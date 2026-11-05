@@ -16,9 +16,9 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
   assert.deepEqual(palette.map((g) => g.category), ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['store'], [], ['value', 'field'], ['math'], ['condition'], ['time'], ['collection'], ['text', 'tag', 'portal'], ['output']]);
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['source'], [], ['value', 'field'], ['math'], ['condition'], ['time'], ['collection'], ['text', 'tag', 'portal'], ['output']]);
   // Eleven items, in the plan's order: the Portal is a Utils (TODO 779).
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.kind.heading)), ['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.kind.heading)), ['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -30,7 +30,7 @@ test('no Query-only kind is in it, and each workflow kind is', () => {
     assert.equal(all.includes(id), kind.graphs.includes('workflow'), id);
     if (kind.graphs.includes('workflow')) assert.ok(kind.category, `${id} has a category`);
   }
-  for (const query of ['status', 'source', 'scope', 'preset', 'saved', 'arrange', 'presentation', 'component']) assert.ok(!all.includes(query), query);
+  for (const query of ['status', 'scope', 'preset', 'saved', 'arrange', 'presentation', 'component']) assert.ok(!all.includes(query), query);
 });
 
 test('a search finds a family by its name, or by a type\'s: "round" finds Math, as Round', () => {

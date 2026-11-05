@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv') as HTMLElement & { rendered: Promise<void> };
     await canvas.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'store', x: 420, y: 40, values: { store: 'customers' } }], routes: [] };
+    const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], routes: [] };
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: document.getElementById('nodes') as never,
       fields: { status: { label: 'Status' } }, stores: ['customers'],

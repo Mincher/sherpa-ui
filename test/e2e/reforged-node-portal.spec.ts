@@ -26,13 +26,13 @@ test.beforeEach(async ({ page }) => {
 });
 
 const node = (id: string, kind: string, x: number, y: number, values?: object, heading?: string) => ({ id, kind, x, y, ...(values ? { values } : {}), ...(heading ? { heading } : {}) });
-/** A Store, a Field and a Count, far apart: the portals go between. */
-const BARE = { v: 2, id: 'g', nodes: [node('start', 'store', 360, 0, { store: 'customers' }), node('pick', 'field', 1160, 0, { field: 'status' }), node('count', 'collection', 1160, 340, { type: 'count' })], routes: [] };
-/** Store → In "rows"; two Outs "rows" into the Field and the Count; an In "other" alone. */
+/** A Source, a Field and a Count, far apart: the portals go between. */
+const BARE = { v: 2, id: 'g', nodes: [node('start', 'source', 360, 0, { store: 'customers' }), node('pick', 'field', 1160, 0, { field: 'status' }), node('count', 'collection', 1160, 340, { type: 'count' })], routes: [] };
+/** Source → In "rows"; two Outs "rows" into the Field and the Count; an In "other" alone. */
 const LINKED = {
   v: 2, id: 'g',
   nodes: [
-    node('start', 'store', 0, 0, { store: 'customers' }), node('in', 'portal', 360, 0, { type: 'in', name: 'rows' }, 'In rows'),
+    node('start', 'source', 0, 0, { store: 'customers' }), node('in', 'portal', 360, 0, { type: 'in', name: 'rows' }, 'In rows'),
     node('o1', 'portal', 720, 0, { type: 'out', name: 'rows' }, 'Out one'), node('o2', 'portal', 720, 300, { type: 'out', name: 'rows' }, 'Out two'),
     node('lone', 'portal', 360, 300, { type: 'in', name: 'other' }, 'In other'),
     node('pick', 'field', 1080, 0, { field: 'status' }), node('count', 'collection', 1080, 300, { type: 'count' }),
@@ -96,7 +96,7 @@ async function press(page: Page, heading: string, n = 0): Promise<void> {
 const linked = (page: Page) => page.locator(`${cards}[data-linked]`).evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
 const name = (page: Page, heading: string, n = 0) => card(page, heading, n).locator('sherpa-input-text[name="name"]');
 
-test('a portal is placed from the panel, named, and routed: the Store\'s rows reach the Field through it, and no line joins the two', async ({ page }) => {
+test('a portal is placed from the panel, named, and routed: the Source\'s rows reach the Field through it, and no line joins the two', async ({ page }) => {
   await bind(page, BARE);
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;
   await place(page, 'portal', [box.x + 560, box.y + 160]);
@@ -112,8 +112,8 @@ test('a portal is placed from the panel, named, and routed: the Store\'s rows re
   expect(await name(page, 'Portal', 1).locator('option').allTextContents()).toEqual(['Pick a name', 'Portal 1', 'New name…']);
   await name(page, 'Portal', 1).locator('select').selectOption('Portal 1');
   await settle(page);
-  // Routed by the real pointer: the Store's Rows into the In, the Out into the Field.
-  await drag(page, await socket(page, 'Store', 'output', 'Rows'), await socket(page, 'Portal', 'input'));
+  // Routed by the real pointer: the Source's Rows into the In, the Out into the Field.
+  await drag(page, await socket(page, 'Source', 'output', 'Rows'), await socket(page, 'Portal', 'input'));
   await drag(page, await socket(page, 'Portal', 'output', undefined, 1), await socket(page, 'Field', 'input'));
   const now = await flow(page);
   expect(now.nodes.filter((n) => n.kind === 'portal').map((n) => [n.id, n.values])).toEqual([['portal-1', { name: 'Portal 1' }], ['portal-2', { type: 'out', name: 'Portal 1' }]]);
@@ -174,7 +174,7 @@ test('Rename, typed in the inspector, renames every portal of the name, one step
   await settle(page);
   const names = async () => (await flow(page)).nodes.filter((n) => n.kind === 'portal').map((n) => [n.id, n.values?.['name']]);
   expect(await names()).toEqual([['in', 'customers'], ['o1', 'customers'], ['o2', 'customers'], ['lone', 'other']]);
-  // The links stay: the Field still reads the Store's rows.
+  // The links stay: the Field still reads the Source's rows.
   await expect(card(page, 'Field')).not.toHaveAttribute('data-warning');
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.undo())).toBe(true);
   await settle(page);
@@ -185,7 +185,7 @@ test('a name or a route that would make a loop through a portal is refused: the 
   const LOOP = {
     v: 2, id: 'g',
     nodes: [
-      node('start', 'store', 0, 0, { store: 'customers' }), node('pick', 'field', 360, 0, { field: 'status' }), node('test', 'condition', 720, 0, { type: 'eq' }),
+      node('start', 'source', 0, 0, { store: 'customers' }), node('pick', 'field', 360, 0, { field: 'status' }), node('test', 'condition', 720, 0, { type: 'eq' }),
       node('in', 'portal', 1080, 0, { type: 'in', name: 'back' }, 'In back'), node('out', 'portal', 0, 360, { type: 'out', name: 'other' }, 'Out'),
       node('lone', 'portal', 1080, 300, { type: 'in', name: 'other' }, 'In other'), node('count', 'collection', 360, 360, { type: 'count' }),
     ],

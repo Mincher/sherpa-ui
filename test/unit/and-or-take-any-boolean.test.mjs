@@ -20,8 +20,8 @@ const { routeRequest } = await import(new URL('query-graph.js', core));
 
 const ACTIVE = { field: 'status', op: 'eq', value: 'active' };
 const PRO = { field: 'plan', op: 'eq', value: 'Pro' };
-const store = { id: 's', kind: 'store', x: 0, y: 0, values: { store: 'users' } };
-/** Status Equals active: Store › Field › Condition. */
+const store = { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } };
+/** Status Equals active: Source › Field › Condition. */
 const status = [store, { id: 'fs', kind: 'field', x: 200, y: 0, values: { field: 'status' } }, { id: 'active', kind: 'condition', x: 400, y: 0, values: { type: 'eq', b: 'active' } }];
 const statusRoutes = [{ from: 's/rows', to: 'fs' }, { from: 'fs/field', to: 'active' }];
 /** Plan Equals Pro, the same way. */
@@ -79,8 +79,8 @@ test('a test brings its tree; a constant folds — true drops out of And and end
 });
 
 test('a boolean only a run gives is named by where it comes from; a test that says no tree is one, and says why', () => {
-  assert.deepEqual(read(flow([], 's')).where, { and: [ACTIVE, { boolean: 'Store › True' }] });
-  assert.deepEqual(read(flow([], 's/#false')).where, { and: [ACTIVE, { boolean: 'Store › False' }] });
+  assert.deepEqual(read(flow([], 's')).where, { and: [ACTIVE, { boolean: 'Source › True' }] });
+  assert.deepEqual(read(flow([], 's/#false')).where, { and: [ACTIVE, { boolean: 'Source › False' }] });
   // A comparison of two values: only a run says it; its True is a boolean, and why it says no tree stays said.
   const two = [value('Pro'), { id: 'eq', kind: 'condition', x: 300, y: 600, values: { type: 'eq', b: 'Pro' } }];
   const g = workflowGraph(flow(two, 'eq', 'and', [{ from: 'v/value', to: 'eq' }]));

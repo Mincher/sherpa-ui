@@ -2,8 +2,8 @@ import { test, expect } from './harness';
 
 /**
  * A node lights by its step — plan 695 N2, Will's TODO 671. The Query graph WATCHES
- * the one trace stream: as a page's source loads, the Source lights by its load,
- * the Store by its reads — the page's request and the worker's answer and hold,
+ * the one trace stream: as a page's source loads, the Source lights by its load and
+ * by its store's reads — the page's request and the worker's answer and hold,
  * joined by one trace — and each condition by what the walk counted. A workflow
  * graph lights from the steps a run says. The lit state is CSS: `data-step` pins
  * the node's look, and `data-caption` says its time and rows.
@@ -43,19 +43,23 @@ const BIND = `async () => {
   await window.__settled();
 }`;
 
-/** A reader's filter change, applied: the source loads, and every node's step is kept as it moves. */
+/** A reader's filter change, applied: the source loads, and every node's step and caption are kept as they move. */
 const LOAD = `async () => {
   window.steps = [];
+  window.captions = [];
   new MutationObserver((changes) => {
-    for (const c of changes) window.steps.push([c.target.dataset.heading, c.target.dataset.step ?? null]);
-  }).observe(document.querySelector('#root sherpa-layout-canvas'), { subtree: true, attributeFilter: ['data-step'] });
+    for (const c of changes) {
+      if (c.attributeName === 'data-step') window.steps.push([c.target.dataset.heading, c.target.dataset.step ?? null]);
+      else window.captions.push([c.target.dataset.heading, c.target.dataset.caption ?? null]);
+    }
+  }).observe(document.querySelector('#root sherpa-layout-canvas'), { subtree: true, attributeFilter: ['data-step', 'data-caption'] });
   await window.source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['APAC'] } });
   await window.source.query.ask({ commit: true });
 }`;
 /** The walk lit: the last node a load lights. */
 const WALKED = () => document.querySelector<HTMLElement>('#root sherpa-node[data-heading="Region"][data-category="logic"]')?.dataset['step'] === 'done';
 
-test('the Query graph lights as its source loads: the Store by the reads, in the page and the worker, the Source by the load, each condition by the walk', async ({ page }) => {
+test('the Query graph lights as its source loads: the Source by the load and by its reads, in the page and the worker, each condition by the walk', async ({ page }) => {
   await page.evaluate(`(${BIND})()`);
   const before = await page.evaluate(LIT) as Lit;
   await page.evaluate(`(${LOAD})()`);
@@ -63,7 +67,7 @@ test('the Query graph lights as its source loads: the Store by the reads, in the
   const lit = await page.evaluate(LIT) as Lit;
   const r = await page.evaluate(async () => {
     type Said = { step: string; host: string; trace: string; ms?: number; detail?: Record<string, unknown> };
-    const w = window as unknown as { editor: { stop(): void }; stopSpans(): void; spans: Said[]; steps: [string, string | null][] };
+    const w = window as unknown as { editor: { stop(): void }; stopSpans(): void; spans: Said[]; steps: [string, string | null][]; captions: [string, string | null][] };
     const ended = (step: string): Said => w.spans.find((s) => s.step === step && s.ms !== undefined)!;
     const [request, answer, hold, load] = ['request', 'answer', 'hold', 'load'].map(ended) as [Said, Said, Said, Said];
     const region = w.spans.find((s) => s.detail?.['node'] === 'when-view-region')!;
@@ -75,19 +79,19 @@ test('the Query graph lights as its source loads: the Store by the reads, in the
     return {
       worker: [answer.host, answer.trace === request.trace, hold.host, hold.trace === request.trace],
       walk: [region.trace === load.trace, region.detail?.['rows']],
-      seen: { Source: seen('Source'), customers: seen('customers') },
+      seen: seen('Source'),
+      said: w.captions.flatMap(([h, c]) => (h === 'Source' && c ? [c] : [])),
       listens: tracing(),
     };
   });
   expect(Object.values(before).every(([step]) => step === null), 'nothing lit before a load').toBe(true);
-  expect(r.seen.Source).toEqual(['running', 'done']);
-  expect(r.seen.customers[0]).toBe('running');
-  expect(r.seen.customers.at(-1)).toBe('done');
+  // One node, the Source (TODO 808): its store's reads — the page's request, and the worker's answer and hold, the
+  // held set's 3 rows — while its load runs; then the load, which ends last, with the page's 1 row, and where it ran.
+  expect([r.seen[0], r.seen.at(-1)]).toEqual(['running', 'done']);
+  expect(r.said.some((c) => /^Running · 3 rows · worker$/.test(c)), r.said.join('; ')).toBe(true);
   expect(lit['Source']![0]).toBe('done');
-  expect(lit['Source']![1]).toMatch(/^[\d.,]+ ms · 1 row$/);
-  // The Store: the page's request, and the worker's answer and hold — the held set's 3 rows.
-  expect(lit['customers']![0]).toBe('done');
-  expect(lit['customers']![1]).toMatch(/^([\d.,]+ ms · )?3 rows · worker$/);
+  expect(lit['Source']![1]).toMatch(/^[\d.,]+ ms · 1 row · worker$/);
+  expect(lit['customers'], 'no Store node').toBeUndefined();
   expect(lit['Region']).toEqual(['done', '1 row']);
   expect(lit['View']).toEqual(['done', null]);
   expect(r).toMatchObject({ worker: ['worker', true, 'worker', true], walk: [true, 1], listens: false });
@@ -107,7 +111,7 @@ test('a worker\'s span from another context lights the same node, joined by its 
     worker.postMessage(span('f'.repeat(32), 7));
     await new Promise((done) => setTimeout(done, 100));
     worker.close();
-    return document.querySelector<HTMLElement>('#root sherpa-node[data-heading="customers"]')!.dataset['caption'];
+    return document.querySelector<HTMLElement>('#root sherpa-node[data-heading="Source"]')!.dataset['caption'];
   });
   expect(said).toBe('41 ms · 99 rows · worker');
 });
@@ -117,7 +121,7 @@ const FLOW = `async () => {
   const { bindWorkflow } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'active-customers', nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
     { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'active' } },
     { id: 'end', kind: 'output', x: 900, y: 0 },
@@ -153,11 +157,11 @@ test('a workflow graph lights from the steps a run says: each node by its id, it
     (window as unknown as { editor: { stop(): void } }).editor.stop();
     return { during, after, again, looks: new Set([idle, running, failed]).size };
   }, LIT);
-  expect(r.during).toEqual({ Store: ['running', 'Running · 3 rows'], Field: [null, null], Condition: ['running', 'Running'], Output: [null, null] });
-  expect(r.after['Store']![0]).toBe('done');
+  expect(r.during).toEqual({ Source: ['running', 'Running · 3 rows'], Field: [null, null], Condition: ['running', 'Running'], Output: [null, null] });
+  expect(r.after['Source']![0]).toBe('done');
   expect(r.after['Condition']![0]).toBe('done');
   expect(r.after['Condition']![1]).toMatch(/2 rows$/);
   expect(r.after['Output']).toEqual(['skipped', 'Skipped']);
-  expect(r.again).toEqual({ Store: [null, null], Field: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], Output: [null, null] });
+  expect(r.again).toEqual({ Source: [null, null], Field: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], Output: [null, null] });
   expect(r.looks, 'idle, running and failed each look their own').toBe(3);
 });

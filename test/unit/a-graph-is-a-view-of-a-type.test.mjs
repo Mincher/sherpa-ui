@@ -26,7 +26,7 @@ const filter = (id, label = id) => ({
   v: 1, type: 'preset-filter', id, label,
   graph: {
     nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: 'active' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
@@ -104,7 +104,7 @@ test('New graph makes an empty entity of the type, checked and kept: its name or
 test('an EMPTY graph is a new one: its outputs are asked for once it places a node', () => {
   const empty = { v: 1, type: 'preset-filter', id: 'empty', label: 'Empty', graph: { nodes: [], routes: [] } };
   assert.deepEqual(entityFaults(empty), []);
-  const placed = { ...empty, graph: { nodes: [{ id: 'start', kind: 'store', x: 0, y: 0 }], routes: [] } };
+  const placed = { ...empty, graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0 }], routes: [] } };
   assert.deepEqual(entityFaults(placed), ['the Preset Filter "empty" sends nothing to its output "where": route one to #out/where']);
 });
 
@@ -119,7 +119,7 @@ test('the canvas edits an entity\'s graph as a workflow — its Group Input and 
       settings: { inputs: [{ name: 'users', type: 'object' }], outputs: [{ name: 'allowed', type: 'object' }] },
     };
     assert.deepEqual(kinds(node), ['#in', 'c', '#out']);
-    const flow = { v: 1, type: 'flow', id: 'onboard', label: 'Onboard', graph: { nodes: [{ id: 'start', kind: 'store', x: 0, y: 0 }], routes: [] } };
+    const flow = { v: 1, type: 'flow', id: 'onboard', label: 'Onboard', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0 }], routes: [] } };
     assert.deepEqual(kinds(flow), ['start']);
     const { workflow, kinds: offered } = graphWorkflow(filter('pf', 'PF'));
     // Its id the entity's, so its tab draft is its own; its own kind not offered on its canvas.

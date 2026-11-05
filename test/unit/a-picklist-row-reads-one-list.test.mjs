@@ -23,7 +23,7 @@ const labels = (list) => list?.map((c) => c.label);
 const flow = (values = {}, extra = {}) => ({
   v: 2, id: 'f',
   nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', ...values } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
@@ -55,7 +55,7 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
 
 test('every workflow picklist row takes a value in; the Value node has its Type', () => {
   const kind = (id) => (id === 'filter' ? resolveKind(NODE_KINDS.condition) : ['sort', 'group'].includes(id) ? resolveKind(NODE_KINDS.collection, id) : NODE_KINDS[id]);
-  for (const [id, row] of [['store', 'store'], ['field', 'field'], ['filter', 'b'], ['sort', 'direction']]) {
+  for (const [id, row] of [['source', 'store'], ['field', 'field'], ['filter', 'b'], ['sort', 'direction']]) {
     assert.equal(socketType(kind(id), row, 'input'), 'value', `${id} › ${row}`);
   }
   const value = resolveKind(NODE_KINDS.value);
@@ -63,14 +63,14 @@ test('every workflow picklist row takes a value in; the Value node has its Type'
   assert.equal(value.rows[0].input, undefined, 'the Type is picked, never fed');
   // Where the Query has no route, its rows draw no socket.
   const g = queryGraph({ v: 1, scopes: {} }, { v: 1, id: 'p', source: { store: 'customers', search: ['name'], fields: { name: {} } } });
-  for (const [id, name] of [['store', 'store'], ['source', 'search'], ['source', 'applyOn']]) {
+  for (const [id, name] of [['source', 'store'], ['source', 'search'], ['source', 'applyOn']]) {
     const r = g.nodes.find((n) => n.id === id).rows.find((x) => x.name === name);
     assert.deepEqual([r.input, r.output, r.editable], [undefined, undefined, undefined], `${id} › ${name} is read only, with no socket`);
     assert.ok(r.choices, `${id} › ${name} is a picklist`);
   }
 });
 
-test('the Query\'s Store, Search fields, Apply on and a shared Presentation are picklists, read only', () => {
+test('the Query\'s Source › Store, Search fields, Apply on and a shared Presentation are picklists, read only', () => {
   const definition = {
     v: 1, id: 'p',
     source: { store: 'customers', search: ['name', 'email'], applyOn: 'input', fields: { name: { label: 'Name' }, email: {}, status: {} } },
@@ -78,7 +78,7 @@ test('the Query\'s Store, Search fields, Apply on and a shared Presentation are 
   const query = { v: 1, scopes: { view: { holds: [], readings: {}, presentation: { kind: 'bar', sort: 'desc' } } } };
   const g = queryGraph(query, definition, { stores: ['customers', 'orders'], components: [{ id: 'c', label: 'Chart', scope: 'view', kind: 'donut' }] });
   const row = (id, name) => g.nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
-  assert.deepEqual(labels(row('store', 'store').choices), ['customers', 'orders']);
+  assert.deepEqual(labels(row('source', 'store').choices), ['customers', 'orders']);
   assert.deepEqual([row('source', 'search').multiple, row('source', 'search').value], [true, ['name', 'email']]);
   assert.deepEqual(row('source', 'search').choices.map((c) => c.value), ['name', 'email', 'status']);
   assert.deepEqual([row('source', 'applyOn').value, labels(row('source', 'applyOn').choices)], ['input', ['Change', 'Input']]);
@@ -115,7 +115,7 @@ test('a row a route drives that sends nothing yet, and that holds nothing, shows
     inputs: [{ name: 'status', label: 'Status', type: 'value' }, { name: 'way', label: 'Way', type: 'value' }],
     outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
     nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'pick', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
       { id: 'match', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } },
       { id: 'order', kind: 'collection', x: 720, y: 0, values: { type: 'sort' } },

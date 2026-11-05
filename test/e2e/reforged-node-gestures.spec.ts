@@ -22,12 +22,12 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** A workflow bound on the harness canvas: Store › Field (Status) › Condition, a Value into its Value B; a Sort waits. */
+/** A workflow bound on the harness canvas: Source › Field (Status) › Condition, a Value into its Value B; a Sort waits. */
 const BIND = `async (routes) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'g', nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 260, values: { value: 'active' } },
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } },
     { id: 'sort', kind: 'collection', x: 720, y: 0, values: { type: 'sort', direction: 'asc' } },

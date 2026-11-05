@@ -18,7 +18,7 @@ const { columnOf, fieldWords, readInput } = await import(new URL('node-input.js'
 const { sentFrom, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 const facts = { fields: { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' }, joined: { label: 'Joined', type: 'date' } } };
-const store = { id: 's', kind: 'store', x: 0, y: 0, values: { store: 'customers' } };
+const store = { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'customers' } };
 const field = (id, name) => ({ id, kind: 'field', x: 300, y: 0, ...(name ? { values: { field: name } } : {}) });
 const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
 const at = (g, id) => g.nodes.find((n) => n.id === id);

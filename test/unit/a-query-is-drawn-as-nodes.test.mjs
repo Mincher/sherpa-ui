@@ -1,5 +1,5 @@
 /**
- * A PAGE'S QUERY IS DRAWN AS NODES: Store, Source, each scope with its held
+ * A PAGE'S QUERY IS DRAWN AS NODES: its Source, each scope with its held
  * fields as rows, a Condition into each answered field, Arrange, Presentation
  * and the components — derived from the live Query, never kept; presets, saved
  * filters, status fields and superseded answers too. The rows go from each node's
@@ -58,16 +58,16 @@ const own = (n) => n.rows.filter((r) => r.name !== ROWS.name);
 const values = (id) => Object.fromEntries(own(node(id)).map((r) => [r.name, r.value]));
 const row = (id, name) => node(id).rows.find((r) => r.name === name);
 
-test('the Records page\'s Query: Store, Source, each scope, its conditions, Arrange, Presentation, each component', () => {
+test('the Records page\'s Query: its Source, each scope, its conditions, Arrange, Presentation, each component', () => {
   assert.deepEqual(graph.nodes.map((n) => `${n.kind}:${n.id}`), [
-    'store:store', 'source:source',
+    'source:source',
     'scope:scope-view', 'field:field-view-region', 'condition:when-view-region', 'presentation:show-r-donut', 'component:component-r-donut', 'component:component-r-line',
     'scope:scope-data', 'field:field-data-status', 'condition:when-data-status', 'arrange:arrange-data', 'component:component-grid',
     'scope:scope-r-bar', 'presentation:show-r-bar', 'component:component-r-bar',
   ]);
   // The rows from each Rows row into the next header; each Field into its test, and the test's True into its row.
   assert.deepEqual(graph.routes.map((r) => `${r.from} → ${r.to}`), [
-    'store/rows → source', 'source/rows → scope-view', 'field-view-region/field → when-view-region', 'when-view-region → scope-view/region',
+    'source/rows → scope-view', 'field-view-region/field → when-view-region', 'when-view-region → scope-view/region',
     'scope-view/rows → show-r-donut', 'show-r-donut/rows → component-r-donut', 'scope-view/rows → component-r-line',
     'scope-view/rows → scope-data', 'field-data-status/field → when-data-status', 'when-data-status → scope-data/status', 'scope-data/rows → arrange-data', 'arrange-data/rows → component-grid',
     'scope-view/rows → scope-r-bar', 'scope-r-bar/rows → show-r-bar', 'show-r-bar/rows → component-r-bar',
@@ -79,7 +79,9 @@ test('each data node sends its rows from its Rows row, first; its header takes t
     const data = !['condition', 'field', 'preset', 'saved', 'component'].includes(n.kind);
     assert.equal(n.rows[0]?.name === ROWS.name, data, `${n.id}: its Rows row`);
     assert.equal(n.output, undefined, `${n.id}: no header sends rows`);
-    if (n.kind !== 'store' && data) assert.equal(n.input, 'any', `${n.id}: its header takes any`);
+    // The Source is where the rows come from: nothing comes in on its header, and it forks nowhere.
+    if (n.kind === 'source') assert.deepEqual([n.input, n.branches], [undefined, undefined], n.id);
+    else if (data) assert.equal(n.input, 'any', `${n.id}: its header takes any`);
   }
   // A test takes its Field's column on its header; a Query's Field takes nothing, and sends its column.
   assert.deepEqual([node('when-view-region').branches, node('when-view-region').input, socketType(node('when-view-region'), undefined, 'output')], [true, 'any', 'boolean']);
@@ -88,9 +90,9 @@ test('each data node sends its rows from its Rows row, first; its header takes t
 });
 
 test('each node shows what the Query and the definition say', () => {
-  assert.equal(node('store').heading, 'customers');
-  assert.deepEqual(values('store'), { store: 'customers' });
-  assert.deepEqual(values('source'), { pageSize: 25, search: ['name', 'email'], applyOn: 'change' });
+  // One Source: its store, then how the page reads it (TODO 808).
+  assert.equal(node('source').heading, 'Source');
+  assert.deepEqual(values('source'), { store: 'customers', pageSize: 25, search: ['name', 'email'], applyOn: 'change' });
   // Its Rows, the filter Switch, then each held field with a socket for its condition's True.
   assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
     ['rows', 'Rows', undefined, undefined, undefined],
@@ -127,7 +129,7 @@ test('every route joins an output to an input that is there, and that accepts it
 
 test('it reads left to right, and nothing in one column overlaps', () => {
   const x = (id) => node(id).x;
-  assert.ok(x('store') < x('source') && x('source') < x('field-view-region') && x('field-view-region') < x('when-view-region') && x('when-view-region') < x('scope-view'));
+  assert.ok(x('source') < x('field-view-region') && x('field-view-region') < x('when-view-region') && x('when-view-region') < x('scope-view'));
   assert.ok(x('scope-view') < x('scope-data') && x('scope-data') < x('arrange-data') && x('arrange-data') < x('component-grid'));
   const columns = Object.groupBy(graph.nodes, (n) => n.x);
   for (const column of Object.values(columns)) {
@@ -150,7 +152,7 @@ test('what a reader may change: everything a door takes — read only only what 
   assert.deepEqual(editable('arrange-data'), { sort: true, direction: true, group: true, search: true });
   assert.deepEqual(editable('scope-view')['#filters'], true);
   // The page size changes live; the rest of the Source is the definition's, and says so.
-  assert.deepEqual(editable('source'), { pageSize: true, search: false, applyOn: false });
+  assert.deepEqual(editable('source'), { store: false, pageSize: true, search: false, applyOn: false });
   assert.match(row('source', 'search').hint, /page definition/);
   assert.equal(row('source', 'rows').hint, undefined, 'its Rows row says nothing of the definition');
   // A slot's presentation changes; one on the View has no slot to keep it, and says so.
@@ -272,16 +274,17 @@ test('a SAVED FILTER is a node: on no bar it says what it would add, and no rout
   assert.ok(onBar.routes.some((r) => r.to === 'scope-view/@saved:trials'));
 });
 
-test('a STATUS FIELD is a node between the store and the source: each value, and when a row has it', () => {
+test('a STATUS FIELD is a node between the Source and the View: each value, and when a row has it', () => {
   const store = statusFields(new ArrayStore(rows, { key: 'id' }), {
     health: { type: 'status', label: 'Health', values: [{ value: 'at risk', status: 'critical', when: [{ seats: { lt: 10 } }] }, { value: 'healthy', status: 'success' }] },
   });
-  const g = queryGraph({ v: 1, scopes: {} }, page, { domains: store.domains });
+  const g = queryGraph({ v: 1, scopes: { view: { holds: [], readings: {} } } }, page, { domains: store.domains });
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
     ['Rows', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
-  assert.ok(g.routes.some((r) => r.from === 'store/rows' && r.to === 'status-health') && g.routes.some((r) => r.from === 'status-health/rows' && r.to === 'source'));
-  assert.ok(nodeIn(g, 'store').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'source').x);
+  // The Source's rows get their status, then reach the View: never the Source's straight.
+  assert.deepEqual(g.routes.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), ['source/rows → status-health', 'status-health/rows → scope-view']);
+  assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'scope-view').x);
 });
 
 test('a SUPERSEDED answer is drawn kept, not in force: read only, into its scope\'s row', () => {

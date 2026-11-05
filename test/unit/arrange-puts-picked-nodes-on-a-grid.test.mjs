@@ -105,7 +105,7 @@ test('a tie stands in the gap, several equally spaced, at the mean height of its
 test('place: nodes, ties and bends in one edit; bends reset on a touched route; the rest left', () => {
   const w = {
     v: 2, id: 'p',
-    nodes: [{ id: 'a', kind: 'store', x: 0, y: 0 }, { id: 'b', kind: 'output', x: 600, y: 0 }, { id: 'c', kind: 'store', x: 0, y: 200 }, { id: 'd', kind: 'output', x: 600, y: 200 }],
+    nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'output', x: 600, y: 0 }, { id: 'c', kind: 'source', x: 0, y: 200 }, { id: 'd', kind: 'output', x: 600, y: 200 }],
     routes: [{ from: 'a/rows', to: 'b', via: [{ x: 300, y: 50 }] }, { from: 'c/rows', to: 'd', via: [{ x: 300, y: 250 }] }],
   };
   const next = editWorkflow(w, { place: { nodes: { a: { x: 4, y: 8 }, b: { x: 644, y: 8 } }, bends: 'reset' } });
@@ -118,7 +118,7 @@ test('place: nodes, ties and bends in one edit; bends reset on a touched route; 
 });
 
 test('place: faults in words, and the workflow comes back untouched', () => {
-  const w = { v: 2, id: 'p', nodes: [{ id: 'a', kind: 'store', x: 0, y: 0 }, { id: 'b', kind: 'output', x: 6, y: 0 }], routes: [] };
+  const w = { v: 2, id: 'p', nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'output', x: 6, y: 0 }], routes: [] };
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: 1, y: 1 } } } }), w);
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: 1, y: 1 }, z: { x: 1, y: 1 } } } }), w);
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: NaN, y: 1 }, b: { x: 1, y: 1 } } } }), w);

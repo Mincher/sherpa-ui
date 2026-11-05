@@ -40,11 +40,11 @@ const FIELDS = { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { 
 const fieldNode = (id, field, x = 200, y = 0) => ({ id, kind: 'field', x, y, values: { field } });
 /** A Condition of one operator, its Value B given. */
 const test_ = (id, type, b, x = 400, y = 0) => ({ id, kind: 'condition', x, y, values: { type, ...(b === undefined ? {} : { b }) } });
-/** Demos' own, rebuilt (plan 783 D9): Store › Field (Status) › Condition (Equals active) › Where. */
+/** Demos' own, rebuilt (plan 783 D9): Source › Field (Status) › Condition (Equals active) › Where. */
 const active = {
   v: 1, type: 'preset-filter', id: 'active-customers', label: 'Active customers', settings: { source: 'customers' },
   graph: {
-    nodes: [{ id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('field', 'status'), test_('status', 'eq', 'active')],
+    nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('field', 'status'), test_('status', 'eq', 'active')],
     routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
   },
 };
@@ -89,9 +89,9 @@ test('A or (B and C) on Seats is ONE reading: one Field into three Conditions, a
   const { where } = presetOfEntity(seats).preset;
   assert.deepEqual(Object.keys(where), ['seats']);
   assert.deepEqual(where, whereOfTree({ or: [{ field: 'seats', op: 'lt', value: 5 }, { and: [{ field: 'seats', op: 'gt', value: 5 }, { field: 'seats', op: 'lt', value: 100 }] }] }).where);
-  // The rows a test lets through carry it: Store › Field › Active › Rows › Field › Pro is Active and Pro.
+  // The rows a test lets through carry it: Source › Field › Active › Rows › Field › Pro is Active and Pro.
   const chain = filter('chain', [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('fs', 'status'), test_('act', 'eq', 'active'), fieldNode('fp', 'plan', 600), test_('pro', 'eq', 'Pro', 800),
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('fs', 'status'), test_('act', 'eq', 'active'), fieldNode('fp', 'plan', 600), test_('pro', 'eq', 'Pro', 800),
   ], [{ from: 'start/rows', to: 'fs' }, { from: 'fs/field', to: 'act' }, { from: 'act/rows', to: 'fp' }, { from: 'fp/field', to: 'pro' }, { from: 'pro', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(chain).preset.where, { status: { eq: 'active' }, plan: { eq: 'Pro' } });
   // Time and a Tag are leaves too, each on the Field on its header.
@@ -146,7 +146,7 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
   assert.deepEqual(presetOfEntity(withPart(yes, 'v/value')).preset.where, { plan: { eq: 'Pro' } }, 'Pro and true: Pro');
   assert.match(presetOfEntity(withPart(yes, 'v/value', 'or')).fault, /always holds, so it filters nothing/);
   assert.match(presetOfEntity(withPart({ ...yes, values: { type: 'boolean', value: 'false' } }, 'v/value')).fault, /never holds, so no row passes/);
-  assert.match(presetOfEntity(withPart({ id: 's', kind: 'store', x: 0, y: 240, values: { store: 'customers' } }, 's')).fault, /"Store › True" is a boolean only a run gives/);
+  assert.match(presetOfEntity(withPart({ id: 's', kind: 'source', x: 0, y: 240, values: { store: 'customers' } }, 's')).fault, /"Source › True" is a boolean only a run gives/);
 });
 
 test('what has no preset form is said in words: Or across two fields, an empty value, no condition, a test with no Field', () => {

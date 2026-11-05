@@ -86,7 +86,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
     if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, ROWS], `${name}: its Rows row, first`);
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
-  assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['store', 'status', 'source', 'scope', 'arrange', 'presentation']);
+  assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['source', 'status', 'scope', 'arrange', 'presentation']);
   // A family's types say their own rows: every Logic type, a Sort, a Group by and a Tag send theirs from a Rows row, first.
   const typed = all.flatMap(([n, k]) => Object.entries(k.types ?? {}).map(([t, type]) => [`${n} › ${t}`, type.rows ?? []]));
   for (const [name, rows] of typed) if (rows.includes(ROWS)) assert.equal(rows.indexOf(ROWS), 0, `${name}: its Rows row, first`);
@@ -94,7 +94,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
     ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'collection › sort', 'collection › group', 'tag › includes',
   ]);
   // True and False: every kind a workflow runs but its end, and the Query's Condition, Preset and Saved filter, whose True goes into a scope's row.
-  assert.deepEqual(named((k) => k.branches), ['store', 'condition', 'preset', 'saved', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag']);
+  assert.deepEqual(named((k) => k.branches), ['source', 'condition', 'preset', 'saved', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag']);
   // A type forks as its family does, and a header sends rows from no type: but a portal's Out, which sends what reaches its In
   // (TODO 779). Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything.
   for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, name === 'portal' && id === 'out' ? 'any' : undefined], name);
@@ -123,7 +123,7 @@ test('every shipped kind says its types once: no output sends any; a fork says n
 const node = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
 const sound = {
   v: 2, id: 'typed',
-  nodes: [node('start', 'store'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'collection', { type: 'count' }), node('end', 'output')],
+  nodes: [node('start', 'source'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'collection', { type: 'count' }), node('end', 'output')],
   routes: [
     { from: 'start/rows', to: 'f/rows' }, { from: 'f', to: 'g' }, { from: 'f/#false', to: 'g' },
     { from: 'f/rows', to: 'end' }, { from: 'v/value', to: 'l' }, { from: 'c/count', to: 'l' }, { from: 'start/rows', to: 'c' },

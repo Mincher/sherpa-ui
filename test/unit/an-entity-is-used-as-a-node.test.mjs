@@ -21,12 +21,12 @@ const lib = await import(new URL('data/node-library.js', core));
 const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
-/** Records whose status is one value — Store › Field › Condition — sent to the Preset Filter's Where. */
+/** Records whose status is one value — Source › Field › Condition — sent to the Preset Filter's Where. */
 const filter = (id, label, value = 'active', extra = {}) => ({
   v: 1, type: 'preset-filter', id, label,
   graph: {
     nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: value } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
@@ -78,8 +78,8 @@ test('the panel offers what the graph\'s type takes, and no node that would hold
   const kinds = { ...NODE_KINDS, ...lib.kindsOf(library) };
   const offered = (host) => Object.keys(offeredKinds(kinds, host, library.nodes));
   const inOuter = offered('preset-filter:outer');
-  // A Preset Filter takes a Store and a Condition, never an Output: its families.
-  assert.ok(inOuter.includes('store') && inOuter.includes('condition'));
+  // A Preset Filter takes a Source and a Condition, never an Output: its families.
+  assert.ok(inOuter.includes('source') && inOuter.includes('condition'));
   assert.ok(!inOuter.includes('output'));
   // Any entity's node is offered (D1), but its own and the two that hold it, one through the other.
   assert.deepEqual(inOuter.filter((id) => id.includes(':')).sort(), ['preset-filter:apart', 'preset-filter:inner']);
@@ -177,10 +177,10 @@ test('an app\'s type is used as a node too; and the keeper\'s modules stay light
     const card = { v: 1, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'preset-filter:trials', x: 0, y: 0 }], routes: [] } };
     const node = asNode(card);
     assert.deepEqual([node.icon, node.outputs.map((o) => o.name)], ['grid', ['present']]);
-    // A card takes a Store, not a Condition; any entity's node, as a Preset Filter's.
+    // A card takes a Source, not a Condition; any entity's node, as a Preset Filter's.
     const library = { v: 1, nodes: { 'ui-card:orders': node, 'preset-filter:trials': asNode(filter('trials', 'Trials')) } };
     const offered = Object.keys(offeredKinds({ ...NODE_KINDS, ...lib.kindsOf(library) }, 'ui-card:orders', library.nodes));
-    assert.ok(offered.includes('store') && !offered.includes('condition'));
+    assert.ok(offered.includes('source') && !offered.includes('condition'));
     assert.deepEqual(offered.filter((id) => id.includes(':')), ['preset-filter:trials']);
   } finally {
     off();

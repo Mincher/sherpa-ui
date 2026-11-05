@@ -24,7 +24,7 @@ const data = await import(new URL('../../data.js', core));
 
 const facts = { fields: { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' }, joined: { label: 'Joined', type: 'date' } } };
 const value = (id, v, type) => ({ id, kind: 'value', x: 0, y: 0, values: { ...(type ? { type } : {}), ...(v === undefined ? {} : { value: v }) } });
-const store = { id: 's', kind: 'store', x: 0, y: 200, values: { store: 'users' } };
+const store = { id: 's', kind: 'source', x: 0, y: 200, values: { store: 'users' } };
 const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
 const drawn = (w, f = facts, kinds) => workflowGraph(w, f, kinds);
 const at = (g, id) => g.nodes.find((n) => n.id === id);
@@ -161,7 +161,7 @@ test('the incoming JSON says it: null where the node cannot use what came, and w
   const g = drawn(flow([value('v', 'abc'), store, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
     [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }]));
   const [t, m] = [nodeFlow(g, 't').incoming, nodeFlow(g, 'm').incoming];
-  assert.deepEqual(t[0], { socket: 'In', type: 'any', from: ['Store › Rows'], value: null, warning: 'Between takes a date; it was given rows' });
+  assert.deepEqual(t[0], { socket: 'In', type: 'any', from: ['Source › Rows'], value: null, warning: 'Between takes a date; it was given rows' });
   assert.deepEqual(m.find((s) => s.socket === 'Value A'), { socket: 'Value A', type: 'value', from: ['Value › Value'], value: null, warning: 'Value A takes a number; it was given "abc"' });
   assert.equal('warning' in m.find((s) => s.socket === 'Value B'), false);
 });

@@ -23,7 +23,7 @@ const filter = (id, label = id, extra = {}) => ({
   v: 1, type: 'preset-filter', id, label,
   graph: {
     nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },

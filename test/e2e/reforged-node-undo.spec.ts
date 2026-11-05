@@ -51,7 +51,7 @@ const BIND = `async (org) => {
   const { useOf } = await import('/dist/data.js');
   const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
   const flow = { v: 2, id: 'g', nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
     useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),
     { id: 'sort', kind: 'collection', x: 0, y: 260, values: { type: 'sort', direction: 'asc' } },
@@ -94,7 +94,7 @@ const can = (page: Page) => page.evaluate(() => ({
 }));
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
-const STORE_ROWS = '#cv > sherpa-node[data-heading="Store"] sherpa-node-row';
+const STORE_ROWS = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row';
 const SORT = '#cv > sherpa-node[data-heading="Collection"]';
 const SORT_ROWS = `${SORT} sherpa-node-row`;
 const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
@@ -196,7 +196,7 @@ test('a route and a row pick: each is one step, back and forward, to the same wo
   await settle(page);
   const s1 = await state(page);
   expect(s1).not.toBe(s0);
-  // A route: the Store's rows to the Sort.
+  // A route: the Source's rows to the Sort.
   await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
   const s2 = await state(page);
   expect(s2).not.toBe(s1);
@@ -257,7 +257,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
     await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
   }],
   ['make a Custom Node', async (page) => {
-    await header(page, 'Store').focus();
+    await header(page, 'Source').focus();
     await page.keyboard.press('Space');
     await header(page, 'Collection').focus();
     await page.keyboard.press('Space');
@@ -283,7 +283,7 @@ for (const [name, edit] of EDITS) {
 test('Ungroup is a step too: Undo makes the Custom Node again, a second Undo puts the pair back', async ({ page }) => {
   await bind(page);
   const s0 = await state(page);
-  await header(page, 'Store').focus();
+  await header(page, 'Source').focus();
   await page.keyboard.press('Space');
   await header(page, 'Collection').focus();
   await page.keyboard.press('Space');

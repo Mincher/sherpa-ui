@@ -15,7 +15,7 @@ const { workflowGraph } = await import(new URL('workflow.js', core));
 const graph = () => workflowGraph({
   v: 2, id: 'flow',
   nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'field', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
     { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },

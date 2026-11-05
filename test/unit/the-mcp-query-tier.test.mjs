@@ -163,7 +163,7 @@ test('query_graph is queryGraph over the opened page, as the Node Editor draws i
   });
   assert.deepEqual({ nodes: json.nodes, routes: json.routes }, JSON.parse(JSON.stringify(graph)));
   const ids = json.nodes.map((n) => n.id);
-  for (const id of ['store', 'source', 'scope-view', 'scope-data', 'when-data-status', 'preset-data-high-risk', 'saved-at-risk']) assert.ok(ids.includes(id), id);
+  for (const id of ['source', 'scope-view', 'scope-data', 'when-data-status', 'preset-data-high-risk', 'saved-at-risk']) assert.ok(ids.includes(id), id);
   source.close();
 });
 
@@ -209,13 +209,13 @@ test('edit_query_graph refuses a dangling node, a row no command takes and a rou
   const at = { definition: records, rows, key: 'id' };
   const dangling = await call('edit_query_graph', { ...at, edits: [{ node: 'when-view-nope', row: 'b', value: 'x' }] });
   assert.equal(dangling.bad, true);
-  assert.match(dangling.text, /^The Query graph has no node "when-view-nope"\. Its nodes: store, source, scope-view, /);
+  assert.match(dangling.text, /^The Query graph has no node "when-view-nope"\. Its nodes: source, scope-view, /);
   const readOnly = await call('edit_query_graph', { ...at, edits: [{ node: 'source', row: 'search', value: 'name' }] });
   assert.equal(readOnly.bad, true);
   assert.match(readOnly.text, /No command takes "Search fields" on "Source": The page definition sets it/);
-  const route = await call('edit_query_graph', { ...at, edits: [{ from: 'store', to: 'scope-view/region' }] });
+  const route = await call('edit_query_graph', { ...at, edits: [{ from: 'source', to: 'scope-view/region' }] });
   assert.equal(route.bad, true);
-  assert.match(route.text, /The Query has no route from "customers" to "View Context": a condition's True goes into a field of a scope\./);
+  assert.match(route.text, /The Query has no route from "Source" to "View Context": a condition's True goes into a field of a scope\./);
 });
 
 test('workflow_graph is workflowGraph with its faults and the kinds a workflow runs', { skip }, async () => {

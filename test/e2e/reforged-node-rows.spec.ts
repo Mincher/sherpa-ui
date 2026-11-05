@@ -29,7 +29,7 @@ const BIND = `async (routes, OWN = false) => {
     tags: { heading: 'Tags', icon: 'flag', rows: [{ name: 'set', label: 'Set', control: 'field', multiple: true, output: 'object' }], model: 'x', graphs: ['workflow'] },
     gate: { heading: 'Gate', icon: 'flag', rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'x', graphs: ['workflow'] } };
   const flow = { v: 2, id: 'g', nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 300, values: { store: 'customers' } },
+    { id: 'start', kind: 'source', x: 0, y: 300, values: { store: 'customers' } },
     { id: 'tags', kind: 'tags', x: 0, y: 0, values: { set: ['status'] } },
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } },
     { id: 'gate', kind: 'gate', x: 720, y: 0, values: { on: OWN } },

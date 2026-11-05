@@ -24,11 +24,11 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** A workflow bound on the harness canvas with its node panel: a Store, far right of the panel. */
+/** A workflow bound on the harness canvas with its node panel: a Source, far right of the panel. */
 const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'store', x: 420, y: 40, values: { store: 'customers' } }], routes: [] };
+  const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], routes: [] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-panel'),
     fields: { status: { label: 'Status' } }, stores: ['customers'], values: { status: ['active', 'trial'] },
@@ -77,7 +77,7 @@ test('it lists each category with its families, eleven, never a Query-only one; 
   const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
   const names = () => page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
-  expect(await names()).toEqual(['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
+  expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
   // A family's line is its synopsis, never its types (TODO 809).
   expect(await item(page, 'collection').getAttribute('data-description')).toBe('Rows in order, grouped or counted.');
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('cou');
@@ -147,7 +147,7 @@ test('Enter on an item places it', async ({ page }) => {
   expect(await onValue()).toBe(true);
   await page.keyboard.press('Enter');
   await settle(page);
-  expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['store', 'collection']);
+  expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['source', 'collection']);
   expect(await pick(page)).toEqual({ current: ['Collection'], open: false });
 });
 
@@ -163,7 +163,7 @@ test('a drag places the node where it is let go', async ({ page }) => {
   await page.mouse.up();
   await settle(page);
   const r = await draft(page);
-  expect(r.nodes.map((n) => n.kind)).toEqual(['store', 'value']);
+  expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'value']);
   // The node's corner is the drop, on the plane and on the screen.
   const view = await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: { x: number; y: number } }).view);
   expect(Math.abs(r.nodes[1]!.x - (drop[0] - canvas!.x - view.x))).toBeLessThanOrEqual(2);
@@ -197,7 +197,7 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   await bind(page);
   // Start's output (rows, an object) dropped on the bare canvas.
   const [x1, y1] = await page.evaluate(() => {
-    const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Store')!;
+    const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Source')!;
     const r = el.socketRect('output');
     return [r.left + r.width / 2, r.top + r.height / 2];
   });
@@ -219,7 +219,7 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   } else await count.click();
   await settle(page);
   const r = await draft(page);
-  expect(r.nodes.map((n) => n.kind)).toEqual(['store', 'collection']);
+  expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'collection']);
   expect(r.routes).toEqual(['start → collection-1']);
   expect(await pick(page)).toEqual({ current: ['Collection'], open: false });
 });

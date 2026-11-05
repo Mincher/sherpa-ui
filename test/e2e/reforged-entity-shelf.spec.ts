@@ -14,7 +14,7 @@ const SETUP = `async () => {
   window.keeper = keeper;
   window.filter = (id, label, kind) => ({ v: 1, type: 'preset-filter', id, label,
     graph: kind ? { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], routes: [{ from: 'inner', to: '#out/where' }] } : { nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } }, { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } } ],
       routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }] },

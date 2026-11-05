@@ -26,7 +26,7 @@ const ACTIVE = {
   v: 1, type: 'preset-filter', id: 'active-customers', label: 'Active customers', description: 'Customers who are active.',
   graph: {
     nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
@@ -118,7 +118,7 @@ test('an app adds a type; a clash with a shipped one is refused; taking it back 
   assert.deepEqual(off.slice(0, 2), [undefined, undefined]);
   assert.equal(reports.filter((r) => r.code === 'entity-type').length, 2);
   assert.ok(T.entityTypes()['ui-card']);
-  const e = { v: 1, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'orders' } }], routes: [{ from: 'start/rows', to: '#out/present' }] } };
+  const e = { v: 1, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'orders' } }], routes: [{ from: 'start/rows', to: '#out/present' }] } };
   assert.deepEqual(faults(e), []);
   off[2]();
   assert.match(faults(e).join('\n'), /type "ui-card", which this app does not have/);

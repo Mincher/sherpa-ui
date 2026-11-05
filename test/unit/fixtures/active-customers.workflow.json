@@ -4,7 +4,7 @@
   "id": "active-customers",
   "label": "Active customers",
   "nodes": [
-    { "id": "start", "kind": "store", "x": 0, "y": 0, "values": { "store": "customers" } },
+    { "id": "start", "kind": "source", "x": 0, "y": 0, "values": { "store": "customers" } },
     { "id": "field", "kind": "field", "x": 360, "y": 0, "values": { "field": "status" } },
     { "id": "status", "kind": "value", "x": 360, "y": 160, "values": { "value": "active" } },
     { "id": "filter", "kind": "condition", "x": 720, "y": 0, "values": { "type": "eq" } },

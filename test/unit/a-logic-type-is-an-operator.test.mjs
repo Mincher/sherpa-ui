@@ -24,7 +24,7 @@ const logic = NODE_KINDS.condition;
 const workflowLogic = kindIn(logic, 'workflow');
 const node = (g, id) => g.nodes.find((n) => n.id === id);
 const names = (n) => n.rows.map((r) => r.name);
-const store = { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } };
+const store = { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } };
 const field = (id, name) => ({ id, kind: 'field', x: 200, y: 0, values: { field: name } });
 const facts = { fields: { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' } }, values: { status: ['active', 'trial'] } };
 
@@ -108,7 +108,7 @@ test('a comparison tests what comes in on its header — a Field\'s column, or a
   assert.deepEqual([workflowFaults(toSum), node(workflowGraph(toSum), 'sum').warnings], [[], undefined]);
   const rowsIn = { ...w, nodes: [...w.nodes, store], routes: [{ from: 'start/rows', to: 'is' }, { from: 'is', to: 'end' }] };
   assert.deepEqual([workflowFaults(rowsIn), node(workflowGraph(rowsIn), 'is').warnings], [[], [{ words: 'Equals takes a field or a value; it was given rows: route a Field in' }]]);
-  // Store › Field › Condition: the column fits, and its Rows row sends the rows that hold.
+  // Source › Field › Condition: the column fits, and its Rows row sends the rows that hold.
   const chain = { ...rowsIn, nodes: [...rowsIn.nodes, field('f', 'status')], routes: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'is' }, { from: 'is/rows', to: 'end' }] };
   assert.deepEqual([node(workflowGraph(chain, facts), 'is').warnings, sentFrom(chain, 'is/rows', facts)], [undefined, { kind: 'rows' }]);
   // An operator the field's type does not take warns, never a fault; a Value B of another type is the row's fault.

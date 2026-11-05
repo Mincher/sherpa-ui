@@ -34,7 +34,7 @@ const library = (nodes = {}) => ({ v: 1, nodes: { 'org-permissions': structuredC
 const flow = (use = {}) => ({
   v: 2, id: 'flow',
   nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'perm', kind: 'org-permissions', x: 360, y: 0, ...use },
     { id: 'end', kind: 'output', x: 720, y: 0 },
   ],
@@ -78,7 +78,7 @@ test('a use is a node of the definition\'s kind: nodeKindOf gives a row per inpu
   const perm = graph.nodes.find((n) => n.id === 'perm');
   assert.deepEqual([perm.heading, perm.rows.map((r) => r.name), perm.rows.find((r) => r.name === 'role').value], ['Org permissions', ['users', 'role', 'allowed'], 'owner']);
   // A shipped kind's id is never a Custom Node's.
-  assert.deepEqual(Object.keys(lib.kindsOf(library({ store: ORG }))), ['org-permissions']);
+  assert.deepEqual(Object.keys(lib.kindsOf(library({ source: ORG }))), ['org-permissions']);
 });
 
 test('a use runs nested: innerOf gives the body with Group Input and Output, and this instance\'s parameters over the defaults', () => {
@@ -89,7 +89,7 @@ test('a use runs nested: innerOf gives the body with Group Input and Output, and
   assert.deepEqual(lib.innerOf(flow().nodes[1], l).params, { role: 'admin' }, 'the default, until the instance sets its own');
   assert.deepEqual(workflowFaults(own.workflow, own.kinds), [], 'the body is a workflow, checked by the same function');
   assert.deepEqual(workflowGraph(own.workflow, {}, own.kinds).nodes.map((n) => n.heading), ['Group Input', 'Field', 'Condition', 'Group Output']);
-  assert.equal(lib.innerOf({ id: 'x', kind: 'store' }, l), undefined, 'a shipped kind has no inside');
+  assert.equal(lib.innerOf({ id: 'x', kind: 'source' }, l), undefined, 'a shipped kind has no inside');
   assert.equal(lib.innerOf({ id: 'x', kind: 'nope' }, l), undefined);
 });
 
@@ -124,8 +124,8 @@ test('a use of an unknown id, and an id a shipped kind owns, are faults', () => 
   const w = flow();
   w.nodes[1].kind = 'nowhere';
   assert.ok(faults(w).some((f) => f.includes('of the kind "nowhere", which is not one')));
-  assert.ok(lib.nodeLibraryFaults(library({ store: ORG })).some((f) => f.includes('"store" has the id of a kind that is shipped')));
-  const shipped = heard(() => lib.checkNodeLibrary(library({ store: ORG })));
+  assert.ok(lib.nodeLibraryFaults(library({ source: ORG })).some((f) => f.includes('"source" has the id of a kind that is shipped')));
+  const shipped = heard(() => lib.checkNodeLibrary(library({ source: ORG })));
   assert.equal(shipped.value, false);
   assert.ok(shipped.said.every((m) => m.startsWith('checkNodeLibrary: ')) && shipped.said.length);
   assert.deepEqual(lib.nodeLibraryFaults({ v: 3 }), ['it is not a Custom Node library: a v1 with its nodes by id']);

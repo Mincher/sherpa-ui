@@ -62,7 +62,7 @@ const press = async (page: Page, name: string) => {
 const R = (n: number) => ({ from: `s${n}/rows`, to: `e${n}` });
 
 test('dragging one of several picked nodes moves them all, relative places kept; an unpicked one stays', async ({ page }) => {
-  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 600, 0], ['s2', 'store', 0, 240], ['e2', 'output', 600, 240], ['s3', 'store', 0, 480]], [R(1), R(2)]);
+  await start(page, [['s1', 'source', 0, 0], ['e1', 'output', 600, 0], ['s2', 'source', 0, 240], ['e2', 'output', 600, 240], ['s3', 'source', 0, 480]], [R(1), R(2)]);
   const before = await flow(page);
   await pick(page, ['s1', 'e1', 's2']);
   expect(await picked(page)).toEqual(['e1', 's1', 's2']);
@@ -80,7 +80,7 @@ test('dragging one of several picked nodes moves them all, relative places kept;
 });
 
 test('a tie whose routes all join picked nodes goes along, bends of a route between picked ends too; others stay', async ({ page }) => {
-  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 700, 0], ['s2', 'store', 0, 240], ['e2', 'output', 700, 240], ['s3', 'store', 0, 480], ['e3', 'output', 700, 480]],
+  await start(page, [['s1', 'source', 0, 0], ['e1', 'output', 700, 0], ['s2', 'source', 0, 240], ['e2', 'output', 700, 240], ['s3', 'source', 0, 480], ['e3', 'output', 700, 480]],
     [{ ...R(1), via: [{ x: 400, y: 40 }] }, R(2), { ...R(3), via: [{ x: 400, y: 520 }] }],
     [{ id: 't', x: 480, y: 130, routes: [R(1), R(2)] }, { id: 'u', x: 480, y: 330, routes: [R(2), R(3)] }]);
   const before = await flow(page);
@@ -101,7 +101,7 @@ test('a tie whose routes all join picked nodes goes along, bends of a route betw
 });
 
 test('a drag on an unpicked node picks only it and moves only it', async ({ page }) => {
-  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 600, 0], ['s3', 'store', 0, 480]], [R(1)]);
+  await start(page, [['s1', 'source', 0, 0], ['e1', 'output', 600, 0], ['s3', 'source', 0, 480]], [R(1)]);
   const before = await flow(page);
   await pick(page, ['s1', 'e1']);
   await dragNode(page, 's3', [60, 40]);
@@ -113,7 +113,7 @@ test('a drag on an unpicked node picks only it and moves only it', async ({ page
 });
 
 test('Ctrl and an arrow, on the canvas, moves the picked nodes 8px, 32 with Shift; one step', async ({ page }) => {
-  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 600, 0], ['s3', 'store', 0, 480]], [R(1)]);
+  await start(page, [['s1', 'source', 0, 0], ['e1', 'output', 600, 0], ['s3', 'source', 0, 480]], [R(1)]);
   const before = await flow(page);
   await pick(page, ['s1', 'e1']);
   await page.locator('#cv').evaluate((cv) => (cv.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
@@ -144,7 +144,7 @@ const crossings = (page: Page) => page.evaluate(() => {
 const rects = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#cv > sherpa-node')].map((n) => [n.getAttribute('data-heading')!, { x: Number(n.getAttribute('data-x')), y: Number(n.getAttribute('data-y')), w: (n as HTMLElement).offsetWidth, h: (n as HTMLElement).offsetHeight }])));
 
 test('Arrange: columns by flow, three tokens apart, on the grid, anchor kept, fewer crossings, ties centred, bends cleared, one Undo', async ({ page }) => {
-  await start(page, [['s1', 'store', 500, 400], ['s2', 'store', 40, 20], ['e1', 'output', 100, 300], ['e2', 'output', 800, 60], ['s3', 'store', 300, 600]],
+  await start(page, [['s1', 'source', 500, 400], ['s2', 'source', 40, 20], ['e1', 'output', 100, 300], ['e2', 'output', 800, 60], ['s3', 'source', 300, 600]],
     [{ ...R(1), via: [{ x: 300, y: 300 }] }, R(2), { from: 's3/rows', to: 'e1' }],
     [{ id: 't', x: 360, y: 200, routes: [R(1), R(2)] }]);
   const button = page.locator('sherpa-node-toolbar sherpa-button.arrange');

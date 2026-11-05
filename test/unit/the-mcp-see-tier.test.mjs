@@ -108,9 +108,9 @@ test('call_component pages the pager as a reader would; watch_trace says that ac
   const trace = await call('watch_trace', {});
   assert.match(trace.json.preview.act, /goToPage/);
   const node = (id) => trace.json.preview.nodes.find((n) => n.node === id)?.steps ?? [];
-  assert.deepEqual(node('source').map((s) => [s.step, s.state, s.rows, s.total]), [['load', 'done', 10, 30]]);
-  // The page asked its store, and the Node host answered under the same trace.
-  const store = node('store').map((s) => `${s.step} ${s.host} ${s.state}`);
+  assert.deepEqual(node('source').filter((s) => s.step === 'load').map((s) => [s.step, s.state, s.rows, s.total]), [['load', 'done', 10, 30]]);
+  // The page asked its store, and the Node host answered under the same trace: the Source's reads (TODO 808).
+  const store = node('source').map((s) => `${s.step} ${s.host} ${s.state}`);
   assert.ok(store.includes('request page done') && store.includes('answer server done'), store.join('; '));
   assert.deepEqual(node('scope-data').map((s) => s.state), ['done']);
 });

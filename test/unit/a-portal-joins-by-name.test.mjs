@@ -22,7 +22,7 @@ const { presetOfEntity } = await import(new URL('preset-filter.js', core));
 const { groupNodes, ungroupUse } = await import(new URL('node-group.js', core));
 
 const facts = { fields: { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } } };
-const store = (id = 's', name = 'customers', y = 0) => ({ id, kind: 'store', x: 0, y, values: { store: name } });
+const store = (id = 's', name = 'customers', y = 0) => ({ id, kind: 'source', x: 0, y, values: { store: name } });
 const portal = (id, type, name, x = 300, y = 0) => ({ id, kind: 'portal', x, y, values: { type, ...(name ? { name } : {}) } });
 const field = (id, name, x = 600, y = 0) => ({ id, kind: 'field', x, y, values: { field: name } });
 const cond = (id, type, b, x = 900, y = 0) => ({ id, kind: 'condition', x, y, values: { type, ...(b === undefined ? {} : { b }) } });

@@ -90,7 +90,7 @@ test('New graph and Save graph as take tags, tidied; a copy given none keeps the
 
 test('Save as Custom Node tags the definition it makes', () => {
   const flow = { v: 2, id: 'g', nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'a', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: 'active' } },
     { id: 'b', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'pro' } },
   ], routes: [{ from: 'start/rows', to: 'a' }, { from: 'a/rows', to: 'b' }] };

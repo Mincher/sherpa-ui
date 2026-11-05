@@ -21,7 +21,7 @@ const empty = () => ({ v: 1, nodes: {} });
 const flow = () => ({
   v: 2, id: 'flow',
   nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
@@ -72,10 +72,10 @@ test('two nodes saved together keep the route between them inside; one source fe
 });
 
 test('a name that is taken, an id a shipped kind owns: a free id', () => {
-  const a = groupNodes(flow(), ['cond'], empty(), { label: 'Store' }, undefined, facts);
-  assert.equal(a.id, 'store-2');
-  const b = groupNodes(flow(), ['cond'], a.library, { label: 'Store' }, undefined, facts);
-  assert.equal(b.id, 'store-3');
+  const a = groupNodes(flow(), ['cond'], empty(), { label: 'Source' }, undefined, facts);
+  assert.equal(a.id, 'source-2');
+  const b = groupNodes(flow(), ['cond'], a.library, { label: 'Source' }, undefined, facts);
+  assert.equal(b.id, 'source-3');
 });
 
 test('refused in words: nothing picked, no name, a Group node, a loop through outside; two types are one socket, typed by its source', () => {
@@ -95,7 +95,7 @@ test('refused in words: nothing picked, no name, a Group node, a loop through ou
   ]);
   const mixed = groupNodes(bad, ['cond'], empty(), { label: 'Mixed' });
   assert.equal(mixed.fault, undefined);
-  assert.deepEqual(mixed.library.nodes[mixed.id].inputs.map((i) => [i.label, i.type]), [['Store › Rows', 'object']]);
+  assert.deepEqual(mixed.library.nodes[mixed.id].inputs.map((i) => [i.label, i.type]), [['Source › Rows', 'object']]);
   const inner = lib.innerOf(mixed.workflow.nodes.find((n) => n.id === mixed.use), mixed.library);
   assert.deepEqual(workflowGraph(inner.workflow, {}, inner.kinds).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'b', words: 'Value B takes a value; it was given an object' }]);
 });
@@ -113,7 +113,7 @@ const hasLib = (preset = false) => ({ v: 1, nodes: { 'has-status': { ...structur
 const beside = (library = hasLib()) => ({
   v: 2, id: 'flow',
   nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'c', kind: 'condition', x: 0, y: 400, values: { type: 'eq' } },
     lib.useOf(library, 'has-status', { id: 'has', x: 360, y: 0 }),
@@ -139,7 +139,7 @@ test('a Custom Node\'s header takes anything: each connection let go on it adds 
   assert.ok(!three.fault, three.fault);
   assert.deepEqual(inputsOf(three.library), [
     ['records', 'Records', 'object'], ['status', 'Status', 'value'],
-    ['start-rows', 'Store › Rows', 'object'], ['val-value', 'Value › Value', 'value'], ['c', 'Condition › True', 'boolean'],
+    ['start-rows', 'Source › Rows', 'object'], ['val-value', 'Value › Value', 'value'], ['c', 'Condition › True', 'boolean'],
   ]);
   assert.ok(said(three.workflow).includes('val/value → has/val-value') && said(three.workflow).includes('c → has/c'));
   // Inside, a Group Input row each, an output socket of the source's type, feeding nothing yet.
@@ -206,7 +206,7 @@ test('the Group Input shows a row per connected input, each an output socket rou
   const w = {
     v: 2, id: 'flow',
     nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
       { id: 'a', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } },
       { id: 'b', kind: 'condition', x: 360, y: 300, values: { type: 'ne' } },

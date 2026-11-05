@@ -49,7 +49,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const flow = {
     v: 2, id: 'g',
     nodes: [
-      { id: 'start', kind: 'store', x: 420, y: 40, values: { store: 'users' } },
+      { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),
       { id: 'end', kind: 'output', x: 1200, y: 40 },
     ],
@@ -107,7 +107,7 @@ test('a socket tip sits beside its socket on hover, after a pan and a zoom, neve
     await settle(page);
     let tested = 0;
     for (const side of ['out', 'in']) {
-      const node = side === 'out' ? '#cv > sherpa-node[data-heading="Store"]' : '#cv > sherpa-node[data-heading="Output"]';
+      const node = side === 'out' ? '#cv > sherpa-node[data-heading="Source"]' : '#cv > sherpa-node[data-heading="Output"]';
       const sock = await rectOf(page, node, `.header .socket-${side}`);
       if (sock.x < 0 || sock.y < 90 || sock.x > 880 || sock.y > 680) continue;
       tested++;
@@ -130,7 +130,7 @@ test('Delete and Backspace remove the picked nodes and their routes as ONE step;
   const before = await flow(page);
   await header(page, 'Output').click();
   await page.keyboard.down('Shift');
-  await header(page, 'Store').click();
+  await header(page, 'Source').click();
   await page.keyboard.up('Shift');
   await page.keyboard.press('Delete');
   await settle(page);
@@ -150,7 +150,7 @@ test('Delete and Backspace remove the picked nodes and their routes as ONE step;
   await page.keyboard.press(`${await primary(page)}+z`);
   await settle(page);
   // A text field keeps its Backspace.
-  await header(page, 'Store').focus();
+  await header(page, 'Source').focus();
   await page.keyboard.press('Enter');
   // The inspector's own Name field: a real text input.
   const name = page.locator('#inspector sherpa-input-text[name="#heading"] input');
@@ -222,7 +222,7 @@ const socketAt = (page: Page, node: string, side: 'in' | 'out', row?: string) =>
   const q = (host as HTMLElement & { socketRect(side: string): DOMRect | null }).socketRect(s === 'in' ? 'input' : 'output')!;
   return [q.left + q.width / 2, q.top + q.height / 2, q.width, q.height] as [number, number, number, number];
 }, [node, side, row]);
-const STORE = '#cv > sherpa-node[data-heading="Store"]';
+const STORE = '#cv > sherpa-node[data-heading="Source"]';
 
 test('a press just outside the drawn socket starts a connector; a drop 10px off an input connects', async ({ page }) => {
   await bind(page);
@@ -239,7 +239,7 @@ test('a press just outside the drawn socket starts a connector; a drop 10px off 
   expect(await page.evaluate(() => !!document.querySelector('#cv svg .graph-draft'))).toBe(true);
   await page.mouse.up();
   await settle(page);
-  // Store's rows -> Sort's input, dropped 10px left of the input's centre.
+  // Source's rows -> Sort's input, dropped 10px left of the input's centre.
   const sortIn = await page.evaluate(() => {
     const n = document.querySelector('#cv > sherpa-node[data-heading="Org permissions"]') as HTMLElement & { socketRect(s: string): DOMRect };
     const r = n.socketRect('input');

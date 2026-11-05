@@ -59,7 +59,7 @@ test('in a graph: True into Math › Value A reads 1, False 0, no warning; a run
   assert.deepEqual([workflowFaults(w), at(g, 'm').warnings, row(g, 'm', 'a').value, row(g, 'm', 'b').value], [[], undefined, '1', '0']);
   const flowIn = nodeFlow(g, 'm').incoming;
   assert.deepEqual(flowIn.filter((s) => s.socket.startsWith('Value')).map((s) => s.value), ['1', '0']);
-  const run = flow([{ id: 's', kind: 'store', x: 0, y: 0 }, { id: 'm', kind: 'math', x: 360, y: 0 }], [{ from: 's', to: 'm/a' }]);
+  const run = flow([{ id: 's', kind: 'source', x: 0, y: 0 }, { id: 'm', kind: 'math', x: 360, y: 0 }], [{ from: 's', to: 'm/a' }]);
   assert.equal(at(workflowGraph(run), 'm').warnings, undefined);
 });
 

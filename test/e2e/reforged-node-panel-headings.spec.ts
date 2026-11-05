@@ -45,7 +45,7 @@ test.beforeEach(async ({ page }) => {
     const flow = {
       v: 2, id: 'g',
       nodes: [
-        { id: 'start', kind: 'store', x: 420, y: 40, values: { store: 'customers' } },
+        { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } },
         { id: 'status', kind: 'field', x: 140, y: 260, values: { field: 'status' } },
         { id: 'active', kind: 'condition', x: 420, y: 260, values: { type: 'eq', b: 'active' } },
         { id: 'trial', kind: 'condition', x: 700, y: 260, values: { type: 'eq', b: 'trial' } },

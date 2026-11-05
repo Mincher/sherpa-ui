@@ -189,7 +189,7 @@ test('Alt and an arrow on the header grows it a tenth, held to the limits', asyn
 const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const flow = { v: 2, id: 'g', nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'sort', kind: 'collection', x: 360, y: 0, values: { type: 'sort', field: 'status', direction: 'asc' } },
     { id: 'end', kind: 'output', x: 700, y: 0 },
   ], routes: [{ from: 'start/rows', to: 'sort' }] };
@@ -214,7 +214,7 @@ test('in the editor a resize is one step, saved as size beside x and y, with the
   await page.evaluate(() => document.getElementById('cv')!.scrollIntoView({ block: 'start' }));
   const wf = () => page.evaluate(() => JSON.stringify((window as never as { ed: { workflow(): { nodes: unknown[] } } }).ed.workflow().nodes));
   const was = await wf();
-  const node = '#cv > sherpa-node[data-heading="Store"]';
+  const node = '#cv > sherpa-node[data-heading="Source"]';
   const b = await page.locator(node).boundingBox();
   await page.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2);
   const h = await page.locator(node).evaluate((el) => { const r = el.shadowRoot!.querySelector('.resize')!.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
@@ -232,7 +232,7 @@ test('in the editor a resize is one step, saved as size beside x and y, with the
   const gap = await page.evaluate(() => {
     const path = document.querySelector<SVGPathElement>('#cv svg.graph-routes path[data-from]')!;
     const p = path.getPointAtLength(0).matrixTransform(path.getScreenCTM()!);
-    const row = document.querySelector('#cv > sherpa-node[data-heading="Store"] sherpa-node-row') as Node;
+    const row = document.querySelector('#cv > sherpa-node[data-heading="Source"] sherpa-node-row') as Node;
     const s = row.socketRect('output')!;
     return Math.hypot(p.x - (s.left + s.width / 2), p.y - (s.top + s.height / 2));
   });
@@ -284,7 +284,7 @@ test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothin
 });
 
 // — 756: every category, picked, takes the SAME active fill and border; the panel's node adds the same ring.
-const CATS = { Sources: 'store', Variables: 'value', Logic: 'condition', Collections: 'collection', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
+const CATS = { Sources: 'source', Variables: 'value', Logic: 'condition', Collections: 'collection', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
 async function bindCategories(page: Page): Promise<void> {
   await page.setViewportSize({ width: 1700, height: 900 });
   await page.evaluate(async (cats) => {

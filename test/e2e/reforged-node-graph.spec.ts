@@ -33,7 +33,7 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
     const graph = (op: string, withB = true): Graph => ({
       nodes: [
-        { id: 'a', kind: 'store', heading: 'customers', icon: 'storage', output: 'object', rows: [], x: 0, y: 0 },
+        { id: 'a', kind: 'source', heading: 'customers', icon: 'storage', output: 'object', rows: [], x: 0, y: 0 },
         ...(withB ? [{ id: 'b', kind: 'condition', heading: 'Status', icon: 'function', input: 'object', x: 360, y: 0, rows: [
           { name: 'type', label: 'Operation', control: 'type', value: op, choices: [{ value: 'eq', label: 'Equals' }, { value: 'in', label: 'Is one of' }] },
           { name: 'matches', label: 'Matches', output: 'value', value: 3 },
@@ -95,7 +95,7 @@ test('bindQueryEditor follows the Query as it changes, and its stop lets it go',
     return { drawn, before, followed, after: value() };
   }, FRAMES);
   // Is one of with no values to pick from is tags: its value, the comma string (plan 749 P4). The Field, then its test (plan 783 D6).
-  expect(r).toEqual({ drawn: ['customers', 'Source', 'View', 'region', 'region'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
+  expect(r).toEqual({ drawn: ['Source', 'View', 'region', 'region'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
 });
 
 test('a filter toolbar\'s ⋮ menu offers Node Editor (beta) only where the host does, and a pick asks the host to open it', async ({ page }) => {
@@ -415,9 +415,9 @@ const PLACES = `(() => Object.fromEntries([...document.querySelectorAll('#root s
 test('a moved node keeps its place across a reload, for the tab — and a new tab starts from the layout (TODO 551)', async ({ page, context }) => {
   await page.evaluate(`(${BIND_QUERY})()`);
   const laid = await page.evaluate(PLACES) as Record<string, string[]>;
-  // The reader moves the Store node: the arrows on its header, as a drag would.
+  // The reader moves the Source node: the arrows on its header, as a drag would.
   await page.evaluate(() => {
-    const header = document.querySelector('#root sherpa-node[data-heading="customers"]')!.shadowRoot!.querySelector<HTMLElement>('.header')!;
+    const header = document.querySelector('#root sherpa-node[data-heading="Source"]')!.shadowRoot!.querySelector<HTMLElement>('.header')!;
     for (const key of ['ArrowRight', 'ArrowRight', 'ArrowDown']) header.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, composed: true, cancelable: true }));
   });
   const moved = await page.evaluate(PLACES) as Record<string, string[]>;
@@ -431,7 +431,7 @@ test('a moved node keeps its place across a reload, for the tab — and a new ta
   await other.evaluate(`(${BIND_QUERY})()`);
   const fresh = await other.evaluate(PLACES);
   await other.close();
-  expect(moved['customers']).toEqual([String(Number(laid['customers']![0]) + 16), String(Number(laid['customers']![1]) + 8)]);
+  expect(moved['Source']).toEqual([String(Number(laid['Source']![0]) + 16), String(Number(laid['Source']![1]) + 8)]);
   expect(reloaded).toEqual(moved);
   expect(fresh).toEqual(laid);
 });
@@ -457,7 +457,7 @@ const BIND_FLOW = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'active-customers', nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
     { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq' } },
     { id: 'end', kind: 'output', x: 900, y: 0 },
@@ -483,8 +483,8 @@ test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s 
     const ok = (window as unknown as { editor: { save(): boolean } }).editor.save();
     return { op, ok, saved: heard.map((d) => d.nodes.find((n) => n.id === 'filter')?.values), draft: sessionStorage.getItem('sherpa:session:/workflows/active-customers') };
   });
-  // Store › Field › Condition › Output (plan 783): the Operation lists Logic's types, And and Or first.
-  expect(drawn.nodes).toEqual(['Store', 'Field', 'Condition', 'Output']);
+  // Source › Field › Condition › Output (plan 783): the Operation lists Logic's types, And and Or first.
+  expect(drawn.nodes).toEqual(['Source', 'Field', 'Condition', 'Output']);
   expect(drawn.ops.slice(0, 3)).toEqual(['And', 'Or', 'Greater than']);
   expect(r).toEqual({ op: 'ne', ok: true, saved: [{ type: 'ne' }], draft: null });
 });
@@ -501,7 +501,7 @@ test('a use of a Custom Node draws closed: one node with a row per input and out
     } } };
     const canvas = document.querySelector('#root sherpa-layout-canvas') as Parameters<typeof bindWorkflow>[0];
     const flow = { v: 2 as const, id: 'flow', nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'perm', kind: 'org-permissions', x: 360, y: 0, values: { role: 'owner' } },
     ], routes: [{ from: 'start/rows', to: 'perm/users' }] };
     bindWorkflow(canvas, flow, { session: new SessionStore(), stores: ['customers'], kinds: { ...NODE_KINDS, ...kindsOf(library) } });
@@ -513,7 +513,7 @@ test('a use of a Custom Node draws closed: one node with a row per input and out
       role: node.querySelector<HTMLElement & { value: string }>('sherpa-input-text[name="role"]')?.value,
     };
   });
-  expect(r.nodes).toEqual(['Store', 'Org permissions']);
+  expect(r.nodes).toEqual(['Source', 'Org permissions']);
   expect(r.role).toBe('owner');
   expect(r.rows.length).toBe(3);
 });

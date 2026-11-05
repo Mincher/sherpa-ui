@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = { v: 2, id: 'logic', nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'f', kind: 'field', x: 280, y: 0, values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 560, y: 0, heading: 'Check', values: { type: 'eq', b: 'active' } },
       { id: 'v1', kind: 'value', x: 0, y: 320, values: { value: 'active' } },

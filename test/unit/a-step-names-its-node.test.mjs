@@ -48,9 +48,9 @@ test('a step begun says its node and graph, then ends done, failed or skipped wi
   assert.equal(spans.filter((s) => s.detail.node === 'output').length, 1);
 });
 
-test('the node ↔ step map: S3\'s spans light the Source and the Store, a named step its own node; the walk names each node it counted', () => {
+test('the node ↔ step map: S3\'s spans light the Source, by its load and its store\'s reads, a named step its own node; the walk names each node it counted', () => {
   assert.deepEqual(['load', 'request', 'answer', 'hold', 'recheck', 'send', 'other'].map((step) => queryStepNode({ step })),
-    ['source', 'store', 'store', 'store', 'store', 'store', undefined]);
+    ['source', 'source', 'source', 'source', 'source', 'source', undefined]);
   assert.equal(queryStepNode({ step: 'load', detail: { node: 'when-view-status' } }), 'when-view-status');
   assert.deepEqual(walkedNodes('view', { '': 9, region: 4, 'preset:mine': 2 }), [
     { node: 'when-view-region', rows: 4, field: 'region' }, { node: 'preset-view-mine', rows: 2 },
@@ -61,7 +61,7 @@ test('the node ↔ step map: S3\'s spans light the Source and the Store, a named
     { v: 1, id: 'records', source: { store: 'customers', scopes: { view: { presets: [{ id: 'mine', label: 'Mine', where: { region: { in: ['EMEA'] } } }] } } } },
   );
   const ids = graph.nodes.map((n) => n.id);
-  for (const id of [QUERY_NODE.store, QUERY_NODE.source, QUERY_NODE.scope('view'), QUERY_NODE.condition('view', 'region'), QUERY_NODE.preset('view', 'mine'), QUERY_NODE.arrange('view')]) {
+  for (const id of [QUERY_NODE.source, QUERY_NODE.scope('view'), QUERY_NODE.condition('view', 'region'), QUERY_NODE.preset('view', 'mine'), QUERY_NODE.arrange('view')]) {
     assert.ok(ids.includes(id), `${id} is drawn`);
   }
 });

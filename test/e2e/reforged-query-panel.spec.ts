@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The Query editor's node panel — Will, TODO 734: "the query editor is a node editor". The panel
- * lists the kinds a Query takes placed (Logic, Presets, Saved filters, Status), and the page's
+ * lists the kinds a Query takes placed (Sources, Logic, Presets, Saved filters, Status), and the page's
  * Preset Filters as its Custom Nodes (TODO 776); placing one, by a click or a drag, is a request
  * through the Query's one door: a Condition holds the scope's next field, a Preset switches on, a
  * Preset Filter switches itself on. A kind the Query cannot take is refused in words, and asks
@@ -46,7 +46,7 @@ const said = (page: Page) => page.evaluate(() => (window as unknown as { said: s
 
 test('it lists the Query\'s kinds by category, flush to the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
-  expect(heads).toEqual(['Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status']);
+  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status']);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('sherpa-node-panel')!].map((e) => {
     const r = e.getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };

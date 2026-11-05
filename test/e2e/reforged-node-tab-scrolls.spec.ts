@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
     await el.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = { v: 2, id: 'tabs', nodes: [
-      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'value', kind: 'value', x: 0, y: 240, values: { value: 'active' } },
       { id: 'f', kind: 'field', x: 320, y: 0, values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 640, y: 0, heading: 'Check', values: { type: 'eq' } },
@@ -61,13 +61,13 @@ const read = (page: Page) => page.evaluate(() => {
 });
 
 test('two picked: the tall node\'s tab scrolls in the panel, and every button in it is reached, not covered', async ({ page }) => {
-  await header(page, 'Store').click();
+  await header(page, 'Source').click();
   await settle(page);
   await header(page, 'Check').focus();
   await page.keyboard.press('Space');
   await settle(page);
   const tabs = page.locator('#inspector sherpa-tabs');
-  expect(await tabs.evaluate((el) => [...el.shadowRoot!.querySelectorAll('.tab .label')].map((t) => t.textContent))).toEqual(['Store', 'Check']);
+  expect(await tabs.evaluate((el) => [...el.shadowRoot!.querySelectorAll('.tab .label')].map((t) => t.textContent))).toEqual(['Source', 'Check']);
   await tabs.evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
   await settle(page);
   const r = await read(page);

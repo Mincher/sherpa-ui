@@ -35,7 +35,7 @@ const flow = (routes) => ({
   v: 2, id: 'w',
   nodes: [
     { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'abc' } },
-    { id: 's', kind: 'store', x: 0, y: 200, values: { store: 'users' } },
+    { id: 's', kind: 'source', x: 0, y: 200, values: { store: 'users' } },
     { id: 'k', kind: 'sink', x: 360, y: 0 },
   ],
   routes,
@@ -62,7 +62,7 @@ test('every output type into every typed input joins, no fault: its own is read;
 test('Will\'s own example: rows into Math › Value A join, Value A reads null, and Save writes the route', () => {
   const w = {
     v: 2, id: 'w',
-    nodes: [{ id: 's', kind: 'store', x: 0, y: 0, values: { store: 'users' } }, { id: 'm', kind: 'math', x: 360, y: 0 }],
+    nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'm', kind: 'math', x: 360, y: 0 }],
     routes: [{ from: 's/rows', to: 'm/a' }],
   };
   const m = workflowGraph(w).nodes.find((n) => n.id === 'm');
@@ -74,7 +74,7 @@ test('the graph\'s shape stays refused, in words: a loop, twice, two into one, n
   const base = {
     v: 2, id: 'w',
     nodes: [
-      { id: 's', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+      { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'v', kind: 'value', x: 0, y: 200, values: { value: 'abc' } },
       { id: 'h', kind: 'value', x: 0, y: 400, values: { type: 'decimal', value: '1.5' } },
       { id: 'c', kind: 'condition', x: 360, y: 0 }, { id: 'd', kind: 'condition', x: 720, y: 0 },

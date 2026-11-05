@@ -144,7 +144,7 @@ test('placing a Field in a Query holds the scope\'s next field; a Condition is r
 const seatsFlow = () => ({
   v: 2, id: 'tree',
   nodes: [
-    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'seats', kind: 'field', x: 200, y: 0, values: { field: 'seats' } },
     { id: 'a', kind: 'condition', x: 400, y: 0, values: { type: 'lt', b: 5 } },
     { id: 'b', kind: 'condition', x: 400, y: 200, values: { type: 'gt', b: 5 } },

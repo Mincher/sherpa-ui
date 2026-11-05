@@ -66,7 +66,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const flow = {
     v: 2, id: 'g',
     nodes: [
-      { id: 'start', kind: 'store', x: 420, y: 40, values: { store: 'users' } },
+      { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),
       { id: 'end', kind: 'output', x: 1200, y: 40 },
     ],
@@ -119,7 +119,7 @@ test('Enter on the header opens a Custom Node: Group Input and Output drawn, a t
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await ed(page, 'ed.path()')).toEqual([]);
-  expect(await headings(page)).toEqual(['Store', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
   expect(await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => el.shadowRoot!.querySelectorAll('.crumb').length)).toBe(0);
   // The keyboard is back on the use it opened.
   const on = await page.evaluate(() => {
@@ -265,7 +265,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(0);
   // By keyboard: focus a header, Space adds it.
-  await header(page, 'Store').focus();
+  await header(page, 'Source').focus();
   await page.keyboard.press('Space');
   await header(page, 'Output').focus();
   await page.keyboard.press('Space');
@@ -276,12 +276,12 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   expect(await field(page, 'label').getAttribute('data-description')).toMatch(/would hold a loop/);
   expect(await page.locator('#custom').evaluate((el: HTMLElement & { open: boolean }) => el.open)).toBe(true);
   await page.locator('#custom sherpa-button[data-action="cancel"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
-  await header(page, 'Store').focus();
+  await header(page, 'Source').focus();
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(0);
   // The two uses of Org permissions, with the store they share: one Custom Node.
-  await header(page, 'Store').focus();
+  await header(page, 'Source').focus();
   await page.keyboard.press('Space');
   await header(page, 'Org permissions').first().focus();
   await page.keyboard.press('Space');
@@ -301,7 +301,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Output', 'Owner check', 'Store']);
+  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Output', 'Owner check', 'Source']);
   expect(await page.locator('#cv svg.graph-routes path[data-to]').count()).toBe(3);
 });
 
@@ -325,13 +325,13 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   await bind(page);
   const perm2 = '#cv > sherpa-node[data-heading="Org permissions"] >> nth=1';
   // An object, then a boolean, onto the HEADER of the second use: never matched to Users, its free row of their type.
-  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]', 'output'), await socketAt(page, perm2, 'input'));
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-label="Rows"]', 'output'), await socketAt(page, perm2, 'input'));
   await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Org permissions"] >> nth=0', 'output'), await socketAt(page, perm2, 'input'));
   expect(await routesOf(page)).toEqual(['perm → end', 'perm → perm2/perm', 'start/rows → perm/users', 'start/rows → perm2/start-rows', 'start/rows → perm2/users']);
   expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="perm2/start-rows"]').count()).toBe(1);
   // A row's words are its own, or its field's where it has a control (Role).
   expect(await page.locator(perm2).locator('sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label'), e.getAttribute('data-input-socket')]))).toEqual([
-    ['Users', 'object'], ['Role', 'value'], ['Store › Rows', 'object'], ['Org permissions › True', 'boolean'], ['Allowed', null],
+    ['Users', 'object'], ['Role', 'value'], ['Source › Rows', 'object'], ['Org permissions › True', 'boolean'], ['Allowed', null],
   ]);
   // The inside is shared: the other use says it can update; this one follows it.
   expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')))).toEqual(['Update available', null]);
@@ -339,17 +339,17 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   await ed(page, "ed.open('perm2')");
   await settle(page);
   const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]));
-  expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Store › Rows', 'object', false], ['Org permissions › True', 'boolean', false]]);
-  // The reader routes Store › Rows on to the Field, by the pointer: it takes the place of Users there.
-  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Store › Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Field"]', 'input'));
+  expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Source › Rows', 'object', false], ['Org permissions › True', 'boolean', false]]);
+  // The reader routes Source › Rows on to the Field, by the pointer: it takes the place of Users there.
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Source › Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Field"]', 'input'));
   expect(await routesOf(page, "ed.library().nodes['org-permissions'].routes")).toContain('#in/start-rows → role');
-  expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Store › Rows', 'object', true], ['Org permissions › True', 'boolean', false]]);
+  expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Source › Rows', 'object', true], ['Org permissions › True', 'boolean', false]]);
   await ed(page, 'ed.back()');
   await settle(page);
   // Save hands the definition over with its two new inputs.
   expect(await ed(page, 'ed.save()')).toBe(true);
   expect(await ed(page, "window.savedNodes.find(([id]) => id === 'org-permissions')[1].inputs.map((i) => i.name)")).toEqual(['users', 'role', 'start-rows', 'perm']);
-  // Ungroup: the Store goes on to the Field through its row; the True and Users rows feed nothing inside, so their routes go.
+  // Ungroup: the Source goes on to the Field through its row; the True and Users rows feed nothing inside, so their routes go.
   await header(page, 'Org permissions').nth(1).click();
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
@@ -366,7 +366,7 @@ test('a preset\'s header refuses a new input as any refused drop does: in words,
     onReport((r) => w.said.push(`${r.code}: ${r.message}`));
   });
   const refused = 'workflow-route: bindWorkflow: a preset is read only: Copy to my nodes to add an input.';
-  const rows = '#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]';
+  const rows = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-label="Rows"]';
   const own = '#cv > sherpa-node[data-heading="Owner check"]';
   const lines = () => page.locator('#cv svg.graph-routes path[data-from]').evaluateAll((els) => els.map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());
   await drawLine(page, await socketAt(page, rows, 'output'), await socketAt(page, own, 'input'));
@@ -389,13 +389,13 @@ test('inside, a picklist row routed from the Group Input, which sends nothing ye
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');
-    // The Store's Status, Equals Value B; Value B not yet routed.
+    // The Source's Status, Equals Value B; Value B not yet routed.
     const library = {
       v: 1, nodes: {
         'has-status': {
           v: 1, label: 'Has status', inputs: [{ name: 'status', label: 'Status', type: 'value' }], outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
           nodes: [
-            { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } }, { id: 'pick', kind: 'field', x: 360, y: 0, values: { field: 'status' } },
+            { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'pick', kind: 'field', x: 360, y: 0, values: { field: 'status' } },
             { id: 'match', kind: 'condition', x: 720, y: 0, values: { type: 'eq' } },
           ],
           routes: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: 'match/rows', to: '#out/matching' }],
@@ -438,7 +438,7 @@ test('a route a file kept on a use\'s header reads once as its own new input: dr
     const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
     const flow = {
       v: 2, id: 'held',
-      nodes: [{ id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } }, useOf(library as never, 'org-permissions', { id: 'perm', x: 400, y: 0 })],
+      nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, useOf(library as never, 'org-permissions', { id: 'perm', x: 400, y: 0 })],
       routes: [{ from: 'start/rows', to: 'perm' }],
     };
     const session = new SessionStore();
@@ -499,7 +499,7 @@ test('the toolbar\'s Save as Custom Node is off with none or one picked, on with
   await bind(page);
   const off = () => tool(page, 'group').evaluate((el) => el.hasAttribute('disabled'));
   expect(await off()).toBe(true);
-  await header(page, 'Store').click();
+  await header(page, 'Source').click();
   await settle(page);
   expect(await off()).toBe(true);
   await header(page, 'Output').focus();
@@ -512,15 +512,15 @@ test('the toolbar\'s Save as Custom Node is off with none or one picked, on with
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await page.locator('#custom').evaluate((el: HTMLElement & { open: boolean }) => el.open)).toBe(false);
-  expect(await headings(page)).toEqual(['Store', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
   // A name a shipped kind holds is refused too.
   await press(page, 'group');
-  await field(page, 'label').locator('input').fill('Store');
+  await field(page, 'label').locator('input').fill('Source');
   await page.keyboard.press('Enter');
   await settle(page);
-  expect(await headings(page)).toEqual(['Store', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
   await page.locator('#custom sherpa-button[data-action="cancel"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
-  await header(page, 'Store').click();
+  await header(page, 'Source').click();
   await settle(page);
   expect(await off()).toBe(true);
   expect(await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').count()).toBe(0);
@@ -528,7 +528,7 @@ test('the toolbar\'s Save as Custom Node is off with none or one picked, on with
 
 test('one picked node shows no tabs; two show a tab each, the active ringed; a tab switches the node, not the pick; the JSON sections read the definition', async ({ page }) => {
   await bind(page);
-  await header(page, 'Store').click();
+  await header(page, 'Source').click();
   await settle(page);
   expect(await page.locator('#inspector sherpa-tabs').count()).toBe(0);
   const json = (title: string) => page.locator(`#inspector sherpa-accordion[data-heading="${title}"] sherpa-code-block`).evaluate((el) => el.getAttribute('data-code'));
@@ -538,8 +538,8 @@ test('one picked node shows no tabs; two show a tab each, the active ringed; a t
   await page.keyboard.press('Space');
   await settle(page);
   const labels = () => page.locator('#inspector sherpa-tabs').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.tab .label')].map((t) => t.textContent));
-  expect(await labels()).toEqual(['Store', 'Output']);
-  expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Store');
+  expect(await labels()).toEqual(['Source', 'Output']);
+  expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Source');
   await page.locator('#inspector sherpa-tabs').evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Output');
