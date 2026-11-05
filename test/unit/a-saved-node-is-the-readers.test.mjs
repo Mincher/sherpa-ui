@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier, NODES_PAGE } = await import(new URL('browser/page-state.js', core));
 const { joinLibrary } = await import(new URL('data/node-shelf.js', core));
-const { readLibrary } = await import(new URL('browser/node-files.js', core));
+const { nodeEntityOf } = await import(new URL('data/entity.js', core));
 const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', core));
 const { kindsOf } = await import(new URL('data/node-library.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
@@ -32,33 +32,6 @@ const heard = async (run) => {
   try { return { result: await run(), reports }; } finally { off(); }
 };
 
-test('loading: a valid file is all presets; a bad one is reported in the checks\' words and the rest load', async () => {
-  const { result, reports } = await heard(() => readLibrary({
-    v: 1, nodes: {
-      'no-name': { v: 1, label: '', inputs: [], outputs: [], nodes: [] },
-      value: mine('Clash with a shipped kind'),
-      'bad-body': { ...mine('Bad body'), nodes: [{ id: 'x', kind: 'nothing-like-it', x: 0, y: 0 }] },
-      // Defined BEFORE the one it uses: it is tried again once that one is in.
-      'after-it': { ...mine('Uses another'), nodes: [{ id: 'u', kind: 'has-role', x: 0, y: 0 }],
-        routes: [{ from: '#in/users', to: 'u/users' }, { from: '#in/role', to: 'u/role' }, { from: 'u/allowed', to: '#out/allowed' }, { from: 'u', to: '#out' }] },
-      'has-role': HAS_ROLE,
-    },
-  }, NODE_KINDS, { preset: true }));
-  assert.deepEqual(Object.keys(result.nodes).sort(), ['after-it', 'has-role']);
-  assert.ok(Object.values(result.nodes).every((d) => d.preset === true), 'each preset is read only');
-  const said = reports.map((r) => r.message).join('\n');
-  assert.match(said, /"no-name" is left out/);
-  assert.match(said, /shipped/, 'a clash with a shipped kind is refused');
-  assert.match(said, /"bad-body" is left out/);
-  assert.ok(reports.every((r) => r.code === 'node-library'));
-});
-
-test('loading: a file that is no library answers an empty one, and says so', async () => {
-  const { result, reports } = await heard(() => readLibrary([1, 2]));
-  assert.deepEqual(result, { v: 1, nodes: {} });
-  assert.equal(reports.length, 1);
-});
-
 test('the keeper keeps a saved node; a second tab sees it, and so does a reload', async () => {
   const local = memoryTier();
   const first = new PageKeeper({ tab: memoryTier(), local });
@@ -74,13 +47,13 @@ test('the keeper keeps a saved node; a second tab sees it, and so does a reload'
 
 test('a custom id may not clash with a preset or a shipped kind; a preset is never the reader\'s to remove', async () => {
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
-  keeper.presets = readLibrary({ v: 1, nodes: { 'has-role': HAS_ROLE } }, NODE_KINDS, { preset: true });
+  keeper.entityPresets = [nodeEntityOf('has-role', HAS_ROLE)];
   const { result, reports } = await heard(async () => [await keeper.saveNode('has-role', mine('Over it')), await keeper.saveNode('value', mine('Over Value')), keeper.removeNode('has-role')]);
   assert.deepEqual(result, [false, false, false]);
   assert.equal(reports.length >= 3, true);
   assert.deepEqual(Object.keys(keeper.read(NODES_PAGE).entities ?? {}), []);
   // And the join leaves a stored clash out, so a custom node overrides nothing.
-  const joined = joinLibrary(keeper.presets, { 'has-role': mine('Over it'), ok: mine('Ok') });
+  const joined = joinLibrary({ v: 1, nodes: { 'has-role': { ...HAS_ROLE, preset: true } } }, { 'has-role': mine('Over it'), ok: mine('Ok') });
   assert.equal(joined.nodes['has-role'].label, 'Has role');
   assert.equal(joined.nodes['has-role'].preset, true);
   assert.equal(joined.nodes['ok'].label, 'Ok');
@@ -143,7 +116,7 @@ test('the shelf tells its watchers at once', async () => {
 
 test('the panel lists presets read only, and the reader\'s own, in "Custom Nodes"; placing is by the id', async () => {
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
-  keeper.presets = readLibrary({ v: 1, nodes: { 'has-role': HAS_ROLE } }, NODE_KINDS, { preset: true });
+  keeper.entityPresets = [nodeEntityOf('has-role', HAS_ROLE)];
   await keeper.saveNode('mine', mine('Mine'));
   const group = paletteOf({ ...NODE_KINDS, ...kindsOf(keeper.nodeLibrary()) }).find((g) => g.items.some((i) => i.id === 'mine'));
   // Each node picks its category: both here say "Logic" (an app's own would say its own).

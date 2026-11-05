@@ -156,9 +156,10 @@ test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its 
   assert.deepEqual(workflowFaults(typed('decimal', 'twelve')), ['the node "n" holds "twelve" as its Value, which is not a number']);
   assert.deepEqual(workflowFaults(typed('integer', '12')), []);
   assert.deepEqual(workflowFaults(typed('integer', '12.5')), ['the node "n" holds "12.5" as its Value, which is not a whole number']);
-  // A Number saved before is a Decimal: the same check, the same fault.
-  assert.deepEqual(workflowFaults(typed('number', 'twelve')), ['the node "n" holds "twelve" as its Value, which is not a number']);
-  assert.deepEqual(workflowFaults(typed('list', 'a, b')), []);
+  // A Number is no type now (TODO 777): the type is the fault.
+  assert.deepEqual(workflowFaults(typed('number', 'twelve')), ['the node "n" holds "number" as its Type, which is none of its choices']);
+  assert.deepEqual(workflowFaults(typed('list', ['a', 'b'])), []);
+  assert.deepEqual(workflowFaults(typed('list', 'a, b')), ['the node "n" holds "a, b" as its Value, which is no list'], 'a List as text is no list now (TODO 777)');
   assert.deepEqual(workflowFaults(typed('boolean', 'maybe')), ['the node "n" holds "maybe" as its Value, which is not true or false']);
   assert.deepEqual(workflowFaults(typed('boolean', 'True')), []);
   assert.deepEqual(workflowFaults(typed('date', '2026-11-04')), []);

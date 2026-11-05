@@ -165,11 +165,11 @@ test('a workflow Condition draws a part for each comparison it holds, and a Join
   assert.deepEqual(grouped.nodes[0].rows.map((r) => r.name).slice(-1), ['group-3']);
 });
 
-test('the Filter kind is gone: a saved Filter node reads as the Condition it became, once, in a v1 and a v2', () => {
+test('the Filter kind is gone, and no file reads as one (TODO 777): a node of it is a fault, in a v1 and a v2', () => {
   assert.equal(NODE_KINDS.filter, undefined);
   const saved = (v) => ({ v, id: 'old', nodes: [{ id: 'f', kind: 'filter', x: 0, y: 0, values: { field: 'status', op: 'eq' } }], routes: [] });
-  for (const v of [1, 2]) assert.equal(readWorkflow(saved(v)).workflow.nodes[0].kind, 'condition', `v${v}`);
-  assert.deepEqual(workflowFaults(saved(2)), []);
+  for (const v of [1, 2]) assert.equal(readWorkflow(saved(v)).workflow.nodes[0].kind, 'filter', `v${v}`);
+  assert.deepEqual(workflowFaults(saved(2)), ['the node "f" is of the kind "filter", which is not one']);
   // An app that registers its own `filter` keeps it.
   const mine = { ...NODE_KINDS, filter: { heading: 'Mine', icon: 'flag', rows: [], model: 'mine', graphs: ['workflow'] } };
   assert.equal(readWorkflow({ ...saved(2), nodes: [{ id: 'f', kind: 'filter', x: 0, y: 0 }] }, mine).workflow.nodes[0].kind, 'filter');

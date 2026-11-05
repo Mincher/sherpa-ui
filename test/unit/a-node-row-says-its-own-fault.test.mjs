@@ -60,11 +60,10 @@ test('a tag edit is typed by its field, and an operator change carries the value
   assert.deepEqual(asList.nodes[0].values, { type: 'list', value: ['a', 'b'] });
   assert.deepEqual(workflowFaults(asList), []);
   assert.deepEqual(editWorkflow(asList, { node: 'v', row: 'type', value: 'text' }).nodes[0].values, { type: 'text', value: 'a, b' });
-  // Saved before tags — a List as text, an Is one of as one pick — it reads once as its list.
+  // A list row holding one value is a fault, a tags row too: nothing is read as it was before tags (TODO 777).
   const old = { v: 2, id: 'w', nodes: [list('a, b'), { id: 'c', kind: 'condition', x: 300, y: 0, values: { field: 'plan', op: 'in', value: 'Pro' } }] };
-  const read = readWorkflow(old).workflow;
-  assert.deepEqual([read.nodes[0].values.value, read.nodes[1].values.value], [['a', 'b'], ['Pro']]);
-  assert.deepEqual(workflowFaults(old, NODE_KINDS, facts), []);
+  assert.equal(readWorkflow(old).workflow, old);
+  assert.deepEqual(workflowFaults(old, NODE_KINDS, facts), ['the node "l" holds "a, b" as its Value, which is no list', 'the node "c" holds "Pro" as its Value, which is no list']);
 });
 
 test('a Value > List routed into Is one of OVERRIDES its tags (D7): read only, its own kept; cut, they are back', () => {

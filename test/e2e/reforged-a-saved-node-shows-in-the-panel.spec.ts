@@ -9,7 +9,7 @@ import { gotoHarness } from './harness';
  * TRAP T-only-a-named-part-crosses-tabs
  */
 const SETUP = `async () => {
-  const { PageKeeper, bindWorkflow, SessionStore, readLibrary, kindsOf, paletteOf, NODE_KINDS } = await import('/dist/index.js');
+  const { PageKeeper, bindWorkflow, SessionStore, nodeEntityOf, kindsOf, paletteOf, NODE_KINDS } = await import('/dist/index.js');
   const canvas = document.createElement('sherpa-layout-canvas');
   canvas.style.cssText = 'inline-size: 900px; block-size: 600px';
   const panel = document.createElement('sherpa-node-panel');
@@ -24,7 +24,7 @@ const SETUP = `async () => {
     routes: [{ from: '#in/users', to: 'c' }, { from: 'c/rows', to: '#out/allowed' }, { from: 'c', to: '#out' }] });
   window.definition = definition;
   const keeper = new PageKeeper();
-  keeper.presets = readLibrary({ v: 1, nodes: { 'has-role': definition('Has role') } }, NODE_KINDS, { preset: true });
+  keeper.entityPresets = [nodeEntityOf('has-role', definition('Has role'))];
   const kinds = { ...NODE_KINDS, ...kindsOf(keeper.nodeLibrary()) };
   // The panel follows the library: mutated in place, which is what the editor holds.
   keeper.shelf.watch((library) => {

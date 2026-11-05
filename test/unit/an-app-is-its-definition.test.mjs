@@ -37,6 +37,8 @@ const heard = (fn) => {
 test('a sound app definition passes its schema and checkApp, and says nothing', () => {
   assert.deepEqual(schemaCheck('app.v1.json')(APP), []);
   assert.deepEqual(heard(() => checkApp(APP)), { ok: true, seen: [] });
+  // An app ships its Custom Nodes as entities: app.v1 `nodes` is gone (TODO 777).
+  assert.notDeepEqual(schemaCheck('app.v1.json')({ ...APP, nodes: 'nodes.json' }), []);
 });
 
 test('every broken name reports, and none is followed', () => {

@@ -202,14 +202,6 @@ test('the old `nodes` is read ONCE as entities of the type `node`, and the old p
   assert.deepEqual(Object.keys(k.nodeLibrary().nodes), ['has-role']);
 });
 
-test('the node presets of nodes.v1 read as entities of the type node, read only', async () => {
-  const k = keeper();
-  k.presets = { v: 1, nodes: { 'has-role': { ...HAS_ROLE, preset: true } } };
-  assert.deepEqual(k.entities.list('node'), [{ id: 'has-role', type: 'node', label: 'Has role', origin: 'preset' }]);
-  assert.equal(k.shelf.library().nodes['has-role'].preset, true);
-  assert.equal(k.entities.remove('has-role'), false);
-});
-
 test('the keeper pushes the reader\'s entities to the server and takes them back, under the local ones; a server that still says `nodes` is read once', async () => {
   const pushes = [];
   const remote = {
