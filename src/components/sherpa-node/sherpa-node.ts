@@ -8,6 +8,7 @@
  * it sees every node. TRAP T-a-node-moves-itself-and-reports
  * Its sockets are drawn by type; a fork adds a footer. TRAP T-a-socket-is-drawn-by-its-type
  * A warning is its host's words: the warning look, and the header's tip. TRAP T-a-node-reads-null-from-what-it-cannot-use
+ * A portal of a picked portal's name is `data-linked`: it looks picked. TRAP T-a-portal-hop-is-resolved-once
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps it.
@@ -50,6 +51,7 @@ export class SherpaNode extends SherpaElement {
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-current': { type: 'boolean', kind: 'style' },
     'data-active': { type: 'boolean', kind: 'style' },
+    'data-linked': { type: 'boolean', kind: 'style' },
     'data-step': { type: 'enum', kind: 'style', values: ['running', 'done', 'failed', 'skipped'] },
     'data-caption': { type: 'string', kind: 'content' },
     'data-warning': { type: 'string', kind: 'content' },

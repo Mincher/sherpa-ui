@@ -60,6 +60,7 @@ import { OP_LABELS, OP_TAKES, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
 import type { Given, Need } from './node-input.js';
+import { nextPortalName } from './node-portals.js';
 
 /** What a socket carries: one value; an object — a record, rows, or a list, for an array is
  *  an object (D17); a boolean, True or False; or, an input only, any of them (D1). */
@@ -69,7 +70,8 @@ export type SocketType = 'value' | 'object' | 'boolean' | 'any';
 export const SOCKET_WORDS: Readonly<Record<SocketType, string>> = { value: 'a value', object: 'an object', boolean: 'a boolean', any: 'any type' };
 
 /** Whether an input reads what an output of a type sends: its own type, or `any`, which takes all. Any route
- *  joins any input; where this is false, the input reads null (TODO 770). An output never sends `any`. */
+ *  joins any input; where this is false, the input reads null (TODO 770). An output never sends `any`, but a portal's
+ *  Out before anything reaches its In (TODO 779). */
 export function accepts(from: SocketType, to: SocketType): boolean {
   return from !== 'any' && (to === 'any' || to === from);
 }
@@ -87,10 +89,10 @@ export function truthy(value: unknown): boolean {
 
 /** The control a row draws: text, a number, a switch, tags (a list, D17) or a date and time; else the
  *  list a picklist reads — the fields, the field's values, units, a span's way (last or next),
- *  directions, presentations, Apply on, stores, scopes or a family's types (`rowChoices`). */
+ *  directions, presentations, Apply on, stores, scopes, a family's types or a graph's portal names (`rowChoices`). */
 export type RowControl =
   | 'text' | 'number' | 'switch' | 'tags' | 'datetime'
-  | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type';
+  | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -185,6 +187,8 @@ const NUMBERS: RowKind = { ...LIST, needs: 'numbers' };
 const RESULT: RowKind = { name: 'result', label: 'Result', output: 'value' };
 const NUMBER: RowKind = { ...RESULT, gives: 'number' };
 const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'), textRow('separator', 'Separator')];
+/** A portal's name: picked from the graph's names, or New name… (TODO 779). */
+const PORTAL_NAME: RowKind = { name: 'name', label: 'Name', control: 'portal' };
 
 /** The operators whose value is a list: Is one of, Is not one of. */
 export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
@@ -359,6 +363,17 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     types: { includes: { label: 'Includes', rows: [ROWS, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
+  // An In and an Out joined by a name, no line between them: what reaches an In comes out of every Out of its name.
+  // The Out's socket is the type of what reaches its Ins, once drawn (TODO 779). TRAP T-a-portal-hop-is-resolved-once
+  portal: {
+    heading: 'Portal', icon: 'link-simple', description: 'What comes in leaves from every Out of the same name, with no line between them.',
+    typeLabel: 'Type', defaultType: 'in',
+    types: {
+      in: { label: 'In', help: 'What comes in leaves from every Out portal of its name', input: 'any', rows: [PORTAL_NAME] },
+      out: { label: 'Out', help: 'Sends what reaches every In portal of its name', output: 'any', rows: [PORTAL_NAME] },
+    },
+    rows: [], model: 'portal', graphs: ['workflow'], category: 'Utils',
+  },
   output: {
     heading: 'Output', icon: 'flag', description: 'Where the flow ends.', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
   },
@@ -472,7 +487,8 @@ export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags'>,
  *  default. `{}` the header, `{ row }` a row; none, no type of it fits. */
 export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string; type?: string } | undefined {
   const key = side === 'out' ? 'input' : 'output';
-  const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : accepts(t, type));
+  // A portal's Out sends what reaches its In: it fits any input (TODO 779).
+  const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : t === 'any' || accepts(t, type));
   const first = typeOf(family)?.id;
   for (const id of [first, ...Object.keys(family.types ?? {}).filter((t) => t !== first)]) {
     const kind = resolveKind(family, id);
@@ -559,6 +575,8 @@ export interface RowFacts {
   types?: readonly RowChoice[];
   /** The count a Unit row's words follow: its node's Value, so 1 reads "day". */
   count?: number;
+  /** Every name the graph's portals hold, in order: what a portal's Name row picks. */
+  portals?: readonly string[];
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
@@ -587,6 +605,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
   const fixed = row.control && FIXED[row.control];
   if (fixed) return [...fixed];
   if (row.control === 'type') return facts.types && [...facts.types];
+  if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;
   const open = row.control === 'field' ? Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }))
@@ -597,6 +616,14 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
   if (!open) return undefined;
   const own = [...new Set([row.value].flat().filter((v) => v != null && v !== '').map(String))];
   return [...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
+}
+
+/** A portal's Name list: the graph's names, its own among them; New name…, whose value is the next free `Portal N`; and
+ *  Pick a name while it has none (TODO 779). */
+function portalChoices(value: unknown, names: readonly string[]): RowChoice[] {
+  const own = typeof value === 'string' && value.trim() ? value.trim() : '';
+  const listed = [...new Set([...names, ...(own ? [own] : [])])];
+  return [...(own ? [] : [{ value: '', label: 'Pick a name' }]), ...listed.map((v) => ({ value: v, label: v })), { value: nextPortalName(listed), label: 'New name…' }];
 }
 
 /** A fixed list, the same on every page — directions, units, spans, Apply on, presentations; none, an open list or no picklist. */

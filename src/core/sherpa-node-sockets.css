@@ -74,7 +74,8 @@
 :host([data-output-socket="object"]) .socket-out { --_shape: var(--_diamond); }
 :host([data-output-socket="boolean"]) .socket-out { --_shape: var(--_triangle); }
 .socket-false { --_shape: var(--_round-square); }
-:host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
+:host([data-input-socket="any"]) .socket-in,
+:host([data-output-socket="any"]) .socket-out { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
 /* Each tip hangs from its own socket: a name is scoped to its shadow root, so the same one serves every node. */
 .socket-in, .tip-in { --_anchor: --sherpa-socket-in; }
@@ -89,7 +90,8 @@
 :host([data-input-socket="any"]) .tip-in .w-any,
 :host([data-output-socket="value"]) .tip-out .w-value,
 :host([data-output-socket="object"]) .tip-out .w-object,
-:host([data-output-socket="boolean"]) .tip-out .w-boolean { display: inline; }
+:host([data-output-socket="boolean"]) .tip-out .w-boolean,
+:host([data-output-socket="any"]) .tip-out .w-any { display: inline; }
 
 /* Colours go and the shapes stay. */
 @media (forced-colors: active) {

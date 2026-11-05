@@ -132,6 +132,10 @@
                 {
                   "el": "span",
                   "class": "word w-boolean"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-any"
                 }
               ]
             }
@@ -330,6 +334,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-linked",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-locked",
       "type": "boolean",
       "observed": true,
@@ -356,9 +369,10 @@
       "values": [
         "value",
         "object",
-        "boolean"
+        "boolean",
+        "any"
       ],
-      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)"
+      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a circle in secondary ink: a portal's Out before anything reaches its In)"
     },
     {
       "$type": "prop",
@@ -445,7 +459,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }",
+    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
@@ -481,6 +495,11 @@
       "$type": "state",
       "name": "current",
       "selector": ":host([data-current])"
+    },
+    {
+      "$type": "state",
+      "name": "linked",
+      "selector": ":host([data-linked])"
     },
     {
       "$type": "state",

@@ -7729,6 +7729,39 @@ and the editor writes the box round their drawn cards on every draw, drag and re
 - Site: `src/components/sherpa-node-frame/sherpa-node-frame.css`
 - Site: `test/e2e/reforged-node-frame.spec.ts`
 
+### T-a-portal-hop-is-resolved-once
+
+**A portal hop is joined in ONE place, `portalFlow`; every reader of what flows reads its routes.**
+Will, TODO 779 · `docs/history/plan-779-portals.md`. An In and an Out of one name have no route between
+them, so a reader that walks `routes` meets an In that sends nothing and an Out that nothing reaches. Each
+reader that followed routes itself would have to learn the hop, and one would not.
+
+- **What flows is `flowOf` in workflow.ts, `flowing` in node-flow.ts**: both the one resolver's routes. A
+  route into an In and a route out of an Out of its name are ONE route, from the In's source to the Out's
+  target, carrying the name (`portal`). `sentFrom`, a row's read, the field a node reads, the warnings, the
+  faults, `conditionAt`, the Outgoing JSON and a Preset Filter's compile all read it. The drawing reads the
+  routes as given, so no line joins two portals.
+- **Each In's is its own send.** Many-to-1 is several routes into one input: what takes several takes each;
+  what takes one reads null and warns, "Sort takes one route; 2 reach it through the portal "rows"" (Will's
+  rule: a mismatch reads null; Save does not wait). Those routes are `dropped`: no reader reads them, and the
+  loop check still walks them, so a loop through a portal is a loop, and the editor refuses it as a route.
+- **An Out no In names reads null**, and warns on the Out; its type is `any` until something reaches an In
+  of its name, then that type. An Out into an In of another name chains; one into its own name is a loop.
+- **A name is local to its graph.** A Custom Node's body resolves alone; Save as Custom Node refuses a pick
+  that holds some, not all, of a name's portals; Ungroup renumbers a name the graph holds (`rows 2`).
+- **A picked portal lights its name** with `data-linked`, the active pin, as a picked node is.
+
+- Site: `src/core/data/node-portals.ts`
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/data/node-flow.ts`
+- Site: `src/core/data/node-group.ts`
+- Site: `src/data.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/components/sherpa-node/sherpa-node.ts`
+- Site: `test/unit/a-portal-joins-by-name.test.mjs`
+- Site: `test/e2e/reforged-node-portal.spec.ts`
+
 ### T-a-cell-draws-words-not-its-value
 
 **A cell draws its value in WORDS; all that acts on it reads the RAW value.**

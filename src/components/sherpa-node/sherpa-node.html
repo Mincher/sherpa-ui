@@ -9,7 +9,7 @@
     data-icon         a glyph before the name
     data-description  a line under the name
     data-input-socket   the whole node's input socket, on its header: value | object | boolean | any: an input is a D, its type in its ink
-    data-output-socket  the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)
+    data-output-socket  the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a circle in secondary ink: a portal's Out before anything reaches its In)
     data-input-routed   a route joins the header's input: its socket is filled, else hollow
     data-output-routed  a route leaves the header's output: its socket is filled, else hollow
     data-branches       a fork: the header's output is True, and a footer shows with its False socket, a rounded square
@@ -22,6 +22,7 @@
     data-y            where it sits down the canvas, in plane px (default 0)
     data-current      the selected node; the HOST writes it, one node of many
     data-active       the one picked node whose panel is shown, in a stronger ring; the HOST writes it
+    data-linked       a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it
     data-step         how its step stands as a run lights it: running | done | failed | skipped. Its host writes it
     data-caption      a line over the node: what its step did, its time and rows. Its host writes it
     data-warning      what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it
@@ -48,7 +49,7 @@
       <span class="socket socket-in sherpa-anchor" part="socket-in" aria-hidden="true"></span>
       <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Input:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span>
       <span class="socket socket-out sherpa-anchor" part="socket-out" aria-hidden="true"></span>
-      <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name name-out">Output:</span><span class="name name-true">True:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
+      <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name name-out">Output:</span><span class="name name-true">True:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span>
     </div>
     <!-- The header's tip: the warning's words, the first tip after it. -->
     <span id="warning" class="tip tip-warning sherpa-tip" popover="manual" part="tip" role="tooltip" data-text="data-warning"></span>

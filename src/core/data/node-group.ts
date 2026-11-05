@@ -2,8 +2,9 @@
  * node-group.ts — "Save as Custom Node" and its inverse "Ungroup", as two pure edits: several
  * nodes of a workflow become one definition and ONE use in their place, each route over the edge
  * a typed socket (a Group Input or Output row); Ungroup puts the nodes and the routes back. Both
- * check what they make, and refuse in words. DOM-free. Will, TODO 719 · plan 713 §9.2, M11, D9
- * TRAP T-a-custom-node-is-an-instance
+ * check what they make, and refuse in words. A portal's name is local to its graph: a pick that cuts one in two is
+ * refused, and Ungroup renumbers a name the graph holds. DOM-free. Will, TODOs 719, 779 · plan 713 §9.2, M11, D9
+ * TRAP T-a-custom-node-is-an-instance · TRAP T-a-portal-hop-is-resolved-once
  *
  * Map:
  * - GroupAsk — What "Save as Custom Node" is asked: a name; a description, tags, category and id if given.
@@ -18,6 +19,7 @@ import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type Nod
 import { tidyTags } from './tags.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
+import { PORTAL, cutNames, ungroupNames } from './node-portals.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -88,6 +90,9 @@ export function groupNodes(
   if (picked.some((id) => id.startsWith('#'))) return { fault: 'Group Input and Group Output belong to a Custom Node: they cannot be saved into another' };
   if (!ids.size) return { fault: 'pick the nodes to save first: none of them are on the graph' };
   if (!label) return { fault: 'give the Custom Node a name' };
+  // A name is local to its graph: one whose portals are on both sides would be cut in two.
+  const cut = cutNames(workflow.nodes, ids);
+  if (cut.length) return { fault: `the portal ${cut.map((n) => `"${n}"`).join(', ')} joins picked nodes to others: pick every portal of its name, or none` };
   const routes = workflow.routes ?? [];
   const inside = (address: string): boolean => ids.has(socketOf(address).node);
   // A route that leaves the picked nodes and comes back would make the Custom Node hold a loop through the graph.
@@ -214,9 +219,13 @@ export function ungroupUse(
     }
   }
   const body = (definition.routes ?? []).filter((r) => !r.from.startsWith('#') && !r.to.startsWith('#')).map((r) => ({ from: moved(r.from), to: moved(r.to) }));
+  // A portal name the graph holds already takes the next free number: nothing links that did not.
+  const names = ungroupNames(workflow.nodes.filter((n) => n.id !== useId), definition.nodes);
   const nodes: WorkflowNode[] = structuredClone(definition.nodes as WorkflowNode[]).map((n) => {
     const own = values.get(rename.get(n.id)!);
-    return { ...n, id: rename.get(n.id)!, ...(own ? { values: { ...n.values, ...own } } : {}) };
+    const name = n.kind === PORTAL ? names.get(String(n.values?.['name'] ?? '').trim()) : undefined;
+    const kept = own || name ? { values: { ...n.values, ...own, ...(name ? { name } : {}) } } : {};
+    return { ...n, id: rename.get(n.id)!, ...kept };
   });
   const at = workflow.nodes.findIndex((n) => n.id === useId);
   const rest = workflow.nodes.filter((n) => n.id !== useId);

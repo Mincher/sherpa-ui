@@ -2788,6 +2788,9 @@
             },
             {
               "name": "boolean"
+            },
+            {
+              "name": "any"
             }
           ]
         }
@@ -2916,6 +2919,11 @@
           ]
         },
         {
+          "name": "data-linked",
+          "description": "a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it",
+          "valueSet": "v"
+        },
+        {
           "name": "data-locked",
           "description": "the host owns the place: a drag or a key reports, and moves nothing",
           "valueSet": "v"
@@ -2927,7 +2935,7 @@
         },
         {
           "name": "data-output-socket",
-          "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)",
+          "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a circle in secondary ink: a portal's Out before anything reaches its In)",
           "values": [
             {
               "name": "value"
@@ -2937,6 +2945,9 @@
             },
             {
               "name": "boolean"
+            },
+            {
+              "name": "any"
             }
           ]
         },

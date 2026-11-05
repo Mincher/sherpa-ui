@@ -2,8 +2,8 @@
  * node-flow.ts — what flows into a node and out of it, as JSON, read from the graph's DEFINITION:
  * the routes and the values the rows hold; and the ONE reader of a graph as a condition, which the
  * Outgoing JSON shows and a Preset Filter compiles by. Nothing RUNS here: a run's values come with the
- * runner (N4). DOM-free. Will, TODOs 745, 776, 780, 783 · TRAP T-a-preset-filter-is-a-preset-of-its-store
- * TRAP T-a-condition-is-a-tree-of-nodes
+ * runner (N4). Each reads the graph as the data flows, through its portals. DOM-free. Will, TODOs 745, 776, 780, 783, 779
+ * · TRAP T-a-preset-filter-is-a-preset-of-its-store · TRAP T-a-condition-is-a-tree-of-nodes · TRAP T-a-portal-hop-is-resolved-once
  *
  * Map:
  * - NodeFlow — A node's incoming and outgoing JSON.
@@ -15,8 +15,9 @@
  * - leafOf — One test as its node says it: the Field on its header, a comparison, Time's or a Tag's; or why it says none.
  * - nodeFlow — A node's flow, read from its graph; a fault in words for a node it does not hold.
  */
-import { FALSE_SOCKET, ROWS, socketOf, type DrawnGraph, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
+import { FALSE_SOCKET, ROWS, socketOf, takesMany, type DrawnGraph, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
 import { coerce, readInput, truthOf } from './node-input.js';
+import { nullWords, portalFlow, type NullWhy } from './node-portals.js';
 import { OP_LABELS, OP_TAKES, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
 
 /** A row's value as JSON writes it: a boolean as true or false, never 1 or 0, nor the words (COERCIONS, TODO 781). */
@@ -78,21 +79,38 @@ function joined(join: 'and' | 'or', reads: readonly ConditionRead[]): ConditionR
 /** Where a read is: the nodes of this graph it came through, and the uses it is inside. */
 type Walk = { seen: ReadonlySet<string>; path: readonly string[] };
 
+/** A drawn graph as the data flows: its routes through its portals, and each input that reads null. */
+type Flowing = DrawnGraph & { nulls: ReadonlyMap<string, NullWhy> };
+
+/** A drawn graph as the data flows, by the ONE resolver; one read so already, as it is. TRAP T-a-portal-hop-is-resolved-once */
+function flowing(graph: DrawnGraph): Flowing {
+  if ('nulls' in graph) return graph as Flowing;
+  const many = (address: string): boolean => {
+    const { node, row } = socketOf(address);
+    const at = graph.nodes.find((n) => n.id === node);
+    return !!at && takesMany(at, row);
+  };
+  const flow = portalFlow(graph.nodes, graph.routes, many);
+  return { ...graph, routes: flow.routes, nulls: flow.nulls };
+}
+
 /** The condition the routes into an input say, as ONE tree: each route's source read, several ANDed. And and Or
  *  join what comes into them; a test — a Condition's comparison, Time, a Tag — is a leaf on the Field on its header,
  *  ANDed with what the rows into that Field carry; a use is read inside, at its Group Output, as `facts.inner` draws
  *  it. A node that says no condition is a fault. The Outgoing JSON shows what it reads, and a Preset Filter compiles
  *  by it. Plan 783 D7 · TRAP T-a-condition-is-a-tree-of-nodes */
 export function conditionAt(graph: DrawnGraph, address: string, facts: ConditionFacts = {}): ConditionRead {
-  return readAt(graph, address, facts, { seen: new Set(), path: [] });
+  return readAt(flowing(graph), address, facts, { seen: new Set(), path: [] });
 }
 
-function readAt(graph: DrawnGraph, address: string, facts: ConditionFacts, walk: Walk): ConditionRead {
+function readAt(graph: Flowing, address: string, facts: ConditionFacts, walk: Walk): ConditionRead {
+  const why = graph.nulls.get(address);
+  if (why) return none(nullWords(`"${said(graph, address, false)}"`, why));
   return joined('and', graph.routes.filter((r) => r.to === address).map((r) => readFrom(graph, r.from, facts, walk)));
 }
 
 /** The condition an output socket sends: a test's True, a use's, or a fault where it says none. */
-function readFrom(graph: DrawnGraph, from: string, facts: ConditionFacts, walk: Walk): ConditionRead {
+function readFrom(graph: Flowing, from: string, facts: ConditionFacts, walk: Walk): ConditionRead {
   const { node: id, row } = socketOf(from);
   const node = graph.nodes.find((n) => n.id === id);
   if (!node) return none(`a route comes from "${id}", which the graph does not hold`);
@@ -107,7 +125,8 @@ const TESTS = new Set(['condition', 'time', 'tag']);
 /** One test as its node says it: its field the Field on its header; a Condition's operator its Operation and its value
  *  Value B, the Values, or Start and End; Time's Between or Duration; a Tag's Includes. The ONE place a leaf is read
  *  (plan 783 D7). Why it says none, in words: no Field, or one that sends nothing. */
-export function leafOf(graph: DrawnGraph, node: GraphNode): { leaf: ConditionLeaf; field: GraphNode } | { fault: string } {
+export function leafOf(drawn: DrawnGraph, node: GraphNode): { leaf: ConditionLeaf; field: GraphNode } | { fault: string } {
+  const graph = flowing(drawn);
   const at = (name: string): unknown => node.rows.find((r) => r.name === name)?.value;
   const via = graph.routes.filter((r) => r.to === node.id).flatMap((r) => {
     const { node: id, row } = socketOf(r.from);
@@ -135,7 +154,7 @@ export function leafOf(graph: DrawnGraph, node: GraphNode): { leaf: ConditionLea
 
 /** What the rows into a Field carry, as a condition: a test's Rows row, the rows that hold it; a node that passes rows
  *  on (a Sort, a Field), what its own rows carry; a Store, nothing. */
-function carried(graph: DrawnGraph, node: GraphNode, facts: ConditionFacts, walk: Walk): ConditionRead {
+function carried(graph: Flowing, node: GraphNode, facts: ConditionFacts, walk: Walk): ConditionRead {
   return joined('and', graph.routes.filter((r) => r.to === node.id).map((r): ConditionRead => {
     const { node: id, row } = socketOf(r.from);
     const from = graph.nodes.find((n) => n.id === id);
@@ -148,7 +167,7 @@ function carried(graph: DrawnGraph, node: GraphNode, facts: ConditionFacts, walk
 /** One part And or Or joins: a test's True or a use's brings its tree — one that says none is a boolean a run gives, and
  *  why stays said; a value the graph holds that says true or false is a CONSTANT, which folds; a boolean only a run gives
  *  is named by where it comes from; what the header cannot use (null) says nothing. TODO 780, plan 783 D4 */
-function partFrom(graph: DrawnGraph, via: NodeRoute, facts: ConditionFacts, walk: Walk): ConditionRead {
+function partFrom(graph: Flowing, via: NodeRoute, facts: ConditionFacts, walk: Walk): ConditionRead {
   const { node: id, row } = socketOf(via.from);
   const from = graph.nodes.find((n) => n.id === id);
   const run: ConditionRead = { tree: { boolean: said(graph, via.from, true) }, faults: [] };
@@ -167,14 +186,14 @@ function partFrom(graph: DrawnGraph, via: NodeRoute, facts: ConditionFacts, walk
 }
 
 /** A node's own condition, read as its kind says: And and Or join what comes in; a test is a leaf on its Field. */
-function readNode(graph: DrawnGraph, node: GraphNode, row: string | undefined, facts: ConditionFacts, walk: Walk): ConditionRead {
+function readNode(graph: Flowing, node: GraphNode, row: string | undefined, facts: ConditionFacts, walk: Walk): ConditionRead {
   const at = (name: string): GraphRow | undefined => node.rows.find((r) => r.name === name);
   if (walk.path.includes(node.kind)) return none(`"${node.heading}" holds itself, in a loop`);
   const inner = facts.inner?.(node);
   if (inner) {
     // A use: the inside's Group Output, at the output it sends from; its header sends its first.
     const out = row ?? node.rows.find((r) => r.output)?.name;
-    return out ? readAt(inner, `#out/${out}`, facts, { seen: new Set(), path: [...walk.path, node.kind] }) : none(`"${node.heading}" sends nothing out`);
+    return out ? readAt(flowing(inner), `#out/${out}`, facts, { seen: new Set(), path: [...walk.path, node.kind] }) : none(`"${node.heading}" sends nothing out`);
   }
   if (row !== undefined) return none(`"${node.heading}" › ${at(row)?.label ?? row} is not its True`);
   const type = at('type')?.value;
@@ -212,7 +231,7 @@ export function nodeFlow(graph: DrawnGraph, id: string, facts: ConditionFacts = 
   ];
   const values = Object.fromEntries(node.rows.filter((r) => r.control && r.value !== undefined && r.value !== '').map((r) => [r.name, r.value]));
   // What its True says, where it says a condition: a Condition, a Tag, a use read inside.
-  const where = readNode(graph, node, undefined, facts, { seen: new Set([node.id]), path: [] }).tree;
+  const where = readNode(flowing(graph), node, undefined, facts, { seen: new Set([node.id]), path: [] }).tree;
   const definition = where !== undefined ? { where }
     : node.kind === 'store' ? { store: values['store'] ?? null }
       : Object.keys(values).length ? { rows: values } : undefined;

@@ -34,9 +34,10 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-input-many` | boolean |  | the header's input takes several routes: its socket is a double height D |
 | `data-input-routed` | boolean |  | a route joins the header's input: its socket is filled, else hollow |
 | `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value \| object \| boolean \| any: an input is a D, its type in its ink |
+| `data-linked` | boolean |  | a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
-| `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) |
+| `data-output-socket` | `value` `object` `boolean` `any` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) \| any (a circle in secondary ink: a portal's Out before anything reaches its In) |
 | `data-resizable` | boolean |  | the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way |
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
 | `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |
@@ -109,6 +110,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }`
+`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

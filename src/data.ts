@@ -180,6 +180,8 @@ export {
 } from './core/data/workflow.js';
 /* A FRAME: nodes under one header; only which nodes is kept. TRAP T-a-frame-is-drawn-round-its-nodes */
 export { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './core/data/node-frames.js';
+/* A PORTAL: an In and an Out joined by a name; one resolver of the hop. TRAP T-a-portal-hop-is-resolved-once */
+export { PORTAL, portalFlow, portalLinks, portalNames, portalOf, type FlowRoute, type Portal, type PortalFlow } from './core/data/node-portals.js';
 /* A CUSTOM NODE: a workflow body saved under one name, used as an instance. TRAP T-a-custom-node-is-an-instance */
 export {
   GROUP_INPUT,

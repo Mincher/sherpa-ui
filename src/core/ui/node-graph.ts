@@ -4,8 +4,10 @@
  * writes. Places last the tab; Save hands the app a checked definition. Each node lights as
  * its step runs, from the one trace stream. A workflow's Custom Node opens, is edited as its
  * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562); a frame
- * holds picked nodes in a column under one header (plan 778). Will, TODOs 555, 551, 671, 719, 562, 735, 778.
+ * holds picked nodes in a column under one header (plan 778). A picked portal lights every portal of its name (plan 779).
+ * Will, TODOs 555, 551, 671, 719, 562, 735, 778, 779.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node · TRAP T-a-frame-is-drawn-round-its-nodes
+ * TRAP T-a-portal-hop-is-resolved-once
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
@@ -77,6 +79,7 @@ import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
+import { portalLinks, portalOf } from '../data/node-portals.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import {
@@ -1259,7 +1262,16 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     drawn.picked = left;
     options.onPicked?.(left);
   }
+  linkPortals(drawn);
   requestAnimationFrame(() => drawRoutes(canvas, drawn));
+}
+
+/** Each portal of a picked portal's name, lit as picked is (`data-linked`): In and Out alike. TODO 779 */
+function linkPortals(drawn: Drawn | undefined): void {
+  if (!drawn) return;
+  const picked = [...drawn.nodes].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id);
+  const lit = new Set(picked.flatMap((id) => portalLinks(drawn.graph.nodes, id)));
+  for (const [id, el] of drawn.nodes) el.toggleAttribute('data-linked', lit.has(id) && !picked.includes(id));
 }
 
 /** Mark one node as the one picked, or none. */
@@ -1269,6 +1281,7 @@ export function markNode(canvas: SherpaLayoutCanvas, id: string | null): void {
     el.removeAttribute('data-active');
   }
   unpickFrame(drawnOn.get(canvas));
+  linkPortals(drawnOn.get(canvas));
 }
 
 /** No frame is picked. */
@@ -1359,6 +1372,7 @@ export function watchArrange(
 export function markNodes(canvas: SherpaLayoutCanvas, ids: ReadonlySet<string>): void {
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', ids.has(key));
   if (ids.size) unpickFrame(drawnOn.get(canvas));
+  linkPortals(drawnOn.get(canvas));
 }
 
 /** Mark the one of the picked nodes whose panel is shown: a stronger ring than the others'. */
@@ -2254,6 +2268,12 @@ export function bindWorkflow(
   }, tag);
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     const own = OWN[row.name];
+    // A portal's name, or a Rename, can join a loop: checked as a route is, and refused the same way; a refused pick draws back. TODO 779
+    const portal = portalOf(node);
+    if (portal && (row.name === '#rename' || !own)) {
+      take(editWorkflow(shown(), row.name === '#rename' ? { renamePortal: { from: portal.name, to: String(value ?? '') } } : { node: node.id, row: row.name, value }, K(), facts));
+      return draw();
+    }
     if (!own) return write(editWorkflow(shown(), { node: node.id, row: row.name, value }, K(), facts), `row:${node.id}/${row.name}`);
     const said = own === 'x' || own === 'y' ? typedValue('number', String(value ?? '')) : String(value ?? '');
     if ((own === 'x' || own === 'y') && typeof said !== 'number') return;
@@ -2797,7 +2817,10 @@ export function bindWorkflow(
       { name: '#x', label: 'X', control: 'number', value: at?.x, editable },
       { name: '#y', label: 'Y', control: 'number', value: at?.y, editable },
     ];
-    return { ...node, rows: [...own, ...node.rows] };
+    // A named portal: Rename, on every portal of its name, so its links stay. TODO 779
+    const portal = portalOf(node);
+    const rename: GraphRow[] = portal?.name ? [{ name: '#rename', label: 'Rename', control: 'text', value: portal.name, editable, hint: `Every portal named "${portal.name}" takes the new name` }] : [];
+    return { ...node, rows: [...own, ...node.rows, ...rename] };
   };
   const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
