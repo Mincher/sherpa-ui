@@ -6416,7 +6416,7 @@ style the node as a warning with tooltip message." Graphs stay open (E5): a rout
 types allow is drawn; no family fences what a graph places.
 
 - **What it needs is the kind's own description** (`needs`): a header that takes any type says
-  it (a Condition's Rows that hold, a Collection and a Tag take rows, Pick an object, Time a date;
+  it (a Condition's Rows that hold, a Collection and a Tag take rows, a Field an object, Time a date;
   Is empty anything); a row says it by its
   control (a number, a date, one of a fixed list, an operator), by picking several (a list; Math's
   a list of numbers), or, a comparison's Value, by its field's type; else by its socket's TYPE
@@ -6425,8 +6425,17 @@ types allow is drawn; no family fences what a graph places.
 - **What reaches is what the graph says before a run** (`givenAt`): the type its source sends,
   finer where its row says (`gives`: rows from a Rows row, a list from a List or Split by, a
   number from a Math Result or a Count), and the value a row with a control holds. A Value that
-  holds nothing sends nothing (D2): no warning. What a node works out (a Text's Result, a Pick's
-  Field) is known only when it runs: no warning until N4. An unconnected row is no such case.
+  holds nothing sends nothing (D2): no warning. What a node works out (a Text's Result) is known
+  only when it runs: no warning until N4. An unconnected row is no such case.
+- **A Field sends a COLUMN** (Will, TODO 783, D2): rows in, `{ rows, field }` out, an object whose
+  finer given is `field`, carrying the field's name, words and type (`sentFrom` reads it through
+  the routes, `columnOf` says it). One record in (an object that is not rows), the row sends that
+  field's value. A column fits a need for a field, rows, an object or a list; a list of numbers
+  where its field is a number; a date where it is a date. It never fits ONE value: "Value A takes
+  a number; it was given the Seats column". Its row says "Seats: a number field". Its list is
+  OPEN (D8): a field the facts lack warns on the row ("is not a field of the rows that come in")
+  and sends nothing, as a Value into its header does. Rows where a field is needed say
+  ": route a Field in".
 - **One door, `readInput`**: the value, or `null` and the words — `<input> takes <need>; it was
   given <what>` — all from `INPUT_WORDS` (a socket type in the words its tip says). The runner
   (N4) reads through the same door. Text that reads as a number is a number, as the row reads it
@@ -6466,6 +6475,7 @@ types allow is drawn; no family fences what a graph places.
 - Site: `test/unit/any-route-joins-any-input.test.mjs`
 - Site: `test/unit/a-group-row-takes-any-boolean.test.mjs`
 - Site: `test/unit/a-boolean-reads-as-its-need.test.mjs`
+- Site: `test/unit/a-field-is-a-node.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
 ### T-a-changed-key-moves-the-row

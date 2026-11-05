@@ -17,6 +17,7 @@
  * - workflowFaults — Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
  * - WorkflowFacts — What drawing a workflow needs that it does not say: the fields a row picks, the stores.
+ * - sentFrom — What one output socket sends, read through the routes: a Field's column by what reaches it.
  * - workflowGraph — A workflow as nodes and routes: each node its kind's, at its own place, with its values.
  * - NODE_WIDTH — A node's width on the plane, in px: where its output socket is from its x.
  * - TIE_GAP — The gap between two routes in a zip tie, in px.
@@ -36,7 +37,7 @@ import {
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
-import { givenAt, needOf, readInput, truthOf, type InputNeeds } from './node-input.js';
+import { columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
@@ -374,6 +375,56 @@ function partsOf(node: WorkflowNode, routes: readonly NodeRoute[]): PartKind[] {
   return Array.from({ length: Math.max(1, ...named.keys()) }, (_, i) => named.get(i + 1) ?? 'leaf');
 }
 
+/** The field a Field row picks, as it shows it — a Value routed in, else its own pick — with its words and type from the
+ *  facts; `stranger` where the facts know fields and not this one. None: it picks none. Plan 783 D8 */
+function pickedField(
+  held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], facts: Pick<WorkflowFacts, 'fields'>, address: string,
+): { field: ColumnField; stranger?: true } | undefined {
+  const { node: id, row = '' } = socketOf(address);
+  const into = routes.find((r) => r.to === address && socketOf(r.from).row !== undefined);
+  const brought = into ? held.get(socketOf(into.from).node)?.values?.[socketOf(into.from).row!] : undefined;
+  const name = String(brought ?? held.get(id)?.values?.[row] ?? '');
+  if (!name) return undefined;
+  const known = facts.fields?.[name];
+  const field: ColumnField = { name, ...(known?.label ? { label: known.label } : {}), ...(known?.type ? { type: known.type } : {}) };
+  return { field, ...(facts.fields && !known ? { stranger: true as const } : {}) };
+}
+
+/** What each output socket sends, read through the routes: what its row gives (`givenAt`); a Field row, the column of what
+ *  reaches its header or one record's value (`columnOf`), none where its field is a stranger or its header read null. A
+ *  loop sends what its kind says. Plan 783 D2 */
+function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fields'>): (from: string) => Reached | undefined {
+  const busy = new Set<string>();
+  const sends = (from: string): Reached | undefined => {
+    const { node: id, row } = socketOf(from);
+    const node = held.get(id);
+    const kind = kindOfNode(kinds, node);
+    if (!kind || row === undefined || rowOf(kind.rows, row)?.gives !== 'field' || busy.has(id)) return givenAt(node, row, kinds);
+    const picked = pickedField(held, routes, facts, from);
+    if (!picked || picked.stranger) return undefined;
+    busy.add(id);
+    try {
+      const need = needOf(kind);
+      const into = routes.find((r) => r.to === id);
+      const got = into && sends(into.from);
+      const read = got && need ? readInput({ label: kind.heading, needs: need }, got) : undefined;
+      return columnOf(picked.field, read?.warning ? null : got);
+    } finally {
+      busy.delete(id);
+    }
+  };
+  return sends;
+}
+
+/** What one output socket of a workflow sends, read through its routes: a Field's column, `{ rows, field }`, by what
+ *  reaches its header and the facts' fields. None: it sends nothing before a run. Plan 783 D2 */
+export function sentFrom(given: WorkflowDefinition | WorkflowDefinitionV1, from: string, facts: Pick<WorkflowFacts, 'fields'> = {}, kinds: Kinds = NODE_KINDS): Reached | undefined {
+  const { workflow } = readWorkflow(given, kinds);
+  if (!workflow) return undefined;
+  const kept = keptRoutes(workflow, kinds);
+  return sender(new Map(workflow.nodes.map((n) => [n.id, n])), (workflow.routes ?? []).filter((r) => !kept.includes(r)), kinds, facts)(from);
+}
+
 /** A workflow as nodes and routes, a v1 read as v2: each node its kind's, at its own place,
  *  with its values. A row a route drives is read only. Where the route comes from a node that
  *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
@@ -395,7 +446,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const value = row === undefined ? undefined : at?.values?.[row];
     return at && out && value !== undefined ? { value, said: `${at.heading ?? kinds[at.kind]!.heading} › ${out.label}` } : undefined;
   };
-  const sent = (from: string): ReturnType<typeof givenAt> => givenAt(held.get(socketOf(from).node), socketOf(from).row, kinds);
+  const sent = sender(held, routes, kinds, facts);
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const family = kinds[node.kind]!;
@@ -447,6 +498,10 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         return brought && read && read.value !== undefined ? { ...brought, value: read.value } : brought;
       };
       const coming = routes.filter((r) => r.to === address && !bad.includes(r)).flatMap((r) => reading(r) ?? []);
+      // A Field row says its field and its type; one the rows do not have warns, and sends nothing (D8).
+      const picked = row.gives === 'field' ? pickedField(held, routes, facts, address) : undefined;
+      if (picked?.stranger) warnings.push({ row: row.name, words: `"${picked.field.name}" is not a field of the rows that come in` });
+      const told = picked && !picked.stranger ? { hint: fieldWords(picked.field) } : {};
       // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
       if (row.control === 'switch') {
         const ins = routes.filter((r) => r.to === address && !bad.includes(r));
@@ -461,12 +516,12 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };
       }
       // Only what it cannot use came in: it reads null, read only.
-      if (!coming.length) return bad.length && bad.length === routes.filter((r) => r.to === address).length ? { ...own, value: null } : said(own);
+      if (!coming.length) return bad.length && bad.length === routes.filter((r) => r.to === address).length ? { ...own, value: null } : said({ ...own, ...told });
       const shown = mirrored(row, coming.map((c) => c.value), list);
       const from = [...new Set(coming.map((c) => c.said))].join(', ');
       // A list routed into tags OVERRIDES them (D7): its values show, read only; cut, the row's own are back.
       return said(list || row.control === 'tags'
-        ? { ...own, ...shown, hint: `Custom ${row.multiple ? 'values' : 'value'}, from ${from}` }
+        ? { ...own, ...shown, hint: `Custom ${row.multiple ? 'values' : 'value'}, from ${from}${told.hint ? `. ${told.hint}` : ''}` }
         : { ...own, value: shown.value }, true);
     });
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };

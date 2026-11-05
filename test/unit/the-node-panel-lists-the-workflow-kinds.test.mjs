@@ -16,9 +16,9 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
   assert.deepEqual(palette.map((g) => g.category), ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['store'], [], ['value', 'pick'], ['math'], ['condition'], ['time'], ['collection'], ['text', 'tag'], ['output']]);
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['store'], [], ['value', 'field'], ['math'], ['condition'], ['time'], ['collection'], ['text', 'tag'], ['output']]);
   // Ten items, in the plan's order.
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.kind.heading)), ['Store', 'Value', 'Pick', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Output']);
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.kind.heading)), ['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Output']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -65,7 +65,7 @@ test('a socket is offered the kinds that could join it, a Value first', () => {
   // An input that takes a value is fed by a kind that gives one: a Value first; a Collection, as its Count.
   const into = paletteFor(palette, 'value', 'in').map((i) => i.id);
   assert.equal(into[0], 'value');
-  assert.ok(into.includes('pick') && into.includes('collection') && into.includes('math'));
+  assert.ok(!into.includes('field') && into.includes('collection') && into.includes('math'), 'a Field sends a column, an object');
   assert.deepEqual(fitOf(NODE_KINDS['collection'], 'value', 'in'), { row: 'count', type: 'count' });
   assert.deepEqual(fitOf(NODE_KINDS['collection'], 'object', 'out'), {}, 'its default, Sort, takes the rows on its header');
   // A list into a Math's own type: Floor takes it, in its Values row.

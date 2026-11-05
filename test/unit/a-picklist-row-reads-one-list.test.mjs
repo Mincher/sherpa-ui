@@ -55,7 +55,7 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
 
 test('every workflow picklist row takes a value in; the Value node has its Type', () => {
   const kind = (id) => (id === 'filter' ? resolveKind(NODE_KINDS.condition) : ['sort', 'group'].includes(id) ? resolveKind(NODE_KINDS.collection, id) : NODE_KINDS[id]);
-  for (const [id, row] of [['store', 'store'], ['pick', 'field'], ['filter', 'field'], ['filter', 'op'], ['filter', 'value'], ['sort', 'field'], ['sort', 'direction'], ['group', 'field']]) {
+  for (const [id, row] of [['store', 'store'], ['field', 'field'], ['filter', 'field'], ['filter', 'op'], ['filter', 'value'], ['sort', 'field'], ['sort', 'direction'], ['group', 'field']]) {
     assert.equal(socketType(kind(id), row, 'input'), 'value', `${id} › ${row}`);
   }
   const value = resolveKind(NODE_KINDS.value);

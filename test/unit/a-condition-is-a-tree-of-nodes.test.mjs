@@ -121,7 +121,7 @@ test('another field takes the whole tree, as one change; a nested group cannot b
 test('a planted fault in each check: an operator the field\'s type does not take, a value of the wrong type; a Group row takes any boolean (780)', () => {
   const nodes = [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'pick', kind: 'pick', x: 0, y: 100, values: { field: 'seats' } },
+    { id: 'pick', kind: 'field', x: 0, y: 100, values: { field: 'seats' } },
     { id: 'when', kind: 'condition', x: 360, y: 0, values: { join: 'or', field: 'seats', op: 'gt', value: 5, 'field-2': 'plan', 'op-2': 'eq', 'value-2': 'Pro' } },
     { id: 'inner', kind: 'condition', x: 0, y: 200, values: { field: 'seats', op: 'lt', value: 100 } },
     { id: 'end', kind: 'output', x: 720, y: 0 },

@@ -1,18 +1,21 @@
 /**
  * node-input.ts — what a node READS from what reaches an input: what it needs, else `null`, and why in words.
  * Before a run, what reaches is what the graph says: its source's type, finer where its kind says (rows, a list,
- * a number), and the value its source holds. Any route joins any input; a socket's type is what it needs where
+ * a number, a Field's column), and the value its source holds. Any route joins any input; a socket's type is what it needs where
  * nothing says more (TODO 770). A warning, never a fault: Save does not wait. DOM-free.
- * Will, TODOs 764, 770 · TRAP T-a-node-reads-null-from-what-it-cannot-use
+ * Will, TODOs 764, 770, 783 · TRAP T-a-node-reads-null-from-what-it-cannot-use
  *
  * Map:
- * - Given — What reaches an input, as finely as its source says: a value, a number, a boolean, an object, a list or rows.
- * - Need — What an input can use: its socket's type, a number, a date, rows, a list, one of its choices, an operator.
+ * - Given — What reaches an input, as finely as its source says: a value, a number, an object, rows, a column.
+ * - Need — What an input can use: its socket's type, a number, a date, rows, a list, one of its choices, a field.
  * - INPUT_WORDS — Each need and each given in words: the one place a warning's words come from.
- * - Reached — One thing that reaches an input: its kind, and the value its source holds.
+ * - ColumnField — The field a column says: its name, its words and its type.
+ * - Reached — One thing that reaches an input: its kind, the value its source holds, and a column's field.
  * - InputNeeds — An input as a warning names it: its label, what it needs, and its choices.
  * - needOf — What an input needs, by its kind's own description: its `needs`, its control, its field, else its type.
  * - givenAt — What one output socket sends; none, where its source holds no value to send, or it is no output.
+ * - columnOf — What a Field row sends, by what reaches its header: the column of rows, the value of one record.
+ * - fieldWords — A field in words, as a column's tip says it: "Seats: a number field".
  * - truthOf — A value as the boolean it says: true or false, the words, a number; none, it says no boolean.
  * - Coercion — One cell of the coercions: what an input needs, what it is given, what it reads, in words.
  * - COERCIONS — Every coercion an input reads, in one place: a boolean as 1 or 0, a word, JSON; a number or word as a boolean.
@@ -24,22 +27,32 @@ import { isDateTime } from './format-date.js';
 import { OP_LABELS } from './store.js';
 import { FALSE_SOCKET, SOCKET_WORDS, fixedChoices, kindOfNode, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
 
-/** What reaches an input, as finely as its source says: its socket's type, or rows, a list or a number. */
-export type Given = 'value' | 'number' | 'boolean' | 'object' | 'list' | 'rows';
+/** What reaches an input, as finely as its source says: its socket's type, or rows, a list, a number or a Field's
+ *  column, `{ rows, field }` (an object, plan 783 D2). */
+export type Given = 'value' | 'number' | 'boolean' | 'object' | 'list' | 'rows' | 'field';
 
-/** What an input can use: its socket's type, or finer. `choice`: one of its fixed list; `numbers`: a list of numbers. */
-export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'operator';
+/** What an input can use: its socket's type, or finer. `choice`: one of its fixed list; `numbers`: a list of numbers;
+ *  `field`: a Field's column. */
+export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'operator' | 'field';
 
 /** Each need and each given in words: the one place a warning's words come from. */
 export const INPUT_WORDS: Readonly<Record<Exclude<Need, 'choice'> | Given, string>> = {
   value: SOCKET_WORDS.value, object: SOCKET_WORDS.object, boolean: SOCKET_WORDS.boolean,
-  number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', operator: 'an operator',
+  number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', operator: 'an operator', field: 'a field',
 };
 
-/** One thing that reaches an input: its kind, and the value its source holds, where it holds one. */
+/** The field a column says: its name, its words and its type (none: text). */
+export interface ColumnField {
+  name: string;
+  label?: string;
+  type?: string;
+}
+
+/** One thing that reaches an input: its kind, the value its source holds, where it holds one, and a column's field. */
 export interface Reached {
   kind: Given;
   value?: unknown;
+  field?: ColumnField;
 }
 
 /** An input as a warning names it: its label (a row's, or the node's heading for its header), its need and its choices. */
@@ -77,6 +90,19 @@ export function givenAt(node: { kind: string; values?: Readonly<Record<string, u
   const value = node!.values?.[row];
   if (out.control && (value === undefined || value === '')) return undefined;
   return { kind: out.gives ?? out.output, ...(out.control ? { value } : {}) };
+}
+
+/** What a Field row sends, by what reaches its node's header: of rows, a column or a list, its column; of one record (an
+ *  object), that field's value; nothing, its column. None where the header read null. Plan 783 D2 */
+export function columnOf(field: ColumnField, header: Reached | null | undefined): Reached | undefined {
+  if (header === null) return undefined;
+  if (header?.kind === 'object') return { kind: field.type === 'number' ? 'number' : 'value' };
+  return { kind: 'field', field };
+}
+
+/** A field in words, as a column's tip says it: "Seats: a number field". None typed is text. */
+export function fieldWords(field: ColumnField): string {
+  return `${field.label ?? field.name}: a ${field.type ?? 'text'} field`;
 }
 
 const isNumber = (value: unknown): boolean => typeof typedValue('number', value) === 'number';
@@ -132,18 +158,21 @@ export function coerce(needs: Need | 'json', reached: Reached): { value: unknown
   return value === undefined ? undefined : { value };
 }
 
-/** Whether a need takes what reaches it: by its kind, and by the value where one is held. */
-function fits(need: Need, { kind, value }: Reached, choices: readonly RowChoice[] = []): boolean {
+/** Whether a need takes what reaches it: by its kind, and by the value where one is held. A column is an object, rows
+ *  and a list; a list of numbers where its field is a number, a date where it is a date; never ONE value. Plan 783 D2 */
+function fits(need: Need, { kind, value, field }: Reached, choices: readonly RowChoice[] = []): boolean {
   const held = value !== undefined;
+  const column = kind === 'field';
   switch (need) {
     case 'value': return kind === 'value' || kind === 'number';
     case 'boolean': return kind === 'boolean' && (!held || truthOf(value) !== undefined);
-    case 'object': return kind === 'object' || kind === 'list' || kind === 'rows';
-    case 'rows': return kind === 'object' || kind === 'rows';
-    case 'list': return kind === 'object' || kind === 'list';
-    case 'numbers': return (kind === 'object' || kind === 'list') && (!held || [value].flat().every(isNumber));
+    case 'object': return kind === 'object' || kind === 'list' || kind === 'rows' || column;
+    case 'rows': return kind === 'object' || kind === 'rows' || column;
+    case 'list': return kind === 'object' || kind === 'list' || column;
+    case 'field': return kind === 'object' || column;
+    case 'numbers': return column ? field?.type === 'number' : (kind === 'object' || kind === 'list') && (!held || [value].flat().every(isNumber));
     case 'number': return (kind === 'value' || kind === 'number') && (!held || isNumber(value));
-    case 'date': return kind === 'value' && (!held || isDateTime(String(value)));
+    case 'date': return column ? field?.type === 'date' : kind === 'value' && (!held || isDateTime(String(value)));
     case 'operator': return kind === 'value' && (!held || String(value) in OP_LABELS);
     case 'choice': return kind === 'value' && (!held || choices.some((c) => c.value === String(value)));
   }
@@ -152,21 +181,23 @@ function fits(need: Need, { kind, value }: Reached, choices: readonly RowChoice[
 const or = (words: readonly string[]): string => new Intl.ListFormat('en', { type: 'disjunction' }).format(words);
 const and = (words: readonly string[]): string => new Intl.ListFormat('en', { type: 'conjunction' }).format(words);
 
-/** What reached, in words: the value its source holds, quoted, or its kind's words. */
-function givenWords(need: Need, { kind, value }: Reached): string {
+/** What reached, in words: the value its source holds, quoted; a column by its field, "the Seats column"; else its kind's words. */
+function givenWords(need: Need, { kind, value, field }: Reached): string {
+  if (field) return `the ${field.label ?? field.name} column`;
   if (value === undefined) return INPUT_WORDS[kind];
   if (!Array.isArray(value)) return `"${String(value)}"`;
   return need === 'numbers' ? `a list with ${and(value.filter((v) => !isNumber(v)).map((v) => `"${String(v)}"`))}` : INPUT_WORDS.list;
 }
 
 /** What an input reads of what reaches it: the value where it can use it; else the value COERCIONS reads of it, with no
- *  warning (TODO 781); else `null`, and why, in words — "Value A takes a number; it was given "abc"". An input that needs
- *  nothing takes all. TRAP T-a-node-reads-null-from-what-it-cannot-use */
+ *  warning (TODO 781); else `null`, and why, in words — "Value A takes a number; it was given "abc""; rows where a field
+ *  is needed say what to route. An input that needs nothing takes all. TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export function readInput(input: InputNeeds, reached: Reached): { value: unknown; warning?: string } {
   const { label, needs, choices } = input;
   if (!needs || fits(needs, reached, choices)) return { value: reached.value };
   const coerced = coerce(needs, reached);
   if (coerced) return coerced;
   const wants = needs === 'choice' ? or((choices ?? []).map((c) => c.label)) : INPUT_WORDS[needs];
-  return { value: null, warning: `${label} takes ${wants}; it was given ${givenWords(needs, reached)}` };
+  const route = needs === 'field' && reached.kind === 'rows' ? ': route a Field in' : '';
+  return { value: null, warning: `${label} takes ${wants}; it was given ${givenWords(needs, reached)}${route}` };
 }

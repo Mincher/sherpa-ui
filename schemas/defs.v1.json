@@ -343,7 +343,7 @@
       "required": ["id", "kind", "x", "y"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
-        "kind": { "description": "A kind a workflow runs: one the library ships (store, value, pick, filter, sort, group, count, output), or one the app adds.", "type": "string" },
+        "kind": { "description": "A kind a workflow runs: one the library ships (store, value, field, math, condition, time, collection, text, tag, output), or one the app adds.", "type": "string" },
         "x": { "description": "Its place across the canvas, in plane px.", "type": "number" },
         "y": { "description": "Its place down the canvas, in plane px.", "type": "number" },
         "size": {

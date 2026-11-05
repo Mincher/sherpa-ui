@@ -32,11 +32,11 @@ const row = (g, id, name) => at(g, id).rows.find((r) => r.name === name);
 /** Each node's warnings in words, by its id: none, where it has none. */
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
 
-test('an ANY header reads what its kind needs: a Condition, a Collection and a Tag take rows, a Pick an object, a Time a date', () => {
+test('an ANY header reads what its kind needs: a Condition, a Collection and a Tag take rows, a Field an object, a Time a date', () => {
   const nodes = [
     value('v', 'active'), store,
     { id: 'c', kind: 'condition', x: 300, y: 0 }, { id: 'col', kind: 'collection', x: 300, y: 200, values: { type: 'count' } },
-    { id: 'tag', kind: 'tag', x: 300, y: 400 }, { id: 'p', kind: 'pick', x: 300, y: 600 }, { id: 't', kind: 'time', x: 300, y: 800 },
+    { id: 'tag', kind: 'tag', x: 300, y: 400 }, { id: 'p', kind: 'field', x: 300, y: 600 }, { id: 't', kind: 'time', x: 300, y: 800 },
     { id: 'end', kind: 'output', x: 600, y: 0 },
   ];
   const wrong = flow(nodes, [
@@ -46,7 +46,7 @@ test('an ANY header reads what its kind needs: a Condition, a Collection and a T
     c: [['', 'Condition takes rows; it was given "active"']],
     col: [['', 'Collection takes rows; it was given a boolean']],
     tag: [['', 'Tag takes rows; it was given a boolean']],
-    p: [['', 'Pick takes an object; it was given a boolean']],
+    p: [['', 'Field takes an object; it was given a boolean']],
     t: [['', 'Time takes a date; it was given rows']],
   }, 'the Output takes anything');
   const right = flow([...nodes, value('d', '2024-01-31', 'date')], [
@@ -109,7 +109,7 @@ test('an unconnected row with no value is not invalid input: no warning; nor is 
   const empty = flow([value('v', undefined, 'text'), { id: 'm', kind: 'math', x: 300, y: 0, values: { a: 3 } }], [{ from: 'v/value', to: 'm/a' }]);
   assert.deepEqual([said(drawn(empty)), row(drawn(empty), 'm', 'a').value], [{}, 3]);
   // What a node works out is known only when it runs: a Text's Result in Value A may read as a number.
-  const later = flow([{ id: 'x', kind: 'text', x: 0, y: 0 }, { id: 'p', kind: 'pick', x: 0, y: 200 }, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
+  const later = flow([{ id: 'x', kind: 'text', x: 0, y: 0 }, { id: 'p', kind: 'field', x: 0, y: 200 }, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
     [{ from: 'x/result', to: 'm/a' }, { from: 'p/field', to: 't' }]);
   assert.deepEqual(said(drawn(later)), {});
 });
@@ -160,10 +160,10 @@ test('the incoming JSON says it: null where the node cannot use what came, and w
 
 test('the words come from one place: the kind says what it needs, INPUT_WORDS says it; a runner reads through the same door', () => {
   // Every need and given a kind can say has its words.
-  for (const word of ['value', 'number', 'boolean', 'object', 'list', 'rows', 'date', 'numbers', 'operator']) assert.equal(typeof INPUT_WORDS[word], 'string', word);
+  for (const word of ['value', 'number', 'boolean', 'object', 'list', 'rows', 'date', 'numbers', 'operator', 'field']) assert.equal(typeof INPUT_WORDS[word], 'string', word);
   assert.equal(INPUT_WORDS.object, data.SOCKET_WORDS.object, 'a socket type says the words a socket\'s tip says');
   // The kinds say it: what each header needs, and each row by its control, list or field.
-  assert.deepEqual(['condition', 'collection', 'tag', 'pick', 'time', 'output'].map((k) => resolveKind(NODE_KINDS[k]).needs), ['rows', 'rows', 'rows', 'object', 'date', undefined]);
+  assert.deepEqual(['condition', 'collection', 'tag', 'field', 'time', 'output'].map((k) => resolveKind(NODE_KINDS[k]).needs), ['rows', 'rows', 'rows', 'object', 'date', undefined]);
   // A family's type says its own: Logic's Rows that hold takes rows; Is empty anything; And takes booleans by its socket.
   assert.deepEqual(['rows', 'empty', 'and'].map((t) => resolveKind(NODE_KINDS.condition, t).needs), ['rows', undefined, undefined]);
   assert.deepEqual([needOf({ control: 'number' }), needOf({ control: 'datetime' }), needOf({ control: 'direction' }), needOf({ control: 'op' }), needOf({ control: 'text' })], ['number', 'date', 'choice', 'operator', undefined]);

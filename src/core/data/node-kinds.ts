@@ -322,9 +322,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
   },
-  pick: {
-    heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', needs: 'object', branches: true,
-    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'value' }], model: 'readField', graphs: ['workflow'], category: 'Variables',
+  // Rows in, a column out, `{ rows, field }`; one record in, that field's value. Its True: the field is there. Plan 783 D1, D2
+  field: {
+    heading: 'Field', icon: 'price-tag', description: 'One field of what comes in: the column of the rows, or the value of one record.', input: 'any', needs: 'object', branches: true,
+    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' }], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
   math: {
