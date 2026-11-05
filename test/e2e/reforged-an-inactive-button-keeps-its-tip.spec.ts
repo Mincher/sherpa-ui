@@ -81,12 +81,12 @@ test('Tab reaches an inactive tool and opens its tip; Enter and Space do nothing
   const TAB = info.project.name === 'webkit' ? 'Alt+Tab' : 'Tab';
   await page.locator('#before .trigger').focus();
   const seen: { tool: string; tip: boolean }[] = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 8; i++) {
     await page.keyboard.press(TAB);
     await expect.poll(async () => (await focused(page)).tip).toBe(true);
     seen.push(await focused(page));
   }
-  expect(seen.map((s) => s.tool)).toEqual(['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'frame']);
+  expect(seen.map((s) => s.tool)).toEqual(['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'frame']);
 
   // On an off tool, Enter and Space are refused.
   await page.locator('#bar sherpa-button.redo .trigger').focus();
