@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-toolbar",
-  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569. TRAP T-an-edit-is-a-step",
   "element": {
     "$type": "element",
     "tag": "span",
@@ -101,6 +101,18 @@
         },
         {
           "el": "sherpa-button",
+          "class": "unfurl",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "unfurl",
+            "data-action": "unfurl",
+            "aria-label": "Unfurl graph",
+            "data-tip": "Unfurl graph: every node round the most connected one, fewer lines crossing",
+            "disabled": ""
+          }
+        },
+        {
+          "el": "sherpa-button",
           "class": "frame",
           "attrs": {
             "data-type": "icon",
@@ -180,6 +192,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-can-unfurl",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-picked-routes",
       "type": "number",
       "observed": true,
@@ -198,7 +219,7 @@
     }
   ],
   "populate": {
-    "shape": "{ canArrange?, canFrame?, canGroup?, canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }",
+    "shape": "{ canArrange?, canFrame?, canGroup?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, pickedRoutes?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

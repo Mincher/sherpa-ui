@@ -218,6 +218,7 @@ export const ICON_NAMES: ReadonlySet<string> = new Set([
   'triangle-left',
   'triangle-right',
   'triangle-up',
+  'unfurl',
   'universal-access',
   'upload',
   'usb-drive',

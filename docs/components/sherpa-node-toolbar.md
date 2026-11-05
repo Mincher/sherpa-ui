@@ -2,7 +2,7 @@
 
 # sherpa-node-toolbar
 
-A graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step
+A graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569. TRAP T-an-edit-is-a-step
 
 |  |  |
 |---|---|
@@ -29,6 +29,7 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 | `data-can-save` | boolean |  | Save can be pressed (default off: Save is a placeholder until a host wants it) |
 | `data-can-tie` | boolean |  | The Zip tie tool can be pressed; written by the editor |
 | `data-can-undo` | boolean |  | Undo can be pressed; written by the editor that owns the history |
+| `data-can-unfurl` | boolean |  | Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor |
 | `data-picked-routes` | number |  | How many connectors are picked; written by the editor, said in the Tie tool's tip |
 | `data-tie` | boolean |  | The Zip tie tool is on; written by the editor, shown as pressed |
 
@@ -57,6 +58,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ canArrange?, canFrame?, canGroup?, canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }`
+`{ canArrange?, canFrame?, canGroup?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, pickedRoutes?, tie? }`
 
 Its declared props by name: `label` sets data-label.

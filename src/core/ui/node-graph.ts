@@ -5,7 +5,7 @@
  * its step runs, from the one trace stream. A workflow's Custom Node opens, is edited as its
  * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562); a frame
  * holds picked nodes in a column under one header (plan 778). A picked portal lights every portal of its name (plan 779).
- * Will, TODOs 555, 551, 671, 719, 562, 735, 778, 779.
+ * Unfurl lays the whole graph out round its hub (plan 569). Will, TODOs 555, 551, 671, 719, 562, 735, 778, 779, 569.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node · TRAP T-a-frame-is-drawn-round-its-nodes
  * TRAP T-a-portal-hop-is-resolved-once
  *
@@ -19,6 +19,8 @@
  * - pickedNodes — The nodes picked, by id: a click, a box, or the keys.
  * - arrangement — Where these nodes go, from the boxes they are drawn in: a grid, or one column.
  * - arrangePicked — Lay the picked nodes out on a grid and hand the host the places: one move, ties and bends with it.
+ * - unfurlment — Where every node goes when the graph is unfurled, from the boxes and frames drawn.
+ * - unfurlGraph — Unfurl the whole graph and hand the host the places: one step; the view fits it after.
  * - watchArrange — Tell a toolbar, in `data-can-arrange` and any flag given, when two or more nodes are picked.
  * - markNodes — Mark several nodes as the ones picked.
  * - markActive — Mark the one picked node whose panel is shown, in a stronger ring.
@@ -77,6 +79,7 @@ import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
 import { PRESET_FILTER, offeredKinds } from '../data/entity-types.js';
 import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
+import { unfurlNodes } from '../data/node-unfurl.js';
 import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalLinks, portalOf } from '../data/node-portals.js';
@@ -1325,23 +1328,27 @@ const ARRANGE_GAP = '--sherpa-display-mode-space-5xl';
 const ARRANGE_GAP_STEPS = 3;
 const ARRANGE_GAP_FALLBACK = 56;
 
+/** What a layout reads off a drawing: Arrange's gap, each node's place and drawn box. */
+function laidAs(canvas: SherpaLayoutCanvas, drawn: Drawn): { gap: number; nodes: { id: string; x: number; y: number }[]; boxes: Record<string, { w: number; h: number }> } {
+  return {
+    gap: ARRANGE_GAP_STEPS * (parseFloat(getComputedStyle(canvas).getPropertyValue(ARRANGE_GAP)) || ARRANGE_GAP_FALLBACK),
+    nodes: [...drawn.nodes].map(([id, el]) => ({ id, x: Number(el.getAttribute('data-x')) || 0, y: Number(el.getAttribute('data-y')) || 0 })),
+    boxes: Object.fromEntries([...drawn.nodes].map(([id, el]) => [id, { w: el.offsetWidth, h: el.offsetHeight }])),
+  };
+}
+
 /** Where these nodes go, from the boxes they are drawn in: on a grid, or in ONE column (TODO 778). None, fewer than two. */
 export function arrangement(canvas: SherpaLayoutCanvas, picked: readonly string[], column = false): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
   const ids = picked.filter((id) => !id.startsWith('#'));
   if (!drawn || ids.length < 2) return undefined;
-  const gap = ARRANGE_GAP_STEPS * (parseFloat(getComputedStyle(canvas).getPropertyValue(ARRANGE_GAP)) || ARRANGE_GAP_FALLBACK);
-  const nodes = [...drawn.nodes].map(([id, el]) => ({ id, x: Number(el.getAttribute('data-x')) || 0, y: Number(el.getAttribute('data-y')) || 0 }));
-  const boxes = Object.fromEntries([...drawn.nodes].map(([id, el]) => [id, { w: el.offsetWidth, h: el.offsetHeight }]));
+  const { gap, nodes, boxes } = laidAs(canvas, drawn);
   const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes, column });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
-/** Lay the picked nodes out on a grid, from the boxes they are drawn in, and hand the host the places. */
-export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined {
-  const drawn = drawnOn.get(canvas);
-  const placed = drawn?.options.onArrange ? arrangement(canvas, pickedNodes(canvas)) : undefined;
-  if (!drawn?.options.onArrange || !placed) return undefined;
+/** Each node where a layout puts it, and the places to the host: one move. */
+function handOn(drawn: Drawn, placed: Arranged): Arranged {
   for (const [id, at] of Object.entries(placed.nodes)) {
     const el = drawn.nodes.get(id);
     if (!el || el.hasAttribute('data-locked')) continue;
@@ -1349,7 +1356,39 @@ export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined 
     el.setAttribute('data-x', String(at.x));
     el.setAttribute('data-y', String(at.y));
   }
-  drawn.options.onArrange(placed);
+  drawn.options.onArrange!(placed);
+  return placed;
+}
+
+/** Lay the picked nodes out on a grid, from the boxes they are drawn in, and hand the host the places. */
+export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined {
+  const drawn = drawnOn.get(canvas);
+  const placed = drawn?.options.onArrange ? arrangement(canvas, pickedNodes(canvas)) : undefined;
+  return drawn && placed ? handOn(drawn, placed) : undefined;
+}
+
+/** Where every node goes when the graph is unfurled, from the boxes and frames drawn: none locked moves. None, fewer than two.
+ *  TODO 569 · TRAP T-unfurl-keeps-the-flow */
+export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
+  const drawn = drawnOn.get(canvas);
+  const ids = [...(drawn?.nodes ?? [])].filter(([id, el]) => !id.startsWith('#') && !el.hasAttribute('data-locked')).map(([id]) => id);
+  if (!drawn || ids.length < 2) return undefined;
+  const { gap, nodes, boxes } = laidAs(canvas, drawn);
+  // A frame's box past its nodes', read off one drawn: its pad each side, and its header and pad above.
+  const frame = [...drawn.frames.values()].find((el) => !el.hasAttribute('hidden') && el.offsetWidth);
+  const side = frame ? Math.max(0, (frame.offsetWidth - Number(frame.getAttribute('data-w'))) / 2) : 0;
+  const top = frame ? Math.max(0, frame.offsetHeight - Number(frame.getAttribute('data-h')) - side) : 0;
+  const placed = unfurlNodes({ nodes, routes: drawn.routes, ties: drawn.ties, frames: drawn.graph.frames ?? [] }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side } });
+  return Object.keys(placed.nodes).length ? placed : undefined;
+}
+
+/** Unfurl the whole graph and hand the host the places, ties and bends with them: one step. The view fits it after. TODO 569 */
+export function unfurlGraph(canvas: SherpaLayoutCanvas): Arranged | undefined {
+  const drawn = drawnOn.get(canvas);
+  const placed = drawn?.options.onArrange ? unfurlment(canvas) : undefined;
+  if (!drawn || !placed) return undefined;
+  handOn(drawn, placed);
+  requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit()));
   return placed;
 }
 
@@ -1937,6 +1976,7 @@ export function bindQueryEditor(
       },
       onPicked: (routes) => toolbar?.setAttribute('data-picked-routes', String(routes.length)),
     });
+    toolbar?.toggleAttribute('data-can-unfurl', graph.nodes.length > 1);
     picks.follow(graph);
   };
   draw();
@@ -1976,6 +2016,7 @@ export function bindQueryEditor(
     if (action === 'undo') undo();
     else if (action === 'redo') redo();
     else if (action === 'arrange') arrangePicked(canvas);
+    else if (action === 'unfurl') unfurlGraph(canvas);
   };
   const unarrange = watchArrange(canvas, toolbar);
   const onKey = (event: KeyboardEvent): void => {
@@ -2007,6 +2048,7 @@ export function bindQueryEditor(
       query.removeEventListener('query-change', onChange);
       toolbar?.removeEventListener('toolbar-select', onTool);
       unarrange();
+      toolbar?.removeAttribute('data-can-unfurl');
       panel?.removeEventListener('node-add', onAdded);
       canvas.removeEventListener('keydown', onKey, { capture: true });
       toolbar?.removeAttribute('data-can-undo');
@@ -2792,6 +2834,7 @@ export function bindWorkflow(
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
     else if (action === 'arrange') arrangePicked(canvas);
+    else if (action === 'unfurl') unfurlGraph(canvas);
     else if (action === 'frame') framePicked();
   };
   toolbar?.addEventListener('toolbar-select', onTool);
@@ -2869,6 +2912,7 @@ export function bindWorkflow(
       locked: (node) => ro || node.id.startsWith('#'),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
     });
+    toolbar?.toggleAttribute('data-can-unfurl', !ro && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
     trail();
     if (multi.size > 1 && inspector?.open) showMulti();
     else if (framePanel && !(shown().frames ?? []).some((f) => f.id === framePanel)) picks.deselect();
@@ -2933,6 +2977,7 @@ export function bindWorkflow(
       toolbar?.removeEventListener('toolbar-select', onTool);
       toolbar?.removeAttribute('data-tie');
       toolbar?.removeAttribute('data-can-group');
+      toolbar?.removeAttribute('data-can-unfurl');
       dialogSave?.removeEventListener('click', saveAs);
       dialogCancel?.removeEventListener('click', onCancel);
       dialogField('label')?.removeEventListener('keydown', onSaveKey);

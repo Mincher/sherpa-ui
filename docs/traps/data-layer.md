@@ -7801,3 +7801,32 @@ whole list, so a tag per item would filter wrong.
 - Site: `src/core/data/format-value.ts`
 - Site: `test/unit/format-value.test.mjs`
 - Site: `test/e2e/reforged-a-cell-reads-in-words.spec.ts`
+
+### T-unfurl-keeps-the-flow
+
+**Unfurl lays the graph out round its hub, but every line still runs left to right.** Will, TODO 569 ·
+`docs/history/plan-569-unfurl.md`. Will asked for weighted cells round the most connected node, its neighbours
+spread evenly round it, the next generation after. Done as a full circle, half the lines run right to left: a
+connector leaves a node's RIGHT edge and enters the next one's LEFT edge, so a target to the left of its source
+is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fan right, its inputs fan left.
+
+- **The rings are made valid, not just signed.** A walk from the anchor gives each node its side, but two walks
+  can disagree, and a ring that a route goes BACK into draws a backwards line. The rings start as a longest-path
+  layering (every route to a higher ring, always), and each node then moves to the valid ring nearest its own.
+  Repairing the walk's rings in place stopped before it settled, and left 43 back lines in 300 nodes.
+- **The order is kept, so the pull cannot tangle it.** A free spring-and-push relaxation crossed lines that the
+  ring order had untangled. The centroid pull moves heights only, and an isotonic projection puts each ring back
+  in its order with its gaps, so a node never passes its neighbour.
+- **No overlap is made in x alone.** An arc bends in at its ends, so an outer ring's end can sit left of an inner
+  ring's middle. Pushing a node along its ray from the anchor moved it off its height and broke the flow. Moving it
+  out in x only, ring by ring, past its sources and past any node placed before it in its height band, keeps both.
+- **A frame is one cell.** Its nodes keep their column; the frame's pad and header are read off a drawn frame, so
+  the gap is between the frames' boxes, not their nodes'.
+- **A portal pair has no route, so it pulls nothing.** An In and an Out of one name sit by their own routes' nodes.
+- **The places a node had do not change where it goes.** Only the boxes and the routes do, and the first part's
+  anchor keeps its place, so a second Unfurl gives the same layout.
+
+- Site: `src/core/data/node-unfurl.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/unfurl-spreads-the-graph-from-its-hub.test.mjs`
+- Site: `test/e2e/reforged-node-unfurl.spec.ts`
