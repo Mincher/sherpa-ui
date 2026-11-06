@@ -76,10 +76,12 @@ const tagHeadings = async (page: Page) => { await openCustom(page); return page.
 const typeTag = async (page: Page, heading: string, word: string) => {
   await header(page, heading).click();
   await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   await page.locator('#inspector sherpa-input-text[name="#tags"] input.control:visible').click();
   await page.keyboard.type(word);
   await page.keyboard.press('Enter');
   await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(true));
 };
 
 test('after Save, Undo takes two definitions\' edits back as it does the workflow\'s own; the next Save hands that over; Redo puts them forward', async ({ page }) => {

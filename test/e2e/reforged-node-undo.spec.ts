@@ -249,6 +249,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
   ['remove a node', async (page) => {
     await page.locator(SORT).click({ position: { x: 40, y: 12 } });
     await settle(page);
+    await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
     await page.locator('#inspector').getByRole('button', { name: 'Remove node' }).click();
   }],
   ['an edit inside a Custom Node', async (page) => {

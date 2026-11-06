@@ -6,7 +6,7 @@ import { test, expect, type Page } from './harness';
  * edges. A search narrows it by name or by a type's ("round" shows Math, placed as Round). An item
  * is placed by a click (the middle of the view),
  * by Enter, or by a drag onto the canvas (where it is let go): each through the draft's one
- * door, picked, its inspector shut (756). A line let go on the bare canvas opens "Add a node": the
+ * door, picked, its inspector a tab (756). A line let go on the bare canvas opens "Add a node": the
  * kinds that take its type, a Value first. Each by real pointer and key.
  */
 test.beforeEach(async ({ page }) => {
@@ -113,20 +113,21 @@ test('"round" shows Math, says Round, and a click places a Math whose type is Ro
   expect(labels).toEqual(['Operation', 'Value A', 'Value B']);
 });
 
-/** The nodes picked, and whether the inspector is open. */
+/** The nodes picked, whether the inspector is open, and whether it is still a tab. */
 const pick = (page: Page) => page.evaluate(() => ({
   current: [...document.querySelectorAll('#root sherpa-node[data-current]')].map((n) => (n as HTMLElement).dataset['heading']),
   open: (document.getElementById('inspector') as HTMLElement & { open: boolean }).open,
+  tab: document.getElementById('inspector')!.hasAttribute('data-minimised'),
 }));
 
-test('a click places the node at the middle of the view, picked, its inspector shut (756)', async ({ page }) => {
+test('a click places the node at the middle of the view, picked, its inspector a tab (756)', async ({ page }) => {
   await bind(page);
   await item(page, 'value').click();
   await settle(page);
   const r = await draft(page);
   expect(r.nodes.map((n) => n.id)).toEqual(['start', 'value-1']);
-  // 756: added, it is picked, and its panel does not open.
-  expect(await pick(page)).toEqual({ current: ['Value'], open: false });
+  // 756: added, it is picked, and its panel does not expand.
+  expect(await pick(page)).toEqual({ current: ['Value'], open: true, tab: true });
   // Its corner is the middle of the 900 x 600 view, less half a node, on the plane.
   const view = await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: { x: number; y: number } }).view);
   expect(Math.abs(r.nodes[1]!.x - (330 - view.x))).toBeLessThanOrEqual(2);
@@ -150,7 +151,7 @@ test('Enter on an item places it', async ({ page }) => {
   await page.keyboard.press('Enter');
   await settle(page);
   expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['source', 'sort']);
-  expect(await pick(page)).toEqual({ current: ['Sort'], open: false });
+  expect(await pick(page)).toEqual({ current: ['Sort'], open: true, tab: true });
 });
 
 test('a drag places the node where it is let go', async ({ page }) => {
@@ -177,11 +178,11 @@ test('a drag places the node where it is let go', async ({ page }) => {
   });
   expect(Math.abs(corner[0]! - drop[0])).toBeLessThanOrEqual(2);
   expect(Math.abs(corner[1]! - drop[1])).toBeLessThanOrEqual(2);
-  expect(await pick(page)).toEqual({ current: ['Value'], open: false });
-  // A click on it opens its panel, as on any node.
+  expect(await pick(page)).toEqual({ current: ['Value'], open: true, tab: true });
+  // A click on it picks it; the panel stays a tab.
   await page.mouse.click(corner[0]! + 60, corner[1]! + 8);
   await settle(page);
-  expect(await pick(page)).toEqual({ current: ['Value'], open: true });
+  expect(await pick(page)).toEqual({ current: ['Value'], open: true, tab: true });
 });
 
 test('a drag let go on the card, or off the canvas, places nothing', async ({ page }) => {
@@ -224,7 +225,7 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   const r = await draft(page);
   expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'condition']);
   expect(r.routes).toEqual(['start/rows → condition-1']);
-  expect(await pick(page)).toEqual({ current: ['Condition'], open: false });
+  expect(await pick(page)).toEqual({ current: ['Condition'], open: true, tab: true });
 });
 
 test('"Add a node" for a list says the type a family takes it as: Math › Floor, Text › Join', async ({ page }) => {

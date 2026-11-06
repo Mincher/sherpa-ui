@@ -200,6 +200,7 @@ test('keys: F frames the picked nodes; on the header the arrows move them, Enter
   // Enter opens its panel: its name, edited there, is its title.
   await page.keyboard.press('Enter');
   await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const name = page.locator('#inspector sherpa-input-text[name="label"]');
   await expect(name).toBeVisible();
   await name.locator('input').fill('Active customers');

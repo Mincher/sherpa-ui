@@ -79,10 +79,12 @@ const headings = async (page: Page) => { await openCustom(page); return page.eva
 const under = async (page: Page, tag: string) => { await openCustom(page); return page.evaluate((t) => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll(`.tag:has(> .tag-heading[data-heading="${t}"]) sherpa-list-item`)].map((i) => i.getAttribute('data-label')), tag); };
 /** Click into the Tags field's own text, and type a tag. */
 const typeTag = async (page: Page, word: string) => {
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   await tagsField(page).locator('input.control:visible').click();
   await page.keyboard.type(word);
   await page.keyboard.press('Enter');
   await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(true));
 };
 
 test('a tag typed in a saved Custom Node\'s inspector is its definition\'s: listed under it at once, an Undo step, kept by Save', async ({ page }) => {
@@ -170,6 +172,7 @@ test('inside an opened Custom Node, its Group Input and Output carry the definit
 test('a preset\'s Tags field is read only: no tag added or taken off, by keys or pointer', async ({ page }) => {
   await header(page, 'Owner check').click();
   await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   expect(await fieldTags(page)).toEqual(['checks']);
   expect(await tagsField(page).getAttribute('readonly')).toBe('');
   expect(await tagsField(page).getAttribute('data-description')).toBe('The Custom Node\'s own tags, read only: it is a preset');
@@ -186,6 +189,7 @@ test('a preset\'s Tags field is read only: no tag added or taken off, by keys or
   expect(await fieldTags(page)).toEqual(['checks']);
   expect(await page.locator('#cv > sherpa-node[data-heading="Owner check"]').count()).toBe(1);
   expect(await page.evaluate(() => (window as unknown as { ed: { can(): { undo: boolean } } }).ed.can().undo)).toBe(false);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(true));
   // Inside it, read only too.
   await header(page, 'Owner check').dblclick();
   await settle(page);

@@ -137,6 +137,7 @@ test('"Update all instances" updates every other graph that uses it, and never t
   await settle(page);
   await header(page, 'Trials').click();
   await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const menu = page.locator('#inspector .update-split > sherpa-button[data-type="icon"]');
   await press(menu);
   await settle(page);

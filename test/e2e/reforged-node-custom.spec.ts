@@ -196,6 +196,7 @@ test('the split button: "Update instance" updates one; the draft keeps it until 
 
 test('the split button\'s menu: both bulk items ask in a critical dialog; cancel changes nothing; confirm updates', async ({ page }) => {
   await stale(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const menu = page.locator('#inspector .update-split > sherpa-button[data-type="icon"]');
   const pick = async (label: string) => {
     await menu.evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());

@@ -70,6 +70,7 @@ test('two picked: the tall node\'s tab scrolls in the panel, and every button in
   expect(await tabs.evaluate((el) => [...el.shadowRoot!.querySelectorAll('.tab .label')].map((t) => t.textContent))).toEqual(['Source', 'Check']);
   await tabs.evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
   await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const r = await read(page);
   expect(r.scrolls).toBe(true);
   expect(r.inside).toBe(true);

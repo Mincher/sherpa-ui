@@ -152,6 +152,7 @@ test('Delete and Backspace remove the picked nodes and their routes as ONE step;
   // A text field keeps its Backspace.
   await header(page, 'Source').focus();
   await page.keyboard.press('Enter');
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   // The inspector's own Name field: a real text input.
   const name = page.locator('#inspector sherpa-input-text[name="#heading"] input');
   await name.click();

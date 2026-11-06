@@ -179,6 +179,7 @@ test('a line dragged out of an unrouted picklist\'s input onto the bare canvas m
 test('with no pointer: the inspector\'s "Custom value" makes the Value node; its "Cut route" cuts it; "Remove node" removes the node and its routes', async ({ page }) => {
   await bind(page, FED);
   await page.locator('#root sherpa-node[data-heading="Condition"]').click({ position: { x: 40, y: 12 } });
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const panel = page.locator('#inspector');
   await panel.getByRole('button', { name: 'Custom value' }).first().click();
   await settle(page);
@@ -192,10 +193,11 @@ test('with no pointer: the inspector\'s "Custom value" makes the Value node; its
   const r = await draft(page);
   expect(Object.keys(r.nodes)).toEqual(['start', 'status', 'sort', 'pick', 'value-1']);
   expect(r.routes).toEqual(['start/rows → pick']);
-  expect(await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { open: boolean }).open)).toBe(false);
+  expect(await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { open: boolean }).open)).toBe(true);
+  await expect(page.locator('#inspector sherpa-empty-state')).toHaveCount(1);
 });
 
-test('559 a click on the blank canvas deselects every node and shuts the panel; a drag across it does not', async ({ page }) => {
+test('559 a click on the blank canvas deselects every node and puts the empty state back; a drag across it does not', async ({ page }) => {
   await bind(page);
   await page.locator('#root sherpa-node[data-heading="Sort"]').click({ position: { x: 40, y: 12 } });
   const state = () => page.evaluate(() => ({
@@ -216,5 +218,6 @@ test('559 a click on the blank canvas deselects every node and shuts the panel; 
   const [bx, by] = await blank(page);
   await page.mouse.click(bx, by);
   await settle(page);
-  expect(await state()).toEqual({ current: [], open: false });
+  expect(await state()).toEqual({ current: [], open: true });
+  await expect(page.locator('#inspector sherpa-empty-state')).toHaveCount(1);
 });

@@ -205,6 +205,7 @@ test('picking a portal lights every portal of its name, In and Out alike, in the
 test('Rename, typed in the inspector, renames every portal of the name, one step: the rows and their routes stay', async ({ page }) => {
   await bind(page, LINKED);
   await press(page, 'Out one');
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const rename = page.locator('#inspector sherpa-input-text[name="#rename"]');
   await expect(rename).toHaveAttribute('data-description', 'Every portal named "rows" takes the new name');
   await rename.locator('input').click();

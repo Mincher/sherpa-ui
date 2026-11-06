@@ -245,6 +245,7 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   await expect.poll(() => sim(page)).toBeDefined();
   const header = (await page.locator('#cv > sherpa-node[data-heading="c"]').boundingBox())!;
   await page.mouse.click(header.x + header.width / 2, header.y + 8);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const pane = page.locator('#inspector .data-pane');
   await expect(pane).toBeVisible();
   const lines = await pane.locator('.data-line').allTextContents();
