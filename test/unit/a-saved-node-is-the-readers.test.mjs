@@ -1,6 +1,6 @@
 /**
  * A SAVED NODE IS THE READER'S, APP-WIDE (D13): a preset is a file's, read only; the reader's own
- * Custom Nodes live in the page keeper's `nodes`, a NAMED part, so every tab sees them, and are
+ * Custom Nodes live in the page keeper's `entities`, a NAMED part, so every tab sees them, and are
  * pushed to the app's server like a saved filter. A custom id never clashes with a preset or a
  * shipped kind, and a stored value of the wrong shape is dropped. The panel lists both.
  * Will, plan 713 §9.4, M12. TRAP T-only-a-named-part-crosses-tabs
@@ -69,11 +69,12 @@ test('a fault in a saved node refuses it, and says why', async () => {
   assert.equal(keeper.read(NODES_PAGE).entities, undefined);
 });
 
-test('the persist guard drops a stored node of the wrong shape, and a preset smuggled in as the reader\'s', async () => {
+test('a stored `nodes`, the old part, is no longer read: the reader\'s nodes are its entities', async () => {
   const local = memoryTier();
-  local.write('sherpa:page:#app', { v: 3, nodes: { ok: mine('Ok'), wrong: { label: 'No lists' }, old: { ...mine('Old'), v: 2 }, sneaky: { ...mine('Sneaky'), preset: true } } });
+  local.write('sherpa:page:#app', { v: 3, nodes: { ok: mine('Ok') }, entities: { kept: nodeEntityOf('kept', mine('Kept')) } });
   const keeper = new PageKeeper({ tab: memoryTier(), local });
-  assert.deepEqual(Object.keys(keeper.read(NODES_PAGE).entities), ['ok'], 'a stored `nodes` is read once, as entities');
+  assert.deepEqual(Object.keys(keeper.read(NODES_PAGE).entities), ['kept']);
+  assert.deepEqual(Object.keys(keeper.nodeLibrary().nodes), ['kept']);
 });
 
 test('removeNode forgets one, in every tab', async () => {
@@ -90,7 +91,7 @@ test('removeNode forgets one, in every tab', async () => {
 test('the keeper pushes the reader\'s nodes to the server and takes them back, under the local ones', async () => {
   const pushes = [];
   const remote = {
-    pull: async (page) => (page === NODES_PAGE ? { nodes: { far: mine('Far'), mine: mine('Server\'s mine'), junk: { label: 3 } } } : {}),
+    pull: async (page) => (page === NODES_PAGE ? { entities: { far: nodeEntityOf('far', mine('Far')), mine: nodeEntityOf('mine', mine('Server\'s mine')), junk: { label: 3 } }, nodes: { old: mine('Old') } } : {}),
     push: async (page, named) => void pushes.push({ page, named }),
   };
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier(), remote, interval: 10 });
@@ -100,8 +101,9 @@ test('the keeper pushes the reader\'s nodes to the server and takes them back, u
   assert.equal(pushes[0].page, NODES_PAGE);
   assert.deepEqual(Object.keys(pushes[0].named.entities), ['mine']);
   const restored = await keeper.restore(NODES_PAGE);
-  assert.deepEqual(Object.keys(restored.nodes).sort(), ['far', 'mine']);
-  assert.equal(restored.nodes.mine.label, 'Mine', 'an unpushed local edit wins');
+  assert.deepEqual(Object.keys(restored.entities).sort(), ['far', 'mine']);
+  assert.equal('nodes' in restored, false, 'a server\'s `nodes` is not read');
+  assert.equal(restored.entities.mine.label, 'Mine', 'an unpushed local edit wins');
   assert.equal(keeper.nodeLibrary().nodes['far'].label, 'Far');
 });
 

@@ -5,7 +5,6 @@
  *
  * Map:
  * - NodeShelf — What an editor is handed: the library as it is now, save one, remove one.
- * - isNodeEntry — Whether a stored value has the SHAPE of a definition; the persist guard.
  * - joinLibrary — The presets and the reader's nodes as one library; a clash with a preset or the given kinds is left out.
  */
 import type { NodeKind } from './node-kinds.js';
@@ -19,14 +18,6 @@ export interface NodeShelf {
   remove(kind: string): boolean;
   /** Called with the library whenever it changes here, and when another tab changes it. Stops on the signal. */
   watch(handler: (library: NodeLibrary) => void, signal?: AbortSignal): void;
-}
-
-const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-
-/** Whether a stored value has the SHAPE of a definition: a v1 with a name and its lists. */
-export function isNodeEntry(value: unknown): boolean {
-  return isObject(value) && value['v'] === 1 && typeof value['label'] === 'string' && !!value['label'].trim()
-    && Array.isArray(value['inputs']) && Array.isArray(value['outputs']) && Array.isArray(value['nodes']);
 }
 
 /** The presets and the reader's nodes as one library. A preset is marked read only; a custom

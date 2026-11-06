@@ -3,8 +3,7 @@
  * type, behind list / get / save / remove / duplicate / export / import / watch. A save is checked
  * by checkEntity; a remove is refused while another entity uses it, naming who; the reader's own are
  * ONE named part of the keeper, so every tab sees them and the server is sent them; a stored value of
- * the wrong shape is dropped. The Custom Node shelf is a VIEW of it, and the old `nodes` is read once
- * as entities of the type `node`. Will, plan 746 E2. TRAP T-an-entity-is-an-envelope-and-a-type
+ * the wrong shape is dropped. The Custom Node shelf is a VIEW of it; the old `nodes` part is gone. Will, plan 746 E2. TRAP T-an-entity-is-an-envelope-and-a-type
  *
  *   node --test test/unit/an-entity-shelf-is-one-door.test.mjs
  */
@@ -16,7 +15,7 @@ const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier, NODES_PAGE } = await import(new URL('browser/page-state.js', core));
 const { readEntities } = await import(new URL('browser/entity-files.js', core));
 const { makeShelf, joinEntities } = await import(new URL('data/entity-shelf.js', core));
-const { definitionOf } = await import(new URL('data/entity.js', core));
+const { definitionOf, nodeEntityOf } = await import(new URL('data/entity.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
 const filter = (id, label = id, extra = {}) => ({
@@ -183,13 +182,12 @@ test('the persist guard drops a stored entity of the wrong shape, and a preset s
   assert.deepEqual(Object.keys(keeper(local).read(NODES_PAGE).entities), ['ok']);
 });
 
-test('the old `nodes` is read ONCE as entities of the type `node`, and the old part is gone', async () => {
+test('the old `nodes` is not read; a Custom Node is an entity of the type `node`', async () => {
   const local = memoryTier();
-  local.write('sherpa:page:#app', { v: 3, nodes: { 'has-role': HAS_ROLE, broken: { label: 'No lists' }, preset: { ...HAS_ROLE, preset: true } } });
+  local.write('sherpa:page:#app', { v: 3, nodes: { old: HAS_ROLE }, entities: { 'has-role': nodeEntityOf('has-role', HAS_ROLE) } });
   const k = keeper(local);
-  assert.deepEqual(ids(k.entities, 'node'), ['has-role']);
+  assert.deepEqual(ids(k.entities, 'node'), ['has-role'], 'the old `nodes` adds none');
   assert.deepEqual(definitionOf(k.entities.get('has-role')), HAS_ROLE);
-  assert.equal('nodes' in local.read('sherpa:page:#app'), false, 'written back without it');
   // The Custom Node shelf is a VIEW of the same: it lists, saves and removes the one set.
   assert.deepEqual(Object.keys(k.shelf.library().nodes), ['has-role']);
   assert.equal(await k.shelf.save('another', { ...HAS_ROLE, label: 'Another' }), true);
@@ -203,7 +201,7 @@ test('the old `nodes` is read ONCE as entities of the type `node`, and the old p
   assert.deepEqual(Object.keys(k.nodeLibrary().nodes), ['has-role']);
 });
 
-test('the keeper pushes the reader\'s entities to the server and takes them back, under the local ones; a server that still says `nodes` is read once', async () => {
+test('the keeper pushes the reader\'s entities to the server and takes them back, under the local ones; a server\'s `nodes` is not read', async () => {
   const pushes = [];
   const remote = {
     pull: async (page) => (page === NODES_PAGE ? { entities: { far: filter('far', 'Far'), mine: filter('mine', 'Server\'s'), junk: { label: 3 } }, nodes: { 'has-role': HAS_ROLE } } : {}),
@@ -217,9 +215,9 @@ test('the keeper pushes the reader\'s entities to the server and takes them back
   assert.deepEqual(Object.keys(pushes[0].named.entities), ['mine']);
   assert.equal('nodes' in pushes[0].named, false);
   const restored = await k.restore(NODES_PAGE);
-  assert.deepEqual(Object.keys(restored.entities).sort(), ['far', 'has-role', 'mine']);
+  assert.deepEqual(Object.keys(restored.entities).sort(), ['far', 'mine']);
   assert.equal(restored.entities.mine.label, 'Mine', 'an unpushed local edit wins');
-  assert.deepEqual(Object.keys(restored.nodes), ['has-role'], '`nodes` is a read of the type node');
+  assert.equal('nodes' in restored, false, 'a server\'s `nodes` is not read');
   assert.equal(k.entities.get('far').label, 'Far');
 });
 

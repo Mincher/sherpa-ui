@@ -35,9 +35,9 @@ import type { Query, QueryDefaults, SavedFilter } from '../data/query.js';
 import { isSavedFilter } from '../data/query.js';
 import type { SharedView } from '../data/query-edits.js';
 import type { NodeDefinition, NodeLibrary } from '../data/node-library.js';
-import { definitionOf, isEntity, nodeEntityOf, type Entity } from '../data/entity.js';
+import { isEntity, type Entity } from '../data/entity.js';
 import { makeShelf, nodesView, type EntityShelf } from '../data/entity-shelf.js';
-import { isNodeEntry, type NodeShelf } from '../data/node-shelf.js';
+import type { NodeShelf } from '../data/node-shelf.js';
 import { applyView, type SavedView } from './persist-view.js';
 import type { EntityRecord, ViewRecord } from './database.js';
 import { isPlainObject, readJson, removeKey, writeJson, type StorageKind } from './web-storage.js';
@@ -74,9 +74,8 @@ export interface LeftView {
   sig: string;
 }
 
-/** The parts a reader names: their own Views, saved filters and entities. `nodes` is a READ of the
- *  entities of the type `node`, as definitions; a server that still sends `nodes` is read once as such. */
-export type Named = Pick<PageState, 'views' | 'filters' | 'entities'> & { nodes?: Record<string, NodeDefinition> };
+/** The parts a reader names: their own Views, saved filters and entities. */
+export type Named = Pick<PageState, 'views' | 'filters' | 'entities'>;
 
 /** The page name the app-wide entities are kept under (D13): no page id can be it. */
 export const NODES_PAGE = '#app';
@@ -185,12 +184,6 @@ const APP_CONTEXT = 'sherpa:app-context';
 /** Where a reader's saved Views and saved filters were kept before v3: read once. */
 const OLD_VIEWS = 'sherpa:views:';
 const OLD_FILTERS = 'sherpa:filter-sets:';
-
-/** Custom Nodes as an earlier build kept them, `nodes` by id, as entities of the type `node`; a preset or a broken one is left out. */
-function carriedNodes(nodes: unknown): Record<string, Entity> {
-  if (!isPlainObject(nodes)) return {};
-  return Object.fromEntries(Object.entries(nodes).filter(([, d]) => isNodeEntry(d) && !(d as { preset?: unknown }).preset).map(([id, d]) => [id, nodeEntityOf(id, d as NodeDefinition)]));
-}
 
 /** What a View defines, as a string: a View left over another definition is stale. */
 export function viewSig(view: { query?: unknown } | undefined): string {
@@ -362,13 +355,11 @@ export class PageKeeper {
     const here = this.read(page);
     const views = { ...cleaned('views', remote.views ?? {}) as object, ...await this.#fromDatabase(page), ...here.views };
     const filters = { ...cleaned('filters', remote.filters ?? {}) as object, ...here.filters };
-    // A server that still keeps `nodes` is read ONCE, as entities of the type `node`.
-    const entities = { ...cleaned('entities', { ...carriedNodes(remote.nodes), ...remote.entities }) as object, ...await this.#entitiesFromDatabase(page), ...here.entities } as Record<string, Entity>;
+    const entities = { ...cleaned('entities', remote.entities ?? {}) as object, ...await this.#entitiesFromDatabase(page), ...here.entities } as Record<string, Entity>;
     // Kept here and in the database; nothing new to push.
     this.#put(page, { views, filters, entities }, false);
     this.#onward(page, [], false);
-    const nodes = Object.fromEntries(Object.values(entities).filter((e) => e.type === 'node').map((e) => [e.id, definitionOf(e)]));
-    return { views, filters, ...(Object.keys(entities).length ? { entities } : {}), ...(Object.keys(nodes).length ? { nodes } : {}) };
+    return { views, filters, ...(Object.keys(entities).length ? { entities } : {}) };
   }
 
   /** Push every page's named parts now, rather than at the next tick. */
@@ -418,7 +409,7 @@ export class PageKeeper {
   #stored(tier: 'tab' | 'local', page: string): Record<string, unknown> {
     const stored = this.#tierOf(tier).read(PREFIX + page) ?? (tier === 'local' ? this.#carried(page) : undefined);
     const doc = isPlainObject(stored) && stored['v'] === 3 ? { ...stored } : { v: 3 };
-    return tier === 'local' && page === NODES_PAGE && 'nodes' in doc ? this.#carriedNodes(doc) : doc;
+    return doc;
   }
 
   /** A reader's saved Views and saved filters as an older build kept them: read
@@ -436,15 +427,6 @@ export class PageKeeper {
     removeKey('local', OLD_VIEWS + page);
     removeKey('local', OLD_FILTERS + page);
     return doc;
-  }
-
-  /** The Custom Nodes an earlier build kept as `nodes`: read ONCE into the entities, and the old part gone. */
-  #carriedNodes(doc: Record<string, unknown>): Record<string, unknown> {
-    const { nodes, ...rest } = doc;
-    const entities = { ...carriedNodes(nodes), ...(isPlainObject(rest['entities']) ? rest['entities'] : {}) };
-    const next = { ...rest, ...(Object.keys(entities).length ? { entities } : {}) };
-    this.#local.write(PREFIX + NODES_PAGE, next);
-    return next;
   }
 
   /** The reader's own Views to the database NOW, and a push to the server soon. */

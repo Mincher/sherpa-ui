@@ -27,8 +27,7 @@
 import type { OutboxEntry } from '../data/outbox.js';
 import type { UpdateNotice } from '../data/notices.js';
 import type { Row } from '../data/store.js';
-import { nodeEntityOf, type Entity } from '../data/entity.js';
-import type { NodeDefinition } from '../data/node-library.js';
+import type { Entity } from '../data/entity.js';
 import type { SavedView } from './persist-view.js';
 
 /** The database's name, in a page and a worker alike. */
@@ -147,15 +146,8 @@ export function openDatabase(): Promise<IDBDatabase> {
         const store = db.createObjectStore(name, { keyPath });
         if (seek) store.createIndex('seek', 'seek', { multiEntry: true });
       }
-      // v2 kept Custom Nodes in a store of their own: read ONCE as entities of the type `node`, then gone.
-      const tx = request.transaction;
-      if (tx && db.objectStoreNames.contains('nodes')) {
-        const old = tx.objectStore('nodes').getAll() as IDBRequest<{ id: string; node: NodeDefinition }[]>;
-        old.onsuccess = () => {
-          for (const { id, node } of old.result) tx.objectStore('entities').put({ id, entity: nodeEntityOf(id, node) } satisfies EntityRecord);
-          db.deleteObjectStore('nodes');
-        };
-      }
+      // v2's store of Custom Nodes is dropped, unread: they are lost.
+      if (db.objectStoreNames.contains('nodes')) db.deleteObjectStore('nodes');
     };
     request.onsuccess = () => {
       const db = request.result;

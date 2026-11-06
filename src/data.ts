@@ -211,7 +211,7 @@ export {
   type NodeSocket,
 } from './core/data/node-library.js';
 /* Where an app's Custom Nodes come together: its presets and the reader's. Plan 713 M12 */
-export { isNodeEntry, joinLibrary, type NodeShelf } from './core/data/node-shelf.js';
+export { joinLibrary, type NodeShelf } from './core/data/node-shelf.js';
 /* An ENTITY: a graph saved under a type, an id and a name; a Custom Node is the type `node`. Plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type */
 export {
   ENTITY_SCHEMA, definitionOf, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf,
