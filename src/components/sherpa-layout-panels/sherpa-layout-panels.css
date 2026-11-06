@@ -95,13 +95,12 @@
   pointer-events: none;
   border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
-/* In TAB mode the edge facing the canvas is a thin, light line: the tab row beside it already
-   sets the panels apart. TRAP T-an-area-with-two-panels-is-tabbed */
+/* In TAB mode the edge facing the canvas is a thin line in the Style's border, over the tab row. It was
+   too faint in the Theme's lighter step to be seen on a white panel. TRAP T-an-area-with-two-panels-is-tabbed */
 :host(:state(start-tabs)) .area-start::after,
 :host(:state(end-tabs)) .area-end::after {
-  border-inline-start-width: var(--sherpa-display-mode-border-width-sm, 0.5px);
-  /* Style border-base is the mid grey in every Style; the light step is the Theme's */
-  border-inline-start-color: var(--sherpa-theme-border-default-1, #e8e8f6); /* theme-direct */
+  border-inline-start-width: var(--sherpa-display-mode-border-width-base, 1px);
+  border-inline-start-color: var(--sherpa-style-border-base, #b3b3c3);
 }
 .area-start::after { inset-inline-end: 0; }
 .area-end::after { inset-inline-start: 0; }

@@ -86,14 +86,25 @@ test('floating one floats only it; docking puts it back as the active tab', asyn
   expect(a.drawn).toEqual(['two']);
 });
 
-test('in tab mode the edge facing the canvas is a thin line', async ({ page }) => {
+test('in tab mode the edge facing the canvas is a thin line you can see: the Style border, drawn over the tab row', async ({ page }) => {
   await stage(page);
-  const colour = () => page.evaluate(() => {
+  await page.evaluate(() => { document.body.style.background = 'rgb(255, 0, 255)'; });
+  const edge = await page.evaluate(() => {
     const layout = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!;
-    return getComputedStyle(layout.shadowRoot!.querySelector('.area-end')!, '::after').borderInlineStartColor;
+    const area = layout.shadowRoot!.querySelector('.area-end')!;
+    const cs = getComputedStyle(area, '::after');
+    return { x: Math.round(area.getBoundingClientRect().x), y: Math.round(area.getBoundingClientRect().y), width: cs.borderInlineStartWidth, colour: cs.borderInlineStartColor, style: cs.borderInlineStartStyle };
   });
-  const tabbed = await colour();
-  await click(page, '.float', 'two');
-  // One panel left: the area's own divider, a darker line.
-  expect(await colour()).not.toBe(tabbed);
+  expect(edge).toMatchObject({ width: '1px', colour: 'rgb(179, 179, 195)', style: 'solid' });
+  // Drawn: the pixel on the edge is the line's grey, not the panel's white.
+  const shot = await page.screenshot({ clip: { x: edge.x, y: edge.y + 8, width: 1, height: 1 } });
+  const px = await page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d')!;
+    c.drawImage(img, 0, 0);
+    return [...c.getImageData(0, 0, 1, 1).data].slice(0, 3);
+  }, shot.toString('base64'));
+  expect(Math.max(...px)).toBeLessThan(215);
 });
