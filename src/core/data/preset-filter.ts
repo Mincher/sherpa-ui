@@ -17,7 +17,7 @@ import { entityKind, type Entity } from './entity.js';
 import { PRESET_FILTER, entityTypes, libraryOf, type EntityType } from './entity-types.js';
 import { graphWorkflow } from './entity-check.js';
 import { innerOf, kindsOf } from './node-library.js';
-import { conditionAt, type Said } from './node-flow.js';
+import { conditionAt, leafOf, type Said } from './node-flow.js';
 import { NODE_KINDS, type DrawnGraph, type GraphNode, type NodeKind } from './node-kinds.js';
 import { groupOf, type Condition, type ConditionLeaf } from './store.js';
 import { whereOfTree, type Where } from './where.js';
@@ -52,7 +52,7 @@ export function sourceOf(entity: Pick<Entity, 'settings' | 'graph'>): string | u
  *  little, or what a preset cannot hold: a constant that decides it, a boolean only a run gives (TODO 780). */
 function leavesRead(tree: Said): { tree: Condition } | { fault: string } {
   if (tree === true) return { fault: 'it always holds, so it filters nothing' };
-  if (tree === false) return { fault: 'it never holds, so no row passes' };
+  if (tree === false) return { fault: 'it never holds, and tests no Field to say so on' };
   if ('boolean' in tree) return { fault: `"${tree.boolean}" is a boolean only a run gives` };
   const parts = groupOf(tree);
   if (parts) {
@@ -92,6 +92,15 @@ export function presetOfEntity(entity: Entity, facts: PresetFilterFacts = {}): {
   const { tree, faults } = conditionAt(graph, '#out/where', { inner });
   if (faults.length) return { fault: `${at}: ${faults[0]}` };
   if (tree === undefined) return { fault: `${at} sends no condition to its Where` };
+  // Never: Any of nothing on each field its tests name, so the preset is on the bar and, on, holds no row.
+  if (tree === false) {
+    const fields = [...new Set(graph.nodes.flatMap((n) => {
+      const leaf = ['condition', 'time', 'tag'].includes(n.kind) ? leafOf(graph, n) : undefined;
+      return leaf && 'leaf' in leaf && leaf.leaf.field ? [leaf.leaf.field] : [];
+    }))];
+    if (!fields.length) return { fault: `${at}: it never holds, and tests no Field to say so on` };
+    return { preset: { id: entityKind(entity), label: entity.label, where: Object.fromEntries(fields.map((f) => [f, { or: [] }])) } };
+  }
   const read = leavesRead(tree);
   const split = 'fault' in read ? read : whereOfTree(read.tree);
   return 'fault' in split ? { fault: `${at}: ${split.fault}` } : { preset: { id: entityKind(entity), label: entity.label, where: split.where } };

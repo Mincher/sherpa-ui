@@ -28,7 +28,7 @@ headings below are older than the index: most entries are under the last one.
 
 | Area | Entries |
 |---|---:|
-| [The data layer](traps/data-layer.md) | 236 |
+| [The data layer](traps/data-layer.md) | 237 |
 | [Storage, saved Views and the URL](traps/storage.md) | 36 |
 | [The join and the app layer](traps/join-and-app.md) | 43 |
 | [Filters](traps/filters.md) | 106 |

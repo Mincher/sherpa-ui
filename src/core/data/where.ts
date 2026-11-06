@@ -45,7 +45,9 @@ function fieldTree(given: WhereCondition, field?: string): Condition | undefined
   const parts: (Condition | undefined)[] = [];
   for (const [key, value] of Object.entries(given)) {
     if (key === 'and' || key === 'or') {
-      parts.push(joinConditions(key, (Array.isArray(value) ? value as WhereCondition[] : []).map((c) => fieldTree(c, field))));
+      const each = Array.isArray(value) ? value as WhereCondition[] : [];
+      // `or: []` is NEVER, kept as said: it holds no row.
+      parts.push(key === 'or' && !each.length ? { or: [] } : joinConditions(key, each.map((c) => fieldTree(c, field))));
     } else if (key === 'last' || key === 'next') {
       parts.push(leaf(field, key, { n: Number(value), unit: given.unit ?? 'day' }));
     } else if (key === 'unit' || key === 'off' || key === 'all') {

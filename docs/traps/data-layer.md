@@ -6866,9 +6866,8 @@ its choices".
   use brings its tree too, read inside (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
 - **The Query holds no constant.** A page's `where` cannot say one, and the Query editor takes no
   route into an And or an Or (`routeRequest`), so it draws none. Folded, a constant compiles as no
-  constant: always holds is no condition (it narrows nothing); never holds has no Condition form
-  today (`conditionClause` reads an empty group as half-built), so a graph that folds to `false`
-  says no condition to a page yet (TODO 780's question).
+  constant: always holds is no condition (it narrows nothing); never holds is an empty Any of,
+  `['or']`, which holds no row (`T-an-empty-any-of-is-never`, TODO 816).
 - **A test is shaped by its Field's type** where the facts give it (`T-a-logic-type-is-an-operator`):
   an operator its type does not take warns; a Value B that is no number for a number field is the
   row's fault.
@@ -7611,7 +7610,7 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
   and `#out` as a Custom Node has. `origin` (`preset` or `mine`) is set on READ, never written.
   A Custom Node is the type `node`, its sockets in `settings`; `nodeEntityOf` and `definitionOf`
   are the two ways round. An app ships its Custom Nodes as entities (app.v1 `nodes` and its
-  `loadNodeLibrary` are gone, TODO 777); the reader's `nodes` kept before entities still read once.
+  `loadNodeLibrary` are gone, TODO 777); the old `nodes` part is not read (TODO 816).
 - **The type registry** (`entity-types.ts`, the data layer, light): each type says its settings check
   (and its schema in `schemas/entity-<type>.v1.json`), the families its graph may place (a kind's
   category), the `#in` and `#out` it demands, and `runs`. Two ship: `preset-filter` and `node`.
@@ -7632,8 +7631,8 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
   over a port, so the rules are one set. The reader's own are ONE named part of the keeper
   (`entities`, app-wide); the presets are `entities.json` (app.v1 `entities`) and the Custom Node
   presets read as type `node`. `nodes` is a VIEW (`nodesView`) of every entity, as the node it
-  offers (E5); the old `nodes` part is read once as entities and gone, and so is the database's
-  `nodes` store (version 3 moves its rows).
+  offers (E5); the old `nodes` part is gone, and the database drops a leftover `nodes`
+  store unread (TODO 816).
   A remove is refused while another entity `uses` it, naming who.
 
 - Site: `src/core/data/entity.ts`
@@ -7788,7 +7787,9 @@ graphs. Let's keep them but also make sure they work in the new architecture for
 - **Composing.** A Preset Filter's use, its True into And or Or, brings its tree, read inside: its
   condition joins the outer one. A constant into And or Or folds (TODO 780); a condition a constant
   decides, always or never, has no preset form, nor has a boolean only a run gives: each is said in
-  words. An Or across two fields is said in words and left off the bar (plan 783 D7, 776 D6); an And
+  words. A graph that folds to never is Any of nothing, `{ or: [] }`, on each field its tests name:
+  on the bar, and on it holds no row; one with no tested field is said in words
+  (`T-an-empty-any-of-is-never`). An Or across two fields is said in words and left off the bar (plan 783 D7, 776 D6); an And
   across them is two readings.
 - **One leaf.** `leafOf` reads one test: the field its Field picks, the operator its Operation, the
   value its Value B, Values, or Start and End. The one place a leaf is read.
@@ -7806,6 +7807,24 @@ graphs. Let's keep them but also make sure they work in the new architecture for
 - Site: `test/unit/a-preset-filter-is-a-preset-of-its-store.test.mjs`
 - Site: `test/e2e/reforged-preset-filter-presets.spec.ts`
 - Site: `test/e2e/reforged-query-panel.spec.ts`
+
+### T-an-empty-any-of-is-never
+
+**An Any of with no part is NEVER: it holds no row, and it is an answer.** Will, TODO 816. Any of is
+"some part holds", so with no part nothing does; All of nothing is always, which narrows nothing.
+
+- **Said, it stays.** A tree's `{ or: [] }` survives the plain form (`fieldTree`) and the reader's
+  answer (`answeredCondition`), and `conditionClause` compiles it to `['or']`. A group whose rows
+  were all unanswered is still dropped: that is a half-built row, not a never.
+- **Every matcher holds it so.** `filterTest` (`some` of none), a held set, the IndexedDB store (an
+  `or` takes no range: it reads all and tests each), a REST request (the filter as JSON) and the
+  data handler's `isFilter`. `filterWithout` keeps it: it names no field, so no field's chart drops it.
+- **Under Any of it adds nothing** (`never or A` is A, the join flattens); under All of it ends it.
+- **A Preset Filter that folds to never** puts `{ or: [] }` on each field its tests name, so its chip
+  is on the bar and, on, gives zero rows. One that tests no Field has nowhere to say it: said in words.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `test/unit/a-preset-filter-is-a-preset-of-its-store.test.mjs`
 
 ### T-a-frame-is-drawn-round-its-nodes
 

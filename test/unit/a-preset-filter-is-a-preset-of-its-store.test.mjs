@@ -145,7 +145,8 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
   const yes = { id: 'v', kind: 'value', x: 0, y: 240, values: { type: 'boolean', value: 'true' } };
   assert.deepEqual(presetOfEntity(withPart(yes, 'v/value')).preset.where, { plan: { eq: 'Pro' } }, 'Pro and true: Pro');
   assert.match(presetOfEntity(withPart(yes, 'v/value', 'or')).fault, /always holds, so it filters nothing/);
-  assert.match(presetOfEntity(withPart({ ...yes, values: { type: 'boolean', value: 'false' } }, 'v/value')).fault, /never holds, so no row passes/);
+  // Never is Any of nothing on the field its test names: a preset on the bar that holds no row (TODO 816).
+  assert.deepEqual(presetOfEntity(withPart({ ...yes, values: { type: 'boolean', value: 'false' } }, 'v/value')).preset.where, { plan: { or: [] } });
   assert.match(presetOfEntity(withPart({ id: 's', kind: 'source', x: 0, y: 240, values: { store: 'customers' } }, 's')).fault, /"Source › True" is a boolean only a run gives/);
 });
 
@@ -205,4 +206,39 @@ test('a press is the Query\'s one door: on, the Status chip\'s Active rows; off,
   assert.match(placeRequest('preset', 'data', facts).refused, /no preset left to switch on/);
   source.query.ask({ scope: 'data', preset: preset.id, on: true, commit: true });
   assert.deepEqual(placeRequest(preset.id, 'data', facts), { refused: '"Active customers" is on already: its chip is pressed.' });
+});
+
+test('never is `[\'or\']`: on the bar, and on it holds no row, in the store, a kept filter and a chart free of the field; always stays off the bar', async () => {
+  // TRAP T-an-empty-any-of-is-never
+  const { conditionClause } = await import(new URL('filter-state.js', data));
+  const { filterWithout, matchesFilter } = await import(new URL('store.js', data));
+  const never = filter('never', [fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), { id: 'v', kind: 'value', x: 0, y: 240, values: { type: 'boolean', value: 'false' } }, test_('j', 'and', undefined, 600)],
+    [{ from: 'plan/field', to: 'pro' }, { from: 'pro', to: 'j' }, { from: 'v/value', to: 'j' }, { from: 'j', to: '#out/where' }]);
+  const made = presetOfEntity(never).preset;
+  assert.deepEqual(made.where, { plan: { or: [] } });
+  // Said as a tree it compiles to the filter that matches nothing; an unanswered group still narrows nothing.
+  assert.deepEqual(conditionClause({ or: [] }, { field: 'plan' }), ['or']);
+  // Never beside another reading, ANDed, stays never; under Any of it adds nothing.
+  assert.deepEqual(conditionClause({ and: [{ or: [] }, { field: 'plan', op: 'eq', value: 'Pro' }] }), ['and', ['or'], ['plan', 'eq', 'Pro']]);
+  assert.deepEqual(conditionClause({ or: [{ or: [] }, { field: 'plan', op: 'eq', value: 'Pro' }] }), ['plan', 'eq', 'Pro']);
+  assert.equal(ROWS.some((row) => matchesFilter(row, ['or'])), false);
+  // A chart free of a field keeps it: it names no field, so it is none's to drop.
+  assert.deepEqual(filterWithout(['or'], new Set(['plan'])), ['or']);
+  assert.deepEqual(filterWithout(['and', ['plan', 'eq', 'Pro'], ['or']], new Set(['plan'])), ['or']);
+  const source = await page();
+  source.declarePresets('data', [{ id: made.id, label: made.label, readings: presetReadings(source, made.where) }]);
+  assert.deepEqual(source.describe('data').filters[0], { id: 'preset:preset-filter:never', label: 'never', preset: true, active: false });
+  source.query.ask({ scope: 'data', preset: made.id, on: true, commit: true });
+  await source.load();
+  assert.equal(source.query.presetOn('data', made.id), true);
+  assert.equal(total(source), 0, 'on, no row');
+  source.query.ask({ scope: 'data', preset: made.id, on: false, commit: true });
+  await source.load();
+  assert.equal(total(source), ROWS.length, 'off, every row');
+  // Always has no preset form: it narrows nothing, so it is left off the bar, said in words.
+  assert.match(presetOfEntity(withTrue()).fault, /always holds, so it filters nothing/);
+  function withTrue() {
+    return filter('always', [fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), { id: 'v', kind: 'value', x: 0, y: 240, values: { type: 'boolean', value: 'true' } }, test_('j', 'or', undefined, 600)],
+      [{ from: 'plan/field', to: 'pro' }, { from: 'pro', to: 'j' }, { from: 'v/value', to: 'j' }, { from: 'j', to: '#out/where' }]);
+  }
 });

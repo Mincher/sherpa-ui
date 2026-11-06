@@ -728,7 +728,9 @@ export function filterWithout(filter: Filter | undefined, fields: ReadonlySet<st
   if (filter[0] === 'and') {
     return andFilter((filter.slice(1) as Filter[]).map((f) => filterWithout(f, fields)).filter((f): f is Filter => !!f));
   }
-  return filterFields(filter).every((f) => fields.has(f)) ? undefined : filter;
+  const named = filterFields(filter);
+  // A filter naming no field (never) is no field's to drop.
+  return named.length && named.every((f) => fields.has(f)) ? undefined : filter;
 }
 
 /**

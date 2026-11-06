@@ -264,6 +264,8 @@ export function answeredCondition(tree: Condition | undefined): Condition | unde
   if (!tree) return undefined;
   const parts = groupOf(tree);
   if (!parts) return leafAnswered(tree as ConditionLeaf) ? tree : undefined;
+  // An Any of said with no part is NEVER: it holds no row. TRAP T-an-empty-any-of-is-never
+  if (parts[0] === 'or' && !parts[1].length) return tree;
   const kept = parts[1].map(answeredCondition).filter((p): p is Condition => !!p);
   if (!kept.length) return undefined;
   const own = { ...(tree.off ? { off: true } : {}), ...(tree.id !== undefined ? { id: tree.id } : {}) };
@@ -499,6 +501,7 @@ export function conditionClause(
   const parts = groupOf(tree);
   if (parts) {
     const [join, each] = parts;
+    if (join === 'or' && !each.length) return ['or'];
     const said = each.map((p) => conditionClause(p, facts, factsOf)).filter((f): f is Filter => !!f)
       .flatMap((f) => (f[0] === join ? (f.slice(1) as Filter[]) : [f]));
     return said.length > 1 ? ([join, ...said] as Filter) : said[0];
