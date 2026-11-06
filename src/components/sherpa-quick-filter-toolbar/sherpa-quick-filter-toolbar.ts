@@ -18,7 +18,7 @@ import {
 } from '../../core/ui/filters-button.js';
 import {
   askSwitches, offersMore, extraRows, manageRows, resetRows, folded, hidesUnmatched, openMore, pickMore,
-  saveRows, syncHide,
+  syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
 import { answerWhenDrawn, arrangeFrom, drawCount, limitField, NextFrame, organiseOf, organiseOptions } from '../../core/ui/filter-host.js';
@@ -91,7 +91,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   // The app's filter settings it reads, each onto its attribute. TODO 436
   static override settings = {
     'data-limit-options': 'limitOptions', 'data-hide-unmatched': 'hideUnmatched', 'data-no-results': '!results',
-    'data-count-applied': 'countApplied', 'data-saved-menu': 'savedMenu', 'data-switchable': 'switchable',
+    'data-count-applied': 'countApplied', 'data-switchable': 'switchable',
     'data-no-section-labels': '!sectionLabels', 'data-no-organise-labels': 'hideOrganiseLabels', 'data-no-sections': '!sections',
     'data-highlight-hover': 'highlightOnHover', 'data-field-apply': '!singleApply', 'data-reorder': 'reorderFilters',
     'data-move-filters': 'moveFilters', 'data-allow-solo': 'allowSolo', 'data-solo-across': 'soloAcrossScopes',
@@ -121,8 +121,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-applied': { type: 'number', kind: 'behaviour' },
     // A column's title counts them. TODO 436
     'data-count-applied': { type: 'boolean', kind: 'behaviour' },
-    // The saved sets, the save rows and Manage: a Saved menu of their own. Will, TODO 436
-    'data-saved-menu': { type: 'boolean', kind: 'behaviour' },
     // Its provider keeps saving off it: no sets, no Save. Will, TODO 485
     'data-no-saves': { type: 'boolean', kind: 'style' },
     // No section names in the bar, in toolbar mode. Will, TODOs 436, 610
@@ -1917,10 +1915,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   override onChange(name?: string): void {
     if ((name === 'data-scope' || name === 'data-column') && this.#settingsTold) this.onSettings(this.#settingsTold);
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameSection(chip);
-    if (name === 'data-saved-menu') {
-      if (this.#columned) this.#column.saved(this.#saved.all);
-      else this.#renderAvailable();
-    }
     // The saves are off while the filters are the View's own. Will, TODO 382
     if (name === 'data-at-default') {
       if (this.#columned) this.#column.saved(this.#saved.all);
@@ -1940,7 +1934,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'data-label-column') this.#syncLayout();
     if (name === 'data-fixed-primary') this.$('.organise-chip[data-id="primary"]')?.toggleAttribute('disabled', this.hasAttribute(name));
     if (name === 'data-move-filters' || name === 'data-allow-solo' || name === 'data-solo-header') this.#redoMoves();
-    if (name === 'data-limit-options' || name === 'data-saved-menu' || name === 'data-saveable' || name === 'data-no-saves'
+    if (name === 'data-limit-options' || name === 'data-saveable' || name === 'data-no-saves'
       || name === 'data-node-editor' || name === 'data-suggest' || name === 'data-orientation' || name === 'data-reset-graph' || name === 'data-graph-unchanged') this.#syncMore();
     if (name === 'data-every-count') this.#filter.countAll();
     if (name === 'data-orientation') {
@@ -2348,13 +2342,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
     ];
     this.#oneRows.tell(added);
-    // Split, the sets are the Saved menu's. TODO 436
-    const split = this.hasAttribute('data-saved-menu');
-    const sets = split ? [] : this.#saved.listed;
     // ONE field folded, and nothing else to list: Edit opens its own values. Will, TODO 678
     const [only] = folded;
-    this.#lone = only && added.length === 1 && added[0]!.hidden && !offer.length && !sets.length ? only : null;
-    const def = drawFiltersButton(add, added, offer, sets);
+    this.#lone = only && added.length === 1 && added[0]!.hidden && !offer.length ? only : null;
+    const def = drawFiltersButton(add, added, offer);
     if (!def) return;
     this.#drawApplied();
     this.#header.drawSaved();
@@ -2586,11 +2577,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const gone = (act: string): boolean => folded(this.$(`.act[data-act="${act}"]`));
     const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),
       ...(gone('refresh') ? [['refresh'] as const] : [])];
-    const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this);
     const resets = [...resetRows(this), ...manageRows(this, this.#saved.listed)];
     // Last, apart: the page's Query as nodes, where the host offers it. Will, TODO 555
     const editor: MoreRow[] = this.hasAttribute('data-node-editor') ? [['node-editor']] : [];
-    return [resets, saves, extraRows(this), tail, editor];
+    return [resets, extraRows(this), tail, editor];
   }
 
   /** A ⋮ with no row to show is not shown, on the bar or its column. Will, TODO 566 */

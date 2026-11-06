@@ -95,7 +95,7 @@ export interface AddedFilter extends ListedFilter {
  * TRAP T-saved-filters-are-the-last-section
  */
 function filtersMenuItems(
-  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[] = [],
+  added: readonly AddedFilter[], offer: readonly ListedFilter[],
 ): Array<FilterMenuItem & { label: string }> {
   return [
     // A held filter the reader cannot take off is listed only while hidden.
@@ -112,8 +112,6 @@ function filtersMenuItems(
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
       ...(f.spent ? { available: false } : {}),
     })),
-    // A reader's saved SETS: ticked while its chip is on a bar. TODO 105 · Will, TODO 605
-    ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.added })),
   ];
 }
 
@@ -122,9 +120,9 @@ function filtersMenuItems(
  *  TRAP T-one-filters-button · TRAP T-add-menu-batches */
 export function drawFiltersButton(
   btn: HTMLElement,
-  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[],
+  added: readonly AddedFilter[], offer: readonly ListedFilter[],
 ): FilterDef {
-  const options = filtersMenuItems(added, offer, sets);
+  const options = filtersMenuItems(added, offer);
   btn.querySelector('sherpa-menu')?.remove();
   return {
     id: 'add', label: FILTERS_LABEL, select: 'multiple',

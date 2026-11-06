@@ -236,20 +236,16 @@ test('Manage Saved Filters is a ⋮ row of a saveable bar with sets of the reade
     el.toggleAttribute('data-saveable', saveable);
     el.savedSets = [{ id: 'page', label: 'Page set' }, ...own ? [{ id: 'mine', label: 'Mine', own: true }] : []];
     await window.__settled();
-    const menu = el.shadowRoot!.querySelector('.add-btn sherpa-menu')!;
-    const head = [...menu.querySelectorAll(':scope > .menu-section')].find((h) => h.textContent === 'Saved filters');
-    const rows: string[] = [];
-    for (let n = head?.nextElementSibling; n && !n.classList.contains('menu-section'); n = n.nextElementSibling) {
-      rows.push(n.querySelector('input')?.value ?? `${(n as HTMLButtonElement).value}: ${n.textContent?.trim()}`);
-    }
-    // Manage is the ⋮'s, never the Filters menu's.
-    if ((await window.__moreRow(el, 'filters-manage'))) rows.unshift('more: filters-manage');
-    return rows;
+    // The sets are the Saved menu's, never the Filters menu's; Manage is the ⋮'s.
+    const sets = [...el.shadowRoot!.querySelectorAll('.saved-btn sherpa-menu input')].map((i) => (i as HTMLInputElement).value);
+    const inFilters = el.shadowRoot!.querySelectorAll('.add-btn sherpa-menu [value^="set:"]').length;
+    const manage = !!(await window.__moreRow(el, 'filters-manage'));
+    return { sets, inFilters, manage };
   }, { own, saveable });
-  expect(await saved(true, true)).toEqual(['more: filters-manage', 'set:page', 'set:mine']);
+  expect(await saved(true, true)).toEqual({ sets: ['set:page', 'set:mine'], inFilters: 0, manage: true });
   // None of the reader's to manage, or a bar that saves nothing (it lists none of theirs): no row.
-  expect(await saved(false, true)).toEqual(['set:page']);
-  expect(await saved(true, false)).toEqual(['set:page']);
+  expect(await saved(false, true)).toEqual({ sets: ['set:page'], inFilters: 0, manage: false });
+  expect(await saved(true, false)).toEqual({ sets: ['set:page'], inFilters: 0, manage: false });
 
   await saved(true, true);
   const asked = await page.evaluate(async () => {

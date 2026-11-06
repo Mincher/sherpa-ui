@@ -55,7 +55,7 @@ for (const kind of ['bar', 'column']) {
       ${mount(kind, 'data-at-default')}
       el.toggleAttribute('data-saveable', true);
       await window.__settled();
-      const row = async () => (await window.__moreRow(el, 'filters-save')).hasAttribute('disabled');
+      const row = async () => (await window.__savedRow(el, 'filters-save')).hasAttribute('disabled');
       const off = await row();
       el.removeAttribute('data-at-default');
       await window.__settled();

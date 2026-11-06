@@ -2539,7 +2539,9 @@ scopes; `open` draws them. The classic panel does the same (`#stale`).
 
 ### T-saved-filters-are-the-last-section
 
-**Saved filters are offered LAST in the Filters menu, under "Saved filters".**
+**Saved filters were offered LAST in the Filters menu; since 11-06 they are the Saved menu's.**
+Will, 11-06: the Filters menu adds and removes only. The sets are rows of the Save
+group's Saved menu, always (`data-saved-menu` is deleted); the history below stands.
 Will, 2026-09-25: *"add them to the add filters menu under a 'Custom' section
 at the bottom"*; renamed "Saved filters" on 2026-09-29 (TODO 105), and this
 trap, `T-saved-filters-are-the-custom-section` until then, on 2026-10-14. A

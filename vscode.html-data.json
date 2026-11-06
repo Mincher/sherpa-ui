@@ -3529,12 +3529,7 @@
         },
         {
           "name": "data-saveable",
-          "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-saved-menu",
-          "description": "the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's. It follows the app's `savedMenu` setting.",
+          "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Saved menu. TRAP T-saved-filters-are-every-scope",
           "valueSet": "v"
         },
         {

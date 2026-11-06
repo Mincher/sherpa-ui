@@ -5231,8 +5231,8 @@ its own (`savedFilters`), which are never saved over or deleted.
 - **Saving**: `filters-save` and `filters-save-as` ask the HOST for a name, which
   confirms an overwrite by name and calls `saveFilters(label)`. The new chip joins the
   bar that saved it, OFF, because the bar's own filters still say the same.
-- **A Saved menu of its own** (Will, TODO 436, where the app asks:
-  `provider.savedMenu`, `data-saved-menu`): a split beside Edit, as the App Header's
+- **The Saved menu** (Will, TODO 436; ALWAYS since 11-06 — `provider.savedMenu` and
+  `data-saved-menu` are deleted): a split beside Edit, as the App Header's
   Save (TODO 446). "Save", a filter icon, asks `filters-save-as`; the icon-only ▾ holds
   the sets, a tick adding one AT ONCE (no Apply), then the save row, then Manage. Alone,
   the ▾ is solo; beside Save it joins the group (`data-when-data-group="data-saveable:

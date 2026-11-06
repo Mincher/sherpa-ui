@@ -87,6 +87,7 @@ declare global {
     __clauses(bar: Element): Promise<Record<string, unknown>>;
     /** A filter toolbar's ⋮ row by value, the ⋮ opened first. */
     __moreRow(host: Element, value: string): Promise<HTMLElement | null>;
+    __savedRow(host: Element, value: string): Promise<HTMLElement | null>;
   }
 }
 

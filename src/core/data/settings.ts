@@ -69,7 +69,6 @@ export const SETTINGS = {
   hideUnmatched: off('/filters/hideUnmatched'),
   results: on('/filters/results'),
   countApplied: off('/filters/countApplied'),
-  savedMenu: off('/filters/savedMenu'),
   saveAnyScope: off('/filters/saveAnyScope'),
   // None: each bar keeps its own `data-switchable`.
   switchable: { type: 'boolean', default: null, scope: 'component', at: '/filters/switchable' },

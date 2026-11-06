@@ -44,7 +44,7 @@ export class ToolbarHeader {
     this.host.toggleState('has-sets', this.saved.listed.length > 0);
     const btn = this.host.root().querySelector(this.at.saved);
     btn?.querySelector('sherpa-menu')?.remove();
-    if (!btn || !el.hasAttribute('data-saved-menu')) return;
+    if (!btn) return;
     const { menu, items } = menuFor(this.host.root(), savedMenuDef(this.saved.listed));
     menu.setAttribute('data-align', 'end');
     btn.append(menu);

@@ -20,7 +20,7 @@ import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { SavedSets, drawFiltersButton, hangFiltersMenu, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
-import { askSwitches, extraRows, hidesUnmatched, manageRows, openMore, pickMore, resetRows, saveRows, type MoreRow } from '../../core/ui/more-menu.js';
+import { askSwitches, extraRows, hidesUnmatched, manageRows, openMore, pickMore, resetRows, type MoreRow } from '../../core/ui/more-menu.js';
 import { FilterHostController } from '../../core/ui/filter-host-controller.js';
 import { ToolbarHeader } from './toolbar-header.js';
 
@@ -191,9 +191,7 @@ export class ToolbarColumn {
       }
     }
     this.#spentFor = this.#spentKey();
-    // Split, the sets are the Saved menu's. TODO 436
-    const split = this.#host.el.hasAttribute('data-saved-menu');
-    const def = drawFiltersButton(btn, added, offer, split ? [] : this.#saved.listed);
+    const def = drawFiltersButton(btn, added, offer);
     const menu = hangFiltersMenu(this.#host.root(), btn, def, hidesUnmatched(this.#host.el));
     menu.setAttribute('data-align', 'end');
     this.#header.drawSaved();
@@ -250,7 +248,7 @@ export class ToolbarColumn {
   /** What its ⋮ holds: Reset and Manage Saved Filters lead. Will, TODO 454, 11-06 */
   moreRows(): MoreRow[][] {
     const el = this.#host.el;
-    return [[...resetRows(el), ...manageRows(el, this.#saved.listed)], el.hasAttribute('data-saved-menu') ? [] : saveRows(el), extraRows(el)];
+    return [[...resetRows(el), ...manageRows(el, this.#saved.listed)], extraRows(el)];
   }
 
   /** A ⋮ row: a filter action, or a page button folded away. */

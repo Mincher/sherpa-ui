@@ -96,7 +96,7 @@ test('a set ticked is a preset chip, on, with its conditions beside the reader\'
     await source.load();
     await settle();
     const one = { chip: chip(bar, 'pro'), total: source.debugState().total, by: Object.keys(source.query.applied.scopes.data.readings.plan.byPreset),
-      own: source.query.applied.scopes.data.readings.plan.picked ?? [], ticked: bar.shadowRoot.querySelector('.add-btn sherpa-menu')?.values?.filter((v) => v.startsWith('set:')) };
+      own: source.query.applied.scopes.data.readings.plan.picked ?? [], ticked: bar.shadowRoot.querySelector('.saved-btn sherpa-menu')?.values?.filter((v) => v.startsWith('set:')) };
     // The chip's own press turns it off, and it stays.
     bar.shadowRoot.querySelector('.chips > .chip[data-id="preset:saved:pro"]').shadowRoot.querySelector('.body').click();
     await source.load();
@@ -107,7 +107,7 @@ test('a set ticked is a preset chip, on, with its conditions beside the reader\'
     await source.load();
     await settle();
     const both = { pro: chip(bar, 'pro'), total: source.debugState().total, told: told(),
-      ticked: bar.shadowRoot.querySelector('.add-btn sherpa-menu')?.values?.filter((v) => v.startsWith('set:')) };
+      ticked: bar.shadowRoot.querySelector('.saved-btn sherpa-menu')?.values?.filter((v) => v.startsWith('set:')) };
     // A reload — a fresh provider over the same tab — keeps them.
     provider.close();
     const again = await open();
@@ -134,7 +134,7 @@ test('a set ticked is a preset chip, on, with its conditions beside the reader\'
 /* Its chip on, a set's preset row in the Edit menu is ticked too. Taking the set off
    redraws that menu's one-value rows, and the ticked row was then read as a filter to
    add: the chip came back, off. TODO 702 */
-test('a set unticked in the Edit menu takes its chip off, though the chip\'s own row there is ticked', async ({ page }) => {
+test('a set unticked in the Saved menu takes its chip off, though the chip\'s own row there is ticked', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     keep({ pro: { label: 'Pro', query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } });
@@ -144,12 +144,12 @@ test('a set unticked in the Edit menu takes its chip off, though the chip\'s own
     await source.load();
     await settle();
     const edit = bar.shadowRoot.querySelector('.add-btn');
-    const menu = () => edit.querySelector('sherpa-menu');
-    const before = { chip: chip(bar, 'pro'), ticked: menu().values.filter((v) => v.includes('pro')) };
-    edit.shadowRoot.querySelector('button').click();
+    const saved = bar.shadowRoot.querySelector('.saved-btn');
+    const menu = () => saved.querySelector('sherpa-menu');
+    const before = { chip: chip(bar, 'pro'), ticked: [...edit.querySelector('sherpa-menu').values, ...menu().values].filter((v) => v.includes('pro')) };
+    saved.shadowRoot.querySelector('button').click();
     await settle();
     [...menu().querySelectorAll('input')].find((i) => i.value === 'set:pro').click();
-    menu().shadowRoot.querySelector('.apply').shadowRoot.querySelector('button').click();
     await source.load();
     await settle();
     return { before, after: { chip: chip(bar, 'pro'), total: source.debugState().total, told: told() } };
@@ -168,14 +168,18 @@ test('a set\'s chip on, its preset row in the Edit menu is ticked; its chip pres
     const source = await open();
     await settle();
     const edit = bar.shadowRoot.querySelector('.add-btn');
-    const menu = () => edit.querySelector('sherpa-menu');
-    // The Edit menu as a reader opens it: its rows for the set, ticked or not.
+    const saved = bar.shadowRoot.querySelector('.saved-btn');
+    // Both menus as a reader opens them: the Edit menu's row for the chip, the Saved menu's for the set.
     const opened = async () => {
-      edit.shadowRoot.querySelector('button').click();
-      await settle();
-      const rows = [...menu().querySelectorAll('input')].filter((i) => i.value.endsWith('pro')).map((i) => i.value + (i.checked ? ' on' : ' off'));
-      menu().hide();
-      await settle();
+      const rows = [];
+      for (const one of [edit, saved]) {
+        one.shadowRoot.querySelector('button').click();
+        await settle();
+        const menu = one.querySelector('sherpa-menu');
+        rows.push(...[...menu.querySelectorAll('input')].filter((i) => i.value.endsWith('pro')).map((i) => i.value + (i.checked ? ' on' : ' off')));
+        menu.hide();
+        await settle();
+      }
       return { chip: chip(bar, 'pro'), rows };
     };
     provider.applyFilters('pro');
@@ -226,17 +230,17 @@ test('another View takes the chips off with what they held; Rename keeps a chip 
   expect(r['rows']).toEqual([]);
 });
 
-test('the bar\'s ⋮ row and a Saved row each ask, and the host answers: several ticked, each added; each unticked, taken off', async ({ page }) => {
+test('the Saved menu\'s save row and a set row each ask, and the host answers: several ticked, each added; each unticked, taken off', async ({ page }) => {
   const r = await page.evaluate(async () => {
     // Mounted with its children drawn: its ⋮ is pressed at once.
     const bar = await window.__mount<HTMLElement & { savedSets: unknown }>('sherpa-quick-filter-toolbar',
       [{ id: 'plan', label: 'Plan', removable: true, options: [{ value: 'Pro', label: 'Pro' }] }], { 'data-saveable': true });
     const sr = bar.shadowRoot!;
-    // The bar's save rows are its ⋮'s (Will, TODO 430; Reset is its Edit menu's, 454).
-    const action = async (value: string): Promise<HTMLElement> => (await window.__moreRow(bar, value))!;
+    // The bar's save rows are its Saved menu's (Will, TODO 430; 11-06).
+    const action = async (value: string): Promise<HTMLElement> => (await window.__savedRow(bar, value))!;
     const actions = async (): Promise<(string | null)[]> => {
-      await window.__moreRow(bar, 'filters-save');
-      return [...sr.querySelectorAll('.more-menu > .more-item .more-label')].map((l) => (l.textContent ?? '').trim());
+      await window.__savedRow(bar, 'filters-save');
+      return [...sr.querySelectorAll('.saved-btn sherpa-menu > button')].map((l) => (l.textContent ?? '').trim());
     };
     bar.savedSets = [{ id: 'a', label: 'A', added: true, own: true }, { id: 'b', label: 'B', own: true }, { id: 'c', label: 'C', own: true }];
     await window.__settled();
@@ -246,8 +250,8 @@ test('the bar\'s ⋮ row and a Saved row each ask, and the host answers: several
     }
     const rows = await actions();
     (await action('filters-save')).click();
-    // The Filters menu: B and C ticked add them; A unticked takes it off.
-    const menu = sr.querySelector('.add-btn sherpa-menu')!;
+    // The Saved menu: B and C ticked add them; A unticked takes it off.
+    const menu = sr.querySelector('.saved-btn sherpa-menu')!;
     const values = (menu as unknown as { values: string[] }).values;
     const ticked = values.filter((v: string) => v.startsWith('set:'));
     menu.dispatchEvent(new CustomEvent('menu-change', { bubbles: true, composed: true, detail: { values: [...values.filter((v: string) => v !== 'set:a'), 'set:b', 'set:c'] } }));
@@ -281,7 +285,7 @@ test('a page\'s own saved filter is listed on an unsaveable bar, adds its chip t
     }, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
     const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
     await settle();
-    const sets = (bar) => (bar.shadowRoot.querySelector('.add-btn sherpa-menu')?.itemData ?? [])
+    const sets = (bar) => (bar.shadowRoot.querySelector('.saved-btn sherpa-menu')?.itemData ?? [])
       .filter((i) => i.value.startsWith('set:')).map((i) => i.label);
     const listed = { view: sets(viewBar), data: sets(dataBar) };
     provider.applyFilters('pro-only');
@@ -293,7 +297,7 @@ test('a page\'s own saved filter is listed on an unsaveable bar, adds its chip t
       preset: dataBar.shadowRoot.querySelector('.chips > .chip[data-id="preset:saved:pro-only"]')?.hasAttribute('data-current') ?? null,
       blue: chip?.dataset.byPreset ?? null,
       readonly: chip?.querySelector('sherpa-menu')?.hasAttribute('data-readonly') ?? null,
-      ticked: (dataBar.shadowRoot.querySelector('.add-btn sherpa-menu')?.values ?? []).filter((v) => v.startsWith('set:')),
+      ticked: (dataBar.shadowRoot.querySelector('.saved-btn sherpa-menu')?.values ?? []).filter((v) => v.startsWith('set:')),
       read: provider.savedFilterSets,
     };
     const deleted = provider.deleteFilters('pro-only');

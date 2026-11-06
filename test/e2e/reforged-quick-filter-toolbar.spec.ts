@@ -2873,12 +2873,9 @@ test('the ⋮ always shows: Reset is always a row of it, off when there is nothi
     el.setAttribute('data-saveable', '');
     await window.__settled();
     at.saves = shown();
-    el.setAttribute('data-saved-menu', '');
-    await window.__settled();
-    at.savedApart = shown();
     return at;
   });
-  expect(r).toEqual({ nothing: true, saves: true, savedApart: true });
+  expect(r).toEqual({ nothing: true, saves: true });
 });
 
 test('a rebuild with data-reset-on-populate forgets the filters, never what a selector picked (Will, TODO 599)', async ({ page }) => {

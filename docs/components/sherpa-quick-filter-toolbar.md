@@ -96,8 +96,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-reorder` | boolean |  |  |
 | `data-reset-graph` | boolean |  | a node graph's editor is on it: the ⋮ alone is shown, holding "Reset node graph" and nothing else |
 | `data-reset-on-populate` | boolean |  |  |
-| `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
-| `data-saved-menu` | boolean | `false` | the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's |
+| `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Saved menu. TRAP T-saved-filters-are-every-scope |
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its column is scrolled past |
 | `data-solo-across` | boolean |  |  |
@@ -249,7 +248,6 @@ Each of the app's settings, onto one of its attributes:
 | `hideUnmatched` | `data-hide-unmatched` |
 | `results` | `data-no-results`, on while it is off |
 | `countApplied` | `data-count-applied` |
-| `savedMenu` | `data-saved-menu` |
 | `switchable` | `data-switchable` |
 | `sectionLabels` | `data-no-section-labels`, on while it is off |
 | `hideOrganiseLabels` | `data-no-organise-labels` |
