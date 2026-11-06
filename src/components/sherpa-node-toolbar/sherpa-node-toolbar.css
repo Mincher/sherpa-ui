@@ -1,5 +1,5 @@
 /**
- * sherpa-node-toolbar.css — icon buttons as ONE object, in the look of a canvas's controls.
+ * sherpa-node-toolbar.css — icon buttons as three objects, one group to a section, in the look of a canvas's controls.
  */
 
 :host {
@@ -10,6 +10,12 @@
 .tools {
   display: inline-flex;
   align-items: center;
+  /* Room each side of a divider, between the groups. */
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+}
+
+/* Each section is one object, in the look of a canvas's controls. */
+.section {
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   box-shadow:
     var(--sherpa-elevation-offset-x, 0)

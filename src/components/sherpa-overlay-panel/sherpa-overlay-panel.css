@@ -119,12 +119,26 @@
   pointer-events: auto;
 }
 :host(:state(in-layout):state(in-area)) .root { position: static; }
+/* FIXED is flat and takes its area's room (above); an OVERLAY docked in a layout draws over the view at its side,
+   with the shadow and rounding of one that is not part of the page. TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
+:host(:state(in-layout):state(overlaid)) .root { display: flex; inset-block: 0; box-shadow: var(--sherpa-shadow-lg); }
+:host(:state(in-layout):state(overlaid):state(tab-start)) .root {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+}
 
 /* Minimised: the box is gone and a TAB stands on the edge of its area, turned on its side.
    The panel has left its area (as floating does), so the area gives its room back; the tabs
    of several panels stack down the edge. TRAP T-a-minimised-panel-is-a-tab */
 .tab, .tab-mark, .rail { display: none; }
 :host([data-minimised]) .root { display: none; }
+/* Peeking: the pointer is on its tab, and the panel is shown over the edge until it leaves. TRAP T-a-panel-peeks-from-its-tab */
+:host([data-minimised]:state(peeking)) .root { display: flex; }
+:host(:state(tab-start):state(peeking):not(:state(in-layout))) .root { inset-inline-start: 0; inset-inline-end: auto; }
 /* PHYSICAL sides: the tab's own vertical writing mode would turn the logical ones. */
 :host([data-minimised][open]) .tab {
   display: flex;
@@ -167,7 +181,7 @@
 :host(:state(tab-start):not(:state(in-layout))[data-minimised][open]) .rail { right: auto; left: 0; }
 @media (forced-colors: active) { .rail { border-color: CanvasText; } }
 :host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
-/* The tab's body: its label and mark, one button; the mode button after it is its own. */
+/* The tab's body: its label and mark, one button. */
 .tab-open {
   display: flex;
   align-items: center;
@@ -182,9 +196,6 @@
 }
 .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab-open:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
-/* The mode button: upright in a tab turned on its side, and there only where the host asks and can float. */
-.tab-mode { writing-mode: horizontal-tb; flex: none; margin-block-end: var(--sherpa-display-mode-space-xs, 4px); display: none; }
-:host([data-tab-mode][data-floatable]) .tab-mode { display: inline-flex; }
 /* Updated: active, and the mark the app header's bell wears, an exclamation for a count. */
 :host([data-updated]) .tab {
   background: var(--sherpa-style-saturated-surface-base, #3b4ccd);
@@ -258,7 +269,7 @@
 }
 :host(:not([data-expandable])) .expand { display: none; }
 :host(:not([data-external])) .external { display: none; }
-:host(:not([data-poppable])) .pop,
+:host(:not([data-poppable]):not(:state(in-layout))) .pop,
 :host(:state(no-area)) .pop,
 :host([data-maximised]) .pop,
 :host(:state(floating)) .pop { display: none; }
@@ -321,3 +332,6 @@
   outline: none;
   box-shadow: inset 2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd);
 }
+
+/* Peeking, its tab stays above the panel it opened, so a press on it still opens the panel for good. */
+:host([data-minimised][open]:state(peeking)) .tab { z-index: calc(var(--sherpa-layer-panels, 101) + 1); }

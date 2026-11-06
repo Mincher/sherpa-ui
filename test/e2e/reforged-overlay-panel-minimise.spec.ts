@@ -162,43 +162,6 @@ test('opened, the focus is the container\'s, not the grip\'s; Tab goes on to the
   expect((await where()).grip).toBe(true);
 });
 
-test('the tab\'s Float or Dock button: off unless asked, upright, and a press opens the panel in the OTHER state', async ({ page }) => {
-  await stage(page, {});
-  const state = () => page.evaluate(() => {
-    const p = document.getElementById('tabbed')!;
-    const b = p.shadowRoot!.querySelector('.tab-mode') as HTMLElement;
-    return { minimised: p.hasAttribute('data-minimised'), floating: p.hasAttribute('data-floating'), shown: getComputedStyle(b).display !== 'none', writing: getComputedStyle(b).writingMode, label: b.getAttribute('aria-label') };
-  });
-  await press(page, '.minimise');
-  // Not asked for: no button.
-  expect((await state()).shown).toBe(false);
-  await page.evaluate(() => document.getElementById('tabbed')!.setAttribute('data-tab-mode', ''));
-  // Last docked: it offers to float; its words are upright.
-  expect(await state()).toMatchObject({ shown: true, writing: 'horizontal-tb', label: 'Open floating', floating: false });
-  await press(page, '.tab-mode');
-  expect(await state()).toMatchObject({ minimised: false, floating: true });
-  // Last floating: it offers to dock.
-  await press(page, '.minimise');
-  expect(await state()).toMatchObject({ shown: true, label: 'Open docked', minimised: true, floating: true });
-  await press(page, '.tab-mode');
-  expect(await state()).toMatchObject({ minimised: false, floating: false });
-});
-
-test('the tab\'s tooltip says the state it opens in, the opposite of the button beside it', async ({ page }) => {
-  await stage(page, {});
-  await page.evaluate(() => document.getElementById('tabbed')!.setAttribute('data-tab-mode', ''));
-  await press(page, '.minimise');
-  const words = () => page.evaluate(() => {
-    const sr = document.getElementById('tabbed')!.shadowRoot!;
-    return { tab: sr.querySelector('.tab-open')!.getAttribute('title'), button: sr.querySelector('.tab-mode')!.getAttribute('aria-label') };
-  });
-  // Last docked: the button floats it, the tab opens it docked.
-  expect(await words()).toEqual({ tab: 'Open docked', button: 'Open floating' });
-  await press(page, '.tab-mode');
-  await press(page, '.minimise');
-  expect(await words()).toEqual({ tab: 'Open floating', button: 'Open docked' });
-});
-
 test('a panel stays under the app header (TRAP T-a-panel-stays-under-the-app-header): docked on the edge, maximised, and floating', async ({ page }) => {
   await stage(page, { shell: true });
   const header = await page.evaluate(() => Math.round(document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.getBoundingClientRect().top));

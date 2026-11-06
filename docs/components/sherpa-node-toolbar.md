@@ -52,7 +52,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`divider`, `tools`
+`divider`, `section`, `tools`
 
 ## CSS custom properties it reads
 
@@ -60,8 +60,9 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
-| `--sherpa-display-mode-border-rounding-base` | `.tools` | `border-radius` |
-| `--sherpa-elevation-offset-x` | `.tools` | `box-shadow` |
+| `--sherpa-display-mode-space-sm` | `.tools` | `gap` |
+| `--sherpa-display-mode-border-rounding-base` | `.section` | `border-radius` |
+| `--sherpa-elevation-offset-x` | `.section` | `box-shadow` |
 | `--sherpa-display-mode-border-width-sm` | `.divider` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.divider` | `block-size` |
 | `--sherpa-style-border-base` | `.divider` | `background` |

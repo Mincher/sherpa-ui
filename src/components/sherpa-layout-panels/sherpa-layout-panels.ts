@@ -97,7 +97,7 @@ export class SherpaLayoutPanels extends SherpaElement {
     if (!panels.length) return;
     const watch = new MutationObserver(() => this.#sync(side));
     for (const panel of panels) {
-      watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating', 'data-minimised', 'data-heading'] });
+      watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating', 'data-minimised', 'data-overlay', 'data-heading'] });
       // Not yet upgraded, it has no `open` to say it can shut.
       if (panel.localName.includes('-') && !customElements.get(panel.localName)) {
         void customElements.whenDefined(panel.localName).then(() => this.#sync(side));
@@ -121,7 +121,7 @@ export class SherpaLayoutPanels extends SherpaElement {
     // A minimised panel is a tab on the layout's edge: its area gives its room back, as floating does. TRAP T-a-minimised-panel-is-a-tab
     // …and while ANY open one is a tab, even a single one, a line runs down the edge the tab stands on. TRAP T-an-area-with-two-panels-is-tabbed
     this.toggleState(`${side}-rail`, open.some((p) => p.hasAttribute('data-minimised')));
-    this.toggleState(`${side}-floating`, panels.length > 0 && panels.every((p) => p.hasAttribute('data-floating') || p.hasAttribute('data-minimised')));
+    this.toggleState(`${side}-floating`, panels.length > 0 && panels.every((p) => p.hasAttribute('data-floating') || p.hasAttribute('data-minimised') || p.hasAttribute('data-overlay')));
     void this.renderItems(`.tabs-${side}`, 'template.tab-tpl', open.map((p, id) => ({ id: String(id), label: p.getAttribute('data-heading') || p.id })), {
       after: (tab, item) => {
         const on = open[Number(item.id)] === shown;

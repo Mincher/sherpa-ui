@@ -29,34 +29,40 @@
     toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' | 'unfurl' | 'fetch' | 'play' | 'pause' | 'stop' | 'frame' }
 -->
 <template id="default">
-  <!-- Three sections, a small divider between each: the data (Fetch, then Play, Pause, Stop), the history (Undo, Redo, Save),
+  <!-- Three sections, each a button group, with a small divider between them: the data (Fetch, then Play, Pause, Stop), the history (Undo, Redo, Save),
        and the graph's shape (Zip tie, Save as Custom Node, Arrange, Unfurl, Frame). -->
-  <span class="tools sherpa-group" part="tools" role="toolbar" aria-label="Editor">
-    <sherpa-button class="fetch" data-type="icon" data-icon-start="cloud" data-action="fetch"
-                   aria-label="Fetch" data-tip="Fetch the rows of every Source on a path to an Output, once; Play then runs on them" disabled></sherpa-button>
-    <sherpa-button class="play" data-type="icon" data-icon-start="play" data-action="play"
-                   aria-label="Play" data-tip="Play: what each node sends, on the rows fetched" disabled></sherpa-button>
-    <sherpa-button class="pause" data-type="icon" data-icon-start="pause" data-action="pause"
-                   aria-label="Pause" data-tip="Pause at this node: the node's own requests finish, and nothing goes on" disabled></sherpa-button>
-    <sherpa-button class="stop" data-type="icon" data-icon-start="stop" data-action="stop"
-                   aria-label="Stop" data-tip="Stop the simulation" disabled></sherpa-button>
+  <span class="tools" part="tools" role="toolbar" aria-label="Editor">
+    <sherpa-group class="section" part="section">
+      <sherpa-button class="fetch" data-type="icon" data-icon-start="cloud" data-action="fetch"
+                     aria-label="Fetch" data-tip="Fetch the rows of every Source on a path to an Output, once; Play then runs on them" disabled></sherpa-button>
+      <sherpa-button class="play" data-type="icon" data-icon-start="play" data-action="play"
+                     aria-label="Play" data-tip="Play: what each node sends, on the rows fetched" disabled></sherpa-button>
+      <sherpa-button class="pause" data-type="icon" data-icon-start="pause" data-action="pause"
+                     aria-label="Pause" data-tip="Pause at this node: the node's own requests finish, and nothing goes on" disabled></sherpa-button>
+      <sherpa-button class="stop" data-type="icon" data-icon-start="stop" data-action="stop"
+                     aria-label="Stop" data-tip="Stop the simulation" disabled></sherpa-button>
+    </sherpa-group>
     <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
-    <sherpa-button class="undo" data-type="icon" data-icon-start="arrow-rotate-left" data-action="undo"
-                   aria-label="Undo" data-tip="Undo (Ctrl+Z)" disabled></sherpa-button>
-    <sherpa-button class="redo" data-type="icon" data-icon-start="arrow-rotate-right" data-action="redo"
-                   aria-label="Redo" data-tip="Redo (Shift+Ctrl+Z)" disabled></sherpa-button>
-    <sherpa-button class="save" data-type="icon" data-icon-start="floppy-disk" data-action="save"
-                   aria-label="Save" data-tip="Save" disabled></sherpa-button>
+    <sherpa-group class="section" part="section">
+      <sherpa-button class="undo" data-type="icon" data-icon-start="arrow-rotate-left" data-action="undo"
+                     aria-label="Undo" data-tip="Undo (Ctrl+Z)" disabled></sherpa-button>
+      <sherpa-button class="redo" data-type="icon" data-icon-start="arrow-rotate-right" data-action="redo"
+                     aria-label="Redo" data-tip="Redo (Shift+Ctrl+Z)" disabled></sherpa-button>
+      <sherpa-button class="save" data-type="icon" data-icon-start="floppy-disk" data-action="save"
+                     aria-label="Save" data-tip="Save" disabled></sherpa-button>
+    </sherpa-group>
     <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
-    <sherpa-button class="tie" data-type="icon" data-icon-start="zip-tie" data-action="tie"
-                   aria-label="Zip tie" data-tip="Zip tie: drag across connectors (T on picked nodes)" aria-pressed="false" disabled></sherpa-button>
-    <sherpa-button class="group" data-type="icon" data-icon-start="group" data-action="group"
-                   aria-label="Save as Custom Node" data-tip="Save as Custom Node (Ctrl+G): pick two or more nodes" disabled></sherpa-button>
-    <sherpa-button class="arrange" data-type="icon" data-icon-start="arrange" data-action="arrange"
-                   aria-label="Arrange nodes" data-tip="Arrange nodes on a grid: pick two or more" disabled></sherpa-button>
-    <sherpa-button class="unfurl" data-type="icon" data-icon-start="unfurl" data-action="unfurl"
-                   aria-label="Unfurl graph" data-tip="Unfurl graph: every node round the most connected one, fewer lines crossing" disabled></sherpa-button>
-    <sherpa-button class="frame" data-type="icon" data-icon-start="frame" data-action="frame"
-                   aria-label="Frame nodes" data-tip="Frame nodes (F): one column, in a frame; pick two or more" disabled></sherpa-button>
+    <sherpa-group class="section" part="section">
+      <sherpa-button class="tie" data-type="icon" data-icon-start="zip-tie" data-action="tie"
+                     aria-label="Zip tie" data-tip="Zip tie: drag across connectors (T on picked nodes)" aria-pressed="false" disabled></sherpa-button>
+      <sherpa-button class="group" data-type="icon" data-icon-start="group" data-action="group"
+                     aria-label="Save as Custom Node" data-tip="Save as Custom Node (Ctrl+G): pick two or more nodes" disabled></sherpa-button>
+      <sherpa-button class="arrange" data-type="icon" data-icon-start="arrange" data-action="arrange"
+                     aria-label="Arrange nodes" data-tip="Arrange nodes on a grid: pick two or more" disabled></sherpa-button>
+      <sherpa-button class="unfurl" data-type="icon" data-icon-start="unfurl" data-action="unfurl"
+                     aria-label="Unfurl graph" data-tip="Unfurl graph: every node round the most connected one, fewer lines crossing" disabled></sherpa-button>
+      <sherpa-button class="frame" data-type="icon" data-icon-start="frame" data-action="frame"
+                     aria-label="Frame nodes" data-tip="Frame nodes (F): one column, in a frame; pick two or more" disabled></sherpa-button>
+    </sherpa-group>
   </span>
 </template>

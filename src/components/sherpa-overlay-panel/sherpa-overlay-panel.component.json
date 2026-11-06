@@ -36,9 +36,7 @@
             "part": "tab-open",
             "attrs": {
               "type": "button",
-              "aria-label": "Open panel",
-              "title": "Open docked",
-              "data-when-title": "data-floating: Open floating"
+              "aria-label": "Open panel"
             },
             "children": [
               {
@@ -55,19 +53,6 @@
                 }
               }
             ]
-          },
-          {
-            "el": "sherpa-button",
-            "class": "tab-mode",
-            "part": "tab-mode",
-            "attrs": {
-              "data-type": "icon",
-              "data-size": "xs",
-              "data-icon-start": "browser",
-              "aria-label": "Open floating",
-              "data-when-data-icon-start": "data-floating: sidebar-flip",
-              "data-when-aria-label": "data-floating: Open docked"
-            }
           }
         ]
       },
@@ -204,9 +189,7 @@
                           "data-type": "icon",
                           "data-size": "sm",
                           "data-icon-start": "sidebar-flip",
-                          "aria-label": "Pop in",
-                          "data-when-data-icon-start": "data-fixed: monitor-w-floating-window",
-                          "data-when-aria-label": "data-fixed: Pop out"
+                          "aria-label": "Pop in"
                         }
                       },
                       {
@@ -391,6 +374,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-hover-open",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a tab opens its panel as a docked overlay while the pointer is on it, and shuts it to the tab as the pointer leaves"
+    },
+    {
+      "$type": "prop",
       "name": "data-icon",
       "type": "string",
       "observed": true,
@@ -427,6 +419,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-overlay",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room"
+    },
+    {
+      "$type": "prop",
       "name": "data-padding",
       "type": "enum",
       "observed": false,
@@ -453,15 +454,6 @@
       "observed": false,
       "kind": "style",
       "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
-    },
-    {
-      "$type": "prop",
-      "name": "data-tab-mode",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens floating if it was last docked, docked if it was last floating, not as it was"
     },
     {
       "$type": "prop",
@@ -569,7 +561,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, padding?, poppable?, tabMode?, updated?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -607,11 +599,6 @@
       "$type": "state",
       "name": "not-external",
       "selector": ":host(:not([data-external]))"
-    },
-    {
-      "$type": "state",
-      "name": "not-poppable",
-      "selector": ":host(:not([data-poppable]))"
     },
     {
       "$type": "state",
@@ -749,7 +736,6 @@
     "root.box-shadow": "{sherpa.shadow-lg}",
     "tab-open.gap": "{sherpa.theme-gap-sm}",
     "tab-open.padding": "{sherpa.display-mode-space-sm}",
-    "tab-mode.margin-block-end": "{sherpa.display-mode-space-xs}",
     "toolbar.gap": "{sherpa.theme-gap-sm}",
     "divider.inline-size": "{sherpa.display-mode-border-width-base}",
     "divider.block-size": "{sherpa.theme-content-size-xs}",

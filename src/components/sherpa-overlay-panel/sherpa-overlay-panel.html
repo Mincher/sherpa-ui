@@ -11,6 +11,9 @@
     open              native boolean (read reflects dialog.open; set → show()/close())
     data-collapsed    collapsed state (body/footer hidden; the collapse toggle reflects it)
     data-maximised    full-overlay state: the panel fills the window and shows its breadcrumbs
+    data-overlay      a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws
+                      over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room
+    data-hover-open   a tab opens its panel as a docked overlay while the pointer is on it, and shuts it to the tab as the pointer leaves
     data-fixed        a fixed panel, docked flush in a panel area of the page's sherpa-app-shell:
                       `start`, or bare or `end` for the end area. It goes back to the right edge
                       where there is no room for one
@@ -22,8 +25,6 @@
     data-width / data-height   how big it floats, in px, written at the end of each resize. Never
                       under 20rem by 12rem nor past the window
     data-minimisable  show the Minimise button
-    data-tab-mode     the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens
-                      floating if it was last docked, docked if it was last floating, not as it was
     data-minimised    shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating
                       too); the tab opens it as it was. Removed, it opens
     data-updated      the panel says it changed while a tab: the tab turns active and wears a "!".
@@ -67,17 +68,10 @@
   <span class="rail" part="rail" aria-hidden="true"></span>
   <div class="tab" part="tab">
     <!-- Its tooltip says what a press does: the state it was left in, the opposite of the button beside it. -->
-    <button class="tab-open" part="tab-open" type="button" aria-label="Open panel"
-            title="Open docked" data-when-title="data-floating: Open floating">
+    <button class="tab-open" part="tab-open" type="button" aria-label="Open panel">
       <span class="tab-title" part="tab-title"></span>
       <span class="tab-mark" part="tab-mark" aria-hidden="true">!</span>
     </button>
-    <!-- After the label: Float if it was last docked, Dock if it was last floating; a press opens it in THAT state.
-         The tab is turned on its side by its writing mode, and this stays upright. TRAP T-a-minimised-panel-is-a-tab -->
-    <sherpa-button class="tab-mode" part="tab-mode" data-type="icon" data-size="xs"
-                   data-icon-start="browser" aria-label="Open floating"
-                   data-when-data-icon-start="data-floating: sidebar-flip"
-                   data-when-aria-label="data-floating: Open docked"></sherpa-button>
   </div>
   <!-- NO scrim: a quick peek, while the page behind stays in use. -->
   <!-- `autofocus` on the dialog itself: opened, the focus is the CONTAINER's, not its first control (the grip); Tab goes on to that. -->
@@ -117,9 +111,7 @@
                          data-when-aria-label="data-floating: Dock"></sherpa-button>
           <!-- Pop in: a fixed panel in a panel area of the shell. TRAP T-a-panel-pops-into-the-end-area -->
           <sherpa-button class="pop" part="pop" data-type="icon" data-size="sm"
-                         data-icon-start="sidebar-flip" aria-label="Pop in"
-                         data-when-data-icon-start="data-fixed: monitor-w-floating-window"
-                         data-when-aria-label="data-fixed: Pop out"></sherpa-button>
+                         data-icon-start="sidebar-flip" aria-label="Pop in"></sherpa-button>
           <sherpa-button class="expand" part="expand" data-type="icon" data-size="sm"
                          data-icon-start="fullscreen" aria-label="Maximise"
                          data-when-data-icon-start="data-maximised: fullscreen-exit"

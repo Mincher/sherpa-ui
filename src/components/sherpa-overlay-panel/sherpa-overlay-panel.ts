@@ -59,8 +59,10 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-floatable': { type: 'boolean', kind: 'style' },
     // Shrunk to a tab on its area's edge; pressed, it opens as it was. TRAP T-a-minimised-panel-is-a-tab
     'data-minimisable': { type: 'boolean', kind: 'style' },
-    // The tab's Float or Dock button. TRAP T-a-minimised-panel-is-a-tab
-    'data-tab-mode': { type: 'boolean', kind: 'style' },
+    // Docked over the content, not in its room (a panel slotted in a layout; a window panel says it by no `data-fixed`).
+    'data-overlay': { type: 'boolean', kind: 'behaviour' },
+    // A tab opens its panel as a docked overlay while the pointer is on it. TRAP T-a-panel-peeks-from-its-tab
+    'data-hover-open': { type: 'boolean', kind: 'style' },
     'data-minimised': { type: 'boolean', kind: 'behaviour' },
     // Written by the area it docks in: the one panel in front of several. TRAP T-an-area-with-two-panels-is-tabbed
     'data-current': { type: 'boolean', kind: 'style' },
@@ -113,7 +115,11 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
     this.$('.minimise')?.addEventListener('button-click', this.#onMinimise);
     this.$('.tab-open')?.addEventListener('click', this.#onMinimise);
-    this.$('.tab-mode')?.addEventListener('button-click', this.#onTabMode);
+    // Hovering the tab peeks the panel open; leaving the tab or the panel shuts it again.
+    for (const part of [this.$('.tab'), this.$('.root')]) {
+      part?.addEventListener('pointerenter', this.#onPeek);
+      part?.addEventListener('pointerleave', this.#onUnpeek);
+    }
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     this.#syncGroup();
@@ -159,6 +165,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       SherpaOverlayPanel.#stack();
     } else if (name === 'data-fixed') this.#place();
     else if (name === 'data-minimised') this.#minimise();
+    else if (name === 'data-overlay') this.#place();
     else if (name === 'data-floating') this.#float();
     else if (FLOAT_ATTRS.includes(name)) this.#floatBox.draw();
     else if (name !== 'data-maximised') {
@@ -270,8 +277,12 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.#dock = layout;
       this.toggleState('no-area', false);
       this.toggleState('tab-start', layout === 'start');
-      this.toggleState('in-area', !floating && !minimised);
+      const overlay = this.hasAttribute('data-overlay');
+      this.toggleState('in-area', !floating && !minimised && !overlay);
+      // Docked over the view, as an overlay, or peeking from its tab: the area has given its room back.
+      this.toggleState('overlaid', (overlay || this.hasState('peeking')) && !floating);
       this.toggleState('floating', floating);
+      this.#syncPop();
       this.#floatBox.floated(floating);
       SherpaOverlayPanel.#shown.delete(this);
       return;
@@ -287,6 +298,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     else this.#popOut();
     this.toggleState('in-area', !!this.#home);
     this.toggleState('floating', floating);
+    this.#syncPop();
     this.#syncGroup();
     this.#floatBox.floated(floating);
     // …and leaves the right edge, as a fixed one does. TRAP T-one-overlay-panel-at-a-time
@@ -416,10 +428,46 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Pop in, to the area it last left, or out; and report it: a press is the reader's choice, a lost room is not. */
   #onPop = (): void => {
-    const fixed = !this.hasAttribute('data-fixed');
     const side = this.#dock;
+    // Slotted in a layout, it pops between FIXED (its area's room) and an OVERLAY on the content; on the window, in and out of the shell's area.
+    if (this.#slotted()) {
+      const fixed = this.hasAttribute('data-overlay');
+      this.set('data-overlay', !fixed);
+      this.emit('panel-pop', { fixed, side });
+      return;
+    }
+    const fixed = !this.hasAttribute('data-fixed');
     this.set('data-fixed', fixed && (side === 'start' ? 'start' : true));
     this.emit('panel-pop', { fixed, side });
+  };
+
+  /** The Pop button says what a press does next: Pop in to the fixed state, or Pop out to the overlay. */
+  #syncPop(): void {
+    const fixed = this.#slotted() ? !this.hasAttribute('data-overlay') : this.hasAttribute('data-fixed');
+    const pop = this.$('.pop');
+    pop?.setAttribute('data-icon-start', fixed ? 'monitor-w-floating-window' : 'sidebar-flip');
+    pop?.setAttribute('aria-label', fixed ? 'Pop out' : 'Pop in');
+  }
+
+  /** How long the pointer may be away from a peeking panel before it shuts. */
+  #peekTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** The pointer is on the tab or the peeking panel: open it as a docked overlay, where the setting says. */
+  #onPeek = (): void => {
+    clearTimeout(this.#peekTimer);
+    if (!this.hasAttribute('data-hover-open') || !this.hasAttribute('data-minimised') || !this.open) return;
+    this.toggleState('peeking', true);
+    if (this.#slotted()) this.toggleState('overlaid', true);
+  };
+
+  /** The pointer left: shut it to its tab a moment on, unless it is back or the focus is in. */
+  #onUnpeek = (): void => {
+    clearTimeout(this.#peekTimer);
+    this.#peekTimer = setTimeout(() => {
+      if (this.matches(':focus-within') || this.$('.root')?.matches(':hover') || this.$('.tab')?.matches(':hover')) return;
+      this.toggleState('peeking', false);
+      if (this.#slotted()) this.toggleState('overlaid', this.hasAttribute('data-overlay') && !this.hasAttribute('data-floating'));
+    }, 250);
   };
 
   /** Float, or dock, and report it. TRAP T-a-floating-panel-is-a-state */
@@ -427,14 +475,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     const floating = !this.hasAttribute('data-floating');
     this.set('data-floating', floating);
     this.emit('panel-float', { floating });
-  };
-
-  /** The tab's own button: open the panel in the OTHER state than it was left in. TRAP T-a-minimised-panel-is-a-tab */
-  #onTabMode = (): void => {
-    const floating = !this.hasAttribute('data-floating');
-    this.set('data-floating', floating);
-    this.emit('panel-float', { floating });
-    this.minimise(false);
   };
 
   /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */

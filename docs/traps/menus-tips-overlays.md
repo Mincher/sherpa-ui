@@ -242,12 +242,6 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
   the edge in the order they were shrunk (`--_tab-index`).
 - **`data-updated`** turns the tab active and gives it a "!" (no count yet). `notify()` sets
   it, and so does a new `data-heading` while it is a tab. Opening clears it.
-- **The tab's Float or Dock button** (`data-tab-mode`, with `data-floatable`; Will, 2026-11-06): after the label,
-  Float if the panel was last docked, Dock if it was last floating. A press on it opens the panel in THAT state
-  (`panel-float` fires, then it opens); a press on the label opens it as it was. The tab is turned by its
-  `writing-mode`, so the button sets `horizontal-tb` and stays upright. The app's setting turns it off.
-- **The tab's tooltip** says the state it opens in (`Open docked`, or `Open floating` after a float): the opposite
-  of the button beside it.
 - **The Node Editor's details panel is always there** (Will, 2026-11-06): the editor shows it as a tab at the
   start (`data-minimised`), with an empty state (`sherpa-empty-state`, "No node selected") in it; a pick FILLS
   it and never opens it; a click on blank canvas puts the empty state back, and the panel is never hidden by
@@ -349,6 +343,24 @@ canvas or an area slot) it is 0. An app that shows a panel alone in a window (a 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/core/sherpa-float.css`
 - Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
+
+### T-a-panel-peeks-from-its-tab
+
+**A panel is FIXED or an OVERLAY, and a tab may peek it open** (Will, 2026-11-06). Docked, a panel is either FIXED
+(flat: no shadow, no rounding; it takes its area's room) or an OVERLAY on the content (a shadow and a rounded
+leading edge; its area gives the room back). `Pop` toggles them in every panel: on the window, `data-fixed` is the
+shell's area (absent: an overlay on the edge); slotted in a layout, `data-overlay` is the overlay (absent: fixed).
+The button says what it will do, from the state (`Pop out`, `Pop in`).
+
+- **`data-hover-open`**: while the pointer is on a minimised panel's TAB, the panel shows as a docked overlay at its
+  edge (`:state(peeking)`); the pointer leaving the tab and the panel shuts it to the tab after 250ms, unless the
+  focus is in it. It never changes `data-minimised`: pressing the tab still opens it for good.
+- A slotted panel counts as floating for its layout's room while it is an overlay, a tab or floating
+  (`T-a-panel-area-is-a-layout`).
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-panel-overlay.spec.ts`
 
 ### T-a-pressed-panel-comes-to-the-front
 

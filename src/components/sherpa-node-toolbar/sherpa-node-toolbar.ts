@@ -1,5 +1,5 @@
 /**
- * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, as icon buttons in one group of three sections.
+ * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, as icon buttons in three groups, a divider between each.
  *
  * It does nothing itself. A press is `toolbar-select`; the editor that owns the history hears Undo
  * and Redo and says, in `data-can-undo` and `data-can-redo`, when each can be pressed. Save is a
@@ -9,6 +9,7 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-group/sherpa-group.js';
 
 export class SherpaNodeToolbar extends SherpaElement {
   static override css = new URL('./sherpa-node-toolbar.css', import.meta.url);

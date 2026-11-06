@@ -3110,6 +3110,11 @@
           "description": "how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window"
         },
         {
+          "name": "data-hover-open",
+          "description": "a tab opens its panel as a docked overlay while the pointer is on it, and shuts it to the tab as the pointer leaves",
+          "valueSet": "v"
+        },
+        {
           "name": "data-icon",
           "description": "a glyph before the title (shows the icon slot area)"
         },
@@ -3129,6 +3134,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-overlay",
+          "description": "a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room",
+          "valueSet": "v"
+        },
+        {
           "name": "data-padding",
           "description": "`none`: the body has no padding, for content that fills it (a list)",
           "values": [
@@ -3145,11 +3155,6 @@
         {
           "name": "data-status",
           "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
-        },
-        {
-          "name": "data-tab-mode",
-          "description": "the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens floating if it was last docked, docked if it was last floating, not as it was",
-          "valueSet": "v"
         },
         {
           "name": "data-updated",

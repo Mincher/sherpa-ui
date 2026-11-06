@@ -22,9 +22,9 @@ const set = (page: Page, attrs: Record<string, boolean>) => page.evaluate(async 
   await window.__settled();
 }, attrs);
 
-test('three sections: Fetch, Play, Pause, Stop | Undo, Redo, Save | the graph\'s shape, with a divider between each', async ({ page }) => {
+test('three button groups: Fetch, Play, Pause, Stop | Undo, Redo, Save | the graph\'s shape, with a divider between each', async ({ page }) => {
   await mount(page);
-  const order = await page.evaluate(() => [...document.querySelector('#bar')!.shadowRoot!.querySelectorAll('.tools > *')].map((n) => (n.classList.contains('divider') ? '|' : n.className.split(' ')[0])));
+  const order = await page.evaluate(() => [...document.querySelector('#bar')!.shadowRoot!.querySelectorAll('.tools > *')].flatMap((n) => (n.classList.contains('divider') ? ['|'] : n.localName === 'sherpa-group' ? [...n.children].map((c) => c.className.split(' ')[0]) : [n.className])));
   expect(order).toEqual(['fetch', 'play', 'pause', 'stop', '|', 'undo', 'redo', 'save', '|', 'tie', 'group', 'arrange', 'unfurl', 'frame']);
   const dividers = await page.evaluate(() => [...document.querySelector('#bar')!.shadowRoot!.querySelectorAll('.divider')].map((d) => { const r = d.getBoundingClientRect(); return [r.width > 0, r.height > 0]; }));
   expect(dividers).toEqual([[true, true], [true, true]]);
@@ -81,4 +81,18 @@ test('the app header has an optional thin divider under it, in the Style\'s bord
   });
   expect(bare).toBe('none');
   expect(await line()).toMatchObject({ style: 'solid', colour: 'rgb(179, 179, 195)' });
+});
+
+test('each section is its own sherpa-group, and the gap each side of a divider is wider than the buttons\'', async ({ page }) => {
+  await mount(page);
+  const read = await page.evaluate(() => {
+    const sr = document.querySelector('#bar')!.shadowRoot!;
+    const groups = [...sr.querySelectorAll('.tools > sherpa-group')];
+    const div = sr.querySelector('.divider')!.getBoundingClientRect();
+    const [a, b] = [groups[0]!.getBoundingClientRect(), groups[1]!.getBoundingClientRect()];
+    return { groups: groups.length, before: Math.round(div.left - a.right), after: Math.round(b.left - div.right) };
+  });
+  expect(read.groups).toBe(3);
+  expect(read.before).toBeGreaterThanOrEqual(8);
+  expect(read.after).toBeGreaterThanOrEqual(8);
 });

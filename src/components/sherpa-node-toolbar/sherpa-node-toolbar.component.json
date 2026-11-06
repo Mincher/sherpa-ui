@@ -19,7 +19,7 @@
   "anatomy": {
     "root": {
       "el": "span",
-      "class": "tools sherpa-group",
+      "class": "tools",
       "part": "tools",
       "attrs": {
         "role": "toolbar",
@@ -27,97 +27,59 @@
       },
       "children": [
         {
-          "el": "sherpa-button",
-          "class": "fetch",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "cloud",
-            "data-action": "fetch",
-            "aria-label": "Fetch",
-            "data-tip": "Fetch the rows of every Source on a path to an Output, once; Play then runs on them",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "play",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "play",
-            "data-action": "play",
-            "aria-label": "Play",
-            "data-tip": "Play: what each node sends, on the rows fetched",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "pause",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "pause",
-            "data-action": "pause",
-            "aria-label": "Pause",
-            "data-tip": "Pause at this node: the node's own requests finish, and nothing goes on",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "stop",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "stop",
-            "data-action": "stop",
-            "aria-label": "Stop",
-            "data-tip": "Stop the simulation",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "span",
-          "class": "divider",
-          "part": "divider",
-          "attrs": {
-            "role": "separator",
-            "aria-orientation": "vertical"
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "undo",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "arrow-rotate-left",
-            "data-action": "undo",
-            "aria-label": "Undo",
-            "data-tip": "Undo (Ctrl+Z)",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "redo",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "arrow-rotate-right",
-            "data-action": "redo",
-            "aria-label": "Redo",
-            "data-tip": "Redo (Shift+Ctrl+Z)",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "save",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "floppy-disk",
-            "data-action": "save",
-            "aria-label": "Save",
-            "data-tip": "Save",
-            "disabled": ""
-          }
+          "el": "sherpa-group",
+          "class": "section",
+          "part": "section",
+          "children": [
+            {
+              "el": "sherpa-button",
+              "class": "fetch",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "cloud",
+                "data-action": "fetch",
+                "aria-label": "Fetch",
+                "data-tip": "Fetch the rows of every Source on a path to an Output, once; Play then runs on them",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "play",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "play",
+                "data-action": "play",
+                "aria-label": "Play",
+                "data-tip": "Play: what each node sends, on the rows fetched",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "pause",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "pause",
+                "data-action": "pause",
+                "aria-label": "Pause",
+                "data-tip": "Pause at this node: the node's own requests finish, and nothing goes on",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "stop",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "stop",
+                "data-action": "stop",
+                "aria-label": "Stop",
+                "data-tip": "Stop the simulation",
+                "disabled": ""
+              }
+            }
+          ]
         },
         {
           "el": "span",
@@ -129,65 +91,124 @@
           }
         },
         {
-          "el": "sherpa-button",
-          "class": "tie",
+          "el": "sherpa-group",
+          "class": "section",
+          "part": "section",
+          "children": [
+            {
+              "el": "sherpa-button",
+              "class": "undo",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "arrow-rotate-left",
+                "data-action": "undo",
+                "aria-label": "Undo",
+                "data-tip": "Undo (Ctrl+Z)",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "redo",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "arrow-rotate-right",
+                "data-action": "redo",
+                "aria-label": "Redo",
+                "data-tip": "Redo (Shift+Ctrl+Z)",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "save",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "floppy-disk",
+                "data-action": "save",
+                "aria-label": "Save",
+                "data-tip": "Save",
+                "disabled": ""
+              }
+            }
+          ]
+        },
+        {
+          "el": "span",
+          "class": "divider",
+          "part": "divider",
           "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "zip-tie",
-            "data-action": "tie",
-            "aria-label": "Zip tie",
-            "data-tip": "Zip tie: drag across connectors (T on picked nodes)",
-            "aria-pressed": "false",
-            "disabled": ""
+            "role": "separator",
+            "aria-orientation": "vertical"
           }
         },
         {
-          "el": "sherpa-button",
-          "class": "group",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "group",
-            "data-action": "group",
-            "aria-label": "Save as Custom Node",
-            "data-tip": "Save as Custom Node (Ctrl+G): pick two or more nodes",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "arrange",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "arrange",
-            "data-action": "arrange",
-            "aria-label": "Arrange nodes",
-            "data-tip": "Arrange nodes on a grid: pick two or more",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "unfurl",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "unfurl",
-            "data-action": "unfurl",
-            "aria-label": "Unfurl graph",
-            "data-tip": "Unfurl graph: every node round the most connected one, fewer lines crossing",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "frame",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "frame",
-            "data-action": "frame",
-            "aria-label": "Frame nodes",
-            "data-tip": "Frame nodes (F): one column, in a frame; pick two or more",
-            "disabled": ""
-          }
+          "el": "sherpa-group",
+          "class": "section",
+          "part": "section",
+          "children": [
+            {
+              "el": "sherpa-button",
+              "class": "tie",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "zip-tie",
+                "data-action": "tie",
+                "aria-label": "Zip tie",
+                "data-tip": "Zip tie: drag across connectors (T on picked nodes)",
+                "aria-pressed": "false",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "group",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "group",
+                "data-action": "group",
+                "aria-label": "Save as Custom Node",
+                "data-tip": "Save as Custom Node (Ctrl+G): pick two or more nodes",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "arrange",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "arrange",
+                "data-action": "arrange",
+                "aria-label": "Arrange nodes",
+                "data-tip": "Arrange nodes on a grid: pick two or more",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "unfurl",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "unfurl",
+                "data-action": "unfurl",
+                "aria-label": "Unfurl graph",
+                "data-tip": "Unfurl graph: every node round the most connected one, fewer lines crossing",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "frame",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "frame",
+                "data-action": "frame",
+                "aria-label": "Frame nodes",
+                "data-tip": "Frame nodes (F): one column, in a frame; pick two or more",
+                "disabled": ""
+              }
+            }
+          ]
         }
       ]
     }
@@ -364,8 +385,9 @@
     }
   ],
   "tokens": {
-    "tools.border-radius": "{sherpa.display-mode-border-rounding-base}",
-    "tools.box-shadow": "{sherpa.elevation-offset-x}",
+    "tools.gap": "{sherpa.display-mode-space-sm}",
+    "section.border-radius": "{sherpa.display-mode-border-rounding-base}",
+    "section.box-shadow": "{sherpa.elevation-offset-x}",
     "divider.inline-size": "{sherpa.display-mode-border-width-sm}",
     "divider.block-size": "{sherpa.display-mode-size-sm}",
     "divider.background": "{sherpa.style-border-base}"
