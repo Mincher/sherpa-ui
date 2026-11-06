@@ -352,7 +352,6 @@
     }
   ],
   "tokens": {
-    "sections.padding": "{sherpa.display-mode-space-2xs}",
     "scope-rule.margin": "{sherpa.display-mode-space-base}",
     "scope-rule.border-block-start": "{sherpa.display-mode-border-width-base}",
     "local-heading.padding-inline": "{sherpa.theme-padding-lg}"

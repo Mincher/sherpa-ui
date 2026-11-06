@@ -312,6 +312,7 @@ panel's 20rem, not the card's 16rem. The panel keys read the overlay panel (`min
 - Site: `src/components/sherpa-node-list/sherpa-node-list.css`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `test/e2e/reforged-overlay-panel-padding.spec.ts`
 
 ### T-a-panel-slotted-in-a-layout-is-docked-there
 

@@ -9,8 +9,6 @@
 .sections {
   display: flex;
   flex-direction: column;
-  /* Never flush with the panel's edge: its border shows. Will, 11-06 */
-  padding: var(--sherpa-display-mode-space-2xs, 4px);
 }
 /* The View Context, white space, a light rule, white space, then the Local
    Context. Each part only while there is a scope on both sides. Will, TODO 435 */

@@ -81,7 +81,6 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
-| `--sherpa-display-mode-space-2xs` | `.sections` | `padding` |
 | `--sherpa-display-mode-space-base` | `.scope-rule` | `margin` |
 | `--sherpa-display-mode-border-width-base` | `.scope-rule` | `border-block-start` |
 | `--sherpa-theme-padding-lg` | `.local-heading` | `padding-inline` |
