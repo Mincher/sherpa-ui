@@ -15,8 +15,8 @@
   --_diamond: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   --_triangle: polygon(0 0, 100% 50%, 0 100%);
   --_square: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  /* The Figma's D (radii 4 8 8 4 on 16px), and its rounded square (4), on this box. */
-  --_d: inset(0 round 25% 50% 50% 25%);
+  /* A fully round input, a pill when it takes many; and the rounded square (4), on this box. */
+  --_d: inset(0 round 50%);
   --_round-square: inset(0 round 25%);
   --_socket-h: var(--_socket);
 }
@@ -53,7 +53,7 @@
 
 /* An INPUT takes the pointer too: its route's end drags to another input, or a picklist's
    input drags out a line. Will, TODOs 557, 558.
-   An INPUT is a D (the Figma's), whatever its type: the type reads in its ink and its tip.
+   An INPUT is fully round, whatever its type: the type reads in its ink and its tip.
    One that takes many is double height; the outputs keep their own. Will, TODOs 740, 807 */
 .socket-in {
   inset-inline-start: 0;
