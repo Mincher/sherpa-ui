@@ -332,18 +332,6 @@ the box (`pointer-events: auto`). Minimised, its tab is `absolute` in the layout
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel-in-a-layout.spec.ts`
 
-### T-a-panel-stays-under-the-app-header
-
-**A panel on the window stays UNDER the app header** (Will, 2026-11-06): its top is `--_top`, where the shell's
-panel areas begin, so its edge height, its maximised box and its floating room are the areas' height, not the
-window's. A floating `data-y` counts from that top (`float-box.ts` reads its room from there). In a layout (a
-canvas or an area slot) it is 0. An app that shows a panel alone in a window (a tab of its own) sets
-`--_top: 0px` there.
-
-- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
-- Site: `src/core/sherpa-float.css`
-- Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
-
 ### T-a-panel-peeks-from-its-tab
 
 **A panel is FIXED or an OVERLAY, and a tab may peek it open** (Will, 2026-11-06). Docked, a panel is either FIXED

@@ -161,20 +161,3 @@ test('opened, the focus is the container\'s, not the grip\'s; Tab goes on to the
   await page.keyboard.press('Tab');
   expect((await where()).grip).toBe(true);
 });
-
-test('a panel stays under the app header (TRAP T-a-panel-stays-under-the-app-header): docked on the edge, maximised, and floating', async ({ page }) => {
-  await stage(page, { shell: true });
-  const header = await page.evaluate(() => Math.round(document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.getBoundingClientRect().top));
-  expect(header).toBeGreaterThan(40);
-  const top = () => page.evaluate(() => Math.round(document.getElementById('tabbed')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().top));
-  // Docked in the end area: the area's own height.
-  expect(await top()).toBe(header);
-  // Floating, dragged as far up as it goes: never over the header.
-  await page.evaluate(() => { const p = document.getElementById('tabbed')!; p.setAttribute('data-floating', ''); p.setAttribute('data-y', '0'); p.setAttribute('data-x', '100'); });
-  await page.evaluate(() => window.__settled());
-  expect(await top()).toBe(header);
-  // Maximised: the window under the header.
-  await page.evaluate(() => { const p = document.getElementById('tabbed')!; p.removeAttribute('data-floating'); p.removeAttribute('data-fixed'); p.setAttribute('data-maximised', ''); });
-  await page.evaluate(() => window.__settled());
-  expect(await top()).toBe(header);
-});

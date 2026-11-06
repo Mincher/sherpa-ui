@@ -143,7 +143,7 @@ test('the reach banner is over a page\'s layers and under the panels, at z-index
   expect(await top(page, peek.x + 40, mid.y)).toBe('peek');
 });
 
-test('a panel stays under the app header, and nothing of the page covers the header either', async ({ page }) => {
+test('a panel still covers the app header; nothing of the page does', async ({ page }) => {
   await open(page, 'rows');
   await rowsUnderTheTop(page);
   const header = await box(page, 'shell', '.header');
@@ -154,7 +154,5 @@ test('a panel stays under the app header, and nothing of the page covers the hea
   await page.evaluate(() => (document.getElementById('peek') as HTMLElement & { show(): void }).show());
   await settle(page);
   const peek = await box(page, 'peek', '.root');
-  // The panel starts under the header (the panel areas' top), so the header stays on top where they meet.
-  expect(peek.y).toBeGreaterThanOrEqual(header.y + header.h - 1);
-  expect(await top(page, peek.x + 40, header.y + Math.round(header.h / 2))).toBe('sherpa-app-header');
+  expect(await top(page, peek.x + 40, header.y + Math.round(header.h / 2))).toBe('peek');
 });

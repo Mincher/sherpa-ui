@@ -48,8 +48,7 @@
   overflow: auto;
 
   position: fixed;
-  /* Under the app header: the height of the panel areas, not the window's. */
-  inset-block: var(--_top, 0px) 0;
+  inset-block: 0;
   inset-inline-end: 0;
   inset-inline-start: auto;
   /* A <dialog> carries UA `margin: auto`, which centres it against the inset box
