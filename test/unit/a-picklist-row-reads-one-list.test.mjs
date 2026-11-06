@@ -46,7 +46,9 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
   assert.deepEqual(labels(rowChoices({ control: 'span' })), ['In the last', 'In the next']);
   assert.deepEqual(labels(rowChoices({ control: 'type' }, { types: typeChoices(NODE_KINDS.value) })), ['Text', 'Integer', 'Decimal', 'Date', 'True/false', 'List']);
   assert.deepEqual(labels(rowChoices({ control: 'presentation' })).slice(0, 3), ['Default', 'Bar', 'Donut']);
-  assert.deepEqual(rowChoices({ control: 'store' }, { stores: ['customers'] }), [{ value: 'customers', label: 'customers' }]);
+  // A Store row with none starts with Pick a store, so it draws the same each time (TODO 824); one picked, only the stores.
+  assert.deepEqual(rowChoices({ control: 'store' }, { stores: ['customers'] }), [{ value: '', label: 'Pick a store' }, { value: 'customers', label: 'customers' }]);
+  assert.deepEqual(rowChoices({ control: 'store', value: 'customers' }, { stores: ['customers'] }), [{ value: 'customers', label: 'customers' }]);
   assert.deepEqual(rowChoices({ control: 'values' }, { values: ['a', 'b'] }).map((c) => c.value), ['a', 'b']);
   assert.equal(rowChoices({ control: 'text' }), undefined);
   assert.equal(rowChoices({}), undefined);
