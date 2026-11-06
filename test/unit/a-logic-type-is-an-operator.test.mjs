@@ -43,9 +43,9 @@ test('Logic is the Condition: And and Or, Figma\'s six, Not and Is empty, then S
   assert.equal(logic.types.in.help, 'True when what comes in is one of the Values');
   // Each type leads with Rows; a comparison's rows are then what its operator takes. Value A is gone (D3).
   const rows = (t) => resolveKind(logic, t).rows.map((r) => [r.name, r.control, r.input, r.multiple]);
-  assert.deepEqual(rows('eq'), [['type', 'type', undefined, undefined], ['rows', undefined, undefined, undefined], ['b', 'values', 'value', undefined]]);
-  assert.deepEqual(rows('in'), [['type', 'type', undefined, undefined], ['rows', undefined, undefined, undefined], ['b', 'tags', 'object', true]]);
-  assert.deepEqual(rows('between').map(([n]) => n), ['type', 'rows', 'start', 'end']);
+  assert.deepEqual(rows('eq'), [['type', 'type', undefined, undefined], ['rows', undefined, undefined, undefined], ['b', 'values', 'value', undefined], ['count', undefined, undefined, undefined]]);
+  assert.deepEqual(rows('in'), [['type', 'type', undefined, undefined], ['rows', undefined, undefined, undefined], ['b', 'tags', 'object', true], ['count', undefined, undefined, undefined]]);
+  assert.deepEqual(rows('between').map(([n]) => n), ['type', 'rows', 'start', 'end', 'count']);
   assert.deepEqual(rows('and').map(([n]) => n), ['type', 'rows']);
   for (const t of Object.keys(workflowLogic.types)) assert.equal(resolveKind(logic, t).rows[1], ROWS, `${t} leads with Rows`);
   assert.deepEqual(LIST_OPS, ['in', 'notin']);
@@ -99,7 +99,7 @@ test('a comparison tests what comes in on its header — a Field\'s column, or a
   };
   assert.deepEqual(workflowFaults(w), []);
   const is = node(workflowGraph(w), 'is');
-  assert.deepEqual(names(is), ['type', 'rows', 'b']);
+  assert.deepEqual(names(is), ['type', 'rows', 'b', 'count']);
   assert.deepEqual([is.input, is.branches, is.warnings, socketType(is, undefined, 'output')], ['any', true, undefined, 'boolean']);
   // A value came in, no rows: its Rows row sends nothing.
   assert.equal(sentFrom(w, 'is/rows'), undefined);
@@ -134,7 +134,7 @@ test('a type change keeps in the draft only what loses its socket: a column into
   assert.deepEqual(finalGraph(w).nodes.find((n) => n.id === 'c').values, { type: 'and' }, 'Value B is the draft\'s');
   // Equals again reads it, its Value B back.
   let e = editWorkflow(w, { node: 'c', row: 'type', value: 'eq' });
-  assert.deepEqual([keptRoutes(e), node(workflowGraph(e, facts), 'c').warnings, node(workflowGraph(e, facts), 'c').rows.map((r) => r.value)], [[], undefined, ['eq', undefined, 'active']]);
+  assert.deepEqual([keptRoutes(e), node(workflowGraph(e, facts), 'c').warnings, node(workflowGraph(e, facts), 'c').rows.map((r) => r.value)], [[], undefined, ['eq', undefined, 'active', undefined]]);
   // A Text routed into B, then Is one of: B's value becomes its list; the Text stays joined, and Values warns.
   e = editWorkflow(e, { route: { from: 'text/value', to: 'c/b' } });
   assert.deepEqual(workflowFaults(e, NODE_KINDS, facts), []);

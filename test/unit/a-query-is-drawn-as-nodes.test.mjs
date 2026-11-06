@@ -92,7 +92,7 @@ test('each data node sends its rows from its Rows row, first; its header takes t
 test('each node shows what the Query and the definition say', () => {
   // One Source: its store, then how the page reads it (TODO 808).
   assert.equal(node('source').heading, 'Source');
-  assert.deepEqual(values('source'), { store: 'customers', pageSize: 25, search: ['name', 'email'], applyOn: 'change' });
+  assert.deepEqual(values('source'), { store: 'customers', pageSize: 25, search: ['name', 'email'], applyOn: 'change', count: undefined });
   // Its Rows, the filter Switch, then each held field with a socket for its condition's True.
   assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
     ['rows', 'Rows', undefined, undefined, undefined],
@@ -152,7 +152,7 @@ test('what a reader may change: everything a door takes — read only only what 
   assert.deepEqual(editable('arrange-data'), { sort: true, direction: true, group: true, search: true });
   assert.deepEqual(editable('scope-view')['#filters'], true);
   // The page size changes live; the rest of the Source is the definition's, and says so.
-  assert.deepEqual(editable('source'), { store: false, pageSize: true, search: false, applyOn: false });
+  assert.deepEqual(editable('source'), { store: false, pageSize: true, search: false, applyOn: false, count: false });
   assert.match(row('source', 'search').hint, /page definition/);
   assert.equal(row('source', 'rows').hint, undefined, 'its Rows row says nothing of the definition');
   // A slot's presentation changes; one on the View has no slot to keep it, and says so.

@@ -87,12 +87,12 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
     if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, name === 'source' ? { ...ROWS, beside: 'store' } : ROWS], `${name}: its Rows row, first`);
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
-  assert.deepEqual(named((k) => k.rows.some((r) => r.name === ROWS.name)), ['source', 'status', 'scope', 'arrange', 'presentation']);
+  assert.deepEqual(named((k) => k.rows.some((r) => r.name === ROWS.name)), ['source', 'status', 'scope', 'arrange', 'presentation', 'sort', 'group']);
   // A family's types say their own rows: every Logic type, a Sort, a Group by and a Tag send theirs from a Rows row, first.
   const typed = all.flatMap(([n, k]) => Object.entries(k.types ?? {}).map(([t, type]) => [`${n} › ${t}`, type.rows ?? []]));
   for (const [name, rows] of typed) if (rows.includes(ROWS)) assert.equal(rows.indexOf(ROWS), 0, `${name}: its Rows row, first`);
   assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), [
-    ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'collection › sort', 'collection › group', 'tag › includes',
+    ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'tag › includes',
   ]);
   // True and False: Condition alone for now (Will, TODO 831); `branches` stays an option any kind may take again. A check that sends
   // a boolean, and no False, says `output`: a Preset and a Saved filter (a scope's row), a Time and a Tag.
@@ -127,7 +127,7 @@ test('every shipped kind says its types once: no output sends any; a fork says n
 const node = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
 const sound = {
   v: 2, id: 'typed',
-  nodes: [node('start', 'source'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'collection', { type: 'count' }), node('end', 'output')],
+  nodes: [node('start', 'source'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'group'), node('end', 'output')],
   routes: [
     { from: 'start/rows', to: 'f/rows' }, { from: 'f', to: 'g' }, { from: 'f/#false', to: 'g' },
     { from: 'f/rows', to: 'end' }, { from: 'v/value', to: 'l' }, { from: 'c/count', to: 'l' }, { from: 'start/rows', to: 'c' },

@@ -111,9 +111,9 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  assert.deepEqual(drawnIn('workflow'), ['source', 'condition', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag', 'portal', 'output']);
-  // Sort, Group and Count are a Collection's types now: their names are gone, and a file read once (plan 749 P3).
-  assert.deepEqual(['sort', 'group', 'count'].map((k) => NODE_KINDS[k]), [undefined, undefined, undefined]);
+  assert.deepEqual(drawnIn('workflow'), ['source', 'condition', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'output']);
+  // Sort and Group are kinds of their own, in Organise; Collection and its Count are gone, a Count a property row (plan 835).
+  assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort.category, NODE_KINDS.group.category], [undefined, undefined, 'Organise', 'Organise']);
   assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'preset', 'saved', 'arrange', 'presentation', 'component', 'field']);
   // One meaning per word: a Source is where rows come from, in both, and the Store kind is gone (TODO 808); a Condition
   // is one test, in both (plan 783 D4).
@@ -121,7 +121,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone: a Source names its store');
   assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
   // No row sends a result: True is on the header, False on the footer. Will, 2026-11-05
-  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['rows', 'b']);
+  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['rows', 'b', 'count']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -179,7 +179,7 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   ]);
   assert.deepEqual(graph.routes, good.routes);
   // Source › Field › Condition › Output (plan 783): the Condition tests the Field on its header, Value B the Value routed in.
-  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['rows', undefined, false], ['b', 'active', true]]);
+  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['rows', undefined, false], ['b', 'active', true], ['count', undefined, false]]);
   assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', true, 'object', undefined]);
   // The Field's list is its Source's store's fields; its row says its field and type.
   assert.deepEqual([row('field', 'field').choices, row('field', 'field').hint], [[{ value: 'status', label: 'Status' }, { value: 'seats', label: 'Seats' }], 'Status: a text field']);

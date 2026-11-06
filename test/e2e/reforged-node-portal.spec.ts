@@ -44,7 +44,7 @@ const LINKED = {
     node('start', 'source', 0, 0, { store: 'customers' }), node('in', 'portal', 360, 0, { type: 'in', name: 'rows' }, 'In rows'),
     node('o1', 'portal', 720, 0, { type: 'out', name: 'rows' }, 'Out one'), node('o2', 'portal', 720, 300, { type: 'out', name: 'rows' }, 'Out two'),
     node('lone', 'portal', 360, 300, { type: 'in', name: 'other' }, 'In other'),
-    node('pick', 'field', 1080, 0, { field: 'status' }), node('count', 'collection', 1080, 300, { type: 'count' }),
+    node('pick', 'field', 1080, 0, { field: 'status' }), node('count', 'group', 1080, 300),
   ],
   routes: [{ from: 'start/rows', to: 'in' }, { from: 'o1/@start/rows', to: 'pick' }, { from: 'o2/@start/rows', to: 'count' }],
 };
@@ -227,7 +227,7 @@ test('a name or a route that would make a loop through a row is refused: the dra
     nodes: [
       node('start', 'source', 0, 0, { store: 'customers' }), node('pick', 'field', 360, 0, { field: 'status' }), node('test', 'condition', 720, 0, { type: 'eq' }),
       node('in', 'portal', 1080, 0, { type: 'in', name: 'back' }, 'In back'), node('out', 'portal', 0, 360, { type: 'out', name: 'other' }, 'Out'),
-      node('out2', 'portal', 0, 620, { type: 'out', name: 'back' }, 'Out back'), node('count', 'collection', 360, 360, { type: 'count' }),
+      node('out2', 'portal', 0, 620, { type: 'out', name: 'back' }, 'Out back'), node('count', 'group', 360, 360),
     ],
     routes: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'test' }, { from: 'test/rows', to: 'in' }, { from: 'out/@test/rows', to: 'count' }, { from: 'count/count', to: 'test/b' }],
   };
@@ -239,7 +239,7 @@ test('a name or a route that would make a loop through a row is refused: the dra
   // The other Out's row into the Count: the same loop, refused.
   const before = await routes(page);
   expect(await rows(page, 'Out back')).toEqual(['Condition › Rows']);
-  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Rows'), await socket(page, 'Collection', 'input'));
+  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Rows'), await socket(page, 'Group', 'input'));
   expect(await routes(page)).toEqual(before);
   expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/rows → in', 'count/count → test/b']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);

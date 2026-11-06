@@ -25,8 +25,6 @@ test('each family: its types in order, the Type row first, and the rows, sockets
       round: ['places', 'a', 'result'], increment: ['a', 'b', 'result'], floor: ['values', 'result'], ceiling: ['values', 'result'], average: ['values', 'result'],
     },
     time: { between: ['start', 'end'], duration: ['when', 'n', 'unit'] },
-    // Sort and Group by take the Field they work on, on their header (plan 783 D5): no Field row.
-    collection: { sort: ['rows', 'direction'], group: ['rows'], count: ['count'] },
     text: { append: ['a', 'b', 'result'], prepend: ['a', 'b', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'] },
     tag: { includes: ['rows', 'value'] },
   };
@@ -39,10 +37,11 @@ test('each family: its types in order, the Type row first, and the rows, sockets
     }
   }
   assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average']);
-  assert.deepEqual(typeChoices(NODE_KINDS.collection).map((c) => c.label), ['Sort', 'Group by', 'Count']);
-  assert.deepEqual(['value', 'math', 'time', 'collection', 'text'].map((k) => NODE_KINDS[k].typeLabel), ['Type', 'Operation', 'Operation', 'Type', 'Operation']);
-  // Each Math, Time, Collection and Text type says what it does, under its select.
-  for (const id of ['math', 'time', 'collection', 'text']) for (const [type, t] of Object.entries(NODE_KINDS[id].types)) assert.ok(t.help, `${id} › ${type} has a hint`);
+  // Sort and Group are kinds of their own, in Organise, and take the Field they work on on their header (plan 835): no types.
+  assert.deepEqual(['sort', 'group'].map((k) => [NODE_KINDS[k].types, NODE_KINDS[k].category, NODE_KINDS[k].rows.map((r) => r.name)]), [[undefined, 'Organise', ['rows', 'direction']], [undefined, 'Organise', ['rows', 'count']]]);
+  assert.deepEqual(['value', 'math', 'time', 'text'].map((k) => NODE_KINDS[k].typeLabel), ['Type', 'Operation', 'Operation', 'Operation']);
+  // Each Math, Time and Text type says what it does, under its select.
+  for (const id of ['math', 'time', 'text']) for (const [type, t] of Object.entries(NODE_KINDS[id].types)) assert.ok(t.help, `${id} › ${type} has a hint`);
   assert.equal(NODE_KINDS.math.types.add.help, 'Add Value B to Value A');
   // Sockets: Floor reads a LIST in, an object, and takes several (D9); a Result row gives a value; Split by gives a list.
   const floor = resolveKind(NODE_KINDS.math, 'floor').rows;

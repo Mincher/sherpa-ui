@@ -72,23 +72,22 @@ test('it docks on the canvas flush, to its top, bottom and left, with no shadow'
   expect(after).toBe(card!.left);
 });
 
-test('it lists each category with its families, eleven, never a Query-only one; "cou" shows only Collection, by its Count', async ({ page }) => {
+test('it lists each category with its families, twelve, never a Query-only one; "sor" shows only Sort', async ({ page }) => {
   await bind(page);
   const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
-  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
+  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output']);
   const names = () => page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
-  expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
+  expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output']);
   // A family's line is its synopsis, never its types (TODO 809).
-  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Organise a set of rows');
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('cou');
-  expect(await names()).toEqual(['Collection']);
-  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Count: How many rows');
+  expect(await item(page, 'sort').getAttribute('data-description')).toBe('Put rows in order of a field');
+  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('sor');
+  expect(await names()).toEqual(['Sort']);
   expect(await page.locator('sherpa-node-panel .category-heading:visible').count()).toBe(1);
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('zzz');
   expect(await names()).toEqual([]);
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('');
-  expect((await names()).length).toBe(11);
-  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Organise a set of rows');
+  expect((await names()).length).toBe(12);
+  expect(await item(page, 'group').getAttribute('data-description')).toBe('Group rows by a field');
 });
 
 test('"round" shows Math, says Round, and a click places a Math whose type is Round; its rows follow the type', async ({ page }) => {
@@ -137,18 +136,18 @@ test('Enter on an item places it', async ({ page }) => {
   const onValue = () => page.evaluate(() => {
     let el: Element | null = document.activeElement;
     while (el?.shadowRoot?.activeElement) el = el.shadowRoot.activeElement;
-    return !!el && !!el.getRootNode() && ((el.getRootNode() as ShadowRoot).host as HTMLElement | undefined)?.dataset?.['kind'] === 'collection';
+    return !!el && !!el.getRootNode() && ((el.getRootNode() as ShadowRoot).host as HTMLElement | undefined)?.dataset?.['kind'] === 'sort';
   });
   for (let i = 0; i < 40 && !(await onValue()); i++) await page.keyboard.press('Tab');
   // WebKit's Tab skips buttons unless asked to; the row's own button takes the focus there.
   if (test.info().project.name === 'webkit') {
-    await page.locator('sherpa-node-panel sherpa-list-item[data-kind="collection"]').evaluate((el) => (el.shadowRoot!.querySelector('button:not(.drag):not(.expand)') as HTMLElement).focus());
+    await page.locator('sherpa-node-panel sherpa-list-item[data-kind="sort"]').evaluate((el) => (el.shadowRoot!.querySelector('button:not(.drag):not(.expand)') as HTMLElement).focus());
   }
   expect(await onValue()).toBe(true);
   await page.keyboard.press('Enter');
   await settle(page);
-  expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['source', 'collection']);
-  expect(await pick(page)).toEqual({ current: ['Collection'], open: false });
+  expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['source', 'sort']);
+  expect(await pick(page)).toEqual({ current: ['Sort'], open: false });
 });
 
 test('a drag places the node where it is let go', async ({ page }) => {
@@ -211,8 +210,8 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   const choices = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // Rows (an object) leave the Store row: the families whose header or a row takes one.
   // A portal's In takes anything (TODO 779).
-  expect(choices).toEqual(['field', 'condition', 'collection', 'portal', 'output']);
-  const count = page.locator('sherpa-node-panel sherpa-menu.add button[value="collection"]');
+  expect(choices).toEqual(['field', 'condition', 'sort', 'group', 'portal', 'output']);
+  const count = page.locator('sherpa-node-panel sherpa-menu.add button[value="sort"]');
   // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
   if (test.info().project.name === 'webkit') {
     await count.evaluate((b: HTMLElement) => b.focus());
@@ -220,9 +219,9 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   } else await count.click();
   await settle(page);
   const r = await draft(page);
-  expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'collection']);
-  expect(r.routes).toEqual(['start/rows → collection-1']);
-  expect(await pick(page)).toEqual({ current: ['Collection'], open: false });
+  expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'sort']);
+  expect(r.routes).toEqual(['start/rows → sort-1']);
+  expect(await pick(page)).toEqual({ current: ['Sort'], open: false });
 });
 
 test('"Add a node" for a list says the type a family takes it as: Math › Floor, Text › Join', async ({ page }) => {
@@ -232,7 +231,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   const menu = page.locator('sherpa-node-panel sherpa-menu.add');
   await expect(menu).toHaveAttribute('open', '');
   const said = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
-  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Time', 'Collection', 'Text › Join', 'Tag', 'Portal', 'Output']);
+  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Time', 'Sort', 'Group', 'Text › Join', 'Tag', 'Portal', 'Output']);
   // What it gives narrows it (plan 783 F6): rows to the kinds that can use rows; a Field's column to those that take one.
   const offered = async (gives: string) => {
     await page.keyboard.press('Escape');
@@ -241,20 +240,20 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
     await expect(menu).toHaveAttribute('open', '');
     return page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   };
-  expect(await offered('rows')).toEqual(['Field', 'Condition', 'Collection', 'Portal', 'Output']);
+  expect(await offered('rows')).toEqual(['Field', 'Condition', 'Portal', 'Output']);
   expect(await offered('field')).toEqual(said);
 });
 
 test('an input let go on the bare canvas offers a Value first', async ({ page }) => {
   await bind(page);
   await pressSearch(page);
-  await item(page, 'collection').click();
+  await item(page, 'sort').click();
   await settle(page);
   // The inspector shut, the bare canvas is free.
   await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { hide(): void }).hide());
-  // The new Collection's header input takes any type; the line runs from it out to the bare canvas.
+  // The new Sort's header input takes any type; the line runs from it out to the bare canvas.
   const [x1, y1] = await page.evaluate(() => {
-    const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Collection')!;
+    const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Sort')!;
     const r = el.socketRect('input');
     return [r.left + r.width / 2, r.top + r.height / 2];
   });
@@ -263,7 +262,7 @@ test('an input let go on the bare canvas offers a Value first', async ({ page })
   await page.mouse.move(x1! + 300, y1! + 190, { steps: 8 });
   await page.mouse.up();
   const choices = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
-  // A Collection's header takes any type: the kinds that give one, a Value first.
+  // A Sort's header takes any type: the kinds that give one, a Value first.
   expect(choices[0]).toBe('value');
   expect(choices).not.toContain('output');
 });

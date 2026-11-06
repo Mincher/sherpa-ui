@@ -166,7 +166,7 @@ test('in a workflow, A or (B and C) is one Field into three Conditions, an And a
   const w = seatsFlow();
   assert.deepEqual(workflowFaults(w, NODE_KINDS, { fieldsOf }), []);
   const g = workflowGraph(w, { fieldsOf });
-  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'b'], id);
+  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'b', 'count'], id);
   for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows'], id);
   assert.ok(g.nodes.every((n) => !n.warnings), 'every route reads what it needs');
   // Each Condition's operators are the Field's type's; an edit types Value B by it.

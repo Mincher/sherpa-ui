@@ -22,7 +22,7 @@ const inPanel = (palette) => palette.flatMap((g) => g.items.map((i) => `${g.cate
 test('every graph type\'s panel offers a Source, under Sources: a workflow, a Preset Filter, a Custom Node, an app\'s type, the Query', () => {
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone');
   assert.deepEqual([NODE_KINDS.source.heading, NODE_KINDS.source.category, NODE_KINDS.source.graphs], ['Source', 'Sources', ['query', 'workflow']]);
-  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store']]);
+  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store'], ['count', null]]);
   const off = registerEntityType({ id: 'workflow', label: 'Workflow', runs: true });
   try {
     for (const host of [undefined, 'preset-filter:trials', 'mine', 'workflow:flow']) {

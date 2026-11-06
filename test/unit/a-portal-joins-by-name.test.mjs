@@ -77,7 +77,7 @@ test('an In takes many routes; its Out draws a row for each, labelled from its s
 
 test('1-to-many: every Out of the name draws the same rows; many-to-1: an In of each, the rows of both; many-to-many', () => {
   // Two Outs: each draws the In's two rows, each routed on alone.
-  const w = flow([...twoIn().nodes, portal('o2', 'out', 'pipe', 600, 300), { id: 'n', kind: 'collection', x: 900, y: 300, values: { type: 'count' } }],
+  const w = flow([...twoIn().nodes, portal('o2', 'out', 'pipe', 600, 300), { id: 'n', kind: 'group', x: 900, y: 300 }],
     [...twoIn().routes, { from: 'o2/@s/rows', to: 'n' }]);
   const g = workflowGraph(w, facts);
   assert.deepEqual(rowsOf(g, 'o2'), rowsOf(g, 'o'));
@@ -142,7 +142,7 @@ test('an Out no In names warns and has no rows; one of no name, too; a row of an
 
 test('a loop through a row is a loop', () => {
   // A Condition's rows into an In; its Out's row into a Count, whose count is the Condition's Value B.
-  const round = flow([source(), field('f', 'status'), cond('c', 'eq'), portal('i', 'in', 'back', 1200), portal('o', 'out', 'back', 1500), { id: 'n', kind: 'collection', x: 1800, y: 0, values: { type: 'count' } }],
+  const round = flow([source(), field('f', 'status'), cond('c', 'eq'), portal('i', 'in', 'back', 1200), portal('o', 'out', 'back', 1500), { id: 'n', kind: 'group', x: 1800, y: 0 }],
     [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'i' }, { from: 'o/@c/rows', to: 'n' }, { from: 'n/count', to: 'c/b' }]);
   assert.deepEqual(workflowFaults(round, undefined, facts), ['its routes run in a loop, through the portal "back"']);
   assert.equal(checkWorkflow(round, undefined, facts), false);
