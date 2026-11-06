@@ -10920,6 +10920,12 @@
               "default": "false"
             },
             {
+              "name": "data-name-from-pick",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-no-value",
               "type": {
                 "text": "boolean"

@@ -49,6 +49,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-layout` | `chip` `section` `values` |  | chip \| section — a SECTION is a field's whole answer in the flow, as a portrait bar draws it: its toggle part is the heading, its menu part still opens the menu, and each menu row is a VALUE chip below, whose press picks that row. TODO 425 |
 | `data-locked` | boolean |  |  |
 | `data-menu` | boolean | `false` | Figma State=menu — snap on the caret button |
+| `data-name-from-pick` | boolean |  |  |
 | `data-no-value` | boolean |  |  |
 | `data-open` | boolean |  |  |
 | `data-pending` | boolean |  | changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning |

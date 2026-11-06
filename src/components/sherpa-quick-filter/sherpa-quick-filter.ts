@@ -110,6 +110,8 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-off-is-not-forgotten */
     'data-direction': { type: 'enum', kind: 'behaviour', values: ['asc', 'desc'] },
     'data-label': { type: 'string', kind: 'content' },
+    // Its name half says what its menu picked, where one is: an Organise chip in the filter panel. TRAP T-an-organise-chip-names-its-field-in-the-panel
+    'data-name-from-pick': { type: 'boolean', kind: 'behaviour' },
     'data-icon-start': { type: 'string', kind: 'content' },
     'data-current': { type: 'boolean', kind: 'style' },
   } as const;
@@ -326,6 +328,7 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   set valueLabel(text: string) {
     this.#says.valueLabel = text;
+    this.#syncText();
   }
   get valueLabel(): string {
     return this.#says.valueLabel;
@@ -407,7 +410,8 @@ export class SherpaQuickFilter extends SherpaElement {
   /** The label and the glyph, each written only where it differs. TRAP T-a-chip-moved-under-a-press-loses-its-click */
   #syncText(): void {
     const label = this.$('.label');
-    const value = this.dataset['label'];
+    const picked = this.hasAttribute('data-name-from-pick') ? this.$('.caret-label')?.textContent?.trim() : '';
+    const value = picked || this.dataset['label'];
     if (label && value != null && (label.childElementCount || label.textContent !== value)) label.textContent = value;
     // TRAP T-icon-writes-to-both-slots — `.icon` leads the body, `.caret-icon`
     // serves an icon-only chip, and CSS picks which is visible.
@@ -437,6 +441,7 @@ export class SherpaQuickFilter extends SherpaElement {
    *  same way. */
   arrangeBy(field: string, direction?: string | null): void {
     this.#arrange.steer(field, direction);
+    this.#syncText();
   }
 
   /**

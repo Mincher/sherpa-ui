@@ -2834,3 +2834,14 @@ nowhere: a reader who moved on in the wait keeps where they went.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-a-redrawn-bar-keeps-the-focus.spec.ts`
+
+### T-an-organise-chip-names-its-field-in-the-panel
+
+**In the filter panel an Organise chip's NAME half says its field** (Will, TODO 866): "Region" and "Name", not "Group" and "Sort". The
+bar keeps the short category name. The section's own heading in the panel's label column is "Organise", so the category is
+still said once. `data-name-from-pick` on the chip makes its `.label` read what its menu picked (its caret text), falling back
+to its category while nothing is; the portrait toolbar sets it on every Organise chip it draws, so there is one rule, in one place.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-organise-chip-names-its-field.spec.ts`

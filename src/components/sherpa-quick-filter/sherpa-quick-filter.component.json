@@ -490,6 +490,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-name-from-pick",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-no-value",
       "type": "boolean",
       "observed": true,

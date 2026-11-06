@@ -2684,6 +2684,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       zone.appendChild(this.#organiseChip('sort',
         SherpaQuickFilterToolbar.#icons.sortNone, organiseOptions(sort, on.sort), on.sort));
     }
+    // In the filter panel (portrait) an Organise chip's name half is its field. TRAP T-an-organise-chip-names-its-field-in-the-panel
+    for (const chip of this.$$('.organise-chip')) chip.toggleAttribute('data-name-from-pick', this.dataset['orientation'] === 'portrait');
     // Then ON, if the host is: a rebuild changes no attribute, so onChange will not.
     this.#syncArrangement();
   }
