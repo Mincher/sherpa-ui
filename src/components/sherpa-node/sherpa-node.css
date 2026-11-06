@@ -345,6 +345,8 @@
   inset-inline-start: calc(-1 * (var(--_socket) / 2 + var(--_hit)));
   background: var(--_category-fill, var(--_surface));
   outline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  /* No border on its flush side: the outline is cut at the box's end edge. */
+  clip-path: inset(-1px 0 -1px -1px);
   border-start-start-radius: calc(var(--_socket) / 2 + var(--_hit));
   border-end-start-radius: calc(var(--_socket) / 2 + var(--_hit));
 }
