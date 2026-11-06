@@ -549,11 +549,6 @@
     },
     {
       "$type": "state",
-      "name": "output-socket",
-      "selector": ":host([data-output-socket])"
-    },
-    {
-      "$type": "state",
       "name": "branches",
       "selector": ":host([data-branches])"
     },
@@ -631,7 +626,7 @@
     "caption-badge.border-radius": "{sherpa.display-mode-border-rounding-sm}",
     "caption-badge.background": "{sherpa.style-surface-base-2}",
     "caption-badge.color": "{sherpa.style-content-base}",
-    "socket-false.inset-inline-start": "{sherpa.theme-padding-lg}",
+    "socket-false.outline": "{sherpa.style-border-width}",
     "footer.min-block-size": "{sherpa.display-mode-size-2xl}",
     "body.gap": "{sherpa.theme-gap-md}",
     "body.padding-block": "{sherpa.theme-gap-md}"

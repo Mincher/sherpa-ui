@@ -61,6 +61,7 @@ What each class's base rule reads:
 | `--sherpa-style-content-base` | `.label` | `color` |
 | `--sherpa-display-mode-size-2xl` | `.socket` | `inset-block-end` |
 | `--sherpa-theme-padding-lg` | `.socket-out` | `inset-inline-start` |
+| `--sherpa-theme-padding-lg` | `.row` | `padding-inline-end` |
 | `--sherpa-style-surface-base-1` | `.socket-in` | `background` |
 
 ## populate()
