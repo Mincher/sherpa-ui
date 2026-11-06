@@ -60,6 +60,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-layer-content` | `.area` | `z-index` |
 | `--sherpa-layout-grid-columns` | `.area` | `--_cols` |
 | `--sherpa-layout-grid-gap-horizontal` | `.area` | `--_gap` |
 | `--sherpa-layout-grid-padding` | `.area` | `--_pad` |

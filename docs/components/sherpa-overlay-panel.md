@@ -107,6 +107,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-layer-panels` | `.root` | `z-index` |
 | `--sherpa-border-rounding-top-left` | `.root` | `border-start-start-radius` |
 | `--sherpa-border-rounding-bottom-left` | `.root` | `border-end-start-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |

@@ -2096,3 +2096,29 @@ Playwright will not `click()` an `aria-disabled` control. A spec presses it with
 - Site: `src/core/ui/roving-focus.ts`
 - Site: `src/components/sherpa-button/sherpa-button.ts`
 - Site: `test/e2e/reforged-an-inactive-button-keeps-its-tip.spec.ts`
+
+### T-the-layers-are-one-scale
+
+**What floats over a page has ONE scale, by name, written once** — Will, TODO 832:
+"a combination of component and app awareness of layers", then the game engine's
+bands. `src/core/sherpa-layers.css` is adopted into every shadow root, so each
+component reads it from its own host: `content` 1 (a page's layers, the header, a
+panel area), `bars` 2 (the nav rail, a Context's fixed region), `banners` 100
+("Unable to reach data"), `panels` 101 (docked on the right edge), `floating` 102
+(a floating panel, plus its place in the tab's one stack:
+`T-a-pressed-panel-comes-to-the-front`), `toasts` 1000. A menu, a dialog and a tip
+are the UI band: the browser's top layer, over every number. A layer is
+`var(--sherpa-layer-<name>, <the value>)`; Rule 20's fallback is required, and it
+is the scale's own number, which `check:layers` reads and holds equal.
+
+The other half is the component's: one with inner layers that could escape seals
+them with `isolation: isolate` (the data grid, `T-a-grid-keeps-its-own-layers`),
+so its own numbers (its head 3, its cells 2, its edges 5) never meet the page's.
+Those internal numbers stay bare and are COUNTED: `scripts/layers-baseline.json`
+may only fall, per file, and a new bare z-index fails the hook and CI. A number
+that reaches the page belongs on the scale, not in a baseline.
+
+- Site: `src/core/sherpa-layers.css`
+- Site: `scripts/check-layers.mjs`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.css`
+- Site: `test/e2e/reforged-layer-bands.spec.ts`

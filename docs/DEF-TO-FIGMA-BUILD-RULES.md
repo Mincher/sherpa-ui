@@ -145,6 +145,10 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   owns them: `structure` into `sherpa-button.css`, `input` into
   `sherpa-input-text.css`, `navigation` into `sherpa-nav.css` and
   `sherpa-nav-item.css`, `switch` into `sherpa-switch.css`.
+- **Layers:** a z-index that reaches the page is a name, `var(--sherpa-layer-bars, 2)`,
+  from `src/core/sherpa-layers.css`; one that stays inside a component seals it with
+  `isolation: isolate`. `check:layers` counts the bare ones and the count only falls
+  (`T-the-layers-are-one-scale`).
 - **The grids:** 4px for spacing, 2px for text (`T-the-grid-is-two-grids`).
   `lint:css` exempts borders, 1px and below, `999px`, and a px inside
   `var(--token, 12px)`. A drawn glyph opts out with `/* off-grid-ok */`.

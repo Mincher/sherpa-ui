@@ -70,6 +70,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-layer-banners` | `.reach` | `z-index` |
 | `--sherpa-display-mode-space-2xs` | `.reach-actions` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.reach-actions` | `margin-inline-start` |
 

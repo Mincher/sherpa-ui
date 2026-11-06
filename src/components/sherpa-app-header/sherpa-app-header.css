@@ -41,7 +41,7 @@
      only appears once something is underneath (see the scroll-state query). */
   position: sticky;
   inset-block-start: 0;
-  z-index: 1;
+  z-index: var(--sherpa-layer-content, 1);
 
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */

@@ -56,7 +56,7 @@
   margin: 0;
   block-size: auto;
   /* Above the nav rail (z-index 2). */
-  z-index: 101;
+  z-index: var(--sherpa-layer-panels, 101);
 
   background: var(--_surface);
   border-style: solid;

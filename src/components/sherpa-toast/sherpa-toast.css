@@ -9,7 +9,7 @@
   position: fixed;
   inset-block-start: var(--sherpa-display-mode-space-base, 16px);
   inset-inline-end: var(--sherpa-display-mode-space-base, 16px);
-  z-index: 1000;
+  z-index: var(--sherpa-layer-toasts, 1000);
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 

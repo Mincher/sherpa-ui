@@ -122,6 +122,7 @@
     "check:ownership": "node scripts/check-ownership.mjs",
     "check:props": "node scripts/check-props.mjs",
     "check:docs": "node scripts/check-docs.mjs",
+    "check:layers": "node scripts/check-layers.mjs",
     "check:weight": "node --experimental-vm-modules --disable-warning=ExperimentalWarning scripts/check-weight.mjs",
     "check:bench": "node scripts/check-bench.mjs",
     "map": "node scripts/code-map.mjs",

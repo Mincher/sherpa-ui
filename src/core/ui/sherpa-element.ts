@@ -285,6 +285,7 @@ export abstract class SherpaElement extends Base {
     new URL('../sherpa-style-modes.css', import.meta.url),
     new URL('../sherpa-anchor.css', import.meta.url),
     new URL('../sherpa-motion.css', import.meta.url),
+    new URL('../sherpa-layers.css', import.meta.url),
   ];
 
   /** Every element on the page now, so a reload can draw them again. */

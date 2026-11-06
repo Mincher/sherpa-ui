@@ -48,6 +48,8 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
       - run: npm run check:docs
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:layers
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
       - run: npm run check:map
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
       - run: npm run check:size

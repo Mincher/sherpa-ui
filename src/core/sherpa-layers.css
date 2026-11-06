@@ -1,0 +1,25 @@
+/**
+ * sherpa-layers.css — THE layer scale: what floats over a page, back to front, by name.
+ * Adopted into every shadow root, so each component reads it from its own host. A number
+ * is written HERE and nowhere else: a layer is `var(--sherpa-layer-<name>, <this value>)`,
+ * the fallback equal to it (check:layers). Bands, as a game draws them: the page and its
+ * bars are the environment; docked and floating panels are the players; a menu, a dialog
+ * and a tip are the UI, in the browser's top layer, over every number. A component with
+ * inner layers that could escape seals them with `isolation: isolate`.
+ * TRAP T-the-layers-are-one-scale
+ */
+
+:host {
+  /* A page's own layers, the shell's header and a panel area: where they meet the shell. */
+  --sherpa-layer-content: 1;
+  /* The nav rail and a Context's fixed region: over the page, under every banner. */
+  --sherpa-layer-bars: 2;
+  /* "Unable to reach data": over the page and its bars, under every panel. */
+  --sherpa-layer-banners: 100;
+  /* A panel docked on the window's right edge. */
+  --sherpa-layer-panels: 101;
+  /* A floating panel: this and up, each press one higher (float-box.ts). */
+  --sherpa-layer-floating: 102;
+  /* A toast stack, over all of them. */
+  --sherpa-layer-toasts: 1000;
+}

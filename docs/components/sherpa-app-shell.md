@@ -88,7 +88,11 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-layer-bars` | `.nav` | `z-index` |
+| `--sherpa-layer-content` | `.header` | `z-index` |
 | `--sherpa-style-surface-base` | `.header` | `background` |
+| `--sherpa-layer-content` | `.content` | `z-index` |
+| `--sherpa-layer-bars` | `.context-header` | `z-index` |
 
 ## populate()
 

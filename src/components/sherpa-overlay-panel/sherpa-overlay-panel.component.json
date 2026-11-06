@@ -561,6 +561,7 @@
     }
   ],
   "tokens": {
+    "root.z-index": "{sherpa.layer-panels}",
     "root.border-start-start-radius": "{sherpa.border-rounding-top-left}",
     "root.border-end-start-radius": "{sherpa.border-rounding-bottom-left}",
     "root.color": "{sherpa.style-content-base}",

@@ -5,9 +5,11 @@
  * Copying them here would fork the Figma projection.
  */
 
-/* The component's own sheet says it too, whatever the page links. */
+/* The component's own sheet says it too, whatever the page links. Isolated: what the page's
+   grid holds (a sticky metric group, 4 to 7) never meets the shell's bars. TRAP T-the-layers-are-one-scale */
 :host {
   display: grid;
+  isolation: isolate;
 }
 
 :host([hidden]) {

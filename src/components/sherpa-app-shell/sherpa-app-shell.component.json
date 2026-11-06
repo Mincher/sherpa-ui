@@ -336,7 +336,11 @@
     }
   ],
   "tokens": {
-    "header.background": "{sherpa.style-surface-base}"
+    "nav.z-index": "{sherpa.layer-bars}",
+    "header.z-index": "{sherpa.layer-content}",
+    "header.background": "{sherpa.style-surface-base}",
+    "content.z-index": "{sherpa.layer-content}",
+    "context-header.z-index": "{sherpa.layer-bars}"
   },
   "$extensions": {
     "sherpa": {

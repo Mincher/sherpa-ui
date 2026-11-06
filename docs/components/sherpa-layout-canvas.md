@@ -76,6 +76,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-layer-content` | `.banner` | `z-index` |
 | `--sherpa-display-mode-space-xs` | `.banner` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.marquee` | `border-width` |
 | `--sherpa-style-active-border-base-1` | `.marquee` | `border-color` |

@@ -165,6 +165,7 @@
     }
   ],
   "tokens": {
+    "area.z-index": "{sherpa.layer-content}",
     "area.--_cols": "{sherpa.layout-grid-columns}",
     "area.--_gap": "{sherpa.layout-grid-gap-horizontal}",
     "area.--_pad": "{sherpa.layout-grid-padding}",

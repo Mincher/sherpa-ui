@@ -291,6 +291,7 @@
     }
   ],
   "tokens": {
+    "reach.z-index": "{sherpa.layer-banners}",
     "reach-actions.gap": "{sherpa.display-mode-space-2xs}",
     "reach-actions.margin-inline-start": "{sherpa.display-mode-space-xs}"
   },

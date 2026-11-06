@@ -92,6 +92,8 @@
   /* The bar's own hover fill, kept under a name a chip does not declare: a
      section ON is pinned to its on-colours, and its hover stays the bar's. TODO 531 */
   --_bar-hover: var(--sherpa-hover-fill);
+  /* Its sticky headers (1, 2) stay inside it: the scale is sherpa-layers.css. */
+  isolation: isolate;
 }
 
 /* ── The ⋮ menu's rows. TRAP T-the-more-menu-holds-what-folded ── */

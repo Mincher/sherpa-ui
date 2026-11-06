@@ -870,7 +870,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (142)
+## SherpaElement and the shared sheets (143)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -1005,6 +1005,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-temporal-is-the-date-model](traps/element-and-sheets.md#t-temporal-is-the-date-model) — temporal
 - [T-the-app-layer-is-opt-in](traps/join-and-app.md#t-the-app-layer-is-opt-in) — components, index
 - [T-the-base-class-names-nothing-visual](traps/element-and-sheets.md#t-the-base-class-names-nothing-visual) — sherpa-element
+- [T-the-layers-are-one-scale](traps/element-and-sheets.md#t-the-layers-are-one-scale) — sherpa-layers
 - [T-the-node-editor-asks-the-query](traps/data-layer.md#t-the-node-editor-asks-the-query) — node-graph
 - [T-the-shared-vocabulary-is-declared-once](traps/element-and-sheets.md#t-the-shared-vocabulary-is-declared-once) — sherpa-element
 - [T-the-templates-text-is-the-default](traps/element-and-sheets.md#t-the-templates-text-is-the-default) — directives
@@ -1015,7 +1016,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (130)
+## Other components (131)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1139,6 +1140,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-style-border-base-is-default-1](traps/element-and-sheets.md#t-style-border-base-is-default-1) — container-footer, select-radio
 - [T-temporal-is-the-date-model](traps/element-and-sheets.md#t-temporal-is-the-date-model) — calendar
 - [T-the-footer-owns-nothing-to-save](traps/menus-tips-overlays.md#t-the-footer-owns-nothing-to-save) — container-footer
+- [T-the-layers-are-one-scale](traps/element-and-sheets.md#t-the-layers-are-one-scale) — layout-grid
 - [T-the-nav-is-a-menu-on-a-phone](traps/other-components.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-node-panel-asks-it-places](traps/other-components.md#t-the-node-panel-asks-it-places) — node-panel
 - [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell, layout-panels
@@ -1148,7 +1150,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (78)
+## Build, tools and the MCP (79)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-build-is-swapped-in-whole](traps/build-tools-mcp.md#t-a-build-is-swapped-in-whole) — build-reforged, sherpa-ui
@@ -1220,6 +1222,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-app-layer-is-opt-in](traps/join-and-app.md#t-the-app-layer-is-opt-in) — check-weight
 - [T-the-bench-counts-and-never-times](traps/build-tools-mcp.md#t-the-bench-counts-and-never-times) — check-bench
 - [T-the-grid-is-two-grids](traps/build-tools-mcp.md#t-the-grid-is-two-grids) — lint-css, project-tokens
+- [T-the-layers-are-one-scale](traps/element-and-sheets.md#t-the-layers-are-one-scale) — check-layers
 - [T-the-manifest-is-written-from-the-specs](traps/build-tools-mcp.md#t-the-manifest-is-written-from-the-specs) — check-generated, write-manifest, write-reference
 - [T-the-mcp-reads-sherpa-ui-through-one-door](traps/build-tools-mcp.md#t-the-mcp-reads-sherpa-ui-through-one-door) — check-mcp-pack, sherpa
 - [T-the-shared-vocabulary-is-declared-once](traps/element-and-sheets.md#t-the-shared-vocabulary-is-declared-once) — check-ownership

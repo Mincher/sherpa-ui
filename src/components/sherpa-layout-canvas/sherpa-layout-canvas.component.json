@@ -375,6 +375,7 @@
     }
   ],
   "tokens": {
+    "banner.z-index": "{sherpa.layer-content}",
     "banner.gap": "{sherpa.display-mode-space-xs}",
     "marquee.border-width": "{sherpa.display-mode-border-width-base}",
     "marquee.border-color": "{sherpa.style-active-border-base-1}",

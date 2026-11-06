@@ -157,6 +157,16 @@ if [ $DOCS_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# A z-INDEX IS A NAME from src/core/sherpa-layers.css, or it is counted, and the
+# count may only fall (TRAP T-the-layers-are-one-scale). About 0.1s.
+echo "🪜 Checking every layer is on the scale..."
+LAYERS_OUT=$(npm run check:layers --silent 2>&1)
+if [ $? -ne 0 ]; then
+  echo "$LAYERS_OUT"
+  echo "❌ A layer is off the scale. Name it in src/core/sherpa-layers.css, or seal it inside its component. Commit blocked."
+  exit 1
+fi
+
 # EVERY FILE SAYS WHAT IT HOLDS. A file's header ends in a `Map:` of its
 # exports — the higher-plane map `npm run map` prints. `--staged`: a file this
 # commit touches must carry its map, so updating it is the last step of any

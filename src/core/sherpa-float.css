@@ -24,7 +24,7 @@
   block-size: var(--_float-h);
   /* Over a docked panel (101), and in the tab's ONE stack: the last pressed is in front.
      TRAP T-a-pressed-panel-comes-to-the-front */
-  z-index: calc(102 + var(--_float-order, 0));
+  z-index: calc(var(--sherpa-layer-floating, 102) + var(--_float-order, 0));
 }
 
 /* The bar takes hold; its buttons are still buttons. */

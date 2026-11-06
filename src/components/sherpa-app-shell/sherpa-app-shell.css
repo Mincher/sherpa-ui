@@ -31,7 +31,7 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  z-index: 2;
+  z-index: var(--sherpa-layer-bars, 2);
   display: flex; /* let the slotted rail fill the height */
 }
 .nav ::slotted(*),
@@ -58,7 +58,7 @@
   min-inline-size: 0;
   /* Above the body it sits over, below the nav rail (z-index: 2). */
   position: relative;
-  z-index: 1;
+  z-index: var(--sherpa-layer-content, 1);
   background: var(--sherpa-style-surface-base, #ffffff);
 }
 
@@ -72,7 +72,7 @@
   min-block-size: 0;
   overflow: hidden;
   position: relative;
-  z-index: 1;
+  z-index: var(--sherpa-layer-content, 1);
   isolation: isolate;
   grid-area: 1 / 1;
   /* A COLUMN: the header, then the body takes what it leaves.
@@ -85,7 +85,7 @@
 .overlay { display: contents; }
 .overlay ::slotted(*) {
   grid-area: 1 / 1;
-  z-index: 1;
+  z-index: var(--sherpa-layer-content, 1);
 }
 
 /* The inset follows the rail's LATCHED state only — hover reveals over the top. */
@@ -129,7 +129,7 @@
 .context-header {
   position: sticky;
   inset-block-start: 0;
-  z-index: 2;
+  z-index: var(--sherpa-layer-bars, 2);
   flex: none;
   background: var(--_shell-surface);
 }

@@ -18,7 +18,7 @@
   position: sticky;
   inset-block-start: 0;
   block-size: 0;
-  z-index: 100;
+  z-index: var(--sherpa-layer-banners, 100);
 }
 :host(:is(:state(reach-unreached), :state(reach-down)):not(:state(reach-dismissed))) .reach { display: block; }
 .reach > sherpa-callout {
