@@ -133,7 +133,7 @@ test('the header\'s mode buttons are ONE group with the ends on its first and la
     out.floatX = titleX(floating);
     return out;
   });
-  expect(r.oneGroup).toBe('minimise float pop expand external');
+  expect(r.oneGroup).toBe('minimise expand external');
   expect(r.first).toEqual(['4px', '0px']);
   expect(r.last).toEqual(['0px', '4px']);
   expect(r.look).toBe('default');
@@ -186,6 +186,6 @@ test('a press on a tab shows its panel as a docked overlay, hover or none; a pre
   expect(await state()).toBe('tab');
   // The docking button docks it, open for good.
   await press(page, '.tab-open');
-  await press(page, '.pop');
+  await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await state()).toBe('overlay');
 });

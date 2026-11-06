@@ -19,7 +19,7 @@ test('a start panel overlaid stays on the start edge; one told its side by data-
   await page.setViewportSize({ width: 1400, height: 900 });
   const fixed = await left(page, 'data-fixed="start"');
   expect(fixed.side).toBe('start');
-  await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.pop')!.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button') as HTMLElement).click());
   await page.evaluate(() => window.__settled());
   const over = await page.evaluate(() => { const r = document.getElementById('p')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect(); return { left: Math.round(r.left), dock: (document.getElementById('p') as unknown as { dockState: string }).dockState }; });
   expect(over).toEqual({ left: 0, dock: 'overlay' });

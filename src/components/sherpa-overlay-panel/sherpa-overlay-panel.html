@@ -38,7 +38,7 @@
     data-collapsible  show the collapse toggle
     data-expandable   show the maximise / minimise button
     data-external     show the external-link button
-    data-poppable     show the docking button (Dock as overlay / Dock as inline) (needs a sherpa-app-shell with room). Pop in
+    data-poppable     show the docking buttons (Dock as overlay, Dock as fixed) (needs a sherpa-app-shell with room). Pop in
                       goes back to the area it last left
     data-floatable    show the Float / Dock button
     data-dismissible  show the close button
@@ -108,21 +108,31 @@
       <!-- Figma Container Header `Variant=Panel`: the host's controls, then the
            view-mode pair, each divided from the next. -->
       <span slot="actions" class="toolbar" part="toolbar">
-        <slot name="actions" data-accepts="control"></slot>
-        <span class="divider after-actions" aria-hidden="true"></span>
-        <!-- ONE group: Minimise, Float or Pop, Maximise, and open in a new tab. Its first and last shown button wear
-             the group's ends (`#syncGroup`). TRAP T-a-minimised-panel-is-a-tab -->
-        <sherpa-group class="modes" part="modes">
-          <sherpa-button class="minimise" part="minimise" data-type="icon" data-size="sm"
-                         data-icon-start="minus" aria-label="Minimise to a tab"></sherpa-button>
+        <!-- GROUP 1, the content's own actions (the page's too, e.g. Filters in toolbar): first. -->
+        <span class="custom" part="custom">
+          <slot name="actions" data-accepts="control"></slot>
+          <slot name="actions-end" data-accepts="control"></slot>
+        </span>
+        <span class="divider after-custom" aria-hidden="true"></span>
+        <!-- GROUP 2, where it is docked: as an overlay, or fixed in its area; or floating. Its first and last shown button
+             wear the group's ends (`#syncGroup`). TRAP T-a-minimised-panel-is-a-tab
+             Dock as fixed pops a panel into the shell's area. TRAP T-a-panel-pops-into-the-end-area -->
+        <sherpa-group class="docks" part="docks">
+          <sherpa-button class="dock-overlay" part="dock-overlay" data-type="icon" data-size="sm"
+                         data-icon-start="monitor-w-floating-window" aria-label="Dock as overlay"></sherpa-button>
+          <sherpa-button class="dock-fixed" part="dock-fixed" data-type="icon" data-size="sm"
+                         data-icon-start="sidebar-flip" aria-label="Dock as fixed"></sherpa-button>
           <!-- Float: lifted off, anywhere in the window; Dock puts it back. -->
           <sherpa-button class="float" part="float" data-type="icon" data-size="sm"
                          data-icon-start="browser" aria-label="Float"
                          data-when-data-icon-start="data-floating: sidebar-flip"
                          data-when-aria-label="data-floating: Dock"></sherpa-button>
-          <!-- Pop in: a fixed panel in a panel area of the shell. TRAP T-a-panel-pops-into-the-end-area -->
-          <sherpa-button class="pop" part="pop" data-type="icon" data-size="sm"
-                         data-icon-start="monitor-w-floating-window" aria-label="Dock as overlay"></sherpa-button>
+        </sherpa-group>
+        <span class="divider after-docks" aria-hidden="true"></span>
+        <!-- GROUP 3, what it shows: Minimise, Maximise (the full page), open in a new tab. -->
+        <sherpa-group class="modes" part="modes">
+          <sherpa-button class="minimise" part="minimise" data-type="icon" data-size="sm"
+                         data-icon-start="minus" aria-label="Minimise to a tab"></sherpa-button>
           <sherpa-button class="expand" part="expand" data-type="icon" data-size="sm"
                          data-icon-start="fullscreen" aria-label="Maximise"
                          data-when-data-icon-start="data-maximised: fullscreen-exit"
@@ -131,11 +141,10 @@
                          data-icon-start="open-externally"
                          aria-label="Open externally"></sherpa-button>
         </sherpa-group>
-        <!-- After the panel's own buttons: the page's (Show as toolbar), then the content's ⋮. -->
-        <span class="divider before-end" aria-hidden="true"></span>
-        <slot name="actions-end" data-accepts="control"></slot>
+        <span class="divider after-modes" aria-hidden="true"></span>
+        <!-- GROUP 4, the overflow menu; then the header's own close. -->
         <slot name="overflow" data-accepts="control"></slot>
-        <span class="divider before-close" aria-hidden="true"></span>
+        <span class="divider after-overflow" aria-hidden="true"></span>
       </span>
     </sherpa-container-header>
 

@@ -193,9 +193,9 @@ test('a panel floats out of its area and docks back into the SAME one: a panel f
   expect((await box(page, 'layout .area-start')).w).toBe(0);
   await press(page, 'ask', '.float');
   expect(await box(page, 'ask .root')).toEqual(inStart);
-  await press(page, 'ask', '.pop');
+  await press(page, 'ask', '.dock-overlay');
   expect((await box(page, 'layout .area-start')).w).toBe(0);
-  await press(page, 'ask', '.pop');
+  await press(page, 'ask', '.dock-fixed');
   expect(await box(page, 'ask .root')).toEqual(inStart);
   expect(await page.evaluate(() => document.getElementById('ask')!.getAttribute('data-fixed'))).toBe('start');
 });

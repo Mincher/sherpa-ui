@@ -281,7 +281,7 @@ test('a host hands the box back by its attributes; the keys move it from the gri
 
 test('a fixed panel floats out of the end area, which gives its room back; Dock puts it back in the area', async ({ page }) => {
   await stage(page, { shell: true });
-  await press(page, 'pop');
+  await press(page, 'dock-fixed');
   const area = () => page.evaluate(() => {
     const r = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-end')!.getBoundingClientRect();
     return Math.round(r.width);
@@ -301,7 +301,7 @@ test('a fixed panel floats out of the end area, which gives its room back; Dock 
   // Never under its min height: a short card lifts taller.
   expect(lifted).toEqual({ x: fixed.x + 16, y: fixed.y + 16, w: fixed.w - 32, h: Math.max(192, fixed.h - 32) });
   // Floating, it says nothing of where it docks: Pop goes until it is docked.
-  expect(await style(page, '.pop', 'display')).toBe('none');
+  expect(await style(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])', 'display')).toBe('none');
   await drag(page, await bar(page), [-700, 50]);
   await drawnAt(page, await box(page));
 
@@ -312,7 +312,7 @@ test('a fixed panel floats out of the end area, which gives its room back; Dock 
   expect(await page.evaluate(() => document.getElementById('float')!.hasAttribute('data-fixed'))).toBe(true);
 });
 
-test('floating, it leaves the right edge: one opened there leaves it open; docked, it takes the edge again', async ({ page }) => {
+test('floating, it leaves the right edge: one opened there leaves it open; docked, both stay open', async ({ page }) => {
   await stage(page);
   await press(page, 'float');
   const r = await page.evaluate(async () => {
@@ -329,7 +329,7 @@ test('floating, it leaves the right edge: one opened there leaves it open; docke
     await window.__settled();
     return { both, z, after: [panel.open, other.open] };
   });
-  expect(r).toEqual({ both: [true, true], z: ['102', '101'], after: [true, false] });
+  expect(r).toEqual({ both: [true, true], z: ['102', '101'], after: [true, true] });
 });
 
 test('maximised while floating, it fills the window and Float goes; Minimise puts it back where it floated', async ({ page }) => {

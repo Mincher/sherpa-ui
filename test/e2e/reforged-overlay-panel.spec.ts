@@ -208,8 +208,8 @@ test('the header buttons are 24px; the pair is one object; a divider needs both 
         metadata: sr.querySelector('.header')!.matches(':state(has-metadata)'),
         close: size(header.querySelector('.close')),
         expand: size(sr.querySelector('.expand')),
-        afterActions: shown('.after-actions'),
-        beforeClose: shown('.before-close'),
+        afterActions: shown('.after-custom'),
+        beforeClose: shown('.after-modes') || shown('.after-overflow'),
         expandEnd: corner('.expand'),
       };
     };
@@ -293,7 +293,7 @@ test.describe('Pop in and Pop out', () => {
     const panel = document.getElementById('pop') as PanelEl;
     const sr = panel.shadowRoot!;
     const shell = document.querySelector('sherpa-app-shell')!;
-    const pop = sr.querySelector('.pop')!;
+    const pop = sr.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!;
     const box = (n: Element) => { const b = n.getBoundingClientRect(); return { x: Math.round(b.x), w: Math.round(b.width) }; };
     const areas = shell.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!;
     return {
@@ -312,7 +312,7 @@ test.describe('Pop in and Pop out', () => {
     };
   });
   const press = (page: import('@playwright/test').Page) => page.evaluate(async () => {
-    document.getElementById('pop')!.shadowRoot!.querySelector('.pop')!.shadowRoot!.querySelector('button')!.click();
+    document.getElementById('pop')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button')!.click();
     await window.__settled();
   });
 
@@ -324,7 +324,7 @@ test.describe('Pop in and Pop out', () => {
       document.addEventListener('panel-pop', (e) => heard.push((e as CustomEvent).detail));
     });
     const floating = await read(page);
-    expect(floating).toMatchObject({ parent: 'div', slot: '', next: 'after', open: true, position: 'fixed', resize: true, pop: true, label: 'Dock as inline', icon: 'sidebar-flip' });
+    expect(floating).toMatchObject({ parent: 'div', slot: '', next: 'after', open: true, position: 'fixed', resize: true, pop: true, label: 'Dock as fixed', icon: 'sidebar-flip' });
     expect(floating.root.w).toBe(528);
 
     await press(page);
@@ -362,7 +362,7 @@ test.describe('Pop in and Pop out', () => {
   test('the press keeps its focus on the button', async ({ page }) => {
     await stage(page);
     const focused = await page.evaluate(async () => {
-      const button = document.getElementById('pop')!.shadowRoot!.querySelector('.pop')!.shadowRoot!.querySelector('button')!;
+      const button = document.getElementById('pop')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button')!;
       button.focus();
       button.click();
       await window.__settled();
@@ -428,7 +428,7 @@ test.describe('Pop in and Pop out', () => {
       await window.__settled();
       const sr = panel.shadowRoot!;
       return {
-        button: getComputedStyle(sr.querySelector('.pop')!).display,
+        button: getComputedStyle(sr.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!).display,
         position: getComputedStyle(sr.querySelector('.root')!).position,
       };
     });
@@ -448,7 +448,7 @@ test.describe('Pop in and Pop out', () => {
       await panel.rendered;
       panel.show!();
       await window.__settled();
-      return getComputedStyle(panel.shadowRoot!.querySelector('.pop')!).display;
+      return getComputedStyle(panel.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!).display;
     });
     expect(display).toBe('none');
   });

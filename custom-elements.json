@@ -8530,7 +8530,7 @@
             },
             {
               "name": "data-poppable",
-              "description": "show the docking button (Dock as overlay / Dock as inline) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
+              "description": "show the docking buttons (Dock as overlay, Dock as fixed) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
               "type": {
                 "text": "boolean"
               }
@@ -8827,6 +8827,18 @@
               "name": "corner"
             },
             {
+              "name": "custom"
+            },
+            {
+              "name": "dock-fixed"
+            },
+            {
+              "name": "dock-overlay"
+            },
+            {
+              "name": "docks"
+            },
+            {
               "name": "expand"
             },
             {
@@ -8849,9 +8861,6 @@
             },
             {
               "name": "modes"
-            },
-            {
-              "name": "pop"
             },
             {
               "name": "rail"

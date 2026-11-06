@@ -159,14 +159,76 @@
                 },
                 "children": [
                   {
-                    "slot": "actions",
-                    "attrs": {
-                      "data-accepts": "control"
-                    }
+                    "el": "span",
+                    "class": "custom",
+                    "part": "custom",
+                    "children": [
+                      {
+                        "slot": "actions",
+                        "attrs": {
+                          "data-accepts": "control"
+                        }
+                      },
+                      {
+                        "slot": "actions-end",
+                        "attrs": {
+                          "data-accepts": "control"
+                        }
+                      }
+                    ]
                   },
                   {
                     "el": "span",
-                    "class": "divider after-actions",
+                    "class": "divider after-custom",
+                    "attrs": {
+                      "aria-hidden": "true"
+                    }
+                  },
+                  {
+                    "el": "sherpa-group",
+                    "class": "docks",
+                    "part": "docks",
+                    "children": [
+                      {
+                        "el": "sherpa-button",
+                        "class": "dock-overlay",
+                        "part": "dock-overlay",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "monitor-w-floating-window",
+                          "aria-label": "Dock as overlay"
+                        }
+                      },
+                      {
+                        "el": "sherpa-button",
+                        "class": "dock-fixed",
+                        "part": "dock-fixed",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "sidebar-flip",
+                          "aria-label": "Dock as fixed"
+                        }
+                      },
+                      {
+                        "el": "sherpa-button",
+                        "class": "float",
+                        "part": "float",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "browser",
+                          "aria-label": "Float",
+                          "data-when-data-icon-start": "data-floating: sidebar-flip",
+                          "data-when-aria-label": "data-floating: Dock"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "el": "span",
+                    "class": "divider after-docks",
                     "attrs": {
                       "aria-hidden": "true"
                     }
@@ -185,30 +247,6 @@
                           "data-size": "sm",
                           "data-icon-start": "minus",
                           "aria-label": "Minimise to a tab"
-                        }
-                      },
-                      {
-                        "el": "sherpa-button",
-                        "class": "float",
-                        "part": "float",
-                        "attrs": {
-                          "data-type": "icon",
-                          "data-size": "sm",
-                          "data-icon-start": "browser",
-                          "aria-label": "Float",
-                          "data-when-data-icon-start": "data-floating: sidebar-flip",
-                          "data-when-aria-label": "data-floating: Dock"
-                        }
-                      },
-                      {
-                        "el": "sherpa-button",
-                        "class": "pop",
-                        "part": "pop",
-                        "attrs": {
-                          "data-type": "icon",
-                          "data-size": "sm",
-                          "data-icon-start": "monitor-w-floating-window",
-                          "aria-label": "Dock as overlay"
                         }
                       },
                       {
@@ -239,15 +277,9 @@
                   },
                   {
                     "el": "span",
-                    "class": "divider before-end",
+                    "class": "divider after-modes",
                     "attrs": {
                       "aria-hidden": "true"
-                    }
-                  },
-                  {
-                    "slot": "actions-end",
-                    "attrs": {
-                      "data-accepts": "control"
                     }
                   },
                   {
@@ -258,7 +290,7 @@
                   },
                   {
                     "el": "span",
-                    "class": "divider before-close",
+                    "class": "divider after-overflow",
                     "attrs": {
                       "aria-hidden": "true"
                     }
@@ -483,7 +515,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show the docking button (Dock as overlay / Dock as inline) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left"
+      "description": "show the docking buttons (Dock as overlay, Dock as fixed) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left"
     },
     {
       "$type": "prop",
@@ -838,9 +870,11 @@
     "tab-open.padding": "{sherpa.display-mode-space-sm}",
     "search.margin-block-start": "{sherpa.theme-gap-md}",
     "toolbar.gap": "{sherpa.theme-gap-sm}",
+    "custom.gap": "{sherpa.theme-gap-sm}",
     "divider.inline-size": "{sherpa.display-mode-border-width-base}",
     "divider.block-size": "{sherpa.theme-content-size-xs}",
     "divider.background": "{sherpa.style-border-base}",
+    "divider.margin-inline": "{sherpa.theme-gap-sm}",
     "resize.inline-size": "{sherpa.display-mode-space-xs}"
   },
   "$extensions": {

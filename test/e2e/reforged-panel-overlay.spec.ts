@@ -38,22 +38,22 @@ test('fixed is flat and takes its area\'s room; Pop makes it an overlay over the
   await stage(page);
   expect(await area(page)).toBeGreaterThan(200);
   expect(await look(page)).toMatchObject({ shadow: false, radius: false });
-  await press(page, '.pop');
+  await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await area(page)).toBe(0);
   expect(await look(page)).toMatchObject({ shadow: true, radius: true, display: 'flex' });
   expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-overlay'))).toBe(true);
   // Pop again: fixed, flat, its room back.
-  await press(page, '.pop');
+  await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await area(page)).toBeGreaterThan(200);
   expect(await look(page)).toMatchObject({ shadow: false, radius: false });
 });
 
-test('the docking button says what it will do: Dock as overlay from fixed, Dock as inline from an overlay', async ({ page }) => {
+test('the docking button says what it will do: Dock as overlay from fixed, Dock as fixed from an overlay', async ({ page }) => {
   await stage(page);
-  const label = () => page.evaluate(() => document.getElementById('p')!.shadowRoot!.querySelector('.pop')!.getAttribute('aria-label'));
+  const label = () => page.evaluate(() => document.getElementById('p')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.getAttribute('aria-label'));
   expect(await label()).toBe('Dock as overlay');
-  await press(page, '.pop');
-  expect(await label()).toBe('Dock as inline');
+  await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
+  expect(await label()).toBe('Dock as fixed');
 });
 
 test('with hover-open, the pointer on a tab shows its panel as a docked overlay and hides the tab; leaving the panel brings the tab back at once', async ({ page }) => {
@@ -125,7 +125,7 @@ for (const kind of KINDS) {
     expect(await read()).toEqual(before);
 
     // Pop: the other docked state; and float and dock from there returns to THAT one.
-    await press(page, '.pop');
+    await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
     const swapped = await read();
     expect(swapped.flat).toBe(!kind.flat);
     await press(page, '.float');
@@ -134,7 +134,7 @@ for (const kind of KINDS) {
     expect(await read()).toEqual(swapped);
 
     // And Pop again: back where it began.
-    await press(page, '.pop');
+    await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
     expect(await read()).toEqual(before);
   });
 }
@@ -169,9 +169,9 @@ for (const kind of KINDS) {
     // WebKit ends a hover on pointer events of its own accord under load: the press is checked in the other two.
     test.skip(browserName === 'webkit', 'a WebKit hover is ended by its own synthetic pointer events');
     // The ONE docking button says so while it peeks: dock it as an overlay, and it stays open as one, whatever it was.
-    expect(await page.evaluate(() => document.getElementById('p')!.shadowRoot!.querySelector('.pop')!.getAttribute('aria-label'))).toBe('Dock as overlay');
+    expect(await page.evaluate(() => document.getElementById('p')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.getAttribute('aria-label'))).toBe('Dock as overlay');
     // The button's own press (WebKit drops a pointer that crosses the hidden tab to reach it).
-    await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.pop')!.shadowRoot!.querySelector('button') as HTMLElement).click());
+    await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button') as HTMLElement).click());
     await page.evaluate(() => window.__settled());
     expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-minimised'))).toBe(false);
     expect(await page.evaluate(() => (document.getElementById('p') as HTMLElement & { dockState: string }).dockState)).toBe('overlay');
@@ -185,13 +185,13 @@ test('the docking cycle: fixed to overlay to fixed, at the same width; dockState
   const width = () => page.evaluate(() => Math.round(document.getElementById('p')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().width));
   expect(await state()).toBe('fixed');
   const fixed = await width();
-  await press(page, '.pop');
+  await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await state()).toBe('overlay');
   // The overlay is as wide as the fixed panel was; dragged wider, the fixed one takes that width back.
   expect(Math.abs((await width()) - fixed)).toBeLessThanOrEqual(2);
   await page.evaluate(() => document.getElementById('p')!.style.setProperty('--_width', '400px'));
   const wider = await width();
-  await press(page, '.pop');
+  await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await state()).toBe('fixed');
   expect(Math.abs((await width()) - wider)).toBeLessThanOrEqual(2);
   // Float and dock: back to fixed.
@@ -217,7 +217,7 @@ test('a docked panel is never over a third of its room: an overlay on the window
   await stage(page, 'data-overlay style="--_width: 900px"');
   const over = await page.evaluate(() => Math.round(document.getElementById('p')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().width));
   expect(over).toBeLessThanOrEqual(Math.round(1000 / 3) + 1);
-  await press(page, '.pop');
+  await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   const fixed = await page.evaluate(() => Math.round(document.getElementById('p')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().width));
   expect(fixed).toBeLessThanOrEqual(Math.round(1000 / 3) + 1);
 });

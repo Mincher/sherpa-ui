@@ -370,8 +370,8 @@ the box (`pointer-events: auto`). Minimised, its tab is `absolute` in the layout
 (flat: no shadow, no rounding; it takes its area's room) or an OVERLAY on the content (a shadow and a rounded
 leading edge; its area gives the room back). `Pop` toggles them in every panel: on the window, `data-fixed` is the
 shell's area (absent: an overlay on the edge); slotted in a layout, `data-overlay` is the overlay (absent: fixed).
-ONE docking button cycles them (Will, 2026-11-06, TODO 854): a tab shown on hover, or a FIXED panel, **Dock as overlay**; an
-overlay, **Dock as inline** (fixed). There is never a hover and fixed together: a hover opens over the content. The
+TWO docking buttons set them (Will, 2026-11-06, TODOs 854, 864): a tab shown on hover, or a FIXED panel, **Dock as overlay**; an
+overlay, **Dock as fixed**; the one of the state it is in is off. There is never a hover and fixed together: a hover opens over the content. The
 box keeps its width across the swap (the overlay takes its area's width; the area takes the overlay's). `dockState`
 says which of `floating`, `tab`, `hover`, `overlay`, `fixed` it is; Float lifts it, and Dock puts it back as it was.
 

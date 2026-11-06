@@ -30,8 +30,10 @@ function moveInto(parent: Node, node: ChildNode, before: ChildNode | null): void
   if (active instanceof HTMLElement) queueMicrotask(() => (active as HTMLElement).focus());
 }
 
-/** The group's buttons, in order. */
-const GROUP = ['minimise', 'float', 'pop', 'expand', 'external'] as const;
+/** The two button groups, in order. */
+const DOCKS = ['dock-overlay', 'dock-fixed', 'float'] as const;
+const MODES = ['minimise', 'expand', 'external'] as const;
+const GROUPS = ['custom', 'docks', 'modes', 'overflow', 'close'] as const;
 
 export class SherpaOverlayPanel extends SherpaElement {
   // The floating box's sheet, shared with the node panel. TRAP T-a-floating-panel-is-a-state
@@ -112,7 +114,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
     this.$('.expand')?.addEventListener('button-click', this.#onExpand);
     this.$('.external')?.addEventListener('button-click', this.#onExternal);
-    this.$('.pop')?.addEventListener('button-click', this.#onPop);
+    this.$('.dock-overlay')?.addEventListener('button-click', () => this.#onDock(false));
+    this.$('.dock-fixed')?.addEventListener('button-click', () => this.#onDock(true));
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
     this.$('.minimise')?.addEventListener('button-click', this.#onMinimiseButton);
     // A tap (or a click) on the tab shows its panel as a docked overlay, as a hover does; the docking button then docks it where it was.
@@ -185,7 +188,9 @@ export class SherpaOverlayPanel extends SherpaElement {
   #syncShown = (): void => {
     const shows = (...slots: string[]): boolean => slots.some((slot) => [...this.children].some((c) => c.getAttribute('slot') === slot && !c.hasAttribute('hidden')));
     this.toggleState('shows-actions', shows('actions'));
-    this.toggleState('shows-end', shows('actions-end', 'overflow'));
+    this.toggleState('shows-end', shows('actions-end'));
+    this.toggleState('shows-overflow', shows('overflow'));
+    this.#syncGroup();
   };
 
   /** Follow its direct children, so a clone hidden or shown is read. */
@@ -425,24 +430,37 @@ export class SherpaOverlayPanel extends SherpaElement {
     moveInto(back, this, before?.parentNode === back ? before : null);
   }
 
-  /** The buttons of the one group, in order: the first and the last that show wear the group's ends, which
-   *  :first-child and :last-child give a button that is hidden. TRAP T-a-minimised-panel-is-a-tab */
+  /** The buttons of the two groups: the first and the last that show wear the group's ends, which :first-child and
+   *  :last-child give a button that is hidden. A divider stands after each group that shows, while a later one does too.
+   *  TRAP T-a-minimised-panel-is-a-tab */
   #syncGroup(): void {
     // The same rules the CSS hides them by, read from the host: a computed style is not drawn yet at the first render.
     const has = (attr: string): boolean => this.hasAttribute(attr);
     const maximised = has('data-maximised');
-    const visible: Record<(typeof GROUP)[number], boolean> = {
-      minimise: has('data-minimisable') && !maximised,
+    const docked = has('data-poppable') && !maximised && !this.hasState('no-area') && !this.hasState('floating');
+    const visible: Record<string, boolean> = {
+      'dock-overlay': docked,
+      'dock-fixed': docked,
       float: has('data-floatable') && !maximised,
-      pop: has('data-poppable') && !maximised && !this.hasState('no-area') && !this.hasState('floating'),
+      minimise: has('data-minimisable') && !maximised,
       expand: has('data-expandable') && !this.hasState('in-area'),
       external: has('data-external'),
     };
-    const shown = GROUP.filter((name) => visible[name]);
-    for (const name of GROUP) {
-      this.toggleState(`first-${name}`, shown[0] === name);
-      this.toggleState(`last-${name}`, shown.at(-1) === name);
+    for (const group of [DOCKS, MODES]) {
+      const shown = group.filter((name) => visible[name]);
+      for (const name of group) {
+        this.toggleState(`first-${name}`, shown[0] === name);
+        this.toggleState(`last-${name}`, shown.at(-1) === name);
+      }
     }
+    const on: Record<(typeof GROUPS)[number], boolean> = {
+      custom: this.hasState('shows-actions') || this.hasState('shows-end'),
+      docks: DOCKS.some((name) => visible[name]),
+      modes: MODES.some((name) => visible[name]),
+      overflow: this.hasState('shows-overflow'),
+      close: has('data-dismissible') || has('data-collapsible'),
+    };
+    GROUPS.forEach((group, i) => this.toggleState(`divide-${group}`, on[group] && GROUPS.slice(i + 1).some((later) => on[later])));
   }
 
   /** Mirror the panel's attributes onto the composed header. */
@@ -487,12 +505,10 @@ export class SherpaOverlayPanel extends SherpaElement {
     return this.#isFixed() ? 'fixed' : 'overlay';
   }
 
-  /** The ONE docking button, a cycle of what is docked: a tab shown on hover, or a fixed panel, docks as an overlay; an overlay docks
-   *  as inline (fixed). It reports `panel-pop`: a press is the reader's choice, a lost room is not. TRAP T-a-panel-peeks-from-its-tab */
-  #onPop = (): void => {
+  /** Dock as an overlay, or fixed in its area. It reports `panel-pop`: a press is the reader's choice, a lost room is not. TRAP T-a-panel-peeks-from-its-tab */
+  #onDock = (fixed: boolean): void => {
     const side = this.#dock;
     const hovering = this.hasState('peeking');
-    const fixed = !hovering && !this.#isFixed();
     // The other docked box is as wide as this one: the width is the reader's, not the state's.
     this.#matchWidth(fixed);
     if (this.#slotted()) this.set('data-overlay', !fixed);
@@ -525,12 +541,12 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.toggleState('at-start', start);
   }
 
-  /** The docking button says what a press does next: dock as an overlay (from fixed, or a tab on hover), or dock as inline. */
+  /** The dock button of the state it is in is off: a press there says nothing. A tab shown on hover is in neither. */
   #syncPop(): void {
-    const toOverlay = this.hasState('peeking') || this.#isFixed();
-    const pop = this.$('.pop');
-    pop?.setAttribute('data-icon-start', toOverlay ? 'monitor-w-floating-window' : 'sidebar-flip');
-    pop?.setAttribute('aria-label', toOverlay ? 'Dock as overlay' : 'Dock as inline');
+    const fixed = this.#isFixed();
+    const peeking = this.hasState('peeking');
+    this.$('.dock-overlay')?.toggleAttribute('disabled', !fixed && !peeking);
+    this.$('.dock-fixed')?.toggleAttribute('disabled', fixed && !peeking);
   }
 
   /** The pointer is on the tab: open the panel as a docked overlay, where the setting says. The tab is hidden while it shows. */

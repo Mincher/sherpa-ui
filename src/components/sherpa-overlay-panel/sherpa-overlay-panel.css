@@ -284,32 +284,37 @@
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
+.custom { display: flex; align-items: center; gap: var(--sherpa-theme-gap-sm, 4px); }
 :host(:not([data-expandable])) .expand { display: none; }
 :host(:not([data-external])) .external { display: none; }
-:host(:not([data-poppable]):not(:state(in-layout))) .pop,
-:host(:state(no-area)) .pop,
-:host([data-maximised]) .pop,
-:host(:state(floating)) .pop { display: none; }
+:host(:not([data-poppable]):not(:state(in-layout))) :is(.dock-overlay, .dock-fixed),
+:host(:state(no-area)) :is(.dock-overlay, .dock-fixed),
+:host([data-maximised]) :is(.dock-overlay, .dock-fixed),
+:host(:state(floating)) :is(.dock-overlay, .dock-fixed) { display: none; }
 :host(:not([data-minimisable])) .minimise,
 :host([data-maximised]) .minimise,
 :host(:not([data-floatable])) .float,
 :host([data-maximised]) .float { display: none; }
-:host(:not([data-minimisable]):not([data-floatable]):not([data-poppable]):not([data-expandable]):not([data-external])) .modes { display: none; }
+:host(:not([data-poppable]):not([data-floatable]):not(:state(in-layout))) .docks,
+:host(:state(no-area):not([data-floatable])) .docks { display: none; }
+:host(:not([data-minimisable]):not([data-expandable]):not([data-external])) .modes { display: none; }
 
 /* The group's first and last SHOWN button wear its ends: the group derives them from :first-child and
    :last-child, which a hidden button still is. `#syncGroup` says which they are. */
-:host(:state(first-minimise)) .minimise,
+:host(:state(first-dock-overlay)) .dock-overlay,
+:host(:state(first-dock-fixed)) .dock-fixed,
 :host(:state(first-float)) .float,
-:host(:state(first-pop)) .pop,
+:host(:state(first-minimise)) .minimise,
 :host(:state(first-expand)) .expand,
 :host(:state(first-external)) .external {
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
-:host(:state(last-minimise)) .minimise,
+:host(:state(last-dock-overlay)) .dock-overlay,
+:host(:state(last-dock-fixed)) .dock-fixed,
 :host(:state(last-float)) .float,
-:host(:state(last-pop)) .pop,
+:host(:state(last-minimise)) .minimise,
 :host(:state(last-expand)) .expand,
 :host(:state(last-external)) .external {
   --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
@@ -317,8 +322,8 @@
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
-/* A divider shows only BETWEEN two groups that each show a control: never leading, never trailing. The panel says which
-   of its slots show one (`shows-actions`, `shows-end`: a hidden clone is none); the modes group is the flags that show it.
+/* A divider stands after a group that shows, while a later group shows too: never leading, never trailing. `#syncGroup`
+   says which (`divide-<group>`); the panel says which slots show a control (`shows-*`: a hidden clone is none).
    TRAP T-a-panel-divides-only-between-shown-groups */
 .divider {
   display: none;
@@ -326,12 +331,12 @@
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
   block-size: var(--sherpa-theme-content-size-xs, 10px);
   background: var(--sherpa-style-border-base, #b3b3c3);
+  margin-inline: var(--sherpa-theme-gap-sm, 4px);
 }
-:host(:state(shows-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable])) .after-actions,
-:host(:is(:state(shows-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable]):state(shows-end)) .before-end,
-:host(:is(:state(shows-actions), :state(shows-end), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable]):is([data-dismissible], [data-collapsible])) .before-close {
-  display: block;
-}
+:host(:state(divide-custom)) .after-custom,
+:host(:state(divide-docks)) .after-docks,
+:host(:state(divide-modes)) .after-modes,
+:host(:state(divide-overflow)) .after-overflow { display: block; }
 
 /* Collapsed → only the header shows. */
 :host([data-collapsed]) .body,

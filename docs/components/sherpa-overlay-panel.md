@@ -44,7 +44,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-minimised` | boolean |  | shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens |
 | `data-overlay` | boolean |  | a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room |
 | `data-padding` | `none` |  | `none`: the body has no padding, for content that fills it (a list) |
-| `data-poppable` | boolean |  | show the docking button (Dock as overlay / Dock as inline) (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
+| `data-poppable` | boolean |  | show the docking buttons (Dock as overlay, Dock as fixed) (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
 | `data-search-placeholder` | text |  | what the search row says (also its label); "Search" by default |
 | `data-searchable` | boolean |  | a search row in the header, the header's full width; it fires `panel-search` |
 | `data-side` | `start` `end` |  | start \| end: the edge it docks to, written from data-fixed; kept, a panel overlaid out of its area stays on it |
@@ -123,7 +123,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `rail`, `resize`, `root`, `search`, `tab`, `tab-mark`, `tab-open`, `tab-title`, `toolbar`, `trail`
+`body`, `corner`, `custom`, `dock-fixed`, `dock-overlay`, `docks`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `rail`, `resize`, `root`, `search`, `tab`, `tab-mark`, `tab-open`, `tab-title`, `toolbar`, `trail`
 
 ## CSS custom properties it reads
 
@@ -140,9 +140,11 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-sm` | `.tab-open` | `padding` |
 | `--sherpa-theme-gap-md` | `.search` | `margin-block-start` |
 | `--sherpa-theme-gap-sm` | `.toolbar` | `gap` |
+| `--sherpa-theme-gap-sm` | `.custom` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.divider` | `inline-size` |
 | `--sherpa-theme-content-size-xs` | `.divider` | `block-size` |
 | `--sherpa-style-border-base` | `.divider` | `background` |
+| `--sherpa-theme-gap-sm` | `.divider` | `margin-inline` |
 | `--sherpa-display-mode-space-xs` | `.resize` | `inline-size` |
 
 ## populate()

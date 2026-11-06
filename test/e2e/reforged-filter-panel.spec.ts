@@ -129,10 +129,10 @@ test('a panel draws a divider only between groups that show a control', async ({
     const plain = read(document.getElementById('q'));
     return { all, noActions, plain };
   })()`) as { all: string[]; noActions: string[]; plain: string[] };
-  // Suggest and Save first, then the panel's own buttons, then the page's and the ⋮, then close.
-  expect(r.all).toEqual(['after-actions', 'before-end', 'before-close']);
+  // The content's actions first, then dock, then the modes, then the ⋮, then close: a divider after each shown group but the last.
+  expect(r.all).toEqual(['after-custom', 'after-docks', 'after-modes', 'after-overflow']);
   // No group before the modes: no leading divider; the ⋮ and the close still divide.
-  expect(r.noActions).toEqual(['before-end', 'before-close']);
+  expect(r.noActions).toEqual(['after-docks', 'after-modes', 'after-overflow']);
   // Only the panel's own buttons and the close: one divider, between them.
-  expect(r.plain).toEqual(['before-close']);
+  expect(r.plain).toEqual(['after-docks', 'after-modes']);
 });
