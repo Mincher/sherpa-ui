@@ -95,13 +95,9 @@
   pointer-events: none;
   border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
-/* In TAB mode the edge facing the canvas is a thin line in the Style's border, over the tab row. It was
-   too faint in the Theme's lighter step to be seen on a white panel. TRAP T-an-area-with-two-panels-is-tabbed */
+/* In TAB mode the tabs mark the edge, so the divider is not drawn. TRAP T-an-area-with-two-panels-is-tabbed */
 :host(:state(start-tabs)) .area-start::after,
-:host(:state(end-tabs)) .area-end::after {
-  border-inline-start-width: var(--sherpa-display-mode-border-width-base, 1px);
-  border-inline-start-color: var(--sherpa-style-border-base, #b3b3c3);
-}
+:host(:state(end-tabs)) .area-end::after { display: none; }
 .area-start::after { inset-inline-end: 0; }
 .area-end::after { inset-inline-start: 0; }
 
@@ -122,14 +118,6 @@
 :host(:state(start-floating)) .edge-start,
 :host(:state(end-floating)) .area-end::after,
 :host(:state(end-floating)) .edge-end { display: none; }
-/* Every panel in the area a TAB: the area covers the layout, and the line runs down the layout's own
-   edge, where the nav (a start area) or the window (an end area) meets the tab. Over the hidden divider.
-   TRAP T-an-area-with-two-panels-is-tabbed */
-:host(:state(start-rail):state(start-floating)) .area-start::after,
-:host(:state(end-rail):state(end-floating)) .area-end::after { display: block; }
-:host(:state(start-rail):state(start-floating)) .area-start::after { inset-inline: 0 auto; }
-:host(:state(end-rail):state(end-floating)) .area-end::after { inset-inline: auto 0; }
-
 /* The INNER edge's handle: a strip astride the divider, half each side, with a line down
    its middle while it is pointed at, focused or held. TRAP T-an-edge-resizes-its-box */
 .edge {
