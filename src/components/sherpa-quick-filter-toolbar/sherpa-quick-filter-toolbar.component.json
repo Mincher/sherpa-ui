@@ -804,6 +804,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-graph-unchanged",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the graph is as it was when the editor loaded: \"Reset node graph\" is inactive. Written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-group-field",
       "type": "string",
       "observed": true,
@@ -1005,6 +1014,15 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
+      "name": "data-reset-graph",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a node graph's editor is on it: the ⋮ alone is shown, holding \"Reset node graph\" and nothing else"
     },
     {
       "$type": "prop",
@@ -1361,6 +1379,13 @@
         "ids": "string[]",
         "scope": "string"
       }
+    },
+    {
+      "$type": "event",
+      "name": "graph-reset",
+      "description": "Reset node graph: the editor puts its graph back to its starting definition, a draft",
+      "bubbles": true,
+      "composed": true
     },
     {
       "$type": "event",

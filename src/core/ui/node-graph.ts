@@ -91,7 +91,7 @@ import { SherpaToast } from '../../components/sherpa-toast/sherpa-toast.js';
 import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalLinks, portalOf } from '../data/node-portals.js';
-import { typedValue, type FieldType } from '../data/filter-state.js';
+import type { FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import {
   FALSE_SOCKET, NODE_KINDS, categorySlug, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
@@ -2248,9 +2248,10 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   notify?: (words: string, status: 'success' | 'critical' | 'info') => void;
 }
 
-/** A node's own name, line and place, as its inspector's first rows edit them. */
-const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y'>>> = {
-  '#heading': 'heading', '#description': 'description', '#x': 'x', '#y': 'y',
+/** A node's own name and line, as its inspector's first rows edit them. Its place is not one: a drag moves it, and the
+ *  draft holds it (TODO 838). */
+const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'description'>>> = {
+  '#heading': 'heading', '#description': 'description',
 };
 
 /** The most steps Undo goes back. */
@@ -2316,6 +2317,10 @@ export function bindWorkflow(
   for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
   let draft: WorkflowDefinition = read.workflow ?? { v: 2, id: workflow.id, nodes: [] };
   let original: WorkflowDefinition = readWorkflow(structuredClone(workflow), topKinds()).workflow ?? draft;
+  /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
+  const starting = original;
+  /** The view bar of the app header, where its ⋮ holds Reset node graph (TODO 837). */
+  const resetBar = (): HTMLElement | null | undefined => header?.querySelector<HTMLElement>('sherpa-quick-filter-toolbar[data-type="view"]');
   const edits = (): Record<string, NodeDefinition> => Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : [])));
   /** A route a use's header holds from before reads once as its own new input, drafted; Save writes it. TRAP T-a-custom-node-header-adds-an-input */
   const readHeld = (): void => {
@@ -2361,6 +2366,8 @@ export function bindWorkflow(
     toolbar?.toggleAttribute('data-can-undo', journal.canBack);
     toolbar?.toggleAttribute('data-can-redo', journal.canForward);
     canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
+    // Reset node graph is off while the graph is as it was when the editor loaded (a preset's never changes).
+    resetBar()?.toggleAttribute('data-graph-unchanged', (draft === starting || JSON.stringify(draft) === JSON.stringify(starting)) && !dirty.size && ownTags === handedTags);
   };
   /** Two steps as one: the first's before, the second's after, for every definition either changed. */
   const fold = (last: Change<Snap>, next: Change<Snap>): Change<Snap> => ({
@@ -2415,6 +2422,24 @@ export function bindWorkflow(
     draw();
     tell();
   };
+  /** Reset node graph: the graph back to its starting definition, and each definition edited since back to what Save last
+   *  handed over — a draft, ONE step, and nothing saved. Will, TODO 837 */
+  const reset = (): void => {
+    if (preset) return;
+    edit(() => {
+      path = [];
+      draft = starting;
+      ownTags = handedTags;
+      const back = new Map([...dirty].map((id) => [id, handed.nodes[id]] as const));
+      lib = { ...lib, nodes: Object.fromEntries(Object.entries(lib.nodes).flatMap(([id, d]) => (back.has(id) ? (back.get(id) ? [[id, back.get(id)!] as const] : []) : [[id, d] as const]))) };
+      dirty.clear();
+      session?.set(pointer, undefined);
+      session?.set(editsAt, undefined);
+      session?.set(tagsAt, undefined);
+      refreshPanel();
+      draw();
+    });
+  };
   /** The library after a change to these definitions: drafted, and kept for the tab. */
   const setLib = (next: NodeLibrary, ids: readonly string[]): void => {
     edit(() => {
@@ -2460,9 +2485,7 @@ export function bindWorkflow(
       return draw();
     }
     if (!own) return write(editWorkflow(shown(), { node: node.id, row: row.name, value }, K(), facts), `row:${node.id}/${row.name}`);
-    const said = own === 'x' || own === 'y' ? typedValue('number', String(value ?? '')) : String(value ?? '');
-    if ((own === 'x' || own === 'y') && typeof said !== 'number') return;
-    write(editWorkflow(shown(), { node: node.id, set: { [own]: said } }, K()), `own:${node.id}/${own}`);
+    write(editWorkflow(shown(), { node: node.id, set: { [own]: String(value ?? '') } }, K()), `own:${node.id}/${own}`);
   };
   const onMove = (node: GraphNode, x: number, y: number): void => {
     if (node.id.startsWith('#')) return;
@@ -2707,6 +2730,8 @@ export function bindWorkflow(
   };
   const onCrumb = (event: Event): void => back((event as CustomEvent<{ index: number }>).detail.index);
   header?.addEventListener('breadcrumb-select', onCrumb);
+  header?.addEventListener('graph-reset', reset);
+  resetBar()?.setAttribute('data-reset-graph', '');
   /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
   const copy = (): void => edit(() => {
     const step = path.at(-1);
@@ -3022,14 +3047,11 @@ export function bindWorkflow(
   const withOwn = (node: GraphNode): GraphNode => {
     const tags = tagsRow(node);
     if (node.id.startsWith('#')) return tags.length ? { ...node, rows: [...tags, ...node.rows] } : node;
-    const at = shown().nodes.find((n) => n.id === node.id);
     const editable = !readOnly();
     const own: GraphRow[] = [
       { name: '#heading', label: 'Name', control: 'text', value: node.heading, editable },
       { name: '#description', label: 'Description', control: 'text', value: node.description ?? '', editable },
       ...tags,
-      { name: '#x', label: 'X', control: 'number', value: at?.x, editable },
-      { name: '#y', label: 'Y', control: 'number', value: at?.y, editable },
     ];
     // A named portal: Rename, on every portal of its name, so its links stay. TODO 779
     const portal = portalOf(node);
@@ -3285,6 +3307,9 @@ export function bindWorkflow(
       canvas.removeEventListener('click', onClick, { capture: true });
       canvas.removeEventListener('dblclick', onDouble);
       header?.removeEventListener('breadcrumb-select', onCrumb);
+      header?.removeEventListener('graph-reset', reset);
+      resetBar()?.removeAttribute('data-reset-graph');
+      resetBar()?.removeAttribute('data-graph-unchanged');
       picks.stop();
     },
   };

@@ -71,6 +71,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-flat` | boolean | `false` | portrait: its scope is a HEADING, not an accordion — the column's View |
 | `data-floatable` | boolean | `false` | a column shows the Float / Dock button in its header |
 | `data-floating` | boolean |  | a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats |
+| `data-graph-unchanged` | boolean |  | the graph is as it was when the editor loaded: "Reset node graph" is inactive. Written by the editor |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
 | `data-height` | number |  | how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout |
@@ -93,6 +94,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
 | `data-reorder` | boolean |  |  |
+| `data-reset-graph` | boolean |  | a node graph's editor is on it: the ⋮ alone is shown, holding "Reset node graph" and nothing else |
 | `data-reset-on-populate` | boolean |  |  |
 | `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope |
 | `data-saved-menu` | boolean | `false` | the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's |
@@ -169,6 +171,7 @@ Each one bubbles.
 | `sort-change` | `{ clear: true; direction: SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string; scope: string }` | A chip was removed. |
 | `filter-add` | `{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }` | Chips were added. |
+| `graph-reset` |  | Reset node graph: the editor puts its graph back to its starting definition, a draft |
 | `view-reset` |  | Reset to view defaults: put back the View's own filters, in every scope. |
 | `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
 | `filter-discard` | `{ field: string }` | Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. |

@@ -3387,6 +3387,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-graph-unchanged",
+          "description": "the graph is as it was when the editor loaded: \"Reset node graph\" is inactive. Written by the editor",
+          "valueSet": "v"
+        },
+        {
           "name": "data-group-field",
           "description": "the field the Group chip points at (the standard name)"
         },
@@ -3510,6 +3515,11 @@
         {
           "name": "data-reorder",
           "description": "It follows the app's `reorderFilters` setting.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-reset-graph",
+          "description": "a node graph's editor is on it: the ⋮ alone is shown, holding \"Reset node graph\" and nothing else",
           "valueSet": "v"
         },
         {

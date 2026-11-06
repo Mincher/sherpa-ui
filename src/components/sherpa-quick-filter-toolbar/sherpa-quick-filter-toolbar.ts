@@ -184,6 +184,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-suggest': { type: 'boolean', kind: 'style' },
     /* "Open in Node Editor" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822 */
     'data-node-editor': { type: 'boolean', kind: 'style' },
+    /* A node graph's editor is on it: the ⋮ is the one control left, holding "Reset node graph" and no filter reset. Will, TODO 837 */
+    'data-reset-graph': { type: 'boolean', kind: 'style' },
+    /* The graph is as it was when the editor loaded: "Reset node graph" is inactive. Written by the editor. */
+    'data-graph-unchanged': { type: 'boolean', kind: 'behaviour' },
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
@@ -1940,7 +1944,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'data-fixed-primary') this.$('.organise-chip[data-id="primary"]')?.toggleAttribute('disabled', this.hasAttribute(name));
     if (name === 'data-move-filters' || name === 'data-allow-solo' || name === 'data-solo-header') this.#redoMoves();
     if (name === 'data-limit-options' || name === 'data-saved-menu' || name === 'data-saveable' || name === 'data-no-saves'
-      || name === 'data-node-editor' || name === 'data-suggest' || name === 'data-orientation') this.#syncMore();
+      || name === 'data-node-editor' || name === 'data-suggest' || name === 'data-orientation' || name === 'data-reset-graph' || name === 'data-graph-unchanged') this.#syncMore();
     if (name === 'data-every-count') this.#filter.countAll();
     if (name === 'data-orientation') {
       this.#syncLayout();
@@ -2524,6 +2528,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'node-editor':
         this.emit('node-editor-open', {});
         break;
+      case 'reset-graph':
+        // The editor answers: the graph back to its starting definition, a draft. Will, TODO 837
+        this.emit('graph-reset', {});
+        break;
       default:
         // Reset to view defaults, and the save rows: the header's, as its column's. TODO 415
         this.#header.act(act);
@@ -2577,6 +2585,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** What the ⋮ holds at this width. Reset is the Edit menu's. Will, TODO 454 */
   #moreRows(): MoreRow[][] {
+    // A node graph's editor is on it: one row, and it is the graph's. Will, TODO 837
+    if (this.hasAttribute('data-reset-graph')) return [[['reset-graph', this.hasAttribute('data-graph-unchanged')]]];
     // A folded button's row: Suggest, where offered (TODO 527), and Refresh.
     const gone = (act: string): boolean => folded(this.$(`.act[data-act="${act}"]`));
     const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),

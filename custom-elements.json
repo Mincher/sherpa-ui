@@ -9547,6 +9547,13 @@
               }
             },
             {
+              "name": "data-graph-unchanged",
+              "description": "the graph is as it was when the editor loaded: \"Reset node graph\" is inactive. Written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-group-field",
               "description": "the field the Group chip points at (the standard name)",
               "type": {
@@ -9697,6 +9704,13 @@
             {
               "name": "data-reorder",
               "description": "It follows the app's `reorderFilters` setting.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-reset-graph",
+              "description": "a node graph's editor is on it: the ⋮ alone is shown, holding \"Reset node graph\" and nothing else",
               "type": {
                 "text": "boolean"
               }
@@ -10326,6 +10340,13 @@
               "description": "Chips were added.",
               "type": {
                 "text": "CustomEvent<{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }>"
+              }
+            },
+            {
+              "name": "graph-reset",
+              "description": "Reset node graph: the editor puts its graph back to its starting definition, a draft",
+              "type": {
+                "text": "CustomEvent"
               }
             },
             {

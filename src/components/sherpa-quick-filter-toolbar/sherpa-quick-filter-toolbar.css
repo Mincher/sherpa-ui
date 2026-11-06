@@ -385,6 +385,9 @@
    alone. Will, TODO 675 */
 :host([data-no-actions]:state(folded)) .actions-zone { display: flex; }
 :host([data-no-actions]:state(folded)) .actions-zone > :not(.add-btn) { display: none; }
+/* A node graph's editor is on it: the ⋮ alone, which holds Reset node graph. Will, TODO 837 */
+:host([data-no-actions][data-reset-graph]) .actions-zone { display: flex; }
+:host([data-no-actions][data-reset-graph]) .actions-zone > :not([data-act="overflow"]) { display: none; }
 
 
 /* A folded chip. NOT `display: none`: its menu is still live as a submenu, and
