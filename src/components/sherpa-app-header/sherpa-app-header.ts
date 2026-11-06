@@ -56,6 +56,7 @@ export class SherpaAppHeader extends SherpaElement {
     'data-theme-mode': { type: 'enum', kind: 'behaviour', values: ['light', 'dark'] },
     'data-heading': { type: 'string', kind: 'content' },
     'data-ai-label': { type: 'string', kind: 'content' },
+    'data-ai-disabled': { type: 'boolean', kind: 'style' },
     /* The notifications panel is OPEN. The header emits the intent and the
        host owns the panel, so the host says when it opened — a button that
        opens something and does not look open reads as broken.

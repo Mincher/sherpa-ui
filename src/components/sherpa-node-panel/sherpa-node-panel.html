@@ -38,11 +38,11 @@
     <sherpa-container class="card" part="card" data-padding="none"
                       data-when-data-elevation="data-floating: lg">
       <sherpa-container-header slot="header" class="heading sherpa-float-bar" part="heading" data-heading="Nodes">
+      <!-- Floating, the header bar moves it, and this shows where to take hold: on hover,
+           and for the keys. A press on it is a press on the bar. -->
+      <span slot="lead" class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
+            tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
         <span slot="actions" class="toolbar" part="toolbar">
-          <!-- Floating, the header bar moves it, and this shows where to take hold: on hover,
-               and for the keys. A press on it is a press on the bar. -->
-          <span class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
-                tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
           <!-- Float: lifted off, anywhere in the canvas; Dock puts it back. -->
           <sherpa-button class="float" part="float" data-type="icon" data-size="sm"
                          data-icon-start="browser" aria-label="Float"

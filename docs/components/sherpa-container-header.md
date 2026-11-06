@@ -52,6 +52,7 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
+| `lead` | control | a control at the very start, before the drag handle, chevron and icon (a floating panel's grip) |
 | `icon` | icon | custom icon element (else data-icon glyph) |
 | `heading` | text | custom heading element (replaces the default .title) |
 | `actions` | control, input | extra trailing action controls (before close) |

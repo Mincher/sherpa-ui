@@ -42,6 +42,7 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 |---|---|---|---|
 | `data-account` | boolean |  | show the account button |
 | `data-ai` | boolean |  | show the "Ask N-zo" AI button |
+| `data-ai-disabled` | boolean |  | the button is off: its panel is open in another tab or window, and its tooltip says so |
 | `data-ai-label` | text | `Ask N-zo` | its label |
 | `data-back` | boolean |  | show the back button |
 | `data-custom-view` | boolean |  | the View on screen is the reader's own: Delete view shows. TRAP T-a-saved-view-is-the-readers-own |

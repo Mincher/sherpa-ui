@@ -24,6 +24,12 @@
           "part": "left",
           "children": [
             {
+              "slot": "lead",
+              "attrs": {
+                "data-accepts": "control"
+              }
+            },
+            {
               "el": "sherpa-button",
               "class": "drag",
               "part": "drag",
@@ -284,6 +290,14 @@
     }
   ],
   "slots": [
+    {
+      "$type": "slot",
+      "name": "lead",
+      "accepts": [
+        "control"
+      ],
+      "description": "a control at the very start, before the drag handle, chevron and icon (a floating panel's grip)"
+    },
     {
       "$type": "slot",
       "name": "icon",

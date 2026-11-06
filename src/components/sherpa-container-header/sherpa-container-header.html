@@ -22,6 +22,7 @@
 
   Slots:
     heading   — custom heading element (replaces the default .title)
+    lead      — a control at the very start, before the drag handle, chevron and icon (a floating panel's grip)
     icon      — custom icon element (else data-icon glyph)
     actions   — extra trailing action controls (before close)
     metadata  — bottom metadata strip (Panel) / secondary content (Default)
@@ -41,6 +42,7 @@
     <!-- The leading cell: the drag handle, the icon — and, collapsible, the
          chevron, as Figma's accordion variant has it. -->
     <span class="left" part="left">
+      <slot name="lead" data-accepts="control"></slot>
       <!-- Composed sherpa-buttons, not raw <button>s: a unicode glyph inks at
            the body font's weight and reads wrong beside every other control. -->
       <sherpa-button class="drag" part="drag" data-type="icon" data-size="xs"

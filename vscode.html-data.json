@@ -43,6 +43,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-ai-disabled",
+          "description": "the button is off: its panel is open in another tab or window, and its tooltip says so",
+          "valueSet": "v"
+        },
+        {
           "name": "data-ai-label",
           "description": "its label"
         },

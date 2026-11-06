@@ -74,16 +74,16 @@
     <!-- DEFAULT variant, not data-type="panel" — that inks the title link-blue.
          The header's own collapse/dismiss events are re-emitted as the panel's. -->
     <sherpa-container-header class="header sherpa-float-bar" part="header">
+      <!-- Floating, the header bar moves it, and this shows where to take hold: on hover,
+           and for the keys. A press on it is a press on the bar. TRAP T-a-floating-panel-is-a-state -->
+      <span slot="lead" class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
+            tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
       <slot name="icon" slot="icon" data-accepts="icon"></slot>
       <slot name="description" slot="metadata" data-accepts="content"></slot>
 
       <!-- Figma Container Header `Variant=Panel`: the host's controls, then the
            view-mode pair, each divided from the next. -->
       <span slot="actions" class="toolbar" part="toolbar">
-        <!-- Floating, the header bar moves it, and this shows where to take hold: on hover,
-             and for the keys. A press on it is a press on the bar. TRAP T-a-floating-panel-is-a-state -->
-        <span class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
-              tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
         <slot name="actions" data-accepts="control"></slot>
         <span class="divider after-actions" aria-hidden="true"></span>
         <!-- Minimise: a tab on the edge; its tab opens it as it was. TRAP T-a-minimised-panel-is-a-tab -->

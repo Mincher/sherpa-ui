@@ -82,6 +82,19 @@
             "part": "header",
             "children": [
               {
+                "el": "span",
+                "class": "grip sherpa-float-grip sherpa-icon-box",
+                "part": "grip",
+                "attrs": {
+                  "slot": "lead",
+                  "data-icon": "drag-handle-vertical",
+                  "role": "button",
+                  "tabindex": "0",
+                  "aria-label": "Move panel",
+                  "title": "Drag the header to move it, or use the arrow keys"
+                }
+              },
+              {
                 "slot": "icon",
                 "attrs": {
                   "slot": "icon",
@@ -103,18 +116,6 @@
                   "slot": "actions"
                 },
                 "children": [
-                  {
-                    "el": "span",
-                    "class": "grip sherpa-float-grip sherpa-icon-box",
-                    "part": "grip",
-                    "attrs": {
-                      "data-icon": "drag-handle-vertical",
-                      "role": "button",
-                      "tabindex": "0",
-                      "aria-label": "Move panel",
-                      "title": "Drag the header to move it, or use the arrow keys"
-                    }
-                  },
                   {
                     "slot": "actions",
                     "attrs": {

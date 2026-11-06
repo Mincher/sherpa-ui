@@ -172,6 +172,13 @@
               }
             },
             {
+              "name": "data-ai-disabled",
+              "description": "the button is off: its panel is open in another tab or window, and its tooltip says so",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-ai-label",
               "description": "its label",
               "type": {
@@ -2232,6 +2239,10 @@
             }
           ],
           "slots": [
+            {
+              "name": "lead",
+              "description": "a control at the very start, before the drag handle, chevron and icon (a floating panel's grip) (accepts: control)"
+            },
             {
               "name": "icon",
               "description": "custom icon element (else data-icon glyph) (accepts: icon)"

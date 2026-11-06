@@ -198,7 +198,9 @@
                       "part": "ai",
                       "attrs": {
                         "data-size": "sm",
-                        "data-icon-start": "wand-magic-sparkles"
+                        "data-icon-start": "wand-magic-sparkles",
+                        "data-when-disabled": "data-ai-disabled: true",
+                        "data-when-data-description": "data-ai-disabled: Open in another tab or window"
                       },
                       "children": [
                         {
@@ -387,6 +389,15 @@
       "declared": true,
       "kind": "style",
       "description": "show the \"Ask N-zo\" AI button"
+    },
+    {
+      "$type": "prop",
+      "name": "data-ai-disabled",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the button is off: its panel is open in another tab or window, and its tooltip says so"
     },
     {
       "$type": "prop",

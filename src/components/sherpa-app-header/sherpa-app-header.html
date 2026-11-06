@@ -9,6 +9,7 @@
     data-back           show the back button
     data-ai             show the "Ask N-zo" AI button
     data-ai-label       its label
+    data-ai-disabled    the button is off: its panel is open in another tab or window, and its tooltip says so
     data-labs           show the labs/beaker button
     data-theme-toggle   show the light/dark (moon) button
     data-theme-mode     light | dark — the mode on screen; the button offers the other
@@ -117,7 +118,9 @@
           <!-- The one action that is not transparent — the default border sets
                it apart from the icon run beside it. -->
           <sherpa-button class="ai" part="ai" data-size="sm"
-                         data-icon-start="wand-magic-sparkles">
+                         data-icon-start="wand-magic-sparkles"
+                         data-when-disabled="data-ai-disabled: true"
+                         data-when-data-description="data-ai-disabled: Open in another tab or window">
             <span class="ai-label" data-text="data-ai-label">Ask N-zo</span>
           </sherpa-button>
 

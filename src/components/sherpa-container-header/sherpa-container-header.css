@@ -47,7 +47,7 @@
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
-:host(:is([data-draggable], [data-icon], :state(has-icon), [data-collapsible])) .left { display: inline-flex; }
+:host(:is([data-draggable], [data-icon], :state(has-icon), :state(has-lead), [data-collapsible])) .left { display: inline-flex; }
 
 .drag,
 .icon {
