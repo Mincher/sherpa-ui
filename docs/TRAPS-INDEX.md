@@ -1030,7 +1030,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (142)
+## Other components (143)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1169,6 +1169,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-node-panel-asks-it-places](traps/other-components.md#t-the-node-panel-asks-it-places) — node-list
 - [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell, layout-panels
 - [T-the-panel-keys-are-shift-and-a-number](traps/element-and-sheets.md#t-the-panel-keys-are-shift-and-a-number) — app-shell
+- [T-the-provider-owns-the-panel-mode](traps/join-and-app.md#t-the-provider-owns-the-panel-mode) — filter-panel
 - [T-the-shell-owns-the-panel-areas](traps/other-components.md#t-the-shell-owns-the-panel-areas) — app-shell
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — app-header
 - [T-two-months-share-one-grid](traps/other-components.md#t-two-months-share-one-grid) — calendar

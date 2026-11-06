@@ -693,6 +693,7 @@ one nobody tests.
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-navigating-sets-up-the-page
 
@@ -797,6 +798,8 @@ its View filters alone.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-provider-filter-panel.spec.ts`
 
 ### T-a-provider-keeps-the-views
 

@@ -186,6 +186,7 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('context-request', this.#onRequest);
     // The panel's own close, and the shell's room for it.
     this.addEventListener('filter-panel-close', this.#modes.closed);
+    this.addEventListener('panel-close', this.#onPanelClose);
     this.#hearSettings();
     // A bar's or the panel's ⋮ switch, and its Hide invalid filters: this provider owns them. TODOs 178, 205, 376
     for (const [type, key] of [['limit-options-change', 'limitOptions'], ['hide-unmatched-change', 'hideUnmatched']] as const) {
@@ -362,6 +363,12 @@ export class SherpaProvider extends SherpaElement {
   /** The scopes the open page declares: each waits for its bar's Apply while
    *  `applyEvery` is on. TRAP T-apply-and-discard-wait-for-a-change */
   #scopes: string[] = [];
+
+  /** A panel that holds a filter panel shut: every close reports. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
+  readonly #onPanelClose = (event: Event): void => {
+    const from = event.target as Element;
+    if (this.#panels().some((el) => from.contains(el))) this.#modes.closed(event);
+  };
 
   /** Every panel that asked — a control drawn over several scopes. None, for a page opened for its Query alone. */
   #panels(): Array<HTMLElement & { show(): void; hide(reason?: string): void }> {

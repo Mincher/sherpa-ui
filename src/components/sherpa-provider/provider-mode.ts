@@ -18,7 +18,8 @@ import { declared } from './provider-declared.js';
 /** Is it the panel area's occupant: a bar — what asks for a `scope` — over a scope
  *  list, or over one, said `data-column`? TODO 425, 436 */
 export function isColumn(el: Element): boolean {
-  return declared(el).asks?.shape === 'scope' && (el.hasAttribute('data-column') || scopesOf(el).length > 1);
+  const { asks, column } = declared(el);
+  return asks?.shape === 'scope' && (column || el.hasAttribute('data-column') || scopesOf(el).length > 1);
 }
 
 /** The scopes it names. */
@@ -169,7 +170,10 @@ export class ProviderMode {
       return undefined;
     }
     button.addEventListener('button-click', this.#onConfigure);
-    host.append(button);
+    // A content's switch goes in its panel's header, after the panel's own buttons.
+    const panel = host.closest('sherpa-overlay-panel');
+    if (panel) button.setAttribute('slot', 'actions-end');
+    (panel ?? host).append(button);
     this.#toggles.set(host, button);
     return button;
   }

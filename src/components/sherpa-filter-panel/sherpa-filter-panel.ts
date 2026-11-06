@@ -9,6 +9,7 @@ import type { DataAsk, Take } from '../../core/ui/context.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { FILTER_MENU_HTML } from '../../core/ui/filter-menu.js';
+import type { Settings } from '../../core/data/settings.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import { drawCount } from '../../core/ui/filter-host.js';
 import { ToolbarColumn } from '../sherpa-quick-filter-toolbar/toolbar-column.js';
@@ -32,6 +33,8 @@ export class SherpaFilterPanel extends SherpaElement {
      TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = { shape: 'scope' };
   static takes: readonly Take[] = [];
+  // A panel's column, even over one scope: the provider's mode shows and shuts its panel. TRAP T-the-provider-owns-the-panel-mode
+  static column = true;
   // The app's filter settings it reads, each onto its attribute.
   static override settings = {
     'data-limit-options': 'limitOptions', 'data-hide-unmatched': 'hideUnmatched', 'data-count-applied': 'countApplied',
@@ -79,6 +82,11 @@ export class SherpaFilterPanel extends SherpaElement {
       watch.observe(panel, { attributes: true, attributeFilter: ['open'] });
       this.signal.addEventListener('abort', () => watch.disconnect(), { once: true });
     }
+  }
+
+  /** Off, the panel saves nothing. TODO 485 · TRAP T-saved-filters-are-every-scope */
+  protected override onSettings(settings: Settings): void {
+    this.toggleAttribute('data-no-saves', settings.get('saveAnyScope') !== true);
   }
 
   override onChange(name?: string): void {
@@ -141,11 +149,13 @@ export class SherpaFilterPanel extends SherpaElement {
 
   show(): void {
     this.#panel?.show();
+    this.#syncOpen();
   }
 
   /** EVERY close reports, and says why: the panel's `panel-close`. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
   hide(reason: 'reader' | 'width' | 'page' = 'reader'): void {
     this.#panel?.hide(reason);
+    this.#syncOpen();
   }
 
   close(reason: 'reader' | 'width' | 'page' = 'reader'): void {
