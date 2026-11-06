@@ -70,7 +70,7 @@ test('each category has its own radius and its own painted fill; one with no cat
   expect(near(logic!, info!, 2), 'a Logic node is not the info tint').toBe(false);
 });
 
-test('a many input is twice the height of a single, a D: round outside, flat on the node side', async ({ page }) => {
+test('a many input is the height of a single: 16px, whatever the routes it takes (cb0b01a4c)', async ({ page }) => {
   const sizes = await page.evaluate(async () => {
     const el = document.querySelector('#root sherpa-layout-canvas')!;
     el.insertAdjacentHTML('beforeend', '<sherpa-node id="one" data-heading="One" data-x="400" data-y="200" data-input-socket="value" data-input-routed></sherpa-node>');
@@ -79,13 +79,11 @@ test('a many input is twice the height of a single, a D: round outside, flat on 
     await window.__settled();
     return { one: one.socketRect('input')!.height, many: (document.getElementById('big') as Node).socketRect('input')!.height };
   });
-  expect(sizes.many).toBeCloseTo(sizes.one * 2, 0);
-  // The Figma's socket: 16px, and 32 for a many input. Will, TODO 747
+  expect(sizes.many).toBe(sizes.one);
   expect(sizes.one).toBe(16);
-  expect(sizes.many).toBe(32);
 });
 
-test('807: only the many INPUT is double height: the same row\'s output, and a fork\'s True and False, keep their own, in pixels', async ({ page }) => {
+test('807: no socket is double height, a many input included: the same row\'s output, and a fork\'s True and False, keep their own, in pixels', async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.querySelector('#root sherpa-layout-canvas')!;
     const row = (id: string, many: boolean) => `<sherpa-node-row id="${id}" data-label="${id}" data-input-socket="value"${many ? ' data-input-many' : ''} data-input-routed data-output-socket="object" data-output-routed></sherpa-node-row>`;
@@ -107,17 +105,17 @@ test('807: only the many INPUT is double height: the same row\'s output, and a f
     const ys = Array.from({ length: clip.h }, (_, n) => [0.5, (n + 0.5) / clip.h] as [number, number]);
     return (await paint(page, clip, ys)).filter((p) => near(p, colour, 24)).length;
   };
-  // Painted: the many row's diamond is as tall as the plain row's.
+  // Painted: the many row's diamond is as tall as the plain row's (its fill sits inside the ring and the white inset).
   const plain = await painted(await rect('plain', 'output'), ink);
   const many = await painted(await rect('many', 'output'), ink);
-  expect(plain, 'the diamond paints at 7/10 of its width').toBeGreaterThanOrEqual(6);
+  expect(plain, 'the diamond paints at 7/10 of its width').toBeGreaterThanOrEqual(4);
   expect(Math.abs(many - plain), `the many row's output paints ${many}px, the plain row's ${plain}px`).toBeLessThanOrEqual(1);
   const sizes = {
     plainIn: (await rect('plain', 'input')).h, plainOut: (await rect('plain', 'output')).h,
     manyIn: (await rect('many', 'input')).h, manyOut: (await rect('many', 'output')).h,
     forkIn: (await rect('fork', 'input')).h, forkOut: (await rect('fork', 'output')).h, forkFalse: (await rect('fork', 'false')).h,
   };
-  expect(sizes).toEqual({ plainIn: 16, plainOut: 16, manyIn: 32, manyOut: 16, forkIn: 32, forkOut: 16, forkFalse: 16 });
+  expect(sizes).toEqual({ plainIn: 16, plainOut: 16, manyIn: 16, manyOut: 16, forkIn: 16, forkOut: 16, forkFalse: 16 });
 });
 
 test('the handle shows on hover at the bottom right, hides without it, and shows on focus', async ({ page }) => {
@@ -232,7 +230,7 @@ test('in the editor a resize is one step, saved as size beside x and y, with the
   const gap = await page.evaluate(() => {
     const path = document.querySelector<SVGPathElement>('#cv svg.graph-routes path[data-from]')!;
     const p = path.getPointAtLength(0).matrixTransform(path.getScreenCTM()!);
-    const row = document.querySelector('#cv > sherpa-node[data-heading="Source"] sherpa-node-row') as Node;
+    const row = document.querySelector('#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-output-socket]') as Node;
     const s = row.socketRect('output')!;
     return Math.hypot(p.x - (s.left + s.width / 2), p.y - (s.top + s.height / 2));
   });
@@ -286,7 +284,7 @@ test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothin
 // — 756: every category, picked, takes the SAME active fill and border; the panel's node adds the same ring.
 const CATS = { Sources: 'source', Variables: 'value', Logic: 'condition', Organise: 'sort', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
 async function bindCategories(page: Page): Promise<void> {
-  await page.setViewportSize({ width: 1700, height: 900 });
+  await page.setViewportSize({ width: 1900, height: 900 });
   await page.evaluate(async (cats) => {
     document.querySelector('#root sherpa-layout-canvas')!.remove();
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
