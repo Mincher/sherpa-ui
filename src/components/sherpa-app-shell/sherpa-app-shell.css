@@ -41,7 +41,10 @@
 }
 
 /* ── A Canvas view: the header and the nav show a reduced shadow, the default or a slotted one. ── */
-:host([data-canvas]) :is(sherpa-app-header, sherpa-nav, ::slotted(sherpa-app-header), ::slotted(sherpa-nav)) {
+:host([data-canvas]) sherpa-app-header,
+:host([data-canvas]) sherpa-nav,
+:host([data-canvas]) ::slotted(sherpa-app-header),
+:host([data-canvas]) ::slotted(sherpa-nav) {
   box-shadow: var(--sherpa-shadow-sm, 2px 2px 8px -4px #35353d4c);
 }
 
