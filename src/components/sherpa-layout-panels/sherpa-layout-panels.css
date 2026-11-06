@@ -15,7 +15,8 @@
 /* ONE cell: what the host slots here stacks in it, and fills it. */
 .content {
   flex: 1 1 auto;
-  min-inline-size: 0;
+  /* The content keeps its least width: the areas share what is left, and shrink to it. TRAP T-a-panel-area-is-a-layout */
+  min-inline-size: var(--sherpa-content-min-width, 24rem);
   min-block-size: 0;
   display: grid;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
@@ -23,8 +24,8 @@
 
 /* The AREA owns the width; the panel fills it, as a grid item stretches. THREE columns of
    the layout grid the row would hold, two gutters and the grid's inset (Will, 2026-09-26);
-   never under its min (TODO 163) nor, dragged, over its max (TODO 146). The min wins where
-   the two cross. Over a view drawn under the layout (a canvas's), and no further. */
+   never under its min (TODO 163) nor, dragged, over its max (TODO 146). The MAX wins where
+   the two cross (TODO 873). Over a view drawn under the layout (a canvas's), and no further. */
 .area {
   display: none;
   position: relative;
@@ -35,8 +36,9 @@
   --_gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
   --_pad: var(--sherpa-layout-grid-padding, 16px);
   --_col: calc((100% - var(--_pad) - (var(--_cols) - 1) * var(--_gap)) / var(--_cols));
-  flex: 0 0 var(--_asked, var(--sherpa-panel-area-width, calc(3 * var(--_col) + 2 * var(--_gap) + var(--_pad))));
-  min-inline-size: var(--sherpa-panel-area-min-width, 464px);
+  flex: 0 1 var(--_asked, var(--sherpa-panel-area-width, calc(3 * var(--_col) + 2 * var(--_gap) + var(--_pad))));
+  /* Never over its own max: at a narrow row the third wins, so two areas and the content's least still fit. */
+  min-inline-size: min(var(--sherpa-panel-area-min-width, 464px), var(--sherpa-panel-area-max-width, 33%));
   max-inline-size: var(--sherpa-panel-area-max-width, 33%);
 }
 .area-start { --_asked: var(--_asked-start); }

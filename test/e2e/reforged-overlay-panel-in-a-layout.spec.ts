@@ -121,7 +121,11 @@ test('Minimise makes a tab on the canvas\'s LEFT edge, inside it; the area gives
   expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x);
   await page.mouse.click(...centre(tab));
   await settle(page);
-  expect(await rect(page, '.root')).toEqual(docked);
+  // A press on the tab shows the panel as an OVERLAY (a third of the canvas at most); Dock as fixed puts it back in its area.
+  expect((await rect(page, '.root')).h).toBe(docked.h);
+  await press(page, '.dock-fixed');
+  expect(await style(page, '.root', 'display')).not.toBe('none');
+  expect(await page.evaluate(() => document.getElementById('nodes')!.hasAttribute('data-minimised'))).toBe(false);
 });
 
 test('panel-close says why it shut: the reader by default, the width or the page when it is told', async ({ page }) => {

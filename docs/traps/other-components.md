@@ -913,6 +913,10 @@ end area. Plan: `docs/history/plan-796-panel-areas.md`.
   over the panel's last pixel, so the panel keeps the area's whole width. The
   knobs: `--sherpa-panel-area-width` (three layout-grid columns), `-min-width`
   (464) and `-max-width` (33%); the canvas sets 18rem, 16rem and 60%.
+- **The two areas SHARE the room** (Will, TODO 873). The areas `flex-shrink`, and the content keeps its least width,
+  `--sherpa-content-min-width` (24rem): a start and an end panel together never starve it, whichever is the wider, and
+  the shrink is the one rule for the shell's body and the canvas, as both compose this layout. A room under what the
+  content and one area need is the host's `data-no-room` (the grid's 728 tablet band), not this rule's.
 - **Forwarded slots.** A host's slot is slotted into the layout's
   (`<slot name="panel-start" slot="panel-start">`), so the layout reads its panel
   with `assignedElements({ flatten: true })`, and a `::slotted` rule there matches
@@ -948,6 +952,7 @@ end area. Plan: `docs/history/plan-796-panel-areas.md`.
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
 - Site: `test/e2e/reforged-layout-panels.spec.ts`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
+- Site: `test/e2e/reforged-panel-areas-share-the-room.spec.ts`
 
 ---
 

@@ -55,14 +55,14 @@ test('a close for width is not a choice: the mode stays, and the panel comes bac
   expect(r).toEqual({ open: false, mode: 'panel' });
 });
 
-test('the mode button sits in the panel header, after the panel\'s own buttons, and not in the content', async ({ page }) => {
+test('the mode button sits in the panel header, BEFORE the panel\'s own buttons, and not in the content', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.settings.set('filterMode', 'panel');
     await settle();
     const btn = panel.querySelector(':scope > [data-filter-mode]');
     const float = panel.shadowRoot.querySelector('.float').getBoundingClientRect().left;
-    return { slot: btn?.slot ?? null, inContent: !!content.querySelector('[data-filter-mode]'), after: btn ? btn.getBoundingClientRect().left > float : false };
+    return { slot: btn?.slot ?? null, inContent: !!content.querySelector('[data-filter-mode]'), after: btn ? btn.getBoundingClientRect().left < float : false };
   })()`) as Record<string, any>;
   expect(r).toEqual({ slot: 'actions-end', inContent: false, after: true });
 });

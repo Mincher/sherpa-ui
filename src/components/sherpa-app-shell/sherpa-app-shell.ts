@@ -66,7 +66,7 @@ export class SherpaAppShell extends SherpaElement {
     this.#roomWatch = new ResizeObserver(() => {
       // Settings covers the Context, so the room under it does not change.
       if (this.dataset['navState'] === 'settings') return;
-      const min = this.#layout()?.areaMin() ?? 0;
+      const min = this.#layout()?.areaLeast() ?? 0;
       const room = body.getBoundingClientRect().width >= min + TABLET;
       if (room !== this.hasAttribute('data-no-room')) return;
       this.set('data-no-room', !room);

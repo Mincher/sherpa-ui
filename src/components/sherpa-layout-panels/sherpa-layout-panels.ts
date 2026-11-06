@@ -67,9 +67,17 @@ export class SherpaLayoutPanels extends SherpaElement {
     for (const side of SIDES) if (name === `data-panel-${side}-width`) this.#askWidth(side);
   }
 
-  /** The narrowest an area may be, in px, as its CSS has it: what a host's room rule needs. */
+  /** The least an area wants, in px: the room a host's rule needs before it shows one. An area at a narrow row is drawn
+   *  under it (`areaMin`), the content's least first. */
+  areaLeast(): number {
+    const said = getComputedStyle(this).getPropertyValue('--sherpa-panel-area-min-width').trim();
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    return (said.endsWith('rem') ? parseFloat(said) * rem : parseFloat(said)) || 464;
+  }
+
+  /** The narrowest an area may be drawn, in px: its least, never over its own max. */
   areaMin(side: PanelSide = 'start'): number {
-    return parseFloat(getComputedStyle(this.#area(side) ?? this).minInlineSize) || 0;
+    return Math.min(this.areaLeast(), this.#areaMax(side));
   }
 
   /** The widest, in px: its max is a share of the row, or a length. */
