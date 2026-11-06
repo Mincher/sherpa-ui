@@ -1,6 +1,6 @@
 # Plan 836 — see the data go through the nodes
 
-**Status: P1 and P2 BUILT 2026-11-06 (lane `lane/data-flow-836`); P3 on wait for Will's word.** Will answered the eight
+**Status: P1 and P2 BUILT and merged; P3 and P4 BUILT 2026-11-06 (lane `lane/data-flow-836`); P3b (845, the running look) and P5 on wait.** Will answered the eight
 decisions the same day; this plan is written to his answers. It builds on plan 695 (N4, held), plan 808 (Sources), plan
 779 (portals), plan 783 (Field), plan 834 (Output category, not built) and the data layer's rules engine plan.
 
@@ -82,7 +82,7 @@ simulateGraph(graph, rowsByStore, facts) → { nodes: { [id]: { incoming, outgoi
   drops rows, it does not copy them). So a node costs one pass and one array of pointers.
 - **Run order.** Along the kept routes, as the data flows (`portalFlow`). Each node runs once.
 - **Only on a press** (answer 6): the editor calls `simulateGraph` from the Simulate button, a key or an agent's call
-  (`simulateGraph(canvas)`, the door the MCP tool later wraps). It never runs on an edit.
+  (`editor.simulate()`, the door the MCP tool later wraps). It never runs on an edit.
 
 ### What it reuses (nothing is written twice)
 
@@ -107,7 +107,7 @@ simulateGraph(graph, rowsByStore, facts) → { nodes: { [id]: { incoming, outgoi
 
 There is NO plan that works the graph backwards. A Fetch is: for each Source that has a path to an Output (section 5), one
 `store.load` as the Source already limits it, paged, stopped at the cap, written to the cache. Press again for a new fetch.
-A Source with no path is not fetched. Cancel is the same button (the fetch has an `AbortSignal`).
+A Source with no path is not fetched. A second press while a fetch runs is blocked (TODO 843); the fetch has an `AbortSignal`, which leaving the editor uses.
 
 Why: a graph's filters are the reader's questions; the cache is the data they ask them of. Pushing a filter down would make
 a cache that answers only one question, and a new Fetch for each edit. Will chose the plain thing.
@@ -152,7 +152,7 @@ graph's answer, as JSON.
 
 ### Keyboard parity (PRINCIPLES 21)
 
-- Fetch and Simulate are toolbar buttons: Tab, then Enter or Space; the toolbar takes arrow keys.
+- Fetch and Simulate are toolbar buttons: Tab, then Enter or Space; the toolbar takes arrow keys. A second press while one runs is blocked and said (TODO 843); there is no press-to-stop.
 - `Ctrl/Cmd+Enter` on the canvas is Simulate (the one `primaryKey` helper); `Shift+Ctrl/Cmd+Enter` is Fetch (P3 on).
 - The Data tab is a tab; its grid takes keys; the JSON toggle is a switch.
 - A host with no pointer, or an agent, calls `simulateGraph(canvas)` and `fetchGraph(canvas)`, as `unfurlGraph(canvas)` is called.
@@ -171,8 +171,9 @@ Each phase is code and tests together. Sizes are lines of code, not tests.
 |---|---|---|---|
 | **P1 ✅** | **The path rule.** `pathRead` in `node-paths.ts` (data layer); the Fetch and Simulate buttons on the toolbar, inactive with the reason in the tip; `data-can-fetch`, `data-can-simulate`, `data-path-why`; the editor sets them on every draw | ~170 | Node: a path; none; a cut route; through a portal; through a Custom Node (cut and whole); through a frame; two Sources, one unjoined; the words. Spec in 3 engines: off with the tip, on after the route is drawn, off after it is cut; read only still on |
 | **P2 ✅** | **The simulator** for Source, Field, Condition (test, And, Or, False) and Output: `node-simulate.ts`, row lists, no effects | ~230 | Node: each kind against `filterTest` on the same rows (20 random sets must agree with `filterRows` of the compiled `conditionAt` tree); the same in, the same out; "not fetched yet"; portals; 100k rows timed |
-| P3 | **Fetch and the cache** in IndexedDB: reuse `sets` and `keepCache`; one capped `load` per Source; the partial mark; Refetch; "Newer data is waiting". The press runs Simulate once | ~220 | Node: a store with no record is "not fetched yet"; a second graph over one store shares it; the cap and the partial mark (`dropped`); Reset. Spec: Fetch, then Simulate with the store offline still answers; a reload keeps it |
-| P4 | **Keys and the agent door:** `fetchGraph(canvas)`, `simulateGraph(canvas)`, `Ctrl/Cmd+Enter`, the tips with the keys | ~80 | Spec by keys alone; the parity sweep |
+| **P3 ✅** | **Fetch and the cache:** `source-cache.ts` (one capped `store.load` per Source at the press; held in the tab; a remote store's rows kept in the device's `sets`, as a View's are; the cap of 100,000 rows or 50 MB marks PARTIAL; "not fetched yet" where nothing is kept; a store's change marks it stale). The press runs Simulate once. Built on the generic task seam of 843 (`task-queue.ts`): a busy button, a blocked second press, ONE end notice as a toast | ~420 | Node: the queue (states, history, exclusive key, cancel, debounced notice, light history, no named user). Spec in 3 engines: nothing read before the press; one load; the rows on the device; PARTIAL at the cap; blocked and busy; the notice; a failed fetch says so |
+| **P4 ✅** | **Keys, the agent door and the Data pane:** `editor.fetch()`, `editor.simulate()`, `Ctrl/Cmd+Enter` (Shift: Fetch); the node's details show each socket's rows as JSON (the first 50), the counts in words, "stale" after an edit; a Count row is the row count | ~230 | Spec: the pane shows the Condition's rows and the Source's first 50 of 120; stale; the keys |
+| P3b | **845: the running look** (a node asks its task; a tab on its top edge, "Simulating… 1s", "Fetching… 1s"; Style-mode pins) | est. ~200 | After the Figma read |
 | P5 | **The data panes:** the Definition / Data switch, the grid on the row list, the JSON toggle, the counts and times on the node lights, "stale" | ~400 | Spec in 3 engines, pointer and keys: after Fetch every node's pane shows rows; a Condition's out is at most its in; an edit marks "stale"; Axe has no new fault |
 | P6 | **The rest of the kinds:** Math, Text, Time, Tag, Collection (sort, group, count), value sockets, Custom Nodes | ~450 | Node: each kind against its own pure function; all Demos graphs simulate with no fault. Bench: 100k rows, a 10-node graph, under 250 ms |
 | P7 | **Demos:** Devices that need attention, fetched and simulated | ~50 | Demos spec in 3 engines: the counts match `debugState().total` of the Devices page for the same condition |
