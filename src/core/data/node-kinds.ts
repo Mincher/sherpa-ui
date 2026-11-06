@@ -238,8 +238,8 @@ const LOGIC: Readonly<Record<string, NodeType>> = {
 };
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
- *  A kind a workflow runs forks (`branches`): its True and False say whether it gave anything
- *  (D2). The Query's own steps do not: nothing routes a branch from them. */
+ *  A kind a workflow runs forks (`branches`): its True and False are a boolean only, whether it gave anything,
+ *  never rows (D2); rows that do not match are not sent: set the Check to its inverse. The Query's own steps do not: nothing routes a branch from them. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
   source: {

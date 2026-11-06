@@ -167,7 +167,7 @@ test('what has no preset form is said in words: Or across two fields, an empty v
   const not = filter('not', [fieldNode('f', 'plan'), test_('c', 'not')], [{ from: 'f/field', to: 'c' }, { from: 'c', to: '#out/where' }]);
   assert.match(presetOfEntity(not).fault, /"Condition" is Not, which a condition cannot say yet/);
   const falsy = filter('falsy', [fieldNode('f', 'plan'), test_('c', 'eq', 'Pro')], [{ from: 'f/field', to: 'c' }, { from: 'c/#false', to: '#out/where' }]);
-  assert.match(presetOfEntity(falsy).fault ?? '', /False is the rows that do not hold/);
+  assert.match(presetOfEntity(falsy).fault ?? '', /False is a boolean only/);
   // A loop reads nothing, and says so.
   assert.match(conditionAt({ nodes: [{ id: 'a', kind: 'condition', heading: 'A', rows: [{ name: 'type', value: 'and' }] }], routes: [{ from: 'a', to: 'a' }] }, 'a').faults[0], /reads itself, in a loop/);
 });

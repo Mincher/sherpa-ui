@@ -106,7 +106,7 @@ function readFrom(graph: Flowing, from: string, facts: ConditionFacts, walk: Wal
   const node = graph.nodes.find((n) => n.id === id);
   if (!node) return none(`a route comes from "${id}", which the graph does not hold`);
   if (walk.seen.has(node.id)) return none(`"${node.heading}" reads itself, in a loop`);
-  if (row === FALSE_SOCKET) return none(`"${node.heading}" › False is the rows that do not hold, which a condition cannot say yet`);
+  if (row === FALSE_SOCKET) return none(`"${node.heading}" › False is a boolean only, not rows: to keep the other rows, set the Check to its inverse`);
   return readNode(graph, node, row, facts, { ...walk, seen: new Set([...walk.seen, node.id]) });
 }
 
