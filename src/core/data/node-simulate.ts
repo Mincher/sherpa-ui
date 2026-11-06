@@ -15,6 +15,7 @@
  * - SimulationRun — A simulation in steps: the nodes it runs, one step each, and what has run.
  * - SteppingOptions — How a stepped simulation lets its host in: before each node, and a pause when one is due.
  * - stepSimulation — Step a simulation node by node, giving the host a turn when one is due.
+ * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87", and the time it took.
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
 import { filterTest, type Filter, type Row } from './store.js';
@@ -100,6 +101,8 @@ export interface SimulationRun {
  *  ms since the host last had a turn, it waits for `pause` (a frame, a timer), so the page can draw the node it is on. */
 export interface SteppingOptions {
   onStep?(id: string): void;
+  /** A node has run, and took this long (ms). */
+  onDone?(id: string, ms: number): void;
   pause?(): Promise<void>;
   now?(): number;
   every?: number;
@@ -112,13 +115,28 @@ export async function stepSimulation(run: SimulationRun, options: SteppingOption
   let last = now();
   for (const id of run.ids) {
     options.onStep?.(id);
+    const began = now();
     run.step(id);
+    options.onDone?.(id, now() - began);
     if (options.pause && now() - last > every) {
       await options.pause();
       last = now();
     }
   }
   return run.result();
+}
+
+/** A node's LIGHT after a simulation: the rows it heard and the rows it said, "412 → 87", and the time it took; a Source or an
+ *  Output has the one count; one that holds no rows says why. */
+export function lightOf(node: SimulatedNode, ms: number): string {
+  const count = (slots: readonly Slot[]): number | undefined => slots.find((s) => s.rows)?.rows?.length;
+  const n = (v: number): string => v.toLocaleString('en');
+  const [heard, said] = [count(node.incoming), count(node.outgoing)];
+  const rows = heard !== undefined && said !== undefined ? `${n(heard)} → ${n(said)}`
+    : heard !== undefined || said !== undefined ? `${n((heard ?? said)!)} ${(heard ?? said) === 1 ? 'row' : 'rows'}`
+      : [...node.incoming, ...node.outgoing].find((s) => s.note)?.note ?? '';
+  const time = ms < 1 ? '<1 ms' : `${Math.round(ms).toLocaleString('en')} ms`;
+  return [rows, time].filter(Boolean).join(' · ');
 }
 
 /** Begin a simulation: nothing runs until it is stepped. */
@@ -253,5 +271,13 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     ];
     nodes[node.id] = { incoming, outgoing };
   };
-  return { ids: held0.map((n) => n.id), step, result: () => ({ nodes, faults }) };
+  // In the order the data flows, so each node's step is mostly its own work and its time is its own; a loop keeps the graph's order.
+  const order: string[] = [];
+  const left = new Map(held0.map((n) => [n.id, new Set(routes.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const).filter(([from, to]) => to === n.id && from !== n.id && held.has(from)).map(([from]) => from))]));
+  while (left.size) {
+    const next = [...left].find(([, waits]) => ![...waits].some((w) => left.has(w))) ?? [...left][0]!;
+    order.push(next[0]);
+    left.delete(next[0]);
+  }
+  return { ids: order, step, result: () => ({ nodes, faults }) };
 }

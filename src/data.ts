@@ -235,7 +235,7 @@ export {
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
 export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
 export { isOutput, isSource, pathRead, type PathFacts, type PathRead } from './core/data/node-paths.js';
-export { simulateGraph, simulation, stepSimulation, type SteppingOptions, type SimulateFacts, type Simulated, type SimulatedNode, type SimulationRun, type Slot } from './core/data/node-simulate.js';
+export { lightOf, simulateGraph, simulation, stepSimulation, type SteppingOptions, type SimulateFacts, type Simulated, type SimulatedNode, type SimulationRun, type Slot } from './core/data/node-simulate.js';
 /* What a node reads of what reaches it: null where it cannot use it, and why. TODO 764 · TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export { COERCIONS, INPUT_WORDS, coerce, columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type Coercion, type ColumnField, type Given, type InputNeeds, type Need, type Reached } from './core/data/node-input.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */

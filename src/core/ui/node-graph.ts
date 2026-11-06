@@ -83,7 +83,7 @@ import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { isSource, pathRead } from '../data/node-paths.js';
-import { simulation as beginSimulation, stepSimulation, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
+import { lightOf, simulation as beginSimulation, stepSimulation, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
 import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
@@ -3088,7 +3088,7 @@ export function bindWorkflow(
   });
   // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
   //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.
-  let simulation: { result: Simulated; stale: boolean; sig: string } | undefined;
+  let simulation: { result: Simulated; stale: boolean; sig: string; times: Record<string, number> } | undefined;
   /** What a simulation reads of the graph: its nodes' kinds and values and its routes, never a place. */
   const dataSig = (): string => JSON.stringify([shown().nodes.map((n) => [n.id, n.kind, n.values]), shown().routes]);
   /** Each Source's store id, by node. */
@@ -3147,17 +3147,37 @@ export function bindWorkflow(
     clearInterval(tick);
     tick = undefined;
   };
+  /** Each node's light after a simulation, on its tab: the rows it heard and said, and its time; "stale" once an edit changed the graph. */
+  const lightNodes = (): void => {
+    if (!simulation) return;
+    for (const [id, node] of Object.entries(simulation.result.nodes)) {
+      const el = drawnOn.get(canvas)?.nodes.get(id);
+      if (!el) continue;
+      el.setAttribute('data-step', 'done');
+      put(el, 'data-caption', `${lightOf(node, simulation.times[id] ?? 0)}${simulation.stale ? ' · stale' : ''}`);
+    }
+  };
+  /** Take the lights off. */
+  const unlightNodes = (): void => {
+    for (const id of Object.keys(simulation?.result.nodes ?? {})) {
+      const el = drawnOn.get(canvas)?.nodes.get(id);
+      el?.removeAttribute('data-step');
+      el?.removeAttribute('data-caption');
+    }
+  };
   /** Run the graph on the rows kept, and show it: node by node, the page let draw between them when one takes a while. */
   const runSimulation = async (): Promise<{ nodes: number; faults: number }> => {
     const { rows, partial, any } = await cachedRows();
     const run = beginSimulation(graph, rows, { partial });
+    const times: Record<string, number> = {};
     let result: Simulated;
     try {
-      result = await stepSimulation(run, { onStep: (id) => runningOn('simulate', [id]), pause: () => new Promise<void>((done) => setTimeout(done, 0)) });
+      result = await stepSimulation(run, { onStep: (id) => runningOn('simulate', [id]), onDone: (id, ms) => { times[id] = ms; }, pause: () => new Promise<void>((done) => setTimeout(done, 0)) });
     } finally {
       runningOff();
     }
-    simulation = { result, stale: false, sig: dataSig() };
+    simulation = { result, stale: false, sig: dataSig(), times };
+    lightNodes();
     toolbar?.toggleAttribute('data-cached', any);
     showData();
     return { nodes: Object.keys(result.nodes).length, faults: result.faults.length };
@@ -3260,7 +3280,10 @@ export function bindWorkflow(
     });
     toolbar?.toggleAttribute('data-can-unfurl', !ro && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
     tellPath();
-    if (simulation && !simulation.stale && simulation.sig !== dataSig()) simulation.stale = true;
+    if (simulation && !simulation.stale && simulation.sig !== dataSig()) {
+      simulation.stale = true;
+      lightNodes();
+    }
     trail();
     if (multi.size > 1 && inspector?.open) showMulti();
     else if (framePanel && !(shown().frames ?? []).some((f) => f.id === framePanel)) picks.deselect();
@@ -3337,6 +3360,7 @@ export function bindWorkflow(
       unarrange();
       for (const task of queue.list()) if (ours(task)) queue.cancel(task.id);
       runningOff();
+      unlightNodes();
       queue.removeEventListener('task-change', onChange);
       queue.removeEventListener('task-blocked', onBlocked);
       queue.removeEventListener('task-notice', onNotice);

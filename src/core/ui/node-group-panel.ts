@@ -11,11 +11,13 @@
  * - InstanceActions — What a Custom Node's instance may ask: open it, ungroup it, copy a preset.
  * - instancePane — The buttons for one instance: Open, Ungroup.
  * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
- * - dataPane — What a node heard and said in the last simulation: each socket's rows, as JSON, the first 50.
+ * - dataPane — What a node heard and said in a simulation: each socket's rows, in the data grid and as JSON.
  */
 import type { DefinitionDiff } from '../data/node-library.js';
 import type { NodeFlow } from '../data/node-flow.js';
 import type { SimulatedNode, Slot } from '../data/node-simulate.js';
+import '../../components/sherpa-data-grid/sherpa-data-grid.js';
+import '../../components/sherpa-accordion/sherpa-accordion.js';
 
 /** A control made of a Sherpa component, its attributes set. */
 function make(tag: string, attrs: Readonly<Record<string, string>>): HTMLElement {
@@ -147,7 +149,19 @@ export function dataPane(data: { node: SimulatedNode; stale: boolean }, shown = 
       line.textContent = `${slot.label}: ${slotWords(slot)}`;
       body.append(line);
       if (slot.rows?.length) {
-        body.append(make('sherpa-code-block', { 'data-language': 'json', 'data-code': JSON.stringify(slot.rows.slice(0, shown), null, 2) }));
+        // The rows as they are, in the grid the pages use: a column for each field the first rows hold.
+        const first = slot.rows.slice(0, shown);
+        const grid = make('sherpa-data-grid', { class: 'data-grid' }) as HTMLElement & { populate(data: unknown): Promise<void> };
+        const frame = make('div', {});
+        frame.style.blockSize = `${Math.min(280, 56 + 32 * first.length)}px`;
+        grid.style.blockSize = '100%';
+        frame.append(grid);
+        body.append(frame);
+        void grid.populate({ columns: [...new Set(first.flatMap((r) => Object.keys(r)))].slice(0, 12).map((field) => ({ field, header: field })), rows: first });
+        // The same rows as JSON, shut.
+        const json = make('sherpa-accordion', { 'data-heading': 'JSON', class: 'data-json' });
+        json.append(make('sherpa-code-block', { 'data-language': 'json', 'data-code': JSON.stringify(first, null, 2) }));
+        body.append(json);
         if (slot.rows.length > shown) {
           const more = make('p', { class: 'data-more' });
           more.style.margin = '0';
