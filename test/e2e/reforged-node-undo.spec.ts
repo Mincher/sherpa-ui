@@ -112,19 +112,22 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
 test('the toolbar floats at the bottom centre, 32px up, never over the card; the panel is flush; the controls and minimap keep clear at 3 widths', async ({ page }) => {
   await bind(page);
   for (const width of [1500, 900, 600]) {
-    const r = await page.evaluate((w) => {
+    // The canvas measures what the view shows a frame after it is resized: read after it has.
+    await page.evaluate((w) => { document.getElementById('cv')!.style.inlineSize = `${w}px`; }, width);
+    await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    const r = await page.evaluate(() => {
       const cv = document.getElementById('cv')!;
-      cv.style.inlineSize = `${w}px`;
       const box = (e: Element) => { const b = e.getBoundingClientRect(); return { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; };
       return {
         canvas: box(cv), bar: box(document.querySelector('sherpa-node-toolbar')!), panel: box(document.querySelector('#cv > sherpa-overlay-panel')!.shadowRoot!.querySelector('.root')!),
         controls: box(cv.shadowRoot!.querySelector('.controls')!), minimap: box(cv.shadowRoot!.querySelector('.minimap')!),
       };
-    }, width);
+    });
     // Centred on the canvas, so a panel over its end leaves it in reach; never over the card, 32px clear. TODO 796
     const mid = (r.canvas.left + r.canvas.right) / 2;
     const centred = Math.abs((r.bar.left + r.bar.right) / 2 - mid) <= 1;
     expect(centred || Math.abs(r.bar.left - (r.panel.right + 32)) <= 1, `${width}: centred, or 32px past the card`).toBe(true);
+    expect(r.bar.right, `${width}: inside the canvas`).toBeLessThanOrEqual(r.canvas.right + 1);
     expect(r.bar.left, `${width}: clear of the card`).toBeGreaterThanOrEqual(r.panel.right + 31);
     if (width === 1500) expect(centred, '1500: centred').toBe(true);
     expect(Math.abs(r.canvas.bottom - r.bar.bottom - 32), `${width}: 32px up`).toBeLessThanOrEqual(1);
