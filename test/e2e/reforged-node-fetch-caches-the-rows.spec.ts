@@ -173,8 +173,10 @@ test('a Source being fetched wears the tab on its top edge, right-aligned, with 
   expect(on.border).not.toBe((await look(idle)).border);
   expect(await look(idle)).toMatchObject({ step: null, tabShown: false });
   await expect.poll(async () => (await look(source)).words).toBe('Fetching… 2s');
-  await expect.poll(async () => (await look(source)).step, { timeout: 15_000 }).toBeNull();
-  expect((await look(source)).tabShown).toBe(false);
+  // Ended: the running look is gone, and the light says what the simulation made of it, no play icon.
+  await expect.poll(async () => (await look(source)).step, { timeout: 15_000 }).toBe('done');
+  expect(await look(source)).toMatchObject({ icon: false, tabShown: true });
+  expect((await look(source)).words).toMatch(/^120 rows · (<1|\d+) ms$/);
 });
 
 test('a simulation shows the node it is on, node by node, "Simulating… 1s", then takes the look off every node', async ({ page }) => {
@@ -199,8 +201,14 @@ test('a simulation shows the node it is on, node by node, "Simulating… 1s", th
   expect(new Set(mine.map(([heading]) => heading)).size).toBeGreaterThanOrEqual(2);
   expect(mine.every(([, words]) => /^Simulating… \d+s$/.test(words))).toBe(true);
   expect(seen.some(([heading, words]) => heading === 's' && words.startsWith('Fetching…'))).toBe(true);
-  await expect(page.locator('#cv > sherpa-node[data-step]')).toHaveCount(0);
-  await expect(page.locator('#cv > sherpa-node[data-caption]')).toHaveCount(0);
+  // Over: nothing runs, and each node's light says its rows and its time: 100,000 in the Source (the cap stopped the 200,000), in → out at the test, in at the end.
+  await expect(page.locator('#cv > sherpa-node[data-step="running"]')).toHaveCount(0);
+  const lights = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#cv > sherpa-node')].map((n) => [n.getAttribute('data-heading')!, `${n.getAttribute('data-step')}|${n.getAttribute('data-caption')}`])));
+  const active = 100_000 / 4;
+  expect(lights['s']).toMatch(/^done\|100,000 rows · (<1|[\d,]+) ms$/);
+  expect(lights['f']).toMatch(/^done\|100,000 → 100,000 · (<1|[\d,]+) ms$/);
+  expect(lights['c']).toMatch(new RegExp(`^done\\|100,000 → ${active.toLocaleString('en')} · (<1|[\\d,]+) ms$`));
+  expect(lights['o']).toMatch(new RegExp(`^done\\|${active.toLocaleString('en')} rows · (<1|[\\d,]+) ms$`));
 });
 
 test('a fetch that cannot go says so once, as a critical notice, and leaves nothing half done', async ({ page }) => {
@@ -245,6 +253,16 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   expect(lines).toContain('Count: ' + ACTIVE.length);
   const code = await pane.locator('sherpa-code-block').evaluateAll((els) => els.map((e) => JSON.parse(e.getAttribute('data-code')!) as { status: string }[]));
   expect(code.some((c) => c.length === ACTIVE.length && c.every((r) => r.status === 'active'))).toBe(true);
+  // Each socket's rows are in the grid the pages use: a column for each field, a row for each of the rows (the first 50), the
+  // same rows as JSON in a shut section beneath.
+  const grids = await page.locator('#inspector .data-pane sherpa-data-grid').evaluateAll((els) => els.map((g) => ({
+    body: g.shadowRoot!.querySelectorAll('tbody tr').length, heads: [...g.shadowRoot!.querySelectorAll('th.head-cell .head-label')].map((e) => e.textContent?.trim()),
+    first: [...(g.shadowRoot!.querySelector('tbody tr')?.querySelectorAll('td') ?? [])].map((c) => c.textContent?.trim()).filter(Boolean), height: Math.round(g.getBoundingClientRect().height),
+  })));
+  expect(grids.every((g) => g.heads.join() === 'id,status' && g.height <= 280)).toBe(true);
+  expect(grids.filter((g) => g.body === ACTIVE.length).every((g) => g.first[1] === 'active')).toBe(true);
+  expect(grids.map((g) => g.body).sort((a, b) => a - b)).toEqual([ACTIVE.length, ACTIVE.length, 50, 50]);
+  expect(await page.locator('#inspector .data-pane sherpa-accordion.data-json[open]').count()).toBe(0);
   // The Source's has 120 rows and writes out 50.
   const source = (await page.locator('#cv > sherpa-node[data-heading="s"]').boundingBox())!;
   await page.mouse.click(source.x + source.width / 2, source.y + 8);
@@ -256,6 +274,8 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   await page.locator('#cv > sherpa-node[data-heading="c"] sherpa-input-text[name="type"] select').selectOption('ne');
   await settle(page);
   await expect(page.locator('#inspector .data-stale')).toHaveText('Stale: the graph changed since this ran. Press Simulate.');
+  // The lights say so too.
+  await expect(page.locator('#cv > sherpa-node[data-heading="c"]')).toHaveAttribute('data-caption', /· stale$/);
 });
 
 test('the keys: Ctrl or Cmd and Enter simulates; with Shift it fetches', async ({ page }) => {

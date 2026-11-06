@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { simulateGraph, simulation, stepSimulation } = await import(new URL('node-simulate.js', core));
+const { lightOf, simulateGraph, simulation, stepSimulation } = await import(new URL('node-simulate.js', core));
 const { workflowGraph } = await import(new URL('workflow.js', core));
 const { filterRows } = await import(new URL('store.js', core));
 
@@ -203,4 +203,33 @@ test('stepping lets the host in when a node has run long, and says each node bef
   assert.equal(pauses, 0);
   assert.deepEqual(quick, slow);
   assert.deepEqual(quick, simulateGraph(g, { customers: rows }));
+});
+
+test('the nodes run in the order the data flows, whatever order the graph lists them in; a loop keeps the listed order', () => {
+  const g = chain('status', 'eq', 'active');
+  const backwards = { ...g, nodes: [...g.nodes].reverse() };
+  assert.deepEqual(simulation(backwards, {}).ids, ['s', 'f', 'c', 'o']);
+  const some = rowsOf(10);
+  assert.deepEqual(simulateGraph(backwards, { customers: some }), simulateGraph(g, { customers: some }));
+  const loop = graphOf([N('x', 'condition', { type: 'and' }), N('y', 'condition', { type: 'or' })], [R('x', 'y'), R('y', 'x')]);
+  assert.deepEqual(simulation(loop, {}).ids.sort(), ['x', 'y']);
+});
+
+test('each node says how long it took, to the host that asked', async () => {
+  let clock = 0;
+  const took = {};
+  await stepSimulation(simulation(chain('status', 'eq', 'active'), { customers: rowsOf(10) }), { onDone: (id, ms) => { took[id] = ms; }, now: () => (clock += 7) });
+  assert.deepEqual(took, { s: 7, f: 7, c: 7, o: 7 });
+});
+
+test('a node\'s light: the rows it heard and said, "120 → 30", and its time; the one count of a Source or an Output; why, where none', () => {
+  const rows = rowsOf(120);
+  const kept = rows.filter((r) => r.status === 'active').length;
+  const sim = simulateGraph(chain('status', 'eq', 'active'), { customers: rows });
+  assert.equal(lightOf(sim.nodes.s, 3.4), '120 rows · 3 ms');
+  assert.equal(lightOf(sim.nodes.c, 12.2), `120 → ${kept} · 12 ms`);
+  assert.equal(lightOf(sim.nodes.o, 0.2), `${kept} rows · <1 ms`);
+  assert.equal(lightOf(simulateGraph(chain('status', 'eq', 'active'), { customers: rows.slice(0, 1) }).nodes.s, 1500), '1 row · 1,500 ms');
+  assert.equal(lightOf(simulateGraph(chain('status', 'eq', 'active'), {}).nodes.s, 2), 'Not fetched yet · 2 ms');
+  assert.equal(lightOf({ incoming: [], outgoing: [] }, 5), '5 ms');
 });
