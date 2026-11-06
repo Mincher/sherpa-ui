@@ -346,6 +346,15 @@ A graph View is a View whose body is a canvas, showing one entity of a type
   `saveGraph(entities, id, graph)`; Save graph as asks a name in the Save View
   dialog, then `saveGraphAs(entities, id, graph, { label, description })` and
   `openGraph` the copy; Delete says `entities.whyKept(id)` when it is refused.
+- **A page's filters are a graph View too**: ship
+  `{ "page-filters": { "label": "Page filters", "graph": { "type": "query" } } }`. Its graph chip
+  lists your pages (each Context with a definition), and a filter toolbar with
+  `data-node-editor` offers Open in Node Editor in its ⋮: the outlet goes there, on that page,
+  and Back comes back. The outlet opens the page for its Query alone, under its own name, so an
+  edit there is the page's. `init` is handed `page` (`{ id, label, href, definition, source,
+  components, markup, stores }`; `graph-change` carries the next): bind
+  `bindQueryEditor(canvas, page.source, { definition, components, markup, stores, inspector,
+  panel, toolbar, session })`, then `page.source.load()`. `T-a-graph-is-a-view-of-a-type`
 
 ## 9. The session
 

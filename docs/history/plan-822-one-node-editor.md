@@ -26,7 +26,7 @@ floating: the same editor drawn twice.
 |---|---|---|---|
 | P1 | How a page's filter graph is a graph the Context can open | **A graph TYPE, `query` (`PAGE_QUERY`)**: its graphs are the app's pages, every Context with a `definition`, read live from each page's Query, never stored as entities. The app ships ONE View of it, `{ "label": "Page filters", "graph": { "type": "query" } }` | It is plan 746's own model: a View per type, and the graph chip picks which one. No new chip, no new URL key, no fifth word |
 | P2 | The URL | **`?context=node-editor&view=page-filters&graph=records`**: the graph is the page's Context name. The first page (Home) is left out, as a type's first is. Opened from a page, it is a PUSH, so Back returns to the page, on its View | The graph View's URL already says `?view=&graph=` (746 D10) |
-| P3 | What the header shows | **The Context's name, "Node Editor"; the crumb is the page, a link back to it on its View; the View chip; the graph chip "Page: Records", its rows the pages, with no New graph…; Save OFF** (`data-readonly`) **with no copy or delete offered** (`data-query`) | Each edit IS the page's, as a chip's is, and the page keeps it (its ONE document). There is nothing to save, and a page is no entity to copy |
+| P3 | What the header shows | **The Context's name, "Node Editor"; the crumbs "Records › Filters", Records a link back to the page on its View; the View chip; the graph chip "Page: Records", its rows the pages, with no New graph…; no View actions** (`data-query` hides ★, Save and its menu) | Each edit IS the page's, as a chip's is, and the page keeps it (its ONE document). There is nothing to save, and a page is no entity to copy. A Save shown always off, with one tip for two reasons, was the other way; a `data-when-*` directive follows one attribute |
 | P4 | How the editor reaches the page's Query and source | **The outlet opens the page's definition in the provider, under the page's own key, with `bars: false`**: its data, its Query and its kept state, and no filter bar, panel or View chip of its own | ONE path to the data: the provider's `open()`, the page's ONE kept document. The header row stays the outlet's; reach, news, settings and the keeper work as on the page |
 | P5 | `bindQueryEditor` | **ONE binding, used by the Context.** It gains `markup`: where a component node's live copy is copied from (the page's markup, not the document) | The dialog was its only other caller. `pageComponents(root, definition)` moves from Demos into sherpa-ui |
 | P6 | The entry point | **The ⋮ row reads "Open in Node Editor"**, still `node-editor-open`; the OUTLET answers it where the app has a `query` View: it goes there, the asking page the graph | An app with no `query` View gets no answer, as before. No app glue |
@@ -53,15 +53,18 @@ flowchart LR
 Query that is not the page. No filter bar or panel is drawn or answered, no View chip is heard, and
 no component is configured by id (`ui`). Its components (an inspector's live copy) are answered,
 and its Query is restored and kept under its key as the page's is. The next page opened, with its
-bars, answers them again. Leaving a page writes what waited for its frame, so an edit made just
-before Back is kept.
+bars, answers them again. Leaving a page writes it as it was left — its View, its Query, what
+waited for its frame — so a page opened on a View by its URL, and never edited, opens on that View
+in the Node Editor too (before, only a pick or an edit wrote the View: found by the keys spec).
 
 ## 5. What the Context is handed
 
 On a `query` graph, `init` is handed `source` and `query` (the page's) and `page`: `{ id, label,
-href, definition, components, markup }`. `graph-change` carries the new `page` with the graph. The
-Context binds `bindQueryEditor(canvas, page.source, { definition, components, markup, inspector,
-panel, toolbar, session })` and puts the page's crumb in the header.
+href, definition, components, markup, stores }`. `graph-change` carries the new `page` with the
+graph. The Context binds `bindQueryEditor(canvas, page.source, { definition, components, markup,
+stores, inspector, panel, toolbar, session })`, loads the source as the page does (so each node
+lights as its step runs), and puts the page's crumb in the header. The kept second Sources (808)
+are the editor's own, kept for the tab by the page's name, so they come along unchanged.
 
 ## 6. Tests
 
@@ -71,14 +74,18 @@ panel, toolbar, session })` and puts the page's crumb in the header.
   its header and chips; an edit there changes Records' rows on Back (`source.debugState().total`);
   the URL; the dialog is gone. Every spec that drove the dialog drives the Context.
 
-## 7. Not done
+## 7. Not done, and one thing lost
 
-- A page's Query is never written as its definition (`editor.save()`'s `definition-save`): Save is off.
+- A page's Query is never written as its definition (`editor.save()`'s `definition-save`).
 - The page's own filter panel is not shown beside the canvas.
+- **Lost**: in the dialog, the floating Nodes card and the floating inspector each came in front
+  of the other when pressed. On the Node Editor page they never did (the outlet isolates its
+  elements; `T-a-pressed-panel-comes-to-the-front`), and a page's graph is that page now. The
+  spec that held it in the dialog is gone with the dialog.
 
 ## 8. Decisions for Will
 
 | # | Question | A (the lane's pick) | B |
 |---|---|---|---|
-| D1 | Save on a page's filter graph | **Off**: each edit is the page's as it is made; what waits for Apply waits, kept, for the page's own Apply on Back | Save applies what waits, as the page's Apply does |
+| D1 | Save on a page's filter graph | **None shown**: each edit is the page's as it is made; what waits for Apply (the View scope always does) waits, kept, for the page's own Apply on Back | Save shown, and it applies what waits, as the page's Apply does |
 | D2 | The filter panel beside a page's graph | **Shut**: the canvas has the room | The page's panel, open beside the canvas, editing the same Query |
