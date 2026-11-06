@@ -129,6 +129,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.toggleState('minimised', this.hasAttribute('data-minimised'));
     this.#place();
     SherpaOverlayPanel.#stack();
+    // At load the shell's areas have no box yet: stack again once they have one, so a tab starts at its area's corner.
+    for (let i = 1; i <= 30; i++) setTimeout(() => SherpaOverlayPanel.#stack(), i * 50);
     this.#syncGroup();
     this.$('.fold')?.addEventListener('button-click', () => this.$<SherpaMenu>('.fold-menu')?.show?.(this.$('.fold') as HTMLElement));
     this.$('.fold-menu')?.addEventListener('menu-select', this.#onFoldPick);
@@ -170,6 +172,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   // Each connect: a move cancels what the last one listened to.
   override onConnect(): void {
     this.on(document, 'panel-room-change', this.#place);
+    this.on(window, 'resize', () => SherpaOverlayPanel.#stack());
     this.#place();
   }
 
@@ -275,7 +278,11 @@ export class SherpaOverlayPanel extends SherpaElement {
    *  to a window, one to each layout a panel is slotted in. */
   static #stack(): void {
     // The tabs stand under the header: where the shell's panel areas begin.
-    const top = document.querySelector('sherpa-app-shell')?.shadowRoot?.querySelector('sherpa-layout-panels')?.getBoundingClientRect().top ?? 0;
+    const layout = document.querySelector('sherpa-app-shell')?.shadowRoot?.querySelector('sherpa-layout-panels');
+    const top = layout?.getBoundingClientRect().top ?? 0;
+    // The shell's areas have no box until it has drawn: tabs wait, so none shows at the window's corner.
+    const shell = document.querySelector('sherpa-app-shell');
+    const ready = !shell || (!!layout && (top > 0 || shell.hasAttribute('data-no-header')));
     // One control group of tabs for each side of each room: a lone tab is solo, several are stitched by the group's positions.
     const groups = new Map<Element | null, Record<'start' | 'end', SherpaOverlayPanel[]>>();
     for (const panel of document.querySelectorAll<SherpaOverlayPanel>('sherpa-overlay-panel[data-minimised][open]')) {
@@ -290,6 +297,7 @@ export class SherpaOverlayPanel extends SherpaElement {
           const tab = panel.$<HTMLElement>('.tab');
           tab?.style.setProperty('--_tab-index', String(index));
           tab?.style.setProperty('--_tab-top', `${Math.round(top)}px`);
+          tab?.toggleAttribute('data-stacked', ready);
         });
       }
     }
@@ -368,10 +376,10 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.toggleState('tab-start', this.#dock === 'start');
     // In the other area: out first. TRAP T-a-panel-pops-into-the-end-area
     if (this.#home && this.slot !== `panel-${this.#dock}`) this.#popOut();
-    // Floating, a fixed panel leaves its area, as Pop out does: the area gives its room back.
-    if (shell && this.hasAttribute('data-fixed') && !floating && !minimised) this.#popIn(shell);
+    // Floating, a fixed panel leaves its area, as Pop out does: the area gives its room back. A tab stays in it, and the area hugs the tabs.
+    if (shell && this.hasAttribute('data-fixed') && !floating) this.#popIn(shell);
     else this.#popOut();
-    this.toggleState('in-area', !!this.#home);
+    this.toggleState('in-area', !!this.#home && !minimised);
     this.toggleState('floating', floating);
     this.#syncSide();
     this.#syncPop();

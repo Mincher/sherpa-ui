@@ -106,6 +106,15 @@
   max-inline-size: none;
   pointer-events: none;
 }
+:host(:state(start-strip)) .area-start,
+:host(:state(end-strip)) .area-end {
+  position: relative;
+  inset: auto;
+  z-index: var(--sherpa-layer-content, 1);
+  flex: 0 0 var(--_strip, 2.5rem);
+  min-inline-size: var(--_strip, 2.5rem);
+  max-inline-size: var(--_strip, 2.5rem);
+}
 :host(:state(start-floating)) .edge-start,
 :host(:state(end-floating)) .edge-end { display: none; }
 /* The INNER edge's handle: a strip astride the divider, half each side, with a line down

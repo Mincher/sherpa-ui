@@ -49,7 +49,7 @@ const press = async (page: Page, sel: string): Promise<void> => {
 const area = (page: Page) => page.evaluate(() =>
   Math.round(document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-end')!.getBoundingClientRect().width));
 
-test('Minimise turns the panel into a small horizontal tab inset from the right edge; the tab opens it again', async ({ page }) => {
+test('Minimise turns the panel into a tab on its side, flush to the right edge; the tab opens it again', async ({ page }) => {
   await stage(page);
   const open = await part(page, '.root');
   expect(open.shown).toBe(true);
@@ -57,17 +57,19 @@ test('Minimise turns the panel into a small horizontal tab inset from the right 
   expect((await part(page, '.root')).shown).toBe(false);
   const tab = await part(page, '.tab');
   expect(tab.shown).toBe(true);
-  expect(tab.w).toBeGreaterThan(tab.h);
-  expect(tab.x + tab.w).toBe(1600 - 16);
+  expect(tab.h).toBeGreaterThan(tab.w);
+  expect(tab.x + tab.w).toBe(1600);
   await openFromTab(page);
   expect(await part(page, '.root')).toEqual(open);
 });
 
-test('in a shell area the tab gives the area its room back; opened, the panel docks as it was', async ({ page }) => {
+test('in a shell area the tab shrinks the area to the tab strip; opened, the panel docks as it was', async ({ page }) => {
   await stage(page, { shell: true });
   expect(await area(page)).toBeGreaterThan(400);
   await press(page, '.minimise');
-  expect(await area(page)).toBe(0);
+  const strip = await area(page);
+  expect(strip).toBeGreaterThan(0);
+  expect(strip).toBeLessThan(64);
   expect((await part(page, '.tab')).shown).toBe(true);
   await openFromTab(page);
   expect(await area(page)).toBeGreaterThan(400);

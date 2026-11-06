@@ -123,6 +123,8 @@
   pointer-events: auto;
 }
 :host(:state(in-layout):state(in-area)) .root { position: static; }
+/* An overlay panel over the view is positioned, so its z-index counts: the content's own layers (a sticky metric group) stay under it. */
+:host(:state(in-area)[data-overlay]) .root { position: relative; }
 /* FIXED is flat and takes its area's room (above); an OVERLAY docked in a layout draws over the view at its side,
    with the shadow and rounding of one that is not part of the page. TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
 :host(:state(in-layout):state(overlaid)) .root {
@@ -153,6 +155,8 @@
 :host(:state(tab-start):state(peeking):not(:state(in-layout))) .root { inset-inline-start: 0; inset-inline-end: auto; }
 /* Overlaid out of its area, a start panel stays on the start edge. TRAP T-an-overlaid-panel-keeps-its-side */
 :host(:state(tab-start):not(:state(in-layout), :state(in-area), :state(floating))) .root { inset-inline-start: 0; inset-inline-end: auto; }
+/* Unseen until it is stacked at its area's corner, so it never shows at the window's. */
+.tab:not([data-stacked]) { visibility: hidden; }
 /* PHYSICAL sides: the tab's own vertical writing mode would turn the logical ones. */
 :host([data-minimised][open]) .tab {
   display: flex;
