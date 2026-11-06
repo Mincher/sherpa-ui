@@ -139,3 +139,36 @@ gap, and a lighter ring would cross lines.
 1. **Flow.** (A, picked) inputs fan left and outputs right, so every line runs left to right; (B) the full circle of
    your words, lines in every direction.
 2. **Scope.** (A, picked) the whole graph, always; (B) the picked nodes when two or more are picked, as Arrange.
+
+## 827 — the sockets' order (built 2026-11-06)
+
+Will, 2026-11-05: *"Unfurling is great! Faster than I thought it would be."* Then (TODO 827): *"One thing I would
+like to look at is using the vertical order of sockets, on each side of the node, to decide the vertical position of
+unfurled neighbour nodes. If there's multiple connections between 2 nodes then use the first connection socket."*
+
+| | Pick | Why |
+|---|---|---|
+| Socket heights | The editor reads each routed socket's drawn height in its node (`sockets` on `unfurlNodes`) | The drawn order is the order: header, rows top to bottom, the False footer, a frame's nodes in their column |
+| The order | The cells one cell reached first, on one side of it, take their own slots on their ring in its sockets' order, in every candidate. The topmost socket decides for two cells joined twice | "The node it hangs from": the parent in the walk out from the anchor |
+| The height | Each line pulled level: a neighbour asks for the height that sets the two sockets of their line level | "decide the vertical position" |
+| The sweeps | Each neighbour read at its socket | 15 fewer crossings over the eight graphs below |
+| The score | Fewest crossings counted socket to socket; then the fewest pairs out of the sockets' order | Two lines out of one node's two sockets that swap are a crossing there |
+| No sockets | Every socket at mid height: exactly 569's layout on all 16 of its graphs | |
+
+**Which wins.** Will's order, for the cells that hang from one cell, on their ring: the test graph where `b` above `a`
+crosses 2 pairs and `a` above `b` (the sockets' order) crosses 3 keeps `a` above `b`. Everything else follows the
+fewest crossings, because ranking every pair of a node's neighbours by the sockets' order first cost 47% more crossings.
+
+**Measured** (crossings at mid height / socket to socket / pairs out of the sockets' order; eight random DAGs whose
+routes use a header and 1–4 rows, the tree, a Math node fed on two rows):
+
+| | Before | 569 | 827 (built) | Sockets' order first |
+|---|---:|---:|---:|---:|
+| Total | 2097 / 2405 / 209 | 398 / 599 / 208 | 484 / 626 / 169 | 733 / 883 / 156 |
+| Siblings out of order | | 61 | 33, none on one ring | 22 |
+
+At mid height 827 crosses more than 569 (398 → 484) because it no longer draws its lines there; socket to socket it
+crosses 4.5% more and keeps 19% more pairs in order. Demos' four shipped workflows, with their drawn sockets: 0 / 0 / 0
+before and after, as with 569 (the Devices graph: 100 drawn crossings and 3 pairs out of order, then none). Time: as
+569 (300 nodes 30–160 ms under a load average of 45; 35 ms with sockets on a quieter moment).
+

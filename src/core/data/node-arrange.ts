@@ -6,7 +6,8 @@
  * - ArrangeGraph — What a layout reads: the nodes' places, the routes, the ties.
  * - ArrangeOptions — The gaps, the grid, each node's drawn box, and one column or the grid.
  * - Arranged — Where each picked node and each tie goes.
- * - crossings — How many pairs of straight lines, centre to centre, cross in a layout.
+ * - SocketHeights — Each socket's height in its node's box, as drawn: inputs by a route's `to`, outputs by its `from`.
+ * - crossings — How many pairs of straight lines, edge to edge at mid height or socket to socket, cross in a layout.
  * - arrangeNodes — The picked nodes on a grid, by their routes, rows crossing least, ties in the gaps; or one column.
  */
 import { socketOf, type NodeRoute, type NodeTie } from './node-kinds.js';
@@ -39,17 +40,26 @@ export interface Arranged {
 type Spot = { x: number; y: number };
 type Box = { w: number; h: number };
 
-/** How many pairs of straight lines, from a node's right edge to the next's left edge at mid height, cross. */
-export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonly<Record<string, Box>>, routes: readonly NodeRoute[]): number {
+/** Each socket's height in its node's box, in plane px, as drawn: inputs by a route's `to`, outputs by its `from`. TODO 827 */
+export interface SocketHeights {
+  inputs: Readonly<Record<string, number>>;
+  outputs: Readonly<Record<string, number>>;
+}
+
+/** How many pairs of straight lines, from a node's right edge to the next's left edge, cross: at mid height, two lines
+ *  of one node never counted; or, given the sockets, socket to socket, and two lines out of one node's two sockets count. */
+export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonly<Record<string, Box>>, routes: readonly NodeRoute[], sockets?: SocketHeights): number {
   const lines = routes.flatMap((r) => {
     const [a, b] = [socketOf(r.from).node, socketOf(r.to).node];
     const [pa, pb, ba, bb] = [places[a], places[b], boxes[a], boxes[b]];
-    return pa && pb && ba && bb && a !== b ? [{ a, b, x1: pa.x + ba.w, y1: pa.y + ba.h / 2, x2: pb.x, y2: pb.y + bb.h / 2 }] : [];
+    if (!pa || !pb || !ba || !bb || a === b) return [];
+    return [{ a, b, x1: pa.x + ba.w, y1: pa.y + (sockets?.outputs[r.from] ?? ba.h / 2), x2: pb.x, y2: pb.y + (sockets?.inputs[r.to] ?? bb.h / 2) }];
   });
   let count = 0;
   for (let i = 0; i < lines.length; i++) for (let j = i + 1; j < lines.length; j++) {
     const [p, q] = [lines[i]!, lines[j]!];
-    if (p.a === q.a || p.b === q.b || p.a === q.b || p.b === q.a) continue;
+    // Given the sockets, two lines that meet at one socket only touch there: the strict test below never counts them.
+    if (!sockets && (p.a === q.a || p.b === q.b || p.a === q.b || p.b === q.a)) continue;
     const side = (x: number, y: number, l: typeof p): number => Math.sign((l.x2 - l.x1) * (y - l.y1) - (l.y2 - l.y1) * (x - l.x1));
     if (side(q.x1, q.y1, p) * side(q.x2, q.y2, p) < 0 && side(p.x1, p.y1, q) * side(p.x2, p.y2, q) < 0) count++;
   }

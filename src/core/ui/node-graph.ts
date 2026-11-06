@@ -19,7 +19,7 @@
  * - pickedNodes — The nodes picked, by id: a click, a box, or the keys.
  * - arrangement — Where these nodes go, from the boxes they are drawn in: a grid, or one column.
  * - arrangePicked — Lay the picked nodes out on a grid and hand the host the places: one move, ties and bends with it.
- * - unfurlment — Where every node goes when the graph is unfurled, from the boxes and frames drawn.
+ * - unfurlment — Where every node goes when the graph is unfurled, from the boxes, frames and socket heights drawn.
  * - unfurlGraph — Unfurl the whole graph and hand the host the places: one step; the view fits it after.
  * - watchArrange — Tell a toolbar, in `data-can-arrange` and any flag given, when two or more nodes are picked.
  * - markNodes — Mark several nodes as the ones picked.
@@ -1379,7 +1379,15 @@ export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
   const frame = [...drawn.frames.values()].find((el) => !el.hasAttribute('hidden') && el.offsetWidth);
   const side = frame ? Math.max(0, (frame.offsetWidth - Number(frame.getAttribute('data-w'))) / 2) : 0;
   const top = frame ? Math.max(0, frame.offsetHeight - Number(frame.getAttribute('data-h')) - side) : 0;
-  const placed = unfurlNodes({ nodes, routes: drawn.routes, ties: drawn.ties, frames: drawn.graph.frames ?? [] }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side } });
+  // Each routed socket's height in its node, as drawn: a node's neighbours stand in its sockets' order. TODO 827
+  const sockets: { inputs: Record<string, number>; outputs: Record<string, number> } = { inputs: {}, outputs: {} };
+  for (const route of drawn.routes) {
+    for (const [address, side, into] of [[route.from, 'output', sockets.outputs], [route.to, 'input', sockets.inputs]] as const) {
+      const [rect, el] = [socketAt(drawn, address, side), drawn.nodes.get(socketOf(address).node)];
+      if (rect && el) into[address] = onPlane(canvas, rect)[1] - (Number(el.getAttribute('data-y')) || 0);
+    }
+  }
+  const placed = unfurlNodes({ nodes, routes: drawn.routes, ties: drawn.ties, frames: drawn.graph.frames ?? [] }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 

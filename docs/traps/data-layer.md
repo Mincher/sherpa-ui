@@ -7932,7 +7932,18 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   places give only the parts' order and the first part's anchor, which keeps its place. So a second Unfurl gives
   the same layout.
 
+- **A node's neighbours stand in its sockets' order** (Will, TODO 827). The editor hands each routed socket's drawn
+  height. The cells one cell reached first, on one side of it, take their own slots on their ring in the order of its
+  sockets, in every candidate; where several routes join two cells, the topmost socket decides. Each line is pulled
+  level, socket to socket, and the lines are counted socket to socket, so two lines out of one node's two sockets
+  that swap are a crossing. With no socket heights, every socket is at mid height and unfurl is as it was.
+- **Will's order wins, but only on the ring.** Ranking the candidates by the sockets' order first, every pair of a
+  node's neighbours, took the drawn crossings of eight random graphs with rows from 599 to 881. Dealing the cells
+  that hang from one cell into their own slots costs 599 to 624, and leaves no such pair out of order on a ring.
+  Siblings on different rings, and a node's other neighbours, follow the fewest crossings.
+
 - Site: `src/core/data/node-unfurl.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/unfurl-spreads-the-graph-from-its-hub.test.mjs`
+- Site: `test/unit/unfurl-keeps-the-socket-order.test.mjs`
 - Site: `test/e2e/reforged-node-unfurl.spec.ts`

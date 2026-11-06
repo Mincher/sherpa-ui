@@ -1,14 +1,15 @@
 /**
  * node-unfurl.ts — UNFURL a graph: every node round its part's most connected one, inputs fanning left and outputs
- * right, each nearer or farther by its weight, none overlapping, every line left to right. A frame moves whole.
- * Pure: no DOM. Will, TODO 569 · docs/history/plan-569-unfurl.md · TRAP T-unfurl-keeps-the-flow
+ * right, each nearer or farther by its weight, none overlapping, every line left to right; a node's neighbours in the
+ * order of the sockets they join. A frame moves whole. Pure: no DOM. Will, TODOs 569, 827 ·
+ * docs/history/plan-569-unfurl.md · TRAP T-unfurl-keeps-the-flow
  *
  * Map:
  * - UnfurlGraph — What an unfurl reads: the nodes' places, the routes, the ties and the frames.
- * - UnfurlOptions — The gaps, the grid, each node's drawn box, and a frame's box past its nodes'.
- * - unfurlNodes — Every node round its part's anchor, by rings and weights, the order crossing least; ties in their limits.
+ * - UnfurlOptions — The gaps, the grid, each node's drawn box and socket heights, and a frame's box past its nodes'.
+ * - unfurlNodes — Every node round its part's anchor, by rings, weights and sockets, crossing least; ties held.
  */
-import { crossings, type Arranged } from './node-arrange.js';
+import { crossings, type Arranged, type SocketHeights } from './node-arrange.js';
 import { socketOf, type NodeRoute, type NodeTie } from './node-kinds.js';
 import type { NodeFrame } from './node-frames.js';
 import { tieLimit } from './workflow.js';
@@ -30,6 +31,9 @@ export interface UnfurlOptions {
   boxes: Readonly<Record<string, { w: number; h: number }>>;
   /** A frame's header and pad above its nodes, and its pad on the other sides. Default none. */
   frameMargin?: { top: number; side: number };
+  /** Each socket's height in its node, as drawn: a node's neighbours stand in the order of the sockets they join
+   *  (Will, TODO 827). A socket not given sits at mid height. */
+  sockets?: SocketHeights;
 }
 
 /** The barycentre sweeps out and back; the centroid pulls; a ring's arc, each way from level; how far out a ring's
@@ -42,8 +46,10 @@ const REACH = 0.5;
 
 /** One cell: a node, or a frame and its nodes, each at its offset in the cell's box. */
 interface Cell { key: string; w: number; h: number; members: { id: string; dx: number; dy: number }[] }
-/** One route or more between two cells, in their main direction. */
-interface Link { s: number; t: number; m: number }
+/** One route or more between two cells, in their main direction, and the topmost socket each joins them by. */
+interface Link { s: number; t: number; m: number; ps: number; pt: number }
+/** A link as one of its cells sees it: the other cell, its socket on this one (`port`) and on the other (`far`). */
+interface Edge { to: number; m: number; down: boolean; port: number; far: number }
 
 /** The heights nearest `want` (by weight), in order, each at least its gap below the one before. */
 function project(want: readonly number[], weight: readonly number[], gap: readonly number[]): number[] {
@@ -70,7 +76,9 @@ function project(want: readonly number[], weight: readonly number[], gap: readon
  * to a higher ring. Each ring is ordered by its neighbours' barycentre; each cell pulled to its neighbours' weighted
  * centroid in height, in its ring's order and gaps; each ring an arc round the anchor, a cell farther out as its
  * weight nears its heaviest neighbour's; then each moved out in x past its sources and anything in its height band.
- * The order whose lines cross least wins. A frame is one cell, so its nodes keep their column. Parts stand side by
+ * A neighbour is read at the socket it joins, the topmost where several routes join two nodes (Will, TODO 827): the
+ * cells that hang from one cell stand on their ring in its sockets' order, and each line is pulled level; then the
+ * order whose lines cross least, socket to socket, wins. A frame is one cell, so its nodes keep their column. Parts stand side by
  * side in the order they stood, lone nodes in a column after; the first part's anchor keeps its place; every place on the grid. A tie whose
  * routes all join moved nodes goes to their middle, held by `tieLimit`. Fewer than two: nothing.
  */
@@ -98,24 +106,38 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
       members: members.map((id) => ({ id, dx: at.get(id)!.x - left + margin.side, dy: at.get(id)!.y - top + margin.top })) });
   }
   for (const id of picked) if (!cellOf.has(id)) { cellOf.set(id, cells.length); cells.push({ key: id, ...box(id), members: [{ id, dx: 0, dy: 0 }] }); }
+  // A socket's height in its cell: its node's offset there, and its own height in the node, else mid height.
+  const offset = new Map(cells.flatMap((cell) => cell.members.map((m) => [m.id, m.dy] as const)));
+  const heightOf = (address: string, heights: SocketHeights['inputs'] | undefined): number => {
+    const id = socketOf(address).node;
+    return offset.get(id)! + (heights?.[address] ?? box(id).h / 2);
+  };
   // Weights: each route end, so several routes on one socket count each. A route inside one cell counts for none.
+  // Several routes between two cells: the topmost socket on each decides (Will, TODO 827).
   const n = cells.length;
   const weight = new Array<number>(n).fill(0);
-  const pairs = new Map<number, { a: number; b: number; m: number; ab: number }>();
+  const pairs = new Map<number, { a: number; b: number; m: number; ab: number; pa: number; pb: number }>();
   for (const r of graph.routes) {
     const [a, b] = [cellOf.get(socketOf(r.from).node), cellOf.get(socketOf(r.to).node)];
     if (a === undefined || b === undefined || a === b) continue;
     weight[a]!++;
     weight[b]!++;
     const [lo, hi] = a < b ? [a, b] : [b, a];
-    const pair = pairs.get(lo * n + hi) ?? { a: lo, b: hi, m: 0, ab: 0 };
+    const [out, into] = [heightOf(r.from, options.sockets?.outputs), heightOf(r.to, options.sockets?.inputs)];
+    const pair = pairs.get(lo * n + hi) ?? { a: lo, b: hi, m: 0, ab: 0, pa: Infinity, pb: Infinity };
     pair.m++;
     if (a === lo) pair.ab++;
+    pair.pa = Math.min(pair.pa, a === lo ? out : into);
+    pair.pb = Math.min(pair.pb, a === lo ? into : out);
     pairs.set(lo * n + hi, pair);
   }
-  const links: Link[] = [...pairs.entries()].sort((p, q) => p[0] - q[0]).map(([, p]) => (2 * p.ab >= p.m ? { s: p.a, t: p.b, m: p.m } : { s: p.b, t: p.a, m: p.m }));
-  const adj = Array.from({ length: n }, () => [] as { to: number; m: number; down: boolean }[]);
-  for (const l of links) { adj[l.s]!.push({ to: l.t, m: l.m, down: true }); adj[l.t]!.push({ to: l.s, m: l.m, down: false }); }
+  const links: Link[] = [...pairs.entries()].sort((p, q) => p[0] - q[0])
+    .map(([, p]) => (2 * p.ab >= p.m ? { s: p.a, t: p.b, m: p.m, ps: p.pa, pt: p.pb } : { s: p.b, t: p.a, m: p.m, ps: p.pb, pt: p.pa }));
+  const adj = Array.from({ length: n }, () => [] as Edge[]);
+  for (const l of links) {
+    adj[l.s]!.push({ to: l.t, m: l.m, down: true, port: l.ps, far: l.pt });
+    adj[l.t]!.push({ to: l.s, m: l.m, down: false, port: l.pt, far: l.ps });
+  }
   const byKey = (a: number, b: number): number => (cells[a]!.key < cells[b]!.key ? -1 : cells[a]!.key > cells[b]!.key ? 1 : a - b);
   // Parts: the cells routes join.
   const part = new Array<number>(n).fill(-1);
@@ -136,11 +158,18 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     const pull = (c: number): number => (c === anchor ? weight[c]! * weight[c]! : Math.max(1, weight[c]!));
     // Generations out from the anchor; each a ring past its parent's, right if the parent sends to it, left if it sends to the parent.
     const prefer = new Map([[anchor, 0]]);
+    // Each cell's parent, the one that reached it first: the cell it hangs from, on which side, by which socket.
+    const parent = new Map<number, { p: number; down: boolean; port: number }>();
     const order = [anchor];
     for (let i = 0; i < order.length; i++) {
       const c = order[i]!;
-      const next = [...adj[c]!].sort((p, q) => q.m - p.m || weight[q.to]! - weight[p.to]! || byKey(p.to, q.to));
-      for (const e of next) if (!prefer.has(e.to)) { prefer.set(e.to, prefer.get(c)! + (e.down ? 1 : -1)); order.push(e.to); }
+      const next = [...adj[c]!].sort((p, q) => q.m - p.m || weight[q.to]! - weight[p.to]! || p.port - q.port || byKey(p.to, q.to));
+      for (const e of next) {
+        if (prefer.has(e.to)) continue;
+        prefer.set(e.to, prefer.get(c)! + (e.down ? 1 : -1));
+        order.push(e.to);
+        parent.set(e.to, { p: c, down: e.down, port: e.port });
+      }
     }
     // The routes the flow holds: a loop's closing route is left out, as Arrange leaves it.
     const into = new Map(list.map((c) => [c, [] as number[]])), from = new Map(list.map((c) => [c, [] as number[]]));
@@ -178,17 +207,20 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     const right = rings.filter((r) => r > 0), left = rings.filter((r) => r < 0).reverse();
     const layers = new Map(rings.map((r) => [r, [] as number[]]));
     for (const c of order) layers.get(ring.get(c)!)!.push(c);
-    // Orders: by the barycentre of the neighbours nearer the anchor going out, and farther coming back. Each new one a candidate.
+    // Orders: by the barycentre of the neighbours nearer the anchor going out, and farther coming back, each neighbour
+    // read at the socket the line joins it by, so those it sends to or hears from stand in its sockets' order. Each new one a candidate.
     const pos = new Map<number, number>();
     const index = (l: readonly number[]): void => l.forEach((c, i) => pos.set(c, l.length > 1 ? i / (l.length - 1) : 0.5));
     for (const l of layers.values()) index(l);
+    const slot = (c: number): number => 1 / Math.max(1, layers.get(ring.get(c)!)!.length - 1);
+    const atSocket = (e: Edge): number => pos.get(e.to)! + (e.far / cells[e.to]!.h - 0.5) * slot(e.to);
     const sweep = (rs: readonly number[], inward: boolean): void => {
       for (const r of rs) {
         const l = layers.get(r)!;
         const key = new Map(l.map((c) => {
           const ns = adj[c]!.filter((e) => ring.get(e.to) !== r && (inward ? Math.abs(ring.get(e.to)!) < Math.abs(r) : Math.abs(ring.get(e.to)!) > Math.abs(r)));
           const sum = ns.reduce((s, e) => s + e.m, 0);
-          return [c, sum ? ns.reduce((s, e) => s + pos.get(e.to)! * e.m, 0) / sum : pos.get(c)!];
+          return [c, sum ? ns.reduce((s, e) => s + atSocket(e) * e.m, 0) / sum : pos.get(c)!];
         }));
         l.sort((a, b) => key.get(a)! - key.get(b)! || pos.get(a)! - pos.get(b)! || byKey(a, b));
         index(l);
@@ -197,9 +229,25 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     const outward = [0, ...right, ...left], back = [...[...right].reverse(), ...[...left].reverse(), 0];
     const seen = new Set<string>();
     const candidates: Map<number, number[]>[] = [];
+    // Will's order, in every candidate: the cells that hang from one cell, on one side of it, take their own slots on
+    // their ring in the order of its sockets; nothing else moves. TODO 827
+    const inSocketOrder = (): Map<number, number[]> => new Map([...layers].map(([r, l]) => {
+      const next = [...l];
+      const groups = new Map<string, number[]>();
+      l.forEach((c, i) => {
+        const up = parent.get(c);
+        if (up) groups.set(`${up.p}|${up.down}`, [...(groups.get(`${up.p}|${up.down}`) ?? []), i]);
+      });
+      for (const slots of groups.values()) {
+        const dealt = [...slots].sort((i, j) => parent.get(l[i]!)!.port - parent.get(l[j]!)!.port || i - j);
+        slots.forEach((i, k) => { next[i] = l[dealt[k]!]!; });
+      }
+      return [r, next];
+    }));
     const keep = (): void => {
-      const said = rings.map((r) => layers.get(r)!.join()).join('|');
-      if (!seen.has(said)) { seen.add(said); candidates.push(new Map([...layers].map(([r, l]) => [r, [...l]]))); }
+      const lay = inSocketOrder();
+      const said = rings.map((r) => lay.get(r)!.join()).join('|');
+      if (!seen.has(said)) { seen.add(said); candidates.push(lay); }
     };
     keep();
     for (let k = 0; k < ROUNDS; k++) { sweep(outward, true); keep(); sweep(back, false); keep(); }
@@ -213,13 +261,18 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
       }
       const level = y.get(anchor)!;
       for (const c of lay.get(0)!) y.set(c, y.get(c)! - level);
-      // Each cell toward its neighbours' weighted centroid, its ring's order and gaps kept; the anchor holds at 0.
+      // Each cell toward its neighbours' weighted centroid, its ring's order and gaps kept; the anchor holds at 0. Each
+      // neighbour asks for the height that sets the two sockets of their line level.
       for (let k = 0; k < PULLS; k++) for (const r of [...outward, ...back]) {
         const l = lay.get(r)!;
         const want = l.map((c) => {
           if (c === anchor) return 0;
           let [sum, total] = [y.get(c)! / 2, 0.5];
-          for (const e of adj[c]!) { const w = e.m * pull(e.to); sum += y.get(e.to)! * w; total += w; }
+          for (const e of adj[c]!) {
+            const w = e.m * pull(e.to);
+            sum += (y.get(e.to)! + e.far - cells[e.to]!.h / 2 - e.port + cells[c]!.h / 2) * w;
+            total += w;
+          }
           return sum / total;
         });
         const gaps = l.slice(1).map((c, i) => (cells[l[i]!]!.h + cells[c]!.h) / 2 + gapY + grid);
@@ -259,11 +312,23 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
       }
       return { x, y };
     };
-    let best: { k: number; x: Map<number, number>; y: Map<number, number> } | undefined;
+    // How often a cell's neighbours on one side stand out of its sockets' order: two lines whose ends swap heights.
+    const swapped = (y: ReadonlyMap<number, number>): number => {
+      let count = 0;
+      for (const c of list) for (const down of [true, false]) {
+        const side = adj[c]!.filter((e) => e.down === down);
+        const end = side.map((e) => y.get(e.to)! - cells[e.to]!.h / 2 + e.far);
+        for (let i = 0; i < side.length; i++) for (let j = i + 1; j < side.length; j++) if ((side[i]!.port - side[j]!.port) * (end[i]! - end[j]!) < 0) count++;
+      }
+      return count;
+    };
+    // The order whose lines cross least, counted socket to socket; of those, the one keeping most of the sockets' order.
+    let best: { v: number; k: number; x: Map<number, number>; y: Map<number, number> } | undefined;
     for (const lay of candidates) {
       const { x, y } = draw(lay);
-      const k = crossings(placesOf(list, x, y), boxes, graph.routes);
-      if (!best || k < best.k) best = { k, x, y };
+      const v = swapped(y);
+      const k = crossings(placesOf(list, x, y), boxes, graph.routes, options.sockets);
+      if (!best || k < best.k || (k === best.k && v < best.v)) best = { v, k, x, y };
     }
     return { anchor, list, x: best!.x, y: best!.y };
   };
