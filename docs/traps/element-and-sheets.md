@@ -2003,10 +2003,13 @@ to the same class with `journal: N` (`T-a-store-keeps-its-history`).
   drag, a typed word) folds into one.
 - **Across a Custom Node**: one journal for the workflow and every definition the
   tab edited, so an undo works in whatever level it was made, and leaving a level
-  keeps it. A step puts the edited definitions back over the app's LAST handed-over
-  library, so a refresh of the library is not undone.
+  keeps it. A step holds each definition IT changed, before and after, and puts back
+  only those, over the library as it is: a refresh of the library is not undone.
 - **Save clears nothing; Discard resets it.** Save hands the draft over, and a step
-  taken after it is still a step.
+  taken after it is still a step, a definition's too: Undo takes it back, it is a
+  draft edit again, and the next Save hands that over (TODO 829). So a step holds the
+  definition as it was, never the saved copy: that has the edit already. A definition
+  a step made stays once saved: it is the app's.
 - **The toolbar reports, the editor owns.** `sherpa-node-toolbar` fires
   `toolbar-select { action }`; the editor sets `data-can-undo` and `data-can-redo`
   from the journal. Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z (and Ctrl/Cmd+Y) are the keys,

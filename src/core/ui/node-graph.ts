@@ -62,7 +62,7 @@ import { bendFault, clampBend, clampedVia, dropBend, placeBend, type Bend } from
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
-import { Journal } from '../data/journal.js';
+import { Journal, type Change } from '../data/journal.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { graphRequest, keptEdit, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
@@ -2202,10 +2202,10 @@ const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'descrip
 /** The most steps Undo goes back. */
 const HISTORY = 100;
 
-/** The draft and the edited definitions at one moment: what a step puts back. */
+/** One side of a step: the draft, and each definition the step changed as it was (none, it was not there). */
 interface Snap {
   draft: WorkflowDefinition;
-  edits: Record<string, NodeDefinition>;
+  defs: Record<string, NodeDefinition | undefined>;
 }
 
 /** One Custom Node opened: its definition's id, the use that opened it, and its name. */
@@ -2290,36 +2290,38 @@ export function bindWorkflow(
     // A loop is read through the draft: what it places now, not what was saved.
     void panel?.populate(paletteOf(offeredKinds(placeable, path.at(-1)?.kind ?? own, own ? { ...lib.nodes, [own]: { nodes: draft.nodes } } : lib.nodes)));
   };
-  // — Undo and Redo: each edit is a pure function on the draft, so a step is a snapshot of
-  //   the draft and the edited definitions, before and after. They share structure: a step is cheap.
+  // — Undo and Redo: each edit is a pure function on the draft, so a step is the draft before and
+  //   after, and each definition it changed, before and after. They share structure: a step is cheap.
   //   TRAP T-an-edit-is-a-step
   const journal = new Journal<Snap>(HISTORY);
-  const snap = (): Snap => ({ draft, edits: edits() });
-  const sameSnap = (a: Snap, b: Snap): boolean => {
-    const ka = Object.keys(a.edits);
-    return a.draft === b.draft && ka.length === Object.keys(b.edits).length && ka.every((k) => a.edits[k] === b.edits[k]);
-  };
   const tell = (): void => {
     toolbar?.toggleAttribute('data-can-undo', journal.canBack);
     toolbar?.toggleAttribute('data-can-redo', journal.canForward);
     canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
   };
+  /** Two steps as one: the first's before, the second's after, for every definition either changed. */
+  const fold = (last: Change<Snap>, next: Change<Snap>): Change<Snap> => ({
+    before: { draft: last.before.draft, defs: { ...next.before.defs, ...last.before.defs } },
+    after: { draft: next.after.draft, defs: { ...last.after.defs, ...next.after.defs } },
+  });
   let depth = 0;
-  let begun: Snap | undefined;
+  let begun: { draft: WorkflowDefinition; nodes: NodeLibrary['nodes'] } | undefined;
   let lastTag = '';
   let lastAt = 0;
   /** One edit, however many writes it makes: ONE step. The same `tag` within a second (a drag, a typed word) is one too. */
   const edit = (fn: () => void, tag = ''): void => {
-    if (depth++ === 0) begun = snap();
+    if (depth++ === 0) begun = { draft, nodes: lib.nodes };
     try {
       fn();
     } finally {
       if (--depth === 0) {
-        const after = snap();
-        if (!sameSnap(begun!, after)) {
+        const was = begun!.nodes;
+        const ids = [...new Set([...Object.keys(was), ...Object.keys(lib.nodes)])].filter((id) => was[id] !== lib.nodes[id]);
+        if (begun!.draft !== draft || ids.length) {
+          const of = (nodes: NodeLibrary['nodes']): Snap['defs'] => Object.fromEntries(ids.map((id) => [id, nodes[id]]));
           const now = performance.now();
           const merge = tag && tag === lastTag && now - lastAt < 1000;
-          journal.push({ before: begun!, after }, merge ? (last, next) => ({ before: last.before, after: next.after }) : undefined);
+          journal.push({ before: { draft: begun!.draft, defs: of(was) }, after: { draft, defs: of(lib.nodes) } }, merge ? fold : undefined);
           lastTag = tag;
           lastAt = now;
           tell();
@@ -2327,14 +2329,22 @@ export function bindWorkflow(
       }
     }
   };
-  /** Put the draft and the edited definitions back as a step left them. */
+  /** Put the draft back as a step left it, and each definition the step changed, over the library as it is
+   *  now: a refresh is not undone, and a Save is no wall. A definition a step made stays once saved: it is the app's. */
   const restore = (to: Snap): void => {
     draft = to.draft;
-    lib = { ...handed, nodes: { ...handed.nodes, ...to.edits } };
-    dirty.clear();
-    for (const id of Object.keys(to.edits)) dirty.add(id);
+    const put = new Map(Object.entries(to.defs).map(([id, was]) => [id, was ?? handed.nodes[id]] as const));
+    for (const [id, definition] of put) {
+      // It is a draft edit while it differs from what Save last handed over.
+      if (definition === handed.nodes[id] || JSON.stringify(definition) === JSON.stringify(handed.nodes[id])) dirty.delete(id);
+      else dirty.add(id);
+    }
+    // In the library's own order, so the panel's does not move.
+    const kept = Object.entries(lib.nodes).flatMap(([id, d]) => (put.has(id) ? (put.get(id) ? [[id, put.get(id)!] as const] : []) : [[id, d] as const]));
+    const added = [...put].flatMap(([id, d]) => (d && !(id in lib.nodes) ? [[id, d] as const] : []));
+    lib = { ...lib, nodes: Object.fromEntries([...kept, ...added]) };
     session?.set(pointer, draft);
-    session?.set(editsAt, to.edits);
+    session?.set(editsAt, edits());
     lastTag = '';
     refreshPanel();
     draw();
