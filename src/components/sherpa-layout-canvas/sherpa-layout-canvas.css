@@ -152,6 +152,14 @@
 :host(:state(panning)) .plane { pointer-events: none; }
 :host(:state(pan-ready)) .viewport { cursor: grab; }
 :host(:state(dragging)) .viewport { cursor: grabbing; }
+/* The INSIDE shadow: the view's top and start edges sit under the header and the nav. */
+.inset {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 4px 4px 12px -6px var(--sherpa-style-surface-shadow, #35353d4c);
+}
+
 /* The marquee: drawn while a box is dragged, in screen px over the view. */
 .marquee {
   display: none;

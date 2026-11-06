@@ -101,20 +101,9 @@
    already applies the layout grid's own inset, and one here insets it twice.
    TRAP T-the-shell-owns-the-panel-areas */
 .body {
-  position: relative;
   flex: 1 1 auto;
   min-block-size: 0;
   min-inline-size: 0;
-}
-/* The INSIDE shadow: the nav, the header and the panel areas frame the content, so it is the content that sits in a
-   recess; the nav and the header cast none of their own. One rule for every view (a grid or a canvas). TODO 875 */
-.body::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: var(--sherpa-layer-content, 1);
-  pointer-events: none;
-  box-shadow: inset var(--sherpa-shadow-sm, 2px 2px 8px -4px #35353d4c);
 }
 
 /* Its frame takes the scroller's place between the panel areas: the layout's one cell. TODO 478 */
