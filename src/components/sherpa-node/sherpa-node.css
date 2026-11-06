@@ -346,14 +346,14 @@
   outline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 .header .socket-in {
-  inset-inline-start: calc(-1 * (var(--_socket) / 2 + var(--_hit)));
+  inset-inline-start: calc(1px - (var(--_socket) / 2 + var(--_hit)));
   /* No border on its flush side: the outline is cut at the box's end edge. */
   clip-path: inset(-1px 0 -1px -1px);
   border-start-start-radius: calc(var(--_socket) / 2 + var(--_hit));
   border-end-start-radius: calc(var(--_socket) / 2 + var(--_hit));
 }
 .header .socket-out, .socket-false {
-  inset-inline-start: calc(100% + var(--_socket) / 2 + var(--_hit));
+  inset-inline-start: calc(100% - 1px + var(--_socket) / 2 + var(--_hit));
   clip-path: inset(-1px -1px -1px 0);
   border-start-end-radius: calc(var(--_socket) / 2 + var(--_hit));
   border-end-end-radius: calc(var(--_socket) / 2 + var(--_hit));
