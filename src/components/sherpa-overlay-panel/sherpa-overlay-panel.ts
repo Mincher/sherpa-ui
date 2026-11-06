@@ -10,7 +10,7 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
-import { FLOAT_ATTRS, FloatBox } from '../../core/ui/float-box.js';
+import { FLOAT_ATTRS, FloatBox, roomOf } from '../../core/ui/float-box.js';
 // Defined before the template stamps them.
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
@@ -79,7 +79,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
     open: (dialog) => {
       this.#place();
-      if (!this.#home && !this.hasAttribute('data-floating')) this.#takeTheEdge();
+      if (!this.#home && !this.#slotted() && !this.hasAttribute('data-floating')) this.#takeTheEdge();
       // Opened floating, it comes to the front. TRAP T-a-pressed-panel-comes-to-the-front
       if (this.hasAttribute('data-floating')) this.#floatBox.raise();
       dialog.show();
@@ -88,7 +88,9 @@ export class SherpaOverlayPanel extends SherpaElement {
     },
     closed: () => {
       SherpaOverlayPanel.#shown.delete(this);
-      this.emit('panel-close');
+      const reason = this.#why;
+      this.#why = 'reader';
+      this.emit('panel-close', { reason });
     },
   });
 
@@ -177,19 +179,27 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (this.hasAttribute('data-minimised') && this.open) this.set('data-updated', true);
   }
 
-  /** Tabs of the open minimised panels stack down the edge, in the order they were shrunk. */
+  /** Tabs of the open minimised panels stack down the edge, in the order they were shrunk: one stack
+   *  to a window, one to each layout a panel is slotted in. */
   static #stack(): void {
-    let index = 0;
+    const indexes = new Map<Element | null, number>();
     // The tabs stand under the header: where the shell's panel areas begin.
     const top = document.querySelector('sherpa-app-shell')?.shadowRoot?.querySelector('sherpa-layout-panels')?.getBoundingClientRect().top ?? 0;
     for (const panel of document.querySelectorAll<SherpaOverlayPanel>('sherpa-overlay-panel[data-minimised][open]')) {
-      panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-index', String(index++));
+      const room = panel.#slotted() ? panel.parentElement : null;
+      const index = indexes.get(room) ?? 0;
+      indexes.set(room, index + 1);
+      panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-index', String(index));
       panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-top', `${Math.round(top)}px`);
     }
   }
 
-  /** Close it. */
-  hide(): void {
+  /** Why it is shutting: the reader's own choice, unless the page or a lost width says so. */
+  #why: 'reader' | 'width' | 'page' = 'reader';
+
+  /** Close it, and say why: `panel-close` reports it. */
+  hide(reason: 'reader' | 'width' | 'page' = 'reader'): void {
+    this.#why = reason;
     this.#surface.hide();
   }
 
@@ -207,6 +217,15 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** The area `data-fixed` names: `start`, else the end. */
   #side(): 'start' | 'end' {
     return this.getAttribute('data-fixed') === 'start' ? 'start' : 'end';
+  }
+
+  /** Is it slotted into a canvas's or a panel area's own slot: docked there by its markup, with no
+   *  shell to pop into? TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
+  #slotted(): 'start' | 'end' | null {
+    const host = this.parentElement;
+    if (!host || (host.localName !== 'sherpa-layout-canvas' && host.localName !== 'sherpa-layout-panels')) return null;
+    if (this.slot === 'panel' || this.slot === 'panel-start') return 'start';
+    return this.slot === 'panel-end' ? 'end' : null;
   }
 
   /** Take the right edge: the other panels there shut. TRAP T-one-overlay-panel-at-a-time */
@@ -227,10 +246,23 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Put the panel where `data-fixed` and the room say. TRAP T-a-panel-pops-into-the-end-area */
   #place = (): void => {
     if (!this.isConnected) return;
-    if (this.hasAttribute('data-fixed')) this.#dock = this.#side();
-    const shell = this.#area();
     const floating = this.hasAttribute('data-floating');
     const minimised = this.hasAttribute('data-minimised');
+    // Slotted into a layout: docked there by its slot, and floating or a tab in that layout's room.
+    const layout = this.#slotted();
+    this.toggleState('in-layout', !!layout);
+    if (layout) {
+      this.#dock = layout;
+      this.toggleState('no-area', false);
+      this.toggleState('tab-start', layout === 'start');
+      this.toggleState('in-area', !floating && !minimised);
+      this.toggleState('floating', floating);
+      this.#floatBox.floated(floating);
+      SherpaOverlayPanel.#shown.delete(this);
+      return;
+    }
+    if (this.hasAttribute('data-fixed')) this.#dock = this.#side();
+    const shell = this.#area();
     this.toggleState('no-area', !shell);
     this.toggleState('tab-start', this.#dock === 'start');
     // In the other area: out first. TRAP T-a-panel-pops-into-the-end-area
@@ -255,7 +287,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     SherpaOverlayPanel.#stack();
     if (minimised) return;
     if (this.hasAttribute('data-floating')) this.#floatBox.raise();
-    else if (!this.#home && this.open) this.#takeTheEdge();
+    else if (!this.#home && !this.#slotted() && this.open) this.#takeTheEdge();
   }
 
   /** Float, or dock back where it came from: the right edge, or the fixed area. */
@@ -263,14 +295,15 @@ export class SherpaOverlayPanel extends SherpaElement {
     const floating = this.hasAttribute('data-floating');
     if (floating) this.#lift();
     this.#place();
-    if (!floating && !this.#home && this.open && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
+    if (!floating && !this.#home && !this.#slotted() && this.open && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
   }
 
   /** Floating, in the window: its box, moved by the header bar and resized by the corner. TRAP T-a-floating-panel-is-a-state */
   readonly #floatBox: FloatBox = new FloatBox({
     el: this,
     box: () => this.$<HTMLElement>('.root'),
-    room: () => ({ x: 0, y: 0, width: document.documentElement.clientWidth, height: document.documentElement.clientHeight }),
+    // The window, or the layout it is slotted in.
+    room: () => this.#slotted() ? roomOf(this) : ({ x: 0, y: 0, width: document.documentElement.clientWidth, height: document.documentElement.clientHeight }),
     free: () => this.hasAttribute('data-floating') && !this.hasAttribute('data-maximised'),
     set: (attr, value) => this.set(attr, value),
     num: (attr) => this.num(attr, NaN),
@@ -385,8 +418,8 @@ export class SherpaOverlayPanel extends SherpaElement {
   #onMinimise = (): void => {
     const minimised = !this.hasAttribute('data-minimised');
     // Docked with others in its area, one minimises them all. Floating, it is its own. TRAP T-an-area-with-two-panels-is-tabbed
-    if (minimised && this.#home) {
-      const mates = this.parentElement?.querySelectorAll<SherpaOverlayPanel>(`:scope > [slot="panel-${this.#dock}"]`) ?? [];
+    if (minimised && (this.#home || this.#slotted())) {
+      const mates = this.parentElement?.querySelectorAll<SherpaOverlayPanel>(`:scope > [slot="${this.slot}"]`) ?? [];
       for (const mate of mates) {
         if (mate === this || !(mate instanceof SherpaOverlayPanel) || mate.hasAttribute('data-minimised')) continue;
         mate.set('data-minimised', true);

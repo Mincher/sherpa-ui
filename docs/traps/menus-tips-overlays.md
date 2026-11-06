@@ -286,6 +286,25 @@ tabs on the inner side, the panel on the other.
 - Site: `test/e2e/reforged-panel-area-tabs.spec.ts`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-a-panel-slotted-in-a-layout-is-docked-there
+
+**An overlay panel SLOTTED into a canvas's `panel` slot, or a panel area's own, is docked there by its
+markup** (Will, TODO 846: ONE panel system, the Nodes card onto the overlay panel). It does not pop (no shell to
+move into): `#slotted()` reads its parent and slot, and the panel is `in-layout`. Docked, it is `in-area`:
+static, flush, no shadow, the area's width. Floating, it is `position: absolute` and its room is that
+layout (`roomOf`), not the window; the area under it covers the layout and passes the press through, but on
+the box (`pointer-events: auto`). Minimised, its tab is `absolute` in the layout, on that area's edge
+(the left for the canvas's `panel` slot), stacked per layout; the layout gives its width back, as for floating.
+
+**`panel-close { reason }`** says why a panel shut: `reader` (the default), `width` or `page`, from
+`hide(reason)`, where the filter column's own `filter-panel-close` said it (TODO 847). The header gained a
+`badge` slot beside the title (a count: the filter panel's applied filters).
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-overlay-panel-in-a-layout.spec.ts`
+
 ### T-a-pressed-panel-comes-to-the-front
 
 **Every floating box in the tab is in ONE stack: a press on one, or a focus into

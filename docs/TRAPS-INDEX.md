@@ -574,7 +574,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (124)
+## Menus, tips and overlays (125)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -609,6 +609,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — toast
 - [T-a-panel-chrome-row-never-shrinks](traps/menus-tips-overlays.md#t-a-panel-chrome-row-never-shrinks) — panel
 - [T-a-panel-pops-into-the-end-area](traps/menus-tips-overlays.md#t-a-panel-pops-into-the-end-area) — overlay-panel
+- [T-a-panel-slotted-in-a-layout-is-docked-there](traps/menus-tips-overlays.md#t-a-panel-slotted-in-a-layout-is-docked-there) — overlay-panel
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — overlay-panel
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — menu
 - [T-a-rebuilt-row-reads-empty-for-a-tick](traps/filters.md#t-a-rebuilt-row-reads-empty-for-a-tick) — menu

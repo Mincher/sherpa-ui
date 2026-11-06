@@ -101,6 +101,12 @@
                   }
                 }
               ]
+            },
+            {
+              "slot": "badge",
+              "attrs": {
+                "data-accepts": "badge"
+              }
             }
           ]
         },
@@ -326,6 +332,14 @@
     },
     {
       "$type": "slot",
+      "name": "badge",
+      "accepts": [
+        "badge"
+      ],
+      "description": "a badge beside the title: a count (a panel's applied filters)"
+    },
+    {
+      "$type": "slot",
       "name": "actions",
       "accepts": [
         "control",
@@ -454,6 +468,7 @@
   "tokens": {
     "header.column-gap": "{sherpa.theme-gap-sm}",
     "header.padding": "{sherpa.theme-padding-md}",
+    "labels.gap": "{sherpa.theme-gap-sm}",
     "left.gap": "{sherpa.theme-gap-sm}",
     "drag.inline-size": "{sherpa.display-mode-size-sm}",
     "drag.block-size": "{sherpa.display-mode-size-sm}",

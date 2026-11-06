@@ -2,7 +2,7 @@
 
 # sherpa-overlay-panel
 
-A NON-modal panel on native &lt;dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.
+A NON-modal panel on native &lt;dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there
 
 |  |  |
 |---|---|
@@ -62,7 +62,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 |---|---|
 | `show()` | Open it, non-modal (no backdrop, no focus trap). |
 | `notify()` | Say something changed: as a tab it turns active and wears a mark, until it is opened. |
-| `hide()` | Close it. |
+| `hide(reason: 'reader' \| 'width' \| 'page' = 'reader')` | Close it, and say why: `panel-close` reports it. |
 | `close()` | `hide()`, in the native &lt;dialog>'s spelling. |
 
 ## Commands
@@ -85,7 +85,7 @@ Each one bubbles.
 | `panel-external` |  |  |
 | `panel-minimise` | `{ minimised: boolean }` | The reader pressed Minimise, or its tab |
 | `panel-pop` | `{ fixed: boolean; side: 'end' \| 'start' }` | The reader pressed Pop in or Pop out; side: start \| end |
-| `panel-close` |  |  |
+| `panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It shut: reader (the default), width or page |
 | `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |
 | `panel-resize` | `{ height: number; width: number }` | Its left edge was dragged, or moved by the keys; floating, its corner |
@@ -96,6 +96,7 @@ Each one bubbles.
 |---|---|---|
 | `breadcrumbs` | nav | a [sherpa-breadcrumbs](sherpa-breadcrumbs.md) trail, shown at the top while maximised |
 | `icon` | icon | custom lead icon (else the data-icon glyph) |
+| `badge` | badge | a badge beside the title: a count, as a filter panel's applied filters |
 | `description` | content | the metadata / description row under the title (reflects has-description) |
 | `actions` | control | the host's own header controls, before the view-mode pair and close |
 | (default) | content | the panel body |

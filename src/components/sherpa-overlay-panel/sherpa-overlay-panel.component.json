@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-overlay-panel",
-  "$description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
+  "$description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there",
   "element": {
     "$type": "element",
     "tag": "button",
@@ -102,6 +102,13 @@
                 "attrs": {
                   "slot": "icon",
                   "data-accepts": "icon"
+                }
+              },
+              {
+                "slot": "badge",
+                "attrs": {
+                  "slot": "badge",
+                  "data-accepts": "badge"
                 }
               },
               {
@@ -472,6 +479,14 @@
     },
     {
       "$type": "slot",
+      "name": "badge",
+      "accepts": [
+        "badge"
+      ],
+      "description": "a badge beside the title: a count, as a filter panel's applied filters"
+    },
+    {
+      "$type": "slot",
       "name": "description",
       "accepts": [
         "content"
@@ -626,8 +641,12 @@
     {
       "$type": "event",
       "name": "panel-close",
+      "description": "It shut: reader (the default), width or page",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "reason": "'page' | 'reader' | 'width'"
+      }
     },
     {
       "$type": "event",
@@ -693,8 +712,8 @@
         {
           "$type": "method",
           "name": "hide",
-          "args": "",
-          "description": "Close it."
+          "args": "reason: 'reader' | 'width' | 'page' = 'reader'",
+          "description": "Close it, and say why: `panel-close` reports it."
         },
         {
           "$type": "method",

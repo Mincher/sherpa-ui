@@ -2259,6 +2259,10 @@
               "description": "custom heading element (replaces the default .title) (accepts: text)"
             },
             {
+              "name": "badge",
+              "description": "a badge beside the title: a count (a panel's applied filters) (accepts: badge)"
+            },
+            {
               "name": "actions",
               "description": "extra trailing action controls (before close) (accepts: control, input)"
             },
@@ -8196,7 +8200,7 @@
           "name": "SherpaOverlayPanel",
           "tagName": "sherpa-overlay-panel",
           "customElement": true,
-          "description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
+          "description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there",
           "attributes": [
             {
               "name": "data-collapsed",
@@ -8377,8 +8381,16 @@
             {
               "kind": "method",
               "name": "hide",
-              "parameters": [],
-              "description": "Close it."
+              "parameters": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "text": "'reader' | 'width' | 'page'"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Close it, and say why: `panel-close` reports it."
             },
             {
               "kind": "method",
@@ -8422,8 +8434,9 @@
             },
             {
               "name": "panel-close",
+              "description": "It shut: reader (the default), width or page",
               "type": {
-                "text": "CustomEvent"
+                "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
               }
             },
             {
@@ -8456,6 +8469,10 @@
             {
               "name": "icon",
               "description": "custom lead icon (else the data-icon glyph) (accepts: icon)"
+            },
+            {
+              "name": "badge",
+              "description": "a badge beside the title: a count, as a filter panel's applied filters (accepts: badge)"
             },
             {
               "name": "description",

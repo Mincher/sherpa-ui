@@ -109,6 +109,15 @@
 :host(:state(floating)[data-collapsed]:not([data-maximised])) .root { block-size: auto; }
 :host(:state(floating)) .resize { display: none; }
 
+/* Slotted in a layout (a canvas's panel, a panel area): its room is that layout, not the window. Floating,
+   the area under it covers the layout and lets the press through, but on the box.
+   TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
+:host(:state(in-layout)) .root {
+  position: absolute;
+  pointer-events: auto;
+}
+:host(:state(in-layout):state(in-area)) .root { position: static; }
+
 /* Minimised: the box is gone and a TAB stands on the edge of its area, turned on its side.
    The panel has left its area (as floating does), so the area gives its room back; the tabs
    of several panels stack down the edge. TRAP T-a-minimised-panel-is-a-tab */
@@ -123,6 +132,7 @@
   /* From the top of the panel areas (below the header), as the Nodes tab is from its area's. */
   top: calc(var(--_tab-top, 0px) + var(--sherpa-layout-grid-padding, 16px) + var(--_tab-index, 0) * 11rem);
   right: 0;
+  pointer-events: auto;
   z-index: var(--sherpa-layer-panels, 101);
   max-height: 10rem;
   padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
@@ -143,6 +153,7 @@
   border-left: 0;
   border-radius: 0 var(--sherpa-border-rounding-top-right, 4px) var(--sherpa-border-rounding-bottom-right, 4px) 0;
 }
+:host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
 .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
 /* Updated: active, and the mark the app header's bell wears, an exclamation for a count. */

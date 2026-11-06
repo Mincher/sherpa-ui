@@ -56,6 +56,7 @@ Each one bubbles.
 | `lead` | control | a control over the header's very start, before the drag handle, chevron and icon (a floating panel's grip); it reserves no room |
 | `icon` | icon | custom icon element (else data-icon glyph) |
 | `heading` | text | custom heading element (replaces the default .title) |
+| `badge` | badge | a badge beside the title: a count (a panel's applied filters) |
 | `actions` | control, input | extra trailing action controls (before close) |
 | `metadata` | content | bottom metadata strip (Panel) / secondary content (Default) |
 
@@ -73,6 +74,7 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-theme-gap-sm` | `.header` | `column-gap` |
 | `--sherpa-theme-padding-md` | `.header` | `padding` |
+| `--sherpa-theme-gap-sm` | `.labels` | `gap` |
 | `--sherpa-theme-gap-sm` | `.left` | `gap` |
 | `--sherpa-display-mode-size-sm` | `.drag` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.drag` | `block-size` |

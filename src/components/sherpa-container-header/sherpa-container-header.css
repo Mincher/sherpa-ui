@@ -39,7 +39,14 @@
   grid-area: labels;
   min-inline-size: 0;
   overflow: hidden;
+  /* The title, and a badge beside it when one is slotted. */
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
 }
+.labels > slot[name="heading"] { display: contents; }
+.labels > slot[name="badge"] { display: contents; }
+.labels .title { min-inline-size: 0; }
 
 /* ── The leading cell: drag handle, chevron, icon ─────────────────────── */
 .left {

@@ -23,6 +23,7 @@
 
   Slots:
     heading   — custom heading element (replaces the default .title)
+    badge     — a badge beside the title: a count (a panel's applied filters)
     lead      — a control over the header's very start, before the drag handle, chevron and icon (a floating panel's grip); it reserves no room
     icon      — custom icon element (else data-icon glyph)
     actions   — extra trailing action controls (before close)
@@ -61,6 +62,7 @@
       <slot name="heading" data-accepts="text">
         <span class="title sherpa-truncate" part="title" data-text="data-heading"></span>
       </slot>
+      <slot name="badge" data-accepts="badge"></slot>
     </div>
 
     <div class="actions" part="actions">
