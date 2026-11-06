@@ -131,12 +131,14 @@ async function drawnAt(page: Page, b: Box): Promise<void> {
 test('Float lifts it in place, 16px in; Dock puts it back on the edge at its width; Float again finds its place', async ({ page }) => {
   await stage(page);
   const docked = await box(page);
-  expect(docked).toEqual({ x: W - 640, y: 0, w: 640, h: H });
+  // 640 asked, a third of the window the most.
+  const D = Math.round(W * 0.33);
+  expect(docked).toEqual({ x: W - D, y: 0, w: D, h: H });
   expect(await page.evaluate(() => document.getElementById('float')!.shadowRoot!.querySelector('.float')!.getAttribute('aria-label'))).toBe('Float');
 
   await press(page, 'float');
   const lifted = await box(page);
-  expect(lifted).toEqual({ x: W - 640 + 16, y: 16, w: 640 - 32, h: H - 32 });
+  expect(lifted).toEqual({ x: W - D + 16, y: 16, w: D - 32, h: H - 32 });
   expect(await attrs(page)).toEqual({ 'data-floating': '', 'data-x': String(lifted.x), 'data-y': '16', 'data-width': String(lifted.w), 'data-height': String(lifted.h) });
   const button = await page.evaluate(() => {
     const b = document.getElementById('float')!.shadowRoot!.querySelector('.float')!;

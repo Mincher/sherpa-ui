@@ -18,7 +18,7 @@ export interface EdgeResizeOptions {
   /** Write the size asked for. `done` on release or a key: the moment to report. */
   apply: (px: number, done: boolean) => void;
   /** +1: the edge is the box's END, so pulling it on grows it; -1: its START. */
-  grows: 1 | -1;
+  grows: 1 | -1 | (() => 1 | -1);
   /** `x` (the default): a width, the Left and Right keys. `y`: a height, Up and Down. */
   axis?: 'x' | 'y';
   /** How far one arrow key moves the edge, read at each press. */
@@ -39,6 +39,8 @@ export interface EdgeResizeOptions {
  * the strip.
  */
 export function resizeByEdge(edge: HTMLElement, options: EdgeResizeOptions): void {
+  /** Which way it grows: fixed, or asked at each press (a panel that docks on either side). */
+  const grows = (): 1 | -1 => (typeof options.grows === 'function' ? options.grows() : options.grows);
   const step = (): number => {
     const s = options.step ?? 16;
     return typeof s === 'function' ? s() : s;
@@ -77,7 +79,7 @@ export function resizeByEdge(edge: HTMLElement, options: EdgeResizeOptions): voi
     } catch { /* not a live pointer: the drag still works while over the edge */ }
     edge.toggleAttribute('data-dragging', true);
     event.preventDefault();
-    const at = (e: PointerEvent): number => start + options.grows * ((y ? e.clientY : e.clientX) - from);
+    const at = (e: PointerEvent): number => start + grows() * ((y ? e.clientY : e.clientX) - from);
     let last = start;
     const move = (e: PointerEvent): void => {
       if (e.pointerId !== id) return;
@@ -102,7 +104,7 @@ export function resizeByEdge(edge: HTMLElement, options: EdgeResizeOptions): voi
     const keys: Record<string, number> = y ? { ArrowUp: -1, ArrowDown: 1 } : { ArrowLeft: -1, ArrowRight: 1 };
     const way = keys[event.key];
     let px: number | undefined;
-    if (way) px = options.measure() + way * options.grows * step();
+    if (way) px = options.measure() + way * grows() * step();
     else if (event.key === 'Home') px = options.min?.();
     else if (event.key === 'End') px = options.max?.();
     if (px == null) return;

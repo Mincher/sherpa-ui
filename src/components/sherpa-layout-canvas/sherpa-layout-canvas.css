@@ -32,7 +32,7 @@
   inset: 0;
   --sherpa-panel-area-width: 18rem;
   --sherpa-panel-area-min-width: 16rem;
-  --sherpa-panel-area-max-width: 60%;
+  --sherpa-panel-area-max-width: 33%;
 }
 
 /* ── The banners ──────────────────────────────────────────────────────── */

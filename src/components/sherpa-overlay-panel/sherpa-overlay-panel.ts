@@ -125,14 +125,17 @@ export class SherpaOverlayPanel extends SherpaElement {
        TRAP T-an-edge-resizes-its-box */
     const edge = this.$<HTMLElement>('.resize');
     const drawn = (): number => this.$<HTMLElement>('.root')?.getBoundingClientRect().width ?? 0;
+    const room = (): number => (this.#slotted() ? roomOf(this).width : innerWidth);
     const rem = (): number => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
     if (edge) {
       resizeByEdge(edge, {
-        grows: -1,
+        // On the left edge, pulling out grows it; on the right edge (a panel docked at the start), pushing out does. TRAP T-an-overlay-panel-resizes-from-its-left-edge
+        grows: () => (this.hasState('at-start') ? 1 : -1),
         measure: drawn,
         // The CSS clamp: `clamp(min(20rem, 92vw), …, 92vw)`.
-        min: () => Math.min(20 * rem(), 0.92 * innerWidth),
-        max: () => 0.92 * innerWidth,
+        // Docked, no more than a third of its room.
+        min: () => Math.min(20 * rem(), 0.33 * room()),
+        max: () => 0.33 * room(),
         apply: (px, done) => {
           this.style.setProperty('--_width', `${Math.round(px)}px`);
           // The CSS clamp is the truth: write back what it drew, so a key moves from there.
@@ -271,6 +274,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       // Docked over the view, as an overlay, or peeking from its tab: the area has given its room back.
       this.toggleState('overlaid', ((overlay && !minimised) || this.hasState('peeking')) && !floating);
       this.toggleState('floating', floating);
+      this.#syncSide();
       this.#syncPop();
       this.#floatBox.floated(floating);
       SherpaOverlayPanel.#shown.delete(this);
@@ -287,6 +291,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     else this.#popOut();
     this.toggleState('in-area', !!this.#home);
     this.toggleState('floating', floating);
+    this.#syncSide();
     this.#syncPop();
     this.#syncGroup();
     this.#floatBox.floated(floating);
@@ -462,6 +467,12 @@ export class SherpaOverlayPanel extends SherpaElement {
     host.dispatchEvent(new CustomEvent('panel-area-resize', { detail: { side, width }, bubbles: false }));
   }
 
+  /** Is the box drawn at the START of its room (a panel docked at the start side, or peeking there)? Its resize edge is then the right one. */
+  #syncSide(): void {
+    const start = this.#dock === 'start' && (!!this.#slotted() || this.hasState('peeking'));
+    this.toggleState('at-start', start);
+  }
+
   /** The docking button says what a press does next: dock as an overlay (from fixed, or a tab on hover), or dock as inline. */
   #syncPop(): void {
     const toOverlay = this.hasState('peeking') || this.#isFixed();
@@ -478,7 +489,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     const { clientX: x, clientY: y } = event as PointerEvent;
     requestAnimationFrame(() => {
       const box = this.$('.root')?.getBoundingClientRect();
-      if (this.hasState('peeking') && box && (x < box.left || x > box.right || y < box.top || y > box.bottom)) this.#peek(false);
+      // A pointer event with no place (0, 0) says nothing of where the pointer is.
+      if (this.hasState('peeking') && box && (x || y) && (x < box.left || x > box.right || y < box.top || y > box.bottom)) this.#peek(false);
     });
   };
 
@@ -495,6 +507,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Show or shut the peek, and the Minimise button's words with it: while it peeks, a press keeps it open. */
   #peek(on: boolean): void {
     this.toggleState('peeking', on);
+    this.#syncSide();
     this.#peekEnds?.abort();
     this.#peekEnds = undefined;
     if (on) {

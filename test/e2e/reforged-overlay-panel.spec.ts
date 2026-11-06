@@ -111,8 +111,8 @@ test('data-heading forwards to the header and renders', async ({ page }) => {
  * it 16 px. Each resize is reported.
  * TRAP T-an-overlay-panel-resizes-from-its-left-edge
  */
-test('the panel opens 640 wide, drags from its left edge within its bounds, and steps by key', async ({ page }) => {
-  await page.setViewportSize({ width: 1200, height: 800 });
+test('the panel opens 640 wide, or a third of the window if that is less; it drags from its left edge within its bounds, and steps by key', async ({ page }) => {
+  await page.setViewportSize({ width: 1800, height: 800 });
   const edge = await page.evaluate(async () => {
     const el = document.createElement('sherpa-overlay-panel') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-heading', 'Ask');
@@ -135,9 +135,9 @@ test('the panel opens 640 wide, drags from its left edge within its bounds, and 
   await page.mouse.up();
   const dragged = await width();
   // Far to the right: the 20rem floor holds.
-  await page.mouse.move(edge.x - 100, edge.y);
+  await page.mouse.move(edge.x, edge.y);
   await page.mouse.down();
-  await page.mouse.move(1150, edge.y, { steps: 5 });
+  await page.mouse.move(1750, edge.y, { steps: 5 });
   await page.mouse.up();
   const floor = await width();
   await page.evaluate(() => {
@@ -147,11 +147,12 @@ test('the panel opens 640 wide, drags from its left edge within its bounds, and 
   });
   const keyed = await width();
   const heard = await page.evaluate(() => (window as unknown as { __heard: number[] }).__heard);
-  expect(opened).toBe(640);
-  expect(dragged).toBe(740);
+  // A third of 1800: the most a docked panel is, whatever it was asked.
+  expect(opened).toBe(594);
+  expect(dragged).toBe(594);
   expect(floor).toBe(320);
   expect(keyed).toBe(336);
-  expect(heard).toEqual([740, 320, 336]);
+  expect(heard).toEqual([594, 320, 336]);
 });
 
 /** NO scrim: the panel is a quick peek, so the page beside it is not dimmed. */
@@ -324,7 +325,7 @@ test.describe('Pop in and Pop out', () => {
     });
     const floating = await read(page);
     expect(floating).toMatchObject({ parent: 'div', slot: '', next: 'after', open: true, position: 'fixed', resize: true, pop: true, label: 'Dock as inline', icon: 'sidebar-flip' });
-    expect(floating.root.w).toBe(640);
+    expect(floating.root.w).toBe(528);
 
     await press(page);
     const fixed = await read(page);

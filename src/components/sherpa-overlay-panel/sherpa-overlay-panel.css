@@ -43,7 +43,8 @@
   /* Wide enough to read, never narrower than 20rem nor past 92vw; the left
      edge sets `--_width`. TRAP T-an-overlay-panel-resizes-from-its-left-edge */
   min-inline-size: 0;
-  inline-size: clamp(min(20rem, 92vw), var(--_width, 40rem), 92vw);
+  /* Docked, never over a third of the content area it sits in. */
+  inline-size: min(33%, clamp(min(20rem, 92vw), var(--_width, 40rem), 92vw));
   padding: 0;
   overflow: auto;
 
@@ -124,7 +125,7 @@
   display: flex;
   inset-block: 0;
   /* As wide as the area it left, down to the area's own narrowest. */
-  inline-size: clamp(min(16rem, 92%), var(--_width, 24rem), 92%);
+  inline-size: min(33%, clamp(min(16rem, 92%), var(--_width, 24rem), 92%));
   box-shadow: var(--sherpa-shadow-lg);
 }
 :host(:state(in-layout):state(overlaid):state(tab-start)) .root {
@@ -324,7 +325,7 @@
 :host([data-collapsed]) .body,
 :host([data-collapsed]:state(has-footer)) .footer { display: none; }
 
-/* The left edge's handle: a strip over the border, drawn only when it is used. */
+/* The edge facing the content: the left, or the RIGHT for a box at the start. A strip over the border, drawn only when used. */
 .resize {
   position: absolute;
   inset-block: 0;
@@ -339,4 +340,9 @@
   outline: none;
   box-shadow: inset 2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd);
 }
+:host(:state(at-start)) .resize {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+:host(:state(at-start)) .resize:is(:hover, :focus-visible) { box-shadow: inset -2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd); }
 
