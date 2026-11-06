@@ -150,8 +150,9 @@ test('the header and each row draw their sockets on the card\'s edges', async ({
     const matches = mid(rows[2]!.socketRect('output'))!;
     return {
       none: [rows[0]!.socketRect('input'), rows[0]!.socketRect('output'), rows[1]!.socketRect('output')],
-      // Within the card's hairline border and a rounding.
-      onEdges: [header[0]! - box.left, value[0]! - box.left, matches[0]! - box.right].map((d) => Math.abs(d) <= 1),
+      // Each socket sits on the edge of its grey section: an input's middle 13px outside the card (the header's in line with it),
+      // an output's 13px inside it, not on the card's own edge (sections, TODO 874).
+      onEdges: [header[0]! - box.left + 13, value[0]! - box.left + 13, matches[0]! - box.right + 13].map((d) => Math.abs(d) <= 1),
       headerFirst: header[1]! < value[1]!,
       onControl: Math.abs(value[1]! - control(rows[1]!)) <= 1,
     };
@@ -295,7 +296,8 @@ test('a fork shows its footer with False in red, and True on the header in green
   expect(near(no!, critical), 'False is red').toBe(true);
   // False is a rounded square, True a circle: two shapes (TODOs 740, 874).
   const square = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), PROBES);
-  expect(square.map((p) => (near(p, critical) ? 1 : 0))).toEqual(SHAPES['any']);
+  // Its fill is a rounded square inside the white inset: the centre and the edges' middles ink, the corners not (two corners sit on a fraction of a pixel, and are left out).
+  expect(square.map((p) => (near(p, critical) ? 1 : 0)).filter((_, i) => i !== 1 && i !== 4)).toEqual([1, 0, 0, 1, 1]);
   const circle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
   expect(circle.map((p) => (near(p, success) ? 1 : 0))).toEqual(SHAPES['boolean']);
   // Unrouted, False is hollow.

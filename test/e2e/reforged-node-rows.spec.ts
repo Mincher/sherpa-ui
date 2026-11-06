@@ -55,7 +55,7 @@ const GATE = '#root sherpa-node[data-heading="Gate"]';
 test('a multi-select row is ONE select: a chip that opens a menu of ticks, never a list of checkboxes', async ({ page }) => {
   await bind(page);
   const seen = await page.evaluate((sel) => {
-    const row = document.querySelector(`${sel} sherpa-node-row`)!;
+    const row = document.querySelector(`${sel} sherpa-node-row:has(sherpa-quick-filter)`)!;
     return {
       chips: row.querySelectorAll('sherpa-quick-filter').length,
       groups: row.querySelectorAll('sherpa-select-group, sherpa-select-checkbox').length,
@@ -90,7 +90,7 @@ const near = (a: Rgb, b: Rgb, within = 40): boolean => Math.max(...a.map((v, i) 
 /** The pixels at points (fractions) of the gate row's input socket, as a reader sees them. */
 async function socketPaint(page: Page, at: [number, number][]): Promise<Rgb[]> {
   const rect = await page.evaluate((sel) => {
-    const row = document.querySelector<Sock>(`${sel} sherpa-node-row`)!;
+    const row = document.querySelector<Sock>(`${sel} sherpa-node-row:has(sherpa-switch)`)!;
     row.scrollIntoView({ block: 'center' });
     const r = row.socketRect('input')!;
     return { x: r.x, y: r.y, w: r.width, h: r.height };
@@ -109,7 +109,7 @@ async function socketPaint(page: Page, at: [number, number][]): Promise<Rgb[]> {
 test('a switch row has a boolean input socket: hollow until a route joins it', async ({ page }) => {
   await bind(page);
   const green = await ink(page);
-  expect(await page.evaluate((sel) => document.querySelector(`${sel} sherpa-node-row`)!.getAttribute('data-input-socket'), GATE)).toBe('boolean');
+  expect(await page.evaluate((sel) => document.querySelector(`${sel} sherpa-node-row:has(sherpa-switch)`)!.getAttribute('data-input-socket'), GATE)).toBe('boolean');
   // Hollow: the middle is the face, not the ink (the routed one, below, is ink there).
   const [centre] = await socketPaint(page, [[.5, .5]]);
   expect(near(centre!, green), 'hollow centre').toBe(false);
