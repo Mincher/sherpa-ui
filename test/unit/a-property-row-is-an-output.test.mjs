@@ -90,3 +90,27 @@ test('a property row routes through a portal as a row, and a Custom Node takes i
   const back = ungroupUse(made.workflow, made.use, made.library);
   assert.deepEqual(back.workflow.routes.map((r) => `${r.from} → ${r.to}`), ['s/count → m/a']);
 });
+
+test('a property gives a value or an object: a number, text or boolean a circle or triangle; a row, rows or a record a diamond; Count is a number like any other (Will, 2026-11-06)', async () => {
+  const { propertyRow } = await import(new URL('node-kinds.js', core));
+  const sockets = Object.fromEntries(['number', 'value', 'boolean', 'object', 'list', 'rows', 'field'].map((g) => [g, propertyRow('p', 'P', g).output]));
+  assert.deepEqual(sockets, { number: 'value', value: 'value', boolean: 'boolean', object: 'object', list: 'object', rows: 'object', field: 'object' });
+  assert.deepEqual(propertyRow('count', 'Count'), { name: 'count', label: 'Count', output: 'value', gives: 'number', property: true });
+  // An object property routes into an input that takes an object, and a boolean one into a boolean's.
+  const kinds = { ...NODE_KINDS, hold: { heading: 'Hold', icon: 'folder', input: 'any', rows: [propertyRow('first', 'First', 'rows'), propertyRow('empty', 'Empty', 'boolean')], model: 'hold', graphs: ['workflow'] } };
+  const w = flow([source, { id: 'h', kind: 'hold', x: 0, y: 0 }, { id: 'f', kind: 'field', x: 300, y: 0, values: { field: 'status' } }, { id: 'a', kind: 'condition', x: 300, y: 300, values: { type: 'and' } }],
+    [{ from: 's/rows', to: 'h' }, { from: 'h/first', to: 'f' }, { from: 'h/empty', to: 'a' }]);
+  assert.deepEqual(workflowFaults(w, kinds), []);
+  assert.deepEqual(said(workflowGraph(w, {}, kinds)), {});
+});
+
+test('a graph with a fault does not save: checkWorkflow says no, in words, for a saved collection and for a route from a node that has no True', async () => {
+  const { checkWorkflow } = await import(new URL('workflow.js', core));
+  const { setReportSink } = await import(new URL('report.js', core)).catch(() => ({}));
+  const old = flow([{ id: 'old', kind: 'collection', x: 0, y: 0, values: { type: 'sort' } }]);
+  const noTrue = flow([source, { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'add' } }, { id: 'k', kind: 'sort', x: 600, y: 0 }], [{ from: 's/rows', to: 'k' }, { from: 'm', to: 'k' }]);
+  void setReportSink;
+  assert.deepEqual(workflowFaults(old), ['the node "old" is of the kind "collection", which is not one']);
+  assert.match(workflowFaults(noTrue).join('; '), /a route leaves "m", which is no output socket/);
+  assert.deepEqual([checkWorkflow(old), checkWorkflow(noTrue), checkWorkflow(flow([source]))], [false, false, true]);
+});

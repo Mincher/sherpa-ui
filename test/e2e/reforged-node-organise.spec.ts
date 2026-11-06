@@ -127,3 +127,11 @@ test('a saved Collection draws nothing and says why: nothing converts it', async
     return workflowFaults((window as never as { ed: { workflow(): never } }).ed.workflow());
   })).toEqual(['the node "old" is of the kind "collection", which is not one']);
 });
+
+test('a graph with a fault does not save: Save is refused, nothing is handed over, and the faults are said in words', async ({ page }) => {
+  await bind(page, { ...BARE, nodes: [...BARE.nodes, node('old', 'collection', 0, 400, { type: 'count' })] });
+  await page.evaluate(() => { (window as never as { refused: unknown[] }).refused = []; document.addEventListener('definition-refused', (e) => (window as never as { refused: unknown[] }).refused.push((e as CustomEvent<{ faults: string[] }>).detail.faults)); });
+  expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(false);
+  expect(await page.evaluate(() => (window as never as { saved: unknown[] }).saved.length)).toBe(0);
+  expect(await page.evaluate(() => (window as never as { refused: string[][] }).refused)).toEqual([['the node "old" is of the kind "collection", which is not one']]);
+});
