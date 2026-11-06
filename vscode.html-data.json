@@ -2745,6 +2745,16 @@
           "description": "how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas"
         },
         {
+          "name": "data-minimisable",
+          "description": "show the Minimise button: it shrinks to a tab on the edge of its area, turned on its side; the tab opens it as it was. TRAP T-a-minimised-panel-is-a-tab",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-minimised",
+          "description": "shrunk to that tab; kept while it is shown and hidden",
+          "valueSet": "v"
+        },
+        {
           "name": "data-width",
           "description": "how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas"
         },

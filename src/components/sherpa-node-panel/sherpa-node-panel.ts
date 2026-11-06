@@ -86,6 +86,8 @@ export class SherpaNodePanel extends SherpaElement {
 
   static override props = {
     'data-floatable': { type: 'boolean', kind: 'style' },
+    'data-minimisable': { type: 'boolean', kind: 'style' },
+    'data-minimised': { type: 'boolean', kind: 'behaviour' },
     // Lifted off its place, anywhere in its canvas. TRAP T-a-floating-panel-is-a-state
     'data-floating': { type: 'boolean', kind: 'behaviour' },
     'data-x': { type: 'number', kind: 'behaviour' },
@@ -128,6 +130,9 @@ export class SherpaNodePanel extends SherpaElement {
     void this.$<SherpaElement>('.tabs')?.populate(TABS.map(({ id, label }) => ({ id, label })));
     // `button-click`, not `click`: a disabled sherpa-button still gets raw clicks.
     this.on(this.$('.float')!, 'button-click', this.#onFloat);
+    this.on(this.$('.minimise')!, 'button-click', this.#onMinimise);
+    this.on(this.$('.tab')!, 'click', this.#onMinimise);
+    this.toggleState('minimised', this.hasAttribute('data-minimised'));
     this.#floatBox.wire(this.$('.heading'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     this.toggleState('floating', this.hasAttribute('data-floating'));
@@ -137,7 +142,8 @@ export class SherpaNodePanel extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-floating') this.#float();
+    if (name === 'data-minimised') this.toggleState('minimised', this.hasAttribute('data-minimised'));
+    else if (name === 'data-floating') this.#float();
     else if (FLOAT_ATTRS.includes(name)) this.#floatBox.draw();
   }
 
@@ -250,6 +256,13 @@ export class SherpaNodePanel extends SherpaElement {
     this.toggleState('floating', floating);
     this.#floatBox.floated(floating);
   }
+
+  /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
+  #onMinimise = (): void => {
+    const minimised = !this.hasAttribute('data-minimised');
+    this.set('data-minimised', minimised);
+    this.emit('panel-minimise', { minimised });
+  };
 
   /** Float, or dock, and report it. */
   #onFloat = (): void => {

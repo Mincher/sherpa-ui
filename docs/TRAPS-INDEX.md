@@ -1021,7 +1021,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (132)
+## Other components (133)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1057,6 +1057,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-link-row-is-pressed-anywhere-in-its-box](traps/other-components.md#t-a-link-row-is-pressed-anywhere-in-its-box) — nav-item
 - [T-a-menu-is-reached-by-keys-from-its-trigger](traps/menus-tips-overlays.md#t-a-menu-is-reached-by-keys-from-its-trigger) — nav
 - [T-a-metric-group-knows-it-is-stuck](traps/charts.md#t-a-metric-group-knows-it-is-stuck) — metric-group
+- [T-a-minimised-panel-is-a-tab](traps/menus-tips-overlays.md#t-a-minimised-panel-is-a-tab) — layout-panels, node-panel
 - [T-a-native-name-where-a-native-element-does-the-job](traps/other-components.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — button
 - [T-a-node-moves-itself-and-reports](traps/other-components.md#t-a-node-moves-itself-and-reports) — node

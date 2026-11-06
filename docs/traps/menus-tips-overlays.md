@@ -245,11 +245,20 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
   the edge in the order they were shrunk (`--_tab-index`).
 - **`data-updated`** turns the tab active and gives it a "!" (no count yet). `notify()` sets
   it, and so does a new `data-heading` while it is a tab. Opening clears it.
-- `show()` from SHUT opens whole; already open as a tab, it stays one.
+- **One panel keeps its state** through `hide()` and `show()`: shut while a tab, it opens as a tab again
+  (the node inspector is shown and hidden on a pick, and keeps where the reader left it).
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
+- **The Nodes panel does the same**, on the LEFT edge of its canvas's area: the layout counts a minimised
+  panel as floating (its area gives its room back), and the tab, absolute in the panel's host, takes the
+  press (`pointer-events: auto`, over the canvas).
+
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.css`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 - Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
 
 ### T-a-pressed-panel-comes-to-the-front

@@ -87,12 +87,13 @@ export class SherpaLayoutPanels extends SherpaElement {
     const sync = (): void => {
       if (this.#panel(side) !== panel) return;
       this.toggleState(`${side}-open`, panel instanceof HTMLElement && isOpen(panel));
-      this.toggleState(`${side}-floating`, !!panel?.hasAttribute('data-floating'));
+      // A minimised panel is a tab on the layout's edge: its area gives its room back, as floating does. TRAP T-a-minimised-panel-is-a-tab
+      this.toggleState(`${side}-floating`, !!panel?.hasAttribute('data-floating') || !!panel?.hasAttribute('data-minimised'));
     };
     sync();
     if (!panel) return;
     const watch = new MutationObserver(sync);
-    watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating'] });
+    watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating', 'data-minimised'] });
     this.#watch[side] = watch;
     // Not yet upgraded, it has no `open` to say it can shut.
     if (panel.localName.includes('-') && !customElements.get(panel.localName)) {

@@ -88,3 +88,14 @@ test('a new title while it is a tab makes it active with a "!"; opening clears i
   await press(page, '.tab');
   expect(await page.evaluate(() => document.getElementById('tabbed')!.hasAttribute('data-updated'))).toBe(false);
 });
+
+test('shut and shown again, a minimised panel comes back as a tab: its state is kept', async ({ page }) => {
+  await stage(page);
+  await press(page, '.minimise');
+  await page.evaluate(() => (document.getElementById('tabbed') as PanelEl & { hide(): void }).hide());
+  expect((await part(page, '.tab')).shown).toBe(false);
+  await page.evaluate(() => (document.getElementById('tabbed') as PanelEl).show());
+  await page.evaluate(() => window.__settled());
+  expect((await part(page, '.tab')).shown).toBe(true);
+  expect((await part(page, '.root')).shown).toBe(false);
+});

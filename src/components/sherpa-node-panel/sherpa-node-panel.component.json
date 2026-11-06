@@ -60,6 +60,17 @@
                     "children": [
                       {
                         "el": "sherpa-button",
+                        "class": "minimise",
+                        "part": "minimise",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "minus",
+                          "aria-label": "Minimise to a tab"
+                        }
+                      },
+                      {
+                        "el": "sherpa-button",
                         "class": "float",
                         "part": "float",
                         "attrs": {
@@ -136,6 +147,22 @@
               "aria-label": "Resize panel",
               "title": "Drag to resize, or use the arrow keys"
             }
+          }
+        ]
+      },
+      {
+        "el": "button",
+        "class": "tab",
+        "part": "tab",
+        "attrs": {
+          "type": "button",
+          "aria-label": "Open Nodes panel"
+        },
+        "children": [
+          {
+            "el": "span",
+            "class": "tab-title",
+            "part": "tab-title"
           }
         ]
       },
@@ -290,6 +317,24 @@
     },
     {
       "$type": "prop",
+      "name": "data-minimisable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show the Minimise button: it shrinks to a tab on the edge of its area, turned on its side; the tab opens it as it was. TRAP T-a-minimised-panel-is-a-tab"
+    },
+    {
+      "$type": "prop",
+      "name": "data-minimised",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "shrunk to that tab; kept while it is shown and hidden"
+    },
+    {
+      "$type": "prop",
       "name": "data-width",
       "type": "number",
       "observed": true,
@@ -323,8 +368,23 @@
   "states": [
     {
       "$type": "state",
+      "name": "minimised",
+      "selector": ":host([data-minimised])"
+    },
+    {
+      "$type": "state",
+      "name": "not-minimisable",
+      "selector": ":host(:not([data-minimisable]))"
+    },
+    {
+      "$type": "state",
       "name": "not-floatable",
       "selector": ":host(:not([data-floatable]))"
+    },
+    {
+      "$type": "state",
+      "name": "focus-visible",
+      "selector": ".tab:focus-visible"
     }
   ],
   "capabilities": [
@@ -356,6 +416,16 @@
       "composed": true,
       "detail": {
         "floating": "boolean"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-minimise",
+      "description": "The reader pressed Minimise, or its tab.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "minimised": "boolean"
       }
     },
     {

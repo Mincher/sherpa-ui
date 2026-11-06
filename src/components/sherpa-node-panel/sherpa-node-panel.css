@@ -43,6 +43,34 @@
   block-size: 100%;
 }
 
+/* Minimised: the card is gone and a TAB stands on the left edge of its area, turned on its side. The
+   area has given its room back (as floating does), so the tab is the host's, which fills the layout.
+   PHYSICAL sides: the tab's vertical writing mode would turn the logical ones. TRAP T-a-minimised-panel-is-a-tab */
+.tab { display: none; }
+:host([data-minimised]) .box { display: none; }
+:host([data-minimised]) .tab {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 5rem;
+  left: 0;
+  max-height: 10rem;
+  padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
+  writing-mode: vertical-rl;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: var(--sherpa-layer-panels, 101);
+  color: var(--sherpa-style-content-base, #0c0b11);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base-1, #b3b3c3);
+  border-left: 0;
+  border-radius: 0 var(--sherpa-border-rounding-top-right, 4px) var(--sherpa-border-rounding-bottom-right, 4px) 0;
+  box-shadow: var(--sherpa-shadow-lg);
+}
+.tab:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
+:host(:not([data-minimisable])) .minimise { display: none; }
+
 /* The header's own controls: the grip and Float, only where floating is offered. */
 .toolbar {
   display: flex;

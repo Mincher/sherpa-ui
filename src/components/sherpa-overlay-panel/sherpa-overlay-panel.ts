@@ -163,8 +163,6 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Open it, non-modal (no backdrop, no focus trap). */
   show(): void {
-    // Opened from shut, it opens whole; already open as a tab, it stays one. TRAP T-a-minimised-panel-is-a-tab
-    if (!this.open) this.removeAttribute('data-minimised');
     this.#surface.show();
   }
 
