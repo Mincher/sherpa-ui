@@ -369,8 +369,12 @@ test('756: picked by the pointer, every category takes the same active fill and 
   // The panel's node, by its tab: the same accent ring, whichever category.
   const ring = await inkOf(page, '--sherpa-theme-border-accent-2');
   await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
-  for (const [i, n] of names.entries()) {
-    const tab = await page.locator('#inspector sherpa-tabs:not(.content-tabs)').evaluate((el, k) => { const r = el.shadowRoot!.querySelectorAll('.tab')[k]!.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, i);
+  // The tabs are in the panel's own order, which the picks do not fix: each is read by its label, and the strip scrolls to it (seven tabs are wider than the panel).
+  const labels = await page.locator('#inspector sherpa-tabs:not(.content-tabs)').evaluate((el) =>
+    [...el.shadowRoot!.querySelectorAll('.tab')].map((t) => (t.textContent ?? '').replace(/\s+/g, ' ').trim()));
+  expect(labels.slice().sort()).toEqual(names.slice().sort());
+  for (const [i, n] of labels.entries()) {
+    const tab = await page.locator('#inspector sherpa-tabs:not(.content-tabs)').evaluate((el, k) => { const t = el.shadowRoot!.querySelectorAll('.tab')[k]!; t.scrollIntoView({ inline: 'center', block: 'nearest' }); const r = t.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, i);
     await page.mouse.click(tab.x, tab.y);
     await page.mouse.move(2, 2);
     await page.evaluate(() => window.__settled());
