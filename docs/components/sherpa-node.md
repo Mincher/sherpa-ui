@@ -101,7 +101,7 @@ What each class's base rule reads:
 | `--sherpa-style-surface-base-2` | `.caption-badge` | `background` |
 | `--sherpa-style-content-base` | `.caption-badge` | `color` |
 | `--sherpa-style-border-width` | `.socket-false` | `outline` |
-| `--sherpa-display-mode-size-2xl` | `.footer` | `min-block-size` |
+| `--sherpa-display-mode-size-5xl` | `.footer` | `min-block-size` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 

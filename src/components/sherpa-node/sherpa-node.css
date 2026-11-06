@@ -363,7 +363,8 @@
 .footer {
   position: relative;
   /* No word in it now; the False socket sits on its middle. */
-  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  /* As tall as a header, so False sits as far from the bottom as True does from the top. */
+  min-block-size: var(--sherpa-display-mode-size-5xl, 56px);
   border-end-start-radius: inherit;
   border-end-end-radius: inherit;
 }
