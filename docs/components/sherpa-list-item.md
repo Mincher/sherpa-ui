@@ -24,6 +24,7 @@ For one row in a `sherpa-list`: a label, a description, and optional icon, tick,
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-category` | text |  | the node kind's category slug (sources, output, custom-nodes, ai…), which says that fill and those radii |
 | `data-current` | boolean | `false` | current-row state |
 | `data-description` | text |  | secondary text |
 | `data-draggable` | boolean |  | show the drag handle |
@@ -34,6 +35,7 @@ For one row in a `sherpa-list`: a label, a description, and optional icon, tick,
 | `data-label` | text |  | primary text |
 | `data-selectable` | boolean |  | show a leading selection control (checkbox affordance) |
 | `data-selected` | boolean | `false` | selection state (for the leading control) |
+| `data-type` | `node` |  | "node": the row looks like its node on the canvas: its fill, border and corner radii |
 | `disabled` | boolean, native | `false` | disabled state |
 
 ## Properties
@@ -103,6 +105,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ current?, description?, draggable?, expandable?, expanded?, icon?, interactive?, label?, selectable?, selected? }`
+`{ category?, current?, description?, draggable?, expandable?, expanded?, icon?, interactive?, label?, selectable?, selected?, type? }`
 
 Its declared props by name: `label` sets data-label.

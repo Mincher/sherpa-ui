@@ -5167,6 +5167,13 @@
           "description": "a single list row.",
           "attributes": [
             {
+              "name": "data-category",
+              "description": "the node kind's category slug (sources, output, custom-nodes, ai…), which says that fill and those radii",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-current",
               "description": "current-row state",
               "type": {
@@ -5239,6 +5246,13 @@
                 "text": "boolean"
               },
               "default": "false"
+            },
+            {
+              "name": "data-type",
+              "description": "\"node\": the row looks like its node on the canvas: its fill, border and corner radii",
+              "type": {
+                "text": "'node'"
+              }
             },
             {
               "name": "disabled",

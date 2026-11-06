@@ -18,6 +18,8 @@
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
+ * - categorySlug — A category as the slug a node's, and its panel row's, `data-category` says.
+ * - categorySlug — A category as the slug a node's, and its panel row's, `data-category` says.
  * - typeOf — The type of a family kind a node's `type` names: its own, else the kind's default.
  * - typeChoices — The types of a family kind as a picklist reads them; none, it is no family.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
@@ -383,6 +385,9 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Output', icon: 'flag', description: 'End the flow with a result', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
   },
 };
+
+/** A category as the slug a node's, and its panel row's, `data-category` says: lower case, words joined by hyphens. TODO 840 */
+export const categorySlug = (category: string | undefined): string | undefined => category?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /** The type of a family kind a node's `type` value names: that one, else the kind's default or first. */
 export function typeOf(kind: Pick<NodeKind, 'types' | 'defaultType'>, type?: unknown): { id: string; type: NodeType } | undefined {

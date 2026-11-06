@@ -1,0 +1,25 @@
+/**
+ * sherpa-node-look.css — a node's look by its kind's category (the Figma's columns), one place: its tinted fill and its
+ * corner radii, as the custom properties `--_category-fill` and `--_node-radius`. A node on the canvas and a row of it in the
+ * Nodes panel adopt it, so they look alike. Will, TODOs 740, 840 · TRAP T-a-node-row-wears-its-nodes-look
+ *
+ * Radius from the Display Mode scale (medium = base 4px, x-large = xl 16px); a tinted fill from the Theme tier, since a
+ * Style info or success pin resolves to plain white.
+ */
+
+:host([data-category="sources"]) {
+  --_node-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px)
+    var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px);
+}
+:host([data-category="sources"]),
+:host([data-category="custom-nodes"]) { --_category-fill: var(--sherpa-theme-surface-info-base, #d4f0ff); /* theme-direct */ }
+:host([data-category="output"]) {
+  --_node-radius: var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px)
+    var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
+  --_category-fill: var(--sherpa-theme-surface-success-base, #f0fff5); /* theme-direct */
+}
+:host([data-category="ai"]) {
+  --_node-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-xl, 16px)
+    var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
+  --_category-fill: var(--sherpa-theme-surface-active-base, #f8ebff); /* theme-direct */
+}

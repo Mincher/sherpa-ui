@@ -2040,6 +2040,10 @@
       "description": "a single list row.",
       "attributes": [
         {
+          "name": "data-category",
+          "description": "the node kind's category slug (sources, output, custom-nodes, ai…), which says that fill and those radii"
+        },
+        {
           "name": "data-current",
           "description": "current-row state",
           "valueSet": "v"
@@ -2085,6 +2089,15 @@
           "name": "data-selected",
           "description": "selection state (for the leading control)",
           "valueSet": "v"
+        },
+        {
+          "name": "data-type",
+          "description": "\"node\": the row looks like its node on the canvas: its fill, border and corner radii",
+          "values": [
+            {
+              "name": "node"
+            }
+          ]
         },
         {
           "name": "disabled",

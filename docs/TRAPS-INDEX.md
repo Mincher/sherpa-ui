@@ -873,7 +873,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (144)
+## SherpaElement and the shared sheets (145)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -905,6 +905,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-control-brings-its-own-margin](traps/element-and-sheets.md#t-a-native-control-brings-its-own-margin) — sherpa-base
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — sherpa-button-look
 - [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — node-graph
+- [T-a-node-row-wears-its-nodes-look](traps/element-and-sheets.md#t-a-node-row-wears-its-nodes-look) — sherpa-node-look
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — filter-host-controller, shared-constants
 - [T-a-portal-hop-is-resolved-once](traps/data-layer.md#t-a-portal-hop-is-resolved-once) — node-graph
@@ -1020,7 +1021,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (131)
+## Other components (132)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1061,6 +1062,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-node-moves-itself-and-reports](traps/other-components.md#t-a-node-moves-itself-and-reports) — node
 - [T-a-node-panel-lists-under-sticky-headings](traps/other-components.md#t-a-node-panel-lists-under-sticky-headings) — node-panel
 - [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — node
+- [T-a-node-row-wears-its-nodes-look](traps/element-and-sheets.md#t-a-node-row-wears-its-nodes-look) — list-item
 - [T-a-number-input-wears-sherpas-steppers](traps/menus-tips-overlays.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — metric-group
 - [T-a-panel-area-is-a-layout](traps/other-components.md#t-a-panel-area-is-a-layout) — layout-canvas, layout-panels, node-panel

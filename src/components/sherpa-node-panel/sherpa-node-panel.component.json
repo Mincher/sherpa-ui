@@ -233,7 +233,9 @@
           {
             "el": "sherpa-list-item",
             "attrs": {
+              "data-type": "node",
               "data-interactive": "",
+              "data-attr-data-category": "slug",
               "data-attr-data-kind": "id",
               "data-attr-data-label": "heading",
               "data-attr-data-description": "description",

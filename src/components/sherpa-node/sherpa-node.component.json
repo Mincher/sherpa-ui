@@ -468,26 +468,6 @@
     },
     {
       "$type": "state",
-      "name": "sources",
-      "selector": ":host([data-category=\"sources\"])"
-    },
-    {
-      "$type": "state",
-      "name": "custom-nodes",
-      "selector": ":host([data-category=\"custom-nodes\"])"
-    },
-    {
-      "$type": "state",
-      "name": "output",
-      "selector": ":host([data-category=\"output\"])"
-    },
-    {
-      "$type": "state",
-      "name": "ai",
-      "selector": ":host([data-category=\"ai\"])"
-    },
-    {
-      "$type": "state",
       "name": "current",
       "selector": ":host([data-current])"
     },

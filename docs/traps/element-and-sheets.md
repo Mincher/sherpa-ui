@@ -1988,6 +1988,22 @@ and `any` (an input only) a square.
 - Site: `src/components/sherpa-node/sherpa-node.ts`
 - Site: `test/e2e/reforged-node.spec.ts`
 
+### T-a-node-row-wears-its-nodes-look
+
+**A Nodes-panel row looks like its node on the canvas, from ONE sheet** (Will, 2026-11-06, TODO 840: "it is hard to
+link a node in the Nodes panel to its node on the canvas"). A node's tinted fill and its corner radii are said by its
+kind's category (`data-category`: sources, output, ai, custom-nodes), once, in `src/core/sherpa-node-look.css`, as the
+custom properties `--_category-fill` and `--_node-radius`; `sherpa-node` and `sherpa-list-item` both adopt it.
+
+- A list item with `data-type="node"` draws its `.row` with that fill, a border and those radii; with no category the
+  fill is the plain surface and the radii 4px, as a node's are. The panel stamps `data-type="node"` and the category's
+  slug (`categorySlug`, the one the node's own attribute uses) on every row; a Custom Node's row is `custom-nodes`.
+- A new category is one more rule in that sheet: the node and its row both follow. Nothing is said in the panel's CSS.
+
+- Site: `src/core/sherpa-node-look.css`
+- Site: `src/components/sherpa-list-item/sherpa-list-item.css`
+- Site: `test/e2e/reforged-node-panel-row-looks-like-its-node.spec.ts`
+
 ### T-an-edit-is-a-step
 
 **An editor's Undo steps back what the reader did, not each write** (TODOs 560 and

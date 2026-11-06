@@ -219,7 +219,7 @@
   flex-direction: column;
   background: var(--_category-fill, var(--_surface));
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  border-radius: var(--_node-radius, var(--sherpa-display-mode-border-rounding-base, 4px));
   color: var(--sherpa-style-content-base, #0c0b11);
 }
 
@@ -229,25 +229,7 @@
   outline-offset: var(--sherpa-focus-offset);
 }
 
-/* ── The node's look, by its kind's category (the Figma's columns). Will, TODO 740.
-   Radius from the Display Mode scale (medium = base 4px, x-large = xl 16px); a tinted
-   fill from the Theme tier, since a Style info or success pin resolves to plain white. */
-:host([data-category="sources"]) .root {
-  border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px)
-    var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px);
-}
-:host([data-category="sources"]) .root,
-:host([data-category="custom-nodes"]) .root { --_category-fill: var(--sherpa-theme-surface-info-base, #d4f0ff); /* theme-direct */ }
-:host([data-category="output"]) .root {
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px)
-    var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
-  --_category-fill: var(--sherpa-theme-surface-success-base, #f0fff5); /* theme-direct */
-}
-:host([data-category="ai"]) .root {
-  border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-xl, 16px)
-    var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
-  --_category-fill: var(--sherpa-theme-surface-active-base, #f8ebff); /* theme-direct */
-}
+/* ── The node's look, by its kind's category, is `sherpa-node-look.css`: its fill and radii, which the Nodes panel's rows wear too. TODO 840 */
 /* Picked, every node takes the active pin's fill and border: a category's tint is its resting look. TODO 756
    A warning, the same: its pin's look. TODO 764. A portal of the picked one's name, the same as picked. TODO 779 */
 :host([data-current]) .root,

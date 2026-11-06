@@ -179,6 +179,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-category",
+      "type": "string",
+      "observed": false,
+      "declared": true,
+      "kind": "style",
+      "description": "the node kind's category slug (sources, output, custom-nodes, ai…), which says that fill and those radii"
+    },
+    {
+      "$type": "prop",
       "name": "data-current",
       "type": "boolean",
       "observed": true,
@@ -273,6 +282,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-type",
+      "type": "enum",
+      "observed": false,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "node"
+      ],
+      "description": "\"node\": the row looks like its node on the canvas: its fill, border and corner radii"
+    },
+    {
+      "$type": "prop",
       "name": "disabled",
       "type": "boolean",
       "observed": false,
@@ -309,7 +330,7 @@
     }
   ],
   "populate": {
-    "shape": "{ current?, description?, draggable?, expandable?, expanded?, icon?, interactive?, label?, selectable?, selected? }",
+    "shape": "{ category?, current?, description?, draggable?, expandable?, expanded?, icon?, interactive?, label?, selectable?, selected?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -337,6 +358,11 @@
       "$type": "state",
       "name": "selected",
       "selector": ":host([data-selected])"
+    },
+    {
+      "$type": "state",
+      "name": "node",
+      "selector": ":host([data-type=\"node\"])"
     },
     {
       "$type": "state",

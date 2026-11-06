@@ -28,6 +28,7 @@ export class SherpaNode extends SherpaElement {
   static override css = [
     new URL('../../core/sherpa-container-regions.css', import.meta.url),
     new URL('../../core/sherpa-node-sockets.css', import.meta.url),
+    new URL('../../core/sherpa-node-look.css', import.meta.url),
     new URL('./sherpa-node.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-node.html', import.meta.url);

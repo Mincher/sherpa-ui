@@ -6,6 +6,8 @@
  * Public API:
  *   data-label / data-description   text
  *   data-icon                       leading icon glyph
+ *   data-type="node"                the row looks like its node: its fill, border and radii, by `data-category`
+ *   data-category                   the node kind's category, as a slug: sources, output, custom-nodes, ai…
  *   data-current                    current-row visual state
  *   data-interactive                enable hover + click behaviour
  *   data-draggable / data-expandable / data-expanded
@@ -17,9 +19,15 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaListItem extends SherpaElement {
-  static override css = new URL('./sherpa-list-item.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-node-look.css', import.meta.url),
+    new URL('./sherpa-list-item.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override props = {
+    /* A row of a NODE: it wears the node's own fill, border and corner radii, by its kind's category. TODO 840 */
+    'data-type': { type: 'enum', kind: 'style', values: ['node'] },
+    'data-category': { type: 'string', kind: 'style' },
     'data-draggable': { type: 'boolean', kind: 'style' },
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-interactive': { type: 'boolean', kind: 'style' },

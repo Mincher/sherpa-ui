@@ -16,7 +16,7 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { FLOAT_ATTRS, FloatBox, roomOf } from '../../core/ui/float-box.js';
-import { fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type PaletteItem, type SocketType } from '../../core/data/node-kinds.js';
+import { categorySlug, fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type PaletteItem, type SocketType } from '../../core/data/node-kinds.js';
 import { takesGiven, type Given } from '../../core/data/node-input.js';
 // Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
@@ -151,7 +151,7 @@ export class SherpaNodePanel extends SherpaElement {
   #draw(): void {
     const fill = (list: Element, items: readonly PaletteItem[]): void => {
       for (const { id, kind } of items) {
-        const item = this.cloneItem('template.item-tpl', { id, heading: kind.heading, icon: kind.icon, description: lineOf(kind) });
+        const item = this.cloneItem('template.item-tpl', { id, heading: kind.heading, icon: kind.icon, description: lineOf(kind), slug: categorySlug(kind.category) });
         if (!item) continue;
         // A preset is a file's: read only, and its line says so.
         if ('preset' in kind && kind.preset) item.toggleAttribute('data-preset', true);

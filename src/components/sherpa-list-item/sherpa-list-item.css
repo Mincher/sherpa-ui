@@ -158,6 +158,15 @@
   background: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
 
+/* A row of a NODE (Will, TODO 840): its node's own fill, border and corner radii, so a row in the Nodes panel looks like its
+   node on the canvas. The category says them, in `sherpa-node-look.css`, as the node's does. TRAP T-a-node-row-wears-its-nodes-look */
+:host([data-type="node"]) .row {
+  background: var(--_category-fill, var(--sherpa-theme-surface-base, #ffffff)); /* theme-direct */
+  border: var(--sherpa-style-default-border-width, 0.5px) solid var(--sherpa-style-default-border-base, #b3b3c3);
+  border-radius: var(--_node-radius, var(--sherpa-display-mode-border-rounding-base, 4px));
+}
+:host([data-type="node"][data-interactive]) .row:hover { border-color: var(--sherpa-style-default-indicator-accent, #3b4ccd); }
+
 /* Colour inherits from `.row`. */
 .leading {
   display: none;
