@@ -34,6 +34,12 @@ export function folded(el: Element | null): boolean {
   return !!el && getComputedStyle(el).display === 'none';
 }
 
+/** Is this the PAGE's bar, in the app header? Only it offers the two Limit switches: its value sets every scope on the page.
+ *  Will, TODO 870 */
+function isPageBar(host: HTMLElement): boolean {
+  return host.dataset['type'] === 'view';
+}
+
 /** Is this host over the View: its bar, or a column that holds it? */
 function atView(host: HTMLElement): boolean {
   return host.dataset['type'] === 'view' || !!(host.constructor as { column?: boolean }).column
@@ -69,7 +75,7 @@ export function extraRows(host: HTMLElement): MoreRow[] {
 
 /** Would the ⋮ menu hold anything: these rows, or the host's own switches? Will, TODO 566 */
 export function offersMore(host: HTMLElement, groups: readonly MoreRow[][]): boolean {
-  return groups.some((rows) => rows.length) || (!!host.dataset['limitOptions'] && atView(host));
+  return groups.some((rows) => rows.length) || (!!host.dataset['limitOptions'] && isPageBar(host));
 }
 
 /** Draw the ⋮ menu from groups of rows — a divider between each — then the
@@ -80,8 +86,8 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   if (!menu || !divider) return;
   const drawn = groups.map((rows) => drawRows(host, root, rows));
   const limit = host.dataset['limitOptions'];
-  // The app's setting: offered over the View only. Will, TODO 553
-  if (limit && atView(host)) {
+  // The app's setting: offered on the page's View bar only, and it sets every scope. Will, TODOs 553, 870
+  if (limit && isPageBar(host)) {
     // …and below it, whether what Limit rules out is shown at all. Will, TODOs 205 and 376
     drawn.push([check(root, 'limit-options', limit === 'on'), check(root, 'hide-unmatched', host.dataset['hideUnmatched'] === 'on')]
       .filter((n): n is HTMLElement => !!n));

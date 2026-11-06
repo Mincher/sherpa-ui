@@ -25,8 +25,6 @@ For a page's filters in a panel: every scope the page offers, the View as a head
 | `data-applied` | number |  | how many filters are applied in what it answers |
 | `data-at-default` | boolean |  | the filters are the View's own: Reset to view defaults and Save are inactive |
 | `data-count-applied` | boolean |  | the title counts them |
-| `data-hide-unmatched` | `on` `off` |  | on \| off: the ⋮'s switch for Hide invalid filters |
-| `data-limit-options` | `on` `off` |  | on \| off: the ⋮'s switch for Limit to matching filters |
 | `data-no-saves` | boolean |  | its provider keeps saving off it |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive |
 | `data-saveable` | boolean |  | the host SAVES filters: the Save group shows |
@@ -66,8 +64,6 @@ Each one bubbles.
 | `filters-manage` |  | Manage Saved Filters. |
 | `filters-apply` |  | A saved set ticked. |
 | `filters-dismiss` |  | A saved set unticked. |
-| `limit-options-change` |  | The ⋮ switch. |
-| `hide-unmatched-change` |  | The ⋮ switch. |
 
 ## Parts
 
@@ -97,12 +93,10 @@ Each of the app's settings, onto one of its attributes:
 
 | Setting | Attribute |
 |---|---|
-| `limitOptions` | `data-limit-options` |
-| `hideUnmatched` | `data-hide-unmatched` |
 | `countApplied` | `data-count-applied` |
 
 ## populate()
 
-`{ applied?, atDefault?, countApplied?, hideUnmatched?, limitOptions?, noSaves?, nothingToReset?, saveable?, scope?, suggest? }`
+`{ applied?, atDefault?, countApplied?, noSaves?, nothingToReset?, saveable?, scope?, suggest? }`
 
 Its declared props by name: `label` sets data-label.

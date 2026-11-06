@@ -1155,7 +1155,7 @@
     {
       "$type": "event",
       "name": "limit-options-change",
-      "description": "The ⋮ menu's \"Limit to matching filters\".",
+      "description": "The page's View bar's ⋮ \"Limit to matching filters\"; the provider holds it for every scope.",
       "bubbles": true,
       "composed": true,
       "detail": {

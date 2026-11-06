@@ -167,7 +167,7 @@ Each one bubbles.
 | `filters-save` |  | Save filters: under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
 | `filters-manage` |  | Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. |
-| `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
+| `limit-options-change` | `{ on: boolean }` | The page's View bar's ⋮ "Limit to matching filters"; the provider holds it for every scope. |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 | `data-refresh` |  | Refresh: load the page's data again. |
 | `ai-filter-request` |  | Suggest filters was pressed. |

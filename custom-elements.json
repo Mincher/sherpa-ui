@@ -3817,20 +3817,6 @@
               }
             },
             {
-              "name": "data-hide-unmatched",
-              "description": "on | off: the ⋮'s switch for Hide invalid filters. It follows the app's `hideUnmatched` setting.",
-              "type": {
-                "text": "'on' | 'off'"
-              }
-            },
-            {
-              "name": "data-limit-options",
-              "description": "on | off: the ⋮'s switch for Limit to matching filters. It follows the app's `limitOptions` setting.",
-              "type": {
-                "text": "'on' | 'off'"
-              }
-            },
-            {
               "name": "data-no-saves",
               "description": "its provider keeps saving off it",
               "type": {
@@ -4018,20 +4004,6 @@
             {
               "name": "filters-dismiss",
               "description": "A saved set unticked.",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "limit-options-change",
-              "description": "The ⋮ switch.",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "hide-unmatched-change",
-              "description": "The ⋮ switch.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -10663,7 +10635,7 @@
             },
             {
               "name": "limit-options-change",
-              "description": "The ⋮ menu's \"Limit to matching filters\".",
+              "description": "The page's View bar's ⋮ \"Limit to matching filters\"; the provider holds it for every scope.",
               "type": {
                 "text": "CustomEvent<{ on: boolean }>"
               }

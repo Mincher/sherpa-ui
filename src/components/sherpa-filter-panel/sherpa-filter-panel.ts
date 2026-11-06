@@ -37,7 +37,7 @@ export class SherpaFilterPanel extends SherpaElement {
   static column = true;
   // The app's filter settings it reads, each onto its attribute.
   static override settings = {
-    'data-limit-options': 'limitOptions', 'data-hide-unmatched': 'hideUnmatched', 'data-count-applied': 'countApplied',
+    'data-count-applied': 'countApplied',
   };
 
   static override props = {
@@ -49,8 +49,6 @@ export class SherpaFilterPanel extends SherpaElement {
     'data-count-applied': { type: 'boolean', kind: 'behaviour' },
     'data-at-default': { type: 'boolean', kind: 'behaviour' },
     'data-nothing-to-reset': { type: 'boolean', kind: 'behaviour' },
-    'data-limit-options': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
-    'data-hide-unmatched': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
     // Its panel is showing: the panel says, and this reports it. TRAP T-a-shut-column-draws-nothing
     open: { type: 'boolean', kind: 'behaviour' },
   } as const;

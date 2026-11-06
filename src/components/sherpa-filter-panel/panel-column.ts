@@ -20,12 +20,12 @@ import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { SavedSets, type SavedSet } from '../../core/ui/filters-button.js';
-import { askSwitches, extraRows, manageRows, openMore, pickMore, resetRows, type MoreRow } from '../../core/ui/more-menu.js';
+import { extraRows, manageRows, openMore, pickMore, resetRows, type MoreRow } from '../../core/ui/more-menu.js';
 import { ToolbarHeader } from '../sherpa-quick-filter-toolbar/toolbar-header.js';
 
 /** What the filter panel says. */
 export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-apply' | 'filters-dismiss' | 'filters-manage' | 'ai-filter-request'
-  | 'quick-filter-change' | 'view-reset' | 'limit-options-change' | 'hide-unmatched-change';
+  | 'quick-filter-change' | 'view-reset';
 
 /** What the column asks of its filter panel. */
 export interface ColumnHost {
@@ -78,7 +78,6 @@ export class ToolbarColumn {
     this.#$('.column-save-as')?.addEventListener('button-click', () => this.#host.emit('filters-save-as'));
     this.#$('.column-more')?.addEventListener('button-click', this.#onMore);
     this.#$('.more-menu')?.addEventListener('menu-select', this.#onMoreRow);
-    this.#$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
     for (const type of ['input', 'change']) this.#$('.find')?.addEventListener(type, this.#onFind);
     this.draw(this.#scopes);
     this.#header.drawSave();
@@ -188,9 +187,6 @@ export class ToolbarColumn {
     const act = pickMore(this.#host.el, this.#host.root(), event);
     if (act) this.#act(act);
   };
-
-  /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
-  #onMoreSwitch = (event: Event): void => askSwitches(this.#host.el, event, (name, on) => this.#host.emit(name, { on }));
 
   /** ONE search, above every scope: each section finds in its own fields. */
   #onFind = (): void => this.find(this.#$<HTMLInputElement>('.find')?.value ?? '');

@@ -136,3 +136,18 @@ test('a panel draws a divider only between groups that show a control', async ({
   // Only the panel's own buttons and the close: one divider, between them.
   expect(r.plain).toEqual(['after-docks', 'after-modes']);
 });
+
+/* Limit to matching and Hide invalid are the PAGE's: the View bar's ⋮ holds them and its value sets every scope, so the panel's ⋮ has neither. Will, TODO 870 */
+test('the panel\'s ⋮ holds no Limit or Hide invalid row', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${MOUNT}
+    content.setAttribute('data-limit-options', 'on');
+    content.setAttribute('data-hide-unmatched', 'on');
+    await window.__settled();
+    await window.__moreRow(content, 'reset');
+    return [...content.shadowRoot.querySelectorAll('.more-menu [value], .more-menu input')].map((n) => n.value);
+  })()`) as string[];
+  expect(r).toContain('reset');
+  expect(r).not.toContain('limit-options');
+  expect(r).not.toContain('hide-unmatched');
+});

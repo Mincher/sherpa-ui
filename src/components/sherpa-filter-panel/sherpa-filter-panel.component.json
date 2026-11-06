@@ -162,32 +162,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-hide-unmatched",
-      "type": "enum",
-      "observed": false,
-      "declared": true,
-      "kind": "behaviour",
-      "values": [
-        "on",
-        "off"
-      ],
-      "description": "on | off: the ⋮'s switch for Hide invalid filters"
-    },
-    {
-      "$type": "prop",
-      "name": "data-limit-options",
-      "type": "enum",
-      "observed": false,
-      "declared": true,
-      "kind": "behaviour",
-      "values": [
-        "on",
-        "off"
-      ],
-      "description": "on | off: the ⋮'s switch for Limit to matching filters"
-    },
-    {
-      "$type": "prop",
       "name": "data-no-saves",
       "type": "boolean",
       "observed": true,
@@ -243,7 +217,7 @@
     }
   ],
   "populate": {
-    "shape": "{ applied?, atDefault?, countApplied?, hideUnmatched?, limitOptions?, noSaves?, nothingToReset?, saveable?, scope?, suggest? }",
+    "shape": "{ applied?, atDefault?, countApplied?, noSaves?, nothingToReset?, saveable?, scope?, suggest? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "asks": {
@@ -251,8 +225,6 @@
   },
   "takes": [],
   "settings": {
-    "data-limit-options": "limitOptions",
-    "data-hide-unmatched": "hideUnmatched",
     "data-count-applied": "countApplied"
   },
   "capabilities": [
@@ -321,20 +293,6 @@
       "$type": "event",
       "name": "filters-dismiss",
       "description": "A saved set unticked.",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "limit-options-change",
-      "description": "The ⋮ switch.",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "hide-unmatched-change",
-      "description": "The ⋮ switch.",
       "bubbles": true,
       "composed": true
     }

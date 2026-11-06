@@ -1413,30 +1413,6 @@
           "valueSet": "v"
         },
         {
-          "name": "data-hide-unmatched",
-          "description": "on | off: the ⋮'s switch for Hide invalid filters. It follows the app's `hideUnmatched` setting.",
-          "values": [
-            {
-              "name": "on"
-            },
-            {
-              "name": "off"
-            }
-          ]
-        },
-        {
-          "name": "data-limit-options",
-          "description": "on | off: the ⋮'s switch for Limit to matching filters. It follows the app's `limitOptions` setting.",
-          "values": [
-            {
-              "name": "on"
-            },
-            {
-              "name": "off"
-            }
-          ]
-        },
-        {
           "name": "data-no-saves",
           "description": "its provider keeps saving off it",
           "valueSet": "v"
