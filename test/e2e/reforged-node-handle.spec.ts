@@ -108,7 +108,10 @@ test('the grip is a tab on the header\'s left edge, as tall as it, outside it, i
   });
   const bare = await read();
   // Its right edge is the header's left, its top the header's, its height the header's: a tab on the edge, outside the box.
-  expect(bare).toMatchObject({ right: 0, top: 0, height: 0, wide: true, turned: '90deg', handle: ['button', 'node', 'true'] });
+  // (Its right edge is past the node's own half-pixel border, which it leaves whole.)
+  expect(bare.right).toBeLessThanOrEqual(0);
+  expect(bare.right).toBeGreaterThanOrEqual(-1);
+  expect(bare).toMatchObject({ top: 0, height: 0, wide: true, turned: '90deg', handle: ['button', 'node', 'true'] });
   const [x, y] = await at(page, 'empty');
   await page.mouse.move(x - 40, y);
   expect((await read()).box).toEqual(bare.box);

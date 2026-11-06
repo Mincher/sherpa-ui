@@ -554,6 +554,7 @@
     "root.border-width": "{sherpa.style-border-width}",
     "root.border-radius": "{sherpa.display-mode-border-rounding-base}",
     "root.color": "{sherpa.style-content-base}",
+    "grip.inset-inline-end": "{sherpa.style-border-width}",
     "grip.padding-block-start": "{sherpa.theme-padding-md}",
     "grip.inline-size": "{sherpa.display-mode-size-md}",
     "grip.border-width": "{sherpa.style-border-width}",

@@ -265,7 +265,8 @@
 .grip {
   position: absolute;
   inset-block: 0;
-  inset-inline-end: 100%;
+  /* Past the node's own border, which stays whole (a warning's colour is read there). */
+  inset-inline-end: calc(100% + var(--sherpa-style-border-width, 0.5px));
   display: flex;
   /* At the top, clear of the header's own socket at its middle. */
   align-items: flex-start;
@@ -277,7 +278,6 @@
   block-size: auto;
   background: var(--_category-fill, var(--_surface));
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-inline-end: none;
   border-start-start-radius: inherit;
   border-end-start-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   color: var(--sherpa-style-content-secondary, #35353d);
