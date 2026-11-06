@@ -47,9 +47,9 @@ async function pick(page: Page, ids: string[]): Promise<void> {
   await page.keyboard.up('Shift');
   await settle(page);
 }
+/** The tool's own button, pressed from its inside: the details panel a pick opens may cover the toolbar's last tools. */
 async function press(page: Page, name: string): Promise<void> {
-  const b = (await page.locator(`sherpa-node-toolbar sherpa-button.${name}`).boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await page.locator(`sherpa-node-toolbar sherpa-button.${name}`).evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
 }
 
