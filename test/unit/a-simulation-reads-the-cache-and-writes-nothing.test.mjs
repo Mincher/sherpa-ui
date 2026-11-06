@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { simulateGraph } = await import(new URL('node-simulate.js', core));
+const { simulateGraph, simulation, stepSimulation } = await import(new URL('node-simulate.js', core));
 const { workflowGraph } = await import(new URL('workflow.js', core));
 const { filterRows } = await import(new URL('store.js', core));
 
@@ -167,4 +167,40 @@ test('where a fetch stopped at its cap, the Source says so beside its rows', () 
   assert.deepEqual(sim.faults, []);
   // Another store's words are no one else's.
   assert.equal(out(simulateGraph(chain('status', 'eq', 'active'), { customers: rows }, { partial: { devices: words } }), 's', 's/rows').note, undefined);
+});
+
+test('a simulation in steps: it names its nodes, runs nothing until stepped, and stepped whole it is simulateGraph', () => {
+  const rows = rowsOf(40);
+  const g = chain('status', 'eq', 'active');
+  const run = simulation(g, { customers: rows });
+  assert.deepEqual(run.ids, ['s', 'f', 'c', 'o']);
+  assert.deepEqual(run.result().nodes, {}, 'nothing has run');
+  run.step('c');
+  assert.deepEqual(Object.keys(run.result().nodes), ['c'], 'one step runs one node, and what it hears is read, not run');
+  run.step('c');
+  run.step('nope');
+  for (const id of run.ids) run.step(id);
+  assert.deepEqual(run.result(), simulateGraph(g, { customers: rows }));
+  // The doors a Custom Node's inside draws (`#in`, `#out`) are not run.
+  const node = (id) => ({ id, kind: 'x', heading: id, icon: '', rows: [], x: 0, y: 0 });
+  assert.deepEqual(simulation({ nodes: [node('#in'), node('a'), node('#out')], routes: [] }, {}).ids, ['a']);
+});
+
+test('stepping lets the host in when a node has run long, and says each node before it runs: the page can draw the one it is on', async () => {
+  const rows = rowsOf(20);
+  const g = chain('status', 'eq', 'active');
+  const told = [];
+  let pauses = 0;
+  let clock = 0;
+  // Each look at the clock is 20 ms on: a node runs 20 ms, over the 15, and the host has a turn after each.
+  const slow = await stepSimulation(simulation(g, { customers: rows }), { onStep: (id) => told.push(id), pause: async () => { pauses++; }, now: () => (clock += 20), every: 15 });
+  assert.deepEqual(told, ['s', 'f', 'c', 'o']);
+  assert.equal(pauses, 4);
+  // Quick nodes: the host is not asked, so a fast graph pays nothing.
+  clock = 0;
+  pauses = 0;
+  const quick = await stepSimulation(simulation(g, { customers: rows }), { pause: async () => { pauses++; }, now: () => clock, every: 15 });
+  assert.equal(pauses, 0);
+  assert.deepEqual(quick, slow);
+  assert.deepEqual(quick, simulateGraph(g, { customers: rows }));
 });

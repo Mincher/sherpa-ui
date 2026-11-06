@@ -15,8 +15,9 @@ const STATES = ['active', 'trial', 'suspended', 'churned'];
 const ROWS = Array.from({ length: 120 }, (_, id) => ({ id, status: STATES[(id * 7) % 4] }));
 const ACTIVE = ROWS.filter((r) => r.status === 'active');
 
-async function start(page: Page, options: { limit?: { rows?: number }; delay?: number; collect?: boolean; known?: boolean } = {}): Promise<void> {
-  await page.evaluate(async ([rows, limit, delay, collect, known]) => {
+async function start(page: Page, options: { limit?: { rows?: number }; delay?: number; collect?: boolean; known?: boolean; big?: number } = {}): Promise<void> {
+  await page.evaluate(async ([given, limit, delay, collect, known, big]) => {
+    const rows = big ? Array.from({ length: big }, (_, id) => ({ id, status: ['active', 'trial', 'suspended', 'churned'][(id * 7) % 4]!, seats: id % 100 })) : given;
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
@@ -49,7 +50,7 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
     canvas.zoomTo(0.4);
     canvas.panTo(20, 20);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [ROWS, options.limit ?? null, options.delay ?? 5, options.collect ?? true, options.known ?? true] as const);
+  }, [ROWS, options.limit ?? null, options.delay ?? 5, options.collect ?? true, options.known ?? true, options.big ?? 0] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const tool = (page: Page, name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
@@ -127,25 +128,79 @@ test('an edit and Simulate read no more: the last simulation is stale after the 
   await expect.poll(() => loads(page)).toBe(2);
 });
 
-test('Fetch is a task: its button is busy while it runs, a second press is blocked and said, and ONE notice says how it ended', async ({ page }) => {
+test('Fetch is a task: both tools wait while it runs and its button says busy; a press by the keys is blocked and said; ONE notice ends it', async ({ page }) => {
   await start(page, { delay: 500 });
   await press(page, 'fetch');
   await expect(page.locator('sherpa-node-toolbar')).toHaveAttribute('data-fetching', '');
   await expect(tool(page, 'fetch')).toHaveAttribute('aria-busy', 'true');
   await expect(tool(page, 'fetch')).toHaveAttribute('data-tip', 'Fetching: wait for it to end');
-  // Pressed again, and Simulate with it: the graph's fetch is not done, so both are blocked, and each says what is in the way.
-  await press(page, 'fetch');
-  await press(page, 'simulate');
+  for (const name of ['fetch', 'simulate']) await expect(tool(page, name)).toHaveAttribute('disabled', '');
+  // The keys still ask, and the queue says what is in the way, for each.
+  await page.locator('#cv').evaluate((cv) => (cv.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
+  await page.keyboard.press('ControlOrMeta+Shift+Enter');
+  await page.keyboard.press('ControlOrMeta+Enter');
   expect((await notices(page)).map((n) => n.words)).toEqual(['Fetch is still running: wait for it to end.', 'Fetch is still running: wait for it to end.']);
   expect(await loads(page)).toBeLessThanOrEqual(1);
   await expect.poll(() => sim(page)).toBeDefined();
   await expect(tool(page, 'fetch')).toHaveAttribute('aria-busy', 'false');
+  await expect(tool(page, 'fetch')).not.toHaveAttribute('disabled', '');
   await expect(page.locator('sherpa-node-toolbar')).not.toHaveAttribute('data-fetching', '');
   // The end: one notice, how it went.
   await expect.poll(async () => (await notices(page)).length).toBe(3);
   expect(await loads(page)).toBe(1);
   expect((await notices(page))[2]).toEqual({ words: 'Fetched. users: 120 rows.', status: 'success' });
   expect(await kept(page)).toMatchObject({ rows: expect.any(Array) });
+});
+
+test('a Source being fetched wears the tab on its top edge, right-aligned, with the play icon and "Fetching… 1s", and the active border; it is gone when the fetch ends', async ({ page }) => {
+  await start(page, { delay: 2700 });
+  const source = page.locator('#cv > sherpa-node[data-heading="s"]');
+  const idle = page.locator('#cv > sherpa-node[data-heading="f"]');
+  const look = (n: ReturnType<Page['locator']>) => n.evaluate((el) => {
+    const root = el.shadowRoot!.querySelector('.root') as HTMLElement;
+    const tab = el.shadowRoot!.querySelector('.caption') as HTMLElement;
+    const icon = el.shadowRoot!.querySelector('.caption-icon') as HTMLElement;
+    const [a, t] = [root.getBoundingClientRect(), tab.getBoundingClientRect()];
+    return { step: el.getAttribute('data-step'), words: tab.textContent?.trim(), border: getComputedStyle(root).borderTopColor, tabBorder: getComputedStyle(tab).borderTopColor,
+      tabShown: getComputedStyle(tab).display !== 'none', icon: getComputedStyle(icon).display !== 'none', above: Math.round(t.bottom - a.top) + 0, right: Math.round(t.right - a.right) + 0, left: t.left > a.left };
+  });
+  await press(page, 'fetch');
+  await expect.poll(async () => (await look(source)).words).toBe('Fetching… 1s');
+  const on = await look(source);
+  expect(on).toMatchObject({ step: 'running', tabShown: true, icon: true, above: 0, right: 0, left: true });
+  // The tab wears the node's own border, and the border is the active one: not what an idle node has.
+  expect(on.tabBorder).toBe(on.border);
+  expect(on.border).not.toBe((await look(idle)).border);
+  expect(await look(idle)).toMatchObject({ step: null, tabShown: false });
+  await expect.poll(async () => (await look(source)).words).toBe('Fetching… 2s');
+  await expect.poll(async () => (await look(source)).step, { timeout: 15_000 }).toBeNull();
+  expect((await look(source)).tabShown).toBe(false);
+});
+
+test('a simulation shows the node it is on, node by node, "Simulating… 1s", then takes the look off every node', async ({ page }) => {
+  await start(page, { big: 200_000, delay: 5 });
+  // Every caption a node is given, as it is given: the page may not draw between two.
+  await page.evaluate(() => {
+    const seen: [string, string, number, number][] = [];
+    let frames = 0;
+    const count = (): void => { frames++; requestAnimationFrame(count); };
+    requestAnimationFrame(count);
+    Object.assign(window, { seen });
+    const set = Element.prototype.setAttribute;
+    Element.prototype.setAttribute = function (name: string, value: string) {
+      if (name === 'data-caption' && this.localName === 'sherpa-node') seen.push([this.getAttribute('data-heading')!, value, frames, performance.now()]);
+      return set.call(this, name, value);
+    };
+  });
+  await press(page, 'fetch');
+  await expect.poll(() => sim(page), { timeout: 30_000 }).toBeDefined();
+  const seen = await page.evaluate(() => (window as never as { seen: [string, string, number, number][] }).seen);
+  const mine = seen.filter(([, words]) => words.startsWith('Simulating…'));
+  expect(new Set(mine.map(([heading]) => heading)).size).toBeGreaterThanOrEqual(2);
+  expect(mine.every(([, words]) => /^Simulating… \d+s$/.test(words))).toBe(true);
+  expect(seen.some(([heading, words]) => heading === 's' && words.startsWith('Fetching…'))).toBe(true);
+  await expect(page.locator('#cv > sherpa-node[data-step]')).toHaveCount(0);
+  await expect(page.locator('#cv > sherpa-node[data-caption]')).toHaveCount(0);
 });
 
 test('a fetch that cannot go says so once, as a critical notice, and leaves nothing half done', async ({ page }) => {
