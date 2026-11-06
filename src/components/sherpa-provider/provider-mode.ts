@@ -138,7 +138,7 @@ export class ProviderMode {
 
   /**
    * THE MODE'S OWN BUTTONS — the page's, so no bar or panel carries a switch
-   * for a mode it knows nothing of (Will, TODO 37). A bar has "View as filter
+   * for a mode it knows nothing of (Will, TODO 37). The page's View bar has "View as filter
    * panel" in its `actions` slot while a panel is on the page — taken out
    * while the panel answers; a panel has "Filter in the toolbars instead".
    * TRAP T-the-mode-switch-is-the-pages-own
@@ -148,7 +148,8 @@ export class ProviderMode {
     for (const bar of this.#strips()) {
       let toggle = this.#toggles.get(bar);
       // A bar no panel answers — a View the column leaves out — switches nothing. Will, TODO 488
-      if (!panels.length || !this.#answered(bar)) {
+      // ONE home, the page-level (View) bar in the app header: a local scope's bar never has it. Will, TODO 869
+      if (!panels.length || !this.#answered(bar) || (bar as HTMLElement).dataset['type'] !== 'view') {
         toggle?.remove();
         this.#toggles.delete(bar);
         continue;

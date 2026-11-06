@@ -103,6 +103,8 @@ test('mode buttons wait for the provider to draw; nothing throws', async ({ page
     const provider = document.createElement('sherpa-provider');
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.setAttribute('data-scope', 'data');
+    // The page-level bar (the app header's) is the mode switch's one home. TRAP T-the-mode-switch-is-the-pages-own
+    bar.setAttribute('data-type', 'view');
     const panelShell = document.createElement('sherpa-overlay-panel');
     panelShell.setAttribute('data-heading', 'Filters');
     panelShell.setAttribute('open', '');
@@ -381,6 +383,8 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     const provider = document.createElement('sherpa-provider');
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.setAttribute('data-scope', 'data');
+    // The page-level bar (the app header's) is the mode switch's one home. TRAP T-the-mode-switch-is-the-pages-own
+    bar.setAttribute('data-type', 'view');
     const panelShell = document.createElement('sherpa-overlay-panel');
     panelShell.setAttribute('data-heading', 'Filters');
     panelShell.setAttribute('open', '');
@@ -427,6 +431,8 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     const provider = document.createElement('sherpa-provider');
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.setAttribute('data-scope', 'data');
+    // The page-level bar (the app header's) is the mode switch's one home. TRAP T-the-mode-switch-is-the-pages-own
+    bar.setAttribute('data-type', 'view');
     provider.append(bar);
     root.append(provider);
     const src = source(2, 'p');
@@ -435,6 +441,10 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     await provider.provide({ sources: { s: src } });
     await settle();
     const toggle = (el) => el.querySelector('[data-filter-mode]');
+    const local = document.createElement('sherpa-quick-filter-toolbar');
+    local.setAttribute('data-scope', 'data');
+    provider.append(local);
+    await settle();
     const alone = !!toggle(bar);
     const panelShell = document.createElement('sherpa-overlay-panel');
     panelShell.setAttribute('data-heading', 'Filters');
@@ -450,9 +460,11 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     const inPanel = { bar: !!toggle(bar), panel: toggle(panelShell)?.getAttribute('aria-label'), mode: provider.settings.get('filterMode') };
     toggle(panelShell).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
-    return { alone, withPanel, inPanel, back: { bar: !!toggle(bar), mode: provider.settings.get('filterMode') }, reports };
+    return { alone, withPanel, inPanel, localNever: !!toggle(local), back: { bar: !!toggle(bar), mode: provider.settings.get('filterMode') }, reports };
   })()`) as Record<string, unknown>;
   expect(r['alone']).toBe(false);
+  // A local scope's bar never has it: not alone, not with a panel, not in panel mode.
+  expect(r['localNever']).toBe(false);
   expect(r['withPanel']).toEqual({ bar: 'View as filter panel', slot: 'actions' });
   expect(r['inPanel']).toEqual({ bar: false, panel: 'Filter in the toolbars instead', mode: 'panel' });
   expect(r['back']).toEqual({ bar: true, mode: 'toolbars' });

@@ -736,6 +736,8 @@ leaves out ("Include View Context in the panel" off) stays a toolbar, so its bar
 switches nothing and carries no button; it follows the column's scopes as they
 change.
 
+
+**One home (Will, TODO 869): the page-level View bar in the app header.** A local scope's bar (a card's or a grid's) never has it, in either mode; in panel mode it is the panel's own action in `actions-end`.
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
