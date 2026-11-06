@@ -370,7 +370,7 @@ test('756: picked by the pointer, every category takes the same active fill and 
   const ring = await inkOf(page, '--sherpa-theme-border-accent-2');
   await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   for (const [i, n] of names.entries()) {
-    const tab = await page.locator('#inspector sherpa-tabs').evaluate((el, k) => { const r = el.shadowRoot!.querySelectorAll('.tab')[k]!.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, i);
+    const tab = await page.locator('#inspector sherpa-tabs:not(.content-tabs)').evaluate((el, k) => { const r = el.shadowRoot!.querySelectorAll('.tab')[k]!.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, i);
     await page.mouse.click(tab.x, tab.y);
     await page.mouse.move(2, 2);
     await page.evaluate(() => window.__settled());

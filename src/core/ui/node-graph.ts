@@ -1620,6 +1620,39 @@ interface Inspecting {
 
 const inspecting = new WeakMap<HTMLElement, Inspecting>();
 
+const contentTab = new WeakMap<HTMLElement, string>();
+
+/** A node's body: Details, and a JSON and a Data tab when it has them. The reader's tab is kept per inspector. */
+function contentTabs(panel: HTMLElement, details: HTMLElement, json?: HTMLElement, data?: HTMLElement): HTMLElement {
+  if (!json && !data) return details;
+  const pages = [{ id: 'details', label: 'Details', el: details }, ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : [])];
+  const asked = contentTab.get(panel);
+  const current = pages.some((p) => p.id === asked) ? asked! : 'details';
+  const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
+  strip.setAttribute('data-current-id', current);
+  strip.className = 'content-tabs';
+  strip.style.cssText = 'block-size: 100%; min-block-size: 0';
+  for (const p of pages) {
+    const page = document.createElement('div');
+    page.dataset['tab'] = p.id;
+    page.style.cssText = 'block-size: 100%';
+    if (p.el === details) page.append(p.el);
+    else {
+      const run = document.createElement('sherpa-stack');
+      run.setAttribute('data-scroll', '');
+      run.append(p.el);
+      page.append(run);
+    }
+    strip.append(page);
+  }
+  strip.populate(pages.map((p) => ({ id: p.id, label: p.label })));
+  strip.addEventListener('tab-select', (event) => {
+    event.stopPropagation();
+    contentTab.set(panel, (event as CustomEvent<{ id: string }>).detail.id);
+  });
+  return strip;
+}
+
 /** Fill an overlay panel with one node: its rows again — the same values, the same
  *  edits — with where each comes from and goes to, and a visual above them. */
 export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGraph, options: InspectOptions = {}): void {
@@ -1674,15 +1707,16 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   stack.setAttribute('data-scroll', '');
   const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
   const flow = nodeFlow(graph, node.id, options.flow);
-  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...(options.data ? [dataPane(options.data)] : []), ...remove);
+  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...remove);
+  const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined);
   const { tabs } = options;
   if (tabs) {
     const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
-    const body = document.createElement('div');
-    body.dataset['tab'] = tabs.current;
-    body.append(stack);
+    const page = document.createElement('div');
+    page.dataset['tab'] = tabs.current;
+    page.append(body);
     strip.setAttribute('data-current-id', tabs.current);
-    strip.append(body);
+    strip.append(page);
     strip.populate(tabs.nodes.map((t) => ({ id: t.id, label: t.label })));
     strip.addEventListener('tab-select', (event) => {
       event.stopPropagation();
@@ -1691,7 +1725,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
       requestAnimationFrame(() => panel.querySelector('sherpa-tabs')?.shadowRoot?.querySelector<HTMLElement>('.tab[data-current]')?.focus());
     });
     panel.replaceChildren(strip);
-  } else panel.replaceChildren(stack);
+  } else panel.replaceChildren(body);
   if (whole.length) (header as HTMLElement & { populate(items: unknown): void }).populate(whole);
   panel.setAttribute('data-heading', tabs?.heading ?? node.heading);
   put(panel, 'data-icon', node.icon);

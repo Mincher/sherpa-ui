@@ -66,6 +66,7 @@ const press = async (page: Page, name: string) => {
 
 test('the open Custom Node\'s own Tags, on its Group Input and Output: a draft, an Undo step, written by the app\'s Save', async ({ page }) => {
   await bind(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   await header(page, 'Group Output').click();
   await settle(page);
   expect(await fieldTags(page)).toEqual(['permissions']);
@@ -105,6 +106,7 @@ test('the open Custom Node\'s own Tags, on its Group Input and Output: a draft, 
 
 test('a preset Custom Node open on the canvas: its own Tags are read only', async ({ page }) => {
   await bind(page, true);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   await header(page, 'Group Input').click();
   await settle(page);
   expect(await fieldTags(page)).toEqual(['permissions']);

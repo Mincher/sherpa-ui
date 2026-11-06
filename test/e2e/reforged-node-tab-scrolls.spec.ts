@@ -66,7 +66,7 @@ test('two picked: the tall node\'s tab scrolls in the panel, and every button in
   await header(page, 'Check').focus();
   await page.keyboard.press('Space');
   await settle(page);
-  const tabs = page.locator('#inspector sherpa-tabs');
+  const tabs = page.locator('#inspector sherpa-tabs:not(.content-tabs)');
   expect(await tabs.evaluate((el) => [...el.shadowRoot!.querySelectorAll('.tab .label')].map((t) => t.textContent))).toEqual(['Source', 'Check']);
   await tabs.evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
   await settle(page);
@@ -79,7 +79,7 @@ test('two picked: the tall node\'s tab scrolls in the panel, and every button in
   expect(r.buttons.filter((b) => !b.hit)).toEqual([]);
   expect(r.panelScrolled).toBe(0);
   // A button reached by the scroll does its work: the cut route is gone.
-  await page.locator('#inspector sherpa-tabs [data-current] sherpa-button[data-label^="Cut route"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await page.locator('#inspector sherpa-tabs:not(.content-tabs) [data-current] sherpa-button[data-label^="Cut route"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
   await expect(page.locator('#cv svg.graph-routes path[data-to="c/b"]')).toHaveCount(0);
 });
