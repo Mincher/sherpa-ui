@@ -42,6 +42,8 @@
   grid-area: 1 / 1;
   align-self: start;
   margin: var(--_float);
+  /* Narrower, so a panel's tabs on either side do not cover it. */
+  margin-inline: calc(var(--_float) + var(--sherpa-display-mode-size-2xl, 32px));
   position: relative;
   z-index: var(--sherpa-layer-content, 1);
   display: flex;

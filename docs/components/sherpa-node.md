@@ -73,7 +73,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `foot`, `footer`, `grip`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
+`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `foot`, `footer`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -84,11 +84,6 @@ What each class's base rule reads:
 | `--sherpa-style-border-width` | `.root` | `border-width` |
 | `--sherpa-display-mode-border-rounding-base` | `.root` | `border-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
-| `--sherpa-theme-padding-md` | `.grip` | `margin-block-start` |
-| `--sherpa-display-mode-size-sm` | `.grip` | `inline-size` |
-| `--sherpa-display-mode-size-sm` | `.grip` | `block-size` |
-| `--sherpa-theme-padding-sm` | `.grip` | `margin-inline-start` |
-| `--sherpa-style-content-secondary` | `.grip` | `color` |
 | `--sherpa-display-mode-size-sm` | `.resize` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.resize` | `block-size` |
 | `--sherpa-style-content-secondary` | `.resize` | `color` |
