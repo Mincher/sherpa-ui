@@ -157,9 +157,10 @@
   --sherpa-theme-content-line-height-xs: var(--sherpa-display-mode-fonts-scale-lg);
 }
 
-/* NOT LARGE: the Settings and Pin buttons and the search field keep the normal
+/* NOT LARGE: the Settings and Pin buttons, the search field and the shut
+   rail's child menu (.flyout) keep the normal
    sizes (the tokens put back to their default values; density does not reach them). */
-:host([data-large]) :is(.settings, .pin, .search) {
+:host([data-large]) :is(.settings, .pin, .search, .flyout) {
   --sherpa-display-mode-size-4xs: 2px;
   --sherpa-display-mode-size-3xs: 4px;
   --sherpa-display-mode-size-2xs: 8px;

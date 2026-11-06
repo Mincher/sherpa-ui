@@ -9,7 +9,7 @@
   "components.js": {
     "files": 155,
     "brotli": {
-      "js": 283085,
+      "js": 283087,
       "fetched": 8591
     }
   },
@@ -289,7 +289,7 @@
   "components/sherpa-nav/sherpa-nav.js": {
     "files": 42,
     "brotli": {
-      "js": 76897,
+      "js": 76899,
       "fetched": 0
     }
   },
@@ -534,7 +534,7 @@
   "index.js": {
     "files": 257,
     "brotli": {
-      "js": 453101,
+      "js": 453103,
       "fetched": 8591
     }
   }
