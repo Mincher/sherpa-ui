@@ -159,8 +159,8 @@
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
   position: fixed;
-  /* From the top of the panel areas (below the header), as the Nodes tab is from its area's. */
-  top: calc(var(--_tab-top, 0px) + var(--sherpa-layout-grid-padding, 16px) + var(--_tab-index, 0) * 11rem);
+  /* From the top corner of the panel areas (below the header), not of the window. */
+  top: calc(var(--_tab-top, 0px) + var(--_tab-index, 0) * 11rem);
   right: 0;
   pointer-events: auto;
   z-index: var(--sherpa-layer-panels, 101);
@@ -180,7 +180,7 @@
   border-left: 0;
   border-radius: 0 var(--sherpa-border-rounding-top-right, 4px) var(--sherpa-border-rounding-bottom-right, 4px) 0;
 }
-:host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
+:host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--_tab-index, 0) * 11rem); }
 /* The snapped edge: a light grey 1px line down the side the tabs stand on, running a little past the tab at its start and end
    and fading to transparent away from it, so a group of tabs reads as one run. */
 :host([data-minimised][open]) .tab::before {
