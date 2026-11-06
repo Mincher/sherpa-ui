@@ -605,7 +605,9 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
     : undefined;
   if (!open) return undefined;
   const own = [...new Set([row.value].flat().filter((v) => v != null && v !== '').map(String))];
-  return [...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
+  // A Store row with none says so, drawn the same every time: a select would show its first store. TODO 824
+  const none = row.control === 'store' && !own.length ? [{ value: '', label: 'Pick a store' }] : [];
+  return [...none, ...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
 }
 
 /** A portal's Name list: the graph's names, its own among them; New name…, whose value is the next free `Portal N`; and
