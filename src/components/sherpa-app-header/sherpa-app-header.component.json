@@ -429,6 +429,16 @@
     },
     {
       "$type": "prop",
+      "name": "data-divider",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "a thin line under the header : a view with a canvas content area turns it on"
+    },
+    {
+      "$type": "prop",
       "name": "data-favourite",
       "type": "boolean",
       "observed": true,
@@ -683,6 +693,11 @@
       "$type": "state",
       "name": "loading",
       "selector": ":host([data-loading])"
+    },
+    {
+      "$type": "state",
+      "name": "divider",
+      "selector": ":host([data-divider])"
     },
     {
       "$type": "state",

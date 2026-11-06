@@ -85,7 +85,7 @@ import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { isSource, pathRead } from '../data/node-paths.js';
-import { lightOf, trueOf, simulation as beginSimulation, stepSimulation, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
+import { lightOf, trueOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
 import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
@@ -3006,10 +3006,10 @@ export function bindWorkflow(
     if (mod && (event.key.toLowerCase() === 'z' || event.key.toLowerCase() === 'y')) {
       if (event.key.toLowerCase() === 'y' || event.shiftKey) redo();
       else undo();
-    } else if (mod && event.key === 'Enter' && toolbar?.hasAttribute('data-can-simulate')) {
-      // Simulate: Ctrl or Cmd and Enter; with Shift, Fetch. TODO 836
+    } else if (mod && event.key === 'Enter' && toolbar?.hasAttribute('data-can-play')) {
+      // Play: Ctrl or Cmd and Enter; with Shift, Fetch. TODO 836
       if (event.shiftKey) void fetchRows('keys');
-      else void simulate('keys');
+      else play('keys');
     } else if (event.key === 'Escape') {
       const routes = pickedRoutes(canvas).length > 0;
       if (routes) markRoutes(canvas, []);
@@ -3065,7 +3065,9 @@ export function bindWorkflow(
     else if (action === 'arrange') arrangePicked(canvas);
     else if (action === 'unfurl') unfurlGraph(canvas);
     else if (action === 'fetch') void fetchRows('toolbar');
-    else if (action === 'simulate') void simulate('toolbar');
+    else if (action === 'play') play('toolbar');
+    else if (action === 'pause') pause();
+    else if (action === 'stop') stop();
     else if (action === 'frame') framePicked();
   };
   toolbar?.addEventListener('toolbar-select', onTool);
@@ -3175,6 +3177,8 @@ export function bindWorkflow(
   // — The running look: the node a task is on wears the step's tab on its top edge and the active border, and says how long
   //   the task has run, which the task's own history gives. One look for every kind of task. TODO 845
   let lit: { kind: string; ids: readonly string[] } | undefined;
+  /** The simulation in hand: its play, pause and stop. TODO (Will, 2026-11-06) */
+  let control: SimulationControl | undefined;
   let tick: ReturnType<typeof setInterval> | undefined;
   /** The task of this graph that is queued or running. */
   const activeTask = (): Task | undefined => queue.list().find((t) => t.key === taskKey && t.state !== 'ok' && t.state !== 'failed');
@@ -3182,10 +3186,11 @@ export function bindWorkflow(
     if (!lit) return;
     const started = activeTask()?.history.find((h) => h.state === 'running')?.at ?? Date.now();
     const seconds = Math.max(1, Math.ceil((Date.now() - started) / 1000));
+    const held = control?.paused === true;
     for (const id of lit.ids) {
       const el = drawnOn.get(canvas)?.nodes.get(id);
       el?.setAttribute('data-step', 'running');
-      if (el) put(el, 'data-caption', `${lit.kind === 'fetch' ? 'Fetching' : 'Simulating'}… ${seconds}s`);
+      if (el) put(el, 'data-caption', held ? 'Paused here' : `${lit.kind === 'fetch' ? 'Fetching' : 'Simulating'}… ${seconds}s`);
     }
   };
   /** Take the look off the node it was on, and put it on these. */
@@ -3232,21 +3237,35 @@ export function bindWorkflow(
     }
   };
   /** Run the graph on the rows kept, and show it: node by node, the page let draw between them when one takes a while. */
-  const runSimulation = async (): Promise<{ nodes: number; faults: number }> => {
+  const runSimulation = async (): Promise<{ nodes: number; faults: number; stopped: boolean }> => {
     const { rows, partial, any } = await cachedRows();
     const run = beginSimulation(graph, rows, { partial });
     const times: Record<string, number> = {};
     let result: Simulated;
+    const mine = new SimulationControl();
+    control = mine;
     try {
-      result = await stepSimulation(run, { onStep: (id) => runningOn('simulate', [id]), onDone: (id, ms) => { times[id] = ms; }, pause: () => new Promise<void>((done) => setTimeout(done, 0)) });
+      result = await stepSimulation(run, {
+        control: mine,
+        onStep: (id) => runningOn('simulate', [id]),
+        onDone: (id, ms) => { times[id] = ms; },
+        // Paused: the node it stopped at says so, and the toolbar's Play and Pause swap.
+        onPause: (held) => {
+          toolbar?.toggleAttribute('data-paused', held);
+          paintRunning();
+        },
+        pause: () => new Promise<void>((done) => setTimeout(done, 0)),
+      });
     } finally {
+      control = undefined;
+      toolbar?.removeAttribute('data-paused');
       runningOff();
     }
     simulation = { result, stale: false, sig: dataSig(), times };
     lightNodes();
     toolbar?.toggleAttribute('data-cached', any);
     showData();
-    return { nodes: Object.keys(result.nodes).length, faults: result.faults.length };
+    return { nodes: Object.keys(result.nodes).length, faults: result.faults.length, stopped: mine.stopped };
   };
   // The tasks: one queue (the app's, or this editor's own), one key for this graph, so a second press is blocked. TODO 843
   const queue = facts.tasks ?? new TaskQueue();
@@ -3272,9 +3291,28 @@ export function bindWorkflow(
     if (accepted) await ended(task.id);
   };
   const simulate = (by = 'host'): Promise<void> => request('simulate', by, async () => {
-    const { nodes, faults } = await runSimulation();
-    return { words: `Simulated ${nodes} nodes${faults ? `, ${faults} to look at` : ''}.` };
+    const { nodes, faults, stopped } = await runSimulation();
+    return { words: `${stopped ? 'Stopped after' : 'Simulated'} ${nodes} nodes${faults ? `, ${faults} to look at` : ''}.` };
   });
+  /** Play: start a simulation, or go on from the node a paused one waits at. */
+  const play = (by: string): void => {
+    if (control?.paused) {
+      control.play();
+      toolbar?.removeAttribute('data-paused');
+    } else void simulate(by);
+  };
+  /** Pause: the node in hand finishes, and nothing goes on until Play. */
+  const pause = (): void => {
+    if (!control || control.paused) return;
+    control.pause();
+    toolbar?.setAttribute('data-paused', '');
+    paintRunning();
+  };
+  /** Stop: the run ends, the nodes done keep their lights. */
+  const stop = (): void => {
+    control?.stop();
+    toolbar?.removeAttribute('data-paused');
+  };
   const fetchRows = (by = 'host'): Promise<void> => request('fetch', by, async ({ signal, state }) => {
     const stores = storesOf();
     const said: string[] = [];
@@ -3321,7 +3359,7 @@ export function bindWorkflow(
   // Fetch and Simulate wait for a path from a Source to an Output; inside a Custom Node's definition they wait for its use. TODO 836
   const tellPath = (): void => {
     const read = path.length ? { ok: false, why: 'Open the graph that uses this Custom Node: Fetch and Simulate run on a whole graph' } : pathRead(graph, { inner: innerGraph });
-    for (const flag of ['data-can-fetch', 'data-can-simulate']) toolbar?.toggleAttribute(flag, read.ok);
+    for (const flag of ['data-can-fetch', 'data-can-play']) toolbar?.toggleAttribute(flag, read.ok);
     if (read.ok || !read.why) toolbar?.removeAttribute('data-path-why');
     else toolbar?.setAttribute('data-path-why', read.why);
   };
@@ -3435,7 +3473,7 @@ export function bindWorkflow(
       toolbar?.removeAttribute('data-tie');
       toolbar?.removeAttribute('data-can-group');
       toolbar?.removeAttribute('data-can-unfurl');
-      for (const flag of ['data-can-fetch', 'data-can-simulate', 'data-path-why', 'data-cached', 'data-fetching', 'data-simulating']) toolbar?.removeAttribute(flag);
+      for (const flag of ['data-can-fetch', 'data-can-play', 'data-path-why', 'data-cached', 'data-fetching', 'data-simulating', 'data-paused']) toolbar?.removeAttribute(flag);
       dialogSave?.removeEventListener('click', saveAs);
       dialogCancel?.removeEventListener('click', onCancel);
       dialogField('label')?.removeEventListener('keydown', onSaveKey);

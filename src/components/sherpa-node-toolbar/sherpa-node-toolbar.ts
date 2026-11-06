@@ -1,5 +1,5 @@
 /**
- * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes, as icon buttons in one group.
+ * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, as icon buttons in one group of three sections.
  *
  * It does nothing itself. A press is `toolbar-select`; the editor that owns the history hears Undo
  * and Redo and says, in `data-can-undo` and `data-can-redo`, when each can be pressed. Save is a
@@ -23,11 +23,12 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-arrange': { type: 'boolean', kind: 'behaviour' },
     'data-can-unfurl': { type: 'boolean', kind: 'behaviour' },
     'data-can-fetch': { type: 'boolean', kind: 'behaviour' },
-    'data-can-simulate': { type: 'boolean', kind: 'behaviour' },
+    'data-can-play': { type: 'boolean', kind: 'behaviour' },
     'data-path-why': { type: 'string', kind: 'behaviour' },
     'data-cached': { type: 'boolean', kind: 'behaviour' },
     'data-fetching': { type: 'boolean', kind: 'behaviour' },
     'data-simulating': { type: 'boolean', kind: 'behaviour' },
+    'data-paused': { type: 'boolean', kind: 'behaviour' },
     'data-can-frame': { type: 'boolean', kind: 'behaviour' },
     'data-tie': { type: 'boolean', kind: 'behaviour' },
     'data-picked-routes': { type: 'number', kind: 'behaviour' },
@@ -44,28 +45,36 @@ export class SherpaNodeToolbar extends SherpaElement {
     this.#sync();
   }
 
-  /** Fetch's and Simulate's own tips, kept while a reason stands in their place. */
+  /** Fetch's and Play's own tips, kept while a reason stands in their place. */
   #tips: Record<string, string> = {};
 
   /** Each tool can be pressed when its flag is set. */
   #sync(): void {
-    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'fetch', 'simulate', 'frame']) {
+    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'fetch', 'play', 'frame']) {
       this.$(`.${action}`)?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${action}`));
     }
-    // Fetch and Simulate say why they are off: the graph has no path from a Source to an Output. TODO 836
+    const running = this.hasAttribute('data-simulating');
+    const paused = this.hasAttribute('data-paused');
+    const waiting = this.hasAttribute('data-fetching') || running;
+    // Fetch and Play say why they are off: the graph has no path from a Source to an Output. TODO 836
     const why = this.getAttribute('data-path-why');
-    for (const name of ['fetch', 'simulate'] as const) {
+    for (const name of ['fetch', 'play'] as const) {
       const tool = this.$(`.${name}`);
       const own = (this.#tips[name] ??= tool?.getAttribute('data-tip') ?? '');
-      // A fetch that runs says how to stop it; rows cached say Refetch; else the tool's own words.
-      // One task at a time for the graph: both tools wait while either runs, and the busy one says so.
-      const busy = this.hasAttribute(name === 'fetch' ? 'data-fetching' : 'data-simulating');
-      const waiting = this.hasAttribute('data-fetching') || this.hasAttribute('data-simulating');
-      const now = busy ? `${name === 'fetch' ? 'Fetching' : 'Simulating'}: wait for it to end` : name === 'fetch' && this.hasAttribute('data-cached') ? 'Refetch: read every Source on a path again' : own;
-      tool?.setAttribute('data-tip', !this.hasAttribute(`data-can-${name}`) && why ? why : now);
-      tool?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${name}`) || waiting);
+      // A fetch that runs says how to stop it; rows cached say Refetch; a paused run says Play goes on; else the tool's own words.
+      // One task at a time for the graph: Fetch waits while either runs, Play while a fetch does or a run is not paused.
+      const busy = name === 'fetch' ? this.hasAttribute('data-fetching') : running && !paused;
+      const off = name === 'fetch' ? waiting : this.hasAttribute('data-fetching') || (running && !paused);
+      const now = busy ? `${name === 'fetch' ? 'Fetching' : 'Simulating'}: wait for it to end`
+        : name === 'play' && paused ? 'Play: go on from this node'
+          : name === 'fetch' && this.hasAttribute('data-cached') ? 'Refetch: read every Source on a path again' : own;
+      tool?.setAttribute('data-tip', !this.hasAttribute('data-can-play') && why ? why : now);
+      tool?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${name}`) || off);
       tool?.setAttribute('aria-busy', String(busy));
     }
+    // Pause while it runs; Stop while it runs or is paused.
+    this.$('.pause')?.toggleAttribute('disabled', !running || paused);
+    this.$('.stop')?.toggleAttribute('disabled', !running);
     const tie = this.$('.tie');
     tie?.setAttribute('aria-pressed', String(this.hasAttribute('data-tie')));
     // The count of connectors picked, where the Tie tool says what T will tie.
@@ -77,8 +86,10 @@ export class SherpaNodeToolbar extends SherpaElement {
 
   /** A tool was pressed: say which, if it can be. */
   #onPress = (event: Event): void => {
-    const action = (event.target as HTMLElement).closest<HTMLElement>('sherpa-button')?.dataset['action'];
-    if (action && this.hasAttribute(`data-can-${action}`)) this.emit('toolbar-select', { action });
+    const button = (event.target as HTMLElement).closest<HTMLElement>('sherpa-button');
+    const action = button?.dataset['action'];
+    // Pause and Stop have no flag of their own: they can be pressed while their button is on.
+    if (action && button && !button.hasAttribute('disabled')) this.emit('toolbar-select', { action });
   };
 }
 

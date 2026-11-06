@@ -80,7 +80,7 @@ test('nothing is read until Fetch is pressed: Simulate says "not fetched yet"; F
   await start(page);
   expect(await loads(page)).toBe(0);
   expect(await sim(page)).toBeUndefined();
-  await press(page, 'simulate');
+  await press(page, 'play');
   await expect.poll(() => sim(page)).toBeDefined();
   let s = (await sim(page))!;
   expect(out(s, 's', 's/rows').note).toBe('Not fetched yet');
@@ -119,7 +119,7 @@ test('an edit and Simulate read no more: the last simulation is stale after the 
   await settle(page);
   expect((await sim(page))!.stale).toBe(true);
   expect(into((await sim(page))!, 'o', 'o').rows).toEqual(ACTIVE);
-  await press(page, 'simulate');
+  await press(page, 'play');
   await expect.poll(async () => (await sim(page))?.stale).toBe(false);
   expect(into((await sim(page))!, 'o', 'o').rows).toEqual(ROWS.filter((r) => r.status !== 'active'));
   expect(await loads(page)).toBe(1);
@@ -134,7 +134,7 @@ test('Fetch is a task: both tools wait while it runs and its button says busy; a
   await expect(page.locator('sherpa-node-toolbar')).toHaveAttribute('data-fetching', '');
   await expect(tool(page, 'fetch')).toHaveAttribute('aria-busy', 'true');
   await expect(tool(page, 'fetch')).toHaveAttribute('data-tip', 'Fetching: wait for it to end');
-  for (const name of ['fetch', 'simulate']) await expect(tool(page, name)).toHaveAttribute('disabled', '');
+  for (const name of ['fetch', 'play']) await expect(tool(page, name)).toHaveAttribute('disabled', '');
   // The keys still ask, and the queue says what is in the way, for each.
   await page.locator('#cv').evaluate((cv) => (cv.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
   await page.keyboard.press('ControlOrMeta+Shift+Enter');

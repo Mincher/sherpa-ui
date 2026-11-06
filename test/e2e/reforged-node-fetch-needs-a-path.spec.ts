@@ -51,7 +51,7 @@ const sockets = (page: Page) => page.evaluate(() => {
 
 test('with no path both tools are inactive and say which part is missing: no Source, no Output, or no path', async ({ page }) => {
   await start(page, [OUTPUT]);
-  for (const name of ['fetch', 'simulate']) {
+  for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).toHaveAttribute('disabled', '');
     expect(await tip(page, name)).toBe('Add a Source: Fetch and Simulate read its rows');
   }
@@ -60,7 +60,7 @@ test('with no path both tools are inactive and say which part is missing: no Sou
   expect(await tip(page, 'fetch')).toBe('Add an Output: Fetch and Simulate need a path to one');
   await page.evaluate(() => document.getElementById('root')!.replaceChildren());
   await start(page, [SOURCE, OUTPUT]);
-  for (const name of ['fetch', 'simulate']) {
+  for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).toHaveAttribute('disabled', '');
     expect(await tip(page, name)).toBe(NO_PATH);
   }
@@ -78,12 +78,12 @@ test('a route drawn by the pointer from the Source to the Output turns both on, 
   await page.mouse.up();
   await settle(page);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.workflow().routes.length)).toBe(1);
-  for (const name of ['fetch', 'simulate']) {
+  for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).not.toHaveAttribute('disabled', '');
     expect(await tip(page, name)).not.toContain('No path');
   }
   expect(await tip(page, 'fetch')).toMatch(/^Fetch the rows/);
-  expect(await tip(page, 'simulate')).toMatch(/^Simulate:/);
+  expect(await tip(page, 'play')).toMatch(/^Play:/);
   await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
   await settle(page);
   await expect(tool(page, 'fetch')).toHaveAttribute('disabled', '');
@@ -94,12 +94,12 @@ test('with a path, a press and Enter on the focused tool say fetch and simulate'
   await start(page, [SOURCE, OUTPUT], [{ from: 'Source/rows', to: 'Output' }]);
   await expect(tool(page, 'fetch')).not.toHaveAttribute('disabled', '');
   await tool(page, 'fetch').click();
-  await tool(page, 'simulate').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).focus());
+  await tool(page, 'play').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).focus());
   await page.keyboard.press('Enter');
-  expect(await heard(page)).toEqual(['fetch', 'simulate']);
+  expect(await heard(page)).toEqual(['fetch', 'play']);
 });
 
 test('a preset graph reads only, so it can fetch and simulate', async ({ page }) => {
   await start(page, [SOURCE, OUTPUT], [{ from: 'Source/rows', to: 'Output' }], true);
-  for (const name of ['fetch', 'simulate']) await expect(tool(page, name)).not.toHaveAttribute('disabled', '');
+  for (const name of ['fetch', 'play']) await expect(tool(page, name)).not.toHaveAttribute('disabled', '');
 });

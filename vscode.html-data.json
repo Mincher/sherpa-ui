@@ -62,6 +62,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-divider",
+          "description": "a thin line under the header : a view with a canvas content area turns it on",
+          "valueSet": "v"
+        },
+        {
           "name": "data-favourite",
           "description": "the ★ is lit — the value, IN",
           "valueSet": "v"
@@ -2796,7 +2801,7 @@
     },
     {
       "name": "sherpa-node-toolbar",
-      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
+      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
       "attributes": [
         {
           "name": "data-cached",
@@ -2824,6 +2829,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-can-play",
+          "description": "Play can be pressed: the same; written by the editor",
+          "valueSet": "v"
+        },
+        {
           "name": "data-can-redo",
           "description": "Redo can be pressed",
           "valueSet": "v"
@@ -2831,11 +2841,6 @@
         {
           "name": "data-can-save",
           "description": "Save can be pressed (default off: Save is a placeholder until a host wants it)",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-can-simulate",
-          "description": "Simulate can be pressed: the same; written by the editor",
           "valueSet": "v"
         },
         {
@@ -2860,7 +2865,12 @@
         },
         {
           "name": "data-path-why",
-          "description": "Why Fetch and Simulate cannot be pressed, in words: their tip says it; written by the editor"
+          "description": "Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor"
+        },
+        {
+          "name": "data-paused",
+          "description": "A simulation is paused at its node: Play goes on, Pause is off; written by the editor",
+          "valueSet": "v"
         },
         {
           "name": "data-picked-routes",
@@ -2868,7 +2878,7 @@
         },
         {
           "name": "data-simulating",
-          "description": "A simulation is queued or running: the same for Simulate; written by the editor",
+          "description": "A simulation is queued or running: Play waits, Pause and Stop can be pressed; written by the editor",
           "valueSet": "v"
         },
         {

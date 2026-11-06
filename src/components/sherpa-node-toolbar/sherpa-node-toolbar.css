@@ -9,6 +9,7 @@
 
 .tools {
   display: inline-flex;
+  align-items: center;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   box-shadow:
     var(--sherpa-elevation-offset-x, 0)
@@ -16,4 +17,13 @@
     var(--sherpa-elevation-blur, 2px)
     var(--sherpa-elevation-spread, 0)
     var(--sherpa-style-surface-shadow, #35353d4c);
+}
+
+/* A small divider between the sections: a line the height of an icon, drawn in the Style's border. */
+.divider {
+  flex: none;
+  align-self: center;
+  inline-size: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  background: var(--sherpa-style-border-base, #b3b3c3);
 }

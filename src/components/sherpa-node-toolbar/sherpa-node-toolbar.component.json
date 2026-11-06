@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-toolbar",
-  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
+  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
   "element": {
     "$type": "element",
     "tag": "span",
@@ -28,14 +28,59 @@
       "children": [
         {
           "el": "sherpa-button",
-          "class": "save",
+          "class": "fetch",
           "attrs": {
             "data-type": "icon",
-            "data-icon-start": "floppy-disk",
-            "data-action": "save",
-            "aria-label": "Save",
-            "data-tip": "Save",
+            "data-icon-start": "cloud",
+            "data-action": "fetch",
+            "aria-label": "Fetch",
+            "data-tip": "Fetch the rows of every Source on a path to an Output, once; Play then runs on them",
             "disabled": ""
+          }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "play",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "play",
+            "data-action": "play",
+            "aria-label": "Play",
+            "data-tip": "Play: what each node sends, on the rows fetched",
+            "disabled": ""
+          }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "pause",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "pause",
+            "data-action": "pause",
+            "aria-label": "Pause",
+            "data-tip": "Pause at this node: the node's own requests finish, and nothing goes on",
+            "disabled": ""
+          }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "stop",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "stop",
+            "data-action": "stop",
+            "aria-label": "Stop",
+            "data-tip": "Stop the simulation",
+            "disabled": ""
+          }
+        },
+        {
+          "el": "span",
+          "class": "divider",
+          "part": "divider",
+          "attrs": {
+            "role": "separator",
+            "aria-orientation": "vertical"
           }
         },
         {
@@ -60,6 +105,27 @@
             "aria-label": "Redo",
             "data-tip": "Redo (Shift+Ctrl+Z)",
             "disabled": ""
+          }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "save",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "floppy-disk",
+            "data-action": "save",
+            "aria-label": "Save",
+            "data-tip": "Save",
+            "disabled": ""
+          }
+        },
+        {
+          "el": "span",
+          "class": "divider",
+          "part": "divider",
+          "attrs": {
+            "role": "separator",
+            "aria-orientation": "vertical"
           }
         },
         {
@@ -108,30 +174,6 @@
             "data-action": "unfurl",
             "aria-label": "Unfurl graph",
             "data-tip": "Unfurl graph: every node round the most connected one, fewer lines crossing",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "fetch",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "cloud",
-            "data-action": "fetch",
-            "aria-label": "Fetch",
-            "data-tip": "Fetch the rows of every Source on a path to an Output, once; Simulate then runs on them",
-            "disabled": ""
-          }
-        },
-        {
-          "el": "sherpa-button",
-          "class": "simulate",
-          "attrs": {
-            "data-type": "icon",
-            "data-icon-start": "play",
-            "data-action": "simulate",
-            "aria-label": "Simulate",
-            "data-tip": "Simulate: what each node sends, on the rows fetched",
             "disabled": ""
           }
         },
@@ -198,6 +240,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-can-play",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Play can be pressed: the same; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-can-redo",
       "type": "boolean",
       "observed": true,
@@ -213,15 +264,6 @@
       "declared": true,
       "kind": "behaviour",
       "description": "Save can be pressed (default off: Save is a placeholder until a host wants it)"
-    },
-    {
-      "$type": "prop",
-      "name": "data-can-simulate",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "Simulate can be pressed: the same; written by the editor"
     },
     {
       "$type": "prop",
@@ -266,7 +308,16 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "Why Fetch and Simulate cannot be pressed, in words: their tip says it; written by the editor"
+      "description": "Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-paused",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "A simulation is paused at its node: Play goes on, Pause is off; written by the editor"
     },
     {
       "$type": "prop",
@@ -284,7 +335,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "A simulation is queued or running: the same for Simulate; written by the editor"
+      "description": "A simulation is queued or running: Play waits, Pause and Stop can be pressed; written by the editor"
     },
     {
       "$type": "prop",
@@ -297,7 +348,7 @@
     }
   ],
   "populate": {
-    "shape": "{ cached?, canArrange?, canFetch?, canFrame?, canGroup?, canRedo?, canSave?, canSimulate?, canTie?, canUndo?, canUnfurl?, fetching?, pathWhy?, pickedRoutes?, simulating?, tie? }",
+    "shape": "{ cached?, canArrange?, canFetch?, canFrame?, canGroup?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, fetching?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [
@@ -314,6 +365,9 @@
   ],
   "tokens": {
     "tools.border-radius": "{sherpa.display-mode-border-rounding-base}",
-    "tools.box-shadow": "{sherpa.elevation-offset-x}"
+    "tools.box-shadow": "{sherpa.elevation-offset-x}",
+    "divider.inline-size": "{sherpa.display-mode-border-width-sm}",
+    "divider.block-size": "{sherpa.display-mode-size-sm}",
+    "divider.background": "{sherpa.style-border-base}"
   }
 }

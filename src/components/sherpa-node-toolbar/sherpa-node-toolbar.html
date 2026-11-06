@@ -1,6 +1,6 @@
 <!--
   sherpa-node-toolbar — a graph editor's tools, one object of icon buttons: Save, Undo and
-  Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
+  Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
   Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step
 
   Public API:
@@ -12,11 +12,12 @@
     data-can-arrange  Arrange nodes can be pressed: two or more nodes are picked; written by the editor
     data-can-unfurl  Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor
     data-can-fetch  Fetch can be pressed: a path joins a Source to an Output; written by the editor
-    data-can-simulate  Simulate can be pressed: the same; written by the editor
+    data-can-play   Play can be pressed: the same; written by the editor
     data-cached     Rows are cached: Fetch reads Refetch; written by the editor
     data-fetching   A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor
-    data-simulating A simulation is queued or running: the same for Simulate; written by the editor
-    data-path-why   Why Fetch and Simulate cannot be pressed, in words: their tip says it; written by the editor
+    data-simulating A simulation is queued or running: Play waits, Pause and Stop can be pressed; written by the editor
+    data-paused     A simulation is paused at its node: Play goes on, Pause is off; written by the editor
+    data-path-why   Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor
     data-can-frame  Frame nodes can be pressed: two or more nodes are picked; written by the editor
     data-tie        The Zip tie tool is on; written by the editor, shown as pressed
     data-picked-routes  How many connectors are picked; written by the editor, said in the Tie tool's tip
@@ -25,16 +26,28 @@
     (none)
 
   Fires:
-    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' | 'unfurl' | 'fetch' | 'simulate' | 'frame' }
+    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' | 'unfurl' | 'fetch' | 'play' | 'pause' | 'stop' | 'frame' }
 -->
 <template id="default">
+  <!-- Three sections, a small divider between each: the data (Fetch, then Play, Pause, Stop), the history (Undo, Redo, Save),
+       and the graph's shape (Zip tie, Save as Custom Node, Arrange, Unfurl, Frame). -->
   <span class="tools sherpa-group" part="tools" role="toolbar" aria-label="Editor">
-    <sherpa-button class="save" data-type="icon" data-icon-start="floppy-disk" data-action="save"
-                   aria-label="Save" data-tip="Save" disabled></sherpa-button>
+    <sherpa-button class="fetch" data-type="icon" data-icon-start="cloud" data-action="fetch"
+                   aria-label="Fetch" data-tip="Fetch the rows of every Source on a path to an Output, once; Play then runs on them" disabled></sherpa-button>
+    <sherpa-button class="play" data-type="icon" data-icon-start="play" data-action="play"
+                   aria-label="Play" data-tip="Play: what each node sends, on the rows fetched" disabled></sherpa-button>
+    <sherpa-button class="pause" data-type="icon" data-icon-start="pause" data-action="pause"
+                   aria-label="Pause" data-tip="Pause at this node: the node's own requests finish, and nothing goes on" disabled></sherpa-button>
+    <sherpa-button class="stop" data-type="icon" data-icon-start="stop" data-action="stop"
+                   aria-label="Stop" data-tip="Stop the simulation" disabled></sherpa-button>
+    <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
     <sherpa-button class="undo" data-type="icon" data-icon-start="arrow-rotate-left" data-action="undo"
                    aria-label="Undo" data-tip="Undo (Ctrl+Z)" disabled></sherpa-button>
     <sherpa-button class="redo" data-type="icon" data-icon-start="arrow-rotate-right" data-action="redo"
                    aria-label="Redo" data-tip="Redo (Shift+Ctrl+Z)" disabled></sherpa-button>
+    <sherpa-button class="save" data-type="icon" data-icon-start="floppy-disk" data-action="save"
+                   aria-label="Save" data-tip="Save" disabled></sherpa-button>
+    <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
     <sherpa-button class="tie" data-type="icon" data-icon-start="zip-tie" data-action="tie"
                    aria-label="Zip tie" data-tip="Zip tie: drag across connectors (T on picked nodes)" aria-pressed="false" disabled></sherpa-button>
     <sherpa-button class="group" data-type="icon" data-icon-start="group" data-action="group"
@@ -43,10 +56,6 @@
                    aria-label="Arrange nodes" data-tip="Arrange nodes on a grid: pick two or more" disabled></sherpa-button>
     <sherpa-button class="unfurl" data-type="icon" data-icon-start="unfurl" data-action="unfurl"
                    aria-label="Unfurl graph" data-tip="Unfurl graph: every node round the most connected one, fewer lines crossing" disabled></sherpa-button>
-    <sherpa-button class="fetch" data-type="icon" data-icon-start="cloud" data-action="fetch"
-                   aria-label="Fetch" data-tip="Fetch the rows of every Source on a path to an Output, once; Simulate then runs on them" disabled></sherpa-button>
-    <sherpa-button class="simulate" data-type="icon" data-icon-start="play" data-action="simulate"
-                   aria-label="Simulate" data-tip="Simulate: what each node sends, on the rows fetched" disabled></sherpa-button>
     <sherpa-button class="frame" data-type="icon" data-icon-start="frame" data-action="frame"
                    aria-label="Frame nodes" data-tip="Frame nodes (F): one column, in a frame; pick two or more" disabled></sherpa-button>
   </span>

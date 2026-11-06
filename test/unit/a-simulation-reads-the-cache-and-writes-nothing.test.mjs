@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { lightOf, trueOf, simulateGraph, simulation, stepSimulation } = await import(new URL('node-simulate.js', core));
+const { lightOf, trueOf, SimulationControl, simulateGraph, simulation, stepSimulation } = await import(new URL('node-simulate.js', core));
 const { workflowGraph } = await import(new URL('workflow.js', core));
 const { filterRows } = await import(new URL('store.js', core));
 
@@ -242,4 +242,45 @@ test('the rows true: a fork counts its True rows, a node with no True has none, 
   assert.equal(trueOf(sim.nodes.s), undefined);
   assert.equal(trueOf(simulateGraph(chain('status', 'eq', 'no-such-status'), { customers: rows }).nodes.c), 0);
   assert.equal(trueOf(simulateGraph(chain('status', 'eq', 'active'), {}).nodes.c), undefined);
+});
+
+test('Pause lets the node in hand finish and goes no further; Play goes on from the next node; Stop ends the run, keeping the nodes done', async () => {
+  const rows = rowsOf(20);
+  const ids = () => simulation(chain('status', 'eq', 'active'), { customers: rows }).ids;
+  assert.equal(ids().length, 4);
+  // Paused after the first node: the second waits.
+  const control = new SimulationControl();
+  const ran = [];
+  const held = [];
+  const done = stepSimulation(simulation(chain('status', 'eq', 'active'), { customers: rows }), {
+    control,
+    onStep: (id) => ran.push(id),
+    onDone: () => { if (ran.length === 1) control.pause(); },
+    onPause: (paused, at) => held.push([paused, at]),
+  });
+  await new Promise((r) => setTimeout(r, 20));
+  assert.deepEqual(ran, ['s'], 'one node ran, and the run waits');
+  assert.equal(control.paused, true);
+  assert.deepEqual(held, [[true, 'f']]);
+  // Play: it goes on from the node it waits at, and finishes.
+  control.play();
+  const result = await done;
+  assert.deepEqual(ran, ['s', 'f', 'c', 'o']);
+  assert.equal(Object.keys(result.nodes).length, 4);
+  assert.deepEqual(held, [[true, 'f'], [false, 'f']]);
+
+  // Stop, while paused: the run ends there, with the nodes it had done.
+  const stopper = new SimulationControl();
+  const seen = [];
+  const ended = stepSimulation(simulation(chain('status', 'eq', 'active'), { customers: rows }), {
+    control: stopper,
+    onStep: (id) => seen.push(id),
+    onDone: () => { if (seen.length === 2) stopper.pause(); },
+  });
+  await new Promise((r) => setTimeout(r, 20));
+  stopper.stop();
+  const partial = await ended;
+  assert.deepEqual(seen, ['s', 'f']);
+  assert.deepEqual(Object.keys(partial.nodes).sort(), ['f', 's']);
+  assert.equal(stopper.stopped, true);
 });

@@ -14,6 +14,13 @@
  * - simulateGraph — The graph run on the cached rows: what each node hears and says, a row list on each socket.
  * - SimulationRun — A simulation in steps: the nodes it runs, one step each, and what has run.
  * - SteppingOptions — How a stepped simulation lets its host in: before each node, and a pause when one is due.
+ * - SimulationControl — A simulation's play, pause and stop, held by its host.
+ * - .paused — Is it held between nodes?
+ * - .stopped — Has it ended?
+ * - .pause — Hold before the next node; the one in hand finishes.
+ * - .play — Go on from the node it waits at.
+ * - .stop — End the run, keeping the nodes done.
+ * - .turn — Before a node: waits while paused, and says whether to go on.
  * - stepSimulation — Step a simulation node by node, giving the host a turn when one is due.
  * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87", and the time it took.
  * - trueOf — How many rows reach a node's True after a simulation: none where it has no True or has not run.
@@ -105,8 +112,52 @@ export interface SteppingOptions {
   /** A node has run, and took this long (ms). */
   onDone?(id: string, ms: number): void;
   pause?(): Promise<void>;
+  /** Play, pause and stop: asked before each node. */
+  control?: SimulationControl;
+  /** The run is paused or goes on: the node it waits at. */
+  onPause?(paused: boolean, at: string | undefined): void;
   now?(): number;
   every?: number;
+}
+
+/** A simulation's play, pause and stop, held by its host. Pause lets the node in hand finish and goes no further;
+ *  play goes on from the next node; stop ends the run, keeping the nodes done. */
+export class SimulationControl {
+  /** Held between nodes until `play`. */
+  #paused = false;
+  /** Ended: no node after this one runs. */
+  #stopped = false;
+  /** Lets a waiting `turn` go on. */
+  #resume: (() => void) | undefined;
+
+  get paused(): boolean {
+    return this.#paused;
+  }
+
+  get stopped(): boolean {
+    return this.#stopped;
+  }
+
+  pause(): void {
+    if (!this.#stopped) this.#paused = true;
+  }
+
+  play(): void {
+    this.#paused = false;
+    this.#resume?.();
+  }
+
+  stop(): void {
+    this.#stopped = true;
+    this.play();
+  }
+
+  /** Before a node: waits while paused, and says whether to go on. */
+  async turn(): Promise<boolean> {
+    while (this.#paused && !this.#stopped) await new Promise<void>((done) => { this.#resume = done; });
+    this.#resume = undefined;
+    return !this.#stopped;
+  }
 }
 
 /** Step a simulation node by node, in order, giving the host a turn when one is due. The same result as stepping it whole. */
@@ -115,6 +166,12 @@ export async function stepSimulation(run: SimulationRun, options: SteppingOption
   const every = options.every ?? 16;
   let last = now();
   for (const id of run.ids) {
+    if (options.control) {
+      const held = options.control.paused;
+      if (held) options.onPause?.(true, id);
+      if (!(await options.control.turn())) break;
+      if (held) options.onPause?.(false, id);
+    }
     options.onStep?.(id);
     const began = now();
     run.step(id);
