@@ -4,7 +4,8 @@ import { test, expect, type Page } from './harness';
  * A node's header always moves it — Will, TODO 738. A drag that starts on the
  * header's icon, heading, description, empty area or padding moves the node by the
  * drag, selects no text and starts no native drag; the grip shows on hover and on
- * focus and moves nothing. Each by real pointer events.
+ * focus and moves nothing: a tab on the header's LEFT edge, as tall as the header and outside it, its glyph
+ * turned a quarter (TODO 849). Each by real pointer events.
  */
 type Canvas = HTMLElement & { rendered: Promise<void> };
 
@@ -91,4 +92,33 @@ test('the grip shows on hover and on focus, and the header does not change size'
   const focused = await read();
   expect(focused.visibility).toBe('visible');
   expect(focused.box).toEqual(bare.box);
+});
+
+test('the grip is a tab on the header\'s left edge, as tall as it, outside it, its glyph turned a quarter; the header is still the handle', async ({ page }) => {
+  const read = () => page.evaluate(() => {
+    const root = document.querySelector('#a')!.shadowRoot!;
+    const h = root.querySelector('.header')!;
+    const [hr, gr] = [h.getBoundingClientRect(), root.querySelector('.grip')!.getBoundingClientRect()];
+    const svg = root.querySelector('.grip svg')!;
+    return {
+      right: Math.round(gr.right - hr.left), top: Math.round(gr.top - hr.top), height: Math.round(gr.height - hr.height), wide: gr.width > 8,
+      turned: getComputedStyle(svg).rotate, handle: [h.getAttribute('role'), h.getAttribute('aria-roledescription'), root.querySelector('.grip')!.getAttribute('aria-hidden')],
+      box: [hr.width, hr.height],
+    };
+  });
+  const bare = await read();
+  // Its right edge is the header's left, its top the header's, its height the header's: a tab on the edge, outside the box.
+  expect(bare).toMatchObject({ right: 0, top: 0, height: 0, wide: true, turned: '90deg', handle: ['button', 'node', 'true'] });
+  const [x, y] = await at(page, 'empty');
+  await page.mouse.move(x - 40, y);
+  expect((await read()).box).toEqual(bare.box);
+  // Pixels: the tab is drawn when the pointer is over the header, a tinted box at the left of the header.
+  const box = (await page.locator('#a').locator('.grip').boundingBox())!;
+  const header = (await page.locator('#a').locator('.header[role="button"]').boundingBox())!;
+  expect(box.x + box.width).toBeLessThanOrEqual(header.x + 1);
+  // A press on the header, and the arrows, still move the node.
+  await page.locator('#a').locator('.header[role="button"]').focus();
+  const before = await place(page);
+  await page.keyboard.press('ArrowRight');
+  expect(await place(page)).not.toEqual(before);
 });

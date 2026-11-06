@@ -259,17 +259,35 @@
     var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #35353d4c);
 }
-/* The GRIP, in the header's end padding, so nothing moves when it shows. It is
-   never a target: a press on it is a press on the header. */
+/* The GRIP is a TAB on the header's left edge, as tall as the header, its glyph turned a quarter: outside the header's
+   box, so nothing in the header moves when it shows. It is never a target: a press on it is a press on the header.
+   The top edge is the running tab's (TODO 845); the two are apart. Will, TODO 849 */
 .grip {
   position: absolute;
-  inset-block-start: calc(var(--sherpa-theme-padding-md, 8px) + 2px);
-  inset-inline-end: var(--sherpa-theme-gap-md, 8px);
-  inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  inset-block: 0;
+  inset-inline-end: 100%;
+  display: flex;
+  /* At the top, clear of the header's own socket at its middle. */
+  align-items: flex-start;
+  justify-content: center;
+  padding-block-start: var(--sherpa-theme-padding-md, 8px);
+  box-sizing: border-box;
+  inline-size: var(--sherpa-display-mode-size-md, 20px);
+  /* The icon box is square; the tab is as tall as the header. */
+  block-size: auto;
+  background: var(--_category-fill, var(--_surface));
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-inline-end: none;
+  border-start-start-radius: inherit;
+  border-end-start-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   color: var(--sherpa-style-content-secondary, #35353d);
   pointer-events: none;
   visibility: hidden;
+}
+.grip svg {
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  rotate: 90deg;
 }
 .header:hover .grip,
 .header:focus-visible .grip,
