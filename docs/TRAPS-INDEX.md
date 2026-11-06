@@ -877,7 +877,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (146)
+## SherpaElement and the shared sheets (147)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -1017,6 +1017,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-base-class-names-nothing-visual](traps/element-and-sheets.md#t-the-base-class-names-nothing-visual) — sherpa-element
 - [T-the-layers-are-one-scale](traps/element-and-sheets.md#t-the-layers-are-one-scale) — sherpa-layers
 - [T-the-node-editor-asks-the-query](traps/data-layer.md#t-the-node-editor-asks-the-query) — node-graph
+- [T-the-panel-keys-are-shift-and-a-number](traps/element-and-sheets.md#t-the-panel-keys-are-shift-and-a-number) — panel-keys
 - [T-the-shared-vocabulary-is-declared-once](traps/element-and-sheets.md#t-the-shared-vocabulary-is-declared-once) — sherpa-element
 - [T-the-templates-text-is-the-default](traps/element-and-sheets.md#t-the-templates-text-is-the-default) — directives
 - [T-the-text-is-in-the-js](traps/element-and-sheets.md#t-the-text-is-in-the-js) — templater
@@ -1026,7 +1027,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (134)
+## Other components (135)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1157,6 +1158,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-nav-is-a-menu-on-a-phone](traps/other-components.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-node-panel-asks-it-places](traps/other-components.md#t-the-node-panel-asks-it-places) — node-panel
 - [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell, layout-panels
+- [T-the-panel-keys-are-shift-and-a-number](traps/element-and-sheets.md#t-the-panel-keys-are-shift-and-a-number) — app-shell
 - [T-the-shell-owns-the-panel-areas](traps/other-components.md#t-the-shell-owns-the-panel-areas) — app-shell
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — app-header
 - [T-two-months-share-one-grid](traps/other-components.md#t-two-months-share-one-grid) — calendar

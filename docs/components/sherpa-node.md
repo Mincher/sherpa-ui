@@ -83,6 +83,7 @@ What each class's base rule reads:
 | `--sherpa-style-border-width` | `.root` | `border-width` |
 | `--sherpa-display-mode-border-rounding-base` | `.root` | `border-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
+| `--sherpa-theme-padding-md` | `.grip` | `margin-block-start` |
 | `--sherpa-display-mode-size-sm` | `.grip` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.grip` | `block-size` |
 | `--sherpa-theme-padding-sm` | `.grip` | `margin-inline-start` |

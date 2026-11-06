@@ -54,6 +54,9 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | Property | Type | Access | What it is |
 |---|---|---|---|
 | `open` | `boolean` | read and write | whether the panel is open (delegates to &lt;dialog>) |
+| `minimised` | `boolean` | read only |  |
+| `side` | `'start' \| 'end'` | read only |  |
+| `shown` | `boolean` | read only |  |
 
 ## Methods
 
@@ -63,6 +66,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `notify()` | Say something changed: as a tab it turns active and wears a mark, until it is opened. |
 | `hide(reason: 'reader' \| 'width' \| 'page' = 'reader')` | Close it, and say why: `panel-close` reports it. |
 | `close()` | `hide()`, in the native &lt;dialog>'s spelling. |
+| `minimise(on = !this.minimised)` | Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here. |
 
 ## Commands
 

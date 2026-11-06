@@ -390,8 +390,13 @@
   "capabilities": [
     {
       "$type": "capability",
+      "api": "js-property-mirror",
+      "description": "read/write JS properties (minimised, side, shown). See $extensions.sherpa.jsProps."
+    },
+    {
+      "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (askAdd). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (minimise, askAdd). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -478,9 +483,32 @@
       "methods": [
         {
           "$type": "method",
+          "name": "minimise",
+          "args": "on = !this.minimised",
+          "description": "Shrink to a tab (`on`), or open from it; with no word, the other of the two."
+        },
+        {
+          "$type": "method",
           "name": "askAdd",
           "args": "context: AddContext",
           "description": "Open \"Add a node\" where a line was let go: the kinds a socket of its type could join, a Value first."
+        }
+      ],
+      "jsProps": [
+        {
+          "name": "minimised",
+          "type": "boolean",
+          "access": "read"
+        },
+        {
+          "name": "side",
+          "type": "'start'",
+          "access": "read"
+        },
+        {
+          "name": "shown",
+          "type": "boolean",
+          "access": "read"
         }
       ]
     }

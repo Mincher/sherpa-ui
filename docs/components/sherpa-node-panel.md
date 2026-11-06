@@ -92,10 +92,19 @@ For a graph editor's list of the nodes it may place, one per family, in one list
 | `data-x` | number |  | where it floats, in px from its canvas's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
 | `data-y` | number |  | where it floats, in px from its canvas's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
 
+## Properties
+
+| Property | Type | Access | What it is |
+|---|---|---|---|
+| `minimised` | `boolean` | read only |  |
+| `side` | `'start'` | read only |  |
+| `shown` | `boolean` | read only |  |
+
 ## Methods
 
 | Method | What it does |
 |---|---|
+| `minimise(on = !this.minimised)` | Shrink to a tab (`on`), or open from it; with no word, the other of the two. |
 | `askAdd(context: AddContext)` | Open "Add a node" where a line was let go: the kinds a socket of its type could join, a Value first. |
 
 ## Events

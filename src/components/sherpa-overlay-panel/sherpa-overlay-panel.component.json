@@ -581,12 +581,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (open). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (open, minimised, side, shown). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (show, notify, hide, close). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (show, notify, hide, close, minimise). See $extensions.sherpa.methods."
     },
     {
       "$type": "capability",
@@ -722,6 +722,12 @@
           "name": "close",
           "args": "",
           "description": "`hide()`, in the native <dialog>'s spelling."
+        },
+        {
+          "$type": "method",
+          "name": "minimise",
+          "args": "on = !this.minimised",
+          "description": "Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here."
         }
       ],
       "commands": [
@@ -744,6 +750,21 @@
           "type": "boolean",
           "description": "whether the panel is open (delegates to <dialog>)",
           "access": "read-write"
+        },
+        {
+          "name": "minimised",
+          "type": "boolean",
+          "access": "read"
+        },
+        {
+          "name": "side",
+          "type": "'start' | 'end'",
+          "access": "read"
+        },
+        {
+          "name": "shown",
+          "type": "boolean",
+          "access": "read"
         }
       ]
     }

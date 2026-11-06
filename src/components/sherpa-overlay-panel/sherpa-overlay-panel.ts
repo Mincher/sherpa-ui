@@ -415,8 +415,27 @@ export class SherpaOverlayPanel extends SherpaElement {
   };
 
   /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
-  #onMinimise = (): void => {
-    const minimised = !this.hasAttribute('data-minimised');
+  #onMinimise = (): void => this.minimise();
+
+  /** Is it a tab now? */
+  get minimised(): boolean {
+    return this.hasAttribute('data-minimised');
+  }
+
+  /** The side of the window it docks on: the area it sits in, or last sat in. */
+  get side(): 'start' | 'end' {
+    return this.#slotted() ?? this.#dock;
+  }
+
+  /** Is it open, for the panel keys? */
+  get shown(): boolean {
+    return this.open;
+  }
+
+  /** Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here. */
+  minimise(on = !this.minimised): void {
+    const minimised = on;
+    if (minimised === this.minimised) return;
     // Docked with others in its area, one minimises them all. Floating, it is its own. TRAP T-an-area-with-two-panels-is-tabbed
     if (minimised && (this.#home || this.#slotted())) {
       const mates = this.parentElement?.querySelectorAll<SherpaOverlayPanel>(`:scope > [slot="${this.slot}"]`) ?? [];

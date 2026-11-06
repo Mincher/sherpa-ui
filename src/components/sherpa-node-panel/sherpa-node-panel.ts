@@ -258,8 +258,27 @@ export class SherpaNodePanel extends SherpaElement {
   }
 
   /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
-  #onMinimise = (): void => {
-    const minimised = !this.hasAttribute('data-minimised');
+  #onMinimise = (): void => this.minimise();
+
+  /** Is it a tab now? */
+  get minimised(): boolean {
+    return this.hasAttribute('data-minimised');
+  }
+
+  /** The side of the canvas it docks on. */
+  get side(): 'start' {
+    return 'start';
+  }
+
+  /** Is it drawn, for the panel keys? */
+  get shown(): boolean {
+    return !this.hidden;
+  }
+
+  /** Shrink to a tab (`on`), or open from it; with no word, the other of the two. */
+  minimise(on = !this.minimised): void {
+    const minimised = on;
+    if (minimised === this.minimised) return;
     this.set('data-minimised', minimised);
     this.emit('panel-minimise', { minimised });
   };

@@ -9,6 +9,7 @@ import type { SherpaNav } from '../sherpa-nav/sherpa-nav.js';
 // Defined before the template stamps it: the body's panel areas.
 import type { SherpaLayoutPanels } from '../sherpa-layout-panels/sherpa-layout-panels.js';
 import '../sherpa-layout-panels/sherpa-layout-panels.js';
+import { panelKeys } from '../../core/ui/panel-keys.js';
 
 /** The narrowest Context a panel area may leave: the layout grid's tablet breakpoint. */
 const TABLET = 768;
@@ -91,6 +92,11 @@ export class SherpaAppShell extends SherpaElement {
     event.stopPropagation();
     this.emit('panel-area-resize', (event as CustomEvent<{ side: 'start' | 'end'; width: number }>).detail);
   };
+
+  // The panel keys, for as long as the shell is in the page. TRAP T-the-panel-keys-are-shift-and-a-number
+  override onConnect(): void {
+    panelKeys((target, type, handler) => this.on(target, type, handler));
+  }
 
   override onDisconnect(): void {
     this.#roomWatch?.disconnect();

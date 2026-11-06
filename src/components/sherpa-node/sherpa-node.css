@@ -267,7 +267,9 @@
   display: none;
   flex: none;
   align-items: center;
-  align-self: center;
+  /* The top left of the header, level with the heading's first line. */
+  align-self: flex-start;
+  margin-block-start: calc(var(--sherpa-theme-padding-md, 8px) + 2px);
   inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   margin-inline-start: var(--sherpa-theme-padding-sm, 4px);

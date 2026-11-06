@@ -7192,6 +7192,41 @@
           ],
           "members": [
             {
+              "kind": "field",
+              "name": "minimised",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "side",
+              "type": {
+                "text": "'start'"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "shown",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "minimise",
+              "parameters": [
+                {
+                  "name": "on",
+                  "optional": true
+                }
+              ],
+              "description": "Shrink to a tab (`on`), or open from it; with no word, the other of the two."
+            },
+            {
               "kind": "method",
               "name": "askAdd",
               "parameters": [
@@ -8367,6 +8402,30 @@
               "description": "whether the panel is open (delegates to <dialog>)"
             },
             {
+              "kind": "field",
+              "name": "minimised",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "side",
+              "type": {
+                "text": "'start' | 'end'"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "shown",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "show",
               "parameters": [],
@@ -8397,6 +8456,17 @@
               "name": "close",
               "parameters": [],
               "description": "`hide()`, in the native <dialog>'s spelling."
+            },
+            {
+              "kind": "method",
+              "name": "minimise",
+              "parameters": [
+                {
+                  "name": "on",
+                  "optional": true
+                }
+              ],
+              "description": "Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here."
             }
           ],
           "events": [

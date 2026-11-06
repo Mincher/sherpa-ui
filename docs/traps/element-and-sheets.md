@@ -2139,3 +2139,23 @@ that reaches the page belongs on the scale, not in a baseline.
 - Site: `scripts/check-layers.mjs`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.css`
 - Site: `test/e2e/reforged-layer-bands.spec.ts`
+
+### T-the-panel-keys-are-shift-and-a-number
+
+**The panels' tabs have keys** (Will, 2026-11-06), installed by the app shell
+(`src/core/ui/panel-keys.ts`, on `window`): **Left Shift and a number** shuts that number's panel of the
+left areas to its tab, or opens it to its last state if it is a tab; **Right Shift and a number** does the
+same on the right; **Shift and minus** shuts every panel to its tab; **Shift and plus** opens every tab.
+
+- **The number is the panel's place among the SHOWN panels of its side**, in page order, a tab or open.
+  A panel counts only if it is `data-minimisable`. A number with no panel does nothing.
+- **Which Shift** comes from the key codes (`ShiftLeft`, `ShiftRight`) of the keydowns seen, since a key
+  event only says `shiftKey`. Both held, or neither seen, name no side; a blur forgets them.
+- **A field being typed in keeps its keys**, and Ctrl, Alt and Cmd chords are left alone.
+- The panels answer `minimise(on?)`, `minimised`, `side` and `shown`; the buttons call the same method,
+  so a shut-to-tab by key also shuts its area's others, as a press does
+  (`T-an-area-with-two-panels-is-tabbed`).
+
+- Site: `src/core/ui/panel-keys.ts`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
+- Site: `test/e2e/reforged-panel-keys.spec.ts`
