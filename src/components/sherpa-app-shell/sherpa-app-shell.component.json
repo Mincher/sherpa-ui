@@ -155,14 +155,6 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-canvas",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-nav-state",
       "type": "enum",
       "observed": false,
@@ -295,15 +287,10 @@
     }
   ],
   "populate": {
-    "shape": "{ canvas?, navState?, noHeader?, noNav?, noRoom?, panelEndWidth?, panelStartWidth?, scrollShadow? }",
+    "shape": "{ navState?, noHeader?, noNav?, noRoom?, panelEndWidth?, panelStartWidth?, scrollShadow? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "canvas",
-      "selector": ":host([data-canvas])"
-    },
     {
       "$type": "state",
       "name": "pinned",

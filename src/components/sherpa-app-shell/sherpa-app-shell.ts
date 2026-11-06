@@ -26,8 +26,6 @@ export class SherpaAppShell extends SherpaElement {
     'data-no-nav': { type: 'boolean', kind: 'style' },
     'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
     'data-no-header': { type: 'boolean', kind: 'style' },
-    // A Canvas view is on screen: the header and the nav show a reduced shadow. The shell writes it.
-    'data-canvas': { type: 'boolean', kind: 'style' },
     'data-panel-start-width': { type: 'string', kind: 'behaviour' },
     'data-panel-end-width': { type: 'string', kind: 'behaviour' },
   } as const;
@@ -54,20 +52,7 @@ export class SherpaAppShell extends SherpaElement {
       layout.addEventListener('panel-area-resize', this.#onAreaResize);
     }
     this.#watchRoom();
-    this.#watchCanvas();
   }
-
-  /** A Canvas view in the content: seen as a canvas is added or removed anywhere under the host. */
-  #watchCanvas(): void {
-    const seen = (nodes: NodeList): boolean => [...nodes].some((n) => n instanceof Element && (n.localName === 'sherpa-layout-canvas' || !!n.querySelector('sherpa-layout-canvas')));
-    const sync = (): void => this.set('data-canvas', !!this.querySelector('sherpa-layout-canvas'));
-    this.#canvasWatch = new MutationObserver((records) => {
-      if (records.some((r) => seen(r.addedNodes) || seen(r.removedNodes))) sync();
-    });
-    this.#canvasWatch.observe(this, { childList: true, subtree: true });
-    sync();
-  }
-  #canvasWatch?: MutationObserver;
 
   /**
    * A panel area needs ROOM: the Context beside it keeps a tablet's width, so
@@ -116,7 +101,6 @@ export class SherpaAppShell extends SherpaElement {
 
   override onDisconnect(): void {
     this.#roomWatch?.disconnect();
-    this.#canvasWatch?.disconnect();
   }
 
   /** The nav changed state: mirror it, so the content can make room. */

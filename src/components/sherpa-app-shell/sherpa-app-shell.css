@@ -40,14 +40,6 @@
   block-size: 100%;
 }
 
-/* ── A Canvas view: the header and the nav show a reduced shadow, the default or a slotted one. ── */
-:host([data-canvas]) sherpa-app-header,
-:host([data-canvas]) sherpa-nav,
-:host([data-canvas]) ::slotted(sherpa-app-header),
-:host([data-canvas]) ::slotted(sherpa-nav) {
-  box-shadow: var(--sherpa-shadow-sm, 2px 2px 8px -4px #35353d4c);
-}
-
 /* ── Header + content wrapper — inset past the rail ─────────────────── */
 /* The content and the overlay share ONE cell; the overlay paints on top, and
    the rail (z-index 2) stays above both. */

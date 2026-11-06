@@ -68,7 +68,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`banner`, `controls`, `marquee`, `minimap`, `panels`, `plane`, `stage`, `toolbar`, `viewport`
+`banner`, `controls`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `stage`, `toolbar`, `viewport`
 
 ## CSS custom properties it reads
 
@@ -79,6 +79,7 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-2xl` | `.banner` | `margin-inline` |
 | `--sherpa-layer-content` | `.banner` | `z-index` |
 | `--sherpa-display-mode-space-xs` | `.banner` | `gap` |
+| `--sherpa-style-surface-shadow` | `.inset` | `box-shadow` |
 | `--sherpa-display-mode-border-width-base` | `.marquee` | `border-width` |
 | `--sherpa-style-active-border-base-1` | `.marquee` | `border-color` |
 | `--sherpa-style-active-border-base-1` | `.marquee` | `background` |
