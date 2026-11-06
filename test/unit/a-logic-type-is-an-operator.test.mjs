@@ -33,7 +33,7 @@ test('Logic is the Condition: And and Or, Figma\'s six, Not and Is empty, then S
     'and', 'or', 'gt', 'gte', 'lt', 'lte', 'eq', 'ne', 'not', 'empty',
     'contains', 'notcontains', 'startswith', 'endswith', 'in', 'notin', 'between', 'notbetween',
   ]);
-  assert.deepEqual([logic.typeLabel, logic.defaultType, logic.category], ['Operation', 'eq', 'Logic']);
+  assert.deepEqual([logic.typeLabel, logic.defaultType, logic.category], ['Check', 'eq', 'Logic']);
   // One vocabulary: a comparison's words are the operator's own, never a copy.
   for (const [id, type] of Object.entries(logic.types)) if (id in OP_LABELS) assert.equal(type.label, OP_LABELS[id], id);
   // A span from today is Time › Duration's: two nodes would do one check.
@@ -79,7 +79,7 @@ test('And joins tests: two Conditions on two Fields, their True into its header,
   assert.deepEqual([sentFrom(w, 'both/rows', facts), sentFrom({ ...w, routes: [] }, 'both/rows', facts)], [{ kind: 'rows' }, undefined]);
   const flow = nodeFlow(g, 'both');
   assert.deepEqual(flow.incoming.find((i) => i.socket === 'In'), { socket: 'In', type: 'boolean', from: ['Condition › True', 'Condition › True'] });
-  assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.type]), [['True', 'boolean'], ['False', 'boolean'], ['Rows', 'object']]);
+  assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.type]), [['True', 'boolean'], ['False', 'boolean'], ['Results', 'object']]);
   // Or the same; Not takes ONE boolean: a second is a fault, said in words.
   assert.deepEqual(workflowFaults({ ...w, nodes: w.nodes.map((n) => (n.id === 'both' ? { ...n, values: { type: 'or' } } : n)) }), []);
   const not = { ...w, nodes: w.nodes.map((n) => (n.id === 'both' ? { ...n, values: { type: 'not' } } : n)) };

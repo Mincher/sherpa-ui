@@ -373,13 +373,32 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     for (const key of [...drawn.rows.keys()]) if (key.startsWith(`${node.id}/`)) drawn.rows.delete(key);
     for (const key of [...drawn.beside.keys()]) if (key.startsWith(`${node.id}/`)) drawn.beside.delete(key);
     // A row drawn `beside` another has no line: its output is the other's.
-    el.replaceChildren(...node.rows.filter((row) => !row.beside).map((row) => {
+    // Three sections, each its own grey box: the type pick, the inputs, then the properties under their own label.
+    const lines = (rows: readonly GraphRow[]): HTMLElement[] => rows.filter((row) => !row.beside).map((row) => {
       const line = document.createElement('sherpa-node-row');
       drawn.rows.set(`${node.id}/${row.name}`, line);
       drawn.addresses.set(line, [node.id, row.name]);
       if (row.control) line.append(fieldFor(row, locked(row)));
       return line;
-    }));
+    });
+    const section = (...kids: HTMLElement[]): HTMLElement[] => {
+      if (!kids.length) return [];
+      const box = document.createElement('div');
+      box.className = 'section';
+      box.append(...kids);
+      return [box];
+    };
+    const titled = (label: string): HTMLElement => {
+      const title = document.createElement('sherpa-node-row');
+      title.setAttribute('data-label', label);
+      return title;
+    };
+    const inputs = lines(node.rows.filter((r) => r.control !== 'type' && !r.property));
+    el.replaceChildren(
+      ...section(...lines(node.rows.filter((r) => r.control === 'type'))),
+      ...(inputs.length ? section(titled('Values'), ...inputs) : []),
+      ...(node.rows.some((r) => r.property) ? section(titled('Properties'), ...lines(node.rows.filter((r) => r.property))) : []),
+    );
     for (const row of node.rows) {
       const wearer = row.beside && drawn.rows.get(`${node.id}/${row.beside}`);
       if (!wearer) continue;
@@ -401,7 +420,10 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     if (row.beside) continue;
     if (field) fill(field, row);
     // A row with no field says what it reads; one that reads null, only its name.
-    else line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
+    else {
+      line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
+      line.toggleAttribute('data-property', !!row.property);
+    }
   }
 }
 

@@ -39,7 +39,7 @@ test('each family: its types in order, the Type row first, and the rows, sockets
   assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average']);
   // Sort and Group are kinds of their own, in Organise, and take the Field they work on on their header (plan 835): no types.
   assert.deepEqual(['sort', 'group'].map((k) => [NODE_KINDS[k].types, NODE_KINDS[k].category, NODE_KINDS[k].rows.map((r) => r.name)]), [[undefined, 'Organise', ['rows', 'direction']], [undefined, 'Organise', ['rows', 'count']]]);
-  assert.deepEqual(['value', 'math', 'time', 'text'].map((k) => NODE_KINDS[k].typeLabel), ['Type', 'Operation', 'Operation', 'Operation']);
+  assert.deepEqual(['value', 'math', 'time', 'text'].map((k) => NODE_KINDS[k].typeLabel), ['Type', 'Operation', 'Check', 'Operation']);
   // Each Math, Time and Text type says what it does, under its select.
   for (const id of ['math', 'time', 'text']) for (const [type, t] of Object.entries(NODE_KINDS[id].types)) assert.ok(t.help, `${id} › ${type} has a hint`);
   assert.equal(NODE_KINDS.math.types.add.help, 'Add Value B to Value A');

@@ -28,6 +28,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 | `data-label` | text |  | the row's name, when it has no field: a field names itself |
 | `data-output-routed` | boolean |  | a route leaves the output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | an output socket on the end edge: value (a circle) \| object (a diamond) \| boolean (a triangle) |
+| `data-property` | boolean |  | a property: its label reads in the input value's own type |
 
 ## Methods
 
@@ -62,6 +63,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }`
+`{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket?, property? }`
 
 Its declared props by name: `label` sets data-label.

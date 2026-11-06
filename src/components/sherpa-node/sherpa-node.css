@@ -390,5 +390,16 @@
   padding-block: var(--sherpa-theme-gap-md, 8px) var(--_pad);
 }
 :host(:state(has-content-slot)) .body { display: flex; }
-.body ::slotted(:not(sherpa-node-row)) { padding-inline: var(--_pad-inline); }
+.body ::slotted(:not(sherpa-node-row, .section)) { padding-inline: var(--_pad-inline); }
+/* A SECTION: rows on a grey box, 8px in. Its rows bleed back out to the card's edges, so their sockets stay there. */
+.body ::slotted(.section) {
+  --_bleed: calc(var(--_pad-inline, 16px) - var(--sherpa-theme-padding-md, 8px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  margin-inline: var(--_bleed);
+  padding-block: var(--sherpa-theme-padding-md, 8px);
+  background: var(--sherpa-style-surface-base-1, #f5f5f8);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
 :host(:not(:state(has-content-slot))) .heading { border-block-end: none; }

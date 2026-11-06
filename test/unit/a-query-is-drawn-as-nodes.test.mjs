@@ -95,7 +95,7 @@ test('each node shows what the Query and the definition say', () => {
   assert.deepEqual(values('source'), { store: 'customers', pageSize: 25, search: ['name', 'email'], applyOn: 'change', count: undefined });
   // Its Rows, the filter Switch, then each held field with a socket for its condition's True.
   assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
-    ['rows', 'Rows', undefined, undefined, undefined],
+    ['rows', 'Results', undefined, undefined, undefined],
     ['#filters', 'Filters', 'boolean', 'switch', true], ['region', 'Region', 'boolean', undefined, undefined], ['created', 'created', 'boolean', undefined, undefined],
   ]);
   // A scope's name is the definition's, else its one component's, else its id.
@@ -280,7 +280,7 @@ test('a STATUS FIELD is a node between the Source and the View: each value, and 
   });
   const g = queryGraph({ v: 1, scopes: { view: { holds: [], readings: {} } } }, page, { domains: store.domains });
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
-    ['Rows', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
+    ['Results', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
   // The Source's rows get their status, then reach the View: never the Source's straight.
   assert.deepEqual(g.routes.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), ['source/rows → status-health', 'status-health/rows → scope-view']);

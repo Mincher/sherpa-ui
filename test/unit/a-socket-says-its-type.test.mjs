@@ -76,7 +76,7 @@ test('the registry says each socket: a row\'s, the header\'s — True where it f
 });
 
 test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; only Condition forks (TODO 831)', () => {
-  assert.deepEqual(ROWS, { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' });
+  assert.deepEqual(ROWS, { name: 'rows', label: 'Results', output: 'object', gives: 'rows', property: true });
   const all = Object.entries(NODE_KINDS);
   // A header input takes any; no header sends rows: a Rows row does, first.
   for (const [name, kind] of all) {

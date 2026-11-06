@@ -14,11 +14,10 @@
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
  * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
- * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
+ * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
- * - categorySlug — A category as the slug a node's, and its panel row's, `data-category` says.
  * - categorySlug — A category as the slug a node's, and its panel row's, `data-category` says.
  * - typeOf — The type of a family kind a node's `type` names: its own, else the kind's default.
  * - typeChoices — The types of a family kind as a picklist reads them; none, it is no family.
@@ -171,15 +170,11 @@ export interface NodeKind {
   /** A FAMILY: one node, and its first row picks the type, kept as the node's `type` value. Its rows and sockets
    *  follow the type (`resolveKind`). With one type there is no row. Plan 749 */
   types?: Readonly<Record<string, NodeType>>;
-  /** That first row's label: "Operation", "Type". */
+  /** That first row's label: "Check", "Operation", "Type". */
   typeLabel?: string;
   /** The type a node with none shows; else the first. */
   defaultType?: string;
 }
-
-/** The Rows row: the data rows a node sends on, an object. They come in on its header (D1);
- *  it is first on each kind that gives them. Plan 713 §3 */
-export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' };
 
 /** A property row, the one definition: output only, no control and no value, sending what the node's data or logic gives
  *  (`gives`): a value (a number, the default; text; a boolean) or an object (a row, a set of rows, a record). Count is its
@@ -189,6 +184,8 @@ export const propertyRow = (name: string, label: string, gives: Given = 'number'
 /** The socket a property's given takes: a number, text or value a circle; a boolean a triangle; rows, a list, a field or an object a diamond. */
 const propertySocket = (gives: Given): SocketType => (gives === 'boolean' ? 'boolean' : ['object', 'list', 'rows', 'field'].includes(gives) ? 'object' : 'value');
 const COUNT = propertyRow('count', 'Count');
+/** Results: the data rows a node sends on, a property like Count; they come in on its header (D1). It keeps the address `node/rows`. Plan 713 §3 */
+export const ROWS: Readonly<RowKind> = propertyRow('rows', 'Results', 'rows');
 
 /** A family's rows, each once: a type names the ones it draws. */
 const VALUE: RowKind = { name: 'value', label: 'Value', control: 'text', output: 'value' };
@@ -262,7 +259,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Logic: one test per Condition, And and Or joining tests (plan 783 D4). TRAP T-a-condition-is-a-tree-of-nodes
   condition: {
     heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition', branches: true,
-    typeLabel: 'Operation', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
+    typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
@@ -334,7 +331,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Whether the date that comes in, of any type (D1), holds: True takes it, False the rest.
   time: {
-    heading: 'Time', icon: 'time', description: 'Check a date against a time', input: 'any', needs: 'date', output: 'boolean', typeLabel: 'Operation', defaultType: 'between',
+    heading: 'Time', icon: 'time', description: 'Check a date against a time', input: 'any', needs: 'date', output: 'boolean', typeLabel: 'Check', defaultType: 'between',
     types: {
       between: { label: 'Between', help: 'True when the date is from Start to End', rows: [dateRow('start', 'Start'), dateRow('end', 'End')] },
       duration: {

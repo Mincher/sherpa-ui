@@ -40,7 +40,7 @@ test('Sort and Group are kinds of their own in Organise; the Collection family a
 });
 
 test('a property row is output only: no control, no input, no value; one definition, on a Source, a Field, a Group and a Condition\'s comparisons', () => {
-  const props = (kind) => kind.rows.filter((r) => r.property);
+  const props = (kind) => kind.rows.filter((r) => r.property && r.name !== 'rows');
   for (const [id, type] of [['source'], ['field'], ['group'], ['condition', 'eq'], ['condition', 'between']]) {
     const kind = resolveKind(NODE_KINDS[id], type);
     const [row, ...more] = props(kind);
@@ -49,10 +49,10 @@ test('a property row is output only: no control, no input, no value; one definit
     assert.equal(socketType(kind, 'count', 'output'), 'value');
   }
   // One definition: the very same row object, on each.
-  const same = ['source', 'field', 'group'].map((id) => NODE_KINDS[id].rows.find((r) => r.property));
+  const same = ['source', 'field', 'group'].map((id) => NODE_KINDS[id].rows.find((r) => r.property && r.name !== 'rows'));
   assert.ok(same.every((r) => r === same[0]));
   // Not where a count means nothing: a Sort is the rows it was given; And and Or join booleans.
-  assert.deepEqual([NODE_KINDS.sort.rows, resolveKind(NODE_KINDS.condition, 'and').rows].flat().filter((r) => r.property), []);
+  assert.deepEqual([NODE_KINDS.sort.rows, resolveKind(NODE_KINDS.condition, 'and').rows].flat().filter((r) => r.property && r.name !== 'rows'), []);
 });
 
 test('a property row sends a number before a run, as a Result does: it routes like any output, into a number or a value', () => {
@@ -70,7 +70,7 @@ test('a property row sends a number before a run, as a Result does: it routes li
   const bad = flow([source, { id: 'k', kind: 'sort', x: 300, y: 0 }], [{ from: 's/count', to: 'k' }]);
   assert.deepEqual(said(workflowGraph(bad)), { k: [['', 'Sort takes a field; it was given a number']] });
   // The Outgoing JSON lists it among a node's outputs.
-  assert.deepEqual(nodeFlow(g, 's').outgoing.map((o) => [o.socket, o.type]), [['Rows', 'object'], ['Count', 'value']]);
+  assert.deepEqual(nodeFlow(g, 's').outgoing.map((o) => [o.socket, o.type]), [['Results', 'object'], ['Count', 'value']]);
 });
 
 test('a property row routes through a portal as a row, and a Custom Node takes it as an output: Save as and Ungroup keep its route', () => {

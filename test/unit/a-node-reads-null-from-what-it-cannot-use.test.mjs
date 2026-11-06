@@ -164,7 +164,7 @@ test('the incoming JSON says it: null where the node cannot use what came, and w
   const g = drawn(flow([value('v', 'abc'), store, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
     [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }]));
   const [t, m] = [nodeFlow(g, 't').incoming, nodeFlow(g, 'm').incoming];
-  assert.deepEqual(t[0], { socket: 'In', type: 'any', from: ['Source › Rows'], value: null, warning: 'Between takes a date; it was given rows' });
+  assert.deepEqual(t[0], { socket: 'In', type: 'any', from: ['Source › Results'], value: null, warning: 'Between takes a date; it was given rows' });
   assert.deepEqual(m.find((s) => s.socket === 'Value A'), { socket: 'Value A', type: 'value', from: ['Value › Value'], value: null, warning: 'Value A takes a number; it was given "abc"' });
   assert.equal('warning' in m.find((s) => s.socket === 'Value B'), false);
 });

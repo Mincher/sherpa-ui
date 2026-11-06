@@ -95,7 +95,7 @@ test('refused in words: nothing picked, no name, a Group node, a loop through ou
   ]);
   const mixed = groupNodes(bad, ['cond'], empty(), { label: 'Mixed' });
   assert.equal(mixed.fault, undefined);
-  assert.deepEqual(mixed.library.nodes[mixed.id].inputs.map((i) => [i.label, i.type]), [['Source › Rows', 'object']]);
+  assert.deepEqual(mixed.library.nodes[mixed.id].inputs.map((i) => [i.label, i.type]), [['Source › Results', 'object']]);
   const inner = lib.innerOf(mixed.workflow.nodes.find((n) => n.id === mixed.use), mixed.library);
   assert.deepEqual(workflowGraph(inner.workflow, {}, inner.kinds).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'b', words: 'Value B takes a value; it was given an object' }]);
 });
@@ -139,7 +139,7 @@ test('a Custom Node\'s header takes anything: each connection let go on it adds 
   assert.ok(!three.fault, three.fault);
   assert.deepEqual(inputsOf(three.library), [
     ['records', 'Records', 'object'], ['status', 'Status', 'value'],
-    ['start-rows', 'Source › Rows', 'object'], ['val-value', 'Value › Value', 'value'], ['c', 'Condition › True', 'boolean'],
+    ['start-rows', 'Source › Results', 'object'], ['val-value', 'Value › Value', 'value'], ['c', 'Condition › True', 'boolean'],
   ]);
   assert.ok(said(three.workflow).includes('val/value → has/val-value') && said(three.workflow).includes('c → has/c'));
   // Inside, a Group Input row each, an output socket of the source's type, feeding nothing yet.

@@ -61,7 +61,7 @@ test('an In takes many routes; its Out draws a row for each, labelled from its s
   assert.deepEqual(workflowFaults(w, undefined, facts), []);
   const g = workflowGraph(w, facts);
   assert.deepEqual(said(g), {});
-  assert.deepEqual(rowsOf(g, 'o'), [['@s/rows', 'Source › Rows', 'object'], ['@v/value', 'Value › Value', 'value']]);
+  assert.deepEqual(rowsOf(g, 'o'), [['@s/rows', 'Source › Results', 'object'], ['@v/value', 'Value › Value', 'value']]);
   // The Out's header sends nothing: it has no socket.
   assert.equal(at(g, 'o').output, undefined);
   assert.equal(at(g, 'o').rows.find((r) => r.name === 'name').hint, '2 rows, from 1 In portal');
@@ -110,7 +110,7 @@ test('a row keeps its id: a route in cut, its route out is kept unseen, no fault
   assert.deepEqual(lines(keptRoutes(cut)), ['o/@v/value → eq/b']);
   assert.deepEqual(workflowFaults(cut, undefined, facts), []);
   const g = workflowGraph(cut, facts);
-  assert.deepEqual(rowsOf(g, 'o'), [['@s/rows', 'Source › Rows', 'object']]);
+  assert.deepEqual(rowsOf(g, 'o'), [['@s/rows', 'Source › Results', 'object']]);
   assert.ok(!lines(g.routes).includes('o/@v/value → eq/b'), 'drawn nowhere');
   assert.equal(at(g, 'eq').rows.find((r) => r.name === 'b').value, undefined);
   assert.deepEqual(lines(finalGraph(cut).routes), ['s/rows → in', 'o/@s/rows → f', 'f/field → eq']);
@@ -135,7 +135,7 @@ test('an Out no In names warns and has no rows; one of no name, too; a row of an
   const chain = flow([source(), portal('ia', 'in', 'a'), portal('oa', 'out', 'a', 600), portal('ib', 'in', 'b', 900), portal('ob', 'out', 'b', 1200), field('f', 'status', 1500)],
     [{ from: 's/rows', to: 'ia' }, { from: 'oa/@s/rows', to: 'ib' }, { from: 'ob/@oa/@s/rows', to: 'f' }]);
   const g = workflowGraph(chain, facts);
-  assert.deepEqual(rowsOf(g, 'ob'), [['@oa/@s/rows', 'Portal › Source › Rows', 'object']]);
+  assert.deepEqual(rowsOf(g, 'ob'), [['@oa/@s/rows', 'Portal › Source › Results', 'object']]);
   assert.deepEqual(lines(portalFlow(chain.nodes, chain.routes).routes), ['s/rows → f']);
   assert.deepEqual(workflowFaults(chain, undefined, facts), []);
 });
@@ -207,7 +207,7 @@ test('a name is local to its graph: a cut name refused; inside, a row from outsi
   const made = groupNodes(w, ['in', 'o', 'f'], library, { label: 'Pipe' }, undefined, facts);
   assert.ok(!('fault' in made), made.fault);
   const body = made.library.nodes[made.id];
-  assert.deepEqual(body.inputs.map((i) => [i.name, i.label, i.type]), [['s-rows', 'Source › Rows', 'object'], ['v-value', 'Value › Value', 'value']]);
+  assert.deepEqual(body.inputs.map((i) => [i.name, i.label, i.type]), [['s-rows', 'Source › Results', 'object'], ['v-value', 'Value › Value', 'value']]);
   assert.deepEqual(lines(body.routes).sort(), ['#in/s-rows → in', '#in/v-value → in', 'f/field → #out/f-field', 'o/@#in/s-rows → f', 'o/@#in/v-value → #out/o-v-value'].sort());
   assert.deepEqual(body.outputs.map((o) => [o.label, o.type]), [['Value › Value', 'value'], ['Field › Field', 'object']]);
   // Ungroup: the rows by their sources again, the same routes as before.

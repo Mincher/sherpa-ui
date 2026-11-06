@@ -2843,6 +2843,11 @@
               "name": "boolean"
             }
           ]
+        },
+        {
+          "name": "data-property",
+          "description": "a property: its label reads in the input value's own type",
+          "valueSet": "v"
         }
       ]
     },

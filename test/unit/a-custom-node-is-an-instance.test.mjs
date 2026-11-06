@@ -98,7 +98,7 @@ test('a use gives the same faults inside, named by path', () => {
   inside.nodes['org-permissions'].nodes[1].values = { type: 'nonsense' };
   const said = faults(flow(), inside);
   assert.equal(said.length, 1);
-  assert.match(said[0], /^Org permissions › Condition: the node "has-role" holds "nonsense" as its Operation, which is none of its choices$/);
+  assert.match(said[0], /^Org permissions › Condition: the node "has-role" holds "nonsense" as its Check, which is none of its choices$/);
   // The same words as the body checked by itself.
   const body = lib.innerOf(flow().nodes[1], inside);
   assert.ok(workflowFaults(body.workflow, body.kinds).some((f) => said[0].endsWith(f)));
