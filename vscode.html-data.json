@@ -3149,7 +3149,7 @@
         },
         {
           "name": "data-poppable",
-          "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
+          "description": "show the docking button (Dock as overlay / Dock as inline) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
           "valueSet": "v"
         },
         {

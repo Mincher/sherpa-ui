@@ -113,7 +113,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.external')?.addEventListener('button-click', this.#onExternal);
     this.$('.pop')?.addEventListener('button-click', this.#onPop);
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
-    this.$('.minimise')?.addEventListener('button-click', this.#onMinimise);
+    this.$('.minimise')?.addEventListener('button-click', this.#onMinimiseButton);
     this.$('.tab-open')?.addEventListener('click', this.#onMinimise);
     // The pointer on the tab peeks the panel open and hides the tab; the pointer leaving the PANEL shuts it to the tab again.
     this.$('.tab')?.addEventListener('pointerenter', this.#onPeek);
@@ -417,27 +417,57 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.emit('panel-expand', { maximised });
   };
 
-  /** Pop in, to the area it last left, or out; and report it: a press is the reader's choice, a lost room is not. */
+  /** Is it docked FIXED (flat, in its area's room) and not an overlay on the content? */
+  #isFixed(): boolean {
+    return this.#slotted() ? !this.hasAttribute('data-overlay') : this.hasAttribute('data-fixed');
+  }
+
+  /** Its docked state, one word: `floating`, a `tab`, a tab `hover`ed open as a docked overlay, `overlay` or `fixed`. A fixed panel is never hovered:
+   *  a hover opens it over the content. */
+  get dockState(): 'floating' | 'tab' | 'hover' | 'overlay' | 'fixed' {
+    if (this.hasAttribute('data-floating')) return 'floating';
+    if (this.hasAttribute('data-minimised')) return this.hasState('peeking') ? 'hover' : 'tab';
+    return this.#isFixed() ? 'fixed' : 'overlay';
+  }
+
+  /** The ONE docking button, a cycle of what is docked: a tab shown on hover, or a fixed panel, docks as an overlay; an overlay docks
+   *  as inline (fixed). It reports `panel-pop`: a press is the reader's choice, a lost room is not. TRAP T-a-panel-peeks-from-its-tab */
   #onPop = (): void => {
     const side = this.#dock;
-    // Slotted in a layout, it pops between FIXED (its area's room) and an OVERLAY on the content; on the window, in and out of the shell's area.
-    if (this.#slotted()) {
-      const fixed = this.hasAttribute('data-overlay');
-      this.set('data-overlay', !fixed);
-      this.emit('panel-pop', { fixed, side });
-      return;
-    }
-    const fixed = !this.hasAttribute('data-fixed');
-    this.set('data-fixed', fixed && (side === 'start' ? 'start' : true));
+    const hovering = this.hasState('peeking');
+    const fixed = !hovering && !this.#isFixed();
+    // The other docked box is as wide as this one: the width is the reader's, not the state's.
+    this.#matchWidth(fixed);
+    if (this.#slotted()) this.set('data-overlay', !fixed);
+    else this.set('data-fixed', fixed && (side === 'start' ? 'start' : true));
+    // Docked from a hover: it stays open, in the state it was docked in.
+    if (hovering) this.minimise(false);
     this.emit('panel-pop', { fixed, side });
   };
 
-  /** The Pop button says what a press does next: Pop in to the fixed state, or Pop out to the overlay. */
+  /** Hand the width it is drawn at to the state it is going to: an overlay's own, or its area's. */
+  #matchWidth(toFixed: boolean): void {
+    const width = Math.round((this.hasState('peeking') || !this.#isFixed() ? this.$('.root') : this)?.getBoundingClientRect().width ?? 0);
+    if (!width) return;
+    if (!toFixed) {
+      this.style.setProperty('--_width', `${width}px`);
+      return;
+    }
+    const side = this.#dock;
+    const host = this.#slotted() ? this.parentElement : document.querySelector('sherpa-app-shell');
+    if (!host) return;
+    // A canvas keeps its card's width in `data-panel-width`; a shell or an area, one for each side.
+    const attr = host.localName === 'sherpa-layout-canvas' ? 'data-panel-width' : `data-panel-${side}-width`;
+    host.setAttribute(attr, String(width));
+    host.dispatchEvent(new CustomEvent('panel-area-resize', { detail: { side, width }, bubbles: false }));
+  }
+
+  /** The docking button says what a press does next: dock as an overlay (from fixed, or a tab on hover), or dock as inline. */
   #syncPop(): void {
-    const fixed = this.#slotted() ? !this.hasAttribute('data-overlay') : this.hasAttribute('data-fixed');
+    const toOverlay = this.hasState('peeking') || this.#isFixed();
     const pop = this.$('.pop');
-    pop?.setAttribute('data-icon-start', fixed ? 'monitor-w-floating-window' : 'sidebar-flip');
-    pop?.setAttribute('aria-label', fixed ? 'Pop out' : 'Pop in');
+    pop?.setAttribute('data-icon-start', toOverlay ? 'monitor-w-floating-window' : 'sidebar-flip');
+    pop?.setAttribute('aria-label', toOverlay ? 'Dock as overlay' : 'Dock as inline');
   }
 
   /** The pointer is on the tab: open the panel as a docked overlay, where the setting says. The tab is hidden while it shows. */
@@ -472,9 +502,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.on(document, 'pointermove', this.#onPeekMove, { while: this.#peekEnds.signal });
     }
     if (this.#slotted()) this.toggleState('overlaid', (on || (this.hasAttribute('data-overlay') && !this.hasAttribute('data-minimised'))) && !this.hasAttribute('data-floating'));
-    const minimise = this.$('.minimise');
-    minimise?.setAttribute('data-icon-start', on ? 'plus' : 'minus');
-    minimise?.setAttribute('aria-label', on ? 'Keep open' : 'Minimise to a tab');
+    this.#syncPop();
   }
 
   /** Float, or dock, and report it. TRAP T-a-floating-panel-is-a-state */
@@ -486,6 +514,12 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
   #onMinimise = (): void => this.minimise();
+
+  /** The Minimise button: a panel shown on hover is already a tab, so it goes back to it; otherwise the panel shrinks to one. */
+  #onMinimiseButton = (): void => {
+    if (this.hasState('peeking')) this.#peek(false);
+    else this.minimise();
+  };
 
   /** Is it a tab now? */
   get minimised(): boolean {

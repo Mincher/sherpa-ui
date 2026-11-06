@@ -13,7 +13,7 @@ async function stage(page: Page, attrs = ''): Promise<void> {
   await page.evaluate(async (a) => {
     const root = document.getElementById('root')!;
     root.innerHTML = `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">
-      <sherpa-overlay-panel id="p" slot="panel" data-heading="Nodes" data-minimisable data-poppable ${a}><p>body</p></sherpa-overlay-panel>
+      <sherpa-overlay-panel id="p" slot="panel" data-heading="Nodes" data-minimisable data-poppable data-floatable ${a}><p>body</p></sherpa-overlay-panel>
     </sherpa-layout-canvas>`;
     const panel = document.getElementById('p') as PanelEl;
     await panel.rendered;
@@ -48,12 +48,12 @@ test('fixed is flat and takes its area\'s room; Pop makes it an overlay over the
   expect(await look(page)).toMatchObject({ shadow: false, radius: false });
 });
 
-test('the Pop button says what it will do: Pop out from fixed, Pop in from an overlay', async ({ page }) => {
+test('the docking button says what it will do: Dock as overlay from fixed, Dock as inline from an overlay', async ({ page }) => {
   await stage(page);
   const label = () => page.evaluate(() => document.getElementById('p')!.shadowRoot!.querySelector('.pop')!.getAttribute('aria-label'));
-  expect(await label()).toBe('Pop out');
+  expect(await label()).toBe('Dock as overlay');
   await press(page, '.pop');
-  expect(await label()).toBe('Pop in');
+  expect(await label()).toBe('Dock as inline');
 });
 
 test('with hover-open, the pointer on a tab shows its panel as a docked overlay and hides the tab; leaving the panel brings the tab back at once', async ({ page }) => {
@@ -171,10 +171,33 @@ for (const kind of KINDS) {
     await expect.poll(async () => (await root()).shown).toBe(false);
     await page.mouse.move(tab.x, tab.y);
     await expect.poll(async () => (await root()).shown).toBe(true);
-    // Keep it open: the Minimise button says so while it peeks.
-    expect(await page.evaluate(() => document.getElementById('p')!.shadowRoot!.querySelector('.minimise')!.getAttribute('aria-label'))).toBe('Keep open');
-    await press(page, '.minimise');
+    // The ONE docking button says so while it peeks: dock it as an overlay, and it stays open as one, whatever it was.
+    expect(await page.evaluate(() => document.getElementById('p')!.shadowRoot!.querySelector('.pop')!.getAttribute('aria-label'))).toBe('Dock as overlay');
+    await press(page, '.pop');
     expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-minimised'))).toBe(false);
-    expect((await root()).shadow).toBe(!kind.flat);
+    expect(await page.evaluate(() => (document.getElementById('p') as HTMLElement & { dockState: string }).dockState)).toBe('overlay');
+    expect((await root()).shadow).toBe(true);
   });
 }
+
+test('the docking cycle: fixed to overlay to fixed, at the same width; dockState says which; Minimise ends a hover', async ({ page }) => {
+  await stage(page);
+  const state = () => page.evaluate(() => (document.getElementById('p') as HTMLElement & { dockState: string }).dockState);
+  const width = () => page.evaluate(() => Math.round(document.getElementById('p')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().width));
+  expect(await state()).toBe('fixed');
+  const fixed = await width();
+  await press(page, '.pop');
+  expect(await state()).toBe('overlay');
+  // The overlay is as wide as the fixed panel was; dragged wider, the fixed one takes that width back.
+  expect(Math.abs((await width()) - fixed)).toBeLessThanOrEqual(2);
+  await page.evaluate(() => document.getElementById('p')!.style.setProperty('--_width', '400px'));
+  const wider = await width();
+  await press(page, '.pop');
+  expect(await state()).toBe('fixed');
+  expect(Math.abs((await width()) - wider)).toBeLessThanOrEqual(2);
+  // Float and dock: back to fixed.
+  await press(page, '.float');
+  expect(await state()).toBe('floating');
+  await press(page, '.float');
+  expect(await state()).toBe('fixed');
+});

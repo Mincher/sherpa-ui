@@ -323,18 +323,19 @@ test.describe('Pop in and Pop out', () => {
       document.addEventListener('panel-pop', (e) => heard.push((e as CustomEvent).detail));
     });
     const floating = await read(page);
-    expect(floating).toMatchObject({ parent: 'div', slot: '', next: 'after', open: true, position: 'fixed', resize: true, pop: true, label: 'Pop in', icon: 'sidebar-flip' });
+    expect(floating).toMatchObject({ parent: 'div', slot: '', next: 'after', open: true, position: 'fixed', resize: true, pop: true, label: 'Dock as inline', icon: 'sidebar-flip' });
     expect(floating.root.w).toBe(640);
 
     await press(page);
     const fixed = await read(page);
-    expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', open: true, position: 'static', resize: false, pop: true, label: 'Pop out', icon: 'monitor-w-floating-window' });
+    expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', open: true, position: 'static', resize: false, pop: true, label: 'Dock as overlay', icon: 'monitor-w-floating-window' });
     // FLUSH in the area, which owns its width; no inset. TODO 796
     expect(fixed.area.w).toBeGreaterThanOrEqual(464);
     expect(fixed.root).toEqual(fixed.area);
 
     await press(page);
-    expect(await read(page)).toEqual({ ...floating, area: { x: 0, w: 0 } });
+    // Docked out again, it is as wide as the area it left, on the same edge.
+    expect(await read(page)).toEqual({ ...floating, root: { x: floating.root.x + floating.root.w - fixed.area.w, w: fixed.area.w }, area: { x: 0, w: 0 } });
     expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([{ fixed: true, side: 'end' }, { fixed: false, side: 'end' }]);
   });
 

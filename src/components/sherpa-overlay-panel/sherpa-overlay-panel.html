@@ -35,7 +35,7 @@
     data-collapsible  show the collapse toggle
     data-expandable   show the maximise / minimise button
     data-external     show the external-link button
-    data-poppable     show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in
+    data-poppable     show the docking button (Dock as overlay / Dock as inline) (needs a sherpa-app-shell with room). Pop in
                       goes back to the area it last left
     data-floatable    show the Float / Dock button
     data-dismissible  show the close button
@@ -56,7 +56,7 @@
     panel-expand     (detail: { maximised })
     panel-external   (detail: { })
     panel-minimise   (detail: { minimised })  the reader pressed Minimise, or its tab
-    panel-pop        (detail: { fixed, side })  the reader pressed Pop in or Pop out; side: start | end
+    panel-pop        (detail: { fixed, side })  the reader pressed the docking button (Dock as overlay, or Dock as inline); side: start | end
     panel-close      (detail: { reason })  it shut: reader (the default), width or page
     panel-float      (detail: { floating })  the reader pressed Float or Dock
     panel-move       (detail: { x, y })  floating, its header was dragged, or its grip moved by the keys
@@ -111,7 +111,7 @@
                          data-when-aria-label="data-floating: Dock"></sherpa-button>
           <!-- Pop in: a fixed panel in a panel area of the shell. TRAP T-a-panel-pops-into-the-end-area -->
           <sherpa-button class="pop" part="pop" data-type="icon" data-size="sm"
-                         data-icon-start="sidebar-flip" aria-label="Pop in"></sherpa-button>
+                         data-icon-start="monitor-w-floating-window" aria-label="Dock as overlay"></sherpa-button>
           <sherpa-button class="expand" part="expand" data-type="icon" data-size="sm"
                          data-icon-start="fullscreen" aria-label="Maximise"
                          data-when-data-icon-start="data-maximised: fullscreen-exit"

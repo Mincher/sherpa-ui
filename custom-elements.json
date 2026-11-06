@@ -8247,7 +8247,7 @@
             },
             {
               "name": "data-poppable",
-              "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
+              "description": "show the docking button (Dock as overlay / Dock as inline) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
               "type": {
                 "text": "boolean"
               }
@@ -8304,6 +8304,14 @@
                 "text": "boolean"
               },
               "description": "whether the panel is open (delegates to <dialog>)"
+            },
+            {
+              "kind": "field",
+              "name": "dockState",
+              "type": {
+                "text": "'floating' | 'tab' | 'hover' | 'overlay' | 'fixed'"
+              },
+              "readonly": true
             },
             {
               "kind": "field",
@@ -8415,7 +8423,7 @@
             },
             {
               "name": "panel-pop",
-              "description": "The reader pressed Pop in or Pop out; side: start | end",
+              "description": "The reader pressed the docking button (Dock as overlay, or Dock as inline); side: start | end",
               "type": {
                 "text": "CustomEvent<{ fixed: boolean; side: 'end' | 'start' }>"
               }

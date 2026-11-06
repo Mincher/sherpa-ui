@@ -120,7 +120,13 @@
 :host(:state(in-layout):state(in-area)) .root { position: static; }
 /* FIXED is flat and takes its area's room (above); an OVERLAY docked in a layout draws over the view at its side,
    with the shadow and rounding of one that is not part of the page. TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
-:host(:state(in-layout):state(overlaid)) .root { display: flex; inset-block: 0; box-shadow: var(--sherpa-shadow-lg); }
+:host(:state(in-layout):state(overlaid)) .root {
+  display: flex;
+  inset-block: 0;
+  /* As wide as the area it left, down to the area's own narrowest. */
+  inline-size: clamp(min(16rem, 92%), var(--_width, 24rem), 92%);
+  box-shadow: var(--sherpa-shadow-lg);
+}
 :host(:state(in-layout):state(overlaid):state(tab-start)) .root {
   inset-inline-start: 0;
   inset-inline-end: auto;

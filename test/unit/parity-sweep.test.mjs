@@ -43,6 +43,7 @@ const KNOWN = {
   'sherpa-overlay-panel.minimised': 'ok: minimise(on) / the data-minimised attribute',
   'sherpa-overlay-panel.side': 'derived: the side its area docks on; `data-fixed` says it, or the slot it is in',
   'sherpa-overlay-panel.tabbed': 'derived: a tab on the edge, or in the row of an area that holds several; minimise() and docking change it',
+  'sherpa-overlay-panel.dockState': 'derived: floating, a tab, a tab on hover, an overlay or fixed; the docking button, Float and Minimise change it',
   'sherpa-overlay-panel.shown': 'derived: whether it is open (show() / hide()); the panel keys read it',
   // What a bar sends to turn its presets off: a request, not a state. Will, TODO 592
   'sherpa-quick-filter.presetsOff': 'read only: the presets are turned off through the Query',

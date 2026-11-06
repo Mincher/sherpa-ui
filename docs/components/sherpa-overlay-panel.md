@@ -44,7 +44,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-minimised` | boolean |  | shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens |
 | `data-overlay` | boolean |  | a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room |
 | `data-padding` | `none` |  | `none`: the body has no padding, for content that fills it (a list) |
-| `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
+| `data-poppable` | boolean |  | show the docking button (Dock as overlay / Dock as inline) (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
 | `data-updated` | boolean |  | the panel says it changed while a tab: the tab turns active and wears a "!". Set by `notify()` or a new `data-heading`; cleared when it opens |
 | `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
@@ -57,6 +57,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | Property | Type | Access | What it is |
 |---|---|---|---|
 | `open` | `boolean` | read and write | whether the panel is open (delegates to &lt;dialog>) |
+| `dockState` | `'floating' \| 'tab' \| 'hover' \| 'overlay' \| 'fixed'` | read only |  |
 | `minimised` | `boolean` | read only |  |
 | `side` | `'start' \| 'end'` | read only |  |
 | `tabbed` | `boolean` | read only |  |
@@ -92,7 +93,7 @@ Each one bubbles.
 | `panel-expand` | `{ maximised: boolean }` |  |
 | `panel-external` |  |  |
 | `panel-minimise` | `{ minimised: boolean }` | The reader pressed Minimise, or its tab |
-| `panel-pop` | `{ fixed: boolean; side: 'end' \| 'start' }` | The reader pressed Pop in or Pop out; side: start \| end |
+| `panel-pop` | `{ fixed: boolean; side: 'end' \| 'start' }` | The reader pressed the docking button (Dock as overlay, or Dock as inline); side: start \| end |
 | `panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It shut: reader (the default), width or page |
 | `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |

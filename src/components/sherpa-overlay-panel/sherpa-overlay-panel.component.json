@@ -188,8 +188,8 @@
                         "attrs": {
                           "data-type": "icon",
                           "data-size": "sm",
-                          "data-icon-start": "sidebar-flip",
-                          "aria-label": "Pop in"
+                          "data-icon-start": "monitor-w-floating-window",
+                          "aria-label": "Dock as overlay"
                         }
                       },
                       {
@@ -445,7 +445,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in goes back to the area it last left"
+      "description": "show the docking button (Dock as overlay / Dock as inline) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left"
     },
     {
       "$type": "prop",
@@ -620,7 +620,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (open, minimised, side, tabbed, shown). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (open, dockState, minimised, side, tabbed, shown). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -671,7 +671,7 @@
     {
       "$type": "event",
       "name": "panel-pop",
-      "description": "The reader pressed Pop in or Pop out; side: start | end",
+      "description": "The reader pressed the docking button (Dock as overlay, or Dock as inline); side: start | end",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -803,6 +803,11 @@
           "type": "boolean",
           "description": "whether the panel is open (delegates to <dialog>)",
           "access": "read-write"
+        },
+        {
+          "name": "dockState",
+          "type": "'floating' | 'tab' | 'hover' | 'overlay' | 'fixed'",
+          "access": "read"
         },
         {
           "name": "minimised",
