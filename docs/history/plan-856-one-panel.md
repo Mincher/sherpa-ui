@@ -133,3 +133,52 @@ most reduction, the larger saving is not the template swap but deleting `#peek` 
 shows the overlay): a CSS-only peek, which this swap would make simple, but which gives up the pointer-leave check for touch.
 
 **Order.** P1 of the plan becomes: `variantAttrs`, the two templates, `data-dock-state`, the CSS of each, then the specs.
+
+### Spike 862, way (b): the same panel, a `tab` state, CSS only
+
+Asked by Will: no tab component and no template swap; in `data-dock-state="tab"` CSS hides the body, the footer and all of the
+container header but its title and the one button that opens it, sizes the box to the label, and rotates it at the area's edge.
+One DOM. And the SAME box is the hover target: on hover (or a tap) it grows from the rotated label into the overlay.
+
+**Prototype, measured.** On the real panel, one rule block of 4 lines added from outside (hide `.body`, `.footer`, `.trail`,
+`.resize`, `.corner`, `.toolbar`, `.grip`, `.description`; `writing-mode: vertical-rl` on `.header`; the box fixed at the
+edge, `inline-size: auto`): the 396 by 800 panel became a 47 by 18 box with the title and the icon showing and the close button
+hidden. It is not a finished tab: the container header lays its title out inside its own shadow, so the rotation and the size need
+the header to take the `writing-mode` and to size to its label (a few lines in `sherpa-container-header`, or a part). Realistic
+size of the finished CSS: about 30 to 35 lines, against about 95 now.
+
+**What (b) deletes.** (Lines now: TS 617, CSS 353, HTML 145; the total 1115.)
+- HTML: the `.tab`, `.tab-open`, `.tab-title`, `.tab-mark` and `.rail` elements, about 19 lines. The tab's name comes from the header
+  (`role="button"` and `tabindex="0"`, set by the template's own directives from `data-dock-state`, no JS). The "!" is the header's
+  existing `badge` slot, shown while `data-updated`.
+- TS: the whole peek (`#onPeek`, `#onTab`, `#onPeekPress`, `#onPeekMove`, `#peek`, the `requestAnimationFrame` check, the
+  document listeners, the `peeking`, `minimised`, `overlaid` states, the tab's `pointerenter` / `click` wiring): about 120 lines.
+  What stays: a tap or press toggles `hover`, and a press outside or Escape ends it for a finger: about 15 lines. For a mouse, hover is
+  CSS: `:host([data-dock-state="tab"]:hover)` draws the overlay, so there is no pointer-leave check, no hand-over from a tab to a
+  panel, no gap between them to flicker in, and no edge cases (a drag from its edge, a synthetic pointer event, WebKit): the
+  flaky WebKit hover specs would go with the code.
+- CSS: the `.tab`, `.rail`, `.tab-open`, `.tab-mark` and the `peeking` rules: about 60 of the 95 lines.
+- A re-stamp, none: the DOM is never replaced (focus, pressed states and the `<dialog>` stay).
+
+**What (b) loses, and the answer.** The hovered panel's content must exist: it does, it is the same slotted light DOM, just hidden
+by `display: none` while it is a tab (as now). A name and a role: the header carries them (above). Focus: on the same element, so it
+stays. The "updated" mark: the badge slot. Sizing to the label: `inline-size: fit-content` with the vertical writing mode.
+Several tabs stacking down the edge: unchanged, `--_tab-index` stays (about 15 lines). Hover growth: the box changes size on
+`:hover`, which a plain CSS transition can do; the panel's own pointer-leave then is CSS too.
+
+**Numbers side by side.**
+
+| | now | (a) template swap | (b) CSS only |
+|---|---|---|---|
+| TS lines removed | 0 | 60 to 90 | about 105 (120 less 15 kept) |
+| CSS lines removed | 0 | 40 to 60 | about 60 to 65 (95 less 30 to 35 new) |
+| HTML lines removed | 0 | 0 (moved) | about 15 (19 less 4) |
+| A re-stamp on each change | none | 2 (1 ms each; focus handed over) | none |
+| A hover | peek code + a hand-over | two re-stamps | CSS `:hover`, nothing to hand over |
+| New moving parts | none | `variantAttrs`, two templates | a few lines in `sherpa-container-header` |
+
+**Recommendation: (b), and drop (a).** It deletes more (about 180 of 1115 lines, 16 percent, against 100 to 150), has no re-stamp and no
+focus hand-over, and takes out the hover code that has been the source of the WebKit flakes. The one real cost is the work in
+`sherpa-container-header` so a header can size to its label and take a writing mode. It also fits the plan's own principle
+(state is an attribute CSS reads): build it with the `data-dock-state` migration, in the same change. Open question for Will: on a
+touch screen a tap shows the overlay and a second tap, or a press outside, shuts it: keep as is.
