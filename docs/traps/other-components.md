@@ -1758,12 +1758,12 @@ scopes; `open` draws them. The classic panel does the same (`#stale`).
 
 ### T-one-line-between-a-context-and-a-panel-area
 
-**One line sits between a Context and an open panel area, and it is the area's** (Will, TODO 867: a double border beside the
-filter panel). The Records page's last card ended 9px short of the area's line (the grid's 8px inset, then the card's own
-1px border), so two parallel lines showed. The shell now says, from the area's state (`start-open`, `end-open`), that the
-Context's frame takes no gutter on that side (`--sherpa-context-gutter-start|end: 0`, read by the grid's inline padding in
-the generated tokens) and reaches 1px under the area, so the last card's border and the area's line are the one column. The
-resize handle (`.edge-*`) draws only on hover, focus or drag, so it adds none; the area's width work is separate.
+**One gap sits between a Context and an open panel area, and it is the area's 16px inset** (Will, TODO 867, then 871). A
+docked panel is a card inset 16px from the nav, the header, the window's edge and the content, with a border and four
+rounded corners of its own, so no line of the area's is drawn (TODO 867's shared line is gone). The shell says, from the
+area's state (`start-open`, `end-open`), that the Context's frame takes no gutter on that side
+(`--sherpa-context-gutter-start|end: 0`, read by the grid's inline padding in the generated tokens): the area's inset is
+the whole gap. The resize handle (`.edge-*`) draws only on hover, focus or drag, so it adds none.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `test/e2e/reforged-shell-one-line-at-a-panel-area.spec.ts`

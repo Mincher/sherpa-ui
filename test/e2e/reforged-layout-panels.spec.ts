@@ -80,30 +80,29 @@ async function drag(page: Page, from: [number, number], by: [number, number]): P
   await settle(page);
 }
 
+/** A docked panel is a card INSET from its area by 16px on every side. TODO 871 */
+const inset = (b: { x: number; y: number; w: number; h: number }) => ({ x: b.x + 16, y: b.y + 16, w: b.w - 32, h: b.h - 32 });
+
 test('docked, a panel is FLUSH to its area\'s top, side and bottom, with no shadow: the area draws the divider', async ({ page }) => {
   await shell(page);
   const [body, start, end] = [await box(page, 'shell .body'), await box(page, 'layout .area-start'), await box(page, 'layout .area-end')];
   const [column, ask] = [await box(page, 'col .root'), await box(page, 'ask .root')];
-  // Flush: the column fills the start area, the Assistant the end, each top to bottom.
-  expect(column).toEqual(start);
-  expect(ask).toEqual(end);
+  // A card: the column sits in the start area, the Assistant in the end, each inset by 16px.
+  expect(column).toEqual(inset(start));
+  expect(ask).toEqual(inset(end));
   expect([start.x, start.y, start.h]).toEqual([body.x, body.y, body.h]);
   expect([end.x + end.w, end.y, end.h]).toEqual([body.x + body.w, body.y, body.h]);
-  // Flat: no shadow, no rounding, no edge of their own.
+  // A card of its own: no shadow, four rounded corners, an edge.
   const look = await page.evaluate(() => ['col', 'ask'].map((id) => {
     const el = document.getElementById(id)!.shadowRoot!.querySelector('.root')!;
     const s = getComputedStyle(el);
-    return [s.boxShadow, s.borderTopLeftRadius, s.borderTopWidth];
+    return [s.boxShadow, s.borderTopLeftRadius, s.borderTopRightRadius, s.borderBottomLeftRadius, s.borderBottomRightRadius];
   }));
-  expect(look).toEqual([['none', '0px', '0px'], ['none', '0px', '0px']]);
-  // By PIXELS: the divider is drawn on the column's own last pixel; past it the content's own
-  // surface, with no shadow falling on it.
+  expect(look).toEqual([['none', '4px', '4px', '4px', '4px'], ['none', '4px', '4px', '4px', '4px']]);
+  // No line of the area's is drawn: the card's own border is the edge, and no shadow falls on the content.
   const y = start.y + 400;
-  const row = await pixels(page, start.x + start.w - 1, y, 24);
   const surface = (await pixels(page, start.x + start.w + 200, y))[0]!;
-  expect(far(row[0]!, surface), `the divider: ${JSON.stringify(row[0])}`).toBeGreaterThan(24);
-  for (const [i, p] of row.slice(2).entries()) expect(far(p, surface), `${i + 2}px past the divider: ${JSON.stringify(p)}`).toBeLessThanOrEqual(2);
-  // …and before the end area's: no shadow falls back on the content.
+  for (const p of await pixels(page, start.x + start.w, y, 23)) expect(far(p, surface)).toBeLessThanOrEqual(2);
   const before = await pixels(page, end.x - 23, y, 23);
   for (const p of before) expect(far(p, surface)).toBeLessThanOrEqual(2);
 });
@@ -113,12 +112,12 @@ test('the content reflows beside its panels, and takes the width back when one s
   const body = await box(page, 'shell .body');
   const frame = () => box(page, 'shell .context-edges');
   const [start, end] = [await box(page, 'layout .area-start'), await box(page, 'layout .area-end')];
-  // The frame reaches 1px under each open area: the last card's border is the area's one line. TRAP T-one-line-between-a-context-and-a-panel-area
-  expect(await frame()).toMatchObject({ x: start.x + start.w - 1, w: end.x - (start.x + start.w) + 2 });
+  // The frame starts where each open area ends: the area's inset is the gap. TRAP T-one-line-between-a-context-and-a-panel-area
+  expect(await frame()).toMatchObject({ x: start.x + start.w, w: end.x - (start.x + start.w) });
   // Shut, the Assistant gives the content its width back.
   await page.evaluate(() => (document.getElementById('ask') as HTMLElement & { hide(): void }).hide());
   await settle(page);
-  expect(await frame()).toMatchObject({ x: start.x + start.w - 1, w: body.x + body.w - (start.x + start.w) + 1 });
+  expect(await frame()).toMatchObject({ x: start.x + start.w, w: body.x + body.w - (start.x + start.w) });
   // Floating, the column does too: its area takes no width.
   await press(page, 'col', '.float');
   expect(await frame()).toMatchObject({ x: body.x, w: body.w });
@@ -139,7 +138,7 @@ test('a panel opened LATE shows its area, shut it gives it back; a card hidden b
     return shut;
   }).then((shut) => expect(shut).toBe(0));
   await settle(page);
-  expect(await box(page, 'col .root')).toEqual(await box(page, 'layout .area-start'));
+  expect(await box(page, 'col .root')).toEqual(inset(await box(page, 'layout .area-start')));
   expect((await box(page, 'layout .area-start')).w).toBe(464);
   await page.evaluate(() => document.getElementById('col')!.removeAttribute('open'));
   await settle(page);
@@ -160,8 +159,8 @@ test('an area resizes by its edge, by a real drag and by the keys; the shell rep
   await drag(page, [edge.x + edge.w / 2, edge.y + 300], [60, 0]);
   const wider = await area();
   expect(wider.w).toBe(before.w + 60);
-  // The column is still flush in it.
-  expect(await box(page, 'col .root')).toEqual(wider);
+  // The column is still its card in it.
+  expect(await box(page, 'col .root')).toEqual(inset(wider));
   // The keys, from the edge, as a reader with no pointer does it.
   await page.evaluate(() => (document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.edge-start') as HTMLElement).focus());
   await page.keyboard.press('ArrowLeft');
@@ -187,16 +186,16 @@ test('a panel floats out of its area and docks back into the SAME one: a panel f
   await page.evaluate(() => document.getElementById('ask')!.setAttribute('data-fixed', 'start'));
   await settle(page);
   const inStart = await box(page, 'layout .area-start');
-  expect(await box(page, 'ask .root')).toEqual(inStart);
+  expect(await box(page, 'ask .root')).toEqual(inset(inStart));
   expect((await box(page, 'layout .area-end')).w).toBe(0);
   await press(page, 'ask', '.float');
   expect((await box(page, 'layout .area-start')).w).toBe(0);
   await press(page, 'ask', '.float');
-  expect(await box(page, 'ask .root')).toEqual(inStart);
+  expect(await box(page, 'ask .root')).toEqual(inset(inStart));
   await press(page, 'ask', '.dock-overlay');
   expect((await box(page, 'layout .area-start')).w).toBe(0);
   await press(page, 'ask', '.dock-fixed');
-  expect(await box(page, 'ask .root')).toEqual(inStart);
+  expect(await box(page, 'ask .root')).toEqual(inset(inStart));
   expect(await page.evaluate(() => document.getElementById('ask')!.getAttribute('data-fixed'))).toBe('start');
 });
 
@@ -269,17 +268,16 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
   await settle(page);
   const cv = await box(page, 'cv');
   const card = () => box(page, 'nodes .root');
-  expect(await card()).toEqual({ x: cv.x, y: cv.y, w: 288, h: cv.h });
+  expect(await card()).toEqual({ x: cv.x + 16, y: cv.y + 16, w: 288 - 32, h: cv.h - 32 });
   expect(await page.evaluate(() => getComputedStyle(document.getElementById('nodes')!.shadowRoot!.querySelector('.root')!).boxShadow)).toBe('none');
-  // By pixels, on a row between the grid's crosses: the divider, then the canvas, no shadow.
+  // By pixels, on a row between the grid's crosses: past the area, the canvas, no shadow.
   const y = await page.evaluate(([top]) => {
     const view = (document.getElementById('cv') as HTMLElement & { view: { y: number } }).view;
     return top! + 300 + 12 - (((300 - view.y) % 24) + 24) % 24;
   }, [cv.y]);
-  const row = await pixels(page, cv.x + 287, y, 24);
+  const row = await pixels(page, cv.x + 288, y, 24);
   const canvasInk = (await pixels(page, cv.x + 700, y))[0]!;
-  expect(far(row[0]!, canvasInk)).toBeGreaterThan(24);
-  for (const p of row.slice(2)) expect(far(p, canvasInk)).toBeLessThanOrEqual(2);
+  for (const p of row) expect(far(p, canvasInk)).toBeLessThanOrEqual(2);
   // What the view shows is beside the card: the stage.
   const stage = await box(page, 'cv .stage');
   expect(stage).toEqual({ x: cv.x + 288, y: cv.y, w: cv.w - 288, h: cv.h });
@@ -296,13 +294,13 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
     return [r.x + r.width / 2, r.y + 300];
   });
   await drag(page, edge as [number, number], [40, 0]);
-  expect((await card()).w).toBe(328);
+  expect((await card()).w).toBe(328 - 32);
   expect(await box(page, 'thing')).toEqual(thing);
   expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([['cv', { side: 'start', width: 328 }]]);
   // The host hands it back.
   await page.evaluate(() => document.getElementById('cv')!.setAttribute('data-panel-width', '300'));
   await settle(page);
-  expect((await card()).w).toBe(300);
+  expect((await card()).w).toBe(268);
   // Floating, the card gives the width back; the plane holds still.
   await press(page, 'nodes', '.float');
   expect(await box(page, 'cv .stage')).toEqual(cv);

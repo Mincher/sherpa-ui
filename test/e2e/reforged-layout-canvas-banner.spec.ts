@@ -106,7 +106,8 @@ test('beside a panel card: the banners keep clear of it, and of the controls and
     const r = await read(page);
     const panel = r.panel!;
     for (const banner of [r.app!, r.data!]) {
-      expect(Math.round(banner.left - panel.right), `${width}: 32px past the card`).toBe(32);
+      // The card is inset 16px in its area, and the banners stand 32px in from the area's edge. TODO 871
+      expect(Math.round(banner.left - panel.right), `${width}: past the card`).toBe(48);
       expect(Math.round(r.canvas.right - banner.right), `${width}: 32px in from the right`).toBe(32);
       expect(hit(banner, panel), `${width}: banner x panel`).toBe(false);
       expect(hit(banner, r.controls), `${width}: banner x controls`).toBe(false);

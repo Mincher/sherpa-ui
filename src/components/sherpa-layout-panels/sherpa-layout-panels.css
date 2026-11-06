@@ -31,6 +31,9 @@
   position: relative;
   z-index: var(--sherpa-layer-content, 1);
   min-block-size: 0;
+  /* The panel is a card INSET from the nav, the header, the window's edge and the content. TODO 871 */
+  padding: var(--sherpa-display-mode-space-base, 16px);
+  box-sizing: border-box;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   --_cols: var(--sherpa-layout-grid-columns, 12);
   --_gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
@@ -91,15 +94,13 @@
 /* The DIVIDER is the panel's own edge: the area draws it over the panel's last pixel, so the
    panel keeps the area's whole width and drops its own card edge while docked. */
 .area::after {
+  display: none;
   content: '';
   position: absolute;
   inset-block: 0;
   pointer-events: none;
   border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
-/* In TAB mode the tabs mark the edge, so the divider is not drawn. TRAP T-an-area-with-two-panels-is-tabbed */
-:host(:state(start-tabs)) .area-start::after,
-:host(:state(end-tabs)) .area-end::after { display: none; }
 .area-start::after { inset-inline-end: 0; }
 .area-end::after { inset-inline-start: 0; }
 
@@ -111,6 +112,7 @@
   position: absolute;
   inset: 0;
   z-index: auto;
+  padding: 0;
   flex: none;
   min-inline-size: 0;
   max-inline-size: none;

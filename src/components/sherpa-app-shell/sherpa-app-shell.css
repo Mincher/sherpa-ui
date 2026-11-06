@@ -114,17 +114,10 @@
   min-block-size: 0;
 }
 
-/* ONE LINE between the Context and an open panel area: the area draws it, on its own edge. The Context's cards end FLUSH
-   there — the gutter beside the area is none (`--sherpa-context-gutter-*`, read by the grid), and the frame reaches 1px under
-   the area, so the last card's border IS the area's line. TRAP T-one-line-between-a-context-and-a-panel-area */
-.body:state(has-panel-start):state(start-open):not([data-no-room]) .context-edges {
-  --sherpa-context-gutter-start: 0px;
-  margin-inline-start: -1px;
-}
-.body:state(has-panel-end):state(end-open):not([data-no-room]) .context-edges {
-  --sherpa-context-gutter-end: 0px;
-  margin-inline-end: -1px;
-}
+/* The gap between the Context and an open panel area is the AREA's inset (16px, the panel's own card): the Context takes
+   no gutter of its own beside it (`--sherpa-context-gutter-*`, read by the grid). TRAP T-one-line-between-a-context-and-a-panel-area */
+.body:state(has-panel-start):state(start-open):not([data-no-room]) .context-edges { --sherpa-context-gutter-start: 0px; }
+.body:state(has-panel-end):state(end-open):not([data-no-room]) .context-edges { --sherpa-context-gutter-end: 0px; }
 
 /* THE SCROLLER. A Context taller than its frame scrolls HERE, between the
    panel areas and under the header. TRAP T-only-the-context-scrolls */

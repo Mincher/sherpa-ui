@@ -87,17 +87,18 @@
 }
 :host([data-maximised]) .resize { display: none; }
 
-/* Fixed: docked in a panel area of the shell, which owns its width, its edge and
-   its divider. Flush and flat: no edge, no rounding, no shadow of its own.
+/* Fixed: docked in a panel area, which owns its width and insets it by 16px. A card of its own: its edge and
+   four rounded corners, no shadow.
    TRAP T-a-panel-pops-into-the-end-area */
 :host(:state(in-area)) { display: block; }
 :host(:state(in-area)) .root {
   position: static;
   inline-size: 100%;
   block-size: 100%;
+  /* A card of its own in the area, inset by it: its border and four rounded corners, no shadow. TODO 871 */
   box-shadow: none;
-  border-width: 0;
-  border-radius: 0;
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 }
 :host(:state(in-area)) :is(.resize, .expand) { display: none; }
 /* Several panels share the area, a tab each: only the one the area marks in front is drawn. TRAP T-an-area-with-two-panels-is-tabbed */

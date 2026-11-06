@@ -63,6 +63,7 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-content-min-width` | `.content` | `min-inline-size` |
 | `--sherpa-layer-content` | `.area` | `z-index` |
+| `--sherpa-display-mode-space-base` | `.area` | `padding` |
 | `--sherpa-layout-grid-columns` | `.area` | `--_cols` |
 | `--sherpa-layout-grid-gap-horizontal` | `.area` | `--_gap` |
 | `--sherpa-layout-grid-padding` | `.area` | `--_pad` |

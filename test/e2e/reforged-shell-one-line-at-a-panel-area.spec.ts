@@ -1,8 +1,8 @@
 import { test, expect } from './harness';
 
 /**
- * A Context's cards end FLUSH at an open panel area, and the frame reaches 1px under it, so the last card's border IS
- * the area's one line; shut, the gutter comes back (Will, TODO 867). Read from the grid's inset and the frame's edge.
+ * A Context's cards take no gutter at an open panel area: the area's 16px inset is the one gap; shut, the gutter comes back
+ * (Will, TODOs 867, 871). Read from the grid's inset and the frame's edge.
  * TRAP T-one-line-between-a-context-and-a-panel-area
  */
 test('an open panel area takes the Context\'s gutter on its side; shut, it comes back', async ({ page }) => {
@@ -27,6 +27,6 @@ test('an open panel area takes the Context\'s gutter on its side; shut, it comes
   });
   expect(r.shut.pad).not.toBe('0px');
   expect(r.shut.margin).toBe('0px');
-  expect(r.open).toEqual({ pad: '0px', margin: '-1px' });
+  expect(r.open).toEqual({ pad: '0px', margin: '0px' });
   expect(r.again.pad).toBe(r.shut.pad);
 });

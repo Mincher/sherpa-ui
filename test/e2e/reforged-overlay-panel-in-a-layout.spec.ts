@@ -63,15 +63,15 @@ async function drag(page: Page, from: [number, number], by: [number, number]): P
   await settle(page);
 }
 
-test('slotted in a canvas it is docked flush, with no shadow, its width the canvas\'s area; a badge sits beside its title', async ({ page }) => {
+test('slotted in a canvas it is docked as a card 16px in, with no shadow, its width the canvas\'s area; a badge sits beside its title', async ({ page }) => {
   const cv = await rect(page, '', 'cv');
   const root = await rect(page, '.root');
-  expect(root).toEqual({ x: cv.x, y: cv.y, w: root.w, h: cv.h });
+  expect(root).toEqual({ x: cv.x + 16, y: cv.y + 16, w: root.w, h: cv.h - 32 });
   expect(root.w).toBeGreaterThanOrEqual(256);
   expect(await style(page, '.root', 'box-shadow')).toBe('none');
   expect(await style(page, '.root', 'position')).toBe('static');
   // The canvas's content takes what is left of it.
-  expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x + root.w);
+  expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x + root.w + 32);
   // The badge is in the header's title row, past the title.
   const [title, badge] = await page.evaluate(() => {
     const header = document.getElementById('nodes')!.shadowRoot!.querySelector('.header')!;
@@ -90,7 +90,7 @@ test('Float lifts it 16px in and it floats INSIDE the canvas, never past it; the
   await press(page, '.float');
   const lifted = await rect(page, '.root');
   // Never under the panel floor, 20rem: a card of 18rem lifts to it.
-  expect(lifted).toEqual({ x: cv.x + 16, y: cv.y + 16, w: Math.max(320, docked.w - 32), h: cv.h - 32 });
+  expect(lifted).toEqual({ x: docked.x + 16, y: docked.y + 16, w: Math.max(320, docked.w - 32), h: docked.h - 32 });
   expect(await style(page, '.root', 'position')).toBe('absolute');
   expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x);
   // Dragged far past the canvas's corner: it stops at the canvas's edge, not the window's.
@@ -111,7 +111,6 @@ test('Float lifts it 16px in and it floats INSIDE the canvas, never past it; the
 
 test('Minimise makes a tab on the canvas\'s LEFT edge, inside it; the area gives its width back; the tab opens it as it was', async ({ page }) => {
   const cv = await rect(page, '', 'cv');
-  const docked = await rect(page, '.root');
   await press(page, '.minimise');
   const tab = await rect(page, '.tab');
   expect(tab.x).toBe(cv.x);
@@ -122,7 +121,7 @@ test('Minimise makes a tab on the canvas\'s LEFT edge, inside it; the area gives
   await page.mouse.click(...centre(tab));
   await settle(page);
   // A press on the tab shows the panel as an OVERLAY (a third of the canvas at most); Dock as fixed puts it back in its area.
-  expect((await rect(page, '.root')).h).toBe(docked.h);
+  expect((await rect(page, '.root')).h).toBe(cv.h);
   await press(page, '.dock-fixed');
   expect(await style(page, '.root', 'display')).not.toBe('none');
   expect(await page.evaluate(() => document.getElementById('nodes')!.hasAttribute('data-minimised'))).toBe(false);
