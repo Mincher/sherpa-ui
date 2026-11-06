@@ -14,6 +14,8 @@ import { panelKeys } from '../../core/ui/panel-keys.js';
 /** The narrowest Context a panel area may leave: where the layout grid's tablet band begins (`@container sherpa-context (min-width: 728px)`). A wider
  *  rail (Increased nav sizing) still leaves a laptop's 1280px room for the panel. TRAP T-the-panel-is-desktop-only */
 const TABLET = 728;
+/** The room a panel area is worth showing: what an area of an ordinary panel takes. TRAP T-the-panel-is-desktop-only */
+const AREA_ROOM = 464;
 
 export class SherpaAppShell extends SherpaElement {
   static override css = new URL('./sherpa-app-shell.css', import.meta.url);
@@ -66,7 +68,7 @@ export class SherpaAppShell extends SherpaElement {
     this.#roomWatch = new ResizeObserver(() => {
       // Settings covers the Context, so the room under it does not change.
       if (this.dataset['navState'] === 'settings') return;
-      const min = this.#layout()?.areaLeast() ?? 0;
+      const min = this.#layout() ? AREA_ROOM : 0;
       const room = body.getBoundingClientRect().width >= min + TABLET;
       if (room !== this.hasAttribute('data-no-room')) return;
       this.set('data-no-room', !room);

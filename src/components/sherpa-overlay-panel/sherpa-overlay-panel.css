@@ -90,7 +90,13 @@
 /* Fixed: docked in a panel area, which owns its width and insets it by 16px. A card of its own: its edge and
    four rounded corners, no shadow.
    TRAP T-a-panel-pops-into-the-end-area */
-:host(:state(in-area)) { display: block; }
+:host(:state(in-area)) {
+  display: block;
+  /* It sets the width of the area that holds it, and fills it: a size of its own, not its content's. TODO 858 */
+  contain: inline-size;
+  inline-size: var(--_width, 24rem);
+  max-inline-size: 100%;
+}
 :host(:state(in-area)) .root {
   position: static;
   inline-size: 100%;

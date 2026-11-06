@@ -391,7 +391,7 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
   expect(r.keyed).toBe(r.wider - 16);
   // Never over 33% of the row, never under the area's min.
   expect(Math.abs(r.most - r.row * 0.33)).toBeLessThanOrEqual(1);
-  expect(r.least).toBe(464);
+  expect(r.least).toBe(256);
   expect(r.end).toBe(r.most);
   expect(r.given).toBe(500);
   expect(r.back).toBe(r.before.start);
@@ -402,5 +402,5 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
   ]);
   expect(r.held.every(Boolean)).toBe(true);
   expect(r.edge).toEqual({ astride: true, flush: true });
-  expect(r.aria).toEqual({ role: 'separator', now: String(r.end), min: '464', max: String(Math.round(r.row * 0.33)) });
+  expect(r.aria).toEqual({ role: 'separator', now: String(r.end), min: '256', max: String(Math.round(r.row * 0.33)) });
 });

@@ -184,7 +184,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (areaLeast, areaMin). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (areaMin). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -204,10 +204,6 @@
     "content.min-inline-size": "{sherpa.content-min-width}",
     "area.z-index": "{sherpa.layer-content}",
     "area.padding": "{sherpa.display-mode-space-base}",
-    "area.--_cols": "{sherpa.layout-grid-columns}",
-    "area.--_gap": "{sherpa.layout-grid-gap-horizontal}",
-    "area.--_pad": "{sherpa.layout-grid-padding}",
-    "area.flex": "{sherpa.panel-area-width}",
     "area.min-inline-size": "{sherpa.panel-area-min-width}",
     "area.max-inline-size": "{sherpa.panel-area-max-width}",
     "tabs.gap": "{sherpa.theme-gap-sm}",
@@ -222,12 +218,6 @@
   "$extensions": {
     "sherpa": {
       "methods": [
-        {
-          "$type": "method",
-          "name": "areaLeast",
-          "args": "",
-          "description": "The least an area wants, in px: the room a host's rule needs before it shows one. An area at a narrow row is drawn under it (`areaMin`), the content's least first."
-        },
         {
           "$type": "method",
           "name": "areaMin",

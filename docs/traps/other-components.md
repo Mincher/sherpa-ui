@@ -912,7 +912,11 @@ end area. Plan: `docs/history/plan-796-panel-areas.md`.
   the node panel, the filter column. The divider is the area's `::after`, drawn
   over the panel's last pixel, so the panel keeps the area's whole width. The
   knobs: `--sherpa-panel-area-width` (three layout-grid columns), `-min-width`
-  (464) and `-max-width` (33%); the canvas sets 18rem, 16rem and 60%.
+  (16rem) and `-max-width` (33%).
+- **The area follows its panels' width** (Will, TODO 858). No width of its own: it is as wide as its widest open panel (the panel's
+  `--_width`, 24rem by default, which an overlay also uses, so the width carries across a dock) plus the 16px inset each side;
+  empty, shut or every panel a tab, it takes nothing. A reader's drag or a host's `data-panel-<side>-width` asks for one, held
+  as `--_asked-<side>` and handed to the panels. The panel is `contain: inline-size` so its content never sets the area's width.
 - **The two areas SHARE the room** (Will, TODO 873). The areas `flex-shrink`, and the content keeps its least width,
   `--sherpa-content-min-width` (24rem): a start and an end panel together never starve it, whichever is the wider, and
   the shrink is the one rule for the shell's body and the canvas, as both compose this layout. A room under what the
@@ -953,6 +957,7 @@ end area. Plan: `docs/history/plan-796-panel-areas.md`.
 - Site: `test/e2e/reforged-layout-panels.spec.ts`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
 - Site: `test/e2e/reforged-panel-areas-share-the-room.spec.ts`
+- Site: `test/e2e/reforged-panel-areas-follow-their-content.spec.ts`
 
 ---
 

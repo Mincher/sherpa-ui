@@ -5188,12 +5188,6 @@
           "members": [
             {
               "kind": "method",
-              "name": "areaLeast",
-              "parameters": [],
-              "description": "The least an area wants, in px: the room a host's rule needs before it shows one. An area at a narrow row is drawn under it (`areaMin`), the content's least first."
-            },
-            {
-              "kind": "method",
               "name": "areaMin",
               "parameters": [
                 {

@@ -26,9 +26,8 @@
               row kept in view. The outlet lifts a Context's own `slot="context-header"`
               element here, and takes it away with the Context; what scrolls passes
               under it, under the shell's scroll shadow. Empty it takes no room.
-    Set `--sherpa-panel-area-width` to change how wide a panel area is
-    (three layout-grid columns), `--sherpa-panel-area-min-width` its narrowest,
-    `--sherpa-panel-area-max-width` its widest. The AREA owns them.
+    A panel area is as wide as its widest open panel (the panel's own `--_width`); `--sherpa-panel-area-min-width` is
+    its narrowest, `--sherpa-panel-area-max-width` its widest.
 
     panel-start  a panel BESIDE the Context, on the leading side — a filter
               panel. Empty it takes no room.

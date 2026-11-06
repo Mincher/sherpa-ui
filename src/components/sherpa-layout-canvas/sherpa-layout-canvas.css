@@ -30,7 +30,6 @@
 .panels {
   position: absolute;
   inset: 0;
-  --sherpa-panel-area-width: 18rem;
   --sherpa-panel-area-min-width: 16rem;
   --sherpa-panel-area-max-width: 33%;
 }
@@ -38,6 +37,9 @@
 /* ── The banners ──────────────────────────────────────────────────────── */
 /* Across the top of the cell beside the card, 32px in. A hidden one takes no room.
    Over the view, which follows it in the template. */
+/* The card's own width: a node panel's. */
+slot[name="panel"]::slotted(*) { --_width: 18rem; }
+
 .banner {
   grid-area: 1 / 1;
   align-self: start;

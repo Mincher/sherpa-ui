@@ -331,7 +331,7 @@ test.describe('Pop in and Pop out', () => {
     const fixed = await read(page);
     expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', open: true, position: 'static', resize: false, pop: true, label: 'Dock as overlay', icon: 'monitor-w-floating-window' });
     // FLUSH in the area, which owns its width; no inset. TODO 796
-    expect(fixed.area.w).toBeGreaterThanOrEqual(464);
+    expect(fixed.area.w).toBeGreaterThanOrEqual(416);
     // A card, inset 16px in its area. TODO 871
     expect(fixed.root).toEqual({ x: fixed.area.x + 16, w: fixed.area.w - 32 });
 
@@ -350,7 +350,7 @@ test.describe('Pop in and Pop out', () => {
     const fixed = await read(page);
     expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start', position: 'static', area: { x: 0, w: 0 } });
     expect(fixed.root).toEqual({ x: fixed.start.x + 16, w: fixed.start.w - 32 });
-    expect(fixed.start.w).toBeGreaterThanOrEqual(464);
+    expect(fixed.start.w).toBeGreaterThanOrEqual(416);
     await press(page);
     expect(await read(page)).toMatchObject({ parent: 'div', slot: '', position: 'fixed', start: { x: 0, w: 0 } });
     await press(page);

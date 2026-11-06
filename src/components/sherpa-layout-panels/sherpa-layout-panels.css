@@ -35,15 +35,13 @@
   padding: var(--sherpa-display-mode-space-base, 16px);
   box-sizing: border-box;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
-  --_cols: var(--sherpa-layout-grid-columns, 12);
-  --_gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
-  --_pad: var(--sherpa-layout-grid-padding, 16px);
-  --_col: calc((100% - var(--_pad) - (var(--_cols) - 1) * var(--_gap)) / var(--_cols));
-  flex: 0 1 var(--_asked, var(--sherpa-panel-area-width, calc(3 * var(--_col) + 2 * var(--_gap) + var(--_pad))));
+  /* No width of its own: it holds its widest panel, until a reader drags it or a host sets it. TODO 858 */
+  flex: 0 1 var(--_asked, auto);
   /* Never over its own max: at a narrow row the third wins, so two areas and the content's least still fit. */
-  min-inline-size: min(var(--sherpa-panel-area-min-width, 464px), var(--sherpa-panel-area-max-width, 33%));
+  min-inline-size: min(var(--sherpa-panel-area-min-width, 16rem), var(--sherpa-panel-area-max-width, 33%));
   max-inline-size: var(--sherpa-panel-area-max-width, 33%);
 }
+
 .area-start { --_asked: var(--_asked-start); }
 .area-end { --_asked: var(--_asked-end); }
 

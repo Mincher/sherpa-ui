@@ -30,7 +30,6 @@ For a panel docked beside content, flush in its own area: the area takes the pan
 
 | Method | What it does |
 |---|---|
-| `areaLeast()` | The least an area wants, in px: the room a host's rule needs before it shows one. An area at a narrow row is drawn under it (`areaMin`), the content's least first. |
 | `areaMin(side: PanelSide = 'start')` | The narrowest an area may be drawn, in px: its least, never over its own max. |
 
 ## Events
@@ -64,10 +63,6 @@ What each class's base rule reads:
 | `--sherpa-content-min-width` | `.content` | `min-inline-size` |
 | `--sherpa-layer-content` | `.area` | `z-index` |
 | `--sherpa-display-mode-space-base` | `.area` | `padding` |
-| `--sherpa-layout-grid-columns` | `.area` | `--_cols` |
-| `--sherpa-layout-grid-gap-horizontal` | `.area` | `--_gap` |
-| `--sherpa-layout-grid-padding` | `.area` | `--_pad` |
-| `--sherpa-panel-area-width` | `.area` | `flex` |
 | `--sherpa-panel-area-min-width` | `.area` | `min-inline-size` |
 | `--sherpa-panel-area-max-width` | `.area` | `max-inline-size` |
 | `--sherpa-theme-gap-sm` | `.tabs` | `gap` |

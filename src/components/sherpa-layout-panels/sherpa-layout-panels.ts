@@ -67,17 +67,16 @@ export class SherpaLayoutPanels extends SherpaElement {
     for (const side of SIDES) if (name === `data-panel-${side}-width`) this.#askWidth(side);
   }
 
-  /** The least an area wants, in px: the room a host's rule needs before it shows one. An area at a narrow row is drawn
-   *  under it (`areaMin`), the content's least first. */
-  areaLeast(): number {
-    const said = getComputedStyle(this).getPropertyValue('--sherpa-panel-area-min-width').trim();
-    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    return (said.endsWith('rem') ? parseFloat(said) * rem : parseFloat(said)) || 464;
-  }
-
   /** The narrowest an area may be drawn, in px: its least, never over its own max. */
   areaMin(side: PanelSide = 'start'): number {
-    return Math.min(this.areaLeast(), this.#areaMax(side));
+    return Math.min(this.#least(), this.#areaMax(side));
+  }
+
+  /** The narrowest its CSS asks, in px. */
+  #least(): number {
+    const said = getComputedStyle(this).getPropertyValue('--sherpa-panel-area-min-width').trim();
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    return (said.endsWith('rem') ? parseFloat(said) * rem : parseFloat(said)) || 16 * rem;
   }
 
   /** The widest, in px: its max is a share of the row, or a length. */
@@ -101,6 +100,7 @@ export class SherpaLayoutPanels extends SherpaElement {
   #follow(side: PanelSide): void {
     this.#watch[side]?.disconnect();
     const panels = this.#panels(side);
+    this.#askWidth(side);
     this.#sync(side);
     if (!panels.length) return;
     const watch = new MutationObserver(() => this.#sync(side));
@@ -173,19 +173,27 @@ export class SherpaLayoutPanels extends SherpaElement {
       min: () => this.areaMin(side),
       max: () => this.#areaMax(side),
       apply: (px, done) => {
-        this.style.setProperty(`--_asked-${side}`, `${Math.round(px)}px`);
+        this.#setPanelWidth(side, px);
         // What the clamp DREW is the width: a key moves from there.
         const width = Math.round(drawn());
-        this.style.setProperty(`--_asked-${side}`, `${width}px`);
+        this.#setPanelWidth(side, width);
         if (done) this.emit('panel-area-resize', { side, width });
       },
     });
   }
 
+  /** A width asked of an area (a reader's drag, or the host's): the area holds it, and its panels take it less the two insets, so a
+   *  panel moved out keeps it. Nothing asked, the area follows its panels. TODO 858 */
+  #setPanelWidth(side: PanelSide, px: number): void {
+    this.style.setProperty(`--_asked-${side}`, `${Math.round(px)}px`);
+    const pad = parseFloat(getComputedStyle(this.#area(side) ?? this).paddingInlineStart) || 0;
+    for (const panel of this.#panels(side)) panel.style.setProperty('--_width', `${Math.max(0, Math.round(px - 2 * pad))}px`);
+  }
+
   /** The host's width for an area, in: none is the area's own. */
   #askWidth(side: PanelSide): void {
     const px = this.num(`data-panel-${side}-width`, 0);
-    if (px > 0) this.style.setProperty(`--_asked-${side}`, `${px}px`);
+    if (px > 0) this.#setPanelWidth(side, px);
     else this.style.removeProperty(`--_asked-${side}`);
   }
 }
