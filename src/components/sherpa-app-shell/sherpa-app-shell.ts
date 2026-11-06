@@ -11,8 +11,9 @@ import type { SherpaLayoutPanels } from '../sherpa-layout-panels/sherpa-layout-p
 import '../sherpa-layout-panels/sherpa-layout-panels.js';
 import { panelKeys } from '../../core/ui/panel-keys.js';
 
-/** The narrowest Context a panel area may leave: the layout grid's tablet breakpoint. */
-const TABLET = 768;
+/** The narrowest Context a panel area may leave: where the layout grid's tablet band begins (`@container sherpa-context (min-width: 728px)`). A wider
+ *  rail (Increased nav sizing) still leaves a laptop's 1280px room for the panel. TRAP T-the-panel-is-desktop-only */
+const TABLET = 728;
 
 export class SherpaAppShell extends SherpaElement {
   static override css = new URL('./sherpa-app-shell.css', import.meta.url);

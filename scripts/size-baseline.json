@@ -3,7 +3,7 @@
   "src/components.ts": 133,
   "src/components/sherpa-accordion/sherpa-accordion.ts": 75,
   "src/components/sherpa-app-header/sherpa-app-header.ts": 215,
-  "src/components/sherpa-app-shell/sherpa-app-shell.ts": 128,
+  "src/components/sherpa-app-shell/sherpa-app-shell.ts": 129,
   "src/components/sherpa-badge/sherpa-badge.ts": 13,
   "src/components/sherpa-barchart/sherpa-barchart.ts": 179,
   "src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.ts": 91,

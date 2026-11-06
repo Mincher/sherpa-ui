@@ -420,9 +420,12 @@ While Settings is open the nav is wide, but the overlay covers the Context:
 the shell ignores the room then, or leaving Settings would shut and reopen
 the panel under it.
 
+**The Context a panel area leaves is 728px** (11-06): where the layout grid's tablet band begins, not 768. The nav's wider rail (`31c1b1cef`, on by default) left a 1280px window a 1200px body, one panel and 736px short of the old reserve: no panel on a laptop. A 1192px body is the least.
+
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
+- Site: `test/e2e/reforged-shell-room-for-a-panel.spec.ts`
 
 ### T-bind-locks-what-it-owns
 
