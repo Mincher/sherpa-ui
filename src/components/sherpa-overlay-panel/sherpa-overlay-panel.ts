@@ -274,15 +274,25 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Tabs of the open minimised panels stack down the edge, in the order they were shrunk: one stack
    *  to a window, one to each layout a panel is slotted in. */
   static #stack(): void {
-    const indexes = new Map<Element | null, number>();
     // The tabs stand under the header: where the shell's panel areas begin.
     const top = document.querySelector('sherpa-app-shell')?.shadowRoot?.querySelector('sherpa-layout-panels')?.getBoundingClientRect().top ?? 0;
+    // One control group of tabs for each side of each room: a lone tab is solo, several are stitched by the group's positions.
+    const groups = new Map<Element | null, Record<'start' | 'end', SherpaOverlayPanel[]>>();
     for (const panel of document.querySelectorAll<SherpaOverlayPanel>('sherpa-overlay-panel[data-minimised][open]')) {
       const room = panel.#slotted() ? panel.parentElement : null;
-      const index = indexes.get(room) ?? 0;
-      indexes.set(room, index + 1);
-      panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-index', String(index));
-      panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-top', `${Math.round(top)}px`);
+      const sides = groups.get(room) ?? { start: [], end: [] };
+      groups.set(room, sides);
+      sides[panel.hasState('tab-start') ? 'start' : 'end'].push(panel);
+    }
+    for (const sides of groups.values()) {
+      for (const group of Object.values(sides)) {
+        group.forEach((panel, index) => {
+          const tab = panel.$<HTMLElement>('.tab');
+          tab?.style.setProperty('--_tab-index', String(index));
+          tab?.style.setProperty('--_tab-top', `${Math.round(top)}px`);
+          tab?.setAttribute('data-group', group.length === 1 ? 'vertical-solo' : index === 0 ? 'vertical-start' : index === group.length - 1 ? 'vertical-end' : 'vertical-mid');
+        });
+      }
     }
   }
 
@@ -598,10 +608,12 @@ export class SherpaOverlayPanel extends SherpaElement {
     const side = this.#dock;
     const host = this.#slotted() ? this.parentElement : document.querySelector('sherpa-app-shell');
     if (!host) return;
+    // The area is the card and its inset on both sides. TODO 871
+    const inset = 2 * (parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-display-mode-space-base')) || 16);
     // A canvas keeps its card's width in `data-panel-width`; a shell or an area, one for each side.
     const attr = host.localName === 'sherpa-layout-canvas' ? 'data-panel-width' : `data-panel-${side}-width`;
-    host.setAttribute(attr, String(width));
-    host.dispatchEvent(new CustomEvent('panel-area-resize', { detail: { side, width }, bubbles: false }));
+    host.setAttribute(attr, String(width + inset));
+    host.dispatchEvent(new CustomEvent('panel-area-resize', { detail: { side, width: width + inset }, bubbles: false }));
   }
 
   /** Is the box drawn at the START of its room (a panel docked at the start side, or peeking there)? Its resize edge is then the right one. */

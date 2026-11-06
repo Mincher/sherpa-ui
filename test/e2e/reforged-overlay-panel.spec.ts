@@ -173,8 +173,8 @@ test('an open panel draws nothing over the page beside it', async ({ page }) => 
     return [...el.shadowRoot!.children].map((n) => n.tagName.toLowerCase());
   });
   const after = await page.screenshot({ clip });
-  // The dialog, and the minimised edge line and tab (drawn only while minimised).
-  expect(parts).toEqual(['span', 'div', 'dialog']);
+  // The dialog, and the minimised tab (drawn only while minimised).
+  expect(parts).toEqual(['div', 'dialog']);
   expect(after.equals(before)).toBe(true);
 });
 
@@ -332,11 +332,12 @@ test.describe('Pop in and Pop out', () => {
     expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', open: true, position: 'static', resize: false, pop: true, label: 'Dock as overlay', icon: 'monitor-w-floating-window' });
     // FLUSH in the area, which owns its width; no inset. TODO 796
     expect(fixed.area.w).toBeGreaterThanOrEqual(464);
-    expect(fixed.root).toEqual(fixed.area);
+    // A card, inset 16px in its area. TODO 871
+    expect(fixed.root).toEqual({ x: fixed.area.x + 16, w: fixed.area.w - 32 });
 
     await press(page);
     // Docked out again, it is as wide as the area it left, on the same edge.
-    expect(await read(page)).toEqual({ ...floating, root: { x: floating.root.x + floating.root.w - fixed.area.w, w: fixed.area.w }, area: { x: 0, w: 0 } });
+    expect(await read(page)).toEqual({ ...floating, root: { x: floating.root.x + floating.root.w - (fixed.area.w - 32), w: fixed.area.w - 32 }, area: { x: 0, w: 0 } });
     expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([{ fixed: true, side: 'end' }, { fixed: false, side: 'end' }]);
   });
 
@@ -348,14 +349,14 @@ test.describe('Pop in and Pop out', () => {
     });
     const fixed = await read(page);
     expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start', position: 'static', area: { x: 0, w: 0 } });
-    expect(fixed.root).toEqual(fixed.start);
+    expect(fixed.root).toEqual({ x: fixed.start.x + 16, w: fixed.start.w - 32 });
     expect(fixed.start.w).toBeGreaterThanOrEqual(464);
     await press(page);
     expect(await read(page)).toMatchObject({ parent: 'div', slot: '', position: 'fixed', start: { x: 0, w: 0 } });
     await press(page);
     const back = await read(page);
     expect(back).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start' });
-    expect(back.root).toEqual(back.start);
+    expect(back.root).toEqual({ x: back.start.x + 16, w: back.start.w - 32 });
     expect(await page.evaluate(() => document.getElementById('pop')!.getAttribute('data-fixed'))).toBe('start');
   });
 

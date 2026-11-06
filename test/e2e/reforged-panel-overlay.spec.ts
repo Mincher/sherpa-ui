@@ -34,10 +34,10 @@ const press = async (page: Page, sel: string): Promise<void> => {
   await page.evaluate(() => window.__settled());
 };
 
-test('fixed is flat and takes its area\'s room; Pop makes it an overlay over the view, with a shadow, and gives the room back', async ({ page }) => {
+test('fixed is a card with no shadow and takes its area\'s room; Pop makes it an overlay over the view, with a shadow, and gives the room back', async ({ page }) => {
   await stage(page);
   expect(await area(page)).toBeGreaterThan(200);
-  expect(await look(page)).toMatchObject({ shadow: false, radius: false });
+  expect(await look(page)).toMatchObject({ shadow: false, radius: true });
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await area(page)).toBe(0);
   expect(await look(page)).toMatchObject({ shadow: true, radius: true, display: 'flex' });
@@ -45,7 +45,7 @@ test('fixed is flat and takes its area\'s room; Pop makes it an overlay over the
   // Pop again: fixed, flat, its room back.
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await area(page)).toBeGreaterThan(200);
-  expect(await look(page)).toMatchObject({ shadow: false, radius: false });
+  expect(await look(page)).toMatchObject({ shadow: false, radius: true });
 });
 
 test('the docking button says what it will do: Dock as overlay from fixed, Dock as fixed from an overlay', async ({ page }) => {
@@ -193,7 +193,8 @@ test('the docking cycle: fixed to overlay to fixed, at the same width; dockState
   const wider = await width();
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await state()).toBe('fixed');
-  expect(Math.abs((await width()) - wider)).toBeLessThanOrEqual(2);
+  // The area holds the card and its two insets, and is never over a third of the room: at that cap the card is 32px under.
+  expect(Math.abs((await width()) - wider)).toBeLessThanOrEqual(34);
   // Float and dock: back to fixed.
   await press(page, '.float');
   expect(await state()).toBe('floating');

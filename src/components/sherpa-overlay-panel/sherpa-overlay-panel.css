@@ -141,10 +141,11 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 }
 
-/* Minimised: the box is gone and a TAB stands on the edge of its area, turned on its side.
-   The panel has left its area (as floating does), so the area gives its room back; the tabs
-   of several panels stack down the edge. TRAP T-a-minimised-panel-is-a-tab */
-.tab, .tab-mark, .rail { display: none; }
+/* Minimised: the box is gone and a TAB stands on the edge of its area: a small horizontal button, INSET from the side
+   as a docked panel is. The panel has left its area (as floating does), so the area gives its room back; the tabs of
+   several panels stack down the edge as one control group, which writes their corners and edges (`data-group`).
+   TRAP T-a-minimised-panel-is-a-tab */
+.tab, .tab-mark { display: none; }
 :host([data-minimised]) .root { display: none; }
 /* Peeking: the pointer is on its tab, and the panel is shown over the edge until it leaves. TRAP T-a-panel-peeks-from-its-tab */
 :host([data-minimised]:state(peeking)) .root { display: flex; }
@@ -153,59 +154,38 @@
 :host(:state(tab-start):state(peeking):not(:state(in-layout))) .root { inset-inline-start: 0; inset-inline-end: auto; }
 /* Overlaid out of its area, a start panel stays on the start edge. TRAP T-an-overlaid-panel-keeps-its-side */
 :host(:state(tab-start):not(:state(in-layout), :state(in-area), :state(floating))) .root { inset-inline-start: 0; inset-inline-end: auto; }
-/* PHYSICAL sides: the tab's own vertical writing mode would turn the logical ones. */
 :host([data-minimised][open]) .tab {
+  --_tab-size: var(--sherpa-display-mode-size-xl, 32px);
   display: flex;
   align-items: center;
-  gap: var(--sherpa-theme-gap-sm, 4px);
+  box-sizing: border-box;
+  block-size: var(--_tab-size);
   position: fixed;
-  /* From the top of the panel areas (below the header), as the Nodes tab is from its area's. */
-  top: calc(var(--_tab-top, 0px) + var(--sherpa-layout-grid-padding, 16px) + var(--_tab-index, 0) * 11rem);
-  right: 0;
+  /* From the top of the panel areas (below the header), inset as a docked panel is; one below the other, touching. */
+  top: calc(var(--_tab-top, 0px) + var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * var(--_tab-size));
+  inset-inline-end: var(--sherpa-display-mode-space-base, 16px);
   pointer-events: auto;
   z-index: var(--sherpa-layer-panels, 101);
-  max-height: 10rem;
-  writing-mode: vertical-rl;
+  max-inline-size: 12rem;
   color: var(--sherpa-style-content-base, #0c0b11);
   background: var(--_surface);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
-  border-right: 0;
-  border-radius: var(--sherpa-border-rounding-top-left, 4px) 0 0 var(--sherpa-border-rounding-bottom-left, 4px);
-  box-shadow: var(--sherpa-shadow-lg);
+  border-color: var(--_border);
 }
-:host(:state(tab-start)[data-minimised][open]) .tab {
-  right: auto;
-  left: 0;
-  border-right: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
-  border-left: 0;
-  border-radius: 0 var(--sherpa-border-rounding-top-right, 4px) var(--sherpa-border-rounding-bottom-right, 4px) 0;
-}
-/* The line down the window's edge under the header, where the tab stands (a panel in a layout has the
-   layout's own: sherpa-layout-panels draws it). TRAP T-an-area-with-two-panels-is-tabbed */
-:host(:not(:state(in-layout))[data-minimised][open]) .rail {
-  display: block;
-  position: fixed;
-  top: var(--_tab-top, 0px);
-  bottom: 0;
-  right: 0;
-  z-index: var(--sherpa-layer-panels, 101);
-  pointer-events: none;
-  border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
-}
-:host(:state(tab-start):not(:state(in-layout))[data-minimised][open]) .rail { right: auto; left: 0; }
-@media (forced-colors: active) { .rail { border-color: CanvasText; } }
-:host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
+:host(:state(tab-start)[data-minimised][open]) .tab { inset-inline-start: var(--sherpa-display-mode-space-base, 16px); inset-inline-end: auto; }
+:host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * var(--_tab-size)); }
 /* The tab's body: its label and mark, one button. */
 .tab-open {
   display: flex;
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  min-block-size: 0;
-  padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
+  min-inline-size: 0;
+  block-size: 100%;
+  padding: 0 var(--sherpa-display-mode-space-sm, 8px);
   font: inherit;
   color: inherit;
   background: none;
   border: 0;
+  border-radius: inherit;
   cursor: pointer;
 }
 .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -218,7 +198,6 @@
 }
 :host([data-updated]) .tab-mark {
   display: inline-block;
-  writing-mode: horizontal-tb;
   min-inline-size: 1.25em;
   text-align: center;
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);

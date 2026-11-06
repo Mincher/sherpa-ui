@@ -49,7 +49,7 @@ const press = async (page: Page, sel: string): Promise<void> => {
 const area = (page: Page) => page.evaluate(() =>
   Math.round(document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-end')!.getBoundingClientRect().width));
 
-test('Minimise turns the panel into a tall tab on the right edge; the tab opens it again', async ({ page }) => {
+test('Minimise turns the panel into a small horizontal tab inset from the right edge; the tab opens it again', async ({ page }) => {
   await stage(page);
   const open = await part(page, '.root');
   expect(open.shown).toBe(true);
@@ -57,8 +57,8 @@ test('Minimise turns the panel into a tall tab on the right edge; the tab opens 
   expect((await part(page, '.root')).shown).toBe(false);
   const tab = await part(page, '.tab');
   expect(tab.shown).toBe(true);
-  expect(tab.h).toBeGreaterThan(tab.w);
-  expect(tab.x + tab.w).toBe(1600);
+  expect(tab.w).toBeGreaterThan(tab.h);
+  expect(tab.x + tab.w).toBe(1600 - 16);
   await openFromTab(page);
   expect(await part(page, '.root')).toEqual(open);
 });

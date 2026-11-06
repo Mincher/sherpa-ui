@@ -123,7 +123,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `corner`, `custom`, `dock-fixed`, `dock-overlay`, `docks`, `expand`, `external`, `float`, `fold`, `footer`, `grip`, `header`, `minimise`, `modes`, `rail`, `resize`, `root`, `search`, `tab`, `tab-mark`, `tab-open`, `tab-title`, `toolbar`, `trail`
+`body`, `corner`, `custom`, `dock-fixed`, `dock-overlay`, `docks`, `expand`, `external`, `float`, `fold`, `footer`, `grip`, `header`, `minimise`, `modes`, `resize`, `root`, `search`, `tab`, `tab-mark`, `tab-open`, `tab-title`, `toolbar`, `trail`
 
 ## CSS custom properties it reads
 

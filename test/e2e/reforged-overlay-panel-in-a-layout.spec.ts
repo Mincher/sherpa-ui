@@ -113,7 +113,7 @@ test('Minimise makes a tab on the canvas\'s LEFT edge, inside it; the area gives
   const cv = await rect(page, '', 'cv');
   await press(page, '.minimise');
   const tab = await rect(page, '.tab');
-  expect(tab.x).toBe(cv.x);
+  expect(tab.x).toBe(cv.x + 16);
   expect(tab.y).toBeGreaterThanOrEqual(cv.y);
   expect(tab.y + tab.h).toBeLessThanOrEqual(cv.y + cv.h);
   expect(await style(page, '.root', 'display')).toBe('none');
