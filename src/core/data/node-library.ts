@@ -166,7 +166,7 @@ export function nodeKindOf(definition: NodeDefinition): CustomKind {
     ...definition.outputs.map((o): RowKind => ({ name: o.name, label: o.label ?? o.name, output: o.type })),
   ];
   return {
-    heading: definition.label, icon: definition.icon ?? 'folder', input: 'any', branches: true, rows, model: 'graph', graphs: ['workflow'],
+    heading: definition.label, icon: definition.icon ?? 'folder', input: 'any', output: 'boolean', rows, model: 'graph', graphs: ['workflow'],
     ...(definition.description ? { description: definition.description } : {}),
     // Tidied, so a bad file never breaks the panel; the check names its fault.
     ...(tidyTags(definition.tags).length ? { tags: tidyTags(definition.tags) } : {}),
@@ -197,11 +197,11 @@ export interface Inner {
 function inside(id: string, definition: NodeDefinition, base: Kinds, values: Readonly<Record<string, unknown>> = {}): Inner {
   const xs = definition.nodes.map((n) => n.x);
   const input: NodeKind = {
-    heading: 'Group Input', icon: 'login', description: 'What comes into the Custom Node.', model: 'groupInput', graphs: ['workflow'],
+    heading: 'Group Input', icon: 'login', description: 'Where inputs enter the Custom Node', model: 'groupInput', graphs: ['workflow'],
     rows: definition.inputs.map((i) => ({ name: i.name, label: i.label ?? i.name, output: i.type, ...(i.multiple ? { multiple: true as const } : {}) })),
   };
   const output: NodeKind = {
-    heading: 'Group Output', icon: 'logout', description: 'What the Custom Node gives.', input: 'any', model: 'groupOutput', graphs: ['workflow'],
+    heading: 'Group Output', icon: 'logout', description: 'Where outputs leave the Custom Node', input: 'any', model: 'groupOutput', graphs: ['workflow'],
     rows: definition.outputs.map((o) => ({ name: o.name, label: o.label ?? o.name, input: o.type })),
   };
   const params = Object.fromEntries(definition.inputs.flatMap((i) => {

@@ -176,6 +176,8 @@ interface Drawn {
   rows: Map<string, HTMLElement>;
   /** Each row element's address, for an edit to name. */
   addresses: WeakMap<HTMLElement, [string, string]>;
+  /** A row whose output is drawn on another's (`beside`): its address, and the address of the row that wears it. */
+  beside: Map<string, string>;
   shapes: Map<string, string>;
   /** The place each node was last given by its graph: a new one moves it, the same one leaves the reader's. */
   placedAt: Map<string, string>;
@@ -353,26 +355,38 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
   const routed = driven(drawn.graph);
   const sent = new Set(drawn.graph.routes.map((r) => r.from));
   const locked = (row: GraphRow): boolean => !row.editable || routed.has(`${node.id}/${row.name}`);
-  const shape = JSON.stringify(node.rows.map((r) => [r.name, r.control, r.input, r.output, locked(r), r.choices]));
+  const shape = JSON.stringify(node.rows.map((r) => [r.name, r.control, r.input, r.output, r.beside, locked(r), r.choices]));
   if (drawn.shapes.get(node.id) !== shape) {
     drawn.shapes.set(node.id, shape);
     for (const key of [...drawn.rows.keys()]) if (key.startsWith(`${node.id}/`)) drawn.rows.delete(key);
-    el.replaceChildren(...node.rows.map((row) => {
+    for (const key of [...drawn.beside.keys()]) if (key.startsWith(`${node.id}/`)) drawn.beside.delete(key);
+    // A row drawn `beside` another has no line: its output is the other's.
+    el.replaceChildren(...node.rows.filter((row) => !row.beside).map((row) => {
       const line = document.createElement('sherpa-node-row');
       drawn.rows.set(`${node.id}/${row.name}`, line);
       drawn.addresses.set(line, [node.id, row.name]);
       if (row.control) line.append(fieldFor(row, locked(row)));
       return line;
     }));
+    for (const row of node.rows) {
+      const wearer = row.beside && drawn.rows.get(`${node.id}/${row.beside}`);
+      if (!wearer) continue;
+      drawn.rows.set(`${node.id}/${row.name}`, wearer);
+      drawn.beside.set(`${node.id}/${row.name}`, `${node.id}/${row.beside}`);
+    }
   }
+  const worn = new Set(node.rows.flatMap((r) => (r.beside ? [r.beside] : [])));
   for (const row of node.rows) {
     const line = drawn.rows.get(`${node.id}/${row.name}`)!;
-    put(line, 'data-input-socket', row.input);
-    put(line, 'data-output-socket', row.output);
-    line.toggleAttribute('data-input-many', !!row.many);
-    line.toggleAttribute('data-input-routed', routed.has(`${node.id}/${row.name}`));
-    line.toggleAttribute('data-output-routed', sent.has(`${node.id}/${row.name}`));
+    const address = `${node.id}/${row.name}`;
+    // A row that wears another's output leaves it to that row; one that is worn sets only its output.
+    if (!row.beside) put(line, 'data-input-socket', row.input);
+    if (!worn.has(row.name) || row.beside) put(line, 'data-output-socket', row.output);
+    if (!row.beside) line.toggleAttribute('data-input-many', !!row.many);
+    if (!row.beside) line.toggleAttribute('data-input-routed', routed.has(address));
+    if (!worn.has(row.name) || row.beside) line.toggleAttribute('data-output-routed', sent.has(address));
     const field = line.firstElementChild as Field | null;
+    if (row.beside) continue;
     if (field) fill(field, row);
     // A row with no field says what it reads; one that reads null, only its name.
     else line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
@@ -548,7 +562,10 @@ function addressOf(drawn: Drawn, el: HTMLElement): string | null {
 function socketNear(drawn: Drawn, side: 'input' | 'output', x: number, y: number): string | null {
   const REACH = 20;
   let best: [string, number] | null = null;
+  const worn = new Set(drawn.beside.values());
   for (const [address, el] of [...drawn.nodes, ...drawn.rows]) {
+    // A row's output drawn on another's is that one's by its own address only (`beside`).
+    if (drawn.beside.has(address) ? side !== 'output' : side === 'output' && worn.has(address)) continue;
     const rect = (el as HasSockets).socketRect?.(side);
     if (!rect) continue;
     const far = Math.hypot(rect.left + rect.width / 2 - x, rect.top + rect.height / 2 - y);
@@ -579,13 +596,14 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const out = hit.classList.contains('socket-out');
   if (!out && !hit.classList.contains('socket-in')) return;
   const owner = path.find((n): n is HTMLElement => n instanceof HTMLElement && addressOf(drawn, n) !== null);
+  const wornAs = (address: string): string => (out ? [...drawn.beside].find(([, to]) => to === address)?.[0] ?? address : address);
   const own = owner ? addressOf(drawn, owner) : null;
   if (!owner || !own) return;
   const fork = hit.classList.contains('socket-false');
   // What the line is joined to at its start: the output it leaves, or the input it runs back to.
   const lifting = out ? undefined : drawn.routes.findLast((r) => r.to === own);
   if (!out && !lifting && !takesCustom(drawn, own) && !(drawn.options.onAdd && typeAt(drawn, own, 'input'))) return;
-  const from = out ? (fork ? `${own}/${FALSE_SOCKET}` : own) : lifting?.from;
+  const from = out ? (fork ? `${own}/${FALSE_SOCKET}` : wornAs(own)) : lifting?.from;
   const start = out ? (owner as HasSockets).socketRect?.(fork ? 'false' : 'output') : lifting ? socketAt(drawn, lifting.from, 'output') : (owner as HasSockets).socketRect?.('input');
   if (!start) return;
   event.preventDefault();
@@ -903,7 +921,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   canvas.prepend(lines);
   const made: Drawn = {
     graph: { nodes: [], routes: [] }, options: {},
-    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
+    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), beside: new Map(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
     lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
     frames: new Map(), selectedFrame: null,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.

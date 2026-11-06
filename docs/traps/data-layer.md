@@ -6822,6 +6822,17 @@ sockets only, never types.
   TRUTHINESS (Will, D2): `truthy()` says nothing — none, false, 0, NaN, blank
   text, an empty list, set or record — is False, and the rest True. A value is
   typed first: the TEXT "false" is something.
+- **Only a Condition forks, for now** (Will, TODO 831: "not all nodes need a true/false
+  socket… Don't completely remove the ability… Just hide them for now"). `branches` stays
+  a kind option; no other shipped kind, type or Custom Node use sets it, so none draws True
+  or a False footer, and a route from one of their headers is a fault, in words. A check that
+  is no Condition (Time, Tag, a Preset, a Saved filter, a Custom Node's use) says `output:
+  'boolean'` instead: one boolean from its header, `Out`, and no False. A kind opts back in by
+  setting `branches: true`; nothing else changes.
+- **A row's output may be DRAWN on another's** (`beside`, TODO 830): a Source's Rows leave from
+  its Store row, as a Field's column does from its Field row, not from a Rows line of their own.
+  The address stays `node/rows`; the drawing makes no line for it, wears its socket on the named
+  row (`drawn.beside`), and a press or a drop on that socket is the Rows', never the Store's.
 - **One `rowChoices()` gives every picklist's list**, single or `multiple`: the
   `control` names the list. An open list (fields, operators, values, stores,
   scopes) also offers each own value it lacks, so a select shows it; a fixed list
@@ -6831,6 +6842,7 @@ sockets only, never types.
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-socket-says-its-type.test.mjs`
 - Site: `test/unit/any-route-joins-any-input.test.mjs`
+- Site: `test/e2e/reforged-node-true-false.spec.ts`
 
 ### T-a-condition-is-a-tree-of-nodes
 
@@ -6889,6 +6901,7 @@ its choices".
 - Site: `test/unit/a-status-is-a-chain-of-conditions.test.mjs`
 - Site: `test/unit/and-or-take-any-boolean.test.mjs`
 - Site: `test/e2e/reforged-node-and-or.spec.ts`
+- Site: `test/unit/only-a-condition-forks.test.mjs`
 
 ### T-an-app-is-its-definition
 

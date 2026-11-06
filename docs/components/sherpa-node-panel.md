@@ -46,7 +46,7 @@ For a graph editor's list of the nodes it may place, one per family, in one list
         "kind": {
           "heading": "Value",
           "icon": "function",
-          "description": "One value, typed."
+          "description": "Primitive value variables"
         }
       }
     ]
