@@ -163,7 +163,7 @@ export const SHARED_PROPS = {
   'data-bounds': { type: 'string', kind: 'style' },
   /** An inner shadow on each edge its scroll box is scrolled past. Off by default. TODO 401 */
   'data-scroll-shadow': { type: 'boolean', kind: 'style' },
-  /** A node's sockets, on its header or a row: a value is a circle, an object a diamond, a boolean a triangle, any (an input only) a square. TODO 713 */
+  /** A node's sockets, on its header or a row: a value is a circle, an object a diamond, a boolean a circle, any (an input only) a square. TODO 713 */
   'data-input-socket': { type: 'enum', kind: 'style', values: ['value', 'object', 'boolean', 'any'] },
   'data-output-socket': { type: 'enum', kind: 'style', values: ['value', 'object', 'boolean'] },
   /** A route joins the socket: it is drawn filled, else hollow. The host writes them. */

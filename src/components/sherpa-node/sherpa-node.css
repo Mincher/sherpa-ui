@@ -362,9 +362,10 @@
   border-end-end-radius: inherit;
 }
 :host([data-branches]) .footer { display: block; }
-:host([data-branches]) .header .socket-out { display: block; --_shape: var(--_triangle); }
+:host([data-branches]) .header .socket-out { display: block; }
 :host([data-branches]) .socket-false { display: block; --_shape: var(--_round-square); }
 :host([data-false-routed]) .socket-false .core { display: block; }
+:host([data-false-routed]) .socket-false { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
 .tip-false .word { display: inline; }
 .name-true { display: none; }
 :host([data-branches]) .header .name-out { display: none; }

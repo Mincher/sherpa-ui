@@ -13,7 +13,6 @@
   --_ring: var(--sherpa-display-mode-border-width-lg, 2px);
   --_circle: circle(50%);
   --_diamond: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-  --_triangle: polygon(0 0, 100% 50%, 0 100%);
   --_square: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   /* A fully round input; and the rounded square (4), on this box. */
   --_d: inset(0 round 50%);
@@ -48,10 +47,11 @@
   background: var(--sherpa-style-surface-base, #ffffff);
   clip-path: var(--_shape, var(--_circle));
 }
-/* A routed socket is FILLED: its ring, then a gap of the card's face, then the ink again. */
+/* A CONNECTED socket: a 1px ring of its ink, a 1px inset of the card's face, then the ink again in its shape. */
 .core {
   display: none;
   position: absolute;
+  z-index: var(--sherpa-layer-content, 1);
   inset: calc(var(--_ring) * 2);
   background: var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
   clip-path: var(--_shape, var(--_circle));
@@ -59,6 +59,8 @@
 }
 :host([data-input-routed]) .socket-in .core,
 :host([data-output-routed]) .socket-out:not(.socket-false) .core { display: block; }
+:host([data-input-routed]) .socket-in,
+:host([data-output-routed]) .socket-out:not(.socket-false) { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
 
 /* An INPUT takes the pointer too: its route's end drags to another input, or a picklist's
    input drags out a line. Will, TODOs 557, 558.
@@ -78,9 +80,8 @@
 :host([data-output-socket]) .socket-out { display: block; }
 
 /* An OUTPUT keeps its type's SHAPE: a value a circle, an object a diamond, a boolean
-   a triangle pointing the way the data goes. False is a rounded square. Will, TODOs 713, 740 */
+   a circle, like a value: its colour says boolean. False is a rounded square. Will, TODOs 713, 740, 874 */
 :host([data-output-socket="object"]) .socket-out { --_shape: var(--_diamond); }
-:host([data-output-socket="boolean"]) .socket-out { --_shape: var(--_triangle); }
 .socket-false { --_shape: var(--_round-square); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 

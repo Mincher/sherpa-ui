@@ -7514,7 +7514,7 @@
             },
             {
               "name": "data-output-socket",
-              "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a triangle)",
+              "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a circle)",
               "type": {
                 "text": "'value' | 'object' | 'boolean'"
               }
@@ -7884,7 +7884,7 @@
             },
             {
               "name": "data-output-socket",
-              "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)",
+              "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a circle)",
               "type": {
                 "text": "'value' | 'object' | 'boolean'"
               }

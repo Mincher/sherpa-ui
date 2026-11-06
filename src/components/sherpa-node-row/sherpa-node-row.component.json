@@ -185,7 +185,7 @@
         "object",
         "boolean"
       ],
-      "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a triangle)"
+      "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a circle)"
     },
     {
       "$type": "prop",

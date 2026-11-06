@@ -418,7 +418,7 @@
         "object",
         "boolean"
       ],
-      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)"
+      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a circle)"
     },
     {
       "$type": "prop",

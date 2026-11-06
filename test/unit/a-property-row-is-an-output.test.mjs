@@ -91,7 +91,7 @@ test('a property row routes through a portal as a row, and a Custom Node takes i
   assert.deepEqual(back.workflow.routes.map((r) => `${r.from} → ${r.to}`), ['s/count → m/a']);
 });
 
-test('a property gives a value or an object: a number, text or boolean a circle or triangle; a row, rows or a record a diamond; Count is a number like any other (Will, 2026-11-06)', async () => {
+test('a property gives a value or an object: a number, text or boolean a circle; a row, rows or a record a diamond; Count is a number like any other (Will, 2026-11-06)', async () => {
   const { propertyRow } = await import(new URL('node-kinds.js', core));
   const sockets = Object.fromEntries(['number', 'value', 'boolean', 'object', 'list', 'rows', 'field'].map((g) => [g, propertyRow('p', 'P', g).output]));
   assert.deepEqual(sockets, { number: 'value', value: 'value', boolean: 'boolean', object: 'object', list: 'object', rows: 'object', field: 'object' });

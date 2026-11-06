@@ -1960,7 +1960,7 @@ read both `define(` and `customElements.define(`.
 **A socket is its type's SHAPE, in its type's ink, hollow until a route joins
 it** (Will, TODO 713; plan-713 §2, M2). The shape is a `clip-path` on the socket
 and its inner face — never an image — so one box draws all four: a value a
-circle, an object a diamond, a boolean a triangle pointing the way the data goes,
+circle, an object a diamond, a boolean a circle (its ink says boolean),
 and `any` (an input only) a square.
 
 - **The ink is a PIN, not a colour rule.** Each type pins its own Style mode on
@@ -1971,7 +1971,7 @@ and `any` (an input only) a square.
 - **Hollow is the face inside the ring**; `data-input-routed` and
   `data-output-routed` (the host writes them) hide it, so a joined socket is
   filled. False has its own, `data-false-routed`.
-- **A fork** (`data-branches`) is the header's True, a triangle pinned
+- **A fork** (`data-branches`) is the header's True, a circle pinned
   `success`, and a footer — the container footer, composed — with False. A node
   with no fork draws no footer.
 - **Only a many INPUT is double height** (`data-input-many`, TODO 740). Its

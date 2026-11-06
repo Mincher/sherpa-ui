@@ -216,10 +216,10 @@ const PROBES: [number, number][] = [[.5, .5], [.1, .1], [.9, .1], [.1, .9], [.9,
 const SHAPES: Record<string, number[]> = {
   value: [1, 0, 0, 0, 0, 1, 1],
   object: [1, 0, 0, 0, 0, 1, 0],
-  boolean: [1, 1, 0, 1, 0, 0, 1],
+  boolean: [1, 0, 0, 0, 0, 1, 1],
   any: [1, 1, 1, 1, 1, 1, 1],
-  // An INPUT is a D, flat on the node's side and round outside, whatever its type (TODO 740); False is a rounded square.
-  input: [1, 1, 0, 1, 0, 1, 1],
+  // An INPUT is round, whatever its type (TODOs 740, 807); the dock behind it is grey, not ink; False is a rounded square.
+  input: [1, 0, 0, 0, 0, 1, 1],
 };
 
 /** A node of one input socket, big, routed or not, on the canvas at a place of its own. */
@@ -293,12 +293,11 @@ test('a fork shows its footer with False in red, and True on the header in green
   const [no] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
   expect(near(yes!, success), 'True is green').toBe(true);
   expect(near(no!, critical), 'False is red').toBe(true);
-  // False is a rounded square, True a triangle: two shapes (TODO 740).
+  // False is a rounded square, True a circle: two shapes (TODOs 740, 874).
   const square = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), PROBES);
   expect(square.map((p) => (near(p, critical) ? 1 : 0))).toEqual(SHAPES['any']);
-  const triangle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
-  // (Its bottom corner is under the footer: read the other six.)
-  expect(triangle.map((p) => (near(p, success) ? 1 : 0)).filter((_, i) => i !== 3)).toEqual(SHAPES['boolean']!.filter((_, i) => i !== 3));
+  const circle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
+  expect(circle.map((p) => (near(p, success) ? 1 : 0))).toEqual(SHAPES['boolean']);
   // Unrouted, False is hollow.
   await socketNode(page, 'fork', 'data-branches');
   const [open] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);

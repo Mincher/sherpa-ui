@@ -3,7 +3,7 @@ import { test, expect, type Page } from './harness';
 /**
  * The node look, its sockets and its resize handle — Will, TODO 740, from his Figma. A node's kind's
  * category (`data-category`) gives its radius and fill; an input is a D, a many input double height;
- * True is a triangle and False a rounded square. On hover or focus a handle shows at the bottom right:
+ * True is a circle and False a rounded square. On hover or focus a handle shows at the bottom right:
  * a drag grows the node to at most double each way, non-uniformly, and the primary key (Cmd on a Mac,
  * Ctrl elsewhere) keeps its aspect. Real pointer events; pixels, never computed style alone.
  */

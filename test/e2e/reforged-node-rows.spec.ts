@@ -115,7 +115,7 @@ test('a switch row has a boolean input socket: hollow until a route joins it', a
   expect(near(centre!, green), 'hollow centre').toBe(false);
 });
 
-test('a routed socket is filled: the triangle is ink in the middle, not at its far corners', async ({ page }) => {
+test('a routed socket is filled: the shape is ink in the middle, not at its far corners', async ({ page }) => {
   await bind(page, [{ from: 'filter', to: 'gate/on' }]);
   const green = await ink(page);
   // Three corners: the fourth, bottom right, is inked or not by the fraction of a pixel the fitted view puts the socket on.

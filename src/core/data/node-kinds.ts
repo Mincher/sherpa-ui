@@ -181,7 +181,7 @@ export interface NodeKind {
  *  first use, a number like any other. TODO 835
  *  TRAP T-a-property-row-is-an-output */
 export const propertyRow = (name: string, label: string, gives: Given = 'number'): RowKind => ({ name, label, output: propertySocket(gives), gives, property: true });
-/** The socket a property's given takes: a number, text or value a circle; a boolean a triangle; rows, a list, a field or an object a diamond. */
+/** The socket a property's given takes: a number, text or value a circle; a boolean a circle; rows, a list, a field or an object a diamond. */
 const propertySocket = (gives: Given): SocketType => (gives === 'boolean' ? 'boolean' : ['object', 'list', 'rows', 'field'].includes(gives) ? 'object' : 'value');
 const COUNT = propertyRow('count', 'Count');
 /** Results: the data rows a node sends on, a property like Count; they come in on its header (D1). It keeps the address `node/rows`. Plan 713 §3 */
