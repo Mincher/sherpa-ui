@@ -81,6 +81,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-preset-filter-is-a-preset-of-its-store](traps/data-layer.md#t-a-preset-filter-is-a-preset-of-its-store) — data, entity-types, node-flow, preset-filter, where
 - [T-a-preset-is-its-own-part](traps/data-layer.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-edits, source-counts
 - [T-a-projected-row-is-checked-on-what-it-was-sent](traps/data-layer.md#t-a-projected-row-is-checked-on-what-it-was-sent) — base-store, store
+- [T-a-property-row-is-an-output](traps/data-layer.md#t-a-property-row-is-an-output) — node-kinds
 - [T-a-push-is-a-check-behind](traps/data-layer.md#t-a-push-is-a-check-behind) — data-handler
 - [T-a-query-falls-back-to-post](traps/data-layer.md#t-a-query-falls-back-to-post) — request-store, stores
 - [T-a-range-is-bounded-by-the-data](traps/data-layer.md#t-a-range-is-bounded-by-the-data) — data-source-types

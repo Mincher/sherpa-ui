@@ -7907,6 +7907,23 @@ Out row that nothing reaches. Each reader that followed routes itself would have
 - Site: `test/unit/a-portal-joins-by-name.test.mjs`
 - Site: `test/e2e/reforged-node-portal.spec.ts`
 
+### T-a-property-row-is-an-output
+
+**A property row is output only, one definition, and routes like any output.** Will, TODO 835 ·
+`docs/history/plan-835-organise-and-properties.md`. It is a row a node provides from its own data or logic: no control,
+no input socket, no value to edit. `propertyRow` in node-kinds.ts is the ONE builder; Count is its first use, on a
+Source, a Field, a Group and a Condition's comparisons, the very same row object. Sort and Group are kinds of their own in
+Organise, and the Collection family and its Count type are gone: a saved `collection` reads with the fault "of the kind
+"collection", which is not one", and nothing converts it.
+
+- **It needs no reader of its own.** `givenAt` reads any output row; a count sends `{ kind: 'number' }` before a run, as
+  a Result does. Warnings (764), coercion (781), a portal row's label ("Source › Count"), Save as Custom Node's outputs and
+  Unfurl's socket heights all read it as an output.
+- **General on `gives`.** Sum, Min and Max follow with `propertyRow(name, label, gives)`, no new row kind.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `test/unit/a-property-row-is-an-output.test.mjs`
+
 ### T-a-cell-draws-words-not-its-value
 
 **A cell draws its value in WORDS; all that acts on it reads the RAW value.**

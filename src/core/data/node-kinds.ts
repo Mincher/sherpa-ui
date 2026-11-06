@@ -116,6 +116,8 @@ export interface RowKind {
   /** Its output socket is DRAWN on the row of this name, and it draws no line of its own: a Source's Rows leave from its Store row.
    *  The address stays `node/<name>`. TODO 830 */
   beside?: string;
+  /** A PROPERTY row: output only, a value the node provides from its own data or logic (`propertyRow`). TODO 835 */
+  property?: true;
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -176,6 +178,12 @@ export interface NodeKind {
  *  it is first on each kind that gives them. Plan 713 §3 */
 export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' };
 
+/** A property row, the one definition: output only, no control and no value, sending what the node's data or logic gives
+ *  (`gives`), a number unless said. Count is its first use; Sum, Min and Max follow on `gives`. TODO 835
+ *  TRAP T-a-property-row-is-an-output */
+const propertyRow = (name: string, label: string, gives: Given = 'number'): RowKind => ({ name, label, output: 'value', gives, property: true });
+const COUNT = propertyRow('count', 'Count');
+
 /** A family's rows, each once: a type names the ones it draws. */
 const VALUE: RowKind = { name: 'value', label: 'Value', control: 'text', output: 'value' };
 const numberRow = (name: string, label: string): RowKind => ({ name, label, control: 'number', input: 'value' });
@@ -206,7 +214,7 @@ function compareType(op: FilterOp): NodeType {
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows] };
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows, COUNT] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -233,7 +241,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
   source: {
     heading: 'Source', icon: 'storage', description: 'Connect a data source',
-    rows: [{ ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
+    rows: [{ ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' }, COUNT], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
@@ -299,7 +307,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Rows in, a column out, `{ rows, field }`; one record in, that field's value. Its True: the field is there. Plan 783 D1, D2
   field: {
     heading: 'Field', icon: 'price-tag', description: 'Target a field from a connected Source', input: 'any', needs: 'object',
-    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' }], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
+    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' }, COUNT], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
   math: {
@@ -330,15 +338,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'timeCheck', graphs: ['workflow'], category: 'Time',
   },
-  // Sort and Group by take the Field they work on, on the header (plan 783 D5); Count takes rows or a Field.
-  collection: {
-    heading: 'Collection', icon: 'list', description: 'Organise a set of rows', input: 'any', needs: 'rows', typeLabel: 'Type', defaultType: 'sort',
-    types: {
-      sort: { label: 'Sort', help: 'The rows in order of the Field that comes in', needs: 'field', rows: [ROWS, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }] },
-      group: { label: 'Group by', help: 'The rows by the Field that comes in', needs: 'field', rows: [ROWS] },
-      count: { label: 'Count', help: 'How many rows', rows: [{ name: 'count', label: 'Count', output: 'value', gives: 'number' }] },
-    },
-    rows: [], model: 'collectRows', graphs: ['workflow'], category: 'Collections',
+  // Sort and Group take the Field they work on, on the header (plan 783 D5); a count is a property row (TODO 835).
+  sort: {
+    heading: 'Sort', icon: 'sort-ascending', description: 'Put rows in order of a field', input: 'any', needs: 'field',
+    rows: [ROWS, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }], model: 'sortRows', graphs: ['workflow'], category: 'Organise',
+  },
+  group: {
+    heading: 'Group', icon: 'group', description: 'Group rows by a field', input: 'any', needs: 'field',
+    rows: [ROWS, COUNT], model: 'groupRows', graphs: ['workflow'], category: 'Organise',
   },
   // Text from text, given from its Result row: a list, where Split by makes one.
   text: {
@@ -428,7 +435,7 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
+export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
  *  its Custom Nodes, its page's Preset Filters (TODO 776). */

@@ -65,9 +65,9 @@ export const PRESET_FILTER = 'preset-filter';
 export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
   [PRESET_FILTER]: {
     id: PRESET_FILTER, label: 'Preset Filter', icon: 'filter', schema: 'entity-preset-filter.v1.json',
-    // A graph that decides a condition: where its rows come from, its values and sums, the logic, dates, collections, text and
+    // A graph that decides a condition: where its rows come from, its values and sums, the logic, dates, sort and group, text and
     // tags; no Output (its `#out` is the end). A Sort, Group or Count saved before is a Collection's type (plan 749 P3).
-    families: ['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils'],
+    families: ['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils'],
     outputs: [{ name: 'where', label: 'Where', type: 'boolean' }],
     runs: false,
     settingsFaults: (s) => [...keysFault(s, ['source']), ...('source' in s && typeof s['source'] !== 'string' ? ['its source is not a name'] : [])],
