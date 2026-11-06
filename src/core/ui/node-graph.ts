@@ -1749,7 +1749,8 @@ function keepOpen(inspector: Inspector | undefined): void {
   if (!inspector) return;
   const open = (): void => {
     if (inspector.open) return;
-    if (!inspector.hasAttribute('data-minimised')) inspector.setAttribute('data-minimised', '');
+    // A tab to begin with, unless the app has put the reader's own state back (`data-state-restored`).
+    if (!inspector.hasAttribute('data-minimised') && !inspector.hasAttribute('data-state-restored')) inspector.setAttribute('data-minimised', '');
     inspectNone(inspector);
     inspector.show();
   };
