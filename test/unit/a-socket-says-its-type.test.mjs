@@ -95,9 +95,9 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
   ]);
   // True and False: every kind a workflow runs but its end, and the Query's Condition, Preset and Saved filter, whose True goes into a scope's row.
   assert.deepEqual(named((k) => k.branches), ['source', 'condition', 'preset', 'saved', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag']);
-  // A type forks as its family does, and a header sends rows from no type: but a portal's Out, which sends what reaches its In
-  // (TODO 779). Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything.
-  for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, name === 'portal' && id === 'out' ? 'any' : undefined], name);
+  // A type forks as its family does, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
+  // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
+  for (const [name, kind] of all) for (const type of Object.values(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], name);
   assert.deepEqual(all.filter(([, k]) => Object.values(k.types ?? {}).some((t) => t.input)).map(([n]) => n), ['condition', 'portal']);
   // A comparison tests what comes in on its header (plan 783 D3): a Field's column, or a value.
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['boolean', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);

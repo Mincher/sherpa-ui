@@ -1,10 +1,11 @@
 /**
  * A PORTAL JOINS BY NAME — Will, 2026-11-05 (TODO 779): "Connect any node to the 'in' portal node and have it come out of
- * any output portal node with the same name/id. There can be multiple input and output portal nodes with the same name so
- * we can create many-to-1, 1-to-many, and many-to-many scenarios. There are no connectors between input and output portal
- * nodes." ONE resolver joins each hop (`portalFlow`); every reader of what flows reads it: what an output sends, the
- * warnings, the Outgoing JSON and a Preset Filter's compile. An Out no In names warns and reads null; a loop through a
- * portal is a loop. A name is local to its graph.
+ * any output portal node with the same name/id." And TODO 826: "A portal input should be able to take in multiple
+ * connections. Associated portal outs should show each input node row as input rows in the output portal node." An In
+ * takes many routes; every Out of its name draws ONE ROW per route into any In of the name, `@` and its source, labelled
+ * from it, and each row is routed on alone, as a Group Input's is (763). ONE resolver reads a row as its source
+ * (`portalFlow`): what an output sends, the warnings, the Outgoing JSON and a Preset Filter's compile. A route from a row
+ * whose route in is gone is kept, unseen. A loop through a row is a loop. A name is local to its graph.
  *
  *   node --test test/unit/a-portal-joins-by-name.test.mjs
  *
@@ -15,217 +16,207 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, kindIn, paletteOf, paletteMatch, rowChoices, fitOf } = await import(new URL('node-kinds.js', core));
-const { portalFlow, portalLinks, cutNames, ungroupNames } = await import(new URL('node-portals.js', core));
+const { portalFlow, portalLinks, cutNames, ungroupNames, connectionRow, connectionOf } = await import(new URL('node-portals.js', core));
 const { sentFrom, workflowFaults, workflowGraph, editWorkflow, finalGraph, checkWorkflow, readWorkflow, keptRoutes } = await import(new URL('workflow.js', core));
 const { conditionAt, nodeFlow } = await import(new URL('node-flow.js', core));
 const { presetOfEntity } = await import(new URL('preset-filter.js', core));
 const { groupNodes, ungroupUse } = await import(new URL('node-group.js', core));
 
 const facts = { fieldsOf: { customers: { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } } } };
-const store = (id = 's', name = 'customers', y = 0) => ({ id, kind: 'source', x: 0, y, values: { store: name } });
+const source = (id = 's', name = 'customers', y = 0) => ({ id, kind: 'source', x: 0, y, values: { store: name } });
 const portal = (id, type, name, x = 300, y = 0) => ({ id, kind: 'portal', x, y, values: { type, ...(name ? { name } : {}) } });
 const field = (id, name, x = 600, y = 0) => ({ id, kind: 'field', x, y, values: { field: name } });
 const cond = (id, type, b, x = 900, y = 0) => ({ id, kind: 'condition', x, y, values: { type, ...(b === undefined ? {} : { b }) } });
-const value = (id, v, y = 400) => ({ id, kind: 'value', x: 0, y, values: { type: 'integer', value: v } });
+const value = (id, v, y = 400) => ({ id, kind: 'value', x: 0, y, values: { type: 'text', value: v } });
 const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
 const at = (g, id) => g.nodes.find((n) => n.id === id);
 /** Each node's warnings, by its id. */
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
+/** An Out's connection rows as drawn: its name, its label and its socket's type. */
+const rowsOf = (g, id) => at(g, id).rows.filter((r) => connectionOf(r.name) !== undefined).map((r) => [r.name, r.label, r.output]);
+const lines = (routes) => routes.map((r) => `${r.from} → ${r.to}`);
 
-test('Portal is ONE family in Utils, a workflow\'s alone: In takes anything on its header, Out sends from its; a Name row', () => {
+test('Portal is ONE family in Utils, a workflow\'s alone: an In takes MANY routes on its header; an Out has no header socket, only rows', () => {
   const kind = NODE_KINDS.portal;
   assert.deepEqual([kind.heading, kind.category, kind.icon, kind.graphs, kind.defaultType, Object.keys(kind.types)], ['Portal', 'Utils', 'link-simple', ['workflow'], 'in', ['in', 'out']]);
-  assert.deepEqual([kind.types.in.input, kind.types.in.output, kind.types.out.input, kind.types.out.output], ['any', undefined, undefined, 'any']);
-  assert.deepEqual(kind.types.in.rows.map((r) => [r.name, r.control, r.input, r.output]), [['name', 'portal', undefined, undefined]]);
+  assert.deepEqual([kind.types.in.input, kind.types.in.many, kind.types.in.output, kind.types.out.input, kind.types.out.output], ['any', true, undefined, undefined, undefined]);
+  assert.deepEqual(kind.types.out.rows.map((r) => [r.name, r.control]), [['name', 'portal']]);
   assert.equal(kindIn(kind, 'query'), undefined);
   assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Utils').items.map((i) => i.id), ['text', 'tag', 'portal']);
   assert.deepEqual(paletteMatch(kind, 'out'), { type: 'out' });
-  // "Add a node" from any output offers an In; from any input, an Out.
-  assert.deepEqual([fitOf(kind, 'object', 'out'), fitOf(kind, 'boolean', 'in'), fitOf(kind, 'value', 'in')], [{}, { type: 'out' }, { type: 'out' }]);
-  // Its Name picks a name the graph holds, or New name…, the next free Portal N; with none, Pick a name.
-  assert.deepEqual(rowChoices({ control: 'portal', value: undefined }, { portals: ['rows', 'Portal 1'] }), [
-    { value: '', label: 'Pick a name' }, { value: 'rows', label: 'rows' }, { value: 'Portal 1', label: 'Portal 1' }, { value: 'Portal 2', label: 'New name…' },
-  ]);
-  assert.deepEqual(rowChoices({ control: 'portal', value: 'rows' }, { portals: ['rows'] }).map((c) => c.label), ['rows', 'New name…']);
+  // "Add a node" from an output offers an In; an input has nothing an Out could send it before a route reaches its In.
+  assert.deepEqual([fitOf(kind, 'object', 'out'), fitOf(kind, 'boolean', 'in')], [{}, undefined]);
+  assert.deepEqual(rowChoices({ control: 'portal', value: undefined }, { portals: ['rows', 'Portal 1'] }).map((c) => c.label), ['Pick a name', 'rows', 'Portal 1', 'New name…']);
+  // A row's name is `@` and its source: the same route back, the same row.
+  assert.deepEqual([connectionRow('s/rows'), connectionOf('@s/rows'), connectionOf('@c'), connectionOf('name')], ['@s/rows', 's/rows', 'c', undefined]);
 });
 
-/** One Store's rows through a portal, to a Field › Condition and to a Count: 1-to-many. */
-const oneToMany = () => flow([
-  store(), portal('in', 'in', 'rows'), portal('o1', 'out', 'rows', 600, 0), portal('o2', 'out', 'rows', 600, 300),
-  field('f', 'status', 900), { id: 'n', kind: 'collection', x: 900, y: 300, values: { type: 'count' } }, cond('eq', 'eq', 'active', 1200),
-], [{ from: 's/rows', to: 'in' }, { from: 'o1', to: 'f' }, { from: 'o2', to: 'n' }, { from: 'f/field', to: 'eq' }]);
+/** A Source's rows and a Value into one In; one Out, its two rows routed on alone: the rows to a Field, the Value to Value B. */
+const twoIn = () => flow([
+  source(), value('v', 'active'), portal('in', 'in', 'pipe'), portal('o', 'out', 'pipe', 600), field('f', 'status', 900), cond('eq', 'eq', undefined, 1200),
+], [{ from: 's/rows', to: 'in' }, { from: 'v/value', to: 'in' }, { from: 'o/@s/rows', to: 'f' }, { from: 'o/@v/value', to: 'eq/b' }, { from: 'f/field', to: 'eq' }]);
 
-test('1-to-many: what reaches an In leaves from every Out of its name, as if routed straight; no line joins the portals', () => {
-  const w = oneToMany();
+test('an In takes many routes; its Out draws a row for each, labelled from its source, typed by it, each routed on alone', () => {
+  const w = twoIn();
   assert.deepEqual(workflowFaults(w, undefined, facts), []);
-  // The Field reads the Store's rows through the portal: its column, as with a straight route.
-  assert.deepEqual(sentFrom(w, 'f/field', facts), { kind: 'field', field: { name: 'status', label: 'Status' } });
-  const straight = flow([store(), field('f', 'status', 900)], [{ from: 's/rows', to: 'f' }]);
-  assert.deepEqual(sentFrom(w, 'f/field', facts), sentFrom(straight, 'f/field', facts));
-  // The Count's Rows: nothing reads null; no warning anywhere.
   const g = workflowGraph(w, facts);
   assert.deepEqual(said(g), {});
-  // Drawn: the routes as given; none from an In to an Out. Each Out draws the type that reaches it: rows, an object.
-  assert.deepEqual(g.routes.map((r) => `${r.from} → ${r.to}`), ['s/rows → in', 'o1 → f', 'o2 → n', 'f/field → eq']);
-  assert.deepEqual([at(g, 'o1').output, at(g, 'o2').output, at(g, 'in').input], ['object', 'object', 'any']);
-  // Its Name row says how many share it.
-  assert.deepEqual(['in', 'o1'].map((id) => at(g, id).rows.find((r) => r.name === 'name').hint), ['Sends to 2 Out portals', 'Sends what reaches 1 In portal, with 1 other Out portal']);
-  assert.deepEqual(portalLinks(g.nodes, 'o1'), ['in', 'o2']);
-  // The Outgoing JSON reads through it too.
+  assert.deepEqual(rowsOf(g, 'o'), [['@s/rows', 'Source › Rows', 'object'], ['@v/value', 'Value › Value', 'value']]);
+  // The Out's header sends nothing: it has no socket.
+  assert.equal(at(g, 'o').output, undefined);
+  assert.equal(at(g, 'o').rows.find((r) => r.name === 'name').hint, '2 rows, from 1 In portal');
+  assert.equal(at(g, 'in').many, true);
+  // Each row reads as its source: the Field the Source's column; Value B the Value's word, as routed straight.
+  assert.deepEqual(sentFrom(w, 'f/field', facts), { kind: 'field', field: { name: 'status', label: 'Status' } });
+  assert.equal(at(g, 'eq').rows.find((r) => r.name === 'b').value, 'active');
   assert.deepEqual(nodeFlow(g, 'eq').definition, { where: { field: 'status', op: 'eq', value: 'active' } });
-  // A Value into one In: each Out's Value B shows it, read only, as a route from the Value would; the route reaches both.
-  const sent = flow([
-    { id: 'v', kind: 'value', x: 0, y: 0, values: { type: 'text', value: 'trial' } }, portal('in', 'in', 'pick'), portal('o1', 'out', 'pick', 600, 0), portal('o2', 'out', 'pick', 600, 300),
-    cond('a', 'eq', 'active', 900, 0), cond('b', 'ne', 'churned', 900, 300),
-  ], [{ from: 'v/value', to: 'in' }, { from: 'o1', to: 'a/b' }, { from: 'o2', to: 'b/b' }]);
-  assert.deepEqual(portalFlow(sent.nodes, sent.routes).routes, [{ from: 'v/value', to: 'a/b', portal: 'pick' }, { from: 'v/value', to: 'b/b', portal: 'pick' }]);
-  const shown = workflowGraph(sent, facts);
-  assert.deepEqual(['a', 'b'].map((id) => at(shown, id).rows.find((r) => r.name === 'b').value), ['trial', 'trial']);
-  assert.equal(at(shown, 'o1').output, 'value');
+  assert.deepEqual(lines(portalFlow(w.nodes, w.routes).routes).sort(), ['f/field → eq', 's/rows → f', 'v/value → eq/b']);
+  // Drawn: the routes as given; none from the In to the Out.
+  assert.deepEqual(lines(g.routes), lines(w.routes));
 });
 
-test('many-to-1: into an input that takes several, each is one part; into one that takes one, it reads null and warns', () => {
-  // Two tests, each into an In named "ok"; its Out into And: both are its parts.
+test('1-to-many: every Out of the name draws the same rows; many-to-1: an In of each, the rows of both; many-to-many', () => {
+  // Two Outs: each draws the In's two rows, each routed on alone.
+  const w = flow([...twoIn().nodes, portal('o2', 'out', 'pipe', 600, 300), { id: 'n', kind: 'collection', x: 900, y: 300, values: { type: 'count' } }],
+    [...twoIn().routes, { from: 'o2/@s/rows', to: 'n' }]);
+  const g = workflowGraph(w, facts);
+  assert.deepEqual(rowsOf(g, 'o2'), rowsOf(g, 'o'));
+  assert.deepEqual(lines(portalFlow(w.nodes, w.routes).routes).filter((r) => r.includes(' → n')), ['s/rows → n']);
+  assert.equal(at(g, 'o').rows.find((r) => r.name === 'name').hint, '2 rows, from 1 In portal, with 1 other Out portal');
+  // Two Ins of one name, a Condition's True into each: an Out draws both rows; And takes each, a part each.
   const both = flow([
-    store(), field('f', 'status'), field('p', 'plan', 600, 200), cond('a', 'eq', 'active'), cond('b', 'eq', 'Pro', 900, 200),
+    source(), field('f', 'status'), field('p', 'plan', 600, 200), cond('a', 'eq', 'active'), cond('b', 'eq', 'Pro', 900, 200),
     portal('i1', 'in', 'ok', 1200, 0), portal('i2', 'in', 'ok', 1200, 200), portal('o', 'out', 'ok', 1500), cond('and', 'and', undefined, 1800),
   ], [
     { from: 's/rows', to: 'f' }, { from: 's/rows', to: 'p' }, { from: 'f/field', to: 'a' }, { from: 'p/field', to: 'b' },
-    { from: 'a', to: 'i1' }, { from: 'b', to: 'i2' }, { from: 'o', to: 'and' }, { from: 'and', to: '#out/where' },
+    { from: 'a', to: 'i1' }, { from: 'b', to: 'i2' }, { from: 'o/@a', to: 'and' }, { from: 'o/@b', to: 'and' }, { from: 'and', to: '#out/where' },
   ]);
-  const g = workflowGraph(both, facts);
-  assert.deepEqual(said(g), {});
-  assert.equal(at(g, 'o').output, 'boolean');
-  assert.deepEqual(conditionAt(g, '#out/where').tree, { and: [{ field: 'status', op: 'eq', value: 'active' }, { field: 'plan', op: 'eq', value: 'Pro' }] });
-  // Two values into one Value A, which takes one: null, and why.
-  const values = flow([
-    value('v1', '1'), value('v2', '2', 600), portal('i1', 'in', 'n', 300, 400), portal('i2', 'in', 'n', 300, 600), portal('o', 'out', 'n', 600, 400),
-    { id: 'm', kind: 'math', x: 900, y: 400, values: { type: 'add', a: 5 } },
-  ], [{ from: 'v1/value', to: 'i1' }, { from: 'v2/value', to: 'i2' }, { from: 'o', to: 'm/a' }]);
-  const m = at(workflowGraph(values), 'm');
-  assert.equal(m.rows.find((r) => r.name === 'a').value, null);
-  assert.deepEqual(m.warnings, [{ row: 'a', words: 'Value A takes one route; 2 reach it through the portal "n"' }]);
-  // Two Stores' rows into a Field's header, which takes one: null, and why. Nothing is a fault: Save does not wait.
-  const rows = flow([store('s1'), store('s2', 'devices', 300), portal('i1', 'in', 'rows'), portal('i2', 'in', 'rows', 300, 300), portal('o', 'out', 'rows', 600), field('f', 'status', 900)],
-    [{ from: 's1/rows', to: 'i1' }, { from: 's2/rows', to: 'i2' }, { from: 'o', to: 'f' }]);
-  assert.deepEqual(said(workflowGraph(rows, facts)), { f: [['', 'Field takes one route; 2 reach it through the portal "rows"']] });
-  assert.equal(sentFrom(rows, 'f/field', facts), undefined, 'no rows read: it sends nothing (TODO 817)');
-  assert.deepEqual(workflowFaults(rows, undefined, facts), []);
+  const gb = workflowGraph(both, facts);
+  assert.deepEqual(rowsOf(gb, 'o'), [['@a', 'Condition › True', 'boolean'], ['@b', 'Condition › True', 'boolean']]);
+  assert.deepEqual(said(gb), {});
+  assert.deepEqual(conditionAt(gb, '#out/where').tree, { and: [{ field: 'status', op: 'eq', value: 'active' }, { field: 'plan', op: 'eq', value: 'Pro' }] });
+  // Many-to-many: a second Out draws the same two rows; its rows into Or.
+  const many = flow([...both.nodes, portal('o2', 'out', 'ok', 1500, 300), cond('or', 'or', undefined, 1800, 300)], [...both.routes, { from: 'o2/@a', to: 'or' }, { from: 'o2/@b', to: 'or' }]);
+  const gm = workflowGraph(many, facts);
+  assert.deepEqual(rowsOf(gm, 'o2'), rowsOf(gm, 'o'));
+  assert.deepEqual(nodeFlow(gm, 'or').definition, { where: { or: [{ field: 'status', op: 'eq', value: 'active' }, { field: 'plan', op: 'eq', value: 'Pro' }] } });
+  // One row into an input that takes one is one route: nothing reads null, nothing warns. (A workflow has no Where.)
+  assert.deepEqual(workflowFaults(flow(many.nodes, many.routes.filter((r) => r.to !== '#out/where')), undefined, facts), []);
 });
 
-test('many-to-many: each Out sends what reaches every In of its name', () => {
-  const w = flow([
-    store(), field('f', 'status'), field('p', 'plan', 600, 200), cond('a', 'eq', 'active'), cond('b', 'eq', 'Pro', 900, 200),
-    portal('i1', 'in', 'ok', 1200, 0), portal('i2', 'in', 'ok', 1200, 200), portal('o1', 'out', 'ok', 1500, 0), portal('o2', 'out', 'ok', 1500, 200),
-    cond('and', 'and', undefined, 1800, 0), cond('or', 'or', undefined, 1800, 200),
-  ], [
-    { from: 's/rows', to: 'f' }, { from: 's/rows', to: 'p' }, { from: 'f/field', to: 'a' }, { from: 'p/field', to: 'b' },
-    { from: 'a', to: 'i1' }, { from: 'b', to: 'i2' }, { from: 'o1', to: 'and' }, { from: 'o2', to: 'or' },
-  ]);
-  const g = workflowGraph(w, facts);
-  const parts = [{ field: 'status', op: 'eq', value: 'active' }, { field: 'plan', op: 'eq', value: 'Pro' }];
-  assert.deepEqual([nodeFlow(g, 'and').definition, nodeFlow(g, 'or').definition], [{ where: { and: parts } }, { where: { or: parts } }]);
-  const resolved = portalFlow(w.nodes, w.routes, () => true).routes.map((r) => `${r.from} →${r.portal ? ` (${r.portal})` : ''} ${r.to}`);
-  assert.deepEqual(resolved.filter((r) => r.includes('(ok)')), ['a → (ok) and', 'b → (ok) and', 'a → (ok) or', 'b → (ok) or']);
+test('a row keeps its id: a route in cut, its route out is kept unseen, no fault, and Save leaves it out; the route back, it is back', () => {
+  const w = twoIn();
+  const cut = editWorkflow(w, { cut: { from: 'v/value', to: 'in' } });
+  assert.deepEqual(lines(keptRoutes(cut)), ['o/@v/value → eq/b']);
+  assert.deepEqual(workflowFaults(cut, undefined, facts), []);
+  const g = workflowGraph(cut, facts);
+  assert.deepEqual(rowsOf(g, 'o'), [['@s/rows', 'Source › Rows', 'object']]);
+  assert.ok(!lines(g.routes).includes('o/@v/value → eq/b'), 'drawn nowhere');
+  assert.equal(at(g, 'eq').rows.find((r) => r.name === 'b').value, undefined);
+  assert.deepEqual(lines(finalGraph(cut).routes), ['s/rows → in', 'o/@s/rows → f', 'f/field → eq']);
+  // The route back: the same row, and its route out draws again.
+  const back = editWorkflow(cut, { route: { from: 'v/value', to: 'in' } });
+  assert.deepEqual(keptRoutes(back), []);
+  assert.equal(at(workflowGraph(back, facts), 'eq').rows.find((r) => r.name === 'b').value, 'active');
+  // An Out turned In keeps its row routes unseen too; turned back, they draw again.
+  const turned = editWorkflow(w, { node: 'o', row: 'type', value: 'in' });
+  assert.deepEqual(lines(keptRoutes(turned)), ['o/@s/rows → f', 'o/@v/value → eq/b']);
+  assert.deepEqual(workflowFaults(turned, undefined, facts), []);
+  assert.deepEqual(keptRoutes(editWorkflow(turned, { node: 'o', row: 'type', value: 'out' })), []);
 });
 
-test('an Out no In names warns, and an input only it reaches reads null; an In and an Out of no name link nothing', () => {
-  const w = flow([portal('o', 'out', 'nope'), { id: 'm', kind: 'math', x: 600, y: 0, values: { type: 'add', a: 5 } }], [{ from: 'o', to: 'm/a' }]);
-  const g = workflowGraph(w);
-  assert.deepEqual(said(g), {
-    o: [['', 'No In portal is named "nope": it sends nothing']],
-    m: [['a', 'Value A reads nothing: no In portal is named "nope"']],
-  });
-  assert.equal(at(g, 'm').rows.find((r) => r.name === 'a').value, null);
-  // Before anything reaches it, its socket is any type. A warning, never a fault.
-  assert.equal(at(g, 'o').output, 'any');
-  assert.deepEqual(workflowFaults(w), []);
-  // With no name: it says to pick one.
+test('an Out no In names warns and has no rows; one of no name, too; a row of an Out into an In of another name chains', () => {
+  const lone = workflowGraph(flow([portal('o', 'out', 'nope')], []));
+  assert.deepEqual(said(lone), { o: [['', 'No In portal is named "nope": it has no rows']] });
+  assert.deepEqual(rowsOf(lone, 'o'), []);
   const bare = workflowGraph(flow([portal('o', 'out')], []));
-  assert.deepEqual(said(bare), { o: [['', 'It has no name: pick one, or New name…, to send what reaches its In']] });
-  assert.equal(at(bare, 'o').rows.find((r) => r.name === 'name').hint, 'Pick a name, or New name…');
+  assert.deepEqual(said(bare), { o: [['', 'It has no name: pick one, or New name…, for a row per route into its In']] });
+  // Out "a"'s row into In "b": Out "b" draws a row for it, "Portal › Source › Rows", and reads as the Source.
+  const chain = flow([source(), portal('ia', 'in', 'a'), portal('oa', 'out', 'a', 600), portal('ib', 'in', 'b', 900), portal('ob', 'out', 'b', 1200), field('f', 'status', 1500)],
+    [{ from: 's/rows', to: 'ia' }, { from: 'oa/@s/rows', to: 'ib' }, { from: 'ob/@oa/@s/rows', to: 'f' }]);
+  const g = workflowGraph(chain, facts);
+  assert.deepEqual(rowsOf(g, 'ob'), [['@oa/@s/rows', 'Portal › Source › Rows', 'object']]);
+  assert.deepEqual(lines(portalFlow(chain.nodes, chain.routes).routes), ['s/rows → f']);
+  assert.deepEqual(workflowFaults(chain, undefined, facts), []);
 });
 
-test('a loop through a portal is a loop; portals that send into their own name are one', () => {
-  // A Condition's rows into an In; its Out into a Count, whose count is the Condition's Value B.
-  const count = { id: 'n', kind: 'collection', x: 1800, y: 0, values: { type: 'count' } };
-  const round = flow([store(), field('f', 'status'), cond('c', 'eq', 'active'), portal('i', 'in', 'back', 1200), portal('o', 'out', 'back', 1500), count],
-    [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'i' }, { from: 'o', to: 'n' }, { from: 'n/count', to: 'c/b' }]);
+test('a loop through a row is a loop', () => {
+  // A Condition's rows into an In; its Out's row into a Count, whose count is the Condition's Value B.
+  const round = flow([source(), field('f', 'status'), cond('c', 'eq'), portal('i', 'in', 'back', 1200), portal('o', 'out', 'back', 1500), { id: 'n', kind: 'collection', x: 1800, y: 0, values: { type: 'count' } }],
+    [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'i' }, { from: 'o/@c/rows', to: 'n' }, { from: 'n/count', to: 'c/b' }]);
   assert.deepEqual(workflowFaults(round, undefined, facts), ['its routes run in a loop, through the portal "back"']);
   assert.equal(checkWorkflow(round, undefined, facts), false);
-  // A loop into an input that reads null is still one.
-  const twice = flow(round.nodes.slice(0, 5), [...round.routes.slice(0, 3), { from: 'o', to: 'f' }]);
-  assert.deepEqual(workflowFaults(twice, undefined, facts), ['two routes enter "f", which takes one', 'its routes run in a loop, through the portal "back"']);
-  const self = flow([portal('i', 'in', 'x'), portal('o', 'out', 'x', 600)], [{ from: 'o', to: 'i' }]);
-  assert.deepEqual(workflowFaults(self), ['the portal "x" sends into itself, in a loop']);
-  // Without the portal hop the same graph has no loop: the hop is what made it.
-  const cut = flow(round.nodes, round.routes.filter((r) => r.from !== 'o'));
-  assert.deepEqual(workflowFaults(cut, undefined, facts), []);
+  // Without the row's route the same graph has none.
+  assert.deepEqual(workflowFaults(flow(round.nodes, round.routes.filter((r) => r.from !== 'o/@c/rows')), undefined, facts), []);
 });
 
-/** Demos' Active customers Preset Filter, its Field sent through a portal to its Condition. */
+/** Demos' Active customers Preset Filter, its Field sent through a portal row to its Condition. */
 const throughPortal = {
   v: 1, type: 'preset-filter', id: 'portal-active', label: 'Active, through a portal', settings: { source: 'customers' },
   graph: {
-    nodes: [store('start'), field('field', 'status', 300), portal('in', 'in', 'status', 600), portal('out', 'out', 'status', 900), cond('status', 'eq', 'active', 1200)],
-    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'in' }, { from: 'out', to: 'status' }, { from: 'status', to: '#out/where' }],
+    nodes: [source('start'), field('field', 'status', 300), portal('in', 'in', 'status', 600), portal('out', 'out', 'status', 900), cond('status', 'eq', 'active', 1200)],
+    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'in' }, { from: 'out/@field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
   },
 };
 const straightFilter = {
   ...throughPortal, id: 'straight-active',
-  graph: { nodes: [store('start'), field('field', 'status', 300), cond('status', 'eq', 'active', 1200)], routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }] },
+  graph: { nodes: [source('start'), field('field', 'status', 300), cond('status', 'eq', 'active', 1200)], routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }] },
 };
 
-test('a Preset Filter through a portal compiles to the same preset as the one routed straight', () => {
+test('a Preset Filter through a portal row compiles to the same preset as the one routed straight', () => {
   const [a, b] = [presetOfEntity(throughPortal, facts), presetOfEntity(straightFilter, facts)];
   assert.ok('preset' in a, JSON.stringify(a));
   assert.deepEqual(a.preset.where, b.preset.where);
   assert.deepEqual(a.preset.where, { status: { eq: 'active' } });
-  // Its Where through a portal too: the condition still reaches it.
+  // Its Where through a row too: the condition still reaches it.
   const where = { ...throughPortal, id: 'via-where', graph: {
     nodes: [...straightFilter.graph.nodes, portal('wi', 'in', 'where', 1500), portal('wo', 'out', 'where', 1800)],
-    routes: [...straightFilter.graph.routes.filter((r) => r.to !== '#out/where'), { from: 'status', to: 'wi' }, { from: 'wo', to: '#out/where' }],
+    routes: [...straightFilter.graph.routes.filter((r) => r.to !== '#out/where'), { from: 'status', to: 'wi' }, { from: 'wo/@status', to: '#out/where' }],
   } };
   assert.deepEqual(presetOfEntity(where, facts).preset.where, b.preset.where);
 });
 
-test('Save writes the portals and their routes, and they read back the same', () => {
-  const w = oneToMany();
+test('Save writes the portals and their row routes, and they read back the same', () => {
+  const w = twoIn();
   assert.equal(finalGraph(w), w);
   const back = readWorkflow(JSON.parse(JSON.stringify(w))).workflow;
   assert.deepEqual(back, w);
-  assert.deepEqual(sentFrom(back, 'f/field', facts), sentFrom(w, 'f/field', facts));
+  assert.deepEqual(rowsOf(workflowGraph(back, facts), 'o'), rowsOf(workflowGraph(w, facts), 'o'));
   assert.equal(checkWorkflow(back, undefined, facts), true);
-  // An Out switched to an In keeps its routes in the draft, unseen and no fault; Save leaves them out.
-  const turned = editWorkflow(w, { node: 'o1', row: 'type', value: 'in' });
-  assert.deepEqual(keptRoutes(turned).map((r) => `${r.from} → ${r.to}`), ['o1 → f']);
-  assert.deepEqual(workflowFaults(turned, undefined, facts), []);
-  assert.deepEqual(finalGraph(turned).routes.map((r) => `${r.from} → ${r.to}`), ['s/rows → in', 'o2 → n', 'f/field → eq']);
 });
 
-test('Rename renames a name on every portal that holds it: its links stay', () => {
-  const w = editWorkflow(oneToMany(), { renamePortal: { from: 'rows', to: 'customers' } });
-  assert.deepEqual(w.nodes.filter((n) => n.kind === 'portal').map((n) => n.values.name), ['customers', 'customers', 'customers']);
-  assert.deepEqual(sentFrom(w, 'f/field', facts), sentFrom(oneToMany(), 'f/field', facts));
-  // An empty name, or one no portal holds, is refused: the workflow given.
-  const was = oneToMany();
-  assert.equal(editWorkflow(was, { renamePortal: { from: 'rows', to: ' ' } }), was);
-  assert.equal(editWorkflow(was, { renamePortal: { from: 'none', to: 'x' } }), was);
+test('Rename renames a name on every portal that holds it: the rows and their routes stay', () => {
+  const w = editWorkflow(twoIn(), { renamePortal: { from: 'pipe', to: 'customers' } });
+  assert.deepEqual(w.nodes.filter((n) => n.kind === 'portal').map((n) => n.values.name), ['customers', 'customers']);
+  assert.deepEqual(rowsOf(workflowGraph(w, facts), 'o'), rowsOf(workflowGraph(twoIn(), facts), 'o'));
+  assert.deepEqual(keptRoutes(w), []);
+  const was = twoIn();
+  assert.equal(editWorkflow(was, { renamePortal: { from: 'pipe', to: ' ' } }), was);
+  // One Out moved to another name: its rows go, their routes kept unseen; moved back, they draw again.
+  const moved = editWorkflow(was, { node: 'o', row: 'name', value: 'other' });
+  assert.deepEqual(lines(keptRoutes(moved)), ['o/@s/rows → f', 'o/@v/value → eq/b']);
+  assert.deepEqual(keptRoutes(editWorkflow(moved, { node: 'o', row: 'name', value: 'pipe' })), []);
 });
 
-test('a name is local to its graph: Save as Custom Node refuses one cut in two; Ungroup renumbers one the graph holds', () => {
+test('a name is local to its graph: a cut name refused; inside, a row from outside comes by the Group Input, and Ungroup gives it back', () => {
   const library = { v: 1, nodes: {} };
-  const w = oneToMany();
-  assert.deepEqual(cutNames(w.nodes, new Set(['o1', 'f'])), ['rows']);
-  const cut = groupNodes(w, ['o1', 'f'], library, { label: 'Status' }, undefined, facts);
-  assert.match(cut.fault, /the portal "rows" joins picked nodes to others: pick every portal of its name, or none/);
-  // Every portal of the name picked: it goes inside, and still joins there.
-  const made = groupNodes(w, ['in', 'o1', 'o2', 'f', 'n'], library, { label: 'Rows twice' }, undefined, facts);
+  const w = twoIn();
+  assert.deepEqual(cutNames(w.nodes, new Set(['o', 'f'])), ['pipe']);
+  assert.match(groupNodes(w, ['o', 'f'], library, { label: 'Status' }, undefined, facts).fault, /the portal "pipe" joins picked nodes to others/);
+  // The portals and the Field picked; the Source and the Value stay out. Inside, the Out's rows are the Group Input's.
+  const made = groupNodes(w, ['in', 'o', 'f'], library, { label: 'Pipe' }, undefined, facts);
   assert.ok(!('fault' in made), made.fault);
-  // Ungroup beside a portal already named "rows": the body's comes out as "rows 2".
-  const beside = { ...made.workflow, nodes: [...made.workflow.nodes, portal('mine', 'in', 'rows', 0, 900)] };
-  assert.deepEqual(ungroupNames(beside.nodes, made.library.nodes[made.id].nodes), new Map([['rows', 'rows 2']]));
-  const back = ungroupUse(beside, made.use, made.library);
-  assert.deepEqual(back.workflow.nodes.filter((n) => n.kind === 'portal').map((n) => [n.id, n.values.name]), [['in', 'rows 2'], ['o1', 'rows 2'], ['o2', 'rows 2'], ['mine', 'rows']]);
-  assert.deepEqual(sentFrom(back.workflow, 'f/field', facts).field.name, 'status');
+  const body = made.library.nodes[made.id];
+  assert.deepEqual(body.inputs.map((i) => [i.name, i.label, i.type]), [['s-rows', 'Source › Rows', 'object'], ['v-value', 'Value › Value', 'value']]);
+  assert.deepEqual(lines(body.routes).sort(), ['#in/s-rows → in', '#in/v-value → in', 'f/field → #out/f-field', 'o/@#in/s-rows → f', 'o/@#in/v-value → #out/o-v-value'].sort());
+  assert.deepEqual(body.outputs.map((o) => [o.label, o.type]), [['Value › Value', 'value'], ['Field › Field', 'object']]);
+  // Ungroup: the rows by their sources again, the same routes as before.
+  const back = ungroupUse(made.workflow, made.use, made.library);
+  assert.deepEqual(lines(back.workflow.routes).sort(), lines(w.routes).sort());
+  // Beside a portal already named "pipe": the body's comes out as "pipe 2", and its rows with it.
+  const beside = { ...made.workflow, nodes: [...made.workflow.nodes, portal('mine', 'in', 'pipe', 0, 900)] };
+  assert.deepEqual(ungroupNames(beside.nodes, body.nodes), new Map([['pipe', 'pipe 2']]));
+  const out = ungroupUse(beside, made.use, made.library).workflow;
+  assert.deepEqual(out.nodes.filter((n) => n.kind === 'portal').map((n) => [n.id, n.values.name]), [['in', 'pipe 2'], ['o', 'pipe 2'], ['mine', 'pipe']]);
+  assert.deepEqual(rowsOf(workflowGraph(out, facts), 'o'), rowsOf(workflowGraph(w, facts), 'o'));
 });
