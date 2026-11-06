@@ -173,9 +173,9 @@ sherpa-node:
   '&[data-linked]': active
   # What reached it that it cannot use: the warning mode, picked or not; a run's step wins. TODO 764
   '&[data-warning]': warning
-  # LIT by its step as a run goes (plan 695 N2): running info, failed critical,
-  # skipped inactive; done keeps the default. Will may restyle them.
-  '&[data-step="running"]': info
+  # LIT by its step as a run goes (plan 695 N2): running active (TODO 845: the active border and the tab on its top edge),
+  # failed critical, skipped inactive; done keeps the default. Will may restyle them.
+  '&[data-step="running"]': active
   '&[data-step="failed"]': critical
   '&[data-step="skipped"]': inactive
   # A SOCKET pins its own type's mode, whatever its node does (a picked or running

@@ -7611,7 +7611,7 @@
             },
             {
               "name": "data-caption",
-              "description": "a line over the node: what its step did, its time and rows. Its host writes it",
+              "description": "the TAB on its top edge: what its step does or did, its time and rows (\"Simulating… 1s\"). A running tab leads with a play icon. Its host writes it",
               "type": {
                 "text": "string"
               }
@@ -7733,7 +7733,7 @@
             },
             {
               "name": "data-step",
-              "description": "how its step stands as a run lights it: running | done | failed | skipped. Its host writes it",
+              "description": "how its step stands as a run lights it: running | done | failed | skipped. Its host writes it. Running, the node wears the active border",
               "type": {
                 "text": "'running' | 'done' | 'failed' | 'skipped'"
               }
@@ -7812,6 +7812,12 @@
             },
             {
               "name": "caption"
+            },
+            {
+              "name": "caption-icon"
+            },
+            {
+              "name": "caption-text"
             },
             {
               "name": "foot"

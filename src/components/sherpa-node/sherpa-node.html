@@ -23,8 +23,8 @@
     data-current      the selected node; the HOST writes it, one node of many
     data-active       the one picked node whose panel is shown, in a stronger ring; the HOST writes it
     data-linked       a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it
-    data-step         how its step stands as a run lights it: running | done | failed | skipped. Its host writes it
-    data-caption      a line over the node: what its step did, its time and rows. Its host writes it
+    data-step         how its step stands as a run lights it: running | done | failed | skipped. Its host writes it. Running, the node wears the active border
+    data-caption      the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it
     data-warning      what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it
     data-locked       the host owns the place: a drag or a key reports, and moves nothing
     data-resizable    the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way
@@ -39,8 +39,11 @@
 -->
 <template id="default">
   <div class="root" part="root">
-    <!-- What its step did, over the card: it moves no row, so no route moves. -->
-    <span class="caption sherpa-truncate" part="caption" data-text="data-caption"></span>
+    <!-- The TAB on its top edge, right-aligned: what its step does or did. It moves no row, so no route moves. TODO 845 -->
+    <span class="caption" part="caption">
+      <span class="caption-icon sherpa-icon-box" part="caption-icon" aria-hidden="true" data-icon="play"></span>
+      <span class="caption-text sherpa-truncate" part="caption-text" data-text="data-caption"></span>
+    </span>
     <!-- The HEADER is the handle: a drag moves the node, the arrows move it, Enter selects it. It anchors the warning's tip. -->
     <div class="header sherpa-anchor" part="header" role="button" tabindex="0" aria-roledescription="node" aria-describedby="warning">
       <sherpa-container-header class="heading" part="heading" data-heading="Node" data-attr-data-heading="data-heading" data-attr-data-icon="data-icon" data-attr-data-description="data-description"></sherpa-container-header>

@@ -83,7 +83,7 @@ import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { isSource, pathRead } from '../data/node-paths.js';
-import { simulateGraph, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
+import { simulation as beginSimulation, stepSimulation, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
 import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
@@ -3114,10 +3114,49 @@ export function bindWorkflow(
     if (multi.size > 1 && inspector?.open) showMulti();
     else picks.follow(graph);
   };
-  /** Run the graph on the rows kept, and show it. */
+  // — The running look: the node a task is on wears the step's tab on its top edge and the active border, and says how long
+  //   the task has run, which the task's own history gives. One look for every kind of task. TODO 845
+  let lit: { kind: string; ids: readonly string[] } | undefined;
+  let tick: ReturnType<typeof setInterval> | undefined;
+  /** The task of this graph that is queued or running. */
+  const activeTask = (): Task | undefined => queue.list().find((t) => t.key === taskKey && t.state !== 'ok' && t.state !== 'failed');
+  const paintRunning = (): void => {
+    if (!lit) return;
+    const started = activeTask()?.history.find((h) => h.state === 'running')?.at ?? Date.now();
+    const seconds = Math.max(1, Math.ceil((Date.now() - started) / 1000));
+    for (const id of lit.ids) {
+      const el = drawnOn.get(canvas)?.nodes.get(id);
+      el?.setAttribute('data-step', 'running');
+      if (el) put(el, 'data-caption', `${lit.kind === 'fetch' ? 'Fetching' : 'Simulating'}… ${seconds}s`);
+    }
+  };
+  /** Take the look off the node it was on, and put it on these. */
+  const runningOn = (kind: string, ids: readonly string[]): void => {
+    for (const id of lit?.ids ?? []) if (!ids.includes(id)) {
+      const el = drawnOn.get(canvas)?.nodes.get(id);
+      el?.removeAttribute('data-step');
+      el?.removeAttribute('data-caption');
+    }
+    lit = { kind, ids };
+    paintRunning();
+    tick ??= setInterval(paintRunning, 1000);
+  };
+  const runningOff = (): void => {
+    runningOn('', []);
+    lit = undefined;
+    clearInterval(tick);
+    tick = undefined;
+  };
+  /** Run the graph on the rows kept, and show it: node by node, the page let draw between them when one takes a while. */
   const runSimulation = async (): Promise<{ nodes: number; faults: number }> => {
     const { rows, partial, any } = await cachedRows();
-    const result = simulateGraph(graph, rows, { partial });
+    const run = beginSimulation(graph, rows, { partial });
+    let result: Simulated;
+    try {
+      result = await stepSimulation(run, { onStep: (id) => runningOn('simulate', [id]), pause: () => new Promise<void>((done) => setTimeout(done, 0)) });
+    } finally {
+      runningOff();
+    }
     simulation = { result, stale: false, sig: dataSig() };
     toolbar?.toggleAttribute('data-cached', any);
     showData();
@@ -3158,7 +3197,13 @@ export function bindWorkflow(
       const store = name ? await storeFor(name) : undefined;
       if (!name || !store) throw new Error(`the Source "${id}" names a store the page cannot reach`);
       state(`reading ${name}`);
-      const cache = await fetchSource(store, name, { ...(facts.fetchLimit ? { limit: facts.fetchLimit } : {}), signal });
+      runningOn('fetch', [...stores].filter(([, s]) => s === name).map(([node]) => node));
+      let cache: SourceCache;
+      try {
+        cache = await fetchSource(store, name, { ...(facts.fetchLimit ? { limit: facts.fetchLimit } : {}), signal });
+      } finally {
+        runningOff();
+      }
       said.push(`${name}: ${sourceWords(cache)}`);
     }
     state('simulating');
@@ -3291,6 +3336,7 @@ export function bindWorkflow(
       unwatch();
       unarrange();
       for (const task of queue.list()) if (ours(task)) queue.cancel(task.id);
+      runningOff();
       queue.removeEventListener('task-change', onChange);
       queue.removeEventListener('task-blocked', onBlocked);
       queue.removeEventListener('task-notice', onNotice);

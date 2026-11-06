@@ -24,7 +24,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 |---|---|---|---|
 | `data-active` | boolean |  | the one picked node whose panel is shown, in a stronger ring; the HOST writes it |
 | `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with its False socket, a rounded square |
-| `data-caption` | text |  | a line over the node: what its step did, its time and rows. Its host writes it |
+| `data-caption` | text |  | the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
@@ -41,7 +41,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-resizable` | boolean |  | the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way |
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
 | `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |
-| `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it |
+| `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it. Running, the node wears the active border |
 | `data-warning` | text |  | what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
 | `data-y` | number | `0` | where it sits down the canvas, in plane px |
@@ -72,7 +72,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `foot`, `footer`, `grip`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
+`body`, `caption`, `caption-icon`, `caption-text`, `foot`, `footer`, `grip`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -92,10 +92,14 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-sm` | `.resize` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.resize` | `block-size` |
 | `--sherpa-style-content-secondary` | `.resize` | `color` |
-| `--sherpa-theme-gap-sm` | `.caption` | `padding-block-end` |
-| `--sherpa-style-content-secondary` | `.caption` | `color` |
-| `--sherpa-font-family-body` | `.caption` | `font-family` |
-| `--sherpa-font-size-body-small` | `.caption` | `font-size` |
+| `--sherpa-theme-gap-sm` | `.caption` | `gap` |
+| `--sherpa-theme-padding-xs` | `.caption` | `padding` |
+| `--sherpa-style-border-width` | `.caption` | `border-width` |
+| `--sherpa-display-mode-border-rounding-sm` | `.caption` | `border-start-start-radius` |
+| `--sherpa-display-mode-border-rounding-sm` | `.caption` | `border-start-end-radius` |
+| `--sherpa-style-content-base` | `.caption` | `color` |
+| `--sherpa-font-family-mono` | `.caption` | `font-family` |
+| `--sherpa-font-size-body-xs` | `.caption` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
 | `--sherpa-display-mode-size-2xl` | `.footer` | `min-block-size` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |

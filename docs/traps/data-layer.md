@@ -8052,6 +8052,11 @@ N4); Fetch and Simulate are its first two users.
   with the failures. Each end moves the timer, so tasks that end a little apart are one notice, not several.
 - **The queue is told, not read.** The button, the node and the toast ask `get`, `list`, `busy` or hear `task-change`; the
   elapsed time is the task's history, drawn by whoever shows it.
+- **The running look is one part, drawn from the task.** A node a task is on wears the node's own `caption` as a TAB on its
+  top edge, right-aligned, with the play icon, and the active border (`data-step="running"` pins the active mode, never a
+  colour of its own): "Fetching… 1s" on a Source being read, "Simulating… 1s" on the node a simulation is on. The seconds are
+  the task's own history; the node only draws them. A stepped simulation (`stepSimulation`) lets the page draw between nodes
+  once one has run over 16 ms, so the tab can move. One look for every kind of task. (TODO 845)
 - **Light and in memory.** The history keeps the latest finished tasks (100); nothing is stored. A stopped task ends failed as
   "Stopped"; a queued one never runs.
 - **It names no user.** The test reads its source for the words fetch, simulate, graph, store, row and source: none is there.

@@ -58,10 +58,12 @@ export class SherpaNodeToolbar extends SherpaElement {
       const tool = this.$(`.${name}`);
       const own = (this.#tips[name] ??= tool?.getAttribute('data-tip') ?? '');
       // A fetch that runs says how to stop it; rows cached say Refetch; else the tool's own words.
+      // One task at a time for the graph: both tools wait while either runs, and the busy one says so.
       const busy = this.hasAttribute(name === 'fetch' ? 'data-fetching' : 'data-simulating');
+      const waiting = this.hasAttribute('data-fetching') || this.hasAttribute('data-simulating');
       const now = busy ? `${name === 'fetch' ? 'Fetching' : 'Simulating'}: wait for it to end` : name === 'fetch' && this.hasAttribute('data-cached') ? 'Refetch: read every Source on a path again' : own;
       tool?.setAttribute('data-tip', !this.hasAttribute(`data-can-${name}`) && why ? why : now);
-      tool?.toggleAttribute('data-busy', busy);
+      tool?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${name}`) || waiting);
       tool?.setAttribute('aria-busy', String(busy));
     }
     const tie = this.$('.tie');

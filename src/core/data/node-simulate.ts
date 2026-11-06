@@ -12,6 +12,10 @@
  * - SimulatedNode — One node: each input socket's slot, and each output socket's.
  * - Simulated — Every node's slots, and each fault in words.
  * - simulateGraph — The graph run on the cached rows: what each node hears and says, a row list on each socket.
+ * - SimulationRun — A simulation in steps: the nodes it runs, one step each, and what has run.
+ * - SteppingOptions — How a stepped simulation lets its host in: before each node, and a pause when one is due.
+ * - stepSimulation — Step a simulation node by node, giving the host a turn when one is due.
+ * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
 import { filterTest, type Filter, type Row } from './store.js';
 import { leafOf } from './node-flow.js';
@@ -78,6 +82,47 @@ function common(lists: readonly (readonly Row[])[]): Row[] {
  * data flows (`portalFlow`). The same in gives the same out.
  */
 export function simulateGraph(graph: DrawnGraph, rowsByStore: Readonly<Record<string, readonly Row[] | undefined>>, facts: SimulateFacts = {}): Simulated {
+  const run = simulation(graph, rowsByStore, facts);
+  for (const id of run.ids) run.step(id);
+  return run.result();
+}
+
+/** A simulation in steps: the ids of the nodes it runs, in the graph's order; `step` runs one (and, lazily, what it hears),
+ *  `result` is what has run. A host that wants to show the node it is on, and let the page draw between nodes, steps it;
+ *  `simulateGraph` steps it whole. The same in gives the same out. TODO 845 */
+export interface SimulationRun {
+  ids: readonly string[];
+  step(id: string): void;
+  result(): Simulated;
+}
+
+/** How a stepped simulation lets its host in: it is told each node before it runs; and once a node has run longer than `every`
+ *  ms since the host last had a turn, it waits for `pause` (a frame, a timer), so the page can draw the node it is on. */
+export interface SteppingOptions {
+  onStep?(id: string): void;
+  pause?(): Promise<void>;
+  now?(): number;
+  every?: number;
+}
+
+/** Step a simulation node by node, in order, giving the host a turn when one is due. The same result as stepping it whole. */
+export async function stepSimulation(run: SimulationRun, options: SteppingOptions = {}): Promise<Simulated> {
+  const now = options.now ?? ((): number => performance.now());
+  const every = options.every ?? 16;
+  let last = now();
+  for (const id of run.ids) {
+    options.onStep?.(id);
+    run.step(id);
+    if (options.pause && now() - last > every) {
+      await options.pause();
+      last = now();
+    }
+  }
+  return run.result();
+}
+
+/** Begin a simulation: nothing runs until it is stepped. */
+export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<string, readonly Row[] | undefined>>, facts: SimulateFacts = {}): SimulationRun {
   const now = facts.now ?? new Date();
   const routes = portalFlow(graph.nodes, graph.routes).routes;
   const held = new Map(graph.nodes.map((n) => [n.id, n]));
@@ -193,8 +238,10 @@ export function simulateGraph(graph: DrawnGraph, rowsByStore: Readonly<Record<st
   };
 
   const nodes: Record<string, SimulatedNode> = {};
-  for (const node of graph.nodes) {
-    if (node.id.startsWith('#')) continue;
+  const held0 = graph.nodes.filter((n) => !n.id.startsWith('#'));
+  const step = (id: string): void => {
+    const node = held.get(id);
+    if (!node || id in nodes) return;
     const incoming: Slot[] = [
       ...(node.input ? [slot(node.id, 'In', 'in')] : []),
       ...node.rows.filter((r) => r.input).map((r) => slot(`${node.id}/${r.name}`, r.label, 'in')),
@@ -205,6 +252,6 @@ export function simulateGraph(graph: DrawnGraph, rowsByStore: Readonly<Record<st
       ...(node.branches ? [slot(`${node.id}/${FALSE_SOCKET}`, 'False', 'out')] : []),
     ];
     nodes[node.id] = { incoming, outgoing };
-  }
-  return { nodes, faults };
+  };
+  return { ids: held0.map((n) => n.id), step, result: () => ({ nodes, faults }) };
 }
