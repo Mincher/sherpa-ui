@@ -264,3 +264,41 @@ test('floated from a panel shown on hover, it stays floating when the pointer le
   await page.waitForTimeout(300);
   expect(await read()).toEqual({ state: 'floating', shown: true });
 });
+
+/** A tab peeks as an OVERLAY, never as the mode it was last open in: floating is kept, and the hover does not use it. TODO 872 */
+for (const kind of [
+  { name: 'a floating panel', slotted: false, attrs: 'data-floating' },
+  { name: 'a floating panel in a canvas', slotted: true, attrs: 'data-floating' },
+]) {
+  test(`${kind.name}, then a tab: hover shows an overlay, not the floating box`, async ({ page, browserName }) => {
+    test.skip(browserName === 'webkit', 'a WebKit hover is ended by its own synthetic pointer events');
+    await page.setViewportSize({ width: 1400, height: 800 });
+    await page.evaluate(async ({ slotted, attrs }) => {
+      const root = document.getElementById('root')!;
+      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'slot="panel"' : ''} data-heading="P" data-floatable data-poppable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
+      root.innerHTML = slotted
+        ? `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">${panel}</sherpa-layout-canvas>`
+        : `<sherpa-app-shell></sherpa-app-shell>${panel}`;
+      const p = document.getElementById('p') as PanelEl & { minimise(on: boolean): void };
+      await p.rendered;
+      await window.__settled();
+      p.show();
+      await window.__settled();
+      p.minimise(true);
+      await window.__settled();
+    }, { slotted: kind.slotted, attrs: kind.attrs });
+    const tab = await page.evaluate(() => { const b = document.getElementById('p')!.shadowRoot!.querySelector('.tab-open')!.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
+    await page.mouse.move(tab.x, tab.y);
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.getElementById('p')!.shadowRoot!.querySelector('.root')!).display !== 'none')).toBe(true);
+    const peek = await page.evaluate(() => {
+      const p = document.getElementById('p') as HTMLElement & { dockState: string };
+      const r = p.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
+      return { dock: p.dockState, kept: p.hasAttribute('data-floating'), full: Math.round(r.height), edge: Math.round(innerWidth - r.right) };
+    });
+    // The kept state is still floating; what is drawn is the overlay: the full height, on the edge.
+    expect(peek.kept).toBe(true);
+    expect(peek.dock).toBe('hover');
+    if (!kind.slotted) expect(peek.edge).toBeLessThanOrEqual(1);
+    expect(peek.full).toBeGreaterThanOrEqual(580);
+  });
+}

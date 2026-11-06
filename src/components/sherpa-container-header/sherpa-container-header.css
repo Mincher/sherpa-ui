@@ -177,6 +177,7 @@ slot[name="heading"] { display: contents; }
 ::slotted([slot="lead"]) {
   position: absolute;
   inset-inline-start: var(--sherpa-theme-gap-sm, 4px);
-  inset-block: 0;
-  margin-block: auto;
+  /* TOP left: beside the first row, the title's, even when a search row makes the header tall. */
+  inset-block: var(--sherpa-theme-padding-md, 8px) auto;
+  margin-block-start: var(--sherpa-theme-gap-sm, 4px);
 }

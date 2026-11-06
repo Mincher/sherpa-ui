@@ -331,7 +331,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Put the panel where `data-fixed` and the room say. TRAP T-a-panel-pops-into-the-end-area */
   #place = (): void => {
     if (!this.isConnected) return;
-    const floating = this.hasAttribute('data-floating');
+    const floating = this.#floats();
     const minimised = this.hasAttribute('data-minimised');
     // Slotted into a layout: docked there by its slot, and floating or a tab in that layout's room.
     const layout = this.#slotted();
@@ -557,10 +557,16 @@ export class SherpaOverlayPanel extends SherpaElement {
     return this.#slotted() ? !this.hasAttribute('data-overlay') : this.hasAttribute('data-fixed');
   }
 
+  /** Is it a floating box now? A floating panel that is a tab is a tab: its hover shows an overlay, whatever it was last open as.
+   *  TRAP T-a-panel-peeks-from-its-tab */
+  #floats(): boolean {
+    return this.hasAttribute('data-floating') && !this.hasAttribute('data-minimised');
+  }
+
   /** Its docked state, one word: `floating`, a `tab`, a tab `hover`ed open as a docked overlay, `overlay` or `fixed`. A fixed panel is never hovered:
    *  a hover opens it over the content. */
   get dockState(): 'floating' | 'tab' | 'hover' | 'overlay' | 'fixed' {
-    if (this.hasAttribute('data-floating')) return 'floating';
+    if (this.#floats()) return 'floating';
     if (this.hasAttribute('data-minimised')) return this.hasState('peeking') ? 'hover' : 'tab';
     return this.#isFixed() ? 'fixed' : 'overlay';
   }
@@ -573,8 +579,11 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.#matchWidth(fixed);
     if (this.#slotted()) this.set('data-overlay', !fixed);
     else this.set('data-fixed', fixed && (side === 'start' ? 'start' : true));
-    // Docked from a hover: it stays open, in the state it was docked in.
-    if (hovering) this.minimise(false);
+    // Docked from a hover: it stays open, in the state it was docked in, and no longer floating.
+    if (hovering) {
+      this.set('data-floating', false);
+      this.minimise(false);
+    }
     this.emit('panel-pop', { fixed, side });
   };
 
@@ -631,7 +640,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** A press outside a peeking panel, or Escape, ends the peek: the way out for a touch screen, which has no leaving. */
   #onPeekPress = (event: Event): void => {
-    if (this.hasAttribute('data-floating')) return;
+    if (this.#floats()) return;
     const away = event.type === 'keydown' ? (event as KeyboardEvent).key === 'Escape' : !event.composedPath().includes(this);
     if (away) this.#peek(false);
   };
@@ -641,7 +650,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** The pointer moved while it peeks: out of the panel is back to the tab at once. A drag that began on it (its edge) is not a leaving. */
   #onPeekMove = (event: Event): void => {
-    if (this.hasAttribute('data-floating')) return;
+    if (this.#floats()) return;
     const { clientX: x, clientY: y, buttons, pointerType } = event as PointerEvent;
     const box = this.$('.root')?.getBoundingClientRect();
     // A finger leaves by pressing outside, not by moving.
@@ -660,7 +669,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.on(document, 'pointerdown', this.#onPeekPress, { while: this.#peekEnds.signal });
       this.on(document, 'keydown', this.#onPeekPress, { while: this.#peekEnds.signal });
     }
-    if (this.#slotted()) this.toggleState('overlaid', (on || (this.hasAttribute('data-overlay') && !this.hasAttribute('data-minimised'))) && !this.hasAttribute('data-floating'));
+    if (this.#slotted()) this.toggleState('overlaid', (on || (this.hasAttribute('data-overlay') && !this.hasAttribute('data-minimised'))) && !this.#floats());
     this.#syncPop();
   }
 
