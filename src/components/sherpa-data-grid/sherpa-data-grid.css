@@ -140,6 +140,9 @@
   display: flex;
   flex-direction: column;
   min-block-size: 0;
+  /* Its own layers stay inside it: its sticky head, cells and scroll edges never
+     rise over the shell's fixed region or a banner. TRAP T-a-grid-keeps-its-own-layers */
+  isolation: isolate;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   /* Grid Cell binds every label and stroke to Style; states are PINS or tints

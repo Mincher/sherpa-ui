@@ -1246,6 +1246,20 @@ Measured: a bound pick makes 0 heading cells and 0 heading components (it made
 - Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
+### T-a-grid-keeps-its-own-layers
+
+**A data grid's host isolates: its sticky head (3), its cells (2) and its scroll
+edges (5) stay inside it** (TODO 823). The outlet used to isolate every element of
+a Context, which held them. Without that, measured in each engine, the edges (in
+all three) and, in Firefox and WebKit, the head and the cells met the shell's
+layers, and a head scrolled under a page's fixed region (2) would have been drawn
+over it. Isolated, the grid is drawn at the page's own level, under the fixed
+region, the reach banner (100) and the panels; its sticky head still sticks inside
+its own scroller. A grid holds no floating panel, so it orders none.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `test/e2e/reforged-outlet-layers.spec.ts`
+
 ### T-an-inner-event-stops-at-its-host
 
 **A page hears a component's OWN events, never its parts'.** Every `emit()`

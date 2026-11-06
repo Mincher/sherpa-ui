@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../schemas/app.v1.json",
+  "v": 1,
+  "default": "rows",
+  "contexts": {
+    "rows": {
+      "label": "Rows",
+      "icon": "home",
+      "template": "templates/rows.html"
+    },
+    "canvas": {
+      "label": "Canvas",
+      "template": "templates/canvas.html"
+    }
+  }
+}

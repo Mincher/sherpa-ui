@@ -126,9 +126,18 @@ the failure's kind — is a word in the markup (`T-a-word-is-in-the-markup`).
 warning is SAID by a hidden one, `.reach-say`, always in the tree and written
 when the reach moves; the visible warning is a `note`. The critical one is an
 alert. **Focus** on Retry or Dismiss, when the banner goes, lands on
-`.reach-after` — the top of the content — never the page's start. **On top:**
-the Context's own z-indexes stay inside it (`::slotted(*) { isolation:
-isolate }`), so a grid's sticky heading never paints over the banner.
+`.reach-after` — the top of the content — never the page's start. **On top,
+at 100:** over the page's own layers and the shell's fixed region (2), and
+under the panels (101 and up). A Context is NO stacking context of its own
+(Will, TODO 823): the outlet used to isolate each element of a Context
+(`::slotted(*) { isolation: isolate }`), so on the Node Editor page a floating
+Nodes card never came in front of the inspector beside it
+(`T-a-pressed-panel-comes-to-the-front`). Measured, before the change, what
+that isolation held, page by page and in each engine: the canvas's docked area
+and banners (1), a card's loading bar (1), and the data grid's scroll edges
+(5) and, in Firefox and WebKit, its sticky head (3) and cells (2), which would
+have risen over the fixed region. The grid now keeps its own layers
+(`T-a-grid-keeps-its-own-layers`); what is left meets the shell at 1.
 
 **No room:** `.reach` is a sticky row of ZERO height at the top of the
 scrolling content; its callout is absolute inside it. Shown or gone, nothing
@@ -141,6 +150,7 @@ beside a critical banner; a stale answer gives a card no state at all.
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.html`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.css`
+- Site: `test/e2e/reforged-outlet-layers.spec.ts`
 
 ### T-the-provider-says-the-pages-reach
 

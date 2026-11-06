@@ -694,7 +694,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](traps/data-layer.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (99)
+## The data grid (100)
 
 - [T-a-cell-chip-is-one-and-moves](traps/data-grid.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-cell-draws-words-not-its-value](traps/data-layer.md#t-a-cell-draws-words-not-its-value) — data-grid
@@ -708,6 +708,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — data-grid
 - [T-a-find-asks-its-host-to-step](traps/data-layer.md#t-a-find-asks-its-host-to-step) — data-grid
 - [T-a-grid-draws-once-per-moment](traps/data-grid.md#t-a-grid-draws-once-per-moment) — data-grid
+- [T-a-grid-keeps-its-own-layers](traps/data-grid.md#t-a-grid-keeps-its-own-layers) — data-grid
 - [T-a-group-is-a-data-layer-concept](traps/data-layer.md#t-a-group-is-a-data-layer-concept) — data-grid
 - [T-a-heading-cell-is-kept](traps/data-grid.md#t-a-heading-cell-is-kept) — data-grid
 - [T-a-heading-holds-a-whole-reading](traps/data-layer.md#t-a-heading-holds-a-whole-reading) — data-grid

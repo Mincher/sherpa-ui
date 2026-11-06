@@ -10,13 +10,15 @@
 
 /* UNABLE TO REACH DATA: a row of NO height, sticky at the top of the scrolling
    content, its callout floating in it — shown or gone, nothing moves (CLS 0).
-   Will, W1 A. TRAP T-a-reach-banner-takes-no-room */
+   Will, W1 A. Over the Context's own layers and under the panels (101 and up):
+   a Context is no stacking context of its own, so a floating card in it meets
+   the panels beside it. TRAP T-a-reach-banner-takes-no-room */
 .reach {
   display: none;
   position: sticky;
   inset-block-start: 0;
   block-size: 0;
-  z-index: 3;
+  z-index: 100;
 }
 :host(:is(:state(reach-unreached), :state(reach-down)):not(:state(reach-dismissed))) .reach { display: block; }
 .reach > sherpa-callout {
@@ -25,8 +27,6 @@
   inset-block-start: var(--sherpa-layout-grid-padding, 16px);
   inset-inline: var(--sherpa-layout-grid-padding, 16px);
 }
-/* The Context's own z-indexes stay inside it: a grid's sticky heading never paints over the banner. */
-::slotted(*) { isolation: isolate; }
 /* What a reader hears: always in the tree, so a change to it is announced. Seen by no one. */
 .reach-say {
   position: absolute;

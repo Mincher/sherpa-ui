@@ -249,14 +249,15 @@ box and its neighbours may make one: the canvas lost its `isolation` and its
 `container-type` (the stage is the container now), and the panel-area layout and
 a floating area make none (`T-a-panel-area-is-a-layout`). Measured: the Nodes card
 floating in its canvas and an overlay panel floating beside it each come in front
-of the other when pressed. **A box in another context cannot pass it**: one inside the shell's
-content (which isolates) never rises over one floating in the window, as the Node
-Editor's own inspector and the Assistant. And the outlet isolates each element of a
-Context (`T-a-reach-banner-takes-no-room`), so on the Node Editor page the card,
-in the canvas's box, never rises over the inspector beside it — on a page's filter
-graph too, now the Query editor is that page (TODO 822). Measured: moved
-into the canvas's box, the inspector shared the card's order but went UNDER the
-app header, which it must cover (746 E4), so it stays where it is.
+of the other when pressed. **A page is no stacking context of its own** (Will, TODO
+823): the outlet no longer isolates each element of a Context
+(`T-a-reach-banner-takes-no-room`), so on the Node Editor page, and on a page's
+filter graph, which is that page (822), the floating card and the inspector beside
+it each come to the front on a press or a focus, and the inspector still covers the
+app header (746 E4). Moving the inspector into the canvas's box had shared the
+order but put it UNDER the header. **A box in another context cannot pass it**: one
+inside the shell's content (which isolates) never rises over one floating in the
+window, as the Node Editor's own inspector and the Assistant.
 
 - Site: `src/core/ui/float-box.ts`
 - Site: `src/core/sherpa-float.css`
@@ -265,6 +266,7 @@ app header, which it must cover (746 E4), so it stays where it is.
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
 - Site: `test/e2e/reforged-layout-panels.spec.ts`
+- Site: `test/e2e/reforged-outlet-layers.spec.ts`
 
 ### T-a-tree-rule-beats-slotted
 
