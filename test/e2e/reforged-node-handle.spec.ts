@@ -109,3 +109,13 @@ test('the header is still the handle, and a press and the arrows move the node',
   await page.keyboard.press('ArrowRight');
   expect(await place(page)).not.toEqual(before);
 });
+
+test('a node showing its step\'s tab squares its top right corner, and gets it back', async ({ page }) => {
+  const corner = () => page.evaluate(() => getComputedStyle(document.querySelector('#a')!.shadowRoot!.querySelector('.root')!).borderTopRightRadius);
+  const bare = await corner();
+  expect(bare).not.toBe('0px');
+  await page.evaluate(() => document.querySelector('#a')!.setAttribute('data-caption', 'Simulating… 1s'));
+  expect(await corner()).toBe('0px');
+  await page.evaluate(() => document.querySelector('#a')!.removeAttribute('data-caption'));
+  expect(await corner()).toBe(bare);
+});

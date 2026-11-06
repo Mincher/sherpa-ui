@@ -83,6 +83,8 @@ export class SherpaOverlayPanel extends SherpaElement {
       // Opened floating, it comes to the front. TRAP T-a-pressed-panel-comes-to-the-front
       if (this.hasAttribute('data-floating')) this.#floatBox.raise();
       dialog.show();
+      // The CONTAINER takes the focus, not its first control (the grip, in Chromium); Tab goes on to that.
+      dialog.focus({ preventScroll: true });
       // A focusable separator must state its value: the width it is drawn at.
       this.$('.resize')?.setAttribute('aria-valuenow', String(Math.round(dialog.getBoundingClientRect().width)));
     },

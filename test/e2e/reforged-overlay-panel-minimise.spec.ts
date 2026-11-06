@@ -150,3 +150,14 @@ test('floating, the grip nudges the title right while the pointer is on the head
   await page.mouse.move(1500, 880);
   expect(await titleX()).toBe(bare);
 });
+
+test('opened, the focus is the container\'s, not the grip\'s; Tab goes on to the grip', async ({ page }) => {
+  await stage(page, { floating: true });
+  const where = () => page.evaluate(() => {
+    const sr = document.getElementById('tabbed')!.shadowRoot!;
+    return { root: sr.activeElement?.classList.contains('root') ?? false, grip: sr.activeElement?.classList.contains('grip') ?? false };
+  });
+  expect(await where()).toEqual({ root: true, grip: false });
+  await page.keyboard.press('Tab');
+  expect((await where()).grip).toBe(true);
+});

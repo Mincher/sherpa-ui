@@ -53,6 +53,10 @@
         "el": "dialog",
         "class": "root sherpa-float sherpa-border-edges sherpa-border-corners",
         "part": "root",
+        "attrs": {
+          "autofocus": "",
+          "tabindex": "-1"
+        },
         "children": [
           {
             "el": "div",

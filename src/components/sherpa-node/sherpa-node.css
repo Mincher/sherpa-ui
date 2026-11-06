@@ -331,6 +331,8 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 :host([data-caption]) .caption { display: flex; }
+/* The tab stands on the node's top right: that corner is square while the tab shows, so tab and card join. */
+:host([data-caption]) .root { border-start-end-radius: 0; }
 .caption-text { min-inline-size: 0; }
 .caption-icon { display: none; flex: none; }
 :host([data-step="running"]) .caption-icon { display: inline-flex; }

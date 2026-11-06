@@ -67,7 +67,8 @@
     <span class="tab-mark" part="tab-mark" aria-hidden="true">!</span>
   </button>
   <!-- NO scrim: a quick peek, while the page behind stays in use. -->
-  <dialog class="root sherpa-float sherpa-border-edges sherpa-border-corners" part="root">
+  <!-- `autofocus` on the dialog itself: opened, the focus is the CONTAINER's, not its first control (the grip); Tab goes on to that. -->
+  <dialog class="root sherpa-float sherpa-border-edges sherpa-border-corners" part="root" autofocus tabindex="-1">
     <!-- The LEFT edge resizes it: drag it, or ArrowLeft / ArrowRight on it.
          TRAP T-an-overlay-panel-resizes-from-its-left-edge -->
     <div class="resize" part="resize" role="separator" aria-orientation="vertical"
