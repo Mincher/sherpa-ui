@@ -1,0 +1,5 @@
+{
+  "html": "<sherpa-overlay-panel open data-heading=\"Filters\" data-floatable data-minimisable style=\"block-size: 360px\"><sherpa-filter-panel data-scope=\"view data\"></sherpa-filter-panel></sherpa-overlay-panel>",
+  "use": "For a page's filters in a panel: every scope the page offers, the View as a heading and each component's as an accordion of filter sections. It is the CONTENT of a `sherpa-overlay-panel`: the panel gives it its header, float, Pop, minimise and tab, and its own search, Suggest, Save group, ⋮ and count of filters applied are cloned into that header. Put it inside `sherpa-provider`; it asks for the scopes in `data-scope` and the source fills its sections.",
+  "fill": []
+}

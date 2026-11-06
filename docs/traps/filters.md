@@ -2537,6 +2537,7 @@ scopes; `open` draws them. The classic panel does the same (`#stale`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-saved-filters-are-the-last-section
 

@@ -3794,6 +3794,297 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-filter-panel/sherpa-filter-panel.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaFilterPanel",
+          "tagName": "sherpa-filter-panel",
+          "customElement": true,
+          "description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — the search, Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. TRAP T-a-content-adopts-its-panels-header",
+          "attributes": [
+            {
+              "name": "data-applied",
+              "description": "how many filters are applied in what it answers",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-at-default",
+              "description": "the filters are the View's own: Reset to view defaults and Save are inactive",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-count-applied",
+              "description": "the title counts them. It follows the app's `countApplied` setting.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-hide-unmatched",
+              "description": "on | off: the ⋮'s switch for Hide invalid filters. It follows the app's `hideUnmatched` setting.",
+              "type": {
+                "text": "'on' | 'off'"
+              }
+            },
+            {
+              "name": "data-limit-options",
+              "description": "on | off: the ⋮'s switch for Limit to matching filters. It follows the app's `limitOptions` setting.",
+              "type": {
+                "text": "'on' | 'off'"
+              }
+            },
+            {
+              "name": "data-no-saves",
+              "description": "its provider keeps saving off it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-nothing-to-reset",
+              "description": "nothing is left to clear: Reset is inactive",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-saveable",
+              "description": "the host SAVES filters: the Save group shows",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-scope",
+              "description": "the scopes it answers, in order: `view data`. The View is a heading; the rest are accordions",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-suggest",
+              "description": "show \"Suggest filters\"",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "savedSets",
+              "type": {
+                "text": "SavedSet[]"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "drawScopes",
+              "parameters": [
+                {
+                  "name": "scopes",
+                  "type": {
+                    "text": "ScopeDescription[]"
+                  }
+                }
+              ],
+              "description": "drawScopes(scopes) — a column's scopes, from its source: a portrait toolbar per scope."
+            },
+            {
+              "kind": "method",
+              "name": "drawReading",
+              "parameters": [
+                {
+                  "name": "field",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "reading",
+                  "type": {
+                    "text": "FieldReading"
+                  }
+                },
+                {
+                  "name": "scope",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "A chart's own answer, told the column as a panel: its section draws it."
+            },
+            {
+              "kind": "method",
+              "name": "show",
+              "parameters": []
+            },
+            {
+              "kind": "method",
+              "name": "hide",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "text": "'reader' | 'width' | 'page'"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "EVERY close reports, and says why: the panel's `panel-close`."
+            },
+            {
+              "kind": "method",
+              "name": "close",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "text": "'reader' | 'width' | 'page'"
+                  },
+                  "optional": true
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "toggle",
+              "parameters": []
+            }
+          ],
+          "events": [
+            {
+              "name": "quick-filter-change",
+              "description": "Reset, for every scope at once.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "view-reset",
+              "description": "Reset to view defaults, CANCELABLE.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "ai-filter-request",
+              "description": "Suggest filters.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "filters-save",
+              "description": "Save filters: the host asks for a name.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "filters-save-as",
+              "description": "The Save button.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "filters-manage",
+              "description": "Manage Saved Filters.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "filters-apply",
+              "description": "A saved set ticked.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "filters-dismiss",
+              "description": "A saved set unticked.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "limit-options-change",
+              "description": "The ⋮ switch.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "hide-unmatched-change",
+              "description": "The ⋮ switch.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "local-heading"
+            },
+            {
+              "name": "local-scopes"
+            },
+            {
+              "name": "scope-rule"
+            },
+            {
+              "name": "sections"
+            },
+            {
+              "name": "view-scope"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaFilterPanel",
+          "declaration": {
+            "name": "SherpaFilterPanel",
+            "module": "dist/components/sherpa-filter-panel/sherpa-filter-panel.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-filter-panel",
+          "declaration": {
+            "name": "SherpaFilterPanel",
+            "module": "dist/components/sherpa-filter-panel/sherpa-filter-panel.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-gauge-chart/sherpa-gauge-chart.js",
       "declarations": [
         {
@@ -8483,6 +8774,14 @@
             {
               "name": "actions",
               "description": "the host's own header controls, before the view-mode pair and close (accepts: control)"
+            },
+            {
+              "name": "actions-end",
+              "description": "the page's controls after the view-mode pair (Show as toolbar) (accepts: control)"
+            },
+            {
+              "name": "overflow",
+              "description": "the content's ⋮, last (accepts: control)"
             },
             {
               "name": "",

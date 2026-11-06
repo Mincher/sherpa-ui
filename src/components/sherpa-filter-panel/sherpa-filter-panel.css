@@ -1,0 +1,32 @@
+/* sherpa-filter-panel.css — the column of scope sections inside a panel's body. */
+:host {
+  display: block;
+  box-sizing: border-box;
+  min-block-size: 0;
+  block-size: 100%;
+  overflow-y: auto;
+}
+.sections {
+  display: flex;
+  flex-direction: column;
+  /* Never flush with the panel's edge: its border shows. Will, 11-06 */
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
+}
+/* The View Context, white space, a light rule, white space, then the Local
+   Context. Each part only while there is a scope on both sides. Will, TODO 435 */
+.scope-rule {
+  /* Inline margins set: a flex column's `hr` keeps the UA's auto ones, and shrinks to nothing. */
+  margin: var(--sherpa-display-mode-space-base, 16px) var(--sherpa-theme-padding-lg, 16px);
+  border: 0;
+  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
+}
+/* The Local Context's label, small, in the scopes' inset. */
+.local-heading { padding-inline: var(--sherpa-theme-padding-lg, 16px); }
+/* …and the Local Context waits, unseen, for the View's chips: the View growing
+   over it would shift it. TODO 439 · TRAP T-the-local-context-waits-for-the-view */
+.sections:has(> .view-scope > :not(:state(populated))) :is(.scope-rule, .local-heading, .local-scopes) {
+  visibility: hidden;
+}
+.view-scope:empty ~ :is(.scope-rule, .local-heading),
+.local-scopes:empty,
+.sections:has(.local-scopes:empty) :is(.scope-rule, .local-heading) { display: none; }

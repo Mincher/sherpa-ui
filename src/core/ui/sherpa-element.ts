@@ -470,6 +470,8 @@ export abstract class SherpaElement extends Base {
     this.#unsettle?.();
     this.#unsettle = undefined;
     this.#childWatch?.disconnect();
+    for (const node of this.#adopted) node.remove();
+    this.#adopted = [];
     this.onDisconnect();
   }
 
@@ -592,6 +594,28 @@ export abstract class SherpaElement extends Base {
       STAMPED.set(tpl, node);
     }
     return node;
+  }
+
+  /** What this element cloned into its parent's light DOM: gone when it is. */
+  #adopted: Element[] = [];
+
+  /**
+   * Its PARENT PANEL's header controls, cloned from its own `<template class="…">` into
+   * the parent's light DOM — each carries the `slot` it takes there. They are removed
+   * as this element leaves, so a move draws them again. TRAP T-a-content-adopts-its-panels-header
+   */
+  protected adoptHeader(from: string): Element[] {
+    const tpl = this.$<HTMLTemplateElement>(from);
+    const parent = this.parentElement;
+    if (!tpl || !parent) return [];
+    const nodes = [...tpl.content.children].map((child) => {
+      const node = document.importNode(child, true);
+      upgradeIcons(node as unknown as ParentNode);
+      parent.append(node);
+      return node;
+    });
+    this.#adopted.push(...nodes);
+    return nodes;
   }
 
   /* ── Attributes in, attributes out ───────────────────────────────────── */

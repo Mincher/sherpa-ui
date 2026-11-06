@@ -109,6 +109,8 @@ Each one bubbles.
 | `badge` | badge | a badge beside the title: a count, as a filter panel's applied filters |
 | `description` | content | the metadata / description row under the title (reflects has-description) |
 | `actions` | control | the host's own header controls, before the view-mode pair and close |
+| `actions-end` | control | the page's controls after the view-mode pair (Show as toolbar) |
+| `overflow` | control | the content's ⋮, last |
 | (default) | content | the panel body |
 | `footer` | control, input | footer action controls (reflects has-footer) |
 

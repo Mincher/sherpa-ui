@@ -1400,6 +1400,78 @@
       ]
     },
     {
+      "name": "sherpa-filter-panel",
+      "description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — the search, Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. TRAP T-a-content-adopts-its-panels-header",
+      "attributes": [
+        {
+          "name": "data-applied",
+          "description": "how many filters are applied in what it answers"
+        },
+        {
+          "name": "data-at-default",
+          "description": "the filters are the View's own: Reset to view defaults and Save are inactive",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-count-applied",
+          "description": "the title counts them. It follows the app's `countApplied` setting.",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-hide-unmatched",
+          "description": "on | off: the ⋮'s switch for Hide invalid filters. It follows the app's `hideUnmatched` setting.",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
+          "name": "data-limit-options",
+          "description": "on | off: the ⋮'s switch for Limit to matching filters. It follows the app's `limitOptions` setting.",
+          "values": [
+            {
+              "name": "on"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
+          "name": "data-no-saves",
+          "description": "its provider keeps saving off it",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-nothing-to-reset",
+          "description": "nothing is left to clear: Reset is inactive",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-saveable",
+          "description": "the host SAVES filters: the Save group shows",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-scope",
+          "description": "the scopes it answers, in order: `view data`. The View is a heading; the rest are accordions"
+        },
+        {
+          "name": "data-suggest",
+          "description": "show \"Suggest filters\"",
+          "valueSet": "v"
+        },
+        {
+          "name": "open",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
       "name": "sherpa-gauge-chart",
       "description": "a half-circle gauge for a single value on a 0–100 scale. Each band is a closed SVG path, as sherpa-radial-chart draws a slice, so the band itself is the hover target and the hollow centre is not hittable.",
       "attributes": [

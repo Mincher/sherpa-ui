@@ -115,6 +115,7 @@ export { SherpaBarchart, type BarDatum } from './components/sherpa-barchart/sher
 export { SherpaLineChart } from './components/sherpa-line-chart/sherpa-line-chart.js';
 export { SherpaDataGrid, type GridColumn } from './components/sherpa-data-grid/sherpa-data-grid.js';
 export { SherpaQuickFilterToolbar } from './components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
+export { SherpaFilterPanel } from './components/sherpa-filter-panel/sherpa-filter-panel.js';
 /* ONE filter, as a bar or the panel draws it. */
 export type { FilterDef, FilterOption } from './core/ui/filter-def.js';
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';

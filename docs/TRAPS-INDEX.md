@@ -879,7 +879,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (147)
+## SherpaElement and the shared sheets (148)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -891,6 +891,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-imports-anywhere](traps/element-and-sheets.md#t-a-component-imports-anywhere) — sherpa-element
 - [T-a-component-with-data-icon-draws-its-own](traps/element-and-sheets.md#t-a-component-with-data-icon-draws-its-own) — render-icon
 - [T-a-condition-marks-every-match](traps/data-layer.md#t-a-condition-marks-every-match) — mark-text
+- [T-a-content-adopts-its-panels-header](traps/element-and-sheets.md#t-a-content-adopts-its-panels-header) — sherpa-element
 - [T-a-custom-node-header-adds-an-input](traps/data-layer.md#t-a-custom-node-header-adds-an-input) — node-graph
 - [T-a-custom-node-is-an-instance](traps/data-layer.md#t-a-custom-node-is-an-instance) — node-graph
 - [T-a-document-class-cannot-reach-a-shadow-root](traps/element-and-sheets.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
@@ -1029,16 +1030,18 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (136)
+## Other components (142)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
 - [T-a-canvas-owns-its-view](traps/other-components.md#t-a-canvas-owns-its-view) — layout-canvas
 - [T-a-click-does-not-clear-indeterminate](traps/other-components.md#t-a-click-does-not-clear-indeterminate) — select-checkbox
 - [T-a-click-in-a-slotted-menu-is-not-a-press](traps/other-components.md#t-a-click-in-a-slotted-menu-is-not-a-press) — button
+- [T-a-component-asks-its-provider](traps/join-and-app.md#t-a-component-asks-its-provider) — filter-panel
 - [T-a-composed-chrome-row-takes-its-inline-padding-from-its-container](traps/menus-tips-overlays.md#t-a-composed-chrome-row-takes-its-inline-padding-from-its-container) — container-footer, node
 - [T-a-composed-native-event-goes-out-twice](traps/other-components.md#t-a-composed-native-event-goes-out-twice) — input-text
 - [T-a-container-shows-its-datas-state](traps/data-layer.md#t-a-container-shows-its-datas-state) — container
+- [T-a-content-adopts-its-panels-header](traps/element-and-sheets.md#t-a-content-adopts-its-panels-header) — filter-panel
 - [T-a-context-has-a-fixed-region](traps/join-and-app.md#t-a-context-has-a-fixed-region) — app-shell
 - [T-a-disabled-button-acts-on-nothing](traps/other-components.md#t-a-disabled-button-acts-on-nothing) — button
 - [T-a-document-class-cannot-reach-a-shadow-root](traps/element-and-sheets.md#t-a-document-class-cannot-reach-a-shadow-root) — group, layout-grid
@@ -1088,6 +1091,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shadow-reach-is-a-missing-door](traps/other-components.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
 - [T-a-shared-edge-is-halved-on-both-sides](traps/element-and-sheets.md#t-a-shared-edge-is-halved-on-both-sides) — group, metric-group
 - [T-a-shared-enum-is-not-every-enum](traps/element-and-sheets.md#t-a-shared-enum-is-not-every-enum) — button
+- [T-a-shut-column-draws-nothing](traps/filters.md#t-a-shut-column-draws-nothing) — filter-panel
 - [T-a-socket-is-drawn-by-its-type](traps/element-and-sheets.md#t-a-socket-is-drawn-by-its-type) — node
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
 - [T-a-tag-field-counts-what-css-clips](traps/other-components.md#t-a-tag-field-counts-what-css-clips) — input-text
@@ -1122,6 +1126,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-describedby-must-not-be-a-live-region](traps/other-components.md#t-describedby-must-not-be-a-live-region) — input-text
 - [T-embedded-footer-needs-a-public-verb](traps/other-components.md#t-embedded-footer-needs-a-public-verb) — calendar
 - [T-every-button-says-its-action](traps/element-and-sheets.md#t-every-button-says-its-action) — button
+- [T-every-close-reports-or-the-toolbars-stay-hidden](traps/join-and-app.md#t-every-close-reports-or-the-toolbars-stay-hidden) — filter-panel
 - [T-favourite-star-swaps-its-glyph](traps/other-components.md#t-favourite-star-swaps-its-glyph) — app-header
 - [T-fit-is-a-desktop-mode](traps/other-components.md#t-fit-is-a-desktop-mode) — layout-grid
 - [T-grouping-is-an-attribute-and-a-class](traps/menus-tips-overlays.md#t-grouping-is-an-attribute-and-a-class) — calendar, group, input-text
@@ -1147,6 +1152,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-range-header-names-both-months](traps/other-components.md#t-range-header-names-both-months) — calendar
 - [T-range-reads-ordered-but-drags-clamped](traps/other-components.md#t-range-reads-ordered-but-drags-clamped) — slider
 - [T-rules-are-named-not-carried](traps/other-components.md#t-rules-are-named-not-carried) — input-text
+- [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — filter-panel
 - [T-scroll-state-is-chromium-only](traps/other-components.md#t-scroll-state-is-chromium-only) — app-header
 - [T-select-card-keeps-both-footer-controls](traps/other-components.md#t-select-card-keeps-both-footer-controls) — select-card
 - [T-shadow-input-needs-element-internals](traps/element-and-sheets.md#t-shadow-input-needs-element-internals) — input-text, select-checkbox, select-radio, switch
@@ -1158,6 +1164,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-temporal-is-the-date-model](traps/element-and-sheets.md#t-temporal-is-the-date-model) — calendar
 - [T-the-footer-owns-nothing-to-save](traps/menus-tips-overlays.md#t-the-footer-owns-nothing-to-save) — container-footer
 - [T-the-layers-are-one-scale](traps/element-and-sheets.md#t-the-layers-are-one-scale) — layout-grid
+- [T-the-local-context-waits-for-the-view](traps/join-and-app.md#t-the-local-context-waits-for-the-view) — filter-panel
 - [T-the-nav-is-a-menu-on-a-phone](traps/other-components.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-node-panel-asks-it-places](traps/other-components.md#t-the-node-panel-asks-it-places) — node-list
 - [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell, layout-panels

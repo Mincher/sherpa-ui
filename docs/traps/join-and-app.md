@@ -666,6 +666,7 @@ just drawn.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-every-close-reports-or-the-toolbars-stay-hidden
 
@@ -691,6 +692,7 @@ one nobody tests.
 
 - Site: `src/components/sherpa-provider/provider-mode.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-navigating-sets-up-the-page
 
@@ -941,6 +943,7 @@ actions are CONFIGURATION, not data (`T-configuration-is-not-data`).
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-heading-opens-the-chips-menu
 

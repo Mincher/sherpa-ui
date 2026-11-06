@@ -219,6 +219,18 @@
                     ]
                   },
                   {
+                    "slot": "actions-end",
+                    "attrs": {
+                      "data-accepts": "control"
+                    }
+                  },
+                  {
+                    "slot": "overflow",
+                    "attrs": {
+                      "data-accepts": "control"
+                    }
+                  },
+                  {
                     "el": "span",
                     "class": "divider before-close",
                     "attrs": {
@@ -541,6 +553,22 @@
         "control"
       ],
       "description": "the host's own header controls, before the view-mode pair and close"
+    },
+    {
+      "$type": "slot",
+      "name": "actions-end",
+      "accepts": [
+        "control"
+      ],
+      "description": "the page's controls after the view-mode pair (Show as toolbar)"
+    },
+    {
+      "$type": "slot",
+      "name": "overflow",
+      "accepts": [
+        "control"
+      ],
+      "description": "the content's ⋮, last"
     },
     {
       "$type": "slot",

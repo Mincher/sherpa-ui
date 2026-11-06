@@ -46,6 +46,8 @@
     badge        — a badge beside the title: a count, as a filter panel's applied filters
     description  — the metadata / description row under the title (reflects has-description)
     actions      — the host's own header controls, before the view-mode pair and close
+    actions-end  — the page's controls after the view-mode pair (Show as toolbar)
+    overflow     — the content's ⋮, last
     (default)    — the panel body
     footer       — footer action controls (reflects has-footer)
 
@@ -120,6 +122,9 @@
                          data-icon-start="open-externally"
                          aria-label="Open externally"></sherpa-button>
         </sherpa-group>
+        <!-- After the panel's own buttons: the page's (Show as toolbar), then the content's ⋮. -->
+        <slot name="actions-end" data-accepts="control"></slot>
+        <slot name="overflow" data-accepts="control"></slot>
         <span class="divider before-close" aria-hidden="true"></span>
       </span>
     </sherpa-container-header>

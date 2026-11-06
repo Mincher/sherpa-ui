@@ -1,0 +1,62 @@
+<!--
+  sherpa-filter-panel — the CONTENT of a panel: every filter scope the page offers, a section each.
+  Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab.
+  Its own controls — the search, Suggest, the Save group, the ⋮ and the count of filters applied — are
+  cloned into that panel's header slots, and leave with it. TRAP T-a-content-adopts-its-panels-header
+
+  Public API:
+    data-scope      the scopes it answers, in order: `view data`. The View is a heading; the rest are accordions
+    data-saveable   the host SAVES filters: the Save group shows
+    data-no-saves   its provider keeps saving off it
+    data-suggest    show "Suggest filters"
+    data-applied    how many filters are applied in what it answers
+    data-count-applied  the title counts them
+    data-at-default      the filters are the View's own: Reset to view defaults and Save are inactive
+    data-nothing-to-reset  nothing is left to clear: Reset is inactive
+    data-limit-options   on | off: the ⋮'s switch for Limit to matching filters
+    data-hide-unmatched  on | off: the ⋮'s switch for Hide invalid filters
+
+  Slots: none.
+
+  Fires:
+    quick-filter-change   — Reset, for every scope at once. detail: { scope: 'column', request, active, values }
+    view-reset            — Reset to view defaults, CANCELABLE. detail: { }
+    ai-filter-request     — Suggest filters. detail: { }
+    filters-save          — Save filters: the host asks for a name. detail: { }
+    filters-save-as       — the Save button. detail: { }
+    filters-manage        — Manage Saved Filters. detail: { }
+    filters-apply         — a saved set ticked. detail: { id }
+    filters-dismiss       — a saved set unticked. detail: { id }
+    limit-options-change  — the ⋮ switch. detail: { on }
+    hide-unmatched-change — the ⋮ switch. detail: { on }
+-->
+<template id="default">
+  <div class="sections" part="sections">
+    <div class="view-scope" part="view-scope"></div>
+    <hr class="scope-rule" part="scope-rule" />
+    <sherpa-section-header class="local-heading" part="local-heading" data-heading="Local Context"
+                           data-size="sm" data-divider="none"></sherpa-section-header>
+    <div class="local-scopes" part="local-scopes"></div>
+  </div>
+
+  <!-- One scope's toolbar, in portrait. -->
+  <template class="section-tpl"><sherpa-quick-filter-toolbar data-orientation="portrait"></sherpa-quick-filter-toolbar></template>
+
+  <!-- The controls that live in the panel's header: each says its slot there. -->
+  <template class="header-tpl">
+    <sherpa-input-text slot="description" class="find" data-icon-start="magnifying-glass" data-clearable
+                       placeholder="Search filters" autocomplete="off" aria-label="Search every filter"></sherpa-input-text>
+    <sherpa-badge slot="badge" class="applied-count" role="img" hidden></sherpa-badge>
+    <sherpa-button slot="actions" class="column-suggest" data-size="sm" data-type="icon"
+                   data-icon-start="wand-magic-sparkles" aria-label="Suggest filters" hidden></sherpa-button>
+    <sherpa-group slot="actions" class="saved-group" hidden>
+      <sherpa-button class="column-save-as" data-size="sm" data-group="start" data-icon-start="filter">Save</sherpa-button>
+      <sherpa-button class="column-saved" data-size="sm" data-type="icon" data-group="solo" data-icon-start="filter"
+                     data-description="Use, save and manage your saved filters."
+                     aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
+    </sherpa-group>
+    <sherpa-button slot="overflow" class="column-more" data-type="icon" data-size="sm"
+                   data-icon-start="ellipses-vertical" data-description="Reset, save and refresh these filters."
+                   aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
+  </template>
+</template>

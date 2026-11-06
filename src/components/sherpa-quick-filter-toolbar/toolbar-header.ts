@@ -24,6 +24,8 @@ export type HeaderEvent = 'filters-apply' | 'filters-dismiss' | 'view-reset' | '
 export interface HeaderHost {
   el: HTMLElement;
   root(): ShadowRoot;
+  /** Where its buttons are, where they are not in its own root: a panel's header. */
+  header?(): ParentNode;
   emit(name: HeaderEvent, detail?: unknown, options?: { cancelable?: boolean }): void;
   toggleState(name: string, on: boolean): void;
 }
@@ -42,7 +44,7 @@ export class ToolbarHeader {
   drawSaved(): void {
     const { el } = this.host;
     this.host.toggleState('has-sets', this.saved.listed.length > 0);
-    const btn = this.host.root().querySelector(this.at.saved);
+    const btn = this.#find(this.at.saved);
     btn?.querySelector('sherpa-menu')?.remove();
     if (!btn) return;
     const { menu, items } = menuFor(this.host.root(), savedMenuDef(this.saved.listed));
@@ -60,9 +62,14 @@ export class ToolbarHeader {
     for (const id of apply) this.host.emit('filters-apply', { id });
   }
 
+  /** One of its buttons: in its root, else in its panel's header. */
+  #find(selector: string): Element | null {
+    return this.host.root().querySelector(selector) ?? this.host.header?.().querySelector(selector) ?? null;
+  }
+
   /** Save is off while the filters are the View's own, as Reset all is. Will, 382 */
   drawSave(): void {
-    this.host.root().querySelector(this.at.saveAs)?.toggleAttribute('disabled', this.host.el.hasAttribute('data-at-default'));
+    this.#find(this.at.saveAs)?.toggleAttribute('disabled', this.host.el.hasAttribute('data-at-default'));
   }
 
   /** A filter act both templates send; false for one that is not. Reset is each

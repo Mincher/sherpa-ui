@@ -10,6 +10,8 @@
  * - .wire — Hear the header's controls, once per stamp.
  * - .draw — One portrait toolbar per scope, in order — once it is open.
  * - .opened — It opened: what it was told while shut is drawn now.
+ * - .sets — The sets it was last told.
+ * - .drawSave — Save: off while the filters are the View's own.
  * - .drawReading — A chart's own answer, told the column as a panel: its section draws it.
  * - .saved — The reader's saved sets: the Saved menu's.
  * - .moreRows — What its ⋮ holds.
@@ -30,6 +32,8 @@ export interface ColumnHost {
   /** The toolbar: it says the column's requests, and carries its attributes. */
   readonly el: HTMLElement;
   root(): ShadowRoot;
+  /** Its header's controls, where they are not in its own root: a panel's header. */
+  header?(): ParentNode;
   clone(selector: string): HTMLElement | null;
   emit(name: ColumnEvent, detail?: unknown, options?: { cancelable?: boolean }): void;
   toggleState(name: string, on: boolean): void;
@@ -57,7 +61,7 @@ export class ToolbarColumn {
 
   /** One element of the column's own tree. */
   #$<T extends Element = HTMLElement>(selector: string): T | null {
-    return this.#host.root().querySelector<T>(selector);
+    return this.#host.root().querySelector<T>(selector) ?? this.#host.header?.().querySelector<T>(selector) ?? null;
   }
 
   /** Each scope's portrait toolbar, the View's first. */
@@ -115,6 +119,16 @@ export class ToolbarColumn {
   /** It opened: what it was told while shut is drawn now. */
   opened(): void {
     if (this.#scopes.length && !this.#bars().length) this.draw(this.#scopes);
+  }
+
+  /** The sets it was last told. */
+  get sets(): SavedSet[] {
+    return this.#saved.all;
+  }
+
+  /** Save: off while the filters are the View's own. */
+  drawSave(): void {
+    this.#header.drawSave();
   }
 
   /** A chart's own answer — a PART's — is told a panel, not a bar: the column

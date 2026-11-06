@@ -5255,6 +5255,7 @@ its own (`savedFilters`), which are never saved over or deleted.
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-up-is-open-down-is-closed
 
