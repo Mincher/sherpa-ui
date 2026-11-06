@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (library) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 536px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 536px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="custom" data-heading="Save as Custom Node">
         <sherpa-stack data-gap="md">
@@ -151,7 +151,7 @@ test('two tabs: Preset Nodes lists the kinds a file gives, Custom Nodes the save
 });
 
 test('a search narrows both tabs, a count shows on each tab, and a heading with nothing under it is hidden', async ({ page }) => {
-  const find = page.locator('sherpa-node-list sherpa-input-text.find input');
+  const find = page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])');
   expect(await badges(page)).toEqual(['', '']);
   await find.fill('round');
   expect(await shown(page)).toEqual(['Math']);
@@ -216,6 +216,6 @@ test('a tag set in Save as Custom Node, by the keys, lists the new node under it
   expect(await under('billing')).toEqual(['Active trials']);
   expect(await under('permissions')).toEqual(['Org permissions', 'Is admin', 'Active trials']);
   // Found by a tag, it is listed under each of its own.
-  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('bill');
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('bill');
   expect(await names(page)).toEqual(['Active trials', 'Active trials']);
 });

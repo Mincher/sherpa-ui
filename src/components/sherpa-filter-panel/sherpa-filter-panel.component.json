@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-filter-panel",
-  "$description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — the search, Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. TRAP T-a-content-adopts-its-panels-header",
+  "$description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -62,18 +62,6 @@
         "el": "template",
         "class": "header-tpl",
         "children": [
-          {
-            "el": "sherpa-input-text",
-            "class": "find",
-            "attrs": {
-              "slot": "description",
-              "data-icon-start": "magnifying-glass",
-              "data-clearable": "",
-              "placeholder": "Search filters",
-              "autocomplete": "off",
-              "aria-label": "Search every filter"
-            }
-          },
           {
             "el": "sherpa-badge",
             "class": "applied-count",

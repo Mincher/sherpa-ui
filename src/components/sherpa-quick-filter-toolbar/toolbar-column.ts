@@ -15,6 +15,7 @@
  * - .drawReading — A chart's own answer, told the column as a panel: its section draws it.
  * - .saved — The reader's saved sets: the Saved menu's.
  * - .moreRows — What its ⋮ holds.
+ * - .find — Find text in every section.
  */
 import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
@@ -193,8 +194,10 @@ export class ToolbarColumn {
   #onMoreSwitch = (event: Event): void => askSwitches(this.#host.el, event, (name, on) => this.#host.emit(name, { on }));
 
   /** ONE search, above every scope: each section finds in its own fields. */
-  #onFind = (): void => {
-    const text = this.#$<HTMLInputElement>('.find')?.value ?? '';
+  #onFind = (): void => this.find(this.#$<HTMLInputElement>('.find')?.value ?? '');
+
+  /** Find `text` in every section. */
+  find(text: string): void {
     for (const bar of this.#bars()) bar.search?.(text);
-  };
+  }
 }

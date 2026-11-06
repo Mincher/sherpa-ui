@@ -48,6 +48,9 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-heading': { type: 'string', kind: 'content' },
     // The body's own padding: `none` for content that fills it (a list). TRAP T-a-node-list-is-a-panels-content
     'data-padding': { type: 'enum', kind: 'style', values: ['none'] },
+    // A search row in the header, the header's full width: the panel owns the input and says `panel-search`. TRAP T-a-panel-owns-its-search-row
+    'data-searchable': { type: 'boolean', kind: 'behaviour' },
+    'data-search-placeholder': { type: 'string', kind: 'behaviour' },
     'data-icon': { type: 'string', kind: 'content' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
     'data-maximised': { type: 'boolean', kind: 'style' },
@@ -77,7 +80,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-width': { type: 'number', kind: 'behaviour' },
     'data-height': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['open', 'data-fixed', 'data-x', 'data-y', 'data-width', 'data-height'];
+  static override observed = ['open', 'data-search-placeholder', 'data-fixed', 'data-x', 'data-y', 'data-width', 'data-height'];
 
   /** The panels open now. They share the right edge, so opening one shuts the
    *  rest. TRAP T-one-overlay-panel-at-a-time */
@@ -106,6 +109,8 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   override onRender(): void {
     this.#syncHeader();
+    this.#syncSearch();
+    this.#watchShown();
     if (this.hasAttribute('open')) this.#surface.show();
     this.#surface.listen();
     this.$('.header')?.addEventListener('header-collapse', this.#onCollapse);
@@ -170,7 +175,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (name === 'open') {
       this.#surface.follow();
       SherpaOverlayPanel.#stack();
-    } else if (name === 'data-fixed') this.#place();
+    } else if (name === 'data-searchable' || name === 'data-search-placeholder') this.#syncSearch();
+    else if (name === 'data-fixed') this.#place();
     else if (name === 'data-minimised') this.#minimise();
     else if (name === 'data-overlay') this.#place();
     else if (name === 'data-floating') this.#float();
@@ -180,6 +186,63 @@ export class SherpaOverlayPanel extends SherpaElement {
       // A new title while it is a tab is news. TRAP T-a-minimised-panel-is-a-tab
       if (name === 'data-heading') this.notify();
     }
+  }
+
+  /** Which header slots show a control: a clone the content has `hidden` is none. TRAP T-a-panel-divides-only-between-shown-groups */
+  #syncShown = (): void => {
+    const shows = (...slots: string[]): boolean => slots.some((slot) => [...this.children].some((c) => c.getAttribute('slot') === slot && !c.hasAttribute('hidden')));
+    this.toggleState('shows-actions', shows('actions'));
+    this.toggleState('shows-end', shows('actions-end', 'overflow'));
+  };
+
+  /** Follow its direct children, so a clone hidden or shown is read. */
+  #watchShown(): void {
+    const watch = new MutationObserver(() => { follow(); this.#syncShown(); });
+    // A direct child's own `hidden` or `slot`, as children come.
+    const follow = (): void => {
+      watch.observe(this, { childList: true });
+      for (const child of this.children) watch.observe(child, { attributes: true, attributeFilter: ['hidden', 'slot'] });
+    };
+    follow();
+    this.#syncShown();
+    this.signal.addEventListener('abort', () => watch.disconnect(), { once: true });
+  }
+
+  /** The search row, stamped the first time `data-searchable` shows it. */
+  #syncSearch(): void {
+    const input = this.stampOnce<HTMLElement & { value: string }>('template.search-tpl', this.hasAttribute('data-searchable'));
+    if (!input) return;
+    const said = this.getAttribute('data-search-placeholder') ?? 'Search';
+    input.setAttribute('placeholder', said);
+    input.setAttribute('aria-label', said);
+    if (this.#searchWired.has(input)) return;
+    this.#searchWired.add(input);
+    for (const type of ['input', 'change']) input.addEventListener(type, this.#onSearch);
+    input.addEventListener('keydown', (event) => {
+      if ((event as KeyboardEvent).key === 'Escape' && input.value) { event.stopPropagation(); this.search = ''; }
+    });
+  }
+  /** The search rows already heard. */
+  #searchWired = new WeakSet<Element>();
+  /** The text `panel-search` last said. */
+  #searched = '';
+
+  /** The row's text changed: say it, once per change. */
+  #onSearch = (event: Event): void => {
+    const value = (event.target as HTMLElement & { value?: string }).value ?? '';
+    if (value === this.#searched) return;
+    this.#searched = value;
+    this.emit('panel-search', { value });
+  };
+
+  /** What the search row holds. Set, it types it and says `panel-search`. */
+  get search(): string {
+    return this.$<HTMLElement & { value: string }>('.search')?.value ?? '';
+  }
+  set search(value: string) {
+    const input = this.$<HTMLElement & { value: string }>('.search');
+    if (input) input.value = value;
+    if (value !== this.#searched) { this.#searched = value; this.emit('panel-search', { value }); }
   }
 
   get open(): boolean {

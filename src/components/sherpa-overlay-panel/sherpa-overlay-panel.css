@@ -274,6 +274,10 @@
   block-size: 100%;
 }
 
+/* The search row: the header's full width, its own row; absent until `data-searchable` stamps it. TRAP T-a-panel-owns-its-search-row */
+.search { flex: 1 1 auto; min-inline-size: 0; inline-size: 100%; }
+:host(:not([data-searchable])) .search { display: none; }
+
 /* The panel's controls, in the composed header's `actions` slot. */
 .toolbar {
   display: flex;
@@ -313,7 +317,9 @@
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
-/* A divider shows only with a control on BOTH sides of it. */
+/* A divider shows only BETWEEN two groups that each show a control: never leading, never trailing. The panel says which
+   of its slots show one (`shows-actions`, `shows-end`: a hidden clone is none); the modes group is the flags that show it.
+   TRAP T-a-panel-divides-only-between-shown-groups */
 .divider {
   display: none;
   flex: none;
@@ -321,8 +327,9 @@
   block-size: var(--sherpa-theme-content-size-xs, 10px);
   background: var(--sherpa-style-border-base, #b3b3c3);
 }
-:host(:state(has-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable])) .after-actions,
-:host(:is(:state(has-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable]):is([data-dismissible], [data-collapsible])) .before-close {
+:host(:state(shows-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable])) .after-actions,
+:host(:is(:state(shows-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable]):state(shows-end)) .before-end,
+:host(:is(:state(shows-actions), :state(shows-end), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable]):is([data-dismissible], [data-collapsible])) .before-close {
   display: block;
 }
 

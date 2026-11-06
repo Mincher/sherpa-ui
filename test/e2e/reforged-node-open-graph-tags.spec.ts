@@ -16,7 +16,7 @@ const ORG = {
 const bind = (page: Page, preset = false) => page.evaluate(async ({ entity, preset }) => {
   const root = document.getElementById('root')!;
   root.insertAdjacentHTML('beforeend', `
-    <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
+    <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
     <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
   await customElements.whenDefined('sherpa-node-list');
   await customElements.whenDefined('sherpa-node-toolbar');

@@ -7,6 +7,8 @@
   Public API:
     data-icon         a glyph before the title (shows the icon slot area)
     data-heading      header title text (rendered into .title)
+    data-searchable   a search row in the header, the header's full width; it fires `panel-search`
+    data-search-placeholder  what the search row says (also its label); "Search" by default
     data-padding      `none`: the body has no padding, for content that fills it (a list)
     open              native boolean (read reflects dialog.open; set → show()/close())
     data-collapsed    collapsed state (body/footer hidden; the collapse toggle reflects it)
@@ -55,6 +57,7 @@
   Commands (a button's `command`, from `commandfor`): --show, --hide
 
   Fires:
+    panel-search     (detail: { value })  the search row's text changed (typed, cleared by its x, or Escape)
     panel-collapse   (detail: { collapsed })
     panel-expand     (detail: { maximised })
     panel-external   (detail: { })
@@ -96,6 +99,11 @@
       <slot name="icon" slot="icon" data-accepts="icon"></slot>
       <slot name="badge" slot="badge" data-accepts="badge"></slot>
       <slot name="description" slot="metadata" data-accepts="content"></slot>
+      <!-- `data-searchable`: a search row of its own, the header's full width, stamped when it first shows. -->
+      <template class="search-tpl">
+        <sherpa-input-text slot="metadata" class="search" part="search" data-icon-start="magnifying-glass" data-clearable
+                           autocomplete="off" placeholder="Search" aria-label="Search"></sherpa-input-text>
+      </template>
 
       <!-- Figma Container Header `Variant=Panel`: the host's controls, then the
            view-mode pair, each divided from the next. -->
@@ -124,6 +132,7 @@
                          aria-label="Open externally"></sherpa-button>
         </sherpa-group>
         <!-- After the panel's own buttons: the page's (Show as toolbar), then the content's ⋮. -->
+        <span class="divider before-end" aria-hidden="true"></span>
         <slot name="actions-end" data-accepts="control"></slot>
         <slot name="overflow" data-accepts="control"></slot>
         <span class="divider before-close" aria-hidden="true"></span>

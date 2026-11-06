@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-list",
-  "$description": "the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places",
+  "$description": "the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes), then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -26,25 +26,6 @@
             "attrs": {
               "data-current-id": "preset"
             }
-          },
-          {
-            "el": "div",
-            "class": "search",
-            "part": "search",
-            "children": [
-              {
-                "el": "sherpa-input-text",
-                "class": "find",
-                "part": "find",
-                "attrs": {
-                  "data-type": "minimal",
-                  "data-icon-start": "magnifying-glass",
-                  "placeholder": "Search nodes",
-                  "aria-label": "Search nodes",
-                  "autocomplete": "off"
-                }
-              }
-            ]
           },
           {
             "el": "div",
@@ -211,8 +192,6 @@
     }
   ],
   "tokens": {
-    "search.gap": "{sherpa.theme-gap-sm}",
-    "search.padding": "{sherpa.theme-padding-md}",
     "categories.gap": "{sherpa.theme-padding-sm}",
     "categories.padding": "{sherpa.theme-padding-md}",
     "category-heading.padding-block-start": "{sherpa.theme-padding-sm}",

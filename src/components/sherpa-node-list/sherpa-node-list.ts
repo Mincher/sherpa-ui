@@ -1,7 +1,7 @@
 /**
  * sherpa-node-list — the nodes a graph editor may place, by category, as the CONTENT of a panel on a canvas.
  *
- * It re-makes nothing: sherpa-tabs (Preset Nodes, Custom Nodes) and a sherpa-input-text for the search,
+ * It re-makes nothing: sherpa-tabs (Preset Nodes, Custom Nodes), the search its panel's header holds (`data-searchable`),
  * a sherpa-section-header per category that sticks while its items scroll, a sherpa-list of
  * sherpa-list-items, and a sherpa-menu for "Add a node". It places nothing either: an item
  * clicked, Enter on it, or dragged off the panel is `node-add`, and the editor that hears it makes
@@ -90,7 +90,6 @@ export class SherpaNodeList extends SherpaElement {
   #found = new WeakMap<Element, string>();
 
   override onRender(): void {
-    this.on(this.root, 'input', this.#onSearch);
     this.on(this.root, 'click', this.#onClick);
     this.on(this.root, 'pointerdown', this.#onDown as EventListener);
     this.on(this.$('.add')!, 'menu-select', this.#onChoose);
@@ -140,11 +139,15 @@ export class SherpaNodeList extends SherpaElement {
 
   /* ── Search ───────────────────────────────────────────────────────────── */
 
-  /** The search field's typing: narrow the items. */
-  #onSearch = (event: Event): void => {
-    if (event.target !== this.$('.find')) return;
-    this.#search();
-  };
+  /** What the panel's search row holds. */
+  get #query(): string {
+    return (this.closest<HTMLElement & { search?: string }>('sherpa-overlay-panel')?.search ?? '').trim().toLowerCase();
+  }
+
+  override onConnect(): void {
+    const panel = this.closest('sherpa-overlay-panel');
+    if (panel) this.on(panel, 'panel-search', () => this.#search());
+  }
 
   /** A tab was picked: its list shows. */
   #onTab = (event: Event): void => {
@@ -161,7 +164,7 @@ export class SherpaNodeList extends SherpaElement {
    *  it is hidden. An item found by a type, not by its name, says that type and its line, and places it. Each tab
    *  wears the count of its matches while something is typed, so a match on the other tab is not missed. */
   #search(): void {
-    const query = (this.$<HTMLInputElement>('.find')?.value ?? '').trim().toLowerCase();
+    const query = this.#query;
     let shown = 0;
     const current = this.$('.tabs')?.getAttribute('data-current-id') ?? 'preset';
     const counts: Record<string, number> = { preset: 0, custom: 0 };

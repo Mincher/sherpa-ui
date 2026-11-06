@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
-        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
+        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
       </sherpa-layout-canvas>`);
     await Promise.all(['sherpa-node-list', 'sherpa-node-toolbar', 'sherpa-layout-canvas'].map((t) => customElements.whenDefined(t)));
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
@@ -58,7 +58,7 @@ test('two Sources dragged into a workflow: each its own id, customers and device
   expect(Object.fromEntries(lines)).toMatchObject({ source: 'Connect a data source', value: 'Primitive value variables', math: 'Numbers in, one number out' });
   for (const [kind, line] of lines) expect(line!.split(/\s+/).length, `${kind}: "${line}"`).toBeLessThanOrEqual(8);
   // The types stay in search: "integer" finds Value, says Integer, and places it so.
-  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('integer');
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('integer');
   await expect(page.locator('sherpa-node-list sherpa-list-item:visible')).toHaveCount(1);
   await expect(item(page, 'value')).toHaveAttribute('data-description', 'Integer: A whole number, as 42');
   await item(page, 'value').click();

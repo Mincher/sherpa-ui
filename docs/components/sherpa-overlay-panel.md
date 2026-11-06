@@ -45,6 +45,8 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-overlay` | boolean |  | a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room |
 | `data-padding` | `none` |  | `none`: the body has no padding, for content that fills it (a list) |
 | `data-poppable` | boolean |  | show the docking button (Dock as overlay / Dock as inline) (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
+| `data-search-placeholder` | text |  | what the search row says (also its label); "Search" by default |
+| `data-searchable` | boolean |  | a search row in the header, the header's full width; it fires `panel-search` |
 | `data-side` | `start` `end` |  | start \| end: the edge it docks to, written from data-fixed; kept, a panel overlaid out of its area stays on it |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
 | `data-updated` | boolean |  | the panel says it changed while a tab: the tab turns active and wears a "!". Set by `notify()` or a new `data-heading`; cleared when it opens |
@@ -58,6 +60,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | Property | Type | Access | What it is |
 |---|---|---|---|
 | `open` | `boolean` | read and write | whether the panel is open (delegates to &lt;dialog>) |
+| `search` | `string` | read and write |  |
 | `dockState` | `'floating' \| 'tab' \| 'hover' \| 'overlay' \| 'fixed'` | read only |  |
 | `minimised` | `boolean` | read only |  |
 | `side` | `'start' \| 'end'` | read only |  |
@@ -90,6 +93,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
+| `panel-search` | `{ value: string }` | The search row's text changed (typed, cleared by its x, or Escape) |
 | `panel-collapse` | `{ collapsed: boolean }` |  |
 | `panel-expand` | `{ maximised: boolean }` |  |
 | `panel-external` |  |  |
@@ -119,7 +123,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `rail`, `resize`, `root`, `tab`, `tab-mark`, `tab-open`, `tab-title`, `toolbar`, `trail`
+`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `rail`, `resize`, `root`, `search`, `tab`, `tab-mark`, `tab-open`, `tab-title`, `toolbar`, `trail`
 
 ## CSS custom properties it reads
 
@@ -142,6 +146,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, side?, updated?, width?, x?, y? }`
+`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, searchPlaceholder?, searchable?, side?, updated?, width?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

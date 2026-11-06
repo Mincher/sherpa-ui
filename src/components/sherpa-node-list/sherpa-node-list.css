@@ -1,5 +1,5 @@
 /**
- * sherpa-node-list.css — the list of nodes, filling the panel it is the content of. Its search,
+ * sherpa-node-list.css — the list of nodes, filling the panel it is the content of. Its
  * headings and items are the library's own parts; this sheet lays them out.
  * TRAP T-a-node-panel-lists-under-sticky-headings
  */
@@ -17,18 +17,6 @@
   flex-direction: column;
   min-block-size: 0;
   block-size: 100%;
-}
-
-/* The search. */
-.search {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  padding: var(--sherpa-theme-padding-md, 8px);
-}
-.find {
-  flex: 1 1 auto;
-  min-inline-size: 0;
 }
 
 /* ONE scrolling list: each category's heading sticks at its top while that category's

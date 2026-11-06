@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
       <sherpa-breadcrumbs id="trail" hidden></sherpa-breadcrumbs>
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
-        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
+        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
       </sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="custom" data-heading="Save as Custom Node">

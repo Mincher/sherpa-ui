@@ -132,6 +132,25 @@
                 }
               },
               {
+                "el": "template",
+                "class": "search-tpl",
+                "children": [
+                  {
+                    "el": "sherpa-input-text",
+                    "class": "search",
+                    "part": "search",
+                    "attrs": {
+                      "slot": "metadata",
+                      "data-icon-start": "magnifying-glass",
+                      "data-clearable": "",
+                      "autocomplete": "off",
+                      "placeholder": "Search",
+                      "aria-label": "Search"
+                    }
+                  }
+                ]
+              },
+              {
                 "el": "span",
                 "class": "toolbar",
                 "part": "toolbar",
@@ -217,6 +236,13 @@
                         }
                       }
                     ]
+                  },
+                  {
+                    "el": "span",
+                    "class": "divider before-end",
+                    "attrs": {
+                      "aria-hidden": "true"
+                    }
                   },
                   {
                     "slot": "actions-end",
@@ -461,6 +487,24 @@
     },
     {
       "$type": "prop",
+      "name": "data-search-placeholder",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "what the search row says (also its label); \"Search\" by default"
+    },
+    {
+      "$type": "prop",
+      "name": "data-searchable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a search row in the header, the header's full width; it fires `panel-search`"
+    },
+    {
+      "$type": "prop",
       "name": "data-side",
       "type": "enum",
       "observed": false,
@@ -602,7 +646,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, side?, updated?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, searchPlaceholder?, searchable?, side?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -630,6 +674,11 @@
       "$type": "state",
       "name": "collapsed",
       "selector": ":host([data-collapsed])"
+    },
+    {
+      "$type": "state",
+      "name": "not-searchable",
+      "selector": ":host(:not([data-searchable]))"
     },
     {
       "$type": "state",
@@ -661,7 +710,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (open, dockState, minimised, side, tabbed, shown). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (open, search, dockState, minimised, side, tabbed, shown). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -675,6 +724,16 @@
     }
   ],
   "events": [
+    {
+      "$type": "event",
+      "name": "panel-search",
+      "description": "The search row's text changed (typed, cleared by its x, or Escape)",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    },
     {
       "$type": "event",
       "name": "panel-collapse",
@@ -843,6 +902,11 @@
           "name": "open",
           "type": "boolean",
           "description": "whether the panel is open (delegates to <dialog>)",
+          "access": "read-write"
+        },
+        {
+          "name": "search",
+          "type": "string",
           "access": "read-write"
         },
         {

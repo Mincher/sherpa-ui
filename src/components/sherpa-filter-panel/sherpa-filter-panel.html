@@ -1,8 +1,8 @@
 <!--
   sherpa-filter-panel — the CONTENT of a panel: every filter scope the page offers, a section each.
   Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab.
-  Its own controls — the search, Suggest, the Save group, the ⋮ and the count of filters applied — are
-  cloned into that panel's header slots, and leave with it. TRAP T-a-content-adopts-its-panels-header
+  Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are
+  cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header
 
   Public API:
     data-scope      the scopes it answers, in order: `view data`. The View is a heading; the rest are accordions
@@ -44,8 +44,6 @@
 
   <!-- The controls that live in the panel's header: each says its slot there. -->
   <template class="header-tpl">
-    <sherpa-input-text slot="description" class="find" data-icon-start="magnifying-glass" data-clearable
-                       placeholder="Search filters" autocomplete="off" aria-label="Search every filter"></sherpa-input-text>
     <sherpa-badge slot="badge" class="applied-count" role="img" hidden></sherpa-badge>
     <sherpa-button slot="actions" class="column-suggest" data-size="sm" data-type="icon"
                    data-icon-start="wand-magic-sparkles" aria-label="Suggest filters" hidden></sherpa-button>

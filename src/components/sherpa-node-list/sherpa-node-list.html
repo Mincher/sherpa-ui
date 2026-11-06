@@ -1,6 +1,5 @@
 <!--
-  sherpa-node-list — the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a
-  search, then one list in which each category's heading sticks while its items scroll, one
+  sherpa-node-list — the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes), then one list in which each category's heading sticks while its items scroll, one
   item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay
   panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a
   category with no kind is empty.
@@ -22,9 +21,6 @@
   <div class="content" part="content">
     <!-- Two lists: the kinds a file gives, and the Custom Nodes saved. A search shows its match count on each. -->
     <sherpa-tabs class="tabs" part="tabs" data-current-id="preset"></sherpa-tabs>
-    <div class="search" part="search">
-      <sherpa-input-text class="find" part="find" data-type="minimal" data-icon-start="magnifying-glass" placeholder="Search nodes" aria-label="Search nodes" autocomplete="off"></sherpa-input-text>
-    </div>
     <div class="categories" part="categories"></div>
     <p class="none" part="none" role="status" aria-live="polite" data-word="none">No node matches.</p>
   </div>

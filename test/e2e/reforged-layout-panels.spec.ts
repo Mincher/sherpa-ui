@@ -222,7 +222,7 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
     const root = document.getElementById('root')!;
     root.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
-        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-padding="none" data-floatable data-floating data-x="40" data-y="40" data-width="320" data-height="400"><p>The list</p></sherpa-overlay-panel>
+        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable data-floating data-x="40" data-y="40" data-width="320" data-height="400"><p>The list</p></sherpa-overlay-panel>
       </sherpa-layout-canvas>
       <sherpa-overlay-panel id="a" data-heading="A" data-floatable data-floating data-x="200" data-y="100" data-width="400" data-height="300"><p>A</p></sherpa-overlay-panel>
       <sherpa-overlay-panel id="b" data-heading="B" data-floatable data-floating data-x="300" data-y="200" data-width="400" data-height="300"><p>B</p></sherpa-overlay-panel>`;
@@ -275,7 +275,7 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
     root.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">
         <div id="thing" style="--x: 520px; --y: 60px; inline-size: 120px; block-size: 80px; background: #c046ff">A</div>
-        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-padding="none" data-floatable><p>The list</p></sherpa-overlay-panel>
+        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable><p>The list</p></sherpa-overlay-panel>
       </sherpa-layout-canvas>`;
     await window.__settled();
     const heard: unknown[] = [];

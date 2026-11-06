@@ -15,7 +15,7 @@ const SETUP = `async () => {
   const panel = document.createElement('sherpa-node-list');
   const box = document.createElement('sherpa-overlay-panel');
   box.slot = 'panel';
-  for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-padding', 'none']]) box.setAttribute(a, v);
+  for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-searchable', ''], ['data-padding', 'none']]) box.setAttribute(a, v);
   box.appendChild(panel);
   canvas.appendChild(box);
   const inspector = document.createElement('sherpa-overlay-panel');

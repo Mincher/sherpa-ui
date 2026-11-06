@@ -9,7 +9,7 @@ import { test, expect } from './harness';
 
 const MOUNT = `
   const root = document.getElementById('root');
-  root.innerHTML = '<sherpa-overlay-panel id="p" open data-heading="Filters" data-floatable data-minimisable data-dismissible style="block-size: 420px; inline-size: 520px;">'
+  root.innerHTML = '<sherpa-overlay-panel id="p" open data-heading="Filters" data-searchable data-search-placeholder="Search filters" data-floatable data-minimisable data-dismissible style="block-size: 420px; inline-size: 520px;">'
     + '<sherpa-filter-panel id="fp" data-scope="view data" data-suggest data-saveable data-count-applied data-applied="3"></sherpa-filter-panel></sherpa-overlay-panel>';
   const panel = document.getElementById('p');
   const content = document.getElementById('fp');
@@ -24,14 +24,14 @@ test('its controls are cloned into the panel header, and the panel\'s own button
     const float = panel.shadowRoot.querySelector('.float');
     return {
       slots: [...panel.children].map((c) => c.localName + (c.slot ? '[' + c.slot + ']' : '')),
-      shown: ['.column-suggest', '.saved-group', '.column-more', '.find', '.applied-count'].map((s) => q(s) && q(s).getBoundingClientRect().width > 0),
+      shown: ['.column-suggest', '.saved-group', '.column-more', '.applied-count'].map((s) => q(s) && q(s).getBoundingClientRect().width > 0),
       badge: q('.applied-count').getAttribute('aria-label'),
       floatBeforeMore: left(float) < left(q('.column-more')),
       moreIsLast: left(q('.column-more')) >= Math.max(...[...panel.shadowRoot.querySelectorAll('.modes sherpa-button')].map(left)),
     };
   })()`) as { slots: string[]; shown: boolean[]; badge: string; floatBeforeMore: boolean; moreIsLast: boolean };
-  expect(r.slots).toEqual(['sherpa-filter-panel', 'sherpa-input-text[description]', 'sherpa-badge[badge]', 'sherpa-button[actions]', 'sherpa-group[actions]', 'sherpa-button[overflow]']);
-  expect(r.shown).toEqual([true, true, true, true, true]);
+  expect(r.slots).toEqual(['sherpa-filter-panel', 'sherpa-badge[badge]', 'sherpa-button[actions]', 'sherpa-group[actions]', 'sherpa-button[overflow]']);
+  expect(r.shown).toEqual([true, true, true, true]);
   expect(r.badge).toBe('3 filters applied');
   expect(r.floatBeforeMore).toBe(true);
   expect(r.moreIsLast).toBe(true);
@@ -50,9 +50,9 @@ test('its controls leave with it, and come back when it is moved', async ({ page
     await window.__settled();
     return { before, gone, back: n() };
   })()`) as { before: number; gone: number; back: number };
-  expect(r.before).toBe(6);
+  expect(r.before).toBe(5);
   expect(r.gone).toBe(0);
-  expect(r.back).toBe(6);
+  expect(r.back).toBe(5);
 });
 
 test('its show, hide and open are its panel\'s, and a close says why', async ({ page }) => {
@@ -90,4 +90,49 @@ test('the Save group, Suggest and the count follow what the page says', async ({
   })()`) as { all: Record<string, boolean>; none: Record<string, boolean> };
   expect(r.all).toEqual({ suggest: true, group: true, save: true, count: true });
   expect(r.none).toEqual({ suggest: false, group: false, save: false, count: false });
+});
+
+test('the panel\'s own search row fills the header, says panel-search, and the content finds by it', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${MOUNT}
+    const input = panel.shadowRoot.querySelector('.search');
+    const header = panel.shadowRoot.querySelector('.header').getBoundingClientRect();
+    const box = input.getBoundingClientRect();
+    const heard = [];
+    panel.addEventListener('panel-search', (e) => heard.push(e.detail.value));
+    panel.search = 'em';
+    panel.search = '';
+    return { fills: Math.abs((header.width) - box.width) < 40 && box.width > 300, ph: input.getAttribute('placeholder'), heard, inContent: !!content.querySelector('.find') };
+  })()`) as { fills: boolean; ph: string; heard: string[]; inContent: boolean };
+  expect(r.fills).toBe(true);
+  expect(r.ph).toBe('Search filters');
+  expect(r.heard).toEqual(['em', '']);
+  expect(r.inContent).toBe(false);
+});
+
+/* A divider only BETWEEN two groups that show a control: never leading, never trailing. TRAP T-a-panel-divides-only-between-shown-groups */
+const dividers = `(panel) => [...panel.shadowRoot.querySelectorAll('.divider')].filter((d) => getComputedStyle(d).display !== 'none').map((d) => [...d.classList].find((c) => c !== 'divider'))`;
+
+test('a panel draws a divider only between groups that show a control', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const read = ${dividers};
+    ${MOUNT}
+    const all = read(panel);
+    // Nothing on offer from the content: the Save group, Suggest and the count hidden, the ⋮ still there.
+    content.removeAttribute('data-saveable');
+    content.removeAttribute('data-suggest');
+    await window.__settled();
+    const noActions = read(panel);
+    // A panel with no actions at all, only its own buttons.
+    root.innerHTML = '<sherpa-overlay-panel id="q" open data-heading="Plain" data-floatable data-minimisable data-dismissible></sherpa-overlay-panel>';
+    await window.__settled();
+    const plain = read(document.getElementById('q'));
+    return { all, noActions, plain };
+  })()`) as { all: string[]; noActions: string[]; plain: string[] };
+  // Suggest and Save first, then the panel's own buttons, then the page's and the ⋮, then close.
+  expect(r.all).toEqual(['after-actions', 'before-end', 'before-close']);
+  // No group before the modes: no leading divider; the ⋮ and the close still divide.
+  expect(r.noActions).toEqual(['before-end', 'before-close']);
+  // Only the panel's own buttons and the close: one divider, between them.
+  expect(r.plain).toEqual(['before-close']);
 });

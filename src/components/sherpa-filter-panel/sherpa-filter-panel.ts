@@ -78,6 +78,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncHeader();
     const panel = this.#panel;
     if (panel) {
+      this.on(panel, 'panel-search', (event) => this.#column.find((event as CustomEvent<{ value: string }>).detail.value));
       const watch = new MutationObserver(() => this.#syncOpen());
       watch.observe(panel, { attributes: true, attributeFilter: ['open'] });
       this.signal.addEventListener('abort', () => watch.disconnect(), { once: true });

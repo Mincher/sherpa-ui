@@ -2,7 +2,7 @@
 
 # sherpa-filter-panel
 
-The CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — the search, Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. TRAP T-a-content-adopts-its-panels-header
+The CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header
 
 |  |  |
 |---|---|
@@ -15,7 +15,7 @@ For a page's filters in a panel: every scope the page offers, the View as a head
 ## Example
 
 ```html
-<sherpa-overlay-panel open data-heading="Filters" data-floatable data-minimisable style="block-size: 360px"><sherpa-filter-panel data-scope="view data"></sherpa-filter-panel></sherpa-overlay-panel>
+<sherpa-overlay-panel open data-heading="Filters" data-searchable data-search-placeholder="Search filters" data-floatable data-minimisable style="block-size: 360px"><sherpa-filter-panel data-scope="view data"></sherpa-filter-panel></sherpa-overlay-panel>
 ```
 
 ## Attributes

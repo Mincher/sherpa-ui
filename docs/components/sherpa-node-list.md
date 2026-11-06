@@ -2,7 +2,7 @@
 
 # sherpa-node-list
 
-The nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places
+The nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes), then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places
 
 |  |  |
 |---|---|
@@ -15,7 +15,7 @@ For a graph editor's list of the nodes it may place, one per family, in two tabs
 ## Example
 
 ```html
-<sherpa-overlay-panel open data-heading="Nodes" data-padding="none" style="block-size: 360px"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
+<sherpa-overlay-panel open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" style="block-size: 360px"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
 ```
 
 `populate()` is given, on `sherpa-node-list`:
@@ -97,7 +97,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`categories`, `content`, `find`, `ghost`, `none`, `search`, `tabs`
+`categories`, `content`, `ghost`, `none`, `tabs`
 
 ## CSS custom properties it reads
 
@@ -105,8 +105,6 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
-| `--sherpa-theme-gap-sm` | `.search` | `gap` |
-| `--sherpa-theme-padding-md` | `.search` | `padding` |
 | `--sherpa-theme-padding-sm` | `.categories` | `gap` |
 | `--sherpa-theme-padding-md` | `.categories` | `padding` |
 | `--sherpa-theme-padding-sm` | `.category-heading` | `padding-block-start` |

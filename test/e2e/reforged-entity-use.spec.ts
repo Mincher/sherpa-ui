@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (entities) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="confirm" data-status="critical" data-heading="Update">
         <p style="margin: 0"></p>

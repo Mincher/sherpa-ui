@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
     const panel = document.createElement('sherpa-node-list');
     const box = document.createElement('sherpa-overlay-panel');
     box.slot = 'panel';
-    for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-padding', 'none']] as const) box.setAttribute(a, v);
+    for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-searchable', ''], ['data-padding', 'none']] as const) box.setAttribute(a, v);
     box.appendChild(panel);
     el.appendChild(box);
     document.getElementById('root')!.appendChild(el);
@@ -54,7 +54,7 @@ const draft = (page: Page) => page.evaluate(() => {
 });
 /** Press the search field with the real pointer: WebKit's own hit check calls the card's host the thing in the way. */
 async function pressSearch(page: Page): Promise<void> {
-  const box = (await page.locator('sherpa-node-list sherpa-input-text.find input').boundingBox())!;
+  const box = (await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
@@ -83,19 +83,19 @@ test('it lists each category with its families, twelve, never a Query-only one; 
   expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output']);
   // A family's line is its synopsis, never its types (TODO 809).
   expect(await item(page, 'sort').getAttribute('data-description')).toBe('Put rows in order of a field');
-  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('sor');
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('sor');
   expect(await names()).toEqual(['Sort']);
   expect(await page.locator('sherpa-node-list .category-heading:visible').count()).toBe(1);
-  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('zzz');
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('zzz');
   expect(await names()).toEqual([]);
-  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('');
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('');
   expect((await names()).length).toBe(12);
   expect(await item(page, 'group').getAttribute('data-description')).toBe('Group rows by a field');
 });
 
 test('"round" shows Math, says Round, and a click places a Math whose type is Round; its rows follow the type', async ({ page }) => {
   await bind(page);
-  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('round');
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('round');
   const names = await page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(names).toEqual(['Math']);
   expect(await item(page, 'math').getAttribute('data-description')).toBe('Round: Rounds a decimal to a set number of places');

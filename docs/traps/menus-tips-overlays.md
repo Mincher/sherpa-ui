@@ -327,6 +327,28 @@ for a state kept before this existed.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel-side.spec.ts`
 
+### T-a-panel-owns-its-search-row
+
+**A panel's search is the PANEL's, in its header** (Will, TODO 860). `data-searchable` stamps a `sherpa-input-text` row, the
+header's full width, into the header's metadata slot (`stampOnce`); `data-search-placeholder` is its placeholder and
+label. The panel owns the input, its clear (x) and Escape, and says `panel-search { value }` as it changes; `search` reads
+it, and set, types it. No content holds a search box: the filter panel hears `panel-search` and finds in every section,
+the node list narrows its items by it. The old filter-panel clone in the `description` slot, and the node list's own box, are gone.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+
+### T-a-panel-divides-only-between-shown-groups
+
+**A header divider is drawn only BETWEEN two groups that each show a control** (Will, TODO 860: an orphan divider before the
+minimise button). The groups are the content's `actions`, the panel's own buttons, the page's `actions-end` and the ⋮,
+then close. A clone the content hides is no control, which CSS cannot read from a slot, so the panel says it with
+`:state(shows-actions)` and `:state(shows-end)`, set from its direct children's `hidden` and `slot`; the rest is CSS.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+
 ### T-a-panel-slotted-in-a-layout-is-docked-there
 
 **An overlay panel SLOTTED into a canvas's `panel` slot, or a panel area's own, is docked there by its

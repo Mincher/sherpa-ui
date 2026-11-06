@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
     const panel = document.createElement('sherpa-node-list');
     const box = document.createElement('sherpa-overlay-panel');
     box.slot = 'panel';
-    for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-padding', 'none']] as const) box.setAttribute(a, v);
+    for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-searchable', ''], ['data-padding', 'none']] as const) box.setAttribute(a, v);
     box.appendChild(panel);
     el.appendChild(box);
     document.getElementById('root')!.appendChild(el);
@@ -94,7 +94,7 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
 }
 /** Place a node from the panel by a real drag, let go at a point of the canvas: found by its name first, so it is in view. */
 async function place(page: Page, kind: string, [x, y]: [number, number]): Promise<void> {
-  await page.locator('sherpa-node-list sherpa-input-text.find input').fill(kind);
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill(kind);
   await settle(page);
   const from = (await page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`).boundingBox())!;
   await drag(page, [from.x + from.width / 2, from.y + from.height / 2], [x, y]);
