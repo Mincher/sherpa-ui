@@ -7,7 +7,7 @@ A NON-modal panel on native &lt;dialog>, docked on the window's right edge. show
 |  |  |
 |---|---|
 | Category | container |
-| Built on | the native `<dialog>`, which gives modal, focus-trap, escape-close, backdrop |
+| Built on | the native `<button>`, which gives click, keyboard, focus, disabled |
 | Figma | Overlay Panel |
 | Source | [.ts](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts) · [.html](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.html) · [.css](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.css) · [.component.json](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.component.json) · [.example.json](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.example.json) |
 
@@ -39,8 +39,11 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-height` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot area) |
 | `data-maximised` | boolean |  | full-overlay state: the panel fills the window and shows its breadcrumbs |
+| `data-minimisable` | boolean |  | show the Minimise button |
+| `data-minimised` | boolean |  | shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens |
 | `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
+| `data-updated` | boolean |  | the panel says it changed while a tab: the tab turns active and wears a "!". Set by `notify()` or a new `data-heading`; cleared when it opens |
 | `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
 | `data-x` | number |  | where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
 | `data-y` | number |  | where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
@@ -57,6 +60,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | Method | What it does |
 |---|---|
 | `show()` | Open it, non-modal (no backdrop, no focus trap). |
+| `notify()` | Say something changed: as a tab it turns active and wears a mark, until it is opened. |
 | `hide()` | Close it. |
 | `close()` | `hide()`, in the native &lt;dialog>'s spelling. |
 
@@ -78,6 +82,7 @@ Each one bubbles.
 | `panel-collapse` | `{ collapsed: boolean }` |  |
 | `panel-expand` | `{ maximised: boolean }` |  |
 | `panel-external` |  |  |
+| `panel-minimise` | `{ minimised: boolean }` | The reader pressed Minimise, or its tab |
 | `panel-pop` | `{ fixed: boolean; side: 'end' \| 'start' }` | The reader pressed Pop in or Pop out; side: start \| end |
 | `panel-close` |  |  |
 | `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock |
@@ -99,7 +104,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `pop`, `resize`, `root`, `toolbar`, `trail`, `view-modes`
+`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `pop`, `resize`, `root`, `tab`, `tab-mark`, `tab-title`, `toolbar`, `trail`, `view-modes`
 
 ## CSS custom properties it reads
 
@@ -120,6 +125,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, poppable?, width?, x?, y? }`
+`{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

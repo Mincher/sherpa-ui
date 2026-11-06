@@ -107,6 +107,58 @@
 :host(:state(floating)[data-collapsed]:not([data-maximised])) .root { block-size: auto; }
 :host(:state(floating)) .resize { display: none; }
 
+/* Minimised: the box is gone and a TAB stands on the edge of its area, turned on its side.
+   The panel has left its area (as floating does), so the area gives its room back; the tabs
+   of several panels stack down the edge. TRAP T-a-minimised-panel-is-a-tab */
+.tab, .tab-mark { display: none; }
+:host([data-minimised]) .root { display: none; }
+/* PHYSICAL sides: the tab's own vertical writing mode would turn the logical ones. */
+:host([data-minimised][open]) .tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  position: fixed;
+  top: calc(5rem + var(--_tab-index, 0) * 11rem);
+  right: 0;
+  z-index: var(--sherpa-layer-panels, 101);
+  max-height: 10rem;
+  padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
+  writing-mode: vertical-rl;
+  font: inherit;
+  cursor: pointer;
+  color: var(--sherpa-style-content-base, #0c0b11);
+  background: var(--_surface);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
+  border-right: 0;
+  border-radius: var(--sherpa-border-rounding-top-left, 4px) 0 0 var(--sherpa-border-rounding-bottom-left, 4px);
+  box-shadow: var(--sherpa-shadow-lg);
+}
+:host(:state(tab-start)[data-minimised][open]) .tab {
+  right: auto;
+  left: 0;
+  border-right: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
+  border-left: 0;
+  border-radius: 0 var(--sherpa-border-rounding-top-right, 4px) var(--sherpa-border-rounding-bottom-right, 4px) 0;
+}
+.tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
+/* Updated: active, and the mark the app header's bell wears, an exclamation for a count. */
+:host([data-updated]) .tab {
+  background: var(--sherpa-style-saturated-surface-base, #3b4ccd);
+  color: var(--sherpa-style-saturated-content-base, #ffffff);
+  border-color: var(--sherpa-style-saturated-surface-base, #3b4ccd);
+}
+:host([data-updated]) .tab-mark {
+  display: inline-block;
+  writing-mode: horizontal-tb;
+  min-inline-size: 1.25em;
+  text-align: center;
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  background: var(--sherpa-style-saturated-content-base, #ffffff);
+  color: var(--sherpa-style-saturated-surface-base, #3b4ccd);
+  font-weight: 700;
+}
+
 /* The trail shows only while maximised, and only when one is given. */
 .trail {
   display: none;
@@ -167,6 +219,8 @@
 :host(:state(no-area)) .pop,
 :host([data-maximised]) .pop,
 :host(:state(floating)) .pop { display: none; }
+:host(:not([data-minimisable])) .minimise,
+:host([data-maximised]) .minimise,
 :host(:not([data-floatable])) .float,
 :host([data-maximised]) .float { display: none; }
 
@@ -190,8 +244,8 @@
   block-size: var(--sherpa-theme-content-size-xs, 10px);
   background: var(--sherpa-style-border-base, #b3b3c3);
 }
-:host(:state(has-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable])) .after-actions,
-:host(:is(:state(has-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable]):is([data-dismissible], [data-collapsible])) .before-close {
+:host(:state(has-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable])) .after-actions,
+:host(:is(:state(has-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable], [data-minimisable]):is([data-dismissible], [data-collapsible])) .before-close {
   display: block;
 }
 

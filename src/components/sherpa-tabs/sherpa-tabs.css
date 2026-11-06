@@ -61,7 +61,8 @@
 
 .tabs {
   display: flex;
-  gap: var(--sherpa-display-mode-space-base, 16px);
+  /* No gap: each tab's own padding is the room around its content. */
+  gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -81,7 +82,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding: var(--sherpa-display-mode-space-sm, 12px) 0;
+  padding: var(--sherpa-display-mode-space-sm, 12px) var(--sherpa-display-mode-space-base, 16px);
   margin: 0;
   background: transparent;
   border: none;
@@ -122,3 +123,14 @@
 }
 ::slotted([data-tab]) { display: none; }
 ::slotted([data-current]) { display: block; flex: 1 1 auto; min-block-size: 0; }
+
+/* A tab's badge: a small count on its right, gone while empty. */
+.badge {
+  margin-inline-start: var(--sherpa-theme-gap-sm, 4px);
+  padding-inline: var(--sherpa-display-mode-space-xs, 4px);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  background: var(--sherpa-style-surface-base-2, #ebebf0);
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font-size: var(--sherpa-font-size-body-sm, 12px);
+}
+.badge:empty { display: none; }

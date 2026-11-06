@@ -570,7 +570,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (122)
+## Menus, tips and overlays (123)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -596,6 +596,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-menu-owns-its-own-bodies](traps/filters.md#t-a-menu-owns-its-own-bodies) — menu
 - [T-a-menu-takes-no-grouping](traps/menus-tips-overlays.md#t-a-menu-takes-no-grouping) — menu
 - [T-a-menu-with-no-trigger-lands-at-the-origin](traps/menus-tips-overlays.md#t-a-menu-with-no-trigger-lands-at-the-origin) — menu
+- [T-a-minimised-panel-is-a-tab](traps/menus-tips-overlays.md#t-a-minimised-panel-is-a-tab) — overlay-panel
 - [T-a-mode-switch-carries-the-answer-over](traps/menus-tips-overlays.md#t-a-mode-switch-carries-the-answer-over) — menu
 - [T-a-nested-menu-answers-for-itself](traps/filters.md#t-a-nested-menu-answers-for-itself) — menu
 - [T-a-number-has-advanced-rows](traps/filters.md#t-a-number-has-advanced-rows) — menu

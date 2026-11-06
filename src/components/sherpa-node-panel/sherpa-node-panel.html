@@ -1,5 +1,5 @@
 <!--
-  sherpa-node-panel — the nodes a graph editor may place, by category: a Jump to chip and a
+  sherpa-node-panel — the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a
   search, then one list in which each category's heading sticks while its items scroll, one
   item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas:
   docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a
@@ -51,12 +51,9 @@
         </span>
       </sherpa-container-header>
       <div class="content" part="content">
+        <!-- Two lists: the kinds a file gives, and the Custom Nodes saved. A search shows its match count on each. -->
+        <sherpa-tabs class="tabs" part="tabs" data-current-id="preset"></sherpa-tabs>
         <div class="search" part="search">
-          <!-- A pick scrolls the list to a category's heading, or a tag's. TRAP T-a-node-panel-lists-under-sticky-headings -->
-          <sherpa-quick-filter class="jump" part="jump" data-type="jump" data-label="Jump to"
-                               data-icon-start="list" data-menu>
-            <sherpa-menu slot="menu"></sherpa-menu>
-          </sherpa-quick-filter>
           <sherpa-input-text class="find" part="find" data-type="minimal" data-icon-start="magnifying-glass" placeholder="Search nodes" aria-label="Search nodes" autocomplete="off"></sherpa-input-text>
         </div>
         <div class="categories" part="categories"></div>

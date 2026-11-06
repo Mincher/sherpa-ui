@@ -7,7 +7,7 @@
  * @method select(id) — activate a tab by id, SILENTLY (a reader's pick fires tab-select)
  *
  * Map:
- * - TabDef — one tab: its id and label
+ * - TabDef — one tab: its id, label and badge
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
@@ -15,6 +15,8 @@ import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 export interface TabDef {
   id: string;
   label: string;
+  /** A short mark on the tab's right, a match count; none when empty. */
+  badge?: string;
 }
 
 export class SherpaTabs extends SherpaElement {
@@ -89,7 +91,7 @@ export class SherpaTabs extends SherpaElement {
     const list = Array.isArray(data) ? (data as TabDef[]) : [];
     this.#tabs = list
       .filter((t): t is TabDef => t != null && typeof t === 'object')
-      .map((t) => ({ id: String(t.id ?? ''), label: String(t.label ?? '') }))
+      .map((t) => ({ id: String(t.id ?? ''), label: String(t.label ?? ''), badge: String(t.badge ?? '') }))
       .filter((t) => t.id);
     if (!this.dataset['currentId'] && this.#tabs[0]) {
       this.set('data-current-id', this.#tabs[0].id);

@@ -83,6 +83,7 @@ test('a saved node shows in a second tab, live and after a reload; a preset is r
   expect(await listed(second)).toEqual(['has-role (preset)', 'mine', 'also']);
 
   // Placing one is placing a use: a node whose kind is the saved id.
+  await second.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
   await second.locator('sherpa-node-panel sherpa-list-item[data-kind="mine"]').click();
   await settle(second);
   const placed = await second.evaluate(() => {

@@ -6,212 +6,250 @@
   "$description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
   "element": {
     "$type": "element",
-    "tag": "dialog",
+    "tag": "button",
+    "attributes": {
+      "type": "button",
+      "aria-label": "Open panel"
+    },
     "provides": [
-      "modal",
-      "focus-trap",
-      "escape-close",
-      "backdrop"
-    ],
-    "stateCss": {
-      "open": "[open]"
-    }
+      "click",
+      "keyboard",
+      "focus",
+      "disabled"
+    ]
   },
   "templates": [
     "default"
   ],
   "anatomy": {
-    "root": {
-      "el": "dialog",
-      "class": "root sherpa-float sherpa-border-edges sherpa-border-corners",
-      "part": "root",
-      "children": [
-        {
-          "el": "div",
-          "class": "resize",
-          "part": "resize",
-          "attrs": {
-            "role": "separator",
-            "aria-orientation": "vertical",
-            "aria-label": "Resize panel",
-            "tabindex": "0"
-          }
+    "roots": [
+      {
+        "el": "button",
+        "class": "tab",
+        "part": "tab",
+        "attrs": {
+          "type": "button",
+          "aria-label": "Open panel"
         },
-        {
-          "el": "div",
-          "class": "trail",
-          "part": "trail",
-          "children": [
-            {
-              "slot": "breadcrumbs",
-              "attrs": {
-                "data-accepts": "nav"
-              }
-            }
-          ]
-        },
-        {
-          "el": "sherpa-container-header",
-          "class": "header sherpa-float-bar",
-          "part": "header",
-          "children": [
-            {
-              "slot": "icon",
-              "attrs": {
-                "slot": "icon",
-                "data-accepts": "icon"
-              }
-            },
-            {
-              "slot": "description",
-              "attrs": {
-                "slot": "metadata",
-                "data-accepts": "content"
-              }
-            },
-            {
-              "el": "span",
-              "class": "toolbar",
-              "part": "toolbar",
-              "attrs": {
-                "slot": "actions"
-              },
-              "children": [
-                {
-                  "el": "span",
-                  "class": "grip sherpa-float-grip sherpa-icon-box",
-                  "part": "grip",
-                  "attrs": {
-                    "data-icon": "drag-handle-vertical",
-                    "role": "button",
-                    "tabindex": "0",
-                    "aria-label": "Move panel",
-                    "title": "Drag the header to move it, or use the arrow keys"
-                  }
-                },
-                {
-                  "slot": "actions",
-                  "attrs": {
-                    "data-accepts": "control"
-                  }
-                },
-                {
-                  "el": "span",
-                  "class": "divider after-actions",
-                  "attrs": {
-                    "aria-hidden": "true"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "float",
-                  "part": "float",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-icon-start": "browser",
-                    "aria-label": "Float",
-                    "data-when-data-icon-start": "data-floating: sidebar-flip",
-                    "data-when-aria-label": "data-floating: Dock"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "pop",
-                  "part": "pop",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-icon-start": "sidebar-flip",
-                    "aria-label": "Pop in",
-                    "data-when-data-icon-start": "data-fixed: monitor-w-floating-window",
-                    "data-when-aria-label": "data-fixed: Pop out"
-                  }
-                },
-                {
-                  "el": "sherpa-group",
-                  "class": "view-modes",
-                  "part": "view-modes",
-                  "children": [
-                    {
-                      "el": "sherpa-button",
-                      "class": "expand",
-                      "part": "expand",
-                      "attrs": {
-                        "data-type": "icon",
-                        "data-size": "sm",
-                        "data-icon-start": "fullscreen",
-                        "aria-label": "Maximise",
-                        "data-when-data-icon-start": "data-maximised: fullscreen-exit",
-                        "data-when-aria-label": "data-maximised: Minimise"
-                      }
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "external",
-                      "part": "external",
-                      "attrs": {
-                        "data-type": "icon",
-                        "data-size": "sm",
-                        "data-icon-start": "open-externally",
-                        "aria-label": "Open externally"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "el": "span",
-                  "class": "divider before-close",
-                  "attrs": {
-                    "aria-hidden": "true"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "el": "div",
-          "class": "body",
-          "part": "body",
-          "children": [
-            {
-              "slot": "",
-              "attrs": {
-                "data-accepts": "content"
-              }
-            }
-          ]
-        },
-        {
-          "el": "sherpa-container-footer",
-          "class": "footer",
-          "part": "footer",
-          "attrs": {
-            "data-align": "stretch"
+        "children": [
+          {
+            "el": "span",
+            "class": "tab-title",
+            "part": "tab-title"
           },
-          "children": [
-            {
-              "slot": "footer",
-              "attrs": {
-                "data-accepts": "control,input"
-              }
+          {
+            "el": "span",
+            "class": "tab-mark",
+            "part": "tab-mark",
+            "attrs": {
+              "aria-hidden": "true"
             }
-          ]
-        },
-        {
-          "el": "div",
-          "class": "corner sherpa-float-corner",
-          "part": "corner",
-          "attrs": {
-            "role": "button",
-            "tabindex": "0",
-            "aria-label": "Resize panel",
-            "title": "Drag to resize, or use the arrow keys"
           }
-        }
-      ]
-    }
+        ]
+      },
+      {
+        "el": "dialog",
+        "class": "root sherpa-float sherpa-border-edges sherpa-border-corners",
+        "part": "root",
+        "children": [
+          {
+            "el": "div",
+            "class": "resize",
+            "part": "resize",
+            "attrs": {
+              "role": "separator",
+              "aria-orientation": "vertical",
+              "aria-label": "Resize panel",
+              "tabindex": "0"
+            }
+          },
+          {
+            "el": "div",
+            "class": "trail",
+            "part": "trail",
+            "children": [
+              {
+                "slot": "breadcrumbs",
+                "attrs": {
+                  "data-accepts": "nav"
+                }
+              }
+            ]
+          },
+          {
+            "el": "sherpa-container-header",
+            "class": "header sherpa-float-bar",
+            "part": "header",
+            "children": [
+              {
+                "slot": "icon",
+                "attrs": {
+                  "slot": "icon",
+                  "data-accepts": "icon"
+                }
+              },
+              {
+                "slot": "description",
+                "attrs": {
+                  "slot": "metadata",
+                  "data-accepts": "content"
+                }
+              },
+              {
+                "el": "span",
+                "class": "toolbar",
+                "part": "toolbar",
+                "attrs": {
+                  "slot": "actions"
+                },
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "grip sherpa-float-grip sherpa-icon-box",
+                    "part": "grip",
+                    "attrs": {
+                      "data-icon": "drag-handle-vertical",
+                      "role": "button",
+                      "tabindex": "0",
+                      "aria-label": "Move panel",
+                      "title": "Drag the header to move it, or use the arrow keys"
+                    }
+                  },
+                  {
+                    "slot": "actions",
+                    "attrs": {
+                      "data-accepts": "control"
+                    }
+                  },
+                  {
+                    "el": "span",
+                    "class": "divider after-actions",
+                    "attrs": {
+                      "aria-hidden": "true"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "minimise",
+                    "part": "minimise",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-size": "sm",
+                      "data-icon-start": "minus",
+                      "aria-label": "Minimise to a tab"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "float",
+                    "part": "float",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-size": "sm",
+                      "data-icon-start": "browser",
+                      "aria-label": "Float",
+                      "data-when-data-icon-start": "data-floating: sidebar-flip",
+                      "data-when-aria-label": "data-floating: Dock"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "pop",
+                    "part": "pop",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-size": "sm",
+                      "data-icon-start": "sidebar-flip",
+                      "aria-label": "Pop in",
+                      "data-when-data-icon-start": "data-fixed: monitor-w-floating-window",
+                      "data-when-aria-label": "data-fixed: Pop out"
+                    }
+                  },
+                  {
+                    "el": "sherpa-group",
+                    "class": "view-modes",
+                    "part": "view-modes",
+                    "children": [
+                      {
+                        "el": "sherpa-button",
+                        "class": "expand",
+                        "part": "expand",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "fullscreen",
+                          "aria-label": "Maximise",
+                          "data-when-data-icon-start": "data-maximised: fullscreen-exit",
+                          "data-when-aria-label": "data-maximised: Minimise"
+                        }
+                      },
+                      {
+                        "el": "sherpa-button",
+                        "class": "external",
+                        "part": "external",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "open-externally",
+                          "aria-label": "Open externally"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "el": "span",
+                    "class": "divider before-close",
+                    "attrs": {
+                      "aria-hidden": "true"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "el": "div",
+            "class": "body",
+            "part": "body",
+            "children": [
+              {
+                "slot": "",
+                "attrs": {
+                  "data-accepts": "content"
+                }
+              }
+            ]
+          },
+          {
+            "el": "sherpa-container-footer",
+            "class": "footer",
+            "part": "footer",
+            "attrs": {
+              "data-align": "stretch"
+            },
+            "children": [
+              {
+                "slot": "footer",
+                "attrs": {
+                  "data-accepts": "control,input"
+                }
+              }
+            ]
+          },
+          {
+            "el": "div",
+            "class": "corner sherpa-float-corner",
+            "part": "corner",
+            "attrs": {
+              "role": "button",
+              "tabindex": "0",
+              "aria-label": "Resize panel",
+              "title": "Drag to resize, or use the arrow keys"
+            }
+          }
+        ]
+      }
+    ]
   },
   "props": [
     {
@@ -324,6 +362,24 @@
     },
     {
       "$type": "prop",
+      "name": "data-minimisable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show the Minimise button"
+    },
+    {
+      "$type": "prop",
+      "name": "data-minimised",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens"
+    },
+    {
+      "$type": "prop",
       "name": "data-poppable",
       "type": "boolean",
       "observed": true,
@@ -338,6 +394,15 @@
       "observed": false,
       "kind": "style",
       "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
+    },
+    {
+      "$type": "prop",
+      "name": "data-updated",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the panel says it changed while a tab: the tab turns active and wears a \"!\". Set by `notify()` or a new `data-heading`; cleared when it opens"
     },
     {
       "$type": "prop",
@@ -428,7 +493,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, poppable?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -436,6 +501,16 @@
       "$type": "state",
       "name": "maximised",
       "selector": ":host([data-maximised])"
+    },
+    {
+      "$type": "state",
+      "name": "minimised",
+      "selector": ":host([data-minimised])"
+    },
+    {
+      "$type": "state",
+      "name": "updated",
+      "selector": ":host([data-updated])"
     },
     {
       "$type": "state",
@@ -459,13 +534,18 @@
     },
     {
       "$type": "state",
+      "name": "not-minimisable",
+      "selector": ":host(:not([data-minimisable]))"
+    },
+    {
+      "$type": "state",
       "name": "not-floatable",
       "selector": ":host(:not([data-floatable]))"
     },
     {
       "$type": "state",
       "name": "focus-visible",
-      "selector": ".resize:focus-visible"
+      "selector": ".tab:focus-visible"
     }
   ],
   "capabilities": [
@@ -477,7 +557,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (show, hide, close). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (show, notify, hide, close). See $extensions.sherpa.methods."
     },
     {
       "$type": "capability",
@@ -509,6 +589,16 @@
       "name": "panel-external",
       "bubbles": true,
       "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "panel-minimise",
+      "description": "The reader pressed Minimise, or its tab",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "minimised": "boolean"
+      }
     },
     {
       "$type": "event",
@@ -581,6 +671,12 @@
           "name": "show",
           "args": "",
           "description": "Open it, non-modal (no backdrop, no focus trap)."
+        },
+        {
+          "$type": "method",
+          "name": "notify",
+          "args": "",
+          "description": "Say something changed: as a tab it turns active and wears a mark, until it is opened."
         },
         {
           "$type": "method",

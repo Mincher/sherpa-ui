@@ -233,6 +233,25 @@ Float goes while it is maximised.
 - Site: `test/e2e/reforged-overlay-panel-float.spec.ts`
 - Site: `test/e2e/reforged-node-panel-float.spec.ts`
 
+### T-a-minimised-panel-is-a-tab
+
+**Minimised is a STATE of an overlay panel: a tab, turned on its side, on the edge of its
+area** (Will, 2026-11-06). `data-minimisable` shows the header's Minimise button; a press
+sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restores it, with
+`data-fixed` and `data-floating` untouched, so it opens as it was.
+
+- **It leaves its area as floating does** (`#place`), so the area gives its room back and the
+  tab, `position: fixed` on the window's edge, is never inside a hidden area. Tabs stack down
+  the edge in the order they were shrunk (`--_tab-index`).
+- **`data-updated`** turns the tab active and gives it a "!" (no count yet). `notify()` sets
+  it, and so does a new `data-heading` while it is a tab. Opening clears it.
+- `show()` from SHUT opens whole; already open as a tab, it stays one.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
+
 ### T-a-pressed-panel-comes-to-the-front
 
 **Every floating box in the tab is in ONE stack: a press on one, or a focus into

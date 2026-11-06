@@ -2,7 +2,7 @@
 
 # sherpa-node-panel
 
-The nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card ([sherpa-container](sherpa-container.md)) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places
+The nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card ([sherpa-container](sherpa-container.md)) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places
 
 |  |  |
 |---|---|
@@ -111,7 +111,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`box`, `card`, `categories`, `content`, `corner`, `find`, `float`, `ghost`, `grip`, `heading`, `jump`, `none`, `search`, `toolbar`
+`box`, `card`, `categories`, `content`, `corner`, `find`, `float`, `ghost`, `grip`, `heading`, `none`, `search`, `tabs`, `toolbar`
 
 ## CSS custom properties it reads
 

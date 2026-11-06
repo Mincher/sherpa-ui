@@ -2710,7 +2710,7 @@
     },
     {
       "name": "sherpa-node-panel",
-      "description": "the nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
+      "description": "the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
       "attributes": [
         {
           "name": "data-floatable",
@@ -3076,6 +3076,16 @@
           "valueSet": "v"
         },
         {
+          "name": "data-minimisable",
+          "description": "show the Minimise button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-minimised",
+          "description": "shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens",
+          "valueSet": "v"
+        },
+        {
           "name": "data-poppable",
           "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
           "valueSet": "v"
@@ -3083,6 +3093,11 @@
         {
           "name": "data-status",
           "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
+        },
+        {
+          "name": "data-updated",
+          "description": "the panel says it changed while a tab: the tab turns active and wears a \"!\". Set by `notify()` or a new `data-heading`; cleared when it opens",
+          "valueSet": "v"
         },
         {
           "name": "data-width",

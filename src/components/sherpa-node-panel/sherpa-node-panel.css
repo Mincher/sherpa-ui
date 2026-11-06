@@ -10,11 +10,10 @@
   block-size: 100%;
   min-inline-size: 0;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* Floating, never smaller than this: room for Jump to, the search and a few nodes. */
+  /* Floating, never smaller than this: room for the tabs, the search and a few nodes. */
   --_float-min-width: 16rem;
   --_float-min-height: 12rem;
   /* A category heading's height: a tag's heading lands just under it. */
-  --_head: 2.25rem;
 }
 
 /* Docked, the box fills its area; floating, it is placed in the canvas: the area gives this
@@ -28,7 +27,7 @@
 
 .card {
   block-size: 100%;
-  /* Clipped, not hidden: a jump's scroll moves only the list, never the card. */
+  /* Clipped, not hidden. */
   overflow: clip;
 }
 /* Docked, FLUSH and FLAT: no edge, no rounding, no shadow; its area draws the divider. */
@@ -52,14 +51,13 @@
 }
 :host(:not([data-floatable])) .float { display: none; }
 
-/* Jump to, then the search, on one row. */
+/* The search. */
 .search {
   display: flex;
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--sherpa-theme-padding-md, 8px);
 }
-.jump { flex: none; }
 .find {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -84,17 +82,14 @@
   /* The card's own surface: what scrolls under it does not show through. */
   background: var(--sherpa-style-surface-base, #ffffff);
 }
-/* A jump lands a tag's heading just under its category's, which sticks over it. */
-.tag { scroll-margin-block-start: var(--_head); }
 .tag-heading {
   padding-block-start: var(--sherpa-theme-padding-sm, 4px);
   padding-inline-start: var(--sherpa-theme-padding-md, 8px);
 }
-/* A jump moves focus to the heading it scrolled to, so the next Tab is its first item. */
-.category-heading:focus-visible,
-.tag-heading:focus-visible {
-  outline: var(--sherpa-focus-ring);
-  outline-offset: var(--sherpa-focus-offset);
+/* Only the open tab's categories show. */
+.categories[data-tab="preset"] > .category:not([data-group="preset"]),
+.categories[data-tab="custom"] > .category:not([data-group="custom"]) {
+  display: none;
 }
 
 /* A search hides what it does not match, and a heading with nothing under it. JS

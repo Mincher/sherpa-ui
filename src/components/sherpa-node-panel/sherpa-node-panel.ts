@@ -1,7 +1,7 @@
 /**
  * sherpa-node-panel — the nodes a graph editor may place, by category, in a card docked on a canvas.
  *
- * It re-makes nothing: a sherpa-container, a Jump to chip and a sherpa-input-text for the search,
+ * It re-makes nothing: a sherpa-container, sherpa-tabs (Preset Nodes, Custom Nodes) and a sherpa-input-text for the search,
  * a sherpa-section-header per category that sticks while its items scroll, a sherpa-list of
  * sherpa-list-items, and a sherpa-menu for "Add a node". It places nothing either: an item
  * clicked, Enter on it, or dragged off the card is `node-add`, and the editor that hears it makes
@@ -26,7 +26,7 @@ import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-list/sherpa-list.js';
 import '../sherpa-list-item/sherpa-list-item.js';
 import '../sherpa-menu/sherpa-menu.js';
-import '../sherpa-quick-filter/sherpa-quick-filter.js';
+import '../sherpa-tabs/sherpa-tabs.js';
 import '../sherpa-section-header/sherpa-section-header.js';
 
 /** Where "Add a node" opens, and what it is for: a socket of a type, a line let go at a point.
@@ -44,6 +44,11 @@ export interface AddContext {
   at: { x: number; y: number };
 }
 
+/** The two lists: the kinds a file gives, and the Custom Nodes a reader saved. */
+const TABS = [{ id: 'preset', label: 'Preset Nodes' }, { id: 'custom', label: 'Custom Nodes' }] as const;
+const CUSTOM = 'Custom Nodes';
+const tabOf = (category: string): string => (category === CUSTOM ? 'custom' : 'preset');
+
 /** How far a pointer travels before a press on an item becomes a drag. */
 const THRESHOLD = 4;
 
@@ -53,7 +58,7 @@ function lineOf(kind: NodeKind): string | undefined {
   return kind.description;
 }
 
-/** One category as drawn: its items with no tag, then a group per tag, each with an id to jump to. */
+/** One category as drawn: its items with no tag, then a group per tag, each with an id. */
 interface Drawn {
   category: string;
   anchor: string;
@@ -100,8 +105,6 @@ export class SherpaNodePanel extends SherpaElement {
   #kinds = new WeakMap<Element, NodeKind>();
   /** The type a search found an item by, when its name did not match: placing it sets that type. */
   #found = new WeakMap<Element, string>();
-  /** The heading a Jump to pick scrolled to: it takes the focus once the menu has shut. */
-  #jumped: HTMLElement | null = null;
 
   /** Floating, in its canvas: its area's layout is its room, the whole canvas. TRAP T-a-panel-area-is-a-layout */
   readonly #floatBox: FloatBox = new FloatBox({
@@ -121,14 +124,15 @@ export class SherpaNodePanel extends SherpaElement {
     this.on(this.root, 'click', this.#onClick);
     this.on(this.root, 'pointerdown', this.#onDown as EventListener);
     this.on(this.$('.add')!, 'menu-select', this.#onChoose);
-    this.on(this.$('.jump')!, 'jump-select', this.#onJump);
-    this.on(this.$('.jump')!, 'menu-close', this.#onJumpShut);
+    this.on(this.$('.tabs')!, 'tab-select', this.#onTab);
+    void this.$<SherpaElement>('.tabs')?.populate(TABS.map(({ id, label }) => ({ id, label })));
     // `button-click`, not `click`: a disabled sherpa-button still gets raw clicks.
     this.on(this.$('.float')!, 'button-click', this.#onFloat);
     this.#floatBox.wire(this.$('.heading'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     this.toggleState('floating', this.hasAttribute('data-floating'));
     this.#floatBox.floated(this.hasAttribute('data-floating'));
+    this.$<HTMLElement>('.categories')?.setAttribute('data-tab', 'preset');
     this.#draw();
   }
 
@@ -157,8 +161,9 @@ export class SherpaNodePanel extends SherpaElement {
     };
     this.renderItems('.categories', 'template.category-tpl', this.#palette.map(byTag), {
       after: (node, group) => {
-        // An id is no field a template writes: Jump to scrolls to it.
+        // An id is no field a template writes.
         node.id = group.anchor;
+        node.dataset['group'] = tabOf(group.category);
         node.toggleAttribute('data-empty', !group.items.length && !group.tags.length);
         const list = node.querySelector('.items')!;
         fill(list, group.items);
@@ -182,29 +187,39 @@ export class SherpaNodePanel extends SherpaElement {
     this.#search();
   };
 
+  /** A tab was picked: its list shows. */
+  #onTab = (event: Event): void => {
+    this.#showTab((event as CustomEvent<{ id: string }>).detail.id);
+  };
+
+  /** Show one tab's categories; CSS hides the rest. */
+  #showTab(id: string): void {
+    this.$<HTMLElement>('.categories')?.setAttribute('data-tab', id);
+    this.#search();
+  }
+
   /** Narrow the items to those whose name, a tag, or a type's name holds what is typed; a heading with none under
-   *  it is hidden. An item found by a type, not by its name, says that type and its line, and places it. Jump to
-   *  lists the headings left. */
+   *  it is hidden. An item found by a type, not by its name, says that type and its line, and places it. Each tab
+   *  wears the count of its matches while something is typed, so a match on the other tab is not missed. */
   #search(): void {
     const query = (this.$<HTMLInputElement>('.find')?.value ?? '').trim().toLowerCase();
     let shown = 0;
-    const places: { value: string; label: string }[] = [];
+    const current = this.$('.tabs')?.getAttribute('data-current-id') ?? 'preset';
+    const counts: Record<string, number> = { preset: 0, custom: 0 };
     for (const category of this.$$('.categories > .category')) {
-      const name = category.querySelector('.category-heading')?.getAttribute('data-heading') ?? '';
       let own = 0;
       for (const item of category.querySelectorAll<HTMLElement>('sherpa-list-item')) if (this.#match(item, query)) own++;
       // A heading with nothing under it shows only while nothing is searched.
       category.toggleAttribute('data-filtered', !!query && !own);
-      if (!query || own) places.push({ value: category.id, label: name });
       for (const tag of category.querySelectorAll<HTMLElement>('.tag')) {
         const any = !!tag.querySelector('sherpa-list-item:not([data-filtered])');
         tag.toggleAttribute('data-filtered', !any);
-        if (any) places.push({ value: tag.id, label: `${name} › ${tag.querySelector('.tag-heading')?.getAttribute('data-heading') ?? ''}` });
       }
-      shown += own;
+      counts[category.dataset['group'] ?? 'preset']! += own;
+      if (category.dataset['group'] === current) shown += own;
     }
     this.toggleState('none', !!query && shown === 0);
-    void this.$<SherpaElement>('.jump')?.populate(places);
+    void this.$<SherpaElement>('.tabs')?.populate(TABS.map(({ id, label }) => ({ id, label, badge: query ? String(counts[id]) : '' })));
   }
 
   /** Whether an item answers the search, its line said for how; and its `data-filtered`. */
@@ -220,21 +235,6 @@ export class SherpaNodePanel extends SherpaElement {
     else item.removeAttribute('data-description');
     return !!hit;
   }
-
-  /* ── Jump to ──────────────────────────────────────────────────────────── */
-
-  /** A Jump to pick: the chip scrolled the list to that heading; the heading takes the focus once its menu shuts. */
-  #onJump = (event: Event): void => {
-    const { value } = (event as CustomEvent<{ value: string }>).detail;
-    this.#jumped = this.root.getElementById(value)?.querySelector<HTMLElement>('.category-heading, .tag-heading') ?? null;
-  };
-
-  /** The menu shut, its focus back on the chip: a jump moves it on to the heading, so the next Tab is its first item. */
-  #onJumpShut = (): void => {
-    const heading = this.#jumped;
-    this.#jumped = null;
-    if (heading) requestAnimationFrame(() => heading.focus({ preventScroll: true }));
-  };
 
   /* ── Floating ─────────────────────────────────────────────────────────── */
 

@@ -72,7 +72,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`detail`, `panels`, `tab`, `tablist`
+`badge`, `detail`, `panels`, `tab`, `tablist`
 
 ## CSS custom properties it reads
 
@@ -81,7 +81,6 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-border-bottom` | `.strip` | `border-block-end` |
-| `--sherpa-display-mode-space-base` | `.tabs` | `gap` |
 | `--sherpa-display-mode-space-sm` | `.detail` | `gap` |
 | `--sherpa-display-mode-space-sm` | `.detail` | `padding-inline` |
 | `--sherpa-display-mode-space-xs` | `.tab` | `gap` |
@@ -93,6 +92,12 @@ What each class's base rule reads:
 | `--sherpa-display-mode-fonts-scale-xl` | `.tab` | `line-height` |
 | `--sherpa-style-content-base` | `.tab` | `color` |
 | `--sherpa-display-mode-space-base` | `.panels` | `padding-block-start` |
+| `--sherpa-theme-gap-sm` | `.badge` | `margin-inline-start` |
+| `--sherpa-display-mode-space-xs` | `.badge` | `padding-inline` |
+| `--sherpa-display-mode-border-rounding-sm` | `.badge` | `border-radius` |
+| `--sherpa-style-surface-base-2` | `.badge` | `background` |
+| `--sherpa-style-content-base` | `.badge` | `color` |
+| `--sherpa-font-size-body-sm` | `.badge` | `font-size` |
 
 ## populate()
 

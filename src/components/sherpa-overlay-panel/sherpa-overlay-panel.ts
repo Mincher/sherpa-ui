@@ -52,6 +52,11 @@ export class SherpaOverlayPanel extends SherpaElement {
     // A fixed panel, in a panel area of the app shell: `start`, else the end. TRAP T-a-panel-pops-into-the-end-area
     'data-fixed': { type: 'string', kind: 'behaviour' },
     'data-floatable': { type: 'boolean', kind: 'style' },
+    // Shrunk to a tab on its area's edge; pressed, it opens as it was. TRAP T-a-minimised-panel-is-a-tab
+    'data-minimisable': { type: 'boolean', kind: 'style' },
+    'data-minimised': { type: 'boolean', kind: 'behaviour' },
+    // Something changed while it was a tab: the tab is active and wears a mark.
+    'data-updated': { type: 'boolean', kind: 'style' },
     // Lifted off its edge or its area, anywhere in the window. TRAP T-a-floating-panel-is-a-state
     'data-floating': { type: 'boolean', kind: 'behaviour' },
     'data-x': { type: 'number', kind: 'behaviour' },
@@ -93,6 +98,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.external')?.addEventListener('button-click', this.#onExternal);
     this.$('.pop')?.addEventListener('button-click', this.#onPop);
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
+    this.$('.minimise')?.addEventListener('button-click', this.#onMinimise);
+    this.$('.tab')?.addEventListener('click', this.#onMinimise);
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     /* The LEFT edge: dragged, it moves as far as the pointer does, and
@@ -128,14 +135,22 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   override onDisconnect(): void {
     SherpaOverlayPanel.#shown.delete(this);
+    SherpaOverlayPanel.#stack();
   }
 
   override onChange(name: string): void {
-    if (name === 'open') this.#surface.follow();
-    else if (name === 'data-fixed') this.#place();
+    if (name === 'open') {
+      this.#surface.follow();
+      SherpaOverlayPanel.#stack();
+    } else if (name === 'data-fixed') this.#place();
+    else if (name === 'data-minimised') this.#minimise();
     else if (name === 'data-floating') this.#float();
     else if (FLOAT_ATTRS.includes(name)) this.#floatBox.draw();
-    else if (name !== 'data-maximised') this.#syncHeader();
+    else if (name !== 'data-maximised') {
+      this.#syncHeader();
+      // A new title while it is a tab is news. TRAP T-a-minimised-panel-is-a-tab
+      if (name === 'data-heading') this.notify();
+    }
   }
 
   get open(): boolean {
@@ -148,7 +163,22 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Open it, non-modal (no backdrop, no focus trap). */
   show(): void {
+    // Opened from shut, it opens whole; already open as a tab, it stays one. TRAP T-a-minimised-panel-is-a-tab
+    if (!this.open) this.removeAttribute('data-minimised');
     this.#surface.show();
+  }
+
+  /** Say something changed: as a tab it turns active and wears a mark, until it is opened. */
+  notify(): void {
+    if (this.hasAttribute('data-minimised') && this.open) this.set('data-updated', true);
+  }
+
+  /** Tabs of the open minimised panels stack down the edge, in the order they were shrunk. */
+  static #stack(): void {
+    let index = 0;
+    for (const panel of document.querySelectorAll<SherpaOverlayPanel>('sherpa-overlay-panel[data-minimised][open]')) {
+      panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-index', String(index++));
+    }
   }
 
   /** Close it. */
@@ -193,25 +223,39 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (this.hasAttribute('data-fixed')) this.#dock = this.#side();
     const shell = this.#area();
     const floating = this.hasAttribute('data-floating');
+    const minimised = this.hasAttribute('data-minimised');
     this.toggleState('no-area', !shell);
+    this.toggleState('tab-start', this.#dock === 'start');
     // In the other area: out first. TRAP T-a-panel-pops-into-the-end-area
     if (this.#home && this.slot !== `panel-${this.#dock}`) this.#popOut();
     // Floating, a fixed panel leaves its area, as Pop out does: the area gives its room back.
-    if (shell && this.hasAttribute('data-fixed') && !floating) this.#popIn(shell);
+    if (shell && this.hasAttribute('data-fixed') && !floating && !minimised) this.#popIn(shell);
     else this.#popOut();
     this.toggleState('in-area', !!this.#home);
     this.toggleState('floating', floating);
     this.#floatBox.floated(floating);
     // …and leaves the right edge, as a fixed one does. TRAP T-one-overlay-panel-at-a-time
-    if (floating) SherpaOverlayPanel.#shown.delete(this);
+    if (floating || minimised) SherpaOverlayPanel.#shown.delete(this);
   };
+
+  /** Shrink to a tab, or open as it was: the area gives its room back and takes it again. */
+  #minimise(): void {
+    const minimised = this.hasAttribute('data-minimised');
+    this.toggleState('minimised', minimised);
+    this.set('data-updated', false);
+    this.#place();
+    SherpaOverlayPanel.#stack();
+    if (minimised) return;
+    if (this.hasAttribute('data-floating')) this.#floatBox.raise();
+    else if (!this.#home && this.open) this.#takeTheEdge();
+  }
 
   /** Float, or dock back where it came from: the right edge, or the fixed area. */
   #float(): void {
     const floating = this.hasAttribute('data-floating');
     if (floating) this.#lift();
     this.#place();
-    if (!floating && !this.#home && this.open) this.#takeTheEdge();
+    if (!floating && !this.#home && this.open && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
   }
 
   /** Floating, in the window: its box, moved by the header bar and resized by the corner. TRAP T-a-floating-panel-is-a-state */
@@ -263,12 +307,14 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.removeAttribute('slot');
     const back = parent.isConnected ? parent : document.body;
     moveInto(back, this, before?.parentNode === back ? before : null);
-    if (this.open && !this.hasAttribute('data-floating')) this.#takeTheEdge();
+    if (this.open && !this.hasAttribute('data-floating') && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
   }
 
   /** Mirror the panel's attributes onto the composed header. */
   #syncHeader(): void {
     const header = this.$('.header');
+    const title = this.$('.tab-title');
+    if (title) title.textContent = this.getAttribute('data-heading') ?? '';
     if (header) this.mirrorAttrs(header, ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible']);
   }
 
@@ -305,6 +351,13 @@ export class SherpaOverlayPanel extends SherpaElement {
     const floating = !this.hasAttribute('data-floating');
     this.set('data-floating', floating);
     this.emit('panel-float', { floating });
+  };
+
+  /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
+  #onMinimise = (): void => {
+    const minimised = !this.hasAttribute('data-minimised');
+    this.set('data-minimised', minimised);
+    this.emit('panel-minimise', { minimised });
   };
 
   /** The open-elsewhere button — the host decides where. */

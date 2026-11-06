@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-panel",
-  "$description": "the nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
+  "$description": "the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -80,29 +80,18 @@
                 "part": "content",
                 "children": [
                   {
+                    "el": "sherpa-tabs",
+                    "class": "tabs",
+                    "part": "tabs",
+                    "attrs": {
+                      "data-current-id": "preset"
+                    }
+                  },
+                  {
                     "el": "div",
                     "class": "search",
                     "part": "search",
                     "children": [
-                      {
-                        "el": "sherpa-quick-filter",
-                        "class": "jump",
-                        "part": "jump",
-                        "attrs": {
-                          "data-type": "jump",
-                          "data-label": "Jump to",
-                          "data-icon-start": "list",
-                          "data-menu": ""
-                        },
-                        "children": [
-                          {
-                            "el": "sherpa-menu",
-                            "attrs": {
-                              "slot": "menu"
-                            }
-                          }
-                        ]
-                      },
                       {
                         "el": "sherpa-input-text",
                         "class": "find",
@@ -333,11 +322,6 @@
       "$type": "state",
       "name": "not-floatable",
       "selector": ":host(:not([data-floatable]))"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ".category-heading:focus-visible"
     }
   ],
   "capabilities": [

@@ -79,6 +79,14 @@
                 "attrs": {
                   "data-text": "label"
                 }
+              },
+              {
+                "el": "span",
+                "class": "badge",
+                "part": "badge",
+                "attrs": {
+                  "data-text": "badge"
+                }
               }
             ]
           }
@@ -154,7 +162,6 @@
   ],
   "tokens": {
     "strip.border-block-end": "{sherpa.border-bottom}",
-    "tabs.gap": "{sherpa.display-mode-space-base}",
     "detail.gap": "{sherpa.display-mode-space-sm}",
     "detail.padding-inline": "{sherpa.display-mode-space-sm}",
     "tab.gap": "{sherpa.display-mode-space-xs}",
@@ -165,7 +172,13 @@
     "tab.font-weight": "{sherpa.font-weight-regular}",
     "tab.line-height": "{sherpa.display-mode-fonts-scale-xl}",
     "tab.color": "{sherpa.style-content-base}",
-    "panels.padding-block-start": "{sherpa.display-mode-space-base}"
+    "panels.padding-block-start": "{sherpa.display-mode-space-base}",
+    "badge.margin-inline-start": "{sherpa.theme-gap-sm}",
+    "badge.padding-inline": "{sherpa.display-mode-space-xs}",
+    "badge.border-radius": "{sherpa.display-mode-border-rounding-sm}",
+    "badge.background": "{sherpa.style-surface-base-2}",
+    "badge.color": "{sherpa.style-content-base}",
+    "badge.font-size": "{sherpa.font-size-body-sm}"
   },
   "$extensions": {
     "sherpa": {

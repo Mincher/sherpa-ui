@@ -11,6 +11,8 @@
     (default) — the tab panels; each child should have data-tab="<id>"
     detail    — trailing content beside the tab strip (badges, actions)
 
+  A tab may carry a `badge`, a short mark on its right (a match count); empty, it is gone.
+
   Fires: tab-select — detail: { id, index, label }
 -->
 <template id="default">
@@ -26,6 +28,7 @@
     <button class="tab" part="tab" role="tab" type="button" tabindex="-1" aria-selected="false"
             data-attr-data-id="id">
       <span class="label" data-text="label"></span>
+      <span class="badge" part="badge" data-text="badge"></span>
     </button>
   </template>
 </template>

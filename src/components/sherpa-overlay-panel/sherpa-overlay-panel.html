@@ -18,6 +18,11 @@
                       at the end of each move; kept while docked, so it floats there again
     data-width / data-height   how big it floats, in px, written at the end of each resize. Never
                       under 20rem by 12rem nor past the window
+    data-minimisable  show the Minimise button
+    data-minimised    shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating
+                      too); the tab opens it as it was. Removed, it opens
+    data-updated      the panel says it changed while a tab: the tab turns active and wears a "!".
+                      Set by `notify()` or a new `data-heading`; cleared when it opens
     data-status       status colour cascade (critical | warning | success | info | urgent)
 
   Toolbar buttons are shown by opt-in data-* flags (CSS-gated):
@@ -43,6 +48,7 @@
     panel-collapse   (detail: { collapsed })
     panel-expand     (detail: { maximised })
     panel-external   (detail: { })
+    panel-minimise   (detail: { minimised })  the reader pressed Minimise, or its tab
     panel-pop        (detail: { fixed, side })  the reader pressed Pop in or Pop out; side: start | end
     panel-close      (detail: { })
     panel-float      (detail: { floating })  the reader pressed Float or Dock
@@ -51,6 +57,11 @@
                      floating, its corner
 -->
 <template id="default">
+  <!-- Minimised: this tab, turned on its side, in place of the box. -->
+  <button class="tab" part="tab" type="button" aria-label="Open panel">
+    <span class="tab-title" part="tab-title"></span>
+    <span class="tab-mark" part="tab-mark" aria-hidden="true">!</span>
+  </button>
   <!-- NO scrim: a quick peek, while the page behind stays in use. -->
   <dialog class="root sherpa-float sherpa-border-edges sherpa-border-corners" part="root">
     <!-- The LEFT edge resizes it: drag it, or ArrowLeft / ArrowRight on it.
@@ -75,6 +86,9 @@
               tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
         <slot name="actions" data-accepts="control"></slot>
         <span class="divider after-actions" aria-hidden="true"></span>
+        <!-- Minimise: a tab on the edge; its tab opens it as it was. TRAP T-a-minimised-panel-is-a-tab -->
+        <sherpa-button class="minimise" part="minimise" data-type="icon" data-size="sm"
+                       data-icon-start="minus" aria-label="Minimise to a tab"></sherpa-button>
         <!-- Float: lifted off, anywhere in the window; Dock puts it back. -->
         <sherpa-button class="float" part="float" data-type="icon" data-size="sm"
                        data-icon-start="browser" aria-label="Float"
