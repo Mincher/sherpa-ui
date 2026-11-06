@@ -221,7 +221,7 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   await settle(page);
   const r = await draft(page);
   expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'collection']);
-  expect(r.routes).toEqual(['start → collection-1']);
+  expect(r.routes).toEqual(['start/rows → collection-1']);
   expect(await pick(page)).toEqual({ current: ['Collection'], open: false });
 });
 

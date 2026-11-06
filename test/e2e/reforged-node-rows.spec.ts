@@ -118,8 +118,9 @@ test('a switch row has a boolean input socket: hollow until a route joins it', a
 test('a routed socket is filled: the triangle is ink in the middle, not at its far corners', async ({ page }) => {
   await bind(page, [{ from: 'filter', to: 'gate/on' }]);
   const green = await ink(page);
-  const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.96, .96]])).map((p) => (near(p, green) ? 1 : 0));
-  expect(mask).toEqual([1, 0, 0]);
+  // Three corners: the fourth, bottom right, is inked or not by the fraction of a pixel the fitted view puts the socket on.
+  const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.04, .04], [.04, .96]])).map((p) => (near(p, green) ? 1 : 0));
+  expect(mask).toEqual([1, 0, 0, 0]);
 });
 
 const sw = (page: Page) => page.evaluate((sel) => {
