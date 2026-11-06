@@ -66,7 +66,7 @@ test('the store is read through the routes: past a test\'s Rows to the Field bef
   const chain = flow([source('d', 'devices'), field('f1', 'type'), cond('c', 'eq', 0, 'Laptop'), field('f2', 'health', 0, 900)], route('d/rows → f1', 'f1/field → c', 'c/rows → f2'));
   assert.deepEqual(listed(workflowGraph(chain, facts), 'f2'), ['health', 'type', 'seats']);
   // Through a portal: no line joins the In and the Out, and the Field still reads the In's Source.
-  const hop = flow([source('d', 'devices'), portal('in', 'in', 'devices'), portal('out', 'out', 'devices', 200), field('f', 'type')], route('d/rows → in', 'out → f'));
+  const hop = flow([source('d', 'devices'), portal('in', 'in', 'devices'), portal('out', 'out', 'devices', 200), field('f', 'type')], route('d/rows → in', 'out/@d/rows → f'));
   const g = workflowGraph(hop, facts);
   assert.deepEqual([listed(g, 'f'), said(g)], [['health', 'type', 'seats'], {}]);
   assert.equal(sentFrom(hop, 'f/field', facts).field.label, 'Type');
