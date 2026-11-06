@@ -36,6 +36,11 @@ const part = (page: Page, sel: string) => page.evaluate((s) => {
   const r = el.getBoundingClientRect();
   return { shown: getComputedStyle(el).display !== 'none', x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
 }, sel);
+/** The panel opens from its tab as it was set: what the keys do (a press on the tab shows it as an overlay: the next test). */
+const openFromTab = async (page: Page): Promise<void> => {
+  await page.evaluate(() => (document.getElementById('tabbed') as PanelEl & { minimise(on: boolean): void }).minimise(false));
+  await page.evaluate(() => window.__settled());
+};
 const press = async (page: Page, sel: string): Promise<void> => {
   const r = await part(page, sel);
   await page.mouse.click(r.x + r.w / 2, r.y + r.h / 2);
@@ -54,7 +59,7 @@ test('Minimise turns the panel into a tall tab on the right edge; the tab opens 
   expect(tab.shown).toBe(true);
   expect(tab.h).toBeGreaterThan(tab.w);
   expect(tab.x + tab.w).toBe(1600);
-  await press(page, '.tab');
+  await openFromTab(page);
   expect(await part(page, '.root')).toEqual(open);
 });
 
@@ -64,7 +69,7 @@ test('in a shell area the tab gives the area its room back; opened, the panel do
   await press(page, '.minimise');
   expect(await area(page)).toBe(0);
   expect((await part(page, '.tab')).shown).toBe(true);
-  await press(page, '.tab');
+  await openFromTab(page);
   expect(await area(page)).toBeGreaterThan(400);
 });
 
@@ -73,7 +78,7 @@ test('floating, it keeps its box through a minimise', async ({ page }) => {
   const before = await part(page, '.root');
   await press(page, '.minimise');
   expect((await part(page, '.tab')).shown).toBe(true);
-  await press(page, '.tab');
+  await openFromTab(page);
   expect(await part(page, '.root')).toEqual(before);
 });
 
@@ -85,7 +90,7 @@ test('a new title while it is a tab makes it active with a "!"; opening clears i
   await page.evaluate(() => window.__settled());
   expect((await part(page, '.tab-mark')).shown).toBe(true);
   expect(await page.evaluate(() => document.getElementById('tabbed')!.hasAttribute('data-updated'))).toBe(true);
-  await press(page, '.tab');
+  await openFromTab(page);
   expect(await page.evaluate(() => document.getElementById('tabbed')!.hasAttribute('data-updated'))).toBe(false);
 });
 
@@ -160,4 +165,26 @@ test('opened, the focus is the container\'s, not the grip\'s; Tab goes on to the
   expect(await where()).toEqual({ root: true, grip: false });
   await page.keyboard.press('Tab');
   expect((await where()).grip).toBe(true);
+});
+
+test('a press on a tab shows its panel as a docked overlay, hover or none; a press outside, or Escape, shuts it to the tab; the docking button docks it', async ({ page }) => {
+  await stage(page, { shell: true });
+  await page.evaluate(() => document.getElementById('tabbed')!.setAttribute('data-poppable', ''));
+  await press(page, '.minimise');
+  const state = () => page.evaluate(() => (document.getElementById('tabbed') as HTMLElement & { dockState: string }).dockState);
+  expect(await state()).toBe('tab');
+  await press(page, '.tab-open');
+  expect(await state()).toBe('hover');
+  // A press away from it ends the show.
+  await page.mouse.click(40, 600);
+  await page.evaluate(() => window.__settled());
+  expect(await state()).toBe('tab');
+  await press(page, '.tab-open');
+  expect(await state()).toBe('hover');
+  await page.keyboard.press('Escape');
+  expect(await state()).toBe('tab');
+  // The docking button docks it, open for good.
+  await press(page, '.tab-open');
+  await press(page, '.pop');
+  expect(await state()).toBe('overlay');
 });

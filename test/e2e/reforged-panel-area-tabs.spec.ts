@@ -67,7 +67,9 @@ test('minimising one minimises the area\'s; a tab restores its own panel', async
   const a = await area(page);
   expect(a.width).toBe(0);
   expect(await page.evaluate(() => ['one', 'two'].map((id) => document.getElementById(id)!.hasAttribute('data-minimised')))).toEqual([true, true]);
-  await click(page, '.tab', 'one');
+  // A tab press shows a panel as an overlay; the panel itself comes back with its own API (the keys do this).
+  await page.evaluate(() => (document.getElementById('one') as HTMLElement & { minimise(on: boolean): void }).minimise(false));
+  await page.evaluate(() => window.__settled());
   expect((await area(page)).drawn).toEqual(['one']);
   expect(await page.evaluate(() => document.getElementById('two')!.hasAttribute('data-minimised'))).toBe(true);
 });

@@ -114,7 +114,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.pop')?.addEventListener('button-click', this.#onPop);
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
     this.$('.minimise')?.addEventListener('button-click', this.#onMinimiseButton);
-    this.$('.tab-open')?.addEventListener('click', this.#onMinimise);
+    // A tap (or a click) on the tab shows its panel as a docked overlay, as a hover does; the docking button then docks it where it was.
+    this.$('.tab-open')?.addEventListener('click', this.#onTab);
     // The pointer on the tab peeks the panel open and hides the tab; the pointer leaving the PANEL shuts it to the tab again.
     this.$('.tab')?.addEventListener('pointerenter', this.#onPeek);
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
@@ -487,6 +488,8 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** The pointer is on the tab: open the panel as a docked overlay, where the setting says. The tab is hidden while it shows. */
   #onPeek = (event: Event): void => {
+    // A finger does not hover: on a touch screen a tab is tapped (`#onTab`).
+    if ((event as PointerEvent).pointerType === 'touch') return;
     if (!this.hasAttribute('data-hover-open') || !this.hasAttribute('data-minimised') || !this.open) return;
     this.#peek(true);
     // The panel opens where the tab stood, so the pointer is on it; if it is not, there is nothing to leave from.
@@ -498,14 +501,26 @@ export class SherpaOverlayPanel extends SherpaElement {
     });
   };
 
-  /** Where the pointer was while the peek has run, and what hears it move. */
+  /** The tab was pressed: its panel shows as a docked overlay until the pointer leaves it or a press lands outside. */
+  #onTab = (): void => {
+    if (this.hasAttribute('data-minimised') && this.open && !this.hasState('peeking')) this.#peek(true);
+  };
+
+  /** A press outside a peeking panel, or Escape, ends the peek: the way out for a touch screen, which has no leaving. */
+  #onPeekPress = (event: Event): void => {
+    const away = event.type === 'keydown' ? (event as KeyboardEvent).key === 'Escape' : !event.composedPath().includes(this);
+    if (away) this.#peek(false);
+  };
+
+  /** What hears the pointer move, press and key while the peek has run. */
   #peekEnds: AbortController | undefined;
 
   /** The pointer moved while it peeks: out of the panel is back to the tab at once. A drag that began on it (its edge) is not a leaving. */
   #onPeekMove = (event: Event): void => {
-    const { clientX: x, clientY: y, buttons } = event as PointerEvent;
+    const { clientX: x, clientY: y, buttons, pointerType } = event as PointerEvent;
     const box = this.$('.root')?.getBoundingClientRect();
-    if (!buttons && box && (x < box.left || x > box.right || y < box.top || y > box.bottom)) this.#peek(false);
+    // A finger leaves by pressing outside, not by moving.
+    if (pointerType !== 'touch' && !buttons && box && (x < box.left || x > box.right || y < box.top || y > box.bottom)) this.#peek(false);
   };
 
   /** Show or shut the peek, and the Minimise button's words with it: while it peeks, a press keeps it open. */
@@ -517,6 +532,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (on) {
       this.#peekEnds = new AbortController();
       this.on(document, 'pointermove', this.#onPeekMove, { while: this.#peekEnds.signal });
+      this.on(document, 'pointerdown', this.#onPeekPress, { while: this.#peekEnds.signal });
+      this.on(document, 'keydown', this.#onPeekPress, { while: this.#peekEnds.signal });
     }
     if (this.#slotted()) this.toggleState('overlaid', (on || (this.hasAttribute('data-overlay') && !this.hasAttribute('data-minimised'))) && !this.hasAttribute('data-floating'));
     this.#syncPop();
@@ -530,8 +547,6 @@ export class SherpaOverlayPanel extends SherpaElement {
   };
 
   /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
-  #onMinimise = (): void => this.minimise();
-
   /** The Minimise button: a panel shown on hover is already a tab, so it goes back to it; otherwise the panel shrinks to one. */
   #onMinimiseButton = (): void => {
     if (this.hasState('peeking')) this.#peek(false);
