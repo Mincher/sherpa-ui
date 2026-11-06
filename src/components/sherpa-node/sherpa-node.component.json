@@ -87,7 +87,13 @@
               "part": "socket-in",
               "attrs": {
                 "aria-hidden": "true"
-              }
+              },
+              "children": [
+                {
+                  "el": "i",
+                  "class": "core"
+                }
+              ]
             },
             {
               "el": "span",
@@ -126,7 +132,13 @@
               "part": "socket-out",
               "attrs": {
                 "aria-hidden": "true"
-              }
+              },
+              "children": [
+                {
+                  "el": "i",
+                  "class": "core"
+                }
+              ]
             },
             {
               "el": "span",
@@ -201,7 +213,13 @@
               "part": "socket-false",
               "attrs": {
                 "aria-hidden": "true"
-              }
+              },
+              "children": [
+                {
+                  "el": "i",
+                  "class": "core"
+                }
+              ]
             },
             {
               "el": "span",

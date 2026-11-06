@@ -48,8 +48,17 @@
   background: var(--sherpa-style-surface-base, #ffffff);
   clip-path: var(--_shape, var(--_circle));
 }
-:host([data-input-routed]) .socket-in::after,
-:host([data-output-routed]) .socket-out:not(.socket-false)::after { display: none; }
+/* A routed socket is FILLED: its ring, then a gap of the card's face, then the ink again. */
+.core {
+  display: none;
+  position: absolute;
+  inset: calc(var(--_ring) * 2);
+  background: var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
+  clip-path: var(--_shape, var(--_circle));
+  pointer-events: none;
+}
+:host([data-input-routed]) .socket-in .core,
+:host([data-output-routed]) .socket-out:not(.socket-false) .core { display: block; }
 
 /* An INPUT takes the pointer too: its route's end drags to another input, or a picklist's
    input drags out a line. Will, TODOs 557, 558.
@@ -100,4 +109,5 @@
     forced-color-adjust: none;
     background: Canvas;
   }
+  .core { forced-color-adjust: none; background: CanvasText; }
 }

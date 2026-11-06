@@ -364,7 +364,7 @@
 :host([data-branches]) .footer { display: block; }
 :host([data-branches]) .header .socket-out { display: block; --_shape: var(--_triangle); }
 :host([data-branches]) .socket-false { display: block; --_shape: var(--_round-square); }
-:host([data-false-routed]) .socket-false::after { display: none; }
+:host([data-false-routed]) .socket-false .core { display: block; }
 .tip-false .word { display: inline; }
 .name-true { display: none; }
 :host([data-branches]) .header .name-out { display: none; }
