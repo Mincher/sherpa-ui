@@ -7919,7 +7919,12 @@ Organise, and the Collection family and its Count type are gone: a saved `collec
 - **It needs no reader of its own.** `givenAt` reads any output row; a count sends `{ kind: 'number' }` before a run, as
   a Result does. Warnings (764), coercion (781), a portal row's label ("Source › Count"), Save as Custom Node's outputs and
   Unfurl's socket heights all read it as an output.
-- **General on `gives`.** Sum, Min and Max follow with `propertyRow(name, label, gives)`, no new row kind.
+- **A value or an object.** `propertyRow(name, label, gives)` gives a number (the default), text or a boolean (a circle or
+  a triangle), or a row, rows or a record (a diamond); Count stays a number, like any other. Sum, Min and Max follow, no
+  new row kind.
+- **A graph with a fault does not save.** Save says each fault in words and fires `definition-refused { faults }`; nothing is
+  handed over. Every shipped definition is walked for faults (sherpa-ui's, and Demos'): none is converted on read, each is
+  corrected or deleted.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `test/unit/a-property-row-is-an-output.test.mjs`

@@ -92,7 +92,7 @@ import {
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
-  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, readWorkflow, tieLimit, workflowGraph,
+  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, readWorkflow, tieLimit, workflowFaults, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -3066,7 +3066,11 @@ export function bindWorkflow(
       // Save writes the final graph: what the draft keeps for a node's other types stays behind.
       const final = finalGraph(draft, topKinds());
       const finished = { ...lib, nodes: { ...lib.nodes, ...Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, finalGraph(lib.nodes[id]!, topKinds())]] : []))) } };
-      if (!checkWorkflow(final, topKinds(), facts)) return false;
+      // A graph with a fault does not save: each fault is said, and `definition-refused` carries them to the app. TODO 835
+      if (!checkWorkflow(final, topKinds(), facts)) {
+        canvas.dispatchEvent(new CustomEvent('definition-refused', { detail: { faults: workflowFaults(final, topKinds(), facts) }, bubbles: true, composed: true }));
+        return false;
+      }
       if (dirty.size && !checkNodeLibrary(finished, kinds, facts)) return false;
       draft = final;
       lib = finished;

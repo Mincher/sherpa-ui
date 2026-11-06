@@ -15,6 +15,7 @@
  * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
+ * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - typeOf — The type of a family kind a node's `type` names: its own, else the kind's default.
@@ -179,9 +180,12 @@ export interface NodeKind {
 export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' };
 
 /** A property row, the one definition: output only, no control and no value, sending what the node's data or logic gives
- *  (`gives`), a number unless said. Count is its first use; Sum, Min and Max follow on `gives`. TODO 835
+ *  (`gives`): a value (a number, the default; text; a boolean) or an object (a row, a set of rows, a record). Count is its
+ *  first use, a number like any other. TODO 835
  *  TRAP T-a-property-row-is-an-output */
-const propertyRow = (name: string, label: string, gives: Given = 'number'): RowKind => ({ name, label, output: 'value', gives, property: true });
+export const propertyRow = (name: string, label: string, gives: Given = 'number'): RowKind => ({ name, label, output: propertySocket(gives), gives, property: true });
+/** The socket a property's given takes: a number, text or value a circle; a boolean a triangle; rows, a list, a field or an object a diamond. */
+const propertySocket = (gives: Given): SocketType => (gives === 'boolean' ? 'boolean' : ['object', 'list', 'rows', 'field'].includes(gives) ? 'object' : 'value');
 const COUNT = propertyRow('count', 'Count');
 
 /** A family's rows, each once: a type names the ones it draws. */

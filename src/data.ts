@@ -131,6 +131,7 @@ export {
   paletteMatch,
   paletteOf,
   placed,
+  propertyRow,
   resolveKind,
   rowChoices,
   socketOf,
