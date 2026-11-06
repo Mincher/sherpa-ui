@@ -46,7 +46,6 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-ai-label` | text | `Ask N-zo` | its label |
 | `data-back` | boolean |  | show the back button |
 | `data-custom-view` | boolean |  | the View on screen is the reader's own: Delete view shows. TRAP T-a-saved-view-is-the-readers-own |
-| `data-divider` | boolean | `false` | a thin line under the header : a view with a canvas content area turns it on |
 | `data-favourite` | boolean |  | the ★ is lit — the value, IN |
 | `data-graph` | boolean |  | the View on screen is a graph: Save graph as, Delete graph. TRAP T-a-graph-is-a-view-of-a-type |
 | `data-heading` | text |  | the Context title (row 2) |

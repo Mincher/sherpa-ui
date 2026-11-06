@@ -62,11 +62,6 @@
           "valueSet": "v"
         },
         {
-          "name": "data-divider",
-          "description": "a thin line under the header : a view with a canvas content area turns it on",
-          "valueSet": "v"
-        },
-        {
           "name": "data-favourite",
           "description": "the ★ is lit — the value, IN",
           "valueSet": "v"
@@ -2729,6 +2724,10 @@
         {
           "name": "data-current-id",
           "description": "id of the current Context"
+        },
+        {
+          "name": "data-large",
+          "valueSet": "v"
         },
         {
           "name": "data-menu",

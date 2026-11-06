@@ -201,14 +201,6 @@
               }
             },
             {
-              "name": "data-divider",
-              "description": "a thin line under the header : a view with a canvas content area turns it on",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
               "name": "data-favourite",
               "description": "the ★ is lit — the value, IN",
               "type": {
@@ -7075,6 +7067,12 @@
               }
             },
             {
+              "name": "data-large",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-menu",
               "description": "the PHONE's menu: the whole screen, no Pin, Settings at the bottom, and Cancel — openMenu() / closeMenu()",
               "type": {
@@ -9747,7 +9745,7 @@
               "name": "setting-change",
               "description": "A reader changed a setting here: a bar's ⋮, the panel's mode.",
               "type": {
-                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navViews' | 'reorderFilters' | 'resizeNodes' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
+                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reorderFilters' | 'resizeNodes' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
               }
             },
             {

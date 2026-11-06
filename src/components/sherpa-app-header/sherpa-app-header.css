@@ -267,8 +267,8 @@
   100% { transform: translateX(400%); }
 }
 
-/* An optional thin line under the header: a view with a canvas content area turns it on. */
-:host([data-divider]) {
+/* A thin line under every header. */
+:host {
   /* As the nav's and the tabs' lines are: the border's own width token, in the Style's border. */
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
   box-sizing: border-box;
