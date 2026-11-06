@@ -2113,7 +2113,8 @@ is the scale's own number, which `check:layers` reads and holds equal.
 
 The other half is the component's: one with inner layers that could escape seals
 them with `isolation: isolate` (the data grid, `T-a-grid-keeps-its-own-layers`),
-so its own numbers (its head 3, its cells 2, its edges 5) never meet the page's.
+so its own numbers (its head 3, its cells 2, its edges 5) never meet the page's. A component that HOLDS a floating box must not seal: the filter column floats, so its
+toolbar stays open (sealed, its floating box drew UNDER the page beside it).
 Those internal numbers stay bare and are COUNTED: `scripts/layers-baseline.json`
 may only fall, per file, and a new bare z-index fails the hook and CI. A number
 that reaches the page belongs on the scale, not in a baseline.
