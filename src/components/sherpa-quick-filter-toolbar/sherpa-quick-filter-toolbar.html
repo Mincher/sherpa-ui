@@ -243,6 +243,11 @@
       <sherpa-button class="act discard-all" data-act="discard" data-size="sm"
                      data-icon-start="trash" disabled>Discard</sherpa-button>
       <slot name="actions" data-accepts="control"></slot>
+      <!-- Its own FILTERS, where it holds more than one field: the column has none. Will, 11-06 -->
+      <sherpa-button class="act add-btn" data-act="add" data-size="sm"
+                     data-icon-start="pencil" data-icon-end="triangle-down"
+                     data-description="Add filters to this scope, or remove them."
+                     aria-haspopup="dialog">Filters</sherpa-button>
     </span>
   </sherpa-section-header>
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
@@ -272,11 +277,6 @@
       <span slot="heading" class="column-heading" part="heading">Filters<template class="applied-count-tpl"><sherpa-badge class="applied-count" role="img"></sherpa-badge></template></span>
       <sherpa-button slot="actions" class="column-suggest suggest" part="suggest" data-size="sm" data-type="icon"
                      data-icon-start="wand-magic-sparkles" aria-label="Suggest filters"></sherpa-button>
-      <!-- FILTERS, as the bar's button reads. Will, TODO 681 -->
-      <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
-                     data-icon-start="pencil" data-icon-end="triangle-down"
-                     data-description="Add filters to this page, or remove them."
-                     aria-haspopup="dialog">Filters</sherpa-button>
       <span slot="actions" class="saved-group" part="saved-group">
         <sherpa-button class="column-save-as" data-size="sm"
                        data-group="start" data-icon-start="filter">Save</sherpa-button>
@@ -286,16 +286,17 @@
                        data-description="Use, save and manage your saved filters."
                        aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
       </span>
-      <slot name="actions" slot="actions" data-accepts="control"></slot>
-      <sherpa-button slot="actions" class="column-more" part="more" data-type="icon" data-size="sm"
-                     data-icon-start="ellipses-vertical"
-                     data-description="Reset, save and refresh these filters."
-                     aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
+      <!-- The panel's own float first, then the page's buttons (Show as toolbar), then ⋮. Will, 11-06 -->
       <!-- Float: lifted out of its area, anywhere in the shell's body; Dock puts it back. 787b -->
       <sherpa-button slot="actions" class="column-float" part="float" data-type="icon" data-size="sm"
                      data-icon-start="browser" aria-label="Float"
                      data-when-data-icon-start="data-floating: sidebar-flip"
                      data-when-aria-label="data-floating: Dock"></sherpa-button>
+      <slot name="actions" slot="actions" data-accepts="control"></slot>
+      <sherpa-button slot="actions" class="column-more" part="more" data-type="icon" data-size="sm"
+                     data-icon-start="ellipses-vertical"
+                     data-description="Reset, save and refresh these filters."
+                     aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
       <sherpa-input-text slot="metadata" class="find" part="find"
                          data-icon-start="magnifying-glass" data-clearable
                          placeholder="Search filters" autocomplete="off"

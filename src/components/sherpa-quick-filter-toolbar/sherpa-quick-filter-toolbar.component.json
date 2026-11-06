@@ -370,6 +370,18 @@
                   "attrs": {
                     "data-accepts": "control"
                   }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act add-btn",
+                  "attrs": {
+                    "data-act": "add",
+                    "data-size": "sm",
+                    "data-icon-start": "pencil",
+                    "data-icon-end": "triangle-down",
+                    "data-description": "Add filters to this scope, or remove them.",
+                    "aria-haspopup": "dialog"
+                  }
                 }
               ]
             }
@@ -498,19 +510,6 @@
                       }
                     },
                     {
-                      "el": "sherpa-button",
-                      "class": "column-filters",
-                      "part": "filters",
-                      "attrs": {
-                        "slot": "actions",
-                        "data-size": "sm",
-                        "data-icon-start": "pencil",
-                        "data-icon-end": "triangle-down",
-                        "data-description": "Add filters to this page, or remove them.",
-                        "aria-haspopup": "dialog"
-                      }
-                    },
-                    {
                       "el": "span",
                       "class": "saved-group",
                       "part": "saved-group",
@@ -546,6 +545,20 @@
                       ]
                     },
                     {
+                      "el": "sherpa-button",
+                      "class": "column-float",
+                      "part": "float",
+                      "attrs": {
+                        "slot": "actions",
+                        "data-type": "icon",
+                        "data-size": "sm",
+                        "data-icon-start": "browser",
+                        "aria-label": "Float",
+                        "data-when-data-icon-start": "data-floating: sidebar-flip",
+                        "data-when-aria-label": "data-floating: Dock"
+                      }
+                    },
+                    {
                       "slot": "actions",
                       "attrs": {
                         "slot": "actions",
@@ -564,20 +577,6 @@
                         "data-description": "Reset, save and refresh these filters.",
                         "aria-label": "More actions",
                         "aria-haspopup": "dialog"
-                      }
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "column-float",
-                      "part": "float",
-                      "attrs": {
-                        "slot": "actions",
-                        "data-type": "icon",
-                        "data-size": "sm",
-                        "data-icon-start": "browser",
-                        "aria-label": "Float",
-                        "data-when-data-icon-start": "data-floating: sidebar-flip",
-                        "data-when-aria-label": "data-floating: Dock"
                       }
                     },
                     {
@@ -1539,6 +1538,7 @@
     "column-heading.font-size": "{sherpa.font-size-body-base}",
     "column-heading.font-weight": "{sherpa.font-weight-medium}",
     "column-heading.line-height": "{sherpa.theme-content-line-height-base}",
+    "sections.padding": "{sherpa.display-mode-space-2xs}",
     "scope-rule.margin": "{sherpa.display-mode-space-base}",
     "scope-rule.border-block-start": "{sherpa.display-mode-border-width-base}",
     "local-heading.padding-inline": "{sherpa.theme-padding-lg}"
@@ -1625,7 +1625,7 @@
         {
           "$type": "method",
           "name": "drawPresent",
-          "args": "present: Readonly<Record<string, readonly string[]>>, scope?: string",
+          "args": "present: Readonly<Record<string, readonly string[]>>",
           "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
         },
         {

@@ -2126,6 +2126,8 @@ it already skips `data-persistent` and `data-locked`.
 A filter panel's scope had an Add menu of what was LEFT to add, and a bin icon
 on every field row. Two controls, two places, one question.
 
+(Since 11-06 the panel column has no menu of its own: each section's Filters is its scope's whole list.)
+
 The Add menu is the whole list instead: every filter the scope can hold, with
 the held ones ticked. Ticking a row adds it; unticking removes it. What changed
 is the difference between what the menu now says and what the panel is drawing,
@@ -2176,7 +2178,6 @@ is spent moved.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/ui/filters-button.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 
 ### T-an-inline-menu-is-the-same-menu
 

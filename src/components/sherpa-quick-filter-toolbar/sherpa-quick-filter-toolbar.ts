@@ -1052,8 +1052,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * field leave; a chip's menu greys the rest. SILENT. A field not named is
    * not limited. TRAP T-a-ruled-out-value-is-greyed
    */
-  drawPresent(present: Readonly<Record<string, readonly string[]>>, scope?: string): void {
-    if (this.#columned) return scope ? this.#column.present(present, scope) : undefined;
+  drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
+    if (this.#columned) return;
     this.#filter.drawPresent(present);
     // The Add list is drawn again only when a field's being spent moved.
     if (this.#spentKey() !== this.#spentFor) this.#renderAvailable();

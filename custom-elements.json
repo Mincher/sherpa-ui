@@ -10141,13 +10141,6 @@
                   "type": {
                     "text": "Readonly<Record<string, readonly string[]>>"
                   }
-                },
-                {
-                  "name": "scope",
-                  "type": {
-                    "text": "string"
-                  },
-                  "optional": true
                 }
               ],
               "description": "drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
@@ -10519,9 +10512,6 @@
             },
             {
               "name": "corner"
-            },
-            {
-              "name": "filters"
             },
             {
               "name": "find"

@@ -145,7 +145,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `drawResults(results: Readonly<Record<string, number>>, _scope?: string, end?: number)` | drawResults(results, scope, end) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field; `end`, the rows its filters leave. SILENT. A chip with none shows no number. Will, TODO 60. |
 | `nameScope(scope: { scope?: string; label: string; component?: string \| undefined })` | nameScope(scope) — its source names its scope: a portrait bar's heading, and the component it narrows. TODO 425 |
 | `search(text: string)` | search(text) — a portrait bar shows only the fields whose name, or one of whose values, holds the text; empty shows all. The lead bar's search asks it of every portrait bar beside it. TODO 425 |
-| `drawPresent(present: Readonly<Record<string, readonly string[]>>, scope?: string)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
+| `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: its menu removes the rest, but keeps a pick. |
 | `drawReading(field: string, reading: FieldReading, scope?: string)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
 | `supersede(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string)` | supersede(readings) — the VIEW now owns these fields, each with its answer there. |
@@ -200,7 +200,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `box`, `chips`, `column`, `corner`, `filters`, `find`, `float`, `grip`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `presets`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `box`, `chips`, `column`, `corner`, `find`, `float`, `grip`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `presets`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
 
 ## CSS custom properties it reads
 
@@ -227,6 +227,7 @@ What each class's base rule reads:
 | `--sherpa-font-size-body-base` | `.column-heading` | `font-size` |
 | `--sherpa-font-weight-medium` | `.column-heading` | `font-weight` |
 | `--sherpa-theme-content-line-height-base` | `.column-heading` | `line-height` |
+| `--sherpa-display-mode-space-2xs` | `.sections` | `padding` |
 | `--sherpa-display-mode-space-base` | `.scope-rule` | `margin` |
 | `--sherpa-display-mode-border-width-base` | `.scope-rule` | `border-block-start` |
 | `--sherpa-theme-padding-lg` | `.local-heading` | `padding-inline` |
