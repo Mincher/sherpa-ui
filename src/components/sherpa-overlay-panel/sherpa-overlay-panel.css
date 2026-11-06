@@ -325,6 +325,11 @@
 /* A divider stands after a group that shows, while a later group shows too: never leading, never trailing. `#syncGroup`
    says which (`divide-<group>`); the panel says which slots show a control (`shows-*`: a hidden clone is none).
    TRAP T-a-panel-divides-only-between-shown-groups */
+.fold, .fold-menu { display: none; }
+:host(:state(folded)) .fold { display: inline-flex; }
+:host(:state(fold-modes)) :is(.modes, .after-modes),
+:host(:state(fold-docks)) :is(.docks, .after-docks),
+:host(:state(fold-custom)) :is(.custom, .after-custom) { display: none; }
 .divider {
   display: none;
   flex: none;

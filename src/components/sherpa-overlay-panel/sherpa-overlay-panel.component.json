@@ -289,6 +289,24 @@
                     }
                   },
                   {
+                    "el": "sherpa-button",
+                    "class": "fold",
+                    "part": "fold",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-size": "sm",
+                      "data-icon-start": "ellipsis",
+                      "aria-label": "More actions"
+                    }
+                  },
+                  {
+                    "el": "sherpa-menu",
+                    "class": "fold-menu",
+                    "attrs": {
+                      "data-align": "end"
+                    }
+                  },
+                  {
                     "el": "span",
                     "class": "divider after-overflow",
                     "attrs": {

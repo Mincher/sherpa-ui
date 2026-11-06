@@ -334,6 +334,18 @@ the node list narrows its items by it. The old filter-panel clone in the `descri
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 
+### T-a-panel-folds-its-groups-into-the-more-menu
+
+**A narrow panel folds its button groups into one "More actions" menu, a group at a time** (Will, 2026-11-06, TODO 865). The
+header measures its own TITLE: while the title has less than 112px, the next group goes, in the order modes, docks, then the
+content's own actions; the title is the last thing cut short. A folded group's controls become rows of the menu, and a row
+presses the control it stands for (its inner button: a press on the host is no control press). The measure RESETS first, then
+re-measures after each fold, as the filter bar's reflow does (`T-reflow-resets-before-measuring`). The menu is loaded the first
+time something folds. The content's own ⋮ (the `overflow` slot) is a separate group and never folds.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `test/e2e/reforged-overlay-panel-fold.spec.ts`
+
 ### T-a-panel-divides-only-between-shown-groups
 
 **A header divider is drawn only BETWEEN two groups that each show a control** (Will, TODO 860: an orphan divider before the

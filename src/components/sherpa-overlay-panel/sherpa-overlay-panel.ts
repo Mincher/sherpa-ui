@@ -16,6 +16,7 @@ import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
+import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 /** Move a node and keep its focus. A browser with no `moveBefore` drops it on the way. */
 function moveInto(parent: Node, node: ChildNode, before: ChildNode | null): void {
@@ -129,6 +130,15 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.#place();
     SherpaOverlayPanel.#stack();
     this.#syncGroup();
+    this.$('.fold')?.addEventListener('button-click', () => this.$<SherpaMenu>('.fold-menu')?.show?.(this.$('.fold') as HTMLElement));
+    this.$('.fold-menu')?.addEventListener('menu-select', this.#onFoldPick);
+    // The header narrows: a group folds into the ⋮ before the title is cut short. TRAP T-a-panel-folds-its-groups-into-the-more-menu
+    let frame = 0;
+    const watch = new ResizeObserver(() => {
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; this.#fit(); });
+    });
+    watch.observe(this.$('.root') ?? this);
+    this.signal.addEventListener('abort', () => watch.disconnect(), { once: true });
     /* The LEFT edge: dragged, it moves as far as the pointer does, and
        ArrowLeft widens. TRAP T-an-overlay-panel-resizes-from-its-left-edge
        TRAP T-an-edge-resizes-its-box */
@@ -457,11 +467,61 @@ export class SherpaOverlayPanel extends SherpaElement {
       custom: this.hasState('shows-actions') || this.hasState('shows-end'),
       docks: DOCKS.some((name) => visible[name]),
       modes: MODES.some((name) => visible[name]),
-      overflow: this.hasState('shows-overflow'),
+      overflow: this.hasState('shows-overflow') || this.hasState('folded'),
       close: has('data-dismissible') || has('data-collapsible'),
     };
     GROUPS.forEach((group, i) => this.toggleState(`divide-${group}`, on[group] && GROUPS.slice(i + 1).some((later) => on[later])));
   }
+
+  /** The least room a title is left, in px, before a group folds. */
+  static readonly #TITLE_MIN = 112;
+
+  /** What each group holds, as the controls a reader can press: the folded rows of the more menu. */
+  #folded = new Map<string, HTMLElement>();
+
+  /** Fold the groups into the more menu, the modes first, then the docks, then the content's own, until the title has room. */
+  #fit(): void {
+    const header = this.$('.header');
+    const title = header?.shadowRoot?.querySelector<HTMLElement>('.title');
+    if (!header || !title || !this.open) return;
+    const order = ['modes', 'docks', 'custom'] as const;
+    for (const group of order) this.toggleState(`fold-${group}`, false);
+    this.toggleState('folded', false);
+    const tight = (): boolean => title.clientWidth < Math.min(title.scrollWidth, SherpaOverlayPanel.#TITLE_MIN);
+    const was = [...this.#folded.keys()].join();
+    const rows = new Map<string, HTMLElement>();
+    for (const group of order) {
+      if (!tight()) break;
+      const controls = this.#controlsOf(group);
+      if (!controls.length) continue;
+      this.toggleState(`fold-${group}`, true);
+      this.toggleState('folded', true);
+      for (const control of controls) rows.set(`${group}:${rows.size}`, control);
+    }
+    this.#folded = rows;
+    this.#syncGroup();
+    if (was === [...rows.keys()].join()) return;
+    // The menu is loaded the first time something folds: a panel that never narrows never pays for it.
+    if (rows.size) void import('../sherpa-menu/sherpa-menu.js');
+    this.$<SherpaMenu>('.fold-menu')?.hide?.();
+    this.$<SherpaMenu>('.fold-menu')?.items?.([...rows].map(([value, control]) => ({
+      value,
+      label: control.getAttribute('aria-label') ?? control.textContent?.trim() ?? control.getAttribute('title') ?? value,
+    })));
+  }
+
+  /** The controls of a group that show: a button hidden by its flag, or a clone the content hides, is none. */
+  #controlsOf(group: 'modes' | 'docks' | 'custom'): HTMLElement[] {
+    if (group === 'custom') return [...this.children].filter((c): c is HTMLElement => c instanceof HTMLElement && ['actions', 'actions-end'].includes(c.getAttribute('slot') ?? '') && !c.hasAttribute('hidden'));
+    return [...(this.$(`.${group}`)?.children ?? [])].filter((c): c is HTMLElement => c instanceof HTMLElement && getComputedStyle(c).display !== 'none');
+  }
+
+  /** A folded row was chosen: press the control it stands for, as a reader would. */
+  #onFoldPick = (event: Event): void => {
+    const control = this.#folded.get((event as CustomEvent<{ value: string }>).detail.value);
+    this.$<SherpaMenu>('.fold-menu')?.hide?.();
+    (control?.shadowRoot?.querySelector<HTMLElement>('button') ?? control)?.click();
+  };
 
   /** Mirror the panel's attributes onto the composed header. */
   #syncHeader(): void {

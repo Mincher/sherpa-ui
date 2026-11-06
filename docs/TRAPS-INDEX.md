@@ -570,7 +570,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (129)
+## Menus, tips and overlays (130)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -606,6 +606,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — toast
 - [T-a-panel-chrome-row-never-shrinks](traps/menus-tips-overlays.md#t-a-panel-chrome-row-never-shrinks) — panel
 - [T-a-panel-divides-only-between-shown-groups](traps/menus-tips-overlays.md#t-a-panel-divides-only-between-shown-groups) — overlay-panel
+- [T-a-panel-folds-its-groups-into-the-more-menu](traps/menus-tips-overlays.md#t-a-panel-folds-its-groups-into-the-more-menu) — overlay-panel
 - [T-a-panel-owns-its-search-row](traps/menus-tips-overlays.md#t-a-panel-owns-its-search-row) — overlay-panel
 - [T-a-panel-peeks-from-its-tab](traps/menus-tips-overlays.md#t-a-panel-peeks-from-its-tab) — overlay-panel
 - [T-a-panel-pops-into-the-end-area](traps/menus-tips-overlays.md#t-a-panel-pops-into-the-end-area) — overlay-panel
