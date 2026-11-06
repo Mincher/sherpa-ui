@@ -12,7 +12,6 @@
   --_hit: 6px; /* off-grid-ok */
   --_ring: var(--sherpa-display-mode-border-width-lg, 2px);
   --_circle: circle(50%);
-  --_diamond: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   --_square: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   /* A fully round input; and the rounded square (4), on this box. */
   --_d: inset(0 round 50%);
@@ -81,7 +80,22 @@
 
 /* An OUTPUT keeps its type's SHAPE: a value a circle, an object a diamond, a boolean
    a circle, like a value: its colour says boolean. False is a rounded square. Will, TODOs 713, 740, 874 */
-:host([data-output-socket="object"]) .socket-out { --_shape: var(--_diamond); }
+/* An object is a square, 1px border, turned 45deg: no clip path. It is as wide across its corners as the box. */
+:host([data-output-socket="object"]) .socket-out { --_dia: calc(var(--_socket) * 0.1464); }
+:host([data-output-socket="object"]) .socket-out::before {
+  inset: var(--_dia);
+  box-sizing: border-box;
+  clip-path: none;
+  transform: rotate(45deg);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
+}
+:host([data-output-socket="object"]) .socket-out::after { display: none; }
+:host([data-output-socket="object"]) .socket-out .core {
+  inset: calc(var(--_dia) + var(--_ring) * 1.5);
+  clip-path: none;
+  transform: rotate(45deg);
+}
 .socket-false { --_shape: var(--_round-square); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
