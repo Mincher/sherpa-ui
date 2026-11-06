@@ -54,6 +54,15 @@
           },
           "children": [
             {
+              "el": "span",
+              "class": "grip sherpa-icon-box",
+              "part": "grip",
+              "attrs": {
+                "aria-hidden": "true",
+                "data-icon": "drag-handle-vertical"
+              }
+            },
+            {
               "el": "sherpa-container-header",
               "class": "heading",
               "part": "heading",
@@ -62,15 +71,6 @@
                 "data-attr-data-heading": "data-heading",
                 "data-attr-data-icon": "data-icon",
                 "data-attr-data-description": "data-description"
-              }
-            },
-            {
-              "el": "span",
-              "class": "grip sherpa-icon-box",
-              "part": "grip",
-              "attrs": {
-                "aria-hidden": "true",
-                "data-icon": "drag-handle-vertical"
               }
             },
             {
@@ -575,11 +575,9 @@
     "root.border-width": "{sherpa.style-border-width}",
     "root.border-radius": "{sherpa.display-mode-border-rounding-base}",
     "root.color": "{sherpa.style-content-base}",
-    "grip.inset-inline-end": "{sherpa.style-border-width}",
-    "grip.padding-block-start": "{sherpa.theme-padding-md}",
-    "grip.inline-size": "{sherpa.display-mode-size-md}",
-    "grip.border-width": "{sherpa.style-border-width}",
-    "grip.border-end-start-radius": "{sherpa.display-mode-border-rounding-base}",
+    "grip.inline-size": "{sherpa.display-mode-size-sm}",
+    "grip.block-size": "{sherpa.display-mode-size-sm}",
+    "grip.margin-inline-start": "{sherpa.theme-padding-sm}",
     "grip.color": "{sherpa.style-content-secondary}",
     "resize.inline-size": "{sherpa.display-mode-size-sm}",
     "resize.block-size": "{sherpa.display-mode-size-sm}",

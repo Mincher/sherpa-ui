@@ -239,7 +239,8 @@
 
 /* ── The header: always there, as it is the handle ───────────────────── */
 .header {
-  display: block;
+  display: flex;
+  align-items: stretch;
   position: relative;
   cursor: grab;
   user-select: none;
@@ -259,40 +260,25 @@
     var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #35353d4c);
 }
-/* The GRIP is a TAB on the header's left edge, as tall as the header, its glyph turned a quarter: outside the header's
-   box, so nothing in the header moves when it shows. It is never a target: a press on it is a press on the header.
-   The top edge is the running tab's (TODO 845); the two are apart. Will, TODO 849 */
+/* The GRIP, left of the heading: where to take hold. It takes no room while it is hidden, and when it shows
+   (on hover, focus, while the node is current or dragged) it pushes the header's content to the right. It is
+   never a target: a press on it is a press on the header. Will, TODO 849 */
 .grip {
-  position: absolute;
-  inset-block: 0;
-  /* Past the node's own border, which stays whole (a warning's colour is read there). */
-  inset-inline-end: calc(100% + var(--sherpa-style-border-width, 0.5px));
-  display: flex;
-  /* At the top, clear of the header's own socket at its middle. */
-  align-items: flex-start;
-  justify-content: center;
-  padding-block-start: var(--sherpa-theme-padding-md, 8px);
-  box-sizing: border-box;
-  inline-size: var(--sherpa-display-mode-size-md, 20px);
-  /* The icon box is square; the tab is as tall as the header. */
-  block-size: auto;
-  background: var(--_category-fill, var(--_surface));
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-start-start-radius: inherit;
-  border-end-start-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  color: var(--sherpa-style-content-secondary, #35353d);
-  pointer-events: none;
-  visibility: hidden;
-}
-.grip svg {
+  display: none;
+  flex: none;
+  align-items: center;
+  align-self: center;
   inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
-  rotate: 90deg;
+  margin-inline-start: var(--sherpa-theme-padding-sm, 4px);
+  color: var(--sherpa-style-content-secondary, #35353d);
+  pointer-events: none;
 }
+.heading { flex: 1 1 auto; min-inline-size: 0; }
 .header:hover .grip,
 .header:focus-visible .grip,
 :host(:state(dragging)) .grip,
-:host([data-current]) .grip { visibility: visible; }
+:host([data-current]) .grip { display: flex; }
 @media (forced-colors: active) { .grip { color: CanvasText; } }
 .header:focus-visible {
   outline: var(--sherpa-focus-ring);

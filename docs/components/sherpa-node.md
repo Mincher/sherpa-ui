@@ -83,11 +83,9 @@ What each class's base rule reads:
 | `--sherpa-style-border-width` | `.root` | `border-width` |
 | `--sherpa-display-mode-border-rounding-base` | `.root` | `border-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
-| `--sherpa-style-border-width` | `.grip` | `inset-inline-end` |
-| `--sherpa-theme-padding-md` | `.grip` | `padding-block-start` |
-| `--sherpa-display-mode-size-md` | `.grip` | `inline-size` |
-| `--sherpa-style-border-width` | `.grip` | `border-width` |
-| `--sherpa-display-mode-border-rounding-base` | `.grip` | `border-end-start-radius` |
+| `--sherpa-display-mode-size-sm` | `.grip` | `inline-size` |
+| `--sherpa-display-mode-size-sm` | `.grip` | `block-size` |
+| `--sherpa-theme-padding-sm` | `.grip` | `margin-inline-start` |
 | `--sherpa-style-content-secondary` | `.grip` | `color` |
 | `--sherpa-display-mode-size-sm` | `.resize` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.resize` | `block-size` |
