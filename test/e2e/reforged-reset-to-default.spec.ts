@@ -2,12 +2,12 @@ import { test, expect, type Bar } from './harness';
 
 /**
  * RESET, AND RESET ALL TO DEFAULT — TODO 109, 129, 383 and 454. Both lead the
- * Edit menu, Reset filters first; "Reset to view defaults" asks for the
+ * ⋮ menu (it moved there 11-06), Reset filters first; "Reset to view defaults" asks for the
  * View's OWN filters, which only the provider knows. The ask is CANCELABLE, so
  * an app can ask the reader first — and keep what is on screen under a name.
  * TRAP T-reset-to-default-is-the-views-own
  */
-test('the bar\'s and the column\'s Edit menus lead with Reset, and Reset to view defaults asks for the View\'s own filters', async ({ page }) => {
+test('the bar\'s and the column\'s ⋮ menus lead with Reset, and Reset to view defaults asks for the View\'s own filters', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const heard: string[] = [];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': 'view' });
@@ -18,12 +18,10 @@ test('the bar\'s and the column\'s Edit menus lead with Reset, and Reset to view
     for (const [name, el] of [['bar', bar], ['column', column]] as const) {
       el.addEventListener('view-reset', (e) => heard.push(`${name}${e.cancelable ? ', cancelable' : ''}`));
     }
-    // Each is its Edit menu's rows. Will, TODO 454
+    // Each is its ⋮ menu's rows. Will, TODO 454, 11-06
     const pick = async (host: HTMLElement): Promise<{ lead: string[][]; old: number; open: boolean }> => {
-      const btn = host.shadowRoot!.querySelector<HTMLElement>('.add-btn, .column-filters')!;
-      btn.shadowRoot!.querySelector<HTMLElement>('button')!.click();
-      await window.__settled();
-      const menu = btn.querySelector('sherpa-menu') as HTMLElement & { open: boolean };
+      await window.__moreRow(host, 'reset');
+      const menu = host.shadowRoot!.querySelector('.more-menu') as HTMLElement & { open: boolean };
       const lead = [...menu.children].slice(0, 2)
         .map((n) => [(n as HTMLButtonElement).value, (n.textContent ?? '').trim()]);
       menu.querySelector<HTMLElement>(':scope > [value="reset-default"]')!.click();

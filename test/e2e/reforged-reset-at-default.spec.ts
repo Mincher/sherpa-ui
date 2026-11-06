@@ -28,7 +28,7 @@ for (const kind of ['bar', 'column']) {
   test(`${kind}: data-at-default makes Reset to view defaults inactive, before and after it draws`, async ({ page }) => {
     const r = await page.evaluate(`(async () => {
       ${mount(kind, 'data-at-default')}
-      const row = () => window.__editRow(el, 'reset-default');
+      const row = () => window.__moreRow(el, 'reset-default');
       const atFirst = (await row()).hasAttribute('disabled');
       el.removeAttribute('data-at-default');
       const changed = (await row()).hasAttribute('disabled');
@@ -41,7 +41,7 @@ for (const kind of ['bar', 'column']) {
   test(`${kind}: data-nothing-to-reset makes Reset filters inactive`, async ({ page }) => {
     const r = await page.evaluate(`(async () => {
       ${mount(kind, 'data-nothing-to-reset')}
-      const reset = () => window.__editRow(el, 'reset');
+      const reset = () => window.__moreRow(el, 'reset');
       const off = (await reset()).hasAttribute('disabled');
       el.removeAttribute('data-nothing-to-reset');
       return { off, on: !(await reset()).hasAttribute('disabled') };

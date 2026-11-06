@@ -14,10 +14,10 @@ import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-
 import { FILTER_MENU_HTML, menuFor, type FilterMenuOptions } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, hangFiltersMenu, saves, type AddedFilter, type SavedSet,
+  MenuDrill, OneRows, SavedSets, drawFiltersButton, hangFiltersMenu, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  FILTER_ACTIONS, askSwitches, drawFilterActions, offersMore, extraRows, folded, hidesUnmatched, openMore, pickMore,
+  askSwitches, offersMore, extraRows, manageRows, resetRows, folded, hidesUnmatched, openMore, pickMore,
   saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
@@ -1730,8 +1730,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     more.setAttribute('aria-label', `${def.label} options`);
   }
 
-  /** The Edit menu opened: its Reset rows say whether there is anything to reset —
-   *  or, holding one folded field alone, it is that field's own menu, one level, not
+  /** The Edit menu opened: holding one folded field alone, it is that field's own menu, one level, not
    *  two. Will, TODO 678 */
   #onEditOpen = (event: Event): void => {
     const edit = this.pathFind<HTMLElement>(event, '.add-btn');
@@ -1742,7 +1741,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       own.show?.(edit);
       return;
     }
-    drawFilterActions(this, this.root, edit.querySelector('sherpa-menu'));
   };
   /** The one chip folded, while Edit would list nothing else. */
   #lone: HTMLElement | null = null;
@@ -1790,9 +1788,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#move(mover);
       return;
     }
-    // Manage Saved Filters and Reset, the Edit menu's actions — or, split, the Saved menu's rows. TODO 427, 436, 454
-    if (((value === MANAGE_SETS || FILTER_ACTIONS.has(value)) && this.pathFind(event, '.add-btn'))
-      || (String(value).startsWith('filters-') && this.pathFind(event, '.saved-btn'))) {
+    // The Saved menu's rows. TODO 436
+    if (String(value).startsWith('filters-') && this.pathFind(event, '.saved-btn')) {
       event.stopImmediatePropagation();
       this.$<SherpaMenu>('.add-btn sherpa-menu')?.hide?.();
       this.#act(value);
@@ -2357,14 +2354,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // ONE field folded, and nothing else to list: Edit opens its own values. Will, TODO 678
     const [only] = folded;
     this.#lone = only && added.length === 1 && added[0]!.hidden && !offer.length && !sets.length ? only : null;
-    const def = drawFiltersButton(add, added, offer, sets, !split && saves(this));
+    const def = drawFiltersButton(add, added, offer, sets);
     if (!def) return;
     this.#drawApplied();
     this.#header.drawSaved();
     // The ONE Filters menu, as the column makes its own. TODO 523 U13
-    const menu = hangFiltersMenu(this.root, add, def, hidesUnmatched(this), this.#menuFlags());
-    // The Edit menu leads with Reset. Will, TODO 454
-    drawFilterActions(this, this.root, menu);
+    hangFiltersMenu(this.root, add, def, hidesUnmatched(this), this.#menuFlags());
     this.#header.drawSave();
     this.#syncOverflowActive();
   }
@@ -2574,7 +2569,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /**
-   * THE ⋮ MENU: Save filters (Will, TODO 430; Reset is the Edit menu's, 454), then what has FOLDED
+   * THE ⋮ MENU: Save filters (Will, TODO 430), after Reset and Manage Saved Filters (11-06), then what has FOLDED
    * away at this width — the page's own buttons, then Refresh. A row does what
    * its button does. Suggest filters and the View's ★ and Save are the App
    * Header's (TODO 425). TRAP T-the-more-menu-holds-what-folded
@@ -2583,7 +2578,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     openMore(this, this.root, trigger, this.#moreRows());
   }
 
-  /** What the ⋮ holds at this width. Reset is the Edit menu's. Will, TODO 454 */
+  /** What the ⋮ holds at this width: Reset and Manage Saved Filters lead. Will, TODO 454, 11-06 */
   #moreRows(): MoreRow[][] {
     // A node graph's editor is on it: one row, and it is the graph's. Will, TODO 837
     if (this.hasAttribute('data-reset-graph')) return [[['reset-graph', this.hasAttribute('data-graph-unchanged')]]];
@@ -2592,9 +2587,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),
       ...(gone('refresh') ? [['refresh'] as const] : [])];
     const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this);
+    const resets = [...resetRows(this), ...manageRows(this, this.#saved.listed)];
     // Last, apart: the page's Query as nodes, where the host offers it. Will, TODO 555
     const editor: MoreRow[] = this.hasAttribute('data-node-editor') ? [['node-editor']] : [];
-    return [saves, extraRows(this), tail, editor];
+    return [resets, saves, extraRows(this), tail, editor];
   }
 
   /** A ⋮ with no row to show is not shown, on the bar or its column. Will, TODO 566 */

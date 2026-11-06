@@ -19,10 +19,9 @@
 import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
-import { MANAGE_SETS, SavedSets, drawFiltersButton, hangFiltersMenu, saves, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
-import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows, type MoreRow } from '../../core/ui/more-menu.js';
+import { SavedSets, drawFiltersButton, hangFiltersMenu, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
+import { askSwitches, extraRows, hidesUnmatched, manageRows, openMore, pickMore, resetRows, saveRows, type MoreRow } from '../../core/ui/more-menu.js';
 import { FilterHostController } from '../../core/ui/filter-host-controller.js';
-import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { ToolbarHeader } from './toolbar-header.js';
 
 /** What a column says: its toolbar's own events. */
@@ -79,9 +78,7 @@ export class ToolbarColumn {
   wire(): void {
     const filters = this.#$('.column-filters');
     filters?.addEventListener('menu-change', this.#onFiltersCommit);
-    filters?.addEventListener('menu-select', this.#onFilterAction);
     // Its Reset rows say, as it opens, whether there is anything to reset. TODO 454
-    filters?.addEventListener('menu-open', () => this.#drawResets());
     const saved = this.#$('.column-saved');
     saved?.addEventListener('menu-change', this.#onSavedPick);
     saved?.addEventListener('menu-select', this.#onSavedAction);
@@ -196,17 +193,10 @@ export class ToolbarColumn {
     this.#spentFor = this.#spentKey();
     // Split, the sets are the Saved menu's. TODO 436
     const split = this.#host.el.hasAttribute('data-saved-menu');
-    const saveable = saves(this.#host.el);
-    const def = drawFiltersButton(btn, added, offer, split ? [] : this.#saved.listed, !split && saveable);
+    const def = drawFiltersButton(btn, added, offer, split ? [] : this.#saved.listed);
     const menu = hangFiltersMenu(this.#host.root(), btn, def, hidesUnmatched(this.#host.el));
     menu.setAttribute('data-align', 'end');
-    this.#drawResets();
     this.#header.drawSaved();
-  }
-
-  /** The Edit menu leads with Reset. Will, TODO 454 */
-  #drawResets(): void {
-    drawFilterActions(this.#host.el, this.#host.root(), this.#$('.column-filters sherpa-menu'));
   }
 
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
@@ -240,16 +230,7 @@ export class ToolbarColumn {
     for (const [scope, ids] of adds) this.#host.emit('filter-add', { scope, ids });
   };
 
-  /** Manage Saved Filters, the Filters menu's one action. TODO 427 */
-  #onFilterAction = (event: Event): void => {
-    const value = (event as CustomEvent).detail?.value;
-    if (value !== MANAGE_SETS && !FILTER_ACTIONS.has(value)) return;
-    event.stopPropagation();
-    this.#$<SherpaMenu>('.column-filters sherpa-menu')?.hide?.();
-    this.#act(value);
-  };
-
-  /** A filter action: Reset and Reset to view defaults, from the Edit menu (TODO 454); the save rows, from the ⋮ (TODO 430). */
+  /** A filter action: Reset and Reset to view defaults, from the ⋮; the save rows too (TODO 430). */
   #act(act: string): void {
     if (act === 'reset') {
       const request = this.#scopes.map((s) => ({ scope: s.scope, reset: { organise: true } }));
@@ -259,17 +240,17 @@ export class ToolbarColumn {
     else this.#header.act(act);
   }
 
-  /** ⋮ — Save filters (Will, TODO 430; Reset is the Edit menu's, 454), the page's buttons folded
+  /** ⋮ — Save filters (Will, TODO 430), and Reset and Manage Saved Filters, the page's buttons folded
    *  away, then Limit. No Suggest filters or Refresh: those are the App
    *  Header's. Will, TODO 425 G11 */
   #onMore = (event: Event): void => {
     openMore(this.#host.el, this.#host.root(), event.currentTarget as HTMLElement, this.moreRows());
   };
 
-  /** What its ⋮ holds. Reset is the Edit menu's. Will, TODO 454 */
+  /** What its ⋮ holds: Reset and Manage Saved Filters lead. Will, TODO 454, 11-06 */
   moreRows(): MoreRow[][] {
     const el = this.#host.el;
-    return [el.hasAttribute('data-saved-menu') ? [] : saveRows(el), extraRows(el)];
+    return [[...resetRows(el), ...manageRows(el, this.#saved.listed)], el.hasAttribute('data-saved-menu') ? [] : saveRows(el), extraRows(el)];
   }
 
   /** A ⋮ row: a filter action, or a page button folded away. */

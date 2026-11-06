@@ -41,10 +41,8 @@ const FILTERS_LABEL = 'Filters';
 const ADDED_SECTION = 'Added filters';
 const AVAILABLE_SECTION = 'Available filters';
 const SAVED_SECTION = 'Saved filters';
-const MANAGE_LABEL = 'Manage Saved Filters';
 
-/** The Saved section's lead row: Manage Saved Filters — rename and remove the
- *  reader's sets, in the host's dialog. Will, TODO 427 */
+/** Manage Saved Filters, a ⋮ row — rename and remove the reader's sets, in the host's dialog. Will, TODO 427 */
 export const MANAGE_SETS = 'filters-manage';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
@@ -97,7 +95,7 @@ export interface AddedFilter extends ListedFilter {
  * TRAP T-saved-filters-are-the-last-section
  */
 function filtersMenuItems(
-  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[] = [], manage = false,
+  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[] = [],
 ): Array<FilterMenuItem & { label: string }> {
   return [
     // A held filter the reader cannot take off is listed only while hidden.
@@ -114,8 +112,6 @@ function filtersMenuItems(
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
       ...(f.spent ? { available: false } : {}),
     })),
-    // Led by Manage Saved Filters, where the reader has sets of their own. Will, TODO 427
-    ...(manage && sets.some((s) => s.own) ? [{ value: MANAGE_SETS, label: MANAGE_LABEL, section: SAVED_SECTION, action: true }] : []),
     // A reader's saved SETS: ticked while its chip is on a bar. TODO 105 · Will, TODO 605
     ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.added })),
   ];
@@ -126,9 +122,9 @@ function filtersMenuItems(
  *  TRAP T-one-filters-button · TRAP T-add-menu-batches */
 export function drawFiltersButton(
   btn: HTMLElement,
-  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[], manage = false,
+  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[],
 ): FilterDef {
-  const options = filtersMenuItems(added, offer, sets, manage);
+  const options = filtersMenuItems(added, offer, sets);
   btn.querySelector('sherpa-menu')?.remove();
   return {
     id: 'add', label: FILTERS_LABEL, select: 'multiple',

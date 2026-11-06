@@ -13,7 +13,7 @@
  * - .act — A filter act both templates send; false for one that is not.
  */
 import { menuFor } from '../../core/ui/filter-menu.js';
-import { MANAGE_SETS, savedMenuDef, saves, type SavedSets } from '../../core/ui/filters-button.js';
+import { MANAGE_SETS, savedMenuDef, type SavedSets } from '../../core/ui/filters-button.js';
 import { drawSaveActions } from '../../core/ui/more-menu.js';
 
 /** What the header says: its toolbar's own events, named so a checker reads them. */
@@ -49,8 +49,7 @@ export class ToolbarHeader {
     menu.setAttribute('data-align', 'end');
     btn.append(menu);
     menu.items?.(items);
-    const manage = saves(el) && this.saved.listed.some((s) => s.own);
-    drawSaveActions(el, this.host.root(), menu, manage);
+    drawSaveActions(el, this.host.root(), menu);
   }
 
   /** A saved set ticked adds its chip; unticked, takes it off. Its rows leave `values`:

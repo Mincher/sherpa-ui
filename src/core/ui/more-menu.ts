@@ -9,12 +9,11 @@
  * - resetRows — Reset filters, then Reset to view defaults — off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
  * - saveRows — Save filters; none unless the host saves.
+ * - manageRows — Manage Saved Filters: where the host saves and the reader has a set of their own.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - offersMore — Would the ⋮ menu hold anything: these rows, or the host's own switches?
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
- * - FILTER_ACTIONS — The rows the Filters menu ends with: its filter actions.
- * - drawFilterActions — Lead a Filters menu with Reset and Reset to view defaults.
- * - drawSaveActions — End a Saved menu with its save rows, then Manage Saved Filters.
+ * - drawSaveActions — End a Saved menu with its save rows.
  * - syncHide — Hide invalid filters is inactive while Limit is off.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
  * - askSwitches — The ⋮ menu's two switches: each that MOVED is asked for, Limit first.
@@ -56,6 +55,11 @@ export function hidesUnmatched(host: HTMLElement): boolean {
  *  own, as Reset all is. TODO 105 · Will, 382 */
 export function saveRows(host: HTMLElement): MoreRow[] {
   return saves(host) ? [['filters-save', host.hasAttribute('data-at-default')]] : [];
+}
+
+/** Manage Saved Filters: where the host saves and the reader has a set of their own. Will, 11-06 */
+export function manageRows(host: HTMLElement, sets: readonly { own?: boolean }[]): MoreRow[] {
+  return saves(host) && sets.some((s) => s.own) ? [['filters-manage']] : [];
 }
 
 /** The page's own buttons in the `actions` slot that have folded away — the panel switch is one. */
@@ -101,26 +105,12 @@ function drawRows(host: HTMLElement, root: ParentNode, rows: readonly MoreRow[])
   });
 }
 
-/** The rows the Filters menu ends with: its filter actions. Will, TODO 383 */
-export const FILTER_ACTIONS = new Set(['reset', 'reset-default', 'filters-save', 'filters-save-as']);
-
-/** Lead a Filters menu with Reset and Reset to view defaults, in place of the ones it
- *  had; its save rows are the ⋮'s, or the Saved menu's. Will, TODOs 383, 454 */
-export function drawFilterActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined): void {
-  if (!menu) return;
-  for (const old of menu.querySelectorAll(':scope > .filter-action')) old.remove();
-  const rows = drawRows(host, root, resetRows(host));
-  // `data-lead`: above the values, whenever the menu stamps them.
-  for (const one of rows) { one.classList.add('filter-action'); one.setAttribute('data-lead', ''); }
-  menu.prepend(...rows);
-}
-
-/** End a Saved menu — split from Filters — with its save rows, then Manage
- *  Saved Filters, each after a divider: below its sets. Will, TODO 436 */
-export function drawSaveActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined, manage = false): void {
+/** End a Saved menu — split from Filters — with its save rows, after a divider:
+ *  below its sets. Will, TODO 436 */
+export function drawSaveActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined): void {
   if (!menu) return;
   for (const old of menu.querySelectorAll(':scope > .save-action')) old.remove();
-  const groups = [drawRows(host, root, saveRows(host)), manage ? drawRows(host, root, [['filters-manage']]) : []];
+  const groups = [drawRows(host, root, saveRows(host))];
   const rows = groups.filter((g) => g.length).flatMap((g) => [cloneFirst(root, 'template.more-divider-tpl'), ...g])
     .filter((n): n is HTMLElement => !!n);
   for (const one of rows) one.classList.add('save-action');
