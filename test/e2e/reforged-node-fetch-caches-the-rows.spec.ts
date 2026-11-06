@@ -15,8 +15,8 @@ const STATES = ['active', 'trial', 'suspended', 'churned'];
 const ROWS = Array.from({ length: 120 }, (_, id) => ({ id, status: STATES[(id * 7) % 4] }));
 const ACTIVE = ROWS.filter((r) => r.status === 'active');
 
-async function start(page: Page, options: { limit?: { rows?: number }; delay?: number; collect?: boolean; known?: boolean; big?: number } = {}): Promise<void> {
-  await page.evaluate(async ([given, limit, delay, collect, known, big]) => {
+async function start(page: Page, options: { limit?: { rows?: number }; delay?: number; collect?: boolean; known?: boolean; big?: number; calc?: boolean } = {}): Promise<void> {
+  await page.evaluate(async ([given, limit, delay, collect, known, big, calc]) => {
     const rows = big ? Array.from({ length: big }, (_, id) => ({ id, status: ['active', 'trial', 'suspended', 'churned'][(id * 7) % 4]!, seats: id % 100 })) : given;
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
@@ -35,11 +35,16 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
     const load = store.load.bind(store);
     store.load = (o) => { loads++; return load(o); };
     Object.assign(window, { loads: () => loads, store });
-    const nodes = [
+    const nodes: { id: string; kind: string; x: number; y: number; heading: string; values?: Record<string, unknown> }[] = [
       { id: 's', kind: 'source', x: 0, y: 0, heading: 's', values: { store: 'users' } }, { id: 'f', kind: 'field', x: 360, y: 0, heading: 'f', values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 720, y: 0, heading: 'c', values: { type: 'eq', b: 'active' } }, { id: 'o', kind: 'output', x: 1080, y: 0, heading: 'o' },
     ];
     const routes = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'o' }];
+    // A Value into a Math, off the path: a node that sends a number, not rows (P6).
+    if (calc) {
+      nodes.push({ id: 'v', kind: 'value', x: 0, y: 300, heading: 'v', values: { type: 'integer', value: '21' } }, { id: 'm', kind: 'math', x: 360, y: 300, heading: 'm', values: { type: 'multiply', b: 2 } });
+      routes.push({ from: 'v/value', to: 'm/a' });
+    }
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 2, id: 'w', nodes, routes } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!,
@@ -50,7 +55,7 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
     canvas.zoomTo(0.4);
     canvas.panTo(20, 20);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [ROWS, options.limit ?? null, options.delay ?? 5, options.collect ?? true, options.known ?? true, options.big ?? 0] as const);
+  }, [ROWS, options.limit ?? null, options.delay ?? 5, options.collect ?? true, options.known ?? true, options.big ?? 0, options.calc ?? false] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const tool = (page: Page, name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
@@ -289,4 +294,17 @@ test('the keys: Ctrl or Cmd and Enter simulates; with Shift it fetches', async (
   await page.keyboard.press('ControlOrMeta+Shift+Enter');
   await expect.poll(() => loads(page)).toBe(1);
   await expect.poll(async () => (await sim(page))?.faults.length).toBe(0);
+});
+
+test('a Value into a Math: Simulate sends the number, and the Math\'s light says it', async ({ page }) => {
+  await start(page, { calc: true });
+  await press(page, 'fetch');
+  await settle(page);
+  await expect.poll(() => loads(page)).toBe(1);
+  await press(page, 'play');
+  await expect.poll(async () => (await sim(page))?.nodes['m'] !== undefined).toBe(true);
+  const s = (await sim(page))!;
+  expect(out(s, 'm', 'm/result').value).toBe(42);
+  expect(into(s, 'm', 'm/a').value).toBe(21);
+  await expect.poll(() => page.evaluate(() => document.querySelector('#cv > sherpa-node[data-heading="m"]')!.getAttribute('data-caption'))).toMatch(/^= 42 · (<1|[\d,]+) ms$/);
 });

@@ -1,6 +1,6 @@
 # Plan 836 — see the data go through the nodes
 
-**Status: P1 to P5 and P3b (845) BUILT 2026-11-06 (lane `lane/data-flow-836`); P6 (the other kinds) and P7 (Demos) on wait.** Will answered the eight
+**Status: P1 to P6 and P3b (845) BUILT 2026-11-06 (lane `lane/data-flow-836`); P7 (Demos) on wait. P6: Value, Math, Text, Sort, Group and Custom Nodes (the host hands the body as `facts.inner`) in `node-simulate.ts`; Time and Tag run as tests; a value shows on a node's light as "= 42".** Will answered the eight
 decisions the same day; this plan is written to his answers. It builds on plan 695 (N4, held), plan 808 (Sources), plan
 779 (portals), plan 783 (Field), plan 834 (Output category, not built) and the data layer's rules engine plan.
 
@@ -92,7 +92,7 @@ simulateGraph(graph, rowsByStore, facts) → { nodes: { [id]: { incoming, outgoi
 | And and Or | The rows of the parts, joined: And keeps what every part kept, Or what any part kept |
 | A Field | Passes its rows on and sends its field name |
 | Portals | `portalFlow`, once: an Out's route comes from its In's source, so the rows flow with no portal code of its own |
-| Custom Nodes | P6: `innerOf` runs the body as the same graph |
+| Custom Nodes | P6 BUILT: the host hands `innerOf`'s body as `facts.inner`; the same simulator runs it |
 | Math, Text, Collection (sort, group, count) | P6: the pure functions rows already use |
 | What a socket can read | `readInput`, `COERCIONS` (P6 for value sockets) |
 

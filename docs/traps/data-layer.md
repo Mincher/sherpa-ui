@@ -8036,6 +8036,7 @@ each node's incoming and outgoing slots, a row list on each socket. It is not N4
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-graph-has-a-path-from-a-source-to-an-output.test.mjs`
 - Site: `test/unit/a-simulation-reads-the-cache-and-writes-nothing.test.mjs`
+- Site: `test/unit/a-simulation-runs-every-kind.test.mjs`
 - Site: `test/e2e/reforged-node-fetch-needs-a-path.spec.ts`
 - Site: `test/e2e/reforged-node-fetch-caches-the-rows.spec.ts`
 

@@ -174,7 +174,7 @@
   "src/core/data/node-paths.ts": 70,
   "src/core/data/node-portals.ts": 185,
   "src/core/data/node-shelf.ts": 35,
-  "src/core/data/node-simulate.ts": 347,
+  "src/core/data/node-simulate.ts": 479,
   "src/core/data/node-unfurl.ts": 401,
   "src/core/data/notices.ts": 47,
   "src/core/data/outbox.ts": 65,

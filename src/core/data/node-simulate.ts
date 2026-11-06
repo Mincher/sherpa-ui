@@ -3,7 +3,7 @@
  * on each socket: what the node would hear and what it would say. It reads rows and writes nothing: no store is asked,
  * no clock is read but the one given. A Condition's rows are the rows into its Field that its test keeps, run by the
  * same `filterTest` a page runs; a Source with no cached rows is "not fetched yet". The kinds beyond Source, Field,
- * Condition (test, And, Or) and Output wait for P6. Pure: no DOM. Will, TODO 836 · docs/history/plan-836-data-through-nodes.md
+ * Condition, Time and Tag (tests, And, Or), Value, Math, Text, Sort, Group, a Custom Node (its body run, given by the host) and Output are simulated. Pure: no DOM. Will, TODO 836 · docs/history/plan-836-data-through-nodes.md
  * · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
  *
  * Map:
@@ -11,6 +11,7 @@
  * - Slot — What one socket hears or says: its rows, a field's name or a value, and where it comes from.
  * - SimulatedNode — One node: each input socket's slot, and each output socket's.
  * - Simulated — Every node's slots, and each fault in words.
+ * - Sent — What an output socket sends: rows, a field, a value, or nothing and why.
  * - simulateGraph — The graph run on the cached rows: what each node hears and says, a row list on each socket.
  * - SimulationRun — A simulation in steps: the nodes it runs, one step each, and what has run.
  * - SteppingOptions — How a stepped simulation lets its host in: before each node, and a pause when one is due.
@@ -22,7 +23,7 @@
  * - .stop — End the run, keeping the nodes done.
  * - .turn — Before a node: waits while paused, and says whether to go on.
  * - stepSimulation — Step a simulation node by node, giving the host a turn when one is due.
- * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87", and the time it took.
+ * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87", or its value, and the time it took.
  * - trueOf — How many rows reach a node's True after a simulation: none where it has no True or has not run.
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
@@ -36,6 +37,8 @@ import { FALSE_SOCKET, socketOf, type DrawnGraph, type GraphNode } from './node-
 export interface SimulateFacts {
   now?: Date;
   partial?: Readonly<Record<string, string>>;
+  /** A Custom Node's body, drawn: its Group Input is `#in` and its Group Output `#out`. None for a node that has none. */
+  inner?(node: GraphNode): DrawnGraph | undefined;
 }
 
 /** What one socket hears or says: its rows (a row list), a field's name, or a value; and where it comes from, as
@@ -63,7 +66,7 @@ export interface Simulated {
 }
 
 /** What an output socket sends: rows, a field (its name, and the rows into it), or nothing and why. */
-type Sent = { kind: 'rows' | 'field' | 'value'; rows?: readonly Row[]; value?: unknown; note?: string };
+export type Sent = { kind: 'rows' | 'field' | 'value'; rows?: readonly Row[]; value?: unknown; note?: string };
 
 /** The kinds whose True is a test of a field. */
 const TESTS = new Set(['condition', 'time', 'tag']);
@@ -103,6 +106,8 @@ export interface SimulationRun {
   ids: readonly string[];
   step(id: string): void;
   result(): Simulated;
+  /** What an input socket hears now, as the routes bring it (a Custom Node reads its body's Group Output so). */
+  hears(address: string): Slot;
 }
 
 /** How a stepped simulation lets its host in: it is told each node before it runs; and once a node has run longer than `every`
@@ -184,6 +189,14 @@ export async function stepSimulation(run: SimulationRun, options: SteppingOption
   return run.result();
 }
 
+/** What a node that sends a value says on its light, as = 42. */
+function valueWords(slots: readonly Slot[]): string | undefined {
+  const said = slots.find((s) => s.kind === 'value' && s.value !== undefined);
+  if (!said) return undefined;
+  const words = typeof said.value === 'string' ? said.value : JSON.stringify(said.value);
+  return `= ${words.length > 24 ? `${words.slice(0, 23)}…` : words}`;
+}
+
 /** A node's LIGHT after a simulation: the rows it heard and the rows it said, "412 → 87", and the time it took; a Source or an
  *  Output has the one count; one that holds no rows says why. */
 export function lightOf(node: SimulatedNode, ms: number): string {
@@ -192,7 +205,7 @@ export function lightOf(node: SimulatedNode, ms: number): string {
   const [heard, said] = [count(node.incoming), count(node.outgoing)];
   const rows = heard !== undefined && said !== undefined ? `${n(heard)} → ${n(said)}`
     : heard !== undefined || said !== undefined ? `${n((heard ?? said)!)} ${(heard ?? said) === 1 ? 'row' : 'rows'}`
-      : [...node.incoming, ...node.outgoing].find((s) => s.note)?.note ?? '';
+      : valueWords(node.outgoing) ?? [...node.incoming, ...node.outgoing].find((s) => s.note)?.note ?? '';
   const time = ms < 1 ? '<1 ms' : `${Math.round(ms).toLocaleString('en')} ms`;
   return [rows, time].filter(Boolean).join(' · ');
 }
@@ -203,7 +216,7 @@ export function trueOf(node: SimulatedNode): number | undefined {
 }
 
 /** Begin a simulation: nothing runs until it is stepped. */
-export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<string, readonly Row[] | undefined>>, facts: SimulateFacts = {}): SimulationRun {
+export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<string, readonly Row[] | undefined>>, facts: SimulateFacts = {}, seeds: ReadonlyMap<string, Sent> = new Map(), depth = 0): SimulationRun {
   const now = facts.now ?? new Date();
   const routes = portalFlow(graph.nodes, graph.routes).routes;
   const held = new Map(graph.nodes.map((n) => [n.id, n]));
@@ -253,7 +266,118 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return test(node);
   };
 
+  /** What an input row hears: a routed value, else the row's own, as its control reads it. */
+  const heard = (node: GraphNode, name: string): Sent => {
+    const came = into(`${node.id}/${name}`).map((p) => p.sent);
+    const first = came[0];
+    if (first) return first.kind === 'value' ? first : { kind: 'value', note: first.note ?? 'Nothing it can use arrives' };
+    const own = node.rows.find((r) => r.name === name);
+    return own?.value === undefined || own.value === '' ? { kind: 'value', note: `${own?.label ?? name} is empty` } : { kind: 'value', value: own.value };
+  };
+  const number = (sent: Sent): number | string => {
+    if (sent.note) return sent.note;
+    const n = typeof sent.value === 'number' ? sent.value : Number(sent.value);
+    return Number.isFinite(n) ? n : `"${String(sent.value)}" is not a number`;
+  };
+  const listOf = (sent: Sent): unknown[] | string => (sent.note ? sent.note : Array.isArray(sent.value) ? sent.value : typeof sent.value === 'string' ? sent.value.split(',').map((v) => v.trim()) : 'It needs a list');
+
+  /** A Math node's result: a number, or why there is none, in words. */
+  const math = (node: GraphNode): Sent => {
+    const type = String(node.rows.find((r) => r.name === 'type')?.value ?? 'add');
+    const fail = (note: string): Sent => ({ kind: 'value', note });
+    if (type === 'floor' || type === 'ceiling' || type === 'average') {
+      const list = listOf(heard(node, 'values'));
+      if (typeof list === 'string') return fail(list);
+      const nums = list.map(Number);
+      if (!nums.length || nums.some((n) => !Number.isFinite(n))) return fail('The list holds no numbers, or one that is not');
+      return { kind: 'value', value: type === 'floor' ? Math.min(...nums) : type === 'ceiling' ? Math.max(...nums) : nums.reduce((a, b) => a + b, 0) / nums.length };
+    }
+    const a = number(heard(node, 'a'));
+    if (typeof a === 'string') return fail(a);
+    if (type === 'round') {
+      const places = number(heard(node, 'places'));
+      if (typeof places === 'string') return fail(places);
+      const f = 10 ** places;
+      return { kind: 'value', value: Math.round(a * f) / f };
+    }
+    const b = number(heard(node, 'b'));
+    if (typeof b === 'string') return fail(b);
+    if (type === 'divide' || type === 'ratio') return b === 0 ? fail('It divides by zero') : { kind: 'value', value: a / b };
+    return { kind: 'value', value: type === 'subtract' ? a - b : type === 'multiply' ? a * b : a + b };
+  };
+
+  /** A Text node's result. */
+  const text = (node: GraphNode): Sent => {
+    const type = String(node.rows.find((r) => r.name === 'type')?.value ?? 'append');
+    const word = (name: string): string | Sent => { const h = heard(node, name); return h.note ? h : String(h.value ?? ''); };
+    if (type === 'join') {
+      const list = listOf(heard(node, 'values'));
+      const sep = word('separator');
+      if (typeof list === 'string') return { kind: 'value', note: list };
+      return typeof sep === 'string' ? { kind: 'value', value: list.join(sep) } : sep;
+    }
+    const a = word(type === 'split' ? 'a' : 'a');
+    if (typeof a !== 'string') return a;
+    if (type === 'split') {
+      const sep = word('separator');
+      return typeof sep === 'string' ? { kind: 'value', value: sep === '' ? [a] : a.split(sep) } : sep;
+    }
+    const b = word('b');
+    if (typeof b !== 'string') return b;
+    return { kind: 'value', value: type === 'prepend' ? b + a : a + b };
+  };
+
+  /** A Value node's value, read as its type says. */
+  const valued = (node: GraphNode): Sent => {
+    const type = String(node.rows.find((r) => r.name === 'type')?.value ?? 'text');
+    const own = node.rows.find((r) => r.name === 'value')?.value;
+    if (own === undefined || own === '') return { kind: 'value', note: 'It holds no value' };
+    if (type === 'integer' || type === 'decimal') { const n = Number(own); return Number.isFinite(n) ? { kind: 'value', value: type === 'integer' ? Math.trunc(n) : n } : { kind: 'value', note: `"${String(own)}" is not a number` }; }
+    if (type === 'boolean') return { kind: 'value', value: own === true || own === 'true' || own === 1 || own === '1' };
+    return { kind: 'value', value: own };
+  };
+
+  /** The rows a Sort or Group hears, and the field it reads: from the Field routed into its header. */
+  const fielded = (node: GraphNode): { field: string; rows: readonly Row[] } | { note: string } => {
+    const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
+    if (!fed) return { note: 'No Field is routed in' };
+    if (!fed.rows) return { note: fed.note ?? 'No rows reach it' };
+    return { field: String(fed.value ?? ''), rows: fed.rows };
+  };
+
+  /** Sort puts the rows in their field's order; Group gathers each value's rows, the groups in the order they first appear. */
+  const arranged = (node: GraphNode, row: string | undefined): Sent => {
+    const read = fielded(node);
+    if ('note' in read) return { kind: row === 'count' ? 'value' : 'rows', note: read.note };
+    const { field, rows } = read;
+    if (node.kind === 'sort') {
+      const dir = heard(node, 'direction').value === 'desc' ? -1 : 1;
+      const order = [...rows].sort((x, y) => {
+        const a = x[field], b = y[field];
+        return a == null ? (b == null ? 0 : 1) : b == null ? -1 : (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b), 'en', { numeric: true })) * dir;
+      });
+      return { kind: 'rows', rows: order };
+    }
+    const groups = Map.groupBy(rows, (r) => String(r[field] ?? ''));
+    return row === 'count' ? { kind: 'value', value: groups.size } : { kind: 'rows', rows: [...groups.values()].flat() };
+  };
+
+  /** A Custom Node, run: its body is a graph of its own, its Group Input fed what the use hears, and what its Group Output
+   *  hears is what the use sends. */
+  const custom = (node: GraphNode, row: string | undefined): Sent | undefined => {
+    const body = depth < 8 ? facts.inner?.(node) : undefined;
+    if (!body) return undefined;
+    const given = new Map<string, Sent>();
+    for (const r of node.rows) if (r.input) { const came = into(`${node.id}/${r.name}`); given.set(`#in/${r.name}`, came[0] ? came[0].sent : heard(node, r.name)); }
+    const inside = simulation(body, rowsByStore, facts, given, depth + 1);
+    const out = row === undefined ? undefined : inside.hears(`#out/${row}`);
+    if (!out) return undefined;
+    return out.rows ? { kind: 'rows', rows: out.rows } : out.value !== undefined ? { kind: out.kind === 'field' ? 'field' : 'value', value: out.value } : { kind: 'value', note: out.note ?? 'Nothing reaches the Group Output' };
+  };
+
   function sends(address: string): Sent {
+    const seed = seeds.get(address);
+    if (seed) return seed;
     const known = sent.get(address);
     if (known) return known;
     const { node: id, row } = socketOf(address);
@@ -269,6 +393,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
 
   /** What one output socket of a node sends. A Count property row sends how many rows the node sends on: a number. TODO 835 */
   function make(node: GraphNode, row: string | undefined): Sent {
+    if (node.kind === 'group' && row === 'count') return arranged(node, row);
     if (row !== undefined && node.rows.find((r) => r.name === row)?.property && row === 'count') {
       const on = node.kind === 'field' ? { rows: rowsInto(node.id) } : sends(`${node.id}/${node.rows.find((r) => r.gives === 'rows')?.name ?? 'rows'}`);
       return on.rows ? { kind: 'value', value: on.rows.length } : { kind: 'value', note: 'No rows to count' };
@@ -298,6 +423,12 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       if ('note' in read) return { kind: 'rows', note: read.note };
       return { kind: 'rows', rows: row === FALSE_SOCKET ? read.lost : read.kept };
     }
+    if (node.kind === 'value') return valued(node);
+    if (node.kind === 'math') return math(node);
+    if (node.kind === 'text') return text(node);
+    if (node.kind === 'sort' || node.kind === 'group') return arranged(node, row);
+    const ran = custom(node, row);
+    if (ran) return ran;
     fault(`"${node.heading}" is not simulated yet`);
     return { kind: 'value', note: 'Not simulated yet' };
   }
@@ -311,9 +442,10 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     const lists = came.flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
     const note = came.find((p) => p.sent.note)?.sent.note;
     const field = came.find((p) => p.sent.kind === 'field');
+    const valued = field ?? came.find((p) => p.sent.kind === 'value' && p.sent.value !== undefined);
     return {
       socket: address, label, kind: field ? 'field' : lists.length ? 'rows' : 'value',
-      ...(lists.length ? { rows: union(lists) } : {}), ...(field?.sent.value !== undefined ? { value: field.sent.value } : {}),
+      ...(lists.length ? { rows: union(lists) } : {}), ...(valued?.sent.value !== undefined ? { value: valued.sent.value } : {}),
       from: came.map((p) => p.from), ...(note && !lists.length ? { note } : {}),
     };
   };
@@ -342,5 +474,5 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     order.push(next[0]);
     left.delete(next[0]);
   }
-  return { ids: order, step, result: () => ({ nodes, faults }) };
+  return { ids: order, step, result: () => ({ nodes, faults }), hears: (address) => slot(address, address, 'in') };
 }

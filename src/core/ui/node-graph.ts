@@ -3261,7 +3261,7 @@ export function bindWorkflow(
   /** Run the graph on the rows kept, and show it: node by node, the page let draw between them when one takes a while. */
   const runSimulation = async (): Promise<{ nodes: number; faults: number; stopped: boolean }> => {
     const { rows, partial, any } = await cachedRows();
-    const run = beginSimulation(graph, rows, { partial });
+    const run = beginSimulation(graph, rows, { partial, inner: innerGraph });
     const times: Record<string, number> = {};
     let result: Simulated;
     const mine = new SimulationControl();

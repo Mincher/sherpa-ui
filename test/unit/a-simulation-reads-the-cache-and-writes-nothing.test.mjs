@@ -98,10 +98,10 @@ test('a test with no Field says why, and its rows are none, not all', () => {
 });
 
 test('a kind not simulated yet says so and sends no rows', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'seats' }), N('m', 'math', { type: 'round' }), N('o', 'output')],
-    [R('s/rows', 'f'), R('f/field', 'm'), R('m/result', 'o')]);
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'seats' }), N('m', 'preset', {}), N('o', 'output')],
+    [R('s/rows', 'f'), R('f/field', 'm')]);
   const sim = simulateGraph(g, { customers: rowsOf(5) });
-  assert.ok(sim.faults.includes('"Math" is not simulated yet'), JSON.stringify(sim.faults));
+  assert.ok(sim.faults.includes('"Preset" is not simulated yet'), JSON.stringify(sim.faults));
 });
 
 test('rows flow through a portal as through a route', () => {
