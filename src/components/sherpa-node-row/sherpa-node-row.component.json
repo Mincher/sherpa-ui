@@ -171,8 +171,7 @@
       "values": [
         "value",
         "object",
-        "boolean",
-        "any"
+        "boolean"
       ],
       "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a triangle)"
     }

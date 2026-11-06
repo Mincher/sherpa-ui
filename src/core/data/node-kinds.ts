@@ -70,8 +70,7 @@ export type SocketType = 'value' | 'object' | 'boolean' | 'any';
 export const SOCKET_WORDS: Readonly<Record<SocketType, string>> = { value: 'a value', object: 'an object', boolean: 'a boolean', any: 'any type' };
 
 /** Whether an input reads what an output of a type sends: its own type, or `any`, which takes all. Any route
- *  joins any input; where this is false, the input reads null (TODO 770). An output never sends `any`, but a portal's
- *  Out before anything reaches its In (TODO 779). */
+ *  joins any input; where this is false, the input reads null (TODO 770). An output never sends `any`. */
 export function accepts(from: SocketType, to: SocketType): boolean {
   return from !== 'any' && (to === 'any' || to === from);
 }
@@ -355,14 +354,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     types: { includes: { label: 'Includes', rows: [ROWS, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
-  // An In and an Out joined by a name, no line between them: what reaches an In comes out of every Out of its name.
-  // The Out's socket is the type of what reaches its Ins, once drawn (TODO 779). TRAP T-a-portal-hop-is-resolved-once
+  // An In and an Out joined by a name, no line between them. An In takes many routes; an Out draws a row for each route
+  // into an In of its name, once drawn, and sends from those rows alone (TODOs 779, 826). TRAP T-a-portal-hop-is-resolved-once
   portal: {
     heading: 'Portal', icon: 'link-simple', description: 'Joins by name, with no line.',
     typeLabel: 'Type', defaultType: 'in',
     types: {
-      in: { label: 'In', help: 'What comes in leaves from every Out portal of its name', input: 'any', rows: [PORTAL_NAME] },
-      out: { label: 'Out', help: 'Sends what reaches every In portal of its name', output: 'any', rows: [PORTAL_NAME] },
+      in: { label: 'In', help: 'Each route in is a row on every Out portal of its name', input: 'any', many: true, rows: [PORTAL_NAME] },
+      out: { label: 'Out', help: 'A row for each route into an In portal of its name', rows: [PORTAL_NAME] },
     },
     rows: [], model: 'portal', graphs: ['workflow'], category: 'Utils',
   },
@@ -479,8 +478,7 @@ export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags'>,
  *  default. `{}` the header, `{ row }` a row; none, no type of it fits. */
 export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string; type?: string } | undefined {
   const key = side === 'out' ? 'input' : 'output';
-  // A portal's Out sends what reaches its In: it fits any input (TODO 779).
-  const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : t === 'any' || accepts(t, type));
+  const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : accepts(t, type));
   const first = typeOf(family)?.id;
   for (const id of [first, ...Object.keys(family.types ?? {}).filter((t) => t !== first)]) {
     const kind = resolveKind(family, id);

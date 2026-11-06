@@ -19,7 +19,7 @@ import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type Nod
 import { tidyTags } from './tags.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
-import { PORTAL, cutNames, ungroupNames } from './node-portals.js';
+import { PORTAL, connectionOf, connectionRow, cutNames, ungroupNames } from './node-portals.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -47,10 +47,12 @@ const slug = (text: string, fallback: string): string => {
 /** A node's name as a reader sees it. */
 const nameOf = (node: WorkflowNode | undefined, kinds: Kinds): string => node?.heading ?? kinds[node?.kind ?? '']?.heading ?? node?.kind ?? '?';
 
-/** A socket address in words: "Source › Rows". */
+/** A socket address in words: "Source › Rows"; a portal's row, its source's words. */
 function wordsOf(address: string, workflow: WorkflowDefinition, kinds: Kinds): string {
   const { node: id, row } = socketOf(address);
   const node = workflow.nodes.find((n) => n.id === id);
+  const source = node?.kind === PORTAL ? connectionOf(row) : undefined;
+  if (source !== undefined) return wordsOf(source, workflow, kinds);
   const kind = kindOfNode(kinds, node);
   const part = row === FALSE_SOCKET ? 'False' : row === undefined ? (kind?.branches ? 'True' : '') : (rowOf(kind?.rows ?? [], row)?.label ?? row);
   return [nameOf(node, kinds), part].filter(Boolean).join(' › ');
@@ -59,9 +61,19 @@ function wordsOf(address: string, workflow: WorkflowDefinition, kinds: Kinds): s
 /** The type a route carries, from the output it leaves; none, it has no such output. */
 const sentBy = (address: string, workflow: WorkflowDefinition, kinds: Kinds): SocketType | undefined => {
   const { node: id, row } = socketOf(address);
-  const kind = kindOfNode(kinds, workflow.nodes.find((n) => n.id === id));
+  const node = workflow.nodes.find((n) => n.id === id);
+  const source = node?.kind === PORTAL ? connectionOf(row) : undefined;
+  if (source !== undefined) return sentBy(source, workflow, kinds);
+  const kind = kindOfNode(kinds, node);
   return kind && socketType(kind, row, 'output');
 };
+
+/** A portal Out's row address with its source rewritten, through any Out's row it names: none rewritten, as it was. */
+function rerow(address: string, portal: (id: string) => boolean, rewrite: (source: string) => string | undefined): string {
+  const { node, row } = socketOf(address);
+  const source = portal(node) ? connectionOf(row) : undefined;
+  return source === undefined ? address : `${node}/${connectionRow(rewrite(source) ?? rerow(source, portal, rewrite))}`;
+}
 
 const asSocket = (type: SocketType | undefined): NodeSocket['type'] => (type === 'value' || type === 'boolean' ? type : 'object');
 
@@ -131,9 +143,11 @@ export function groupNodes(
     return `${id}-${n}`;
   })();
   // A socket per outside output that feeds in: every inside input it reaches hangs off its row.
+  const fed = new Map<string, string>();
   for (const from of [...new Set(ins.map((r) => r.from))]) {
     const reached = ins.filter((r) => r.from === from);
     const name = freeName(slug(from.replace('/', '-').replace('#', ''), 'in'), taken);
+    fed.set(from, `#in/${name}`);
     inputs.push({ name, label: wordsOf(from, workflow, all), type: asSocket(sentBy(from, workflow, all)) });
     for (const r of reached) inner.push({ from: `#in/${name}`, to: r.to });
     outer.push({ from, to: `${use}/${name}` });
@@ -145,6 +159,9 @@ export function groupNodes(
     inner.push({ from, to: `#out/${name}` });
     for (const r of outs.filter((x) => x.from === from)) outer.push({ from: `${use}/${name}`, to: r.to });
   }
+  // A portal Out's row whose source is outside is the Group Input's row it now comes in by. TODO 826
+  const portal = (node: string): boolean => ids.has(node) && workflow.nodes.find((n) => n.id === node)?.kind === PORTAL;
+  for (const [n, r] of inner.entries()) inner[n] = { ...r, from: rerow(r.from, portal, (source) => fed.get(source)) };
   const nodes = workflow.nodes.filter((n) => ids.has(n.id));
   // A tie of inner routes only goes inside; a tie of outer ones stays.
   const tied = (workflow.ties ?? []).filter((t) => t.routes.every((r) => inner.some((x) => x.from === r.from && x.to === r.to)));
@@ -193,6 +210,16 @@ export function ungroupUse(
     const { node, row } = socketOf(address);
     return `${rename.get(node) ?? node}${row === undefined ? '' : `/${row}`}`;
   };
+  // A portal Out's row, by its source's new address: one from the Group Input is a row per route the use's input took. TODO 826
+  const portal = (node: string): boolean => definition.nodes.some((n) => n.id === node && n.kind === PORTAL);
+  const feeders = (name: string): string[] => (workflow.routes ?? []).filter((r) => r.to === `${useId}/${name}`).map((r) => r.from);
+  const expand = (address: string): string[] => {
+    const { node, row } = socketOf(address);
+    const source = portal(node) ? connectionOf(row) : undefined;
+    if (source === undefined) return [moved(address)];
+    const from = source.startsWith('#in/') ? feeders(socketOf(source).row ?? '') : expand(source);
+    return from.map((f) => `${rename.get(node) ?? node}/${connectionRow(f)}`);
+  };
   const routes = workflow.routes ?? [];
   const touching = (r: NodeRoute): boolean => socketOf(r.from).node === useId || socketOf(r.to).node === useId;
   const sockets = (side: 'in' | 'out', name: string | undefined): string => `${side === 'in' ? '#in' : '#out'}${name === undefined ? '' : `/${name}`}`;
@@ -206,7 +233,7 @@ export function ungroupUse(
   for (const r of routes.filter((x) => socketOf(x.from).node === useId)) {
     const { row } = socketOf(r.from);
     if (row === FALSE_SOCKET) continue;
-    for (const inner of (definition.routes ?? []).filter((x) => x.to === sockets('out', row))) joined.push({ from: moved(inner.from), to: r.to });
+    for (const inner of (definition.routes ?? []).filter((x) => x.to === sockets('out', row))) for (const from of expand(inner.from)) joined.push({ from, to: r.to });
   }
   // A parameter nothing fed: the row it reached holds its value.
   for (const input of definition.inputs) {
@@ -218,7 +245,7 @@ export function ungroupUse(
       if (row !== undefined) values.set(node, { ...values.get(node), [row]: value });
     }
   }
-  const body = (definition.routes ?? []).filter((r) => !r.from.startsWith('#') && !r.to.startsWith('#')).map((r) => ({ from: moved(r.from), to: moved(r.to) }));
+  const body = (definition.routes ?? []).filter((r) => !r.from.startsWith('#') && !r.to.startsWith('#')).flatMap((r) => expand(r.from).map((from) => ({ from, to: moved(r.to) })));
   // A portal name the graph holds already takes the next free number: nothing links that did not.
   const names = ungroupNames(workflow.nodes.filter((n) => n.id !== useId), definition.nodes);
   const nodes: WorkflowNode[] = structuredClone(definition.nodes as WorkflowNode[]).map((n) => {

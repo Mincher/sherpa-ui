@@ -7836,23 +7836,28 @@ and the editor writes the box round their drawn cards on every draw, drag and re
 ### T-a-portal-hop-is-resolved-once
 
 **A portal hop is joined in ONE place, `portalFlow`; every reader of what flows reads its routes.**
-Will, TODO 779 · `docs/history/plan-779-portals.md`. An In and an Out of one name have no route between
-them, so a reader that walks `routes` meets an In that sends nothing and an Out that nothing reaches. Each
-reader that followed routes itself would have to learn the hop, and one would not.
+Will, TODOs 779, 826 · `docs/history/plan-779-portals.md`, `docs/history/plan-826-portal-rows.md`. An In and an
+Out of one name have no route between them, so a reader that walks `routes` meets an In that sends nothing and an
+Out row that nothing reaches. Each reader that followed routes itself would have to learn the hop, and one would not.
 
-- **What flows is `flowOf` in workflow.ts, `flowing` in node-flow.ts**: both the one resolver's routes. A
-  route into an In and a route out of an Out of its name are ONE route, from the In's source to the Out's
-  target, carrying the name (`portal`). `sentFrom`, a row's read, the field a node reads, the warnings, the
-  faults, `conditionAt`, the Outgoing JSON and a Preset Filter's compile all read it. The drawing reads the
-  routes as given, so no line joins two portals.
-- **Each In's is its own send.** Many-to-1 is several routes into one input: what takes several takes each;
-  what takes one reads null and warns, "Sort takes one route; 2 reach it through the portal "rows"" (Will's
-  rule: a mismatch reads null; Save does not wait). Those routes are `dropped`: no reader reads them, and the
-  loop check still walks them, so a loop through a portal is a loop, and the editor refuses it as a route.
-- **An Out no In names reads null**, and warns on the Out; its type is `any` until something reaches an In
-  of its name, then that type. An Out into an In of another name chains; one into its own name is a loop.
+- **An In takes many routes; every Out of its name draws ONE ROW per route into an In of the name**, as a Group
+  Input does (763). The row is named `@` and the route's SOURCE (`connectionRow`, `o/@source-1/rows`), labelled
+  from it ("Source › Rows") and typed by it. The Out's header sends nothing: it has no socket.
+- **What flows is `flowOf` in workflow.ts, `flowing` in node-flow.ts**: both the one resolver's routes. A route
+  from an Out's row is ONE route from that row's source, carrying the name (`portal`); an Out's row into an In of
+  another name chains. `sentFrom`, a row's read, the field a node reads, the warnings, the faults, `conditionAt`,
+  the Outgoing JSON and a Preset Filter's compile all read it. The drawing reads the routes as given, so no line
+  joins two portals. An Out's rows come from `flowOf`'s `kindOf`, never `kindOfNode`, which knows no routes.
+- **A row's id is its source**, so it is stable: a route in cut, its row goes, and the routes out of it are
+  `orphans`, kept as another type's are (`keptRoutes`): unseen, no fault, and Save leaves them out. The same
+  route back, the same row, and they draw again. An Out turned In, or renamed away, keeps them the same way.
+- **Each row is routed alone**, so many-to-1 is several rows, and an input that takes one takes one row.
+- **A loop through a row is a loop**: the check reads the routes as the data flows, and the editor refuses a
+  route, a name or a Rename that makes one, a name that revives a kept row too.
+- **An Out no In names warns, and has no rows.**
 - **A name is local to its graph.** A Custom Node's body resolves alone; Save as Custom Node refuses a pick
-  that holds some, not all, of a name's portals; Ungroup renumbers a name the graph holds (`rows 2`).
+  that holds some, not all, of a name's portals; a row whose source is outside becomes `@#in/<input>`, and
+  Ungroup gives each route the use's input took its own row again. Ungroup renumbers a name the graph holds.
 - **A picked portal lights its name** with `data-linked`, the active pin, as a picked node is.
 
 - Site: `src/core/data/node-portals.ts`

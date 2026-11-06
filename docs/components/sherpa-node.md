@@ -37,7 +37,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-linked` | boolean |  | a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
-| `data-output-socket` | `value` `object` `boolean` `any` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) \| any (a circle in secondary ink: a portal's Out before anything reaches its In) |
+| `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) |
 | `data-resizable` | boolean |  | the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way |
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
 | `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |

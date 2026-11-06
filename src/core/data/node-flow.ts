@@ -15,9 +15,9 @@
  * - leafOf — One test as its node says it: the Field on its header, a comparison, Time's or a Tag's; or why it says none.
  * - nodeFlow — A node's flow, read from its graph; a fault in words for a node it does not hold.
  */
-import { FALSE_SOCKET, ROWS, socketOf, takesMany, type DrawnGraph, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
+import { FALSE_SOCKET, ROWS, socketOf, type DrawnGraph, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
 import { coerce, readInput, truthOf } from './node-input.js';
-import { nullWords, portalFlow, type NullWhy } from './node-portals.js';
+import { portalFlow } from './node-portals.js';
 import { OP_LABELS, OP_TAKES, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
 
 /** A row's value as JSON writes it: a boolean as true or false, never 1 or 0, nor the words (COERCIONS, TODO 781). */
@@ -79,19 +79,12 @@ function joined(join: 'and' | 'or', reads: readonly ConditionRead[]): ConditionR
 /** Where a read is: the nodes of this graph it came through, and the uses it is inside. */
 type Walk = { seen: ReadonlySet<string>; path: readonly string[] };
 
-/** A drawn graph as the data flows: its routes through its portals, and each input that reads null. */
-type Flowing = DrawnGraph & { nulls: ReadonlyMap<string, NullWhy> };
+/** A drawn graph as the data flows: a route from a portal's row is one from that row's source. */
+type Flowing = DrawnGraph & { flowing: true };
 
 /** A drawn graph as the data flows, by the ONE resolver; one read so already, as it is. TRAP T-a-portal-hop-is-resolved-once */
 function flowing(graph: DrawnGraph): Flowing {
-  if ('nulls' in graph) return graph as Flowing;
-  const many = (address: string): boolean => {
-    const { node, row } = socketOf(address);
-    const at = graph.nodes.find((n) => n.id === node);
-    return !!at && takesMany(at, row);
-  };
-  const flow = portalFlow(graph.nodes, graph.routes, many);
-  return { ...graph, routes: flow.routes, nulls: flow.nulls };
+  return 'flowing' in graph ? (graph as Flowing) : { ...graph, routes: portalFlow(graph.nodes, graph.routes).routes, flowing: true };
 }
 
 /** The condition the routes into an input say, as ONE tree: each route's source read, several ANDed. And and Or
@@ -104,8 +97,6 @@ export function conditionAt(graph: DrawnGraph, address: string, facts: Condition
 }
 
 function readAt(graph: Flowing, address: string, facts: ConditionFacts, walk: Walk): ConditionRead {
-  const why = graph.nulls.get(address);
-  if (why) return none(nullWords(`"${said(graph, address, false)}"`, why));
   return joined('and', graph.routes.filter((r) => r.to === address).map((r) => readFrom(graph, r.from, facts, walk)));
 }
 

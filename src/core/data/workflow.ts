@@ -39,7 +39,7 @@ import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 import { columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
-import { nullWords, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
+import { connectionRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -156,27 +156,59 @@ function retyped(route: NodeRoute, byId: ReadonlyMap<string, WorkflowNode>, kind
 }
 
 /** The routes a node keeps for another of its types: into or out of a row only that type has, or into a socket only
- *  another type has. The draft keeps them, so picking it back joins them again; none is drawn, none is a fault, and
- *  Save leaves them out (`finalGraph`). A route into a socket that is there is live, whatever it carries (TODO 770).
- *  Will, 2026-11-05 */
+ *  another type has; and out of a portal's row whose route into an In is gone (TODO 826). The draft keeps them, so
+ *  picking it back joins them again; none is drawn, none is a fault, and Save leaves them out (`finalGraph`). A route
+ *  into a socket that is there is live, whatever it carries (TODO 770). Will, 2026-11-05 */
 export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = NODE_KINDS): NodeRoute[] {
-  const byId = new Map(workflow.nodes.map((n) => [n.id, n]));
-  const kept = (address: string): boolean => keptRow(byId.get(socketOf(address).node), socketOf(address).row, kinds);
-  return (workflow.routes ?? []).filter((r) => kept(r.from) || kept(r.to) || retyped(r, byId, kinds));
+  return flowOf(workflow, kinds).kept;
 }
 
-/** A workflow's routes: those its nodes' types keep for another type, the rest, and the rest as the data flows through
- *  its portals — the ONE read every reader of what flows takes; the drawing takes the rest. TRAP T-a-portal-hop-is-resolved-once */
-function flowOf(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds): { kept: NodeRoute[]; live: NodeRoute[]; flow: PortalFlow } {
-  const kept = keptRoutes(workflow, kinds);
-  const live = (workflow.routes ?? []).filter((r) => !kept.includes(r));
+/** What one read of a workflow gives: the routes kept, the rest, the rest as the data flows, and each node's kind. */
+interface Flow {
+  kept: NodeRoute[];
+  live: NodeRoute[];
+  flow: PortalFlow;
+  /** A node's kind as drawn: a portal's Out with a row per route into an In of its name. */
+  kindOf: (node: WorkflowNode | undefined) => NodeKind | undefined;
+}
+
+/** A workflow's routes: those kept for another type or a gone row, the rest, and the rest as the data flows through its
+ *  portals — the ONE read every reader of what flows takes; the drawing takes the rest. TRAP T-a-portal-hop-is-resolved-once */
+function flowOf(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds): Flow {
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-  const many = (address: string): boolean => {
-    const { node, row } = socketOf(address);
-    const kind = kindOfNode(kinds, held.get(node));
-    return !!kind && takesMany(kind, row);
+  const keep = (address: string): boolean => keptRow(held.get(socketOf(address).node), socketOf(address).row, kinds);
+  const all = workflow.routes ?? [];
+  const typed = all.filter((r) => keep(r.from) || keep(r.to) || retyped(r, held, kinds));
+  const flow = portalFlow(workflow.nodes, all.filter((r) => !typed.includes(r)));
+  const gone = new Set([...typed, ...flow.orphans]);
+  return { kept: all.filter((r) => gone.has(r)), live: all.filter((r) => !gone.has(r)), flow, kindOf: rowsOf(held, flow, kinds) };
+}
+
+/** Each node's kind, a portal's Out with its rows: one per route into an In of its name, named and typed by that route's
+ *  source, "Source › Rows", as a Group Input's is (763). TODO 826 */
+function rowsOf(held: ReadonlyMap<string, WorkflowNode>, flow: PortalFlow, kinds: Kinds): Flow['kindOf'] {
+  const made = new Map<string, NodeKind | undefined>();
+  const kindOf = (node: WorkflowNode | undefined): NodeKind | undefined => {
+    if (!node) return undefined;
+    if (made.has(node.id)) return made.get(node.id);
+    const kind = kindOfNode(kinds, node);
+    // Its own first: a row whose source is another Out's row reads that Out, never this one again.
+    made.set(node.id, kind);
+    const rows = flow.rows.get(node.id);
+    if (!kind || !rows?.length) return kind;
+    const out = { ...kind, rows: [...kind.rows, ...rows.map(connection)] };
+    made.set(node.id, out);
+    return out;
   };
-  return { kept, live, flow: portalFlow(workflow.nodes, live, many) };
+  const connection = (source: string): RowKind => {
+    const { node: id, row } = socketOf(source);
+    const from = held.get(id);
+    const kind = kindOf(from);
+    const part = row === FALSE_SOCKET ? 'False' : row === undefined ? (kind?.branches ? 'True' : undefined) : rowOf(kind?.rows ?? [], row)?.label;
+    const output = (kind && socketType(kind, row, 'output')) || 'object';
+    return { name: connectionRow(source), label: [from?.heading ?? kind?.heading ?? id, part].filter(Boolean).join(' › '), output: output === 'any' ? 'object' : output };
+  };
+  return kindOf;
 }
 
 /** A graph as Save writes it: each node with the values of its type's rows, and only the routes they join.
@@ -273,13 +305,13 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   const problems = [...faults];
   const byId = new Map<string, NodeKind>();
   // A route to a row another type holds is kept for that type: no fault, and Save leaves it out. What flows is read through the portals.
-  const { kept, flow } = flowOf(workflow, kinds);
+  const { kept, flow, kindOf } = flowOf(workflow, kinds);
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   const sends = sender(held, flow.routes, kinds, fieldsReach(held, flow.routes, kinds, facts));
   const reads = new Map<string, ReadField | undefined>();
   for (const node of workflow.nodes) {
     const shipped = kinds[node.kind];
-    const kind = kindOfNode(kinds, node);
+    const kind = kindOf(node);
     if (byId.has(node.id)) problems.push(`two nodes are "${node.id}"`);
     if (!kind) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which is not one`);
     else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
@@ -336,8 +368,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const into = at(to, 'input');
     const there = fed.get(to) ?? [];
     if (!leaves) problems.push(`a route leaves "${from}", which is no output socket`);
-    // A portal's Out sends what reaches its Ins: its type is theirs (TODO 779).
-    else if (!out && portalOf(held.get(socketOf(from).node))?.side !== 'out') problems.push(`a route leaves "${from}", which sends any type: an output says the one it sends`);
+    else if (!out) problems.push(`a route leaves "${from}", which sends any type: an output says the one it sends`);
     // A Rows row only sends: a v1 habit, the rows in, says so.
     if (!into && socketOf(to).row === ROWS.name && byId.has(socketOf(to).node)) problems.push(`a route enters "${to}", a Rows row, which only sends: a node's rows come in on its header`);
     else if (!into) problems.push(`a route enters "${to}", which is no input socket`);
@@ -354,7 +385,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   }
   // A loop has no first node to run: read as the data flows, so one through a portal is one (TODO 779).
   const next = new Map<string, FlowRoute[]>();
-  for (const r of [...flow.routes, ...flow.dropped]) next.set(socketOf(r.from).node, [...(next.get(socketOf(r.from).node) ?? []), r]);
+  for (const r of flow.routes) next.set(socketOf(r.from).node, [...(next.get(socketOf(r.from).node) ?? []), r]);
   const done = new Set<string>();
   const walking: string[] = [];
   const path: FlowRoute[] = [];
@@ -377,7 +408,6 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const through = [...new Set(ring.flatMap((r) => (r.portal ? [`"${r.portal}"`] : [])))];
     problems.push(`its routes run in a loop${through.length ? `, through the portal ${through.join(', ')}` : ''}`);
   }
-  for (const name of flow.loops) problems.push(`the portal "${name}" sends into itself, in a loop`);
   const tied = new Set<string>();
   for (const tie of workflow.ties ?? []) {
     if (tied.has(tie.id)) problems.push(`two ties are "${tie.id}"`);
@@ -537,7 +567,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
   if (!workflow) return { nodes: [], routes: [] };
   // A route kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
   // What each input reads, it reads as the data flows: through the portals (TODO 779).
-  const { kept, live: routes, flow } = flowOf(workflow, kinds);
+  const { kept, live: routes, flow, kindOf } = flowOf(workflow, kinds);
   const flows = flow.routes;
   const names = portalNames(workflow.nodes);
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
@@ -561,7 +591,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const family = kinds[node.kind]!;
-    const kind = kindOfNode(kinds, node)!;
+    const kind = kindOf(node)!;
     const at = typeOf(family, values['type']);
     // What each route into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
     const warnings: { row?: string; words: string }[] = [];
@@ -575,9 +605,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const head = needOf(kind);
     const headed = node.heading ?? (Object.keys(family.types ?? {}).length > 1 ? at?.type.label : undefined) ?? kind.heading;
     if (head) readsAt(node.id, { label: headed, needs: head });
-    // More reach it through a portal than it takes, or only an Out no In names: it reads null. A portal says its own.
-    const nulled = flow.nulls.get(node.id);
-    if (nulled) warnings.push({ words: nullWords(headed, nulled) });
+    // A portal says its own: an Out of no name, or one no In names.
     for (const w of flow.warnings) if (w.node === node.id) warnings.push({ words: w.words });
     // The field its rows read: the Field reaching its header. Its operator warns where the field's type does not take it.
     const read = fieldAt(node, flows, sent);
@@ -627,13 +655,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       if (row.gives === 'field' && reach(node.id).none) {
         if (!warnings.some((w) => w.row === undefined)) warnings.push({ row: row.name, words: storelessWords(kinds) });
       } else if (picked?.stranger) warnings.push({ row: row.name, words: `"${picked.field.name}" is not a field of the rows that come in` });
-      // A portal's Name says how many portals of its name it is joined to.
-      const told = picked && !picked.stranger ? { hint: fieldWords(picked.field) } : row.control === 'portal' ? { hint: portalHint(workflow.nodes, node.id) } : {};
-      const why = flow.nulls.get(address);
-      if (why) {
-        warnings.push({ row: row.name, words: nullWords(row.label, why) });
-        return { ...own, value: null };
-      }
+      // A portal's Name says how many portals of its name it is joined to, and an Out its rows.
+      const told = picked && !picked.stranger ? { hint: fieldWords(picked.field) } : row.control === 'portal' ? { hint: portalHint(workflow.nodes, node.id, flow.rows.get(node.id)?.length) } : {};
       // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
       if (row.control === 'switch') {
         if (!ins.length) return bad.length ? { ...own, value: null } : own;
@@ -662,23 +685,12 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         ? { ...own, ...shown, hint: `Custom ${row.multiple ? 'values' : 'value'}, from ${from}${told.hint ? `. ${told.hint}` : ''}` }
         : { ...own, value: shown.value }, true);
     });
-    const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}), ...portalSends(node.id, flow, held, kinds) };
+    const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
     return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, routes) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
   return { nodes, routes, ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) };
-}
-
-/** A portal's Out as drawn: its socket the type of what reaches its Ins, one type, else any. None: it is no Out. */
-function portalSends(id: string, flow: PortalFlow, held: ReadonlyMap<string, WorkflowNode>, kinds: Kinds): { output?: SocketType } {
-  const from = flow.sources.get(id);
-  if (!from) return {};
-  const types = [...new Set(from.map((s) => {
-    const kind = kindOfNode(kinds, held.get(socketOf(s).node));
-    return kind && socketType(kind, socketOf(s).row, 'output');
-  }))];
-  return { output: types.length === 1 && types[0] ? types[0] : 'any' };
 }
 
 /** A node's width on the plane, in px: its output socket is at its x plus this. */
