@@ -146,8 +146,9 @@ test('the toolbar floats at the bottom centre, 32px up, never over the card; the
 test('Save is a placeholder, off; Undo and Redo are off until there is a step, and say their keys', async ({ page }) => {
   await bind(page);
   expect(await can(page)).toEqual({ undo: false, redo: false, buttons: [true, true, true] });
-  const tips = await page.locator('sherpa-node-toolbar sherpa-button').evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')));
-  expect(tips.slice(0, 3)).toEqual(['Save', 'Undo (Ctrl+Z)', 'Redo (Shift+Ctrl+Z)']);
+  // By class: the toolbar's sections are Fetch, Play, Pause, Stop | Undo, Redo, Save | the graph's shape.
+  const tips = await page.evaluate(() => ['save', 'undo', 'redo'].map((n) => document.querySelector('sherpa-node-toolbar')!.shadowRoot!.querySelector(`sherpa-button.${n}`)!.getAttribute('data-tip')));
+  expect(tips).toEqual(['Save', 'Undo (Ctrl+Z)', 'Redo (Shift+Ctrl+Z)']);
   await item(page, 'math').click();
   await settle(page);
   expect(await can(page)).toEqual({ undo: true, redo: false, buttons: [true, false, true] });

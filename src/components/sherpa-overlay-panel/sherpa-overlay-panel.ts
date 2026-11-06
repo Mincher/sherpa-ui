@@ -115,11 +115,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
     this.$('.minimise')?.addEventListener('button-click', this.#onMinimise);
     this.$('.tab-open')?.addEventListener('click', this.#onMinimise);
-    // Hovering the tab peeks the panel open; leaving the tab or the panel shuts it again.
-    for (const part of [this.$('.tab'), this.$('.root')]) {
-      part?.addEventListener('pointerenter', this.#onPeek);
-      part?.addEventListener('pointerleave', this.#onUnpeek);
-    }
+    // The pointer on the tab peeks the panel open and hides the tab; the pointer leaving the PANEL shuts it to the tab again.
+    this.$('.tab')?.addEventListener('pointerenter', this.#onPeek);
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     this.#syncGroup();
@@ -280,7 +277,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       const overlay = this.hasAttribute('data-overlay');
       this.toggleState('in-area', !floating && !minimised && !overlay);
       // Docked over the view, as an overlay, or peeking from its tab: the area has given its room back.
-      this.toggleState('overlaid', (overlay || this.hasState('peeking')) && !floating);
+      this.toggleState('overlaid', ((overlay && !minimised) || this.hasState('peeking')) && !floating);
       this.toggleState('floating', floating);
       this.#syncPop();
       this.#floatBox.floated(floating);
@@ -308,6 +305,8 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Shrink to a tab, or open as it was: the area gives its room back and takes it again. */
   #minimise(): void {
     const minimised = this.hasAttribute('data-minimised');
+    // Opened for good (or shut): no longer a peek.
+    if (!minimised && this.hasState('peeking')) this.#peek(false);
     this.toggleState('minimised', minimised);
     this.set('data-updated', false);
     this.#place();
@@ -449,26 +448,42 @@ export class SherpaOverlayPanel extends SherpaElement {
     pop?.setAttribute('aria-label', fixed ? 'Pop out' : 'Pop in');
   }
 
-  /** How long the pointer may be away from a peeking panel before it shuts. */
-  #peekTimer: ReturnType<typeof setTimeout> | undefined;
-
-  /** The pointer is on the tab or the peeking panel: open it as a docked overlay, where the setting says. */
-  #onPeek = (): void => {
-    clearTimeout(this.#peekTimer);
+  /** The pointer is on the tab: open the panel as a docked overlay, where the setting says. The tab is hidden while it shows. */
+  #onPeek = (event: Event): void => {
     if (!this.hasAttribute('data-hover-open') || !this.hasAttribute('data-minimised') || !this.open) return;
-    this.toggleState('peeking', true);
-    if (this.#slotted()) this.toggleState('overlaid', true);
+    this.#peek(true);
+    // The panel opens where the tab stood, so the pointer is on it; if it is not, there is nothing to leave from.
+    const { clientX: x, clientY: y } = event as PointerEvent;
+    requestAnimationFrame(() => {
+      const box = this.$('.root')?.getBoundingClientRect();
+      if (this.hasState('peeking') && box && (x < box.left || x > box.right || y < box.top || y > box.bottom)) this.#peek(false);
+    });
   };
 
-  /** The pointer left: shut it to its tab a moment on, unless it is back or the focus is in. */
-  #onUnpeek = (): void => {
-    clearTimeout(this.#peekTimer);
-    this.#peekTimer = setTimeout(() => {
-      if (this.matches(':focus-within') || this.$('.root')?.matches(':hover') || this.$('.tab')?.matches(':hover')) return;
-      this.toggleState('peeking', false);
-      if (this.#slotted()) this.toggleState('overlaid', this.hasAttribute('data-overlay') && !this.hasAttribute('data-floating'));
-    }, 250);
+  /** Where the pointer was while the peek has run, and what hears it move. */
+  #peekEnds: AbortController | undefined;
+
+  /** The pointer moved while it peeks: out of the panel is back to the tab at once. A drag that began on it (its edge) is not a leaving. */
+  #onPeekMove = (event: Event): void => {
+    const { clientX: x, clientY: y, buttons } = event as PointerEvent;
+    const box = this.$('.root')?.getBoundingClientRect();
+    if (!buttons && box && (x < box.left || x > box.right || y < box.top || y > box.bottom)) this.#peek(false);
   };
+
+  /** Show or shut the peek, and the Minimise button's words with it: while it peeks, a press keeps it open. */
+  #peek(on: boolean): void {
+    this.toggleState('peeking', on);
+    this.#peekEnds?.abort();
+    this.#peekEnds = undefined;
+    if (on) {
+      this.#peekEnds = new AbortController();
+      this.on(document, 'pointermove', this.#onPeekMove, { while: this.#peekEnds.signal });
+    }
+    if (this.#slotted()) this.toggleState('overlaid', (on || (this.hasAttribute('data-overlay') && !this.hasAttribute('data-minimised'))) && !this.hasAttribute('data-floating'));
+    const minimise = this.$('.minimise');
+    minimise?.setAttribute('data-icon-start', on ? 'plus' : 'minus');
+    minimise?.setAttribute('aria-label', on ? 'Keep open' : 'Minimise to a tab');
+  }
 
   /** Float, or dock, and report it. TRAP T-a-floating-panel-is-a-state */
   #onFloat = (): void => {
