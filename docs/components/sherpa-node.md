@@ -23,6 +23,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-active` | boolean |  | the one picked node whose panel is shown, in a stronger ring; the HOST writes it |
+| `data-badge` | text |  | a short count on its tab's right: the rows true after a simulation. Its host writes it |
 | `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with its False socket, a rounded square |
 | `data-caption` | text |  | the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
@@ -72,7 +73,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `caption-icon`, `caption-text`, `foot`, `footer`, `grip`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
+`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `foot`, `footer`, `grip`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -100,6 +101,10 @@ What each class's base rule reads:
 | `--sherpa-font-family-mono` | `.caption` | `font-family` |
 | `--sherpa-font-size-body-xs` | `.caption` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
+| `--sherpa-theme-padding-sm` | `.caption-badge` | `padding-inline` |
+| `--sherpa-display-mode-border-rounding-sm` | `.caption-badge` | `border-radius` |
+| `--sherpa-style-surface-base-2` | `.caption-badge` | `background` |
+| `--sherpa-style-content-base` | `.caption-badge` | `color` |
 | `--sherpa-display-mode-size-2xl` | `.footer` | `min-block-size` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
@@ -114,6 +119,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }`
+`{ active?, badge?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { lightOf, simulateGraph, simulation, stepSimulation } = await import(new URL('node-simulate.js', core));
+const { lightOf, trueOf, simulateGraph, simulation, stepSimulation } = await import(new URL('node-simulate.js', core));
 const { workflowGraph } = await import(new URL('workflow.js', core));
 const { filterRows } = await import(new URL('store.js', core));
 
@@ -232,4 +232,14 @@ test('a node\'s light: the rows it heard and said, "120 → 30", and its time; t
   assert.equal(lightOf(simulateGraph(chain('status', 'eq', 'active'), { customers: rows.slice(0, 1) }).nodes.s, 1500), '1 row · 1,500 ms');
   assert.equal(lightOf(simulateGraph(chain('status', 'eq', 'active'), {}).nodes.s, 2), 'Not fetched yet · 2 ms');
   assert.equal(lightOf({ incoming: [], outgoing: [] }, 5), '5 ms');
+});
+
+test('the rows true: a fork counts its True rows, a node with no True has none, and a test nothing passes counts 0', () => {
+  const rows = rowsOf(120);
+  const kept = rows.filter((r) => r.status === 'active').length;
+  const sim = simulateGraph(chain('status', 'eq', 'active'), { customers: rows });
+  assert.equal(trueOf(sim.nodes.c), kept);
+  assert.equal(trueOf(sim.nodes.s), undefined);
+  assert.equal(trueOf(simulateGraph(chain('status', 'eq', 'no-such-status'), { customers: rows }).nodes.c), 0);
+  assert.equal(trueOf(simulateGraph(chain('status', 'eq', 'active'), {}).nodes.c), undefined);
 });

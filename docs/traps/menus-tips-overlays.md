@@ -242,6 +242,14 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
   the edge in the order they were shrunk (`--_tab-index`).
 - **`data-updated`** turns the tab active and gives it a "!" (no count yet). `notify()` sets
   it, and so does a new `data-heading` while it is a tab. Opening clears it.
+- **The tab's Float or Dock button** (`data-tab-mode`, with `data-floatable`; Will, 2026-11-06): after the label,
+  Float if the panel was last docked, Dock if it was last floating. A press on it opens the panel in THAT state
+  (`panel-float` fires, then it opens); a press on the label opens it as it was. The tab is turned by its
+  `writing-mode`, so the button sets `horizontal-tb` and stays upright. The app's setting turns it off.
+- **The Node Editor's details panel is always there** (Will, 2026-11-06): the editor shows it as a tab at the
+  start (`data-minimised`), with an empty state (`sherpa-empty-state`, "No node selected") in it; a pick FILLS
+  it and never opens it; a click on blank canvas puts the empty state back, and the panel is never hidden by
+  the editor, only by its teardown.
 - **One panel keeps its state** through `hide()` and `show()`: shut while a tab, it opens as a tab again
   (the node inspector is shown and hidden on a pick, and keeps where the reader left it).
 

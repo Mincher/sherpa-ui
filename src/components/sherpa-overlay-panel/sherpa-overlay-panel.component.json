@@ -26,25 +26,45 @@
         }
       },
       {
-        "el": "button",
+        "el": "div",
         "class": "tab",
         "part": "tab",
-        "attrs": {
-          "type": "button",
-          "aria-label": "Open panel"
-        },
         "children": [
           {
-            "el": "span",
-            "class": "tab-title",
-            "part": "tab-title"
+            "el": "button",
+            "class": "tab-open",
+            "part": "tab-open",
+            "attrs": {
+              "type": "button",
+              "aria-label": "Open panel"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "tab-title",
+                "part": "tab-title"
+              },
+              {
+                "el": "span",
+                "class": "tab-mark",
+                "part": "tab-mark",
+                "attrs": {
+                  "aria-hidden": "true"
+                }
+              }
+            ]
           },
           {
-            "el": "span",
-            "class": "tab-mark",
-            "part": "tab-mark",
+            "el": "sherpa-button",
+            "class": "tab-mode",
+            "part": "tab-mode",
             "attrs": {
-              "aria-hidden": "true"
+              "data-type": "icon",
+              "data-size": "xs",
+              "data-icon-start": "browser",
+              "aria-label": "Open floating",
+              "data-when-data-icon-start": "data-floating: sidebar-flip",
+              "data-when-aria-label": "data-floating: Open docked"
             }
           }
         ]
@@ -434,6 +454,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-tab-mode",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens floating if it was last docked, docked if it was last floating, not as it was"
+    },
+    {
+      "$type": "prop",
       "name": "data-updated",
       "type": "boolean",
       "observed": true,
@@ -538,7 +567,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, padding?, poppable?, updated?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, padding?, poppable?, tabMode?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -595,7 +624,7 @@
     {
       "$type": "state",
       "name": "focus-visible",
-      "selector": ".tab:focus-visible"
+      "selector": ".tab-open:focus-visible"
     }
   ],
   "capabilities": [
@@ -716,6 +745,9 @@
     "root.border-end-start-radius": "{sherpa.border-rounding-bottom-left}",
     "root.color": "{sherpa.style-content-base}",
     "root.box-shadow": "{sherpa.shadow-lg}",
+    "tab-open.gap": "{sherpa.theme-gap-sm}",
+    "tab-open.padding": "{sherpa.display-mode-space-sm}",
+    "tab-mode.margin-block-end": "{sherpa.display-mode-space-xs}",
     "toolbar.gap": "{sherpa.theme-gap-sm}",
     "divider.inline-size": "{sherpa.display-mode-border-width-base}",
     "divider.block-size": "{sherpa.theme-content-size-xs}",

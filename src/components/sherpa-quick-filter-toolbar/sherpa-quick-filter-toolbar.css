@@ -595,6 +595,8 @@ sherpa-accordion.scope::part(actions) {
 }
 :host(:state(floating)) .box { position: absolute; }
 :host(:not([data-floatable])) .column-float { display: none; }
+/* The grip shows on a floating column: the header's content steps right for it, as a panel's does. */
+:host(:state(floating)) .head { --_lead-width: var(--sherpa-display-mode-size-md, 20px); }
 .column {
   block-size: 100%;
 }

@@ -31,6 +31,7 @@
  * - watchSteps — Light a canvas's nodes from the one trace stream as their steps run; its stop lets it go.
  * - InspectOptions — What an inspector shows beside a node's rows, and whom it tells of an edit.
  * - inspectNode — Fill an overlay panel with one node: its rows again, their routes, and a visual.
+ * - inspectNone — The inspector with nothing picked: its empty state, in place of a node.
  * - Inspector — The overlay panel a picked node opens in.
  * - GraphEditor — What an editor's binding gives back: Save, and the undo.
  * - Undoable — An editor whose edits are steps.
@@ -43,6 +44,7 @@
 import '../../components/sherpa-accordion/sherpa-accordion.js';
 import '../../components/sherpa-button/sherpa-button.js';
 import '../../components/sherpa-code-block/sherpa-code-block.js';
+import '../../components/sherpa-empty-state/sherpa-empty-state.js';
 import '../../components/sherpa-tabs/sherpa-tabs.js';
 import '../../components/sherpa-input-text/sherpa-input-text.js';
 import '../../components/sherpa-key-value-list/sherpa-key-value-list.js';
@@ -83,7 +85,7 @@ import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { isSource, pathRead } from '../data/node-paths.js';
-import { lightOf, simulation as beginSimulation, stepSimulation, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
+import { lightOf, trueOf, simulation as beginSimulation, stepSimulation, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
 import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
@@ -235,6 +237,9 @@ function shown(row: GraphRow): string {
 }
 
 /** Set an attribute, or take it away when there is nothing to say. */
+/** The header's words when a simulation finds no row true. */
+const NO_TRUE = 'No true matches: no row passes this test, so nothing reaches True.';
+
 function put(el: Element, name: string, value: string | undefined): void {
   if (value === undefined || value === '') el.removeAttribute(name);
   else el.setAttribute(name, value);
@@ -1693,6 +1698,32 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   inspecting.set(panel, { node, fields, options });
 }
 
+/** The inspector with nothing picked: its empty state, in place of a node. */
+export function inspectNone(panel: HTMLElement): void {
+  inspecting.delete(panel);
+  const note = document.createElement('sherpa-empty-state');
+  note.setAttribute('data-size', 'sm');
+  note.setAttribute('data-heading', 'No node selected');
+  note.setAttribute('data-description', 'Pick a node on the canvas to see its details.');
+  panel.replaceChildren(note);
+  panel.setAttribute('data-heading', 'Details');
+  panel.removeAttribute('data-icon');
+}
+
+/** The editor's inspector is always there: a tab to begin with, and its empty state until a node is picked. */
+function keepOpen(inspector: Inspector | undefined): void {
+  if (!inspector) return;
+  const open = (): void => {
+    if (inspector.open) return;
+    if (!inspector.hasAttribute('data-minimised')) inspector.setAttribute('data-minimised', '');
+    inspectNone(inspector);
+    inspector.show();
+  };
+  open();
+  // A graph that replaces another shuts the old one's panel as the new one opens: open it again once that is done.
+  queueMicrotask(open);
+}
+
 /** What a frame's inspector edits, and whom it tells: none, it is read only. */
 interface FrameInspect {
   onEdit?: (set: { label?: string; description?: string }) => void;
@@ -1806,7 +1837,7 @@ interface Picked {
   /** Picked by a box, or added: the panel opens for none; open, it shows this one. TODO 756 */
   peek(node: GraphNode, graph: DrawnGraph): void;
   follow(graph: DrawnGraph): void;
-  /** A click on blank canvas: none picked, and the panel shut. */
+  /** A click on blank canvas: none picked, and the panel says so. */
   deselect(): void;
   /** None picked, and the panel left as it is: something else fills it (a frame). */
   clear(): void;
@@ -1820,11 +1851,8 @@ function pickedIn(
   onDelete?: () => void,
 ): Picked {
   let picked: string | null = null;
-  // The panel shut by the editor, not the reader: what the canvas has picked stays picked.
-  let quiet = false;
   const close = (event: Event): void => {
     if (event.target !== inspector) return;
-    if (quiet) return void (quiet = false);
     picked = null;
     markNode(canvas, null);
     onClose?.();
@@ -1841,12 +1869,8 @@ function pickedIn(
   return {
     select(node, graph): void {
       picked = node.id;
+      // The panel is always there, a tab or open: a pick fills it and never opens it.
       if (inspector) show(node, graph);
-      // A press in a node's own field keeps the focus there: the panel's show would take it, and the reader is typing.
-      let typing = canvas.contains(document.activeElement) ? document.activeElement : null;
-      while (typing?.shadowRoot?.activeElement) typing = typing.shadowRoot.activeElement;
-      inspector?.show();
-      if (typing instanceof HTMLElement && typing.matches('input, textarea')) typing.focus();
     },
     peek(node, graph): void {
       picked = node.id;
@@ -1858,10 +1882,7 @@ function pickedIn(
     },
     deselect(): void {
       picked = null;
-      if (inspector?.open) {
-        quiet = true;
-        inspector.hide();
-      }
+      if (inspector) inspectNone(inspector);
       onClose?.();
     },
     clear(): void {
@@ -2020,6 +2041,7 @@ export function bindQueryEditor(
     inspected = node.id;
     inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node), ...(node.ref?.['kept'] ? { onRemove: () => removeNodes([node.id]) } : {}) });
   }, () => { visual = null; inspected = null; }, () => removeNodes(inspected ? [inspected] : []));
+  keepOpen(inspector);
   let graph: DrawnGraph = { nodes: [], routes: [] };
   /** A cut is reported, never applied: once, however many routes are picked. */
   const cutRefused = (): void => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' });
@@ -2748,7 +2770,7 @@ export function bindWorkflow(
     }
     path = [...parent, { kind: made.id, use: step.use, label: lib.nodes[made.id]!.label }];
     enter(null);
-    inspector?.hide();
+    if (inspector) inspectNone(inspector);
   });
   const scopeNote = (): HTMLElement[] => {
     if (!insidePreset()) return [];
@@ -3086,6 +3108,7 @@ export function bindWorkflow(
     const ids = multi.size ? [...multi] : current ? [current] : [];
     if (ids.length && !readOnly()) onRemoveNodes(ids, []);
   });
+  keepOpen(inspector);
   // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
   //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.
   let simulation: { result: Simulated; stale: boolean; sig: string; times: Record<string, number> } | undefined;
@@ -3136,6 +3159,7 @@ export function bindWorkflow(
       const el = drawnOn.get(canvas)?.nodes.get(id);
       el?.removeAttribute('data-step');
       el?.removeAttribute('data-caption');
+      el?.removeAttribute('data-badge');
     }
     lit = { kind, ids };
     paintRunning();
@@ -3155,6 +3179,11 @@ export function bindWorkflow(
       if (!el) continue;
       el.setAttribute('data-step', 'done');
       put(el, 'data-caption', `${lightOf(node, simulation.times[id] ?? 0)}${simulation.stale ? ' · stale' : ''}`);
+      // Where it forks: the rows that are true, on the tab; none, and the tab and the header say so.
+      const hits = trueOf(node);
+      put(el, 'data-badge', hits === undefined ? undefined : hits.toLocaleString('en'));
+      const own = graph.nodes.find((n) => n.id === id)?.warnings?.map((w) => w.words) ?? [];
+      put(el, 'data-warning', (hits === 0 ? [...own, NO_TRUE] : own).join('\n'));
     }
   };
   /** Take the lights off. */
@@ -3163,6 +3192,8 @@ export function bindWorkflow(
       const el = drawnOn.get(canvas)?.nodes.get(id);
       el?.removeAttribute('data-step');
       el?.removeAttribute('data-caption');
+      el?.removeAttribute('data-badge');
+      if (el) put(el, 'data-warning', graph.nodes.find((n) => n.id === id)?.warnings?.map((w) => w.words).join('\n'));
     }
   };
   /** Run the graph on the rows kept, and show it: node by node, the page let draw between them when one takes a while. */

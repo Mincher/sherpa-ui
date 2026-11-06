@@ -266,8 +266,9 @@
   <sherpa-container class="column" part="column" data-padding="none" data-when-data-scroll-shadow="data-scroll-shadow"
                     data-when-data-elevation="data-floating: lg">
     <sherpa-container-header slot="header" class="head sherpa-float-bar" part="head" data-icon="filter" data-heading="Filters">
-      <!-- Floating, the header bar moves it, and this shows where to take hold: on hover, and for the keys. -->
-      <span slot="actions" class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
+      <!-- Floating, the header bar moves it, and this shows where to take hold: on hover, and for the keys. It leads the
+           header, as every panel's does: no room while hidden, and the header's content steps right when it shows. -->
+      <span slot="lead" class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
             tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
       <!-- Its title, and the filters applied beside it, where the app counts them. Will, TODO 436 -->
       <span slot="heading" class="column-heading" part="heading">Filters<template class="applied-count-tpl"><sherpa-badge class="applied-count" role="img"></sherpa-badge></template></span>

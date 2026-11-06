@@ -2888,6 +2888,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-badge",
+          "description": "a short count on its tab's right: the rows true after a simulation. Its host writes it"
+        },
+        {
           "name": "data-branches",
           "description": "a fork: the header's output is True, and a footer shows with its False socket, a rounded square",
           "valueSet": "v"
@@ -3131,6 +3135,11 @@
         {
           "name": "data-status",
           "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
+        },
+        {
+          "name": "data-tab-mode",
+          "description": "the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens floating if it was last docked, docked if it was last floating, not as it was",
+          "valueSet": "v"
         },
         {
           "name": "data-updated",

@@ -34,10 +34,27 @@
             },
             {
               "el": "span",
+              "class": "caption-warn sherpa-icon-box",
+              "part": "caption-warn",
+              "attrs": {
+                "aria-hidden": "true",
+                "data-icon": "status-warning"
+              }
+            },
+            {
+              "el": "span",
               "class": "caption-text sherpa-truncate",
               "part": "caption-text",
               "attrs": {
                 "data-text": "data-caption"
+              }
+            },
+            {
+              "el": "span",
+              "class": "caption-badge",
+              "part": "caption-badge",
+              "attrs": {
+                "data-text": "data-badge"
               }
             }
           ]
@@ -237,6 +254,15 @@
       "declared": true,
       "kind": "style",
       "description": "the one picked node whose panel is shown, in a stronger ring; the HOST writes it"
+    },
+    {
+      "$type": "prop",
+      "name": "data-badge",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "a short count on its tab's right: the rows true after a simulation. Its host writes it"
     },
     {
       "$type": "prop",
@@ -470,7 +496,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }",
+    "shape": "{ active?, badge?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
@@ -592,6 +618,10 @@
     "caption.font-family": "{sherpa.font-family-mono}",
     "caption.font-size": "{sherpa.font-size-body-xs}",
     "caption.line-height": "{sherpa.theme-content-line-height-small}",
+    "caption-badge.padding-inline": "{sherpa.theme-padding-sm}",
+    "caption-badge.border-radius": "{sherpa.display-mode-border-rounding-sm}",
+    "caption-badge.background": "{sherpa.style-surface-base-2}",
+    "caption-badge.color": "{sherpa.style-content-base}",
     "footer.min-block-size": "{sherpa.display-mode-size-2xl}",
     "body.gap": "{sherpa.theme-gap-md}",
     "body.padding-block": "{sherpa.theme-gap-md}"

@@ -59,6 +59,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-floatable': { type: 'boolean', kind: 'style' },
     // Shrunk to a tab on its area's edge; pressed, it opens as it was. TRAP T-a-minimised-panel-is-a-tab
     'data-minimisable': { type: 'boolean', kind: 'style' },
+    // The tab's Float or Dock button. TRAP T-a-minimised-panel-is-a-tab
+    'data-tab-mode': { type: 'boolean', kind: 'style' },
     'data-minimised': { type: 'boolean', kind: 'behaviour' },
     // Written by the area it docks in: the one panel in front of several. TRAP T-an-area-with-two-panels-is-tabbed
     'data-current': { type: 'boolean', kind: 'style' },
@@ -110,7 +112,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.pop')?.addEventListener('button-click', this.#onPop);
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
     this.$('.minimise')?.addEventListener('button-click', this.#onMinimise);
-    this.$('.tab')?.addEventListener('click', this.#onMinimise);
+    this.$('.tab-open')?.addEventListener('click', this.#onMinimise);
+    this.$('.tab-mode')?.addEventListener('button-click', this.#onTabMode);
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     this.#syncGroup();
@@ -416,6 +419,14 @@ export class SherpaOverlayPanel extends SherpaElement {
     const floating = !this.hasAttribute('data-floating');
     this.set('data-floating', floating);
     this.emit('panel-float', { floating });
+  };
+
+  /** The tab's own button: open the panel in the OTHER state than it was left in. TRAP T-a-minimised-panel-is-a-tab */
+  #onTabMode = (): void => {
+    const floating = !this.hasAttribute('data-floating');
+    this.set('data-floating', floating);
+    this.emit('panel-float', { floating });
+    this.minimise(false);
   };
 
   /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */

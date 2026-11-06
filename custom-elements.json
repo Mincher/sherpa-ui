@@ -7491,6 +7491,13 @@
               }
             },
             {
+              "name": "data-badge",
+              "description": "a short count on its tab's right: the rows true after a simulation. Its host writes it",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-branches",
               "description": "a fork: the header's output is True, and a footer shows with its False socket, a rounded square",
               "type": {
@@ -7702,10 +7709,16 @@
               "name": "caption"
             },
             {
+              "name": "caption-badge"
+            },
+            {
               "name": "caption-icon"
             },
             {
               "name": "caption-text"
+            },
+            {
+              "name": "caption-warn"
             },
             {
               "name": "foot"
@@ -8212,6 +8225,13 @@
               }
             },
             {
+              "name": "data-tab-mode",
+              "description": "the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens floating if it was last docked, docked if it was last floating, not as it was",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-updated",
               "description": "the panel says it changed while a tab: the tab turns active and wears a \"!\". Set by `notify()` or a new `data-heading`; cleared when it opens",
               "type": {
@@ -8485,6 +8505,12 @@
             },
             {
               "name": "tab-mark"
+            },
+            {
+              "name": "tab-mode"
+            },
+            {
+              "name": "tab-open"
             },
             {
               "name": "tab-title"

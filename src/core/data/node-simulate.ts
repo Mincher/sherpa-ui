@@ -16,6 +16,7 @@
  * - SteppingOptions — How a stepped simulation lets its host in: before each node, and a pause when one is due.
  * - stepSimulation — Step a simulation node by node, giving the host a turn when one is due.
  * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87", and the time it took.
+ * - trueOf — How many rows reach a node's True after a simulation: none where it has no True or has not run.
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
 import { filterTest, type Filter, type Row } from './store.js';
@@ -137,6 +138,11 @@ export function lightOf(node: SimulatedNode, ms: number): string {
       : [...node.incoming, ...node.outgoing].find((s) => s.note)?.note ?? '';
   const time = ms < 1 ? '<1 ms' : `${Math.round(ms).toLocaleString('en')} ms`;
   return [rows, time].filter(Boolean).join(' · ');
+}
+
+/** How many rows reach a node's True after a simulation: none where it has no True or has not run. */
+export function trueOf(node: SimulatedNode): number | undefined {
+  return node.outgoing.find((s) => s.label === 'True')?.rows?.length;
 }
 
 /** Begin a simulation: nothing runs until it is stepped. */

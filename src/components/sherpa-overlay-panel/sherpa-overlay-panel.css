@@ -136,10 +136,7 @@
   pointer-events: auto;
   z-index: var(--sherpa-layer-panels, 101);
   max-height: 10rem;
-  padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
   writing-mode: vertical-rl;
-  font: inherit;
-  cursor: pointer;
   color: var(--sherpa-style-content-base, #0c0b11);
   background: var(--_surface);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
@@ -169,8 +166,24 @@
 :host(:state(tab-start):not(:state(in-layout))[data-minimised][open]) .rail { right: auto; left: 0; }
 @media (forced-colors: active) { .rail { border-color: CanvasText; } }
 :host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
+/* The tab's body: its label and mark, one button; the mode button after it is its own. */
+.tab-open {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  min-block-size: 0;
+  padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
 .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tab:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
+.tab-open:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
+/* The mode button: upright in a tab turned on its side, and there only where the host asks and can float. */
+.tab-mode { writing-mode: horizontal-tb; flex: none; margin-block-end: var(--sherpa-display-mode-space-xs, 4px); display: none; }
+:host([data-tab-mode][data-floatable]) .tab-mode { display: inline-flex; }
 /* Updated: active, and the mark the app header's bell wears, an exclamation for a count. */
 :host([data-updated]) .tab {
   background: var(--sherpa-style-saturated-surface-base, #3b4ccd);

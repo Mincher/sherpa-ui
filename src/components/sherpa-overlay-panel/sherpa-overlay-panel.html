@@ -22,6 +22,8 @@
     data-width / data-height   how big it floats, in px, written at the end of each resize. Never
                       under 20rem by 12rem nor past the window
     data-minimisable  show the Minimise button
+    data-tab-mode     the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens
+                      floating if it was last docked, docked if it was last floating, not as it was
     data-minimised    shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating
                       too); the tab opens it as it was. Removed, it opens
     data-updated      the panel says it changed while a tab: the tab turns active and wears a "!".
@@ -63,10 +65,18 @@
 <template id="default">
   <!-- Minimised: the line down the edge the tab stands on, and this tab, turned on its side, in place of the box. -->
   <span class="rail" part="rail" aria-hidden="true"></span>
-  <button class="tab" part="tab" type="button" aria-label="Open panel">
-    <span class="tab-title" part="tab-title"></span>
-    <span class="tab-mark" part="tab-mark" aria-hidden="true">!</span>
-  </button>
+  <div class="tab" part="tab">
+    <button class="tab-open" part="tab-open" type="button" aria-label="Open panel">
+      <span class="tab-title" part="tab-title"></span>
+      <span class="tab-mark" part="tab-mark" aria-hidden="true">!</span>
+    </button>
+    <!-- After the label: Float if it was last docked, Dock if it was last floating; a press opens it in THAT state.
+         The tab is turned on its side by its writing mode, and this stays upright. TRAP T-a-minimised-panel-is-a-tab -->
+    <sherpa-button class="tab-mode" part="tab-mode" data-type="icon" data-size="xs"
+                   data-icon-start="browser" aria-label="Open floating"
+                   data-when-data-icon-start="data-floating: sidebar-flip"
+                   data-when-aria-label="data-floating: Open docked"></sherpa-button>
+  </div>
   <!-- NO scrim: a quick peek, while the page behind stays in use. -->
   <!-- `autofocus` on the dialog itself: opened, the focus is the CONTAINER's, not its first control (the grip); Tab goes on to that. -->
   <dialog class="root sherpa-float sherpa-border-edges sherpa-border-corners" part="root" autofocus tabindex="-1">

@@ -119,3 +119,15 @@ test('a node showing its step\'s tab squares its top right corner, and gets it b
   await page.evaluate(() => document.querySelector('#a')!.removeAttribute('data-caption'));
   expect(await corner()).toBe(bare);
 });
+
+test('the step tab shows the rows true as a badge, and a warned node\'s tab wears the warning icon', async ({ page }) => {
+  const read = () => page.evaluate(() => {
+    const root = document.querySelector('#a')!.shadowRoot!;
+    const shown = (sel: string) => getComputedStyle(root.querySelector(sel)!).display !== 'none';
+    return { badge: shown('.caption-badge') ? root.querySelector('.caption-badge')!.textContent : null, warn: shown('.caption-warn') };
+  });
+  await page.evaluate(() => { const n = document.querySelector('#a')!; n.setAttribute('data-caption', '120 → 3 · 4 ms'); n.setAttribute('data-badge', '3'); });
+  expect(await read()).toEqual({ badge: '3', warn: false });
+  await page.evaluate(() => { const n = document.querySelector('#a')!; n.setAttribute('data-badge', '0'); n.setAttribute('data-warning', 'No true matches'); });
+  expect(await read()).toEqual({ badge: '0', warn: true });
+});

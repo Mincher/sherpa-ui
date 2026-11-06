@@ -55,6 +55,7 @@ export class SherpaNode extends SherpaElement {
     'data-linked': { type: 'boolean', kind: 'style' },
     'data-step': { type: 'enum', kind: 'style', values: ['running', 'done', 'failed', 'skipped'] },
     'data-caption': { type: 'string', kind: 'content' },
+    'data-badge': { type: 'string', kind: 'content' },
     'data-warning': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-resizable': { type: 'boolean', kind: 'style' },

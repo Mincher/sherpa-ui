@@ -161,3 +161,25 @@ test('opened, the focus is the container\'s, not the grip\'s; Tab goes on to the
   await page.keyboard.press('Tab');
   expect((await where()).grip).toBe(true);
 });
+
+test('the tab\'s Float or Dock button: off unless asked, upright, and a press opens the panel in the OTHER state', async ({ page }) => {
+  await stage(page, {});
+  const state = () => page.evaluate(() => {
+    const p = document.getElementById('tabbed')!;
+    const b = p.shadowRoot!.querySelector('.tab-mode') as HTMLElement;
+    return { minimised: p.hasAttribute('data-minimised'), floating: p.hasAttribute('data-floating'), shown: getComputedStyle(b).display !== 'none', writing: getComputedStyle(b).writingMode, label: b.getAttribute('aria-label') };
+  });
+  await press(page, '.minimise');
+  // Not asked for: no button.
+  expect((await state()).shown).toBe(false);
+  await page.evaluate(() => document.getElementById('tabbed')!.setAttribute('data-tab-mode', ''));
+  // Last docked: it offers to float; its words are upright.
+  expect(await state()).toMatchObject({ shown: true, writing: 'horizontal-tb', label: 'Open floating', floating: false });
+  await press(page, '.tab-mode');
+  expect(await state()).toMatchObject({ minimised: false, floating: true });
+  // Last floating: it offers to dock.
+  await press(page, '.minimise');
+  expect(await state()).toMatchObject({ shown: true, label: 'Open docked', minimised: true, floating: true });
+  await press(page, '.tab-mode');
+  expect(await state()).toMatchObject({ minimised: false, floating: false });
+});

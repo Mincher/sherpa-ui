@@ -44,6 +44,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-padding` | `none` |  | `none`: the body has no padding, for content that fills it (a list) |
 | `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
+| `data-tab-mode` | boolean |  | the tab shows a Float or Dock button after its label (needs data-floatable): pressed, the panel opens floating if it was last docked, docked if it was last floating, not as it was |
 | `data-updated` | boolean |  | the panel says it changed while a tab: the tab turns active and wears a "!". Set by `notify()` or a new `data-heading`; cleared when it opens |
 | `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
 | `data-x` | number |  | where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
@@ -113,7 +114,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `rail`, `resize`, `root`, `tab`, `tab-mark`, `tab-title`, `toolbar`, `trail`
+`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `rail`, `resize`, `root`, `tab`, `tab-mark`, `tab-mode`, `tab-open`, `tab-title`, `toolbar`, `trail`
 
 ## CSS custom properties it reads
 
@@ -126,6 +127,9 @@ What each class's base rule reads:
 | `--sherpa-border-rounding-bottom-left` | `.root` | `border-end-start-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
 | `--sherpa-shadow-lg` | `.root` | `box-shadow` |
+| `--sherpa-theme-gap-sm` | `.tab-open` | `gap` |
+| `--sherpa-display-mode-space-sm` | `.tab-open` | `padding` |
+| `--sherpa-display-mode-space-xs` | `.tab-mode` | `margin-block-end` |
 | `--sherpa-theme-gap-sm` | `.toolbar` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.divider` | `inline-size` |
 | `--sherpa-theme-content-size-xs` | `.divider` | `block-size` |
@@ -134,6 +138,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, padding?, poppable?, updated?, width?, x?, y? }`
+`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, padding?, poppable?, tabMode?, updated?, width?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.
