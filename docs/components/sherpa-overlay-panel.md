@@ -7,7 +7,6 @@ A NON-modal panel on native &lt;dialog>, docked on the window's right edge. show
 |  |  |
 |---|---|
 | Category | container |
-| Built on | the native `<button>`, which gives click, keyboard, focus, disabled |
 | Figma | Overlay Panel |
 | Source | [.ts](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts) · [.html](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.html) · [.css](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.css) · [.component.json](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.component.json) · [.example.json](../../src/components/sherpa-overlay-panel/sherpa-overlay-panel.example.json) |
 
@@ -106,7 +105,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `resize`, `root`, `tab`, `tab-mark`, `tab-title`, `toolbar`, `trail`
+`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `rail`, `resize`, `root`, `tab`, `tab-mark`, `tab-title`, `toolbar`, `trail`
 
 ## CSS custom properties it reads
 

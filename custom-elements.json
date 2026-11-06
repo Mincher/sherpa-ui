@@ -8526,6 +8526,9 @@
               "name": "pop"
             },
             {
+              "name": "rail"
+            },
+            {
               "name": "resize"
             },
             {

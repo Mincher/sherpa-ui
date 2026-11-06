@@ -121,7 +121,7 @@
 /* Minimised: the box is gone and a TAB stands on the edge of its area, turned on its side.
    The panel has left its area (as floating does), so the area gives its room back; the tabs
    of several panels stack down the edge. TRAP T-a-minimised-panel-is-a-tab */
-.tab, .tab-mark { display: none; }
+.tab, .tab-mark, .rail { display: none; }
 :host([data-minimised]) .root { display: none; }
 /* PHYSICAL sides: the tab's own vertical writing mode would turn the logical ones. */
 :host([data-minimised][open]) .tab {
@@ -153,6 +153,20 @@
   border-left: 0;
   border-radius: 0 var(--sherpa-border-rounding-top-right, 4px) var(--sherpa-border-rounding-bottom-right, 4px) 0;
 }
+/* The line down the window's edge under the header, where the tab stands (a panel in a layout has the
+   layout's own: sherpa-layout-panels draws it). TRAP T-an-area-with-two-panels-is-tabbed */
+:host(:not(:state(in-layout))[data-minimised][open]) .rail {
+  display: block;
+  position: fixed;
+  top: var(--_tab-top, 0px);
+  bottom: 0;
+  right: 0;
+  z-index: var(--sherpa-layer-panels, 101);
+  pointer-events: none;
+  border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
+}
+:host(:state(tab-start):not(:state(in-layout))[data-minimised][open]) .rail { right: auto; left: 0; }
+@media (forced-colors: active) { .rail { border-color: CanvasText; } }
 :host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
 .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }

@@ -6,23 +6,25 @@
   "$description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there",
   "element": {
     "$type": "element",
-    "tag": "button",
+    "tag": "span",
     "attributes": {
-      "type": "button",
-      "aria-label": "Open panel"
+      "aria-hidden": "true"
     },
-    "provides": [
-      "click",
-      "keyboard",
-      "focus",
-      "disabled"
-    ]
+    "provides": []
   },
   "templates": [
     "default"
   ],
   "anatomy": {
     "roots": [
+      {
+        "el": "span",
+        "class": "rail",
+        "part": "rail",
+        "attrs": {
+          "aria-hidden": "true"
+        }
+      },
       {
         "el": "button",
         "class": "tab",

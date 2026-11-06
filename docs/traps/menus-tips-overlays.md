@@ -275,6 +275,13 @@ tabs on the inner side, the panel on the other.
 - **Minimising one docked panel minimises its area's** (`panel-minimise` fires for each);
   each is its own tab on the window's edge, and a tab restores only its own panel. A
   floating panel minimises alone.
+- **A tab of any kind draws the area's edge line** (Will, TODO 851): with two panels, on the inner edge (the
+  `.area::after`); with ANY open panel minimised, even a single one, on the edge the tab stands on, where the nav
+  (a start area) or the window (an end area) meets it (`start-rail`, `end-rail`, with the area floating, which hid
+  the divider). A minimised panel in the SHELL leaves its slot (its tab is window-fixed), so the overlay panel
+  draws that line itself (`.rail`, under the header); a panel slotted in a layout is in the layout's. Measured
+  first by pixel on Demos' Node Editor, Records, a canvas and the shell's start and end: the tabbed line was
+  there; the minimised one never was.
 - **Shown** means open: a shut panel in the slot has no tab. The area's width goes when
   every panel in it floats or is minimised.
 
@@ -284,6 +291,7 @@ tabs on the inner side, the panel on the other.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-panel-area-tabs.spec.ts`
+- Site: `test/e2e/reforged-panel-area-edge.spec.ts`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
 ### T-a-panel-slotted-in-a-layout-is-docked-there

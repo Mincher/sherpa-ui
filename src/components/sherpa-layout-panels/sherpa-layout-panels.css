@@ -122,6 +122,13 @@
 :host(:state(start-floating)) .edge-start,
 :host(:state(end-floating)) .area-end::after,
 :host(:state(end-floating)) .edge-end { display: none; }
+/* Every panel in the area a TAB: the area covers the layout, and the line runs down the layout's own
+   edge, where the nav (a start area) or the window (an end area) meets the tab. Over the hidden divider.
+   TRAP T-an-area-with-two-panels-is-tabbed */
+:host(:state(start-rail):state(start-floating)) .area-start::after,
+:host(:state(end-rail):state(end-floating)) .area-end::after { display: block; }
+:host(:state(start-rail):state(start-floating)) .area-start::after { inset-inline: 0 auto; }
+:host(:state(end-rail):state(end-floating)) .area-end::after { inset-inline: auto 0; }
 
 /* The INNER edge's handle: a strip astride the divider, half each side, with a line down
    its middle while it is pointed at, focused or held. TRAP T-an-edge-resizes-its-box */

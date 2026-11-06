@@ -117,6 +117,8 @@ export class SherpaLayoutPanels extends SherpaElement {
     this.toggleState(`${side}-open`, open.length > 0);
     this.toggleState(`${side}-tabs`, open.length > 1);
     // A minimised panel is a tab on the layout's edge: its area gives its room back, as floating does. TRAP T-a-minimised-panel-is-a-tab
+    // …and while ANY open one is a tab, even a single one, a line runs down the edge the tab stands on. TRAP T-an-area-with-two-panels-is-tabbed
+    this.toggleState(`${side}-rail`, open.some((p) => p.hasAttribute('data-minimised')));
     this.toggleState(`${side}-floating`, panels.length > 0 && panels.every((p) => p.hasAttribute('data-floating') || p.hasAttribute('data-minimised')));
     void this.renderItems(`.tabs-${side}`, 'template.tab-tpl', open.map((p, id) => ({ id: String(id), label: p.getAttribute('data-heading') || p.id })), {
       after: (tab, item) => {
