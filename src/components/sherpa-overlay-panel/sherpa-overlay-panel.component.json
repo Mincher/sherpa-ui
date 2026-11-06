@@ -80,6 +80,9 @@
             "el": "sherpa-container-header",
             "class": "header sherpa-float-bar",
             "part": "header",
+            "attrs": {
+              "data-bordered-close": ""
+            },
             "children": [
               {
                 "el": "span",
@@ -130,47 +133,47 @@
                     }
                   },
                   {
-                    "el": "sherpa-button",
-                    "class": "minimise",
-                    "part": "minimise",
-                    "attrs": {
-                      "data-type": "icon",
-                      "data-size": "sm",
-                      "data-icon-start": "minus",
-                      "aria-label": "Minimise to a tab"
-                    }
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "float",
-                    "part": "float",
-                    "attrs": {
-                      "data-type": "icon",
-                      "data-size": "sm",
-                      "data-icon-start": "browser",
-                      "aria-label": "Float",
-                      "data-when-data-icon-start": "data-floating: sidebar-flip",
-                      "data-when-aria-label": "data-floating: Dock"
-                    }
-                  },
-                  {
-                    "el": "sherpa-button",
-                    "class": "pop",
-                    "part": "pop",
-                    "attrs": {
-                      "data-type": "icon",
-                      "data-size": "sm",
-                      "data-icon-start": "sidebar-flip",
-                      "aria-label": "Pop in",
-                      "data-when-data-icon-start": "data-fixed: monitor-w-floating-window",
-                      "data-when-aria-label": "data-fixed: Pop out"
-                    }
-                  },
-                  {
                     "el": "sherpa-group",
-                    "class": "view-modes",
-                    "part": "view-modes",
+                    "class": "modes",
+                    "part": "modes",
                     "children": [
+                      {
+                        "el": "sherpa-button",
+                        "class": "minimise",
+                        "part": "minimise",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "minus",
+                          "aria-label": "Minimise to a tab"
+                        }
+                      },
+                      {
+                        "el": "sherpa-button",
+                        "class": "float",
+                        "part": "float",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "browser",
+                          "aria-label": "Float",
+                          "data-when-data-icon-start": "data-floating: sidebar-flip",
+                          "data-when-aria-label": "data-floating: Dock"
+                        }
+                      },
+                      {
+                        "el": "sherpa-button",
+                        "class": "pop",
+                        "part": "pop",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "sidebar-flip",
+                          "aria-label": "Pop in",
+                          "data-when-data-icon-start": "data-fixed: monitor-w-floating-window",
+                          "data-when-aria-label": "data-fixed: Pop out"
+                        }
+                      },
                       {
                         "el": "sherpa-button",
                         "class": "expand",

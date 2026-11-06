@@ -99,3 +99,39 @@ test('shut and shown again, a minimised panel comes back as a tab: its state is 
   expect((await part(page, '.tab')).shown).toBe(true);
   expect((await part(page, '.root')).shown).toBe(false);
 });
+
+test('the header\'s mode buttons are ONE group with the ends on its first and last shown; the close button has a border; the grip reserves no room', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const make = async (attrs: string[]): Promise<PanelEl> => {
+      const el = document.createElement('sherpa-overlay-panel') as PanelEl;
+      el.setAttribute('data-heading', 'Peek');
+      for (const a of attrs) el.setAttribute(a, '');
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.show();
+      await window.__settled();
+      return el;
+    };
+    const rr = (el: PanelEl, part: string, side: string): string => getComputedStyle(el.shadowRoot!.querySelector(`.${part}`)!).getPropertyValue(`--sherpa-border-rounding-${side}`).trim();
+    const docked = await make(['data-dismissible', 'data-minimisable', 'data-floatable', 'data-external']);
+    const group = docked.shadowRoot!.querySelector('.modes')!;
+    const titleX = (el: PanelEl): number => Math.round(el.shadowRoot!.querySelector('.header')!.shadowRoot!.querySelector('.title')!.getBoundingClientRect().x - el.shadowRoot!.querySelector('.root')!.getBoundingClientRect().x);
+    const out = {
+      oneGroup: group.localName === 'sherpa-group' && [...group.children].map((c) => c.className).join(' '),
+      first: [rr(docked, 'minimise', 'top-left'), rr(docked, 'minimise', 'top-right')],
+      last: [rr(docked, 'external', 'top-left'), rr(docked, 'external', 'top-right')],
+      look: docked.shadowRoot!.querySelector('.header')!.shadowRoot!.querySelector('.close')!.getAttribute('data-look'),
+      dockedX: titleX(docked),
+      floatX: 0,
+    };
+    const floating = await make(['data-dismissible', 'data-minimisable', 'data-floatable', 'data-external', 'data-floating']);
+    out.floatX = titleX(floating);
+    return out;
+  });
+  expect(r.oneGroup).toBe('minimise float pop expand external');
+  expect(r.first).toEqual(['4px', '0px']);
+  expect(r.last).toEqual(['0px', '4px']);
+  expect(r.look).toBe('default');
+  // The grip shows over the start padding: the title never moves for it.
+  expect(r.floatX).toBe(r.dockedX);
+});

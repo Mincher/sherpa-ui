@@ -836,6 +836,11 @@
       "description": "the header bar for a container's `header` slot.",
       "attributes": [
         {
+          "name": "data-bordered-close",
+          "description": "the close button has the default look's border, not the transparent one",
+          "valueSet": "v"
+        },
+        {
           "name": "data-collapsed",
           "description": "collapsed state (opt-in; absent = expanded default; the toggle reflects it)",
           "valueSet": "v"

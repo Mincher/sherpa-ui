@@ -18,6 +18,7 @@ export class SherpaContainerHeader extends SherpaElement {
   static override props = {
     'data-collapsible': { type: 'boolean', kind: 'style' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
+    'data-bordered-close': { type: 'boolean', kind: 'style' },
     'data-draggable': { type: 'boolean', kind: 'style' },
     'data-type': { type: 'enum', kind: 'style', values: ['default', 'panel'] },
     'data-heading': { type: 'string', kind: 'content' },

@@ -12,6 +12,7 @@
     data-icon         a glyph before the title (shows the icon slot)
     data-draggable    show the drag handle
     data-dismissible  show the close button
+    data-bordered-close  the close button has the default look's border, not the transparent one
     data-collapsible  show the collapse toggle
     data-collapsed    collapsed state (opt-in; absent = expanded default; the toggle reflects it)
     data-presentation default | bar | donut | pie | grid | off — Show as, a menu before close, with
@@ -22,7 +23,7 @@
 
   Slots:
     heading   — custom heading element (replaces the default .title)
-    lead      — a control at the very start, before the drag handle, chevron and icon (a floating panel's grip)
+    lead      — a control over the header's very start, before the drag handle, chevron and icon (a floating panel's grip); it reserves no room
     icon      — custom icon element (else data-icon glyph)
     actions   — extra trailing action controls (before close)
     metadata  — bottom metadata strip (Panel) / secondary content (Default)
@@ -41,8 +42,9 @@
   <header class="header" part="header">
     <!-- The leading cell: the drag handle, the icon — and, collapsible, the
          chevron, as Figma's accordion variant has it. -->
+    <!-- The lead takes NO room: it is placed over the header's start padding. -->
+    <slot name="lead" data-accepts="control"></slot>
     <span class="left" part="left">
-      <slot name="lead" data-accepts="control"></slot>
       <!-- Composed sherpa-buttons, not raw <button>s: a unicode glyph inks at
            the body font's weight and reads wrong beside every other control. -->
       <sherpa-button class="drag" part="drag" data-type="icon" data-size="xs"
@@ -72,7 +74,7 @@
       <span class="show-as" part="show-as"></span>
       <sherpa-button class="close" part="close" data-type="icon" data-size="sm"
                      data-look="transparent" data-icon-start="cross"
-                     aria-label="Close"></sherpa-button>
+                     aria-label="Close" data-when-data-look="data-bordered-close: default"></sherpa-button>
     </div>
 
     <!-- The description is the metadata's own first line, as Figma's is. -->

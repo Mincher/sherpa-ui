@@ -24,6 +24,7 @@ For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, 
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-bordered-close` | boolean |  | the close button has the default look's border, not the transparent one |
 | `data-collapsed` | boolean | `false` | collapsed state (opt-in; absent = expanded default; the toggle reflects it) |
 | `data-collapsible` | boolean |  | show the collapse toggle |
 | `data-description` | text |  | secondary text (rendered into .description) |
@@ -52,7 +53,7 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| `lead` | control | a control at the very start, before the drag handle, chevron and icon (a floating panel's grip) |
+| `lead` | control | a control over the header's very start, before the drag handle, chevron and icon (a floating panel's grip); it reserves no room |
 | `icon` | icon | custom icon element (else data-icon glyph) |
 | `heading` | text | custom heading element (replaces the default .title) |
 | `actions` | control, input | extra trailing action controls (before close) |
@@ -98,6 +99,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, description?, dismissible?, draggable?, filterToolbar?, heading?, icon?, presentation?, presentationDefault?, type? }`
+`{ borderedClose?, collapsed?, collapsible?, description?, dismissible?, draggable?, filterToolbar?, heading?, icon?, presentation?, presentationDefault?, type? }`
 
 Its declared props by name: `label` sets data-label.

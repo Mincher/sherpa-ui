@@ -19,16 +19,16 @@
       "part": "header",
       "children": [
         {
+          "slot": "lead",
+          "attrs": {
+            "data-accepts": "control"
+          }
+        },
+        {
           "el": "span",
           "class": "left",
           "part": "left",
           "children": [
-            {
-              "slot": "lead",
-              "attrs": {
-                "data-accepts": "control"
-              }
-            },
             {
               "el": "sherpa-button",
               "class": "drag",
@@ -143,7 +143,8 @@
                 "data-size": "sm",
                 "data-look": "transparent",
                 "data-icon-start": "cross",
-                "aria-label": "Close"
+                "aria-label": "Close",
+                "data-when-data-look": "data-bordered-close: default"
               }
             }
           ]
@@ -173,6 +174,15 @@
     }
   },
   "props": [
+    {
+      "$type": "prop",
+      "name": "data-bordered-close",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the close button has the default look's border, not the transparent one"
+    },
     {
       "$type": "prop",
       "name": "data-collapsed",
@@ -296,7 +306,7 @@
       "accepts": [
         "control"
       ],
-      "description": "a control at the very start, before the drag handle, chevron and icon (a floating panel's grip)"
+      "description": "a control over the header's very start, before the drag handle, chevron and icon (a floating panel's grip); it reserves no room"
     },
     {
       "$type": "slot",
@@ -333,7 +343,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, description?, dismissible?, draggable?, filterToolbar?, heading?, icon?, presentation?, presentationDefault?, type? }",
+    "shape": "{ borderedClose?, collapsed?, collapsible?, description?, dismissible?, draggable?, filterToolbar?, heading?, icon?, presentation?, presentationDefault?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

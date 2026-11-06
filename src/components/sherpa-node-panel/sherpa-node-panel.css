@@ -52,7 +52,8 @@
   display: flex;
   align-items: center;
   position: absolute;
-  top: 5rem;
+  /* The same gap below its area's top as the overlay panel's tab. */
+  top: var(--sherpa-layout-grid-padding, 16px);
   left: 0;
   max-height: 10rem;
   padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);

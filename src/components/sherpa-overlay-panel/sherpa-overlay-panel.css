@@ -120,7 +120,8 @@
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
   position: fixed;
-  top: calc(5rem + var(--_tab-index, 0) * 11rem);
+  /* From the top of the panel areas (below the header), as the Nodes tab is from its area's. */
+  top: calc(var(--_tab-top, 0px) + var(--sherpa-layout-grid-padding, 16px) + var(--_tab-index, 0) * 11rem);
   right: 0;
   z-index: var(--sherpa-layer-panels, 101);
   max-height: 10rem;
@@ -215,8 +216,6 @@
 }
 :host(:not([data-expandable])) .expand { display: none; }
 :host(:not([data-external])) .external { display: none; }
-:host(:not([data-expandable]):not([data-external])) .view-modes,
-:host(:state(in-area):not([data-external])) .view-modes { display: none; }
 :host(:not([data-poppable])) .pop,
 :host(:state(no-area)) .pop,
 :host([data-maximised]) .pop,
@@ -225,16 +224,26 @@
 :host([data-maximised]) .minimise,
 :host(:not([data-floatable])) .float,
 :host([data-maximised]) .float { display: none; }
+:host(:not([data-minimisable]):not([data-floatable]):not([data-poppable]):not([data-expandable]):not([data-external])) .modes { display: none; }
 
-/* One of the pair alone is a whole button, not half a group. */
-:host(:not([data-external])) .expand,
-:host(:not([data-expandable])) .external,
-:host(:state(in-area)) .external {
+/* The group's first and last SHOWN button wear its ends: the group derives them from :first-child and
+   :last-child, which a hidden button still is. `#syncGroup` says which they are. */
+:host(:state(first-minimise)) .minimise,
+:host(:state(first-float)) .float,
+:host(:state(first-pop)) .pop,
+:host(:state(first-expand)) .expand,
+:host(:state(first-external)) .external {
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
-  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+:host(:state(last-minimise)) .minimise,
+:host(:state(last-float)) .float,
+:host(:state(last-pop)) .pop,
+:host(:state(last-expand)) .expand,
+:host(:state(last-external)) .external {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 

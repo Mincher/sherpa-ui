@@ -85,3 +85,15 @@ test('floating one floats only it; docking puts it back as the active tab', asyn
   expect(a.tabs).toEqual([{ label: 'ONE', on: false }, { label: 'TWO', on: true }]);
   expect(a.drawn).toEqual(['two']);
 });
+
+test('in tab mode the edge facing the canvas is a thin line', async ({ page }) => {
+  await stage(page);
+  const colour = () => page.evaluate(() => {
+    const layout = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!;
+    return getComputedStyle(layout.shadowRoot!.querySelector('.area-end')!, '::after').borderInlineStartColor;
+  });
+  const tabbed = await colour();
+  await click(page, '.float', 'two');
+  // One panel left: the area's own divider, a darker line.
+  expect(await colour()).not.toBe(tabbed);
+});

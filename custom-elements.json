@@ -2125,6 +2125,13 @@
           "description": "the header bar for a container's `header` slot.",
           "attributes": [
             {
+              "name": "data-bordered-close",
+              "description": "the close button has the default look's border, not the transparent one",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-collapsed",
               "description": "collapsed state (opt-in; absent = expanded default; the toggle reflects it)",
               "type": {
@@ -2241,7 +2248,7 @@
           "slots": [
             {
               "name": "lead",
-              "description": "a control at the very start, before the drag handle, chevron and icon (a floating panel's grip) (accepts: control)"
+              "description": "a control over the header's very start, before the drag handle, chevron and icon (a floating panel's grip); it reserves no room (accepts: control)"
             },
             {
               "name": "icon",
@@ -8490,6 +8497,9 @@
               "name": "minimise"
             },
             {
+              "name": "modes"
+            },
+            {
               "name": "pop"
             },
             {
@@ -8512,9 +8522,6 @@
             },
             {
               "name": "trail"
-            },
-            {
-              "name": "view-modes"
             }
           ]
         }

@@ -105,7 +105,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `pop`, `resize`, `root`, `tab`, `tab-mark`, `tab-title`, `toolbar`, `trail`, `view-modes`
+`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `minimise`, `modes`, `pop`, `resize`, `root`, `tab`, `tab-mark`, `tab-title`, `toolbar`, `trail`
 
 ## CSS custom properties it reads
 

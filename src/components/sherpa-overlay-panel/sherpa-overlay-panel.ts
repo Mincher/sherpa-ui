@@ -30,6 +30,9 @@ function moveInto(parent: Node, node: ChildNode, before: ChildNode | null): void
   if (active instanceof HTMLElement) queueMicrotask(() => (active as HTMLElement).focus());
 }
 
+/** The group's buttons, in order. */
+const GROUP = ['minimise', 'float', 'pop', 'expand', 'external'] as const;
+
 export class SherpaOverlayPanel extends SherpaElement {
   // The floating box's sheet, shared with the node panel. TRAP T-a-floating-panel-is-a-state
   static override css = [new URL('../../core/sherpa-float.css', import.meta.url), new URL('./sherpa-overlay-panel.css', import.meta.url)];
@@ -104,6 +107,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.tab')?.addEventListener('click', this.#onMinimise);
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
+    this.#syncGroup();
     /* The LEFT edge: dragged, it moves as far as the pointer does, and
        ArrowLeft widens. TRAP T-an-overlay-panel-resizes-from-its-left-edge
        TRAP T-an-edge-resizes-its-box */
@@ -176,8 +180,11 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Tabs of the open minimised panels stack down the edge, in the order they were shrunk. */
   static #stack(): void {
     let index = 0;
+    // The tabs stand under the header: where the shell's panel areas begin.
+    const top = document.querySelector('sherpa-app-shell')?.shadowRoot?.querySelector('sherpa-layout-panels')?.getBoundingClientRect().top ?? 0;
     for (const panel of document.querySelectorAll<SherpaOverlayPanel>('sherpa-overlay-panel[data-minimised][open]')) {
       panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-index', String(index++));
+      panel.$<HTMLElement>('.tab')?.style.setProperty('--_tab-top', `${Math.round(top)}px`);
     }
   }
 
@@ -233,6 +240,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     else this.#popOut();
     this.toggleState('in-area', !!this.#home);
     this.toggleState('floating', floating);
+    this.#syncGroup();
     this.#floatBox.floated(floating);
     // …and leaves the right edge, as a fixed one does. TRAP T-one-overlay-panel-at-a-time
     if (floating || minimised) SherpaOverlayPanel.#shown.delete(this);
@@ -309,6 +317,26 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (this.open && !this.hasAttribute('data-floating') && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
   }
 
+  /** The buttons of the one group, in order: the first and the last that show wear the group's ends, which
+   *  :first-child and :last-child give a button that is hidden. TRAP T-a-minimised-panel-is-a-tab */
+  #syncGroup(): void {
+    // The same rules the CSS hides them by, read from the host: a computed style is not drawn yet at the first render.
+    const has = (attr: string): boolean => this.hasAttribute(attr);
+    const maximised = has('data-maximised');
+    const visible: Record<(typeof GROUP)[number], boolean> = {
+      minimise: has('data-minimisable') && !maximised,
+      float: has('data-floatable') && !maximised,
+      pop: has('data-poppable') && !maximised && !this.hasState('no-area') && !this.hasState('floating'),
+      expand: has('data-expandable') && !this.hasState('in-area'),
+      external: has('data-external'),
+    };
+    const shown = GROUP.filter((name) => visible[name]);
+    for (const name of GROUP) {
+      this.toggleState(`first-${name}`, shown[0] === name);
+      this.toggleState(`last-${name}`, shown.at(-1) === name);
+    }
+  }
+
   /** Mirror the panel's attributes onto the composed header. */
   #syncHeader(): void {
     const header = this.$('.header');
@@ -334,6 +362,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   #onExpand = (): void => {
     const maximised = !this.hasAttribute('data-maximised');
     this.set('data-maximised', maximised);
+    this.#syncGroup();
     this.emit('panel-expand', { maximised });
   };
 

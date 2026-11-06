@@ -15,6 +15,7 @@
    under the title — spanning to the end, not under the icon — 4 below.
    Will, TODO 80. */
 .header {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
@@ -27,7 +28,7 @@
 }
 /* Nothing leads: the title takes the first column, so no gap is spent on an
    empty one. */
-:host(:not([data-draggable], [data-icon], :state(has-icon), :state(has-lead), [data-collapsible])) .header {
+:host(:not([data-draggable], [data-icon], :state(has-icon), [data-collapsible])) .header {
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     "labels actions"
@@ -47,7 +48,7 @@
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
-:host(:is([data-draggable], [data-icon], :state(has-icon), :state(has-lead), [data-collapsible])) .left { display: inline-flex; }
+:host(:is([data-draggable], [data-icon], :state(has-icon), [data-collapsible])) .left { display: inline-flex; }
 
 .drag,
 .icon {
@@ -159,4 +160,13 @@ slot[name="heading"] { display: contents; }
 /* ── Narrow: drop the description first ───────────────────────────────── */
 @container sherpa-container-header (max-width: 220px) {
   .description { display: none; }
+}
+
+/* The slotted lead (a panel's grip) floats over the start padding and reserves nothing, so it never
+   nudges the title when it appears. */
+::slotted([slot="lead"]) {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 0;
+  margin-block: auto;
 }
