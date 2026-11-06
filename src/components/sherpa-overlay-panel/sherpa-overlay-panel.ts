@@ -513,6 +513,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** A press outside a peeking panel, or Escape, ends the peek: the way out for a touch screen, which has no leaving. */
   #onPeekPress = (event: Event): void => {
+    if (this.hasAttribute('data-floating')) return;
     const away = event.type === 'keydown' ? (event as KeyboardEvent).key === 'Escape' : !event.composedPath().includes(this);
     if (away) this.#peek(false);
   };
@@ -522,6 +523,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** The pointer moved while it peeks: out of the panel is back to the tab at once. A drag that began on it (its edge) is not a leaving. */
   #onPeekMove = (event: Event): void => {
+    if (this.hasAttribute('data-floating')) return;
     const { clientX: x, clientY: y, buttons, pointerType } = event as PointerEvent;
     const box = this.$('.root')?.getBoundingClientRect();
     // A finger leaves by pressing outside, not by moving.
@@ -547,7 +549,10 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Float, or dock, and report it. TRAP T-a-floating-panel-is-a-state */
   #onFloat = (): void => {
     const floating = !this.hasAttribute('data-floating');
+    // Floated from a panel shown on hover, it stays: a floating panel is no peek, and nothing of the peek (its leaving, its outside press) ends it.
+    const hovering = this.hasState('peeking');
     this.set('data-floating', floating);
+    if (hovering) this.minimise(false);
     this.emit('panel-float', { floating });
   };
 

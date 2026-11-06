@@ -242,3 +242,25 @@ test('a panel at the start side has its resize edge on the RIGHT, facing the con
   });
   expect(await edgeSide('w')).toEqual({ atLeft: true, atRight: false });
 });
+
+test('floated from a panel shown on hover, it stays floating when the pointer leaves, a press lands outside, or Escape is pressed', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit', 'a WebKit hover is ended by its own synthetic pointer events');
+  await stage(page, 'data-hover-open data-minimised');
+  const read = () => page.evaluate(() => {
+    const p = document.getElementById('p') as HTMLElement & { dockState: string };
+    return { state: p.dockState, shown: getComputedStyle(p.shadowRoot!.querySelector('.root')!).display !== 'none' };
+  });
+  const tab = await page.evaluate(() => { const b = document.getElementById('p')!.shadowRoot!.querySelector('.tab-open')!.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
+  await page.mouse.move(tab.x, tab.y);
+  await expect.poll(async () => (await read()).state).toBe('hover');
+  // Float it from there (the button's own press: the pointer stays over the panel).
+  await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.float')!.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await page.evaluate(() => window.__settled());
+  expect(await read()).toEqual({ state: 'floating', shown: true });
+  // Away from it, a press outside, and Escape: none of them shuts a floating panel.
+  await page.mouse.move(1350, 780);
+  await page.mouse.click(1350, 780);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  expect(await read()).toEqual({ state: 'floating', shown: true });
+});

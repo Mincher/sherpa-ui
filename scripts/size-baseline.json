@@ -68,7 +68,7 @@
   "src/components/sherpa-notifications/sherpa-notifications.ts": 182,
   "src/components/sherpa-outlet/outlet-nav.ts": 401,
   "src/components/sherpa-outlet/sherpa-outlet.ts": 765,
-  "src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts": 613,
+  "src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts": 618,
   "src/components/sherpa-pagination/sherpa-pagination.ts": 193,
   "src/components/sherpa-panel/sherpa-panel.ts": 24,
   "src/components/sherpa-progress-bar/sherpa-progress-bar.ts": 80,
