@@ -4,8 +4,8 @@ import { test, expect, type Page } from './harness';
  * UNFURL GRAPH lays the whole graph out round its most connected node — Will, TODO 569. A real press on the
  * toolbar's button: every node moves, none overlaps, every line runs left to right, the drawn lines cross less,
  * the view fits them, and ONE Undo puts every place back. Off read only, and with one node. The Query editor's
- * Unfurl keeps its places for the tab. Places are read from the nodes, lines from the drawn paths.
- * TRAP T-unfurl-keeps-the-flow
+ * Unfurl keeps its places for the tab. A node's neighbours stand in the order of the sockets they join (Will,
+ * TODO 827). Places are read from the nodes, lines from the drawn paths. TRAP T-unfurl-keeps-the-flow
  */
 type Flow = { nodes: { id: string; x: number; y: number }[]; routes: { from: string; to: string; via?: unknown[] }[]; ties?: unknown[] };
 type Ed = { workflow(): Flow; undo(): boolean };
@@ -60,6 +60,27 @@ const overlaps = (r: Record<string, { x: number; y: number; w: number; h: number
   return hit;
 };
 const button = (page: Page) => page.locator('sherpa-node-toolbar sherpa-button.unfurl');
+/** The drawn lines socket to socket: pairs that cross, two of one node's counted too; and pairs of one node's lines,
+ *  on one side, whose far ends stand out of the order of their sockets there. */
+const atSockets = (page: Page) => page.evaluate(() => {
+  const segs = [...document.querySelectorAll('#cv > svg.graph-routes path[data-from]')].map((p) => {
+    const n = (p.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?/g)!.map(Number);
+    return { from: p.getAttribute('data-from')!.split('/')[0]!, to: p.getAttribute('data-to')!.split('/')[0]!, a: [n[0]!, n[1]!], b: [n.at(-2)!, n.at(-1)!] };
+  });
+  const side = (p: number[], q: number[], r: number[]) => Math.sign((q[0]! - p[0]!) * (r[1]! - p[1]!) - (q[1]! - p[1]!) * (r[0]! - p[0]!));
+  let crossed = 0;
+  for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+    const [p, q] = [segs[i]!, segs[j]!];
+    if (side(p.a, p.b, q.a) * side(p.a, p.b, q.b) < 0 && side(q.a, q.b, p.a) * side(q.a, q.b, p.b) < 0) crossed++;
+  }
+  const ends = segs.flatMap((s) => [{ at: `${s.from}>`, here: s.a[1]!, there: s.b[1]! }, { at: `>${s.to}`, here: s.b[1]!, there: s.a[1]! }]);
+  let swapped = 0;
+  for (let i = 0; i < ends.length; i++) for (let j = i + 1; j < ends.length; j++) {
+    const [p, q] = [ends[i]!, ends[j]!];
+    if (p.at === q.at && (p.here - q.here) * (p.there - q.there) < 0) swapped++;
+  }
+  return { crossed, swapped };
+});
 
 // A store feeding four conditions, each with a value, two outputs: placed crossed on purpose, outputs on the left.
 const TANGLE: [string, string, number, number, Record<string, unknown>?][] = [
@@ -164,3 +185,32 @@ test('the Query editor unfurls too: every node moves, none overlaps, the places 
   for (const [id, r] of Object.entries(now)) if (kept[id]) expect([kept[id]!.x, kept[id]!.y]).toEqual([r.x, r.y]);
   expect(Object.keys(kept).length).toBeGreaterThan(1);
 });
+
+// Two Values into a Math node's rows a and b, and a Condition's rows and False out to two Outputs: each pair stood upside down.
+const ROWS: [string, string, number, number, Record<string, unknown>?][] = [
+  ['two', 'value', 0, 0, { type: 'integer', value: '2' }], ['one', 'value', 0, 700, { type: 'integer', value: '1' }],
+  ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }],
+  ['no', 'output', 1500, 0], ['yes', 'output', 1500, 600],
+];
+const FED = [{ from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' }, { from: 'test/rows', to: 'yes' }, { from: 'test/#false', to: 'no' }];
+
+test('the sockets\' order: what feeds rows a and b stands in that order, and what the rows and False send, in theirs (Will, TODO 827)', async ({ page }) => {
+  await start(page, ROWS, FED);
+  expect(await atSockets(page)).toEqual({ crossed: 2, swapped: 2 });
+  await button(page).click();
+  await settle(page);
+  const now = await rects(page);
+  const mid = (id: string) => now[id]!.y + now[id]!.h / 2;
+  expect(mid('one')).toBeLessThan(mid('two'));
+  expect(mid('yes')).toBeLessThan(mid('no'));
+  expect(await atSockets(page)).toEqual({ crossed: 0, swapped: 0 });
+  expect(overlaps(now)).toEqual([]);
+  expect((await lines(page)).backwards).toBe(0);
+  // The tangled graph keeps its sockets' order too.
+  await page.evaluate(() => document.getElementById('root')!.replaceChildren());
+  await start(page, TANGLE, KNOTS);
+  await button(page).click();
+  await settle(page);
+  expect((await atSockets(page)).swapped).toBe(0);
+});
+
