@@ -16,7 +16,7 @@
     "roots": [
       {
         "el": "div",
-        "class": "tab sherpa-border-edges sherpa-border-corners",
+        "class": "tab",
         "part": "tab",
         "children": [
           {

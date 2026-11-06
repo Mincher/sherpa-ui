@@ -228,8 +228,8 @@ Float goes while it is maximised.
 
 ### T-a-minimised-panel-is-a-tab
 
-**Minimised is a STATE of an overlay panel: a tab, a small horizontal button inset 16px from its area's side (several in one area are one control group, stitched by `data-group`), on the edge of its
-area** (Will, 2026-11-06). `data-minimisable` shows the header's Minimise button; a press
+**Minimised is a STATE of an overlay panel: a tab, turned on its side, snapped flush to the edge of its
+area, with a drop shadow** (Will, 2026-11-06). `data-minimisable` shows the header's Minimise button; a press
 sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restores it, with
 `data-fixed` and `data-floating` untouched, so it opens as it was.
 
@@ -254,7 +254,6 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 - Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
-- Site: `test/e2e/reforged-panel-tabs-inset-and-stitched.spec.ts`
 
 ### T-an-area-with-two-panels-is-tabbed
 

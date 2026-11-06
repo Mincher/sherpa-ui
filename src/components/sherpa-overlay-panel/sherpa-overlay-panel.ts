@@ -290,7 +290,6 @@ export class SherpaOverlayPanel extends SherpaElement {
           const tab = panel.$<HTMLElement>('.tab');
           tab?.style.setProperty('--_tab-index', String(index));
           tab?.style.setProperty('--_tab-top', `${Math.round(top)}px`);
-          tab?.setAttribute('data-group', group.length === 1 ? 'vertical-solo' : index === 0 ? 'vertical-start' : index === group.length - 1 ? 'vertical-end' : 'vertical-mid');
         });
       }
     }
