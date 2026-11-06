@@ -172,8 +172,8 @@ test('an open panel draws nothing over the page beside it', async ({ page }) => 
     return [...el.shadowRoot!.children].map((n) => n.tagName.toLowerCase());
   });
   const after = await page.screenshot({ clip });
-  // The dialog, and the minimise tab (drawn only while minimised).
-  expect(parts).toEqual(['button', 'dialog']);
+  // The dialog, and the minimised edge line and tab (drawn only while minimised).
+  expect(parts).toEqual(['span', 'button', 'dialog']);
   expect(after.equals(before)).toBe(true);
 });
 
