@@ -153,6 +153,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-cached",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Rows are cached: Fetch reads Refetch; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-can-arrange",
       "type": "boolean",
       "observed": true,
@@ -243,6 +252,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-fetching",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-path-why",
       "type": "string",
       "observed": true,
@@ -261,6 +279,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-simulating",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "A simulation is queued or running: the same for Simulate; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-tie",
       "type": "boolean",
       "observed": true,
@@ -270,7 +297,7 @@
     }
   ],
   "populate": {
-    "shape": "{ canArrange?, canFetch?, canFrame?, canGroup?, canRedo?, canSave?, canSimulate?, canTie?, canUndo?, canUnfurl?, pathWhy?, pickedRoutes?, tie? }",
+    "shape": "{ cached?, canArrange?, canFetch?, canFrame?, canGroup?, canRedo?, canSave?, canSimulate?, canTie?, canUndo?, canUnfurl?, fetching?, pathWhy?, pickedRoutes?, simulating?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

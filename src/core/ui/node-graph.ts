@@ -8,6 +8,7 @@
  * Unfurl lays the whole graph out round its hub (plan 569). Will, TODOs 555, 551, 671, 719, 562, 735, 778, 779, 569.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node · TRAP T-a-frame-is-drawn-round-its-nodes
  * TRAP T-a-portal-hop-is-resolved-once · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
+ * TRAP T-a-task-queue-knows-nothing-of-what-it-runs
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
@@ -78,10 +79,15 @@ import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
 import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
 import { PRESET_FILTER, offeredKinds } from '../data/entity-types.js';
-import { flowPane, instancePane, updatePane } from './node-group-panel.js';
+import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
-import { pathRead } from '../data/node-paths.js';
+import { isSource, pathRead } from '../data/node-paths.js';
+import { simulateGraph, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
+import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
+import type { Row, Store } from '../data/store.js';
+import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
+import { SherpaToast } from '../../components/sherpa-toast/sherpa-toast.js';
 import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalLinks, portalOf } from '../data/node-portals.js';
@@ -1596,6 +1602,8 @@ export interface InspectOptions {
   tabs?: { nodes: readonly { id: string; label: string }[]; current: string; onTab: (id: string) => void; heading: string };
   /** How the Outgoing JSON reads a use's condition: the graph inside it, drawn. TODO 776 */
   flow?: ConditionFacts;
+  /** What the node heard and said in the last simulation: its rows per socket. TODO 836 */
+  data?: { node: SimulatedNode; stale: boolean };
 }
 
 /** What an inspector holds: its node, the fields by their element, and whom it tells. */
@@ -1661,7 +1669,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   stack.setAttribute('data-scroll', '');
   const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
   const flow = nodeFlow(graph, node.id, options.flow);
-  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);
+  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...(options.data ? [dataPane(options.data)] : []), ...remove);
   const { tabs } = options;
   if (tabs) {
     const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
@@ -1776,6 +1784,13 @@ export interface WorkflowEditor extends GraphEditor, Undoable {
   path(): readonly string[];
   /** The workflow as the draft holds it now, unsaved. */
   workflow(): WorkflowDefinition;
+  /** Fetch: read each Source on a path once, at the cap, and simulate; run again, it reads again. A second press while one
+   *  runs is blocked. Settles when its task ends. The press of the toolbar's Fetch, for a host or an agent. TODO 836, 843 */
+  fetch(): Promise<void>;
+  /** Simulate: run the graph on the rows cached, and show each node's data. Never on an edit; blocked while one runs. */
+  simulate(): Promise<void>;
+  /** The last simulation, and whether an edit has changed the graph since. */
+  simulation(): { result: Simulated; stale: boolean } | undefined;
   /** The open entity's own tags as the draft holds them, for the app's Save to write; none without an entity. TODO 828 */
   tags(): readonly string[] | undefined;
 }
@@ -2223,6 +2238,14 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   /** The entity this graph is: the panel offers what `offeredKinds` says of it, and inside each node opened, of
    *  that one; "Update all instances" never writes its saved copy over the draft. TRAP T-an-entity-is-used-as-a-node */
   entity?: EntityRef;
+  /** The store a Source names, by its id: what Fetch reads. None, or it says none, the Source is "not fetched yet". TODO 836 */
+  storeOf?: (id: string) => Store | undefined | Promise<Store | undefined>;
+  /** The cap of a fetch: rows and bytes. Left out, 100,000 rows and 50 MB. */
+  fetchLimit?: SourceLimit;
+  /** The queue Fetch and Simulate run in, shared with whatever else the app queues; left out, the editor's own. TODO 843 */
+  tasks?: TaskQueue;
+  /** Where an end notice goes: the words, and how it went. Left out, a toast. */
+  notify?: (words: string, status: 'success' | 'critical' | 'info') => void;
 }
 
 /** A node's own name, line and place, as its inspector's first rows edit them. */
@@ -2901,6 +2924,10 @@ export function bindWorkflow(
     if (mod && (event.key.toLowerCase() === 'z' || event.key.toLowerCase() === 'y')) {
       if (event.key.toLowerCase() === 'y' || event.shiftKey) redo();
       else undo();
+    } else if (mod && event.key === 'Enter' && toolbar?.hasAttribute('data-can-simulate')) {
+      // Simulate: Ctrl or Cmd and Enter; with Shift, Fetch. TODO 836
+      if (event.shiftKey) void fetchRows('keys');
+      else void simulate('keys');
     } else if (event.key === 'Escape') {
       const routes = pickedRoutes(canvas).length > 0;
       if (routes) markRoutes(canvas, []);
@@ -2955,6 +2982,8 @@ export function bindWorkflow(
     else if (action === 'group') openSave();
     else if (action === 'arrange') arrangePicked(canvas);
     else if (action === 'unfurl') unfurlGraph(canvas);
+    else if (action === 'fetch') void fetchRows('toolbar');
+    else if (action === 'simulate') void simulate('toolbar');
     else if (action === 'frame') framePicked();
   };
   toolbar?.addEventListener('toolbar-select', onTool);
@@ -3010,6 +3039,7 @@ export function bindWorkflow(
   const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
       onEdit, extra: extraFor(node), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}), flow: { inner: innerGraph },
+      ...(simulation?.result.nodes[node.id] ? { data: { node: simulation.result.nodes[node.id]!, stale: simulation.stale } } : {}),
       // With no pointer: beside the node it feeds, one column left, on the row's own line.
       onCustom: (row) => {
         const at = shown().nodes.find((n) => n.id === node.id);
@@ -3034,6 +3064,107 @@ export function bindWorkflow(
     const ids = multi.size ? [...multi] : current ? [current] : [];
     if (ids.length && !readOnly()) onRemoveNodes(ids, []);
   });
+  // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
+  //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.
+  let simulation: { result: Simulated; stale: boolean; sig: string } | undefined;
+  /** What a simulation reads of the graph: its nodes' kinds and values and its routes, never a place. */
+  const dataSig = (): string => JSON.stringify([shown().nodes.map((n) => [n.id, n.kind, n.values]), shown().routes]);
+  /** Each Source's store id, by node. */
+  const storesOf = (): Map<string, string> => new Map(graph.nodes.flatMap((n) => {
+    const store = isSource(n) ? n.rows.find((r) => r.control === 'store')?.value : undefined;
+    return typeof store === 'string' && store ? [[n.id, store] as const] : [];
+  }));
+  const storeFor = async (id: string): Promise<Store | undefined> => facts.storeOf?.(id);
+  /** The rows kept for each store the graph names, and where a fetch stopped at the cap. */
+  const cachedRows = async (): Promise<{ rows: Record<string, readonly Row[]>; partial: Record<string, string>; any: boolean }> => {
+    const rows: Record<string, readonly Row[]> = {};
+    const partial: Record<string, string> = {};
+    for (const id of new Set(storesOf().values())) {
+      const store = await storeFor(id);
+      const cache: SourceCache | undefined = store ? await cachedSource(store, id) : undefined;
+      if (!cache) continue;
+      rows[id] = cache.rows;
+      if (cache.partial || cache.stale) partial[id] = sourceWords(cache);
+    }
+    return { rows, partial, any: Object.keys(rows).length > 0 };
+  };
+  const showData = (): void => {
+    if (multi.size > 1 && inspector?.open) showMulti();
+    else picks.follow(graph);
+  };
+  /** Run the graph on the rows kept, and show it. */
+  const runSimulation = async (): Promise<{ nodes: number; faults: number }> => {
+    const { rows, partial, any } = await cachedRows();
+    const result = simulateGraph(graph, rows, { partial });
+    simulation = { result, stale: false, sig: dataSig() };
+    toolbar?.toggleAttribute('data-cached', any);
+    showData();
+    return { nodes: Object.keys(result.nodes).length, faults: result.faults.length };
+  };
+  // The tasks: one queue (the app's, or this editor's own), one key for this graph, so a second press is blocked. TODO 843
+  const queue = facts.tasks ?? new TaskQueue();
+  const taskKey = `graph:${workflow.id}`;
+  const notify = facts.notify ?? ((words: string, status: 'success' | 'critical' | 'info'): void => void SherpaToast.show(words, status));
+  const ours = (task: Task): boolean => task.key === taskKey;
+  const over = (task: Task | undefined): boolean => task?.state === 'ok' || task?.state === 'failed';
+  /** Settles when a task ends. */
+  const ended = (id: string): Promise<void> => new Promise((done) => {
+    const hear = (event: Event): void => {
+      const task = (event as CustomEvent<Task>).detail;
+      if (task.id !== id || !over(task)) return;
+      queue.removeEventListener('task-change', hear);
+      done();
+    };
+    queue.addEventListener('task-change', hear);
+    if (over(queue.get(id))) hear(new CustomEvent('task-change', { detail: queue.get(id) }));
+  });
+  /** Ask for a task of this graph; a second while one runs is blocked, and said. */
+  const request = async (kind: 'fetch' | 'simulate', by: string, run: Parameters<TaskQueue['submit']>[0]['run']): Promise<void> => {
+    if (path.length || !pathRead(graph, { inner: innerGraph }).ok) return;
+    const { task, accepted } = queue.submit({ kind, requestedBy: by, key: taskKey, run });
+    if (accepted) await ended(task.id);
+  };
+  const simulate = (by = 'host'): Promise<void> => request('simulate', by, async () => {
+    const { nodes, faults } = await runSimulation();
+    return { words: `Simulated ${nodes} nodes${faults ? `, ${faults} to look at` : ''}.` };
+  });
+  const fetchRows = (by = 'host'): Promise<void> => request('fetch', by, async ({ signal, state }) => {
+    const stores = storesOf();
+    const said: string[] = [];
+    for (const id of pathRead(graph, { inner: innerGraph }).sources) {
+      const name = stores.get(id);
+      const store = name ? await storeFor(name) : undefined;
+      if (!name || !store) throw new Error(`the Source "${id}" names a store the page cannot reach`);
+      state(`reading ${name}`);
+      const cache = await fetchSource(store, name, { ...(facts.fetchLimit ? { limit: facts.fetchLimit } : {}), signal });
+      said.push(`${name}: ${sourceWords(cache)}`);
+    }
+    state('simulating');
+    await runSimulation();
+    return { words: `Fetched. ${said.join(' ')}` };
+  });
+  /** The button shows it is busy while its task is queued or running. */
+  const tellBusy = (): void => {
+    for (const [kind, flag] of [['fetch', 'data-fetching'], ['simulate', 'data-simulating']] as const) {
+      toolbar?.toggleAttribute(flag, queue.list({ kind }).some((t) => ours(t) && !over(t)));
+    }
+  };
+  const onChange = (event: Event): void => { if (ours((event as CustomEvent<Task>).detail)) tellBusy(); };
+  const onBlocked = (event: Event): void => {
+    const task = (event as CustomEvent<Task>).detail;
+    if (ours(task)) notify(`${task.kind === 'fetch' ? 'Fetch' : 'Simulate'} is still running: wait for it to end.`, 'info');
+  };
+  const onNotice = (event: Event): void => {
+    const notice = (event as CustomEvent<TaskNotice>).detail;
+    const mine = notice.tasks.filter(ours);
+    if (!mine.length) return;
+    const failed = mine.filter((t) => t.state === 'failed').length;
+    const words = mine.length === notice.tasks.length ? notice.words : mine.length === 1 ? (mine[0]!.outcome?.words ?? `${mine[0]!.kind} ${mine[0]!.state}`) : `${mine.length} tasks finished${failed ? `, ${failed} failed` : ''}`;
+    notify(words, failed ? 'critical' : 'success');
+  };
+  queue.addEventListener('task-change', onChange);
+  queue.addEventListener('task-blocked', onBlocked);
+  queue.addEventListener('task-notice', onNotice);
   // Fetch and Simulate wait for a path from a Source to an Output; inside a Custom Node's definition they wait for its use. TODO 836
   const tellPath = (): void => {
     const read = path.length ? { ok: false, why: 'Open the graph that uses this Custom Node: Fetch and Simulate run on a whole graph' } : pathRead(graph, { inner: innerGraph });
@@ -3062,6 +3193,7 @@ export function bindWorkflow(
     });
     toolbar?.toggleAttribute('data-can-unfurl', !ro && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
     tellPath();
+    if (simulation && !simulation.stale && simulation.sig !== dataSig()) simulation.stale = true;
     trail();
     if (multi.size > 1 && inspector?.open) showMulti();
     else if (framePanel && !(shown().frames ?? []).some((f) => f.id === framePanel)) picks.deselect();
@@ -3126,6 +3258,9 @@ export function bindWorkflow(
     library: () => lib,
     path: () => path.map((s) => s.use),
     workflow: () => draft,
+    fetch: () => fetchRows(),
+    simulate: () => simulate(),
+    simulation: () => (simulation ? { result: simulation.result, stale: simulation.stale } : undefined),
     tags: () => (own ? ownTags : undefined),
     undo,
     redo,
@@ -3133,12 +3268,16 @@ export function bindWorkflow(
     stop(): void {
       unwatch();
       unarrange();
+      for (const task of queue.list()) if (ours(task)) queue.cancel(task.id);
+      queue.removeEventListener('task-change', onChange);
+      queue.removeEventListener('task-blocked', onBlocked);
+      queue.removeEventListener('task-notice', onNotice);
       panel?.removeEventListener('node-add', onAdded);
       toolbar?.removeEventListener('toolbar-select', onTool);
       toolbar?.removeAttribute('data-tie');
       toolbar?.removeAttribute('data-can-group');
       toolbar?.removeAttribute('data-can-unfurl');
-      for (const flag of ['data-can-fetch', 'data-can-simulate', 'data-path-why']) toolbar?.removeAttribute(flag);
+      for (const flag of ['data-can-fetch', 'data-can-simulate', 'data-path-why', 'data-cached', 'data-fetching', 'data-simulating']) toolbar?.removeAttribute(flag);
       dialogSave?.removeEventListener('click', saveAs);
       dialogCancel?.removeEventListener('click', onCancel);
       dialogField('label')?.removeEventListener('keydown', onSaveKey);

@@ -445,6 +445,8 @@ export { Journal, type Change } from './core/data/journal.js';
 export { failureOf, unreached, type Failure, type FailureKind } from './core/data/failure.js';
 export { keepCache, clearKept, type KeepOptions } from './core/browser/cache-keep.js';
 export { keepData } from './core/browser/database.js';
+export { TaskQueue, type Task, type TaskContext, type TaskNotice, type TaskOutcome, type TaskQueueOptions, type TaskSpec, type TaskState } from './core/data/task-queue.js';
+export { SOURCE_BYTES, SOURCE_ROWS, cachedSource, fetchSource, forgetSource, sourceWords, type SourceCache, type SourceLimit } from './core/browser/source-cache.js';
 export { keepOutbox } from './core/browser/outbox-keep.js';
 // One live feed for every tab. Plan 652 S8
 export { shareFeed } from './core/browser/share-feed.js';

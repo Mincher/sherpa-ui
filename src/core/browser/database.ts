@@ -60,6 +60,8 @@ export interface SetRecord {
   savedAt: number;
   rows: Row[];
   dropped?: number;
+  /** The rows the store held when a graph's fetch stopped at its cap: more than `rows` — a PARTIAL set. TODO 836 */
+  total?: number;
 }
 
 /** A write that waits, in the outbox it waits in. */

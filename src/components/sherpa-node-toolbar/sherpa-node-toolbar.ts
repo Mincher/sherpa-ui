@@ -25,6 +25,9 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-fetch': { type: 'boolean', kind: 'behaviour' },
     'data-can-simulate': { type: 'boolean', kind: 'behaviour' },
     'data-path-why': { type: 'string', kind: 'behaviour' },
+    'data-cached': { type: 'boolean', kind: 'behaviour' },
+    'data-fetching': { type: 'boolean', kind: 'behaviour' },
+    'data-simulating': { type: 'boolean', kind: 'behaviour' },
     'data-can-frame': { type: 'boolean', kind: 'behaviour' },
     'data-tie': { type: 'boolean', kind: 'behaviour' },
     'data-picked-routes': { type: 'number', kind: 'behaviour' },
@@ -54,7 +57,12 @@ export class SherpaNodeToolbar extends SherpaElement {
     for (const name of ['fetch', 'simulate'] as const) {
       const tool = this.$(`.${name}`);
       const own = (this.#tips[name] ??= tool?.getAttribute('data-tip') ?? '');
-      tool?.setAttribute('data-tip', !this.hasAttribute(`data-can-${name}`) && why ? why : own);
+      // A fetch that runs says how to stop it; rows cached say Refetch; else the tool's own words.
+      const busy = this.hasAttribute(name === 'fetch' ? 'data-fetching' : 'data-simulating');
+      const now = busy ? `${name === 'fetch' ? 'Fetching' : 'Simulating'}: wait for it to end` : name === 'fetch' && this.hasAttribute('data-cached') ? 'Refetch: read every Source on a path again' : own;
+      tool?.setAttribute('data-tip', !this.hasAttribute(`data-can-${name}`) && why ? why : now);
+      tool?.toggleAttribute('data-busy', busy);
+      tool?.setAttribute('aria-busy', String(busy));
     }
     const tie = this.$('.tie');
     tie?.setAttribute('aria-pressed', String(this.hasAttribute('data-tie')));

@@ -22,6 +22,7 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-cached` | boolean |  | Rows are cached: Fetch reads Refetch; written by the editor |
 | `data-can-arrange` | boolean |  | Arrange nodes can be pressed: two or more nodes are picked; written by the editor |
 | `data-can-fetch` | boolean |  | Fetch can be pressed: a path joins a Source to an Output; written by the editor |
 | `data-can-frame` | boolean |  | Frame nodes can be pressed: two or more nodes are picked; written by the editor |
@@ -32,8 +33,10 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 | `data-can-tie` | boolean |  | The Zip tie tool can be pressed; written by the editor |
 | `data-can-undo` | boolean |  | Undo can be pressed; written by the editor that owns the history |
 | `data-can-unfurl` | boolean |  | Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor |
+| `data-fetching` | boolean |  | A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor |
 | `data-path-why` | text |  | Why Fetch and Simulate cannot be pressed, in words: their tip says it; written by the editor |
 | `data-picked-routes` | number |  | How many connectors are picked; written by the editor, said in the Tie tool's tip |
+| `data-simulating` | boolean |  | A simulation is queued or running: the same for Simulate; written by the editor |
 | `data-tie` | boolean |  | The Zip tie tool is on; written by the editor, shown as pressed |
 
 ## Events
@@ -61,6 +64,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ canArrange?, canFetch?, canFrame?, canGroup?, canRedo?, canSave?, canSimulate?, canTie?, canUndo?, canUnfurl?, pathWhy?, pickedRoutes?, tie? }`
+`{ cached?, canArrange?, canFetch?, canFrame?, canGroup?, canRedo?, canSave?, canSimulate?, canTie?, canUndo?, canUnfurl?, fetching?, pathWhy?, pickedRoutes?, simulating?, tie? }`
 
 Its declared props by name: `label` sets data-label.

@@ -7430,6 +7430,13 @@
           "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
           "attributes": [
             {
+              "name": "data-cached",
+              "description": "Rows are cached: Fetch reads Refetch; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-can-arrange",
               "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor",
               "type": {
@@ -7500,6 +7507,13 @@
               }
             },
             {
+              "name": "data-fetching",
+              "description": "A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-path-why",
               "description": "Why Fetch and Simulate cannot be pressed, in words: their tip says it; written by the editor",
               "type": {
@@ -7511,6 +7525,13 @@
               "description": "How many connectors are picked; written by the editor, said in the Tie tool's tip",
               "type": {
                 "text": "number"
+              }
+            },
+            {
+              "name": "data-simulating",
+              "description": "A simulation is queued or running: the same for Simulate; written by the editor",
+              "type": {
+                "text": "boolean"
               }
             },
             {

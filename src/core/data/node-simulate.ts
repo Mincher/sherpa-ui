@@ -18,9 +18,11 @@ import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
 import { FALSE_SOCKET, socketOf, type DrawnGraph, type GraphNode } from './node-kinds.js';
 
-/** What a simulation reads beyond its graph and rows: the clock a relative date means. Left out, the machine's. */
+/** What a simulation reads beyond its graph and rows: the clock a relative date means (left out, the machine's), and
+ *  where a fetch stopped at its cap, by store, in words: a Source says it beside its rows. */
 export interface SimulateFacts {
   now?: Date;
+  partial?: Readonly<Record<string, string>>;
 }
 
 /** What one socket hears or says: its rows (a row list), a field's name, or a value; and where it comes from, as
@@ -139,8 +141,12 @@ export function simulateGraph(graph: DrawnGraph, rowsByStore: Readonly<Record<st
     return made;
   }
 
-  /** What one output socket of a node sends. */
+  /** What one output socket of a node sends. A Count property row sends how many rows the node sends on: a number. TODO 835 */
   function make(node: GraphNode, row: string | undefined): Sent {
+    if (row !== undefined && node.rows.find((r) => r.name === row)?.property && row === 'count') {
+      const on = node.kind === 'field' ? { rows: rowsInto(node.id) } : sends(`${node.id}/${node.rows.find((r) => r.gives === 'rows')?.name ?? 'rows'}`);
+      return on.rows ? { kind: 'value', value: on.rows.length } : { kind: 'value', note: 'No rows to count' };
+    }
     if (node.kind === 'source') {
       const store = node.rows.find((r) => r.control === 'store')?.value;
       const rows = typeof store === 'string' ? rowsByStore[store] : undefined;
@@ -148,7 +154,8 @@ export function simulateGraph(graph: DrawnGraph, rowsByStore: Readonly<Record<st
         fault(`"${node.heading}" is not fetched yet`);
         return { kind: 'rows', note: 'Not fetched yet' };
       }
-      return { kind: 'rows', rows };
+      const cut = typeof store === 'string' ? facts.partial?.[store] : undefined;
+      return { kind: 'rows', rows, ...(cut ? { note: cut } : {}) };
     }
     if (node.kind === 'field') {
       const name = node.rows.find((r) => r.gives === 'field')?.value;

@@ -100,7 +100,7 @@ export default [
     /* HEADLESS-SAFE but not storage-free: each reaches storage behind a guard
        (LocalStore's and web-storage's try/catch, hasDatabase()), so in Node it degrades. The
        DOM ban applies; the storage ban does not. */
-    files: ['src/core/data/stores.ts', 'src/core/browser/database.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/page-state.ts', 'src/core/browser/web-storage.ts', 'src/core/browser/cache-keep.ts', 'src/core/browser/outbox-keep.ts', 'src/core/browser/notice-keep.ts', 'src/core/browser/share-feed.ts', 'src/core/browser/one-tab.ts', 'src/core/browser/ask-worker.ts'],
+    files: ['src/core/data/stores.ts', 'src/core/browser/database.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/page-state.ts', 'src/core/browser/web-storage.ts', 'src/core/browser/cache-keep.ts', 'src/core/browser/source-cache.ts', 'src/core/browser/outbox-keep.ts', 'src/core/browser/notice-keep.ts', 'src/core/browser/share-feed.ts', 'src/core/browser/one-tab.ts', 'src/core/browser/ask-worker.ts'],
     rules: {
       'no-restricted-globals': ['error',
         noDom('document', 'This module must run with NO DOM — it is imported by tests, servers and MCP tools.'),

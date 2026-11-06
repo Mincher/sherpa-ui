@@ -8031,7 +8031,32 @@ each node's incoming and outgoing slots, a row list on each socket. It is not N4
 
 - Site: `src/core/data/node-paths.ts`
 - Site: `src/core/data/node-simulate.ts`
+- Site: `src/core/browser/source-cache.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-graph-has-a-path-from-a-source-to-an-output.test.mjs`
 - Site: `test/unit/a-simulation-reads-the-cache-and-writes-nothing.test.mjs`
 - Site: `test/e2e/reforged-node-fetch-needs-a-path.spec.ts`
+- Site: `test/e2e/reforged-node-fetch-caches-the-rows.spec.ts`
+
+### T-a-task-queue-knows-nothing-of-what-it-runs
+
+**The task queue is generic: it names nothing it runs, and the one who runs owns every word of the notice.** Will, TODOs 843
+and 844 · `docs/history/plan-836-data-through-nodes.md`. A task is `{ id, kind, requestedBy, state, history[], outcome }`:
+queued, running, then ok or failed, with the named states a run says. It is a small seam, not the full Task Manager (844, with
+N4); Fetch and Simulate are its first two users.
+
+- **A key makes a task exclusive.** A second request of a key a queued or running task holds is BLOCKED, not queued: `submit`
+  answers `accepted: false` with the task in the way, and fires `task-blocked`. The editor keys a graph's tasks by the graph,
+  so a press while Fetch runs is blocked, and says what is running.
+- **Notices wait for quiet.** `task-notice` sums what ended into ONE: a single task says its own words, several are counted
+  with the failures. Each end moves the timer, so tasks that end a little apart are one notice, not several.
+- **The queue is told, not read.** The button, the node and the toast ask `get`, `list`, `busy` or hear `task-change`; the
+  elapsed time is the task's history, drawn by whoever shows it.
+- **Light and in memory.** The history keeps the latest finished tasks (100); nothing is stored. A stopped task ends failed as
+  "Stopped"; a queued one never runs.
+- **It names no user.** The test reads its source for the words fetch, simulate, graph, store, row and source: none is there.
+
+- Site: `src/core/data/task-queue.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-task-queue-knows-nothing-of-what-it-runs.test.mjs`
+- Site: `test/e2e/reforged-node-fetch-caches-the-rows.spec.ts`

@@ -1,7 +1,7 @@
 /**
  * node-group-panel.ts — the parts of a node's inspector that belong to a Custom Node: what to do
  * with an instance (Open, Ungroup), the update's diff and its split button, and a
- * node's incoming and outgoing JSON. Each is composed of Sherpa's own components and
+ * node's incoming and outgoing JSON, and the rows it heard and said in a simulation. Each is composed of Sherpa's own components and
  * only ASKS: the editor acts. Will, TODO 719 · plan 713 §9.2, M10, M11, D9, D11
  *
  * Map:
@@ -11,9 +11,11 @@
  * - InstanceActions — What a Custom Node's instance may ask: open it, ungroup it, copy a preset.
  * - instancePane — The buttons for one instance: Open, Ungroup.
  * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
+ * - dataPane — What a node heard and said in the last simulation: each socket's rows, as JSON, the first 50.
  */
 import type { DefinitionDiff } from '../data/node-library.js';
 import type { NodeFlow } from '../data/node-flow.js';
+import type { SimulatedNode, Slot } from '../data/node-simulate.js';
 
 /** A control made of a Sherpa component, its attributes set. */
 function make(tag: string, attrs: Readonly<Record<string, string>>): HTMLElement {
@@ -119,5 +121,51 @@ export function flowPane(flow: NodeFlow): HTMLElement {
     return acc;
   };
   pane.append(section('Incoming JSON', flow.incoming), section('Outgoing JSON', { outgoing: flow.outgoing, ...(flow.definition ? { definition: flow.definition } : {}) }));
+  return pane;
+}
+
+/** The most rows of a socket the pane writes out. */
+const DATA_ROWS = 50;
+
+/** One socket in words: how many rows, its field or value, or why it holds none. */
+function slotWords(slot: Slot): string {
+  const rows = slot.rows ? `${slot.rows.length.toLocaleString('en')} ${slot.rows.length === 1 ? 'row' : 'rows'}` : '';
+  const value = slot.kind === 'field' ? `field "${String(slot.value ?? '')}"` : slot.value !== undefined && !slot.rows ? JSON.stringify(slot.value) : '';
+  return [rows, value, slot.note].filter(Boolean).join(' · ') || 'nothing';
+}
+
+/** What a node heard and said in the last simulation: each socket in words, its rows as JSON, the first 50. A graph edited
+ *  since says so. The same rows a grid will show; the JSON is the rows. Will, TODO 836 */
+export function dataPane(data: { node: SimulatedNode; stale: boolean }, shown = DATA_ROWS): HTMLElement {
+  const pane = make('sherpa-stack', { 'data-gap': 'sm', class: 'data-pane' });
+  const section = (heading: string, slots: readonly Slot[]): HTMLElement => {
+    const acc = make('sherpa-accordion', { 'data-heading': heading, class: 'data-section', open: '' });
+    const body = make('sherpa-stack', { 'data-gap': 'sm' });
+    for (const slot of slots) {
+      const line = make('p', { class: 'data-line' });
+      line.style.margin = '0';
+      line.textContent = `${slot.label}: ${slotWords(slot)}`;
+      body.append(line);
+      if (slot.rows?.length) {
+        body.append(make('sherpa-code-block', { 'data-language': 'json', 'data-code': JSON.stringify(slot.rows.slice(0, shown), null, 2) }));
+        if (slot.rows.length > shown) {
+          const more = make('p', { class: 'data-more' });
+          more.style.margin = '0';
+          more.textContent = `The first ${shown} of ${slot.rows.length.toLocaleString('en')} rows.`;
+          body.append(more);
+        }
+      }
+    }
+    if (!slots.length) body.append(make('p', { class: 'data-line' }));
+    acc.append(body);
+    return acc;
+  };
+  if (data.stale) {
+    const stale = make('p', { class: 'data-stale' });
+    stale.style.margin = '0';
+    stale.textContent = 'Stale: the graph changed since this ran. Press Simulate.';
+    pane.append(stale);
+  }
+  pane.append(section('Incoming data', data.node.incoming), section('Outgoing data', data.node.outgoing));
   return pane;
 }

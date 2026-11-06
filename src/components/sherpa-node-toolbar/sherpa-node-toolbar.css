@@ -17,3 +17,8 @@
     var(--sherpa-elevation-spread, 0)
     var(--sherpa-style-surface-shadow, #35353d4c);
 }
+
+/* A tool whose task is queued or running turns, and a second press is blocked. */
+sherpa-button[data-busy] {
+  animation: sherpa-spin 1.2s linear infinite;
+}
