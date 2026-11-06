@@ -9,8 +9,8 @@
   "components.js": {
     "files": 155,
     "brotli": {
-      "js": 283164,
-      "fetched": 8591
+      "js": 283234,
+      "fetched": 8593
     }
   },
   "components/sherpa-accordion/sherpa-accordion.js": {
@@ -30,7 +30,7 @@
   "components/sherpa-app-shell/sherpa-app-shell.js": {
     "files": 15,
     "brotli": {
-      "js": 22448,
+      "js": 22518,
       "fetched": 0
     }
   },
@@ -534,8 +534,8 @@
   "index.js": {
     "files": 257,
     "brotli": {
-      "js": 453180,
-      "fetched": 8591
+      "js": 453250,
+      "fetched": 8593
     }
   }
 }

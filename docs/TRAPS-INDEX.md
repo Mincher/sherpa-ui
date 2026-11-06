@@ -1028,7 +1028,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (145)
+## Other components (146)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1142,6 +1142,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-never-fight-a-focused-field](traps/other-components.md#t-never-fight-a-focused-field) — slider
 - [T-no-attribute-is-the-default-variant](traps/other-components.md#t-no-attribute-is-the-default-variant) — nav
 - [T-num-is-stricter-than-parsefloat](traps/other-components.md#t-num-is-stricter-than-parsefloat) — slider
+- [T-one-line-between-a-context-and-a-panel-area](traps/other-components.md#t-one-line-between-a-context-and-a-panel-area) — app-shell
 - [T-one-tab-stop-per-set](traps/menus-tips-overlays.md#t-one-tab-stop-per-set) — tabs
 - [T-only-the-context-scrolls](traps/other-components.md#t-only-the-context-scrolls) — app-shell
 - [T-parent-chain-walk-not-a-selector](traps/element-and-sheets.md#t-parent-chain-walk-not-a-selector) — nav

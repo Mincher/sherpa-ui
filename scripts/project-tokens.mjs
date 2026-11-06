@@ -1292,7 +1292,8 @@ const viewFrameBlock = `  .sherpa-view {
        against the app frame, which already carries its own; the block edges
        do not. Will, 2026-09-24. */
     padding-block: var(--sherpa-layout-grid-padding, 16px);
-    padding-inline: calc(var(--sherpa-layout-grid-padding, 16px) / 2);
+    padding-inline-start: var(--sherpa-context-gutter-start, calc(var(--sherpa-layout-grid-padding, 16px) / 2));
+    padding-inline-end: var(--sherpa-context-gutter-end, calc(var(--sherpa-layout-grid-padding, 16px) / 2));
   }
   /* A view with no header region lets the body span both rows. */
   .sherpa-view:not(:has(> [data-region='header'])) {
@@ -1749,7 +1750,8 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
        against the app frame, which already carries its own; the block edges
        do not. Will, 2026-09-24. */
     padding-block: var(--sherpa-layout-grid-padding, 16px);
-    padding-inline: calc(var(--sherpa-layout-grid-padding, 16px) / 2);
+    padding-inline-start: var(--sherpa-context-gutter-start, calc(var(--sherpa-layout-grid-padding, 16px) / 2));
+    padding-inline-end: var(--sherpa-context-gutter-end, calc(var(--sherpa-layout-grid-padding, 16px) / 2));
     box-sizing: border-box;
   }
   /* Column and row COUNTS — override the breakpoint's own track counts. A

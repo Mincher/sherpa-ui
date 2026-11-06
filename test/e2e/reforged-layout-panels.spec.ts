@@ -113,11 +113,12 @@ test('the content reflows beside its panels, and takes the width back when one s
   const body = await box(page, 'shell .body');
   const frame = () => box(page, 'shell .context-edges');
   const [start, end] = [await box(page, 'layout .area-start'), await box(page, 'layout .area-end')];
-  expect(await frame()).toMatchObject({ x: start.x + start.w, w: end.x - (start.x + start.w) });
+  // The frame reaches 1px under each open area: the last card's border is the area's one line. TRAP T-one-line-between-a-context-and-a-panel-area
+  expect(await frame()).toMatchObject({ x: start.x + start.w - 1, w: end.x - (start.x + start.w) + 2 });
   // Shut, the Assistant gives the content its width back.
   await page.evaluate(() => (document.getElementById('ask') as HTMLElement & { hide(): void }).hide());
   await settle(page);
-  expect(await frame()).toMatchObject({ x: start.x + start.w, w: body.x + body.w - (start.x + start.w) });
+  expect(await frame()).toMatchObject({ x: start.x + start.w - 1, w: body.x + body.w - (start.x + start.w) + 1 });
   // Floating, the column does too: its area takes no width.
   await press(page, 'col', '.float');
   expect(await frame()).toMatchObject({ x: body.x, w: body.w });
