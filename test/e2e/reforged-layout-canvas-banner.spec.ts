@@ -66,7 +66,7 @@ test('hidden, a banner takes no room; shown, it floats across the top, 32px in; 
   await show(page, ['data']);
   r = await read(page);
   const data = r.data!;
-  expect([data.top - r.canvas.top, data.left - r.canvas.left, r.canvas.right - data.right].map(Math.round), 'across, 32px in').toEqual([32, 32, 32]);
+  expect([data.top - r.canvas.top, data.left - r.canvas.left, r.canvas.right - data.right].map(Math.round), 'across: 32px down, 64px in from each side, clear of the panel tabs').toEqual([32, 64, 64]);
   await show(page, ['app', 'data']);
   r = await read(page);
   expect(Math.round(r.app!.top - r.canvas.top), 'the first leads').toBe(32);
@@ -106,9 +106,9 @@ test('beside a panel card: the banners keep clear of it, and of the controls and
     const r = await read(page);
     const panel = r.panel!;
     for (const banner of [r.app!, r.data!]) {
-      // The card is inset 16px in its area, and the banners stand 32px in from the area's edge. TODO 871
-      expect(Math.round(banner.left - panel.right), `${width}: past the card`).toBe(48);
-      expect(Math.round(r.canvas.right - banner.right), `${width}: 32px in from the right`).toBe(32);
+      // The card is inset 16px in its area, and the banners stand 64px in from the area's edge, clear of the tabs. TODO 871
+      expect(Math.round(banner.left - panel.right), `${width}: past the card`).toBe(80);
+      expect(Math.round(r.canvas.right - banner.right), `${width}: 64px in from the right`).toBe(64);
       expect(hit(banner, panel), `${width}: banner x panel`).toBe(false);
       expect(hit(banner, r.controls), `${width}: banner x controls`).toBe(false);
       expect(hit(banner, r.minimap), `${width}: banner x minimap`).toBe(false);
