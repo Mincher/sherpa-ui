@@ -16,7 +16,7 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
-const { NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf, saveGraph, saveGraphAs } = await import(new URL('data/graph-views.js', core));
+const { NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs } = await import(new URL('data/graph-views.js', core));
 const { entityTypes, registerEntityType } = await import(new URL('data/entity-types.js', core));
 const { checkEntity, entityFaults, graphWorkflow } = await import(new URL('data/entity-check.js', core));
 const { checkApp } = await import(new URL('data/app-definition.js', core));
@@ -76,6 +76,20 @@ test('the graph chip\'s rows come from the shelf: the type\'s presets, read only
   assert.equal(openOf(list, 'gone').id, 'shipped');
   assert.equal(openOf(list, null).id, 'shipped');
   assert.equal(openOf([], 'mine'), undefined);
+});
+
+test('a `query` graph View\'s graphs are the app\'s pages — every Context with a definition, in its order — one row each, none a copy, and no New graph… (TODO 822)', () => {
+  assert.equal(PAGE_QUERY, 'query');
+  const contexts = {
+    home: { label: 'Home', template: 'h.html', definition: 'home.json' },
+    editor: { label: 'Node Editor', template: 'e.html', views: 'v.json', chrome: { filters: 'views' } },
+    records: { label: 'Records', template: 'r.html', definition: 'records.json' },
+  };
+  const pages = pagesOf(contexts);
+  assert.deepEqual(pages, [{ id: 'home', label: 'Home' }, { id: 'records', label: 'Records' }]);
+  assert.deepEqual(pageRows(pages, 'records'), [{ value: 'home', label: 'Home' }, { value: 'records', label: 'Records', selected: true }]);
+  assert.equal(pageRows(pages, null).some((r) => r.value === NEW_GRAPH || r.selected), false);
+  assert.deepEqual(pagesOf({}), []);
 });
 
 test('New graph makes an empty entity of the type, checked and kept: its name or a numbered default, a free id, the type\'s own settings', async () => {

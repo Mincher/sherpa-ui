@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../schemas/page.v1.json",
+  "v": 1,
+  "id": "more",
+  "source": {
+    "store": "items",
+    "pageSize": 10,
+    "fields": {
+      "status": {
+        "label": "Status",
+        "select": "multiple"
+      },
+      "n": {
+        "label": "N",
+        "type": "number"
+      }
+    },
+    "scopes": {
+      "view": {
+        "label": "View filters"
+      },
+      "data": {
+        "label": "Items",
+        "offers": "all",
+        "holds": [
+          "status"
+        ]
+      }
+    }
+  },
+  "ui": {
+    "grid": {
+      "key": "id",
+      "columns": [
+        {
+          "field": "name",
+          "header": "Name"
+        }
+      ]
+    }
+  }
+}

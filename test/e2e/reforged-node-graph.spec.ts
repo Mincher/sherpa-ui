@@ -98,7 +98,7 @@ test('bindQueryEditor follows the Query as it changes, and its stop lets it go',
   expect(r).toEqual({ drawn: ['Source', 'View', 'region', 'region'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
 });
 
-test('a filter toolbar\'s ⋮ menu offers Node Editor (beta) only where the host does, and a pick asks the host to open it', async ({ page }) => {
+test('a filter toolbar\'s ⋮ menu offers Open in Node Editor only where the host does, and a pick asks for it (TODO 822)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const rowsOf = async (attrs: Record<string, string>): Promise<{ rows: string[]; heard: string[] }> => {
       const el = await window.__mount<HTMLElement & { populate(f: unknown[]): void }>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view', ...attrs });
@@ -112,16 +112,16 @@ test('a filter toolbar\'s ⋮ menu offers Node Editor (beta) only where the host
       const rows = [...menu.querySelectorAll('button')].map((b) => (b.textContent ?? '').trim());
       const heard: string[] = [];
       el.addEventListener('node-editor-open', () => heard.push('node-editor-open'));
-      [...menu.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent?.trim() === 'Node Editor (beta)')?.click();
+      [...menu.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent?.trim() === 'Open in Node Editor')?.click();
       await window.__settled();
       el.remove();
       return { rows, heard };
     };
     return { off: await rowsOf({}), on: await rowsOf({ 'data-node-editor': '' }) };
   });
-  expect(r.off.rows).not.toContain('Node Editor (beta)');
+  expect(r.off.rows).not.toContain('Open in Node Editor');
   expect(r.off.heard).toEqual([]);
-  expect(r.on.rows.at(-1)).toBe('Node Editor (beta)');
+  expect(r.on.rows.at(-1)).toBe('Open in Node Editor');
   expect(r.on.heard).toEqual(['node-editor-open']);
 });
 

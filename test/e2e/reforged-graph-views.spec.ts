@@ -148,3 +148,85 @@ test('on a graph View the header says Save graph as and Delete graph; Save is of
   await expect.poll(async () => (await actions(page)).more).toBe('Save view options');
   expect((await actions(page)).rows).toEqual(['Save view as']);
 });
+
+/** The harness on a page with data — its store's twelve items — the outlet started there. */
+async function startOnPage(page: Page, context: string): Promise<void> {
+  await page.goto(`/test/reforged/graph-views.html?context=${context}`);
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  await page.evaluate(`(async () => {
+    const { SessionStore, ArrayStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet');
+    const items = new ArrayStore([...Array(12)].map((_, i) => ({ id: 'i' + i, name: 'Item ' + i, status: i % 3 ? 'open' : 'shut', n: i })), { key: 'id' });
+    const base = new URL('/test/reforged/graph-views/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({ items }) });
+  })()`);
+  await page.waitForFunction((c) => (window as unknown as { __page?: { id: string } }).__page?.id === c, context);
+}
+
+type PageWin = {
+  __page: { id: string; source: Src } | null;
+  __graphs: { page: { id: string; label: string; href: string; stores: string[]; definition: { id: string }; components: unknown[]; markup: DocumentFragment; source: Src } | null; pages: (string | null)[] };
+};
+type Src = { load(): Promise<unknown>; debugState(): { total: number }; query: { ask(r: unknown): Promise<void>; draft: { scopes: Record<string, { readings: Record<string, { picked?: string[] }> }> } } };
+
+test('a `query` graph View shows a page\'s Query: the page\'s Open in Node Editor goes there, the page opened for its Query alone — its kept Query, no bar or element of its own — and Back takes an edit home (TODO 822)', async ({ page }) => {
+  const said: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'warning' || m.type() === 'error') said.push(m.text()); });
+  await startOnPage(page, 'more');
+  await page.evaluate(() => (window as unknown as PageWin).__page!.source.query.ask({ scope: 'data', field: 'status', reading: { picked: ['open'] } }));
+  await expect.poll(() => page.evaluate(() => (window as unknown as PageWin).__page!.source.debugState().total)).toBe(8);
+  // Its toolbar's Open in Node Editor: a request the outlet answers, to the app's `query` View.
+  await page.evaluate(() => document.getElementById('bar')!.dispatchEvent(new CustomEvent('node-editor-open', { bubbles: true, composed: true, detail: {} })));
+  await page.waitForFunction(() => (window as unknown as PageWin).__graphs?.page?.id === 'more');
+  const r = await row(page);
+  expect([r.url, r.graph, r.chips.map((c) => c.id), r.rows, r.noActions]).toEqual([
+    'context=graphs&graph=more&view=pages', { view: 'pages', type: 'query', id: 'more' }, ['view', 'graph'], ['List', 'More'], true,
+  ]);
+  // What the Context is handed: the page's definition, its source and kept Query, its components read from its markup off screen.
+  const handed = await page.evaluate(async () => {
+    const p = (window as unknown as PageWin).__graphs.page!;
+    await p.source.load();
+    const header = document.querySelector('sherpa-app-header')!;
+    return {
+      id: p.id, label: p.label, def: p.definition.id, stores: p.stores, components: p.components, href: new URL(p.href).search,
+      reading: p.source.query.draft.scopes['data']?.readings['status']?.picked, total: p.source.debugState().total,
+      offScreen: !!p.markup.getElementById('grid') && !document.getElementById('grid') && !document.getElementById('bar'),
+      header: [header.hasAttribute('data-graph'), header.hasAttribute('data-query'), header.hasAttribute('data-readonly')],
+    };
+  });
+  expect(handed).toEqual({
+    id: 'more', label: 'More', def: 'more', stores: ['items'], components: [{ id: 'grid', label: 'The items', kind: 'grid', scope: 'data' }],
+    href: '?context=more', reading: ['open'], total: 8, offScreen: true, header: [true, true, false],
+  });
+  // No bar or element is the page's here: nothing configured, so nothing missing is said.
+  expect(said.filter((t) => /no #grid|provider-unknown/.test(t))).toEqual([]);
+  // An edit to the page's Query here is the page's own: Back, it is on the page.
+  await page.evaluate(() => (window as unknown as PageWin).__graphs.page!.source.query.ask({ scope: 'data', field: 'status', reading: { picked: ['shut'] } }));
+  await expect.poll(() => page.evaluate(() => (window as unknown as PageWin).__graphs.page!.source.debugState().total)).toBe(4);
+  await page.evaluate(() => { (window as unknown as PageWin).__page = null; });
+  await page.goBack();
+  await page.waitForFunction(() => (window as unknown as PageWin).__page?.id === 'more');
+  expect((await row(page)).url).toBe('context=more');
+  const home = await page.evaluate(async () => {
+    const { source } = (window as unknown as PageWin).__page!;
+    await source.load();
+    return [source.query.draft.scopes['data']?.readings['status']?.picked, source.debugState().total];
+  });
+  expect(home).toEqual([['shut'], 4]);
+});
+
+test('the graph chip moves a `query` View between pages, each opened in turn; another View closes it; the type\'s first page is left out of the URL (TODO 822)', async ({ page }) => {
+  await startOnPage(page, 'list');
+  await page.evaluate(() => document.getElementById('bar')!.dispatchEvent(new CustomEvent('node-editor-open', { bubbles: true, composed: true, detail: {} })));
+  await page.waitForFunction(() => (window as unknown as PageWin).__graphs?.page?.id === 'list');
+  expect((await row(page)).url).toBe('context=graphs&view=pages');
+  await pick(page, 'graph', 'More');
+  await page.waitForFunction(() => (window as unknown as PageWin).__graphs.page?.id === 'more');
+  expect((await row(page)).url).toBe('context=graphs&graph=more&view=pages');
+  await pick(page, 'view', 'Preset Filters');
+  await expect.poll(async () => (await row(page)).graph).toMatchObject({ view: 'filters', type: 'preset-filter' });
+  expect(await page.evaluate(() => {
+    const header = document.querySelector('sherpa-app-header')!;
+    return [(window as unknown as PageWin).__graphs.pages, header.hasAttribute('data-query')];
+  })).toEqual([['more', null], false]);
+});
