@@ -1,8 +1,8 @@
 /**
  * panel-keys.ts — the keys for the panels' tabs. Left Shift and a number brings that number's panel of the
  * left areas to the fore (a tab opens); Right Shift and a number, the right's. Shift and minus shuts the
- * focused panel (else its side's front one) back to its tab; Shift and plus opens one. Ctrl and Shift and
- * minus, or plus, shuts or opens every panel and tab. The number is the tab's place on its side: the tabs in
+ * focused panel (else its side's front one) back to its tab; Shift and plus opens one. Ctrl (Cmd on a Mac) and
+ * Shift and minus, or plus, shuts or opens every panel and tab. The number is the tab's place on its side: the tabs in
  * the row of an area that holds several panels, in the row's order, then the tabs on the edge; a panel alone in
  * its area has no tab and no number. The app shell installs it. TRAP T-the-panel-keys-are-shift-and-a-number
  *
@@ -10,6 +10,8 @@
  * - PanelLike — A panel the keys can drive.
  * - panelKeys — Listen for the panel keys; `listen` is the element's own `on`, so they end with it.
  */
+
+import { isApple, primaryKey } from './modifier-key.js';
 
 /** A panel the keys can drive: an overlay panel or the node panel. */
 export interface PanelLike extends HTMLElement {
@@ -48,11 +50,14 @@ export function panelKeys(listen: (target: EventTarget, type: string, handler: (
     const event = e as KeyboardEvent;
     if (event.code === 'ShiftLeft') held.left = true;
     else if (event.code === 'ShiftRight') held.right = true;
-    if (!event.shiftKey || event.altKey || event.metaKey || typing(event)) return;
+    // Ctrl is Cmd on a Mac; the other of the two is no chord of ours.
+    const other = isApple ? event.ctrlKey : event.metaKey;
+    const primary = primaryKey(event);
+    if (!event.shiftKey || event.altKey || other || typing(event)) return;
     const n = digit(event.code);
     const minus = event.code === 'Minus' || event.code === 'NumpadSubtract';
     const plus = event.code === 'Equal' || event.code === 'NumpadAdd';
-    if (n && !event.ctrlKey) {
+    if (n && !primary) {
       // One Shift names the side; both, or none seen, name none.
       if (held.left === held.right) return;
       const side = held.left ? 'start' : 'end';
@@ -67,7 +72,7 @@ export function panelKeys(listen: (target: EventTarget, type: string, handler: (
     } else if (minus || plus) {
       event.preventDefault();
       // Ctrl: every panel and tab, whatever the side.
-      if (event.ctrlKey) {
+      if (primary) {
         for (const panel of panels()) panel.minimise(minus);
         return;
       }

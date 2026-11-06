@@ -132,6 +132,21 @@ test('the header\'s mode buttons are ONE group with the ends on its first and la
   expect(r.first).toEqual(['4px', '0px']);
   expect(r.last).toEqual(['0px', '4px']);
   expect(r.look).toBe('default');
-  // The grip shows over the start padding: the title never moves for it.
+  // Hidden, the grip takes no room: the title is where it is docked.
   expect(r.floatX).toBe(r.dockedX);
+});
+
+test('floating, the grip nudges the title right while the pointer is on the header', async ({ page }) => {
+  await stage(page, { floating: true });
+  const titleX = () => page.evaluate(() => {
+    const sr = document.getElementById('tabbed')!.shadowRoot!;
+    return Math.round(sr.querySelector('.header')!.shadowRoot!.querySelector('.title')!.getBoundingClientRect().x - sr.querySelector('.root')!.getBoundingClientRect().x);
+  });
+  await page.mouse.move(1500, 880);
+  const bare = await titleX();
+  const bar = await part(page, '.header');
+  await page.mouse.move(bar.x + bar.w - 120, bar.y + 4);
+  expect(await titleX()).toBeGreaterThan(bare);
+  await page.mouse.move(1500, 880);
+  expect(await titleX()).toBe(bare);
 });

@@ -102,6 +102,7 @@
 /* Floating: anywhere in the window, by the box its header and corner ask for.
    sherpa-float.css draws the box, the grip and the corner, and stacks it over a
    panel on the right edge; here, what a panel adds. TRAP T-a-floating-panel-is-a-state */
+:host(:state(floating):not([data-maximised])) .header { --_lead-width: var(--sherpa-display-mode-size-md, 20px); }
 :host(:state(floating):not([data-maximised])) .root {
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);

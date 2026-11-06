@@ -169,11 +169,14 @@ slot[name="heading"] { display: contents; }
   .description { display: none; }
 }
 
-/* The slotted lead (a panel's grip) floats over the start padding and reserves nothing, so it never
-   nudges the title when it appears. */
+/* The slotted lead (a panel's grip) reserves nothing while hidden. While the pointer is on the header the
+   content steps right by `--_lead-width`, which only a host where the lead shows sets. */
+:host(:hover) .header {
+  padding-inline-start: calc(var(--sherpa-theme-padding-md, 8px) + var(--_lead-width, 0px));
+}
 ::slotted([slot="lead"]) {
   position: absolute;
-  inset-inline-start: 0;
+  inset-inline-start: var(--sherpa-theme-gap-sm, 4px);
   inset-block: 0;
   margin-block: auto;
 }

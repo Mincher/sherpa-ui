@@ -43,6 +43,9 @@
   block-size: 100%;
 }
 
+/* The grip shows on a floating card: the header's content steps right for it. */
+:host(:state(floating)) .heading { --_lead-width: var(--sherpa-display-mode-size-md, 20px); }
+
 /* Minimised: the card is gone and a TAB stands on the left edge of its area, turned on its side. The
    area has given its room back (as floating does), so the tab is the host's, which fills the layout.
    PHYSICAL sides: the tab's vertical writing mode would turn the logical ones. TRAP T-a-minimised-panel-is-a-tab */

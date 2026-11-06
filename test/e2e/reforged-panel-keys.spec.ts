@@ -30,11 +30,13 @@ async function stage(page: Page): Promise<void> {
 }
 const tabs = (page: Page) => page.evaluate(() => ['l1', 'r1', 'r2'].map((id) => document.getElementById(id)!.hasAttribute('data-minimised')));
 const chord = async (page: Page, shift: 'ShiftLeft' | 'ShiftRight', key: string, ctrl = false): Promise<void> => {
-  if (ctrl) await page.keyboard.down('Control');
+  // Ctrl is Cmd on a Mac.
+  const mod = await page.evaluate(() => (/mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control'));
+  if (ctrl) await page.keyboard.down(mod);
   await page.keyboard.down(shift);
   await page.keyboard.press(key);
   await page.keyboard.up(shift);
-  if (ctrl) await page.keyboard.up('Control');
+  if (ctrl) await page.keyboard.up(mod);
   await page.evaluate(() => window.__settled());
 };
 /** The panel drawn in front of the right area: the one the area marks. */
