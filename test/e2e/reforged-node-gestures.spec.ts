@@ -173,7 +173,7 @@ test('a line dragged out of an unrouted picklist\'s input onto the bare canvas m
   // The row mirrors it, and marks it Custom; its own pick is kept.
   const text = await page.evaluate(() => document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"]')!.shadowRoot!.querySelector('select')!.selectedOptions[0]!.textContent);
   expect(text).toBe('asc Custom');
-  expect(r.nodes['sort']).toEqual({ type: 'sort', direction: 'asc' });
+  expect(r.nodes['sort']).toEqual({ direction: 'asc' });
 });
 
 test('with no pointer: the inspector\'s "Custom value" makes the Value node; its "Cut route" cuts it; "Remove node" removes the node and its routes', async ({ page }) => {
