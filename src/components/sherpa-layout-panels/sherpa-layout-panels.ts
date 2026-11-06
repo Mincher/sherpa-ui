@@ -50,6 +50,8 @@ export class SherpaLayoutPanels extends SherpaElement {
       this.#askWidth(side);
       this.on(this.$(`.tabs-${side}`)!, 'click', (event) => this.#onTab(side, event));
     }
+    // A panel asks to come to the front (the panel keys).
+    this.on(this, 'panel-front', this.#onFront);
   }
 
   // Each connect: a moved layout watches its panels again.
@@ -128,6 +130,16 @@ export class SherpaLayoutPanels extends SherpaElement {
       },
     });
   }
+
+  /** A panel said `panel-front`: it is in front of the others in its area. */
+  #onFront = (event: Event): void => {
+    const panel = event.composedPath()[0];
+    for (const side of SIDES) {
+      if (!(panel instanceof HTMLElement) || !this.#panels(side).includes(panel)) continue;
+      this.#shown[side] = panel;
+      this.#sync(side);
+    }
+  };
 
   /** A tab was pressed: its panel comes to the front. */
   #onTab(side: PanelSide, event: Event): void {

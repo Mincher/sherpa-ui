@@ -427,6 +427,19 @@ export class SherpaOverlayPanel extends SherpaElement {
     return this.#slotted() ?? this.#dock;
   }
 
+  /** Has it a tab: on the edge, or in the row of an area that holds several open panels? */
+  get tabbed(): boolean {
+    if (this.minimised) return true;
+    if (!this.#home && !this.#slotted()) return false;
+    const mates = this.parentElement?.querySelectorAll<SherpaOverlayPanel>(`:scope > [slot="${this.slot}"]`) ?? [];
+    return [...mates].filter((m) => m.open).length > 1;
+  }
+
+  /** Bring it to the front of the panels docked beside it in its area: the area hears it. TRAP T-an-area-with-two-panels-is-tabbed */
+  front(): void {
+    this.emit('panel-front');
+  }
+
   /** Is it open, for the panel keys? */
   get shown(): boolean {
     return this.open;

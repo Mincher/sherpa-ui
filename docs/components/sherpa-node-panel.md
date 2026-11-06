@@ -98,12 +98,14 @@ For a graph editor's list of the nodes it may place, one per family, in one list
 |---|---|---|---|
 | `minimised` | `boolean` | read only |  |
 | `side` | `'start'` | read only |  |
+| `tabbed` | `boolean` | read only |  |
 | `shown` | `boolean` | read only |  |
 
 ## Methods
 
 | Method | What it does |
 |---|---|
+| `front()` | Bring it to the front of the panels docked beside it: the area hears it. |
 | `minimise(on = !this.minimised)` | Shrink to a tab (`on`), or open from it; with no word, the other of the two. |
 | `askAdd(context: AddContext)` | Open "Add a node" where a line was let go: the kinds a socket of its type could join, a Value first. |
 
@@ -118,6 +120,7 @@ Each one bubbles.
 | `panel-minimise` | `{ minimised: boolean }` | The reader pressed Minimise, or its tab. |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys. |
 | `panel-resize` | `{ height: number; width: number }` | Floating, its corner was dragged, or moved by the keys. |
+| `panel-front` |  |  |
 
 ## Parts
 

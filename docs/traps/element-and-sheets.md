@@ -2143,19 +2143,24 @@ that reaches the page belongs on the scale, not in a baseline.
 ### T-the-panel-keys-are-shift-and-a-number
 
 **The panels' tabs have keys** (Will, 2026-11-06), installed by the app shell
-(`src/core/ui/panel-keys.ts`, on `window`): **Left Shift and a number** shuts that number's panel of the
-left areas to its tab, or opens it to its last state if it is a tab; **Right Shift and a number** does the
-same on the right; **Shift and minus** shuts every panel to its tab; **Shift and plus** opens every tab.
+(`src/core/ui/panel-keys.ts`, on `window`):
 
-- **The number is the panel's place among the SHOWN panels of its side**, in page order, a tab or open.
-  A panel counts only if it is `data-minimisable`. A number with no panel does nothing.
+- **Left or Right Shift and a number** brings that number's panel of the left or right areas to the fore
+  (`panel.front()`; the area hears `panel-front`); a tab opens to its last state. It never shuts one: with
+  several panels docked and tabbed, a number is the tab's, so it cannot also minimise.
+- **Shift and minus** shuts the focused panel, else the front one of that Shift's side, back to its tab;
+  **Shift and plus** opens the focused tab, else the first tab on that side.
+- **Ctrl and Shift and minus, or plus,** shuts or opens every panel and tab, whatever the side.
+- **The number is the TAB's place on its side** (Will, 2026-11-06): the tabs in the row of an area that holds
+  several open panels, in the row's order, then the tabs on the edge. A panel alone in its area has no tab, so
+  no number (`tabbed`). A panel counts only if it is `data-minimisable`. A number with no tab does nothing.
 - **Which Shift** comes from the key codes (`ShiftLeft`, `ShiftRight`) of the keydowns seen, since a key
   event only says `shiftKey`. Both held, or neither seen, name no side; a blur forgets them.
-- **A field being typed in keeps its keys**, and Ctrl, Alt and Cmd chords are left alone.
-- The panels answer `minimise(on?)`, `minimised`, `side` and `shown`; the buttons call the same method,
-  so a shut-to-tab by key also shuts its area's others, as a press does
-  (`T-an-area-with-two-panels-is-tabbed`).
+- **A field being typed in keeps its keys**, and Alt and Cmd chords are left alone.
+- The panels answer `minimise(on?)`, `front()`, `minimised`, `side` and `shown`; a shut-to-tab by key also
+  shuts its area's others, as the button does (`T-an-area-with-two-panels-is-tabbed`).
 
 - Site: `src/core/ui/panel-keys.ts`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `test/e2e/reforged-panel-keys.spec.ts`
+- Site: `test/unit/parity-sweep.test.mjs`

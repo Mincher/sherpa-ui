@@ -391,12 +391,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (minimised, side, shown). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (minimised, side, tabbed, shown). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (minimise, askAdd). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (front, minimise, askAdd). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -454,6 +454,12 @@
         "height": "number",
         "width": "number"
       }
+    },
+    {
+      "$type": "event",
+      "name": "panel-front",
+      "bubbles": true,
+      "composed": true
     }
   ],
   "tokens": {
@@ -483,6 +489,12 @@
       "methods": [
         {
           "$type": "method",
+          "name": "front",
+          "args": "",
+          "description": "Bring it to the front of the panels docked beside it: the area hears it."
+        },
+        {
+          "$type": "method",
           "name": "minimise",
           "args": "on = !this.minimised",
           "description": "Shrink to a tab (`on`), or open from it; with no word, the other of the two."
@@ -503,6 +515,11 @@
         {
           "name": "side",
           "type": "'start'",
+          "access": "read"
+        },
+        {
+          "name": "tabbed",
+          "type": "boolean",
           "access": "read"
         },
         {

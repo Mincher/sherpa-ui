@@ -1,8 +1,10 @@
 /**
- * panel-keys.ts — the keys for the panels' tabs. Left Shift and a number opens, or shuts back to its tab,
- * that number's panel of the left areas; Right Shift and a number, the right's. Shift and minus shuts every
- * panel to its tab; Shift and plus opens every tab. The number is the panel's place among the shown panels
- * of its side, in page order. The app shell installs it. TRAP T-the-panel-keys-are-shift-and-a-number
+ * panel-keys.ts — the keys for the panels' tabs. Left Shift and a number brings that number's panel of the
+ * left areas to the fore (a tab opens); Right Shift and a number, the right's. Shift and minus shuts the
+ * focused panel (else its side's front one) back to its tab; Shift and plus opens one. Ctrl and Shift and
+ * minus, or plus, shuts or opens every panel and tab. The number is the tab's place on its side: the tabs in
+ * the row of an area that holds several panels, in the row's order, then the tabs on the edge; a panel alone in
+ * its area has no tab and no number. The app shell installs it. TRAP T-the-panel-keys-are-shift-and-a-number
  *
  * Map:
  * - PanelLike — A panel the keys can drive.
@@ -14,7 +16,10 @@ export interface PanelLike extends HTMLElement {
   readonly minimised: boolean;
   readonly side: 'start' | 'end';
   readonly shown: boolean;
+  /** Has it a tab: a tab on the edge, or a tab in the row of an area holding several? */
+  readonly tabbed: boolean;
   minimise(on?: boolean): void;
+  front(): void;
 }
 
 /** A field that is being typed in takes the keys for itself. */
@@ -34,26 +39,43 @@ export function panelKeys(listen: (target: EventTarget, type: string, handler: (
   const held = { left: false, right: false };
   const panels = (): PanelLike[] => [...document.querySelectorAll<PanelLike>('sherpa-overlay-panel[data-minimisable], sherpa-node-panel[data-minimisable]')]
     .filter((p) => p.shown);
+  /** The panel the focus is in, through every shadow root. */
+  const focusedPanel = (event: Event): PanelLike | undefined => event.composedPath().find((n): n is PanelLike => n instanceof HTMLElement && 'minimise' in n && 'side' in n);
+  /** The one in front on a side: the one drawn, not a tab. */
+  const frontOf = (side: 'start' | 'end'): PanelLike | undefined => panels().filter((p) => p.side === side && !p.minimised)
+    .find((p) => p.hasAttribute('data-current')) ?? panels().find((p) => p.side === side && !p.minimised);
   listen(window, 'keydown', (e) => {
     const event = e as KeyboardEvent;
     if (event.code === 'ShiftLeft') held.left = true;
     else if (event.code === 'ShiftRight') held.right = true;
-    if (!event.shiftKey || event.ctrlKey || event.altKey || event.metaKey || typing(event)) return;
+    if (!event.shiftKey || event.altKey || event.metaKey || typing(event)) return;
     const n = digit(event.code);
-    if (n) {
+    const minus = event.code === 'Minus' || event.code === 'NumpadSubtract';
+    const plus = event.code === 'Equal' || event.code === 'NumpadAdd';
+    if (n && !event.ctrlKey) {
       // One Shift names the side; both, or none seen, name none.
       if (held.left === held.right) return;
       const side = held.left ? 'start' : 'end';
-      const panel = panels().filter((p) => p.side === side)[n - 1];
+      // The row's tabs, then the edge's: a panel with no tab has no number.
+      const tabs = panels().filter((p) => p.side === side && p.tabbed);
+      const panel = [...tabs.filter((p) => !p.minimised), ...tabs.filter((p) => p.minimised)][n - 1];
       if (!panel) return;
       event.preventDefault();
-      panel.minimise(!panel.minimised);
-    } else if (event.code === 'Minus' || event.code === 'NumpadSubtract') {
+      // A tab opens; a panel docked with others comes to the fore. It never shuts: that is Shift and minus.
+      if (panel.minimised) panel.minimise(false);
+      else panel.front();
+    } else if (minus || plus) {
       event.preventDefault();
-      for (const panel of panels()) panel.minimise(true);
-    } else if (event.code === 'Equal' || event.code === 'NumpadAdd') {
-      event.preventDefault();
-      for (const panel of panels()) panel.minimise(false);
+      // Ctrl: every panel and tab, whatever the side.
+      if (event.ctrlKey) {
+        for (const panel of panels()) panel.minimise(minus);
+        return;
+      }
+      if (held.left === held.right) return;
+      const side = held.left ? 'start' : 'end';
+      const own = focusedPanel(event);
+      if (minus) (own ?? frontOf(side))?.minimise(true);
+      else (own?.minimised ? own : panels().find((p) => p.side === side && p.minimised))?.minimise(false);
     }
   });
   listen(window, 'keyup', (e) => {

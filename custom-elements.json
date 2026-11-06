@@ -7209,11 +7209,25 @@
             },
             {
               "kind": "field",
+              "name": "tabbed",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "shown",
               "type": {
                 "text": "boolean"
               },
               "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "front",
+              "parameters": [],
+              "description": "Bring it to the front of the panels docked beside it: the area hears it."
             },
             {
               "kind": "method",
@@ -7274,6 +7288,12 @@
               "description": "Floating, its corner was dragged, or moved by the keys.",
               "type": {
                 "text": "CustomEvent<{ height: number; width: number }>"
+              }
+            },
+            {
+              "name": "panel-front",
+              "type": {
+                "text": "CustomEvent"
               }
             }
           ],
@@ -8419,6 +8439,14 @@
             },
             {
               "kind": "field",
+              "name": "tabbed",
+              "type": {
+                "text": "boolean"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "shown",
               "type": {
                 "text": "boolean"
@@ -8456,6 +8484,12 @@
               "name": "close",
               "parameters": [],
               "description": "`hide()`, in the native <dialog>'s spelling."
+            },
+            {
+              "kind": "method",
+              "name": "front",
+              "parameters": [],
+              "description": "Bring it to the front of the panels docked beside it in its area: the area hears it."
             },
             {
               "kind": "method",
@@ -8528,6 +8562,12 @@
               "description": "Its left edge was dragged, or moved by the keys; floating, its corner",
               "type": {
                 "text": "CustomEvent<{ height: number; width: number }>"
+              }
+            },
+            {
+              "name": "panel-front",
+              "type": {
+                "text": "CustomEvent"
               }
             }
           ],

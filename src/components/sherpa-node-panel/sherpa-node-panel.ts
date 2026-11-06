@@ -270,6 +270,16 @@ export class SherpaNodePanel extends SherpaElement {
     return 'start';
   }
 
+  /** Has it a tab: only on the edge, where it is the one panel of its area. */
+  get tabbed(): boolean {
+    return this.minimised;
+  }
+
+  /** Bring it to the front of the panels docked beside it: the area hears it. */
+  front(): void {
+    this.emit('panel-front');
+  }
+
   /** Is it drawn, for the panel keys? */
   get shown(): boolean {
     return !this.hidden;

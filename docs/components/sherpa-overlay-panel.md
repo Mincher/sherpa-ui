@@ -56,6 +56,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `open` | `boolean` | read and write | whether the panel is open (delegates to &lt;dialog>) |
 | `minimised` | `boolean` | read only |  |
 | `side` | `'start' \| 'end'` | read only |  |
+| `tabbed` | `boolean` | read only |  |
 | `shown` | `boolean` | read only |  |
 
 ## Methods
@@ -66,6 +67,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `notify()` | Say something changed: as a tab it turns active and wears a mark, until it is opened. |
 | `hide(reason: 'reader' \| 'width' \| 'page' = 'reader')` | Close it, and say why: `panel-close` reports it. |
 | `close()` | `hide()`, in the native &lt;dialog>'s spelling. |
+| `front()` | Bring it to the front of the panels docked beside it in its area: the area hears it. |
 | `minimise(on = !this.minimised)` | Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here. |
 
 ## Commands
@@ -92,6 +94,7 @@ Each one bubbles.
 | `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |
 | `panel-resize` | `{ height: number; width: number }` | Its left edge was dragged, or moved by the keys; floating, its corner |
+| `panel-front` |  |  |
 
 ## Slots
 
