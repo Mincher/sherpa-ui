@@ -9,7 +9,7 @@
   "components.js": {
     "files": 154,
     "brotli": {
-      "js": 282611,
+      "js": 280971,
       "fetched": 8591
     }
   },
@@ -30,7 +30,7 @@
   "components/sherpa-app-shell/sherpa-app-shell.js": {
     "files": 15,
     "brotli": {
-      "js": 22322,
+      "js": 22319,
       "fetched": 0
     }
   },
@@ -293,10 +293,10 @@
       "fetched": 0
     }
   },
-  "components/sherpa-node-panel/sherpa-node-panel.js": {
-    "files": 56,
+  "components/sherpa-node-list/sherpa-node-list.js": {
+    "files": 49,
     "brotli": {
-      "js": 95627,
+      "js": 85921,
       "fetched": 0
     }
   },
@@ -338,7 +338,7 @@
   "components/sherpa-overlay-panel/sherpa-overlay-panel.js": {
     "files": 44,
     "brotli": {
-      "js": 75557,
+      "js": 75585,
       "fetched": 0
     }
   },
@@ -527,7 +527,7 @@
   "index.js": {
     "files": 256,
     "brotli": {
-      "js": 451693,
+      "js": 450053,
       "fetched": 8591
     }
   }
