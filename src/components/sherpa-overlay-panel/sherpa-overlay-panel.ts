@@ -119,6 +119,10 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.tab')?.addEventListener('pointerenter', this.#onPeek);
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
+    // Attributes put on it before this first render (a kept state, handed back as it connects) raised no change: read them now.
+    this.toggleState('minimised', this.hasAttribute('data-minimised'));
+    this.#place();
+    SherpaOverlayPanel.#stack();
     this.#syncGroup();
     /* The LEFT edge: dragged, it moves as far as the pointer does, and
        ArrowLeft widens. TRAP T-an-overlay-panel-resizes-from-its-left-edge

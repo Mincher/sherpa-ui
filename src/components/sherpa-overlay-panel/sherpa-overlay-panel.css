@@ -59,6 +59,8 @@
   block-size: auto;
   /* Above the nav rail (z-index 2). */
   z-index: var(--sherpa-layer-panels, 101);
+  /* A floating panel's area lets the press through but on the box: the box takes its own back, wherever the panel is slotted. */
+  pointer-events: auto;
 
   background: var(--_surface);
   border-style: solid;
