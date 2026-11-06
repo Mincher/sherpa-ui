@@ -19,7 +19,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const DEMOS = `${ROOT}../Sherpa Demos/app/`;
+// A lane run points SHERPA_DEMOS at its own Demos pair; the default is the one beside this checkout.
+const DEMOS = `${(process.env.SHERPA_DEMOS ?? `${ROOT}../Sherpa Demos`).replace(/\/$/, '')}/app/`;
 // A browser is Playwright's Chromium; with none here, the tests that draw are skipped.
 const pw = await import('playwright-core').catch(() => null);
 const drawn = await pw?.chromium.launch().then((b) => b.close().then(() => true), () => false);

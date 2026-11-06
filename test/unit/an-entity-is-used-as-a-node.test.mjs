@@ -10,6 +10,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { graph } from '../../scripts/check-weight.mjs';
 
 const core = new URL('../../dist/core/', import.meta.url);
@@ -185,7 +186,7 @@ test('an app\'s type is used as a node too; and the keeper\'s modules stay light
   } finally {
     off();
   }
-  const loads = [...graph(new URL('browser/page-state.js', core).pathname).modules].map((f) => f.split('/dist/')[1]);
+  const loads = [...graph(fileURLToPath(new URL('browser/page-state.js', core))).modules].map((f) => f.split('/dist/')[1]);
   assert.ok(loads.includes('core/data/entity-types.js'));
   for (const heavy of ['core/data/node-kinds.js', 'core/data/workflow.js', 'core/data/node-library.js', 'core/data/entity-check.js']) assert.ok(!loads.includes(heavy), heavy);
 });

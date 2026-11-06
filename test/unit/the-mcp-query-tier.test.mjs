@@ -21,12 +21,15 @@ import {
 import { createDataHandler, nodeHandler } from '../../dist/server.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const DEMOS = `${ROOT}../Sherpa Demos/app/`;
+// A lane run points SHERPA_DEMOS at its own Demos pair; the default is the one beside this checkout.
+const DEMOS = `${(process.env.SHERPA_DEMOS ?? `${ROOT}../Sherpa Demos`).replace(/\/$/, '')}/app/`;
 const demos = existsSync(`${DEMOS}view-schemas/records.json`);
 const skip = demos ? false : `no ${DEMOS}: Demos' Records page is read where Demos sits beside this checkout`;
 const fromDemos = (path) => JSON.parse(readFileSync(`${DEMOS}${path}`, 'utf8'));
 const records = demos ? fromDemos('view-schemas/records.json') : null;
-const workflow = demos ? fromDemos('workflows/active-customers.json') : null;
+// Since 760 a workflow is an ENTITY; the tools take its graph as a v2 definition.
+const entity = demos ? fromDemos('workflows/active-customers.json') : null;
+const workflow = entity ? { v: 2, id: entity.id, ...entity.graph } : null;
 
 /** Rows for every field Records declares, the same each run; dates counted back from today. */
 const STATUS = ['active', 'trial', 'suspended', 'churned'];
