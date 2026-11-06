@@ -388,7 +388,7 @@ test.describe('Pop in and Pop out', () => {
     expect(await read(page)).toMatchObject({ parent: 'sherpa-app-shell', open: true, position: 'static' });
   });
 
-  test('a floating panel leaves a fixed one open; popped out, it shuts the floating one', async ({ page }) => {
+  test('a panel opened beside a fixed one leaves it open; popped out, both stay open', async ({ page }) => {
     await stage(page);
     await press(page);
     const states = await page.evaluate(async () => {
@@ -403,7 +403,7 @@ test.describe('Pop in and Pop out', () => {
       await window.__settled();
       return { both, after: [panel.open, other.open] };
     });
-    expect(states).toEqual({ both: [true, true], after: [true, false] });
+    expect(states).toEqual({ both: [true, true], after: [true, true] });
   });
 
   test('with no room it floats and the button goes; with room again it goes back', async ({ page }) => {
@@ -470,7 +470,7 @@ test.describe('Pop in and Pop out', () => {
   });
 });
 
-test('a panel opened INSIDE a panel leaves its holder open; one beside them shuts both', async ({ page }) => {
+test('a panel opened INSIDE a panel leaves its holder open, and one beside them leaves both open', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const make = (): PanelEl & { show(): void; open: boolean } => document.createElement('sherpa-overlay-panel') as PanelEl & { show(): void; open: boolean };
     const outer = make();
@@ -487,5 +487,5 @@ test('a panel opened INSIDE a panel leaves its holder open; one beside them shut
     return { nested, after: [outer.open, inner.open, beside.open] };
   });
   // The Node Editor's inspector sits inside the editor. TODO 555
-  expect(r).toEqual({ nested: [true, true], after: [false, false, true] });
+  expect(r).toEqual({ nested: [true, true], after: [true, true, true] });
 });

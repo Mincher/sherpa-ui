@@ -82,15 +82,10 @@ export class SherpaOverlayPanel extends SherpaElement {
   } as const;
   static override observed = ['open', 'data-search-placeholder', 'data-fixed', 'data-x', 'data-y', 'data-width', 'data-height'];
 
-  /** The panels open now. They share the right edge, so opening one shuts the
-   *  rest. TRAP T-one-overlay-panel-at-a-time */
-  static #shown = new Set<SherpaOverlayPanel>();
-
   /** The native dialog the panel draws in, NON-modal. */
   #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
     open: (dialog) => {
       this.#place();
-      if (!this.#home && !this.#slotted() && !this.hasAttribute('data-floating')) this.#takeTheEdge();
       // Opened floating, it comes to the front. TRAP T-a-pressed-panel-comes-to-the-front
       if (this.hasAttribute('data-floating')) this.#floatBox.raise();
       dialog.show();
@@ -100,7 +95,6 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.$('.resize')?.setAttribute('aria-valuenow', String(Math.round(dialog.getBoundingClientRect().width)));
     },
     closed: () => {
-      SherpaOverlayPanel.#shown.delete(this);
       const reason = this.#why;
       this.#why = 'reader';
       this.emit('panel-close', { reason });
@@ -167,7 +161,6 @@ export class SherpaOverlayPanel extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    SherpaOverlayPanel.#shown.delete(this);
     SherpaOverlayPanel.#stack();
   }
 
@@ -312,13 +305,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     return this.slot === 'panel-end' ? 'end' : null;
   }
 
-  /** Take the right edge: the other panels there shut. TRAP T-one-overlay-panel-at-a-time */
-  #takeTheEdge(): void {
-    // …but never one that HOLDS this one: a panel opened inside a panel sits over it. TODO 555
-    for (const other of SherpaOverlayPanel.#shown) if (other !== this && !other.contains(this)) other.hide();
-    SherpaOverlayPanel.#shown.add(this);
-  }
-
   /** The shell whose area can take the panel: none, no room, or the host's own panel there says no. */
   #area(): Element | null {
     const shell = document.querySelector('sherpa-app-shell');
@@ -347,7 +333,6 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.#syncSide();
       this.#syncPop();
       this.#floatBox.floated(floating);
-      SherpaOverlayPanel.#shown.delete(this);
       return;
     }
     if (this.hasAttribute('data-fixed')) {
@@ -368,8 +353,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.#syncPop();
     this.#syncGroup();
     this.#floatBox.floated(floating);
-    // …and leaves the right edge, as a fixed one does. TRAP T-one-overlay-panel-at-a-time
-    if (floating || minimised) SherpaOverlayPanel.#shown.delete(this);
   };
 
   /** Shrink to a tab, or open as it was: the area gives its room back and takes it again. */
@@ -383,7 +366,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     SherpaOverlayPanel.#stack();
     if (minimised) return;
     if (this.hasAttribute('data-floating')) this.#floatBox.raise();
-    else if (!this.#home && !this.#slotted() && this.open) this.#takeTheEdge();
   }
 
   /** Float, or dock back where it came from: the right edge, or the fixed area. */
@@ -391,7 +373,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     const floating = this.hasAttribute('data-floating');
     if (floating) this.#lift();
     this.#place();
-    if (!floating && !this.#home && !this.#slotted() && this.open && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
   }
 
   /** Floating, in the window: its box, moved by the header bar and resized by the corner. TRAP T-a-floating-panel-is-a-state */
@@ -428,7 +409,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     const parent = this.parentNode;
     if (this.#home || !parent) return;
     const slot = `panel-${this.#dock}`;
-    SherpaOverlayPanel.#shown.delete(this);
     this.#home = { parent, before: this.nextSibling };
     this.slot = slot;
     moveInto(shell, this, null);
@@ -443,7 +423,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.removeAttribute('data-current');
     const back = parent.isConnected ? parent : document.body;
     moveInto(back, this, before?.parentNode === back ? before : null);
-    if (this.open && !this.hasAttribute('data-floating') && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
   }
 
   /** The buttons of the one group, in order: the first and the last that show wear the group's ends, which

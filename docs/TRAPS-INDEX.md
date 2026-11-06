@@ -570,7 +570,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (130)
+## Menus, tips and overlays (129)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -681,7 +681,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-condition-system](traps/data-layer.md#t-one-condition-system) — menu
 - [T-one-field-one-filter-menu](traps/data-layer.md#t-one-field-one-filter-menu) — menu
 - [T-one-number-is-a-pick-under-equals](traps/menus-tips-overlays.md#t-one-number-is-a-pick-under-equals) — menu
-- [T-one-overlay-panel-at-a-time](traps/menus-tips-overlays.md#t-one-overlay-panel-at-a-time) — overlay-panel
 - [T-one-tab-stop-per-set](traps/menus-tips-overlays.md#t-one-tab-stop-per-set) — menu
 - [T-one-verb-proxies-to-the-native-one](traps/menus-tips-overlays.md#t-one-verb-proxies-to-the-native-one) — disclosure, menu, notifications
 - [T-open-menu-resize-closes](traps/menus-tips-overlays.md#t-open-menu-resize-closes) — menu

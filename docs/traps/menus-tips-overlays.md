@@ -132,9 +132,7 @@ design for the button yet.
 **Fixed, it is DOCKED, flush and flat** (Will, TODO 796): it fills its area top,
 side and bottom, with no edge, no rounding and no shadow of its own; the area
 draws the divider (`T-a-panel-area-is-a-layout`). No left-edge handle, as the
-area's edge resizes it. No maximise, which needs the whole window. It leaves the
-panels on the right edge, so one opening beside it leaves it open and sits over
-it (`T-one-overlay-panel-at-a-time`); popped out, it takes the edge again.
+area's edge resizes it. No maximise, which needs the whole window.
 
 **Either area:** `data-fixed="start"` docks it in the START area; bare, or `end`,
 the end one. Pop out remembers the area it left, so Pop in goes back there, and
@@ -181,9 +179,7 @@ Float goes while it is maximised.
   area gives the Context its width back through the watch it has: the shell is
   unchanged. Docked, it pops back in. A slotted box cannot float out of a hidden
   area: `display: none` on the area draws nothing slotted in it.
-- **Floating leaves the right edge**, as a fixed panel does
-  (`T-one-overlay-panel-at-a-time`): a panel opened there leaves it open, and it
-  is drawn over that one (z-index 102 and up, the tab's one stack:
+- **Floating** is drawn over the panels open on the edge (z-index 102 and up, the tab's one stack:
   `T-a-pressed-panel-comes-to-the-front`). Docked back on the edge, it takes it again.
 - **The box** is `data-x`, `data-y`, `data-width` and `data-height`, in px of the
   window. CSS draws it through `--_float-*` and owns the clamp: never under
@@ -533,20 +529,6 @@ row a `listitem`. A calendar's cells sit in `role="row"` boxes that are
 `display: contents`, so they still lie on the grid.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-
-### T-one-overlay-panel-at-a-time
-
-**Opening an overlay panel shuts every other one** — TODO 23. They all sit on
-the right edge, so two open at once draw one over the other. It works as a
-native `popover="auto"` does: the panel keeps a static set of the panels open
-now and hides the rest on `show()`. A set, not a `document` query, so a panel
-inside a shadow root is found too. A shut panel still fires `panel-close`, so
-its host hears it. The Assistant and the Records details panel are the pair.
-A panel opened INSIDE another leaves its holder open: it sits over it, as the
-Node Editor's inspector sits over the editor (TODO 555).
-
-- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
-- Site: `test/e2e/reforged-records-details.spec.ts`
 
 ### T-a-page-sheet-is-for-what-a-component-puts-in-the-page
 
