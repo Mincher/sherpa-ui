@@ -836,6 +836,7 @@
     "root.box-shadow": "{sherpa.shadow-lg}",
     "tab-open.gap": "{sherpa.theme-gap-sm}",
     "tab-open.padding": "{sherpa.display-mode-space-sm}",
+    "search.margin-block-start": "{sherpa.theme-gap-md}",
     "toolbar.gap": "{sherpa.theme-gap-sm}",
     "divider.inline-size": "{sherpa.display-mode-border-width-base}",
     "divider.block-size": "{sherpa.theme-content-size-xs}",

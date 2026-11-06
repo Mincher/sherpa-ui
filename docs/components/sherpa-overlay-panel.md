@@ -138,6 +138,7 @@ What each class's base rule reads:
 | `--sherpa-shadow-lg` | `.root` | `box-shadow` |
 | `--sherpa-theme-gap-sm` | `.tab-open` | `gap` |
 | `--sherpa-display-mode-space-sm` | `.tab-open` | `padding` |
+| `--sherpa-theme-gap-md` | `.search` | `margin-block-start` |
 | `--sherpa-theme-gap-sm` | `.toolbar` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.divider` | `inline-size` |
 | `--sherpa-theme-content-size-xs` | `.divider` | `block-size` |

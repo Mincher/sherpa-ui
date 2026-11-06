@@ -275,7 +275,7 @@
 }
 
 /* The search row: the header's full width, its own row; absent until `data-searchable` stamps it. TRAP T-a-panel-owns-its-search-row */
-.search { flex: 1 1 auto; min-inline-size: 0; inline-size: 100%; }
+.search { flex: 1 1 auto; min-inline-size: 0; inline-size: 100%; margin-block-start: var(--sherpa-theme-gap-md, 8px); }
 :host(:not([data-searchable])) .search { display: none; }
 
 /* The panel's controls, in the composed header's `actions` slot. */
