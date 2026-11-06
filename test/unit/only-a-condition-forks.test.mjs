@@ -30,8 +30,8 @@ test('Condition alone forks, in every type; every other shipped kind, type and C
 
 test('a check sends a boolean from its header and no False; the rest send nothing from it', () => {
   const sends = (id) => socketType(resolveKind(NODE_KINDS[id]), undefined, 'output');
-  assert.deepEqual(Object.fromEntries(['condition', 'time', 'tag', 'preset', 'saved', 'source', 'value', 'field', 'math', 'collection', 'text'].map((id) => [id, sends(id)])), {
-    condition: 'boolean', time: 'boolean', tag: 'boolean', preset: 'boolean', saved: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, collection: undefined, text: undefined,
+  assert.deepEqual(Object.fromEntries(['condition', 'time', 'tag', 'preset', 'saved', 'source', 'value', 'field', 'math', 'sort', 'group', 'text'].map((id) => [id, sends(id)])), {
+    condition: 'boolean', time: 'boolean', tag: 'boolean', preset: 'boolean', saved: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, sort: undefined, group: undefined, text: undefined,
   });
   for (const id of Object.keys(NODE_KINDS)) assert.equal(socketType(resolveKind(NODE_KINDS[id]), '#false', 'output'), id === 'condition' ? 'boolean' : undefined, `${id}: its False`);
 });

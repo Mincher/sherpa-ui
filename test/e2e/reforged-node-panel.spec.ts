@@ -210,8 +210,8 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   const choices = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // Rows (an object) leave the Store row: the families whose header or a row takes one.
   // A portal's In takes anything (TODO 779).
-  expect(choices).toEqual(['field', 'condition', 'sort', 'group', 'portal', 'output']);
-  const count = page.locator('sherpa-node-panel sherpa-menu.add button[value="sort"]');
+  expect(choices).toEqual(['field', 'condition', 'portal', 'output']);
+  const count = page.locator('sherpa-node-panel sherpa-menu.add button[value="condition"]');
   // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
   if (test.info().project.name === 'webkit') {
     await count.evaluate((b: HTMLElement) => b.focus());
@@ -219,9 +219,9 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   } else await count.click();
   await settle(page);
   const r = await draft(page);
-  expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'sort']);
-  expect(r.routes).toEqual(['start/rows → sort-1']);
-  expect(await pick(page)).toEqual({ current: ['Sort'], open: false });
+  expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'condition']);
+  expect(r.routes).toEqual(['start/rows → condition-1']);
+  expect(await pick(page)).toEqual({ current: ['Condition'], open: false });
 });
 
 test('"Add a node" for a list says the type a family takes it as: Math › Floor, Text › Join', async ({ page }) => {

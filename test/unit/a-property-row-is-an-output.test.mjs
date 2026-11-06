@@ -32,7 +32,7 @@ test('Sort and Group are kinds of their own in Organise; the Collection family a
   // Each takes the Field it works on on its header (plan 783 D5), has no types, and sends its rows from its Rows row.
   for (const id of ['sort', 'group']) {
     const kind = resolveKind(NODE_KINDS[id]);
-    assert.deepEqual([kind.types, kind.needs, kind.input, kind.branches, kind.rows[0].name], [undefined, 'field', 'any', true, 'rows'], id);
+    assert.deepEqual([kind.types, kind.needs, kind.input, kind.branches, kind.rows[0].name], [undefined, 'field', 'any', undefined, 'rows'], id);
   }
   assert.deepEqual(NODE_KINDS.sort.rows.map((r) => r.name), ['rows', 'direction']);
   // A saved Collection reads with today's fault: nothing converts it (a clean system).
@@ -70,7 +70,7 @@ test('a property row sends a number before a run, as a Result does: it routes li
   const bad = flow([source, { id: 'k', kind: 'sort', x: 300, y: 0 }], [{ from: 's/count', to: 'k' }]);
   assert.deepEqual(said(workflowGraph(bad)), { k: [['', 'Sort takes a field; it was given a number']] });
   // The Outgoing JSON lists it among a node's outputs.
-  assert.deepEqual(nodeFlow(g, 's').outgoing.map((o) => [o.socket, o.type]), [['True', 'boolean'], ['False', 'boolean'], ['Rows', 'object'], ['Count', 'value']]);
+  assert.deepEqual(nodeFlow(g, 's').outgoing.map((o) => [o.socket, o.type]), [['Rows', 'object'], ['Count', 'value']]);
 });
 
 test('a property row routes through a portal as a row, and a Custom Node takes it as an output: Save as and Ungroup keep its route', () => {
