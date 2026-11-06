@@ -167,7 +167,7 @@
   "src/core/data/node-frames.ts": 66,
   "src/core/data/node-group.ts": 320,
   "src/core/data/node-input.ts": 218,
-  "src/core/data/node-kinds.ts": 750,
+  "src/core/data/node-kinds.ts": 757,
   "src/core/data/node-library.ts": 458,
   "src/core/data/node-paths.ts": 70,
   "src/core/data/node-portals.ts": 185,
