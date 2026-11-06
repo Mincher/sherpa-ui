@@ -182,7 +182,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-saveable': { type: 'boolean', kind: 'style' },
     /* Suggest filters, left of Edit. Will, TODO 527 */
     'data-suggest': { type: 'boolean', kind: 'style' },
-    /* "Node Editor (beta)" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555 */
+    /* "Open in Node Editor" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822 */
     'data-node-editor': { type: 'boolean', kind: 'style' },
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote': { type: 'boolean', kind: 'behaviour' },

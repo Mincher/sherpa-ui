@@ -86,7 +86,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-no-saves` | boolean |  |  |
 | `data-no-section-labels` | boolean |  |  |
 | `data-no-sections` | boolean |  |  |
-| `data-node-editor` | boolean |  | show "Node Editor (beta)" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555 |
+| `data-node-editor` | boolean |  | show "Open in Node Editor" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822 |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |
 | `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope="view data"`) it is the COLUMN: ONE header — one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425 |
 | `data-panel-mode` | boolean |  | a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers |
@@ -185,7 +185,7 @@ Each one bubbles.
 | `panel-resize` | `{ height: number; width: number }` | A floating column's corner was dragged, or moved by the keys. |
 | `data-refresh` |  | Refresh: load the page's data again. |
 | `ai-filter-request` |  | Suggest filters was pressed. |
-| `node-editor-open` |  | Node Editor (beta) was picked in the ⋮ menu: the host opens the page's Query as nodes. |
+| `node-editor-open` |  | Open in Node Editor was picked in the ⋮ menu: an outlet opens the page's Query in its `query` graph View. |
 
 ## Slots
 

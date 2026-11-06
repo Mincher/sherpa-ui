@@ -946,7 +946,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show \"Node Editor (beta)\" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555"
+      "description": "show \"Open in Node Editor\" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822"
     },
     {
       "$type": "prop",
@@ -1500,7 +1500,7 @@
     {
       "$type": "event",
       "name": "node-editor-open",
-      "description": "Node Editor (beta) was picked in the ⋮ menu: the host opens the page's Query as nodes.",
+      "description": "Open in Node Editor was picked in the ⋮ menu: an outlet opens the page's Query in its `query` graph View.",
       "bubbles": true,
       "composed": true
     }

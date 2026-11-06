@@ -234,6 +234,8 @@
 /* Delete view: critical, and only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own */
 .view-delete { color: var(--sherpa-style-content-base, #35353d); }
 :host(:not([data-custom-view])) .view-delete { display: none; }
+/* A page's Query: its edits are the page's, so nothing to save, copy or delete. TRAP T-a-graph-is-a-view-of-a-type */
+:host([data-view-actions][data-query]) .view-group { display: none; }
 
 /* ── Loading bar ─────────────────────────────────────────────────────── */
 /* Absolutely placed on the header's bottom edge so it NEVER adds height — in the

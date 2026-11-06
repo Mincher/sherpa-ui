@@ -186,6 +186,12 @@
             "attrs": {
               "data-word": "new-graph"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "page"
+            }
           }
         ]
       }
@@ -268,7 +274,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "graph": "OpenGraph | null"
+        "graph": "OpenGraph | null",
+        "page": "OpenPage | undefined"
       }
     },
     {

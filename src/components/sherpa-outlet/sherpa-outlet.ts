@@ -4,14 +4,15 @@
  * TRAP T-an-outlet-loads-the-context
  *
  * A Context whose `chrome.filters` is `"views"` has its row drawn here: the View chip and, on a
- * graph View, the graph chip, which picks the entity its canvas shows. TRAP T-a-graph-is-a-view-of-a-type
+ * graph View, the graph chip, which picks the entity its canvas shows — on a `query` View, the page
+ * whose Query it shows, opened here for its Query alone. TRAP T-a-graph-is-a-view-of-a-type
  *
  * Map:
  * - OutletOptions — what an app hands its outlet: app.json, where it lives, the session and the stores
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { bindSettings } from '../../core/ui/bind-settings.js';
-import { checkApp, type AppDefinition, type ContextInit, type ContextModule } from '../../core/data/app-definition.js';
+import { checkApp, type AppDefinition, type ContextInit, type ContextModule, type OpenPage } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
 import type { Entity } from '../../core/data/entity.js';
@@ -19,7 +20,7 @@ import type { EntityShelf } from '../../core/data/entity-shelf.js';
 import type { NodeShelf } from '../../core/data/node-shelf.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { GRAPH_CHIP, VIEW_CHIP } from '../../core/ui/shared-constants.js';
-import { NEW_GRAPH, graphRows, newGraph, openOf, type OpenGraph } from '../../core/data/graph-views.js';
+import { NEW_GRAPH, PAGE_QUERY, graphRows, newGraph, openOf, pageRows, pagesOf, type OpenGraph } from '../../core/data/graph-views.js';
 import type { SessionStore } from '../../core/browser/session.js';
 import { SETTINGS, Settings } from '../../core/data/settings.js';
 import type { PageDefinition } from '../../core/data/page-definition.js';
@@ -121,7 +122,7 @@ export class SherpaOutlet extends SherpaElement {
     const open = this.#graph;
     const shelf = this.#provider?.keeper.entities;
     if (!open || !shelf) return;
-    const first = shelf.list(open.type)[0]?.id ?? null;
+    const first = (open.type === PAGE_QUERY ? this.#pages()[0] : shelf.list(open.type)[0])?.id ?? null;
     await this.#router?.go({ [GRAPH_CHIP]: id === first ? null : id }, { replace: true });
     // The URL stays where the first is opened again: drawn either way.
     await this.#syncGraph();
@@ -179,6 +180,8 @@ export class SherpaOutlet extends SherpaElement {
     }
     const header = this.#header;
     if (header) this.on(header, 'quick-filter-change', this.#onViewPick);
+    // A toolbar's Open in Node Editor: the page's Query, in the app's `query` graph View.
+    this.on(this.#shell ?? this, 'node-editor-open', this.#onOpenEditor);
     /* Settings' back arrow and ESC are INTENTS: each asks the router, and the
        screen follows its route-change. */
     const settings = options.settings;
@@ -478,18 +481,23 @@ export class SherpaOutlet extends SherpaElement {
     const library = this.viewsOf(context);
     const view = route['view'] && library[route['view']] ? route['view'] : this.firstView(context);
     const type = view ? library[view]?.graph?.type : undefined;
-    const list = type ? this.#provider?.keeper.entities.list(type) ?? [] : [];
-    const picked = openOf(list, route[GRAPH_CHIP]);
-    const open: OpenGraph | null = view && type ? { view, type, id: picked?.id ?? null, ...(picked ? { origin: picked.origin } : {}) } : null;
+    // A `query` View's graphs are the app's pages; any other's, the entities of its type.
+    const pages = type === PAGE_QUERY ? this.#pages() : null;
+    const list = type && !pages ? this.#provider?.keeper.entities.list(type) ?? [] : [];
+    const entity = pages ? undefined : openOf(list, route[GRAPH_CHIP]);
+    const picked = pages ? pages.find((p) => p.id === route[GRAPH_CHIP]) ?? pages[0] : entity;
+    const open: OpenGraph | null = view && type ? { view, type, id: picked?.id ?? null, ...(entity ? { origin: entity.origin } : {}) } : null;
     const { entityTypes } = await import('../../core/data/entity-types.js');
     if (token !== this.#graphToken) return;
-    const kind = type ? entityTypes()[type] : undefined;
-    if (type && !kind) report({ code: 'graph-view', message: `sherpa-outlet: the View "${view}" shows graphs of the type "${type}", which this app does not have.`, at: { context, view: view ?? '' } });
+    const kind = type && !pages ? entityTypes()[type] : undefined;
+    if (type && !pages && !kind) report({ code: 'graph-view', message: `sherpa-outlet: the View "${view}" shows graphs of the type "${type}", which this app does not have.`, at: { context, view: view ?? '' } });
     const chips: unknown[] = [{
       id: VIEW_CHIP, label: this.word('view'), persistent: true, active: true, select: 'single',
       options: Object.entries(library).map(([value, v]) => ({ value, label: v.label, ...(value === view ? { selected: true } : {}) })),
     }];
-    if (open) {
+    if (open && pages) {
+      chips.push({ id: GRAPH_CHIP, label: this.word('page'), icon: 'filter', persistent: true, active: true, select: 'single', options: pageRows(pages, open.id) });
+    } else if (open) {
       const words = { presets: this.word('presets'), mine: this.word('mine'), readOnly: this.word('read-only'), new: this.word('new-graph') };
       chips.push({
         id: GRAPH_CHIP, label: kind?.label ?? open.type, ...(kind?.icon ? { icon: kind.icon } : {}), persistent: true, active: true, select: 'single',
@@ -505,18 +513,89 @@ export class SherpaOutlet extends SherpaElement {
     } finally {
       this.#drawing = false;
     }
+    if (token !== this.#graphToken) return;
+    // A page's graph: its data opened BEFORE the Context is told, which binds to it.
+    await this.#openPage(open?.type === PAGE_QUERY ? open.id : null);
     if (token === this.#graphToken) this.#setGraph(open, tell, was);
   }
+
+  /** The app's pages a `query` graph View offers. */
+  #pages(): ReturnType<typeof pagesOf> {
+    return pagesOf(this.#options?.app.contexts ?? {});
+  }
+
+  /** The page a `query` graph View has open, for its Query alone. */
+  #page: OpenPage | null = null;
+  /** The page asked for last, open or opening. */
+  #pageWanted: string | null = null;
+  /** Each page opening; only the newest commits. */
+  #pageToken = 0;
+
+  /** Open a page for its Query alone, as its own Context opens it — its definition, under its own key, on
+   *  the View it was left on — or close the one open. TRAP T-a-graph-is-a-view-of-a-type */
+  async #openPage(id: string | null): Promise<void> {
+    if (id === this.#pageWanted) return;
+    const was = this.#pageWanted;
+    this.#pageWanted = id;
+    const token = ++this.#pageToken;
+    const options = this.#options;
+    const context = id ? options?.app.contexts[id] : undefined;
+    const provider = this.#provider;
+    this.#page = null;
+    if (was) provider?.close();
+    if (!id || !options || !context?.definition || !provider) return;
+    const [read, template, files] = await Promise.all([
+      this.#file(context.definition, 'json') as Promise<PageDefinition | null>, this.#file(context.template, 'text'),
+      import('../../core/ui/page-components.js'),
+    ]);
+    if (token !== this.#pageToken || !read) return;
+    const definition = options.definition ? options.definition(id, structuredClone(read)) : read;
+    const views = this.#views[id] ?? {};
+    const kept = provider.keeper.read(id).view;
+    const view = kept && this.viewsOf(id)[kept] ? kept : undefined;
+    await options.ready;
+    const stores = options.stores();
+    const source = await provider.open(definition, { key: id, stores, views, ...(view ? { view } : {}), bars: false });
+    // Another asked meanwhile: a page opens over this one, and none closes it.
+    if (token !== this.#pageToken && !this.#pageWanted && source) provider.close();
+    if (token !== this.#pageToken || !source) return;
+    const content = view ? this.viewsOf(id)[view]?.content : undefined;
+    const markup = files.pageMarkup(String(template ?? ''), typeof content === 'string' ? content : undefined);
+    const shown = view && view !== this.firstView(id) ? view : null;
+    this.#page = {
+      id, label: context.label, definition, source, markup, stores: Object.keys(stores),
+      components: files.pageComponents(markup, definition),
+      href: this.#router?.href({ ...this.#router.route, context: id, view: shown, [GRAPH_CHIP]: null, settings: null }) ?? `?context=${id}`,
+    };
+  }
+
+  /** Open in Node Editor, from a page's toolbar: the app's `query` graph View, on this page. A push, so Back
+   *  comes back. An app with no such View is not answered. TRAP T-a-graph-is-a-view-of-a-type */
+  #onOpenEditor = async (): Promise<void> => {
+    const page = this.#context;
+    if (!page || !this.#options?.app.contexts[page]?.definition) return;
+    await this.#viewsReady;
+    for (const [context, views] of Object.entries(this.#views)) {
+      const view = Object.keys(views).find((id) => views[id]?.graph?.type === PAGE_QUERY);
+      if (!view) continue;
+      const first = this.#pages()[0]?.id;
+      await this.#router?.go({ context, view: view === this.firstView(context) ? null : view, [GRAPH_CHIP]: page === first ? null : page });
+      return;
+    }
+  };
 
   /** The header follows the open graph — its words, Save off on a preset — and the Context is told when it moved. */
   #setGraph(open: OpenGraph | null, tell: boolean, was: OpenGraph | null = this.#graph): void {
     this.#graph = open;
     const header = this.#header;
+    const query = open?.type === PAGE_QUERY;
     header?.toggleAttribute('data-graph', !!open);
     header?.toggleAttribute('data-readonly', open?.origin === 'preset');
+    // A page's Query: its edits are the page's own, so the View's actions go.
+    header?.toggleAttribute('data-query', query);
     if (open || was) this.#onViewChange();
     const key = (g: OpenGraph | null): string => (g ? `${g.view}/${g.type}/${g.id ?? ''}` : '');
-    if (tell && key(was) !== key(open)) this.emit('graph-change', { graph: open });
+    if (tell && key(was) !== key(open)) this.emit('graph-change', { graph: open, ...(query && this.#page ? { page: this.#page } : {}) });
   }
 
   /** New graph… was picked: the chip shows the open one again, and the app may take the ask over —
@@ -578,9 +657,11 @@ export class SherpaOutlet extends SherpaElement {
     const leaving = (this.#leaving = new AbortController());
     if (this.#graph) this.#provider?.keeper.entities.watch(() => void this.#syncGraph(), leaving.signal);
     const header = this.#header;
+    const page = this.#graph?.type === PAGE_QUERY ? this.#page : null;
     const ctx: ContextInit = {
       session: options.session, ...shelves, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label, id: name,
       ...(source ? { source, query: source.query } : {}), ...(header ? { header } : {}), ...(this.#graph ? { graph: { ...this.#graph } } : {}),
+      ...(page ? { page, source: page.source, query: page.source.query } : {}),
     };
     const teardown = await module?.init?.(this, ctx);
     // A newer load has begun: this one's own teardown runs now.
@@ -611,6 +692,10 @@ export class SherpaOutlet extends SherpaElement {
     }
     this.#leaving?.abort();
     this.#leaving = null;
+    // A page opened for its Query alone goes with it.
+    this.#page = null;
+    this.#pageWanted = null;
+    ++this.#pageToken;
     this.#provider?.close(options);
   }
 

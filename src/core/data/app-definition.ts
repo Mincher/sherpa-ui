@@ -7,6 +7,7 @@
  * - AppDefinition — One app, as JSON: its Contexts, the one it opens on, its nav sections and its Settings pages.
  * - ContextDefinition — One Context: its row's name and icon, its files, and what it changes in the chrome.
  * - SettingsPage — One Settings page: its row's name and icon, and its markup.
+ * - OpenPage — On a `query` graph View, the page whose Query the canvas shows, opened for its Query alone.
  * - ContextInit — What every Context's init is handed: the session, the View, its source, its chrome and a signal.
  * - ContextModule — A Context's module: `init(root, ctx)`, which may hand back a teardown.
  * - checkApp — Check every name an app definition uses; each broken one reports.
@@ -17,6 +18,8 @@ import type { QueryContext } from './query-context.js';
 import type { EntityShelf } from './entity-shelf.js';
 import type { NodeShelf } from './node-shelf.js';
 import type { OpenGraph } from './graph-views.js';
+import type { PageDefinition } from './page-definition.js';
+import type { GraphComponent } from './query-graph.js';
 import { report } from './report.js';
 
 /** One app, as JSON: its Contexts, the one it opens on, its nav sections and
@@ -62,6 +65,24 @@ export interface SettingsPage {
   template: string;
 }
 
+/** On a `query` graph View, the page whose Query the canvas shows, opened for its Query alone.
+ *  TRAP T-a-graph-is-a-view-of-a-type */
+export interface OpenPage {
+  /** Its Context's name. */
+  id: string;
+  label: string;
+  /** The URL back to it, on its View. */
+  href: string;
+  definition: PageDefinition;
+  source: DataSource;
+  /** Its grids and charts, read from its markup. */
+  components: readonly GraphComponent[];
+  /** Its markup, off screen: where a component's live copy is copied from. */
+  markup: DocumentFragment;
+  /** The app's stores, by name: what a Source row offers. */
+  stores: readonly string[];
+}
+
 /** What every Context's init is handed: the session, the View, its source and
  *  Query, its chrome and a signal. */
 export interface ContextInit {
@@ -75,6 +96,8 @@ export interface ContextInit {
   view: string | null;
   /** On a graph View, the entity its canvas shows; the outlet's `graph-change` says when it moves. TRAP T-a-graph-is-a-view-of-a-type */
   graph?: OpenGraph;
+  /** On a `query` graph View, the page it shows: `source` and `query` are that page's. */
+  page?: OpenPage;
   /** Its page's source, when it has a definition. */
   source?: DataSource;
   /** The Context's ONE Query, which its source and controls share. 366 step 24 */

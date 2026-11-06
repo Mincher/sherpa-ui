@@ -1845,6 +1845,8 @@ export interface QueryEditorOptions extends QueryGraphFacts {
   toolbar?: HTMLElement;
   /** The node panel floating on the canvas: it lists the kinds a Query takes placed, and each one asked for is a request. */
   panel?: SherpaNodePanel;
+  /** Where a component node's live copy is copied from, by id: the page's markup where the page is not on screen. Default, the document. */
+  markup?: NonElementParentNode;
 }
 
 /** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
@@ -1854,7 +1856,7 @@ export interface QueryEditorOptions extends QueryGraphFacts {
 export function bindQueryEditor(
   canvas: SherpaLayoutCanvas,
   source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state' | 'results' | 'addEventListener' | 'removeEventListener'>>,
-  { definition, inspector, session, toolbar, panel, ...facts }: QueryEditorOptions,
+  { definition, inspector, session, toolbar, panel, markup = document, ...facts }: QueryEditorOptions,
 ): GraphEditor & Undoable {
   const query = source.query;
   const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
@@ -1946,12 +1948,12 @@ export function bindQueryEditor(
   let visual: { id: string; el: HTMLElement } | null = null;
   const visualOf = (node: GraphNode): HTMLElement | null => {
     const id = node.ref?.['component'];
-    const page = id ? document.getElementById(id) : null;
+    const page = id ? markup.getElementById(id) : null;
     if (!id || !page) return null;
     if (visual?.id === id) return visual.el;
     // A COPY of the page's own component: it asks the provider as the page's does,
     // so it draws what the Query says. Its ids would clash, so it has none.
-    const el = page.cloneNode(true) as HTMLElement;
+    const el = document.importNode(page, true) as HTMLElement;
     for (const one of [el, ...el.querySelectorAll('[id]')]) one.removeAttribute('id');
     const scope = node.ref?.['scope'];
     if (scope && scope !== VIEW) el.setAttribute('data-scope', scope);

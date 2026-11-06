@@ -18,6 +18,8 @@
     viewsReady          settles once every Context's own Views are in
     graph               the graph View on screen: { view, type, id, origin }, or null
     openGraph(id)       open an entity in it (none: its type's first); the URL follows
+                        on a `query` graph View the graphs are the app's pages, each
+                        opened for its Query alone; a toolbar's node-editor-open goes there
 
   Slots:
     (default)   the Context's markup, put there by the outlet
@@ -33,7 +35,7 @@
     context-load — detail: { context, view }
     settings-open — detail: { page }
     settings-close — detail: { }
-    graph-change — the graph View's entity moved. detail: { graph }
+    graph-change — the graph View's entity moved. detail: { graph, page? }, page on a `query` graph
     graph-new — New graph… was picked, a request: prevented, the app makes it. detail: { type }
 -->
 <template id="default">
@@ -70,5 +72,6 @@
     <span data-word="mine">My graphs</span>
     <span data-word="read-only">Read only</span>
     <span data-word="new-graph">New graph…</span>
+    <span data-word="page">Page</span>
   </template>
 </template>

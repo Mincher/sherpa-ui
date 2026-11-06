@@ -6684,7 +6684,9 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
   same edits, with where each comes from and goes to. A component's node shows a
   live COPY of the page's component, with no ids, which asks the provider as the
   page's does — so it draws what the Query says. The editor sits inside the
-  provider for that.
+  provider for that; off its page, the copy is made from the page's markup
+  (`markup`), and the provider holds the page (TODO 822,
+  `T-a-graph-is-a-view-of-a-type`).
 - **A drag from an OUTPUT socket draws a new route** (Will, 2026-10-29). The
   drawing hears the press first, at the canvas, so it neither moves the node nor
   pans the view; let go within reach of an input socket, and the HOST is asked
@@ -7669,6 +7671,30 @@ of that type the canvas shows.
   canvas takes them over. Save is `saveGraph` (a preset refused by the shelf); Save graph as is
   `saveGraphAs`, the shelf's `duplicate` of the canvas's graph under the reader's name and a free
   id; Delete asks `whyKept` first, so a refusal is said in words before anything goes.
+- **A page's Query is a graph too** (Will, TODO 822: "2 different views… The former has no app
+  header"; plan-822). The type `query` (`PAGE_QUERY`) is no entity: its graphs are the app's
+  pages, every Context with a definition (`pagesOf`), one chip row each, with no New graph…
+  (`pageRows`). `?view=<the query View>&graph=<page>`, the first page left out. A filter toolbar's
+  ⋮ › Open in Node Editor (`node-editor-open`) is answered by the OUTLET: a PUSH to the app's
+  `query` View on the asking page, so Back returns to it; an app with none is not answered.
+- **The outlet opens the page for its Query alone**: its definition (the app's `definition()` hook
+  too), under the page's own KEY, on the View the keeper says it was left on, with `bars: false`.
+  So the page's ONE document is what is drawn and what each edit writes: there is no second path
+  to the data. `bars: false` answers no filter bar or panel (the header row stays the outlet's; the
+  panel stays shut), hears no View chip, configures no element by id, and still answers a
+  component (the inspector's live copy) and draws the page's news and reach. Leaving a page writes
+  it as it was left — its View, its Query, what waited for its frame — so a page opened on a View
+  by URL, never edited, opens on that View here too.
+- **The Context is handed `page`** (`OpenPage`: `id`, `label`, `href` back on its View,
+  `definition`, `source`, `components`, `markup`, `stores`), and `source` and `query` are the
+  page's; `graph-change` carries the next `page`. Bind `bindQueryEditor(canvas, page.source, {
+  definition, components, markup, stores, … })`, and load the source, as the page does, so each
+  node lights. `markup` is the page's template off screen (`pageMarkup`, its View's own cards in
+  `[data-view-content]`, parsed through the allow-list), where `pageComponents` reads the grids and
+  charts and a component node's live copy is copied from. `presentsOf` reads a tag not upgraded by
+  its class, so an inert template answers.
+- **The header** shows `data-query`: the View's actions (★, Save, its menu) are not shown, since
+  each edit is the page's as it is made, and a page is no entity to copy.
 
 - Site: `src/core/data/graph-views.ts`
 - Site: `src/core/data/entity-check.ts`
@@ -7678,8 +7704,12 @@ of that type the canvas shows.
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/core/ui/page-components.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.css`
 - Site: `test/unit/a-graph-is-a-view-of-a-type.test.mjs`
 - Site: `test/e2e/reforged-graph-views.spec.ts`
 

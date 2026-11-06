@@ -249,12 +249,12 @@ box and its neighbours may make one: the canvas lost its `isolation` and its
 `container-type` (the stage is the container now), and the panel-area layout and
 a floating area make none (`T-a-panel-area-is-a-layout`). Measured: the Nodes card
 floating in its canvas and an overlay panel floating beside it each come in front
-of the other when pressed, and so do the Query editor's card and inspector, inside
-its panel. **A box in another context cannot pass it**: one inside the shell's
+of the other when pressed. **A box in another context cannot pass it**: one inside the shell's
 content (which isolates) never rises over one floating in the window, as the Node
 Editor's own inspector and the Assistant. And the outlet isolates each element of a
 Context (`T-a-reach-banner-takes-no-room`), so on the Node Editor page the card,
-in the canvas's box, never rises over the inspector beside it. Measured: moved
+in the canvas's box, never rises over the inspector beside it — on a page's filter
+graph too, now the Query editor is that page (TODO 822). Measured: moved
 into the canvas's box, the inspector shared the card's order but went UNDER the
 app header, which it must cover (746 E4), so it stays where it is.
 

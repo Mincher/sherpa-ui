@@ -526,6 +526,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-query",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility",
+      "description": "the graph on screen is a page's Query: each edit is the page's, so the View's actions — ★, Save and its menu — are not shown"
+    },
+    {
+      "$type": "prop",
       "name": "data-readonly",
       "type": "boolean",
       "observed": true,

@@ -69,7 +69,7 @@
     data-sort-direction  asc (default) | desc
     data-group-field     the field the Group chip points at (the standard name)
     data-suggest     show "Suggest filters", left of Edit. Will, TODO 527
-    data-node-editor show "Node Editor (beta)" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555
+    data-node-editor show "Open in Node Editor" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822
     data-saveable    the host SAVES filters: its ⋮ offers Save filters, or "Save
                   <name>" over the set last taken with Save filters as and
                   Delete filters. Its `savedSets` fill the Filters menu's Saved
@@ -116,7 +116,7 @@
     panel-resize         — a floating column's corner was dragged, or moved by the keys. detail: { width, height }
     data-refresh         — Refresh: load the page's data again. detail: {}
     ai-filter-request    — Suggest filters was pressed. detail: {}
-    node-editor-open     — Node Editor (beta) was picked in the ⋮ menu: the host opens the page's Query as nodes. detail: {}
+    node-editor-open     — Open in Node Editor was picked in the ⋮ menu: an outlet opens the page's Query in its `query` graph View. detail: {}
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the

@@ -28,7 +28,7 @@
  * - .joined — A bar that asks once the page's bars are drawn — a filter stack's — is drawn as they were.
  * - .view — The View on screen.
  * - .views — Open the Views over one source: restore, then hear and keep.
- * - .stopViews — Stop the Views' listeners.
+ * - .stopViews — Stop the Views' listeners, the page kept as it was left.
  * - .sharing — sharing — does the app share the View's answer: set by its provider as it opens a page.
  * - .share — share(on) — the app starts sharing the View's answer, or stops: the page on screen takes the App answer, or…
  * - .takeView — A state taken in names a View: show it, and hear its next pick.
@@ -619,8 +619,11 @@ export class ProviderPage {
     return this.#openViews(source, options, this.#views.signal);
   }
 
-  /** Stop the Views' listeners. */
+  /** Stop the Views' listeners. A page left is kept as it was left — its View on screen, its Query and what
+   *  waited for its frame — so the next to open it, a Node Editor too, opens it so. TRAP T-a-graph-is-a-view-of-a-type */
   stopViews(): void {
+    this.#flush?.();
+    this.#settle?.();
     this.#views?.abort();
     this.#views = null;
     this.#hear = null;
@@ -652,8 +655,9 @@ export class ProviderPage {
     else if (this.#sharing) await source.query.setQuery(source.query.applied, { lay });
     if (signal.aborted) return;
     this.#share(source);
-    this.#hear = () => this.#hearPicks(source, library, signal);
-    this.#hear();
+    // A page opened for its Query alone: no View chip is its. TRAP T-a-graph-is-a-view-of-a-type
+    this.#hear = options.bars === false ? null : () => this.#hearPicks(source, library, signal);
+    this.#hear?.();
     // Opened on a View with cards of its own: they are drawn now, and the page told. TODO 198
     if (typeof start?.content === 'string') this.#host.viewChanged(this.#view);
     if (!key) return;

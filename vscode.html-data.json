@@ -114,6 +114,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-query",
+          "description": "the graph on screen is a page's Query: each edit is the page's, so the View's actions — ★, Save and its menu — are not shown",
+          "valueSet": "v"
+        },
+        {
           "name": "data-readonly",
           "description": "the View on screen is read only, a preset graph: Save is off",
           "valueSet": "v"
@@ -3398,7 +3403,7 @@
         },
         {
           "name": "data-node-editor",
-          "description": "show \"Node Editor (beta)\" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555",
+          "description": "show \"Open in Node Editor\" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822",
           "valueSet": "v"
         },
         {

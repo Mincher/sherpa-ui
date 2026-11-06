@@ -1,7 +1,7 @@
 /**
  * graph-views.ts — a GRAPH View: a View whose body is a canvas, bound to one entity of the View's
- * type. The graph chip's rows, a new empty entity, what a canvas keeps as an entity's graph, and
- * its Save and Save graph as. Light: only types and the tags' tidy are imported, so the outlet carries it. DOM-free.
+ * type, or to a page's Query (`PAGE_QUERY`). The graph chip's rows, a new empty entity, what a canvas
+ * keeps as an entity's graph, and its Save and Save graph as. Light: only types and the tags' tidy are imported, so the outlet carries it. DOM-free.
  * Will, plan 746 E3, E4 · TRAP T-a-graph-is-a-view-of-a-type
  *
  * Map:
@@ -12,6 +12,10 @@
  * - GraphChoice — One row of the graph chip: an entity, or New graph….
  * - graphRows — The graph chip's rows: the type's presets, then the reader's own, then New graph….
  * - openOf — The entity a graph View opens: the one named, when the list holds it; else the first.
+ * - PAGE_QUERY — The graph type of a page's Query: its graphs are the app's pages, read live, never entities.
+ * - GraphPage — One page whose Query a `query` graph View draws: its Context's name and its nav label.
+ * - pagesOf — The pages a `query` graph View offers: every Context with a definition, in the app's order.
+ * - pageRows — The graph chip's rows over the pages: one each, none a copy, and no New graph….
  * - newGraph — A new, empty entity of a type, saved through the shelf under a free id, name and tags.
  * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes, ties and frames.
  * - saveGraph — Save the graph on a canvas as the open entity's: a preset is refused, as the shelf refuses it.
@@ -73,6 +77,25 @@ export function graphRows(list: readonly EntitySummary[], current: string | null
 /** The entity a graph View opens: the one named, when the list holds it; else the first. */
 export function openOf(list: readonly EntitySummary[], id: string | null | undefined): EntitySummary | undefined {
   return list.find((e) => e.id === id) ?? list[0];
+}
+
+/** The graph type of a page's Query: its graphs are the app's pages, read live, never entities. TRAP T-a-graph-is-a-view-of-a-type */
+export const PAGE_QUERY = 'query';
+
+/** One page whose Query a `query` graph View draws: its Context's name and its nav label. */
+export interface GraphPage {
+  id: string;
+  label: string;
+}
+
+/** The pages a `query` graph View offers: every Context with a definition, in the app's order. */
+export function pagesOf(contexts: Readonly<Record<string, { label: string; definition?: string }>>): GraphPage[] {
+  return Object.entries(contexts).flatMap(([id, c]) => (c.definition ? [{ id, label: c.label }] : []));
+}
+
+/** The graph chip's rows over the pages: one each, none a copy, and no New graph…. */
+export function pageRows(pages: readonly GraphPage[], current: string | null): GraphChoice[] {
+  return pages.map((p) => ({ value: p.id, label: p.label, ...(p.id === current ? { selected: true } : {}) }));
 }
 
 /** An id from a name: kebab-case, free among those taken. */

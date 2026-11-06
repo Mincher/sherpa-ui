@@ -58,6 +58,8 @@ export interface ProvideOptions {
   /** The page's name in the keeper: its Query outlives a reload, on its View only.
    *  None: nothing is kept. TRAP T-one-page-one-document */
   key?: string;
+  /** False: no View chip picks its Views — the page is opened for its Query alone. */
+  bars?: boolean;
 }
 
 /** What `open()` is given beside a page's definition: the app's stores, by the
@@ -70,6 +72,10 @@ export interface OpenOptions {
   /** The page's own Views; a reader's saved ones join them by its key. */
   views?: ViewLibrary;
   view?: string;
+  /** False: the page's data alone, for a view of its Query that is not the page — a Node Editor's.
+   *  No filter bar or panel is drawn or answered, no View chip picks, no element is configured.
+   *  TRAP T-a-graph-is-a-view-of-a-type */
+  bars?: boolean;
 }
 
 /** The attribute a summary needs before it asks; without it a page populates it.
@@ -294,7 +300,7 @@ export class SherpaProvider extends SherpaElement {
   readonly #modes = new ProviderMode({
     bars: () => this.#bars(),
     panels: () => this.#panels().filter((el) => !el.closest('[data-filter-mode="none"]')),
-    found: () => [...this.querySelectorAll(':defined')]
+    found: () => (this.#headless ? [] : [...this.querySelectorAll(':defined')])
       .filter((el) => isColumn(el) && el.closest(this.localName) === this && !el.closest('[data-filter-mode="none"]')) as never,
     button: (kind) => this.clone(`template.mode-${kind}-tpl`) as HTMLElement | null,
     rendered: () => this.rendered,
@@ -357,15 +363,18 @@ export class SherpaProvider extends SherpaElement {
    *  `applyEvery` is on. TRAP T-apply-and-discard-wait-for-a-change */
   #scopes: string[] = [];
 
-  /** Every panel that asked — a control drawn over several scopes. */
+  /** Every panel that asked — a control drawn over several scopes. None, for a page opened for its Query alone. */
   #panels(): Array<HTMLElement & { show(): void; hide(reason?: string): void }> {
-    return [...this.#asked.keys()].filter(isColumn) as never;
+    return this.#headless ? [] : [...this.#asked.keys()].filter(isColumn) as never;
   }
 
-  /** Every filter bar that asked — a control drawn one scope at a time. */
+  /** Every filter bar that asked — a control drawn one scope at a time. None, for a page opened for its Query alone. */
   #bars(): Element[] {
-    return [...this.#asked.keys()].filter((el) => declared(el).asks?.shape === 'scope' && !isColumn(el));
+    return this.#headless ? [] : [...this.#asked.keys()].filter((el) => declared(el).asks?.shape === 'scope' && !isColumn(el));
   }
+
+  /** The open page was opened for its Query alone (`bars: false`): its bars and panels are another's. */
+  #headless = false;
 
   /** The filter bars in a slot, in this subtree's own tree — not a panel's sections. */
   #slotBars(slot: string): Element[] {
@@ -429,6 +438,7 @@ export class SherpaProvider extends SherpaElement {
   async open(definition: PageDefinition, options: OpenOptions): Promise<DataSource | undefined> {
     checkPage(definition);
     this.#page?.abort();
+    this.#headless = options.bars === false;
     const page = (this.#page = new AbortController());
     const def = definition.source;
     const store = def ? options.stores[def.store] : undefined;
@@ -480,12 +490,13 @@ export class SherpaProvider extends SherpaElement {
       // A View this page does not have is the first.
       const view = options.view && library?.()[options.view] ? options.view : undefined;
       // BEFORE the Query: a kept one is drawn onto these chips.
-      await Promise.all([this.#pages.drawBars(view), this.#configure(definition.ui ?? {})]);
+      await Promise.all([this.#pages.drawBars(view), this.#headless ? null : this.#configure(definition.ui ?? {})]);
       if (page.signal.aborted) return undefined;
       this.#pages.listen(page.signal);
       await this.provide({
         sources: { [definition.id]: source },
         ...(library ? { views: library, ...(view ? { view } : {}), key } : {}),
+        ...(this.#headless ? { bars: false } : {}),
       });
       if (!page.signal.aborted) opened = source;
       return opened;
@@ -556,6 +567,7 @@ export class SherpaProvider extends SherpaElement {
   close(options: { next?: boolean } = {}): void {
     this.#page?.abort();
     this.#page = null;
+    this.#headless = false;
     void this.#provide({ sources: {} }, !options.next);
   }
 
@@ -822,6 +834,8 @@ export class SherpaProvider extends SherpaElement {
       this.#asked.delete(el);
       return;
     }
+    // A page opened for its Query alone answers no bar or panel: they wait for the next page.
+    if (this.#headless && declared(el).asks?.shape === 'scope') return;
     // Its source is given above now: it goes there.
     if (this.#passes(el)) {
       this.#handUp(asked);

@@ -326,7 +326,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-control-sends-one-request](traps/join-and-app.md#t-a-control-sends-one-request) — bind-source
 - [T-a-field-reads-its-values-when-needed](traps/data-layer.md#t-a-field-reads-its-values-when-needed) — provider
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — provider
-- [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — outlet
+- [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — outlet, provider
 - [T-a-grid-from-a-chart-keeps-to-its-card](traps/join-and-app.md#t-a-grid-from-a-chart-keeps-to-its-card) — provider
 - [T-a-grid-is-never-wired-by-hand](traps/join-and-app.md#t-a-grid-is-never-wired-by-hand) — bind-source
 - [T-a-group-is-a-data-layer-concept](traps/data-layer.md#t-a-group-is-a-data-layer-concept) — provider
@@ -889,7 +889,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — drag-xy, float-box, sherpa-float
 - [T-a-frame-is-drawn-round-its-nodes](traps/data-layer.md#t-a-frame-is-drawn-round-its-nodes) — node-graph
 - [T-a-gauge-composes-the-ring](traps/charts.md#t-a-gauge-composes-the-ring) — shared-constants
-- [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — node-graph, shared-constants
+- [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — node-graph, page-components, shared-constants
 - [T-a-grid-group-computes-its-own-position](traps/element-and-sheets.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping
 - [T-a-host-attribute-is-declared-once](traps/element-and-sheets.md#t-a-host-attribute-is-declared-once) — sherpa-element
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — sherpa-element

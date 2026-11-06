@@ -49,7 +49,7 @@ Each one bubbles.
 | `context-load` | `{ context: string; view: null \| string }` |  |
 | `settings-open` | `{ page: string }` |  |
 | `settings-close` |  |  |
-| `graph-change` | `{ graph: OpenGraph \| null }` | The graph View's entity moved. |
+| `graph-change` | `{ graph: OpenGraph \| null; page: OpenPage \| undefined }` | The graph View's entity moved. |
 | `graph-new` | `{ type: string }` | New graph… was picked, a request: prevented, the app makes it. A host may call `preventDefault()` to take it over. |
 
 ## Slots

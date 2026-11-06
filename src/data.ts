@@ -226,10 +226,10 @@ export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type PresetFilt
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, nodesView, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
-/* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip. Plan 746 E3 · TRAP T-a-graph-is-a-view-of-a-type */
+/* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip — or a page's Query. Plan 746 E3, TODO 822 · TRAP T-a-graph-is-a-view-of-a-type */
 export {
-  NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf, saveGraph, saveGraphAs,
-  type GraphChoice, type GraphOf, type GraphWords, type OpenGraph,
+  NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs,
+  type GraphChoice, type GraphOf, type GraphPage, type GraphWords, type OpenGraph,
 } from './core/data/graph-views.js';
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
 export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
@@ -285,6 +285,7 @@ export {
   type SettingsPage,
   type ContextInit,
   type ContextModule,
+  type OpenPage,
 } from './core/data/app-definition.js';
 // The id a saved view or filter takes from its name.
 export { labelId } from './core/browser/web-storage.js';

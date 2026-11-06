@@ -50,9 +50,10 @@ function kinds(ctor: unknown): readonly Presents[] {
 /** A class's declared attributes. */
 const props = (ctor: unknown): PropMap => (ctor as { props?: PropMap }).props ?? {};
 
-/** The kind an element presents, where it presents one: its class's, told apart by `is`. */
+/** The kind an element presents, where it presents one: its class's, told apart by `is`. One not
+ *  upgraded — in a template — presents what its tag's class does. */
 export function presentsOf(el: Element): Presents | undefined {
-  const all = kinds(el.constructor);
+  const all = kinds(globalThis.customElements?.get(el.localName) ?? el.constructor);
   const own = (p: Presents): boolean => Object.entries(p.is ?? {}).every(([name, value]) => el.getAttribute(name) === value);
   return (all.length > 1 ? all.find(own) : undefined) ?? all[0];
 }

@@ -278,6 +278,13 @@
               }
             },
             {
+              "name": "data-query",
+              "description": "the graph on screen is a page's Query: each edit is the page's, so the View's actions — ★, Save and its menu — are not shown",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-readonly",
               "description": "the View on screen is read only, a preset graph: Save is off",
               "type": {
@@ -8018,7 +8025,7 @@
               "name": "graph-change",
               "description": "The graph View's entity moved.",
               "type": {
-                "text": "CustomEvent<{ graph: OpenGraph | null }>"
+                "text": "CustomEvent<{ graph: OpenGraph | null; page: OpenPage | undefined }>"
               }
             },
             {
@@ -9488,7 +9495,7 @@
             },
             {
               "name": "data-node-editor",
-              "description": "show \"Node Editor (beta)\" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555",
+              "description": "show \"Open in Node Editor\" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822",
               "type": {
                 "text": "boolean"
               }
@@ -10277,7 +10284,7 @@
             },
             {
               "name": "node-editor-open",
-              "description": "Node Editor (beta) was picked in the ⋮ menu: the host opens the page's Query as nodes.",
+              "description": "Open in Node Editor was picked in the ⋮ menu: an outlet opens the page's Query in its `query` graph View.",
               "type": {
                 "text": "CustomEvent"
               }
