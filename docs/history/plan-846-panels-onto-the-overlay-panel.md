@@ -37,7 +37,7 @@ The overlay panel already has all the states. The two others duplicate them, eac
 
 ## The picks, 847
 
-5. **A content element, `sherpa-filter-panel`,** takes `ToolbarColumn`'s logic out of the toolbar: the
+5. **A content element, `sherpa-filter-panel (new)`,** takes `ToolbarColumn`'s logic out of the toolbar: the
    draw of one portrait toolbar per scope, the Filters menu for all of them, the saved sets, ⋮, the search,
    the applied count. It asks its provider for `scope` as the column did, and keeps `drawScopes`.
 6. **The header controls go into the overlay panel's slots,** as the Ask N-zo chat re-slots its halves:
@@ -55,8 +55,8 @@ The overlay panel already has all the states. The two others duplicate them, eac
 |---|---|---|
 | node list, search, tabs, drag, Add a node | `sherpa-node-panel` | `sherpa-node-list` |
 | float, dock, minimise, grip, corner, the tab | `sherpa-node-panel`, the toolbar column | the overlay panel (already there) |
-| the column's logic | `toolbar-column.ts` | `sherpa-filter-panel` |
-| the filter panel's markup and styles | the toolbar's `column` template and CSS | `sherpa-filter-panel` and the panel's slots |
+| the column's logic | `toolbar-column.ts` | `sherpa-filter-panel (new)` |
+| the filter panel's markup and styles | the toolbar's `column` template and CSS | `sherpa-filter-panel (new)` and the panel's slots |
 
 **Deleted, in the same commits** (a refactor deletes what it replaced): the `sherpa-node-panel` folder (ts,
 html, css, spec, example, reference page), its export in `components.ts`, its `FloatBox` wiring, its
@@ -98,7 +98,7 @@ only a selector).
    reason. Specs for each, with the Nodes card still as it is. Gates, commit.
 2. 846: `sherpa-node-list`; the canvas, `node-graph.ts`, the example and Demos' node editor on it; move the
    specs; delete `sherpa-node-panel`. Gates, three engines, commit.
-3. 847: `sherpa-filter-panel` beside the toolbar's column, the provider on it, Demos' index on it; move the
+3. 847: `sherpa-filter-panel (new)` beside the toolbar's column, the provider on it, Demos' index on it; move the
    specs; run the Records and Devices suites on it. Gates, commit.
 4. Delete the toolbar's column mode, its attributes, event and CSS. Gates, a final full run, baselines
    (size should FALL), the trap sites and index, the map.
@@ -138,7 +138,7 @@ Each step is one commit and leaves the suite green, so Will can stop after any o
    - B: keep the tag `sherpa-node-panel` for the content, so an app's markup does not change, though the name
      is then wrong (it is not a panel).
 2. **How the filter panel gets its header controls.**
-   - A, my pick: `sherpa-filter-panel` re-slots them into the overlay panel (`actions`, `description`), as
+   - A, my pick: `sherpa-filter-panel (new)` re-slots them into the overlay panel (`actions`, `description`), as
      the chat does. One panel, no new panel kind.
    - B: give the overlay panel a `data-type="filters"` template with the controls in it. That puts the
      filter's logic into the panel component.
@@ -156,3 +156,34 @@ Each step is one commit and leaves the suite green, so Will can stop after any o
 6. **One lane or two.**
    - A, my pick: one lane, four commits, merged by step (846 can ship alone after step 2).
    - B: 846 and 847 as two lanes. 847 then waits on step 1's overlay panel work.
+
+## Reconciled with plan-filter-panel-port.md (Will's naming rule: `sherpa-filter-panel (new)`)
+
+**This file is the plan of record for 846 AND 847.** `plan-filter-panel-port.md` stays as the detail of
+847's phases (P0 to P5) and its pixel baselines; where the two differ, this is who wins:
+
+| | Where they differ | Wins |
+|---|---|---|
+| Header controls | both: the panel header's `actions` and `description` slots | same (Will's decision 1) |
+| Name | both: `sherpa-filter-panel (new)` | same (Will's decision 2) |
+| The scope SECTIONS | the port plan MOVES the portrait and flat code out of the toolbar into the new component; this plan first left them as toolbar templates | **the port plan**: the toolbar keeps only the landscape bar; the sections move (P1). The toolbar's `portrait` and `flat` templates, `data-orientation`, `data-flat` and the chip section look that only they use are deleted in P4 |
+| `data-panel-mode` | the port plan deletes it in P4; Will approved keeping it (decision 4, A) | **this plan**: it is the BARS' half of the provider's mode, and a bar still steps back while a panel answers. What goes is the panel's half |
+| Pixel baselines (P0) | only the port plan has them | **the port plan**: recorded before any 847 code, and every 847 commit reproduces them |
+| Commits | the port plan has six phases | **this plan**: the four commits below, each green; P1 to P3 are one commit |
+
+### The sequence (846 first, then 847)
+
+1. **Done:** the overlay panel docks by its slot in a canvas, `badge`, `panel-close { reason }` (and 851).
+2. **846:** `sherpa-node-list` in an overlay panel; `sherpa-node-panel` deleted. This proves a panel in a
+   canvas with real content before the filter panel relies on the same box.
+3. **847, P0 then P1 to P3:** pixel baselines of the filter panel (closed, open, accordion shut,
+   floating, dark), then `sherpa-filter-panel (new)` built from the column and section code, the provider
+   and Demos on it, the specs moved; the toolbar's column still in place until the baselines match.
+4. **847, P4 and P5:** delete the toolbar's panel half (column, portrait, flat, `data-orientation`,
+   `data-column`, `data-flat`, the 787b float attributes, `filter-panel-close`, `isColumn`), keep
+   `data-panel-mode`; baselines; the full suite.
+
+Why this order: 846 and 847 both change how a panel hosts content and both touch the overlay panel, the
+provider's panel doors and the specs; 846 is the smaller and shows the overlay panel works in a canvas,
+and 847's P0 baselines want the panel session's tab and header work (848 to 851) to have settled. The panel
+session does not touch the filter toolbar, the provider or the filter column.

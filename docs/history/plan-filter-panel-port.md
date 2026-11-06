@@ -1,5 +1,8 @@
 # Plan — the filter panel is a panel again
 
+> PLAN OF RECORD: `plan-846-panels-onto-the-overlay-panel.md` ("Reconciled with…"). This file is the detail of
+> 847's phases P0 to P5; where they differ, that file says which wins.
+
 Written for: Will. Status: PLAN, decided (Will, 2026-11-06), nothing built. Needs a TODO number (the lane integrator numbers it).
 
 ## What you asked for
