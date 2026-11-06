@@ -92,6 +92,7 @@ test('Float lifts it 16px in and it floats INSIDE the canvas, never past it; the
   // Never under the panel floor, 20rem: a card of 18rem lifts to it.
   expect(lifted).toEqual({ x: docked.x + 16, y: docked.y + 16, w: Math.max(320, docked.w - 32), h: docked.h - 32 });
   expect(await style(page, '.root', 'position')).toBe('absolute');
+  // Floating, the area gives its width back.
   expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x);
   // Dragged far past the canvas's corner: it stops at the canvas's edge, not the window's.
   const head = await rect(page, '.header');
@@ -117,7 +118,7 @@ test('Minimise makes a tab on the canvas\'s LEFT edge, inside it; the area gives
   expect(tab.y).toBeGreaterThanOrEqual(cv.y);
   expect(tab.y + tab.h).toBeLessThanOrEqual(cv.y + cv.h);
   expect(await style(page, '.root', 'display')).toBe('none');
-  expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x);
+  expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x + 40);
   await page.mouse.click(...centre(tab));
   await settle(page);
   // A press on the tab shows the panel as an OVERLAY (a third of the canvas at most); Dock as fixed puts it back in its area.

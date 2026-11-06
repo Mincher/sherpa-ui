@@ -21,8 +21,8 @@ for (const host of ['layout', 'canvas'] as const) {
       const layout = (host === 'layout' ? document.getElementById('h')! : document.getElementById('h')!.shadowRoot!.querySelector('sherpa-layout-panels')!) as HTMLElement;
       const area = () => {
         const row = layout.getBoundingClientRect().width;
-        // Every panel a tab: the area covers the layout and the content keeps it all.
-        return Math.round(layout.shadowRoot!.querySelector('.content')!.getBoundingClientRect().width) === Math.round(row) ? 0 : Math.round(layout.shadowRoot!.querySelector('.area-start')!.getBoundingClientRect().width);
+        void row;
+        return Math.round(layout.shadowRoot!.querySelector('.area-start')!.getBoundingClientRect().width);
       };
       const out: Record<string, number> = { one: area() };
       document.getElementById('h')!.insertAdjacentHTML('beforeend', panel('b', '26rem'));
@@ -38,6 +38,7 @@ for (const host of ['layout', 'canvas'] as const) {
     expect(r.one).toBe(20 * 16 + 32);
     // Two panels: the widest, and the tab row beside it.
     expect(r.two).toBe(26 * 16 + 32 + (r.tabsRow ?? 0));
-    expect(r.tabs).toBe(0);
+    // Only tabs left: the area is the strip the tabs stand in (2.5rem), the content beside it. TODO 858
+    expect(r.tabs).toBe(40);
   });
 }
