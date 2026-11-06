@@ -183,3 +183,35 @@ test('the tab\'s Float or Dock button: off unless asked, upright, and a press op
   await press(page, '.tab-mode');
   expect(await state()).toMatchObject({ minimised: false, floating: false });
 });
+
+test('the tab\'s tooltip says the state it opens in, the opposite of the button beside it', async ({ page }) => {
+  await stage(page, {});
+  await page.evaluate(() => document.getElementById('tabbed')!.setAttribute('data-tab-mode', ''));
+  await press(page, '.minimise');
+  const words = () => page.evaluate(() => {
+    const sr = document.getElementById('tabbed')!.shadowRoot!;
+    return { tab: sr.querySelector('.tab-open')!.getAttribute('title'), button: sr.querySelector('.tab-mode')!.getAttribute('aria-label') };
+  });
+  // Last docked: the button floats it, the tab opens it docked.
+  expect(await words()).toEqual({ tab: 'Open docked', button: 'Open floating' });
+  await press(page, '.tab-mode');
+  await press(page, '.minimise');
+  expect(await words()).toEqual({ tab: 'Open floating', button: 'Open docked' });
+});
+
+test('a panel stays under the app header (TRAP T-a-panel-stays-under-the-app-header): docked on the edge, maximised, and floating', async ({ page }) => {
+  await stage(page, { shell: true });
+  const header = await page.evaluate(() => Math.round(document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.getBoundingClientRect().top));
+  expect(header).toBeGreaterThan(40);
+  const top = () => page.evaluate(() => Math.round(document.getElementById('tabbed')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().top));
+  // Docked in the end area: the area's own height.
+  expect(await top()).toBe(header);
+  // Floating, dragged as far up as it goes: never over the header.
+  await page.evaluate(() => { const p = document.getElementById('tabbed')!; p.setAttribute('data-floating', ''); p.setAttribute('data-y', '0'); p.setAttribute('data-x', '100'); });
+  await page.evaluate(() => window.__settled());
+  expect(await top()).toBe(header);
+  // Maximised: the window under the header.
+  await page.evaluate(() => { const p = document.getElementById('tabbed')!; p.removeAttribute('data-floating'); p.removeAttribute('data-fixed'); p.setAttribute('data-maximised', ''); });
+  await page.evaluate(() => window.__settled());
+  expect(await top()).toBe(header);
+});

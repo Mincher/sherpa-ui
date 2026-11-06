@@ -574,7 +574,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (126)
+## Menus, tips and overlays (127)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -611,6 +611,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-chrome-row-never-shrinks](traps/menus-tips-overlays.md#t-a-panel-chrome-row-never-shrinks) — panel
 - [T-a-panel-pops-into-the-end-area](traps/menus-tips-overlays.md#t-a-panel-pops-into-the-end-area) — overlay-panel
 - [T-a-panel-slotted-in-a-layout-is-docked-there](traps/menus-tips-overlays.md#t-a-panel-slotted-in-a-layout-is-docked-there) — overlay-panel
+- [T-a-panel-stays-under-the-app-header](traps/menus-tips-overlays.md#t-a-panel-stays-under-the-app-header) — overlay-panel
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — overlay-panel
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — menu
 - [T-a-rebuilt-row-reads-empty-for-a-tick](traps/filters.md#t-a-rebuilt-row-reads-empty-for-a-tick) — menu
@@ -878,7 +879,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (147)
+## SherpaElement and the shared sheets (148)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -912,6 +913,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — node-graph
 - [T-a-node-row-wears-its-nodes-look](traps/element-and-sheets.md#t-a-node-row-wears-its-nodes-look) — sherpa-node-look
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
+- [T-a-panel-stays-under-the-app-header](traps/menus-tips-overlays.md#t-a-panel-stays-under-the-app-header) — sherpa-float
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — filter-host-controller, shared-constants
 - [T-a-portal-hop-is-resolved-once](traps/data-layer.md#t-a-portal-hop-is-resolved-once) — node-graph
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — float-box, sherpa-float

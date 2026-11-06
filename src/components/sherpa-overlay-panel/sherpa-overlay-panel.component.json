@@ -36,7 +36,9 @@
             "part": "tab-open",
             "attrs": {
               "type": "button",
-              "aria-label": "Open panel"
+              "aria-label": "Open panel",
+              "title": "Open docked",
+              "data-when-title": "data-floating: Open floating"
             },
             "children": [
               {

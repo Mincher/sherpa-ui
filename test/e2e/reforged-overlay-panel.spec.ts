@@ -173,7 +173,7 @@ test('an open panel draws nothing over the page beside it', async ({ page }) => 
   });
   const after = await page.screenshot({ clip });
   // The dialog, and the minimised edge line and tab (drawn only while minimised).
-  expect(parts).toEqual(['span', 'button', 'dialog']);
+  expect(parts).toEqual(['span', 'div', 'dialog']);
   expect(after.equals(before)).toBe(true);
 });
 

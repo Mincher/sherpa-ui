@@ -246,6 +246,8 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
   Float if the panel was last docked, Dock if it was last floating. A press on it opens the panel in THAT state
   (`panel-float` fires, then it opens); a press on the label opens it as it was. The tab is turned by its
   `writing-mode`, so the button sets `horizontal-tb` and stays upright. The app's setting turns it off.
+- **The tab's tooltip** says the state it opens in (`Open docked`, or `Open floating` after a float): the opposite
+  of the button beside it.
 - **The Node Editor's details panel is always there** (Will, 2026-11-06): the editor shows it as a tab at the
   start (`data-minimised`), with an empty state (`sherpa-empty-state`, "No node selected") in it; a pick FILLS
   it and never opens it; a click on blank canvas puts the empty state back, and the panel is never hidden by
@@ -335,6 +337,18 @@ the box (`pointer-events: auto`). Minimised, its tab is `absolute` in the layout
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel-in-a-layout.spec.ts`
+
+### T-a-panel-stays-under-the-app-header
+
+**A panel on the window stays UNDER the app header** (Will, 2026-11-06): its top is `--_top`, where the shell's
+panel areas begin, so its edge height, its maximised box and its floating room are the areas' height, not the
+window's. A floating `data-y` counts from that top (`float-box.ts` reads its room from there). In a layout (a
+canvas or an area slot) it is 0. An app that shows a panel alone in a window (a tab of its own) sets
+`--_top: 0px` there.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/core/sherpa-float.css`
+- Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
 
 ### T-a-pressed-panel-comes-to-the-front
 

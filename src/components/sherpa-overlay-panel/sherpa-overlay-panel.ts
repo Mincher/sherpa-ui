@@ -250,9 +250,17 @@ export class SherpaOverlayPanel extends SherpaElement {
     return held && !(held instanceof SherpaOverlayPanel) ? null : shell;
   }
 
+  /** Where the panel areas begin, in px: under the app header. Zero with no shell, or in a layout. */
+  #top(): number {
+    if (this.#slotted()) return 0;
+    return Math.round(document.querySelector('sherpa-app-shell')?.shadowRoot?.querySelector('sherpa-layout-panels')?.getBoundingClientRect().top ?? 0);
+  }
+
   /** Put the panel where `data-fixed` and the room say. TRAP T-a-panel-pops-into-the-end-area */
   #place = (): void => {
     if (!this.isConnected) return;
+    // A panel on the window's edge, maximised or floating, stays under the header. TRAP T-a-panel-stays-under-the-app-header
+    this.style.setProperty('--_top', `${this.#top()}px`);
     const floating = this.hasAttribute('data-floating');
     const minimised = this.hasAttribute('data-minimised');
     // Slotted into a layout: docked there by its slot, and floating or a tab in that layout's room.
@@ -310,7 +318,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     el: this,
     box: () => this.$<HTMLElement>('.root'),
     // The window, or the layout it is slotted in.
-    room: () => this.#slotted() ? roomOf(this) : ({ x: 0, y: 0, width: document.documentElement.clientWidth, height: document.documentElement.clientHeight }),
+    room: () => this.#slotted() ? roomOf(this) : ({ x: 0, y: this.#top(), width: document.documentElement.clientWidth, height: document.documentElement.clientHeight - this.#top() }),
     free: () => this.hasAttribute('data-floating') && !this.hasAttribute('data-maximised'),
     set: (attr, value) => this.set(attr, value),
     num: (attr) => this.num(attr, NaN),

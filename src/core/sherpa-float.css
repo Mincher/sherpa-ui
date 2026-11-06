@@ -16,10 +16,12 @@
    the window instead. */
 :host(:state(floating):not([data-maximised])) .sherpa-float {
   --_float-w: clamp(min(var(--_float-min-width), 100%), var(--_float-width, 40rem), 100%);
-  --_float-h: clamp(min(var(--_float-min-height), 100%), var(--_float-height, 30rem), 100%);
+  /* `--_top` is the header's foot, where a window panel's room begins (0 in a layout). TRAP T-a-panel-stays-under-the-app-header */
+  --_float-h: clamp(min(var(--_float-min-height), 100% - var(--_top, 0px)), var(--_float-height, 30rem), 100% - var(--_top, 0px));
   inset: auto;
   left: clamp(0px, var(--_float-x, 0px), 100% - var(--_float-w));
-  top: clamp(0px, var(--_float-y, 0px), 100% - var(--_float-h));
+  /* `data-y` counts from the room's top, which is `--_top` down the window. */
+  top: clamp(var(--_top, 0px), var(--_top, 0px) + var(--_float-y, 0px), 100% - var(--_float-h));
   inline-size: var(--_float-w);
   block-size: var(--_float-h);
   /* Over a docked panel (101), and in the tab's ONE stack: the last pressed is in front.

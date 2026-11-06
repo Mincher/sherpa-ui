@@ -66,7 +66,9 @@
   <!-- Minimised: the line down the edge the tab stands on, and this tab, turned on its side, in place of the box. -->
   <span class="rail" part="rail" aria-hidden="true"></span>
   <div class="tab" part="tab">
-    <button class="tab-open" part="tab-open" type="button" aria-label="Open panel">
+    <!-- Its tooltip says what a press does: the state it was left in, the opposite of the button beside it. -->
+    <button class="tab-open" part="tab-open" type="button" aria-label="Open panel"
+            title="Open docked" data-when-title="data-floating: Open floating">
       <span class="tab-title" part="tab-title"></span>
       <span class="tab-mark" part="tab-mark" aria-hidden="true">!</span>
     </button>
