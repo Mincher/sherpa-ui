@@ -8,19 +8,28 @@ import { test, expect } from './harness';
  * TRAP T-reset-to-default-is-the-views-own
  */
 const mount = (kind: string, attr: string): string => `
-  const el = document.createElement('sherpa-quick-filter-toolbar');
-  el.setAttribute('${attr}', '');
-  // "Reset to view defaults" is the View's bar's, or a column's. TODO 524
-  if ('${kind}' === 'bar') el.setAttribute('data-type', 'view');
+  let el;
   if ('${kind}' === 'column') {
-    el.setAttribute('data-orientation', 'portrait');
-    el.setAttribute('data-column', '');
-    el.setAttribute('open', '');
+    // The panel's content: a filter panel in an overlay panel.
+    const shell = document.createElement('sherpa-overlay-panel');
+    shell.setAttribute('open', '');
+    shell.setAttribute('data-heading', 'Filters');
+    el = document.createElement('sherpa-filter-panel');
+    el.setAttribute('data-scope', 'view data');
+    el.setAttribute('${attr}', '');
+    shell.append(el);
+    document.getElementById('root').replaceChildren(shell);
+    await el.rendered;
+    el.drawScopes([]);
+  } else {
+    el = document.createElement('sherpa-quick-filter-toolbar');
+    el.setAttribute('${attr}', '');
+    // "Reset to view defaults" is the View's bar's, or a column's. TODO 524
+    el.setAttribute('data-type', 'view');
+    document.getElementById('root').replaceChildren(el);
+    await el.rendered;
+    await el.populate([]);
   }
-  document.getElementById('root').replaceChildren(el);
-  await el.rendered;
-  if ('${kind}' === 'column') el.drawScopes([]);
-  else await el.populate([]);
   await window.__settled();
 `;
 

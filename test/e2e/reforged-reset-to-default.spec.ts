@@ -11,8 +11,14 @@ test('the bar\'s and the column\'s ⋮ menus lead with Reset, and Reset to view 
   const r = await page.evaluate(async () => {
     const heard: string[] = [];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': 'view' });
-    const column = await window.__mount<HTMLElement & { drawScopes(s: unknown): void }>('sherpa-quick-filter-toolbar', undefined,
-      { 'data-orientation': 'portrait', 'data-column': true, open: true, keep: true });
+    const shell = document.createElement('sherpa-overlay-panel');
+    shell.setAttribute('open', '');
+    shell.setAttribute('data-heading', 'Filters');
+    const column = document.createElement('sherpa-filter-panel') as HTMLElement & { drawScopes(s: unknown): void; rendered: Promise<void> };
+    column.setAttribute('data-scope', 'view data');
+    shell.append(column);
+    document.getElementById('root')!.append(shell);
+    await column.rendered;
     column.drawScopes([]);
     await window.__settled();
     for (const [name, el] of [['bar', bar], ['column', column]] as const) {

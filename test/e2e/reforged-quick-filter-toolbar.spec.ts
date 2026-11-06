@@ -2796,23 +2796,6 @@ test('in a label-column panel, an Advanced section\'s rows sit in the answer col
   expect(r.sameRow).toBe(true);
 });
 
-test('the panel column offers Suggest filters left of its Save group, where the app offers it (Will, TODO 527)', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const column = await window.__mount<HTMLElement & { drawScopes(s: unknown): void }>('sherpa-quick-filter-toolbar', undefined,
-      { 'data-orientation': 'portrait', 'data-column': true, open: true, keep: true, 'data-suggest': '' });
-    column.drawScopes([]);
-    await window.__settled();
-    const seen: string[] = [];
-    column.addEventListener('ai-filter-request', () => seen.push('ai-filter-request'));
-    const suggest = column.shadowRoot!.querySelector<HTMLElement>('.column-suggest')!;
-    const edit = column.shadowRoot!.querySelector<HTMLElement>('.column-more')!;
-    const left = suggest.getBoundingClientRect().right <= edit.getBoundingClientRect().left;
-    suggest.shadowRoot!.querySelector('button')!.click();
-    return { shown: getComputedStyle(suggest).display !== 'none', left, seen };
-  });
-  expect(r).toEqual({ shown: true, left: true, seen: ['ai-filter-request'] });
-});
-
 test('a panel section, hovered, wears a grid row\'s hover fill — on or off (Will, TODO 531)', async ({ page }) => {
   await page.evaluate(async () => {
     const opts = [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }];
@@ -2943,29 +2926,4 @@ test('a chip moved while its menu is open opens at the next press: removal shuts
     return { opened, moved, again: menu.open };
   });
   expect(r).toEqual({ opened: true, moved: { same: true, open: false }, again: true });
-});
-
-
-/* The column's header: no Filters button (each section has its own), the panel's float before the page's
-   buttons (Show as toolbar), the ⋮ last; its sections sit inside its edge. Will, 11-06 */
-test('the column\'s header has no Filters button; float, then the page\'s buttons, then the ⋮; its sections are padded in', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const column = await window.__mount<HTMLElement & { drawScopes(s: unknown): void }>('sherpa-quick-filter-toolbar', undefined,
-      { 'data-orientation': 'portrait', 'data-column': true, open: true, keep: true, 'data-floatable': '', 'data-saveable': '' });
-    const extra = document.createElement('sherpa-button');
-    extra.slot = 'actions';
-    extra.setAttribute('aria-label', 'Show as toolbar');
-    column.append(extra);
-    column.drawScopes([]);
-    await window.__settled();
-    const sr = column.shadowRoot!;
-    const x = (el: Element | null): number => el!.getBoundingClientRect().left;
-    const sections = sr.querySelector<HTMLElement>('.sections')!;
-    return { filters: sr.querySelectorAll('.column-filters').length, float: x(sr.querySelector('.column-float')),
-      extra: x(extra), more: x(sr.querySelector('.column-more')), pad: getComputedStyle(sections).paddingLeft };
-  });
-  expect(r.filters).toBe(0);
-  expect(r.float, 'float is before the page\'s button').toBeLessThan(r.extra);
-  expect(r.extra, 'the page\'s button is before the ⋮').toBeLessThan(r.more);
-  expect(r.pad).toBe('4px');
 });

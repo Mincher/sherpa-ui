@@ -7,7 +7,7 @@ A strip of quick-filter chips above a grid/list.
 |  |  |
 |---|---|
 | Category | control |
-| Templates | `default`, `portrait`, `flat`, `column` |
+| Templates | `default`, `portrait`, `flat` |
 | Figma | Filter Toolbar |
 | Source | [.ts](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts) · [.html](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html) · [.css](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css) · [.component.json](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.component.json) · [.example.json](../../src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.example.json) |
 
@@ -60,7 +60,6 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
 | `data-bounds` | text |  |  |
-| `data-column` | boolean | `false` | portrait: a column, header and all, even over one scope and its parts |
 | `data-count-applied` | boolean |  |  |
 | `data-dirty` | boolean |  | something in its scope is changed and not applied: Apply is on. Set by a bound source. |
 | `data-every-count` | boolean |  |  |
@@ -69,12 +68,9 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-field-apply` | boolean |  |  |
 | `data-fixed-primary` | boolean |  |  |
 | `data-flat` | boolean | `false` | portrait: its scope is a HEADING, not an accordion — the column's View |
-| `data-floatable` | boolean | `false` | a column shows the Float / Dock button in its header |
-| `data-floating` | boolean |  | a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats |
 | `data-graph-unchanged` | boolean |  | the graph is as it was when the editor loaded: "Reset node graph" is inactive. Written by the editor |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
-| `data-height` | number |  | how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
 | `data-highlight-hover` | boolean |  |  |
 | `data-label-column` | boolean |  |  |
@@ -89,7 +85,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-no-sections` | boolean |  |  |
 | `data-node-editor` | boolean |  | show "Open in Node Editor" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822 |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |
-| `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope="view data"`) it is the COLUMN: ONE header — one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425 |
+| `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is a SECTION of the filter panel: the scope an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. `flat` makes the scope a heading, as the panel's View is. |
 | `data-panel-mode` | boolean |  | a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers |
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
@@ -107,16 +103,13 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-switchable` | boolean |  | show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. |
 | `data-type` | `view` `data` | `data` | data \| view |
 | `data-waits` | boolean |  | its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406 |
-| `data-width` | number |  | how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout |
-| `data-x` | number |  | where a column floats, in px from its layout's top left, written at the end of each move; kept while docked |
-| `data-y` | number |  | where a column floats, in px from its layout's top left, written at the end of each move; kept while docked |
+| `data-x` | text |  | where a column floats, in px from its layout's top left, written at the end of each move; kept while docked |
 | `open` | text, native |  | a column is showing. A host writes it; every close reports `filter-panel-close`, and says why. |
 
 ## Properties
 
 | Property | Type | Access | What it is |
 |---|---|---|---|
-| `open` | `boolean` | read and write |  |
 | `active` | `string[]` | read only |  |
 | `values` | `Record<string, string[]>` | read and write |  |
 | `savedSets` | `SavedSet[]` | read and write |  |
@@ -132,11 +125,6 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 
 | Method | What it does |
 |---|---|
-| `drawScopes(scopes: ScopeDescription[])` | drawScopes(scopes) — a column's scopes, from its source: a portrait toolbar per scope, under the one header. TODO 425 |
-| `show()` |  |
-| `hide(reason: 'reader' \| 'width' \| 'page' = 'reader')` | EVERY close reports, and says why. |
-| `close(reason: 'reader' \| 'width' \| 'page' = 'reader')` |  |
-| `toggle()` |  |
 | `setChipValues(id: string, picks: readonly string[] \| undefined)` | Set ONE chip's picks, leaving every other chip alone. |
 | `setChipReading(id: string, reading: FieldReading)` | setChipReading(id, reading) — steer ONE chip with a whole reading. |
 | `drawApplied(applied: Readonly<Record<string, FieldReading>>)` | drawApplied(applied) — a bound source says what each field that waits for Apply holds APPLIED: a section marks only the values its draft changed. SILENT. TODO 425 |
@@ -147,7 +135,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `search(text: string)` | search(text) — a portrait bar shows only the fields whose name, or one of whose values, holds the text; empty shows all. The lead bar's search asks it of every portrait bar beside it. TODO 425 |
 | `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present) — a bound source says what the filters before each field leave; a chip's menu greys the rest. SILENT. A field not named is not limited. |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: its menu removes the rest, but keeps a pick. |
-| `drawReading(field: string, reading: FieldReading, scope?: string)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
+| `drawReading(field: string, reading: FieldReading)` | drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go. |
 | `supersede(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string)` | supersede(readings) — the VIEW now owns these fields, each with its answer there. |
 | `report()` | report() — announce the bar with no request: its `values` and `active`, for a host that follows the View chip. Bound, each door already asked. |
 | `available(defs: FilterDef[])` | available([...]) — the filters the Add chip offers, over the populate() set. |
@@ -181,10 +169,6 @@ Each one bubbles.
 | `filters-manage` |  | Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
-| `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | A column shut, and why: the reader, the width or the page. |
-| `panel-float` | `{ floating: boolean }` | A column's Float or Dock was pressed. |
-| `panel-move` | `{ x: number; y: number }` | A floating column's header was dragged, or its grip moved by the keys. |
-| `panel-resize` | `{ height: number; width: number }` | A floating column's corner was dragged, or moved by the keys. |
 | `data-refresh` |  | Refresh: load the page's data again. |
 | `ai-filter-request` |  | Suggest filters was pressed. |
 | `node-editor-open` |  | Open in Node Editor was picked in the ⋮ menu: an outlet opens the page's Query in its `query` graph View. |
@@ -194,13 +178,13 @@ Each one bubbles.
 | Slot | Accepts | What it holds |
 |---|---|---|
 | `view` | control | leading view chip (view type) |
-| `actions` | control | host extras, placed BEFORE the built-in cluster; a column's, in its header |
+| `actions` | control | host extras, placed BEFORE the built-in cluster |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `box`, `chips`, `column`, `corner`, `find`, `float`, `grip`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `presets`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `chips`, `organise`, `presets`, `saved-group`, `scope`, `switch`, `view-zone`
 
 ## CSS custom properties it reads
 
@@ -222,15 +206,6 @@ What each class's base rule reads:
 | `--sherpa-theme-border-default-2` | `.act-divider` | `background` |
 | `--sherpa-display-mode-space-xs` | `.chips` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions-zone` | `gap` |
-| `--sherpa-theme-gap-sm` | `.column-heading` | `gap` |
-| `--sherpa-style-content-base` | `.column-heading` | `color` |
-| `--sherpa-font-size-body-base` | `.column-heading` | `font-size` |
-| `--sherpa-font-weight-medium` | `.column-heading` | `font-weight` |
-| `--sherpa-theme-content-line-height-base` | `.column-heading` | `line-height` |
-| `--sherpa-display-mode-space-2xs` | `.sections` | `padding` |
-| `--sherpa-display-mode-space-base` | `.scope-rule` | `margin` |
-| `--sherpa-display-mode-border-width-base` | `.scope-rule` | `border-block-start` |
-| `--sherpa-theme-padding-lg` | `.local-heading` | `padding-inline` |
 
 ## Data
 

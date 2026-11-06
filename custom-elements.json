@@ -9835,14 +9835,6 @@
               }
             },
             {
-              "name": "data-column",
-              "description": "portrait: a column, header and all, even over one scope and its parts",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
               "name": "data-count-applied",
               "description": "It follows the app's `countApplied` setting.",
               "type": {
@@ -9899,21 +9891,6 @@
               "default": "false"
             },
             {
-              "name": "data-floatable",
-              "description": "a column shows the Float / Dock button in its header",
-              "type": {
-                "text": "boolean"
-              },
-              "default": "false"
-            },
-            {
-              "name": "data-floating",
-              "description": "a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-graph-unchanged",
               "description": "the graph is as it was when the editor loaded: \"Reset node graph\" is inactive. Written by the editor",
               "type": {
@@ -9932,13 +9909,6 @@
               "description": "its scope's name, written by its source: a portrait bar's heading.",
               "type": {
                 "text": "string"
-              }
-            },
-            {
-              "name": "data-height",
-              "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout",
-              "type": {
-                "text": "number"
               }
             },
             {
@@ -10041,7 +10011,7 @@
             },
             {
               "name": "data-orientation",
-              "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425",
+              "description": "landscape | portrait — PORTRAIT is a SECTION of the filter panel: the scope an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. `flat` makes the scope a heading, as the panel's View is.",
               "type": {
                 "text": "'landscape' | 'portrait'"
               },
@@ -10169,24 +10139,10 @@
               }
             },
             {
-              "name": "data-width",
-              "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout",
-              "type": {
-                "text": "number"
-              }
-            },
-            {
               "name": "data-x",
               "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked",
               "type": {
-                "text": "number"
-              }
-            },
-            {
-              "name": "data-y",
-              "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked",
-              "type": {
-                "text": "number"
+                "text": "string"
               }
             },
             {
@@ -10198,13 +10154,6 @@
             }
           ],
           "members": [
-            {
-              "kind": "field",
-              "name": "open",
-              "type": {
-                "text": "boolean"
-              }
-            },
             {
               "kind": "field",
               "name": "active",
@@ -10282,56 +10231,6 @@
                 "text": "boolean"
               },
               "readonly": true
-            },
-            {
-              "kind": "method",
-              "name": "drawScopes",
-              "parameters": [
-                {
-                  "name": "scopes",
-                  "type": {
-                    "text": "ScopeDescription[]"
-                  }
-                }
-              ],
-              "description": "drawScopes(scopes) — a column's scopes, from its source: a portrait toolbar per scope, under the one header. TODO 425"
-            },
-            {
-              "kind": "method",
-              "name": "show",
-              "parameters": []
-            },
-            {
-              "kind": "method",
-              "name": "hide",
-              "parameters": [
-                {
-                  "name": "reason",
-                  "type": {
-                    "text": "'reader' | 'width' | 'page'"
-                  },
-                  "optional": true
-                }
-              ],
-              "description": "EVERY close reports, and says why."
-            },
-            {
-              "kind": "method",
-              "name": "close",
-              "parameters": [
-                {
-                  "name": "reason",
-                  "type": {
-                    "text": "'reader' | 'width' | 'page'"
-                  },
-                  "optional": true
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "toggle",
-              "parameters": []
             },
             {
               "kind": "method",
@@ -10510,13 +10409,6 @@
                   "type": {
                     "text": "FieldReading"
                   }
-                },
-                {
-                  "name": "scope",
-                  "type": {
-                    "text": "string"
-                  },
-                  "optional": true
                 }
               ],
               "description": "drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go."
@@ -10772,34 +10664,6 @@
               }
             },
             {
-              "name": "filter-panel-close",
-              "description": "A column shut, and why: the reader, the width or the page.",
-              "type": {
-                "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
-              }
-            },
-            {
-              "name": "panel-float",
-              "description": "A column's Float or Dock was pressed.",
-              "type": {
-                "text": "CustomEvent<{ floating: boolean }>"
-              }
-            },
-            {
-              "name": "panel-move",
-              "description": "A floating column's header was dragged, or its grip moved by the keys.",
-              "type": {
-                "text": "CustomEvent<{ x: number; y: number }>"
-              }
-            },
-            {
-              "name": "panel-resize",
-              "description": "A floating column's corner was dragged, or moved by the keys.",
-              "type": {
-                "text": "CustomEvent<{ height: number; width: number }>"
-              }
-            },
-            {
               "name": "data-refresh",
               "description": "Refresh: load the page's data again.",
               "type": {
@@ -10828,7 +10692,7 @@
             },
             {
               "name": "actions",
-              "description": "host extras, placed BEFORE the built-in cluster; a column's, in its header (accepts: control)"
+              "description": "host extras, placed BEFORE the built-in cluster (accepts: control)"
             }
           ],
           "cssParts": [
@@ -10839,40 +10703,7 @@
               "name": "bar"
             },
             {
-              "name": "box"
-            },
-            {
               "name": "chips"
-            },
-            {
-              "name": "column"
-            },
-            {
-              "name": "corner"
-            },
-            {
-              "name": "find"
-            },
-            {
-              "name": "float"
-            },
-            {
-              "name": "grip"
-            },
-            {
-              "name": "head"
-            },
-            {
-              "name": "heading"
-            },
-            {
-              "name": "local-heading"
-            },
-            {
-              "name": "local-scopes"
-            },
-            {
-              "name": "more"
             },
             {
               "name": "organise"
@@ -10881,28 +10712,13 @@
               "name": "presets"
             },
             {
-              "name": "saved"
-            },
-            {
               "name": "saved-group"
             },
             {
               "name": "scope"
             },
             {
-              "name": "scope-rule"
-            },
-            {
-              "name": "sections"
-            },
-            {
-              "name": "suggest"
-            },
-            {
               "name": "switch"
-            },
-            {
-              "name": "view-scope"
             },
             {
               "name": "view-zone"

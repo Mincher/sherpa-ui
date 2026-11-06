@@ -36,7 +36,7 @@ export function folded(el: Element | null): boolean {
 
 /** Is this host over the View: its bar, or a column that holds it? */
 function atView(host: HTMLElement): boolean {
-  return host.dataset['type'] === 'view' || host.hasAttribute('data-column')
+  return host.dataset['type'] === 'view' || !!(host.constructor as { column?: boolean }).column
     || (host.dataset['scope'] ?? '').split(/\s+/).includes(VIEW);
 }
 

@@ -15,11 +15,10 @@
  */
 import { declared } from './provider-declared.js';
 
-/** Is it the panel area's occupant: a bar — what asks for a `scope` — over a scope
- *  list, or over one, said `data-column`? TODO 425, 436 */
+/** Is it the panel's content: what asks for a `scope`, over a scope list or declared a column? TODO 425, 436 */
 export function isColumn(el: Element): boolean {
   const { asks, column } = declared(el);
-  return asks?.shape === 'scope' && (column || el.hasAttribute('data-column') || scopesOf(el).length > 1);
+  return asks?.shape === 'scope' && (column || scopesOf(el).length > 1);
 }
 
 /** The scopes it names. */
@@ -78,7 +77,8 @@ export class ProviderMode {
    *  wants, one with none shuts it — before it paints. TRAP T-the-filter-mode-is-set-before-the-page-paints */
   page(filters: boolean): void {
     if (!filters) for (const panel of this.#host.found()) panel.hide('page');
-    else if (this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
+    // A shut panel's close is reported a moment later: a page that wants it opens it whatever the mode says yet.
+    else if (this.#wanted === 'panel' && (this.#mode !== 'panel' || this.#host.panels().some((p) => !p.hasAttribute('open')))) this.#setMode('panel');
     if (filters) this.#early();
   }
 
@@ -103,6 +103,8 @@ export class ProviderMode {
   /** EVERY close reports, and a READER's is a choice worth keeping; a window
    *  too narrow is not. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
   readonly closed = (event: Event): void => {
+    // A close reported late, for a panel that has opened again since, is stale.
+    if (this.#host.panels().some((p) => p.hasAttribute('open'))) return;
     this.#mode = 'toolbars';
     for (const bar of this.#strips()) this.#stepBack(bar);
     this.#giveToggles();

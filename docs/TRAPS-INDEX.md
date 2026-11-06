@@ -413,11 +413,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — provider
 
-## Filters (158)
+## Filters (153)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — quick-filter-toolbar
-- [T-a-chart-scope-is-its-legend-field](traps/data-layer.md#t-a-chart-scope-is-its-legend-field) — quick-filter, quick-filter-toolbar
+- [T-a-chart-scope-is-its-legend-field](traps/data-layer.md#t-a-chart-scope-is-its-legend-field) — quick-filter
 - [T-a-chip-body-cycles-its-states](traps/data-layer.md#t-a-chip-body-cycles-its-states) — filter-host, quick-filter
 - [T-a-chip-counts-within-the-filters-before-it](traps/data-layer.md#t-a-chip-counts-within-the-filters-before-it) — quick-filter, quick-filter-toolbar
 - [T-a-chip-knows-what-kind-it-is](traps/filters.md#t-a-chip-knows-what-kind-it-is) — filter-def, filter-kind, quick-filter, quick-filter-toolbar
@@ -437,7 +437,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-field-can-carry-over-views](traps/data-layer.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
 - [T-a-field-reads-its-values-when-needed](traps/data-layer.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](traps/filters.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu
-- [T-a-filter-column-floats](traps/filters.md#t-a-filter-column-floats) — quick-filter-toolbar
 - [T-a-filter-is-dragged-into-its-place](traps/filters.md#t-a-filter-is-dragged-into-its-place) — quick-filter-toolbar
 - [T-a-filter-menu-has-two-modes](traps/filters.md#t-a-filter-menu-has-two-modes) — quick-filter
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — quick-filter-toolbar
@@ -464,7 +463,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-row-remembers-what-it-was-given](traps/filters.md#t-a-row-remembers-what-it-was-given) — quick-filter
 - [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — filter-def, filter-host, quick-filter, quick-filter-toolbar
 - [T-a-section-is-headed-once](traps/filters.md#t-a-section-is-headed-once) — quick-filter-toolbar
-- [T-a-shut-column-draws-nothing](traps/filters.md#t-a-shut-column-draws-nothing) — quick-filter-toolbar
 - [T-a-shut-scope-wears-its-chips-fill](traps/filters.md#t-a-shut-scope-wears-its-chips-fill) — quick-filter-toolbar
 - [T-a-silent-steer-still-redraws-its-chip](traps/filters.md#t-a-silent-steer-still-redraws-its-chip) — filter-host, quick-filter
 - [T-a-silent-write-still-needs-a-way-to-report](traps/filters.md#t-a-silent-write-still-needs-a-way-to-report) — quick-filter-toolbar
@@ -512,7 +510,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-empty-flag-needs-rows-to-count](traps/filters.md#t-empty-flag-needs-rows-to-count) — quick-filter
 - [T-empty-is-every-kind-of-answer](traps/filters.md#t-empty-is-every-kind-of-answer) — quick-filter, quick-filter-toolbar
 - [T-every-chip-menu-gets-clear-and-search](traps/filters.md#t-every-chip-menu-gets-clear-and-search) — filter-menu
-- [T-every-close-reports-or-the-toolbars-stay-hidden](traps/join-and-app.md#t-every-close-reports-or-the-toolbars-stay-hidden) — quick-filter-toolbar
 - [T-everything-on-is-no-filter](traps/data-layer.md#t-everything-on-is-no-filter) — quick-filter, quick-filter-toolbar
 - [T-grid-suspend-is-not-clear](traps/data-layer.md#t-grid-suspend-is-not-clear) — quick-filter, quick-filter-toolbar
 - [T-group-and-sort-are-component-scope](traps/data-layer.md#t-group-and-sort-are-component-scope) — quick-filter-toolbar
@@ -562,9 +559,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-filters-button-is-a-door-not-a-filter](traps/filters.md#t-the-filters-button-is-a-door-not-a-filter) — quick-filter-toolbar
 - [T-the-fold-measures-a-chip-that-has-not-drawn-itself](traps/filters.md#t-the-fold-measures-a-chip-that-has-not-drawn-itself) — quick-filter-toolbar
 - [T-the-header-chips-must-reach-the-query](traps/filters.md#t-the-header-chips-must-reach-the-query) — quick-filter-toolbar
-- [T-the-local-context-waits-for-the-view](traps/join-and-app.md#t-the-local-context-waits-for-the-view) — quick-filter-toolbar
 - [T-the-more-menu-holds-what-folded](traps/filters.md#t-the-more-menu-holds-what-folded) — more-menu, quick-filter-toolbar
-- [T-the-panel-is-the-bar-in-portrait](traps/filters.md#t-the-panel-is-the-bar-in-portrait) — quick-filter-toolbar
 - [T-the-panel-is-the-toolbar-in-a-column](traps/filters.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def
 - [T-the-view-chip-stays-on-the-header](traps/filters.md#t-the-view-chip-stays-on-the-header) — quick-filter-toolbar
 - [T-toggle-chip-has-no-count](traps/filters.md#t-toggle-chip-has-no-count) — quick-filter-toolbar
@@ -1033,11 +1028,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (143)
+## Other components (145)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
 - [T-a-canvas-owns-its-view](traps/other-components.md#t-a-canvas-owns-its-view) — layout-canvas
+- [T-a-chart-scope-is-its-legend-field](traps/data-layer.md#t-a-chart-scope-is-its-legend-field) — filter-panel
 - [T-a-click-does-not-clear-indeterminate](traps/other-components.md#t-a-click-does-not-clear-indeterminate) — select-checkbox
 - [T-a-click-in-a-slotted-menu-is-not-a-press](traps/other-components.md#t-a-click-in-a-slotted-menu-is-not-a-press) — button
 - [T-a-component-asks-its-provider](traps/join-and-app.md#t-a-component-asks-its-provider) — filter-panel
@@ -1094,7 +1090,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shadow-reach-is-a-missing-door](traps/other-components.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
 - [T-a-shared-edge-is-halved-on-both-sides](traps/element-and-sheets.md#t-a-shared-edge-is-halved-on-both-sides) — group, metric-group
 - [T-a-shared-enum-is-not-every-enum](traps/element-and-sheets.md#t-a-shared-enum-is-not-every-enum) — button
-- [T-a-shut-column-draws-nothing](traps/filters.md#t-a-shut-column-draws-nothing) — filter-panel
+- [T-a-shut-column-draws-nothing](traps/other-components.md#t-a-shut-column-draws-nothing) — filter-panel
 - [T-a-socket-is-drawn-by-its-type](traps/element-and-sheets.md#t-a-socket-is-drawn-by-its-type) — node
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
 - [T-a-tag-field-counts-what-css-clips](traps/other-components.md#t-a-tag-field-counts-what-css-clips) — input-text
@@ -1171,6 +1167,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-nav-is-a-menu-on-a-phone](traps/other-components.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-node-panel-asks-it-places](traps/other-components.md#t-the-node-panel-asks-it-places) — node-list
 - [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell, layout-panels
+- [T-the-panel-is-the-bar-in-portrait](traps/other-components.md#t-the-panel-is-the-bar-in-portrait) — filter-panel
 - [T-the-panel-keys-are-shift-and-a-number](traps/element-and-sheets.md#t-the-panel-keys-are-shift-and-a-number) — app-shell
 - [T-the-provider-owns-the-panel-mode](traps/join-and-app.md#t-the-provider-owns-the-panel-mode) — filter-panel
 - [T-the-shell-owns-the-panel-areas](traps/other-components.md#t-the-shell-owns-the-panel-areas) — app-shell

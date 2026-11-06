@@ -92,7 +92,6 @@
   /* The bar's own hover fill, kept under a name a chip does not declare: a
      section ON is pinned to its on-colours, and its hover stays the bar's. TODO 531 */
   --_bar-hover: var(--sherpa-hover-fill);
-  /* NOT isolated: a column floats, and its box must meet the page's panels (sherpa-layers.css). */
 }
 
 /* ── The ⋮ menu's rows. TRAP T-the-more-menu-holds-what-folded ── */
@@ -376,7 +375,7 @@
   flex: 0 0 auto;
 }
 :host(:is([data-saveable]:not([data-no-saves]), :state(has-sets))) .saved-group { display: inline-flex; }
-:host(:is(:not([data-saveable]), [data-no-saves])) :is(.save-as-btn, .column-save-as) { display: none; }
+:host(:is(:not([data-saveable]), [data-no-saves])) .save-as-btn { display: none; }
 .saved-group > :not(:first-child) { margin-inline-start: var(--sherpa-structure-space-snapped, 0px); }
 
 /* The Saved chip, while a set is on. TODO 105 */
@@ -578,89 +577,10 @@ sherpa-accordion.scope::part(actions) {
   inline-size: var(--sherpa-quick-filter-label-size, 96px);
 }
 
-/* ── COLUMN — portrait over several scopes: the panel area's. It opens and
-   shuts as a panel does; its BODY scrolls, the header stays. TODO 425 */
-:host(:state(column)) {
-  display: none;
-  block-size: 100%;
-  min-block-size: 0;
-}
-:host(:state(column)[open]) { display: block; }
-/* The box that floats. Docked, it fills its panel area; floating, it is placed in the
-   area's layout, which lets the clicks through but on the box. TRAP T-a-filter-column-floats */
-.box {
-  position: relative;
-  block-size: 100%;
-  pointer-events: auto;
-}
-:host(:state(floating)) .box { position: absolute; }
-:host(:not([data-floatable])) .column-float { display: none; }
-/* The grip shows on a floating column: the header's content steps right for it, as a panel's does. */
-:host(:state(floating)) .head { --_lead-width: var(--sherpa-display-mode-size-md, 20px); }
-.column {
-  block-size: 100%;
-}
-/* Docked, FLUSH and FLAT: no edge, no rounding, no shadow; its area draws the divider. */
-:host(:not(:state(floating))) .column {
-  border-width: 0;
-  border-radius: 0;
-}
-.column::part(body) {
-  overflow: auto;
-  min-block-size: 0;
-  padding: 0;
-}
-/* Its title, as the header draws one, and the filters applied beside it. TODO 436 */
-.column-heading {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  color: var(--sherpa-style-content-base, #0c0b11);
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-}
-/* ONE SIZE UP: the panel area's own chrome. */
-.head::part(icon) {
-  inline-size: var(--sherpa-theme-content-size-large, 16px);
-  block-size: var(--sherpa-theme-content-size-large, 16px);
-}
-/* The ONE search spans the header's bottom row, above every scope. Will, G8 */
-.head::part(metadata) {
-  grid-column: 1 / -1;
-  margin-block-start: var(--sherpa-theme-gap-md, 8px);
-}
-.find { flex: 1 1 auto; }
-.sections {
-  display: flex;
-  flex-direction: column;
-  /* Never flush with the panel's edge: its border shows. Will, 11-06 */
-  padding: var(--sherpa-display-mode-space-2xs, 4px);
-}
-/* The View Context, white space, a light rule, white space, then the Local
-   Context. Each part only while there is a scope on both sides. Will, TODO 435 */
-.scope-rule {
-  /* Inline margins set: a flex column's `hr` keeps the UA's auto ones, and shrinks to nothing. */
-  margin: var(--sherpa-display-mode-space-base, 16px) var(--sherpa-theme-padding-lg, 16px);
-  border: 0;
-  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
-}
-/* The two contexts' labels, small, in the scopes' inset. */
-.local-heading,
-:host([data-flat]) .scope { padding-inline: var(--sherpa-theme-padding-lg, 16px); }
-:host([data-flat]) .scope { padding-block: var(--sherpa-display-mode-space-sm, 12px); }
-/* Its label centred on Apply and Discard. */
+/* The View Context's section is a HEADING, not an accordion: its inset, its row, its fields. Will, TODO 435 */
+:host([data-flat]) .scope { padding-inline: var(--sherpa-theme-padding-lg, 16px); padding-block: var(--sherpa-display-mode-space-sm, 12px); }
 :host([data-flat]) .scope::part(row) { align-items: center; }
-/* The View's fields, in the inset an accordion's body gives the rest. */
 :host([data-flat]) .bar { padding-inline: var(--sherpa-theme-padding-lg, 16px); }
-/* …and the Local Context waits, unseen, for the View's chips: the View growing
-   over it would shift it. TODO 439 · TRAP T-the-local-context-waits-for-the-view */
-.sections:has(> .view-scope > :not(:state(populated))) :is(.scope-rule, .local-heading, .local-scopes) {
-  visibility: hidden;
-}
-.view-scope:empty ~ :is(.scope-rule, .local-heading),
-.local-scopes:empty,
-.sections:has(.local-scopes:empty) :is(.scope-rule, .local-heading) { display: none; }
 
 /* A panel's filter section wears the shared hover fill, as a grid row does. Will, TODO 531 */
 .chips > .chip[data-layout="section"]:hover, :host([data-orientation="portrait"]:state(has-organise)) .organise-zone:hover, .preset-zone:hover { background: var(--_bar-hover); }
@@ -682,7 +602,7 @@ sherpa-quick-filter:not([data-solo]) .more-item[value="unsolo"],
 .chip[data-by-preset] > .field-more .more-item:is([value="advanced"], [value="clear"]) { display: none; }
 .chips > .chip[data-by-preset] > .field-more:not([data-move], [data-removable]) { display: none; }
 /* A ⋮ with no row to show is not shown. Will, TODO 566 */
-:host(:state(no-more)) :is(.act[data-act="overflow"], .column-more) { display: none; }
+:host(:state(no-more)) .act[data-act="overflow"] { display: none; }
 /* A section's ⋮ offers Reset only once there is something to clear. */
 .chips > .chip:not([data-current]) > .field-more .more-item[value="clear"] { display: none; }
 /* A two-way row says where it goes: back to Simple from Advanced. */

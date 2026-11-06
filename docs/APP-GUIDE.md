@@ -83,8 +83,10 @@ Plus the app's stores, and its Views as JSON.
         <sherpa-quick-filter-toolbar slot="filters" data-type="view" data-scope="view"
                                      data-locked data-reset-on-populate></sherpa-quick-filter-toolbar>
       </sherpa-app-header>
-      <sherpa-quick-filter-toolbar slot="panel-start" id="filter-column" data-orientation="portrait"
-                                   data-column data-scope="view data"></sherpa-quick-filter-toolbar>
+      <sherpa-overlay-panel slot="panel-start" id="filter-column" data-heading="Filters" data-fixed="start" data-side="start"
+                            data-floatable data-minimisable data-poppable data-searchable data-search-placeholder="Search filters">
+        <sherpa-filter-panel data-scope="view data"></sherpa-filter-panel>
+      </sherpa-overlay-panel>
       <sherpa-outlet id="context-root"></sherpa-outlet>
       <sherpa-dialog slot="overlay" id="settings" data-type="overlay">
         <sherpa-app-header slot="header" data-back></sherpa-app-header>
@@ -116,7 +118,7 @@ Plus the app's stores, and its Views as JSON.
   body, a `sherpa-layout-panels`: top, side and bottom, with no shadow; the area
   draws the divider, takes the panel's width and resizes by its edge
   (`panel-area-resize`; keep the width, hand it back in `data-panel-start-width`).
-  A shut panel takes no room. Add `data-floatable` to the filter column and it
+  A shut panel takes no room. Add `data-floatable` to the filter panel's overlay panel and it
   floats out of the area and docks back. `T-a-panel-area-is-a-layout`
 
 ## 3. `app.json`
@@ -559,7 +561,7 @@ provider.addEventListener('filters-save-as', saveAs);
   `data-y`, `data-width` and `data-height` in the session and hand them back. The
   Nodes panel is an overlay panel slotted in the canvas's `panel` slot with
   `sherpa-node-list` in it, and floats the same way, inside the canvas; so does a
-  filter column with `data-floatable`. A press or a focus brings a floating panel to the front.
+  filter panel's overlay panel with `data-floatable`. A press or a focus brings a floating panel to the front.
   `T-a-floating-panel-is-a-state` · `T-a-pressed-panel-comes-to-the-front`
 - From a script, call `dialog.show()`, never the native `showModal()`: the
   component owns modality and `open`. An add or edit flow is that dialog, its

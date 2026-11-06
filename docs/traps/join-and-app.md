@@ -664,7 +664,6 @@ nothing waits.
 sets: ~6 times each as the column opened. `#offer(only)` tells only the bars
 just drawn.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
@@ -691,7 +690,6 @@ the state change, never from one path's handler. The second path is always the
 one nobody tests.
 
 - Site: `src/components/sherpa-provider/provider-mode.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 

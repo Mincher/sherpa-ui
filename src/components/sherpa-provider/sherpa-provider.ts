@@ -185,7 +185,6 @@ export class SherpaProvider extends SherpaElement {
     // From the START: a child can ask before this has rendered.
     this.addEventListener('context-request', this.#onRequest);
     // The panel's own close, and the shell's room for it.
-    this.addEventListener('filter-panel-close', this.#modes.closed);
     this.addEventListener('panel-close', this.#onPanelClose);
     this.#hearSettings();
     // A bar's or the panel's ⋮ switch, and its Hide invalid filters: this provider owns them. TODOs 178, 205, 376

@@ -12,9 +12,9 @@ test('a press in a panel section steers through its own bar\'s binding alone', a
     const seen = [];
     const undo = onReport((x) => seen.push(x.code));
     const provider = document.createElement('sherpa-provider');
-    provider.innerHTML = '<sherpa-quick-filter-toolbar data-orientation="portrait" data-scope="view data" open></sherpa-quick-filter-toolbar>';
+    provider.innerHTML = '<sherpa-overlay-panel open data-heading="Filters"><sherpa-filter-panel data-scope="view data"></sherpa-filter-panel></sherpa-overlay-panel>';
     document.getElementById('root').replaceChildren(provider);
-    const column = provider.querySelector('sherpa-quick-filter-toolbar');
+    const column = provider.querySelector('sherpa-filter-panel');
     const rows = [{ id: 1, plan: 'Pro', tier: 'gold' }, { id: 2, plan: 'Free', tier: 'gold' }, { id: 3, plan: 'Pro', tier: 'silver' }];
     const source = await provider.open({
       v: 1, id: 'plans',

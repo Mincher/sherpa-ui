@@ -16,8 +16,7 @@
   "templates": [
     "default",
     "portrait",
-    "flat",
-    "column"
+    "flat"
   ],
   "anatomy": {
     "byTemplate": {
@@ -434,225 +433,6 @@
             }
           ]
         }
-      ],
-      "column": [
-        {
-          "el": "div",
-          "class": "box sherpa-float",
-          "part": "box",
-          "children": [
-            {
-              "el": "sherpa-container",
-              "class": "column",
-              "part": "column",
-              "attrs": {
-                "data-padding": "none",
-                "data-when-data-scroll-shadow": "data-scroll-shadow",
-                "data-when-data-elevation": "data-floating: lg"
-              },
-              "children": [
-                {
-                  "el": "sherpa-container-header",
-                  "class": "head sherpa-float-bar",
-                  "part": "head",
-                  "attrs": {
-                    "slot": "header",
-                    "data-icon": "filter",
-                    "data-heading": "Filters"
-                  },
-                  "children": [
-                    {
-                      "el": "span",
-                      "class": "grip sherpa-float-grip sherpa-icon-box",
-                      "part": "grip",
-                      "attrs": {
-                        "slot": "lead",
-                        "data-icon": "drag-handle-vertical",
-                        "role": "button",
-                        "tabindex": "0",
-                        "aria-label": "Move panel",
-                        "title": "Drag the header to move it, or use the arrow keys"
-                      }
-                    },
-                    {
-                      "el": "span",
-                      "class": "column-heading",
-                      "part": "heading",
-                      "attrs": {
-                        "slot": "heading"
-                      },
-                      "children": [
-                        {
-                          "el": "template",
-                          "class": "applied-count-tpl",
-                          "children": [
-                            {
-                              "el": "sherpa-badge",
-                              "class": "applied-count",
-                              "attrs": {
-                                "role": "img"
-                              }
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "column-suggest suggest",
-                      "part": "suggest",
-                      "attrs": {
-                        "slot": "actions",
-                        "data-size": "sm",
-                        "data-type": "icon",
-                        "data-icon-start": "wand-magic-sparkles",
-                        "aria-label": "Suggest filters"
-                      }
-                    },
-                    {
-                      "el": "span",
-                      "class": "saved-group",
-                      "part": "saved-group",
-                      "attrs": {
-                        "slot": "actions"
-                      },
-                      "children": [
-                        {
-                          "el": "sherpa-button",
-                          "class": "column-save-as",
-                          "attrs": {
-                            "data-size": "sm",
-                            "data-group": "start",
-                            "data-icon-start": "filter"
-                          }
-                        },
-                        {
-                          "el": "sherpa-button",
-                          "class": "column-saved",
-                          "part": "saved",
-                          "attrs": {
-                            "data-size": "sm",
-                            "data-type": "icon",
-                            "data-group": "solo",
-                            "data-icon-start": "filter",
-                            "data-when-data-group": "data-saveable: end",
-                            "data-when-data-icon-start": "data-saveable: triangle-down",
-                            "data-description": "Use, save and manage your saved filters.",
-                            "aria-label": "Saved filters",
-                            "aria-haspopup": "dialog"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "column-float",
-                      "part": "float",
-                      "attrs": {
-                        "slot": "actions",
-                        "data-type": "icon",
-                        "data-size": "sm",
-                        "data-icon-start": "browser",
-                        "aria-label": "Float",
-                        "data-when-data-icon-start": "data-floating: sidebar-flip",
-                        "data-when-aria-label": "data-floating: Dock"
-                      }
-                    },
-                    {
-                      "slot": "actions",
-                      "attrs": {
-                        "slot": "actions",
-                        "data-accepts": "control"
-                      }
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "column-more",
-                      "part": "more",
-                      "attrs": {
-                        "slot": "actions",
-                        "data-type": "icon",
-                        "data-size": "sm",
-                        "data-icon-start": "ellipses-vertical",
-                        "data-description": "Reset, save and refresh these filters.",
-                        "aria-label": "More actions",
-                        "aria-haspopup": "dialog"
-                      }
-                    },
-                    {
-                      "el": "sherpa-input-text",
-                      "class": "find",
-                      "part": "find",
-                      "attrs": {
-                        "slot": "metadata",
-                        "data-icon-start": "magnifying-glass",
-                        "data-clearable": "",
-                        "placeholder": "Search filters",
-                        "autocomplete": "off",
-                        "aria-label": "Search every filter"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "el": "div",
-                  "class": "sections",
-                  "part": "sections",
-                  "children": [
-                    {
-                      "el": "div",
-                      "class": "view-scope",
-                      "part": "view-scope"
-                    },
-                    {
-                      "el": "hr",
-                      "class": "scope-rule",
-                      "part": "scope-rule"
-                    },
-                    {
-                      "el": "sherpa-section-header",
-                      "class": "local-heading",
-                      "part": "local-heading",
-                      "attrs": {
-                        "data-heading": "Local Context",
-                        "data-size": "sm",
-                        "data-divider": "none"
-                      }
-                    },
-                    {
-                      "el": "div",
-                      "class": "local-scopes",
-                      "part": "local-scopes"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "el": "div",
-              "class": "corner sherpa-float-corner",
-              "part": "corner",
-              "attrs": {
-                "role": "button",
-                "tabindex": "0",
-                "aria-label": "Resize panel",
-                "title": "Drag to resize, or use the arrow keys"
-              }
-            }
-          ]
-        },
-        {
-          "el": "template",
-          "class": "section-tpl",
-          "children": [
-            {
-              "el": "sherpa-quick-filter-toolbar",
-              "attrs": {
-                "data-orientation": "portrait"
-              }
-            }
-          ]
-        }
       ]
     }
   },
@@ -702,16 +482,6 @@
       "observed": true,
       "declared": true,
       "kind": "style"
-    },
-    {
-      "$type": "prop",
-      "name": "data-column",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "template",
-      "default": false,
-      "description": "portrait: a column, header and all, even over one scope and its parts"
     },
     {
       "$type": "prop",
@@ -784,25 +554,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-floatable",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "default": false,
-      "description": "a column shows the Float / Dock button in its header"
-    },
-    {
-      "$type": "prop",
-      "name": "data-floating",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats"
-    },
-    {
-      "$type": "prop",
       "name": "data-graph-unchanged",
       "type": "boolean",
       "observed": true,
@@ -827,15 +578,6 @@
       "declared": true,
       "kind": "content",
       "description": "its scope's name, written by its source: a portrait bar's heading."
-    },
-    {
-      "$type": "prop",
-      "name": "data-height",
-      "type": "number",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
     },
     {
       "$type": "prop",
@@ -977,7 +719,7 @@
         "portrait"
       ],
       "default": "landscape",
-      "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425"
+      "description": "landscape | portrait — PORTRAIT is a SECTION of the filter panel: the scope an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. `flat` makes the scope a heading, as the panel's View is."
     },
     {
       "$type": "prop",
@@ -1142,28 +884,9 @@
     },
     {
       "$type": "prop",
-      "name": "data-width",
-      "type": "number",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
-    },
-    {
-      "$type": "prop",
       "name": "data-x",
-      "type": "number",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
-    },
-    {
-      "$type": "prop",
-      "name": "data-y",
-      "type": "number",
-      "observed": true,
-      "declared": true,
+      "type": "string",
+      "observed": false,
       "kind": "behaviour",
       "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
     },
@@ -1191,7 +914,7 @@
       "accepts": [
         "control"
       ],
-      "description": "host extras, placed BEFORE the built-in cluster; a column's, in its header"
+      "description": "host extras, placed BEFORE the built-in cluster"
     }
   ],
   "populate": {
@@ -1281,11 +1004,6 @@
     },
     {
       "$type": "state",
-      "name": "not-floatable",
-      "selector": ":host(:not([data-floatable]))"
-    },
-    {
-      "$type": "state",
       "name": "not-allow-solo",
       "selector": ":host(:not([data-allow-solo]))"
     },
@@ -1299,12 +1017,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (open, active, values, savedSets, superseded, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (active, values, savedSets, superseded, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (drawScopes, show, hide, close, toggle, setChipValues, setChipReading, drawApplied, drawValueResults, drawCounts, drawResults, nameScope, search, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawApplied, drawValueResults, drawCounts, drawResults, nameScope, search, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -1456,48 +1174,6 @@
     },
     {
       "$type": "event",
-      "name": "filter-panel-close",
-      "description": "A column shut, and why: the reader, the width or the page.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "reason": "'page' | 'reader' | 'width'"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "panel-float",
-      "description": "A column's Float or Dock was pressed.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "floating": "boolean"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "panel-move",
-      "description": "A floating column's header was dragged, or its grip moved by the keys.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "x": "number",
-        "y": "number"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "panel-resize",
-      "description": "A floating column's corner was dragged, or moved by the keys.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "height": "number",
-        "width": "number"
-      }
-    },
-    {
-      "$type": "event",
       "name": "data-refresh",
       "description": "Refresh: load the page's data again.",
       "bubbles": true,
@@ -1532,48 +1208,12 @@
     "act-divider.block-size": "{sherpa.display-mode-size-sm}",
     "act-divider.background": "{sherpa.theme-border-default-2}",
     "chips.gap": "{sherpa.display-mode-space-xs}",
-    "actions-zone.gap": "{sherpa.display-mode-space-xs}",
-    "column-heading.gap": "{sherpa.theme-gap-sm}",
-    "column-heading.color": "{sherpa.style-content-base}",
-    "column-heading.font-size": "{sherpa.font-size-body-base}",
-    "column-heading.font-weight": "{sherpa.font-weight-medium}",
-    "column-heading.line-height": "{sherpa.theme-content-line-height-base}",
-    "sections.padding": "{sherpa.display-mode-space-2xs}",
-    "scope-rule.margin": "{sherpa.display-mode-space-base}",
-    "scope-rule.border-block-start": "{sherpa.display-mode-border-width-base}",
-    "local-heading.padding-inline": "{sherpa.theme-padding-lg}"
+    "actions-zone.gap": "{sherpa.display-mode-space-xs}"
   },
   "$extensions": {
     "sherpa": {
       "figmaName": "Filter Toolbar",
       "methods": [
-        {
-          "$type": "method",
-          "name": "drawScopes",
-          "args": "scopes: ScopeDescription[]",
-          "description": "drawScopes(scopes) — a column's scopes, from its source: a portrait toolbar per scope, under the one header. TODO 425"
-        },
-        {
-          "$type": "method",
-          "name": "show",
-          "args": ""
-        },
-        {
-          "$type": "method",
-          "name": "hide",
-          "args": "reason: 'reader' | 'width' | 'page' = 'reader'",
-          "description": "EVERY close reports, and says why."
-        },
-        {
-          "$type": "method",
-          "name": "close",
-          "args": "reason: 'reader' | 'width' | 'page' = 'reader'"
-        },
-        {
-          "$type": "method",
-          "name": "toggle",
-          "args": ""
-        },
         {
           "$type": "method",
           "name": "setChipValues",
@@ -1637,7 +1277,7 @@
         {
           "$type": "method",
           "name": "drawReading",
-          "args": "field: string, reading: FieldReading, scope?: string",
+          "args": "field: string, reading: FieldReading",
           "description": "drawReading(field, reading) — a bound source tells this bar one field's answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when the view lets go."
         },
         {
@@ -1715,11 +1355,6 @@
         "note": "Checked against Figma \"Filter Toolbar\" (150:3688) on 2026-10-16. Figma has two slots, content (chips, divider-separated) and right-actions; the code builds both itself — chips stamped by populate(), the action cluster in its template — and keeps its view and actions slots for a host's extras. Figma's Type=data leads its content with a Switch; the code builds it but hides it unless data-switchable, for legacy reasons (Will, TODO 338), and places it after Group and Sort, which lead the bar. Figma's description names older events; the code's are the contract."
       },
       "jsProps": [
-        {
-          "name": "open",
-          "type": "boolean",
-          "access": "read-write"
-        },
         {
           "name": "active",
           "type": "string[]",

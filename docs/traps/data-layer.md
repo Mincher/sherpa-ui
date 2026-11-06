@@ -5254,7 +5254,7 @@ its own (`savedFilters`), which are never saved over or deleted.
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
-- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
+- Site: `src/components/sherpa-filter-panel/panel-column.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-up-is-open-down-is-closed
@@ -6066,7 +6066,7 @@ it knows, so declaring a part declares its field.
 - Site: `test/unit/chart-scope.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-context.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
+- Site: `src/components/sherpa-filter-panel/panel-column.ts`
 - Site: `src/core/data/source-view.ts`
 - Site: `src/core/data/query-declarations.ts`
 

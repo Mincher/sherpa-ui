@@ -13,11 +13,13 @@ const SETUP = `
   const root = document.getElementById('root');
   root.innerHTML = '';
   const provider = document.createElement('sherpa-provider');
-  // The panel area's column: a portrait toolbar over both scopes.
-  const panel = document.createElement('sherpa-quick-filter-toolbar');
-  panel.setAttribute('data-orientation', 'portrait');
+  // The panel's content: a filter panel over both scopes, in an overlay panel.
+  const shell = document.createElement('sherpa-overlay-panel');
+  shell.setAttribute('data-heading', 'Filters');
+  const panel = document.createElement('sherpa-filter-panel');
   panel.setAttribute('data-scope', 'view data');
-  provider.append(panel);
+  shell.append(panel);
+  provider.append(shell);
   root.append(provider);
   const data = { v: 1, id: 'p', source: { store: 's', fields: { name: { label: 'Name' } } } };
   const none = { v: 1, id: 'q' };

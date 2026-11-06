@@ -1,11 +1,10 @@
 /**
- * toolbar-column.ts — a portrait toolbar over SEVERAL scopes: the panel area's
- * column. Under ONE header — Save, Saved, ⋮ and the search; each scope has its own Filters — the View Context, a rule, then the Local Context: a
- * portrait toolbar per component scope. TODO 425, 435 · TRAP T-the-panel-is-the-bar-in-portrait
+ * panel-column.ts — what the filter panel does: one portrait toolbar per scope, the View a heading, a rule, then the
+ * Local Context; the header's Save, Saved and ⋮, and the panel's search. TODO 425, 435, 847 · TRAP T-the-panel-is-the-bar-in-portrait
  *
  * Map:
- * - ColumnEvent — What a column says: its toolbar's own events.
- * - ColumnHost — What the column asks of its toolbar.
+ * - ColumnEvent — What the filter panel says.
+ * - ColumnHost — What the column asks of its filter panel.
  * - ToolbarColumn — A column's sections and its header.
  * - .wire — Hear the header's controls, once per stamp.
  * - .draw — One portrait toolbar per scope, in order — once it is open.
@@ -22,13 +21,13 @@ import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { SavedSets, type SavedSet } from '../../core/ui/filters-button.js';
 import { askSwitches, extraRows, manageRows, openMore, pickMore, resetRows, type MoreRow } from '../../core/ui/more-menu.js';
-import { ToolbarHeader } from './toolbar-header.js';
+import { ToolbarHeader } from '../sherpa-quick-filter-toolbar/toolbar-header.js';
 
-/** What a column says: its toolbar's own events. */
+/** What the filter panel says. */
 export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-apply' | 'filters-dismiss' | 'filters-manage' | 'ai-filter-request'
   | 'quick-filter-change' | 'view-reset' | 'limit-options-change' | 'hide-unmatched-change';
 
-/** What the column asks of its toolbar. */
+/** What the column asks of its filter panel. */
 export interface ColumnHost {
   /** The toolbar: it says the column's requests, and carries its attributes. */
   readonly el: HTMLElement;

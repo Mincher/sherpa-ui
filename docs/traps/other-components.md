@@ -1731,3 +1731,22 @@ prompt does on input, and the field's own check speaks again on the next blur.
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/e2e/reforged-input-tags.spec.ts`
 - Site: `test/e2e/reforged-node-row-controls.spec.ts`
+
+### T-the-panel-is-the-bar-in-portrait
+
+**A filter panel's section is the filter toolbar in portrait.** The panel's own half (its header, its float, its tab, its close) was deleted from the toolbar at TODO 847: it is `sherpa-filter-panel` in a `sherpa-overlay-panel` now, and the toolbar keeps the strip and the sections the panel is made of (`data-orientation="portrait"`, `data-flat`). `data-panel-mode` stays: the bars' step back while the panel answers.
+
+- Site: `src/components/sherpa-filter-panel/panel-column.ts`
+
+### T-a-shut-column-draws-nothing
+
+**A toolbar column draws its sections only once it is OPEN** — TODO 425. The
+column is the panel area's occupant on every page, shut in toolbars mode. Each
+section is a toolbar that asks the provider for its scope, and drawing one asks
+for data — so a shut column cost a trip back to Records over a slow store
+about 700 ms (Firefox: 270 ms with the classic panel, 990 with the column;
+Demos `reforged-a-reopen-shows-at-once`). Shut, `drawScopes` only keeps the
+scopes; `open` draws them. The classic panel does the same (`#stale`).
+
+- Site: `src/components/sherpa-filter-panel/panel-column.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`

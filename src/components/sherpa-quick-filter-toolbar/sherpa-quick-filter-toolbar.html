@@ -21,28 +21,13 @@
   Public API:
     data-scroll-shadow  an inner shadow on each edge its column is scrolled past (boolean)
     data-flat       portrait: its scope is a HEADING, not an accordion — the column's View (boolean)
-    data-column     portrait: a column, header and all, even over one scope and its parts (boolean)
     data-no-results its chips say no match counts — the app's choice, written by its provider (boolean)
     data-type      data (default) | view
-    data-orientation  landscape (default) | portrait — PORTRAIT is the panel's
-                    column. Over ONE scope, the scope is an accordion — its
-                    name, its matches while shut, its Apply and Discard —
-                    holding Group and Sort, then each list field as a SECTION
-                    of value chips; nothing folds. Over SEVERAL scopes
-                    (`data-scope="view data"`) it is the COLUMN: ONE header —
-                    one Filters menu for every scope, the page's
-                    buttons, ⋮ and the search — over one such accordion per
-                    scope. A column opens and shuts as a panel does. TODO 425
-    open           a column is showing. A host writes it; every close reports
-                    `filter-panel-close`, and says why.
-    data-floatable  a column shows the Float / Dock button in its header (boolean)
-    data-floating   a column lifted out of its panel area: anywhere in the layout the area is in,
-                    moved by its header and resized by its corner; a press brings it to the front.
-                    Removed, it docks back. TRAP T-a-filter-column-floats
-    data-x / data-y   where a column floats, in px from its layout's top left, written at the end
-                    of each move; kept while docked
-    data-width / data-height   how big a column floats, in px, written at the end of each resize.
-                    Never under 20rem by 12rem nor past its layout
+    data-orientation  landscape (default) | portrait — PORTRAIT is a SECTION of the
+                    filter panel: the scope an accordion — its name, its matches
+                    while shut, its Apply and Discard — holding Group and Sort,
+                    then each list field as a SECTION of value chips; nothing
+                    folds. `flat` makes the scope a heading, as the panel's View is.
     data-heading   its scope's name, written by its source: a portrait bar's
                     heading.
     data-fetch-fields  the fields the STORE answers, space-separated: each Apply
@@ -92,7 +77,7 @@
 
   Slots:
     view     — leading view chip (view type)
-    actions  — host extras, placed BEFORE the built-in cluster; a column's, in its header
+    actions  — host extras, placed BEFORE the built-in cluster
 
   Fires:
     quick-filter-change  — one reader act, as a request: a field's answer, an on or off, the Switch, Clear all. detail: { scope, request?, active, values }
@@ -111,10 +96,6 @@
     filters-manage       — Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. detail: { }
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
-    filter-panel-close   — a column shut, and why: the reader, the width or the page. detail: { reason }
-    panel-float          — a column's Float or Dock was pressed. detail: { floating }
-    panel-move           — a floating column's header was dragged, or its grip moved by the keys. detail: { x, y }
-    panel-resize         — a floating column's corner was dragged, or moved by the keys. detail: { width, height }
     data-refresh         — Refresh: load the page's data again. detail: {}
     ai-filter-request    — Suggest filters was pressed. detail: {}
     node-editor-open     — Open in Node Editor was picked in the ⋮ menu: an outlet opens the page's Query in its `query` graph View. detail: {}
@@ -257,64 +238,4 @@
     <div class="organise-zone" part="organise" data-section="Organise"></div>
     <div class="chips" part="chips"><div class="preset-zone" part="presets"></div></div>
   </div>
-</template>
-
-<!-- COLUMN — portrait over SEVERAL scopes: the panel area's. ONE header — Save
-     <name>, the Filters menu for every scope, the page's buttons, ⋮, and the
-     one search above every scope — over the View Context, a rule, then the
-     Local Context: a portrait toolbar per component scope. TODO 425 · Will, TODO 435 -->
-<template id="column">
-  <!-- The box that floats; docked, it fills its panel area flush. TRAP T-a-filter-column-floats -->
-  <div class="box sherpa-float" part="box">
-  <sherpa-container class="column" part="column" data-padding="none" data-when-data-scroll-shadow="data-scroll-shadow"
-                    data-when-data-elevation="data-floating: lg">
-    <sherpa-container-header slot="header" class="head sherpa-float-bar" part="head" data-icon="filter" data-heading="Filters">
-      <!-- Floating, the header bar moves it, and this shows where to take hold: on hover, and for the keys. It leads the
-           header, as every panel's does: no room while hidden, and the header's content steps right when it shows. -->
-      <span slot="lead" class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
-            tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
-      <!-- Its title, and the filters applied beside it, where the app counts them. Will, TODO 436 -->
-      <span slot="heading" class="column-heading" part="heading">Filters<template class="applied-count-tpl"><sherpa-badge class="applied-count" role="img"></sherpa-badge></template></span>
-      <sherpa-button slot="actions" class="column-suggest suggest" part="suggest" data-size="sm" data-type="icon"
-                     data-icon-start="wand-magic-sparkles" aria-label="Suggest filters"></sherpa-button>
-      <span slot="actions" class="saved-group" part="saved-group">
-        <sherpa-button class="column-save-as" data-size="sm"
-                       data-group="start" data-icon-start="filter">Save</sherpa-button>
-        <sherpa-button class="column-saved" part="saved" data-size="sm" data-type="icon"
-                       data-group="solo" data-icon-start="filter"
-                       data-when-data-group="data-saveable: end" data-when-data-icon-start="data-saveable: triangle-down"
-                       data-description="Use, save and manage your saved filters."
-                       aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
-      </span>
-      <!-- The panel's own float first, then the page's buttons (Show as toolbar), then ⋮. Will, 11-06 -->
-      <!-- Float: lifted out of its area, anywhere in the shell's body; Dock puts it back. 787b -->
-      <sherpa-button slot="actions" class="column-float" part="float" data-type="icon" data-size="sm"
-                     data-icon-start="browser" aria-label="Float"
-                     data-when-data-icon-start="data-floating: sidebar-flip"
-                     data-when-aria-label="data-floating: Dock"></sherpa-button>
-      <slot name="actions" slot="actions" data-accepts="control"></slot>
-      <sherpa-button slot="actions" class="column-more" part="more" data-type="icon" data-size="sm"
-                     data-icon-start="ellipses-vertical"
-                     data-description="Reset, save and refresh these filters."
-                     aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
-      <sherpa-input-text slot="metadata" class="find" part="find"
-                         data-icon-start="magnifying-glass" data-clearable
-                         placeholder="Search filters" autocomplete="off"
-                         aria-label="Search every filter"></sherpa-input-text>
-    </sherpa-container-header>
-    <div class="sections" part="sections">
-      <div class="view-scope" part="view-scope"></div>
-      <hr class="scope-rule" part="scope-rule" />
-      <sherpa-section-header class="local-heading" part="local-heading" data-heading="Local Context"
-                             data-size="sm" data-divider="none"></sherpa-section-header>
-      <div class="local-scopes" part="local-scopes"></div>
-    </div>
-  </sherpa-container>
-  <!-- Floating, the bottom-right corner resizes it: drag it, or the arrow keys on it. -->
-  <div class="corner sherpa-float-corner" part="corner" role="button" tabindex="0" aria-label="Resize panel"
-       title="Drag to resize, or use the arrow keys"></div>
-  </div>
-
-  <!-- One scope's toolbar, in portrait. -->
-  <template class="section-tpl"><sherpa-quick-filter-toolbar data-orientation="portrait"></sherpa-quick-filter-toolbar></template>
 </template>

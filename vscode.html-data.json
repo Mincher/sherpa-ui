@@ -3428,11 +3428,6 @@
           "name": "data-bounds"
         },
         {
-          "name": "data-column",
-          "description": "portrait: a column, header and all, even over one scope and its parts",
-          "valueSet": "v"
-        },
-        {
           "name": "data-count-applied",
           "description": "It follows the app's `countApplied` setting.",
           "valueSet": "v"
@@ -3470,16 +3465,6 @@
           "valueSet": "v"
         },
         {
-          "name": "data-floatable",
-          "description": "a column shows the Float / Dock button in its header",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-floating",
-          "description": "a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats",
-          "valueSet": "v"
-        },
-        {
           "name": "data-graph-unchanged",
           "description": "the graph is as it was when the editor loaded: \"Reset node graph\" is inactive. Written by the editor",
           "valueSet": "v"
@@ -3491,10 +3476,6 @@
         {
           "name": "data-heading",
           "description": "its scope's name, written by its source: a portrait bar's heading."
-        },
-        {
-          "name": "data-height",
-          "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
         },
         {
           "name": "data-hide-unmatched",
@@ -3581,7 +3562,7 @@
         },
         {
           "name": "data-orientation",
-          "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425",
+          "description": "landscape | portrait — PORTRAIT is a SECTION of the filter panel: the scope an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. `flat` makes the scope a heading, as the panel's View is.",
           "values": [
             {
               "name": "landscape"
@@ -3690,15 +3671,7 @@
           "valueSet": "v"
         },
         {
-          "name": "data-width",
-          "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
-        },
-        {
           "name": "data-x",
-          "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
-        },
-        {
-          "name": "data-y",
           "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
         },
         {

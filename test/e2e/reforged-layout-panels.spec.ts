@@ -23,7 +23,7 @@ async function shell(page: Page): Promise<void> {
     const root = document.getElementById('root')!;
     root.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
       + '<div slot="header" style="block-size: 40px">H</div>'
-      + '<sherpa-quick-filter-toolbar slot="panel-start" id="col" data-orientation="portrait" data-column data-floatable open data-scope="view data"></sherpa-quick-filter-toolbar>'
+      + '<sherpa-overlay-panel slot="panel-start" id="col" data-heading="Filters" data-fixed="start" data-floatable open><p>Filters</p></sherpa-overlay-panel>'
       + '<div><div class="page" style="padding: 16px">Context</div></div></sherpa-app-shell>'
       + '<sherpa-overlay-panel id="ask" data-heading="Assistant" data-fixed data-floatable data-poppable data-dismissible><p>Hi</p></sherpa-overlay-panel>';
     await window.__settled();
@@ -83,7 +83,7 @@ async function drag(page: Page, from: [number, number], by: [number, number]): P
 test('docked, a panel is FLUSH to its area\'s top, side and bottom, with no shadow: the area draws the divider', async ({ page }) => {
   await shell(page);
   const [body, start, end] = [await box(page, 'shell .body'), await box(page, 'layout .area-start'), await box(page, 'layout .area-end')];
-  const [column, ask] = [await box(page, 'col .box'), await box(page, 'ask .root')];
+  const [column, ask] = [await box(page, 'col .root'), await box(page, 'ask .root')];
   // Flush: the column fills the start area, the Assistant the end, each top to bottom.
   expect(column).toEqual(start);
   expect(ask).toEqual(end);
@@ -91,7 +91,7 @@ test('docked, a panel is FLUSH to its area\'s top, side and bottom, with no shad
   expect([end.x + end.w, end.y, end.h]).toEqual([body.x + body.w, body.y, body.h]);
   // Flat: no shadow, no rounding, no edge of their own.
   const look = await page.evaluate(() => ['col', 'ask'].map((id) => {
-    const el = document.getElementById(id)!.shadowRoot!.querySelector(id === 'col' ? '.column' : '.root')!;
+    const el = document.getElementById(id)!.shadowRoot!.querySelector('.root')!;
     const s = getComputedStyle(el);
     return [s.boxShadow, s.borderTopLeftRadius, s.borderTopWidth];
   }));
@@ -119,7 +119,7 @@ test('the content reflows beside its panels, and takes the width back when one s
   await settle(page);
   expect(await frame()).toMatchObject({ x: start.x + start.w, w: body.x + body.w - (start.x + start.w) });
   // Floating, the column does too: its area takes no width.
-  await press(page, 'col', '.column-float');
+  await press(page, 'col', '.float');
   expect(await frame()).toMatchObject({ x: body.x, w: body.w });
 });
 
@@ -128,7 +128,7 @@ test('a panel opened LATE shows its area, shut it gives it back; a card hidden b
   await page.evaluate(async () => {
     document.getElementById('root')!.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
       + '<div slot="header" style="block-size: 40px">H</div>'
-      + '<sherpa-quick-filter-toolbar slot="panel-start" id="col" data-orientation="portrait" data-column data-scope="view data"></sherpa-quick-filter-toolbar>'
+      + '<sherpa-overlay-panel slot="panel-start" id="col" data-heading="Filters" data-fixed="start" data-floatable><p>Filters</p></sherpa-overlay-panel>'
       + '<div slot="panel-end" id="side" style="display: none">Side</div><div>C</div></sherpa-app-shell>';
     await window.__settled();
     const shut = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-start')!.getBoundingClientRect().width;
@@ -138,7 +138,7 @@ test('a panel opened LATE shows its area, shut it gives it back; a card hidden b
     return shut;
   }).then((shut) => expect(shut).toBe(0));
   await settle(page);
-  expect(await box(page, 'col .box')).toEqual(await box(page, 'layout .area-start'));
+  expect(await box(page, 'col .root')).toEqual(await box(page, 'layout .area-start'));
   expect((await box(page, 'layout .area-start')).w).toBe(464);
   await page.evaluate(() => document.getElementById('col')!.removeAttribute('open'));
   await settle(page);
@@ -160,7 +160,7 @@ test('an area resizes by its edge, by a real drag and by the keys; the shell rep
   const wider = await area();
   expect(wider.w).toBe(before.w + 60);
   // The column is still flush in it.
-  expect(await box(page, 'col .box')).toEqual(wider);
+  expect(await box(page, 'col .root')).toEqual(wider);
   // The keys, from the edge, as a reader with no pointer does it.
   await page.evaluate(() => (document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.edge-start') as HTMLElement).focus());
   await page.keyboard.press('ArrowLeft');
@@ -178,28 +178,11 @@ test('an area resizes by its edge, by a real drag and by the keys; the shell rep
   ]);
 });
 
-test('a panel floats out of its area and docks back into the SAME one: the column, and a panel fixed at the start', async ({ page }) => {
+test('a panel floats out of its area and docks back into the SAME one: a panel fixed at the start', async ({ page }) => {
   await shell(page);
-  const start = await box(page, 'layout .area-start');
-  // The column: lifted in place, 16px in; the area gives its width back; Dock, it is flush again.
-  await press(page, 'col', '.column-float');
-  expect(await box(page, 'col .box')).toEqual({ x: start.x + 16, y: start.y + 16, w: start.w - 32, h: start.h - 32 });
-  // Its area is its ROOM now, the whole body, and the content starts at the body's edge.
-  const body = await box(page, 'shell .body');
-  expect(await box(page, 'layout .area-start')).toEqual(body);
-  expect((await box(page, 'shell .context-edges')).x).toBe(body.x);
-  expect(await page.evaluate(() => document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.matches(':state(start-floating)'))).toBe(true);
-  // Its header moves it inside its room, the shell's body: shorter first, so it has room to go down.
-  await page.evaluate(() => document.getElementById('col')!.setAttribute('data-height', '400'));
-  await settle(page);
-  const head = await box(page, 'col .head');
-  await drag(page, [head.x + 110, head.y + head.h / 2], [300, 40]);
-  expect(await box(page, 'col .box')).toMatchObject({ x: start.x + 316, y: start.y + 56 });
-  await press(page, 'col', '.column-float');
-  expect(await box(page, 'col .box')).toEqual(start);
-
-  // A panel fixed in the START area: Pop takes it out, Float lifts it, and both put it back there.
+  // (The filter column's own Float is the overlay panel's now: reforged-overlay-panel-float and the Demos float spec read it.)
   await page.evaluate(() => document.getElementById('col')!.remove());
+  // A panel fixed in the START area: Pop takes it out, Float lifts it, and both put it back there.
   await page.evaluate(() => document.getElementById('ask')!.setAttribute('data-fixed', 'start'));
   await settle(page);
   const inStart = await box(page, 'layout .area-start');

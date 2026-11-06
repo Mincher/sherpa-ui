@@ -88,11 +88,13 @@ test('in the panel, a section\'s ⋮ offers Solo, and its chip shows the Solo st
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.settings.set('allowSolo', true);
-    const column = document.createElement('sherpa-quick-filter-toolbar');
-    column.setAttribute('data-orientation', 'portrait');
+    const columnShell = document.createElement('sherpa-overlay-panel');
+    columnShell.setAttribute('data-heading', 'Filters');
+    columnShell.setAttribute('open', '');
+    const column = document.createElement('sherpa-filter-panel');
     column.setAttribute('data-scope', 'view data');
-    column.setAttribute('open', '');
-    provider.append(column);
+    columnShell.append(column);
+    provider.append(columnShell);
     await settle();
     await new Promise((r) => setTimeout(r, 300));
     await settle();

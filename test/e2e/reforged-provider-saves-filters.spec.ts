@@ -24,9 +24,10 @@ const SETUP = `
   const provider = document.createElement('sherpa-provider');
   provider.settings.set('saveAnyScope', true);
   provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>'
-    + '<sherpa-quick-filter-toolbar data-orientation="portrait" data-scope="view data" data-saveable open></sherpa-quick-filter-toolbar>';
+    + '<sherpa-overlay-panel open data-heading="Filters"><sherpa-filter-panel data-scope="view data" data-saveable></sherpa-filter-panel></sherpa-overlay-panel>';
   root.replaceChildren(provider);
-  const [bar, column] = provider.querySelectorAll('sherpa-quick-filter-toolbar');
+  const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+  const column = provider.querySelector('sherpa-filter-panel');
   const rows = [
     { id: 1, plan: 'Pro', tier: 'gold' }, { id: 2, plan: 'Free', tier: 'gold' }, { id: 3, plan: 'Pro', tier: 'silver' },
   ];
@@ -324,9 +325,10 @@ test('Save filters at any scope OFF: a set is the asking bar\'s scope alone, lis
     const provider = document.createElement('sherpa-provider');
     provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="view" data-saveable></sherpa-quick-filter-toolbar>'
       + '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>'
-      + '<sherpa-quick-filter-toolbar data-orientation="portrait" data-scope="view data" data-saveable open></sherpa-quick-filter-toolbar>';
+      + '<sherpa-overlay-panel open data-heading="Filters"><sherpa-filter-panel data-scope="view data" data-saveable></sherpa-filter-panel></sherpa-overlay-panel>';
     document.getElementById('root').replaceChildren(provider);
-    const [viewBar, dataBar, column] = provider.querySelectorAll('sherpa-quick-filter-toolbar');
+    const [viewBar, dataBar] = provider.querySelectorAll('sherpa-quick-filter-toolbar');
+    const column = provider.querySelector('sherpa-filter-panel');
     const rows = [{ id: 1, plan: 'Pro', tier: 'gold' }, { id: 2, plan: 'Free', tier: 'gold' }, { id: 3, plan: 'Pro', tier: 'silver' }];
     const source = await provider.open(${PAGE}, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
     const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };

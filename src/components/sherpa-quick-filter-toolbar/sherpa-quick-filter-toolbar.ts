@@ -36,9 +36,7 @@ import type { DataAsk, Take } from '../../core/ui/context.js';
 import type { Settings } from '../../core/data/settings.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { dragToOrder } from '../../core/ui/drag-order.js';
-import { FLOAT_ATTRS, FloatBox, roomOf } from '../../core/ui/float-box.js';
 import { ToolbarHeader } from './toolbar-header.js';
-import { ToolbarColumn } from './toolbar-column.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -74,8 +72,7 @@ export type { OrganiseColumn } from '../../core/data/data-source.js';
 export type { SortDirection } from '../../core/data/store.js';
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
-  // The floating box's sheet: a column floats as the node panel does. TRAP T-a-filter-column-floats
-  static override css = [new URL('../../core/sherpa-float.css', import.meta.url), new URL('./sherpa-quick-filter-toolbar.css', import.meta.url)];
+  static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
   static override html = [
     FILTER_MENU_HTML, new URL('./toolbar-rows.html', import.meta.url),
     new URL('./sherpa-quick-filter-toolbar.html', import.meta.url),
@@ -106,15 +103,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-orientation': { type: 'enum', kind: 'template', values: ['landscape', 'portrait'] },
     // Portrait: its scope a HEADING, not an accordion — the column's View Context. Will, TODO 435
     'data-flat': { type: 'boolean', kind: 'template' },
-    // Portrait: a COLUMN, header and all, even over ONE scope and its parts. Will, TODO 436
-    'data-column': { type: 'boolean', kind: 'template' },
-    // A column floats out of its panel area, by its header. Will, TODO 787b. TRAP T-a-filter-column-floats
-    'data-floatable': { type: 'boolean', kind: 'style' },
-    'data-floating': { type: 'boolean', kind: 'behaviour' },
-    'data-x': { type: 'number', kind: 'behaviour' },
-    'data-y': { type: 'number', kind: 'behaviour' },
-    'data-width': { type: 'number', kind: 'behaviour' },
-    'data-height': { type: 'number', kind: 'behaviour' },
     // Its chips say no match counts: the app's choice, its provider's to write. Will, TODO 436
     'data-no-results': { type: 'boolean', kind: 'behaviour' },
     // How many filters are APPLIED in what it answers, as its provider counts them. TODO 436
@@ -202,103 +190,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
   } as const;
 
-  static override variantAttrs = ['data-orientation', 'data-scope', 'data-flat', 'data-column'];
+  static override variantAttrs = ['data-orientation', 'data-scope', 'data-flat'];
 
   static override observed = [
     'open', 'data-bounds', 'data-applied', 'data-limit-options', 'data-hide-unmatched', 'data-type',
     'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-apply-on', 'data-pending',
-    'data-failed', 'data-x', 'data-y', 'data-width', 'data-height',
+    'data-failed',
   ];
 
-  /** Portrait over one scope, an accordion — or flat; over several, the column. TODO 425, 435 */
+  /** Portrait over one scope, an accordion — or flat: a section of the filter panel. TODO 425, 435 */
   protected override get templateId(): string {
     if (this.dataset['orientation'] !== 'portrait') return 'default';
-    if (this.hasAttribute('data-column') || (this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1) return 'column';
     return this.hasAttribute('data-flat') ? 'flat' : 'portrait';
-  }
-
-  /** The column it is, over several scopes. */
-  readonly #column = new ToolbarColumn({
-    el: this,
-    root: () => this.root,
-    clone: (selector) => this.clone(selector),
-    emit: (name, detail, options) => { this.emit(name, detail, options); },
-    toggleState: (name, on) => this.toggleState(name, on),
-  });
-  /** Stamped as a column. */
-  #columned = false;
-
-  /** A column, floating in its area's layout: moved by its header, resized by its corner. 787b */
-  readonly #floatBox: FloatBox = new FloatBox({
-    el: this,
-    box: () => this.$<HTMLElement>('.box'),
-    room: () => roomOf(this),
-    free: () => this.#columned && this.hasAttribute('data-floating'),
-    set: (attr, value) => this.set(attr, value),
-    num: (attr) => this.num(attr, NaN),
-    toggleState: (name, on) => this.toggleState(name, on),
-    moved: (at) => this.emit('panel-move', at),
-    sized: (size) => this.emit('panel-resize', size),
-  });
-
-  /** A column's Float: its box wired, drawn, and in the stack while it floats. */
-  #wireFloat(): void {
-    this.$('.column-float')?.addEventListener('button-click', () => {
-      const floating = !this.hasAttribute('data-floating');
-      this.set('data-floating', floating);
-      this.emit('panel-float', { floating });
-    });
-    this.#floatBox.wire(this.$('.head'), this.$('.grip'), this.$('.corner'));
-    this.#floatBox.draw();
-    this.toggleState('floating', this.hasAttribute('data-floating'));
-    this.#floatBox.floated(this.hasAttribute('data-floating'));
-  }
-
-  /** Float, lifted 16px in from where it docks the first time; or dock back. To the front as it floats. */
-  #float(): void {
-    const floating = this.hasAttribute('data-floating');
-    const box = this.$<HTMLElement>('.box');
-    if (floating && box && !this.hasState('floating')) {
-      const inset = parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-layout-grid-padding')) || 16;
-      this.#floatBox.lift(box.getBoundingClientRect(), inset);
-    }
-    this.toggleState('floating', floating);
-    this.#floatBox.floated(floating);
-  }
-
-  /** drawScopes(scopes) — a column's scopes, from its source: a portrait
-   *  toolbar per scope, under the one header. TODO 425 */
-  drawScopes(scopes: ScopeDescription[]): void {
-    this.#column.draw(scopes);
-  }
-
-  /** A column is showing. */
-  get open(): boolean {
-    return this.hasAttribute('open');
-  }
-  set open(value: boolean) {
-    if (value) this.show();
-    else this.hide();
-  }
-
-  show(): void {
-    this.toggleAttribute('open', true);
-  }
-
-  /** EVERY close reports, and says why. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
-  hide(reason: 'reader' | 'width' | 'page' = 'reader'): void {
-    if (!this.hasAttribute('open')) return;
-    this.removeAttribute('open');
-    this.emit('filter-panel-close', { reason });
-  }
-
-  close(reason: 'reader' | 'width' | 'page' = 'reader'): void {
-    this.hide(reason);
-  }
-
-  toggle(): void {
-    if (this.hasAttribute('open')) this.hide();
-    else this.show();
   }
 
   /** The filter defs this bar holds, in order. */
@@ -641,14 +544,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   override onRender(): void {
-    /* A COLUMN hears only its header: its sections are toolbars of their own,
-       whose events stop at this host. TODO 425 */
-    this.#columned = this.templateId === 'column';
-    this.toggleState('column', this.#columned);
-    if (this.#columned) {
-      this.#wireFloat();
-      return this.#column.wire();
-    }
     // Left and Right move between the bar's controls. TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
     const bar = this.$('.bar');
     if (bar) toolbarKeys(bar);
@@ -1053,7 +948,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * not limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
-    if (this.#columned) return;
     this.#filter.drawPresent(present);
     // The Add list is drawn again only when a field's being spent moved.
     if (this.#spentKey() !== this.#spentFor) this.#renderAvailable();
@@ -1097,7 +991,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-saved-filters-are-every-scope
    */
   set savedSets(sets: readonly SavedSet[]) {
-    this.#column.saved(sets);
     this.#saved.set(sets);
     this.#renderAvailable();
   }
@@ -1139,9 +1032,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * the reader's own picks for when the view lets go.
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
-  drawReading(field: string, reading: FieldReading, scope?: string): void {
-    // A column's sections are told their own; a chart's, through it. TODO 425, 426
-    if (this.#columned) return void (scope && this.#column.drawReading(field, reading, scope));
+  drawReading(field: string, reading: FieldReading): void {
     if (this.#filter.heldAbove(field)) return;
     this.#filter.drawReading(field, reading);
   }
@@ -1906,18 +1797,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (let n = this.parentElement ?? (this.getRootNode() as ShadowRoot).host; n && scope === null; n = n.parentElement ?? (n.getRootNode() as ShadowRoot).host) {
       scope = n.getAttribute('data-scope');
     }
-    const column = this.hasAttribute('data-column') || (this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1;
-    this.toggleAttribute('data-no-saves', settings.get('saveAnyScope') !== true && (column || scope === VIEW));
+    this.toggleAttribute('data-no-saves', settings.get('saveAnyScope') !== true && scope === VIEW);
   }
   /** The app's settings, as last told. */
   #settingsTold: Settings | undefined;
 
   override onChange(name?: string): void {
-    if ((name === 'data-scope' || name === 'data-column') && this.#settingsTold) this.onSettings(this.#settingsTold);
+    if (name === 'data-scope' && this.#settingsTold) this.onSettings(this.#settingsTold);
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameSection(chip);
     // The saves are off while the filters are the View's own. Will, TODO 382
     if (name === 'data-at-default') {
-      if (this.#columned) this.#column.saved(this.#saved.all);
       this.#header.drawSave();
       this.#header.drawSaved();
     }
@@ -1927,10 +1816,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#syncResults();
       this.#filter.countAll();
     }
-    // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
-    if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
-    if (name === 'data-floating' && this.#columned) this.#float();
-    else if (name && FLOAT_ATTRS.includes(name) && this.#columned) this.#floatBox.draw();
     if (name === 'data-label-column') this.#syncLayout();
     if (name === 'data-fixed-primary') this.$('.organise-chip[data-id="primary"]')?.toggleAttribute('disabled', this.hasAttribute(name));
     if (name === 'data-move-filters' || name === 'data-allow-solo' || name === 'data-solo-header') this.#redoMoves();
@@ -1965,8 +1850,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncArrangement();
     // Saving on or off — its own, or its provider keeping it off: every save row follows. TODO 485, 518
     if (name === 'data-saveable' || name === 'data-no-saves') {
-      if (this.#columned) this.#column.saved(this.#saved.all);
-      else this.#renderAvailable();
+      this.#renderAvailable();
       this.#header.drawSave();
       this.#header.drawSaved();
     }
@@ -2586,8 +2470,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A ⋮ with no row to show is not shown, on the bar or its column. Will, TODO 566 */
   #syncMore(): void {
     if (!this.hasRendered) return;
-    const portrait = this.dataset['orientation'] === 'portrait';
-    this.toggleState('no-more', !offersMore(this, portrait ? this.#column.moreRows() : this.#moreRows()));
+    this.toggleState('no-more', !offersMore(this, this.#moreRows()));
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

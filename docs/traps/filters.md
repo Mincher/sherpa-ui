@@ -2285,30 +2285,6 @@ under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 ---
 - Site: `src/core/ui/filter-def.ts`
 
-### T-a-filter-column-floats
-
-**The filter column floats out of its panel area, as the Nodes card floats in
-its canvas, by the same code** — Will, TODO 787b. A column (`data-column`, or
-several scopes) with `data-floatable` shows Float / Dock last in its header;
-`data-floating`, `data-x`, `data-y`, `data-width` and `data-height` are the box,
-as the overlay panel's and the node panel's, and it reports `panel-float`,
-`panel-move` and `panel-resize`. Its `.box` wraps the column's container and the
-corner, so the corner never scrolls with the body; the grip is first in the
-header. `float-box.ts` draws, lifts (16px in) and moves it, and
-`sherpa-float.css` is listed first in the toolbar's sheets
-(`T-a-floating-panel-is-a-state`).
-
-It stays slotted in the shell's start area, which takes no width while it floats
-and is its room: the shell's body (`T-a-panel-area-is-a-layout`). So the Context
-reflows to the full body, and the provider's open and shut and the room rule work
-on it unchanged. Docked, it is flush and flat: no edge, no rounding, no shadow,
-and the area draws the divider. It joins the tab's one stack
-(`T-a-pressed-panel-comes-to-the-front`), with boxes in the shell's content only.
-
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
-
 ### T-the-view-chip-stays-on-the-header
 
 One chip is never drawn in the filter panel: `view`. It is not a filter at
@@ -2485,59 +2461,6 @@ leaves it untouched; an empty list clears it — see
 T-everything-on-is-no-filter.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-
-### T-the-panel-is-the-bar-in-portrait
-
-Will, TODO 425: *"The elements are the same across both so they should really
-just be 2 presentations of the same component … a flip between landscape and
-portrait mode (still consolidating all toolbars and moving the content to the
-panel area for panel mode)."*
-
-So the filter toolbar has an ORIENTATION, and panel mode is the toolbar too.
-Will: *"Both modes are variants of the filter toolbar component"* — the old
-`sherpa-filter-panel` (old) was legacy, and TODO 476 deleted it.
-
-`data-orientation="portrait"` over ONE scope stamps the `portrait` template:
-the scope is an accordion, as a panel's scope is — its name and icon, a badge of
-its matches while shut, Apply and Discard on its header row — holding the
-Switch, Group and Sort, then each field. A LIST field's chip is a SECTION
-(`data-layout="section"`): its toggle part the heading, and a VALUE chip per
-menu row whose press picks that row through the menu (`values`, `apply()`) —
-so the field chip stays the one owner, and none, waits, pending (only what
-changed) and Limit hold in portrait as in landscape. A tiered value chip
-carries its own Sites menu; the field chip catches its change in CAPTURE.
-
-Over SEVERAL scopes (`data-scope="view data"`) it stamps the `column`
-template: ONE header — Save <name>, one Filters menu for every scope, the
-page's buttons, ⋮, the search above every scope — over the View Context, a
-rule, then the Local Context: a portrait toolbar per component scope
-(`toolbar-column.ts`; Will, TODO 435). The View's is no accordion: `data-flat`
-stamps the `flat` template, a section header with Apply and Discard over its
-fields. The templates every variant clones — a chip, Group and Sort, Move, a
-section's ⋮, the words — are one family file, `toolbar-rows.html`, so a
-variant costs only its own markup. It asks for its scopes and is drawn
-(`drawScopes`), opens and shuts, as a panel does. The provider tells a column
-from a bar by what it ASKED — several scopes — not by the methods it has
-(`isColumn`), since a toolbar has both `drawScope` and `drawScopes`. A column
-hears only its header: its sections' events stop at its host. A section asks
-for its own scope; one made once the page's bars are drawn is drawn as they
-were (`joined`); it never steps back for panel mode and gets no mode button.
-
-- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
-
-### T-a-shut-column-draws-nothing
-
-**A toolbar column draws its sections only once it is OPEN** — TODO 425. The
-column is the panel area's occupant on every page, shut in toolbars mode. Each
-section is a toolbar that asks the provider for its scope, and drawing one asks
-for data — so a shut column cost a trip back to Records over a slow store
-about 700 ms (Firefox: 270 ms with the classic panel, 990 with the column;
-Demos `reforged-a-reopen-shows-at-once`). Shut, `drawScopes` only keeps the
-scopes; `open` draws them. The classic panel does the same (`#stale`).
-
-- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-saved-filters-are-the-last-section
 

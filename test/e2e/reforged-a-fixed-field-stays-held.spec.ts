@@ -138,11 +138,13 @@ test('no door does what the chips do not offer: the bar\'s and the Query\'s refu
 test('in the panel\'s column: each stays a section, a fixed one\'s ⋮ has no Remove, and no divider is drawn', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    const column = document.createElement('sherpa-quick-filter-toolbar');
-    column.setAttribute('data-orientation', 'portrait');
+    const columnShell = document.createElement('sherpa-overlay-panel');
+    columnShell.setAttribute('data-heading', 'Filters');
+    columnShell.setAttribute('open', '');
+    const column = document.createElement('sherpa-filter-panel');
     column.setAttribute('data-scope', 'view data');
-    column.setAttribute('open', '');
-    provider.append(column);
+    columnShell.append(column);
+    provider.append(columnShell);
     await settle();
     await new Promise((r) => setTimeout(r, 300));
     await settle();

@@ -12,7 +12,7 @@ import { FILTER_MENU_HTML } from '../../core/ui/filter-menu.js';
 import type { Settings } from '../../core/data/settings.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import { drawCount } from '../../core/ui/filter-host.js';
-import { ToolbarColumn } from '../sherpa-quick-filter-toolbar/toolbar-column.js';
+import { ToolbarColumn } from './panel-column.js';
 import '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 import '../sherpa-badge/sherpa-badge.js';
 import '../sherpa-group/sherpa-group.js';
@@ -92,7 +92,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'open' && this.hasAttribute('open')) this.#column.opened();
-    if (name === 'data-at-default') this.#column.drawSave();
+    // The saves are off while the filters are the View's own. Will, TODO 382
+    if (name === 'data-at-default' || name === 'data-saveable' || name === 'data-no-saves') this.#column.saved(this.#column.sets);
     if (!name || ['data-saveable', 'data-no-saves', 'data-suggest', 'data-applied', 'data-count-applied'].includes(name)) this.#syncHeader();
   }
 
@@ -149,8 +150,10 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   show(): void {
-    this.#panel?.show();
-    this.#syncOpen();
+    const panel = this.#panel;
+    panel?.show();
+    // Asked to open before its panel has drawn: it is open as it is asked.
+    if (panel) this.setAttribute('open', '');
   }
 
   /** EVERY close reports, and says why: the panel's `panel-close`. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */

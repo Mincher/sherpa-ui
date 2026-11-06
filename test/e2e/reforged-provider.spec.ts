@@ -103,10 +103,13 @@ test('mode buttons wait for the provider to draw; nothing throws', async ({ page
     const provider = document.createElement('sherpa-provider');
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.setAttribute('data-scope', 'data');
-    const panel = document.createElement('sherpa-quick-filter-toolbar');
-    panel.setAttribute('data-orientation', 'portrait');
+    const panelShell = document.createElement('sherpa-overlay-panel');
+    panelShell.setAttribute('data-heading', 'Filters');
+    panelShell.setAttribute('open', '');
+    const panel = document.createElement('sherpa-filter-panel');
     panel.setAttribute('data-scope', 'view data');
-    provider.append(bar, panel);
+    panelShell.append(panel);
+    provider.append(bar, panelShell);
     root.append(provider);
     // At once: nothing has drawn yet.
     provider.settings.set('filterMode', 'toolbars');
@@ -114,7 +117,7 @@ test('mode buttons wait for the provider to draw; nothing throws', async ({ page
     src.query.offer('data', ['name']);
     await provider.provide({ sources: { s: src } });
     await settle();
-    return { bar: !!bar.querySelector('[data-filter-mode]'), panel: !!panel.querySelector('[data-filter-mode]'), reports };
+    return { bar: !!bar.querySelector('[data-filter-mode]'), panel: !!panelShell.querySelector('[data-filter-mode]'), reports };
   })()`) as Record<string, unknown>;
   expect(r).toEqual({ bar: true, panel: true, reports: [] });
   expect(errors).toEqual([]);
@@ -378,10 +381,13 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     const provider = document.createElement('sherpa-provider');
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.setAttribute('data-scope', 'data');
-    const panel = document.createElement('sherpa-quick-filter-toolbar');
-    panel.setAttribute('data-orientation', 'portrait');
+    const panelShell = document.createElement('sherpa-overlay-panel');
+    panelShell.setAttribute('data-heading', 'Filters');
+    panelShell.setAttribute('open', '');
+    const panel = document.createElement('sherpa-filter-panel');
     panel.setAttribute('data-scope', 'view data');
-    provider.append(bar, panel);
+    panelShell.append(panel);
+    provider.append(bar, panelShell);
     root.append(provider);
     const heard = [];
     provider.addEventListener('setting-change', (e) => { if (e.detail.key === 'filterMode') heard.push(e.detail.value); });
@@ -430,16 +436,19 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     await settle();
     const toggle = (el) => el.querySelector('[data-filter-mode]');
     const alone = !!toggle(bar);
-    const panel = document.createElement('sherpa-quick-filter-toolbar');
-    panel.setAttribute('data-orientation', 'portrait');
+    const panelShell = document.createElement('sherpa-overlay-panel');
+    panelShell.setAttribute('data-heading', 'Filters');
+    panelShell.setAttribute('open', '');
+    const panel = document.createElement('sherpa-filter-panel');
     panel.setAttribute('data-scope', 'view data');
-    provider.append(panel);
+    panelShell.append(panel);
+    provider.append(panelShell);
     await settle();
     const withPanel = { bar: toggle(bar)?.getAttribute('aria-label'), slot: toggle(bar)?.slot };
     toggle(bar).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
-    const inPanel = { bar: !!toggle(bar), panel: toggle(panel)?.getAttribute('aria-label'), mode: provider.settings.get('filterMode') };
-    toggle(panel).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+    const inPanel = { bar: !!toggle(bar), panel: toggle(panelShell)?.getAttribute('aria-label'), mode: provider.settings.get('filterMode') };
+    toggle(panelShell).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
     return { alone, withPanel, inPanel, back: { bar: !!toggle(bar), mode: provider.settings.get('filterMode') }, reports };
   })()`) as Record<string, unknown>;
@@ -457,10 +466,13 @@ test('a page with no data shuts the panel without changing the mode; the next pa
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const provider = document.createElement('sherpa-provider');
-    const panel = document.createElement('sherpa-quick-filter-toolbar');
-    panel.setAttribute('data-orientation', 'portrait');
+    const panelShell = document.createElement('sherpa-overlay-panel');
+    panelShell.setAttribute('data-heading', 'Filters');
+    panelShell.setAttribute('open', '');
+    const panel = document.createElement('sherpa-filter-panel');
     panel.setAttribute('data-scope', 'view data');
-    provider.append(panel);
+    panelShell.append(panel);
+    provider.append(panelShell);
     root.append(provider);
     const heard = [];
     provider.addEventListener('setting-change', (e) => { if (e.detail.key === 'filterMode') heard.push(e.detail.value); });
