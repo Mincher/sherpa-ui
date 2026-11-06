@@ -88,7 +88,7 @@ import { portalLinks, portalOf } from '../data/node-portals.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
+  FALSE_SOCKET, NODE_KINDS, categorySlug, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
@@ -1243,7 +1243,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     put(el, 'data-input-socket', socketType(node, undefined, 'input'));
     put(el, 'data-output-socket', socketType(node, undefined, 'output'));
     el.toggleAttribute('data-input-many', !!node.many);
-    put(el, 'data-category', node.category?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+    put(el, 'data-category', categorySlug(node.category));
     put(el, 'data-scale-w', node.size ? String(node.size.w) : undefined);
     put(el, 'data-scale-h', node.size ? String(node.size.h) : undefined);
     el.toggleAttribute('data-branches', !!node.branches);
@@ -1406,7 +1406,17 @@ export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
       if (rect && el) into[address] = onPlane(canvas, rect)[1] - (Number(el.getAttribute('data-y')) || 0);
     }
   }
-  const placed = unfurlNodes({ nodes, routes: drawn.routes, ties: drawn.ties, frames: drawn.graph.frames ?? [] }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
+  // A graph reads left to right: Sources and Portal Ins stand left, Outputs and Portal Outs right; an In hands on to each Out of
+  // its name with no line, and the hop holds the order a route would. TODO 839
+  const bands: Record<string, 'left' | 'right'> = {};
+  const hops: { from: string; to: string }[] = [];
+  const portals = drawn.graph.nodes.flatMap((n) => { const p = portalOf(n); return p ? [{ id: n.id, ...p }] : []; });
+  for (const n of drawn.graph.nodes) if (n.kind === 'source') bands[n.id] = 'left'; else if (n.kind === 'output') bands[n.id] = 'right';
+  for (const p of portals) {
+    bands[p.id] = p.side === 'in' ? 'left' : 'right';
+    if (p.side === 'in' && p.name) for (const o of portals) if (o.side === 'out' && o.name === p.name) hops.push({ from: p.id, to: o.id });
+  }
+  const placed = unfurlNodes({ nodes, routes: drawn.routes, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 

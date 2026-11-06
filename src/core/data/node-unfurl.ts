@@ -20,6 +20,11 @@ export interface UnfurlGraph {
   routes: readonly NodeRoute[];
   ties?: readonly NodeTie[];
   frames?: readonly NodeFrame[];
+  /** Hidden joins that draw no line, each a node to the node it hands on to (a Portal In to its Outs): they hold the flow
+   *  left to right as a route does, so a pair never flips the order. TODO 839 */
+  hops?: readonly { from: string; to: string }[];
+  /** A node that stands by its end of the graph: `left` (a Source, a Portal In), `right` (an Output, a Portal Out). */
+  bands?: Readonly<Record<string, 'left' | 'right'>>;
 }
 
 /** The gaps, the grid, each node's drawn box, and a frame's box past its nodes', all in plane px. */
@@ -117,7 +122,8 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
   const n = cells.length;
   const weight = new Array<number>(n).fill(0);
   const pairs = new Map<number, { a: number; b: number; m: number; ab: number; pa: number; pb: number }>();
-  for (const r of graph.routes) {
+  // A hop holds the order as a route does, with no line to cross or to read at a socket.
+  for (const r of [...graph.routes, ...(graph.hops ?? [])]) {
     const [a, b] = [cellOf.get(socketOf(r.from).node), cellOf.get(socketOf(r.to).node)];
     if (a === undefined || b === undefined || a === b) continue;
     weight[a]!++;
@@ -356,8 +362,21 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     for (const c of p.list) corner.set(c, { x: p.x.get(c)! - cells[c]!.w / 2 + dx, y: p.y.get(c)! - cells[c]!.h / 2 + dy });
     edge = maxX + dx + gapX + grid;
   });
-  let below = top;
-  for (const c of lone) { corner.set(c, { x: edge, y: below }); below += cells[c]!.h + gapY + grid; }
+  // Lone nodes in columns by their band: Sources and Portal Ins before the parts, the rest after them, Outputs and Portal Outs last.
+  const bandOf = (c: number): 'left' | 'right' | undefined => graph.bands?.[cells[c]!.key];
+  const columns = [lone.filter((c) => bandOf(c) === 'left'), lone.filter((c) => !bandOf(c)), lone.filter((c) => bandOf(c) === 'right')];
+  const [first] = columns;
+  if (first!.length) {
+    const wide = Math.max(...first!.map((c) => cells[c]!.w));
+    const start = laid.length ? Math.min(...laid.flatMap((p) => p.list.map((c) => corner.get(c)!.x))) : edge;
+    let y0 = top;
+    for (const c of first!) { corner.set(c, { x: start - wide - gapX - grid + (wide - cells[c]!.w) / 2, y: y0 }); y0 += cells[c]!.h + gapY + grid; }
+  }
+  for (const column of columns.slice(1)) {
+    let below = top;
+    for (const c of column) { corner.set(c, { x: edge, y: below }); below += cells[c]!.h + gapY + grid; }
+    if (column.length) edge += Math.max(...column.map((c) => cells[c]!.w)) + gapX + grid;
+  }
   // The first part's anchor keeps its place.
   const main = laid[0]?.anchor ?? lone[0]!;
   const [lead] = cells[main]!.members;

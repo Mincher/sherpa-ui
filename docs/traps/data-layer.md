@@ -8000,6 +8000,11 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   that hang from one cell into their own slots costs 599 to 624, and leaves no such pair out of order on a ring.
   Siblings on different rings, and a node's other neighbours, follow the fewest crossings.
 
+- **A graph reads left to right** (Will, TODO 839). Sources and a Portal In stand left, Outputs and a Portal Out right
+  (`bands`); an In hands on to each Out of its name with no line, and that hop (`hops`) holds the order a route would, so
+  a portal pair makes one part, never two stood in the order they were: it cannot flip. A lone Source or In has its
+  column before the parts, a lone Output or Out after them.
+
 - Site: `src/core/data/node-unfurl.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/unfurl-spreads-the-graph-from-its-hub.test.mjs`
