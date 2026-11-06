@@ -60,6 +60,8 @@ What each class's base rule reads:
 | `--sherpa-theme-content-line-height-small` | `.label` | `line-height` |
 | `--sherpa-style-content-base` | `.label` | `color` |
 | `--sherpa-display-mode-size-2xl` | `.socket` | `inset-block-end` |
+| `--sherpa-theme-padding-lg` | `.socket-out` | `inset-inline-start` |
+| `--sherpa-style-surface-base-1` | `.socket-in` | `background` |
 
 ## populate()
 

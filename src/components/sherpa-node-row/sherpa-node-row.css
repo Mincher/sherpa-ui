@@ -141,8 +141,6 @@
 
 :host {
   display: block;
-  /* In a node's section: out to the card's edge again. */
-  margin-inline: calc(-1 * var(--_bleed, 0px));
 }
 
 .row {
@@ -186,4 +184,15 @@
 :host(:not(:state(has-content-slot))) .socket {
   inset-block: 50% auto;
   margin-block: calc(var(--_socket-h) / -2 - var(--_hit)) 0;
+}
+
+/* In a section: an output sits inside the box's padding, so the row keeps clear of it. */
+.socket-out { inset-inline-start: calc(100% - var(--sherpa-theme-padding-lg, 16px) + var(--sherpa-theme-padding-sm, 4px)); }
+:host([data-output-socket]) .row { padding-inline-end: calc(var(--_pad-inline, 8px) + var(--_socket, 16px)); }
+/* An input sits in a DOCK: a reverse D of the section's grey, flush with the box's start edge, the socket and its press area inside. */
+.socket-in {
+  inset-inline-start: calc(-1 * (var(--_socket, 16px) / 2 + var(--_hit, 6px)));
+  background: var(--_section-fill, var(--sherpa-style-surface-base-1, #f5f5f8));
+  border-start-start-radius: calc(var(--_socket, 16px) / 2 + var(--_hit, 6px));
+  border-end-start-radius: calc(var(--_socket, 16px) / 2 + var(--_hit, 6px));
 }

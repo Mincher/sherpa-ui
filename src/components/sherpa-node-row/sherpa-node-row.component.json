@@ -209,6 +209,11 @@
       "$type": "state",
       "name": "property",
       "selector": ":host([data-property])"
+    },
+    {
+      "$type": "state",
+      "name": "output-socket",
+      "selector": ":host([data-output-socket])"
     }
   ],
   "capabilities": [
@@ -224,7 +229,9 @@
     "label.font-weight": "{sherpa.font-weight-medium}",
     "label.line-height": "{sherpa.theme-content-line-height-small}",
     "label.color": "{sherpa.style-content-base}",
-    "socket.inset-block-end": "{sherpa.display-mode-size-2xl}"
+    "socket.inset-block-end": "{sherpa.display-mode-size-2xl}",
+    "socket-out.inset-inline-start": "{sherpa.theme-padding-lg}",
+    "socket-in.background": "{sherpa.style-surface-base-1}"
   },
   "$extensions": {
     "sherpa": {

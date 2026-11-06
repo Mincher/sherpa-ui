@@ -396,7 +396,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     const inputs = lines(node.rows.filter((r) => r.control !== 'type' && !r.property));
     el.replaceChildren(
       ...section(...lines(node.rows.filter((r) => r.control === 'type'))),
-      ...(inputs.length ? section(titled('Values'), ...inputs) : []),
+      ...(inputs.length ? section(titled('Parameters'), ...inputs) : []),
       ...(node.rows.some((r) => r.property) ? section(titled('Properties'), ...lines(node.rows.filter((r) => r.property))) : []),
     );
     for (const row of node.rows) {
