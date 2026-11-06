@@ -145,3 +145,26 @@ test('it is fast: 100,000 rows through a Source, a Field, five Conditions and an
   assert.equal(into(sim, 'o', 'o').rows.length, filterRows(rows, ['and', ...tests.map(([f, t, b]) => [f, t, b])]).length);
   assert.ok(ms < 1000, `${ms} ms`);
 });
+
+test('a Count row is the row count: a Source\'s rows, a Field\'s rows into it, a Condition\'s rows it kept; none to count, a note (TODO 835)', () => {
+  const rows = rowsOf(60);
+  const sim = simulateGraph(chain('status', 'eq', 'active'), { customers: rows });
+  const kept = rows.filter((r) => r.status === 'active').length;
+  assert.deepEqual([out(sim, 's', 's/count').kind, out(sim, 's', 's/count').value], ['value', 60]);
+  assert.equal(out(sim, 'f', 'f/count').value, 60);
+  assert.equal(out(sim, 'c', 'c/count').value, kept);
+  const none = simulateGraph(chain('status', 'eq', 'active'), {});
+  assert.deepEqual([out(none, 's', 's/count').value, out(none, 's', 's/count').note], [undefined, 'No rows to count']);
+  assert.equal(out(none, 'c', 'c/count').value, undefined);
+});
+
+test('where a fetch stopped at its cap, the Source says so beside its rows', () => {
+  const rows = rowsOf(10);
+  const words = 'PARTIAL: the first 10 of 40 rows.';
+  const sim = simulateGraph(chain('status', 'eq', 'active'), { customers: rows }, { partial: { customers: words } });
+  const source = out(sim, 's', 's/rows');
+  assert.deepEqual([source.rows, source.note], [rows, words]);
+  assert.deepEqual(sim.faults, []);
+  // Another store's words are no one else's.
+  assert.equal(out(simulateGraph(chain('status', 'eq', 'active'), { customers: rows }, { partial: { devices: words } }), 's', 's/rows').note, undefined);
+});
