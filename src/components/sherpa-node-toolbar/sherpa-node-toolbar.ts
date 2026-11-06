@@ -1,5 +1,5 @@
 /**
- * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph and Frame nodes, as icon buttons in one group.
+ * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes, as icon buttons in one group.
  *
  * It does nothing itself. A press is `toolbar-select`; the editor that owns the history hears Undo
  * and Redo and says, in `data-can-undo` and `data-can-redo`, when each can be pressed. Save is a
@@ -22,11 +22,14 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-group': { type: 'boolean', kind: 'behaviour' },
     'data-can-arrange': { type: 'boolean', kind: 'behaviour' },
     'data-can-unfurl': { type: 'boolean', kind: 'behaviour' },
+    'data-can-fetch': { type: 'boolean', kind: 'behaviour' },
+    'data-can-simulate': { type: 'boolean', kind: 'behaviour' },
+    'data-path-why': { type: 'string', kind: 'behaviour' },
     'data-can-frame': { type: 'boolean', kind: 'behaviour' },
     'data-tie': { type: 'boolean', kind: 'behaviour' },
     'data-picked-routes': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-picked-routes'];
+  static override observed = ['data-picked-routes', 'data-path-why'];
 
   override onRender(): void {
     toolbarKeys(this.$('.tools')!);
@@ -38,10 +41,20 @@ export class SherpaNodeToolbar extends SherpaElement {
     this.#sync();
   }
 
+  /** Fetch's and Simulate's own tips, kept while a reason stands in their place. */
+  #tips: Record<string, string> = {};
+
   /** Each tool can be pressed when its flag is set. */
   #sync(): void {
-    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'frame']) {
+    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'fetch', 'simulate', 'frame']) {
       this.$(`.${action}`)?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${action}`));
+    }
+    // Fetch and Simulate say why they are off: the graph has no path from a Source to an Output. TODO 836
+    const why = this.getAttribute('data-path-why');
+    for (const name of ['fetch', 'simulate'] as const) {
+      const tool = this.$(`.${name}`);
+      const own = (this.#tips[name] ??= tool?.getAttribute('data-tip') ?? '');
+      tool?.setAttribute('data-tip', !this.hasAttribute(`data-can-${name}`) && why ? why : own);
     }
     const tie = this.$('.tie');
     tie?.setAttribute('aria-pressed', String(this.hasAttribute('data-tie')));

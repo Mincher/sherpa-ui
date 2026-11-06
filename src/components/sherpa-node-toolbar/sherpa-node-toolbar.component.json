@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-toolbar",
-  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569. TRAP T-an-edit-is-a-step",
+  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
   "element": {
     "$type": "element",
     "tag": "span",
@@ -113,6 +113,30 @@
         },
         {
           "el": "sherpa-button",
+          "class": "fetch",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "cloud",
+            "data-action": "fetch",
+            "aria-label": "Fetch",
+            "data-tip": "Fetch the rows of every Source on a path to an Output, once; Simulate then runs on them",
+            "disabled": ""
+          }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "simulate",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "play",
+            "data-action": "simulate",
+            "aria-label": "Simulate",
+            "data-tip": "Simulate: what each node sends, on the rows fetched",
+            "disabled": ""
+          }
+        },
+        {
+          "el": "sherpa-button",
           "class": "frame",
           "attrs": {
             "data-type": "icon",
@@ -135,6 +159,15 @@
       "declared": true,
       "kind": "behaviour",
       "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-can-fetch",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Fetch can be pressed: a path joins a Source to an Output; written by the editor"
     },
     {
       "$type": "prop",
@@ -174,6 +207,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-can-simulate",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Simulate can be pressed: the same; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-can-tie",
       "type": "boolean",
       "observed": true,
@@ -201,6 +243,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-path-why",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Why Fetch and Simulate cannot be pressed, in words: their tip says it; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-picked-routes",
       "type": "number",
       "observed": true,
@@ -219,7 +270,7 @@
     }
   ],
   "populate": {
-    "shape": "{ canArrange?, canFrame?, canGroup?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, pickedRoutes?, tie? }",
+    "shape": "{ canArrange?, canFetch?, canFrame?, canGroup?, canRedo?, canSave?, canSimulate?, canTie?, canUndo?, canUnfurl?, pathWhy?, pickedRoutes?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

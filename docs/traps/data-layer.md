@@ -7983,3 +7983,28 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
 - Site: `test/unit/unfurl-spreads-the-graph-from-its-hub.test.mjs`
 - Site: `test/unit/unfurl-keeps-the-socket-order.test.mjs`
 - Site: `test/e2e/reforged-node-unfurl.spec.ts`
+
+### T-a-simulation-reads-the-cache-and-writes-nothing
+
+**A simulation READS the cached rows and WRITES nothing; a fetch is only ever a press.** Will, TODO 836 ·
+`docs/history/plan-836-data-through-nodes.md`. `simulateGraph` takes a graph and the cached rows of each Source and gives
+each node's incoming and outgoing slots, a row list on each socket. It is not N4: it sends, writes and notifies nothing.
+
+- **No fetch without a press.** Nothing fetches on open, on an edit, on Save, on Undo, on a timer or on a store's push.
+  Simulate runs only on a press or an agent's call, never as the reader edits.
+- **A Source with no cached rows is "not fetched yet"**, a note on its slot and a fault in words, never an empty list that
+  reads as "no rows".
+- **A Condition keeps the rows of its Field's rows** that its leaf holds, by the same `filterTest` a page runs; its False
+  is the rest. And keeps what every part kept, Or what any part kept. A row is the cache's own object, never a copy, so
+  "kept" is identity.
+- **A route through a portal is read as the data flows** (`portalFlow`): no portal code lives here.
+- **A path is a chain of kept routes from a Source to an Output**, through portals and through a use whose inside joins its
+  Group Input to its Group Output. Fetch and Simulate are inactive without one, and the tip says which part is missing.
+  Inside a Custom Node's definition they are inactive: they run on a whole graph.
+
+- Site: `src/core/data/node-paths.ts`
+- Site: `src/core/data/node-simulate.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-graph-has-a-path-from-a-source-to-an-output.test.mjs`
+- Site: `test/unit/a-simulation-reads-the-cache-and-writes-nothing.test.mjs`
+- Site: `test/e2e/reforged-node-fetch-needs-a-path.spec.ts`

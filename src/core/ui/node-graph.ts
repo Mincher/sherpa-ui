@@ -7,7 +7,7 @@
  * holds picked nodes in a column under one header (plan 778). A picked portal lights every portal of its name (plan 779).
  * Unfurl lays the whole graph out round its hub (plan 569). Will, TODOs 555, 551, 671, 719, 562, 735, 778, 779, 569.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node · TRAP T-a-frame-is-drawn-round-its-nodes
- * TRAP T-a-portal-hop-is-resolved-once
+ * TRAP T-a-portal-hop-is-resolved-once · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
@@ -81,6 +81,7 @@ import { PRESET_FILTER, offeredKinds } from '../data/entity-types.js';
 import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
+import { pathRead } from '../data/node-paths.js';
 import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalLinks, portalOf } from '../data/node-portals.js';
@@ -3023,6 +3024,13 @@ export function bindWorkflow(
     const ids = multi.size ? [...multi] : current ? [current] : [];
     if (ids.length && !readOnly()) onRemoveNodes(ids, []);
   });
+  // Fetch and Simulate wait for a path from a Source to an Output; inside a Custom Node's definition they wait for its use. TODO 836
+  const tellPath = (): void => {
+    const read = path.length ? { ok: false, why: 'Open the graph that uses this Custom Node: Fetch and Simulate run on a whole graph' } : pathRead(graph, { inner: innerGraph });
+    for (const flag of ['data-can-fetch', 'data-can-simulate']) toolbar?.toggleAttribute(flag, read.ok);
+    if (read.ok || !read.why) toolbar?.removeAttribute('data-path-why');
+    else toolbar?.setAttribute('data-path-why', read.why);
+  };
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
@@ -3043,6 +3051,7 @@ export function bindWorkflow(
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
     });
     toolbar?.toggleAttribute('data-can-unfurl', !ro && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
+    tellPath();
     trail();
     if (multi.size > 1 && inspector?.open) showMulti();
     else if (framePanel && !(shown().frames ?? []).some((f) => f.id === framePanel)) picks.deselect();
@@ -3115,6 +3124,7 @@ export function bindWorkflow(
       toolbar?.removeAttribute('data-tie');
       toolbar?.removeAttribute('data-can-group');
       toolbar?.removeAttribute('data-can-unfurl');
+      for (const flag of ['data-can-fetch', 'data-can-simulate', 'data-path-why']) toolbar?.removeAttribute(flag);
       dialogSave?.removeEventListener('click', saveAs);
       dialogCancel?.removeEventListener('click', onCancel);
       dialogField('label')?.removeEventListener('keydown', onSaveKey);

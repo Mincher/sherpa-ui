@@ -2800,11 +2800,16 @@
     },
     {
       "name": "sherpa-node-toolbar",
-      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569. TRAP T-an-edit-is-a-step",
+      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Simulate and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
       "attributes": [
         {
           "name": "data-can-arrange",
           "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-can-fetch",
+          "description": "Fetch can be pressed: a path joins a Source to an Output; written by the editor",
           "valueSet": "v"
         },
         {
@@ -2828,6 +2833,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-can-simulate",
+          "description": "Simulate can be pressed: the same; written by the editor",
+          "valueSet": "v"
+        },
+        {
           "name": "data-can-tie",
           "description": "The Zip tie tool can be pressed; written by the editor",
           "valueSet": "v"
@@ -2841,6 +2851,10 @@
           "name": "data-can-unfurl",
           "description": "Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor",
           "valueSet": "v"
+        },
+        {
+          "name": "data-path-why",
+          "description": "Why Fetch and Simulate cannot be pressed, in words: their tip says it; written by the editor"
         },
         {
           "name": "data-picked-routes",

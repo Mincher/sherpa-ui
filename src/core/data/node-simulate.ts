@@ -1,0 +1,203 @@
+/**
+ * node-simulate.ts — SIMULATE a graph: the cached rows go in at each Source and come out of every node, as a ROW LIST
+ * on each socket: what the node would hear and what it would say. It reads rows and writes nothing: no store is asked,
+ * no clock is read but the one given. A Condition's rows are the rows into its Field that its test keeps, run by the
+ * same `filterTest` a page runs; a Source with no cached rows is "not fetched yet". The kinds beyond Source, Field,
+ * Condition (test, And, Or) and Output wait for P6. Pure: no DOM. Will, TODO 836 · docs/history/plan-836-data-through-nodes.md
+ * · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
+ *
+ * Map:
+ * - SimulateFacts — What a simulation reads beyond its graph and rows: the clock a relative date means.
+ * - Slot — What one socket hears or says: its rows, a field's name or a value, and where it comes from.
+ * - SimulatedNode — One node: each input socket's slot, and each output socket's.
+ * - Simulated — Every node's slots, and each fault in words.
+ * - simulateGraph — The graph run on the cached rows: what each node hears and says, a row list on each socket.
+ */
+import { filterTest, type Filter, type Row } from './store.js';
+import { leafOf } from './node-flow.js';
+import { portalFlow } from './node-portals.js';
+import { FALSE_SOCKET, socketOf, type DrawnGraph, type GraphNode } from './node-kinds.js';
+
+/** What a simulation reads beyond its graph and rows: the clock a relative date means. Left out, the machine's. */
+export interface SimulateFacts {
+  now?: Date;
+}
+
+/** What one socket hears or says: its rows (a row list), a field's name, or a value; and where it comes from, as
+ *  the socket addresses of the routes that bring it. `note` says why it holds no rows: not fetched, not simulated. */
+export interface Slot {
+  socket: string;
+  label: string;
+  kind: 'rows' | 'field' | 'value';
+  rows?: readonly Row[];
+  value?: unknown;
+  from: readonly string[];
+  note?: string;
+}
+
+/** One node: each input socket's slot, and each output socket's. */
+export interface SimulatedNode {
+  incoming: readonly Slot[];
+  outgoing: readonly Slot[];
+}
+
+/** Every node's slots, by id, and each fault in words. */
+export interface Simulated {
+  nodes: Record<string, SimulatedNode>;
+  faults: string[];
+}
+
+/** What an output socket sends: rows, a field (its name, and the rows into it), or nothing and why. */
+type Sent = { kind: 'rows' | 'field' | 'value'; rows?: readonly Row[]; value?: unknown; note?: string };
+
+/** The kinds whose True is a test of a field. */
+const TESTS = new Set(['condition', 'time', 'tag']);
+
+/** A node's rows kept in the order of the first list, each once. */
+function union(lists: readonly (readonly Row[])[]): Row[] {
+  const seen = new Set<Row>();
+  const out: Row[] = [];
+  for (const list of lists) for (const row of list) if (!seen.has(row)) { seen.add(row); out.push(row); }
+  return out;
+}
+
+/** The rows every list holds, in the first list's order. */
+function common(lists: readonly (readonly Row[])[]): Row[] {
+  const [first = [], ...rest] = lists;
+  const others = rest.map((l) => new Set(l));
+  return first.filter((row) => others.every((o) => o.has(row)));
+}
+
+/**
+ * The graph run on the cached rows. Each Source sends its store's rows (`rowsByStore`, by store id; a store not in it is
+ * "not fetched yet"). A Field sends its name and the rows into it. A test (Condition, Time, Tag) keeps the rows into its
+ * Field that its test holds, and its False the rest; And and Or keep what every part kept, or what any part kept. An
+ * Output hears what is routed to it. Another kind says "not simulated yet". A route through a portal is read as the
+ * data flows (`portalFlow`). The same in gives the same out.
+ */
+export function simulateGraph(graph: DrawnGraph, rowsByStore: Readonly<Record<string, readonly Row[] | undefined>>, facts: SimulateFacts = {}): Simulated {
+  const now = facts.now ?? new Date();
+  const routes = portalFlow(graph.nodes, graph.routes).routes;
+  const held = new Map(graph.nodes.map((n) => [n.id, n]));
+  const faults: string[] = [];
+  const said = new Set<string>();
+  const fault = (words: string): void => { if (!said.has(words)) { said.add(words); faults.push(words); } };
+  const sent = new Map<string, Sent>();
+  const busy = new Set<string>();
+
+  /** What flows into a node's header, as each route brings it. */
+  const into = (address: string): { from: string; sent: Sent }[] => routes.filter((r) => r.to === address).map((r) => ({ from: r.from, sent: sends(r.from) }));
+  /** The rows that reach a socket, each once; none at all when none of its routes brings rows (not fetched, not simulated). */
+  const rowsInto = (address: string): Row[] | undefined => {
+    const lists = into(address).flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
+    return lists.length ? union(lists) : undefined;
+  };
+
+  /** What a test says: the rows of its Field that its leaf keeps, and those it does not; a fault in words; or, where no rows
+   *  reach it, why: that was said upstream. */
+  const test = (node: GraphNode): { kept: Row[]; lost: Row[] } | string | { note: string } => {
+    const read = leafOf(graph, node);
+    if ('fault' in read) return read.fault;
+    const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
+    const base = fed?.rows;
+    if (!base) return { note: fed?.note ?? 'No rows reach it' };
+    const keep = filterTest([read.leaf.field, read.leaf.op, read.leaf.value] as Filter, now);
+    const kept: Row[] = [];
+    const lost: Row[] = [];
+    for (const row of base) (keep(row) ? kept : lost).push(row);
+    return { kept, lost };
+  };
+
+  /** A Condition's rows, by its kind: a test keeps, And and Or join what the parts kept. */
+  const verdict = (node: GraphNode): { kept: Row[]; lost: Row[] } | string | { note: string } => {
+    const type = node.rows.find((r) => r.name === 'type')?.value;
+    if (node.kind === 'condition' && (type === 'and' || type === 'or')) {
+      const came = into(node.id);
+      if (!came.length) return `"${node.heading}" joins no tests: route their True in`;
+      const lacking = came.find((p) => !p.sent.rows);
+      if (lacking) return { note: lacking.sent.note ?? 'No rows reach it' };
+      const parts = came.flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
+      const kept = type === 'and' ? common(parts) : union(parts);
+      const all = union(parts);
+      const keeps = new Set(kept);
+      return { kept, lost: all.filter((row) => !keeps.has(row)) };
+    }
+    return test(node);
+  };
+
+  function sends(address: string): Sent {
+    const known = sent.get(address);
+    if (known) return known;
+    const { node: id, row } = socketOf(address);
+    const node = held.get(id);
+    if (!node) return { kind: 'value', note: `a route comes from "${id}", which the graph does not hold` };
+    if (busy.has(address)) return { kind: 'value', note: `"${node.heading}" reads itself, in a loop` };
+    busy.add(address);
+    const made = make(node, row);
+    busy.delete(address);
+    sent.set(address, made);
+    return made;
+  }
+
+  /** What one output socket of a node sends. */
+  function make(node: GraphNode, row: string | undefined): Sent {
+    if (node.kind === 'source') {
+      const store = node.rows.find((r) => r.control === 'store')?.value;
+      const rows = typeof store === 'string' ? rowsByStore[store] : undefined;
+      if (!rows) {
+        fault(`"${node.heading}" is not fetched yet`);
+        return { kind: 'rows', note: 'Not fetched yet' };
+      }
+      return { kind: 'rows', rows };
+    }
+    if (node.kind === 'field') {
+      const name = node.rows.find((r) => r.gives === 'field')?.value;
+      const rows = rowsInto(node.id);
+      const note = into(node.id).find((p) => p.sent.note)?.sent.note;
+      return { kind: 'field', value: name, ...(rows ? { rows } : note ? { note } : {}) };
+    }
+    if (TESTS.has(node.kind)) {
+      const read = verdict(node);
+      if (typeof read === 'string') {
+        fault(read);
+        return { kind: 'rows', note: read };
+      }
+      if ('note' in read) return { kind: 'rows', note: read.note };
+      return { kind: 'rows', rows: row === FALSE_SOCKET ? read.lost : read.kept };
+    }
+    fault(`"${node.heading}" is not simulated yet`);
+    return { kind: 'value', note: 'Not simulated yet' };
+  }
+
+  const slot = (address: string, label: string, side: 'in' | 'out'): Slot => {
+    if (side === 'out') {
+      const s = sends(address);
+      return { socket: address, label, kind: s.kind, ...(s.rows ? { rows: s.rows } : {}), ...(s.value !== undefined ? { value: s.value } : {}), from: [], ...(s.note ? { note: s.note } : {}) };
+    }
+    const came = into(address);
+    const lists = came.flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
+    const note = came.find((p) => p.sent.note)?.sent.note;
+    const field = came.find((p) => p.sent.kind === 'field');
+    return {
+      socket: address, label, kind: field ? 'field' : lists.length ? 'rows' : 'value',
+      ...(lists.length ? { rows: union(lists) } : {}), ...(field?.sent.value !== undefined ? { value: field.sent.value } : {}),
+      from: came.map((p) => p.from), ...(note && !lists.length ? { note } : {}),
+    };
+  };
+
+  const nodes: Record<string, SimulatedNode> = {};
+  for (const node of graph.nodes) {
+    if (node.id.startsWith('#')) continue;
+    const incoming: Slot[] = [
+      ...(node.input ? [slot(node.id, 'In', 'in')] : []),
+      ...node.rows.filter((r) => r.input).map((r) => slot(`${node.id}/${r.name}`, r.label, 'in')),
+    ];
+    const outgoing: Slot[] = [
+      ...(node.output || node.branches ? [slot(node.id, node.branches ? 'True' : 'Out', 'out')] : []),
+      ...node.rows.filter((r) => r.output).map((r) => slot(`${node.id}/${r.name}`, r.label, 'out')),
+      ...(node.branches ? [slot(`${node.id}/${FALSE_SOCKET}`, 'False', 'out')] : []),
+    ];
+    nodes[node.id] = { incoming, outgoing };
+  }
+  return { nodes, faults };
+}
