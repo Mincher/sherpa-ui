@@ -49,7 +49,7 @@ test('a boolean says true or false: true and false, the words, a number — 0 Fa
 test('every boolean joins And and Or, no fault and no warning: a test\'s True, a True, a False, a value that says one, 1 or 0', () => {
   const math = { id: 'm', kind: 'math', x: 0, y: 400 };
   const cases = [
-    [plan, 'pro', planRoutes], [[], 's'], [[], 's/#false'], [plan, 'pro/#false', planRoutes],
+    [plan, 'pro', planRoutes], [[], 'active/#false'], [plan, 'pro/#false', planRoutes],
     [[value('true', 'boolean')], 'v/value'], [[value('false', 'boolean')], 'v/value'], [[value('1', 'integer')], 'v/value'], [[value('0', 'integer')], 'v/value'],
     [[value('True')], 'v/value'], [[math], 'm/result'], [[value('2', 'integer')], 'v/value'],
   ];
@@ -79,12 +79,12 @@ test('a test brings its tree; a constant folds — true drops out of And and end
 });
 
 test('a boolean only a run gives is named by where it comes from; a test that says no tree is one, and says why', () => {
-  assert.deepEqual(read(flow([], 's')).where, { and: [ACTIVE, { boolean: 'Source › True' }] });
-  assert.deepEqual(read(flow([], 's/#false')).where, { and: [ACTIVE, { boolean: 'Source › False' }] });
   // A comparison of two values: only a run says it; its True is a boolean, and why it says no tree stays said.
   const two = [value('Pro'), { id: 'eq', kind: 'condition', x: 300, y: 600, values: { type: 'eq', b: 'Pro' } }];
   const g = workflowGraph(flow(two, 'eq', 'and', [{ from: 'v/value', to: 'eq' }]));
   assert.deepEqual(nodeFlow(g, 'j').definition.where, { and: [ACTIVE, { boolean: 'Condition › True' }] });
+  const off = workflowGraph(flow(two, 'eq/#false', 'and', [{ from: 'v/value', to: 'eq' }]));
+  assert.deepEqual(nodeFlow(off, 'j').definition.where, { and: [ACTIVE, { boolean: 'Condition › False' }] });
 });
 
 test('anything else reads null and warns in words, and says nothing in the tree; no fault', () => {

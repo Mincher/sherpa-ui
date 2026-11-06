@@ -79,7 +79,7 @@ test('it lists each category with its families, eleven, never a Query-only one; 
   const names = () => page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
   // A family's line is its synopsis, never its types (TODO 809).
-  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Rows in order, grouped or counted.');
+  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Organise a set of rows');
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('cou');
   expect(await names()).toEqual(['Collection']);
   expect(await item(page, 'collection').getAttribute('data-description')).toBe('Count: How many rows');
@@ -88,7 +88,7 @@ test('it lists each category with its families, eleven, never a Query-only one; 
   expect(await names()).toEqual([]);
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('');
   expect((await names()).length).toBe(11);
-  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Rows in order, grouped or counted.');
+  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Organise a set of rows');
 });
 
 test('"round" shows Math, says Round, and a click places a Math whose type is Round; its rows follow the type', async ({ page }) => {
@@ -198,7 +198,8 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   // Start's output (rows, an object) dropped on the bare canvas.
   const [x1, y1] = await page.evaluate(() => {
     const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Source')!;
-    const r = el.socketRect('output');
+    const row = el.querySelector('sherpa-node-row:has(sherpa-input-text[name="store"])') as HTMLElement & { socketRect(s: string): DOMRect };
+    const r = row.socketRect('output');
     return [r.left + r.width / 2, r.top + r.height / 2];
   });
   await page.mouse.move(x1!, y1!);
@@ -208,9 +209,9 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   const menu = page.locator('sherpa-node-panel sherpa-menu.add');
   await expect(menu).toHaveAttribute('open', '');
   const choices = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
-  // The header sends True: the families whose header takes any type.
+  // Rows (an object) leave the Store row: the families whose header or a row takes one.
   // A portal's In takes anything (TODO 779).
-  expect(choices).toEqual(['field', 'condition', 'time', 'collection', 'tag', 'portal', 'output']);
+  expect(choices).toEqual(['field', 'condition', 'collection', 'portal', 'output']);
   const count = page.locator('sherpa-node-panel sherpa-menu.add button[value="collection"]');
   // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
   if (test.info().project.name === 'webkit') {

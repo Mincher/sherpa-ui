@@ -75,26 +75,29 @@ test('the registry says each socket: a row\'s, the header\'s — True where it f
   assert.equal(socketType(kindNode(NODE_KINDS, 'condition', 'x', resolveKind(NODE_KINDS.condition).rows), 'rows', 'output'), 'object');
 });
 
-test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; each kind a workflow runs forks, and the Query\'s own steps do not', () => {
+test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; only Condition forks (TODO 831)', () => {
   assert.deepEqual(ROWS, { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' });
   const all = Object.entries(NODE_KINDS);
   // A header input takes any; no header sends rows: a Rows row does, first.
   for (const [name, kind] of all) {
     assert.ok([undefined, 'any'].includes(kind.input), `${name}: its header takes any`);
-    assert.equal(kind.output, undefined, `${name}: no header sends rows`);
+    assert.ok([undefined, 'boolean'].includes(kind.output), `${name}: no header sends rows`);
     const at = kind.rows.findIndex((r) => r.name === ROWS.name);
-    if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, ROWS], `${name}: its Rows row, first`);
+    // A Source's Rows leave from its Store row: drawn beside it, not a line of its own (TODO 830).
+    if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, name === 'source' ? { ...ROWS, beside: 'store' } : ROWS], `${name}: its Rows row, first`);
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
-  assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['source', 'status', 'scope', 'arrange', 'presentation']);
+  assert.deepEqual(named((k) => k.rows.some((r) => r.name === ROWS.name)), ['source', 'status', 'scope', 'arrange', 'presentation']);
   // A family's types say their own rows: every Logic type, a Sort, a Group by and a Tag send theirs from a Rows row, first.
   const typed = all.flatMap(([n, k]) => Object.entries(k.types ?? {}).map(([t, type]) => [`${n} › ${t}`, type.rows ?? []]));
   for (const [name, rows] of typed) if (rows.includes(ROWS)) assert.equal(rows.indexOf(ROWS), 0, `${name}: its Rows row, first`);
   assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), [
     ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'collection › sort', 'collection › group', 'tag › includes',
   ]);
-  // True and False: every kind a workflow runs but its end, and the Query's Condition, Preset and Saved filter, whose True goes into a scope's row.
-  assert.deepEqual(named((k) => k.branches), ['source', 'condition', 'preset', 'saved', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag']);
+  // True and False: Condition alone for now (Will, TODO 831); `branches` stays an option any kind may take again. A check that sends
+  // a boolean, and no False, says `output`: a Preset and a Saved filter (a scope's row), a Time and a Tag.
+  assert.deepEqual(named((k) => k.branches), ['condition']);
+  assert.deepEqual(named((k) => k.output === 'boolean'), ['preset', 'saved', 'time', 'tag']);
   // A type forks as its family does, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
   // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
   for (const [name, kind] of all) for (const type of Object.values(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], name);
@@ -102,14 +105,15 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
   // A comparison tests what comes in on its header (plan 783 D3): a Field's column, or a value.
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['boolean', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
-  // No fork: the end, and a portal, which passes on what reaches it (TODO 779).
-  assert.deepEqual(named((k) => k.graphs.includes('workflow') && !k.branches), ['portal', 'output']);
+  // No fork: every other kind a workflow runs, the end and a portal, which passes on what reaches it (TODO 779), among them.
+  assert.deepEqual(named((k) => k.graphs.includes('workflow') && !k.branches), ['source', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag', 'portal', 'output']);
 });
 
 test('every shipped kind says its types once: no output sends any; a fork says no output of its own; a multi-select row is an object, one route in', () => {
   for (const [name, kind] of Object.entries(NODE_KINDS)) {
     assert.notEqual(kind.output, 'any', name);
     if (kind.branches) assert.equal(kind.output, undefined, `${name}: its header's output is True`);
+    else if (kind.output) assert.equal(kind.output, 'boolean', `${name}: a header sends a boolean or nothing`);
     for (const row of kind.rows) {
       assert.notEqual(row.output, 'any', `${name}/${row.name}`);
       if (!row.multiple) continue;
@@ -156,7 +160,7 @@ test('a route of another type joins, no fault: the input reads null, and its nod
     assert.deepEqual(workflowGraph(w, {}, kinds).nodes.find((n) => n.id === 'g').warnings?.map((x) => x.words), [words]);
   }
   // A True into a value row reads as the word, true or false: COERCIONS, no warning (TODO 781).
-  const word = { ...structuredClone(sound), nodes, routes: [...sound.routes, { from: 'start', to: 'g/note' }] };
+  const word = { ...structuredClone(sound), nodes, routes: [...sound.routes, { from: 'f', to: 'g/note' }] };
   assert.deepEqual([workflowFaults(word, kinds), workflowGraph(word, {}, kinds).nodes.find((n) => n.id === 'g').warnings], [[], undefined]);
 });
 

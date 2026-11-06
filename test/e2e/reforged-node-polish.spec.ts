@@ -218,17 +218,19 @@ test('the Pan tool draws four arrows', async ({ page }) => {
 
 const socketAt = (page: Page, node: string, side: 'in' | 'out', row?: string) => page.evaluate(([n, s, r]) => {
   const el = document.querySelector(n!)!;
-  const host = r ? el.querySelector(`sherpa-node-row[data-label="${r}"], sherpa-node-row:nth-of-type(${r})`)! : el;
+  const host = r ? el.querySelector(r.startsWith('[') ? `sherpa-node-row:has(${r})` : `sherpa-node-row[data-label="${r}"], sherpa-node-row:nth-of-type(${r})`)! : el;
   const q = (host as HTMLElement & { socketRect(side: string): DOMRect | null }).socketRect(s === 'in' ? 'input' : 'output')!;
   return [q.left + q.width / 2, q.top + q.height / 2, q.width, q.height] as [number, number, number, number];
 }, [node, side, row]);
 const STORE = '#cv > sherpa-node[data-heading="Source"]';
+/** Its Rows leave from the Store row. */
+const STORE_ROW = '[name="store"]';
 
 test('a press just outside the drawn socket starts a connector; a drop 10px off an input connects', async ({ page }) => {
   await bind(page);
   await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { fit(): void }).fit());
   await settle(page);
-  const [ox, oy, w] = await socketAt(page, STORE, 'out');
+  const [ox, oy, w] = await socketAt(page, STORE, 'out', STORE_ROW);
   // 16px drawn, at the canvas's zoom.
   const zoom = await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { view: { zoom: number } }).view.zoom);
   expect(w).toBeCloseTo(16 * zoom, 0);

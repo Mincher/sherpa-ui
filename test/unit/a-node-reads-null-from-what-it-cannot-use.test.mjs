@@ -43,7 +43,7 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
   ];
   // A header's words name a family's type: Equals, Count, Between.
   const wrong = flow(nodes, [
-    { from: 's/rows', to: 'c' }, { from: 's', to: 'col' }, { from: 'v', to: 'tag' }, { from: 's/#false', to: 'p' }, { from: 's/rows', to: 't' }, { from: 'v/value', to: 'end' },
+    { from: 's/rows', to: 'c' }, { from: 'c', to: 'col' }, { from: 'c', to: 'tag' }, { from: 'c/#false', to: 'p' }, { from: 's/rows', to: 't' }, { from: 'v/value', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(wrong)), {
     fld: [lone],
@@ -55,7 +55,7 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
   }, 'the Output takes anything');
   // A comparison and a Tag test a Field's column; a Count counts rows or a column. Rows with no Field into a Tag warn.
   const right = flow([...nodes, value('d', '2024-01-31', 'date')], [
-    { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 'c/rows', to: 'col' }, { from: 'fld/field', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 's', to: 'end' },
+    { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 'c/rows', to: 'col' }, { from: 'fld/field', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 'c', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(right)), {});
   assert.deepEqual(said(drawn(flow(nodes, [{ from: 's/rows', to: 'tag' }]))), { fld: [lone], tag: [['', 'Tag takes a field; it was given rows: route a Field in']], p: [lone] });
@@ -188,7 +188,7 @@ test('the words come from one place: the kind says what it needs, INPUT_WORDS sa
   assert.deepEqual(readInput({ label: 'Value A', needs: 'number' }, { kind: 'rows' }), { value: null, warning: 'Value A takes a number; it was given rows' });
   assert.deepEqual(readInput({ label: 'Anything' }, { kind: 'boolean' }), { value: undefined });
   // What a socket sends: rows from a Rows row, a list from a List, a number from a Result; nothing from a Value that holds none.
-  assert.deepEqual([givenAt(store, 'rows', NODE_KINDS), givenAt(value('l', ['a'], 'list'), 'value', NODE_KINDS), givenAt({ kind: 'math' }, 'result', NODE_KINDS), givenAt(value('e'), 'value', NODE_KINDS), givenAt(store, '#false', NODE_KINDS)],
+  assert.deepEqual([givenAt(store, 'rows', NODE_KINDS), givenAt(value('l', ['a'], 'list'), 'value', NODE_KINDS), givenAt({ kind: 'math' }, 'result', NODE_KINDS), givenAt(value('e'), 'value', NODE_KINDS), givenAt({ kind: 'condition' }, '#false', NODE_KINDS)],
     [{ kind: 'rows' }, { kind: 'list', value: ['a'] }, { kind: 'number' }, undefined, { kind: 'boolean' }]);
   for (const name of ['INPUT_WORDS', 'givenAt', 'needOf', 'readInput']) assert.equal(typeof data[name], name === 'INPUT_WORDS' ? 'object' : 'function', `sherpa-ui/data exports ${name}`);
 });

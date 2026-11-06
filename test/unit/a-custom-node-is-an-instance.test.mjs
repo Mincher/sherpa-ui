@@ -67,7 +67,7 @@ test('a library passes its schema and the check; a planted fault in each rule fa
 
 test('a use is a node of the definition\'s kind: nodeKindOf gives a row per input and output, and kindsOf merges', () => {
   const kind = lib.nodeKindOf(ORG);
-  assert.deepEqual([kind.heading, kind.model, kind.category, kind.branches, kind.input], ['Org permissions', 'graph', 'Logic', true, 'any']);
+  assert.deepEqual([kind.heading, kind.model, kind.category, kind.output, kind.input], ['Org permissions', 'graph', 'Logic', 'boolean', 'any']);
   assert.deepEqual(kind.rows.map((r) => [r.name, r.input ?? r.output, r.control ?? null]), [['users', 'object', null], ['role', 'value', 'text'], ['allowed', 'object', null]]);
   assert.equal(lib.nodeKindOf({ ...ORG, category: undefined }).category, 'Custom Nodes');
   const kinds = { ...NODE_KINDS, ...lib.kindsOf(library()) };

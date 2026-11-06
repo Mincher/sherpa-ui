@@ -2,8 +2,8 @@ import { test, expect, type Page } from './harness';
 
 /**
  * AND and OR take any boolean (Will, TODO 780: "0/1 or True or False is data"; plan 783 D4): a Value's 1 is a
- * constant part, read as true (TODO 781), no warning, and it folds in the Outgoing JSON's tree; the Source's True
- * joins by a drag, no refusal; the Source's rows join too, read null and warn. Real pointer.
+ * constant part, read as true (TODO 781), no warning, and it folds in the Outgoing JSON's tree; the Source's
+ * rows join by a drag, no refusal, read null and warn. Real pointer.
  * TRAP T-a-condition-is-a-tree-of-nodes
  */
 test.beforeEach(async ({ page }) => {
@@ -65,14 +65,13 @@ test('a Value\'s 1 into Or is a constant part: no warning, and Status or 1 alway
   expect(await where(page)).toEqual({ field: 'status', op: 'eq', value: 'active' });
 });
 
-test('the Source\'s True dropped on Or\'s header joins, no refusal; its rows join too, read null, and Or warns', async ({ page }) => {
+test('the Source\'s rows dropped on Or\'s header join, no refusal, read null, and Or warns', async ({ page }) => {
   const heard: string[] = [];
   page.on('console', (m) => { if (/bindWorkflow/.test(m.text())) heard.push(m.text()); });
-  await drag(page, await socketAt(page, '#cv > sherpa-node[data-heading="Source"]', 'output'), await socketAt(page, OR, 'input'));
-  expect(await page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-routes path[data-to="or"]')].map((p) => (p as SVGElement).dataset['from']).sort())).toEqual(['c', 'one/value', 's']);
+  expect(await page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-routes path[data-to="or"]')].map((p) => (p as SVGElement).dataset['from']).sort())).toEqual(['c', 'one/value']);
   expect(await page.locator(OR).getAttribute('data-warning')).toBeNull();
   const rows = await page.evaluate(() => {
-    const row = [...document.querySelectorAll('#cv > sherpa-node[data-heading="Source"] sherpa-node-row')].find((r) => r.getAttribute('data-label') === 'Rows') as HTMLElement & { socketRect(side: string): DOMRect };
+    const row = [...document.querySelectorAll('#cv > sherpa-node[data-heading="Source"] sherpa-node-row')].find((r) => r.querySelector('sherpa-input-text[name="store"]')) as HTMLElement & { socketRect(side: string): DOMRect };
     const r = row.socketRect('output');
     return [r.left + r.width / 2, r.top + r.height / 2] as [number, number];
   });

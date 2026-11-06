@@ -127,7 +127,7 @@ test('two routes into one In make two rows on its Out, each routed on alone by t
   expect(await rows(page, 'Portal', 1)).toEqual([]);
   await expect(card(page, 'Portal', 1)).not.toHaveAttribute('data-output-socket');
   // The Source's Rows and the Value into the In, which takes many: a row each on the Out, labelled from its source.
-  await drag(page, await socket(page, 'Source', 'output', 'Rows'), await socket(page, 'Portal', 'input'));
+  await drag(page, await socket(page, 'Source', 'output', '[name="store"]'), await socket(page, 'Portal', 'input'));
   await drag(page, await socket(page, 'Value', 'output', '[name="value"]'), await socket(page, 'Portal', 'input'));
   await expect(card(page, 'Portal')).toHaveAttribute('data-input-many', '');
   expect(await rows(page, 'Portal', 1)).toEqual(['Source › Rows', 'Value › Value']);

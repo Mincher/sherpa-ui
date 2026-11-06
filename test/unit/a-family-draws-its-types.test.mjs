@@ -49,8 +49,8 @@ test('each family: its types in order, the Type row first, and the rows, sockets
   assert.deepEqual(floor.map((r) => [r.name, r.input, r.output, r.many]), [['type', undefined, undefined, undefined], ['values', 'object', undefined, true], ['result', undefined, 'value', undefined]]);
   assert.equal(resolveKind(NODE_KINDS.text, 'split').rows.at(-1).output, 'object');
   assert.equal(resolveKind(NODE_KINDS.value, 'list').rows.at(-1).output, 'object');
-  // Time takes the date on its header, of any type (D1), and forks: True, it holds; False, it does not.
-  assert.deepEqual([NODE_KINDS.time.input, NODE_KINDS.time.branches], ['any', true]);
+  // Time takes the date on its header, of any type (D1), and sends a boolean: True, it holds (no False now, TODO 831).
+  assert.deepEqual([NODE_KINDS.time.input, NODE_KINDS.time.output], ['any', 'boolean']);
   assert.deepEqual(resolveKind(NODE_KINDS.time, 'duration').rows.slice(1).map((r) => r.control), ['span', 'number', 'unit']);
 });
 

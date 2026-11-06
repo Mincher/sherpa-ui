@@ -135,11 +135,11 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
   const inner = (node) => { const use = innerOf(node, library, kinds); return use && workflowGraph(use.workflow, {}, use.kinds); };
   assert.deepEqual(nodeFlow(drawn, 'and', { inner }).definition, { where: { and: [{ field: 'plan', op: 'eq', value: 'Pro' }, { field: 'status', op: 'eq', value: 'active' }] } });
   assert.deepEqual(nodeFlow(drawn, 'use', { inner }).definition, { where: { field: 'status', op: 'eq', value: 'active' } });
-  // Without the inside, the use's True is a boolean only a run gives (TODO 780), named by where it comes from.
-  assert.deepEqual(nodeFlow(drawn, 'and').definition, { where: { and: [{ field: 'plan', op: 'eq', value: 'Pro' }, { boolean: 'Active customers › True' }] } });
+  // Without the inside, the use's boolean is one only a run gives (TODO 780), named by where it comes from.
+  assert.deepEqual(nodeFlow(drawn, 'and').definition, { where: { and: [{ field: 'plan', op: 'eq', value: 'Pro' }, { boolean: 'Active customers' }] } });
   assert.deepEqual(workflowFaults({ v: 2, id: 'x', nodes: proActive.graph.nodes, routes }, kinds), []);
   // And takes any boolean (TODO 780, plan 783 D4): a constant folds, and one that decides it, or a boolean only a run
-  // gives, has no preset form, said in words.
+  // gives (and-or-take-any-boolean), has no preset form, said in words.
   const withPart = (node, from, join = 'and') => filter('part', [node, fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), test_('j', join, undefined, 600)],
     [{ from: 'plan/field', to: 'pro' }, { from: 'pro', to: 'j' }, { from, to: 'j' }, { from: 'j', to: '#out/where' }]);
   const yes = { id: 'v', kind: 'value', x: 0, y: 240, values: { type: 'boolean', value: 'true' } };
@@ -147,7 +147,6 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
   assert.match(presetOfEntity(withPart(yes, 'v/value', 'or')).fault, /always holds, so it filters nothing/);
   // Never is Any of nothing on the field its test names: a preset on the bar that holds no row (TODO 816).
   assert.deepEqual(presetOfEntity(withPart({ ...yes, values: { type: 'boolean', value: 'false' } }, 'v/value')).preset.where, { plan: { or: [] } });
-  assert.match(presetOfEntity(withPart({ id: 's', kind: 'source', x: 0, y: 240, values: { store: 'customers' } }, 's')).fault, /"Source › True" is a boolean only a run gives/);
 });
 
 test('what has no preset form is said in words: Or across two fields, an empty value, no condition, a test with no Field', () => {

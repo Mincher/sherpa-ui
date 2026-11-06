@@ -325,13 +325,13 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   await bind(page);
   const perm2 = '#cv > sherpa-node[data-heading="Org permissions"] >> nth=1';
   // An object, then a boolean, onto the HEADER of the second use: never matched to Users, its free row of their type.
-  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-label="Rows"]', 'output'), await socketAt(page, perm2, 'input'));
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Source"] sherpa-node-row:has(sherpa-input-text[name="store"])', 'output'), await socketAt(page, perm2, 'input'));
   await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Org permissions"] >> nth=0', 'output'), await socketAt(page, perm2, 'input'));
   expect(await routesOf(page)).toEqual(['perm → end', 'perm → perm2/perm', 'start/rows → perm/users', 'start/rows → perm2/start-rows', 'start/rows → perm2/users']);
   expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="perm2/start-rows"]').count()).toBe(1);
   // A row's words are its own, or its field's where it has a control (Role).
   expect(await page.locator(perm2).locator('sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label'), e.getAttribute('data-input-socket')]))).toEqual([
-    ['Users', 'object'], ['Role', 'value'], ['Source › Rows', 'object'], ['Org permissions › True', 'boolean'], ['Allowed', null],
+    ['Users', 'object'], ['Role', 'value'], ['Source › Rows', 'object'], ['Org permissions', 'boolean'], ['Allowed', null],
   ]);
   // The inside is shared: the other use says it can update; this one follows it.
   expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')))).toEqual(['Update available', null]);
@@ -339,11 +339,11 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   await ed(page, "ed.open('perm2')");
   await settle(page);
   const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]));
-  expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Source › Rows', 'object', false], ['Org permissions › True', 'boolean', false]]);
+  expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Source › Rows', 'object', false], ['Org permissions', 'boolean', false]]);
   // The reader routes Source › Rows on to the Field, by the pointer: it takes the place of Users there.
   await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Source › Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Field"]', 'input'));
   expect(await routesOf(page, "ed.library().nodes['org-permissions'].routes")).toContain('#in/start-rows → role');
-  expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Source › Rows', 'object', true], ['Org permissions › True', 'boolean', false]]);
+  expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Source › Rows', 'object', true], ['Org permissions', 'boolean', false]]);
   await ed(page, 'ed.back()');
   await settle(page);
   // Save hands the definition over with its two new inputs.
@@ -366,7 +366,7 @@ test('a preset\'s header refuses a new input as any refused drop does: in words,
     onReport((r) => w.said.push(`${r.code}: ${r.message}`));
   });
   const refused = 'workflow-route: bindWorkflow: a preset is read only: Copy to my nodes to add an input.';
-  const rows = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-label="Rows"]';
+  const rows = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row:has(sherpa-input-text[name="store"])';
   const own = '#cv > sherpa-node[data-heading="Owner check"]';
   const lines = () => page.locator('#cv svg.graph-routes path[data-from]').evaluateAll((els) => els.map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());
   await drawLine(page, await socketAt(page, rows, 'output'), await socketAt(page, own, 'input'));
@@ -544,5 +544,5 @@ test('one picked node shows no tabs; two show a tab each, the active ringed; a t
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Output');
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
-  expect(JSON.parse((await json('Incoming JSON'))!)[0].from).toEqual(['Org permissions › True']);
+  expect(JSON.parse((await json('Incoming JSON'))!)[0].from).toEqual(['Org permissions']);
 });

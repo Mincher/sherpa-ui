@@ -89,14 +89,20 @@ test('a kept Source is drawn under the page\'s and warns; its Store is the reade
   assert.ok(!JSON.stringify(pageWithQuery(page, query)).includes('devices'));
 });
 
-test('each kind\'s line is ONE short synopsis: a few words, one line, never its types', () => {
+test('each kind\'s line is ONE short job in plain words: a few words, one line, no article first, never its types', () => {
   for (const [id, kind] of Object.entries(NODE_KINDS)) {
     if (kind.category) assert.ok(kind.description, `${id}: a panel kind has a synopsis`);
     if (!kind.description) continue;
     const words = kind.description.split(/\s+/).length;
-    assert.ok(words <= 6 && kind.description.length <= 40 && !/\n/.test(kind.description), `${id}: "${kind.description}" is ${words} words`);
+    assert.ok(words <= 8 && kind.description.length <= 48 && !/\n/.test(kind.description), `${id}: "${kind.description}" is ${words} words`);
+    // A job, said as one: no article first, no full stop (Will, TODO 833).
+    assert.ok(!/^(a|an|the|one)\s/i.test(kind.description) && !kind.description.endsWith('.'), `${id}: "${kind.description}" reads as a job`);
     const types = Object.values(kind.types ?? {}).map((t) => t.label);
     assert.ok(types.filter((t) => kind.description.includes(t)).length < 2, `${id}: its line lists no types`);
   }
-  assert.equal(NODE_KINDS.math.description, 'Numbers in, one number out.', 'Will\'s own');
+  // Will's own words (TODO 833).
+  assert.deepEqual(Object.fromEntries(['source', 'field', 'value', 'condition', 'math'].map((id) => [id, NODE_KINDS[id].description])), {
+    source: 'Connect a data source', field: 'Target a field from a connected Source', value: 'Primitive value variables',
+    condition: 'Logical checks of a value against a condition', math: 'Numbers in, one number out',
+  });
 });

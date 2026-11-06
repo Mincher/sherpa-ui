@@ -34,7 +34,7 @@ test.beforeEach(async ({ page }) => {
         { id: 't', kind: 'time', x: 380, y: 340 },
         { id: 'end', kind: 'output', x: 740, y: 340 },
       ],
-      routes: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 's', to: 'end' }],
+      routes: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c', to: 'end' }],
     };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     const w = window as unknown as Record<string, unknown>;
@@ -139,7 +139,7 @@ test('keyboard focus on the header shows the tip, and the header is described by
 
 test('a connection made by hand warns at once; Undo takes the warning away, Redo gives it back, and Save does not wait', async ({ page }) => {
   // Rows with no Field into a comparison (plan 783 D3): it tests a field or a value.
-  const from = await socketAt(page, 'Source', 'Rows', 'output');
+  const from = await socketAt(page, 'Source', 'store', 'output');
   const to = await socketAt(page, 'Condition', null, 'input');
   await page.mouse.move(...from);
   await page.mouse.down();
@@ -182,7 +182,7 @@ const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll(
 test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is still refused, in words (770)', async ({ page }) => {
   const heard: string[] = [];
   page.on('console', (m) => { if (/bindWorkflow/.test(m.text())) heard.push(m.text()); });
-  await drag(page, await socketAt(page, 'Source', 'Rows', 'output'), await socketAt(page, 'Math', 'b', 'input'));
+  await drag(page, await socketAt(page, 'Source', 'store', 'output'), await socketAt(page, 'Math', 'b', 'input'));
   expect(await lines(page)).toContain('s/rows>m/b');
   expect(await warning(page, 'Math')).toBe('Value A takes a number; it was given "abc"\nValue B takes a number; it was given rows');
   expect(heard, 'no refusal').toEqual([]);

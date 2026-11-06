@@ -245,7 +245,7 @@ test('a PRESET is a node into its scope\'s row: its on, from the Query, and what
   assert.deepEqual(nodeIn(off, 'preset-data-big').ref, { scope: 'data', preset: 'big' });
   // Its True into its row: a boolean into a boolean.
   assert.ok(off.routes.some((r) => r.from === 'preset-data-big' && r.to === 'scope-data/@big'));
-  assert.deepEqual([nodeIn(off, 'preset-data-big').branches, nodeIn(off, 'scope-data').rows.find((r) => r.name === '@big').input], [true, 'boolean']);
+  assert.deepEqual([nodeIn(off, 'preset-data-big').output, nodeIn(off, 'scope-data').rows.find((r) => r.name === '@big').input], ['boolean', 'boolean']);
   // Its on is the command a chip asks; drawn again, it is on, and its rows are its own, not a condition's.
   const preset = nodeIn(off, 'preset-data-big');
   source.query.ask(graphRequest({ node: preset, row: preset.rows[0], value: true }, facts));

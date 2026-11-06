@@ -27,10 +27,10 @@ const at = (g, id) => g.nodes.find((n) => n.id === id);
 /** Each node's warnings in words, by its id: none, where it has none. */
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
 
-test('Pick became Field: one node in Variables, in both graphs; its Field row an object out; its True and False', () => {
+test('Pick became Field: one node in Variables, in both graphs; its Field row an object out; no True and False now (TODO 831)', () => {
   assert.equal(NODE_KINDS.pick, undefined);
   const kind = NODE_KINDS.field;
-  assert.deepEqual([kind.heading, kind.category, kind.input, kind.needs, kind.branches, kind.graphs], ['Field', 'Variables', 'any', 'object', true, ['query', 'workflow']]);
+  assert.deepEqual([kind.heading, kind.category, kind.input, kind.needs, kind.branches, kind.graphs], ['Field', 'Variables', 'any', 'object', undefined, ['query', 'workflow']]);
   assert.deepEqual(kind.rows.map((r) => [r.name, r.control, r.input, r.output, r.gives]), [['field', 'field', 'value', 'object', 'field']]);
   assert.equal(kindIn(kind, 'query'), kind);
   assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Variables').items.map((i) => i.id), ['value', 'field']);

@@ -53,10 +53,10 @@ test('two Sources dragged into a workflow: each its own id, customers and device
     .map((n) => [n.id, n.kind, n.values?.store ?? null]));
   expect(await kept()).toEqual([['source-1', 'source', 'customers'], ['source-2', 'source', 'devices']]);
   await expect(page.locator(sources)).toHaveCount(2);
-  // 809: every line is a few words, on one line; a family's never lists its types.
+  // 809, 833: every line is a short job in Will's words, on one line; a family's never lists its types.
   const lines = await page.locator('sherpa-node-panel sherpa-list-item').evaluateAll((els) => els.map((e) => [e.getAttribute('data-kind'), e.getAttribute('data-description')]));
-  expect(Object.fromEntries(lines)).toMatchObject({ source: 'Rows from a store.', value: 'One value, typed.', math: 'Numbers in, one number out.' });
-  for (const [kind, line] of lines) expect(line!.split(/\s+/).length, `${kind}: "${line}"`).toBeLessThanOrEqual(6);
+  expect(Object.fromEntries(lines)).toMatchObject({ source: 'Connect a data source', value: 'Primitive value variables', math: 'Numbers in, one number out' });
+  for (const [kind, line] of lines) expect(line!.split(/\s+/).length, `${kind}: "${line}"`).toBeLessThanOrEqual(8);
   // The types stay in search: "integer" finds Value, says Integer, and places it so.
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('integer');
   await expect(page.locator('sherpa-node-panel sherpa-list-item:visible')).toHaveCount(1);
