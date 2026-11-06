@@ -408,12 +408,12 @@
       }
     },
     "socket": {
-      "description": "A node's header socket, \"node\" (its input is its data; its output is True, where the node forks); a row's, \"node/row\" (\"node/rows\" sends its data rows); or its footer's False, \"node/#false\".",
-      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?$"
+      "description": "A node's header socket, \"node\" (its input is its data; its output is True, where the node forks); a row's, \"node/row\" (\"node/rows\" sends its data rows); its footer's False, \"node/#false\"; or a portal Out's row, \"node/@<source>\", one per route into an In of its name, named by that route's source (TODO 826).",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false|@[a-z#][a-z0-9#/@-]*))?$"
     },
     "innerSocket": {
-      "description": "An address inside a Custom Node's body: a node's socket, or the Group Input's (\"#in\", \"#in/<name>\") or Group Output's (\"#out\", \"#out/<name>\").",
-      "type": "string", "pattern": "^((#in|#out)(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?)$"
+      "description": "An address inside a Custom Node's body: a node's socket, or the Group Input's (\"#in\", \"#in/<name>\") or Group Output's (\"#out\", \"#out/<name>\"); a portal Out's row names its source, \"node/@#in/<name>\" for one that comes in by the Group Input.",
+      "type": "string", "pattern": "^((#in|#out)(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false|@[a-z#][a-z0-9#/@-]*))?)$"
     },
     "innerRoute": {
       "description": "A route inside a Custom Node's body: it may start at the Group Input and end at the Group Output.",
