@@ -214,3 +214,41 @@ test('the sockets\' order: what feeds rows a and b stands in that order, and wha
   expect((await atSockets(page)).swapped).toBe(0);
 });
 
+
+// A portal pair, stood flipped: the Output and the Portal Out on the left, the Source and the Portal In on the right (TODO 839).
+const PORTAL_PAIR: [string, string, number, number, Record<string, unknown>?][] = [
+  ['end', 'output', 0, 0], ['out', 'portal', 400, 0, { type: 'out', name: 'Hand on' }], ['rows', 'condition', 800, 0, { type: 'eq', b: 'x' }],
+  ['in', 'portal', 1200, 0, { type: 'in', name: 'Hand on' }], ['pick', 'field', 1600, 0], ['src', 'source', 2000, 0, { store: 'users' }],
+];
+const PORTAL_ROUTES = [{ from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'in' }, { from: 'out', to: 'rows' }, { from: 'rows/rows', to: 'end' }];
+
+test('a graph reads left to right: Sources and a Portal In left, a Portal Out and Outputs right; a portal pair never flips it (Will, TODO 839)', async ({ page }) => {
+  await start(page, PORTAL_PAIR, PORTAL_ROUTES);
+  await button(page).click();
+  await settle(page);
+  const now = await rects(page);
+  const left = (id: string) => now[id]!.x;
+  // Source, then its Field, the In; the Out, then its Condition, the Output: each to the right of the one before.
+  expect(['src', 'pick', 'in', 'out', 'rows', 'end'].map(left)).toEqual([...['src', 'pick', 'in', 'out', 'rows', 'end'].map(left)].sort((a, b) => a - b));
+  expect(left('in') + now['in']!.w).toBeLessThanOrEqual(left('out'));
+  expect(overlaps(now)).toEqual([]);
+  expect((await lines(page)).backwards).toBe(0);
+  // And once more: it holds, and one Undo puts the flipped places back.
+  await button(page).click();
+  await settle(page);
+  expect(['src', 'in', 'out', 'end'].map(left)).toEqual([...['src', 'in', 'out', 'end'].map(left)].sort((a, b) => a - b));
+  await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await settle(page);
+  expect((await flow(page)).nodes.find((n) => n.id === 'src')!.x).toBe(2000);
+});
+
+test('a lone Source stands left of the graph and a lone Output right of it', async ({ page }) => {
+  await start(page, [['a', 'source', 400, 0, { store: 'users' }], ['f', 'field', 800, 0], ['c', 'condition', 1200, 0, { type: 'eq', b: 'x' }], ['lone-out', 'output', 0, 0], ['lone-src', 'source', 1600, 300, { store: 'users' }]],
+    [{ from: 'a/rows', to: 'f' }, { from: 'f/field', to: 'c' }]);
+  await button(page).click();
+  await settle(page);
+  const now = await rects(page);
+  expect(now['lone-src']!.x + now['lone-src']!.w).toBeLessThanOrEqual(Math.min(now['a']!.x, now['f']!.x, now['c']!.x));
+  expect(now['lone-out']!.x).toBeGreaterThanOrEqual(Math.max(...['a', 'f', 'c'].map((id) => now[id]!.x + now[id]!.w)));
+});
