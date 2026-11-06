@@ -574,7 +574,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (127)
+## Menus, tips and overlays (128)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -647,6 +647,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-inline-menu-is-the-same-menu](traps/filters.md#t-an-inline-menu-is-the-same-menu) — menu
 - [T-an-instance-pin-is-the-hosts-to-apply](traps/menus-tips-overlays.md#t-an-instance-pin-is-the-hosts-to-apply) — dialog
 - [T-an-operator-decides-pick-or-type](traps/data-layer.md#t-an-operator-decides-pick-or-type) — menu
+- [T-an-overlaid-panel-keeps-its-side](traps/menus-tips-overlays.md#t-an-overlaid-panel-keeps-its-side) — overlay-panel
 - [T-an-overlay-panel-resizes-from-its-left-edge](traps/menus-tips-overlays.md#t-an-overlay-panel-resizes-from-its-left-edge) — overlay-panel
 - [T-an-unanswered-row-survives-a-redraw](traps/menus-tips-overlays.md#t-an-unanswered-row-survives-a-redraw) — menu
 - [T-an-untouched-select-is-not-an-answer](traps/menus-tips-overlays.md#t-an-untouched-select-is-not-an-answer) — menu

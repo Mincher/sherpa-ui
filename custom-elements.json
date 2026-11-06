@@ -8544,6 +8544,13 @@
               }
             },
             {
+              "name": "data-side",
+              "description": "start | end: the edge it docks to, written from data-fixed; kept, a panel overlaid out of its area stays on it",
+              "type": {
+                "text": "'start' | 'end'"
+              }
+            },
+            {
               "name": "data-status",
               "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):",
               "type": {

@@ -56,6 +56,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-poppable': { type: 'boolean', kind: 'style' },
     // A fixed panel, in a panel area of the app shell: `start`, else the end. TRAP T-a-panel-pops-into-the-end-area
     'data-fixed': { type: 'string', kind: 'behaviour' },
+    // The side it docks to: the panel writes it from `data-fixed`, so overlaid out of its area it stays on that edge. TRAP T-an-overlaid-panel-keeps-its-side
+    'data-side': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
     'data-floatable': { type: 'boolean', kind: 'style' },
     // Shrunk to a tab on its area's edge; pressed, it opens as it was. TRAP T-a-minimised-panel-is-a-tab
     'data-minimisable': { type: 'boolean', kind: 'style' },
@@ -285,7 +287,10 @@ export class SherpaOverlayPanel extends SherpaElement {
       SherpaOverlayPanel.#shown.delete(this);
       return;
     }
-    if (this.hasAttribute('data-fixed')) this.#dock = this.#side();
+    if (this.hasAttribute('data-fixed')) {
+      this.#dock = this.#side();
+      this.setAttribute('data-side', this.#dock);
+    } else if (this.getAttribute('data-side') === 'start') this.#dock = 'start';
     const shell = this.#area();
     this.toggleState('no-area', !shell);
     this.toggleState('tab-start', this.#dock === 'start');

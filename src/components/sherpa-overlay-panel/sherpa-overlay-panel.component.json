@@ -461,6 +461,19 @@
     },
     {
       "$type": "prop",
+      "name": "data-side",
+      "type": "enum",
+      "observed": false,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "start",
+        "end"
+      ],
+      "description": "start | end: the edge it docks to, written from data-fixed; kept, a panel overlaid out of its area stays on it"
+    },
+    {
+      "$type": "prop",
       "name": "data-status",
       "type": "string",
       "observed": false,
@@ -589,7 +602,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, updated?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, side?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

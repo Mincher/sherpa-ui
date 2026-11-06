@@ -314,6 +314,19 @@ panel's 20rem, not the card's 16rem. The panel keys read the overlay panel (`min
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `test/e2e/reforged-overlay-panel-padding.spec.ts`
 
+### T-an-overlaid-panel-keeps-its-side
+
+**A panel docked to the start area, and overlaid out of it, stays on the START edge** (Will, TODO 858: the filter panel
+came up on the right). Pop (Dock as overlay) took `data-fixed` off a panel in the shell's area, and a panel with no
+`data-fixed` is the right-edge overlay, so it jumped across the window; the app kept `fixed: false`, so every reload
+put it there. The panel now writes `data-side` (`start` | `end`) from `data-fixed`, and a panel overlaid with
+`data-side="start"` takes the start edge. The app keeps it beside `fixed`, and its own markup names the side too,
+for a state kept before this existed.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-overlay-panel-side.spec.ts`
+
 ### T-a-panel-slotted-in-a-layout-is-docked-there
 
 **An overlay panel SLOTTED into a canvas's `panel` slot, or a panel area's own, is docked there by its

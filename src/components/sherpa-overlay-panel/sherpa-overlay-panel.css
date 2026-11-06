@@ -150,6 +150,8 @@
 /* The tab is hidden while its panel shows: the panel is what the pointer is on. */
 :host([data-minimised][open]:state(peeking)) .tab { display: none; }
 :host(:state(tab-start):state(peeking):not(:state(in-layout))) .root { inset-inline-start: 0; inset-inline-end: auto; }
+/* Overlaid out of its area, a start panel stays on the start edge. TRAP T-an-overlaid-panel-keeps-its-side */
+:host(:state(tab-start):not(:state(in-layout), :state(in-area), :state(floating))) .root { inset-inline-start: 0; inset-inline-end: auto; }
 /* PHYSICAL sides: the tab's own vertical writing mode would turn the logical ones. */
 :host([data-minimised][open]) .tab {
   display: flex;
