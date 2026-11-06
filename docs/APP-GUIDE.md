@@ -343,7 +343,8 @@ A graph View is a View whose body is a canvas, showing one entity of a type
 - The header's Save and its menu read Save graph as and Delete graph there;
   Save is off on a preset. Each is a request (`view-save`, `view-save-as`,
   `view-delete`): the Context prevents it and answers. Save is
-  `saveGraph(entities, id, graph)`; Save graph as asks a name in the Save View
+  `saveGraph(entities, id, graph, { tags: editor.tags() })`, the open graph's own
+  tags with it (its Group Input's and Output's Tags field); Save graph as asks a name in the Save View
   dialog, then `saveGraphAs(entities, id, graph, { label, description })` and
   `openGraph` the copy; Delete says `entities.whyKept(id)` when it is refused.
 - **A page's filters are a graph View too**: ship

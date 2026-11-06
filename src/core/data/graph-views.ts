@@ -18,7 +18,7 @@
  * - pageRows — The graph chip's rows over the pages: one each, none a copy, and no New graph….
  * - newGraph — A new, empty entity of a type, saved through the shelf under a free id, name and tags.
  * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes, ties and frames.
- * - saveGraph — Save the graph on a canvas as the open entity's: a preset is refused, as the shelf refuses it.
+ * - saveGraph — Save the graph on a canvas as the open entity's, its own tags if given: a preset is refused.
  * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named and tagged, under a free id.
  */
 import type { Entity, EntityGraph } from './entity.js';
@@ -134,10 +134,11 @@ export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'ro
   };
 }
 
-/** Save the graph on a canvas as the open entity's. A preset is refused, as the shelf refuses it: it is read only. */
-export async function saveGraph(shelf: EntityShelf, id: string, graph: EntityGraph): Promise<boolean> {
+/** Save the graph on a canvas as the open entity's, and its own tags when given (the editor's `tags()`, TODO 828).
+ *  A preset is refused, as the shelf refuses it: it is read only. */
+export async function saveGraph(shelf: EntityShelf, id: string, graph: EntityGraph, own: { tags?: readonly string[] } = {}): Promise<boolean> {
   const was = shelf.get(id);
-  return !!was && shelf.save({ ...was, graph });
+  return !!was && shelf.save({ ...was, graph, ...(own.tags ? { tags: tidyTags(own.tags) } : {}) });
 }
 
 /** Save the graph on a canvas as a COPY of an entity, a preset's too: the reader's own, under the name

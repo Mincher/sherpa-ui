@@ -7557,6 +7557,10 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   follow at once. Tags are no part of the version: no use goes stale. A preset's field is read
   only. A tag chip's Backspace or Delete is the field's: the inspector's Delete-the-node key hears
   only a key no field took (`defaultPrevented`), or a chip's Backspace removed the node.
+  The OPEN graph's own tags (TODO 828) are on its own Group Input and Output: a draft beside
+  the workflow's, one Undo step, and not an edit of the library's copy of it. That copy holds
+  the graph as last saved, and a Save that wrote it as an edited definition would put the old
+  graph back. `editor.tags()` is what the app's `saveGraph(…, { tags })` writes.
 
 - Site: `src/core/data/node-library.ts`
 - Site: `src/core/data/node-group.ts`

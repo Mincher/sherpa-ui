@@ -1747,6 +1747,8 @@ export interface WorkflowEditor extends GraphEditor, Undoable {
   path(): readonly string[];
   /** The workflow as the draft holds it now, unsaved. */
   workflow(): WorkflowDefinition;
+  /** The open entity's own tags as the draft holds them, for the app's Save to write; none without an entity. TODO 828 */
+  tags(): readonly string[] | undefined;
 }
 
 /** Tell the app a definition to keep. */
@@ -2206,6 +2208,8 @@ const HISTORY = 100;
 interface Snap {
   draft: WorkflowDefinition;
   defs: Record<string, NodeDefinition | undefined>;
+  /** The open entity's own tags. */
+  tags: readonly string[];
 }
 
 /** One Custom Node opened: its definition's id, the use that opened it, and its name. */
@@ -2217,6 +2221,8 @@ interface Opened {
 
 /** Whether a value is a library's edits: definitions by id. */
 const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && typeof v === 'object' && !Array.isArray(v);
+/** Whether a value is a list of tags. */
+const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) => typeof t === 'string');
 
 /** Keep a workflow's draft drawn on a canvas, and write each edit to it as a pure edit:
  *  a value, a move, a route, a node's own name. A route that would break the workflow is
@@ -2245,6 +2251,11 @@ export function bindWorkflow(
   let given = library ?? { v: 1, nodes: {} };
   let lib: NodeLibrary = { ...given, nodes: { ...given.nodes, ...edited } };
   let handed: NodeLibrary = given;
+  // The open entity's own tags, a draft beside the workflow's, kept for the tab: the app's Save writes them. TODO 828
+  const tagsAt = `/graph-tags/${workflow.id}`;
+  session?.persist(tagsAt, { shared: false, guard: isTags });
+  let handedTags: readonly string[] = own ? tidyTags(lib.nodes[own]?.tags) : [];
+  let ownTags: readonly string[] = (session?.get(tagsAt) as string[] | undefined) ?? handedTags;
   const dirty = new Set(Object.keys(edited));
   const topKinds = (): Readonly<Record<string, NodeKind>> => ({ ...kinds, ...kindsOf(lib) });
   // This tab's draft wins: a reload loses nothing. What a v1's read cannot map is said once.
@@ -2301,27 +2312,27 @@ export function bindWorkflow(
   };
   /** Two steps as one: the first's before, the second's after, for every definition either changed. */
   const fold = (last: Change<Snap>, next: Change<Snap>): Change<Snap> => ({
-    before: { draft: last.before.draft, defs: { ...next.before.defs, ...last.before.defs } },
-    after: { draft: next.after.draft, defs: { ...last.after.defs, ...next.after.defs } },
+    before: { draft: last.before.draft, defs: { ...next.before.defs, ...last.before.defs }, tags: last.before.tags },
+    after: { draft: next.after.draft, defs: { ...last.after.defs, ...next.after.defs }, tags: next.after.tags },
   });
   let depth = 0;
-  let begun: { draft: WorkflowDefinition; nodes: NodeLibrary['nodes'] } | undefined;
+  let begun: { draft: WorkflowDefinition; nodes: NodeLibrary['nodes']; tags: readonly string[] } | undefined;
   let lastTag = '';
   let lastAt = 0;
   /** One edit, however many writes it makes: ONE step. The same `tag` within a second (a drag, a typed word) is one too. */
   const edit = (fn: () => void, tag = ''): void => {
-    if (depth++ === 0) begun = { draft, nodes: lib.nodes };
+    if (depth++ === 0) begun = { draft, nodes: lib.nodes, tags: ownTags };
     try {
       fn();
     } finally {
       if (--depth === 0) {
         const was = begun!.nodes;
         const ids = [...new Set([...Object.keys(was), ...Object.keys(lib.nodes)])].filter((id) => was[id] !== lib.nodes[id]);
-        if (begun!.draft !== draft || ids.length) {
+        if (begun!.draft !== draft || begun!.tags !== ownTags || ids.length) {
           const of = (nodes: NodeLibrary['nodes']): Snap['defs'] => Object.fromEntries(ids.map((id) => [id, nodes[id]]));
           const now = performance.now();
           const merge = tag && tag === lastTag && now - lastAt < 1000;
-          journal.push({ before: { draft: begun!.draft, defs: of(was) }, after: { draft, defs: of(lib.nodes) } }, merge ? fold : undefined);
+          journal.push({ before: { draft: begun!.draft, defs: of(was), tags: begun!.tags }, after: { draft, defs: of(lib.nodes), tags: ownTags } }, merge ? fold : undefined);
           lastTag = tag;
           lastAt = now;
           tell();
@@ -2333,6 +2344,8 @@ export function bindWorkflow(
    *  now: a refresh is not undone, and a Save is no wall. A definition a step made stays once saved: it is the app's. */
   const restore = (to: Snap): void => {
     draft = to.draft;
+    ownTags = to.tags;
+    session?.set(tagsAt, ownTags === handedTags ? undefined : ownTags);
     const put = new Map(Object.entries(to.defs).map(([id, was]) => [id, was ?? handed.nodes[id]] as const));
     for (const [id, definition] of put) {
       // It is a draft edit while it differs from what Save last handed over.
@@ -2376,6 +2389,12 @@ export function bindWorkflow(
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     // A Custom Node's tags are its definition's: one step, and the panel's headings follow. TODO 819
     if (row.name === '#tags') {
+      // The open entity's own, on its Group Input and Output: a draft beside the workflow's. TODO 828
+      if (ownTagged(node)) {
+        const next = tidyTags(value);
+        if (!readOnly() && JSON.stringify(next) !== JSON.stringify(ownTags)) edit(() => { ownTags = next; session?.set(tagsAt, next); });
+        return;
+      }
       const id = taggedBy(node);
       const next = id && !readOnly() ? tagDefinition(lib, id, value) : lib;
       if (next !== lib) setLib(next, [id!]);
@@ -2926,15 +2945,20 @@ export function bindWorkflow(
   const knownTags = (): string[] => [...new Set(Object.values(lib.nodes).flatMap((d) => tidyTags(d.tags)))].sort();
   /** The definition a Tags field edits: a use's; inside an opened one, its Group Input's and Output's. */
   const taggedBy = (node: Pick<GraphNode, 'id'>): string | undefined => (node.id.startsWith('#') ? path.at(-1)?.kind : use(node.id)?.kind);
+  /** A Group Input or Output of the open entity itself: its Tags field is the entity's own. TODO 828 */
+  const ownTagged = (node: Pick<GraphNode, 'id'>): boolean => !!own && !path.length && node.id.startsWith('#');
   /** The Tags row: the DEFINITION's tags, which every use shares; read only for a preset. TRAP T-a-custom-node-is-an-instance */
   const tagsRow = (node: GraphNode): GraphRow[] => {
     const id = taggedBy(node);
     const definition = id ? lib.nodes[id] : undefined;
-    return definition ? [{
-      name: '#tags', label: 'Tags', control: 'tags', multiple: true, value: tidyTags(definition.tags), editable: !readOnly() && !definition.preset,
+    const mine = ownTagged(node);
+    if (!definition && !mine) return [];
+    const locked = mine ? preset : !!definition?.preset;
+    return [{
+      name: '#tags', label: 'Tags', control: 'tags', multiple: true, value: mine ? [...ownTags] : tidyTags(definition?.tags), editable: !readOnly() && !locked,
       choices: knownTags().map((value) => ({ value, label: value })),
-      hint: definition.preset ? 'The Custom Node\'s own tags, read only: it is a preset' : 'The Custom Node\'s own tags: every use of it shares them',
-    }] : [];
+      hint: locked ? 'The Custom Node\'s own tags, read only: it is a preset' : 'The Custom Node\'s own tags: every use of it shares them',
+    }];
   };
   // The inspector leads with the node's own name, line and place; a Custom Node's tags after its line.
   const withOwn = (node: GraphNode): GraphNode => {
@@ -3025,6 +3049,8 @@ export function bindWorkflow(
       dirty.clear();
       handed = lib;
       original = draft;
+      handedTags = ownTags;
+      session?.set(tagsAt, undefined);
       session?.set(editsAt, undefined);
       session?.set(pointer, undefined);
       return true;
@@ -3032,6 +3058,8 @@ export function bindWorkflow(
     discard(): void {
       draft = original;
       lib = handed;
+      ownTags = handedTags;
+      session?.set(tagsAt, undefined);
       dirty.clear();
       journal.clear();
       lastTag = '';
@@ -3047,6 +3075,8 @@ export function bindWorkflow(
     back,
     refresh(next: NodeLibrary): void {
       given = next;
+      // Its own tags follow another tab's save, unless this tab's draft has its own.
+      if (own && JSON.stringify(ownTags) === JSON.stringify(handedTags)) ownTags = handedTags = tidyTags(next.nodes[own]?.tags);
       handed = next;
       lib = { ...next, nodes: { ...next.nodes, ...edits() } };
       refreshPanel();
@@ -3055,6 +3085,7 @@ export function bindWorkflow(
     library: () => lib,
     path: () => path.map((s) => s.use),
     workflow: () => draft,
+    tags: () => (own ? ownTags : undefined),
     undo,
     redo,
     can: () => ({ undo: journal.canBack, redo: journal.canForward }),
