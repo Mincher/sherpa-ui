@@ -135,3 +135,16 @@ test('a graph with a fault does not save: Save is refused, nothing is handed ove
   expect(await page.evaluate(() => (window as never as { saved: unknown[] }).saved.length)).toBe(0);
   expect(await page.evaluate(() => (window as never as { refused: string[][] }).refused)).toEqual([['the node "old" is of the kind "collection", which is not one']]);
 });
+
+test('a node\'s details have its Name and Description and no X or Y: its place is a drag\'s, debug only (TODO 838)', async ({ page }) => {
+  await bind(page, BARE);
+  const b = (await card(page, 'Math').locator('sherpa-container-header').boundingBox())!;
+  await page.mouse.click(b.x + b.width * 0.4, b.y + b.height / 2);
+  await settle(page);
+  const names = await page.locator('#inspector sherpa-input-text').evaluateAll((els) => els.map((e) => e.getAttribute('name')));
+  expect(names).toEqual(expect.arrayContaining(['#heading', '#description']));
+  expect(names).not.toContain('#x');
+  expect(names).not.toContain('#y');
+  // Its place is still the draft's: a read of the workflow gives it.
+  expect(await page.evaluate(() => ((window as never as { ed: { workflow(): { nodes: { id: string; x: number }[] } } }).ed.workflow().nodes.find((n) => n.id === 'add')!.x))).toBe(1160);
+});

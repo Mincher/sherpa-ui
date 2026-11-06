@@ -40,6 +40,8 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+/** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
+const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
 const asked = (page: Page) => page.evaluate(() => (window as unknown as { asked: unknown[] }).asked);
 const said = (page: Page) => page.evaluate(() => (window as unknown as { said: string[] }).said);
@@ -68,9 +70,11 @@ test('a click on Field asks the Query to hold the next field; a Condition is ref
 
 test('a Preset Filter is a Custom Node: listed by its name, and a click switches it on where it is declared', async ({ page }) => {
   await expect(item(page, 'preset-filter:active')).toHaveAttribute('data-label', 'Active');
+  await openCustom(page);
   await item(page, 'preset-filter:active').click();
   expect(await asked(page)).toEqual([{ scope: 'view', preset: 'preset-filter:active', on: true }]);
-  // Preset is the page's own: it never switches a Preset Filter on.
+  // Preset is the page's own: it never switches a Preset Filter on. It is a kind, on the Preset Nodes tab.
+  await page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="preset"]').click();
   await item(page, 'preset').click();
   expect((await asked(page)).at(-1)).toEqual({ scope: 'view', preset: 'big', on: true });
   expect(await said(page)).toEqual([]);

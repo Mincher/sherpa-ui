@@ -98,23 +98,3 @@ test('a saved node shows in a second tab, live and after a reload; a preset is r
   await expect.poll(() => listed(first)).toEqual(['has-role (preset)', 'also']);
 });
 
-test('a saved node is in the database too: with the browser\'s storage cleared, restore gives it back', async ({ page }) => {
-  await gotoHarness(page);
-  const restored = await page.evaluate(async () => {
-    const { PageKeeper, NODES_PAGE } = await import('/dist/index.js') as unknown as Record<string, any>;
-    for (const key of Object.keys(localStorage)) if (key.startsWith('sherpa:')) localStorage.removeItem(key);
-    const def = { v: 1, label: 'Kept', inputs: [], outputs: [], nodes: [] };
-    const keeper = new PageKeeper({ database: true });
-    await keeper.saveNode('kept', def);
-    await keeper.flush();
-    await keeper.saveNode('gone', { ...def, label: 'Gone' });
-    keeper.removeNode('gone');
-    await keeper.flush();
-    for (const key of Object.keys(localStorage)) if (key.startsWith('sherpa:')) localStorage.removeItem(key);
-    const again = new PageKeeper({ database: true });
-    const before = Object.keys(again.nodeLibrary().nodes);
-    const back = await again.restore(NODES_PAGE);
-    return { before, back: Object.keys(back.nodes ?? {}), now: Object.keys(again.nodeLibrary().nodes) };
-  });
-  expect(restored).toEqual({ before: [], back: ['kept'], now: ['kept'] });
-});

@@ -69,8 +69,10 @@ const handed = (page: Page) => page.evaluate(() => {
   w.handed = [];
   return out;
 });
-const tagHeadings = (page: Page) => page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('.tag-heading')]
-  .filter((h) => h.checkVisibility()).map((h) => h.dataset['heading']));
+/** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
+const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
+const tagHeadings = async (page: Page) => { await openCustom(page); return page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('.tag-heading')]
+  .filter((h) => h.checkVisibility()).map((h) => h.dataset['heading'])); };
 const typeTag = async (page: Page, heading: string, word: string) => {
   await header(page, heading).click();
   await settle(page);

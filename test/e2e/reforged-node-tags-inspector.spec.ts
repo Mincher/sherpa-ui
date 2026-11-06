@@ -70,11 +70,13 @@ const tagsField = (page: Page) => page.locator('#inspector sherpa-input-text[nam
 type Tagged = HTMLElement & { tags: string[]; suggestions: { value: string }[] };
 const fieldTags = (page: Page) => tagsField(page).evaluate((el) => (el as Tagged).tags);
 const defTags = (page: Page, id: string) => page.evaluate((k) => (window as unknown as { ed: { library(): { nodes: Record<string, { tags?: string[] }> } } }).ed.library().nodes[k]?.tags ?? [], id);
+/** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
+const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
 /** The panel's headings that show, a tag's marked. */
-const headings = (page: Page) => page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('.category-heading, .tag-heading')]
-  .filter((h) => h.checkVisibility()).map((h) => (h.classList.contains('tag-heading') ? `› ${h.dataset['heading']}` : h.dataset['heading'])));
+const headings = async (page: Page) => { await openCustom(page); return page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('.category-heading, .tag-heading')]
+  .filter((h) => h.checkVisibility()).map((h) => (h.classList.contains('tag-heading') ? `› ${h.dataset['heading']}` : h.dataset['heading']))); };
 /** The nodes the panel lists under one tag. */
-const under = (page: Page, tag: string) => page.evaluate((t) => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll(`.tag:has(> .tag-heading[data-heading="${t}"]) sherpa-list-item`)].map((i) => i.getAttribute('data-label')), tag);
+const under = async (page: Page, tag: string) => { await openCustom(page); return page.evaluate((t) => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll(`.tag:has(> .tag-heading[data-heading="${t}"]) sherpa-list-item`)].map((i) => i.getAttribute('data-label')), tag); };
 /** Click into the Tags field's own text, and type a tag. */
 const typeTag = async (page: Page, word: string) => {
   await tagsField(page).locator('input.control:visible').click();

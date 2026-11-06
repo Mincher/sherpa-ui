@@ -60,6 +60,8 @@ const bind = (page: Page) => page.evaluate(async () => {
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const ed = <T>(page: Page, fn: string) => page.evaluate(`(() => { const ed = window.ed; return ${fn}; })()`) as Promise<T>;
 /** What the panel lists: each item's kind, by its category. */
+/** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
+const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
 const offered = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelector('#cv sherpa-node-panel')!.shadowRoot!.querySelectorAll('.categories > .category')]
   .map((a) => [a.querySelector('.category-heading')?.getAttribute('data-heading'), [...a.querySelectorAll<HTMLElement>('sherpa-list-item[data-kind]')].map((i) => i.dataset['kind'])])));
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
@@ -73,6 +75,7 @@ test('the panel offers what a Preset Filter takes, and every entity\'s node but 
   expect(all).toContain('condition');
   expect(all).not.toContain('output');
   expect(lists['Custom Nodes']).toEqual(['preset-filter:trials', 'preset-filter:active']);
+  await openCustom(page);
   await page.locator('#cv sherpa-node-panel sherpa-list-item[data-kind="preset-filter:active"]').click();
   await settle(page);
   const placed = await ed<{ kind: string; version?: string }>(page, "ed.workflow().nodes.find((n) => n.kind === 'preset-filter:active')");
@@ -93,6 +96,7 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   await settle(page);
   expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:trials', 'preset-filter:active']);
   // A preset placed and opened: locked, with "Copy to my nodes".
+  await openCustom(page);
   await page.locator('#cv sherpa-node-panel sherpa-list-item[data-kind="preset-filter:active"]').click();
   await settle(page);
   await header(page, 'Active').dblclick();
