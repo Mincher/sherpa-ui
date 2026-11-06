@@ -12,7 +12,7 @@ proved by the gates, the bench and the specs it touches.
 |---|---|---|---|
 | B1 | A rebuilt grid body loses the current-row tint: 11 sites re-render rows without `#syncCurrent` (a filter keystroke, `drawReading`, `select()`) | `sherpa-data-grid.ts` | one `#drawBody()` that does all four syncs |
 | B2 | A JsonStore checks each row twice per load, copies the set, and never reports the rows its schema refused | `stores.ts` JsonStore | load and scan through the inner store |
-| B3 | The panel sends group-change and sort-change twice per pick, the second without a direction | `sherpa-filter-panel.ts` `#onAddCommit` | drop the organise emit there |
+| B3 | The panel sends group-change and sort-change twice per pick, the second without a direction | `sherpa-filter-panel.ts` (old) `#onAddCommit` | drop the organise emit there |
 | B4 | The bar sends two requests per condition edit; the first can read empty | `sherpa-quick-filter-toolbar.ts` `#onConditionChanged` | keep the deferred one |
 | B5 | The provider keeps every past Context's filter bars alive (a Map keyed by element) | `provider-mode.ts` `#toggles` | a WeakMap |
 | ~~B6~~ | ~~The menu runs `#syncDirty` twice per event~~ — NOT waste: the host listener runs after a tree takes its tick. Removing it left a tree menu's Apply off (found by a second session, reverted) | `sherpa-menu.ts` | keep both |

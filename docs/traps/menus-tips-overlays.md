@@ -1404,7 +1404,7 @@ values meant different things depending on how they got there.
 
 ### T-a-borrowed-menu-leaves-its-toolbars-listeners-behind
 
-The old `sherpa-filter-panel` BORROWED a chip's own `<sherpa-menu>` and appended it into
+The old `sherpa-filter-panel` (old) BORROWED a chip's own `<sherpa-menu>` and appended it into
 a field body. The menu is then genuinely out of the toolbar's tree — measured,
 a click on its range switch has the composed path
 `SHERPA-SWITCH → SHERPA-MENU → SHERPA-FILTER-PANEL → SHERPA-APP-SHELL`, and

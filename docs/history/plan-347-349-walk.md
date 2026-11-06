@@ -299,7 +299,7 @@ async #walkRows(): Promise<readonly Row[] | null> {
    - Also in `drawScope`: add a described saved filter that `#available` lacks, built from its description (which carries `readings`).
    - `#addFilters` (:1447-1478; append at :1471): a def with `readings` goes at `findLastIndex(f => f.readings) + 1`, or after the persistent chips when no saved filter is on the bar. Fields still append.
    - The `presets` getter (:1238-1243) then reports saved filters first. `#inSets` (:1286) and `groupSets` (:1277) stay for a bar with no source.
-4. **Panel:** Organise, then Presets, then fields in `describe` order (`sherpa-filter-panel.ts:543-595`). `#groupSets` (:646-655) becomes a no-op on a sourced panel. No change.
+4. **Panel:** Organise, then Presets, then fields in `describe` order (`sherpa-filter-panel.ts (old):543-595`). `#groupSets` (:646-655) becomes a no-op on a sourced panel. No change.
 5. **Grid headings** read `present`. A free field's tap is where it would land; `answerColumn` appends it (:2286-2288). The grid gains a `drawOffered` (none today; `drawPresent` is at `sherpa-data-grid.ts:544`).
 6. **Add list (349):** a list field with `present[f]` equal to `[]` (`spent`) is greyed, and hidden when `hidesUnmatched` (`more-menu.ts:52`, so Limit on and Hide on). A held row is never greyed.
    - Toolbar `#renderAvailable` (:1407-1444) passes this to `drawFiltersButton` (`filters-button.ts:117`; `ListedFilter` :49).
@@ -416,7 +416,7 @@ async #walkRows(): Promise<readonly Row[] | null> {
 
 - **Rename** `T-a-chip-counts-its-own-results` (:1685) to **`T-a-chip-counts-within-the-filters-before-it`** in C5.
   - New text: the rows its scopes leave (parts, then the View for a component scope, then a part's host), the filters before it in the one order, and its own answer. OFF still counts (123); a saved filter counts only while ON (166); each value counts within the same rows (172); the header counts each row once (173); one walk per key.
-  - Gated citations to move: `data-source.ts`, the toolbar, `sherpa-quick-filter.ts`, `sherpa-filter-panel.ts`, `sherpa-filter-panel.css`, `page-definition.test.mjs`, `a-count-runs-again…`, `a-field-counts-unique-rows…`, and `test/e2e/reforged-chip-results.spec.ts`.
+  - Gated citations to move: `data-source.ts`, the toolbar, `sherpa-quick-filter.ts`, `sherpa-filter-panel.ts` (old), `sherpa-filter-panel.css` (old), `page-definition.test.mjs`, `a-count-runs-again…`, `a-field-counts-unique-rows…`, and `test/e2e/reforged-chip-results.spec.ts`.
   - Also update the mention in the body text at `TRAPS.md:10302`.
 - **Delete** `T-a-later-answer-sets-an-earlier-pick-aside` (:7662) in C6. Move its citations to `T-a-ruled-out-value-is-greyed`:
   - `shared-constants.ts:37`, `filter-state.ts:255`, `query.ts:101`, `present-limits…:140`, and the mention at `TRAPS.md:7584`;

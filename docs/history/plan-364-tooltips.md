@@ -141,7 +141,7 @@ There are three systems: the shared anchored tip, the `sherpa-tooltip` element, 
 
 Neither has a tooltip system of its own.
 - **Toolbar:** its action buttons are `sherpa-button`s (`sherpa-quick-filter-toolbar.html:128-181`), and each chip owns its tip (`sherpa-quick-filter-toolbar.ts:411-413`).
-- **Panel:** field buttons are `sherpa-button`s (`sherpa-filter-panel.html:171-203`), and the moved-scope wording is shared with the chip tip through `movedTo()` (`src/core/ui/shared-constants.ts:24-30`; `sherpa-filter-panel.ts:668-679`).
+- **Panel:** field buttons are `sherpa-button`s (`sherpa-filter-panel.html (old):171-203`), and the moved-scope wording is shared with the chip tip through `movedTo()` (`src/core/ui/shared-constants.ts:24-30`; `sherpa-filter-panel.ts (old):668-679`).
 
 #### 4. Duplication and drift (what "one system" has to fold together)
 1. **Two engines:** the CSS-anchored tip with a document-level lift, and the element with listeners on its anchor plus measured placement.

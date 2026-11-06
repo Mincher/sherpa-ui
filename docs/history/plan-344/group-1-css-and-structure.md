@@ -445,7 +445,7 @@ export const FILTER_MENU_HTML = new URL('./filter-menu.html', import.meta.url);
 ```
 - Delete L76 and L99. L98 becomes `if (def.persistent) menu.removeAttribute('data-clearable');`. The number and date branches keep `removeAttribute('data-search')`.
 - The throw can only fire in a fetched build when a host forgets `clonesFrom`. `menuFor` is not in any public entry, and the tests import the inlined `dist`. ❓ for Will if he prefers `report()`.
-- Hosts `sherpa-quick-filter-toolbar.ts`, `sherpa-filter-panel.ts` and `sherpa-data-grid.ts` each add `static override clonesFrom = [FILTER_MENU_HTML];`. Saved-filter-menu is reached only through the toolbar and the panel.
+- Hosts `sherpa-quick-filter-toolbar.ts`, `sherpa-filter-panel.ts` (old) and `sherpa-data-grid.ts` each add `static override clonesFrom = [FILTER_MENU_HTML];`. Saved-filter-menu is reached only through the toolbar and the panel.
 
 **The calendar from the menu's own template.** `filter-menu.ts` date branch: delete L134-144 and write:
 ```ts

@@ -1,6 +1,6 @@
 # Plan — the filter panel is a panel again
 
-Written for: Will. Status: PLAN, nothing built. Needs a TODO number (the lane integrator numbers it).
+Written for: Will. Status: PLAN, decided (Will, 2026-11-06), nothing built. Needs a TODO number (the lane integrator numbers it).
 
 ## What you asked for
 
@@ -29,13 +29,13 @@ That is the parity cost you named: two presentations in one component.
 
 ## The shape
 
-One new **content** component, `sherpa-filter-column` (the existing word is "column"). It holds the
+One new **content** component, `sherpa-filter-panel` (new) (it takes the name of the deleted `sherpa-filter-panel` (old)). It holds the
 portrait scope sections, the flat View section and the one header row. It has no chrome of its own:
 
 ```html
 <sherpa-overlay-panel id="filter-column" data-heading="Filters" data-fixed="start"
                       data-floatable data-minimisable data-dismissible>
-  <sherpa-filter-column data-scope="view data"></sherpa-filter-column>
+  <sherpa-filter-panel data-scope="view data"></sherpa-filter-panel> <!-- (new) -->
 </sherpa-overlay-panel>
 ```
 
@@ -51,7 +51,7 @@ for its scopes as the column does today, so the join (`bindSource`) does not cha
 record pixel baselines of the panel closed, open, accordion shut, floating and dark. Every later
 phase must reproduce them unchanged.
 
-**P1. Copy out.** Build `sherpa-filter-column` by MOVING the column, portrait and flat code (templates,
+**P1. Copy out.** Build `sherpa-filter-panel` (new) by MOVING the column, portrait and flat code (templates,
 CSS, `toolbar-column.ts`, the section chip look stays in the chip family). The toolbar still works
 beside it: nothing is deleted yet. The spec generator and docs pass.
 
@@ -70,15 +70,13 @@ lines. Update the weight and size baselines on purpose, and expect them to fall.
 **P5. Port the specs.** Selectors move from the toolbar host to the panel and content. Run the full
 suite in three engines, the a11y gate and the bench.
 
-## Decisions for you
+## Decisions (Will, 2026-11-06)
 
-1. **Panel header.** The column has its own header row today (Save, the Filters menu, ⋮, search).
-   - **A.** The panel's header carries the title and the panel chrome, and the content keeps its
-     own row below it. Simplest, but it adds one bar.
-   - **B (my pick).** The content's controls go into the panel header's `actions` and description
-     slots, so the panel looks as it does now. A bit more wiring.
-2. **Name.** `sherpa-filter-column` (my pick), or reuse `sherpa-filter-panel`, the old deleted
-   name, which could confuse old notes.
+1. **Panel header: B.** The content's controls (Save, the Filters menu, ⋮, search) go into the panel header's
+   `actions` and description slots, so the panel looks as it does now. The panel's own title and chrome
+   (float, minimise, pop, close) sit beside them in the one group.
+2. **Name: `sherpa-filter-panel` (new).** The deleted component of that name is written `sherpa-filter-panel` (old)
+   in every older doc; a new doc writes `sherpa-filter-panel (new)` for this one.
 
 ## Risks
 

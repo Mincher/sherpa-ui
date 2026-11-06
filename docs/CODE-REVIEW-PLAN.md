@@ -126,7 +126,7 @@ writes `display`/`hidden`/`visibility` on internals 0 times, uses chained
 | `sherpa-menu.ts` | 2,096 |
 | `sherpa-data-grid.ts` | 1,986 |
 | `sherpa-quick-filter-toolbar.ts` | 1,899 |
-| `sherpa-filter-panel.ts` | 1,841 |
+| `sherpa-filter-panel.ts` (old) | 1,841 |
 | `sherpa-provider.ts` | 1,245 |
 | `sherpa-element.ts` | 1,164 |
 

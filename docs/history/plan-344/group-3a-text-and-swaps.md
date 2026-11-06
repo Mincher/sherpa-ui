@@ -52,7 +52,7 @@ I made no edits, builds or tests. I wrote one scan script, `/private/tmp/claude-
   - 73-74: `default?: string | number | boolean;`
   - `#syncProp` 1043-1062 writes `raw ?? fallback`, and the fallback is `''` when there is no `default`. So any text in a `to` target is erased on every stamp.
   - The `#syncAllProps` comment at 1064 says "Runs once". Line 368 says "it fires exactly once". Both are wrong, because a re-stamp or a reload runs both again.
-- `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`:
+- `src/components/sherpa-filter-panel (old)/sherpa-filter-panel.ts` (old):
   - 513-515: `this.$('.head')?.setAttribute('data-heading', this.dataset['heading'] ?? 'Filters');`
   - called at 217 and 222. The prop is `kind: 'style'` (128).
 - `src/components/sherpa-notifications/sherpa-notifications.ts:136`:

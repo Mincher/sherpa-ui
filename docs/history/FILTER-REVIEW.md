@@ -46,7 +46,7 @@ offers more than one.
 ## 1. The short version
 
 Four components draw filters: `sherpa-quick-filter` (the chip), its toolbar,
-`sherpa-filter-panel`, and `sherpa-menu`. Together they are **4,561 lines of
+`sherpa-filter-panel` (old), and `sherpa-menu`. Together they are **4,561 lines of
 TypeScript** — and **6,569 lines counting their CSS and HTML**, with **6,860
 lines of tests** on top. See §13, which corrects what §3 left out. The data layer under them is correct — I tested it directly and
 it answers every question right. **Every filter bug in the last two days came
@@ -98,7 +98,7 @@ node scripts/…/methods.mjs src/components/<name>/<name>.ts
 |---|---:|---:|---:|
 | `sherpa-quick-filter-toolbar.ts` | **1,857** | 77 | 1,367 |
 | `sherpa-menu.ts` | 1,103 | — | — |
-| `sherpa-filter-panel.ts` | **898** | 44 | 638 |
+| `sherpa-filter-panel.ts` (old) | **898** | 44 | 638 |
 | `sherpa-quick-filter.ts` | 703 | — | — |
 
 The five largest methods in the two containers:
@@ -128,7 +128,7 @@ grep -rnE "sortField|sortDirection|data-sort-|setSort|resumeSort|clearSort|nextS
 |---|---:|
 | `sherpa-quick-filter-toolbar.ts` | 15 |
 | `sherpa-data-grid.ts` | 13 |
-| `sherpa-filter-panel.ts` | 9 |
+| `sherpa-filter-panel.ts` (old) | 9 |
 | `data-source.ts` | 8 |
 | `sherpa-quick-filter.ts` | 7 |
 | `records.js` | 5 |
@@ -238,7 +238,7 @@ git log --numstat --since="2 days ago" -- <the filter components>
 
 | file | start | now | net |
 |---|---:|---:|---:|
-| `sherpa-filter-panel.ts` | 0 | 898 | **+898** |
+| `sherpa-filter-panel.ts` (old) | 0 | 898 | **+898** |
 | `sherpa-quick-filter.ts` | 522 | 703 | +181 |
 | `sherpa-quick-filter-toolbar.ts` | 1,748 | 1,857 | +109 |
 | `sherpa-menu.ts` | 1,025 | 1,103 | +78 |
@@ -864,7 +864,7 @@ flowchart LR
     GRID["sherpa-data-grid"]
     MET["sherpa-metric"]
     BAR["sherpa-quick-filter-toolbar"]
-    PAN["sherpa-filter-panel"]
+    PAN["sherpa-filter-panel (old)"]
   end
 
   SRC[("Data layer<br/>DataSource")]
@@ -1334,7 +1334,7 @@ family by a third and left the tests out altogether.
 |---|---:|---:|---:|---:|
 | `sherpa-quick-filter-toolbar` | 1,863 | 268 | 215 | **2,346** |
 | `sherpa-menu` | 1,103 | 479 | 295 | **1,877** |
-| `sherpa-filter-panel` | 902 | 197 | 138 | **1,237** |
+| `sherpa-filter-panel` (old) | 902 | 197 | 138 | **1,237** |
 | `sherpa-quick-filter` | 703 | 297 | 109 | **1,109** |
 | | | | | **6,569** |
 

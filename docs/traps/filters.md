@@ -1942,7 +1942,7 @@ time one was touched — four bug reports in one day. Measured before the move:
 | file | organise-aware lines |
 |---|---|
 | `sherpa-quick-filter-toolbar.ts` | 75 |
-| `sherpa-filter-panel.ts` | 50 |
+| `sherpa-filter-panel.ts` (old) | 50 |
 | `sherpa-quick-filter.ts` | **6** |
 
 `data-organise` was the earlier name and it encoded the wrong idea — a chip
@@ -2494,7 +2494,7 @@ panel area for panel mode)."*
 
 So the filter toolbar has an ORIENTATION, and panel mode is the toolbar too.
 Will: *"Both modes are variants of the filter toolbar component"* — the old
-`sherpa-filter-panel` was legacy, and TODO 476 deleted it.
+`sherpa-filter-panel` (old) was legacy, and TODO 476 deleted it.
 
 `data-orientation="portrait"` over ONE scope stamps the `portrait` template:
 the scope is an accordion, as a panel's scope is — its name and icon, a badge of

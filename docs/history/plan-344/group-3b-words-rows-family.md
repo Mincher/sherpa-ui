@@ -6,7 +6,7 @@ I only read files. I made no edits, builds, tests or stash. I checked every file
 
 Each of these is marked [FIXED] where it lands in the plan below.
 
-1. **Missed site.** `sherpa-filter-panel.ts:514` writes `this.dataset['heading'] ?? 'Filters'`. This is default text in TS. G3, extended to `as: 'attr'`, fixes it and deletes `#syncHeading`.
+1. **Missed site.** `sherpa-filter-panel.ts (old):514` writes `this.dataset['heading'] ?? 'Filters'`. This is default text in TS. G3, extended to `as: 'attr'`, fixes it and deletes `#syncHeading`.
 2. **`ALL_LABEL` is dead code.** It does not need `word()`. `sherpa-menu.ts:1793` looks for `.qf-row-label`. The menu's own `menu-all-tpl` uses `.menu-row-label` and already says "Select all". Only `reforged-menu.spec.ts:468` stamps a `.qf-row-label`, and that test must change. The first plan said no test changes.
 3. **False reports from G2.** `#onRowsChanged` calls `#refillPicks`, which calls `#valueOptions()`, on every menu (`:1805`). So `word('select')` would report `word-missing` on every `default` menu that has value rows. A guard fixes this.
 4. **G3 makes `PropDef.default` dead.** No number prop uses `default`. Its only users are app-header (3b) and transfer-list (3a). Delete it when 3a lands. `T-empty-write-lets-css-collapse` says "ABSENT … write `''`". That stops being true, and the first plan did not list it.
@@ -162,7 +162,7 @@ protected word(key: string): string {
 - `:61`: a page button's row takes the button's `aria-label ?? textContent`. That is page data, and it stays.
 - `:72-97`: each row is cloned from `more-item-tpl` and then labelled. The Hide row is a clone of the Limit row: `box.value = 'hide-unmatched'` and `'Hide unmatching filters'` (`:89-91`).
 - `sherpa-quick-filter-toolbar.ts:1560-1569`: `['ai','Suggest filters']`, `'Remove from Favorites' : 'Favorite'`, `['save','Save view'], ['save-as','Save view as']`, `['delete-view','Delete view']`, `['refresh','Refresh view']`. The toolbar passes `resetRows(this, 'clear')` (`:1561`).
-- `sherpa-filter-panel.ts:1694-1697`: `resetRows(this, 'reset')` and `saveRows(…)`.
+- `sherpa-filter-panel.ts (old):1694-1697`: `resetRows(this, 'reset')` and `saveRows(…)`.
 - **Prototypes, copied in both hosts:** toolbar html `:179-189` and panel html `:146-154` hold `.more-menu`, `more-item-tpl`, `more-divider-tpl` and `more-check-tpl`.
 - **CSS, copied byte for byte:** `.more-item`, `:hover`, `:focus-visible` and `.more-divider` are at toolbar css `:230-255` and panel css `:42-64`. No other host rule touches `.more-*` or `.menu-row`.
 
@@ -471,8 +471,8 @@ Queued: "a quick row given only an id takes the nav's words and glyph; one with 
 
 | Site | Verdict | Change |
 |---|---|---|
-| `sherpa-filter-panel.ts:562` `'Organise'`, `:566` `'Group by' : 'Sort by'`, `:592` `'Presets'` | Default UI text. Each goes into a section title or a FilterDef as data. | In the panel html default template add `<template class="words"><span data-word="organise">Organise</span><span data-word="group">Group by</span><span data-word="sort">Sort by</span><span data-word="presets">Presets</span></template>`. TS: `this.#drawSection('organise', this.word('organise'))`, `label: this.word(kind)`, `label: this.word('presets')`. |
-| [FIXED, missed] `sherpa-filter-panel.ts:514` `this.dataset['heading'] ?? 'Filters'` | Default text in TS: the same pattern as app-header. | Use G3 with `as:'attr'`. Html `:78`: `<sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">`. Prop `:128` becomes `'data-heading': { type: 'string', kind: 'content', to: '.head', as: 'attr' }`. Reword the comment at `:124-127` to "passed on as an attribute, never as text" and keep `TRAP T-a-composed-child-takes-an-attribute-not-text`. Delete `#syncHeading` (`:512-515`) and its calls at `:217` and `:223`. |
+| `sherpa-filter-panel.ts (old):562` `'Organise'`, `:566` `'Group by' : 'Sort by'`, `:592` `'Presets'` | Default UI text. Each goes into a section title or a FilterDef as data. | In the panel html default template add `<template class="words"><span data-word="organise">Organise</span><span data-word="group">Group by</span><span data-word="sort">Sort by</span><span data-word="presets">Presets</span></template>`. TS: `this.#drawSection('organise', this.word('organise'))`, `label: this.word(kind)`, `label: this.word('presets')`. |
+| [FIXED, missed] `sherpa-filter-panel.ts (old):514` `this.dataset['heading'] ?? 'Filters'` | Default text in TS: the same pattern as app-header. | Use G3 with `as:'attr'`. Html `:78`: `<sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">`. Prop `:128` becomes `'data-heading': { type: 'string', kind: 'content', to: '.head', as: 'attr' }`. Reword the comment at `:124-127` to "passed on as an attribute, never as text" and keep `TRAP T-a-composed-child-takes-an-attribute-not-text`. Delete `#syncHeading` (`:512-515`) and its calls at `:217` and `:223`. |
 | `sherpa-menu.ts:591-594` `join?.populate?.([{and,And},{or,Or}])` | A fixed list. | Children as data (`sherpa-input-text.ts:110`, T-a-list-takes-its-children-as-data). At `sherpa-menu.html:335`: `<sherpa-input-text class="join" …><option value="and">And</option><option value="or">Or</option></sherpa-input-text>`. Delete the populate call. `join.value = 'or'` still takes the held-value path: the children are read after render, as populate is. The select template has only `slot name="actions"`, so the options are never slotted or drawn. |
 | `sherpa-menu.ts:722` `'Select…'` | Default UI text. | In `<template id="filter">`: `<template class="words"><span data-word="select">Select…</span></template>`. TS: `[{ value: '', label: this.word('select') }, ...values]`. [FIXED] In `#refillPicks` (`:1811`), add `if (!this.#rowEls().length) return;` before `#valueOptions()`. This changes no behaviour, because the loop below only touches rows. It stops a false `word-missing` on every `default` menu with value rows (`#onRowsChanged`, `:1805`). |
 | `sherpa-menu.ts:2036` `label: 'Remove'` | A copy of the footer button's own text (`html:249`, `:417`). | `this.emit('menu-select', { value: 'remove', label: this.$('.remove')?.textContent?.trim() ?? '' });` |
@@ -537,7 +537,7 @@ Queued:
 - `:1674`: the star's aria-label swap. Use `this.word()`.
 - `sherpa-nav.ts:197` (`#applyState`): `'Settings'`. Use `this.word()`.
 - [FIXED, missed] `sherpa-app-header.ts:164`: the theme toggle's `'Switch to light mode' / 'Switch to dark mode'` uses `this.word()`. Its sun/moon `data-icon-start` swap (`:163`) could be a CSS-driven pair.
-- [FIXED, missed] `sherpa-filter-panel.ts:828-832`: the aria-label templates ``Reset ${name}``, ``Send ${name} to view filters`` and ``Advanced ${name}``. They need a word with a slot for the name.
+- [FIXED, missed] `sherpa-filter-panel.ts (old):828-832`: the aria-label templates ``Reset ${name}``, ``Send ${name} to view filters`` and ``Advanced ${name}``. They need a word with a slot for the name.
 - `provider-mode.ts:114`, `:120`: `'View as filter panel'` and `'Filter in the toolbars instead'`, with icons. Use two prototypes in `sherpa-provider.html`.
 - `sherpa-input-text.ts:41`, `:43` [FIXED: not `:470`/`:475`]: `NUMBER_PLACEHOLDER`, `FIND_PLACEHOLDER`.
 - `shared-constants.ts`: `RULED_OUT`, `SET_ASIDE`, `NOT_AVAILABLE`, `movedTo()`. Later these can go in a family words file through G1 and G2.

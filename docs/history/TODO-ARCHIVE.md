@@ -375,7 +375,7 @@ an item moves here when it is done, as it was written.
 | ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
 | ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
 | ✅ | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
-| ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
+| ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel` (old); the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
 | ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
 | ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
 | ✅ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
@@ -422,7 +422,7 @@ an item moves here when it is done, as it was written.
 | ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
 | ✅ | 2zzz | 474 | LOOK — the panel's label column a little narrower: 75–80% of its 120px (Will, 2026-10-26) | look |
 | ✅ | 3a | 475 | LOOK — in the panel, a section's field labels line up with its accordion header's label, on their left (Will, 2026-10-26) | look |
-| ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
+| ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel` (old), `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
 | ✅ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26; A: as the other legends) | data |
 | ✅ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
 | ✅ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
@@ -1480,7 +1480,7 @@ the filter work."*
 
 Why (read, not yet run): Settings › Filtering › "Show active filters in green"
 is Demos CSS. It re-points the Style `active` names to the theme's success
-colours inside `sherpa-quick-filter-toolbar` and `sherpa-filter-panel` ONLY
+colours inside `sherpa-quick-filter-toolbar` and `sherpa-filter-panel` (old) ONLY
 (Demos `app/index.html:21`). The heading's filter and sort are ALREADY
 icon-only chips — `sherpa-quick-filter.head-filter` and `.head-sort`
 (`sherpa-data-grid.html:156-162`), not buttons. But they sit in the grid's
@@ -2858,7 +2858,7 @@ recorded). TRAP `T-a-band-is-a-value-of-its-field`. Tests: sherpa-ui
 
 ### `[x]` ✅ 476 — CLEAN-UP: the legacy filter panel goes
 
-Will, 2026-10-26: A — remove `sherpa-filter-panel` now. Only the Demos compare
+Will, 2026-10-26: A — remove `sherpa-filter-panel` (old) now. Only the Demos compare
 page uses it. With it go `filter-field.ts`, its tests, its Gallery story, and
 the TRAPs that only it cites. Closes 425.
 
@@ -3392,7 +3392,7 @@ renamed or deleted. TRAP T-saved-filters-are-every-scope
 Will, 2026-10-23: *"Let's update the Records pages in Sherpa Demos to use the new
 filter-toolbar implementation of the panel instead of the filter-panel
 component."* The column was already the default (425 G10); now it is the only
-one: the app shell holds no `sherpa-filter-panel` and Settings › Application
+one: the app shell holds no `sherpa-filter-panel` (old) and Settings › Application
 has no Classic switch. The compare page (Customers › Filter layouts) keeps the
 classic panel. 35 Demos tests drove the classic panel on Records: each moves to
 the column, and a behaviour the column lacks is fixed here or queued below.
@@ -3762,7 +3762,7 @@ ids}` → `take`) or a remove (`filter-remove {scope, id}` → `release`) and is
 back; the whole-list report stays for a host's own bar. Its second half — the
 provider and `drawScope` both drawing a bar — is left: the provider adds the View
 chip in that draw.
-Not touched: the legacy `sherpa-filter-panel` (Demos' compare page still uses
+Not touched: the legacy `sherpa-filter-panel` (old) (Demos' compare page still uses
 it — delete it and `filter-field.ts` once that page drops it), the data layer,
 fold/hover/drag/Switch, the cached counts, `values`/`active` on the event.
 
@@ -6579,7 +6579,7 @@ until 191 moves it into the provider.
 - `T-shared-sheets-settle-independently` explains a wait by code that is gone.
 - `Fires:` blocks miss events the code emits: `sherpa-menu` (`menu-range-change`,
   `menu-items`, `menu-back`), `sherpa-quick-filter` (`group-change`,
-  `sort-change`), `sherpa-filter-panel` (`filter-condition-change`).
+  `sort-change`), `sherpa-filter-panel` (old) (`filter-condition-change`).
 - The MCP: `control-content` and `container-*` tokens (0 exist), a "Rule 9"
   (the rules end at 8), ontology checks that no longer run, a dead `readDoc`.
 - The `generate_component` prompt and the skill's description still sell the
@@ -7723,7 +7723,7 @@ Found building 97, 2026-09-29: Figma's Icons section (`17:3931`) has neither,
 and nothing else in the file does. **❓ Will:** add a chart glyph — and a
 table glyph, if `table-columns` is not the one you want for a grid — then
 `npm run icons`, and one line each in `SHOWS_ICON`
-(`sherpa-filter-panel.ts`).
+(`sherpa-filter-panel.ts` (old)).
 
 **✅ Will, 2026-10-12 — all my picks:** B — keep the stand-ins: `reports` for charts, `table-columns` for grids.
 
@@ -12975,7 +12975,7 @@ Will, 2026-09-26: the panel's Email field shows the Conditional switch, but
 Email is CONDITIONS-ONLY — there is no list to switch to. The menu already
 hides its own switch for `data-custom-only`
 (`T-a-filter-answers-by-values-conditions-or-both`); the panel does not. Its
-`data-custom-ok` is `!!customOf(def)` (`sherpa-filter-panel.ts`), and
+`data-custom-ok` is `!!customOf(def)` (`sherpa-filter-panel.ts` (old)), and
 `customOf()` answers `'only'` for Email, which is truthy. So: no switch for
 `'only'`, and the field opens in custom mode with its rows showing.
 

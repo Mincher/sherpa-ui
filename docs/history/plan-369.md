@@ -325,7 +325,7 @@ TRAPS: T-a-value-holds-child-values, T-a-parent-pick-is-the-parent, T-a-tree-men
 - **missing:** FieldFacts (filter-state.ts:135-152) and FilterState need `child`, and FieldCatalogue.facts (field-catalogue.ts:85-96) must pass it on. Every caller of fieldState/readingClause that builds its own facts needs it too: grid #facts (sherpa-data-grid.ts:915-918), quick-filter #state (:909) and source-counts `each` (:164). Only the walk's `each` is named.
 - **missing:** Perf commit 1: looseEqual(null, '') is false (store.ts:440-445), but a Set of text() keys maps null and '' both to '' (store.ts:470-476). Without a null guard, `in ['']` and `in [null]` change meaning. The tests listed do not cover null or empty.
 - **missing:** The tree rows need hierarchy semantics: aria-expanded on the twisty, and a level or grouping for child rows. The axe gate will not catch a flat list of indented checkboxes.
-- **missing:** The working tree already has uncommitted edits to sherpa-filter-panel.html and reforged-filter-panel-component.spec.ts, maybe a peer's. The panel commit must check for a live peer first.
+- **missing:** The working tree already has uncommitted edits to sherpa-filter-panel.html (old) and reforged-filter-panel-component.spec.ts, maybe a peer's. The panel commit must check for a live peer first.
 
 ## The map
 
@@ -336,12 +336,12 @@ READ-ONLY MAP of TODO 369 at HEAD (sherpa-data-layer). Nothing was edited, built
 - Values come from the data, never from the definition (page-definition.ts:33-35, TRAP T-the-data-says-what-a-field-may-hold, TRAPS.md:17984). DataSource.declareFromRows (data-source.ts:979-995) asks `store.distinct(open)` when the store has it, else does one `load({})` and maps `readField(r,f)`. FieldCatalogue.fromRows (field-catalogue.ts:138-171) de-dupes by valueKey, sorts, and calls declareValues (:43), which keeps each RAW value once per key.
 - distinct() is per field and flat (store.ts:240, distinctOf :280). It cannot return (customer, site) PAIRS. A tier read from data needs one of two things: a child value that carries its parent (an object value, `{customer,name}`, which valueKey already keys at store.ts:475), or a paired read.
 - FilterDef. catalogue.filterDef (field-catalogue.ts:104-117) builds `options: [{value: valueKey(v), label: labels?.[v] ?? v}]`, a FLAT list. FieldFilter.options is typed `{value,label,swatch?}[]` (data-source-types.ts:74). The UI-side FilterOption (filter-def.ts:17-34) is flat too: value, label, selected, available, note, section, swatch, kind, saved.
-- describe(scope) (data-source.ts:751-827) hands every held field to the controls as `{...filterDef(f), state: reading}`. The provider draws it onto the bar, the panel (drawScopes, sherpa-filter-panel.ts:769-791, which maps options and adds `selected`) and the grid (#givenFilters).
+- describe(scope) (data-source.ts:751-827) hands every held field to the controls as `{...filterDef(f), state: reading}`. The provider draws it onto the bar, the panel (drawScopes, sherpa-filter-panel.ts (old):769-791, which maps options and adds `selected`) and the grid (#givenFilters).
 - Kind. kindOf (filter-kind.ts:63-74): options plus select:'multiple' gives 'multi'. oneChipList (:96-99, EXPLODE_AT=16 at :93): more than 16 values makes the panel draw ONE chip with the list in its menu, not a run of chips.
 - menuFor (filter-menu.ts:73-184) clones `template.filter-menu-tpl` (FILTER_MENU_HTML, :31) and sets data-select, data-commit and data-type="filter". It returns `items = [...def.options]` unchanged (:183). The caller fills the menu with `menu.items(items)`.
   - Bar: toolbar #addMenu (sherpa-quick-filter-toolbar.ts:811-845). Each item is spread (`...item`, :831), so new MenuItem fields would pass through.
   - Grid heading: #buildColumnFilter (sherpa-data-grid.ts:643), #filterDef (:717-745) and #columnItems (:747-750) spread items too.
-  - Panel: #giveMenu (sherpa-filter-panel.ts:954-982) builds a menu only for a one-chip field, an arrangement or an inline body. It returns at :959 for a run of value chips: "a run of chips answers it already".
+  - Panel: #giveMenu (sherpa-filter-panel.ts (old):954-982) builds a menu only for a one-chip field, an arrangement or an inline body. It returns at :959 for a run of value chips: "a run of chips answers it already".
 - sherpa-menu draws rows. MenuItem (sherpa-menu.ts:46-69) has value, label, selected, available, note, section, drill, pickable, count and remove. It has no parent and no depth.
   - items() (:1314) records the items, then #stampItems (:1399-1480) clones ONE check or radio prototype per item (sherpa-menu.html:189-209). It adds a section heading where `section` changes, and the menu's own Select-all row (`menu-all-tpl`).
   - The menu prepends every row into its light DOM in one pass, and emits `menu-items`. The rows are slotted, so CSS reaches the row only (::slotted, sherpa-menu.css:366-530).
@@ -388,7 +388,7 @@ READ-ONLY MAP of TODO 369 at HEAD (sherpa-data-layer). Nothing was edited, built
 
 4. THE PANEL'S VIEW SCOPE: THE CUSTOMER CHIPS
 - Demos' records View scope holds customer, region and created (Sherpa Demos/app/view-schemas/records.json:36-37). There are 8 customers, which is not over 16, so #drawField (panel.ts:856-946) EXPLODES them into a run.
-- Each option becomes #valueChip (:807-830): a bare `<sherpa-quick-filter class="value">` cloned from `template.value-tpl` (sherpa-filter-panel.html:209-211), with data-value, data-label and data-current. It has NO menu and acts as an on/off toggle.
+- Each option becomes #valueChip (:807-830): a bare `<sherpa-quick-filter class="value">` cloned from `template.value-tpl` (sherpa-filter-panel.html (old):209-211), with data-value, data-label and data-current. It has NO menu and acts as an on/off toggle.
 - Per-chip counts arrive by drawValueResults (:472-483). Greys arrive by #markPresent.
 - The only value chip in the panel that carries a menu today is a SAVED chip: #addSavedMenu (:1557-1560) → hangSavedMenu (saved-filter-menu.ts:177-182), which sets `chip.setAttribute('data-menu','')` and appends the menu.
 - A chip with data-menu splits into a body (toggle) and a caret (opens the menu): #onCaret (sherpa-quick-filter.ts:648-660), #togglesOnly (:246). A Customer chip with a sites menu fits this: the body toggles the customer, and the caret opens its sites.
