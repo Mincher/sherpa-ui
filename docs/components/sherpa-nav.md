@@ -71,6 +71,7 @@ For the app's side navigation rail, filled by `populate()`: an entry with `child
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-current-id` | text |  | id of the current Context |
+| `data-large` | boolean |  |  |
 | `data-menu` | boolean |  | the PHONE's menu: the whole screen, no Pin, Settings at the bottom, and Cancel — openMenu() / closeMenu() |
 | `data-nav-state` | `collapsed` `hover` `default` `pinned` `settings` | `collapsed` | collapsed \| hover \| default \| pinned \| settings |
 | `data-no-hover` | boolean |  | the rail does not open to a pointer: Settings and Pin stay at its foot, and, while it is shut, a row says its name in a tip and a parent row lists its children in a menu beside it |

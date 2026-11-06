@@ -85,6 +85,8 @@ export class SherpaNav extends SherpaElement {
     'data-menu': { type: 'boolean', kind: 'visibility' },
     /* Hover off: the rail opens only to its Pin. TRAP T-a-rail-may-stay-shut */
     'data-no-hover': { type: 'boolean', kind: 'visibility' },
+    /* Large nav: sizes double, text steps up. The `navLarge` setting. */
+    'data-large': { type: 'boolean', kind: 'style' },
     'data-current-id': { type: 'string', kind: 'behaviour' },
     // A host may set it; a product turns it on.
     'data-searchable': { type: 'boolean', kind: 'visibility' },

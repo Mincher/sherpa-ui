@@ -415,6 +415,7 @@ document.querySelector('sherpa-provider').settings = settings;
   once instead. `T-the-outlet-keeps-the-nav`
 - The nav opens to a pointer; `/nav/hover: false` keeps it as icons until its Pin.
   `T-a-rail-may-stay-shut`
+- `/nav/large` (on by default) doubles the nav's sizes and spaces and steps its text up one; the shell's rail inset follows.
 
 ### A page's state
 

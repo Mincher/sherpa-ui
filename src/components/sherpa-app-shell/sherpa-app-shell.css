@@ -5,7 +5,8 @@
  */
 
 :host {
-  --_nav-collapsed: var(--sherpa-display-mode-size-3xl, 40px);
+  /* The `navLarge` setting puts --sherpa-nav-scale (2) on the root; none, it is 1. Only the shut rail scales. */
+  --_nav-collapsed: calc(var(--sherpa-display-mode-size-3xl, 40px) * var(--sherpa-nav-scale, 1));
   --_nav-open: 320px;
   --_content-inset: var(--_nav-collapsed);
 

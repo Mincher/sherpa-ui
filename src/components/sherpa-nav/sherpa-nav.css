@@ -95,6 +95,111 @@
 }
 /* == end sherpa:tokens == */
 
+/* LARGE NAV (the `navLarge` setting): every size and space doubles through
+   `--sherpa-nav-scale`; each text token takes one step up the type scale. The
+   rows, section, flyout and menu inherit these. Density does not reach it. */
+:host([data-large]) {
+  --sherpa-display-mode-size-4xs: calc(2px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-3xs: calc(4px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-2xs: calc(8px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-xs: calc(12px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-sm: calc(16px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-md: calc(20px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-lg: calc(24px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-xl: calc(28px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-2xl: calc(32px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-3xl: calc(40px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-4xl: calc(48px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-5xl: calc(56px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-6xl: calc(64px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-3xs: calc(2px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-2xs: calc(4px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-xs: calc(8px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-sm: calc(12px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-base: calc(16px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-lg: calc(20px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-xl: calc(24px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-2xl: calc(32px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-3xl: calc(40px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-4xl: calc(48px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-5xl: calc(56px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-space-6xl: calc(64px * var(--sherpa-nav-scale, 2));
+  --sherpa-font-size-body-large: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-font-size-body-base: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-font-size-body-small: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-font-size-body-xs: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-theme-content-size-large: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-theme-content-size-base: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-size-small: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-theme-content-size-xs: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-theme-size-icon-xs: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-line-height-large: var(--sherpa-display-mode-fonts-scale-3xl);
+  --sherpa-theme-content-line-height-base: var(--sherpa-display-mode-fonts-scale-2xl);
+  --sherpa-theme-content-line-height-small: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-theme-content-line-height-xs: var(--sherpa-display-mode-fonts-scale-xl);
+}
+
+/* A menu item's TEXT keeps the normal size; its box and spacing still grow. */
+:host([data-large]) sherpa-nav-item,
+:host([data-large]) ::slotted(sherpa-nav-item) {
+  --sherpa-font-size-body-large: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-font-size-body-base: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-font-size-body-small: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-font-size-body-xs: var(--sherpa-display-mode-fonts-scale-xs);
+  --sherpa-theme-content-size-large: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-size-base: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-theme-content-size-small: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-theme-content-size-xs: var(--sherpa-display-mode-fonts-scale-xs);
+  --sherpa-theme-size-icon-xs: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-theme-content-line-height-large: var(--sherpa-display-mode-fonts-scale-2xl);
+  --sherpa-theme-content-line-height-base: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-theme-content-line-height-small: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-line-height-xs: var(--sherpa-display-mode-fonts-scale-lg);
+}
+
+/* NOT LARGE: the Settings and Pin buttons and the search field keep the normal
+   sizes (the tokens put back to their default values; density does not reach them). */
+:host([data-large]) :is(.settings, .pin, .search) {
+  --sherpa-display-mode-size-4xs: 2px;
+  --sherpa-display-mode-size-3xs: 4px;
+  --sherpa-display-mode-size-2xs: 8px;
+  --sherpa-display-mode-size-xs: 12px;
+  --sherpa-display-mode-size-sm: 16px;
+  --sherpa-display-mode-size-md: 20px;
+  --sherpa-display-mode-size-lg: 24px;
+  --sherpa-display-mode-size-xl: 28px;
+  --sherpa-display-mode-size-2xl: 32px;
+  --sherpa-display-mode-size-3xl: 40px;
+  --sherpa-display-mode-size-4xl: 48px;
+  --sherpa-display-mode-size-5xl: 56px;
+  --sherpa-display-mode-size-6xl: 64px;
+  --sherpa-display-mode-space-3xs: 2px;
+  --sherpa-display-mode-space-2xs: 4px;
+  --sherpa-display-mode-space-xs: 8px;
+  --sherpa-display-mode-space-sm: 12px;
+  --sherpa-display-mode-space-base: 16px;
+  --sherpa-display-mode-space-lg: 20px;
+  --sherpa-display-mode-space-xl: 24px;
+  --sherpa-display-mode-space-2xl: 32px;
+  --sherpa-display-mode-space-3xl: 40px;
+  --sherpa-display-mode-space-4xl: 48px;
+  --sherpa-display-mode-space-5xl: 56px;
+  --sherpa-display-mode-space-6xl: 64px;
+  --sherpa-font-size-body-large: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-font-size-body-base: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-font-size-body-small: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-font-size-body-xs: var(--sherpa-display-mode-fonts-scale-xs);
+  --sherpa-theme-content-size-large: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-size-base: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-theme-content-size-small: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-theme-content-size-xs: var(--sherpa-display-mode-fonts-scale-xs);
+  --sherpa-theme-size-icon-xs: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-theme-content-line-height-large: var(--sherpa-display-mode-fonts-scale-2xl);
+  --sherpa-theme-content-line-height-base: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-theme-content-line-height-small: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-line-height-xs: var(--sherpa-display-mode-fonts-scale-lg);
+}
+
 /**
  * sherpa-nav.css — the primary application navigation rail.
  *

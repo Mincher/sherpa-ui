@@ -331,6 +331,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-large",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-menu",
       "type": "boolean",
       "observed": true,
@@ -412,6 +420,11 @@
     "description": "the nav content, a NavConfig."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "large",
+      "selector": ":host([data-large])"
+    },
     {
       "$type": "state",
       "name": "menu",

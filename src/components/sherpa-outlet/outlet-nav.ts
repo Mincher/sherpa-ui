@@ -107,6 +107,7 @@ export class OutletNav {
     ];
     this.#hear(at.settings);
     this.#syncHover();
+    this.#syncLarge();
     at.signal.addEventListener('abort', () => {
       for (const stop of stops) stop();
       this.#heard?.abort();
@@ -126,6 +127,7 @@ export class OutletNav {
     this.syncCurrent();
     this.syncStar();
     this.#syncHover();
+    this.#syncLarge();
     void this.refresh();
   }
 
@@ -142,6 +144,7 @@ export class OutletNav {
         this.syncStar();
         void this.refresh();
       } else if (key === 'navHover') this.#syncHover();
+      else if (key === 'navLarge') this.#syncLarge();
     }, { signal: this.#heard.signal });
   }
 
@@ -234,6 +237,11 @@ export class OutletNav {
   /** "Expand navigation on hover": on unless the session says off. */
   #syncHover(): void {
     this.#nav.toggleAttribute('data-no-hover', this.#settings.get('navHover') === false);
+  }
+
+  /** "Increased nav sizing": on unless the session says off. */
+  #syncLarge(): void {
+    this.#nav.toggleAttribute('data-large', this.#settings.get('navLarge') !== false);
   }
 
   /** The rows app.json gives: Home is the default Context, Recent and Favorites
