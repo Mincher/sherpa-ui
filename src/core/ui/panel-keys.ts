@@ -39,7 +39,7 @@ function digit(code: string): number {
 /** Listen for the panel keys. */
 export function panelKeys(listen: (target: EventTarget, type: string, handler: (event: Event) => void) => void): void {
   const held = { left: false, right: false };
-  const panels = (): PanelLike[] => [...document.querySelectorAll<PanelLike>('sherpa-overlay-panel[data-minimisable], sherpa-node-panel[data-minimisable]')]
+  const panels = (): PanelLike[] => [...document.querySelectorAll<PanelLike>('sherpa-overlay-panel[data-minimisable]')]
     .filter((p) => p.shown);
   /** The panel the focus is in, through every shadow root. */
   const focusedPanel = (event: Event): PanelLike | undefined => event.composedPath().find((n): n is PanelLike => n instanceof HTMLElement && 'minimise' in n && 'side' in n);

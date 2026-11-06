@@ -13,9 +13,12 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.createElement('sherpa-layout-canvas') as HTMLElement & { rendered: Promise<void> };
     el.style.cssText = 'inline-size: 900px; block-size: 600px';
-    const panel = document.createElement('sherpa-node-panel');
-    panel.slot = 'panel';
-    el.appendChild(panel);
+    const panel = document.createElement('sherpa-node-list');
+    const box = document.createElement('sherpa-overlay-panel');
+    box.slot = 'panel';
+    for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-padding', 'none']] as const) box.setAttribute(a, v);
+    box.appendChild(panel);
+    el.appendChild(box);
     document.getElementById('root')!.appendChild(el);
     const inspector = document.createElement('sherpa-overlay-panel');
     inspector.id = 'inspector';
@@ -30,12 +33,12 @@ const BIND = `async () => {
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], routes: [] };
   window.editor = bindWorkflow(canvas, flow, {
-    session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-panel'),
+    session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['customers'],
   });
   window.saved = [];
   document.addEventListener('definition-save', (e) => window.saved.push(e.detail.definition));
-  await customElements.whenDefined('sherpa-node-panel');
+  await customElements.whenDefined('sherpa-node-list');
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }`;
@@ -51,49 +54,49 @@ const draft = (page: Page) => page.evaluate(() => {
 });
 /** Press the search field with the real pointer: WebKit's own hit check calls the card's host the thing in the way. */
 async function pressSearch(page: Page): Promise<void> {
-  const box = (await page.locator('sherpa-node-panel sherpa-input-text.find input').boundingBox())!;
+  const box = (await page.locator('sherpa-node-list sherpa-input-text.find input').boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
-const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
+const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
 
 test('it docks on the canvas flush, to its top, bottom and left, with no shadow', async ({ page }) => {
   await bind(page);
   const [canvas, card] = await page.evaluate(() => {
     const c = document.querySelector('#root sherpa-layout-canvas')!.getBoundingClientRect();
-    const p = document.querySelector('sherpa-node-panel')!.getBoundingClientRect();
+    const p = document.querySelector('#root sherpa-overlay-panel[slot="panel"]')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
     return [c, p].map((r) => ({ left: r.left, top: r.top, right: r.right, bottom: r.bottom }));
   });
   // TODO 796: flush and flat in its panel area.
   expect([card!.top, card!.bottom, card!.left]).toEqual([canvas!.top, canvas!.bottom, canvas!.left]);
-  expect(await page.evaluate(() => getComputedStyle(document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelector('.card')!).boxShadow)).toBe('none');
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#root sherpa-overlay-panel[slot="panel"]')!.shadowRoot!.querySelector('.root')!).boxShadow)).toBe('none');
   // It keeps its place as the view pans: it is not on the plane.
   await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { panTo(x: number, y: number): void }).panTo(300, 200));
-  const after = await page.evaluate(() => document.querySelector('sherpa-node-panel')!.getBoundingClientRect().left);
+  const after = await page.evaluate(() => document.querySelector('#root sherpa-overlay-panel[slot="panel"]')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().left);
   expect(after).toBe(card!.left);
 });
 
 test('it lists each category with its families, twelve, never a Query-only one; "sor" shows only Sort', async ({ page }) => {
   await bind(page);
-  const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
+  const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output']);
-  const names = () => page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
+  const names = () => page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output']);
   // A family's line is its synopsis, never its types (TODO 809).
   expect(await item(page, 'sort').getAttribute('data-description')).toBe('Put rows in order of a field');
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('sor');
+  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('sor');
   expect(await names()).toEqual(['Sort']);
-  expect(await page.locator('sherpa-node-panel .category-heading:visible').count()).toBe(1);
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('zzz');
+  expect(await page.locator('sherpa-node-list .category-heading:visible').count()).toBe(1);
+  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('zzz');
   expect(await names()).toEqual([]);
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('');
+  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('');
   expect((await names()).length).toBe(12);
   expect(await item(page, 'group').getAttribute('data-description')).toBe('Group rows by a field');
 });
 
 test('"round" shows Math, says Round, and a click places a Math whose type is Round; its rows follow the type', async ({ page }) => {
   await bind(page);
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('round');
-  const names = await page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
+  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('round');
+  const names = await page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(names).toEqual(['Math']);
   expect(await item(page, 'math').getAttribute('data-description')).toBe('Round: Rounds a decimal to a set number of places');
   await item(page, 'math').click();
@@ -141,7 +144,7 @@ test('Enter on an item places it', async ({ page }) => {
   for (let i = 0; i < 40 && !(await onValue()); i++) await page.keyboard.press('Tab');
   // WebKit's Tab skips buttons unless asked to; the row's own button takes the focus there.
   if (test.info().project.name === 'webkit') {
-    await page.locator('sherpa-node-panel sherpa-list-item[data-kind="sort"]').evaluate((el) => (el.shadowRoot!.querySelector('button:not(.drag):not(.expand)') as HTMLElement).focus());
+    await page.locator('sherpa-node-list sherpa-list-item[data-kind="sort"]').evaluate((el) => (el.shadowRoot!.querySelector('button:not(.drag):not(.expand)') as HTMLElement).focus());
   }
   expect(await onValue()).toBe(true);
   await page.keyboard.press('Enter');
@@ -205,13 +208,13 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   await page.mouse.down();
   await page.mouse.move(x1! + 150, y1! + 200, { steps: 8 });
   await page.mouse.up();
-  const menu = page.locator('sherpa-node-panel sherpa-menu.add');
+  const menu = page.locator('sherpa-node-list sherpa-menu.add');
   await expect(menu).toHaveAttribute('open', '');
-  const choices = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
+  const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // Rows (an object) leave the Store row: the families whose header or a row takes one.
   // A portal's In takes anything (TODO 779).
   expect(choices).toEqual(['field', 'condition', 'portal', 'output']);
-  const count = page.locator('sherpa-node-panel sherpa-menu.add button[value="condition"]');
+  const count = page.locator('sherpa-node-list sherpa-menu.add button[value="condition"]');
   // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
   if (test.info().project.name === 'webkit') {
     await count.evaluate((b: HTMLElement) => b.focus());
@@ -226,19 +229,19 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
 
 test('"Add a node" for a list says the type a family takes it as: Math › Floor, Text › Join', async ({ page }) => {
   await bind(page);
-  await page.evaluate(() => (document.querySelector('sherpa-node-panel') as HTMLElement & { askAdd(c: unknown): void })
+  await page.evaluate(() => (document.querySelector('sherpa-node-list') as HTMLElement & { askAdd(c: unknown): void })
     .askAdd({ socket: 'start/rows', type: 'object', side: 'out', client: { x: 500, y: 300 }, at: { x: 400, y: 200 } }));
-  const menu = page.locator('sherpa-node-panel sherpa-menu.add');
+  const menu = page.locator('sherpa-node-list sherpa-menu.add');
   await expect(menu).toHaveAttribute('open', '');
-  const said = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
+  const said = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Time', 'Sort', 'Group', 'Text › Join', 'Tag', 'Portal', 'Output']);
   // What it gives narrows it (plan 783 F6): rows to the kinds that can use rows; a Field's column to those that take one.
   const offered = async (gives: string) => {
     await page.keyboard.press('Escape');
-    await page.evaluate((g) => (document.querySelector('sherpa-node-panel') as HTMLElement & { askAdd(c: unknown): void })
+    await page.evaluate((g) => (document.querySelector('sherpa-node-list') as HTMLElement & { askAdd(c: unknown): void })
       .askAdd({ socket: 'start/rows', type: 'object', side: 'out', gives: g, client: { x: 500, y: 300 }, at: { x: 400, y: 200 } }), gives);
     await expect(menu).toHaveAttribute('open', '');
-    return page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
+    return page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   };
   expect(await offered('rows')).toEqual(['Field', 'Condition', 'Portal', 'Output']);
   expect(await offered('field')).toEqual(said);
@@ -261,7 +264,7 @@ test('an input let go on the bare canvas offers a Value first', async ({ page })
   await page.mouse.down();
   await page.mouse.move(x1! + 300, y1! + 190, { steps: 8 });
   await page.mouse.up();
-  const choices = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
+  const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // A Sort's header takes any type: the kinds that give one, a Value first.
   expect(choices[0]).toBe('value');
   expect(choices).not.toContain('output');

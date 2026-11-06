@@ -22,9 +22,9 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (org) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
@@ -50,7 +50,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv')!;
     const toolbar = canvas.querySelector('sherpa-node-toolbar')!;
     const ed = bindWorkflow(canvas as never, flow as never, {
-      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
       toolbar: toolbar as never, library: library as never,
       onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
       fieldsOf: { users: { role: { label: 'Role' } } }, stores: ['users'],
@@ -71,12 +71,12 @@ type Tagged = HTMLElement & { tags: string[]; suggestions: { value: string }[] }
 const fieldTags = (page: Page) => tagsField(page).evaluate((el) => (el as Tagged).tags);
 const defTags = (page: Page, id: string) => page.evaluate((k) => (window as unknown as { ed: { library(): { nodes: Record<string, { tags?: string[] }> } } }).ed.library().nodes[k]?.tags ?? [], id);
 /** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
-const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
+const openCustom = (page: Page) => page.locator('sherpa-node-list sherpa-tabs .tab[data-id="custom"]').click();
 /** The panel's headings that show, a tag's marked. */
-const headings = async (page: Page) => { await openCustom(page); return page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('.category-heading, .tag-heading')]
+const headings = async (page: Page) => { await openCustom(page); return page.evaluate(() => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll<HTMLElement>('.category-heading, .tag-heading')]
   .filter((h) => h.checkVisibility()).map((h) => (h.classList.contains('tag-heading') ? `› ${h.dataset['heading']}` : h.dataset['heading']))); };
 /** The nodes the panel lists under one tag. */
-const under = async (page: Page, tag: string) => { await openCustom(page); return page.evaluate((t) => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll(`.tag:has(> .tag-heading[data-heading="${t}"]) sherpa-list-item`)].map((i) => i.getAttribute('data-label')), tag); };
+const under = async (page: Page, tag: string) => { await openCustom(page); return page.evaluate((t) => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll(`.tag:has(> .tag-heading[data-heading="${t}"]) sherpa-list-item`)].map((i) => i.getAttribute('data-label')), tag); };
 /** Click into the Tags field's own text, and type a tag. */
 const typeTag = async (page: Page, word: string) => {
   await tagsField(page).locator('input.control:visible').click();

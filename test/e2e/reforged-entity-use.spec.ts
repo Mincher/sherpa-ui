@@ -20,13 +20,13 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (entities) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="confirm" data-status="critical" data-heading="Update">
         <p style="margin: 0"></p>
         <sherpa-container-footer slot="footer"><sherpa-button>Cancel</sherpa-button><sherpa-button data-look="saturated">Update</sherpa-button></sherpa-container-footer>
       </sherpa-dialog>`);
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     (window as unknown as { ENTITIES: unknown }).ENTITIES = entities;
   }, { trials: filter('trials', 'Trials', 'trial'), active: { ...filter('active', 'Active', 'active'), origin: 'preset' } });
@@ -49,7 +49,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   document.addEventListener('definition-save', (e) => (w['saved'] as unknown[]).push((e as CustomEvent).detail.definition));
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, workflow, {
-    session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
+    session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
     header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, kinds, library, entity: outer,
     onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'lead'] } } }, stores: ['customers'],
@@ -61,8 +61,8 @@ const settle = (page: Page) => page.evaluate(() => window.__settled().then(() =>
 const ed = <T>(page: Page, fn: string) => page.evaluate(`(() => { const ed = window.ed; return ${fn}; })()`) as Promise<T>;
 /** What the panel lists: each item's kind, by its category. */
 /** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
-const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
-const offered = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelector('#cv sherpa-node-panel')!.shadowRoot!.querySelectorAll('.categories > .category')]
+const openCustom = (page: Page) => page.locator('sherpa-node-list sherpa-tabs .tab[data-id="custom"]').click();
+const offered = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelector('#cv sherpa-node-list')!.shadowRoot!.querySelectorAll('.categories > .category')]
   .map((a) => [a.querySelector('.category-heading')?.getAttribute('data-heading'), [...a.querySelectorAll<HTMLElement>('sherpa-list-item[data-kind]')].map((i) => i.dataset['kind'])])));
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
 const caption = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).first().getAttribute('data-caption');
@@ -76,7 +76,7 @@ test('the panel offers what a Preset Filter takes, and every entity\'s node but 
   expect(all).not.toContain('output');
   expect(lists['Custom Nodes']).toEqual(['preset-filter:trials', 'preset-filter:active']);
   await openCustom(page);
-  await page.locator('#cv sherpa-node-panel sherpa-list-item[data-kind="preset-filter:active"]').click();
+  await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="preset-filter:active"]').click();
   await settle(page);
   const placed = await ed<{ kind: string; version?: string }>(page, "ed.workflow().nodes.find((n) => n.kind === 'preset-filter:active')");
   expect(placed.version).toBeTruthy();
@@ -97,7 +97,7 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:trials', 'preset-filter:active']);
   // A preset placed and opened: locked, with "Copy to my nodes".
   await openCustom(page);
-  await page.locator('#cv sherpa-node-panel sherpa-list-item[data-kind="preset-filter:active"]').click();
+  await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="preset-filter:active"]').click();
   await settle(page);
   await header(page, 'Active').dblclick();
   await settle(page);

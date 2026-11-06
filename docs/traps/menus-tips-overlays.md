@@ -203,7 +203,7 @@ Float goes while it is maximised.
 - **A release outside the window is lost in Firefox** (Playwright's, at least):
   a move with no button held ends the drag where it got to, so the handle is
   never left held.
-- **The node panel floats by the SAME code** (769c): `float-box.ts` draws the box
+- **Every panel floats by the SAME code** (769c; the Nodes panel is an overlay panel since 846): `float-box.ts` draws the box
   from the four attributes, lifts it, and wires the bar and the corner by
   `dragXY`; `sherpa-float.css` (a family sheet, picked by `.sherpa-float`, `-bar`,
   `-grip` and `-corner`) owns the clamp, the grip and the corner. Each component
@@ -227,11 +227,8 @@ Float goes while it is maximised.
 - Site: `src/core/ui/drag-xy.ts`
 - Site: `src/core/ui/float-box.ts`
 - Site: `src/core/sherpa-float.css`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `test/e2e/reforged-overlay-panel-float.spec.ts`
-- Site: `test/e2e/reforged-node-panel-float.spec.ts`
 
 ### T-a-minimised-panel-is-a-tab
 
@@ -250,14 +247,11 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
-- **The Nodes panel does the same**, on the LEFT edge of its canvas's area: the layout counts a minimised
-  panel as floating (its area gives its room back), and the tab, absolute in the panel's host, takes the
-  press (`pointer-events: auto`, over the canvas).
+- **A panel in a canvas does the same**, on the LEFT edge of its canvas's area (the Nodes panel): the layout counts a
+  minimised panel as floating (its area gives its room back), and the tab, absolute in the layout, takes the
+  press (`T-a-panel-slotted-in-a-layout-is-docked-there`).
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.css`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 - Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
 
@@ -293,6 +287,27 @@ tabs on the inner side, the panel on the other.
 - Site: `test/e2e/reforged-panel-area-tabs.spec.ts`
 - Site: `test/e2e/reforged-panel-area-edge.spec.ts`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
+
+### T-a-node-list-is-a-panels-content
+
+**The Nodes panel is an overlay panel with `sherpa-node-list` in it** (Will, TODO 846: ONE panel system). The old
+`sherpa-node-panel` was its own `sherpa-container` card with its own copy of float, dock, minimise, the grip and
+the corner (`FloatBox`); the overlay panel already had every state, so the card is gone and the list is the
+panel's content: `populate(paletteOf(kinds))`, `node-add`, `askAdd()`, the tabs, the search, the sticky headings and
+the drag off the panel. The panel is slotted into the canvas's `panel` slot (`T-a-panel-slotted-in-a-layout-is-docked-there`),
+`data-padding="none"` (the list fills the body), `data-floatable`, `data-minimisable`. The floating floor is the
+panel's 20rem, not the card's 16rem. The panel keys read the overlay panel (`minimise()`, `front()`, `minimised`,
+`side`, `tabbed`, `shown`).
+
+- **A menu a panel's content opens needs its anchor and its ghost FIXED.** "Add a node" is a top-layer popover
+  anchored to a point; the point was an absolute element inside the list, and the panel's `overflow: hidden` body
+  (and the canvas's) clipped it. The card painted, and a press on it fell through to the page. Measured by
+  `elementsFromPoint` and a real click: the anchor and the drag's ghost are `position: fixed`, in window coordinates.
+
+- Site: `src/components/sherpa-node-list/sherpa-node-list.ts`
+- Site: `src/components/sherpa-node-list/sherpa-node-list.css`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 
 ### T-a-panel-slotted-in-a-layout-is-docked-there
 
@@ -342,7 +357,6 @@ window, as the Node Editor's own inspector and the Assistant.
 - Site: `src/core/ui/float-box.ts`
 - Site: `src/core/sherpa-float.css`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
 - Site: `test/e2e/reforged-layout-panels.spec.ts`

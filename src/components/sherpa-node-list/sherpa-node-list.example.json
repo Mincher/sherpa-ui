@@ -1,0 +1,14 @@
+{
+  "html": "<sherpa-overlay-panel open data-heading=\"Nodes\" data-padding=\"none\" style=\"block-size: 360px\"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>",
+  "use": "For a graph editor's list of the nodes it may place, one per family, in two tabs (Preset Nodes, Custom Nodes) and one list whose category headings stick while their items scroll, with a search that finds a family by any of its types, or a Custom Node by a tag (it is listed under each of its tags). It is the CONTENT of a `sherpa-overlay-panel`, slotted into a canvas's `panel` slot, and the panel gives it its header, float, dock and minimise. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens \"Add a node\" from `askAdd()`.",
+  "fill": [
+    {
+      "at": "sherpa-node-list",
+      "data": [
+        { "category": "Custom Nodes", "items": [ { "id": "org-permissions", "kind": { "heading": "Org permissions", "icon": "folder", "description": "Users who hold a role.", "tags": ["permissions"] } } ] },
+        { "category": "Variables", "items": [ { "id": "value", "kind": { "heading": "Value", "icon": "function", "description": "Primitive value variables" } } ] },
+        { "category": "Collections", "items": [ { "id": "collection", "kind": { "heading": "Collection", "icon": "list", "description": "The rows in order, grouped, or counted.", "types": { "sort": { "label": "Sort" }, "group": { "label": "Group by" }, "count": { "label": "Count", "help": "How many rows" } } } } ] }
+      ]
+    }
+  ]
+}

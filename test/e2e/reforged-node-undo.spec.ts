@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
       <sherpa-breadcrumbs id="trail" hidden></sherpa-breadcrumbs>
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
-        <sherpa-node-panel slot="panel"></sherpa-node-panel>
+        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
       </sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="custom" data-heading="Save as Custom Node">
@@ -40,7 +40,7 @@ test.beforeEach(async ({ page }) => {
           <sherpa-button data-action="save" data-look="saturated">Save as Custom Node</sherpa-button>
         </sherpa-container-footer>
       </sherpa-dialog>`);
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
   });
@@ -59,7 +59,7 @@ const BIND = `async (org) => {
   ], routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
   const canvas = document.getElementById('cv');
   window.ed = bindWorkflow(canvas, flow, {
-    session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-panel'),
+    session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'),
     toolbar: canvas.querySelector('sherpa-node-toolbar'), customDialog: document.getElementById('custom'), breadcrumbs: document.getElementById('trail'), library,
     fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],
   });
@@ -93,7 +93,7 @@ const can = (page: Page) => page.evaluate(() => ({
   buttons: ['save', 'undo', 'redo'].map((n) => document.querySelector('sherpa-node-toolbar')!.shadowRoot!.querySelector(`sherpa-button.${n}`)!.hasAttribute('disabled')),
 }));
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
-const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
+const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
 const STORE_ROWS = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row';
 const SORT = '#cv > sherpa-node[data-heading="Sort"]';
 const SORT_ROWS = `${SORT} sherpa-node-row`;
@@ -117,7 +117,7 @@ test('the toolbar floats at the bottom centre, 32px up, never over the card; the
       cv.style.inlineSize = `${w}px`;
       const box = (e: Element) => { const b = e.getBoundingClientRect(); return { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; };
       return {
-        canvas: box(cv), bar: box(document.querySelector('sherpa-node-toolbar')!), panel: box(document.querySelector('sherpa-node-panel')!),
+        canvas: box(cv), bar: box(document.querySelector('sherpa-node-toolbar')!), panel: box(document.querySelector('#cv > sherpa-overlay-panel')!.shadowRoot!.querySelector('.root')!),
         controls: box(cv.shadowRoot!.querySelector('.controls')!), minimap: box(cv.shadowRoot!.querySelector('.minimap')!),
       };
     }, width);
@@ -237,7 +237,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
       const b = cv.getBoundingClientRect();
       for (let y = b.bottom - 120; y > b.top + 20; y -= 20) {
         for (let x = b.right - 40; x > b.left + 340; x -= 20) {
-          const free = document.elementsFromPoint(x, y).every((e) => e.localName !== 'sherpa-node' && e.localName !== 'sherpa-node-panel')
+          const free = document.elementsFromPoint(x, y).every((e) => e.localName !== 'sherpa-node' && e.localName !== 'sherpa-node-list')
             && cv.shadowRoot!.elementsFromPoint(x, y).every((e) => !e.closest('.minimap, .controls'));
           if (free) return [x, y] as [number, number];
         }

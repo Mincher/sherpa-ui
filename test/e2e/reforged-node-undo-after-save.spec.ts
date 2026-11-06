@@ -20,9 +20,9 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (library) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
@@ -40,7 +40,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv')!;
     const toolbar = canvas.querySelector('sherpa-node-toolbar')!;
     const ed = bindWorkflow(canvas as never, flow as never, {
-      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
       toolbar: toolbar as never, library: library as never,
       onSaveNode: (id: string, d: { tags?: readonly string[]; nodes: readonly { x: number }[] }) => { (w['handed'] as unknown[]).push([id, d.tags ?? [], d.nodes[0]!.x]); },
       fieldsOf: { users: { role: { label: 'Role' } } }, stores: ['users'],
@@ -70,8 +70,8 @@ const handed = (page: Page) => page.evaluate(() => {
   return out;
 });
 /** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
-const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
-const tagHeadings = async (page: Page) => { await openCustom(page); return page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('.tag-heading')]
+const openCustom = (page: Page) => page.locator('sherpa-node-list sherpa-tabs .tab[data-id="custom"]').click();
+const tagHeadings = async (page: Page) => { await openCustom(page); return page.evaluate(() => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll<HTMLElement>('.tag-heading')]
   .filter((h) => h.checkVisibility()).map((h) => h.dataset['heading'])); };
 const typeTag = async (page: Page, heading: string, word: string) => {
   await header(page, heading).click();

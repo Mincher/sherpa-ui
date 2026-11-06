@@ -555,9 +555,10 @@ provider.addEventListener('filters-save-as', saveAs);
   corner resizes it, and Dock puts it back on the right edge or in the shell's
   panel area it came from (`data-fixed`, or `data-fixed="start"`). It reports
   `panel-float`, `panel-move` and `panel-resize`; keep `data-floating`, `data-x`,
-  `data-y`, `data-width` and `data-height` in the session and hand them back. A
-  node panel and a filter column with `data-floatable` float the same way, inside
-  their layout. A press or a focus brings a floating panel to the front.
+  `data-y`, `data-width` and `data-height` in the session and hand them back. The
+  Nodes panel is an overlay panel slotted in the canvas's `panel` slot with
+  `sherpa-node-list` in it, and floats the same way, inside the canvas; so does a
+  filter column with `data-floatable`. A press or a focus brings a floating panel to the front.
   `T-a-floating-panel-is-a-state` · `T-a-pressed-panel-comes-to-the-front`
 - From a script, call `dialog.show()`, never the native `showModal()`: the
   component owns modality and `open`. An add or edit flow is that dialog, its

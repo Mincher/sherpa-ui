@@ -1,27 +1,22 @@
 /**
- * sherpa-node-panel — the nodes a graph editor may place, by category, in a card docked on a canvas.
+ * sherpa-node-list — the nodes a graph editor may place, by category, as the CONTENT of a panel on a canvas.
  *
- * It re-makes nothing: a sherpa-container, sherpa-tabs (Preset Nodes, Custom Nodes) and a sherpa-input-text for the search,
+ * It re-makes nothing: sherpa-tabs (Preset Nodes, Custom Nodes) and a sherpa-input-text for the search,
  * a sherpa-section-header per category that sticks while its items scroll, a sherpa-list of
  * sherpa-list-items, and a sherpa-menu for "Add a node". It places nothing either: an item
- * clicked, Enter on it, or dragged off the card is `node-add`, and the editor that hears it makes
+ * clicked, Enter on it, or dragged off the panel is `node-add`, and the editor that hears it makes
  * the node. An item is a FAMILY: its line is its kind's synopsis, and the search finds it by any
  * type's name, or by a tag: "round" finds Math, placed as Round. TRAP T-the-node-panel-asks-it-places
  * A Custom Node is listed under each of its tags. TRAP T-a-node-panel-lists-under-sticky-headings
- * Docked flush in its canvas's panel area, it floats there as an overlay panel floats in the window, by the
- * same code. TRAP T-a-floating-panel-is-a-state
+ * It is no panel: the box, the header, float, dock and minimise are the overlay panel's it sits in.
+ * TRAP T-a-node-list-is-a-panels-content
  *
  * Map:
  * - AddContext — Where "Add a node" opens, and what it is for: a socket of a type, dragged to a point.
- */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { FLOAT_ATTRS, FloatBox, roomOf } from '../../core/ui/float-box.js';
+ */import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { categorySlug, fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type PaletteItem, type SocketType } from '../../core/data/node-kinds.js';
 import { takesGiven, type Given } from '../../core/data/node-input.js';
 // Defined before the template stamps them.
-import '../sherpa-button/sherpa-button.js';
-import '../sherpa-container/sherpa-container.js';
-import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-list/sherpa-list.js';
 import '../sherpa-list-item/sherpa-list-item.js';
@@ -79,23 +74,9 @@ function byTag(group: PaletteGroup, index: number): Drawn {
   };
 }
 
-export class SherpaNodePanel extends SherpaElement {
-  // The floating box's sheet, shared with the overlay panel. TRAP T-a-floating-panel-is-a-state
-  static override css = [new URL('../../core/sherpa-float.css', import.meta.url), new URL('./sherpa-node-panel.css', import.meta.url)];
-  static override html = new URL('./sherpa-node-panel.html', import.meta.url);
-
-  static override props = {
-    'data-floatable': { type: 'boolean', kind: 'style' },
-    'data-minimisable': { type: 'boolean', kind: 'style' },
-    'data-minimised': { type: 'boolean', kind: 'behaviour' },
-    // Lifted off its place, anywhere in its canvas. TRAP T-a-floating-panel-is-a-state
-    'data-floating': { type: 'boolean', kind: 'behaviour' },
-    'data-x': { type: 'number', kind: 'behaviour' },
-    'data-y': { type: 'number', kind: 'behaviour' },
-    'data-width': { type: 'number', kind: 'behaviour' },
-    'data-height': { type: 'number', kind: 'behaviour' },
-  } as const;
-  static override observed = ['data-x', 'data-y', 'data-width', 'data-height'];
+export class SherpaNodeList extends SherpaElement {
+  static override css = new URL('./sherpa-node-list.css', import.meta.url);
+  static override html = new URL('./sherpa-node-list.html', import.meta.url);
 
   /** The categories, as populated. */
   #palette: readonly PaletteGroup[] = [];
@@ -108,19 +89,6 @@ export class SherpaNodePanel extends SherpaElement {
   /** The type a search found an item by, when its name did not match: placing it sets that type. */
   #found = new WeakMap<Element, string>();
 
-  /** Floating, in its canvas: its area's layout is its room, the whole canvas. TRAP T-a-panel-area-is-a-layout */
-  readonly #floatBox: FloatBox = new FloatBox({
-    el: this,
-    box: () => this.$<HTMLElement>('.box'),
-    room: () => roomOf(this),
-    free: () => this.hasAttribute('data-floating'),
-    set: (attr, value) => this.set(attr, value),
-    num: (attr) => this.num(attr, NaN),
-    toggleState: (name, on) => this.toggleState(name, on),
-    moved: (at) => this.emit('panel-move', at),
-    sized: (size) => this.emit('panel-resize', size),
-  });
-
   override onRender(): void {
     this.on(this.root, 'input', this.#onSearch);
     this.on(this.root, 'click', this.#onClick);
@@ -128,23 +96,8 @@ export class SherpaNodePanel extends SherpaElement {
     this.on(this.$('.add')!, 'menu-select', this.#onChoose);
     this.on(this.$('.tabs')!, 'tab-select', this.#onTab);
     void this.$<SherpaElement>('.tabs')?.populate(TABS.map(({ id, label }) => ({ id, label })));
-    // `button-click`, not `click`: a disabled sherpa-button still gets raw clicks.
-    this.on(this.$('.float')!, 'button-click', this.#onFloat);
-    this.on(this.$('.minimise')!, 'button-click', this.#onMinimise);
-    this.on(this.$('.tab')!, 'click', this.#onMinimise);
-    this.toggleState('minimised', this.hasAttribute('data-minimised'));
-    this.#floatBox.wire(this.$('.heading'), this.$('.grip'), this.$('.corner'));
-    this.#floatBox.draw();
-    this.toggleState('floating', this.hasAttribute('data-floating'));
-    this.#floatBox.floated(this.hasAttribute('data-floating'));
     this.$<HTMLElement>('.categories')?.setAttribute('data-tab', 'preset');
     this.#draw();
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-minimised') this.toggleState('minimised', this.hasAttribute('data-minimised'));
-    else if (name === 'data-floating') this.#float();
-    else if (FLOAT_ATTRS.includes(name)) this.#floatBox.draw();
   }
 
   /** populate(paletteOf(kinds)) — each category and its kinds. */
@@ -242,64 +195,6 @@ export class SherpaNodePanel extends SherpaElement {
     return !!hit;
   }
 
-  /* ── Floating ─────────────────────────────────────────────────────────── */
-
-  /** Float, and lift where it is docked the first time, 16px in on each side, so it visibly lifts; or dock back
-   *  in its area. To the front as it floats. TRAP T-a-pressed-panel-comes-to-the-front */
-  #float(): void {
-    const floating = this.hasAttribute('data-floating');
-    const box = this.$<HTMLElement>('.box');
-    if (floating && box && !this.hasState('floating')) {
-      const inset = parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-layout-grid-padding')) || 16;
-      this.#floatBox.lift(box.getBoundingClientRect(), inset);
-    }
-    this.toggleState('floating', floating);
-    this.#floatBox.floated(floating);
-  }
-
-  /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
-  #onMinimise = (): void => this.minimise();
-
-  /** Is it a tab now? */
-  get minimised(): boolean {
-    return this.hasAttribute('data-minimised');
-  }
-
-  /** The side of the canvas it docks on. */
-  get side(): 'start' {
-    return 'start';
-  }
-
-  /** Has it a tab: only on the edge, where it is the one panel of its area. */
-  get tabbed(): boolean {
-    return this.minimised;
-  }
-
-  /** Bring it to the front of the panels docked beside it: the area hears it. */
-  front(): void {
-    this.emit('panel-front');
-  }
-
-  /** Is it drawn, for the panel keys? */
-  get shown(): boolean {
-    return !this.hidden;
-  }
-
-  /** Shrink to a tab (`on`), or open from it; with no word, the other of the two. */
-  minimise(on = !this.minimised): void {
-    const minimised = on;
-    if (minimised === this.minimised) return;
-    this.set('data-minimised', minimised);
-    this.emit('panel-minimise', { minimised });
-  };
-
-  /** Float, or dock, and report it. */
-  #onFloat = (): void => {
-    const floating = !this.hasAttribute('data-floating');
-    this.set('data-floating', floating);
-    this.emit('panel-float', { floating });
-  };
-
   /* ── Placing ──────────────────────────────────────────────────────────── */
 
   /** A click on an item, or Enter on it: the button inside it clicks. */
@@ -315,7 +210,7 @@ export class SherpaNodePanel extends SherpaElement {
     return { kind: item.dataset['kind'], ...(type ? { type } : {}) };
   }
 
-  /** A press on an item, moved a few pixels: a drag. Let go off the card, it asks for the node there. */
+  /** A press on an item, moved a few pixels: a drag. Let go off the list, it asks for the node there. */
   #onDown = (event: PointerEvent): void => {
     const item = this.pathFind(event, 'sherpa-list-item[data-kind]');
     if (event.button !== 0 || !item) return;
@@ -330,9 +225,9 @@ export class SherpaNodePanel extends SherpaElement {
         ghost.textContent = item.dataset['label'] ?? '';
         this.toggleState('dragging', true);
       }
-      const box = this.getBoundingClientRect();
-      ghost.style.setProperty('--_x', `${e.clientX - box.left + 12}px`);
-      ghost.style.setProperty('--_y', `${e.clientY - box.top + 12}px`);
+      // Fixed in the window: the list sits in a panel that clips, and the ghost leaves it.
+      ghost.style.setProperty('--_x', `${e.clientX + 12}px`);
+      ghost.style.setProperty('--_y', `${e.clientY + 12}px`);
     };
     const stop = (e: PointerEvent): void => {
       shorter.abort();
@@ -340,7 +235,7 @@ export class SherpaNodePanel extends SherpaElement {
       this.toggleState('dragging', false);
       this.#dragged = true;
       setTimeout(() => { this.#dragged = false; });
-      const card = this.$('.card')!.getBoundingClientRect();
+      const card = this.getBoundingClientRect();
       const over = e.clientX >= card.left && e.clientX <= card.right && e.clientY >= card.top && e.clientY <= card.bottom;
       if (e.type === 'pointerup' && !over) this.emit('node-add', { ...this.#asked(item), point: { x: e.clientX, y: e.clientY } });
     };
@@ -361,10 +256,10 @@ export class SherpaNodePanel extends SherpaElement {
     if (!choices.length) return;
     this.#context = context;
     this.renderItems('.add', 'template.choice-tpl', choices);
-    const box = this.getBoundingClientRect();
+    // Fixed in the window, so the panel's clip never reaches the point the menu is anchored to.
     const anchor = this.$('.anchor')!;
-    anchor.style.setProperty('--_ax', `${context.client.x - box.left}px`);
-    anchor.style.setProperty('--_ay', `${context.client.y - box.top}px`);
+    anchor.style.setProperty('--_ax', `${context.client.x}px`);
+    anchor.style.setProperty('--_ay', `${context.client.y}px`);
     this.$<HTMLElement & { show(trigger?: HTMLElement): void }>('.add')?.show(anchor);
   }
 
@@ -377,4 +272,4 @@ export class SherpaNodePanel extends SherpaElement {
   };
 }
 
-define('sherpa-node-panel', SherpaNodePanel);
+define('sherpa-node-list', SherpaNodeList);

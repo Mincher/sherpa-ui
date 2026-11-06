@@ -12,9 +12,12 @@ const SETUP = `async () => {
   const { PageKeeper, bindWorkflow, SessionStore, nodeEntityOf, kindsOf, paletteOf, NODE_KINDS } = await import('/dist/index.js');
   const canvas = document.createElement('sherpa-layout-canvas');
   canvas.style.cssText = 'inline-size: 900px; block-size: 600px';
-  const panel = document.createElement('sherpa-node-panel');
-  panel.slot = 'panel';
-  canvas.appendChild(panel);
+  const panel = document.createElement('sherpa-node-list');
+  const box = document.createElement('sherpa-overlay-panel');
+  box.slot = 'panel';
+  for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-padding', 'none']]) box.setAttribute(a, v);
+  box.appendChild(panel);
+  canvas.appendChild(box);
   const inspector = document.createElement('sherpa-overlay-panel');
   document.getElementById('root').append(canvas, inspector);
   await canvas.rendered;
@@ -36,7 +39,7 @@ const SETUP = `async () => {
   window.saved = [];
   document.addEventListener('definition-save', (e) => window.saved.push(e.detail.definition));
   window.editor = bindWorkflow(canvas, { v: 2, id: 'g', nodes: [], routes: [] }, { session: new SessionStore(), inspector, panel, kinds });
-  await customElements.whenDefined('sherpa-node-panel');
+  await customElements.whenDefined('sherpa-node-list');
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }`;
@@ -44,7 +47,7 @@ const setup = (page: Page) => page.evaluate(`(${SETUP})()`);
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 /** The Custom Nodes category: each item's kind id, and whether it is a preset. */
 const listed = (page: Page) => page.evaluate(() => {
-  const category = [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll('.categories > .category')].find((a) => a.querySelector('.category-heading')?.getAttribute('data-heading') === 'Custom Nodes');
+  const category = [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll('.categories > .category')].find((a) => a.querySelector('.category-heading')?.getAttribute('data-heading') === 'Custom Nodes');
   return [...(category?.querySelectorAll('sherpa-list-item') ?? [])].map((i) => `${(i as HTMLElement).dataset['kind']}${i.hasAttribute('data-preset') ? ' (preset)' : ''}`);
 });
 const save = (page: Page, id: string, label: string) => page.evaluate(([i, l]) => {
@@ -83,8 +86,8 @@ test('a saved node shows in a second tab, live and after a reload; a preset is r
   expect(await listed(second)).toEqual(['has-role (preset)', 'mine', 'also']);
 
   // Placing one is placing a use: a node whose kind is the saved id.
-  await second.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
-  await second.locator('sherpa-node-panel sherpa-list-item[data-kind="mine"]').click();
+  await second.locator('sherpa-node-list sherpa-tabs .tab[data-id="custom"]').click();
+  await second.locator('sherpa-node-list sherpa-list-item[data-kind="mine"]').click();
   await settle(second);
   const placed = await second.evaluate(() => {
     const w = window as unknown as { editor: { save(): boolean }; saved: { nodes: { kind: string }[] }[] };

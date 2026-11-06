@@ -46,6 +46,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-external': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content' },
+    // The body's own padding: `none` for content that fills it (a list). TRAP T-a-node-list-is-a-panels-content
+    'data-padding': { type: 'enum', kind: 'style', values: ['none'] },
     'data-icon': { type: 'string', kind: 'content' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
     'data-maximised': { type: 'boolean', kind: 'style' },

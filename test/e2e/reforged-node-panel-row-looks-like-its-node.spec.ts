@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.evaluate(async (library) => {
     const root = document.getElementById('root')!;
-    root.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="cv" style="inline-size: 1400px; block-size: 760px"><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>');
+    root.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="cv" style="inline-size: 1400px; block-size: 760px"><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');
@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
     bindWorkflow(canvas as never, { v: 2, id: 'g', nodes: [
       { id: 's', kind: 'source', x: 500, y: 60, values: { store: 'users' } }, { id: 'o', kind: 'output', x: 900, y: 60 }, { id: 'c', kind: 'condition', x: 500, y: 400 },
       useOf(library as never, 'mine', { id: 'm', x: 900, y: 400 }),
-    ] } as never, { session: new SessionStore(), panel: canvas.querySelector('sherpa-node-panel') as never, stores: ['users'], library: library as never });
+    ] } as never, { session: new SessionStore(), panel: canvas.querySelector('sherpa-node-list') as never, stores: ['users'], library: library as never });
     await window.__settled();
     canvas.zoomTo(1);
     canvas.panTo(0, 0);
@@ -49,7 +49,7 @@ const nodeLook = async (page: Page, heading: string): Promise<Look> => {
   return look(page, box, [...radii], border);
 };
 const rowLook = async (page: Page, kind: string): Promise<Look> => {
-  const el = page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`).first();
+  const el = page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`).first();
   await el.scrollIntoViewIfNeeded();
   const box = (await el.boundingBox())!;
   const [radii, border] = await el.evaluate((n) => { const s = getComputedStyle(n.shadowRoot!.querySelector('.row')!); return [[s.borderTopLeftRadius, s.borderTopRightRadius, s.borderBottomRightRadius, s.borderBottomLeftRadius], s.borderTopWidth] as const; });
@@ -76,7 +76,7 @@ test('a Condition\'s row has no tint and a plain 4px; a Custom Node\'s, its node
   expect(new Set(row.radii).size).toBe(1);
   expect(near(row.fill, node.fill), `its fill ${row.fill} is its node's ${node.fill}`).toBe(true);
   // Custom Nodes is a tab of its own.
-  await page.locator('sherpa-node-panel sherpa-tabs').evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
+  await page.locator('sherpa-node-list sherpa-tabs').evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
   const [mine, mineNode] = [await rowLook(page, 'mine'), await nodeLook(page, 'Mine')];
   expect(mine.radii).toEqual(mineNode.radii);
   expect(near(mine.fill, mineNode.fill), `its fill ${mine.fill} is its node's ${mineNode.fill}`).toBe(true);

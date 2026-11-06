@@ -44,10 +44,6 @@ const KNOWN = {
   'sherpa-overlay-panel.side': 'derived: the side its area docks on; `data-fixed` says it, or the slot it is in',
   'sherpa-overlay-panel.tabbed': 'derived: a tab on the edge, or in the row of an area that holds several; minimise() and docking change it',
   'sherpa-overlay-panel.shown': 'derived: whether it is open (show() / hide()); the panel keys read it',
-  'sherpa-node-panel.minimised': 'ok: minimise(on) / the data-minimised attribute',
-  'sherpa-node-panel.side': 'derived: the side its area docks on; `data-fixed` says it, or the slot it is in',
-  'sherpa-node-panel.tabbed': 'derived: a tab on the edge, or in the row of an area that holds several; minimise() and docking change it',
-  'sherpa-node-panel.shown': 'derived: whether it is open (show() / hide()); the panel keys read it',
   // What a bar sends to turn its presets off: a request, not a state. Will, TODO 592
   'sherpa-quick-filter.presetsOff': 'read only: the presets are turned off through the Query',
   'sherpa-calendar-cell.value': 'ok: data-value attribute',

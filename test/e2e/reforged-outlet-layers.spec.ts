@@ -90,7 +90,7 @@ test('on a page, a floating card and a floating panel each come to the front on 
     inspector.show();
   }, [cv.x, cv.y]);
   await settle(page);
-  const [nodes, inspector] = [await box(page, 'nodes', '.box'), await box(page, 'inspector', '.root')];
+  const [nodes, inspector] = [await box(page, 'nodes', '.root'), await box(page, 'inspector', '.root')];
   const at = { x: Math.round((inspector.x + nodes.x + nodes.w) / 2), y: inspector.y + 120 };
   // Opened last, the panel is in front where they overlap.
   expect(await top(page, at.x, at.y)).toBe('inspector');

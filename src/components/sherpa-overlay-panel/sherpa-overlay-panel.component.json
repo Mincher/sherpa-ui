@@ -405,6 +405,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-padding",
+      "type": "enum",
+      "observed": false,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "none"
+      ],
+      "description": "`none`: the body has no padding, for content that fills it (a list)"
+    },
+    {
+      "$type": "prop",
       "name": "data-poppable",
       "type": "boolean",
       "observed": true,
@@ -526,7 +538,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, padding?, poppable?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -544,6 +556,11 @@
       "$type": "state",
       "name": "updated",
       "selector": ":host([data-updated])"
+    },
+    {
+      "$type": "state",
+      "name": "none",
+      "selector": ":host([data-padding=\"none\"])"
     },
     {
       "$type": "state",

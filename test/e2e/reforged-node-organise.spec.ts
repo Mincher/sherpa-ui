@@ -12,9 +12,12 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.createElement('sherpa-layout-canvas') as HTMLElement & { rendered: Promise<void> };
     el.style.cssText = 'inline-size: 1100px; block-size: 640px';
-    const panel = document.createElement('sherpa-node-panel');
-    panel.slot = 'panel';
-    el.appendChild(panel);
+    const panel = document.createElement('sherpa-node-list');
+    const box = document.createElement('sherpa-overlay-panel');
+    box.slot = 'panel';
+    for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-padding', 'none']] as const) box.setAttribute(a, v);
+    box.appendChild(panel);
+    el.appendChild(box);
     document.getElementById('root')!.appendChild(el);
     const inspector = document.createElement('sherpa-overlay-panel');
     inspector.id = 'inspector';
@@ -28,12 +31,12 @@ async function bind(page: Page, flow: object): Promise<void> {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const canvas = document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, given as never, {
-      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
       fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'],
     });
     (window as never as { saved: unknown[] }).saved = [];
     document.addEventListener('definition-save', (e) => (window as never as { saved: unknown[] }).saved.push((e as CustomEvent<{ definition: unknown }>).detail.definition));
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     await window.__settled();
     // Clear of the node panel, which floats on the left.
     canvas.zoomTo(0.5);
@@ -65,9 +68,9 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
 }
 /** Place a node from the panel by a real drag, let go at a point of the canvas: found by its name first, so it is in view. */
 async function place(page: Page, kind: string, [x, y]: [number, number]): Promise<void> {
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill(kind);
+  await page.locator('sherpa-node-list sherpa-input-text.find input').fill(kind);
   await settle(page);
-  const from = (await page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`).boundingBox())!;
+  const from = (await page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`).boundingBox())!;
   await drag(page, [from.x + from.width / 2, from.y + from.height / 2], [x, y]);
 }
 
@@ -79,10 +82,10 @@ const routes = async (page: Page) => (await flow(page)).routes.map((r) => `${r.f
 
 test('the panel lists Organise: Sort and Group; a Group dragged from it is placed, and no Collection is offered', async ({ page }) => {
   await bind(page, BARE);
-  const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
+  const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toContain('Organise');
   expect(heads).not.toContain('Collections');
-  const names = await page.locator('sherpa-node-panel sherpa-list-item').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
+  const names = await page.locator('sherpa-node-list sherpa-list-item').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(names).toEqual(expect.arrayContaining(['Sort', 'Group']));
   expect(names).not.toContain('Collection');
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;

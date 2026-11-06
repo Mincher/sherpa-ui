@@ -54,7 +54,7 @@ import '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
 import '../../components/sherpa-group/sherpa-group.js';
 import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
-import type { AddContext, SherpaNodePanel } from '../../components/sherpa-node-panel/sherpa-node-panel.js';
+import type { AddContext, SherpaNodeList } from '../../components/sherpa-node-list/sherpa-node-list.js';
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 import { primaryKey } from './modifier-key.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
@@ -1898,7 +1898,7 @@ export interface QueryEditorOptions extends QueryGraphFacts {
   /** A `sherpa-node-toolbar`: its Undo and Redo step the Query's draft, and it says when they can be pressed. */
   toolbar?: HTMLElement;
   /** The node panel floating on the canvas: it lists the kinds a Query takes placed, and each one asked for is a request. */
-  panel?: SherpaNodePanel;
+  panel?: SherpaNodeList;
   /** Where a component node's live copy is copied from, by id: the page's markup where the page is not on screen. Default, the document. */
   markup?: NonElementParentNode;
 }
@@ -2214,7 +2214,7 @@ function watchQuery(
 export interface WorkflowEditorOptions extends WorkflowFacts {
   inspector?: Inspector;
   /** The node panel floating on the canvas: it lists the kinds, and each node it asks for is placed. */
-  panel?: SherpaNodePanel;
+  panel?: SherpaNodeList;
   /** Where the DRAFT is kept for the tab (TODO 551): every edit, a move too, survives a
    *  reload, and the session's end forgets it — unless Save handed it over. */
   session?: SessionStore;

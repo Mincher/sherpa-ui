@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (library) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 536px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 536px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="custom" data-heading="Save as Custom Node">
         <sherpa-stack data-gap="md">
@@ -36,7 +36,7 @@ test.beforeEach(async ({ page }) => {
           <sherpa-button data-action="save" data-look="saturated">Save as Custom Node</sherpa-button>
         </sherpa-container-footer>
       </sherpa-dialog>`);
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
@@ -52,7 +52,7 @@ test.beforeEach(async ({ page }) => {
       routes: [{ from: 'start/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'status/field', to: 'trial' }],
     };
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
-      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
       toolbar: canvas.querySelector('sherpa-node-toolbar') as never, customDialog: document.getElementById('custom') as never, library: structuredClone(library) as never,
       fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['customers'],
     });
@@ -65,18 +65,18 @@ const settle = (page: Page) => page.evaluate(() => window.__settled().then(() =>
 type Box = { x: number; y: number; w: number; h: number };
 /** A box in the panel's shadow root, by selector. */
 const rect = (page: Page, sel: string): Promise<Box> => page.evaluate((s) => {
-  const r = document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelector(s)!.getBoundingClientRect();
+  const r = document.querySelector('sherpa-node-list')!.shadowRoot!.querySelector(s)!.getBoundingClientRect();
   return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
 }, sel);
 /** A category's block, by its heading's words. */
 const category = (heading: string) => `.category:has(> .category-heading[data-heading="${heading}"])`;
 /** The headings drawn now, a tag's marked with its category: what a reader sees. */
-const shown = (page: Page) => page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('.category-heading, .tag-heading')]
+const shown = (page: Page) => page.evaluate(() => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll<HTMLElement>('.category-heading, .tag-heading')]
   .filter((h) => h.checkVisibility()).map((h) => (h.classList.contains('tag-heading') ? `› ${h.dataset['heading']}` : h.dataset['heading'])));
 /** The items drawn now, by name, a Custom Node once per place it is listed. */
-const names = (page: Page) => page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll<HTMLElement>('sherpa-list-item')]
+const names = (page: Page) => page.evaluate(() => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll<HTMLElement>('sherpa-list-item')]
   .filter((h) => h.checkVisibility()).map((h) => h.dataset['label']));
-const scrollTop = (page: Page) => page.evaluate(() => document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelector('.categories')!.scrollTop);
+const scrollTop = (page: Page) => page.evaluate(() => document.querySelector('sherpa-node-list')!.shadowRoot!.querySelector('.categories')!.scrollTop);
 /** The pixels in a row, from a point: what the screen draws there. */
 async function pixels(page: Page, x: number, y: number, width: number): Promise<[number, number, number][]> {
   const shot = await page.screenshot({ clip: { x, y, width, height: 1 } });
@@ -92,7 +92,7 @@ async function pixels(page: Page, x: number, y: number, width: number): Promise<
 const dark = (p: [number, number, number]): boolean => Math.max(...p) < 160;
 
 test('one list, no accordions: a heading sticks while its items scroll under it, and the next one pushes it on', async ({ page }) => {
-  expect(await page.locator('sherpa-node-panel sherpa-accordion').count()).toBe(0);
+  expect(await page.locator('sherpa-node-list sherpa-accordion').count()).toBe(0);
   expect(await shown(page)).toEqual(['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output']);
   const list = await rect(page, '.categories');
   // The wheel, over the list, until Variables' first item passes under its heading. Each engine
@@ -110,12 +110,12 @@ test('one list, no accordions: a heading sticks while its items scroll under it,
   // What scrolled under it is covered: the first item's icon is behind the heading, and the
   // heading's own surface is drawn there, not the icon.
   const icon = await page.evaluate(() => {
-    const item = document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelector('.category:has(> .category-heading[data-heading="Variables"]) sherpa-list-item')!;
+    const item = document.querySelector('sherpa-node-list')!.shadowRoot!.querySelector('.category:has(> .category-heading[data-heading="Variables"]) sherpa-list-item')!;
     const r = item.getBoundingClientRect();
     return { x: Math.round(r.x), y: Math.round(r.y), h: Math.round(r.height) };
   });
   expect(icon.y).toBeLessThan(head.y + head.h);
-  const hit = await page.evaluate(([x, y]) => document.querySelector('sherpa-node-panel')!.shadowRoot!.elementFromPoint(x!, y!)?.className, [list.x + 24, head.y + head.h - 6]);
+  const hit = await page.evaluate(([x, y]) => document.querySelector('sherpa-node-list')!.shadowRoot!.elementFromPoint(x!, y!)?.className, [list.x + 24, head.y + head.h - 6]);
   expect(hit).toContain('category-heading');
   // Its words are ink on the left; past them, the surface, and nothing of the item under it.
   const row = await pixels(page, list.x + 8, Math.round(head.y + 10), 120);
@@ -134,14 +134,14 @@ test('one list, no accordions: a heading sticks while its items scroll under it,
 
 /** A tab, pressed as a reader does. */
 const openTab = async (page: Page, id: string) => {
-  await page.locator(`sherpa-node-panel sherpa-tabs .tab[data-id="${id}"]`).click();
+  await page.locator(`sherpa-node-list sherpa-tabs .tab[data-id="${id}"]`).click();
   await settle(page);
 };
-const badges = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .badge').evaluateAll((els) => els.map((b) => ((b as HTMLElement).checkVisibility() ? b.textContent : '')));
+const badges = (page: Page) => page.locator('sherpa-node-list sherpa-tabs .badge').evaluateAll((els) => els.map((b) => ((b as HTMLElement).checkVisibility() ? b.textContent : '')));
 
 test('two tabs: Preset Nodes lists the kinds a file gives, Custom Nodes the saved ones; there is no Jump to', async ({ page }) => {
-  await expect(page.locator('sherpa-node-panel .jump')).toHaveCount(0);
-  expect(await page.locator('sherpa-node-panel sherpa-tabs .tab .label').allTextContents()).toEqual(['Preset Nodes', 'Custom Nodes']);
+  await expect(page.locator('sherpa-node-list .jump')).toHaveCount(0);
+  expect(await page.locator('sherpa-node-list sherpa-tabs .tab .label').allTextContents()).toEqual(['Preset Nodes', 'Custom Nodes']);
   expect(await shown(page)).not.toContain('Custom Nodes');
   expect(await shown(page)).toContain('Math');
   await openTab(page, 'custom');
@@ -151,7 +151,7 @@ test('two tabs: Preset Nodes lists the kinds a file gives, Custom Nodes the save
 });
 
 test('a search narrows both tabs, a count shows on each tab, and a heading with nothing under it is hidden', async ({ page }) => {
-  const find = page.locator('sherpa-node-panel sherpa-input-text.find input');
+  const find = page.locator('sherpa-node-list sherpa-input-text.find input');
   expect(await badges(page)).toEqual(['', '']);
   await find.fill('round');
   expect(await shown(page)).toEqual(['Math']);
@@ -168,15 +168,15 @@ test('a search narrows both tabs, a count shows on each tab, and a heading with 
   // A preset's tags are its own, read only, and find it as any tag does.
   await find.fill('checks');
   expect(await names(page)).toEqual(['Shipped check']);
-  expect(await page.locator('sherpa-node-panel sherpa-list-item[data-kind="shipped-check"]').getAttribute('data-description')).toMatch(/^Preset, read only/);
+  expect(await page.locator('sherpa-node-list sherpa-list-item[data-kind="shipped-check"]').getAttribute('data-description')).toMatch(/^Preset, read only/);
   await find.fill('zzz');
   expect(await shown(page)).toEqual([]);
-  await expect(page.locator('sherpa-node-panel .none')).toBeVisible();
+  await expect(page.locator('sherpa-node-list .none')).toBeVisible();
   await find.fill('');
   expect(await badges(page)).toEqual(['', '']);
   await openTab(page, 'custom');
   // Untagged, a Custom Node is listed under its category's own heading, before the tags.
-  const custom = await page.evaluate(() => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll('.category:has(> .category-heading[data-heading="Custom Nodes"]) :is(.category-heading, .tag-heading, sherpa-list-item)')]
+  const custom = await page.evaluate(() => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll('.category:has(> .category-heading[data-heading="Custom Nodes"]) :is(.category-heading, .tag-heading, sherpa-list-item)')]
     .map((e) => e.getAttribute('data-heading') ?? e.getAttribute('data-label')));
   expect(custom).toEqual(['Custom Nodes', 'By date', 'checks', 'Shipped check', 'permissions', 'Org permissions', 'Is admin', 'users', 'Org permissions']);
 });
@@ -212,10 +212,10 @@ test('a tag set in Save as Custom Node, by the keys, lists the new node under it
   // Under each of its tags, beside the nodes already there.
   await openTab(page, 'custom');
   expect(await shown(page)).toContain('› billing');
-  const under = (tag: string) => page.evaluate((t) => [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll(`.tag:has(> .tag-heading[data-heading="${t}"]) sherpa-list-item`)].map((i) => i.getAttribute('data-label')), tag);
+  const under = (tag: string) => page.evaluate((t) => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll(`.tag:has(> .tag-heading[data-heading="${t}"]) sherpa-list-item`)].map((i) => i.getAttribute('data-label')), tag);
   expect(await under('billing')).toEqual(['Active trials']);
   expect(await under('permissions')).toEqual(['Org permissions', 'Is admin', 'Active trials']);
   // Found by a tag, it is listed under each of its own.
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('bill');
+  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('bill');
   expect(await names(page)).toEqual(['Active trials', 'Active trials']);
 });

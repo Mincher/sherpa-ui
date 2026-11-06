@@ -16,9 +16,9 @@ const ORG = {
 const bind = (page: Page, preset = false) => page.evaluate(async ({ entity, preset }) => {
   const root = document.getElementById('root')!;
   root.insertAdjacentHTML('beforeend', `
-    <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>
+    <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 640px"><sherpa-node-toolbar slot="toolbar" data-can-save></sherpa-node-toolbar><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
     <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
-  await customElements.whenDefined('sherpa-node-panel');
+  await customElements.whenDefined('sherpa-node-list');
   await customElements.whenDefined('sherpa-node-toolbar');
   await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
@@ -32,7 +32,7 @@ const bind = (page: Page, preset = false) => page.evaluate(async ({ entity, pres
   const canvas = document.getElementById('cv')!;
   const toolbar = canvas.querySelector('sherpa-node-toolbar')!;
   const ed = bindWorkflow(canvas as never, workflow, {
-    session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
+    session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
     toolbar: toolbar as never, kinds, library, entity: { type: 'node', id: 'org' }, readOnly: preset,
     onSaveNode: (id: string) => { (w['handed'] as unknown[]).push(id); },
     fieldsOf: { users: { role: { label: 'Role' } } }, stores: ['users'],

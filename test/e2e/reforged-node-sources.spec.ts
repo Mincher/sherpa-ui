@@ -11,15 +11,15 @@ test.beforeEach(async ({ page }) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
-        <sherpa-node-panel slot="panel"></sherpa-node-panel>
+        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
       </sherpa-layout-canvas>`);
-    await Promise.all(['sherpa-node-panel', 'sherpa-node-toolbar', 'sherpa-layout-canvas'].map((t) => customElements.whenDefined(t)));
+    await Promise.all(['sherpa-node-list', 'sherpa-node-toolbar', 'sherpa-layout-canvas'].map((t) => customElements.whenDefined(t)));
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
   });
 });
 
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
-const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
+const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
 const sources = '#cv > sherpa-node[data-heading="Source"]';
 
 /** Drag a panel item onto the canvas by the real pointer, let go at a point. */
@@ -38,7 +38,7 @@ test('two Sources dragged into a workflow: each its own id, customers and device
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const canvas = document.getElementById('cv')!;
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 2, id: 'both', nodes: [], routes: [] }, {
-      session: new SessionStore(), panel: canvas.querySelector('sherpa-node-panel') as never, stores: ['customers', 'devices'],
+      session: new SessionStore(), panel: canvas.querySelector('sherpa-node-list') as never, stores: ['customers', 'devices'],
     });
     await window.__settled();
   });
@@ -54,12 +54,12 @@ test('two Sources dragged into a workflow: each its own id, customers and device
   expect(await kept()).toEqual([['source-1', 'source', 'customers'], ['source-2', 'source', 'devices']]);
   await expect(page.locator(sources)).toHaveCount(2);
   // 809, 833: every line is a short job in Will's words, on one line; a family's never lists its types.
-  const lines = await page.locator('sherpa-node-panel sherpa-list-item').evaluateAll((els) => els.map((e) => [e.getAttribute('data-kind'), e.getAttribute('data-description')]));
+  const lines = await page.locator('sherpa-node-list sherpa-list-item').evaluateAll((els) => els.map((e) => [e.getAttribute('data-kind'), e.getAttribute('data-description')]));
   expect(Object.fromEntries(lines)).toMatchObject({ source: 'Connect a data source', value: 'Primitive value variables', math: 'Numbers in, one number out' });
   for (const [kind, line] of lines) expect(line!.split(/\s+/).length, `${kind}: "${line}"`).toBeLessThanOrEqual(8);
   // The types stay in search: "integer" finds Value, says Integer, and places it so.
-  await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('integer');
-  await expect(page.locator('sherpa-node-panel sherpa-list-item:visible')).toHaveCount(1);
+  await page.locator('sherpa-node-list sherpa-input-text.find input').fill('integer');
+  await expect(page.locator('sherpa-node-list sherpa-list-item:visible')).toHaveCount(1);
   await expect(item(page, 'value')).toHaveAttribute('data-description', 'Integer: A whole number, as 42');
   await item(page, 'value').click();
   await settle(page);
@@ -85,7 +85,7 @@ async function bindQuery(page: Page): Promise<void> {
     w.ed = bindQueryEditor(canvas as never, { query } as never, {
       definition: { v: 1, id: 'records', source: { store: 'customers', fields: { region: { label: 'Region' } } } },
       stores: ['customers', 'devices'], session: new SessionStore(),
-      panel: canvas.querySelector('sherpa-node-panel') as never, toolbar: canvas.querySelector('sherpa-node-toolbar') as HTMLElement,
+      panel: canvas.querySelector('sherpa-node-list') as never, toolbar: canvas.querySelector('sherpa-node-toolbar') as HTMLElement,
     });
     await window.__settled();
   });
@@ -99,7 +99,7 @@ const said = (page: Page) => page.evaluate(() => (window as unknown as { said: s
 
 test('a page\'s Query offers Source; a second is kept and warns, an Undo step, deleted by the keys; it asks the Query nothing', async ({ page }) => {
   await bindQuery(page);
-  await expect(page.locator('sherpa-node-panel .category-heading').first()).toHaveAttribute('data-heading', 'Sources');
+  await expect(page.locator('sherpa-node-list .category-heading').first()).toHaveAttribute('data-heading', 'Sources');
   expect(await drawn(page)).toEqual([['customers', null]]);
   await drop(page, 'source', 640, 420);
   const warns = 'The page reads customers. This Source is not the page\'s: the Query reads nothing from it.';

@@ -13,9 +13,9 @@ test.beforeEach(async ({ page }) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
-        <sherpa-node-panel slot="panel"></sherpa-node-panel>
+        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
       </sherpa-layout-canvas>`);
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     const { bindQueryEditor } = await import('/dist/app.js');
     const { onReport } = await import('/dist/data.js');
     const w = window as unknown as { asked: unknown[]; said: string[] };
@@ -34,23 +34,23 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv') as HTMLElement;
     bindQueryEditor(canvas as never, { query } as never, {
       definition: { v: 1, id: 'records', source: { store: 'customers' } },
-      panel: canvas.querySelector('sherpa-node-panel') as never, toolbar: canvas.querySelector('sherpa-node-toolbar') as HTMLElement,
+      panel: canvas.querySelector('sherpa-node-list') as never, toolbar: canvas.querySelector('sherpa-node-toolbar') as HTMLElement,
     });
     await window.__settled();
   });
 });
 
 /** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
-const openCustom = (page: Page) => page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="custom"]').click();
-const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
+const openCustom = (page: Page) => page.locator('sherpa-node-list sherpa-tabs .tab[data-id="custom"]').click();
+const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
 const asked = (page: Page) => page.evaluate(() => (window as unknown as { asked: unknown[] }).asked);
 const said = (page: Page) => page.evaluate(() => (window as unknown as { said: string[] }).said);
 
 test('it lists the Query\'s kinds by category, flush to the top, bottom and left', async ({ page }) => {
-  const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
+  const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status']);
-  const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('sherpa-node-panel')!].map((e) => {
-    const r = e.getBoundingClientRect();
+  const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('#cv > sherpa-overlay-panel')!].map((e) => {
+    const r = (e.id === 'cv' ? e : e.shadowRoot!.querySelector('.root')!).getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };
   }));
   // Docked flush in the canvas's panel area. TODO 796
@@ -74,7 +74,7 @@ test('a Preset Filter is a Custom Node: listed by its name, and a click switches
   await item(page, 'preset-filter:active').click();
   expect(await asked(page)).toEqual([{ scope: 'view', preset: 'preset-filter:active', on: true }]);
   // Preset is the page's own: it never switches a Preset Filter on. It is a kind, on the Preset Nodes tab.
-  await page.locator('sherpa-node-panel sherpa-tabs .tab[data-id="preset"]').click();
+  await page.locator('sherpa-node-list sherpa-tabs .tab[data-id="preset"]').click();
   await item(page, 'preset').click();
   expect((await asked(page)).at(-1)).toEqual({ scope: 'view', preset: 'big', on: true });
   expect(await said(page)).toEqual([]);

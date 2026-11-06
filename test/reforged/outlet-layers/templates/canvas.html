@@ -1,7 +1,7 @@
 <!-- A canvas whose card floats beside a floating panel, as the Node Editor's page has them. TODO 823 -->
 <div style="display: grid; grid-template-rows: minmax(0, 1fr); block-size: 100%">
   <sherpa-layout-canvas id="cv">
-    <sherpa-node-panel id="nodes" slot="panel" data-floatable></sherpa-node-panel>
+    <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-padding="none" data-floatable><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
   </sherpa-layout-canvas>
 </div>
 <sherpa-overlay-panel id="inspector" data-heading="Inspector" data-floatable data-dismissible><p>Inspector</p></sherpa-overlay-panel>

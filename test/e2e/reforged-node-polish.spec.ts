@@ -21,13 +21,13 @@ test.beforeEach(async ({ page }) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
       <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-node-panel slot="panel" style="display: none"></sherpa-node-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none" style="display: none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="confirm" data-status="critical" data-heading="Update">
         <p style="margin: 0"></p>
         <sherpa-container-footer slot="footer"><sherpa-button>Cancel</sherpa-button><sherpa-button data-look="saturated">Update</sherpa-button></sherpa-container-footer>
       </sherpa-dialog>`);
-    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-list');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     (window as unknown as { ORG: unknown }).ORG = org;
   }, ORG);
@@ -61,7 +61,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   document.addEventListener('definition-save', (e) => (w['saved'] as unknown[]).push((e as CustomEvent).detail.definition));
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, flow as never, {
-    session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
+    session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
     header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
     onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
     fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],

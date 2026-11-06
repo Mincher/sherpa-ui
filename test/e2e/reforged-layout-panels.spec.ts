@@ -222,7 +222,7 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
     const root = document.getElementById('root')!;
     root.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
-        <sherpa-node-panel id="nodes" slot="panel" data-floatable data-floating data-x="40" data-y="40" data-width="320" data-height="400"></sherpa-node-panel>
+        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-padding="none" data-floatable data-floating data-x="40" data-y="40" data-width="320" data-height="400"><p>The list</p></sherpa-overlay-panel>
       </sherpa-layout-canvas>
       <sherpa-overlay-panel id="a" data-heading="A" data-floatable data-floating data-x="200" data-y="100" data-width="400" data-height="300"><p>A</p></sherpa-overlay-panel>
       <sherpa-overlay-panel id="b" data-heading="B" data-floatable data-floating data-x="300" data-y="200" data-width="400" data-height="300"><p>B</p></sherpa-overlay-panel>`;
@@ -231,7 +231,7 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
   });
   await settle(page);
   const cv = await box(page, 'cv');
-  expect(await box(page, 'nodes .box')).toMatchObject({ x: cv.x + 40, y: cv.y + 40 });
+  expect(await box(page, 'nodes .root')).toMatchObject({ x: cv.x + 40, y: cv.y + 40 });
   /** Which panel is drawn at a point: the topmost. */
   const top = (x: number, y: number) => page.evaluate(([px, py]) => document.elementFromPoint(px!, py!)?.closest('[id]')?.id, [x, y]);
   // B opened last: in front where they overlap.
@@ -256,7 +256,7 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
   await page.evaluate(() => document.getElementById('a')!.removeAttribute('data-floating'));
   await settle(page);
   const order = await page.evaluate(() => ['nodes', 'a', 'b'].map((id) => {
-    const el = document.getElementById(id)!.shadowRoot!.querySelector(id === 'nodes' ? '.box' : '.root')!;
+    const el = document.getElementById(id)!.shadowRoot!.querySelector('.root')!;
     return getComputedStyle(el).zIndex;
   }));
   expect(order[1]).toBe('101');
@@ -275,7 +275,7 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
     root.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">
         <div id="thing" style="--x: 520px; --y: 60px; inline-size: 120px; block-size: 80px; background: #c046ff">A</div>
-        <sherpa-node-panel id="nodes" slot="panel" data-floatable></sherpa-node-panel>
+        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-padding="none" data-floatable><p>The list</p></sherpa-overlay-panel>
       </sherpa-layout-canvas>`;
     await window.__settled();
     const heard: unknown[] = [];
@@ -284,9 +284,9 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
   });
   await settle(page);
   const cv = await box(page, 'cv');
-  const card = () => box(page, 'nodes .box');
+  const card = () => box(page, 'nodes .root');
   expect(await card()).toEqual({ x: cv.x, y: cv.y, w: 288, h: cv.h });
-  expect(await page.evaluate(() => getComputedStyle(document.getElementById('nodes')!.shadowRoot!.querySelector('.card')!).boxShadow)).toBe('none');
+  expect(await page.evaluate(() => getComputedStyle(document.getElementById('nodes')!.shadowRoot!.querySelector('.root')!).boxShadow)).toBe('none');
   // By pixels, on a row between the grid's crosses: the divider, then the canvas, no shadow.
   const y = await page.evaluate(([top]) => {
     const view = (document.getElementById('cv') as HTMLElement & { view: { y: number } }).view;

@@ -228,6 +228,8 @@
   /* No bottom padding — the footer component brings its own block padding. */
   padding: var(--_pad) var(--_pad) 0;
 }
+/* Content that fills the panel (the node list) has none. TRAP T-a-node-list-is-a-panels-content */
+:host([data-padding="none"]) .body { padding: 0; }
 /* Fill the row so percentage heights inside resolve against it. */
 .body ::slotted(*) {
   min-block-size: 0;

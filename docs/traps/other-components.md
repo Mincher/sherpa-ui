@@ -946,8 +946,6 @@ end area. Plan: `docs/history/plan-796-panel-areas.md`.
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.html`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.css`
 - Site: `test/e2e/reforged-layout-panels.spec.ts`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
 
@@ -1650,8 +1648,8 @@ D14 and D16). A click on an item, Enter on it, or a drag let go off the card is
 - **A click is a place at the middle of the view**; a drag is a place where it
   is let go, and a point off the canvas places nothing.
 
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+- Site: `src/components/sherpa-node-list/sherpa-node-list.html`
+- Site: `src/components/sherpa-node-list/sherpa-node-list.ts`
 
 ### T-a-node-panel-lists-under-sticky-headings
 
@@ -1678,8 +1676,8 @@ surface is opaque: what scrolls under it never shows through.
 - **A search hides a heading with nothing under it**, a tag's too: `data-filtered`
   on its block, which CSS hides.
 
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
-- Site: `src/components/sherpa-node-panel/sherpa-node-panel.css`
+- Site: `src/components/sherpa-node-list/sherpa-node-list.ts`
+- Site: `src/components/sherpa-node-list/sherpa-node-list.css`
 - Site: `test/e2e/reforged-node-panel-headings.spec.ts`
 - Site: `test/unit/a-custom-node-has-tags.test.mjs`
 

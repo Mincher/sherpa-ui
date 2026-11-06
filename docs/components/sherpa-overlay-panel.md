@@ -41,6 +41,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-maximised` | boolean |  | full-overlay state: the panel fills the window and shows its breadcrumbs |
 | `data-minimisable` | boolean |  | show the Minimise button |
 | `data-minimised` | boolean |  | shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens |
+| `data-padding` | `none` |  | `none`: the body has no padding, for content that fills it (a list) |
 | `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
 | `data-updated` | boolean |  | the panel says it changed while a tab: the tab turns active and wears a "!". Set by `notify()` or a new `data-heading`; cleared when it opens |
@@ -133,6 +134,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }`
+`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, padding?, poppable?, updated?, width?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

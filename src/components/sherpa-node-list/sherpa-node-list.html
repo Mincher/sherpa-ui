@@ -1,0 +1,58 @@
+<!--
+  sherpa-node-list — the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes) and a
+  search, then one list in which each category's heading sticks while its items scroll, one
+  item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay
+  panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a
+  category with no kind is empty.
+  Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places
+
+  Slots:
+    (none)
+
+  Fires:
+    node-add — an item was clicked, Enter was pressed on it, or it was dropped, or a choice of
+               "Add a node" was picked. detail: { kind, type?, point?, context? } — `type` is the
+               family's type a search found it by; `point` is where a drag was let go, in client
+               pixels; `context` is what askAdd() was given.
+
+  Methods:
+    askAdd(context) — open "Add a node" at a point: the kinds a socket of a type could join
+-->
+<template id="default">
+  <div class="content" part="content">
+    <!-- Two lists: the kinds a file gives, and the Custom Nodes saved. A search shows its match count on each. -->
+    <sherpa-tabs class="tabs" part="tabs" data-current-id="preset"></sherpa-tabs>
+    <div class="search" part="search">
+      <sherpa-input-text class="find" part="find" data-type="minimal" data-icon-start="magnifying-glass" placeholder="Search nodes" aria-label="Search nodes" autocomplete="off"></sherpa-input-text>
+    </div>
+    <div class="categories" part="categories"></div>
+    <p class="none" part="none" role="status" aria-live="polite" data-word="none">No node matches.</p>
+  </div>
+
+  <!-- The drag in flight, and the point "Add a node" opens at. -->
+  <span class="ghost" part="ghost" aria-hidden="true"></span>
+  <span class="anchor" aria-hidden="true"></span>
+  <sherpa-menu class="add" data-heading="Add a node" data-search></sherpa-menu>
+
+  <!-- A category: its heading sticks at the top of the list while its items scroll under it. -->
+  <template class="category-tpl">
+    <div class="category">
+      <sherpa-section-header class="category-heading" data-size="sm" tabindex="-1" data-attr-data-heading="category"></sherpa-section-header>
+      <sherpa-list class="items" data-type="plain"></sherpa-list>
+      <p class="empty" data-word="empty">Nothing saved yet.</p>
+    </div>
+  </template>
+  <!-- A tag, inside its category: the Custom Nodes that have it. -->
+  <template class="tag-tpl">
+    <div class="tag">
+      <sherpa-section-header class="tag-heading" data-size="sm" data-divider="none" tabindex="-1" data-attr-data-heading="tag"></sherpa-section-header>
+      <sherpa-list class="items" data-type="plain"></sherpa-list>
+    </div>
+  </template>
+  <template class="item-tpl">
+    <sherpa-list-item data-type="node" data-interactive data-attr-data-category="slug" data-attr-data-kind="id" data-attr-data-label="heading" data-attr-data-description="description" data-attr-data-icon="icon"></sherpa-list-item>
+  </template>
+  <template class="choice-tpl">
+    <button type="button" data-attr-value="id" data-text="heading"></button>
+  </template>
+</template>
