@@ -15,7 +15,7 @@
   --_diamond: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   --_triangle: polygon(0 0, 100% 50%, 0 100%);
   --_square: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  /* A fully round input, a pill when it takes many; and the rounded square (4), on this box. */
+  /* A fully round input; and the rounded square (4), on this box. */
   --_d: inset(0 round 50%);
   --_round-square: inset(0 round 25%);
   --_socket-h: var(--_socket);
@@ -54,13 +54,12 @@
 /* An INPUT takes the pointer too: its route's end drags to another input, or a picklist's
    input drags out a line. Will, TODOs 557, 558.
    An INPUT is fully round, whatever its type: the type reads in its ink and its tip.
-   One that takes many is double height; the outputs keep their own. Will, TODOs 740, 807 */
+   The outputs keep their own shapes. Will, TODOs 740, 807 */
 .socket-in {
   inset-inline-start: 0;
   cursor: crosshair;
   --_shape: var(--_d);
 }
-:host([data-input-many]) .socket-in { --_socket-h: calc(var(--_socket) * 2); }
 /* An OUTPUT takes the pointer: a drag from it draws a new route. Will, TODO 555 */
 .socket-out {
   inset-inline-start: 100%;

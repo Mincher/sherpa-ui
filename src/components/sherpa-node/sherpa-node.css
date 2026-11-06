@@ -360,6 +360,18 @@
   margin-block-start: calc(var(--_socket-h) / -2 - var(--_hit));
 }
 
+/* The header's sockets, as a row's: an output sits inside the card's padding; an input in a DOCK, a reverse D of the node's own
+   fill and border, flush with the card's start edge. */
+.header .socket-in {
+  inset-inline-start: calc(-1 * (var(--_socket) / 2 + var(--_hit)));
+  background: var(--_category-fill, var(--_surface));
+  outline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-start-start-radius: calc(var(--_socket) / 2 + var(--_hit));
+  border-end-start-radius: calc(var(--_socket) / 2 + var(--_hit));
+}
+.header .socket-out, .socket-false { inset-inline-start: calc(100% - var(--sherpa-theme-padding-lg, 16px) + var(--sherpa-theme-padding-sm, 4px)); }
+:host([data-output-socket]) .header, :host([data-branches]) .header { padding-inline-end: var(--sherpa-theme-padding-md, 8px); }
+
 /* ── A fork: True is the header's output, False the footer's ─────────── */
 .footer {
   position: relative;

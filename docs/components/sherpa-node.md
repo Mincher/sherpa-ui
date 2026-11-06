@@ -105,6 +105,7 @@ What each class's base rule reads:
 | `--sherpa-display-mode-border-rounding-sm` | `.caption-badge` | `border-radius` |
 | `--sherpa-style-surface-base-2` | `.caption-badge` | `background` |
 | `--sherpa-style-content-base` | `.caption-badge` | `color` |
+| `--sherpa-theme-padding-lg` | `.socket-false` | `inset-inline-start` |
 | `--sherpa-display-mode-size-2xl` | `.footer` | `min-block-size` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
