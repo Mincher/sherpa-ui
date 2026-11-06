@@ -39,4 +39,4 @@ headings below are older than the index: most entries are under the last one.
 | [Other components](traps/other-components.md) | 68 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 38 |
 | [Tests only](traps/tests-only.md) | 13 |
-| **All** | **799** |
+| **All** | **800** |
