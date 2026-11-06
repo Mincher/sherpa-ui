@@ -138,6 +138,11 @@
 ::slotted([slot="toolbar"]) {
   position: static;
   pointer-events: auto;
+  /* Wider than what the view shows (three sections at 600px beside a card): it scrolls along, and never runs off the canvas. */
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 /* A box-selecting canvas: a crosshair on blank canvas; the Pan tool or Space held says grab. */
