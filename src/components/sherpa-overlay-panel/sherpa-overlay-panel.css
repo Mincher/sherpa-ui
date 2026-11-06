@@ -96,6 +96,8 @@
   border-radius: 0;
 }
 :host(:state(in-area)) :is(.resize, .expand) { display: none; }
+/* Several panels share the area, a tab each: only the one the area marks in front is drawn. TRAP T-an-area-with-two-panels-is-tabbed */
+:host(:state(in-area):not([data-current])) { display: none; }
 
 /* Floating: anywhere in the window, by the box its header and corner ask for.
    sherpa-float.css draws the box, the grip and the corner, and stacks it over a

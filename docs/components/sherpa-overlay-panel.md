@@ -29,6 +29,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 |---|---|---|---|
 | `data-collapsed` | boolean |  | collapsed state (body/footer hidden; the collapse toggle reflects it) |
 | `data-collapsible` | boolean |  | show the collapse toggle |
+| `data-current` | boolean |  |  |
 | `data-dismissible` | boolean |  | show the close button |
 | `data-expandable` | boolean |  | show the maximise / minimise button |
 | `data-external` | boolean |  | show the external-link button |
@@ -125,6 +126,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }`
+`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

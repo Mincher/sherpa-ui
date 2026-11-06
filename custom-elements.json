@@ -4936,7 +4936,7 @@
           "slots": [
             {
               "name": "panel-start",
-              "description": "the panel docked before the content: shut, gone or with no room it takes none; floating, its area is its room (accepts: panel)"
+              "description": "the panels docked before the content: shut, gone or with no room they take none; floating, its area is their room. (accepts: panel)"
             },
             {
               "name": "",
@@ -4944,7 +4944,7 @@
             },
             {
               "name": "panel-end",
-              "description": "the panel docked after the content, the same (accepts: panel)"
+              "description": "the panels docked after the content, the same (accepts: panel)"
             }
           ],
           "cssParts": [
@@ -4962,6 +4962,15 @@
             },
             {
               "name": "panel-start-edge"
+            },
+            {
+              "name": "tab"
+            },
+            {
+              "name": "tabs-end"
+            },
+            {
+              "name": "tabs-start"
             }
           ]
         }
@@ -8165,6 +8174,12 @@
             {
               "name": "data-collapsible",
               "description": "show the collapse toggle",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-current",
               "type": {
                 "text": "boolean"
               }

@@ -147,8 +147,8 @@ Context swap cannot take them. With no shell, no room
 (`T-the-panel-is-desktop-only`), or a host's own panel in the area, the button
 goes and `data-fixed` floats. It hears `panel-room-change` on the document: room
 lost, it floats; room back, it goes in again. A lost room is not the reader's
-choice, so `data-fixed` stays and `panel-pop` does not fire. One panel to an area:
-the second sends the first back.
+choice, so `data-fixed` stays and `panel-pop` does not fire. Panels share an area, a tab
+each (`T-an-area-with-two-panels-is-tabbed`).
 
 **A move is a disconnect and a connect,** for the panel and all inside it.
 `SherpaElement` keeps the shadow tree and runs `onConnect` again, so a listener on
@@ -260,6 +260,31 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
 - Site: `src/components/sherpa-node-panel/sherpa-node-panel.css`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 - Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
+
+### T-an-area-with-two-panels-is-tabbed
+
+**An area holds ANY number of panels; with two open, a tab each runs down its inner
+edge** (Will, 2026-11-06). The layout reads every panel its slot is assigned, and
+marks the one in front `data-current` (the last one opened, or the tab pressed);
+a docked overlay panel draws only while it is `data-current`
+(`:host(:state(in-area):not([data-current]))`). The area is two columns while tabbed:
+tabs on the inner side, the panel on the other.
+
+- **Docking never sends another panel back**: a panel docking in becomes the
+  active tab; floating it takes only that panel out, and the area goes on with the rest.
+- **Minimising one docked panel minimises its area's** (`panel-minimise` fires for each);
+  each is its own tab on the window's edge, and a tab restores only its own panel. A
+  floating panel minimises alone.
+- **Shown** means open: a shut panel in the slot has no tab. The area's width goes when
+  every panel in it floats or is minimised.
+
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.html`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-panel-area-tabs.spec.ts`
+- Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
 ### T-a-pressed-panel-comes-to-the-front
 

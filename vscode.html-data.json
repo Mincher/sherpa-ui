@@ -3072,6 +3072,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-current",
+          "valueSet": "v"
+        },
+        {
           "name": "data-dismissible",
           "description": "show the close button",
           "valueSet": "v"

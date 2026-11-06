@@ -273,6 +273,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-current",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-dismissible",
       "type": "boolean",
       "observed": true,
@@ -494,7 +502,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, minimisable?, minimised?, poppable?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

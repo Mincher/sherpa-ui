@@ -27,7 +27,7 @@
 }
 /* Nothing leads: the title takes the first column, so no gap is spent on an
    empty one. */
-:host(:not([data-draggable], [data-icon], :state(has-icon), [data-collapsible])) .header {
+:host(:not([data-draggable], [data-icon], :state(has-icon), :state(has-lead), [data-collapsible])) .header {
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     "labels actions"

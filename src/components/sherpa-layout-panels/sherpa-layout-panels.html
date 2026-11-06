@@ -16,15 +16,18 @@
 
   Slots:
     (default)    the content, between the areas; one cell, so what is slotted stacks in it
-    panel-start  the panel docked before the content: shut, gone or with no room it takes
-                 none; floating, its area is its room
-    panel-end    the panel docked after the content, the same
+    panel-start  the panels docked before the content: shut, gone or with no room they take
+                 none; floating, its area is their room. With more than one open, a tab each
+                 runs down the inner edge, and the last opened (or picked) is in front
+    panel-end    the panels docked after the content, the same
     Set `--sherpa-panel-area-width` (three layout-grid columns), `--sherpa-panel-area-min-width`
     (464px) and `--sherpa-panel-area-max-width` (33% of the row). The AREA owns them.
 -->
 <template id="default">
   <aside class="area area-start" part="panel-start">
     <slot name="panel-start" data-accepts="panel"></slot>
+    <!-- Two panels open: a tab each, down the inner edge. TRAP T-an-area-with-two-panels-is-tabbed -->
+    <div class="tabs tabs-start" part="tabs-start" role="tablist" aria-orientation="vertical"></div>
     <!-- The INNER edge resizes it: drag it, or the arrow keys, Home and End. TRAP T-an-edge-resizes-its-box -->
     <div class="edge edge-start" part="panel-start-edge" role="separator"
          aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
@@ -33,6 +36,10 @@
   <aside class="area area-end" part="panel-end">
     <div class="edge edge-end" part="panel-end-edge" role="separator"
          aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>
+    <div class="tabs tabs-end" part="tabs-end" role="tablist" aria-orientation="vertical"></div>
     <slot name="panel-end" data-accepts="panel"></slot>
   </aside>
+  <template class="tab-tpl">
+    <button class="tab" part="tab" type="button" role="tab" aria-selected="false" data-attr-data-id="id" data-text="label"></button>
+  </template>
 </template>

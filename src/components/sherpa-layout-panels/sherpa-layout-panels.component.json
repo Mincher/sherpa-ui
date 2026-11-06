@@ -27,6 +27,15 @@
           },
           {
             "el": "div",
+            "class": "tabs tabs-start",
+            "part": "tabs-start",
+            "attrs": {
+              "role": "tablist",
+              "aria-orientation": "vertical"
+            }
+          },
+          {
+            "el": "div",
             "class": "edge edge-start",
             "part": "panel-start-edge",
             "attrs": {
@@ -68,9 +77,36 @@
             }
           },
           {
+            "el": "div",
+            "class": "tabs tabs-end",
+            "part": "tabs-end",
+            "attrs": {
+              "role": "tablist",
+              "aria-orientation": "vertical"
+            }
+          },
+          {
             "slot": "panel-end",
             "attrs": {
               "data-accepts": "panel"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "tab-tpl",
+        "children": [
+          {
+            "el": "button",
+            "class": "tab",
+            "part": "tab",
+            "attrs": {
+              "type": "button",
+              "role": "tab",
+              "aria-selected": "false",
+              "data-attr-data-id": "id",
+              "data-text": "label"
             }
           }
         ]
@@ -114,7 +150,7 @@
       "accepts": [
         "panel"
       ],
-      "description": "the panel docked before the content: shut, gone or with no room it takes none; floating, its area is its room"
+      "description": "the panels docked before the content: shut, gone or with no room they take none; floating, its area is their room."
     },
     {
       "$type": "slot",
@@ -130,7 +166,7 @@
       "accepts": [
         "panel"
       ],
-      "description": "the panel docked after the content, the same"
+      "description": "the panels docked after the content, the same"
     }
   ],
   "populate": {
@@ -141,7 +177,7 @@
     {
       "$type": "state",
       "name": "focus-visible",
-      "selector": ".edge:focus-visible"
+      "selector": ".tab:focus-visible"
     }
   ],
   "capabilities": [
@@ -172,6 +208,11 @@
     "area.flex": "{sherpa.panel-area-width}",
     "area.min-inline-size": "{sherpa.panel-area-min-width}",
     "area.max-inline-size": "{sherpa.panel-area-max-width}",
+    "tabs.gap": "{sherpa.theme-gap-sm}",
+    "tabs.padding-block": "{sherpa.display-mode-space-sm}",
+    "tab.padding": "{sherpa.display-mode-space-sm}",
+    "tab.color": "{sherpa.style-content-base}",
+    "tab.border-inline-end": "{sherpa.display-mode-border-width-lg}",
     "edge.inline-size": "{sherpa.display-mode-space-xs}",
     "edge-start.inset-inline-end": "{sherpa.display-mode-space-xs}",
     "edge-end.inset-inline-start": "{sherpa.display-mode-space-xs}"

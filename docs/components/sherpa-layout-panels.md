@@ -44,15 +44,15 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| `panel-start` | panel | the panel docked before the content: shut, gone or with no room it takes none; floating, its area is its room |
+| `panel-start` | panel | the panels docked before the content: shut, gone or with no room they take none; floating, its area is their room. |
 | (default) | content | the content, between the areas; one cell, so what is slotted stacks in it |
-| `panel-end` | panel | the panel docked after the content, the same |
+| `panel-end` | panel | the panels docked after the content, the same |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`content`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`
+`content`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`, `tab`, `tabs-end`, `tabs-start`
 
 ## CSS custom properties it reads
 
@@ -67,6 +67,11 @@ What each class's base rule reads:
 | `--sherpa-panel-area-width` | `.area` | `flex` |
 | `--sherpa-panel-area-min-width` | `.area` | `min-inline-size` |
 | `--sherpa-panel-area-max-width` | `.area` | `max-inline-size` |
+| `--sherpa-theme-gap-sm` | `.tabs` | `gap` |
+| `--sherpa-display-mode-space-sm` | `.tabs` | `padding-block` |
+| `--sherpa-display-mode-space-sm` | `.tab` | `padding` |
+| `--sherpa-style-content-base` | `.tab` | `color` |
+| `--sherpa-display-mode-border-width-lg` | `.tab` | `border-inline-end` |
 | `--sherpa-display-mode-space-xs` | `.edge` | `inline-size` |
 | `--sherpa-display-mode-space-xs` | `.edge-start` | `inset-inline-end` |
 | `--sherpa-display-mode-space-xs` | `.edge-end` | `inset-inline-start` |

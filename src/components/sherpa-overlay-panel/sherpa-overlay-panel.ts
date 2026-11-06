@@ -55,6 +55,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     // Shrunk to a tab on its area's edge; pressed, it opens as it was. TRAP T-a-minimised-panel-is-a-tab
     'data-minimisable': { type: 'boolean', kind: 'style' },
     'data-minimised': { type: 'boolean', kind: 'behaviour' },
+    // Written by the area it docks in: the one panel in front of several. TRAP T-an-area-with-two-panels-is-tabbed
+    'data-current': { type: 'boolean', kind: 'style' },
     // Something changed while it was a tab: the tab is active and wears a mark.
     'data-updated': { type: 'boolean', kind: 'style' },
     // Lifted off its edge or its area, anywhere in the window. TRAP T-a-floating-panel-is-a-state
@@ -284,13 +286,11 @@ export class SherpaOverlayPanel extends SherpaElement {
     return { x: innerWidth - width, y: 0, width, height: innerHeight };
   }
 
-  /** Into its area, with the place it left noted. One panel to an area. */
+  /** Into its area, with the place it left noted. The panels there share it, a tab each. TRAP T-an-area-with-two-panels-is-tabbed */
   #popIn(shell: Element): void {
     const parent = this.parentNode;
     if (this.#home || !parent) return;
     const slot = `panel-${this.#dock}`;
-    const held = shell.querySelector(`:scope > [slot="${slot}"]`);
-    if (held !== this) held?.removeAttribute('data-fixed');
     SherpaOverlayPanel.#shown.delete(this);
     this.#home = { parent, before: this.nextSibling };
     this.slot = slot;
@@ -303,6 +303,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     const { parent, before } = this.#home;
     this.#home = null;
     this.removeAttribute('slot');
+    this.removeAttribute('data-current');
     const back = parent.isConnected ? parent : document.body;
     moveInto(back, this, before?.parentNode === back ? before : null);
     if (this.open && !this.hasAttribute('data-floating') && !this.hasAttribute('data-minimised')) this.#takeTheEdge();
@@ -354,6 +355,15 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
   #onMinimise = (): void => {
     const minimised = !this.hasAttribute('data-minimised');
+    // Docked with others in its area, one minimises them all. Floating, it is its own. TRAP T-an-area-with-two-panels-is-tabbed
+    if (minimised && this.#home) {
+      const mates = this.parentElement?.querySelectorAll<SherpaOverlayPanel>(`:scope > [slot="panel-${this.#dock}"]`) ?? [];
+      for (const mate of mates) {
+        if (mate === this || !(mate instanceof SherpaOverlayPanel) || mate.hasAttribute('data-minimised')) continue;
+        mate.set('data-minimised', true);
+        mate.emit('panel-minimise', { minimised: true });
+      }
+    }
     this.set('data-minimised', minimised);
     this.emit('panel-minimise', { minimised });
   };

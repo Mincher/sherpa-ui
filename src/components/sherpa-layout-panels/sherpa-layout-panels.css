@@ -46,6 +46,46 @@
 :host(:state(has-panel-start):state(start-open):not([data-no-room])) .area-start,
 :host(:state(has-panel-end):state(end-open):not([data-no-room])) .area-end { display: grid; }
 
+/* TWO panels or more open: a tab each, in a column down the INNER edge (the panel's own side is the
+   other); only the one in front is drawn, the layout marking it `data-current`. TRAP T-an-area-with-two-panels-is-tabbed */
+.tabs {
+  display: none;
+  flex-direction: column;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding-block: var(--sherpa-display-mode-space-sm, 8px);
+  grid-row: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+:host(:state(start-tabs)) .tabs-start,
+:host(:state(end-tabs)) .tabs-end { display: flex; }
+:host(:state(start-tabs)) .area-start { grid-template-columns: minmax(0, 1fr) auto; }
+:host(:state(end-tabs)) .area-end { grid-template-columns: auto minmax(0, 1fr); }
+.tabs-start { grid-column: 2; }
+.tabs-end { grid-column: 1; }
+:host(:state(start-tabs)) slot[name="panel-start"]::slotted(*) { grid-column: 1; grid-row: 1; }
+:host(:state(end-tabs)) slot[name="panel-end"]::slotted(*) { grid-column: 2; grid-row: 1; }
+.tab {
+  writing-mode: vertical-rl;
+  padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
+  max-block-size: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: inherit;
+  cursor: pointer;
+  color: var(--sherpa-style-content-base, #0c0b11);
+  background: transparent;
+  border: 0;
+  border-inline-end: var(--sherpa-display-mode-border-width-lg, 2px) solid transparent;
+}
+.tab:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
+.tab[data-current] { border-color: var(--sherpa-style-indicator-accent, #3b4ccd); }
+.tab:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
+@media (forced-colors: active) {
+  .tab[data-current] { border-color: Highlight; }
+}
+
 /* The DIVIDER is the panel's own edge: the area draws it over the panel's last pixel, so the
    panel keeps the area's whole width and drops its own card edge while docked. */
 .area::after {

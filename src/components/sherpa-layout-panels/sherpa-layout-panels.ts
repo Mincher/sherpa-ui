@@ -1,7 +1,9 @@
 /**
  * sherpa-layout-panels — a panel area each side of the content: the app shell's body and the
  * canvas compose it. Its CSS owns the width and the divider; this file follows each area's
- * panel, open and floating, and resizes an area by its inner edge. TRAP T-a-panel-area-is-a-layout
+ * panel, open and floating, and resizes an area by its inner edge. An area with more than one open panel
+ * draws a tab down its inner edge, one per panel; a tab swaps to that panel. TRAP T-a-panel-area-is-a-layout
+ * TRAP T-an-area-with-two-panels-is-tabbed
  *
  * Map:
  * - PanelSide — An area: before the content, or after it.
@@ -34,14 +36,19 @@ export class SherpaLayoutPanels extends SherpaElement {
   } as const;
   static override observed = ['data-panel-start-width', 'data-panel-end-width'];
 
-  /** Watches each area's panel: whether it is open, and whether it floats. */
+  /** Watches each area's panels: whether each is open, and whether it floats. */
   #watch: Partial<Record<PanelSide, MutationObserver>> = {};
+  /** The open panels of each area, in tab order. */
+  #tabbed: Record<PanelSide, HTMLElement[]> = { start: [], end: [] };
+  /** The panel of each area that is in front. */
+  #shown: Record<PanelSide, HTMLElement | undefined> = { start: undefined, end: undefined };
 
   override onRender(): void {
     for (const side of SIDES) {
       this.$(`slot[name="panel-${side}"]`)?.addEventListener('slotchange', () => this.#follow(side));
       this.#resizable(side);
       this.#askWidth(side);
+      this.on(this.$(`.tabs-${side}`)!, 'click', (event) => this.#onTab(side, event));
     }
   }
 
@@ -75,30 +82,58 @@ export class SherpaLayoutPanels extends SherpaElement {
     return this.$<HTMLElement>(`.area-${side}`);
   }
 
-  /** The panel in an area, through any slot a host forwards into it. */
-  #panel(side: PanelSide): Element | undefined {
-    return this.$<HTMLSlotElement>(`slot[name="panel-${side}"]`)?.assignedElements({ flatten: true })[0];
+  /** The panels in an area, through any slot a host forwards into it. */
+  #panels(side: PanelSide): HTMLElement[] {
+    return (this.$<HTMLSlotElement>(`slot[name="panel-${side}"]`)?.assignedElements({ flatten: true }) ?? []).filter((e): e is HTMLElement => e instanceof HTMLElement);
   }
 
-  /** Follow an area's panel: shown while it is open; its room while it floats. */
+  /** Follow an area's panels: it shows while one is open; its room while they all float. */
   #follow(side: PanelSide): void {
     this.#watch[side]?.disconnect();
-    const panel = this.#panel(side);
-    const sync = (): void => {
-      if (this.#panel(side) !== panel) return;
-      this.toggleState(`${side}-open`, panel instanceof HTMLElement && isOpen(panel));
-      // A minimised panel is a tab on the layout's edge: its area gives its room back, as floating does. TRAP T-a-minimised-panel-is-a-tab
-      this.toggleState(`${side}-floating`, !!panel?.hasAttribute('data-floating') || !!panel?.hasAttribute('data-minimised'));
-    };
-    sync();
-    if (!panel) return;
-    const watch = new MutationObserver(sync);
-    watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating', 'data-minimised'] });
-    this.#watch[side] = watch;
-    // Not yet upgraded, it has no `open` to say it can shut.
-    if (panel.localName.includes('-') && !customElements.get(panel.localName)) {
-      void customElements.whenDefined(panel.localName).then(sync);
+    const panels = this.#panels(side);
+    this.#sync(side);
+    if (!panels.length) return;
+    const watch = new MutationObserver(() => this.#sync(side));
+    for (const panel of panels) {
+      watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating', 'data-minimised', 'data-heading'] });
+      // Not yet upgraded, it has no `open` to say it can shut.
+      if (panel.localName.includes('-') && !customElements.get(panel.localName)) {
+        void customElements.whenDefined(panel.localName).then(() => this.#sync(side));
+      }
     }
+    this.#watch[side] = watch;
+  }
+
+  /** What an area shows: open while a panel is; tabbed while two are; the one opened last (or picked) in front. */
+  #sync(side: PanelSide): void {
+    const panels = this.#panels(side);
+    const open = panels.filter(isOpen);
+    const fresh = open.filter((p) => !this.#tabbed[side].includes(p));
+    const was = this.#shown[side];
+    const shown = fresh.at(-1) ?? (was && open.includes(was) ? was : open[0]);
+    this.#shown[side] = shown;
+    this.#tabbed[side] = open;
+    for (const panel of panels) panel.toggleAttribute('data-current', panel === shown);
+    this.toggleState(`${side}-open`, open.length > 0);
+    this.toggleState(`${side}-tabs`, open.length > 1);
+    // A minimised panel is a tab on the layout's edge: its area gives its room back, as floating does. TRAP T-a-minimised-panel-is-a-tab
+    this.toggleState(`${side}-floating`, panels.length > 0 && panels.every((p) => p.hasAttribute('data-floating') || p.hasAttribute('data-minimised')));
+    void this.renderItems(`.tabs-${side}`, 'template.tab-tpl', open.map((p, id) => ({ id: String(id), label: p.getAttribute('data-heading') || p.id })), {
+      after: (tab, item) => {
+        const on = open[Number(item.id)] === shown;
+        tab.toggleAttribute('data-current', on);
+        tab.setAttribute('aria-selected', String(on));
+      },
+    });
+  }
+
+  /** A tab was pressed: its panel comes to the front. */
+  #onTab(side: PanelSide, event: Event): void {
+    const tab = (event.target as HTMLElement).closest<HTMLElement>('.tab');
+    const panel = this.#tabbed[side][Number(tab?.dataset['id'])];
+    if (!panel) return;
+    this.#shown[side] = panel;
+    this.#sync(side);
   }
 
   /**

@@ -451,7 +451,7 @@ test.describe('Pop in and Pop out', () => {
     expect(display).toBe('none');
   });
 
-  test('a second panel popping in sends the first back', async ({ page }) => {
+  test('a second panel popping in shares the area with the first, a tab each (TRAP T-an-area-with-two-panels-is-tabbed)', async ({ page }) => {
     await stage(page);
     await press(page);
     const r = await page.evaluate(async () => {
@@ -464,7 +464,7 @@ test.describe('Pop in and Pop out', () => {
       const first = document.getElementById('pop')!;
       return { first: [first.parentElement!.localName, first.hasAttribute('data-fixed')], second: second.parentElement!.localName };
     });
-    expect(r).toEqual({ first: ['div', false], second: 'sherpa-app-shell' });
+    expect(r).toEqual({ first: ['sherpa-app-shell', true], second: 'sherpa-app-shell' });
   });
 });
 
