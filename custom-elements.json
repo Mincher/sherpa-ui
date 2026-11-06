@@ -560,6 +560,12 @@
           "description": "the frame for an app and its Contexts. Nav and header are PRE-COMPOSED; slotting your own replaces the default.",
           "attributes": [
             {
+              "name": "data-canvas",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-nav-state",
               "description": "collapsed | hover | default | pinned | settings — mirrored from the rail; drives the content inset",
               "type": {

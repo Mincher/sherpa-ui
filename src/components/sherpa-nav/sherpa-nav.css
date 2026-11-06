@@ -95,35 +95,35 @@
 }
 /* == end sherpa:tokens == */
 
-/* LARGE NAV (the `navLarge` setting): every size and space doubles through
+/* LARGE NAV (the `navLarge` setting): every size and space grows by 1.5 through
    `--sherpa-nav-scale`; each text token takes one step up the type scale. The
    rows, section, flyout and menu inherit these. Density does not reach it. */
 :host([data-large]) {
-  --sherpa-display-mode-size-4xs: calc(2px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-3xs: calc(4px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-2xs: calc(8px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-xs: calc(12px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-sm: calc(16px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-md: calc(20px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-lg: calc(24px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-xl: calc(28px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-2xl: calc(32px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-3xl: calc(40px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-4xl: calc(48px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-5xl: calc(56px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-size-6xl: calc(64px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-3xs: calc(2px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-2xs: calc(4px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-xs: calc(8px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-sm: calc(12px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-base: calc(16px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-lg: calc(20px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-xl: calc(24px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-2xl: calc(32px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-3xl: calc(40px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-4xl: calc(48px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-5xl: calc(56px * var(--sherpa-nav-scale, 2));
-  --sherpa-display-mode-space-6xl: calc(64px * var(--sherpa-nav-scale, 2));
+  --sherpa-display-mode-size-4xs: calc(2px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-3xs: calc(4px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-2xs: calc(8px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-xs: calc(12px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-sm: calc(16px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-md: calc(20px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-lg: calc(24px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-xl: calc(28px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-2xl: calc(32px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-3xl: calc(40px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-4xl: calc(48px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-5xl: calc(56px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-size-6xl: calc(64px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-3xs: calc(2px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-2xs: calc(4px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-xs: calc(8px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-sm: calc(12px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-base: calc(16px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-lg: calc(20px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-xl: calc(24px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-2xl: calc(32px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-3xl: calc(40px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-4xl: calc(48px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-5xl: calc(56px * var(--sherpa-nav-scale, 1.5));
+  --sherpa-display-mode-space-6xl: calc(64px * var(--sherpa-nav-scale, 1.5));
   --sherpa-font-size-body-large: var(--sherpa-display-mode-fonts-scale-xl);
   --sherpa-font-size-body-base: var(--sherpa-display-mode-fonts-scale-lg);
   --sherpa-font-size-body-small: var(--sherpa-display-mode-fonts-scale-base);

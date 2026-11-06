@@ -5,7 +5,7 @@
  */
 
 :host {
-  /* The `navLarge` setting puts --sherpa-nav-scale (2) on the root; none, it is 1. Only the shut rail scales. */
+  /* The `navLarge` setting puts --sherpa-nav-scale (1.5) on the root; none, it is 1. Only the shut rail scales. */
   --_nav-collapsed: calc(var(--sherpa-display-mode-size-3xl, 40px) * var(--sherpa-nav-scale, 1));
   --_nav-open: 320px;
   --_content-inset: var(--_nav-collapsed);
@@ -38,6 +38,11 @@
 .nav ::slotted(*),
 .nav > sherpa-nav {
   block-size: 100%;
+}
+
+/* ── A Canvas view: the header and the nav show a reduced shadow, the default or a slotted one. ── */
+:host([data-canvas]) :is(sherpa-app-header, sherpa-nav, ::slotted(sherpa-app-header), ::slotted(sherpa-nav)) {
+  box-shadow: var(--sherpa-shadow-sm, 2px 2px 8px -4px #35353d4c);
 }
 
 /* ── Header + content wrapper — inset past the rail ─────────────────── */

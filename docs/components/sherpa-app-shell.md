@@ -47,6 +47,7 @@ The frame for an app: the nav, the app header, the Context, and a panel area on 
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-canvas` | boolean |  |  |
 | `data-nav-state` | `collapsed` `hover` `default` `pinned` `settings` | `collapsed` | collapsed \| hover \| default \| pinned \| settings — mirrored from the rail; drives the content inset |
 | `data-no-header` | boolean | `false` | let the content span the full height (no header row) |
 | `data-no-nav` | boolean | `false` | drop the nav rail; the content spans the full width |
@@ -96,6 +97,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ navState?, noHeader?, noNav?, noRoom?, panelEndWidth?, panelStartWidth?, scrollShadow? }`
+`{ canvas?, navState?, noHeader?, noNav?, noRoom?, panelEndWidth?, panelStartWidth?, scrollShadow? }`
 
 Its declared props by name: `label` sets data-label.

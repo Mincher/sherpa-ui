@@ -97,7 +97,7 @@ export const SETTINGS = {
   navViews: on('/nav/views', 'app'),
   navHover: on('/nav/hover', 'app'),
   // Every nav size and space doubles; its text steps up one. The shell reads the scale too.
-  navLarge: { ...on('/nav/large', 'app'), look: { props: { true: { '--sherpa-nav-scale': '2' } } } },
+  navLarge: { ...on('/nav/large', 'app'), look: { props: { true: { '--sherpa-nav-scale': '1.5' } } } },
   // A node's resize handle and Alt+Arrow. Will, TODO 748
   resizeNodes: off('/nodes/resize', 'app'),
   // A toggle shows its state by a shape too. Will, TODO 497
