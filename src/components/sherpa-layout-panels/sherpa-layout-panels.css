@@ -106,7 +106,8 @@
 }
 :host(:state(start-strip)) .area-start,
 :host(:state(end-strip)) .area-end {
-  position: relative;
+  /* Not a containing block: a peeking panel is sized by the layout, not by the strip. */
+  position: static;
   inset: auto;
   z-index: var(--sherpa-layer-content, 1);
   flex: 0 0 var(--_strip, 2.5rem);
