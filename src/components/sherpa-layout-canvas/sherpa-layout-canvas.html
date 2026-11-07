@@ -37,6 +37,8 @@
   <sherpa-layout-panels class="panels" part="panels">
     <!-- A card docked on the view: it keeps its place as the plane pans and zooms. -->
     <slot name="panel" slot="panel-start" data-accepts="panel"></slot>
+    <!-- A card docked on the end side: the view stays under it as it does under the start card. -->
+    <slot name="panel-end" slot="panel-end" data-accepts="panel"></slot>
 
     <!-- Notices floating over the view, before it, so they are read and reached first. -->
     <div class="banner" part="banner"><slot name="banner" data-accepts="content"></slot></div>

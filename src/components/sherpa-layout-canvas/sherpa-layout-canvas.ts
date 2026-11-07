@@ -47,8 +47,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
     'data-max-zoom': { type: 'number', kind: 'behaviour' },
     // The card's area's width, handed back by the host. TRAP T-an-edge-resizes-its-box
     'data-panel-width': { type: 'number', kind: 'behaviour' },
+    'data-panel-end-width': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-zoom', 'data-panel-width'];
+  static override observed = ['data-zoom', 'data-panel-width', 'data-panel-end-width'];
 
   /** The zoom, and its bounds — read by the code, so observed, not CSS props. */
 
@@ -96,7 +97,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.$('slot:not([name])')?.addEventListener('slotchange', () => this.#drawMinimap());
     // The card's area: its width in, and its resize reported as the canvas's own.
     const panels = this.$('.panels');
-    this.mirrorAttrs(panels!, [['data-panel-width', 'data-panel-start-width']]);
+    this.mirrorAttrs(panels!, [['data-panel-width', 'data-panel-start-width'], 'data-panel-end-width']);
     panels?.addEventListener('panel-area-resize', this.#onAreaResize);
     this.#zoom = this.#clamp(coerceNum(this.dataset['zoom'], 1));
     this.#apply(false);
@@ -139,9 +140,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
       this.zoomTo(coerceNum(value, this.#zoom));
     } else if (name === 'data-no-minimap') {
       this.#drawMinimap();
-    } else if (name === 'data-panel-width') {
+    } else if (name === 'data-panel-width' || name === 'data-panel-end-width') {
       const panels = this.$('.panels');
-      if (panels) this.mirrorAttrs(panels, [['data-panel-width', 'data-panel-start-width']]);
+      if (panels) this.mirrorAttrs(panels, [['data-panel-width', 'data-panel-start-width'], 'data-panel-end-width']);
     }
   }
 

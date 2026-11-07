@@ -618,7 +618,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     // The area is the card and its inset on both sides. TODO 871
     const inset = 2 * (parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-display-mode-space-base')) || 16);
     // A canvas keeps its card's width in `data-panel-width`; a shell or an area, one for each side.
-    const attr = host.localName === 'sherpa-layout-canvas' ? 'data-panel-width' : `data-panel-${side}-width`;
+    const attr = host.localName === 'sherpa-layout-canvas' ? (side === 'end' ? 'data-panel-end-width' : 'data-panel-width') : `data-panel-${side}-width`;
     host.setAttribute(attr, String(width + inset));
     host.dispatchEvent(new CustomEvent('panel-area-resize', { detail: { side, width: width + inset }, bubbles: false }));
   }

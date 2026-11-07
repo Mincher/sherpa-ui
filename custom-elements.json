@@ -4820,6 +4820,12 @@
               }
             },
             {
+              "name": "data-panel-end-width",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
               "name": "data-panel-width",
               "description": "the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas",
               "type": {
@@ -4943,6 +4949,10 @@
             {
               "name": "panel",
               "description": "a card DOCKED flush in the canvas's start panel area: top, left and bottom, no shadow, 18rem wide; its edge resizes it. (accepts: panel)"
+            },
+            {
+              "name": "panel-end",
+              "description": "(accepts: panel)"
             },
             {
               "name": "banner",

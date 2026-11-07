@@ -1818,6 +1818,9 @@
           "valueSet": "v"
         },
         {
+          "name": "data-panel-end-width"
+        },
+        {
           "name": "data-panel-width",
           "description": "the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas"
         },

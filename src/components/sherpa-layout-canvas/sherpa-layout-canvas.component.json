@@ -26,6 +26,13 @@
           }
         },
         {
+          "slot": "panel-end",
+          "attrs": {
+            "slot": "panel-end",
+            "data-accepts": "panel"
+          }
+        },
+        {
           "el": "div",
           "class": "banner",
           "part": "banner",
@@ -250,6 +257,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-panel-end-width",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-panel-width",
       "type": "number",
       "observed": true,
@@ -287,6 +302,13 @@
     },
     {
       "$type": "slot",
+      "name": "panel-end",
+      "accepts": [
+        "panel"
+      ]
+    },
+    {
+      "$type": "slot",
       "name": "banner",
       "accepts": [
         "content"
@@ -311,7 +333,7 @@
     }
   ],
   "populate": {
-    "shape": "{ maxZoom?, minZoom?, noMinimap?, panelWidth?, selectBox?, zoom? }",
+    "shape": "{ maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelWidth?, selectBox?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
