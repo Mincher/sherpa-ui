@@ -139,8 +139,8 @@ export class ProviderMode {
   /**
    * THE MODE'S OWN BUTTONS — the page's, so no bar or panel carries a switch
    * for a mode it knows nothing of (Will, TODO 37). The page's View bar has "View as filter
-   * panel" in its `actions` slot while a panel is on the page — taken out
-   * while the panel answers; a panel has "Filter in the toolbars instead".
+   * panel" in its `actions` slot while a panel is on the page, and "Filter in the
+   * toolbars instead" while the panel answers; a panel has that one too.
    * TRAP T-the-mode-switch-is-the-pages-own
    */
   #giveToggles(): void {
@@ -154,10 +154,16 @@ export class ProviderMode {
         this.#toggles.delete(bar);
         continue;
       }
-      toggle ??= this.#toggle(bar, 'panel');
+      // The header's bar keeps the page's switch in either mode: it asks for the panel, and while the panel answers, for the bars back.
+      const kind = this.#mode === 'panel' ? 'bars' : 'panel';
+      if (toggle && toggle.dataset['mode'] !== kind) {
+        toggle.remove();
+        this.#toggles.delete(bar);
+        toggle = undefined;
+      }
+      toggle ??= this.#toggle(bar, kind);
       if (!toggle) continue;
-      if (this.#mode === 'panel') toggle.remove();
-      else if (!toggle.isConnected) bar.append(toggle);
+      if (!toggle.isConnected) bar.append(toggle);
     }
     for (const panel of panels) {
       if (!this.#toggles.has(panel)) this.#toggle(panel, 'bars');
@@ -172,6 +178,7 @@ export class ProviderMode {
       void this.#host.rendered().then(() => this.#giveToggles());
       return undefined;
     }
+    button.dataset['mode'] = kind;
     button.addEventListener('button-click', this.#onConfigure);
     // A content's switch goes in its panel's header, after the panel's own buttons.
     const panel = host.closest('sherpa-overlay-panel');

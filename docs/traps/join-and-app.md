@@ -371,7 +371,7 @@ The VIEW scope keeps its own name, because there is exactly one of it.
 ### T-panel-mode-hides-what-the-panel-answers
 
 `sherpa-quick-filter-toolbar[data-panel-mode]` hides AI, Reset and Add filter;
-the provider takes its own panel switch out of the bar. A bar that is not
+the page's panel switch stays in the header bar, asking for the bars back. A bar that is not
 `data-type="view"` goes entirely.
 
 A filter PANEL carries all of them: Add filter is each scope's own action, and
