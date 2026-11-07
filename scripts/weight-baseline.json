@@ -9,7 +9,7 @@
   "components.js": {
     "files": 155,
     "brotli": {
-      "js": 284479,
+      "js": 284470,
       "fetched": 8593
     }
   },
@@ -345,7 +345,7 @@
   "components/sherpa-overlay-panel/sherpa-overlay-panel.js": {
     "files": 44,
     "brotli": {
-      "js": 77941,
+      "js": 77932,
       "fetched": 0
     }
   },
@@ -534,7 +534,7 @@
   "index.js": {
     "files": 257,
     "brotli": {
-      "js": 455935,
+      "js": 455926,
       "fetched": 8593
     }
   }
