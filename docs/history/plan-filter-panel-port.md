@@ -36,7 +36,7 @@ One new **content** component, `sherpa-filter-panel` (new) (it takes the name of
 portrait scope sections, the flat View section and the one header row. It has no chrome of its own:
 
 ```html
-<sherpa-overlay-panel id="filter-column" data-heading="Filters" data-fixed="start"
+<sherpa-overlay-panel data-side="start" id="filter-column" data-heading="Filters" data-fixed
                       data-floatable data-minimisable data-dismissible>
   <sherpa-filter-panel data-scope="view data"></sherpa-filter-panel> <!-- (new) -->
 </sherpa-overlay-panel>

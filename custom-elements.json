@@ -4826,15 +4826,14 @@
               }
             },
             {
-              "name": "data-panel-width",
-              "description": "the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas",
+              "name": "data-panel-start-width",
               "type": {
                 "text": "number"
               }
             },
             {
               "name": "data-select-box",
-              "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan",
+              "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas",
               "type": {
                 "text": "boolean"
               }
@@ -4947,8 +4946,8 @@
           ],
           "slots": [
             {
-              "name": "panel",
-              "description": "a card DOCKED flush in the canvas's start panel area: top, left and bottom, no shadow, 18rem wide; its edge resizes it. (accepts: panel)"
+              "name": "panel-start",
+              "description": "(accepts: panel)"
             },
             {
               "name": "panel-end",
@@ -8437,7 +8436,7 @@
               "name": "data-fixed",
               "description": "a fixed panel, docked flush in a panel area of the page's sherpa-app-shell: `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one",
               "type": {
-                "text": "string"
+                "text": "boolean"
               }
             },
             {

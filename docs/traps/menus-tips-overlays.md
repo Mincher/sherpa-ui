@@ -134,8 +134,9 @@ side and bottom, with no edge, no rounding and no shadow of its own; the area
 draws the divider (`T-a-panel-area-is-a-layout`). No left-edge handle, as the
 area's edge resizes it. No maximise, which needs the whole window.
 
-**Either area:** `data-fixed="start"` docks it in the START area; bare, or `end`,
-the end one. Pop out remembers the area it left, so Pop in goes back there, and
+**Either area:** `data-side="start"` is the ONE orientation of a panel, in every host (the shell and a canvas
+alike, which both slot `panel-start` and `panel-end`; the panel sets its own slot from it): `start` docks it in the START area; bare, or `end`,
+the end one. `data-fixed` is a plain boolean. Pop out remembers the area it left, so Pop in goes back there, and
 `panel-pop { fixed, side }` says which. A host's own panel in that area keeps it:
 the button goes, as for the end.
 
@@ -314,7 +315,7 @@ panel's 20rem, not the card's 16rem. The panel keys read the overlay panel (`min
 **A panel docked to the start area, and overlaid out of it, stays on the START edge** (Will, TODO 858: the filter panel
 came up on the right). Pop (Dock as overlay) took `data-fixed` off a panel in the shell's area, and a panel with no
 `data-fixed` is the right-edge overlay, so it jumped across the window; the app kept `fixed: false`, so every reload
-put it there. The panel now writes `data-side` (`start` | `end`) from `data-fixed`, and a panel overlaid with
+put it there. `data-side` (`start` | `end`) is the orientation, and a panel overlaid with
 `data-side="start"` takes the start edge. The app keeps it beside `fixed`, and its own markup names the side too,
 for a state kept before this existed.
 
@@ -1454,7 +1455,7 @@ area gives only from about 1446px wide. The docked panel is flush, so the
 AREA's edge is the panel's own: the handle is a strip ASTRIDE it, half over the
 panel, half over the content, with a 2px line down its middle. The layout's
 `panel-area-resize` stops at its host, which reports its own (PRINCIPLES 18):
-the shell, or the canvas, which takes `data-panel-width` back. The example app
+the shell, or the canvas, each of which takes `data-panel-start-width` and `data-panel-end-width` back. The example app
 keeps the width in its session and hands it back.
 
 **Either axis, in the box's own units** (TODO 177). The layout grid's gutters

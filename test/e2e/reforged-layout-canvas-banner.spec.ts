@@ -47,7 +47,7 @@ const read = (page: import('@playwright/test').Page) => page.evaluate(() => {
   const sr = cv.shadowRoot!;
   return {
     canvas: box(cv)!, app: box(cv.querySelector('#app')), data: box(cv.querySelector('#data')),
-    strip: box(sr.querySelector('.banner')), panel: box(cv.querySelector('[slot="panel"]')),
+    strip: box(sr.querySelector('.banner')), panel: box(cv.querySelector('[slot="panel-start"]')),
     controls: box(sr.querySelector('.controls'))!, minimap: box(sr.querySelector('.minimap'))!,
     items: sr.querySelectorAll('.minimap-item').length,
   };
@@ -94,7 +94,7 @@ test('over the plane: it paints over the content under it, and holds still as th
 
 test('beside a panel card: the banners keep clear of it, and of the controls and minimap, at 1500px and 600px', async ({ page }) => {
   await page.evaluate(async () => {
-    document.getElementById('cv')!.insertAdjacentHTML('beforeend', '<div slot="panel" style="background: #eee">Nodes</div>');
+    document.getElementById('cv')!.insertAdjacentHTML('beforeend', '<div slot="panel-start" style="background: #eee">Nodes</div>');
     await window.__settled();
   });
   await show(page, ['app', 'data']);

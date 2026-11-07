@@ -11,14 +11,14 @@
     data-no-minimap  no minimap
     data-select-box  a plain left drag on blank canvas draws a box and reports it (canvas-box)
                      instead of panning; Space + drag, the middle button and the Pan tool still pan
-    data-panel-width  the card's area's width, in px: what a reader dragged its edge to, handed
+    data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed
                      back by the host. Never under 16rem nor over 60% of the canvas
 
   Slots:
     (default)   the content, placed on the canvas at its `--x` and `--y` (px)
     banner      notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom;
                 two shown stack, and a hidden one takes no room (a reload banner)
-    panel       a card DOCKED flush in the canvas's start panel area: top, left and bottom, no
+    panel-start, panel-end  a card DOCKED flush in the canvas's start (or end) panel area; a panel's `data-side` picks it: top, left and bottom, no
                 shadow, 18rem wide; its edge resizes it. It does not pan or zoom (a node panel). One
                 with `data-floating` gives its width back and floats anywhere in the canvas
     toolbar     tools FLOATING at the bottom centre, 32px up, beside the panel: they do not
@@ -36,7 +36,7 @@
        TRAP T-a-panel-area-is-a-layout -->
   <sherpa-layout-panels class="panels" part="panels">
     <!-- A card docked on the view: it keeps its place as the plane pans and zooms. -->
-    <slot name="panel" slot="panel-start" data-accepts="panel"></slot>
+    <slot name="panel-start" slot="panel-start" data-accepts="panel"></slot>
     <!-- A card docked on the end side: the view stays under it as it does under the start card. -->
     <slot name="panel-end" slot="panel-end" data-accepts="panel"></slot>
 

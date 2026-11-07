@@ -341,10 +341,11 @@ test.describe('Pop in and Pop out', () => {
     expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([{ fixed: true, side: 'end' }, { fixed: false, side: 'end' }]);
   });
 
-  test('data-fixed="start" docks it in the START area; Pop out, then Pop in, takes it back there', async ({ page }) => {
+  test('data-fixed with data-side="start" docks it in the START area; Pop out, then Pop in, takes it back there', async ({ page }) => {
     await stage(page);
     await page.evaluate(async () => {
-      document.getElementById('pop')!.setAttribute('data-fixed', 'start');
+      document.getElementById('pop')!.setAttribute('data-side', 'start');
+      document.getElementById('pop')!.setAttribute('data-fixed', '');
       await window.__settled();
     });
     const fixed = await read(page);
@@ -357,7 +358,7 @@ test.describe('Pop in and Pop out', () => {
     const back = await read(page);
     expect(back).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start' });
     expect(back.root).toEqual({ x: back.start.x + 16, w: back.start.w - 32 });
-    expect(await page.evaluate(() => document.getElementById('pop')!.getAttribute('data-fixed'))).toBe('start');
+    expect(await page.evaluate(() => document.getElementById('pop')!.getAttribute('data-side'))).toBe('start');
   });
 
   test('the press keeps its focus on the button', async ({ page }) => {

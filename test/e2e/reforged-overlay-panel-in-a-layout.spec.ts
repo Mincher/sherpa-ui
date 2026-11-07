@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
     root.style.cssText = `position: absolute; left: ${at.x}px; top: ${at.y}px`;
     root.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: ${size.w}px; block-size: ${size.h}px">
-        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-icon="circle-nodes" data-floatable data-minimisable>
+        <sherpa-overlay-panel data-side="start" id="nodes" open data-heading="Nodes" data-icon="circle-nodes" data-floatable data-minimisable>
           <sherpa-badge slot="badge" id="count" aria-label="3 filters">3</sherpa-badge>
           <p>The list</p>
         </sherpa-overlay-panel>

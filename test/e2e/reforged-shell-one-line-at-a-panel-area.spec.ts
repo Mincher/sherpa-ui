@@ -10,7 +10,7 @@ test('an open panel area takes the Context\'s gutter on its side; shut, it comes
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
-      + '<sherpa-overlay-panel slot="panel-end" id="p" data-heading="P" data-fixed><p>Panel</p></sherpa-overlay-panel>'
+      + '<sherpa-overlay-panel data-side="end" id="p" data-heading="P" data-fixed><p>Panel</p></sherpa-overlay-panel>'
       + '<sherpa-layout-grid id="g"><sherpa-container data-heading="Card"></sherpa-container></sherpa-layout-grid></sherpa-app-shell>';
     await window.__settled();
     const panel = document.getElementById('p') as HTMLElement & { show(): void; hide(): void };

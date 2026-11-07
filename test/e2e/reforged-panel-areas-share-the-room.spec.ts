@@ -16,7 +16,7 @@ for (const width of [1280, 1700]) {
         const root = document.getElementById('root')!;
         root.innerHTML = host === 'layout'
           ? `<sherpa-layout-panels id="host" style="inline-size: ${width}px; block-size: 600px" data-panel-start-width="700" data-panel-end-width="700">${panel('panel-start', 's')}${panel('panel-end', 'e')}<div id="content">content</div></sherpa-layout-panels>`
-          : `<sherpa-layout-canvas id="host" style="inline-size: ${width}px; block-size: 600px" data-panel-width="700">${panel('panel', 's')}</sherpa-layout-canvas>`;
+          : `<sherpa-layout-canvas id="host" style="inline-size: ${width}px; block-size: 600px" data-panel-start-width="700">${panel('panel', 's')}</sherpa-layout-canvas>`;
         await window.__settled();
         const layout = (host === 'layout' ? document.getElementById('host')! : document.getElementById('host')!.shadowRoot!.querySelector('sherpa-layout-panels')!) as HTMLElement;
         const box = (sel: string) => Math.round(layout.shadowRoot!.querySelector(sel)!.getBoundingClientRect().width);

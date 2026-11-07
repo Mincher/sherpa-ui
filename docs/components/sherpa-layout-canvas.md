@@ -27,8 +27,8 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 | `data-min-zoom` | number | `0.25` | the smallest zoom |
 | `data-no-minimap` | boolean |  | no minimap |
 | `data-panel-end-width` | number |  |  |
-| `data-panel-width` | number |  | the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas |
-| `data-select-box` | boolean |  | a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan |
+| `data-panel-start-width` | number |  |  |
+| `data-select-box` | boolean |  | a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas |
 | `data-zoom` | number |  | the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it |
 
 ## Properties
@@ -60,7 +60,7 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| `panel` | panel | a card DOCKED flush in the canvas's start panel area: top, left and bottom, no shadow, 18rem wide; its edge resizes it. |
+| `panel-start` | panel |  |
 | `panel-end` | panel |  |
 | `banner` | content | notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
@@ -97,6 +97,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelWidth?, selectBox?, zoom? }`
+`{ maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

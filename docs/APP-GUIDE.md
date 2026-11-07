@@ -83,7 +83,7 @@ Plus the app's stores, and its Views as JSON.
         <sherpa-quick-filter-toolbar slot="filters" data-type="view" data-scope="view"
                                      data-locked data-reset-on-populate></sherpa-quick-filter-toolbar>
       </sherpa-app-header>
-      <sherpa-overlay-panel slot="panel-start" id="filter-column" data-heading="Filters" data-fixed="start" data-side="start"
+      <sherpa-overlay-panel id="filter-column" data-heading="Filters" data-fixed data-side="start"
                             data-floatable data-minimisable data-poppable data-searchable data-search-placeholder="Search filters">
         <sherpa-filter-panel data-scope="view data"></sherpa-filter-panel>
       </sherpa-overlay-panel>
@@ -556,7 +556,7 @@ provider.addEventListener('filters-save-as', saveAs);
   `command="--hide"` on a button inside it. `T-a-button-commands-by-markup`
 - An overlay panel with `data-floatable` floats: its header bar moves it, its
   corner resizes it, and Dock puts it back on the right edge or in the shell's
-  panel area it came from (`data-fixed`, or `data-fixed="start"`). It reports
+  panel area it came from (`data-fixed`, on the side `data-side` names). It reports
   `panel-float`, `panel-move` and `panel-resize`; keep `data-floating`, `data-x`,
   `data-y`, `data-width` and `data-height` in the session and hand them back. The
   Nodes panel is an overlay panel slotted in the canvas's `panel` slot with

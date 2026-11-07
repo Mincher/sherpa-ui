@@ -60,9 +60,9 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-collapsible': { type: 'boolean', kind: 'style' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
     'data-poppable': { type: 'boolean', kind: 'style' },
-    // A fixed panel, in a panel area of the app shell: `start`, else the end. TRAP T-a-panel-pops-into-the-end-area
-    'data-fixed': { type: 'string', kind: 'behaviour' },
-    // The side it docks to: the panel writes it from `data-fixed`, so overlaid out of its area it stays on that edge. TRAP T-an-overlaid-panel-keeps-its-side
+    // A fixed panel, in a panel area of the app shell. TRAP T-a-panel-pops-into-the-end-area
+    'data-fixed': { type: 'boolean', kind: 'behaviour' },
+    // The ONE orientation of a panel: the area it docks to, `start` or else `end`; overlaid out of its area it stays on that edge. TRAP T-an-overlaid-panel-keeps-its-side
     'data-side': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
     'data-floatable': { type: 'boolean', kind: 'style' },
     // Shrunk to a tab on its area's edge; pressed, it opens as it was. TRAP T-a-minimised-panel-is-a-tab
@@ -83,7 +83,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-width': { type: 'number', kind: 'behaviour' },
     'data-height': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['open', 'data-search-placeholder', 'data-fixed', 'data-x', 'data-y', 'data-width', 'data-height'];
+  static override observed = ['open', 'data-search-placeholder', 'data-side', 'data-x', 'data-y', 'data-width', 'data-height'];
 
   /** The native dialog the panel draws in, NON-modal. */
   #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
@@ -185,7 +185,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.#surface.follow();
       SherpaOverlayPanel.#stack();
     } else if (name === 'data-searchable' || name === 'data-search-placeholder') this.#syncSearch();
-    else if (name === 'data-fixed') this.#place();
+    else if (name === 'data-fixed' || name === 'data-side') this.#place();
     else if (name === 'data-minimised') this.#minimise();
     else if (name === 'data-overlay') this.#place();
     else if (name === 'data-floating') this.#float();
@@ -323,9 +323,9 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** The area it pops into: the one `data-fixed` last named, so Pop in goes back to it. */
   #dock: 'start' | 'end' = 'end';
 
-  /** The area `data-fixed` names: `start`, else the end. */
+  /** The area `data-side` names: `start`, else the end. The one orientation of a panel, in every host. */
   #side(): 'start' | 'end' {
-    return this.getAttribute('data-fixed') === 'start' ? 'start' : 'end';
+    return this.getAttribute('data-side') === 'start' ? 'start' : 'end';
   }
 
   /** Is it slotted into a canvas's or a panel area's own slot: docked there by its markup, with no
@@ -333,8 +333,9 @@ export class SherpaOverlayPanel extends SherpaElement {
   #slotted(): 'start' | 'end' | null {
     const host = this.parentElement;
     if (!host || (host.localName !== 'sherpa-layout-canvas' && host.localName !== 'sherpa-layout-panels')) return null;
-    if (this.slot === 'panel' || this.slot === 'panel-start') return 'start';
-    return this.slot === 'panel-end' ? 'end' : null;
+    const side = this.#side();
+    if (this.slot !== `panel-${side}`) this.slot = `panel-${side}`;
+    return side;
   }
 
   /** The shell whose area can take the panel: none, no room, or the host's own panel there says no. */
@@ -367,10 +368,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.#floatBox.floated(floating);
       return;
     }
-    if (this.hasAttribute('data-fixed')) {
-      this.#dock = this.#side();
-      this.setAttribute('data-side', this.#dock);
-    } else if (this.getAttribute('data-side') === 'start') this.#dock = 'start';
+    this.#dock = this.#side();
     const shell = this.#area();
     this.toggleState('no-area', !shell);
     this.toggleState('tab-start', this.#dock === 'start');
@@ -590,18 +588,17 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Dock as an overlay, or fixed in its area. It reports `panel-pop`: a press is the reader's choice, a lost room is not. TRAP T-a-panel-peeks-from-its-tab */
   #onDock = (fixed: boolean): void => {
-    const side = this.#dock;
     const hovering = this.hasState('peeking');
     // The other docked box is as wide as this one: the width is the reader's, not the state's.
     this.#matchWidth(fixed);
     if (this.#slotted()) this.set('data-overlay', !fixed);
-    else this.set('data-fixed', fixed && (side === 'start' ? 'start' : true));
+    else this.set('data-fixed', fixed);
     // Docked from a hover: it stays open, in the state it was docked in, and no longer floating.
     if (hovering) {
       this.set('data-floating', false);
       this.minimise(false);
     }
-    this.emit('panel-pop', { fixed, side });
+    this.emit('panel-pop', { fixed, side: this.#dock });
   };
 
   /** Hand the width it is drawn at to the state it is going to: an overlay's own, or its area's. */
@@ -617,8 +614,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (!host) return;
     // The area is the card and its inset on both sides. TODO 871
     const inset = 2 * (parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-display-mode-space-base')) || 16);
-    // A canvas keeps its card's width in `data-panel-width`; a shell or an area, one for each side.
-    const attr = host.localName === 'sherpa-layout-canvas' ? (side === 'end' ? 'data-panel-end-width' : 'data-panel-width') : `data-panel-${side}-width`;
+    // Every host keeps a width for each side.
+    const attr = `data-panel-${side}-width`;
     host.setAttribute(attr, String(width + inset));
     host.dispatchEvent(new CustomEvent('panel-area-resize', { detail: { side, width: width + inset }, bubbles: false }));
   }

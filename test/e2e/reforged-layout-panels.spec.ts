@@ -23,7 +23,7 @@ async function shell(page: Page): Promise<void> {
     const root = document.getElementById('root')!;
     root.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
       + '<div slot="header" style="block-size: 40px">H</div>'
-      + '<sherpa-overlay-panel slot="panel-start" id="col" data-heading="Filters" data-fixed="start" data-floatable open><p>Filters</p></sherpa-overlay-panel>'
+      + '<sherpa-overlay-panel data-side="start" id="col" data-heading="Filters" data-fixed data-floatable open><p>Filters</p></sherpa-overlay-panel>'
       + '<div><div class="page" style="padding: 16px">Context</div></div></sherpa-app-shell>'
       + '<sherpa-overlay-panel id="ask" data-heading="Assistant" data-fixed data-floatable data-poppable data-dismissible><p>Hi</p></sherpa-overlay-panel>';
     await window.__settled();
@@ -128,7 +128,7 @@ test('a panel opened LATE shows its area, shut it gives it back; a card hidden b
   await page.evaluate(async () => {
     document.getElementById('root')!.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
       + '<div slot="header" style="block-size: 40px">H</div>'
-      + '<sherpa-overlay-panel slot="panel-start" id="col" data-heading="Filters" data-fixed="start" data-floatable><p>Filters</p></sherpa-overlay-panel>'
+      + '<sherpa-overlay-panel data-side="start" id="col" data-heading="Filters" data-fixed data-floatable><p>Filters</p></sherpa-overlay-panel>'
       + '<div slot="panel-end" id="side" style="display: none">Side</div><div>C</div></sherpa-app-shell>';
     await window.__settled();
     const shut = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-start')!.getBoundingClientRect().width;
@@ -183,7 +183,7 @@ test('a panel floats out of its area and docks back into the SAME one: a panel f
   // (The filter column's own Float is the overlay panel's now: reforged-overlay-panel-float and the Demos float spec read it.)
   await page.evaluate(() => document.getElementById('col')!.remove());
   // A panel fixed in the START area: Pop takes it out, Float lifts it, and both put it back there.
-  await page.evaluate(() => document.getElementById('ask')!.setAttribute('data-fixed', 'start'));
+  await page.evaluate(() => { const a = document.getElementById('ask')!; a.setAttribute('data-side', 'start'); a.setAttribute('data-fixed', ''); });
   await settle(page);
   const inStart = await box(page, 'layout .area-start');
   expect(await box(page, 'ask .root')).toEqual(inset(inStart));
@@ -196,7 +196,7 @@ test('a panel floats out of its area and docks back into the SAME one: a panel f
   expect((await box(page, 'layout .area-start')).w).toBe(0);
   await press(page, 'ask', '.dock-fixed');
   expect(await box(page, 'ask .root')).toEqual(inset(inStart));
-  expect(await page.evaluate(() => document.getElementById('ask')!.getAttribute('data-fixed'))).toBe('start');
+  expect(await page.evaluate(() => document.getElementById('ask')!.getAttribute('data-side'))).toBe('start');
 });
 
 test('a pressed floating panel comes to the FRONT, by the pointer or a focus; docking takes it out of the order', async ({ page }) => {
@@ -205,7 +205,7 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
     const root = document.getElementById('root')!;
     root.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
-        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable data-floating data-x="40" data-y="40" data-width="320" data-height="400"><p>The list</p></sherpa-overlay-panel>
+        <sherpa-overlay-panel data-side="start" id="nodes" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable data-floating data-x="40" data-y="40" data-width="320" data-height="400"><p>The list</p></sherpa-overlay-panel>
       </sherpa-layout-canvas>
       <sherpa-overlay-panel id="a" data-heading="A" data-floatable data-floating data-x="200" data-y="100" data-width="400" data-height="300"><p>A</p></sherpa-overlay-panel>
       <sherpa-overlay-panel id="b" data-heading="B" data-floatable data-floating data-x="300" data-y="200" data-width="400" data-height="300"><p>B</p></sherpa-overlay-panel>`;
@@ -258,7 +258,7 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
     root.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">
         <div id="thing" style="--x: 520px; --y: 60px; inline-size: 120px; block-size: 80px; background: #c046ff">A</div>
-        <sherpa-overlay-panel id="nodes" slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable><p>The list</p></sherpa-overlay-panel>
+        <sherpa-overlay-panel data-side="start" id="nodes" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable><p>The list</p></sherpa-overlay-panel>
       </sherpa-layout-canvas>`;
     await window.__settled();
     const heard: unknown[] = [];
@@ -299,7 +299,7 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
   expect(await box(page, 'thing')).toEqual(thing);
   expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([['cv', { side: 'start', width: Math.round(cv.w * 0.33) }]]);
   // The host hands it back.
-  await page.evaluate(() => document.getElementById('cv')!.setAttribute('data-panel-width', '300'));
+  await page.evaluate(() => document.getElementById('cv')!.setAttribute('data-panel-start-width', '300'));
   await settle(page);
   expect((await card()).w).toBe(268);
   // Floating, the card gives the width back; the plane holds still.

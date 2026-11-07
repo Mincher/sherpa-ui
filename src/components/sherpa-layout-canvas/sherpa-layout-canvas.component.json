@@ -19,7 +19,7 @@
       "part": "panels",
       "children": [
         {
-          "slot": "panel",
+          "slot": "panel-start",
           "attrs": {
             "slot": "panel-start",
             "data-accepts": "panel"
@@ -265,12 +265,11 @@
     },
     {
       "$type": "prop",
-      "name": "data-panel-width",
+      "name": "data-panel-start-width",
       "type": "number",
       "observed": true,
       "declared": true,
-      "kind": "behaviour",
-      "description": "the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas"
+      "kind": "behaviour"
     },
     {
       "$type": "prop",
@@ -279,7 +278,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan"
+      "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas"
     },
     {
       "$type": "prop",
@@ -294,11 +293,10 @@
   "slots": [
     {
       "$type": "slot",
-      "name": "panel",
+      "name": "panel-start",
       "accepts": [
         "panel"
-      ],
-      "description": "a card DOCKED flush in the canvas's start panel area: top, left and bottom, no shadow, 18rem wide; its edge resizes it."
+      ]
     },
     {
       "$type": "slot",
@@ -333,7 +331,7 @@
     }
   ],
   "populate": {
-    "shape": "{ maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelWidth?, selectBox?, zoom? }",
+    "shape": "{ maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

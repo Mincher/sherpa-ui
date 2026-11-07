@@ -32,7 +32,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-dismissible` | boolean |  | show the close button |
 | `data-expandable` | boolean |  | show the maximise / minimise button |
 | `data-external` | boolean |  | show the external-link button |
-| `data-fixed` | text |  | a fixed panel, docked flush in a panel area of the page's [sherpa-app-shell](sherpa-app-shell.md): `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one |
+| `data-fixed` | boolean |  | a fixed panel, docked flush in a panel area of the page's [sherpa-app-shell](sherpa-app-shell.md): `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one |
 | `data-floatable` | boolean |  | show the Float / Dock button |
 | `data-floating` | boolean |  | lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks where it came from |
 | `data-heading` | text |  | header title text (rendered into .title) |

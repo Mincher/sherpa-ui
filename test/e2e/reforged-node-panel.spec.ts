@@ -63,15 +63,15 @@ test('it docks on the canvas as a card, 16px in from its top, bottom and left, w
   await bind(page);
   const [canvas, card] = await page.evaluate(() => {
     const c = document.querySelector('#root sherpa-layout-canvas')!.getBoundingClientRect();
-    const p = document.querySelector('#root sherpa-overlay-panel[slot="panel"]')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
+    const p = document.querySelector('#root sherpa-overlay-panel[data-side="start"]')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
     return [c, p].map((r) => ({ left: r.left, top: r.top, right: r.right, bottom: r.bottom }));
   });
   // TODO 871: a card inset 16px in its panel area, with no shadow.
   expect([card!.top, card!.bottom, card!.left]).toEqual([canvas!.top + 16, canvas!.bottom - 16, canvas!.left + 16]);
-  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#root sherpa-overlay-panel[slot="panel"]')!.shadowRoot!.querySelector('.root')!).boxShadow)).toBe('none');
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#root sherpa-overlay-panel[data-side="start"]')!.shadowRoot!.querySelector('.root')!).boxShadow)).toBe('none');
   // It keeps its place as the view pans: it is not on the plane.
   await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { panTo(x: number, y: number): void }).panTo(300, 200));
-  const after = await page.evaluate(() => document.querySelector('#root sherpa-overlay-panel[slot="panel"]')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().left);
+  const after = await page.evaluate(() => document.querySelector('#root sherpa-overlay-panel[data-side="start"]')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().left);
   expect(after).toBe(card!.left);
 });
 

@@ -13,7 +13,7 @@ async function stage(page: Page, attrs = ''): Promise<void> {
   await page.evaluate(async (a) => {
     const root = document.getElementById('root')!;
     root.innerHTML = `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">
-      <sherpa-overlay-panel id="p" slot="panel" data-heading="Nodes" data-minimisable data-poppable data-floatable ${a}><p>body</p></sherpa-overlay-panel>
+      <sherpa-overlay-panel data-side="start" id="p" data-heading="Nodes" data-minimisable data-poppable data-floatable ${a}><p>body</p></sherpa-overlay-panel>
     </sherpa-layout-canvas>`;
     const panel = document.getElementById('p') as PanelEl;
     await panel.rendered;
@@ -100,7 +100,7 @@ for (const kind of KINDS) {
     await page.setViewportSize({ width: 1400, height: 800 });
     await page.evaluate(async ({ slotted, attrs }) => {
       const root = document.getElementById('root')!;
-      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'slot="panel"' : ''} data-heading="P" data-floatable data-poppable data-minimisable ${attrs}><p>body</p></sherpa-overlay-panel>`;
+      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'data-side="start"' : ''} data-heading="P" data-floatable data-poppable data-minimisable ${attrs}><p>body</p></sherpa-overlay-panel>`;
       root.innerHTML = slotted
         ? `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">${panel}</sherpa-layout-canvas>`
         : `<sherpa-app-shell></sherpa-app-shell>${panel}`;
@@ -144,7 +144,7 @@ for (const kind of KINDS) {
     await page.setViewportSize({ width: 1400, height: 800 });
     await page.evaluate(async ({ slotted, attrs }) => {
       const root = document.getElementById('root')!;
-      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'slot="panel"' : ''} data-heading="P" data-floatable data-poppable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
+      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'data-side="start"' : ''} data-heading="P" data-floatable data-poppable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
       root.innerHTML = slotted
         ? `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">${panel}</sherpa-layout-canvas>`
         : `<sherpa-app-shell></sherpa-app-shell>${panel}`;
@@ -276,7 +276,7 @@ for (const kind of [
     await page.setViewportSize({ width: 1400, height: 800 });
     await page.evaluate(async ({ slotted, attrs }) => {
       const root = document.getElementById('root')!;
-      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'slot="panel"' : ''} data-heading="P" data-floatable data-poppable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
+      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'data-side="start"' : ''} data-heading="P" data-floatable data-poppable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
       root.innerHTML = slotted
         ? `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">${panel}</sherpa-layout-canvas>`
         : `<sherpa-app-shell></sherpa-app-shell>${panel}`;

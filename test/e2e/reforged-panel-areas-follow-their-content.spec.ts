@@ -11,8 +11,7 @@ for (const host of ['layout', 'canvas'] as const) {
   test(`${host}: the area follows its panel's width, the widest of two, and gives it back as a tab`, async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
     const r = await page.evaluate(async (host) => {
-      const slot = host === 'layout' ? 'panel-start' : 'panel';
-      const panel = (id: string, width: string) => `<sherpa-overlay-panel id="${id}" slot="${slot}" open data-heading="${id}" data-minimisable style="--_width: ${width}"><p>${id}</p></sherpa-overlay-panel>`;
+      const panel = (id: string, width: string) => `<sherpa-overlay-panel id="${id}" data-side="start" open data-heading="${id}" data-minimisable style="--_width: ${width}"><p>${id}</p></sherpa-overlay-panel>`;
       const root = document.getElementById('root')!;
       root.innerHTML = host === 'layout'
         ? `<sherpa-layout-panels id="h" style="inline-size: 1500px; block-size: 600px">${panel('a', '20rem')}<div>content</div></sherpa-layout-panels>`

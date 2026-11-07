@@ -38,7 +38,7 @@
 /* Across the top of the cell beside the card, 32px in. A hidden one takes no room.
    Over the view, which follows it in the template. */
 /* The card's own width: a node panel's. */
-slot[name="panel"]::slotted(*) { --_width: 18rem; }
+slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_width: 18rem; }
 
 .banner {
   grid-area: 1 / 1;

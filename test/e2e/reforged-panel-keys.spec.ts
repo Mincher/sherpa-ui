@@ -18,7 +18,8 @@ async function stage(page: Page): Promise<void> {
       const p = document.createElement('sherpa-overlay-panel') as PanelEl;
       p.id = id;
       p.setAttribute('data-heading', id);
-      p.setAttribute('data-fixed', fixed);
+      p.setAttribute('data-fixed', '');
+      if (fixed === 'start') p.setAttribute('data-side', 'start');
       p.setAttribute('data-minimisable', '');
       p.innerHTML = `<p>${id}</p>`;
       return p;

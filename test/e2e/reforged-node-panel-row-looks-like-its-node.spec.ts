@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
   await page.evaluate(async (library) => {
     const root = document.getElementById('root')!;
-    root.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="cv" style="inline-size: 1400px; block-size: 760px"><sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>');
+    root.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="cv" style="inline-size: 1400px; block-size: 760px"><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');

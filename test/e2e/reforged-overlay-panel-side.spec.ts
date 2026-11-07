@@ -17,7 +17,7 @@ const left = (page: import('@playwright/test').Page, attrs: string) => page.eval
 
 test('a start panel overlaid stays on the start edge; one told its side by data-side alone is there too', async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
-  const fixed = await left(page, 'data-fixed="start"');
+  const fixed = await left(page, 'data-fixed data-side="start"');
   expect(fixed.side).toBe('start');
   await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button') as HTMLElement).click());
   await page.evaluate(() => window.__settled());

@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
-        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
+        <sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
       </sherpa-layout-canvas>`);
     await Promise.all(['sherpa-node-list', 'sherpa-node-toolbar', 'sherpa-layout-canvas'].map((t) => customElements.whenDefined(t)));
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
