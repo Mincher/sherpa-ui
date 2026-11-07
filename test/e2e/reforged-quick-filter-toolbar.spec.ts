@@ -370,7 +370,6 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
     el.addEventListener('ai-filter-request', () => heard.push('ai-filter-request'));
     await pick('Suggest filters');
     await pick('Refresh data');
-    await pick('View as filter panel');
     // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
     (el as unknown as { clearAll(): void }).clearAll = () => { heard.push('clear'); };
     // Reset is the ⋮'s first row. Will, TODO 454, 11-06
@@ -381,8 +380,9 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
 
   expect(r.collapse).toBe(3);
   // Suggest folds too, before Refresh. Will, TODO 527
-  expect(r.rows).toEqual(['Reset filters', 'Reset to view defaults', '---', 'View as filter panel', '---', 'Suggest filters', 'Refresh data']);
-  expect(r.heard).toEqual(['ai-filter-request', 'data-refresh', 'extra', 'clear']);
+  expect(r.rows).toEqual(['Reset filters', 'Reset to view defaults', '---', 'Suggest filters', 'Refresh data']);
+  // The page's own button (the filter-panel switch) never folds into the menu: it is the only way to the panel.
+  expect(r.heard).toEqual(['ai-filter-request', 'data-refresh', 'clear']);
 });
 
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {

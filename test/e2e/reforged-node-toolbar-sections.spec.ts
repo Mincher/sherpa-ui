@@ -62,7 +62,7 @@ test('a press on Play, Pause and Stop says so, once each, only while the button 
   expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual(['play', 'pause', 'play', 'stop']);
 });
 
-test('every app header has a thin divider under it, in the Style\'s border, as the nav\'s and the tabs\' lines are', async ({ page }) => {
+test('no app header has a divider under it', async ({ page }) => {
   const line = await page.evaluate(async () => {
     const header = document.createElement('sherpa-app-header') as HTMLElement & { rendered?: Promise<void> };
     document.getElementById('root')!.replaceChildren(header);
@@ -71,7 +71,7 @@ test('every app header has a thin divider under it, in the Style\'s border, as t
     const cs = getComputedStyle(header);
     return { width: cs.borderBlockEndWidth, style: cs.borderBlockEndStyle, colour: cs.borderBlockEndColor };
   });
-  expect(line).toMatchObject({ style: 'solid', colour: 'rgb(179, 179, 195)' });
+  expect(line).toMatchObject({ width: '0px', style: 'none' });
 });
 
 test('each section is its own sherpa-group, and the gap each side of a divider is wider than the buttons\'', async ({ page }) => {

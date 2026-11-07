@@ -125,13 +125,13 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
 }
 
 /* ── The toolbar ──────────────────────────────────────────────────────── */
-/* Tools floating off the bottom edge, 32px up: centred on the CANVAS, so they stay clear of
+/* Tools floating off the bottom edge, as far up as the zoom controls and the minimap (one inset): centred on the CANVAS, so they stay clear of
    a panel over its end, and never over the card. The row starts past what the view shows
    begins, as the canvas measured it; one too wide for it starts there. */
 .toolbar {
   position: absolute;
   inset-inline: 0;
-  inset-block-end: var(--_float, 32px);
+  inset-block-end: var(--_inset);
   display: flex;
   justify-content: safe center;
   padding-inline: calc(var(--_seen-start, 0px) + var(--_float));

@@ -2030,7 +2030,7 @@ to the same class with `journal: N` (`T-a-store-keeps-its-history`).
   `toolbar-select { action }`; the editor sets `data-can-undo` and `data-can-redo`
   from the journal. Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z (and Ctrl/Cmd+Y) are the keys,
   except in a text field, which keeps its own undo.
-- **The toolbar floats at the bottom centre** (Will, 734), 32px up as the card floats
+- **The toolbar floats at the bottom centre** (Will, 734), 16px up, level with the zoom controls, as the card floats
   32px in, so the card keeps 32px from the top. Under 44rem beside a card the
   toolbar yields to the card's right, in the canvas's own container units.
 - **The Query editor steps its draft the same way.** It keeps a `Journal` of the

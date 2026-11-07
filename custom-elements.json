@@ -4963,7 +4963,7 @@
             },
             {
               "name": "toolbar",
-              "description": "tools FLOATING at the bottom centre, 32px up, beside the panel: they do not pan or zoom (a node toolbar) (accepts: toolbar)"
+              "description": "tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar) (accepts: toolbar)"
             }
           ],
           "cssParts": [

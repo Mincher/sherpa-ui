@@ -64,7 +64,7 @@ Each one bubbles.
 | `panel-end` | panel |  |
 | `banner` | content | notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
-| `toolbar` | toolbar | tools FLOATING at the bottom centre, 32px up, beside the panel: they do not pan or zoom (a node toolbar) |
+| `toolbar` | toolbar | tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar) |
 
 ## Parts
 

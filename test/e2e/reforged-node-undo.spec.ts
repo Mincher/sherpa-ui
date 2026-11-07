@@ -109,7 +109,7 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
   await settle(page);
 }
 
-test('the toolbar floats at the bottom centre, 32px up, never over the card; the panel is flush; the controls and minimap keep clear at 3 widths', async ({ page }) => {
+test('the toolbar floats at the bottom centre, 16px up (level with the zoom controls), never over the card; the panel is flush; the controls and minimap keep clear at 3 widths', async ({ page }) => {
   await bind(page);
   for (const width of [1500, 900, 600]) {
     // The canvas measures what the view shows a frame after it is resized: read after it has.
@@ -130,8 +130,8 @@ test('the toolbar floats at the bottom centre, 32px up, never over the card; the
     expect(r.bar.right, `${width}: inside the canvas`).toBeLessThanOrEqual(r.canvas.right + 1);
     expect(r.bar.left, `${width}: clear of the card`).toBeGreaterThanOrEqual(r.panel.right + 31);
     if (width === 1500) expect(centred, '1500: centred').toBe(true);
-    expect(Math.abs(r.canvas.bottom - r.bar.bottom - 32), `${width}: 32px up`).toBeLessThanOrEqual(1);
-    expect([r.panel.top, r.panel.bottom, r.panel.left], `${width}: flush`).toEqual([r.canvas.top, r.canvas.bottom, r.canvas.left]);
+    expect(Math.abs(r.canvas.bottom - r.bar.bottom - 16), `${width}: 16px up`).toBeLessThanOrEqual(1);
+    expect([r.panel.top, r.panel.bottom, r.panel.left], `${width}: the card, inset 16px`).toEqual([r.canvas.top + 16, r.canvas.bottom - 16, r.canvas.left + 16]);
     const hit = (a: typeof r.bar, b: typeof r.bar) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
     expect(hit(r.bar, r.controls), `${width}: toolbar x controls`).toBe(false);
     expect(hit(r.bar, r.minimap), `${width}: toolbar x minimap`).toBe(false);

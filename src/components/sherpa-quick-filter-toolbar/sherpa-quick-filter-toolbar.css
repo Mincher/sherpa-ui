@@ -344,14 +344,12 @@
 .suggest { display: none; }
 :host([data-suggest]) .suggest { display: inline-flex; }
 
-/* Steps 1 and 2 — Refresh, and the host's own buttons. The View's ★ and Save
+/* Steps 1 and 2 — Refresh. The host's own buttons stay: the page's filter-panel switch is the only way to it. The View's ★ and Save
    are the App Header's (TODOs 425 G9, 428). */
 @container qf-bar (max-width: 760px) {
-  .act[data-act="refresh"],
-  slot[name="actions"]::slotted(*) { display: none; }
+  .act[data-act="refresh"] { display: none; }
 }
-:host(:state(collapse-2)) .act[data-act="refresh"],
-:host(:state(collapse-2)) slot[name="actions"]::slotted(*) {
+:host(:state(collapse-2)) .act[data-act="refresh"] {
   display: none;
 }
 
