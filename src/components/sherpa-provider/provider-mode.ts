@@ -147,9 +147,9 @@ export class ProviderMode {
     const panels = this.#host.panels();
     for (const bar of this.#strips()) {
       let toggle = this.#toggles.get(bar);
-      // A bar no panel answers — a View the column leaves out — switches nothing. Will, TODO 488
       // ONE home, the page-level (View) bar in the app header: a local scope's bar never has it. Will, TODO 869
-      if (!panels.length || !this.#answered(bar) || (bar as HTMLElement).dataset['type'] !== 'view') {
+      // It switches the whole page's mode, so it stays even where the column leaves the View out ("Include View Context in the panel" off).
+      if (!panels.length || (bar as HTMLElement).dataset['type'] !== 'view') {
         toggle?.remove();
         this.#toggles.delete(bar);
         continue;

@@ -731,10 +731,12 @@ which forwards into its header. Both come from the provider's template and
 answer to the provider alone; `filter-configure` is gone. A host's buttons in
 the bar's slot fold away at narrow widths, as the old switch did.
 
-**Only a bar a column ANSWERS gets one** (Will, TODO 488): a View the column
-leaves out ("Include View Context in the panel" off) stays a toolbar, so its bar
-switches nothing and carries no button; it follows the column's scopes as they
-change.
+**The header's View bar always has it, while a panel is on the page** (Will,
+2026-11-08, over TODO 488): it is the page's ONE home for the switch, so it stays
+even where the column leaves the View out ("Include View Context in the panel"
+off) and that bar itself stays a toolbar. Otherwise a page with the setting off
+has no way to the panel from a toolbar. The bar steps back only where a column
+answers it, and follows the column's scopes as they change.
 
 
 **One home (Will, TODO 869): the page-level View bar in the app header.** A local scope's bar (a card's or a grid's) never has it, in either mode; in panel mode it is the panel's own action in `actions-end`.
