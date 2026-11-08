@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
     const panel = document.createElement('sherpa-node-list');
     const box = document.createElement('sherpa-overlay-panel');
     box.slot = 'panel';
-    for (const [a, v] of [['open', ''], ['data-heading', 'Nodes'], ['data-searchable', ''], ['data-padding', 'none']] as const) box.setAttribute(a, v);
+    for (const [a, v] of [['open', ''], ['data-side', 'start'], ['data-heading', 'Nodes'], ['data-searchable', ''], ['data-padding', 'none']] as const) box.setAttribute(a, v);
     box.appendChild(panel);
     el.appendChild(box);
     document.getElementById('root')!.appendChild(el);
@@ -59,15 +59,15 @@ async function pressSearch(page: Page): Promise<void> {
 }
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
 
-test('it docks on the canvas as a card, 16px in from its top, bottom and left, with no shadow', async ({ page }) => {
+test('it docks on the canvas as a card, 8px in from its top, bottom and left, with no shadow', async ({ page }) => {
   await bind(page);
   const [canvas, card] = await page.evaluate(() => {
     const c = document.querySelector('#root sherpa-layout-canvas')!.getBoundingClientRect();
     const p = document.querySelector('#root sherpa-overlay-panel[data-side="start"]')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
     return [c, p].map((r) => ({ left: r.left, top: r.top, right: r.right, bottom: r.bottom }));
   });
-  // TODO 871: a card inset 16px in its panel area, with no shadow.
-  expect([card!.top, card!.bottom, card!.left]).toEqual([canvas!.top + 16, canvas!.bottom - 16, canvas!.left + 16]);
+  // TODO 871: a card inset 8px in its panel area, with no shadow.
+  expect([card!.top, card!.bottom, card!.left]).toEqual([canvas!.top + 8, canvas!.bottom - 8, canvas!.left + 8]);
   expect(await page.evaluate(() => getComputedStyle(document.querySelector('#root sherpa-overlay-panel[data-side="start"]')!.shadowRoot!.querySelector('.root')!).boxShadow)).toBe('none');
   // It keeps its place as the view pans: it is not on the plane.
   await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { panTo(x: number, y: number): void }).panTo(300, 200));
@@ -103,7 +103,7 @@ test('"round" shows Math, says Round, and a click places a Math whose type is Ro
   await settle(page);
   const saved = await page.evaluate(() => (window as unknown as { editor: { workflow(): { nodes: { id: string; values?: object }[] } } }).editor.workflow().nodes.find((n) => n.id === 'math-1'));
   expect(saved?.values).toEqual({ type: 'round' });
-  const rows = (heading: string) => page.evaluate((h) => [...document.querySelectorAll(`#root sherpa-layout-canvas > sherpa-node[data-heading="${h}"] sherpa-node-row`)].map((r) => r.querySelector('[name]')?.getAttribute('name') ?? r.textContent?.trim()), heading);
+  const rows = (heading: string) => page.evaluate((h) => [...document.querySelectorAll(`#root sherpa-layout-canvas > sherpa-node[data-heading="${h}"] sherpa-node-row:not([data-label="Parameters"], [data-label="Properties"])`)].map((r) => r.querySelector('[name]')?.getAttribute('name') ?? r.textContent?.trim()), heading);
   expect(await rows('Math')).toEqual(['type', 'places', 'a', '']);
   // Add, by its select: Value A, Value B, then Result.
   await page.locator('#root sherpa-layout-canvas > sherpa-node[data-heading="Math"] sherpa-input-text[name="type"] select').selectOption('add');

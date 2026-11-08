@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
       nodes: [
         { id: 's', kind: 'source', x: 20, y: 40, values: { store: 'users' } }, { id: 'f', kind: 'field', x: 420, y: 40 },
         { id: 'v', kind: 'value', x: 20, y: 420 }, { id: 'm', kind: 'math', x: 420, y: 420 },
-        { id: 'c', kind: 'condition', x: 820, y: 40 }, { id: 't', kind: 'time', x: 820, y: 420 },
+        { id: 'c', kind: 'condition', x: 820, y: 40 }, { id: 't', kind: 'time', x: 820, y: 540 },
         { id: 'o', kind: 'output', x: 1160, y: 40 },
       ],
       routes: [],
@@ -88,12 +88,12 @@ test('only a Condition draws True and False: a header socket and a footer; no ot
 
 test('a Source\'s Rows leave from its Store row, beside its input socket: no Rows line, the pointer joins a Field there', async ({ page }) => {
   const rows = await card(page, 'Source').locator('sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-input-socket'), e.getAttribute('data-output-socket')]));
-  // The Store row, and below it the Count property row: output only (plan 835).
-  expect(rows).toEqual([[null, 'value', 'object'], ['Count', null, 'value']]);
+  // The Store row under "Parameters", then under "Properties" the Count property row: output only (plan 835).
+  expect(rows).toEqual([['Parameters', null, null], [null, 'value', 'object'], ['Properties', null, null], ['Count', null, 'value']]);
   const [out, inn] = [(await socket(page, 'Source', 'output', STORE))!, (await socket(page, 'Source', 'input', STORE))!];
   // One row: both sockets on its line, the Rows on its right.
   expect([Math.abs(out.y - inn.y) <= 1, out.x > inn.x]).toEqual([true, true]);
-  const row = await card(page, 'Source').locator('sherpa-node-row').first().boundingBox();
+  const row = await card(page, 'Source').locator('sherpa-node-row[data-input-socket]').boundingBox();
   expect(out.y).toBeGreaterThanOrEqual(row!.y);
   expect(out.y + out.h).toBeLessThanOrEqual(row!.y + row!.height + 1);
   expect(await inked(page, out), 'the Rows socket is drawn on the Store row').toBeGreaterThan(8);

@@ -70,40 +70,12 @@ test('with text already selected on the page, a drag from the header still moves
   expect(await page.evaluate(() => (window as any).heard.length)).toBe(0);
 });
 
-test('the grip shows on hover and on focus, at the header\'s left, and nudges the heading right', async ({ page }) => {
-  const read = () => page.evaluate(() => {
-    const root = document.querySelector('#a')!.shadowRoot!;
-    const h = root.querySelector('.header')!.getBoundingClientRect();
-    const g = root.querySelector('.grip')!;
-    const t = root.querySelector('.heading')!.getBoundingClientRect();
-    return { box: [h.width, h.height], display: getComputedStyle(g).display, drawn: g.querySelector('svg') !== null, headingX: Math.round(t.x - h.x), gripX: Math.round(g.getBoundingClientRect().x - h.x) };
-  });
-  const bare = await read();
-  expect(bare.display).toBe('none');
-  expect(bare.drawn).toBe(true);
-  const [x, y] = await at(page, 'empty');
-  await page.mouse.move(x - 40, y);
-  const hovered = await read();
-  expect(hovered.display).toBe('flex');
-  // The header is the same box; its heading moved right by the grip, which is the first thing in it.
-  expect(hovered.box).toEqual(bare.box);
-  expect(hovered.headingX).toBeGreaterThan(bare.headingX);
-  expect(hovered.gripX).toBeLessThan(hovered.headingX);
-  await page.mouse.move(5, 5);
-  await page.evaluate(() => (document.querySelector('#a')!.shadowRoot!.querySelector('.header') as HTMLElement).focus());
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Shift+Tab');
-  const focused = await read();
-  expect(focused.display).toBe('flex');
-  expect(focused.box).toEqual(bare.box);
-});
-
 test('the header is still the handle, and a press and the arrows move the node', async ({ page }) => {
   const handle = await page.evaluate(() => {
     const h = document.querySelector('#a')!.shadowRoot!.querySelector('.header')!;
-    return [h.getAttribute('role'), h.getAttribute('aria-roledescription'), h.querySelector('.grip')!.getAttribute('aria-hidden')];
+    return [h.getAttribute('role'), h.getAttribute('aria-roledescription')];
   });
-  expect(handle).toEqual(['button', 'node', 'true']);
+  expect(handle).toEqual(['button', 'node']);
   await page.locator('#a').locator('.header[role="button"]').focus();
   const before = await place(page);
   await page.keyboard.press('ArrowRight');

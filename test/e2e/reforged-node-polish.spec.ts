@@ -270,9 +270,11 @@ test('a taller node spreads its rows evenly, and its routes still end on their s
   const now = await tops();
   const moved = now.map((t, i) => t - was[i]!);
   expect(moved[0]).toBeCloseTo(0, 0);
-  const step = moved[1]!;
+  // The spare height goes between the sections: a row moves with its section, by an equal step each.
+  const section = await page.locator(`${node} sherpa-node-row`).evaluateAll((rows) => rows.map((r) => [...r.parentElement!.parentElement!.children].indexOf(r.parentElement!)));
+  const step = moved[section.findIndex((n) => n === 1)]!;
   expect(step).toBeGreaterThan(2);
-  moved.forEach((m, i) => expect(Math.abs(m - i * step), `row ${i}`).toBeLessThanOrEqual(1));
+  moved.forEach((m, i) => expect(Math.abs(m - section[i]! * step), `row ${i}`).toBeLessThanOrEqual(1));
   // A route's end is on its socket.
   const gap = await page.evaluate(() => {
     const path = [...document.querySelectorAll<SVGPathElement>('#cv svg.graph-routes path[data-from]')].find((p) => p.dataset['to']?.startsWith('has-role/b'))!;

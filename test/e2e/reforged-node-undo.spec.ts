@@ -94,7 +94,7 @@ const can = (page: Page) => page.evaluate(() => ({
 }));
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
-const STORE_ROWS = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row';
+const STORE_ROWS = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-output-socket]';
 const SORT = '#cv > sherpa-node[data-heading="Sort"]';
 const SORT_ROWS = `${SORT} sherpa-node-row`;
 const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;

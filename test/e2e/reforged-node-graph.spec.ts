@@ -48,7 +48,7 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
       return {
         nodes: nodes.map((n) => [n.dataset['heading'], n.dataset['x']]),
         field: field ? [field.value, field.hasAttribute('readonly')] : null,
-        label: canvas.querySelector('sherpa-node-row:not(:has(sherpa-input-text))')?.getAttribute('data-label') ?? null,
+        label: canvas.querySelector('sherpa-node-row[data-label^="Matches"]')?.getAttribute('data-label') ?? null,
         lines: [...canvas.querySelectorAll('svg.graph-routes path')].map((p) => (p.getAttribute('d') ?? '').startsWith('M ')),
       };
     };
@@ -284,7 +284,7 @@ test('a drag from an OUTPUT socket draws a new route: let go on an input socket,
   });
   const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
   const [ax, ay] = await at('#root sherpa-node[data-heading="A"]', 'output');
-  const [bx, by] = await at('#root sherpa-node[data-heading="B"] sherpa-node-row', 'input');
+  const [bx, by] = await at('#root sherpa-node[data-heading="B"] sherpa-node-row[data-input-socket]', 'input');
   const before = await page.evaluate(() => [document.querySelector('#root sherpa-node[data-heading="A"]')!.getAttribute('data-x'),
     JSON.stringify((document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: unknown }).view)]);
   // Onto B's input: a route is asked for.
@@ -323,7 +323,7 @@ test('a drag from the footer\'s False socket starts at it and asks for `node/#fa
   });
   const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
   const [fx, fy] = await at('#root sherpa-node[data-heading="A"]', 'false');
-  const [bx, by] = await at('#root sherpa-node[data-heading="B"] sherpa-node-row', 'input');
+  const [bx, by] = await at('#root sherpa-node[data-heading="B"] sherpa-node-row[data-input-socket]', 'input');
   await page.mouse.move(fx, fy);
   await page.mouse.down();
   await page.mouse.move(bx, by, { steps: 6 });
@@ -515,5 +515,5 @@ test('a use of a Custom Node draws closed: one node with a row per input and out
   });
   expect(r.nodes).toEqual(['Source', 'Org permissions']);
   expect(r.role).toBe('owner');
-  expect(r.rows.length).toBe(3);
+  expect(r.rows.length).toBe(4); // Parameters, Users, Role + Allowed (the "Properties" label row only where a property exists)
 });

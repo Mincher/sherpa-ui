@@ -133,10 +133,10 @@ test('two routes into one In make two rows on its Out, each routed on alone by t
   await drag(page, await socket(page, 'Source', 'output', '[name="store"]'), await socket(page, 'Portal', 'input'));
   await drag(page, await socket(page, 'Value', 'output', '[name="value"]'), await socket(page, 'Portal', 'input'));
   await expect(card(page, 'Portal')).toHaveAttribute('data-input-many', '');
-  expect(await rows(page, 'Portal', 1)).toEqual(['Source › Rows', 'Value › Value']);
+  expect(await rows(page, 'Portal', 1)).toEqual(['Source › Results', 'Value › Value']);
   await expect(name(page, 'Portal', 1)).toHaveAttribute('data-description', '2 rows, from 1 In portal');
   // Each row routed on alone: the rows into the Field, the Value into the Condition's Value B.
-  await drag(page, await socket(page, 'Portal', 'output', 'Source › Rows', 1), await socket(page, 'Field', 'input'));
+  await drag(page, await socket(page, 'Portal', 'output', 'Source › Results', 1), await socket(page, 'Field', 'input'));
   await drag(page, await socket(page, 'Portal', 'output', 'Value › Value', 1), await socket(page, 'Condition', 'input', '[name="b"]'));
   const made = ['start/rows → portal-1', 'v/value → portal-1', 'portal-2/@start/rows → pick', 'portal-2/@v/value → eq/b'];
   expect(await routes(page)).toEqual(made);
@@ -168,7 +168,7 @@ test('a route in cut takes its row away, and its route out is kept unseen; Undo 
   expect(await routes(page)).toEqual(['o1/@start/rows → pick', 'o2/@start/rows → count', 'pick/field → lone']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.undo())).toBe(true);
   await settle(page);
-  expect(await rows(page, 'Out one')).toEqual(['Source › Rows']);
+  expect(await rows(page, 'Out one')).toEqual(['Source › Results']);
   expect(await lines(page)).toEqual(['start/rows → in', 'o1/@start/rows → pick', 'o2/@start/rows → count', 'pick/field → lone']);
 });
 
@@ -215,7 +215,7 @@ test('Rename, typed in the inspector, renames every portal of the name, one step
   await settle(page);
   const names = async () => (await flow(page)).nodes.filter((n) => n.kind === 'portal').map((n) => [n.id, n.values?.['name']]);
   expect(await names()).toEqual([['in', 'customers'], ['o1', 'customers'], ['o2', 'customers'], ['lone', 'other']]);
-  expect(await rows(page, 'Out one')).toEqual(['Source › Rows']);
+  expect(await rows(page, 'Out one')).toEqual(['Source › Results']);
   expect(await lines(page)).toEqual(['start/rows → in', 'o1/@start/rows → pick', 'o2/@start/rows → count']);
   await expect(card(page, 'Field')).not.toHaveAttribute('data-warning');
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.undo())).toBe(true);
@@ -242,8 +242,8 @@ test('a name or a route that would make a loop through a row is refused: the dra
   await expect(name(page, 'Out')).toHaveJSProperty('value', 'other');
   // The other Out's row into the Count: the same loop, refused.
   const before = await routes(page);
-  expect(await rows(page, 'Out back')).toEqual(['Condition › Rows']);
-  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Rows'), await socket(page, 'Group', 'input'));
+  expect(await rows(page, 'Out back')).toEqual(['Condition › Results']);
+  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Results'), await socket(page, 'Group', 'input'));
   expect(await routes(page)).toEqual(before);
   expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/rows → in', 'count/count → test/b']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);

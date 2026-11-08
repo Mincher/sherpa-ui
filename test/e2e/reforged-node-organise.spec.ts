@@ -38,9 +38,9 @@ async function bind(page: Page, flow: object): Promise<void> {
     document.addEventListener('definition-save', (e) => (window as never as { saved: unknown[] }).saved.push((e as CustomEvent<{ definition: unknown }>).detail.definition));
     await customElements.whenDefined('sherpa-node-list');
     await window.__settled();
-    // Clear of the node panel, which floats on the left.
+    // Clear of the node panel, which sits at the canvas's right.
     canvas.zoomTo(0.5);
-    canvas.panTo(360, 60);
+    canvas.panTo(60, 60);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   }, flow);
 }

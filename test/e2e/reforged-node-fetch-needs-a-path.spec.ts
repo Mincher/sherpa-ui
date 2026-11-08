@@ -41,10 +41,10 @@ const SOURCE: Node = ['Source', 'source', 0, 0, { store: 'users' }];
 const OUTPUT: Node = ['Output', 'output', 600, 0];
 const NO_PATH = 'No path from a Source to an Output: join Source › … › Output';
 
-/** The Source's Rows socket (it is drawn on its Store row), then the Output's input, in screen px. */
+/** The Source's Rows socket (it is drawn on its Results row), then the Output's input, in screen px. */
 const sockets = (page: Page) => page.evaluate(() => {
   const mid = (r: DOMRect) => [r.left + r.width / 2, r.top + r.height / 2] as [number, number];
-  const row = document.querySelector('#cv > sherpa-node[data-heading="Source"] sherpa-node-row') as HTMLElement & { socketRect(side: string): DOMRect };
+  const row = document.querySelector('#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-output-socket]') as HTMLElement & { socketRect(side: string): DOMRect };
   const out = document.querySelector('#cv > sherpa-node[data-heading="Output"]') as HTMLElement & { socketRect(side: string): DOMRect };
   return { from: mid(row.socketRect('output')), to: mid(out.socketRect('input')) };
 });

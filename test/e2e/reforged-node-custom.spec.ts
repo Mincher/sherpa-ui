@@ -114,7 +114,7 @@ test('Enter on the header opens a Custom Node: Group Input and Output drawn, a t
   const crumbs = await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.crumb .link')].map((a) => a.textContent));
   expect(crumbs).toEqual(['Workflow', 'Org permissions']);
   // Its inputs and outputs are drawn from the definition: a row each, by its words.
-  const rows = await page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
+  const rows = await page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row:not([data-label="Parameters"])').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(rows).toEqual(['Users', 'Role']);
   await page.keyboard.press('Escape');
   await settle(page);
@@ -331,20 +331,20 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   expect(await routesOf(page)).toEqual(['perm → end', 'perm → perm2/perm', 'start/rows → perm/users', 'start/rows → perm2/start-rows', 'start/rows → perm2/users']);
   expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="perm2/start-rows"]').count()).toBe(1);
   // A row's words are its own, or its field's where it has a control (Role).
-  expect(await page.locator(perm2).locator('sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label'), e.getAttribute('data-input-socket')]))).toEqual([
-    ['Users', 'object'], ['Role', 'value'], ['Source › Rows', 'object'], ['Org permissions', 'boolean'], ['Allowed', null],
+  expect(await page.locator(perm2).locator('sherpa-node-row:not([data-label="Parameters"])').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label'), e.getAttribute('data-input-socket')]))).toEqual([
+    ['Users', 'object'], ['Role', 'value'], ['Source › Results', 'object'], ['Org permissions', 'boolean'], ['Allowed', null],
   ]);
   // The inside is shared: the other use says it can update; this one follows it.
   expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')))).toEqual(['Update available', null]);
   // Inside, a Group Input row each, an output socket of the source's type, routed to nothing yet.
   await ed(page, "ed.open('perm2')");
   await settle(page);
-  const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]));
-  expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Source › Rows', 'object', false], ['Org permissions', 'boolean', false]]);
-  // The reader routes Source › Rows on to the Field, by the pointer: it takes the place of Users there.
-  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Source › Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Field"]', 'input'));
+  const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row:not([data-label="Parameters"])').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]));
+  expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Source › Results', 'object', false], ['Org permissions', 'boolean', false]]);
+  // The reader routes Source › Results on to the Field, by the pointer: it takes the place of Users there.
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Source › Results"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Field"]', 'input'));
   expect(await routesOf(page, "ed.library().nodes['org-permissions'].routes")).toContain('#in/start-rows → role');
-  expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Source › Rows', 'object', true], ['Org permissions', 'boolean', false]]);
+  expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Source › Results', 'object', true], ['Org permissions', 'boolean', false]]);
   await ed(page, 'ed.back()');
   await settle(page);
   // Save hands the definition over with its two new inputs.

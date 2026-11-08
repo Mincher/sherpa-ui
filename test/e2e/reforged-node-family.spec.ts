@@ -43,7 +43,7 @@ const BIND = `async (routed) => {
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }`;
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
-const rows = (page: Page, heading: string) => page.evaluate((h) => [...document.querySelectorAll(`#root sherpa-node[data-heading="${h}"] sherpa-node-row`)].map((r) => r.querySelector('[name]')?.getAttribute('name') ?? ''), heading);
+const rows = (page: Page, heading: string) => page.evaluate((h) => [...document.querySelectorAll(`#root sherpa-node[data-heading="${h}"] sherpa-node-row:has([name])`)].map((r) => r.querySelector('[name]')?.getAttribute('name') ?? ''), heading);
 type Flow = { nodes: { id: string; values?: Record<string, unknown> }[]; routes: { from: string; to: string }[] };
 /** What Save hands over: the final graph. */
 const saved = (page: Page) => page.evaluate(`(() => { window.editor.save(); return window.saved.at(-1); })()`) as Promise<Flow>;

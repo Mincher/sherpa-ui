@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
         { id: 'c', kind: 'condition', x: 740, y: 20 },
         { id: 's', kind: 'source', x: 20, y: 340, values: { store: 'users' } },
         { id: 't', kind: 'time', x: 380, y: 340 },
-        { id: 'end', kind: 'output', x: 740, y: 340 },
+        { id: 'end', kind: 'output', x: 840, y: 440 },
       ],
       routes: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c', to: 'end' }],
     };
@@ -72,17 +72,17 @@ const inkOf = (page: Page, token: string): Promise<Rgb> => page.evaluate((t) => 
 }, token);
 const near = (a: Rgb, b: Rgb, within = 12): boolean => Math.max(...a.map((v, i) => Math.abs(v - b[i]!))) <= within;
 
-/** The pixels across a card's left edge, at a third of its height: its border is among them. */
+/** The pixels down through a card's top edge, at the middle of its width (the sockets' docks sit at the sides): its border is among them. */
 async function edge(page: Page, heading: string): Promise<Rgb[]> {
   const r = await rectOf(page, heading, '.root');
-  const shot = await page.screenshot({ clip: { x: Math.floor(r.x) - 1, y: Math.round(r.y + r.h / 3), width: 4, height: 1 } });
+  const shot = await page.screenshot({ clip: { x: Math.round(r.x + r.w / 2), y: Math.floor(r.y) - 1, width: 1, height: 4 } });
   return page.evaluate(async (b64) => {
     const img = new Image();
     img.src = `data:image/png;base64,${b64}`;
     await img.decode();
     const c = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height }).getContext('2d')!;
     c.drawImage(img, 0, 0);
-    return Array.from({ length: img.width }, (_, x) => [...c.getImageData(x, 0, 1, 1).data].slice(0, 3) as Rgb);
+    return Array.from({ length: img.height }, (_, y) => [...c.getImageData(0, y, 1, 1).data].slice(0, 3) as Rgb);
   }, shot.toString('base64'));
 }
 
@@ -200,7 +200,7 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   expect(await lines(page)).toContain('t>c');
   expect(await warning(page, 'Condition')).toBeNull();
   const before = await lines(page);
-  await drag(page, await socketAt(page, 'Condition', 'Rows', 'output'), await socketAt(page, 'Time', null, 'input'));
+  await drag(page, await socketAt(page, 'Condition', 'Results', 'output'), await socketAt(page, 'Time', null, 'input'));
   expect(await lines(page)).toEqual(before);
   await expect.poll(() => heard.some((m) => m.includes('its routes run in a loop'))).toBe(true);
 });
