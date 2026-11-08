@@ -34,9 +34,9 @@ for (const host of ['layout', 'canvas'] as const) {
       out.tabs = area();
       return out;
     }, host);
-    expect(r.one).toBe(20 * 16 + 32);
+    expect(r.one).toBe(20 * 16 + 16);
     // Two panels: the widest, and the tab row beside it.
-    expect(r.two).toBe(26 * 16 + 32 + (r.tabsRow ?? 0));
+    expect(r.two).toBe(26 * 16 + 16 + (r.tabsRow ?? 0));
     // Only tabs left: the area is the strip the tabs stand in (2.5rem), the content beside it. TODO 858
     expect(r.tabs).toBe(40);
   });

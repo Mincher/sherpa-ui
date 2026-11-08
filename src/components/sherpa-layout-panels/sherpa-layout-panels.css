@@ -32,7 +32,7 @@
   z-index: var(--sherpa-layer-content, 1);
   min-block-size: 0;
   /* The panel is a card INSET from the nav, the header, the window's edge and the content. TODO 871 */
-  padding: var(--sherpa-display-mode-space-base, 16px);
+  padding: var(--sherpa-display-mode-space-xs, 8px);
   box-sizing: border-box;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   /* No width of its own: it holds its widest panel, until a reader drags it or a host sets it. TODO 858 */

@@ -380,7 +380,7 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
     await frames();
     return {
       row, before, wider, endWider, keyed, most, least, end, given, back: width('start'), heard, held,
-      edge: { astride: Math.abs((e.left + e.right) / 2 - a.right) <= 1, flush: [panel.left, panel.right, panel.top, panel.bottom].map(Math.round).join() === [a.left + 16, a.right - 16, a.top + 16, a.bottom - 16].map(Math.round).join() },
+      edge: { astride: Math.abs((e.left + e.right) / 2 - a.right) <= 1, flush: [panel.left, panel.right, panel.top, panel.bottom].map(Math.round).join() === [a.left + 8, a.right - 8, a.top + 8, a.bottom - 8].map(Math.round).join() },
       aria: { role: edge('start').getAttribute('role'), now: edge('start').getAttribute('aria-valuenow'),
         min: edge('start').getAttribute('aria-valuemin'), max: edge('start').getAttribute('aria-valuemax') },
     };

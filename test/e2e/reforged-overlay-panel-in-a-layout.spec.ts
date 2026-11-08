@@ -63,15 +63,15 @@ async function drag(page: Page, from: [number, number], by: [number, number]): P
   await settle(page);
 }
 
-test('slotted in a canvas it is docked as a card 16px in, with no shadow, its width the canvas\'s area; a badge sits beside its title', async ({ page }) => {
+test('slotted in a canvas it is docked as a card 8px in, with no shadow, its width the canvas\'s area; a badge sits beside its title', async ({ page }) => {
   const cv = await rect(page, '', 'cv');
   const root = await rect(page, '.root');
-  expect(root).toEqual({ x: cv.x + 16, y: cv.y + 16, w: root.w, h: cv.h - 32 });
+  expect(root).toEqual({ x: cv.x + 8, y: cv.y + 8, w: root.w, h: cv.h - 16 });
   expect(root.w).toBeGreaterThanOrEqual(256);
   expect(await style(page, '.root', 'box-shadow')).toBe('none');
   expect(await style(page, '.root', 'position')).toBe('static');
   // The canvas's content takes what is left of it.
-  expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x + root.w + 32);
+  expect((await rect(page, '.stage', 'cv')).x).toBe(cv.x + root.w + 16);
   // The badge is in the header's title row, past the title.
   const [title, badge] = await page.evaluate(() => {
     const header = document.getElementById('nodes')!.shadowRoot!.querySelector('.header')!;

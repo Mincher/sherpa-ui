@@ -613,7 +613,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     const host = this.#slotted() ? this.parentElement : document.querySelector('sherpa-app-shell');
     if (!host) return;
     // The area is the card and its inset on both sides. TODO 871
-    const inset = 2 * (parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-display-mode-space-base')) || 16);
+    const inset = 2 * (parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-display-mode-space-xs')) || 8);
     // Every host keeps a width for each side.
     const attr = `data-panel-${side}-width`;
     host.setAttribute(attr, String(width + inset));

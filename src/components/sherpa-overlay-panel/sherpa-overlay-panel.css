@@ -87,7 +87,7 @@
 }
 :host([data-maximised]) .resize { display: none; }
 
-/* Fixed: docked in a panel area, which owns its width and insets it by 16px. A card of its own: its edge and
+/* Fixed: docked in a panel area, which owns its width and insets it by 8px. A card of its own: its edge and
    four rounded corners, no shadow.
    TRAP T-a-panel-pops-into-the-end-area */
 :host(:state(in-area)) {

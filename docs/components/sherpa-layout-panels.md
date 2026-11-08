@@ -62,7 +62,7 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-content-min-width` | `.content` | `min-inline-size` |
 | `--sherpa-layer-content` | `.area` | `z-index` |
-| `--sherpa-display-mode-space-base` | `.area` | `padding` |
+| `--sherpa-display-mode-space-xs` | `.area` | `padding` |
 | `--sherpa-panel-area-min-width` | `.area` | `min-inline-size` |
 | `--sherpa-panel-area-max-width` | `.area` | `max-inline-size` |
 | `--sherpa-theme-gap-sm` | `.tabs` | `gap` |

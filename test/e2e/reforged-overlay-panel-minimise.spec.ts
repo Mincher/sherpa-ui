@@ -65,14 +65,14 @@ test('Minimise turns the panel into a tab on its side, flush to the right edge; 
 
 test('in a shell area the tab shrinks the area to the tab strip; opened, the panel docks as it was', async ({ page }) => {
   await stage(page, { shell: true });
-  expect(await area(page)).toBeGreaterThan(400);
+  expect(await area(page)).toBeGreaterThanOrEqual(400);
   await press(page, '.minimise');
   const strip = await area(page);
   expect(strip).toBeGreaterThan(0);
   expect(strip).toBeLessThan(64);
   expect((await part(page, '.tab')).shown).toBe(true);
   await openFromTab(page);
-  expect(await area(page)).toBeGreaterThan(400);
+  expect(await area(page)).toBeGreaterThanOrEqual(400);
 });
 
 test('floating, it keeps its box through a minimise', async ({ page }) => {

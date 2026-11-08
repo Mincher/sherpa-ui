@@ -203,7 +203,7 @@
   "tokens": {
     "content.min-inline-size": "{sherpa.content-min-width}",
     "area.z-index": "{sherpa.layer-content}",
-    "area.padding": "{sherpa.display-mode-space-base}",
+    "area.padding": "{sherpa.display-mode-space-xs}",
     "area.min-inline-size": "{sherpa.panel-area-min-width}",
     "area.max-inline-size": "{sherpa.panel-area-max-width}",
     "tabs.gap": "{sherpa.theme-gap-sm}",

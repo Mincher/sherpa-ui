@@ -46,7 +46,7 @@ const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa
 const asked = (page: Page) => page.evaluate(() => (window as unknown as { asked: unknown[] }).asked);
 const said = (page: Page) => page.evaluate(() => (window as unknown as { said: string[] }).said);
 
-test('it lists the Query\'s kinds by category, 16px in from the top, bottom and left', async ({ page }) => {
+test('it lists the Query\'s kinds by category, 8px in from the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status']);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('#cv > sherpa-overlay-panel')!].map((e) => {
@@ -54,7 +54,7 @@ test('it lists the Query\'s kinds by category, 16px in from the top, bottom and 
     return { left: r.left, top: r.top, bottom: r.bottom };
   }));
   // Docked in the canvas's panel area, a card 16px in. TODO 871
-  expect([p!.top, p!.bottom, p!.left]).toEqual([c!.top + 16, c!.bottom - 16, c!.left + 16]);
+  expect([p!.top, p!.bottom, p!.left]).toEqual([c!.top + 8, c!.bottom - 8, c!.left + 8]);
 });
 
 test('a click on Field asks the Query to hold the next field; a Condition is refused in words; a click on Preset switches it on', async ({ page }) => {

@@ -81,7 +81,7 @@ async function drag(page: Page, from: [number, number], by: [number, number]): P
 }
 
 /** A docked panel is a card INSET from its area by 16px on every side. TODO 871 */
-const inset = (b: { x: number; y: number; w: number; h: number }) => ({ x: b.x + 16, y: b.y + 16, w: b.w - 32, h: b.h - 32 });
+const inset = (b: { x: number; y: number; w: number; h: number }) => ({ x: b.x + 8, y: b.y + 8, w: b.w - 16, h: b.h - 16 });
 
 test('docked, a panel is FLUSH to its area\'s top, side and bottom, with no shadow: the area draws the divider', async ({ page }) => {
   await shell(page);
@@ -139,7 +139,7 @@ test('a panel opened LATE shows its area, shut it gives it back; a card hidden b
   }).then((shut) => expect(shut).toBe(0));
   await settle(page);
   expect(await box(page, 'col .root')).toEqual(inset(await box(page, 'layout .area-start')));
-  expect((await box(page, 'layout .area-start')).w).toBe(416);
+  expect((await box(page, 'layout .area-start')).w).toBe(400);
   await page.evaluate(() => document.getElementById('col')!.removeAttribute('open'));
   await settle(page);
   expect((await box(page, 'layout .area-start')).w).toBe(0);
@@ -268,7 +268,7 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
   await settle(page);
   const cv = await box(page, 'cv');
   const card = () => box(page, 'nodes .root');
-  expect(await card()).toEqual({ x: cv.x + 16, y: cv.y + 16, w: 288, h: cv.h - 32 });
+  expect(await card()).toEqual({ x: cv.x + 8, y: cv.y + 8, w: 288, h: cv.h - 16 });
   expect(await page.evaluate(() => getComputedStyle(document.getElementById('nodes')!.shadowRoot!.querySelector('.root')!).boxShadow)).toBe('none');
   // By pixels, on a row between the grid's crosses: past the area, the canvas, no shadow.
   const y = await page.evaluate(([top]) => {
@@ -280,7 +280,7 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
   for (const p of row) expect(far(p, canvasInk)).toBeLessThanOrEqual(2);
   // What the view shows is beside the card: the stage.
   const stage = await box(page, 'cv .stage');
-  expect(stage).toEqual({ x: cv.x + 320, y: cv.y, w: cv.w - 320, h: cv.h });
+  expect(stage).toEqual({ x: cv.x + 304, y: cv.y, w: cv.w - 304, h: cv.h });
   // Focused, the view's ring is drawn on the stage, so its start shows beside the card.
   await page.evaluate(() => (document.getElementById('cv')!.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
   const ring = (await pixels(page, stage.x + 2, stage.y + 300))[0]!;
@@ -295,13 +295,13 @@ test('the canvas: its card docks flush with no shadow, its edge resizes it and t
   });
   await drag(page, edge as [number, number], [40, 0]);
   // Dragged 40px wider, to a third of the canvas: the area's cap.
-  expect((await card()).w).toBe(Math.round(cv.w * 0.33) - 32);
+  expect((await card()).w).toBe(Math.round(cv.w * 0.33) - 16);
   expect(await box(page, 'thing')).toEqual(thing);
   expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([['cv', { side: 'start', width: Math.round(cv.w * 0.33) }]]);
   // The host hands it back.
   await page.evaluate(() => document.getElementById('cv')!.setAttribute('data-panel-start-width', '300'));
   await settle(page);
-  expect((await card()).w).toBe(268);
+  expect((await card()).w).toBe(284);
   // Floating, the card gives the width back; the plane holds still.
   await press(page, 'nodes', '.float');
   expect(await box(page, 'cv .stage')).toEqual(cv);

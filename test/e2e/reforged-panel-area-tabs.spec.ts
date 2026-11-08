@@ -56,7 +56,7 @@ test('two docked panels share the area, a tab each; a tab swaps to its panel; th
   const a = await area(page);
   expect(a.tabs).toEqual([{ label: 'ONE', on: false }, { label: 'TWO', on: true }]);
   expect(a.drawn).toEqual(['two']);
-  expect(a.width).toBeGreaterThan(400);
+  expect(a.width).toBeGreaterThanOrEqual(400);
   await click(page, '.tabs-end .tab:first-child');
   expect((await area(page)).drawn).toEqual(['one']);
 });
@@ -80,7 +80,7 @@ test('floating one floats only it; docking puts it back as the active tab', asyn
   let a = await area(page);
   expect(a.tabs).toEqual([]);
   expect(a.drawn).toEqual(['one']);
-  expect(a.width).toBeGreaterThan(400);
+  expect(a.width).toBeGreaterThanOrEqual(400);
   expect(await page.evaluate(() => document.getElementById('two')!.slot)).toBe('');
   await click(page, '.float', 'two');
   a = await area(page);

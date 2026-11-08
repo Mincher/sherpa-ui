@@ -131,7 +131,7 @@ test('the toolbar floats at the bottom centre, 16px up (level with the zoom cont
     expect(r.bar.left, `${width}: clear of the card`).toBeGreaterThanOrEqual(r.panel.right + 31);
     if (width === 1500) expect(centred, '1500: centred').toBe(true);
     expect(Math.abs(r.canvas.bottom - r.bar.bottom - 16), `${width}: 16px up`).toBeLessThanOrEqual(1);
-    expect([r.panel.top, r.panel.bottom, r.panel.left], `${width}: the card, inset 16px`).toEqual([r.canvas.top + 16, r.canvas.bottom - 16, r.canvas.left + 16]);
+    expect([r.panel.top, r.panel.bottom, r.panel.left], `${width}: the card, inset 8px`).toEqual([r.canvas.top + 8, r.canvas.bottom - 8, r.canvas.left + 8]);
     const hit = (a: typeof r.bar, b: typeof r.bar) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
     expect(hit(r.bar, r.controls), `${width}: toolbar x controls`).toBe(false);
     expect(hit(r.bar, r.minimap), `${width}: toolbar x minimap`).toBe(false);

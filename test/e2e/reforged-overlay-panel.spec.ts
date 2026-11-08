@@ -331,13 +331,13 @@ test.describe('Pop in and Pop out', () => {
     const fixed = await read(page);
     expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', open: true, position: 'static', resize: false, pop: true, label: 'Dock as overlay', icon: 'monitor-w-floating-window' });
     // FLUSH in the area, which owns its width; no inset. TODO 796
-    expect(fixed.area.w).toBeGreaterThanOrEqual(416);
+    expect(fixed.area.w).toBeGreaterThanOrEqual(400);
     // A card, inset 16px in its area. TODO 871
-    expect(fixed.root).toEqual({ x: fixed.area.x + 16, w: fixed.area.w - 32 });
+    expect(fixed.root).toEqual({ x: fixed.area.x + 8, w: fixed.area.w - 16 });
 
     await press(page);
     // Docked out again, it is as wide as the area it left, on the same edge.
-    expect(await read(page)).toEqual({ ...floating, root: { x: floating.root.x + floating.root.w - (fixed.area.w - 32), w: fixed.area.w - 32 }, area: { x: 0, w: 0 } });
+    expect(await read(page)).toEqual({ ...floating, root: { x: floating.root.x + floating.root.w - (fixed.area.w - 16), w: fixed.area.w - 16 }, area: { x: 0, w: 0 } });
     expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([{ fixed: true, side: 'end' }, { fixed: false, side: 'end' }]);
   });
 
@@ -350,14 +350,14 @@ test.describe('Pop in and Pop out', () => {
     });
     const fixed = await read(page);
     expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start', position: 'static', area: { x: 0, w: 0 } });
-    expect(fixed.root).toEqual({ x: fixed.start.x + 16, w: fixed.start.w - 32 });
-    expect(fixed.start.w).toBeGreaterThanOrEqual(416);
+    expect(fixed.root).toEqual({ x: fixed.start.x + 8, w: fixed.start.w - 16 });
+    expect(fixed.start.w).toBeGreaterThanOrEqual(400);
     await press(page);
     expect(await read(page)).toMatchObject({ parent: 'div', slot: '', position: 'fixed', start: { x: 0, w: 0 } });
     await press(page);
     const back = await read(page);
     expect(back).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start' });
-    expect(back.root).toEqual({ x: back.start.x + 16, w: back.start.w - 32 });
+    expect(back.root).toEqual({ x: back.start.x + 8, w: back.start.w - 16 });
     expect(await page.evaluate(() => document.getElementById('pop')!.getAttribute('data-side'))).toBe('start');
   });
 
