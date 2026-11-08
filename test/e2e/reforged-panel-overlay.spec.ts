@@ -39,7 +39,7 @@ test('fixed is a card with no shadow and takes its area\'s room; Pop makes it an
   expect(await area(page)).toBeGreaterThan(200);
   expect(await look(page)).toMatchObject({ shadow: false, radius: true });
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
-  expect(await area(page)).toBe(0);
+  expect(await area(page)).toBe(40);
   expect(await look(page)).toMatchObject({ shadow: true, radius: true, display: 'flex' });
   expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-overlay'))).toBe(true);
   // Pop again: fixed, flat, its room back.
@@ -67,8 +67,8 @@ test('with hover-open, the pointer on a tab shows its panel as a docked overlay 
   await page.mouse.move(tab.x, tab.y);
   await expect.poll(shown).toEqual({ panel: true, tab: false });
   expect(await look(page)).toMatchObject({ shadow: true });
-  // The room stays the view's: it is an overlay, not a fixed panel.
-  expect(await area(page)).toBe(0);
+  // The room stays the view's, but for the tab's own 40px strip: it is an overlay, not a fixed panel.
+  expect(await area(page)).toBe(40);
   // The pointer in the panel keeps it open.
   const inside = await page.evaluate(() => { const b = document.getElementById('p')!.shadowRoot!.querySelector('.body')!.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
   await page.mouse.move(inside.x, inside.y);

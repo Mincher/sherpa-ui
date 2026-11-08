@@ -44,7 +44,7 @@
   "src/components/sherpa-layout-grid/grid-resize.ts": 362,
   "src/components/sherpa-layout-grid/grouped-grid.ts": 116,
   "src/components/sherpa-layout-grid/sherpa-layout-grid.ts": 206,
-  "src/components/sherpa-layout-panels/sherpa-layout-panels.ts": 202,
+  "src/components/sherpa-layout-panels/sherpa-layout-panels.ts": 204,
   "src/components/sherpa-line-chart/sherpa-line-chart.ts": 205,
   "src/components/sherpa-list-item/sherpa-list-item.ts": 110,
   "src/components/sherpa-list/sherpa-list.ts": 105,

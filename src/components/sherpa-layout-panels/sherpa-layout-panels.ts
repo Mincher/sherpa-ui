@@ -117,19 +117,21 @@ export class SherpaLayoutPanels extends SherpaElement {
   /** What an area shows: open while a panel is; tabbed while two are; the one opened last (or picked) in front. */
   #sync(side: PanelSide): void {
     const panels = this.#panels(side);
-    const open = panels.filter(isOpen);
+    // A minimised panel is a tab on the edge, not a tab of the area's row: the row and the front panel are the live ones.
+    const shut = panels.filter((p) => isOpen(p) && p.hasAttribute('data-minimised'));
+    const open = panels.filter((p) => isOpen(p) && !p.hasAttribute('data-minimised'));
     const fresh = open.filter((p) => !this.#tabbed[side].includes(p));
     const was = this.#shown[side];
     const shown = fresh.at(-1) ?? (was && open.includes(was) ? was : open[0]);
     this.#shown[side] = shown;
     this.#tabbed[side] = open;
     for (const panel of panels) panel.toggleAttribute('data-current', panel === shown);
-    this.toggleState(`${side}-open`, open.length > 0);
+    this.toggleState(`${side}-open`, open.length + shut.length > 0);
     this.toggleState(`${side}-tabs`, open.length > 1);
     // A minimised panel is a tab on the layout's edge: its area gives its room back, as floating does. TRAP T-a-minimised-panel-is-a-tab
     this.toggleState(`${side}-floating`, panels.length > 0 && panels.every((p) => p.hasAttribute('data-floating') || p.hasAttribute('data-minimised') || p.hasAttribute('data-overlay')));
     // Only tabs left: the area is as wide as the tabs, so the content sits beside them, not under them.
-    this.toggleState(`${side}-strip`, open.length > 0 && open.every((p) => p.hasAttribute('data-minimised')));
+    this.toggleState(`${side}-strip`, open.length === 0 && shut.length > 0);
     void this.renderItems(`.tabs-${side}`, 'template.tab-tpl', open.map((p, id) => ({ id: String(id), label: p.getAttribute('data-heading') || p.id })), {
       after: (tab, item) => {
         const on = open[Number(item.id)] === shown;
