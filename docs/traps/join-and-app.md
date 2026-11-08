@@ -725,7 +725,7 @@ component that switches a mode it knows nothing of is not agnostic.
 
 The provider owns the mode, so it gives the buttons: "View as filter panel" in
 each bar's `actions` slot while a panel is on the page (a bar with no panel
-has none), taken OUT while the panel answers — the panel carries its own way
+has none), inactive while the panel is shown — the panel carries its own way
 back — and "Filter in the toolbars instead" in the panel's `actions` slot,
 which forwards into its header. Both come from the provider's template and
 answer to the provider alone; `filter-configure` is gone. A host's buttons in
@@ -735,7 +735,9 @@ the bar's slot fold away at narrow widths, as the old switch did.
 2026-11-08, over TODO 488): it is the page's ONE home for the switch, so it stays
 even where the column leaves the View out ("Include View Context in the panel"
 off) and that bar itself stays a toolbar. Otherwise a page with the setting off
-has no way to the panel from a toolbar. The bar steps back only where a column
+has no way to the panel from a toolbar. While the panel is shown the button is
+INACTIVE (`disabled`), not taken out: the panel's own header returns to the
+toolbars, and the bar may not be in view to do it (Will, 2026-11-08). The bar steps back only where a column
 answers it, and follows the column's scopes as they change.
 
 
