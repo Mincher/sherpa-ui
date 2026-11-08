@@ -39,7 +39,7 @@ test('fixed is a card with no shadow and takes its area\'s room; Pop makes it an
   expect(await area(page)).toBeGreaterThan(200);
   expect(await look(page)).toMatchObject({ shadow: false, radius: true });
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
-  expect(await area(page)).toBe(40);
+  expect(await area(page)).toBe(0);
   expect(await look(page)).toMatchObject({ shadow: true, radius: true, display: 'flex' });
   expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-overlay'))).toBe(true);
   // Pop again: fixed, flat, its room back.
