@@ -268,103 +268,114 @@ test('maximise fills the window and shows the trail; minimise brings the panel b
   expect(r.told).toEqual([{ maximised: true }, { maximised: false }]);
 });
 
-/** Pop in: a fixed panel in a panel area of the shell, flush (TODO 796). TRAP T-a-panel-has-four-modes */
-test.describe('Pop in and Pop out', () => {
-  /** A shell and a poppable panel beside it, the panel open. */
-  const stage = async (page: import('@playwright/test').Page) => {
+/** The four modes: an area holds two panels, owns how they present, and a floating panel is its own. TRAP T-a-panel-has-four-modes */
+test.describe('The four modes in an area', () => {
+  /** An app shell holding the panels given, each open. `sides` and `ids`: one panel each. */
+  const stage = async (page: import('@playwright/test').Page, panels: Array<{ id: string; side?: string }> = [{ id: 'one' }]) => {
     await page.setViewportSize({ width: 1600, height: 900 });
-    await page.evaluate(async () => {
+    await page.evaluate(async (list) => {
       const shell = document.createElement('sherpa-app-shell');
-      const panel = document.createElement('sherpa-overlay-panel') as PanelEl;
-      panel.id = 'pop';
-      panel.setAttribute('data-poppable', '');
-      panel.setAttribute('data-dismissible', '');
-      const after = document.createElement('span');
-      after.id = 'after';
-      document.getElementById('root')!.replaceChildren(shell, panel, after);
-      await panel.rendered;
-      await window.__settled();
-      panel.show!();
-      await window.__settled();
-    });
+      shell.style.blockSize = '900px';
+      const made = list.map(({ id, side }) => {
+        const panel = document.createElement('sherpa-overlay-panel') as PanelEl;
+        panel.id = id;
+        if (side) panel.setAttribute('data-side', side);
+        panel.setAttribute('data-floatable', '');
+        panel.setAttribute('data-minimisable', '');
+        panel.setAttribute('data-dismissible', '');
+        shell.append(panel);
+        return panel;
+      });
+      document.getElementById('root')!.replaceChildren(shell);
+      for (const panel of made) { await panel.rendered; await window.__settled(); panel.show!(); await window.__settled(); }
+    }, panels);
   };
-  /** Where the panel is, and what it draws. */
-  const read = (page: import('@playwright/test').Page) => page.evaluate(() => {
-    const panel = document.getElementById('pop') as PanelEl;
+  /** Where a panel is, and what it draws. */
+  const read = (page: import('@playwright/test').Page, id = 'one') => page.evaluate((i) => {
+    const panel = document.getElementById(i) as PanelEl;
     const sr = panel.shadowRoot!;
     const shell = document.querySelector('sherpa-app-shell')!;
-    const pop = sr.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!;
-    const box = (n: Element) => { const b = n.getBoundingClientRect(); return { x: Math.round(b.x), w: Math.round(b.width) }; };
+    const box = (n: Element) => { const b = n.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; };
     const areas = shell.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!;
     return {
       parent: panel.parentElement!.localName,
       slot: panel.slot,
-      next: panel.nextElementSibling?.id ?? null,
-      open: panel.open,
+      mode: panel.getAttribute('data-mode'),
       position: getComputedStyle(sr.querySelector('.root')!).position,
+      shadow: getComputedStyle(sr.querySelector('.root')!).boxShadow !== 'none',
       root: box(sr.querySelector('.root')!),
-      area: box(areas.querySelector('.area-end')!),
+      end: box(areas.querySelector('.area-end')!),
       start: box(areas.querySelector('.area-start')!),
+      content: box(areas.querySelector('.content')!),
       resize: getComputedStyle(sr.querySelector('.resize')!).display !== 'none',
-      pop: getComputedStyle(pop).display !== 'none',
-      label: pop.getAttribute('aria-label'),
-      icon: pop.getAttribute('data-icon-start'),
     };
-  });
-  const press = (page: import('@playwright/test').Page) => page.evaluate(async () => {
-    document.getElementById('pop')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button')!.click();
+  }, id);
+  /** Press one of a panel's header buttons, as a reader does. */
+  const press = (page: import('@playwright/test').Page, button: string, id = 'one') => page.evaluate(async ([b, i]) => {
+    document.getElementById(i!)!.shadowRoot!.querySelector(`.${b}`)!.shadowRoot!.querySelector('button')!.click();
     await window.__settled();
+  }, [button, id]);
+
+  test('a panel in the shell is fixed in its end area; Overlay asks, the area writes it, and Fixed asks it back', async ({ page }) => {
+    await stage(page);
+    const fixed = await read(page);
+    expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', position: 'static', shadow: false, resize: false });
+    // A card, inset 8px in the area, which owns its width. TODO 871
+    expect(fixed.end.w).toBeGreaterThanOrEqual(400);
+    expect(fixed.root).toMatchObject({ x: fixed.end.x + 8, w: fixed.end.w - 16 });
+    await press(page, 'dock-overlay');
+    const over = await read(page);
+    expect(over).toMatchObject({ mode: 'overlay', slot: 'panel-end', shadow: true });
+    // An overlay gives the area's room back: the content is as wide as the layout.
+    expect(over.content.w).toBeGreaterThan(fixed.content.w + 300);
+    await press(page, 'dock-fixed');
+    expect(await read(page)).toMatchObject({ mode: 'fixed', position: 'static', shadow: false });
   });
 
-  test('a press moves it into the end area, and a press takes it back to its place', async ({ page }) => {
-    await stage(page);
-    await page.evaluate(() => {
-      const heard: unknown[] = [];
-      (window as unknown as { __heard: unknown[] }).__heard = heard;
-      document.addEventListener('panel-pop', (e) => heard.push((e as CustomEvent).detail));
-    });
-    const floating = await read(page);
-    expect(floating).toMatchObject({ parent: 'div', slot: '', next: 'after', open: true, position: 'fixed', resize: true, pop: true, label: 'Dock as fixed', icon: 'sidebar-flip' });
-    expect(floating.root.w).toBe(528);
-
-    await press(page);
+  test('data-side="start" docks it in the START area', async ({ page }) => {
+    await stage(page, [{ id: 'one', side: 'start' }]);
     const fixed = await read(page);
-    expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', open: true, position: 'static', resize: false, pop: true, label: 'Dock as overlay', icon: 'monitor-w-floating-window' });
-    // FLUSH in the area, which owns its width; no inset. TODO 796
-    expect(fixed.area.w).toBeGreaterThanOrEqual(400);
-    // A card, inset 16px in its area. TODO 871
-    expect(fixed.root).toEqual({ x: fixed.area.x + 8, w: fixed.area.w - 16 });
-
-    await press(page);
-    // Docked out again, it is as wide as the area it left, on the same edge.
-    expect(await read(page)).toEqual({ ...floating, root: { x: floating.root.x + floating.root.w - (fixed.area.w - 16), w: fixed.area.w - 16 }, area: { x: 0, w: 0 } });
-    expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([{ fixed: true, side: 'end' }, { fixed: false, side: 'end' }]);
-  });
-
-  test('data-fixed with data-side="start" docks it in the START area; Pop out, then Pop in, takes it back there', async ({ page }) => {
-    await stage(page);
-    await page.evaluate(async () => {
-      document.getElementById('pop')!.setAttribute('data-side', 'start');
-      document.getElementById('pop')!.setAttribute('data-fixed', '');
-      await window.__settled();
-    });
-    const fixed = await read(page);
-    expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start', position: 'static', area: { x: 0, w: 0 } });
-    expect(fixed.root).toEqual({ x: fixed.start.x + 8, w: fixed.start.w - 16 });
+    expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start' });
     expect(fixed.start.w).toBeGreaterThanOrEqual(400);
-    await press(page);
-    expect(await read(page)).toMatchObject({ parent: 'div', slot: '', position: 'fixed', start: { x: 0, w: 0 } });
-    await press(page);
-    const back = await read(page);
-    expect(back).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start' });
-    expect(back.root).toEqual({ x: back.start.x + 8, w: back.start.w - 16 });
-    expect(await page.evaluate(() => document.getElementById('pop')!.getAttribute('data-side'))).toBe('start');
+    expect(fixed.end.w).toBe(0);
+    expect(fixed.root).toMatchObject({ x: fixed.start.x + 8, w: fixed.start.w - 16 });
+  });
+
+  test('two panels stack top and bottom; a mode asked of one is written on both; floating takes only that one out', async ({ page }) => {
+    await stage(page, [{ id: 'one' }, { id: 'two' }]);
+    const [one, two] = [await read(page, 'one'), await read(page, 'two')];
+    // Each a half of the area's height, one above the other.
+    expect(one.root.h).toBe(two.root.h);
+    expect(two.root.y).toBeGreaterThan(one.root.y + one.root.h - 1);
+    expect(one.root.x).toBe(two.root.x);
+    await press(page, 'dock-overlay', 'two');
+    expect([(await read(page, 'one')).mode, (await read(page, 'two')).mode]).toEqual(['overlay', 'overlay']);
+    await press(page, 'dock-fixed', 'one');
+    expect([(await read(page, 'one')).mode, (await read(page, 'two')).mode]).toEqual(['fixed', 'fixed']);
+    // Floating: that panel alone leaves for the float layer, and the other has the area to itself.
+    await press(page, 'float', 'two');
+    expect(await read(page, 'two')).toMatchObject({ mode: 'floating', slot: 'panel-float' });
+    const left = await read(page, 'one');
+    expect(left).toMatchObject({ mode: 'fixed', slot: 'panel-end' });
+    expect(left.root.h).toBeGreaterThan(one.root.h);
+    // Docked back, it joins in the area's own mode.
+    await press(page, 'dock-overlay', 'one');
+    await press(page, 'float', 'two');
+    expect(await read(page, 'two')).toMatchObject({ mode: 'overlay', slot: 'panel-end' });
+  });
+
+  test('a third panel is not shown, and a panel asking to dock into a full area stays floating', async ({ page }) => {
+    const warned: string[] = [];
+    page.on('console', (m) => { if (m.type() === 'warning') warned.push(m.text()); });
+    await stage(page, [{ id: 'one' }, { id: 'two' }, { id: 'three' }]);
+    expect(await page.evaluate(() => document.getElementById('three')!.hidden)).toBe(true);
+    expect(warned.filter((w) => w.includes('holds 2 panels'))).toHaveLength(1);
   });
 
   test('the press keeps its focus on the button', async ({ page }) => {
     await stage(page);
     const focused = await page.evaluate(async () => {
-      const button = document.getElementById('pop')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button')!;
+      const button = document.getElementById('one')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button')!;
       button.focus();
       button.click();
       await window.__settled();
@@ -375,100 +386,35 @@ test.describe('Pop in and Pop out', () => {
 
   test('shut, it gives the area back; opened again, it is still fixed', async ({ page }) => {
     await stage(page);
-    await press(page);
-    await page.evaluate(async () => {
-      (document.getElementById('pop') as PanelEl).close!();
-      await window.__settled();
-    });
-    const shut = await read(page);
-    expect(shut).toMatchObject({ parent: 'sherpa-app-shell', open: false });
-    expect(shut.area.w).toBe(0);
-    await page.evaluate(async () => {
-      (document.getElementById('pop') as PanelEl).show!();
-      await window.__settled();
-    });
-    expect(await read(page)).toMatchObject({ parent: 'sherpa-app-shell', open: true, position: 'static' });
+    const before = await read(page);
+    await page.evaluate(async () => { ((document.getElementById('one') as PanelEl) as PanelEl & { hide(): void }).hide(); await window.__settled(); });
+    expect((await read(page)).content.w).toBeGreaterThan(before.content.w + 300);
+    await page.evaluate(async () => { (document.getElementById('one') as PanelEl).show!(); await window.__settled(); });
+    expect(await read(page)).toEqual(before);
   });
 
-  test('a panel opened beside a fixed one leaves it open; popped out, both stay open', async ({ page }) => {
-    await stage(page);
-    await press(page);
-    const states = await page.evaluate(async () => {
-      const other = document.createElement('sherpa-overlay-panel') as PanelEl;
-      document.getElementById('root')!.append(other);
-      await other.rendered;
-      other.show!();
-      await window.__settled();
-      const panel = document.getElementById('pop') as PanelEl;
-      const both = [panel.open, other.open];
-      panel.toggleAttribute('data-fixed', false);
-      await window.__settled();
-      return { both, after: [panel.open, other.open] };
-    });
-    expect(states).toEqual({ both: [true, true], after: [true, true] });
-  });
-
-  test('with no room it floats and the button goes; with room again it goes back', async ({ page }) => {
-    await stage(page);
-    await press(page);
-    await page.setViewportSize({ width: 1000, height: 800 });
-    await expect.poll(async () => (await read(page)).parent).toBe('div');
-    expect(await read(page)).toMatchObject({ slot: '', open: true, position: 'fixed', pop: false });
+  test('with no host a panel is an overlay on the window\'s edge, with no Fixed or Overlay button, and asks only itself', async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
-    await expect.poll(async () => (await read(page)).parent).toBe('sherpa-app-shell');
-    expect(await read(page)).toMatchObject({ slot: 'panel-end', open: true, position: 'static', pop: true });
-  });
-
-  test('no shell on the page: no button, and data-fixed floats', async ({ page }) => {
-    const r = await page.evaluate(async () => {
+    await page.evaluate(async () => {
       const panel = document.createElement('sherpa-overlay-panel') as PanelEl;
-      panel.setAttribute('data-poppable', '');
-      panel.setAttribute('data-fixed', '');
+      panel.id = 'one';
+      panel.setAttribute('data-floatable', '');
+      panel.setAttribute('data-minimisable', '');
       document.getElementById('root')!.replaceChildren(panel);
       await panel.rendered;
+      await window.__settled();
       panel.show!();
       await window.__settled();
-      const sr = panel.shadowRoot!;
-      return {
-        button: getComputedStyle(sr.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!).display,
-        position: getComputedStyle(sr.querySelector('.root')!).position,
-      };
     });
-    expect(r).toEqual({ button: 'none', position: 'fixed' });
-  });
-
-  test('the host keeps the end area for its own panel: no button', async ({ page }) => {
-    await page.setViewportSize({ width: 1600, height: 900 });
-    const display = await page.evaluate(async () => {
-      const shell = document.createElement('sherpa-app-shell');
-      const own = document.createElement('div');
-      own.slot = 'panel-end';
-      shell.append(own);
-      const panel = document.createElement('sherpa-overlay-panel') as PanelEl;
-      panel.setAttribute('data-poppable', '');
-      document.getElementById('root')!.replaceChildren(shell, panel);
-      await panel.rendered;
-      panel.show!();
-      await window.__settled();
-      return getComputedStyle(panel.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!).display;
+    const edge = await page.evaluate(() => {
+      const sr = document.getElementById('one')!.shadowRoot!;
+      const shown = (sel: string) => getComputedStyle(sr.querySelector(sel)!).display !== 'none';
+      const r = sr.querySelector('.root')!.getBoundingClientRect();
+      return { overlay: shown('.dock-overlay'), fixed: shown('.dock-fixed'), float: shown('.float'), right: Math.round(innerWidth - r.right), mode: document.getElementById('one')!.getAttribute('data-mode') };
     });
-    expect(display).toBe('none');
-  });
-
-  test('a second panel popping in shares the area with the first, a tab each (TRAP T-an-area-holds-two-panels-stacked)', async ({ page }) => {
-    await stage(page);
-    await press(page);
-    const r = await page.evaluate(async () => {
-      const second = document.createElement('sherpa-overlay-panel') as PanelEl;
-      second.setAttribute('data-poppable', '');
-      document.getElementById('root')!.append(second);
-      await second.rendered;
-      second.toggleAttribute('data-fixed', true);
-      await window.__settled();
-      const first = document.getElementById('pop')!;
-      return { first: [first.parentElement!.localName, first.hasAttribute('data-fixed')], second: second.parentElement!.localName };
-    });
-    expect(r).toEqual({ first: ['sherpa-app-shell', true], second: 'sherpa-app-shell' });
+    expect(edge).toEqual({ overlay: false, fixed: false, float: true, right: 0, mode: null });
+    await press(page, 'float');
+    expect(await page.evaluate(() => document.getElementById('one')!.getAttribute('data-mode'))).toBe('floating');
   });
 });
 

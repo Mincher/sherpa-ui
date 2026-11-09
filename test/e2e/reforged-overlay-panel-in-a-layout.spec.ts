@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const heard: unknown[] = [];
     (window as unknown as { __heard: unknown[] }).__heard = heard;
-    for (const type of ['panel-float', 'panel-minimise', 'panel-close']) {
+    for (const type of ['panel-mode-change', 'panel-close']) {
       document.getElementById('nodes')!.addEventListener(type, (e) => heard.push({ [type]: (e as CustomEvent).detail }));
     }
     await window.__settled();
@@ -106,7 +106,7 @@ test('Float lifts it 16px in and it floats INSIDE the canvas, never past it; the
   await press(page, '.float');
   expect(await rect(page, '.root')).toEqual(docked);
   expect((await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard))).toEqual([
-    { 'panel-float': { floating: true } }, { 'panel-float': { floating: false } },
+    { 'panel-mode-change': { mode: 'floating' } }, { 'panel-mode-change': { mode: 'fixed' } },
   ]);
 });
 

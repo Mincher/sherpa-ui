@@ -23,9 +23,9 @@ async function shell(page: Page): Promise<void> {
     const root = document.getElementById('root')!;
     root.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
       + '<div slot="header" style="block-size: 40px">H</div>'
-      + '<sherpa-overlay-panel data-side="start" id="col" data-heading="Filters" data-fixed data-floatable open><p>Filters</p></sherpa-overlay-panel>'
-      + '<div><div class="page" style="padding: 16px">Context</div></div></sherpa-app-shell>'
-      + '<sherpa-overlay-panel id="ask" data-heading="Assistant" data-fixed data-floatable data-dismissible><p>Hi</p></sherpa-overlay-panel>';
+      + '<sherpa-overlay-panel data-side="start" id="col" data-heading="Filters" data-floatable open><p>Filters</p></sherpa-overlay-panel>'
+      + '<sherpa-overlay-panel id="ask" data-heading="Assistant" data-floatable data-dismissible><p>Hi</p></sherpa-overlay-panel>'
+      + '<div><div class="page" style="padding: 16px">Context</div></div></sherpa-app-shell>';
     await window.__settled();
     (document.getElementById('ask') as HTMLElement & { show(): void }).show();
     const heard: unknown[] = [];
@@ -128,7 +128,7 @@ test('a panel opened LATE shows its area, shut it gives it back; a card hidden b
   await page.evaluate(async () => {
     document.getElementById('root')!.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
       + '<div slot="header" style="block-size: 40px">H</div>'
-      + '<sherpa-overlay-panel data-side="start" id="col" data-heading="Filters" data-fixed data-floatable><p>Filters</p></sherpa-overlay-panel>'
+      + '<sherpa-overlay-panel data-side="start" id="col" data-heading="Filters" data-floatable><p>Filters</p></sherpa-overlay-panel>'
       + '<div slot="panel-end" id="side" style="display: none">Side</div><div>C</div></sherpa-app-shell>';
     await window.__settled();
     const shut = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-start')!.getBoundingClientRect().width;
@@ -182,8 +182,8 @@ test('a panel floats out of its area and docks back into the SAME one: a panel f
   await shell(page);
   // (The filter column's own Float is the overlay panel's now: reforged-overlay-panel-float and the Demos float spec read it.)
   await page.evaluate(() => document.getElementById('col')!.remove());
-  // A panel fixed in the START area: Pop takes it out, Float lifts it, and both put it back there.
-  await page.evaluate(() => { const a = document.getElementById('ask')!; a.setAttribute('data-side', 'start'); a.setAttribute('data-fixed', ''); });
+  // A panel fixed in the START area: Float lifts it out, Dock puts it back there, and Overlay and Fixed ask the area for the others.
+  await page.evaluate(() => { const a = document.getElementById('ask')!; a.setAttribute('data-side', 'start'); });
   await settle(page);
   const inStart = await box(page, 'layout .area-start');
   expect(await box(page, 'ask .root')).toEqual(inset(inStart));
@@ -192,8 +192,10 @@ test('a panel floats out of its area and docks back into the SAME one: a panel f
   expect((await box(page, 'layout .area-start')).w).toBe(0);
   await press(page, 'ask', '.float');
   expect(await box(page, 'ask .root')).toEqual(inset(inStart));
+  const narrow = (await box(page, 'layout .content')).w;
   await press(page, 'ask', '.dock-overlay');
-  expect((await box(page, 'layout .area-start')).w).toBe(0);
+  // An overlay gives its area's room back: the content takes it.
+  expect((await box(page, 'layout .content')).w).toBeGreaterThan(narrow + 300);
   await press(page, 'ask', '.dock-fixed');
   expect(await box(page, 'ask .root')).toEqual(inset(inStart));
   expect(await page.evaluate(() => document.getElementById('ask')!.getAttribute('data-side'))).toBe('start');

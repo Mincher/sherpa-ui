@@ -6,7 +6,7 @@ import { test, expect } from './harness';
  */
 const left = (page: import('@playwright/test').Page, attrs: string) => page.evaluate(async (a) => {
   const root = document.getElementById('root')!;
-  root.innerHTML = '<sherpa-app-shell></sherpa-app-shell><sherpa-overlay-panel id="p" data-heading="P" ' + a + '><p>body</p></sherpa-overlay-panel>';
+  root.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 900px"><sherpa-overlay-panel id="p" data-heading="P" ' + a + '><p>body</p></sherpa-overlay-panel></sherpa-app-shell>';
   const panel = document.getElementById('p') as HTMLElement & { show(): void };
   await window.__settled();
   panel.show();
@@ -17,17 +17,17 @@ const left = (page: import('@playwright/test').Page, attrs: string) => page.eval
 
 test('a start panel overlaid stays on the start edge; one told its side by data-side alone is there too', async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
-  const fixed = await left(page, 'data-fixed data-side="start"');
+  const fixed = await left(page, 'data-side="start"');
   expect(fixed.side).toBe('start');
   await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button') as HTMLElement).click());
   await page.evaluate(() => window.__settled());
   const over = await page.evaluate(() => { const r = document.getElementById('p')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect(); return { left: Math.round(r.left), dock: (document.getElementById('p') as unknown as { dockState: string }).dockState }; });
   expect(over).toEqual({ left: 0, dock: 'overlay' });
-  // After a reload the page has only the kept side: no data-fixed.
-  const kept = await left(page, 'data-side="start"');
+  // After a reload the page has only the kept mode and side.
+  const kept = await left(page, 'data-side="start" data-mode="overlay"');
   expect(kept.dock).toBe('overlay');
   expect(kept.left).toBe(0);
   // The end side is the right edge, as it was.
-  const end = await left(page, 'data-side="end"');
+  const end = await left(page, 'data-side="end" data-mode="overlay"');
   expect(end.right).toBe(1400);
 });

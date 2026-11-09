@@ -62,7 +62,7 @@ export function panelKeys(listen: (target: EventTarget, type: string, handler: (
       event.preventDefault();
       // A tab opens; a panel shown takes the focus. It never shuts: that is Shift and minus.
       if (panel.minimised) panel.minimise(false);
-      else panel.focus();
+      else panel.shadowRoot?.querySelector<HTMLElement>('.root')?.focus();
     } else if (minus || plus) {
       event.preventDefault();
       // Ctrl: every panel and tab, whatever the side.
@@ -72,7 +72,9 @@ export function panelKeys(listen: (target: EventTarget, type: string, handler: (
       }
       if (held.left === held.right) return;
       const side = held.left ? 'start' : 'end';
-      const own = focusedPanel(event);
+      // The focused panel, if it is on that side; else the side's own.
+      const focus = focusedPanel(event);
+      const own = focus?.side === side ? focus : undefined;
       if (minus) (own ?? frontOf(side))?.minimise(true);
       else (own?.minimised ? own : panels().find((p) => p.side === side && p.minimised))?.minimise(false);
     }

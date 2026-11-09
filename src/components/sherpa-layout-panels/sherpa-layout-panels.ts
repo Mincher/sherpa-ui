@@ -55,6 +55,9 @@ export class SherpaLayoutPanels extends SherpaElement {
       this.#resizable(side);
       this.#askWidth(side);
     }
+    // A host that forwards a slot says its panels moved (a panel leaving for the float layer, or docking): `slotchange`
+    // from a forwarded slot bubbles to this host, not into this shadow root.
+    this.on(this, 'slotchange', () => { for (const side of SIDES) this.#follow(side); });
     // A panel asks for a mode: the area writes it on the panels in it.
     this.on(this, 'panel-mode-change', this.#onMode);
   }

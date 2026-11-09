@@ -120,7 +120,7 @@ test('where the bands meet, the higher is on top: bars over the page, a banner o
     flo.id = 'flo';
     flo.setAttribute('data-heading', 'Floating');
     flo.setAttribute('data-floatable', '');
-    for (const [a, v] of [['data-x', String(innerWidth - 560)], ['data-y', '40'], ['data-width', '400'], ['data-height', '300'], ['data-floating', '']]) flo.setAttribute(a!, v!);
+    for (const [a, v] of [['data-x', String(innerWidth - 560)], ['data-y', '40'], ['data-width', '400'], ['data-height', '300'], ['data-mode', 'floating']]) flo.setAttribute(a!, v!);
     document.body.append(flo);
     flo.show();
   });

@@ -27,7 +27,6 @@ for (const host of ['layout', 'canvas'] as const) {
       document.getElementById('h')!.insertAdjacentHTML('beforeend', panel('b', '26rem'));
       await window.__settled();
       out.two = area();
-      out.tabsRow = Math.round(layout.shadowRoot!.querySelector('.tabs-start')!.getBoundingClientRect().width);
       (document.getElementById('a') as Panel).minimise(true);
       (document.getElementById('b') as Panel).minimise(true);
       await window.__settled();
@@ -35,8 +34,8 @@ for (const host of ['layout', 'canvas'] as const) {
       return out;
     }, host);
     expect(r.one).toBe(20 * 16 + 16);
-    // Two panels: the widest, and the tab row beside it.
-    expect(r.two).toBe(26 * 16 + 16 + (r.tabsRow ?? 0));
+    // Two panels, stacked: the widest.
+    expect(r.two).toBe(26 * 16 + 16);
     // Only tabs left: the area is the strip the tabs stand in (2.5rem), the content beside it. TODO 858
     expect(r.tabs).toBe(40);
   });

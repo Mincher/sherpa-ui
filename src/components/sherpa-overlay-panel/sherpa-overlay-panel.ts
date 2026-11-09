@@ -392,7 +392,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     }
     this.toggleState('minimised', mode === 'tab');
     // The first float lifts it where it is drawn.
-    if (mode === 'floating' && prev !== undefined) this.#lift();
+    if (mode === 'floating' && prev !== undefined && prev !== 'tab') this.#lift();
     this.#place();
     SherpaOverlayPanel.#stack();
     if (mode === 'floating') this.#floatBox.raise();

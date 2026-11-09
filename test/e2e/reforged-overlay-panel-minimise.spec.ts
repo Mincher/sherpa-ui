@@ -20,8 +20,10 @@ async function stage(page: Page, opts: { shell?: boolean; floating?: boolean } =
     panel.setAttribute('data-floatable', '');
     panel.innerHTML = '<p>body</p>';
     if (shell) {
-      panel.setAttribute('data-fixed', '');
-      root.replaceChildren(document.createElement('sherpa-app-shell'), panel);
+      const frame = document.createElement('sherpa-app-shell');
+      frame.style.blockSize = '900px';
+      frame.append(panel);
+      root.replaceChildren(frame);
     } else root.replaceChildren(panel);
     if (floating) panel.setAttribute('data-mode', 'floating');
     await panel.rendered;
@@ -112,7 +114,7 @@ test('the header\'s mode buttons are ONE group with the ends on its first and la
     const make = async (attrs: string[]): Promise<PanelEl> => {
       const el = document.createElement('sherpa-overlay-panel') as PanelEl;
       el.setAttribute('data-heading', 'Peek');
-      for (const a of attrs) el.setAttribute(a, '');
+      for (const a of attrs) { const [k, v = ''] = a.split('='); el.setAttribute(k!, v); }
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       el.show();
@@ -131,7 +133,7 @@ test('the header\'s mode buttons are ONE group with the ends on its first and la
       dockedX: titleX(docked),
       floatX: 0,
     };
-    const floating = await make(['data-dismissible', 'data-minimisable', 'data-floatable', 'data-external', 'data-floating']);
+    const floating = await make(['data-dismissible', 'data-minimisable', 'data-floatable', 'data-external', 'data-mode=floating']);
     out.floatX = titleX(floating);
     return out;
   });
@@ -172,7 +174,6 @@ test('opened, the focus is the container\'s, not the grip\'s; Tab goes on to the
 test('a press on a tab shows its panel as a docked overlay, hover or none; a press outside, or Escape, shuts it to the tab; the docking button docks it', async ({ page, browserName }) => {
   test.skip(browserName === 'webkit', 'a WebKit pointer press outside is not heard the same under load');
   await stage(page, { shell: true });
-  await page.evaluate(() => document.getElementById('tabbed')!.setAttribute('data-poppable', ''));
   await press(page, '.minimise');
   const state = () => page.evaluate(() => (document.getElementById('tabbed') as HTMLElement & { dockState: string }).dockState);
   expect(await state()).toBe('tab');

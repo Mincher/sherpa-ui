@@ -2,9 +2,9 @@ import { test, expect } from './harness';
 import type { Page } from '@playwright/test';
 
 /**
- * A panel area with two panels open draws a tab each down its inner edge; a tab swaps to its panel;
- * minimising one minimises the area's; floating one floats only it; docking it puts it back as the
- * active tab. TRAP T-an-area-holds-two-panels-stacked
+ * A panel area holds two panels, stacked top and bottom and both shown; it writes a mode on both (minimising one
+ * minimises the area's), and floating one floats only it, the other taking the whole area; docking it back
+ * stacks them again. TRAP T-an-area-holds-two-panels-stacked
  */
 type PanelEl = HTMLElement & { rendered?: Promise<void>; show(): void };
 
@@ -13,32 +13,32 @@ async function stage(page: Page): Promise<void> {
   await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const shell = document.createElement('sherpa-app-shell');
+    shell.style.blockSize = '900px';
     const panels = ['one', 'two'].map((id) => {
       const p = document.createElement('sherpa-overlay-panel') as PanelEl;
       p.id = id;
       p.setAttribute('data-heading', id.toUpperCase());
-      p.setAttribute('data-fixed', '');
       p.setAttribute('data-minimisable', '');
       p.setAttribute('data-floatable', '');
       p.innerHTML = `<p>${id}</p>`;
+      shell.append(p);
       return p;
     });
-    root.replaceChildren(shell, ...panels);
+    root.replaceChildren(shell);
     for (const p of panels) { await p.rendered; await window.__settled(); p.show(); await window.__settled(); }
   });
 }
 
+/** What the area draws: each panel's card, its mode, and the area's width. */
 const area = (page: Page) => page.evaluate(() => {
   const layout = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!;
   const sr = layout.shadowRoot!;
-  // The row shows only while two are open.
-  const row = sr.querySelector('.tabs-end')!;
-  const tabs = getComputedStyle(row).display === 'none' ? [] : [...row.querySelectorAll('.tab')].map((t) => ({ label: t.textContent, on: t.hasAttribute('data-current') }));
-  const drawn = ['one', 'two'].filter((id) => {
+  const cards = Object.fromEntries(['one', 'two'].map((id) => {
     const p = document.getElementById(id)!;
-    return p.slot === 'panel-end' && p.hasAttribute('data-current') && getComputedStyle(p).display !== 'none';
-  });
-  return { tabs, drawn, width: Math.round(sr.querySelector('.area-end')!.getBoundingClientRect().width) };
+    const r = p.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
+    return [id, { mode: p.getAttribute('data-mode'), slot: p.slot, shown: getComputedStyle(p.shadowRoot!.querySelector('.root')!).display !== 'none', y: Math.round(r.y), h: Math.round(r.height) }];
+  }));
+  return { cards, width: Math.round(sr.querySelector('.area-end')!.getBoundingClientRect().width), tabRow: !!sr.querySelector('.tabs-end') };
 });
 const rectOf = (page: Page, sel: string, id?: string) => page.evaluate(([s, i]) => {
   const root = i ? document.getElementById(i)!.shadowRoot! : document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!;
@@ -51,40 +51,42 @@ const click = async (page: Page, sel: string, id?: string): Promise<void> => {
   await page.evaluate(() => window.__settled());
 };
 
-test('two docked panels share the area, a tab each; a tab swaps to its panel; the last docked is in front', async ({ page }) => {
+test('two panels share the area stacked, both shown, no tab row; a mode asked of one is written on both', async ({ page }) => {
   await stage(page);
   const a = await area(page);
-  expect(a.tabs).toEqual([{ label: 'ONE', on: false }, { label: 'TWO', on: true }]);
-  expect(a.drawn).toEqual(['two']);
+  expect(a.tabRow).toBe(false);
+  expect(a.cards['one']).toMatchObject({ mode: null, slot: 'panel-end', shown: true });
+  expect(a.cards['two']).toMatchObject({ mode: null, slot: 'panel-end', shown: true });
+  expect(a.cards['two']!.y).toBeGreaterThan(a.cards['one']!.y + a.cards['one']!.h - 1);
+  expect(a.cards['one']!.h).toBe(a.cards['two']!.h);
   expect(a.width).toBeGreaterThanOrEqual(400);
-  await click(page, '.tabs-end .tab:first-child');
-  expect((await area(page)).drawn).toEqual(['one']);
 });
 
-test('minimising one minimises the area\'s; a tab restores its own panel', async ({ page }) => {
+test('minimising one minimises the area\'s; opening one opens them both', async ({ page }) => {
   await stage(page);
   await click(page, '.minimise', 'two');
-  const a = await area(page);
+  let a = await area(page);
   expect(a.width).toBe(40);
-  expect(await page.evaluate(() => ['one', 'two'].map((id) => document.getElementById(id)!.getAttribute('data-mode') === 'tab'))).toEqual([true, true]);
-  // A tab press shows a panel as an overlay; the panel itself comes back with its own API (the keys do this).
+  expect([a.cards['one']!.mode, a.cards['two']!.mode]).toEqual(['tab', 'tab']);
+  // The panel's own API (the keys do this) asks the area, which opens them both, as they were.
   await page.evaluate(() => (document.getElementById('one') as HTMLElement & { minimise(on: boolean): void }).minimise(false));
   await page.evaluate(() => window.__settled());
-  expect((await area(page)).drawn).toEqual(['one']);
-  expect(await page.evaluate(() => document.getElementById('two')!.getAttribute('data-mode') === 'tab')).toBe(true);
+  a = await area(page);
+  expect([a.cards['one']!.mode, a.cards['two']!.mode]).toEqual(['fixed', 'fixed']);
+  expect(a.width).toBeGreaterThanOrEqual(400);
 });
 
-test('floating one floats only it; docking puts it back as the active tab', async ({ page }) => {
+test('floating one floats only it; the other takes the area; docking puts it back, stacked', async ({ page }) => {
   await stage(page);
+  const before = await area(page);
   await click(page, '.float', 'two');
   let a = await area(page);
-  expect(a.tabs).toEqual([]);
-  expect(a.drawn).toEqual(['one']);
+  expect(a.cards['two']).toMatchObject({ mode: 'floating', slot: 'panel-float' });
+  expect(a.cards['one']).toMatchObject({ slot: 'panel-end', shown: true });
+  expect(a.cards['one']!.h).toBeGreaterThan(before.cards['one']!.h);
   expect(a.width).toBeGreaterThanOrEqual(400);
-  expect(await page.evaluate(() => document.getElementById('two')!.slot)).toBe('');
   await click(page, '.float', 'two');
   a = await area(page);
-  expect(a.tabs).toEqual([{ label: 'ONE', on: false }, { label: 'TWO', on: true }]);
-  expect(a.drawn).toEqual(['two']);
+  expect(a.cards['two']).toMatchObject({ mode: 'fixed', slot: 'panel-end' });
+  expect(a.cards['one']!.h).toBe(a.cards['two']!.h);
 });
-

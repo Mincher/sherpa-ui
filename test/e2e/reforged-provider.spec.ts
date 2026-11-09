@@ -457,7 +457,7 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     const withPanel = { bar: toggle(bar)?.getAttribute('aria-label'), slot: toggle(bar)?.slot };
     toggle(bar).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
-    const inPanel = { bar: !!toggle(bar), panel: toggle(panelShell)?.getAttribute('aria-label'), mode: provider.settings.get('filterMode') };
+    const inPanel = { bar: !!toggle(bar), barOff: toggle(bar)?.hasAttribute('disabled'), panel: toggle(panelShell)?.getAttribute('aria-label'), mode: provider.settings.get('filterMode') };
     toggle(panelShell).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
     return { alone, withPanel, inPanel, localNever: !!toggle(local), back: { bar: !!toggle(bar), mode: provider.settings.get('filterMode') }, reports };
@@ -466,7 +466,8 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
   // A local scope's bar never has it: not alone, not with a panel, not in panel mode.
   expect(r['localNever']).toBe(false);
   expect(r['withPanel']).toEqual({ bar: 'View as filter panel', slot: 'actions' });
-  expect(r['inPanel']).toEqual({ bar: false, panel: 'Filter in the toolbars instead', mode: 'panel' });
+  // The header bar's switch stays, inactive: the panel's own header returns to the toolbars.
+  expect(r['inPanel']).toEqual({ bar: true, barOff: true, panel: 'Filter in the toolbars instead', mode: 'panel' });
   expect(r['back']).toEqual({ bar: true, mode: 'toolbars' });
   expect(r['reports']).toEqual([]);
 });

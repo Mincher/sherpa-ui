@@ -83,10 +83,10 @@ test('on a page, a floating card and a floating panel each come to the front on 
     const set = (el: Element, b: number[]) => ['data-x', 'data-y', 'data-width', 'data-height'].forEach((a, i) => el.setAttribute(a, String(b[i])));
     const nodes = document.getElementById('nodes')!;
     set(nodes, [40, 40, 320, 420]);
-    nodes.setAttribute('data-floating', '');
+    nodes.setAttribute('data-mode', 'floating');
     const inspector = document.getElementById('inspector') as HTMLElement & { show(): void };
     set(inspector, [x! + 240, y! + 120, 420, 400]);
-    inspector.setAttribute('data-floating', '');
+    inspector.setAttribute('data-mode', 'floating');
     inspector.show();
   }, [cv.x, cv.y]);
   await settle(page);

@@ -250,7 +250,6 @@ mode is its panels' mode (`T-a-panel-has-four-modes`): it mirrors a change on bo
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `test/e2e/reforged-panel-area-tabs.spec.ts`
-- Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
 ### T-a-node-list-is-a-panels-content
 
