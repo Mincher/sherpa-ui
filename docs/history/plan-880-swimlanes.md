@@ -24,15 +24,18 @@ Lanes (horizontal bands, one per actor or data layer), optional stages (columns)
 - Say "Lane" in the Lexicon: it is not a Section, Area, Context or View (PRINCIPLES 19). Add a row.
 - Avoid "stage" meaning a run step: the run's word stays "step".
 
+## Will's answers (2026-11-09, via Harness)
+- Lane rules are a CONCEPT only: Will has none. Rules and ghost nodes are an OPTIONAL, LATER part: keep the model open (`lane.rule?`, `expandLaneRules`) but do not schedule or build them in the first lanes work.
+- A rule on a junction band is a "maybe": do not block it in the model, do not design for it yet.
+- Core now: lanes, junction bands, stages, presets, collapse and the drop target.
+
 ## Steps (each its own commit; first three are data layer, DOM-free)
 1. `node-lanes.ts`: `NodeLane`, `laneFaults`, `lanesAmong` (a lane left with no nodes stays; removing a lane moves nodes to none), `nodeOfLane`. Workflow v2 gains optional `lanes`, `stages` and `node.lane`; schema and `check` updated.
-2. `expandLaneRules`: the ghost expansion, with the rule shape `{ kind, requires, role }`, id rules, and tests that a run sees the ghost.
+2. LATER, only when Will has a rule: `expandLaneRules`, the ghost expansion (shape, ids, a run sees the ghost). The first work only leaves `lane.rule` optional and unread.
 3. Lane presets keeper and the `lane-preset` JSON; Off, By actor and By data layer shipped read only.
 4. `sherpa-node-lane` and `sherpa-node-stage` (five files each, spec, example), canvas draw order, drop highlight, `node-lane-change`.
-5. Editor: drop to change lane, lane menu, rename, reorder (Alt+Up/Down), collapse, tidy-in-lane, minimap bands, ghost look and press to select the rule.
+5. Editor: drop to change lane, lane menu, rename, reorder (Alt+Up/Down), collapse, tidy-in-lane, minimap bands. (The ghost look waits with step 2.)
 6. Run mode: stage strip status.
 
 ## Open for Will
-- Rule shape: which `requires` values at first (Approval only, or any node kind)?
-- A lane rule on a junction band: allowed, or lanes only?
-- Where a preset's save and share goes in the app: the notes say org-shared; that is a server keeper and waits on TODO 170.
+- Where a preset's save and share goes: org-shared is a server keeper and waits on TODO 170.
