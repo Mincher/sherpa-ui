@@ -40,10 +40,10 @@ const COMPONENTS = 'src/components';
  */
 const KNOWN = {
   // The panels' tabs and the panel keys read these; each is written by a method or an attribute. TRAP T-the-panel-keys-are-shift-and-a-number
-  'sherpa-overlay-panel.minimised': 'ok: minimise(on) / the data-minimised attribute',
-  'sherpa-overlay-panel.side': 'derived: the side its area docks on; `data-fixed` says it, or the slot it is in',
-  'sherpa-overlay-panel.tabbed': 'derived: a tab on the edge, or in the row of an area that holds several; minimise() and docking change it',
-  'sherpa-overlay-panel.dockState': 'derived: floating, a tab, a tab on hover, an overlay or fixed; the docking button, Float and Minimise change it',
+  'sherpa-overlay-panel.minimised': 'ok: minimise(on) / the data-mode attribute',
+  'sherpa-overlay-panel.mode': 'ok: requestMode(mode) / the data-mode attribute',
+  'sherpa-overlay-panel.side': 'derived: the side its area docks on; the data-side attribute says it',
+  'sherpa-overlay-panel.dockState': 'derived: floating, a tab, a tab on hover, an overlay or fixed; requestMode(), the mode buttons and Minimise change it',
   'sherpa-overlay-panel.shown': 'derived: whether it is open (show() / hide()); the panel keys read it',
   // What a bar sends to turn its presets off: a request, not a state. Will, TODO 592
   'sherpa-quick-filter.presetsOff': 'read only: the presets are turned off through the Query',
