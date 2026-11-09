@@ -83,8 +83,8 @@ Plus the app's stores, and its Views as JSON.
         <sherpa-quick-filter-toolbar slot="filters" data-type="view" data-scope="view"
                                      data-locked data-reset-on-populate></sherpa-quick-filter-toolbar>
       </sherpa-app-header>
-      <sherpa-overlay-panel id="filter-column" data-heading="Filters" data-fixed data-side="start"
-                            data-floatable data-minimisable data-poppable data-searchable data-search-placeholder="Search filters">
+      <sherpa-overlay-panel id="filter-column" data-heading="Filters" data-side="start"
+                            data-floatable data-minimisable data-searchable data-search-placeholder="Search filters">
         <sherpa-filter-panel data-scope="view data"></sherpa-filter-panel>
       </sherpa-overlay-panel>
       <sherpa-outlet id="context-root"></sherpa-outlet>
@@ -554,12 +554,14 @@ provider.addEventListener('filters-save-as', saveAs);
 - A dialog or an overlay panel that only opens and shuts needs no script:
   `<sherpa-button commandfor="edit" command="--show">Edit</sherpa-button>`, and
   `command="--hide"` on a button inside it. `T-a-button-commands-by-markup`
-- An overlay panel with `data-floatable` floats: its header bar moves it, its
-  corner resizes it, and Dock puts it back on the right edge or in the shell's
-  panel area it came from (`data-fixed`, on the side `data-side` names). It reports
-  `panel-float`, `panel-move` and `panel-resize`; keep `data-floating`, `data-x`,
+- A panel has ONE mode, `data-mode`: `fixed`, `overlay`, `floating` or `tab`, and one side, `data-side` (`start`, else
+  `end`). Put it in the app shell or a canvas as a child, and it is docked in that side's area; the panel sets its own slot. An
+  area holds two panels at most, stacked top and bottom, and owns how they present: a panel's header buttons ask
+  (`panel-mode-change`) and the area writes the mode on both. An overlay panel with `data-floatable` floats: its header bar moves it, its
+  corner resizes it, and Dock puts it back in its area, in the area's mode. It reports `panel-mode-change`, `panel-move` and
+  `panel-resize`; keep `data-mode`, `data-side`, `data-x`,
   `data-y`, `data-width` and `data-height` in the session and hand them back. The
-  Nodes panel is an overlay panel slotted in the canvas's `panel` slot with
+  Nodes panel is an overlay panel in the canvas with `data-side="start"` and
   `sherpa-node-list` in it, and floats the same way, inside the canvas; so does a
   filter panel's overlay panel with `data-floatable`. A press or a focus brings a floating panel to the front.
   `T-a-floating-panel-is-a-state` · `T-a-pressed-panel-comes-to-the-front`

@@ -49,50 +49,23 @@
 :host(:state(has-panel-start):state(start-open):not([data-no-room])) .area-start,
 :host(:state(has-panel-end):state(end-open):not([data-no-room])) .area-end { display: grid; }
 
-/* TWO panels or more open: a tab each, in a column down the INNER edge (the panel's own side is the
-   other); only the one in front is drawn, the layout marking it `data-current`. TRAP T-an-area-with-two-panels-is-tabbed */
-.tabs {
-  display: none;
-  flex-direction: column;
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  padding-block: var(--sherpa-display-mode-space-sm, 8px);
-  grid-row: 1;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-:host(:state(start-tabs)) .tabs-start,
-:host(:state(end-tabs)) .tabs-end { display: flex; }
-:host(:state(start-tabs)) .area-start { grid-template-columns: minmax(0, 1fr) auto; }
-:host(:state(end-tabs)) .area-end { grid-template-columns: auto minmax(0, 1fr); }
-.tabs-start { grid-column: 2; }
-.tabs-end { grid-column: 1; }
-:host(:state(start-tabs)) slot[name="panel-start"]::slotted(*) { grid-column: 1; grid-row: 1; }
-:host(:state(end-tabs)) slot[name="panel-end"]::slotted(*) { grid-column: 2; grid-row: 1; }
-.tab {
-  writing-mode: vertical-rl;
-  padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
-  max-block-size: 10rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font: inherit;
-  cursor: pointer;
-  color: var(--sherpa-style-content-base, #0c0b11);
-  background: transparent;
-  border: 0;
-  border-inline-end: var(--sherpa-display-mode-border-width-lg, 2px) solid transparent;
-}
-.tab:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
-.tab[data-current] { border-color: var(--sherpa-style-indicator-accent, #3b4ccd); }
-.tab:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
-@media (forced-colors: active) {
-  .tab[data-current] { border-color: Highlight; }
+/* TWO panels fixed: stacked, top and bottom, each half the area, a gap between. TRAP T-an-area-holds-two-panels-stacked */
+:host(:state(start-stack)) .area-start,
+:host(:state(end-stack)) .area-end {
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
+/* The FLOAT layer: over the layout, letting the press through but on a floating box's own; no stacking context, so the
+   box's z-index meets the boxes beside the layout's host. TRAP T-a-pressed-panel-comes-to-the-front */
+.floats {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 
-/* FLOATING, the panel stays slotted: its area takes no width and covers the layout, the
-   panel's room. A slotted box cannot float out of a hidden area. Its clicks pass through but
-   on the panel's own box, and it makes no stacking context. TRAP T-a-floating-panel-is-a-state */
+/* NO FIXED panel (an overlay, or a tab that is no strip): the area takes no width and covers the layout, the
+   panel's room, and lets the press through. A slotted box cannot overlay out of a hidden area. TRAP T-a-floating-panel-is-a-state */
 :host(:state(start-floating)) .area-start,
 :host(:state(end-floating)) .area-end {
   position: absolute;

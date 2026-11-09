@@ -607,9 +607,9 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-chrome-row-never-shrinks](traps/menus-tips-overlays.md#t-a-panel-chrome-row-never-shrinks) — panel
 - [T-a-panel-divides-only-between-shown-groups](traps/menus-tips-overlays.md#t-a-panel-divides-only-between-shown-groups) — overlay-panel
 - [T-a-panel-folds-its-groups-into-the-more-menu](traps/menus-tips-overlays.md#t-a-panel-folds-its-groups-into-the-more-menu) — overlay-panel
+- [T-a-panel-has-four-modes](traps/menus-tips-overlays.md#t-a-panel-has-four-modes) — overlay-panel
 - [T-a-panel-owns-its-search-row](traps/menus-tips-overlays.md#t-a-panel-owns-its-search-row) — overlay-panel
 - [T-a-panel-peeks-from-its-tab](traps/menus-tips-overlays.md#t-a-panel-peeks-from-its-tab) — overlay-panel
-- [T-a-panel-pops-into-the-end-area](traps/menus-tips-overlays.md#t-a-panel-pops-into-the-end-area) — overlay-panel
 - [T-a-panel-slotted-in-a-layout-is-docked-there](traps/menus-tips-overlays.md#t-a-panel-slotted-in-a-layout-is-docked-there) — overlay-panel
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — overlay-panel
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — menu
@@ -638,7 +638,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-action-row-can-keep-its-menu-open](traps/menus-tips-overlays.md#t-an-action-row-can-keep-its-menu-open) — menu
 - [T-an-action-says-what-it-does](traps/filters.md#t-an-action-says-what-it-does) — menu
 - [T-an-advanced-row-rules-out-nothing](traps/menus-tips-overlays.md#t-an-advanced-row-rules-out-nothing) — menu
-- [T-an-area-with-two-panels-is-tabbed](traps/menus-tips-overlays.md#t-an-area-with-two-panels-is-tabbed) — overlay-panel
+- [T-an-area-holds-two-panels-stacked](traps/menus-tips-overlays.md#t-an-area-holds-two-panels-stacked) — overlay-panel
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — overlay-panel
 - [T-an-fr-track-floors-at-min-content](traps/menus-tips-overlays.md#t-an-fr-track-floors-at-min-content) — menu
 - [T-an-inline-condition-row-keeps-its-tracks](traps/menus-tips-overlays.md#t-an-inline-condition-row-keeps-its-tracks) — menu
@@ -1029,7 +1029,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (146)
+## Other components (147)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1079,6 +1079,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-number-input-wears-sherpas-steppers](traps/menus-tips-overlays.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — metric-group
 - [T-a-panel-area-is-a-layout](traps/other-components.md#t-a-panel-area-is-a-layout) — layout-canvas, layout-panels
+- [T-a-panel-has-four-modes](traps/menus-tips-overlays.md#t-a-panel-has-four-modes) — layout-panels
 - [T-a-portal-hop-is-resolved-once](traps/data-layer.md#t-a-portal-hop-is-resolved-once) — node
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — layout-canvas, layout-panels
 - [T-a-rail-may-stay-shut](traps/join-and-app.md#t-a-rail-may-stay-shut) — nav, nav-item
@@ -1108,7 +1109,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-accordion-action-is-not-a-toggle](traps/other-components.md#t-an-accordion-action-is-not-a-toggle) — accordion
 - [T-an-accordion-chevron-rides-the-heading-row](traps/other-components.md#t-an-accordion-chevron-rides-the-heading-row) — accordion
 - [T-an-action-says-what-it-does](traps/filters.md#t-an-action-says-what-it-does) — button
-- [T-an-area-with-two-panels-is-tabbed](traps/menus-tips-overlays.md#t-an-area-with-two-panels-is-tabbed) — layout-panels
+- [T-an-area-holds-two-panels-stacked](traps/menus-tips-overlays.md#t-an-area-holds-two-panels-stacked) — layout-panels
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — layout-canvas, layout-panels
 - [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-toolbar
 - [T-an-expandable-row-is-not-a-destination](traps/other-components.md#t-an-expandable-row-is-not-a-destination) — nav-item

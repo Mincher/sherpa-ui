@@ -125,7 +125,7 @@ test('Minimise makes a tab on the canvas\'s LEFT edge, inside it; the area gives
   expect((await rect(page, '.root')).h).toBe(cv.h);
   await press(page, '.dock-fixed');
   expect(await style(page, '.root', 'display')).not.toBe('none');
-  expect(await page.evaluate(() => document.getElementById('nodes')!.hasAttribute('data-minimised'))).toBe(false);
+  expect(await page.evaluate(() => document.getElementById('nodes')!.getAttribute('data-mode') === 'tab')).toBe(false);
 });
 
 test('panel-close says why it shut: the reader by default, the width or the page when it is told', async ({ page }) => {

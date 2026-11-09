@@ -89,7 +89,7 @@
 
 /* Fixed: docked in a panel area, which owns its width and insets it by 8px. A card of its own: its edge and
    four rounded corners, no shadow.
-   TRAP T-a-panel-pops-into-the-end-area */
+   TRAP T-a-panel-has-four-modes */
 :host(:state(in-area)) {
   display: block;
   /* It sets the width of the area that holds it, and fills it: a size of its own, not its content's. TODO 858 */
@@ -107,8 +107,6 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 }
 :host(:state(in-area)) :is(.resize, .expand) { display: none; }
-/* Several panels share the area, a tab each: only the one the area marks in front is drawn. TRAP T-an-area-with-two-panels-is-tabbed */
-:host(:state(in-area):not([data-current])) { display: none; }
 
 /* Floating: anywhere in the window, by the box its header and corner ask for.
    sherpa-float.css draws the box, the grip and the corner, and stacks it over a
@@ -130,7 +128,7 @@
 }
 :host(:state(in-layout):state(in-area)) .root { position: static; }
 /* An overlay panel over the view is positioned, so its z-index counts: the content's own layers (a sticky metric group) stay under it. */
-:host(:state(in-area)[data-overlay]) .root { position: relative; }
+:host(:state(in-layout):state(overlaid)) .root { position: absolute; }
 /* FIXED is flat and takes its area's room (above); an OVERLAY docked in a layout draws over the view at its side,
    with the shadow and rounding of one that is not part of the page. TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
 :host(:state(in-layout):state(overlaid)) .root {
@@ -153,18 +151,18 @@
    drop shadow. The panel has left its area (as floating does), so the area gives its room back; the tabs of several
    panels stack down the edge. TRAP T-a-minimised-panel-is-a-tab */
 .tab, .tab-mark { display: none; }
-:host([data-minimised]) .root { display: none; }
+:host(:state(minimised)) .root { display: none; }
 /* Peeking: the pointer is on its tab, and the panel is shown over the edge until it leaves. TRAP T-a-panel-peeks-from-its-tab */
-:host([data-minimised]:state(peeking)) .root { display: flex; }
+:host(:state(minimised):state(peeking)) .root { display: flex; }
 /* The tab is hidden while its panel shows: the panel is what the pointer is on. */
-:host([data-minimised][open]:state(peeking)) .tab { display: none; }
+:host(:state(minimised)[open]:state(peeking)) .tab { display: none; }
 :host(:state(tab-start):state(peeking):not(:state(in-layout))) .root { inset-inline-start: 0; inset-inline-end: auto; }
 /* Overlaid out of its area, a start panel stays on the start edge. TRAP T-an-overlaid-panel-keeps-its-side */
 :host(:state(tab-start):not(:state(in-layout), :state(in-area), :state(floating))) .root { inset-inline-start: 0; inset-inline-end: auto; }
 /* Unseen until it is stacked at its area's corner, so it never shows at the window's. */
 .tab:not([data-stacked]) { visibility: hidden; }
 /* PHYSICAL sides: the tab's own vertical writing mode would turn the logical ones. */
-:host([data-minimised][open]) .tab {
+:host(:state(minimised)[open]) .tab {
   display: flex;
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
@@ -183,17 +181,17 @@
   border-radius: var(--sherpa-border-rounding-top-left, 4px) 0 0 var(--sherpa-border-rounding-bottom-left, 4px);
   box-shadow: var(--sherpa-shadow-lg, 8px 8px 32px -8px #35353d4c);
 }
-:host(:state(tab-start)[data-minimised][open]) .tab {
+:host(:state(tab-start):state(minimised)[open]) .tab {
   right: auto;
   left: 0;
   border-right: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   border-left: 0;
   border-radius: 0 var(--sherpa-border-rounding-top-right, 4px) var(--sherpa-border-rounding-bottom-right, 4px) 0;
 }
-:host(:state(in-layout)[data-minimised][open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
+:host(:state(in-layout):state(minimised)[open]) .tab { position: absolute; top: calc(var(--sherpa-display-mode-space-base, 16px) + var(--_tab-index, 0) * 11rem); }
 /* The snapped edge: a light grey 1px line down the side the tabs stand on, running a little past the tab at its start and end
    and fading to transparent away from it, so a group of tabs reads as one run. */
-:host([data-minimised][open]) .tab::before {
+:host(:state(minimised)[open]) .tab::before {
   content: '';
   position: absolute;
   /* Physical: the tab's vertical writing mode would turn the logical ones. */
@@ -204,7 +202,7 @@
   pointer-events: none;
   background: linear-gradient(to bottom, transparent, var(--sherpa-style-border-base-1, #b3b3c3) var(--sherpa-display-mode-space-base, 16px), var(--sherpa-style-border-base-1, #b3b3c3) calc(100% - var(--sherpa-display-mode-space-base, 16px)), transparent);
 }
-:host(:state(tab-start)[data-minimised][open]) .tab::before { right: auto; left: 0; }
+:host(:state(tab-start):state(minimised)[open]) .tab::before { right: auto; left: 0; }
 
 /* The tab's body: its label and mark, one button. */
 .tab-open {
@@ -299,16 +297,14 @@
 .custom { display: flex; align-items: center; gap: var(--sherpa-theme-gap-sm, 4px); }
 :host(:not([data-expandable])) .expand { display: none; }
 :host(:not([data-external])) .external { display: none; }
-:host(:not([data-poppable]):not(:state(in-layout))) :is(.dock-overlay, .dock-fixed),
-:host(:state(no-area)) :is(.dock-overlay, .dock-fixed),
+:host(:not(:state(in-layout))) :is(.dock-overlay, .dock-fixed),
 :host([data-maximised]) :is(.dock-overlay, .dock-fixed),
 :host(:state(floating)) :is(.dock-overlay, .dock-fixed) { display: none; }
 :host(:not([data-minimisable])) .minimise,
 :host([data-maximised]) .minimise,
 :host(:not([data-floatable])) .float,
 :host([data-maximised]) .float { display: none; }
-:host(:not([data-poppable]):not([data-floatable]):not(:state(in-layout))) .docks,
-:host(:state(no-area):not([data-floatable])) .docks { display: none; }
+:host(:not([data-floatable]):not(:state(in-layout))) .docks { display: none; }
 :host(:not([data-minimisable]):not([data-expandable]):not([data-external])) .modes { display: none; }
 
 /* The group's first and last SHOWN button wear its ends: the group derives them from :first-child and

@@ -23,7 +23,7 @@ async function stage(page: Page, opts: { shell?: boolean; floating?: boolean } =
       panel.setAttribute('data-fixed', '');
       root.replaceChildren(document.createElement('sherpa-app-shell'), panel);
     } else root.replaceChildren(panel);
-    if (floating) panel.setAttribute('data-floating', '');
+    if (floating) panel.setAttribute('data-mode', 'floating');
     await panel.rendered;
     await window.__settled();
     panel.show();

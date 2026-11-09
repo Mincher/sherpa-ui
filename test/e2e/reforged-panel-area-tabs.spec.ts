@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test';
 /**
  * A panel area with two panels open draws a tab each down its inner edge; a tab swaps to its panel;
  * minimising one minimises the area's; floating one floats only it; docking it puts it back as the
- * active tab. TRAP T-an-area-with-two-panels-is-tabbed
+ * active tab. TRAP T-an-area-holds-two-panels-stacked
  */
 type PanelEl = HTMLElement & { rendered?: Promise<void>; show(): void };
 
@@ -66,12 +66,12 @@ test('minimising one minimises the area\'s; a tab restores its own panel', async
   await click(page, '.minimise', 'two');
   const a = await area(page);
   expect(a.width).toBe(40);
-  expect(await page.evaluate(() => ['one', 'two'].map((id) => document.getElementById(id)!.hasAttribute('data-minimised')))).toEqual([true, true]);
+  expect(await page.evaluate(() => ['one', 'two'].map((id) => document.getElementById(id)!.getAttribute('data-mode') === 'tab'))).toEqual([true, true]);
   // A tab press shows a panel as an overlay; the panel itself comes back with its own API (the keys do this).
   await page.evaluate(() => (document.getElementById('one') as HTMLElement & { minimise(on: boolean): void }).minimise(false));
   await page.evaluate(() => window.__settled());
   expect((await area(page)).drawn).toEqual(['one']);
-  expect(await page.evaluate(() => document.getElementById('two')!.hasAttribute('data-minimised'))).toBe(true);
+  expect(await page.evaluate(() => document.getElementById('two')!.getAttribute('data-mode') === 'tab')).toBe(true);
 });
 
 test('floating one floats only it; docking puts it back as the active tab', async ({ page }) => {

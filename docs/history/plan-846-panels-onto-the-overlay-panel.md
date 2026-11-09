@@ -6,7 +6,7 @@ system. 847: port the filter panel out of `sherpa-quick-filter-toolbar` into an 
 the filter-panel content, NO change to its function or style, then clear the toolbar's panel mode.
 
 Read first: the panel session's commits 4635f8cb0, 94b0eb4d3, f1660e0ae, 36632f2e3, and the traps
-`T-a-minimised-panel-is-a-tab`, `T-an-area-with-two-panels-is-tabbed`, `T-a-floating-panel-is-a-state`,
+`T-a-minimised-panel-is-a-tab`, `T-an-area-holds-two-panels-stacked`, `T-a-floating-panel-is-a-state`,
 `T-a-panel-area-is-a-layout`, `T-the-layers-are-one-scale`, `T-a-filter-column-floats`.
 
 ## What is there now

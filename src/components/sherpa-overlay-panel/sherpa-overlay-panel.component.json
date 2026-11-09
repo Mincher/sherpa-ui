@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-overlay-panel",
-  "$description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there",
+  "$description": "a NON-modal panel on native <dialog>, in one of four modes: fixed in a panel area, an overlay on its content, floating, or a tab on its area's edge. With no host it is an overlay on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -209,8 +209,8 @@
                           "data-size": "sm",
                           "data-icon-start": "browser",
                           "aria-label": "Float",
-                          "data-when-data-icon-start": "data-floating: sidebar-flip",
-                          "data-when-aria-label": "data-floating: Dock"
+                          "data-when-data-icon-start": "data-mode=floating: sidebar-flip",
+                          "data-when-aria-label": "data-mode=floating: Dock"
                         }
                       }
                     ]
@@ -371,14 +371,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-current",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-dismissible",
       "type": "boolean",
       "observed": true,
@@ -406,30 +398,12 @@
     },
     {
       "$type": "prop",
-      "name": "data-fixed",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "a fixed panel, docked flush in a panel area of the page's sherpa-app-shell: `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one"
-    },
-    {
-      "$type": "prop",
       "name": "data-floatable",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show the Float / Dock button"
-    },
-    {
-      "$type": "prop",
-      "name": "data-floating",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks where it came from"
+      "description": "show the Float button (floating, the Dock one: back to its area, in the area's mode)"
     },
     {
       "$type": "prop",
@@ -487,21 +461,18 @@
     },
     {
       "$type": "prop",
-      "name": "data-minimised",
-      "type": "boolean",
+      "name": "data-mode",
+      "type": "enum",
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens"
-    },
-    {
-      "$type": "prop",
-      "name": "data-overlay",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room"
+      "values": [
+        "fixed",
+        "overlay",
+        "floating",
+        "tab"
+      ],
+      "description": "fixed | overlay | floating | tab: the ONE mode. Fixed is flat, taking its area's room; overlay draws over the view with a shadow, the area giving its room back; floating is off its area, anywhere in its room, moved by its header and resized by its corner (data-x, data-y, data-width, data-height, written at the end of each move or resize); tab is shrunk to a tab, turned 90 degrees, on its area's edge, which opens it as it was. None: fixed in an area, an overlay on the window's edge where it has none. The AREA writes it on every panel in it (max 2); floating is its own"
     },
     {
       "$type": "prop",
@@ -514,15 +485,6 @@
         "none"
       ],
       "description": "`none`: the body has no padding, for content that fills it (a list)"
-    },
-    {
-      "$type": "prop",
-      "name": "data-poppable",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "show the docking buttons (Dock as overlay, Dock as fixed) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left"
     },
     {
       "$type": "prop",
@@ -553,7 +515,7 @@
         "start",
         "end"
       ],
-      "description": "start | end: the edge it docks to, written from data-fixed; kept, a panel overlaid out of its area stays on it"
+      "description": "start | end: the area it docks to (the default is end); kept, a panel overlaid out of its area stays on its edge"
     },
     {
       "$type": "prop",
@@ -685,7 +647,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, searchPlaceholder?, searchable?, side?, updated?, width?, x?, y? }",
+    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, floatable?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, mode?, padding?, searchPlaceholder?, searchable?, side?, updated?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -693,11 +655,6 @@
       "$type": "state",
       "name": "maximised",
       "selector": ":host([data-maximised])"
-    },
-    {
-      "$type": "state",
-      "name": "minimised",
-      "selector": ":host([data-minimised])"
     },
     {
       "$type": "state",
@@ -749,12 +706,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (open, search, dockState, minimised, side, tabbed, shown). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (open, search, was, dockState, minimised, mode, side, shown). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (show, notify, hide, close, front, minimise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (show, notify, hide, close, requestMode, minimise). See $extensions.sherpa.methods."
     },
     {
       "$type": "capability",
@@ -799,23 +756,13 @@
     },
     {
       "$type": "event",
-      "name": "panel-minimise",
-      "description": "The reader pressed Minimise, or its tab",
+      "name": "panel-mode-change",
+      "description": "A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own",
       "bubbles": true,
+      "cancelable": true,
       "composed": true,
       "detail": {
-        "minimised": "boolean"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "panel-pop",
-      "description": "The reader pressed the docking button (Dock as overlay, or Dock as inline); side: start | end",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "fixed": "boolean",
-        "side": "'end' | 'start'"
+        "mode": "PanelMode"
       }
     },
     {
@@ -826,16 +773,6 @@
       "composed": true,
       "detail": {
         "reason": "'page' | 'reader' | 'width'"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "panel-float",
-      "description": "The reader pressed Float or Dock",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "floating": "boolean"
       }
     },
     {
@@ -859,12 +796,6 @@
         "height": "number",
         "width": "number"
       }
-    },
-    {
-      "$type": "event",
-      "name": "panel-front",
-      "bubbles": true,
-      "composed": true
     }
   ],
   "tokens": {
@@ -914,15 +845,15 @@
         },
         {
           "$type": "method",
-          "name": "front",
-          "args": "",
-          "description": "Bring it to the front of the panels docked beside it in its area: the area hears it."
+          "name": "requestMode",
+          "args": "mode: PanelMode",
+          "description": "Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody answering, a panel with no area is its own."
         },
         {
           "$type": "method",
           "name": "minimise",
           "args": "on = !this.minimised",
-          "description": "Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here."
+          "description": "Shrink to a tab (`on`), or open from it as it was; with no word, the other of the two. The keys and the buttons come here. The area mirrors it on the panel beside this one."
         }
       ],
       "commands": [
@@ -952,6 +883,11 @@
           "access": "read-write"
         },
         {
+          "name": "was",
+          "type": "PanelMode",
+          "access": "read-write"
+        },
+        {
           "name": "dockState",
           "type": "'floating' | 'tab' | 'hover' | 'overlay' | 'fixed'",
           "access": "read"
@@ -962,13 +898,13 @@
           "access": "read"
         },
         {
-          "name": "side",
-          "type": "'start' | 'end'",
+          "name": "mode",
+          "type": "PanelMode",
           "access": "read"
         },
         {
-          "name": "tabbed",
-          "type": "boolean",
+          "name": "side",
+          "type": "'start' | 'end'",
           "access": "read"
         },
         {

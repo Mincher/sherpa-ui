@@ -2158,7 +2158,7 @@ that reaches the page belongs on the scale, not in a baseline.
   event only says `shiftKey`. Both held, or neither seen, name no side; a blur forgets them.
 - **A field being typed in keeps its keys**, and Alt and Cmd chords are left alone.
 - The panels answer `minimise(on?)`, `front()`, `minimised`, `side` and `shown`; a shut-to-tab by key also
-  shuts its area's others, as the button does (`T-an-area-with-two-panels-is-tabbed`).
+  shuts its area's others, as the button does (`T-an-area-holds-two-panels-stacked`).
 
 - Site: `src/core/ui/panel-keys.ts`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`

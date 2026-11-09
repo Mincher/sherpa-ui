@@ -129,6 +129,13 @@
                         "slot": "panel-end",
                         "data-accepts": "panel"
                       }
+                    },
+                    {
+                      "slot": "panel-float",
+                      "attrs": {
+                        "slot": "panel-float",
+                        "data-accepts": "panel"
+                      }
                     }
                   ]
                 }
@@ -276,6 +283,14 @@
         "panel"
       ],
       "description": "a panel on the trailing side — details, or Ask."
+    },
+    {
+      "$type": "slot",
+      "name": "panel-float",
+      "accepts": [
+        "panel"
+      ],
+      "description": "the floating panels, off their areas: they float in the body"
     },
     {
       "$type": "slot",

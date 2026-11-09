@@ -29,7 +29,7 @@ async function stage(page: Page): Promise<void> {
     for (const p of panels) { await p.rendered; await window.__settled(); p.show(); await window.__settled(); }
   });
 }
-const tabs = (page: Page) => page.evaluate(() => ['l1', 'r1', 'r2'].map((id) => document.getElementById(id)!.hasAttribute('data-minimised')));
+const tabs = (page: Page) => page.evaluate(() => ['l1', 'r1', 'r2'].map((id) => document.getElementById(id)!.getAttribute('data-mode') === 'tab'));
 const chord = async (page: Page, shift: 'ShiftLeft' | 'ShiftRight', key: string, ctrl = false): Promise<void> => {
   // Ctrl is Cmd on a Mac.
   const mod = await page.evaluate(() => (/mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control'));

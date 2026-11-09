@@ -268,7 +268,7 @@ test('maximise fills the window and shows the trail; minimise brings the panel b
   expect(r.told).toEqual([{ maximised: true }, { maximised: false }]);
 });
 
-/** Pop in: a fixed panel in a panel area of the shell, flush (TODO 796). TRAP T-a-panel-pops-into-the-end-area */
+/** Pop in: a fixed panel in a panel area of the shell, flush (TODO 796). TRAP T-a-panel-has-four-modes */
 test.describe('Pop in and Pop out', () => {
   /** A shell and a poppable panel beside it, the panel open. */
   const stage = async (page: import('@playwright/test').Page) => {
@@ -455,7 +455,7 @@ test.describe('Pop in and Pop out', () => {
     expect(display).toBe('none');
   });
 
-  test('a second panel popping in shares the area with the first, a tab each (TRAP T-an-area-with-two-panels-is-tabbed)', async ({ page }) => {
+  test('a second panel popping in shares the area with the first, a tab each (TRAP T-an-area-holds-two-panels-stacked)', async ({ page }) => {
     await stage(page);
     await press(page);
     const r = await page.evaluate(async () => {

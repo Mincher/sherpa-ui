@@ -1,11 +1,15 @@
 /**
- * sherpa-overlay-panel — a NON-modal panel on native <dialog>: on the right edge, fixed in a
- * panel area of the shell, or floating.
+ * sherpa-overlay-panel — a NON-modal panel on native <dialog>, in one of four MODES (`data-mode`): fixed in
+ * a panel area, an overlay over the content, floating, or a tab on its area's edge. The AREA that holds it
+ * writes the mode on every panel in it; a panel only ASKS (`panel-mode-change`).
  *
  * `dialog.show()`, never `showModal()`: no backdrop, no focus trap, no
  * ESC-to-close, and the page behind stays interactive.
  *
  * @prop {boolean} open — whether the panel is open (delegates to <dialog>)
+ *
+ * Map:
+ * - PanelMode — The four modes of a panel.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
@@ -18,18 +22,11 @@ import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
-/** Move a node and keep its focus. A browser with no `moveBefore` drops it on the way. */
-function moveInto(parent: Node, node: ChildNode, before: ChildNode | null): void {
-  if ('moveBefore' in parent) {
-    (parent as ParentNode).moveBefore(node, before);
-    return;
-  }
-  let active = document.activeElement;
-  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
-  parent.insertBefore(node, before);
-  // After the slotchange: the shell's area is not drawn yet, and a hidden box takes no focus.
-  if (active instanceof HTMLElement) queueMicrotask(() => (active as HTMLElement).focus());
-}
+/** The four modes of a panel. Fixed, overlay and tab are of an area; floating is independent of it. */
+export type PanelMode = 'fixed' | 'overlay' | 'floating' | 'tab';
+const MODE_VALUES: readonly PanelMode[] = ['fixed', 'overlay', 'floating', 'tab'];
+/** The hosts that dock a panel by its slot: a canvas, a panel area, the app shell. */
+const HOSTS = ['sherpa-layout-canvas', 'sherpa-layout-panels', 'sherpa-app-shell'];
 
 /** The two button groups, in order. */
 const DOCKS = ['dock-overlay', 'dock-fixed', 'float'] as const;
@@ -59,38 +56,31 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-maximised': { type: 'boolean', kind: 'style' },
     'data-collapsible': { type: 'boolean', kind: 'style' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
-    'data-poppable': { type: 'boolean', kind: 'style' },
-    // A fixed panel, in a panel area of the app shell. TRAP T-a-panel-pops-into-the-end-area
-    'data-fixed': { type: 'boolean', kind: 'behaviour' },
     // The ONE orientation of a panel: the area it docks to, `start` or else `end`; overlaid out of its area it stays on that edge. TRAP T-an-overlaid-panel-keeps-its-side
     'data-side': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
+    // The ONE mode: fixed (flat in its area's room), overlay (over the content), floating (off its area, anywhere in its room) or tab
+    // (on its area's edge). None is fixed in an area, an overlay on the window's edge where there is none. TRAP T-a-panel-has-four-modes
+    'data-mode': { type: 'enum', kind: 'behaviour', values: ['fixed', 'overlay', 'floating', 'tab'] },
     'data-floatable': { type: 'boolean', kind: 'style' },
     // Shrunk to a tab on its area's edge; pressed, it opens as it was. TRAP T-a-minimised-panel-is-a-tab
     'data-minimisable': { type: 'boolean', kind: 'style' },
-    // Docked over the content, not in its room (a panel slotted in a layout; a window panel says it by no `data-fixed`).
-    'data-overlay': { type: 'boolean', kind: 'behaviour' },
     // A tab opens its panel as a docked overlay while the pointer is on it. TRAP T-a-panel-peeks-from-its-tab
     'data-hover-open': { type: 'boolean', kind: 'style' },
-    'data-minimised': { type: 'boolean', kind: 'behaviour' },
-    // Written by the area it docks in: the one panel in front of several. TRAP T-an-area-with-two-panels-is-tabbed
-    'data-current': { type: 'boolean', kind: 'style' },
     // Something changed while it was a tab: the tab is active and wears a mark.
     'data-updated': { type: 'boolean', kind: 'style' },
-    // Lifted off its edge or its area, anywhere in the window. TRAP T-a-floating-panel-is-a-state
-    'data-floating': { type: 'boolean', kind: 'behaviour' },
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-width': { type: 'number', kind: 'behaviour' },
     'data-height': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['open', 'data-search-placeholder', 'data-side', 'data-x', 'data-y', 'data-width', 'data-height'];
+  static override observed = ['open', 'data-search-placeholder', 'data-side', 'data-mode', 'data-x', 'data-y', 'data-width', 'data-height'];
 
   /** The native dialog the panel draws in, NON-modal. */
   #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
     open: (dialog) => {
       this.#place();
       // Opened floating, it comes to the front. TRAP T-a-pressed-panel-comes-to-the-front
-      if (this.hasAttribute('data-floating')) this.#floatBox.raise();
+      if (this.#mode() === 'floating') this.#floatBox.raise();
       dialog.show();
       // The CONTAINER takes the focus, not its first control (the grip, in Chromium); Tab goes on to that.
       dialog.focus({ preventScroll: true });
@@ -115,8 +105,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
     this.$('.expand')?.addEventListener('button-click', this.#onExpand);
     this.$('.external')?.addEventListener('button-click', this.#onExternal);
-    this.$('.dock-overlay')?.addEventListener('button-click', () => this.#onDock(false));
-    this.$('.dock-fixed')?.addEventListener('button-click', () => this.#onDock(true));
+    this.$('.dock-overlay')?.addEventListener('button-click', () => this.#onDock('overlay'));
+    this.$('.dock-fixed')?.addEventListener('button-click', () => this.#onDock('fixed'));
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
     this.$('.minimise')?.addEventListener('button-click', this.#onMinimiseButton);
     // A tap (or a click) on the tab shows its panel as a docked overlay, as a hover does; the docking button then docks it where it was.
@@ -126,7 +116,9 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     // Attributes put on it before this first render (a kept state, handed back as it connects) raised no change: read them now.
-    this.toggleState('minimised', this.hasAttribute('data-minimised'));
+    this.#last = this.#mode();
+    if (this.#last === 'fixed' || this.#last === 'overlay') this.#docked = this.#last;
+    this.toggleState('minimised', this.#last === 'tab');
     this.#place();
     SherpaOverlayPanel.#stack();
     // At load the shell's areas have no box yet: stack again once they have one, so a tab starts at its area's corner.
@@ -185,10 +177,8 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.#surface.follow();
       SherpaOverlayPanel.#stack();
     } else if (name === 'data-searchable' || name === 'data-search-placeholder') this.#syncSearch();
-    else if (name === 'data-fixed' || name === 'data-side') this.#place();
-    else if (name === 'data-minimised') this.#minimise();
-    else if (name === 'data-overlay') this.#place();
-    else if (name === 'data-floating') this.#float();
+    else if (name === 'data-side') this.#place();
+    else if (name === 'data-mode') this.#onMode();
     else if (FLOAT_ATTRS.includes(name)) this.#floatBox.draw();
     else if (name !== 'data-maximised') {
       this.#syncHeader();
@@ -271,7 +261,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Say something changed: as a tab it turns active and wears a mark, until it is opened. */
   notify(): void {
-    if (this.hasAttribute('data-minimised') && this.open) this.set('data-updated', true);
+    if (this.#mode() === 'tab' && this.open) this.set('data-updated', true);
   }
 
   /** Tabs of the open minimised panels stack down the edge, in the order they were shrunk: one stack
@@ -285,7 +275,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     const ready = !shell || (!!layout && (top > 0 || shell.hasAttribute('data-no-header')));
     // One control group of tabs for each side of each room: a lone tab is solo, several are stitched by the group's positions.
     const groups = new Map<Element | null, Record<'start' | 'end', SherpaOverlayPanel[]>>();
-    for (const panel of document.querySelectorAll<SherpaOverlayPanel>('sherpa-overlay-panel[data-minimised][open]')) {
+    for (const panel of document.querySelectorAll<SherpaOverlayPanel>('sherpa-overlay-panel[data-mode="tab"][open]')) {
       const room = panel.#slotted() ? panel.parentElement : null;
       const sides = groups.get(room) ?? { start: [], end: [] };
       groups.set(room, sides);
@@ -297,7 +287,7 @@ export class SherpaOverlayPanel extends SherpaElement {
           const tab = panel.$<HTMLElement>('.tab');
           tab?.style.setProperty('--_tab-index', String(index));
           tab?.style.setProperty('--_tab-top', `${Math.round(top)}px`);
-          tab?.toggleAttribute('data-stacked', ready);
+          tab?.toggleAttribute('data-stacked', ready || panel.#hosted());
         });
       }
     }
@@ -317,10 +307,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.hide();
   }
 
-  /** Where the panel sat before it popped in; null while it is out of the area. */
-  #home: { parent: ParentNode; before: ChildNode | null } | null = null;
-
-  /** The area it pops into: the one `data-fixed` last named, so Pop in goes back to it. */
+  /** The area it docks to: the one `data-side` names. */
   #dock: 'start' | 'end' = 'end';
 
   /** The area `data-side` names: `start`, else the end. The one orientation of a panel, in every host. */
@@ -328,90 +315,102 @@ export class SherpaOverlayPanel extends SherpaElement {
     return this.getAttribute('data-side') === 'start' ? 'start' : 'end';
   }
 
-  /** Is it slotted into a canvas's or a panel area's own slot: docked there by its markup, with no
-   *  shell to pop into? TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
-  #slotted(): 'start' | 'end' | null {
+  /** Is it a child of a host that docks it by its slot: a canvas, a panel area, the app shell? TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
+  #hosted(): boolean {
     const host = this.parentElement;
-    if (!host || (host.localName !== 'sherpa-layout-canvas' && host.localName !== 'sherpa-layout-panels')) return null;
-    const side = this.#side();
-    if (this.slot !== `panel-${side}`) this.slot = `panel-${side}`;
-    return side;
+    return !!host && HOSTS.includes(host.localName);
   }
 
-  /** The shell whose area can take the panel: none, no room, or the host's own panel there says no. */
-  #area(): Element | null {
-    const shell = document.querySelector('sherpa-app-shell');
-    if (!shell || shell.hasAttribute('data-no-room')) return null;
-    const held = shell.querySelector(`:scope > [slot="panel-${this.#dock}"]`);
-    return held && !(held instanceof SherpaOverlayPanel) ? null : shell;
+  /** The side of the host it docks on, or none where it has no host: then it is independent, at the window's edge. */
+  #slotted(): 'start' | 'end' | null {
+    return this.#hosted() ? this.#side() : null;
   }
 
-  /** Put the panel where `data-fixed` and the room say. TRAP T-a-panel-pops-into-the-end-area */
+  /** Its mode, whole: the attribute, or its default. Fixed and overlay are of an area, so with no host a panel is an overlay on the
+   *  window's edge. */
+  #mode(): PanelMode {
+    const said = this.getAttribute('data-mode') as PanelMode | null;
+    const mode = said && MODE_VALUES.includes(said) ? said : 'fixed';
+    return this.#hosted() || mode === 'floating' || mode === 'tab' ? mode : 'overlay';
+  }
+
+  /** What it was before it became a tab: where a tab opens to. */
+  #was: PanelMode | undefined;
+  /** The last docked mode it had: where a float docks back to. */
+  #docked: 'fixed' | 'overlay' | undefined;
+  /** The mode it had the last time it looked. */
+  #last: PanelMode | undefined;
+
+  /** The mode it opens to from a tab, as it was. */
+  get was(): PanelMode {
+    return this.#was ?? this.#dockMode();
+  }
+  set was(mode: PanelMode) {
+    if (MODE_VALUES.includes(mode)) this.#was = mode;
+  }
+
+  /** The docked mode a float goes back to: the last it had, else fixed in an area, an overlay without one. */
+  #dockMode(): 'fixed' | 'overlay' {
+    return this.#docked ?? (this.#hosted() ? 'fixed' : 'overlay');
+  }
+
+  /** Put the panel where its host, its side and its mode say: its slot, and its states. TRAP T-a-panel-slotted-in-a-layout-is-docked-there */
   #place = (): void => {
     if (!this.isConnected) return;
-    const floating = this.#floats();
-    const minimised = this.hasAttribute('data-minimised');
-    // Slotted into a layout: docked there by its slot, and floating or a tab in that layout's room.
-    const layout = this.#slotted();
-    this.toggleState('in-layout', !!layout);
-    if (layout) {
-      this.#dock = layout;
-      this.toggleState('no-area', false);
-      this.toggleState('tab-start', layout === 'start');
-      const overlay = this.hasAttribute('data-overlay');
-      this.toggleState('in-area', !floating && !minimised && !overlay);
-      // Docked over the view, as an overlay, or peeking from its tab: the area has given its room back.
-      this.toggleState('overlaid', ((overlay && !minimised) || this.hasState('peeking')) && !floating);
-      this.toggleState('floating', floating);
-      this.#syncSide();
-      this.#syncPop();
-      this.#floatBox.floated(floating);
-      return;
-    }
+    const mode = this.#mode();
+    const hosted = this.#hosted();
     this.#dock = this.#side();
-    const shell = this.#area();
-    this.toggleState('no-area', !shell);
+    this.toggleState('in-layout', hosted);
     this.toggleState('tab-start', this.#dock === 'start');
-    // In the other area: out first. TRAP T-a-panel-pops-into-the-end-area
-    if (this.#home && this.slot !== `panel-${this.#dock}`) this.#popOut();
-    // Floating, a fixed panel leaves its area, as Pop out does: the area gives its room back. A tab stays in it, and the area hugs the tabs.
-    if (shell && this.hasAttribute('data-fixed') && !floating) this.#popIn(shell);
-    else this.#popOut();
-    this.toggleState('in-area', !!this.#home && !minimised);
-    this.toggleState('floating', floating);
+    if (hosted) {
+      // A floating panel is out of its area, in the host's float layer; a tab that was floating stays there too.
+      const want = mode === 'floating' || (mode === 'tab' && this.#was === 'floating') ? 'panel-float' : `panel-${this.#dock}`;
+      if (this.slot !== want) this.slot = want;
+    } else if (this.slot) this.removeAttribute('slot');
+    this.toggleState('in-area', hosted && mode === 'fixed');
+    // Docked over the view, as an overlay, or peeking from its tab: the area has given its room back.
+    this.toggleState('overlaid', hosted && (mode === 'overlay' || this.hasState('peeking')));
+    this.toggleState('floating', mode === 'floating');
     this.#syncSide();
     this.#syncPop();
     this.#syncGroup();
-    this.#floatBox.floated(floating);
+    this.#floatBox.floated(mode === 'floating');
   };
 
-  /** Shrink to a tab, or open as it was: the area gives its room back and takes it again. */
-  #minimise(): void {
-    const minimised = this.hasAttribute('data-minimised');
+  /** Its mode changed (by the area, or by itself where it has none): follow it. */
+  #onMode(): void {
+    const mode = this.#mode();
+    const prev = this.#last;
+    this.#last = mode;
+    if (mode === prev) return;
+    if (mode === 'fixed' || mode === 'overlay') this.#docked = mode;
+    if (mode === 'tab' && prev && prev !== 'tab') this.#was = prev;
     // Opened for good (or shut): no longer a peek.
-    if (!minimised && this.hasState('peeking')) this.#peek(false);
-    this.toggleState('minimised', minimised);
-    this.set('data-updated', false);
+    if (prev === 'tab' && mode !== 'tab') {
+      if (this.hasState('peeking')) this.#peek(false);
+      this.set('data-updated', false);
+    }
+    this.toggleState('minimised', mode === 'tab');
+    // The first float lifts it where it is drawn.
+    if (mode === 'floating' && prev !== undefined) this.#lift();
     this.#place();
     SherpaOverlayPanel.#stack();
-    if (minimised) return;
-    if (this.hasAttribute('data-floating')) this.#floatBox.raise();
+    if (mode === 'floating') this.#floatBox.raise();
   }
 
-  /** Float, or dock back where it came from: the right edge, or the fixed area. */
-  #float(): void {
-    const floating = this.hasAttribute('data-floating');
-    if (floating) this.#lift();
-    this.#place();
+  /** Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody
+   *  answering, a panel with no area is its own. TRAP T-a-panel-has-four-modes */
+  requestMode(mode: PanelMode): void {
+    if (this.emit('panel-mode-change', { mode }, { cancelable: true })) this.set('data-mode', mode);
   }
 
-  /** Floating, in the window: its box, moved by the header bar and resized by the corner. TRAP T-a-floating-panel-is-a-state */
+  /** Floating, in its room: its box, moved by the header bar and resized by the corner. TRAP T-a-floating-panel-is-a-state */
   readonly #floatBox: FloatBox = new FloatBox({
     el: this,
     box: () => this.$<HTMLElement>('.root'),
     // The window, or the layout it is slotted in.
     room: () => this.#slotted() ? roomOf(this) : ({ x: 0, y: 0, width: document.documentElement.clientWidth, height: document.documentElement.clientHeight }),
-    free: () => this.hasAttribute('data-floating') && !this.hasAttribute('data-maximised'),
+    free: () => this.#mode() === 'floating' && !this.hasAttribute('data-maximised'),
     set: (attr, value) => this.set(attr, value),
     num: (attr) => this.num(attr, NaN),
     toggleState: (name, on) => this.toggleState(name, on),
@@ -434,27 +433,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     return { x: innerWidth - width, y: 0, width, height: innerHeight };
   }
 
-  /** Into its area, with the place it left noted. The panels there share it, a tab each. TRAP T-an-area-with-two-panels-is-tabbed */
-  #popIn(shell: Element): void {
-    const parent = this.parentNode;
-    if (this.#home || !parent) return;
-    const slot = `panel-${this.#dock}`;
-    this.#home = { parent, before: this.nextSibling };
-    this.slot = slot;
-    moveInto(shell, this, null);
-  }
-
-  /** Back to the place it left, or the page's end if that has gone. */
-  #popOut(): void {
-    if (!this.#home) return;
-    const { parent, before } = this.#home;
-    this.#home = null;
-    this.removeAttribute('slot');
-    this.removeAttribute('data-current');
-    const back = parent.isConnected ? parent : document.body;
-    moveInto(back, this, before?.parentNode === back ? before : null);
-  }
-
   /** The buttons of the two groups: the first and the last that show wear the group's ends, which :first-child and
    *  :last-child give a button that is hidden. A divider stands after each group that shows, while a later one does too.
    *  TRAP T-a-minimised-panel-is-a-tab */
@@ -462,7 +440,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     // The same rules the CSS hides them by, read from the host: a computed style is not drawn yet at the first render.
     const has = (attr: string): boolean => this.hasAttribute(attr);
     const maximised = has('data-maximised');
-    const docked = has('data-poppable') && !maximised && !this.hasState('no-area') && !this.hasState('floating');
+    const docked = this.#hosted() && !maximised && !this.hasState('floating');
     const visible: Record<string, boolean> = {
       'dock-overlay': docked,
       'dock-fixed': docked,
@@ -569,36 +547,28 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Is it docked FIXED (flat, in its area's room) and not an overlay on the content? */
   #isFixed(): boolean {
-    return this.#slotted() ? !this.hasAttribute('data-overlay') : this.hasAttribute('data-fixed');
+    return this.#mode() === 'fixed';
   }
 
   /** Is it a floating box now? A floating panel that is a tab is a tab: its hover shows an overlay, whatever it was last open as.
    *  TRAP T-a-panel-peeks-from-its-tab */
   #floats(): boolean {
-    return this.hasAttribute('data-floating') && !this.hasAttribute('data-minimised');
+    return this.#mode() === 'floating';
   }
 
-  /** Its docked state, one word: `floating`, a `tab`, a tab `hover`ed open as a docked overlay, `overlay` or `fixed`. A fixed panel is never hovered:
+  /** Its mode in one word: `floating`, a `tab`, a tab `hover`ed open as a docked overlay, `overlay` or `fixed`. A fixed panel is never hovered:
    *  a hover opens it over the content. */
   get dockState(): 'floating' | 'tab' | 'hover' | 'overlay' | 'fixed' {
-    if (this.#floats()) return 'floating';
-    if (this.hasAttribute('data-minimised')) return this.hasState('peeking') ? 'hover' : 'tab';
-    return this.#isFixed() ? 'fixed' : 'overlay';
+    const mode = this.#mode();
+    if (mode === 'tab') return this.hasState('peeking') ? 'hover' : 'tab';
+    return mode;
   }
 
-  /** Dock as an overlay, or fixed in its area. It reports `panel-pop`: a press is the reader's choice, a lost room is not. TRAP T-a-panel-peeks-from-its-tab */
-  #onDock = (fixed: boolean): void => {
-    const hovering = this.hasState('peeking');
+  /** The Fixed or Overlay button: ask the area. A press is the reader's choice, a lost room is not. TRAP T-a-panel-has-four-modes */
+  #onDock = (mode: 'fixed' | 'overlay'): void => {
     // The other docked box is as wide as this one: the width is the reader's, not the state's.
-    this.#matchWidth(fixed);
-    if (this.#slotted()) this.set('data-overlay', !fixed);
-    else this.set('data-fixed', fixed);
-    // Docked from a hover: it stays open, in the state it was docked in, and no longer floating.
-    if (hovering) {
-      this.set('data-floating', false);
-      this.minimise(false);
-    }
-    this.emit('panel-pop', { fixed, side: this.#dock });
+    this.#matchWidth(mode === 'fixed');
+    this.requestMode(mode);
   };
 
   /** Hand the width it is drawn at to the state it is going to: an overlay's own, or its area's. */
@@ -610,7 +580,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       return;
     }
     const side = this.#dock;
-    const host = this.#slotted() ? this.parentElement : document.querySelector('sherpa-app-shell');
+    const host = this.#hosted() ? this.parentElement : null;
     if (!host) return;
     // The area is the card and its inset on both sides. TODO 871
     const inset = 2 * (parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-display-mode-space-xs')) || 8);
@@ -638,7 +608,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   #onPeek = (event: Event): void => {
     // A finger does not hover: on a touch screen a tab is tapped (`#onTab`).
     if ((event as PointerEvent).pointerType === 'touch') return;
-    if (!this.hasAttribute('data-hover-open') || !this.hasAttribute('data-minimised') || !this.open) return;
+    if (!this.hasAttribute('data-hover-open') || this.#mode() !== 'tab' || !this.open) return;
     this.#peek(true);
     // The panel opens where the tab stood, so the pointer is on it; if it is not, there is nothing to leave from.
     const { clientX: x, clientY: y } = event as PointerEvent;
@@ -651,7 +621,7 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** The tab was pressed: its panel shows as a docked overlay until the pointer leaves it or a press lands outside. */
   #onTab = (): void => {
-    if (this.hasAttribute('data-minimised') && this.open && !this.hasState('peeking')) this.#peek(true);
+    if (this.#mode() === 'tab' && this.open && !this.hasState('peeking')) this.#peek(true);
   };
 
   /** A press outside a peeking panel, or Escape, ends the peek: the way out for a touch screen, which has no leaving. */
@@ -685,22 +655,17 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.on(document, 'pointerdown', this.#onPeekPress, { while: this.#peekEnds.signal });
       this.on(document, 'keydown', this.#onPeekPress, { while: this.#peekEnds.signal });
     }
-    if (this.#slotted()) this.toggleState('overlaid', (on || (this.hasAttribute('data-overlay') && !this.hasAttribute('data-minimised'))) && !this.#floats());
+    if (this.#slotted()) this.toggleState('overlaid', on || this.#mode() === 'overlay');
     this.#syncPop();
   }
 
-  /** Float, or dock, and report it. TRAP T-a-floating-panel-is-a-state */
+  /** Float, or dock back where it came from: the area's own mode. TRAP T-a-floating-panel-is-a-state */
   #onFloat = (): void => {
-    const floating = !this.hasAttribute('data-floating');
     // Floated from a panel shown on hover, it stays: a floating panel is no peek, and nothing of the peek (its leaving, its outside press) ends it.
-    const hovering = this.hasState('peeking');
-    this.set('data-floating', floating);
-    if (hovering) this.minimise(false);
-    this.emit('panel-float', { floating });
+    this.requestMode(this.#floats() ? this.#dockMode() : 'floating');
   };
 
-  /** Minimise to a tab, or open the tab; and report it. TRAP T-a-minimised-panel-is-a-tab */
-  /** The Minimise button: a panel shown on hover is already a tab, so it goes back to it; otherwise the panel shrinks to one. */
+  /** The Minimise button: a panel shown on hover is already a tab, so it goes back to it; otherwise the panel shrinks to one. TRAP T-a-minimised-panel-is-a-tab */
   #onMinimiseButton = (): void => {
     if (this.hasState('peeking')) this.#peek(false);
     else this.minimise();
@@ -708,25 +673,17 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** Is it a tab now? */
   get minimised(): boolean {
-    return this.hasAttribute('data-minimised');
+    return this.#mode() === 'tab';
+  }
+
+  /** Its mode, whole. */
+  get mode(): PanelMode {
+    return this.#mode();
   }
 
   /** The side of the window it docks on: the area it sits in, or last sat in. */
   get side(): 'start' | 'end' {
-    return this.#slotted() ?? this.#dock;
-  }
-
-  /** Has it a tab: on the edge, or in the row of an area that holds several open panels? */
-  get tabbed(): boolean {
-    if (this.minimised) return true;
-    if (!this.#home && !this.#slotted()) return false;
-    const mates = this.parentElement?.querySelectorAll<SherpaOverlayPanel>(`:scope > [slot="${this.slot}"]`) ?? [];
-    return [...mates].filter((m) => m.open).length > 1;
-  }
-
-  /** Bring it to the front of the panels docked beside it in its area: the area hears it. TRAP T-an-area-with-two-panels-is-tabbed */
-  front(): void {
-    this.emit('panel-front');
+    return this.#side();
   }
 
   /** Is it open, for the panel keys? */
@@ -734,22 +691,12 @@ export class SherpaOverlayPanel extends SherpaElement {
     return this.open;
   }
 
-  /** Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here. */
+  /** Shrink to a tab (`on`), or open from it as it was; with no word, the other of the two. The keys and the buttons come here.
+   *  The area mirrors it on the panel beside this one. TRAP T-an-area-holds-two-panels-stacked */
   minimise(on = !this.minimised): void {
-    const minimised = on;
-    if (minimised === this.minimised) return;
-    // Docked with others in its area, one minimises them all. Floating, it is its own. TRAP T-an-area-with-two-panels-is-tabbed
-    if (minimised && (this.#home || this.#slotted())) {
-      const mates = this.parentElement?.querySelectorAll<SherpaOverlayPanel>(`:scope > [slot="${this.slot}"]`) ?? [];
-      for (const mate of mates) {
-        if (mate === this || !(mate instanceof SherpaOverlayPanel) || mate.hasAttribute('data-minimised')) continue;
-        mate.set('data-minimised', true);
-        mate.emit('panel-minimise', { minimised: true });
-      }
-    }
-    this.set('data-minimised', minimised);
-    this.emit('panel-minimise', { minimised });
-  };
+    if (on === this.minimised) return;
+    this.requestMode(on ? 'tab' : this.was);
+  }
 
   /** The open-elsewhere button — the host decides where. */
   #onExternal = (): void => {

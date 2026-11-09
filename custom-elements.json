@@ -654,6 +654,10 @@
               "description": "a panel on the trailing side — details, or Ask. (accepts: panel)"
             },
             {
+              "name": "panel-float",
+              "description": "the floating panels, off their areas: they float in the body (accepts: panel)"
+            },
+            {
               "name": "overlay",
               "description": "covers the header and content, beside the rail — a <sherpa-dialog data-type=\"overlay\"> (accepts: dialog)"
             }
@@ -4954,6 +4958,10 @@
               "description": "(accepts: panel)"
             },
             {
+              "name": "panel-float",
+              "description": "the floating cards, off their areas: they float in the canvas (accepts: panel)"
+            },
+            {
               "name": "banner",
               "description": "notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) (accepts: content)"
             },
@@ -5169,7 +5177,7 @@
           "name": "SherpaLayoutPanels",
           "tagName": "sherpa-layout-panels",
           "customElement": true,
-          "description": "a panel AREA each side of the content. A docked panel fills its area flush, top, side and bottom; the area takes its width and draws the divider, and the content reflows beside it. The area's inner edge resizes it. A panel that floats stays in its area, which gives its width back and becomes the panel's room: the whole layout. The app shell's body and the canvas compose it. Will, TODO 796. TRAP T-a-panel-area-is-a-layout",
+          "description": "a panel AREA each side of the content. A docked panel fills its area flush, top, side and bottom; the area takes its width and draws the divider, and the content reflows beside it. The area's inner edge resizes it. Two panels stack top and bottom. The area OWNS their mode: a panel asks (`panel-mode-change`), the area writes it on both, and a panel that floats leaves for the float layer, whose room is the whole layout. The app shell's body and the canvas compose it. Will, TODO 796. TRAP T-a-panel-area-is-a-layout",
           "attributes": [
             {
               "name": "data-no-room",
@@ -5208,6 +5216,58 @@
                 }
               ],
               "description": "The narrowest an area may be drawn, in px: its least, never over its own max."
+            },
+            {
+              "kind": "method",
+              "name": "docked",
+              "parameters": [
+                {
+                  "name": "side",
+                  "type": {
+                    "text": "PanelSide"
+                  }
+                }
+              ],
+              "description": "The panels docked in an area now: its slot's, open, not hidden as a third."
+            },
+            {
+              "kind": "method",
+              "name": "modeOf",
+              "parameters": [
+                {
+                  "name": "side",
+                  "type": {
+                    "text": "PanelSide"
+                  }
+                }
+              ],
+              "description": "The area's current mode: what its panels share. None, fixed."
+            },
+            {
+              "kind": "method",
+              "name": "dock",
+              "parameters": [
+                {
+                  "name": "panel",
+                  "type": {
+                    "text": "HTMLElement"
+                  }
+                },
+                {
+                  "name": "side",
+                  "type": {
+                    "text": "PanelSide"
+                  }
+                },
+                {
+                  "name": "place",
+                  "type": {
+                    "text": "'top' | 'bottom'"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there. False where the area is full. It joins in the area's current mode."
             }
           ],
           "events": [
@@ -5222,7 +5282,7 @@
           "slots": [
             {
               "name": "panel-start",
-              "description": "the panels docked before the content: shut, gone or with no room they take none; floating, its area is their room. (accepts: panel)"
+              "description": "the panels docked before the content (two at most, stacked top and bottom; a third is not shown): shut, gone or with no room they take none; an overlay or a tab, the area gives its room back. (accepts: panel)"
             },
             {
               "name": "",
@@ -5231,11 +5291,18 @@
             {
               "name": "panel-end",
               "description": "the panels docked after the content, the same (accepts: panel)"
+            },
+            {
+              "name": "panel-float",
+              "description": "the floating panels: off their area, they float in the layout (accepts: panel)"
             }
           ],
           "cssParts": [
             {
               "name": "content"
+            },
+            {
+              "name": "floats"
             },
             {
               "name": "panel-end"
@@ -5248,15 +5315,6 @@
             },
             {
               "name": "panel-start-edge"
-            },
-            {
-              "name": "tab"
-            },
-            {
-              "name": "tabs-end"
-            },
-            {
-              "name": "tabs-start"
             }
           ]
         }
@@ -8389,7 +8447,7 @@
           "name": "SherpaOverlayPanel",
           "tagName": "sherpa-overlay-panel",
           "customElement": true,
-          "description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there",
+          "description": "a NON-modal panel on native <dialog>, in one of four modes: fixed in a panel area, an overlay on its content, floating, or a tab on its area's edge. With no host it is an overlay on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there",
           "attributes": [
             {
               "name": "data-collapsed",
@@ -8401,12 +8459,6 @@
             {
               "name": "data-collapsible",
               "description": "show the collapse toggle",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-current",
               "type": {
                 "text": "boolean"
               }
@@ -8433,22 +8485,8 @@
               }
             },
             {
-              "name": "data-fixed",
-              "description": "a fixed panel, docked flush in a panel area of the page's sherpa-app-shell: `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-floatable",
-              "description": "show the Float / Dock button",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-floating",
-              "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks where it came from",
+              "description": "show the Float button (floating, the Dock one: back to its area, in the area's mode)",
               "type": {
                 "text": "boolean"
               }
@@ -8496,17 +8534,10 @@
               }
             },
             {
-              "name": "data-minimised",
-              "description": "shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens",
+              "name": "data-mode",
+              "description": "fixed | overlay | floating | tab: the ONE mode. Fixed is flat, taking its area's room; overlay draws over the view with a shadow, the area giving its room back; floating is off its area, anywhere in its room, moved by its header and resized by its corner (data-x, data-y, data-width, data-height, written at the end of each move or resize); tab is shrunk to a tab, turned 90 degrees, on its area's edge, which opens it as it was. None: fixed in an area, an overlay on the window's edge where it has none. The AREA writes it on every panel in it (max 2); floating is its own",
               "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-overlay",
-              "description": "a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room",
-              "type": {
-                "text": "boolean"
+                "text": "'fixed' | 'overlay' | 'floating' | 'tab'"
               }
             },
             {
@@ -8514,13 +8545,6 @@
               "description": "`none`: the body has no padding, for content that fills it (a list)",
               "type": {
                 "text": "'none'"
-              }
-            },
-            {
-              "name": "data-poppable",
-              "description": "show the docking buttons (Dock as overlay, Dock as fixed) (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
-              "type": {
-                "text": "boolean"
               }
             },
             {
@@ -8539,7 +8563,7 @@
             },
             {
               "name": "data-side",
-              "description": "start | end: the edge it docks to, written from data-fixed; kept, a panel overlaid out of its area stays on it",
+              "description": "start | end: the area it docks to (the default is end); kept, a panel overlaid out of its area stays on its edge",
               "type": {
                 "text": "'start' | 'end'"
               }
@@ -8606,6 +8630,13 @@
             },
             {
               "kind": "field",
+              "name": "was",
+              "type": {
+                "text": "PanelMode"
+              }
+            },
+            {
+              "kind": "field",
               "name": "dockState",
               "type": {
                 "text": "'floating' | 'tab' | 'hover' | 'overlay' | 'fixed'"
@@ -8622,17 +8653,17 @@
             },
             {
               "kind": "field",
-              "name": "side",
+              "name": "mode",
               "type": {
-                "text": "'start' | 'end'"
+                "text": "PanelMode"
               },
               "readonly": true
             },
             {
               "kind": "field",
-              "name": "tabbed",
+              "name": "side",
               "type": {
-                "text": "boolean"
+                "text": "'start' | 'end'"
               },
               "readonly": true
             },
@@ -8678,9 +8709,16 @@
             },
             {
               "kind": "method",
-              "name": "front",
-              "parameters": [],
-              "description": "Bring it to the front of the panels docked beside it in its area: the area hears it."
+              "name": "requestMode",
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "PanelMode"
+                  }
+                }
+              ],
+              "description": "Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody answering, a panel with no area is its own."
             },
             {
               "kind": "method",
@@ -8691,7 +8729,7 @@
                   "optional": true
                 }
               ],
-              "description": "Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here."
+              "description": "Shrink to a tab (`on`), or open from it as it was; with no word, the other of the two. The keys and the buttons come here. The area mirrors it on the panel beside this one."
             }
           ],
           "events": [
@@ -8721,17 +8759,10 @@
               }
             },
             {
-              "name": "panel-minimise",
-              "description": "The reader pressed Minimise, or its tab",
+              "name": "panel-mode-change",
+              "description": "A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own",
               "type": {
-                "text": "CustomEvent<{ minimised: boolean }>"
-              }
-            },
-            {
-              "name": "panel-pop",
-              "description": "The reader pressed the docking button (Dock as overlay, or Dock as inline); side: start | end",
-              "type": {
-                "text": "CustomEvent<{ fixed: boolean; side: 'end' | 'start' }>"
+                "text": "CustomEvent<{ mode: PanelMode }>"
               }
             },
             {
@@ -8739,13 +8770,6 @@
               "description": "It shut: reader (the default), width or page",
               "type": {
                 "text": "CustomEvent<{ reason: 'page' | 'reader' | 'width' }>"
-              }
-            },
-            {
-              "name": "panel-float",
-              "description": "The reader pressed Float or Dock",
-              "type": {
-                "text": "CustomEvent<{ floating: boolean }>"
               }
             },
             {
@@ -8760,12 +8784,6 @@
               "description": "Its left edge was dragged, or moved by the keys; floating, its corner",
               "type": {
                 "text": "CustomEvent<{ height: number; width: number }>"
-              }
-            },
-            {
-              "name": "panel-front",
-              "type": {
-                "text": "CustomEvent"
               }
             }
           ],

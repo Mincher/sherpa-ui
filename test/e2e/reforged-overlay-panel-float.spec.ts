@@ -18,7 +18,7 @@ const H = 900;
 /** The page behind, a colour no panel draws: a pixel says whose it is. */
 const PAGE: Rgb = [255, 0, 255];
 
-/** A floatable panel, open on the right edge; with `shell`, poppable beside an app shell. */
+/** A floatable panel, open on the right edge; with `shell`, docked in an app shell's end area. */
 async function stage(page: Page, opts: { shell?: boolean; expandable?: boolean } = {}): Promise<void> {
   await page.setViewportSize({ width: W, height: H });
   await page.evaluate(async ({ shell, expandable }) => {
@@ -33,11 +33,12 @@ async function stage(page: Page, opts: { shell?: boolean; expandable?: boolean }
     panel.innerHTML = '<p>body</p>';
     const after = Object.assign(document.createElement('span'), { id: 'after' });
     if (shell) {
-      panel.setAttribute('data-poppable', '');
       const frame = document.createElement('sherpa-app-shell');
       // Its own surface is the page's colour here, so a pixel still says whose it is.
       frame.style.background = 'rgb(255, 0, 255)';
-      root.replaceChildren(frame, panel, after);
+      frame.style.blockSize = '900px';
+      frame.append(panel);
+      root.replaceChildren(frame, after);
     } else {
       root.replaceChildren(panel, after);
     }
@@ -47,7 +48,7 @@ async function stage(page: Page, opts: { shell?: boolean; expandable?: boolean }
     await window.__settled();
     const heard: unknown[] = [];
     (window as unknown as { __heard: unknown[] }).__heard = heard;
-    for (const type of ['panel-float', 'panel-move', 'panel-resize']) {
+    for (const type of ['panel-mode-change', 'panel-move', 'panel-resize']) {
       panel.addEventListener(type, (e) => heard.push({ [type]: (e as CustomEvent).detail }));
     }
   }, opts);
@@ -92,7 +93,7 @@ async function bar(page: Page): Promise<[number, number]> {
 
 const attrs = (page: Page): Promise<Record<string, string | null>> => page.evaluate(() => {
   const p = document.getElementById('float')!;
-  return Object.fromEntries(['data-floating', 'data-x', 'data-y', 'data-width', 'data-height'].map((a) => [a, p.getAttribute(a)]));
+  return Object.fromEntries(['data-mode', 'data-x', 'data-y', 'data-width', 'data-height'].map((a) => [a, p.getAttribute(a)]));
 });
 const heard = (page: Page): Promise<unknown[]> => page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard);
 const style = (page: Page, sel: string, prop: string): Promise<string> => page.evaluate(([s, p]) =>
@@ -139,7 +140,7 @@ test('Float lifts it in place, 16px in; Dock puts it back on the edge at its wid
   await press(page, 'float');
   const lifted = await box(page);
   expect(lifted).toEqual({ x: W - D + 16, y: 16, w: D - 32, h: H - 32 });
-  expect(await attrs(page)).toEqual({ 'data-floating': '', 'data-x': String(lifted.x), 'data-y': '16', 'data-width': String(lifted.w), 'data-height': String(lifted.h) });
+  expect(await attrs(page)).toEqual({ 'data-mode': 'floating', 'data-x': String(lifted.x), 'data-y': '16', 'data-width': String(lifted.w), 'data-height': String(lifted.h) });
   const button = await page.evaluate(() => {
     const b = document.getElementById('float')!.shadowRoot!.querySelector('.float')!;
     return [b.getAttribute('aria-label'), b.getAttribute('data-icon-start')];
@@ -156,7 +157,7 @@ test('Float lifts it in place, 16px in; Dock puts it back on the edge at its wid
   expect((await attrs(page))['data-x']).toBe(String(lifted.x));
   await press(page, 'float');
   expect(await box(page)).toEqual(lifted);
-  expect(await heard(page)).toEqual([{ 'panel-float': { floating: true } }, { 'panel-float': { floating: false } }, { 'panel-float': { floating: true } }]);
+  expect(await heard(page)).toEqual([{ 'panel-mode-change': { mode: 'floating' } }, { 'panel-mode-change': { mode: 'overlay' } }, { 'panel-mode-change': { mode: 'floating' } }]);
 });
 
 /** Float it, at a size with room to move about. */
@@ -186,14 +187,14 @@ test('its header bar drags it anywhere in the window, never past it; a press on 
   expect(moved).toEqual({ ...from, x: from.x - 500, y: from.y + 120 });
   await drawnAt(page, moved);
   expect(await attrs(page)).toMatchObject({ 'data-x': String(moved.x), 'data-y': String(moved.y) });
-  expect(await heard(page)).toEqual([{ 'panel-float': { floating: true } }, { 'panel-move': { x: moved.x, y: moved.y } }]);
+  expect(await heard(page)).toEqual([{ 'panel-mode-change': { mode: 'floating' } }, { 'panel-move': { x: moved.x, y: moved.y } }]);
   expect(moved.h).toBe(400);
 
   // Held on a button and dragged off it: no move, and no press.
   const [bx, by] = centre(await rect(page, '.float'));
   await drag(page, [bx, by], [-300, 200]);
   expect(await box(page)).toEqual(moved);
-  expect((await attrs(page))['data-floating']).toBe('');
+  expect((await attrs(page))['data-mode']).toBe('floating');
 
   // Past the top left, it stops at the window's edge; past the bottom right, at that one.
   await drag(page, await bar(page), [-3000, -3000]);
@@ -281,21 +282,20 @@ test('a host hands the box back by its attributes; the keys move it from the gri
 
 test('a fixed panel floats out of the end area, which gives its room back; Dock puts it back in the area', async ({ page }) => {
   await stage(page, { shell: true });
-  await press(page, 'dock-fixed');
   const area = () => page.evaluate(() => {
     const r = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-end')!.getBoundingClientRect();
     return Math.round(r.width);
   });
   const where = () => page.evaluate(() => {
     const p = document.getElementById('float')!;
-    return { parent: p.parentElement!.localName, slot: p.slot, next: p.nextElementSibling?.id ?? null };
+    return { parent: p.parentElement!.localName, slot: p.slot };
   });
   const fixed = await box(page);
-  expect(await where()).toEqual({ parent: 'sherpa-app-shell', slot: 'panel-end', next: null });
-  expect(await area()).toBeGreaterThan(400);
+  expect(await where()).toEqual({ parent: 'sherpa-app-shell', slot: 'panel-end' });
+  expect(await area()).toBeGreaterThanOrEqual(400);
 
   await press(page, 'float');
-  expect(await where()).toEqual({ parent: 'div', slot: '', next: 'after' });
+  expect(await where()).toEqual({ parent: 'sherpa-app-shell', slot: 'panel-float' });
   expect(await area()).toBe(0);
   const lifted = await box(page);
   // Never under its min height: a short card lifts taller.
@@ -306,10 +306,10 @@ test('a fixed panel floats out of the end area, which gives its room back; Dock 
   await drawnAt(page, await box(page));
 
   await press(page, 'float');
-  expect(await where()).toEqual({ parent: 'sherpa-app-shell', slot: 'panel-end', next: null });
-  expect(await area()).toBeGreaterThan(400);
+  expect(await where()).toEqual({ parent: 'sherpa-app-shell', slot: 'panel-end' });
+  expect(await area()).toBeGreaterThanOrEqual(400);
   expect(await box(page)).toEqual(fixed);
-  expect(await page.evaluate(() => document.getElementById('float')!.hasAttribute('data-fixed'))).toBe(true);
+  expect(await page.evaluate(() => document.getElementById('float')!.getAttribute('data-mode'))).toBe('fixed');
 });
 
 test('floating, it leaves the right edge: one opened there leaves it open; docked, both stay open', async ({ page }) => {
@@ -325,7 +325,7 @@ test('floating, it leaves the right edge: one opened there leaves it open; docke
     const both = [panel.open, other.open];
     // Drawn over the one on the edge.
     const z = [getComputedStyle(panel.shadowRoot!.querySelector('.root')!).zIndex, getComputedStyle(other.shadowRoot!.querySelector('.root')!).zIndex];
-    panel.toggleAttribute('data-floating', false);
+    panel.removeAttribute('data-mode');
     await window.__settled();
     return { both, z, after: [panel.open, other.open] };
   });

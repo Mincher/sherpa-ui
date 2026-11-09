@@ -13,7 +13,7 @@ async function stage(page: Page, attrs = ''): Promise<void> {
   await page.evaluate(async (a) => {
     const root = document.getElementById('root')!;
     root.innerHTML = `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">
-      <sherpa-overlay-panel data-side="start" id="p" data-heading="Nodes" data-minimisable data-poppable data-floatable ${a}><p>body</p></sherpa-overlay-panel>
+      <sherpa-overlay-panel data-side="start" id="p" data-heading="Nodes" data-minimisable data-floatable ${a}><p>body</p></sherpa-overlay-panel>
     </sherpa-layout-canvas>`;
     const panel = document.getElementById('p') as PanelEl;
     await panel.rendered;
@@ -41,7 +41,7 @@ test('fixed is a card with no shadow and takes its area\'s room; Pop makes it an
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await area(page)).toBe(0);
   expect(await look(page)).toMatchObject({ shadow: true, radius: true, display: 'flex' });
-  expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-overlay'))).toBe(true);
+  expect(await page.evaluate(() => document.getElementById('p')!.getAttribute('data-mode') === 'overlay')).toBe(true);
   // Pop again: fixed, flat, its room back.
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await area(page)).toBeGreaterThan(200);
@@ -57,7 +57,7 @@ test('the docking button says what it will do: Dock as overlay from fixed, Dock 
 });
 
 test('with hover-open, the pointer on a tab shows its panel as a docked overlay and hides the tab; leaving the panel brings the tab back at once', async ({ page }) => {
-  await stage(page, 'data-hover-open data-minimised');
+  await stage(page, 'data-hover-open data-mode="tab"');
   const shown = () => page.evaluate(() => {
     const sr = document.getElementById('p')!.shadowRoot!;
     return { panel: getComputedStyle(sr.querySelector('.root')!).display !== 'none', tab: getComputedStyle(sr.querySelector('.tab')!).display !== 'none' };
@@ -80,40 +80,39 @@ test('with hover-open, the pointer on a tab shows its panel as a docked overlay 
 });
 
 test('without hover-open, the pointer on a tab opens nothing', async ({ page }) => {
-  await stage(page, 'data-minimised');
+  await stage(page, 'data-mode="tab"');
   const tab = await page.evaluate(() => { const b = document.getElementById('p')!.shadowRoot!.querySelector('.tab-open')!.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
   await page.mouse.move(tab.x, tab.y);
   await page.waitForTimeout(400);
   expect((await look(page)).display).toBe('none');
 });
 
-/** The four ways a panel is docked, each with what it is called and how to read it. */
+/** The ways a panel is docked in an area, each with what it is called and how to read it. */
 const KINDS = [
-  { name: 'fixed in the shell\'s area', slotted: false, attrs: 'data-fixed', flat: true },
-  { name: 'an overlay on the window\'s edge', slotted: false, attrs: '', flat: false },
-  { name: 'fixed in a canvas\'s area', slotted: true, attrs: '', flat: true },
-  { name: 'an overlay on a canvas', slotted: true, attrs: 'data-overlay', flat: false },
+  { name: 'fixed in the shell\'s area', host: 'shell', attrs: '', flat: true },
+  { name: 'fixed in a canvas\'s area', host: 'canvas', attrs: '', flat: true },
+  { name: 'an overlay on a canvas', host: 'canvas', attrs: 'data-mode="overlay"', flat: false },
 ] as const;
 
 for (const kind of KINDS) {
   test(`${kind.name}: Pop swaps it, Float lifts it off, and Dock puts it back as it was`, async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 800 });
-    await page.evaluate(async ({ slotted, attrs }) => {
+    await page.evaluate(async ({ host, attrs }) => {
       const root = document.getElementById('root')!;
-      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'data-side="start"' : ''} data-heading="P" data-floatable data-poppable data-minimisable ${attrs}><p>body</p></sherpa-overlay-panel>`;
-      root.innerHTML = slotted
+      const panel = `<sherpa-overlay-panel id="p" data-side="start" data-heading="P" data-floatable data-minimisable ${attrs}><p>body</p></sherpa-overlay-panel>`;
+      root.innerHTML = host === 'canvas'
         ? `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">${panel}</sherpa-layout-canvas>`
-        : `<sherpa-app-shell></sherpa-app-shell>${panel}`;
+        : `<sherpa-app-shell style="block-size: 780px">${panel}</sherpa-app-shell>`;
       const p = document.getElementById('p') as PanelEl;
       await p.rendered;
       await window.__settled();
       p.show();
       await window.__settled();
-    }, { slotted: kind.slotted, attrs: kind.attrs });
+    }, { host: kind.host, attrs: kind.attrs });
     const read = () => page.evaluate(() => {
       const p = document.getElementById('p')!;
       const cs = getComputedStyle(p.shadowRoot!.querySelector('.root')!);
-      return { flat: cs.boxShadow === 'none', floating: p.hasAttribute('data-floating'), fixedAttr: p.hasAttribute('data-fixed'), overlayAttr: p.hasAttribute('data-overlay') };
+      return { flat: cs.boxShadow === 'none', floating: p.getAttribute('data-mode') === 'floating', fixedAttr: false, overlayAttr: p.getAttribute('data-mode') === 'overlay' };
     });
     const before = await read();
     expect(before).toMatchObject({ flat: kind.flat, floating: false });
@@ -142,12 +141,12 @@ for (const kind of KINDS) {
 for (const kind of KINDS) {
   test(`${kind.name}: as a tab, hover shows it as a docked overlay for now; a press opens it as it was`, async ({ page, browserName }) => {
     await page.setViewportSize({ width: 1400, height: 800 });
-    await page.evaluate(async ({ slotted, attrs }) => {
+    await page.evaluate(async ({ host, attrs }) => {
       const root = document.getElementById('root')!;
-      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'data-side="start"' : ''} data-heading="P" data-floatable data-poppable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
-      root.innerHTML = slotted
+      const panel = `<sherpa-overlay-panel id="p" data-side="start" data-heading="P" data-floatable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
+      root.innerHTML = host === 'canvas'
         ? `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">${panel}</sherpa-layout-canvas>`
-        : `<sherpa-app-shell></sherpa-app-shell>${panel}`;
+        : `<sherpa-app-shell style="block-size: 780px">${panel}</sherpa-app-shell>`;
       const p = document.getElementById('p') as PanelEl & { minimise(on: boolean): void };
       await p.rendered;
       await window.__settled();
@@ -155,7 +154,7 @@ for (const kind of KINDS) {
       await window.__settled();
       p.minimise(true);
       await window.__settled();
-    }, { slotted: kind.slotted, attrs: kind.attrs });
+    }, { host: kind.host, attrs: kind.attrs });
     const root = () => page.evaluate(() => { const cs = getComputedStyle(document.getElementById('p')!.shadowRoot!.querySelector('.root')!); return { shown: cs.display !== 'none', shadow: cs.boxShadow !== 'none' }; });
     expect((await root()).shown).toBe(false);
     const tab = await page.evaluate(() => { const b = document.getElementById('p')!.shadowRoot!.querySelector('.tab-open')!.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
@@ -163,7 +162,7 @@ for (const kind of KINDS) {
     await expect.poll(async () => (await root()).shown).toBe(true);
     // A docked OVERLAY, whatever it was docked as: over the view, with a shadow. A temporary state: the tab is still a tab.
     expect((await root()).shadow).toBe(true);
-    expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-minimised'))).toBe(true);
+    expect(await page.evaluate(() => document.getElementById('p')!.getAttribute('data-mode') === 'tab')).toBe(true);
     // The tab is hidden while it shows (leaving the panel brings it back: the test above).
     expect(await page.evaluate(() => getComputedStyle(document.getElementById('p')!.shadowRoot!.querySelector('.tab')!).display)).toBe('none');
     // WebKit ends a hover on pointer events of its own accord under load: the press is checked in the other two.
@@ -173,7 +172,7 @@ for (const kind of KINDS) {
     // The button's own press (WebKit drops a pointer that crosses the hidden tab to reach it).
     await page.evaluate(() => (document.getElementById('p')!.shadowRoot!.querySelector('.dock-overlay:not([disabled]), .dock-fixed:not([disabled])')!.shadowRoot!.querySelector('button') as HTMLElement).click());
     await page.evaluate(() => window.__settled());
-    expect(await page.evaluate(() => document.getElementById('p')!.hasAttribute('data-minimised'))).toBe(false);
+    expect(await page.evaluate(() => document.getElementById('p')!.getAttribute('data-mode') === 'tab')).toBe(false);
     expect(await page.evaluate(() => (document.getElementById('p') as HTMLElement & { dockState: string }).dockState)).toBe('overlay');
     expect((await root()).shadow).toBe(true);
   });
@@ -215,7 +214,7 @@ test('a docked panel is never over a third of its room: an overlay on the window
   const wide = await page.evaluate(() => Math.round(document.getElementById('w')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().width));
   expect(wide).toBeLessThanOrEqual(Math.round(1400 / 3) + 1);
   // On a canvas: overlay and fixed.
-  await stage(page, 'data-overlay style="--_width: 900px"');
+  await stage(page, 'data-mode="overlay" style="--_width: 900px"');
   const over = await page.evaluate(() => Math.round(document.getElementById('p')!.shadowRoot!.querySelector('.root')!.getBoundingClientRect().width));
   expect(over).toBeLessThanOrEqual(Math.round(1000 / 3) + 1);
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
@@ -231,7 +230,7 @@ test('a panel at the start side has its resize edge on the RIGHT, facing the con
     return { atLeft: Math.abs(edge.left - root.left) <= 1, atRight: Math.abs(edge.right - root.right) <= 1 };
   }, id);
   // A canvas's card at the start, as an overlay: the right edge.
-  await stage(page, 'data-overlay');
+  await stage(page, 'data-mode="overlay"');
   expect(await edgeSide('p')).toEqual({ atLeft: false, atRight: true });
   // A panel at the end of the window: the left edge.
   await page.evaluate(async () => {
@@ -246,7 +245,7 @@ test('a panel at the start side has its resize edge on the RIGHT, facing the con
 
 test('floated from a panel shown on hover, it stays floating when the pointer leaves, a press lands outside, or Escape is pressed', async ({ page, browserName }) => {
   test.skip(browserName === 'webkit', 'a WebKit hover is ended by its own synthetic pointer events');
-  await stage(page, 'data-hover-open data-minimised');
+  await stage(page, 'data-hover-open data-mode="tab"');
   const read = () => page.evaluate(() => {
     const p = document.getElementById('p') as HTMLElement & { dockState: string };
     return { state: p.dockState, shown: getComputedStyle(p.shadowRoot!.querySelector('.root')!).display !== 'none' };
@@ -268,15 +267,15 @@ test('floated from a panel shown on hover, it stays floating when the pointer le
 
 /** A tab peeks as an OVERLAY, never as the mode it was last open in: floating is kept, and the hover does not use it. TODO 872 */
 for (const kind of [
-  { name: 'a floating panel', slotted: false, attrs: 'data-floating' },
-  { name: 'a floating panel in a canvas', slotted: true, attrs: 'data-floating' },
+  { name: 'a floating panel', slotted: false, attrs: 'data-mode="floating"' },
+  { name: 'a floating panel in a canvas', slotted: true, attrs: 'data-mode="floating"' },
 ]) {
   test(`${kind.name}, then a tab: hover shows an overlay, not the floating box`, async ({ page, browserName }) => {
     test.skip(browserName === 'webkit', 'a WebKit hover is ended by its own synthetic pointer events');
     await page.setViewportSize({ width: 1400, height: 800 });
     await page.evaluate(async ({ slotted, attrs }) => {
       const root = document.getElementById('root')!;
-      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'data-side="start"' : ''} data-heading="P" data-floatable data-poppable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
+      const panel = `<sherpa-overlay-panel id="p" ${slotted ? 'data-side="start"' : ''} data-heading="P" data-floatable data-minimisable data-hover-open ${attrs}><p>body</p></sherpa-overlay-panel>`;
       root.innerHTML = slotted
         ? `<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 600px">${panel}</sherpa-layout-canvas>`
         : `<sherpa-app-shell></sherpa-app-shell>${panel}`;
@@ -294,9 +293,9 @@ for (const kind of [
     const peek = await page.evaluate(() => {
       const p = document.getElementById('p') as HTMLElement & { dockState: string };
       const r = p.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
-      return { dock: p.dockState, kept: p.hasAttribute('data-floating'), full: Math.round(r.height), edge: Math.round(innerWidth - r.right) };
+      return { dock: p.dockState, kept: (p as unknown as { was: string }).was === 'floating', full: Math.round(r.height), edge: Math.round(innerWidth - r.right) };
     });
-    // The kept state is still floating; what is drawn is the overlay: the full height, on the edge.
+    // What it was is still floating; what is drawn is the overlay: the full height, on the edge.
     expect(peek.kept).toBe(true);
     expect(peek.dock).toBe('hover');
     if (!kind.slotted) expect(peek.edge).toBeLessThanOrEqual(1);

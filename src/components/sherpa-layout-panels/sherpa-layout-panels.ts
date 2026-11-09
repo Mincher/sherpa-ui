@@ -1,9 +1,11 @@
 /**
  * sherpa-layout-panels — a panel area each side of the content: the app shell's body and the
  * canvas compose it. Its CSS owns the width and the divider; this file follows each area's
- * panel, open and floating, and resizes an area by its inner edge. An area with more than one open panel
- * draws a tab down its inner edge, one per panel; a tab swaps to that panel. TRAP T-a-panel-area-is-a-layout
- * TRAP T-an-area-with-two-panels-is-tabbed
+ * panels and resizes an area by its inner edge. An area holds two panels at most, stacked top and bottom, and OWNS
+ * how they present: a panel asks for a mode (`panel-mode-change`) and the area writes it on every panel in it, floating
+ * apart. A floating panel is in the host's float layer, off its area. TRAP T-a-panel-area-is-a-layout
+ * TRAP T-an-area-holds-two-panels-stacked
+ * TRAP T-a-panel-has-four-modes
  *
  * Map:
  * - PanelSide — An area: before the content, or after it.
@@ -15,6 +17,12 @@ import { resizeByEdge } from '../../core/ui/edge-resize.js';
 export type PanelSide = 'start' | 'end';
 
 const SIDES: readonly PanelSide[] = ['start', 'end'];
+
+/** How many panels an area holds, for now. */
+const MAX_PANELS = 2;
+
+/** A panel's mode: its attribute, or fixed. */
+const modeOf = (panel: HTMLElement): string => panel.getAttribute('data-mode') ?? 'fixed';
 
 /** Open: an element with an `open` (a dialog-like panel) by that attribute alone; any other unless
  *  `hidden`, or `display: none` in its own style. Never its computed style: in WebKit it stays `none`
@@ -38,20 +46,17 @@ export class SherpaLayoutPanels extends SherpaElement {
 
   /** Watches each area's panels: whether each is open, and whether it floats. */
   #watch: Partial<Record<PanelSide, MutationObserver>> = {};
-  /** The open panels of each area, in tab order. */
-  #tabbed: Record<PanelSide, HTMLElement[]> = { start: [], end: [] };
-  /** The panel of each area that is in front. */
-  #shown: Record<PanelSide, HTMLElement | undefined> = { start: undefined, end: undefined };
+  /** The panels already warned of for being a third. */
+  #warned = new WeakSet<HTMLElement>();
 
   override onRender(): void {
     for (const side of SIDES) {
       this.$(`slot[name="panel-${side}"]`)?.addEventListener('slotchange', () => this.#follow(side));
       this.#resizable(side);
       this.#askWidth(side);
-      this.on(this.$(`.tabs-${side}`)!, 'click', (event) => this.#onTab(side, event));
     }
-    // A panel asks to come to the front (the panel keys).
-    this.on(this, 'panel-front', this.#onFront);
+    // A panel asks for a mode: the area writes it on the panels in it.
+    this.on(this, 'panel-mode-change', this.#onMode);
   }
 
   // Each connect: a moved layout watches its panels again.
@@ -105,7 +110,7 @@ export class SherpaLayoutPanels extends SherpaElement {
     if (!panels.length) return;
     const watch = new MutationObserver(() => this.#sync(side));
     for (const panel of panels) {
-      watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating', 'data-minimised', 'data-overlay', 'data-heading'] });
+      watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-mode', 'data-heading'] });
       // Not yet upgraded, it has no `open` to say it can shut.
       if (panel.localName.includes('-') && !customElements.get(panel.localName)) {
         void customElements.whenDefined(panel.localName).then(() => this.#sync(side));
@@ -114,51 +119,79 @@ export class SherpaLayoutPanels extends SherpaElement {
     this.#watch[side] = watch;
   }
 
-  /** What an area shows: open while a panel is; tabbed while two are; the one opened last (or picked) in front. */
+  /** What an area shows: open while a panel is; stacked while two are fixed; the strip while they are all tabs; its room
+   *  given back while none is fixed. A third panel is not shown. */
   #sync(side: PanelSide): void {
-    const panels = this.#panels(side);
-    // A minimised panel is a tab on the edge, not a tab of the area's row: the row and the front panel are the live ones.
-    const shut = panels.filter((p) => isOpen(p) && p.hasAttribute('data-minimised'));
-    const open = panels.filter((p) => isOpen(p) && !p.hasAttribute('data-minimised'));
-    const fresh = open.filter((p) => !this.#tabbed[side].includes(p));
-    const was = this.#shown[side];
-    const shown = fresh.at(-1) ?? (was && open.includes(was) ? was : open[0]);
-    this.#shown[side] = shown;
-    this.#tabbed[side] = open;
-    for (const panel of panels) panel.toggleAttribute('data-current', panel === shown);
-    this.toggleState(`${side}-open`, open.length + shut.length > 0);
-    this.toggleState(`${side}-tabs`, open.length > 1);
-    // A minimised panel is a tab on the layout's edge: its area gives its room back, as floating does. TRAP T-a-minimised-panel-is-a-tab
-    this.toggleState(`${side}-floating`, panels.length > 0 && panels.every((p) => p.hasAttribute('data-floating') || p.hasAttribute('data-minimised') || p.hasAttribute('data-overlay')));
-    // Only tabs left: the area is as wide as the tabs, so the content sits beside them, not under them.
-    this.toggleState(`${side}-strip`, open.length === 0 && shut.length > 0);
-    void this.renderItems(`.tabs-${side}`, 'template.tab-tpl', open.map((p, id) => ({ id: String(id), label: p.getAttribute('data-heading') || p.id })), {
-      after: (tab, item) => {
-        const on = open[Number(item.id)] === shown;
-        tab.toggleAttribute('data-current', on);
-        tab.setAttribute('aria-selected', String(on));
-      },
+    const live = this.#panels(side).filter(isOpen);
+    // At most two: a third is hidden, and said so once.
+    live.forEach((panel, i) => {
+      panel.toggleAttribute('hidden', i >= MAX_PANELS);
+      if (i >= MAX_PANELS && !this.#warned.has(panel)) {
+        this.#warned.add(panel);
+        console.warn(`sherpa-layout-panels: the ${side} area holds ${MAX_PANELS} panels; "${panel.id || panel.getAttribute('data-heading') || panel.localName}" is not shown`);
+      }
     });
+    const shown = live.slice(0, MAX_PANELS);
+    const fixed = shown.filter((p) => modeOf(p) === 'fixed');
+    this.toggleState(`${side}-open`, shown.length > 0);
+    this.toggleState(`${side}-stack`, fixed.length === MAX_PANELS);
+    // No fixed panel: the area gives its room back, as a floating panel does. TRAP T-a-minimised-panel-is-a-tab
+    this.toggleState(`${side}-floating`, shown.length > 0 && fixed.length === 0);
+    // Only tabs: the area is as wide as the tabs, so the content sits beside them, not under them.
+    this.toggleState(`${side}-strip`, shown.length > 0 && shown.every((p) => modeOf(p) === 'tab'));
   }
 
-  /** A panel said `panel-front`: it is in front of the others in its area. */
-  #onFront = (event: Event): void => {
+  /** The panels docked in an area now: its slot's, open, not hidden as a third. */
+  docked(side: PanelSide): HTMLElement[] {
+    return this.#panels(side).filter((p) => isOpen(p) && !p.hidden);
+  }
+
+  /** The area's current mode: what its panels share. None, fixed. */
+  modeOf(side: PanelSide): string {
+    const first = this.docked(side)[0];
+    return first ? modeOf(first) : 'fixed';
+  }
+
+  /** Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there.
+   *  False where the area is full. It joins in the area's current mode. */
+  dock(panel: HTMLElement, side: PanelSide, place: 'top' | 'bottom' = 'bottom'): boolean {
+    const peers = this.docked(side).filter((p) => p !== panel);
+    if (peers.length >= MAX_PANELS) return false;
+    const mode = peers[0] ? modeOf(peers[0]) : 'fixed';
+    panel.setAttribute('data-side', side);
+    const [peer] = peers;
+    if (peer && place === 'top') peer.before(panel);
+    else if (peer) peer.after(panel);
+    panel.setAttribute('data-mode', mode);
+    return true;
+  }
+
+  /** A panel asked for a mode: the area it is in writes it on every panel in it. Floating is the panel's own; a floating
+   *  panel asking to dock joins the area in the area's mode, if there is room. Not a panel of ours, it is not ours to answer. */
+  #onMode = (event: Event): void => {
     const panel = event.composedPath()[0];
-    for (const side of SIDES) {
-      if (!(panel instanceof HTMLElement) || !this.#panels(side).includes(panel)) continue;
-      this.#shown[side] = panel;
-      this.#sync(side);
+    const mode = (event as CustomEvent<{ mode?: string }>).detail?.mode;
+    if (!(panel instanceof HTMLElement) || !mode) return;
+    const side = SIDES.find((s) => this.#panels(s).includes(panel));
+    const floater = this.$<HTMLSlotElement>('slot[name="panel-float"]')?.assignedElements({ flatten: true }).includes(panel);
+    if (!side && !floater) return;
+    event.preventDefault();
+    if (mode === 'floating') {
+      panel.setAttribute('data-mode', 'floating');
+      return;
     }
+    const at: PanelSide = panel.getAttribute('data-side') === 'start' ? 'start' : 'end';
+    if (floater && mode === 'tab') {
+      // A floating panel shrunk to a tab is a tab of its own: it is not in the area.
+      panel.setAttribute('data-mode', 'tab');
+      return;
+    }
+    const peers = this.docked(side ?? at).filter((p) => p !== panel);
+    // Joining an area, it takes the area's mode, if there is one; and not at all where the area is full.
+    if (floater && peers.length >= MAX_PANELS) return;
+    const next = floater && peers[0] ? modeOf(peers[0]) : mode;
+    for (const p of [panel, ...peers]) p.setAttribute('data-mode', next);
   };
-
-  /** A tab was pressed: its panel comes to the front. */
-  #onTab(side: PanelSide, event: Event): void {
-    const tab = (event.target as HTMLElement).closest<HTMLElement>('.tab');
-    const panel = this.#tabbed[side][Number(tab?.dataset['id'])];
-    if (!panel) return;
-    this.#shown[side] = panel;
-    this.#sync(side);
-  }
 
   /**
    * An area's INNER edge resizes it: drag it, or the arrow keys, Home and End. Drawn live,

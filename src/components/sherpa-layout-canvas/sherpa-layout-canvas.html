@@ -18,9 +18,10 @@
     (default)   the content, placed on the canvas at its `--x` and `--y` (px)
     banner      notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom;
                 two shown stack, and a hidden one takes no room (a reload banner)
+    panel-float  the floating cards, off their areas: they float in the canvas
     panel-start, panel-end  a card DOCKED flush in the canvas's start (or end) panel area; a panel's `data-side` picks it: top, left and bottom, no
                 shadow, 18rem wide; its edge resizes it. It does not pan or zoom (a node panel). One
-                with `data-floating` gives its width back and floats anywhere in the canvas
+                with `data-mode="floating"` leaves for panel-float and floats anywhere in the canvas
     toolbar     tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not
                 pan or zoom (a node toolbar)
 
@@ -39,6 +40,7 @@
     <slot name="panel-start" slot="panel-start" data-accepts="panel"></slot>
     <!-- A card docked on the end side: the view stays under it as it does under the start card. -->
     <slot name="panel-end" slot="panel-end" data-accepts="panel"></slot>
+    <slot name="panel-float" slot="panel-float" data-accepts="panel"></slot>
 
     <!-- Notices floating over the view, before it, so they are read and reached first. -->
     <div class="banner" part="banner"><slot name="banner" data-accepts="content"></slot></div>

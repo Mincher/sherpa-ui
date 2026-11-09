@@ -2,7 +2,7 @@
 
 # sherpa-layout-panels
 
-A panel AREA each side of the content. A docked panel fills its area flush, top, side and bottom; the area takes its width and draws the divider, and the content reflows beside it. The area's inner edge resizes it. A panel that floats stays in its area, which gives its width back and becomes the panel's room: the whole layout. The app shell's body and the canvas compose it. Will, TODO 796. TRAP T-a-panel-area-is-a-layout
+A panel AREA each side of the content. A docked panel fills its area flush, top, side and bottom; the area takes its width and draws the divider, and the content reflows beside it. The area's inner edge resizes it. Two panels stack top and bottom. The area OWNS their mode: a panel asks (`panel-mode-change`), the area writes it on both, and a panel that floats leaves for the float layer, whose room is the whole layout. The app shell's body and the canvas compose it. Will, TODO 796. TRAP T-a-panel-area-is-a-layout
 
 |  |  |
 |---|---|
@@ -31,6 +31,9 @@ For a panel docked beside content, flush in its own area: the area takes the pan
 | Method | What it does |
 |---|---|
 | `areaMin(side: PanelSide = 'start')` | The narrowest an area may be drawn, in px: its least, never over its own max. |
+| `docked(side: PanelSide)` | The panels docked in an area now: its slot's, open, not hidden as a third. |
+| `modeOf(side: PanelSide)` | The area's current mode: what its panels share. None, fixed. |
+| `dock(panel: HTMLElement, side: PanelSide, place: 'top' \| 'bottom' = 'bottom')` | Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there. False where the area is full. It joins in the area's current mode. |
 
 ## Events
 
@@ -44,15 +47,16 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| `panel-start` | panel | the panels docked before the content: shut, gone or with no room they take none; floating, its area is their room. |
+| `panel-start` | panel | the panels docked before the content (two at most, stacked top and bottom; a third is not shown): shut, gone or with no room they take none; an overlay or a tab, the area gives its room back. |
 | (default) | content | the content, between the areas; one cell, so what is slotted stacks in it |
 | `panel-end` | panel | the panels docked after the content, the same |
+| `panel-float` | panel | the floating panels: off their area, they float in the layout |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`content`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`, `tab`, `tabs-end`, `tabs-start`
+`content`, `floats`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`
 
 ## CSS custom properties it reads
 
@@ -65,11 +69,6 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.area` | `padding` |
 | `--sherpa-panel-area-min-width` | `.area` | `min-inline-size` |
 | `--sherpa-panel-area-max-width` | `.area` | `max-inline-size` |
-| `--sherpa-theme-gap-sm` | `.tabs` | `gap` |
-| `--sherpa-display-mode-space-sm` | `.tabs` | `padding-block` |
-| `--sherpa-display-mode-space-sm` | `.tab` | `padding` |
-| `--sherpa-style-content-base` | `.tab` | `color` |
-| `--sherpa-display-mode-border-width-lg` | `.tab` | `border-inline-end` |
 | `--sherpa-display-mode-space-xs` | `.edge` | `inline-size` |
 | `--sherpa-display-mode-space-xs` | `.edge-start` | `inset-inline-end` |
 | `--sherpa-display-mode-space-xs` | `.edge-end` | `inset-inline-start` |

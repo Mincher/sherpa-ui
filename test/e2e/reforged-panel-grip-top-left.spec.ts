@@ -7,7 +7,7 @@ test('the grip sits beside the first row, not centred on a tall header', async (
     const el = document.createElement('sherpa-overlay-panel') as HTMLElement & { rendered?: Promise<void>; show(): void };
     el.setAttribute('data-heading', 'Nodes');
     el.setAttribute('data-floatable', '');
-    el.setAttribute('data-floating', '');
+    el.setAttribute('data-mode', 'floating');
     el.setAttribute('data-searchable', '');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;

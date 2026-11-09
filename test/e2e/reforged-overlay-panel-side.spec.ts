@@ -6,7 +6,7 @@ import { test, expect } from './harness';
  */
 const left = (page: import('@playwright/test').Page, attrs: string) => page.evaluate(async (a) => {
   const root = document.getElementById('root')!;
-  root.innerHTML = '<sherpa-app-shell></sherpa-app-shell><sherpa-overlay-panel id="p" data-heading="P" data-poppable ' + a + '><p>body</p></sherpa-overlay-panel>';
+  root.innerHTML = '<sherpa-app-shell></sherpa-app-shell><sherpa-overlay-panel id="p" data-heading="P" ' + a + '><p>body</p></sherpa-overlay-panel>';
   const panel = document.getElementById('p') as HTMLElement & { show(): void };
   await window.__settled();
   panel.show();

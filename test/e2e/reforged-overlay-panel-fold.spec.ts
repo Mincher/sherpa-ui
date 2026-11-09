@@ -30,7 +30,7 @@ test('as the panel narrows its groups fold into the more menu, and a row presses
     // The first folded row is Minimise: choosing it presses that button.
     el.shadowRoot!.querySelector('.fold-menu')!.dispatchEvent(new CustomEvent('menu-select', { detail: { value: 'modes:0' } }));
     await window.__settled();
-    out.minimised = el.hasAttribute('data-minimised');
+    out.minimised = el.getAttribute('data-mode') === 'tab';
     return out;
   });
   expect(r.wide).toEqual({ modes: true, docks: true, custom: true, fold: false });

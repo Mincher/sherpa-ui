@@ -62,6 +62,7 @@ Each one bubbles.
 |---|---|---|
 | `panel-start` | panel |  |
 | `panel-end` | panel |  |
+| `panel-float` | panel | the floating cards, off their areas: they float in the canvas |
 | `banner` | content | notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
 | `toolbar` | toolbar | tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar) |

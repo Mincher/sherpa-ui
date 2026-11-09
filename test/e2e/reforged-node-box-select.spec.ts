@@ -356,7 +356,7 @@ test('the Query editor selects and highlights what the box encloses or crosses; 
 // — 756: a box picks, and opens no panel; a click on one node still opens it.
 const panel = (page: Page) => page.evaluate(() => {
   const p = document.getElementById('inspector') as HTMLElement & { open: boolean };
-  return { open: p.open, tab: p.hasAttribute('data-minimised'), heading: p.getAttribute('data-heading') };
+  return { open: p.open, tab: p.getAttribute('data-mode') === 'tab', heading: p.getAttribute('data-heading') };
 });
 const header = async (page: Page, id: string): Promise<[number, number]> => {
   const n = await box(page, `#cv sherpa-node[data-heading="${id}"]`);

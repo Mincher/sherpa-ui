@@ -74,6 +74,7 @@ Each one bubbles.
 | `context-header` | header | a Context's FIXED region, above its scroll area — a metrics row kept in view. |
 | (default) | content | the Context content |
 | `panel-end` | panel | a panel on the trailing side — details, or Ask. |
+| `panel-float` | panel | the floating panels, off their areas: they float in the body |
 | `overlay` | dialog | covers the header and content, beside the rail — a &lt;[sherpa-dialog](sherpa-dialog.md) data-type="overlay"> |
 
 ## Parts

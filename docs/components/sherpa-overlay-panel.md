@@ -2,7 +2,7 @@
 
 # sherpa-overlay-panel
 
-A NON-modal panel on native &lt;dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there
+A NON-modal panel on native &lt;dialog>, in one of four modes: fixed in a panel area, an overlay on its content, floating, or a tab on its area's edge. With no host it is an overlay on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive. Slotted into a canvas's or a panel area's own slot, it is docked there already: flush in that area, floating inside that layout, its tab on that area's edge. TRAP T-a-panel-slotted-in-a-layout-is-docked-there
 
 |  |  |
 |---|---|
@@ -28,26 +28,21 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 |---|---|---|---|
 | `data-collapsed` | boolean |  | collapsed state (body/footer hidden; the collapse toggle reflects it) |
 | `data-collapsible` | boolean |  | show the collapse toggle |
-| `data-current` | boolean |  |  |
 | `data-dismissible` | boolean |  | show the close button |
 | `data-expandable` | boolean |  | show the maximise / minimise button |
 | `data-external` | boolean |  | show the external-link button |
-| `data-fixed` | boolean |  | a fixed panel, docked flush in a panel area of the page's [sherpa-app-shell](sherpa-app-shell.md): `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one |
-| `data-floatable` | boolean |  | show the Float / Dock button |
-| `data-floating` | boolean |  | lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks where it came from |
+| `data-floatable` | boolean |  | show the Float button (floating, the Dock one: back to its area, in the area's mode) |
 | `data-heading` | text |  | header title text (rendered into .title) |
 | `data-height` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
 | `data-hover-open` | boolean |  | a tab opens its panel as a docked overlay while the pointer is on it, and shuts it to the tab as the pointer leaves |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot area) |
 | `data-maximised` | boolean |  | full-overlay state: the panel fills the window and shows its breadcrumbs |
 | `data-minimisable` | boolean |  | show the Minimise button |
-| `data-minimised` | boolean |  | shrunk to a tab, turned 90 degrees, on the edge of its panel area (floating too); the tab opens it as it was. Removed, it opens |
-| `data-overlay` | boolean |  | a panel slotted in a layout is docked as an OVERLAY on its content: its area gives its room back and it draws over the view, with a shadow. Without it, it is FIXED, flat, taking its area's room |
+| `data-mode` | `fixed` `overlay` `floating` `tab` |  | fixed \| overlay \| floating \| tab: the ONE mode. Fixed is flat, taking its area's room; overlay draws over the view with a shadow, the area giving its room back; floating is off its area, anywhere in its room, moved by its header and resized by its corner (data-x, data-y, data-width, data-height, written at the end of each move or resize); tab is shrunk to a tab, turned 90 degrees, on its area's edge, which opens it as it was. None: fixed in an area, an overlay on the window's edge where it has none. The AREA writes it on every panel in it (max 2); floating is its own |
 | `data-padding` | `none` |  | `none`: the body has no padding, for content that fills it (a list) |
-| `data-poppable` | boolean |  | show the docking buttons (Dock as overlay, Dock as fixed) (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
 | `data-search-placeholder` | text |  | what the search row says (also its label); "Search" by default |
 | `data-searchable` | boolean |  | a search row in the header, the header's full width; it fires `panel-search` |
-| `data-side` | `start` `end` |  | start \| end: the edge it docks to, written from data-fixed; kept, a panel overlaid out of its area stays on it |
+| `data-side` | `start` `end` |  | start \| end: the area it docks to (the default is end); kept, a panel overlaid out of its area stays on its edge |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
 | `data-updated` | boolean |  | the panel says it changed while a tab: the tab turns active and wears a "!". Set by `notify()` or a new `data-heading`; cleared when it opens |
 | `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
@@ -61,10 +56,11 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 |---|---|---|---|
 | `open` | `boolean` | read and write | whether the panel is open (delegates to &lt;dialog>) |
 | `search` | `string` | read and write |  |
+| `was` | `PanelMode` | read and write |  |
 | `dockState` | `'floating' \| 'tab' \| 'hover' \| 'overlay' \| 'fixed'` | read only |  |
 | `minimised` | `boolean` | read only |  |
+| `mode` | `PanelMode` | read only |  |
 | `side` | `'start' \| 'end'` | read only |  |
-| `tabbed` | `boolean` | read only |  |
 | `shown` | `boolean` | read only |  |
 
 ## Methods
@@ -75,8 +71,8 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `notify()` | Say something changed: as a tab it turns active and wears a mark, until it is opened. |
 | `hide(reason: 'reader' \| 'width' \| 'page' = 'reader')` | Close it, and say why: `panel-close` reports it. |
 | `close()` | `hide()`, in the native &lt;dialog>'s spelling. |
-| `front()` | Bring it to the front of the panels docked beside it in its area: the area hears it. |
-| `minimise(on = !this.minimised)` | Shrink to a tab (`on`), or open from it; with no word, the other of the two. The keys and the buttons come here. |
+| `requestMode(mode: PanelMode)` | Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody answering, a panel with no area is its own. |
+| `minimise(on = !this.minimised)` | Shrink to a tab (`on`), or open from it as it was; with no word, the other of the two. The keys and the buttons come here. The area mirrors it on the panel beside this one. |
 
 ## Commands
 
@@ -97,13 +93,10 @@ Each one bubbles.
 | `panel-collapse` | `{ collapsed: boolean }` |  |
 | `panel-expand` | `{ maximised: boolean }` |  |
 | `panel-external` |  |  |
-| `panel-minimise` | `{ minimised: boolean }` | The reader pressed Minimise, or its tab |
-| `panel-pop` | `{ fixed: boolean; side: 'end' \| 'start' }` | The reader pressed the docking button (Dock as overlay, or Dock as inline); side: start \| end |
+| `panel-mode-change` | `{ mode: PanelMode }` | A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own A host may call `preventDefault()` to take it over. |
 | `panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It shut: reader (the default), width or page |
-| `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |
 | `panel-resize` | `{ height: number; width: number }` | Its left edge was dragged, or moved by the keys; floating, its corner |
-| `panel-front` |  |  |
 
 ## Slots
 
@@ -149,6 +142,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, current?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, minimised?, overlay?, padding?, poppable?, searchPlaceholder?, searchable?, side?, updated?, width?, x?, y? }`
+`{ collapsed?, collapsible?, dismissible?, expandable?, external?, floatable?, heading?, height?, hoverOpen?, icon?, maximised?, minimisable?, mode?, padding?, searchPlaceholder?, searchable?, side?, updated?, width?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

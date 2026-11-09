@@ -33,6 +33,13 @@
           }
         },
         {
+          "slot": "panel-float",
+          "attrs": {
+            "slot": "panel-float",
+            "data-accepts": "panel"
+          }
+        },
+        {
           "el": "div",
           "class": "banner",
           "part": "banner",
@@ -304,6 +311,14 @@
       "accepts": [
         "panel"
       ]
+    },
+    {
+      "$type": "slot",
+      "name": "panel-float",
+      "accepts": [
+        "panel"
+      ],
+      "description": "the floating cards, off their areas: they float in the canvas"
     },
     {
       "$type": "slot",

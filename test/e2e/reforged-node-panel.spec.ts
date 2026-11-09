@@ -117,7 +117,7 @@ test('"round" shows Math, says Round, and a click places a Math whose type is Ro
 const pick = (page: Page) => page.evaluate(() => ({
   current: [...document.querySelectorAll('#root sherpa-node[data-current]')].map((n) => (n as HTMLElement).dataset['heading']),
   open: (document.getElementById('inspector') as HTMLElement & { open: boolean }).open,
-  tab: document.getElementById('inspector')!.hasAttribute('data-minimised'),
+  tab: document.getElementById('inspector')!.getAttribute('data-mode') === 'tab',
 }));
 
 test('a click places the node at the middle of the view, picked, its inspector a tab (756)', async ({ page }) => {

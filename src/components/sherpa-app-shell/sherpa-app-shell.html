@@ -33,6 +33,7 @@
               panel. Empty it takes no room.
     panel-end a panel on the trailing side — details, or Ask. Empty it takes
               no room.
+    panel-float  the floating panels, off their areas: they float in the body
     overlay   covers the header and content, beside the rail — a
               <sherpa-dialog data-type="overlay">
 -->
@@ -61,6 +62,7 @@
             <div class="context-header" part="context-header"><slot name="context-header" data-accepts="header"></slot></div>
             <slot data-accepts="content"></slot></div></div>
           <slot name="panel-end" slot="panel-end" data-accepts="panel"></slot>
+          <slot name="panel-float" slot="panel-float" data-accepts="panel"></slot>
         </sherpa-layout-panels>
       </main>
       <div class="overlay" part="overlay"><slot name="overlay" data-accepts="dialog"></slot></div>

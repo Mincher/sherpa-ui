@@ -25,7 +25,7 @@ async function shell(page: Page): Promise<void> {
       + '<div slot="header" style="block-size: 40px">H</div>'
       + '<sherpa-overlay-panel data-side="start" id="col" data-heading="Filters" data-fixed data-floatable open><p>Filters</p></sherpa-overlay-panel>'
       + '<div><div class="page" style="padding: 16px">Context</div></div></sherpa-app-shell>'
-      + '<sherpa-overlay-panel id="ask" data-heading="Assistant" data-fixed data-floatable data-poppable data-dismissible><p>Hi</p></sherpa-overlay-panel>';
+      + '<sherpa-overlay-panel id="ask" data-heading="Assistant" data-fixed data-floatable data-dismissible><p>Hi</p></sherpa-overlay-panel>';
     await window.__settled();
     (document.getElementById('ask') as HTMLElement & { show(): void }).show();
     const heard: unknown[] = [];
@@ -205,10 +205,10 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
     const root = document.getElementById('root')!;
     root.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
-        <sherpa-overlay-panel data-side="start" id="nodes" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable data-floating data-x="40" data-y="40" data-width="320" data-height="400"><p>The list</p></sherpa-overlay-panel>
+        <sherpa-overlay-panel data-side="start" id="nodes" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" data-floatable data-mode="floating" data-x="40" data-y="40" data-width="320" data-height="400"><p>The list</p></sherpa-overlay-panel>
       </sherpa-layout-canvas>
-      <sherpa-overlay-panel id="a" data-heading="A" data-floatable data-floating data-x="200" data-y="100" data-width="400" data-height="300"><p>A</p></sherpa-overlay-panel>
-      <sherpa-overlay-panel id="b" data-heading="B" data-floatable data-floating data-x="300" data-y="200" data-width="400" data-height="300"><p>B</p></sherpa-overlay-panel>`;
+      <sherpa-overlay-panel id="a" data-heading="A" data-floatable data-mode="floating" data-x="200" data-y="100" data-width="400" data-height="300"><p>A</p></sherpa-overlay-panel>
+      <sherpa-overlay-panel id="b" data-heading="B" data-floatable data-mode="floating" data-x="300" data-y="200" data-width="400" data-height="300"><p>B</p></sherpa-overlay-panel>`;
     await window.__settled();
     for (const id of ['a', 'b']) (document.getElementById(id) as HTMLElement & { show(): void }).show();
   });
@@ -236,7 +236,7 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
   const [own] = await pixels(page, 680, 480);
   expect(far(overlap!, own!)).toBeLessThanOrEqual(4);
   // Docked, A leaves the order: B stays in front, and A goes back to the right edge, under it.
-  await page.evaluate(() => document.getElementById('a')!.removeAttribute('data-floating'));
+  await page.evaluate(() => document.getElementById('a')!.removeAttribute('data-mode'));
   await settle(page);
   const order = await page.evaluate(() => ['nodes', 'a', 'b'].map((id) => {
     const el = document.getElementById(id)!.shadowRoot!.querySelector('.root')!;
@@ -245,7 +245,7 @@ test('a pressed floating panel comes to the FRONT, by the pointer or a focus; do
   expect(order[1]).toBe('101');
   expect(Number(order[2])).toBeGreaterThan(Number(order[0]));
   // Floated again, it comes to the front.
-  await page.evaluate(() => document.getElementById('a')!.setAttribute('data-floating', ''));
+  await page.evaluate(() => document.getElementById('a')!.setAttribute('data-mode', 'floating'));
   await settle(page);
   expect(await top(350, 250)).toBe('a');
 });

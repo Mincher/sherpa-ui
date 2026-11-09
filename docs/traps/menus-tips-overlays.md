@@ -117,53 +117,30 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
-### T-a-panel-pops-into-the-end-area
+### T-a-panel-has-four-modes
 
-**Pop in moves an overlay panel INTO the app shell's end panel area, as a fixed
-panel. Pop out takes it back to the place it left.** Will, TODO 636.
-`data-poppable` shows the button; it stands alone before the view-mode pair, so
-the pair's corner rules do not grow. `data-fixed` is the state AND the door: set
-it and the panel moves, so a caller needs no pointer. A press also reports
-`panel-pop { fixed }`, which a host may keep. It is a real move to
-`slot="panel-end"`, not a drawing over the area: so the shell gives it the width,
-the edge and the reflow, and its `open` shuts the area, as for any panel. No Figma
-design for the button yet.
+**A panel has ONE mode, `data-mode`: fixed, overlay, floating or tab** (Will, 2026-11-09). It replaces `data-fixed`,
+`data-overlay`, `data-floating`, `data-minimised` and the Pop in / Pop out move into the shell. Fixed is flat and takes its
+area's room; overlay draws over the content with a shadow, the area giving its room back; tab is the strip on the area's edge
+(`T-a-minimised-panel-is-a-tab`); floating is off its area, in the host's float layer (`T-a-floating-panel-is-a-state`).
+Fixed, overlay and tab are of an AREA: with no host a panel is an overlay on the window's edge, or floating or a tab, and its
+Fixed and Overlay buttons are not drawn. The default is fixed in an area. `data-side` (`start`, else `end`) is the ONE orientation.
 
-**Fixed, it is DOCKED, flush and flat** (Will, TODO 796): it fills its area top,
-side and bottom, with no edge, no rounding and no shadow of its own; the area
-draws the divider (`T-a-panel-area-is-a-layout`). No left-edge handle, as the
-area's edge resizes it. No maximise, which needs the whole window.
+**The AREA owns how its panels present.** A panel's header buttons, its tab and `minimise()` do not set its mode: they ASK,
+with `panel-mode-change { mode }` (a request, cancelable), and the `sherpa-layout-panels` that holds the panel writes `data-mode`
+on every panel in that area: two panels in an area are mirrored, so they cannot disagree. Floating is the exception: it is one
+panel's own, and takes it out of the area (it is slotted in `panel-float`, the host's float layer); the other keeps the area's
+mode. A floating panel asking to dock joins the area in the area's CURRENT mode, and not at all where the area holds two. With no
+area to answer, a panel writes its own. A tab remembers what it was (`was`), and opens to it. `area.dock(panel, side, place)` is the
+door for a drop to come: it docks a floating panel as the second panel, above or below the one there.
 
-**Either area:** `data-side="start"` is the ONE orientation of a panel, in every host (the shell and a canvas
-alike, which both slot `panel-start` and `panel-end`; the panel sets its own slot from it): `start` docks it in the START area; bare, or `end`,
-the end one. `data-fixed` is a plain boolean. Pop out remembers the area it left, so Pop in goes back there, and
-`panel-pop { fixed, side }` says which. A host's own panel in that area keeps it:
-the button goes, as for the end.
-
-**The button shows only where a press can work.** The panel finds the page's
-`sherpa-app-shell` by its tag, as an app keeps its panels outside the shell so a
-Context swap cannot take them. With no shell, no room
-(`T-the-panel-is-desktop-only`), or a host's own panel in the area, the button
-goes and `data-fixed` floats. It hears `panel-room-change` on the document: room
-lost, it floats; room back, it goes in again. A lost room is not the reader's
-choice, so `data-fixed` stays and `panel-pop` does not fire. Panels share an area, a tab
-each (`T-an-area-with-two-panels-is-tabbed`).
-
-**A move is a disconnect and a connect,** for the panel and all inside it.
-`SherpaElement` keeps the shadow tree and runs `onConnect` again, so a listener on
-anything outside goes there, not in `onRender`. `moveBefore` keeps focus and
-scroll, in Chromium 153 and Firefox 155. WebKit 26.6 has none: focus is handed
-back in a microtask, after the slotchange, since the area is not drawn before it
-and a hidden box takes no focus (measured). A scroller inside goes back to its
-top there.
-
-**The room rule counts ONE area.** With the filter panel open too, the Context
-gets 312px at a 1280 window and 632px at 1600, under the tablet width that rule
-keeps (measured). TODO 650.
+**A host places a panel by its slot**: the panel sets its own `slot` from its side and mode (`panel-start`, `panel-end`, or
+`panel-float`), as a child of a canvas, a panel area or the app shell. Nothing moves in the DOM: there is no Pop.
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
 ### T-a-floating-panel-is-a-state
@@ -224,6 +201,7 @@ Float goes while it is maximised.
 - Site: `src/core/ui/drag-xy.ts`
 - Site: `src/core/ui/float-box.ts`
 - Site: `src/core/sherpa-float.css`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.html`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `test/e2e/reforged-overlay-panel-float.spec.ts`
 
@@ -256,35 +234,21 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 - Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
 
-### T-an-area-with-two-panels-is-tabbed
+### T-an-area-holds-two-panels-stacked
 
-**An area holds ANY number of panels; with two open, a tab each runs down its inner
-edge** (Will, 2026-11-06). The layout reads every panel its slot is assigned, and
-marks the one in front `data-current` (the last one opened, or the tab pressed);
-a docked overlay panel draws only while it is `data-current`
-(`:host(:state(in-area):not([data-current]))`). The area is two columns while tabbed:
-tabs on the inner side, the panel on the other.
+**An area holds TWO panels at most, shown together, stacked top and bottom** (Will, 2026-11-09). It replaces the tab row of
+the old area (and `data-current`, the one in front). Fixed, two panels are two rows of the area, each half its height with the
+card gap between (`:state(start-stack)`); a third panel slotted there is hidden, and said so once in the console. The area's
+mode is its panels' mode (`T-a-panel-has-four-modes`): it mirrors a change on both, and a panel that floats leaves it.
 
-- **Docking never sends another panel back**: a panel docking in becomes the
-  active tab; floating it takes only that panel out, and the area goes on with the rest.
-- **Minimising one docked panel minimises its area's** (`panel-minimise` fires for each);
-  each is its own tab on the window's edge, and a tab restores only its own panel. A
-  floating panel minimises alone.
-- **A tab of any kind draws the area's edge line** (Will, TODO 851): with two panels, on the inner edge (the
-  `.area::after`); with ANY open panel minimised, even a single one, on the edge the tab stands on, where the nav
-  (a start area) or the window (an end area) meets it (`start-rail`, `end-rail`, with the area floating, which hid
-  the divider). A minimised panel in the SHELL leaves its slot (its tab is window-fixed), so the overlay panel
-  draws that line itself (`.rail`, under the header); a panel slotted in a layout is in the layout's. Measured
-  first by pixel on Demos' Node Editor, Records, a canvas and the shell's start and end: the tabbed line was
-  there; the minimised one never was.
-- **Shown** means open: a shut panel in the slot has no tab. The area's width goes when
-  every panel in it floats or is minimised.
+- **Overlay or tab: the area gives its room back.** With no fixed panel the area covers the layout and lets the press through
+  (`:state(*-floating)`); with only tabs it is the strip, as wide as the tabs, so the content sits beside them.
+- **A tab is the edge's**: each panel in a tabs-only area is its own tab, stacked down the edge; a tab restores the area's panels.
+- **Shown** means open: a shut panel takes no row.
 
-- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
-- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.html`
-- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
-- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `test/e2e/reforged-panel-area-tabs.spec.ts`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
