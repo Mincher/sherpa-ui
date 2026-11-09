@@ -145,18 +145,15 @@ door for a drop to come: it docks a floating panel as the second panel, above or
 
 ### T-a-floating-panel-is-a-state
 
-**Floating is a STATE of an overlay or a fixed panel, not a third kind** (Will,
-TODO 769; plan `docs/history/plan-769-floating-panels.md`). `data-fixed` says where it
-DOCKS: the right edge, or the shell's end area. `data-floating` lifts it off for
-now, and is the door, as `data-fixed` is: set it and it floats, remove it and it
-docks back there. `data-floatable` shows the Float / Dock button; a press reports
-`panel-float { floating }`. Pop goes while it floats, as it says where it docks;
-Float goes while it is maximised.
+**Floating is one of a panel's four MODES** (`data-mode="floating"`, `T-a-panel-has-four-modes`; Will,
+TODO 769; plan `docs/history/plan-769-floating-panels.md`). It lifts a panel off its area, and is the door:
+set it and it floats, ask for another mode and it docks back, in its area's own mode. `data-floatable` shows the
+Float / Dock button; a press asks with `panel-mode-change { mode }`. The Fixed and Overlay buttons go while it
+floats, as Dock says where it goes; Float goes while it is maximised.
 
-- **A fixed panel leaves its area to float**, by the same move as Pop out, so the
-  area gives the Context its width back through the watch it has: the shell is
-  unchanged. Docked, it pops back in. A slotted box cannot float out of a hidden
-  area: `display: none` on the area draws nothing slotted in it.
+- **A floating panel leaves its area for the host's float layer**: it stays a child of the host, with `slot="panel-float"`
+  (the panel sets it), so nothing moves in the DOM, and the area gives its room back at once. The float layer is the whole
+  layout and lets the press through but on a box's own. Alone, with no host, it floats in the window.
 - **Floating** is drawn over the panels open on the edge (z-index 102 and up, the tab's one stack:
   `T-a-pressed-panel-comes-to-the-front`). Docked back on the edge, it takes it again.
 - **The box** is `data-x`, `data-y`, `data-width` and `data-height`, in px of the
@@ -182,13 +179,13 @@ Float goes while it is maximised.
   `dragXY`; `sherpa-float.css` (a family sheet, picked by `.sherpa-float`, `-bar`,
   `-grip` and `-corner`) owns the clamp, the grip and the corner. Each component
   keeps its own events and says where its box sits: fixed in the window, or
-  absolute in its canvas. `--_float-*` are written on the BOX, never the host, so
+  absolute in the float layer of its host. `--_float-*` are written on the BOX, never the host, so
   a canvas watching its children's `style` hears nothing of a drag.
 - **Its room is its PANEL AREA's layout** (TODO 796, `T-a-panel-area-is-a-layout`).
   The card stays slotted: floating, its area takes no width and covers the whole
   layout, the canvas, with `pointer-events: none`, so a press beside the card
   reaches the view; its box takes its own back, and the host no longer sets any
-  (inherited from the area, it passes them). The layout hears `data-floating` by
+  (inherited from the area, it passes them). The layout hears `data-mode` by
   its MutationObserver, as a host may set it with no event: the banners, the
   toolbar and the minimap take their room back. `roomOf()` finds that layout up
   the flat tree. Docked, the card is flush and flat; the first float lifts it 16px
@@ -207,18 +204,18 @@ Float goes while it is maximised.
 
 ### T-a-minimised-panel-is-a-tab
 
-**Minimised is a STATE of an overlay panel: a tab, turned on its side, snapped flush to the edge of its
+**Minimised is a MODE of an overlay panel: `data-mode="tab"`, a tab turned on its side, snapped flush to the edge of its
 area, with a drop shadow** (Will, 2026-11-06). `data-minimisable` shows the header's Minimise button; a press
-sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restores it, with
-`data-fixed` and `data-floating` untouched, so it opens as it was.
+asks for `tab` with `panel-mode-change`, and the area writes it on every panel in it; the tab asks for what the panel was
+(`was`), so it opens as it was.
 
-- **It leaves its area as floating does** (`#place`), so the area gives its room back and the
-  tab, `position: fixed` on the window's edge, is never inside a hidden area. Tabs stack down
+- **A tab stays in its area**, which is the strip: as wide as the tabs when every panel in it is one, so the content sits beside
+  them. In a host the tab is absolute in the layout; alone, `position: fixed` on the window's edge. Tabs stack down
   the edge in the order they were shrunk (`--_tab-index`).
 - **`data-updated`** turns the tab active and gives it a "!" (no count yet). `notify()` sets
   it, and so does a new `data-heading` while it is a tab. Opening clears it.
 - **The Node Editor's details panel is always there** (Will, 2026-11-06): the editor shows it as a tab at the
-  start (`data-minimised`), with an empty state (`sherpa-empty-state`, "No node selected") in it; a pick FILLS
+  start (`data-mode="tab"`), with an empty state (`sherpa-empty-state`, "No node selected") in it; a pick FILLS
   it and never opens it; a click on blank canvas puts the empty state back, and the panel is never hidden by
   the editor, only by its teardown.
 - **One panel keeps its state** through `hide()` and `show()`: shut while a tab, it opens as a tab again
@@ -226,9 +223,8 @@ sets `data-minimised` and reports `panel-minimise { minimised }`; the tab restor
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
-- **A panel in a canvas does the same**, on the LEFT edge of its canvas's area (the Nodes panel): the layout counts a
-  minimised panel as floating (its area gives its room back), and the tab, absolute in the layout, takes the
-  press (`T-a-panel-slotted-in-a-layout-is-docked-there`).
+- **A panel in a canvas or the shell does the same**, on the edge of its area: with no fixed panel the layout gives the area's room back
+  but for the strip, and the tab, absolute in the layout, takes the press (`T-a-panel-slotted-in-a-layout-is-docked-there`).
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
