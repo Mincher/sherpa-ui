@@ -52,6 +52,7 @@ export class SherpaAppShell extends SherpaElement {
     if (layout) {
       this.mirrorAttrs(layout, SherpaAppShell.#handed);
       layout.addEventListener('panel-area-resize', this.#onAreaResize);
+      layout.addEventListener('panel-dock', this.#onDock);
     }
     this.#watchRoom();
   }
@@ -89,6 +90,12 @@ export class SherpaAppShell extends SherpaElement {
     const layout = this.#layout();
     if (layout && (SherpaAppShell.#handed as readonly string[]).includes(name)) this.mirrorAttrs(layout, [name]);
   }
+
+  /** A dragged panel was dropped on a lit area and docked: the shell's own report, and the layout's goes no further. */
+  #onDock = (event: Event): void => {
+    event.stopPropagation();
+    this.emit('panel-dock', (event as CustomEvent<{ side: 'start' | 'end'; place: 'top' | 'bottom' | 'only' }>).detail);
+  };
 
   /** An area's edge was let go: the shell's own report, and the layout's goes no further. */
   #onAreaResize = (event: Event): void => {

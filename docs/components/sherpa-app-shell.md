@@ -62,6 +62,7 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `panel-area-resize` | `{ side: 'end' \| 'start'; width: number }` | An area's inner edge was dragged, or moved by the keys. |
+| `panel-dock` | `{ place: 'bottom' \| 'only' \| 'top'; side: 'end' \| 'start' }` | A floating panel was dropped on a lit area and docked there. |
 | `panel-room-change` | `{ room: boolean }` | The body gained or lost room for a panel area. |
 
 ## Slots

@@ -563,7 +563,11 @@ provider.addEventListener('filters-save-as', saveAs);
   `data-y`, `data-width` and `data-height` in the session and hand them back. The
   Nodes panel is an overlay panel in the canvas with `data-side="start"` and
   `sherpa-node-list` in it, and floats the same way, inside the canvas; so does a
-  filter panel's overlay panel with `data-floatable`. A press or a focus brings a floating panel to the front.
+  filter panel's overlay panel with `data-floatable`. A press or a focus brings a floating panel to the front. Drag a floating
+  panel by its header to within 4rem of the left or right edge and the area it would dock in lights up (an empty side, a card;
+  a side with one panel, the new half of the split, above or below by the pointer's height); drop on it to dock, and the shell
+  or canvas reports `panel-dock { side, place }`. Escape cancels. With no pointer, the Fixed button or `requestMode('fixed')`
+  docks it. `T-a-dragged-panel-docks-where-the-area-lights-up`
   `T-a-floating-panel-is-a-state` · `T-a-pressed-panel-comes-to-the-front`
 - From a script, call `dialog.show()`, never the native `showModal()`: the
   component owns modality and `open`. An add or edit flow is that dialog, its

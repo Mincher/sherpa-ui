@@ -27,6 +27,13 @@
           },
           {
             "el": "div",
+            "class": "spacer spacer-start",
+            "attrs": {
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
             "class": "edge edge-start",
             "part": "panel-start-edge",
             "attrs": {
@@ -72,8 +79,31 @@
             "attrs": {
               "data-accepts": "panel"
             }
+          },
+          {
+            "el": "div",
+            "class": "spacer spacer-end",
+            "attrs": {
+              "aria-hidden": "true"
+            }
           }
         ]
+      },
+      {
+        "el": "div",
+        "class": "lit lit-start",
+        "part": "dock-zone-start",
+        "attrs": {
+          "aria-hidden": "true"
+        }
+      },
+      {
+        "el": "div",
+        "class": "lit lit-end",
+        "part": "dock-zone-end",
+        "attrs": {
+          "aria-hidden": "true"
+        }
       },
       {
         "el": "div",
@@ -99,7 +129,7 @@
       "declared": true,
       "kind": "visibility",
       "default": false,
-      "description": "both areas hide: the host's rule leaves the content no room for one"
+      "description": "both areas hide: the host's rule leaves the content no room for one  Dragging a FLOATING panel by its header within `--sherpa-panel-dock-threshold` (4rem) of the layout's left or right edge lights up where it would dock: an empty side, a card at the edge; a side with one panel, the new half of the split, by the pointer's height. A drop on it docks the panel, in the area's mode; a side with two panels offers nothing. Escape cancels. TRAP T-a-dragged-panel-docks-where-the-area-lights-up"
     },
     {
       "$type": "prop",
@@ -183,6 +213,17 @@
         "side": "PanelSide",
         "width": "number"
       }
+    },
+    {
+      "$type": "event",
+      "name": "panel-dock",
+      "description": "A dragged panel was dropped on a lit area and docked there.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "place": "DockPlace",
+        "side": "PanelSide"
+      }
     }
   ],
   "tokens": {
@@ -193,7 +234,17 @@
     "area.max-inline-size": "{sherpa.panel-area-max-width}",
     "edge.inline-size": "{sherpa.display-mode-space-xs}",
     "edge-start.inset-inline-end": "{sherpa.display-mode-space-xs}",
-    "edge-end.inset-inline-start": "{sherpa.display-mode-space-xs}"
+    "edge-end.inset-inline-start": "{sherpa.display-mode-space-xs}",
+    "lit.z-index": "{sherpa.layer-floating}",
+    "lit.inset-block-start": "{sherpa.display-mode-space-xs}",
+    "lit.block-size": "{sherpa.display-mode-space-xs}",
+    "lit.inline-size": "{sherpa.display-mode-space-xs}",
+    "lit.border-width": "{sherpa.display-mode-border-width-lg}",
+    "lit.border-color": "{sherpa.style-indicator-accent}",
+    "lit.border-radius": "{sherpa.border-rounding-top-right}",
+    "lit.background": "{sherpa.style-indicator-accent}",
+    "lit-start.inset-inline-start": "{sherpa.display-mode-space-xs}",
+    "lit-end.inset-inline-end": "{sherpa.display-mode-space-xs}"
   },
   "$extensions": {
     "sherpa": {

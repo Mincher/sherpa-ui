@@ -28,6 +28,7 @@
   Fires:
     canvas-change — the view moved: panned or zoomed. detail: { x, y, zoom }
     panel-area-resize — the panel's area was resized by its edge, dragged or by the keys. detail: { side: start, width }
+    panel-dock — a floating card was dropped on a lit area and docked there. detail: { side: start | end, place: top | bottom | only }
     canvas-box — a box was dragged on blank canvas. detail: { left, top, right, bottom, mode } (plane px; mode: replace | add (Shift) | remove (Ctrl, Cmd on a Mac))
 -->
 <template id="default">

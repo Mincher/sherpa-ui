@@ -341,6 +341,17 @@
     },
     {
       "$type": "event",
+      "name": "panel-dock",
+      "description": "A floating panel was dropped on a lit area and docked there.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "place": "'bottom' | 'only' | 'top'",
+        "side": "'end' | 'start'"
+      }
+    },
+    {
+      "$type": "event",
       "name": "panel-room-change",
       "description": "The body gained or lost room for a panel area.",
       "bubbles": true,

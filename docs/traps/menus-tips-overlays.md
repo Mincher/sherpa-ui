@@ -247,6 +247,33 @@ mode is its panels' mode (`T-a-panel-has-four-modes`): it mirrors a change on bo
 - Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `test/e2e/reforged-panel-area-tabs.spec.ts`
 
+### T-a-dragged-panel-docks-where-the-area-lights-up
+
+**Dragging a FLOATING panel by its header lights up the area it would dock in, like a window-tiling assistant** (Will,
+2026-11-09). The panel reports where the POINTER is (`panel-drag { x, y, phase: move | end | cancel }`, from `dragXY`'s
+`track`, through `FloatBox`'s `dragged`); the layout it floats over decides, and draws the zones from its own template.
+
+- **A distance threshold, ONE place**: `--sherpa-panel-dock-threshold` on the layout (4rem). Within it of the layout's left or
+  right edge (and over its height) an area lights; further, nothing. The nearer edge wins in a narrow layout.
+- **What lights.** An empty side: ONE card at its edge, the width an area would take (`.zone-solo-*`). A side with ONE fixed
+  panel: the area splits as it will stack, and the NEW half is lit (`.zone-*`, first or last row of the area), by the pointer's
+  height: the upper half of the layout is above the panel there, the lower below. A side whose panel is an overlay or a tab has
+  no room to share: a card at the edge, and the drop docks in that mode. A side with TWO lights nothing (max 2).
+- **A drop on it docks**: `dock(panel, side, place)`, in the area's current mode, `data-side` set; the layout reports
+  `panel-dock { side, place: top | bottom | only }` and the shell and the canvas say it again as their own. A drop elsewhere
+  leaves it floating. **Escape** clears the zones and the drop lands nowhere; the panel stays where it was dragged to.
+- **A reader with no pointer** docks a floating panel with its header's Fixed button, or `requestMode('fixed')`: it joins
+  the area its `data-side` names, as the second panel where one is there (`T-a-panel-has-four-modes`).
+- The zones take no press (`pointer-events: none`), draw with `--sherpa-style-indicator-accent`, and are `Highlight` in forced colours.
+
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.html`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
+- Site: `src/core/ui/float-box.ts`
+- Site: `test/e2e/reforged-panel-dock-assist.spec.ts`
+
 ### T-a-node-list-is-a-panels-content
 
 **The Nodes panel is an overlay panel with `sherpa-node-list` in it** (Will, TODO 846: ONE panel system). The old

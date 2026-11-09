@@ -22,7 +22,7 @@ For a panel docked beside content, flush in its own area: the area takes the pan
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
-| `data-no-room` | boolean | `false` | both areas hide: the host's rule leaves the content no room for one |
+| `data-no-room` | boolean | `false` | both areas hide: the host's rule leaves the content no room for one Dragging a FLOATING panel by its header within `--sherpa-panel-dock-threshold` (4rem) of the layout's left or right edge lights up where it would dock: an empty side, a card at the edge; a side with one panel, the new half of the split, by the pointer's height. A drop on it docks the panel, in the area's mode; a side with two panels offers nothing. Escape cancels. TRAP T-a-dragged-panel-docks-where-the-area-lights-up |
 | `data-panel-end-width` | number |  | an area's width, in px: what a reader dragged it to, handed back by the host. Never under the area's min nor over its max |
 | `data-panel-start-width` | number |  | an area's width, in px: what a reader dragged it to, handed back by the host. Never under the area's min nor over its max |
 
@@ -42,6 +42,7 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `panel-area-resize` | `{ side: PanelSide; width: number }` | An area's inner edge was dragged, or moved by the keys. |
+| `panel-dock` | `{ place: DockPlace; side: PanelSide }` | A dragged panel was dropped on a lit area and docked there. |
 
 ## Slots
 
@@ -56,7 +57,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`content`, `floats`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`
+`content`, `dock-zone-end`, `dock-zone-start`, `floats`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`
 
 ## CSS custom properties it reads
 
@@ -72,6 +73,16 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.edge` | `inline-size` |
 | `--sherpa-display-mode-space-xs` | `.edge-start` | `inset-inline-end` |
 | `--sherpa-display-mode-space-xs` | `.edge-end` | `inset-inline-start` |
+| `--sherpa-layer-floating` | `.lit` | `z-index` |
+| `--sherpa-display-mode-space-xs` | `.lit` | `inset-block-start` |
+| `--sherpa-display-mode-space-xs` | `.lit` | `block-size` |
+| `--sherpa-display-mode-space-xs` | `.lit` | `inline-size` |
+| `--sherpa-display-mode-border-width-lg` | `.lit` | `border-width` |
+| `--sherpa-style-indicator-accent` | `.lit` | `border-color` |
+| `--sherpa-border-rounding-top-right` | `.lit` | `border-radius` |
+| `--sherpa-style-indicator-accent` | `.lit` | `background` |
+| `--sherpa-display-mode-space-xs` | `.lit-start` | `inset-inline-start` |
+| `--sherpa-display-mode-space-xs` | `.lit-end` | `inset-inline-end` |
 
 ## populate()
 

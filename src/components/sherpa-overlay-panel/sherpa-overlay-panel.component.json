@@ -788,6 +788,18 @@
     },
     {
       "$type": "event",
+      "name": "panel-drag",
+      "description": "Floating, where the POINTER is (client px) while its header drags it: phase move, then end or cancel.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "phase": "'cancel' | 'end' | 'move'",
+        "x": "number",
+        "y": "number"
+      }
+    },
+    {
+      "$type": "event",
       "name": "panel-resize",
       "description": "Its left edge was dragged, or moved by the keys; floating, its corner",
       "bubbles": true,

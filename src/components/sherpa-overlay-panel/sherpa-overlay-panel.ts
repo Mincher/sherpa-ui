@@ -415,6 +415,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     num: (attr) => this.num(attr, NaN),
     toggleState: (name, on) => this.toggleState(name, on),
     moved: (at) => this.emit('panel-move', at),
+    // The areas it floats over hear where the pointer is, and light up. TRAP T-a-dragged-panel-docks-where-the-area-lights-up
+    dragged: (pointer, phase) => this.emit('panel-drag', { ...pointer, phase }),
     sized: (size) => this.emit('panel-resize', size),
   });
 

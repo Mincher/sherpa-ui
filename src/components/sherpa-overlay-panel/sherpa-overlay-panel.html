@@ -54,6 +54,7 @@
     panel-mode-change (detail: { mode })  a button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own
     panel-close      (detail: { reason })  it shut: reader (the default), width or page
     panel-move       (detail: { x, y })  floating, its header was dragged, or its grip moved by the keys
+    panel-drag       (detail: { x, y, phase })  floating, where the POINTER is (client px) while its header drags it: phase move, then end or cancel. The area it floats over lights up to dock it. TRAP T-a-dragged-panel-docks-where-the-area-lights-up
     panel-resize     (detail: { width, height })  its left edge was dragged, or moved by the keys;
                      floating, its corner
 -->

@@ -570,7 +570,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (130)
+## Menus, tips and overlays (131)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -581,6 +581,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-css-function-needs-its-longhand-first](traps/menus-tips-overlays.md#t-a-css-function-needs-its-longhand-first) — menu
 - [T-a-dialog-answers-its-question](traps/menus-tips-overlays.md#t-a-dialog-answers-its-question) — dialog
 - [T-a-draft-dies-with-its-menu](traps/menus-tips-overlays.md#t-a-draft-dies-with-its-menu) — menu
+- [T-a-dragged-panel-docks-where-the-area-lights-up](traps/menus-tips-overlays.md#t-a-dragged-panel-docks-where-the-area-lights-up) — overlay-panel
 - [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — sherpa-tip
 - [T-a-filter-answers-by-values-conditions-or-both](traps/filters.md#t-a-filter-answers-by-values-conditions-or-both) — menu
 - [T-a-filter-menu-has-two-modes](traps/filters.md#t-a-filter-menu-has-two-modes) — menu
@@ -878,7 +879,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (148)
+## SherpaElement and the shared sheets (149)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -894,6 +895,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-custom-node-header-adds-an-input](traps/data-layer.md#t-a-custom-node-header-adds-an-input) — node-graph
 - [T-a-custom-node-is-an-instance](traps/data-layer.md#t-a-custom-node-is-an-instance) — node-graph
 - [T-a-document-class-cannot-reach-a-shadow-root](traps/element-and-sheets.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
+- [T-a-dragged-panel-docks-where-the-area-lights-up](traps/menus-tips-overlays.md#t-a-dragged-panel-docks-where-the-area-lights-up) — float-box
 - [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — description-tips, sherpa-element, templater
 - [T-a-filter-is-dragged-into-its-place](traps/filters.md#t-a-filter-is-dragged-into-its-place) — drag-order
 - [T-a-flag-brings-the-base-methods](traps/element-and-sheets.md#t-a-flag-brings-the-base-methods) — sherpa-element
@@ -1029,7 +1031,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (147)
+## Other components (148)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1047,6 +1049,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-document-class-cannot-reach-a-shadow-root](traps/element-and-sheets.md#t-a-document-class-cannot-reach-a-shadow-root) — group, layout-grid
 - [T-a-document-rule-outranks-an-adopted-host-rule](traps/other-components.md#t-a-document-rule-outranks-an-adopted-host-rule) — layout-grid
 - [T-a-dragged-layout-is-kept-per-column-count](traps/other-components.md#t-a-dragged-layout-is-kept-per-column-count) — layout-grid
+- [T-a-dragged-panel-docks-where-the-area-lights-up](traps/menus-tips-overlays.md#t-a-dragged-panel-docks-where-the-area-lights-up) — layout-panels
 - [T-a-find-asks-its-host-to-step](traps/data-layer.md#t-a-find-asks-its-host-to-step) — input-text
 - [T-a-fit-grid-counts-its-resized-rows](traps/other-components.md#t-a-fit-grid-counts-its-resized-rows) — layout-grid
 - [T-a-fit-grid-needs-a-sized-parent](traps/other-components.md#t-a-fit-grid-needs-a-sized-parent) — app-shell

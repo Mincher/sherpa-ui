@@ -96,6 +96,7 @@ Each one bubbles.
 | `panel-mode-change` | `{ mode: PanelMode }` | A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own A host may call `preventDefault()` to take it over. |
 | `panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It shut: reader (the default), width or page |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |
+| `panel-drag` | `{ phase: 'cancel' \| 'end' \| 'move'; x: number; y: number }` | Floating, where the POINTER is (client px) while its header drags it: phase move, then end or cancel. |
 | `panel-resize` | `{ height: number; width: number }` | Its left edge was dragged, or moved by the keys; floating, its corner |
 
 ## Slots

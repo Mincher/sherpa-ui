@@ -54,6 +54,7 @@ Each one bubbles.
 |---|---|---|
 | `canvas-change` | `{ x: number; y: number; zoom: number }` | The view moved: panned or zoomed. |
 | `panel-area-resize` | `{ side: 'end' \| 'start'; width: number }` | The panel's area was resized by its edge, dragged or by the keys. |
+| `panel-dock` | `{ place: 'bottom' \| 'only' \| 'top'; side: 'end' \| 'start' }` | A floating card was dropped on a lit area and docked there. |
 | `canvas-box` | `{ bottom: number; left: number; mode: BoxMode; right: number; top: number }` | A box was dragged on blank canvas. |
 
 ## Slots

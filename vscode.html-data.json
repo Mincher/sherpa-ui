@@ -1966,7 +1966,7 @@
       "attributes": [
         {
           "name": "data-no-room",
-          "description": "both areas hide: the host's rule leaves the content no room for one",
+          "description": "both areas hide: the host's rule leaves the content no room for one  Dragging a FLOATING panel by its header within `--sherpa-panel-dock-threshold` (4rem) of the layout's left or right edge lights up where it would dock: an empty side, a card at the edge; a side with one panel, the new half of the split, by the pointer's height. A drop on it docks the panel, in the area's mode; a side with two panels offers nothing. Escape cancels. TRAP T-a-dragged-panel-docks-where-the-area-lights-up",
           "valueSet": "v"
         },
         {

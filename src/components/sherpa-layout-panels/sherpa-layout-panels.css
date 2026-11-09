@@ -51,7 +51,11 @@
 
 /* TWO panels fixed: stacked, top and bottom, each half the area, a gap between. TRAP T-an-area-holds-two-panels-stacked */
 :host(:state(start-stack)) .area-start,
-:host(:state(end-stack)) .area-end {
+:host(:state(end-stack)) .area-end,
+:host(:state(start-dock-top)) .area-start,
+:host(:state(start-dock-bottom)) .area-start,
+:host(:state(end-dock-top)) .area-end,
+:host(:state(end-dock-bottom)) .area-end {
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
@@ -117,4 +121,37 @@
 
 @media (forced-colors: active) {
   .edge:is(:hover, :focus-visible, [data-dragging])::before { border-color: Highlight; }
+}
+
+/* DOCK ZONES: while a floating panel is dragged within `--sherpa-panel-dock-threshold` (4rem) of an edge, the area it would dock
+   in lights up. A side with one fixed panel splits (the SPACER takes the new half's row, first or last) and the lit box is
+   drawn over it; a side with none, or with panels that take no room, is a card at its edge. The lit box is over the floating
+   panels and takes no press. TRAP T-a-dragged-panel-docks-where-the-area-lights-up */
+.spacer { display: none; visibility: hidden; }
+:host(:state(start-dock-top)) .spacer-start,
+:host(:state(start-dock-bottom)) .spacer-start,
+:host(:state(end-dock-top)) .spacer-end,
+:host(:state(end-dock-bottom)) .spacer-end { display: block; }
+:host(:state(start-dock-top)) .spacer-start,
+:host(:state(end-dock-top)) .spacer-end { order: -1; }
+.lit {
+  display: none;
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+  z-index: calc(var(--sherpa-layer-floating, 102) + 1000);
+  /* The card an area would draw, unless the layout measured a half. */
+  inset-block-start: var(--_lit-y, var(--sherpa-display-mode-space-xs, 8px));
+  block-size: var(--_lit-h, calc(100% - 2 * var(--sherpa-display-mode-space-xs, 8px)));
+  inline-size: var(--_lit-w, calc(min(var(--_asked, calc(24rem + 2 * var(--sherpa-display-mode-space-xs, 8px))), var(--sherpa-panel-area-max-width, 33%)) - 2 * var(--sherpa-display-mode-space-xs, 8px)));
+  border: var(--sherpa-display-mode-border-width-lg, 2px) dashed var(--sherpa-style-indicator-accent, #3b4ccd);
+  border-radius: var(--sherpa-border-rounding-top-right, 4px);
+  background: color-mix(in srgb, var(--sherpa-style-indicator-accent, #3b4ccd) 14%, transparent);
+}
+.lit-start { --_asked: var(--_asked-start); inset-inline-start: var(--_lit-x, var(--sherpa-display-mode-space-xs, 8px)); }
+.lit-end { --_asked: var(--_asked-end); inset-inline-end: var(--_lit-x, var(--sherpa-display-mode-space-xs, 8px)); }
+:host(:is(:state(start-dock-solo), :state(start-dock-top), :state(start-dock-bottom))) .lit-start,
+:host(:is(:state(end-dock-solo), :state(end-dock-top), :state(end-dock-bottom))) .lit-end { display: block; }
+@media (forced-colors: active) {
+  .lit { border-color: Highlight; background: transparent; forced-color-adjust: none; }
 }

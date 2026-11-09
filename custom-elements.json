@@ -621,6 +621,13 @@
               }
             },
             {
+              "name": "panel-dock",
+              "description": "A floating panel was dropped on a lit area and docked there.",
+              "type": {
+                "text": "CustomEvent<{ place: 'bottom' | 'only' | 'top'; side: 'end' | 'start' }>"
+              }
+            },
+            {
               "name": "panel-room-change",
               "description": "The body gained or lost room for a panel area.",
               "type": {
@@ -4941,6 +4948,13 @@
               }
             },
             {
+              "name": "panel-dock",
+              "description": "A floating card was dropped on a lit area and docked there.",
+              "type": {
+                "text": "CustomEvent<{ place: 'bottom' | 'only' | 'top'; side: 'end' | 'start' }>"
+              }
+            },
+            {
               "name": "canvas-box",
               "description": "A box was dragged on blank canvas.",
               "type": {
@@ -5181,7 +5195,7 @@
           "attributes": [
             {
               "name": "data-no-room",
-              "description": "both areas hide: the host's rule leaves the content no room for one",
+              "description": "both areas hide: the host's rule leaves the content no room for one  Dragging a FLOATING panel by its header within `--sherpa-panel-dock-threshold` (4rem) of the layout's left or right edge lights up where it would dock: an empty side, a card at the edge; a side with one panel, the new half of the split, by the pointer's height. A drop on it docks the panel, in the area's mode; a side with two panels offers nothing. Escape cancels. TRAP T-a-dragged-panel-docks-where-the-area-lights-up",
               "type": {
                 "text": "boolean"
               },
@@ -5277,6 +5291,13 @@
               "type": {
                 "text": "CustomEvent<{ side: PanelSide; width: number }>"
               }
+            },
+            {
+              "name": "panel-dock",
+              "description": "A dragged panel was dropped on a lit area and docked there.",
+              "type": {
+                "text": "CustomEvent<{ place: DockPlace; side: PanelSide }>"
+              }
             }
           ],
           "slots": [
@@ -5300,6 +5321,12 @@
           "cssParts": [
             {
               "name": "content"
+            },
+            {
+              "name": "dock-zone-end"
+            },
+            {
+              "name": "dock-zone-start"
             },
             {
               "name": "floats"
@@ -8777,6 +8804,13 @@
               "description": "Floating, its header was dragged, or its grip moved by the keys",
               "type": {
                 "text": "CustomEvent<{ x: number; y: number }>"
+              }
+            },
+            {
+              "name": "panel-drag",
+              "description": "Floating, where the POINTER is (client px) while its header drags it: phase move, then end or cancel.",
+              "type": {
+                "text": "CustomEvent<{ phase: 'cancel' | 'end' | 'move'; x: number; y: number }>"
               }
             },
             {

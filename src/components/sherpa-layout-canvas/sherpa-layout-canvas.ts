@@ -99,6 +99,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     const panels = this.$('.panels');
     this.mirrorAttrs(panels!, ['data-panel-start-width', 'data-panel-end-width']);
     panels?.addEventListener('panel-area-resize', this.#onAreaResize);
+    panels?.addEventListener('panel-dock', this.#onDock);
     this.#zoom = this.#clamp(coerceNum(this.dataset['zoom'], 1));
     this.#apply(false);
   }
@@ -152,6 +153,12 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.style.setProperty('--_seen-start', `${start}px`);
     this.toggleState('beside', start > 0);
   }
+
+  /** A dragged panel was dropped on a lit area and docked: the canvas's own report, and the layout's goes no further. */
+  #onDock = (event: Event): void => {
+    event.stopPropagation();
+    this.emit('panel-dock', (event as CustomEvent<{ side: 'start' | 'end'; place: 'top' | 'bottom' | 'only' }>).detail);
+  };
 
   /** The card's area was resized: the canvas's own report; the layout's goes no further. */
   #onAreaResize = (event: Event): void => {

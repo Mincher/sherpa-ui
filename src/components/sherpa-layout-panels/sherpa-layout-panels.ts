@@ -6,9 +6,11 @@
  * apart. A floating panel is in the host's float layer, off its area. TRAP T-a-panel-area-is-a-layout
  * TRAP T-an-area-holds-two-panels-stacked
  * TRAP T-a-panel-has-four-modes
+ * TRAP T-a-dragged-panel-docks-where-the-area-lights-up
  *
  * Map:
  * - PanelSide — An area: before the content, or after it.
+ * - DockPlace — Where a dropped panel lands in an area: alone, or above or below the one there.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
@@ -17,6 +19,9 @@ import { resizeByEdge } from '../../core/ui/edge-resize.js';
 export type PanelSide = 'start' | 'end';
 
 const SIDES: readonly PanelSide[] = ['start', 'end'];
+
+/** Where a dropped panel lands in an area: alone, or above or below the one there. */
+export type DockPlace = 'only' | 'top' | 'bottom';
 
 /** How many panels an area holds, for now. */
 const MAX_PANELS = 2;
@@ -60,6 +65,13 @@ export class SherpaLayoutPanels extends SherpaElement {
     this.on(this, 'slotchange', () => { for (const side of SIDES) this.#follow(side); });
     // A panel asks for a mode: the area writes it on the panels in it.
     this.on(this, 'panel-mode-change', this.#onMode);
+    // A floating panel is dragged by its header: the areas it could dock in light up. TRAP T-a-dragged-panel-docks-where-the-area-lights-up
+    this.on(this, 'panel-drag', this.#onDrag);
+    this.on(document, 'keydown', (event) => {
+      if ((event as KeyboardEvent).key !== 'Escape' || !this.#dragging) return;
+      this.#escaped = this.#dragging;
+      this.#light(null);
+    });
   }
 
   // Each connect: a moved layout watches its panels again.
@@ -168,6 +180,76 @@ export class SherpaLayoutPanels extends SherpaElement {
     panel.setAttribute('data-mode', mode);
     return true;
   }
+
+  /** The panel being dragged, while it is; Escape clears it, and the drag lights nothing more. */
+  #dragging: HTMLElement | null = null;
+
+  /** How near an edge the pointer must come for an area to light up, in px: `--sherpa-panel-dock-threshold` (4rem). */
+  #threshold(): number {
+    const said = getComputedStyle(this).getPropertyValue('--sherpa-panel-dock-threshold').trim();
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    return (said.endsWith('rem') ? parseFloat(said) * rem : parseFloat(said)) || 4 * rem;
+  }
+
+  /** Where a panel dropped with the pointer at (x, y) would dock: the side and the place, or none. Within the threshold of an
+   *  edge only, over the layout's own height, and not into an area that holds two. */
+  #target(panel: HTMLElement, x: number, y: number): { side: PanelSide; place: DockPlace; lit: 'solo' | 'top' | 'bottom' } | null {
+    if (this.hasAttribute('data-no-room')) return null;
+    const box = this.getBoundingClientRect();
+    if (y < box.top || y > box.bottom) return null;
+    const near = this.#threshold();
+    const start = x - box.left;
+    const end = box.right - x;
+    const side: PanelSide | null = start <= near && start >= -near && start <= end ? 'start' : end <= near && end >= -near ? 'end' : null;
+    if (!side) return null;
+    const peers = this.docked(side).filter((p) => p !== panel);
+    if (peers.length >= MAX_PANELS) return null;
+    if (!peers.length) return { side, place: 'only', lit: 'solo' };
+    const place: DockPlace = y < box.top + box.height / 2 ? 'top' : 'bottom';
+    // Fixed panels share the area: the new half is lit. An overlay or a tab area has no room to share: a card at the edge.
+    return { side, place, lit: modeOf(peers[0]!) === 'fixed' ? place : 'solo' };
+  }
+
+  /** Light up what a drop here would dock into, and nothing else. */
+  #light(target: { side: PanelSide; lit: 'solo' | 'top' | 'bottom' } | null): void {
+    for (const side of SIDES) for (const lit of ['solo', 'top', 'bottom']) this.toggleState(`${side}-dock-${lit}`, target?.side === side && target.lit === lit);
+    // A split: the lit box is drawn over the room the spacer holds for the new half; a card at an edge is the CSS's own.
+    for (const side of SIDES) {
+      const box = this.$<HTMLElement>(`.lit-${side}`);
+      if (!box) continue;
+      const half = target?.side === side && target.lit !== 'solo' ? this.$<HTMLElement>(`.spacer-${side}`)?.getBoundingClientRect() : undefined;
+      const room = this.getBoundingClientRect();
+      const set = (name: string, px: number | undefined): void => {
+        if (px === undefined) box.style.removeProperty(name);
+        else box.style.setProperty(name, `${Math.round(px)}px`);
+      };
+      set('--_lit-y', half && half.top - room.top);
+      set('--_lit-h', half?.height);
+      set('--_lit-w', half?.width);
+      set('--_lit-x', half && (side === 'start' ? half.left - room.left : room.right - half.right));
+    }
+  }
+
+  /** The dragged panel's pointer moved, or it let go. */
+  #onDrag = (event: Event): void => {
+    const panel = event.composedPath()[0];
+    const { x, y, phase } = (event as CustomEvent<{ x: number; y: number; phase: 'move' | 'end' | 'cancel' }>).detail;
+    const floater = this.$<HTMLSlotElement>('slot[name="panel-float"]')?.assignedElements({ flatten: true }).includes(panel as Element);
+    if (!(panel instanceof HTMLElement) || !floater) return;
+    if (phase === 'move') {
+      this.#dragging ??= panel;
+      // Escape cleared the drag: it lights nothing more, and its drop lands nowhere.
+      if (this.#dragging === panel && this.#escaped !== panel) this.#light(this.#target(panel, x, y));
+      return;
+    }
+    const target = phase === 'end' && this.#escaped !== panel ? this.#target(panel, x, y) : null;
+    this.#light(null);
+    this.#dragging = this.#escaped = null;
+    if (target && this.dock(panel, target.side, target.place === 'only' ? 'bottom' : target.place)) this.emit('panel-dock', { side: target.side, place: target.place });
+  };
+
+  /** Escape during a drag: nothing is lit, and the drop lands nowhere. */
+  #escaped: HTMLElement | null = null;
 
   /** A panel asked for a mode: the area it is in writes it on every panel in it. Floating is the panel's own; a floating
    *  panel asking to dock joins the area in the area's mode, if there is room. Not a panel of ours, it is not ours to answer. */

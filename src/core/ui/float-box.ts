@@ -69,6 +69,8 @@ export interface FloatHost {
   toggleState(name: string, on: boolean): void;
   /** The end of a move, or a key on the grip: where it was drawn. */
   moved(at: XY): void;
+  /** Where the pointer is while the bar moves it (client px), and how the move ended. TRAP T-a-dragged-panel-docks-where-the-area-lights-up */
+  dragged?(pointer: XY, phase: 'move' | 'end' | 'cancel'): void;
   /** The end of a resize, or a key on the corner: how big it was drawn. */
   sized(size: { width: number; height: number }): void;
 }
@@ -172,6 +174,7 @@ export class FloatBox {
         measure: () => ({ x: this.#drawn().x, y: this.#drawn().y }),
         apply: (to, done) => this.#write(to, done, 'move'),
         hold: (held) => host.toggleState('moving', held),
+        track: (pointer, phase) => host.dragged?.(pointer, phase),
       });
     }
     if (corner) {

@@ -34,6 +34,8 @@ export interface DragXYOptions {
   slop?: number;
   /** Told when a drag takes hold and lets go, so its handle can stay drawn. */
   hold?: (held: boolean) => void;
+  /** Told where the POINTER is (client px) on each move past the slop, and how it ended: `end` on a release, else `cancel`. */
+  track?: (pointer: XY, phase: 'move' | 'end' | 'cancel') => void;
   signal?: AbortSignal;
 }
 
@@ -75,6 +77,7 @@ export function dragXY(handle: HTMLElement, options: DragXYOptions): void {
       moved = true;
       last = at(e);
       options.apply(last, false);
+      options.track?.({ x: e.clientX, y: e.clientY }, 'move');
     };
     // A lost capture ends it too, or a handle taken away mid-drag would stay held.
     const ends = ['pointerup', 'pointercancel', 'lostpointercapture'] as const;
@@ -87,6 +90,7 @@ export function dragXY(handle: HTMLElement, options: DragXYOptions): void {
       options.hold?.(false);
       // Only a release says where: a cancelled drag keeps where it got to.
       options.apply(e.type === 'pointerup' ? at(e) : last, true);
+      options.track?.({ x: e.clientX, y: e.clientY }, e.type === 'pointerup' ? 'end' : 'cancel');
     };
     handle.addEventListener('pointermove', move);
     for (const type of ends) handle.addEventListener(type, end);

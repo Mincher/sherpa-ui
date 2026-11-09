@@ -12,8 +12,14 @@
                      over its max
     data-no-room     both areas hide: the host's rule leaves the content no room for one (boolean)
 
+  Dragging a FLOATING panel by its header within `--sherpa-panel-dock-threshold` (4rem) of the layout's left or right edge lights
+  up where it would dock: an empty side, a card at the edge; a side with one panel, the new half of the split, by the
+  pointer's height. A drop on it docks the panel, in the area's mode; a side with two panels offers nothing. Escape cancels.
+  TRAP T-a-dragged-panel-docks-where-the-area-lights-up
+
   Fires:
     panel-area-resize — an area's inner edge was dragged, or moved by the keys. detail: { side: start | end, width }
+    panel-dock — a dragged panel was dropped on a lit area and docked there. detail: { side: start | end, place: top | bottom | only }
 
   Slots:
     (default)    the content, between the areas; one cell, so what is slotted stacks in it
@@ -29,6 +35,8 @@
 <template id="default">
   <aside class="area area-start" part="panel-start">
     <slot name="panel-start" data-accepts="panel"></slot>
+    <!-- The room the new half of a split takes while a dragged panel is over it: empty, and measured for the lit box. TRAP T-a-dragged-panel-docks-where-the-area-lights-up -->
+    <div class="spacer spacer-start" aria-hidden="true"></div>
     <!-- The INNER edge resizes it: drag it, or the arrow keys, Home and End. TRAP T-an-edge-resizes-its-box -->
     <div class="edge edge-start" part="panel-start-edge" role="separator"
          aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
@@ -38,7 +46,11 @@
     <div class="edge edge-end" part="panel-end-edge" role="separator"
          aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>
     <slot name="panel-end" data-accepts="panel"></slot>
+    <div class="spacer spacer-end" aria-hidden="true"></div>
   </aside>
+  <!-- The LIT box: where a dragged panel would dock, over the floating panels: a card at an empty edge, or the new half of a split. -->
+  <div class="lit lit-start" part="dock-zone-start" aria-hidden="true"></div>
+  <div class="lit lit-end" part="dock-zone-end" aria-hidden="true"></div>
   <!-- The FLOAT layer: a floating panel is off its area, and floats in the layout. It lets the press through, but on its box. TRAP T-a-floating-panel-is-a-state -->
   <div class="floats" part="floats"><slot name="panel-float" data-accepts="panel"></slot></div>
 </template>

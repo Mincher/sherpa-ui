@@ -404,6 +404,17 @@
     },
     {
       "$type": "event",
+      "name": "panel-dock",
+      "description": "A floating card was dropped on a lit area and docked there.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "place": "'bottom' | 'only' | 'top'",
+        "side": "'end' | 'start'"
+      }
+    },
+    {
+      "$type": "event",
       "name": "canvas-box",
       "description": "A box was dragged on blank canvas.",
       "bubbles": true,
