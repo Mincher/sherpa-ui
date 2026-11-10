@@ -79,6 +79,14 @@ is not in the repo (/private/tmp/claude-502/probe/hic-spike.mjs).
 - A click where a field is drawn focuses it; typing, Shift+arrow selection and the focus ring (drawn in the node's
   snapshot) all work; a socket's tip opens beside its tab.
 - Not seen headless: a native `<select>`'s popup. To check in a real window.
+- **Inside a drawing canvas, an element is laid out in FLOW**: `position: absolute` computes to `static`, so `left` and
+  `top` move nothing and `offsetLeft`/`offsetTop` read 0. Its `left` still RESOLVES (`getComputedStyle(el).left` gives
+  `120px` from `var(--x)`, a frame's `calc()` too): the canvas reads each element's place there.
+- **An element not drawn has no drawn place**: its box reads as its hidden place in flow. So, with only the view's nodes
+  `drawable`, nothing may read a node's place from layout: the lines (a socket's box today), the minimap and Fit
+  (`offsetLeft`), a frame round its nodes, box-select and paste. All read it from the model: a node's place is its
+  `--x`/`--y`; a socket's place in it is (socket box − node box) ÷ the node's drawn scale (its box width ÷ `offsetWidth`:
+  the zoom where drawn, 1 where not). ONE helper for a node's box on the plane — the six the review found become one.
 
 ## Decide after the spike
 
@@ -90,8 +98,12 @@ is not in the repo (/private/tmp/claude-502/probe/hic-spike.mjs).
    that view, with a source box past it for what overhangs, and only what the view shows is `drawable`. It sizes its grid
    to device pixels. Where the engine has no API, its template is a plain layer the view moves by a CSS transform — today's
    plane — and the same elements lay out the same.
-2. **`sherpa-layout-canvas` draws its plane with it**: its `.plane` IS a `sherpa-canvas`; pan and zoom set its view.
-3. **The lines**: the routes' SVG is drawn too, its box the routes' bounds, so a click on a line still picks it.
-4. **Tests**: a Playwright project on Google Chrome 157 (`channel: 'chrome'`) runs the canvas and node specs drawn; the
+2. **Places from the model, not layout**: one helper for a node's box on the plane (its `--x`/`--y`, its size) and a
+   socket's place in it; the canvas's measure, the lines, frames, box-select and paste use it. Nothing changes on screen;
+   it is what lets a node out of view go undrawn.
+3. **`sherpa-layout-canvas` draws its plane with it**: its `.plane` IS a `sherpa-canvas`; pan and zoom set its view; a
+   blank press passes through it to the view (`pointer-events: none`, its content `auto`).
+4. **The lines**: the routes' SVG is drawn too, its box the routes' bounds, so a click on a line still picks it.
+5. **Tests**: a Playwright project on Google Chrome 157 (`channel: 'chrome'`) runs the canvas and node specs drawn; the
    bundled Chromium 153, Firefox and WebKit run them on the plain layer, as today. CI: the runner's Chrome.
-5. **Measure** in Demos (the Records graph, the Node editor page), both ways; the trap, the APP-GUIDE, the Map.
+6. **Measure** in Demos (the Records graph, the Node editor page), both ways; the trap, the APP-GUIDE, the Map.
