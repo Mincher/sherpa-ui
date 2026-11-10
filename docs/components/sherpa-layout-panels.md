@@ -67,15 +67,16 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-content-min-width` | `.content` | `min-inline-size` |
 | `--sherpa-layer-content` | `.area` | `z-index` |
-| `--sherpa-display-mode-space-xs` | `.area` | `padding` |
+| `--sherpa-panel-area-padding-block` | `.area` | `padding-block` |
+| `--sherpa-display-mode-space-xs` | `.area` | `padding-inline` |
 | `--sherpa-panel-area-min-width` | `.area` | `min-inline-size` |
 | `--sherpa-panel-area-max-width` | `.area` | `max-inline-size` |
 | `--sherpa-display-mode-space-xs` | `.edge` | `inline-size` |
 | `--sherpa-display-mode-space-xs` | `.edge-start` | `inset-inline-end` |
 | `--sherpa-display-mode-space-xs` | `.edge-end` | `inset-inline-start` |
 | `--sherpa-layer-floating` | `.lit` | `z-index` |
-| `--sherpa-display-mode-space-xs` | `.lit` | `inset-block-start` |
-| `--sherpa-display-mode-space-xs` | `.lit` | `block-size` |
+| `--sherpa-panel-area-padding-block` | `.lit` | `inset-block-start` |
+| `--sherpa-panel-area-padding-block` | `.lit` | `block-size` |
 | `--sherpa-display-mode-space-xs` | `.lit` | `inline-size` |
 | `--sherpa-display-mode-border-width-lg` | `.lit` | `border-width` |
 | `--sherpa-style-indicator-accent` | `.lit` | `border-color` |

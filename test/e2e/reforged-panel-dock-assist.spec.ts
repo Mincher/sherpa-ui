@@ -101,10 +101,12 @@ for (const host of ['shell', 'canvas'] as const) {
       await page.mouse.move(room.x + room.w - NEAR + 4, room.y + room.h / 2, { steps: 3 });
       const near = await lit(page);
       expect(near.zones).toEqual(['end-dock-solo']);
-      // A card at the edge, as a docked card is: 8px in, the area's default width less its insets.
+      // A card at the edge, as a docked card is: 8px in at the side, the area's default width less its insets; at the top
+      // and bottom the shell's layout grid's 16px, the canvas's 8px.
+      const block = host === 'shell' ? 16 : 8;
       expect(near.boxes[0]!.x + near.boxes[0]!.w).toBe(room.x + room.w - 8);
-      expect(near.boxes[0]!.y).toBe(room.y + 8);
-      expect(near.boxes[0]!.h).toBe(room.h - 16);
+      expect(near.boxes[0]!.y).toBe(room.y + block);
+      expect(near.boxes[0]!.h).toBe(room.h - 2 * block);
       // Back out: it goes.
       await page.mouse.move(room.x + room.w / 2, room.y + room.h / 2, { steps: 3 });
       expect((await lit(page)).zones).toEqual([]);

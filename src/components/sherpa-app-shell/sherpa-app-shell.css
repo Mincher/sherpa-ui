@@ -104,6 +104,8 @@
   flex: 1 1 auto;
   min-block-size: 0;
   min-inline-size: 0;
+  /* A docked panel's top and bottom meet the Context's cards: the layout grid's own block padding. TRAP T-one-line-between-a-context-and-a-panel-area */
+  --sherpa-panel-area-padding-block: var(--sherpa-layout-grid-padding, 16px);
 }
 
 /* Its frame takes the scroller's place between the panel areas: the layout's one cell. TODO 478 */

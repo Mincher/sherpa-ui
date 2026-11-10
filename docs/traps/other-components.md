@@ -1767,12 +1767,18 @@ scopes; `open` draws them. The classic panel does the same (`#stale`).
 
 ### T-one-line-between-a-context-and-a-panel-area
 
-**One gap sits between a Context and an open panel area, and it is the area's 16px inset** (Will, TODO 867, then 871). A
-docked panel is a card inset 16px from the nav, the header, the window's edge and the content, with a border and four
-rounded corners of its own, so no line of the area's is drawn (TODO 867's shared line is gone). The shell says, from the
+**One gap sits between a Context and an open panel area, and it is the area's inset** (Will, TODO 867, then 871; 8px
+since 2026-11-08). A docked panel is a card inset from the nav, the header, the window's edge and the content, with a
+border and four rounded corners of its own, so no line of the area's is drawn (TODO 867's shared line is gone). The shell says, from the
 area's state (`start-open`, `end-open`), that the Context's frame takes no gutter on that side
 (`--sherpa-context-gutter-start|end: 0`, read by the grid's inline padding in the generated tokens): the area's inset is
 the whole gap. The resize handle (`.edge-*`) draws only on hover, focus or drag, so it adds none.
+
+**Its top and bottom meet the Context's cards** (Will, 2026-11-10). The area's block inset is the host's,
+`--sherpa-panel-area-padding-block` (8px); the shell sets it to the layout grid's block padding
+(`--sherpa-layout-grid-padding`, 16px), so a fixed panel's top is the first cards' top and its bottom the last cards'
+bottom. At 8px it stood 8px above the metric cards and 8px below the records card. The canvas keeps 8px: it has no
+cards to meet. The lit box of a drop at an empty edge reads the same inset.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `test/e2e/reforged-shell-one-line-at-a-panel-area.spec.ts`

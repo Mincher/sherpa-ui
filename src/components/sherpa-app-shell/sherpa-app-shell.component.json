@@ -366,6 +366,7 @@
     "header.z-index": "{sherpa.layer-content}",
     "header.background": "{sherpa.style-surface-base}",
     "content.z-index": "{sherpa.layer-content}",
+    "body.--sherpa-panel-area-padding-block": "{sherpa.layout-grid-padding}",
     "context-header.z-index": "{sherpa.layer-bars}"
   },
   "$extensions": {

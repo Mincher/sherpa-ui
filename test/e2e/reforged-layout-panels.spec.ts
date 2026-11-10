@@ -80,14 +80,14 @@ async function drag(page: Page, from: [number, number], by: [number, number]): P
   await settle(page);
 }
 
-/** A docked panel is a card INSET from its area by 16px on every side. TODO 871 */
-const inset = (b: { x: number; y: number; w: number; h: number }) => ({ x: b.x + 8, y: b.y + 8, w: b.w - 16, h: b.h - 16 });
+/** A docked panel in the shell is a card INSET from its area: 8px at its sides, the layout grid's 16px at its top and bottom. TODO 871 */
+const inset = (b: { x: number; y: number; w: number; h: number }) => ({ x: b.x + 8, y: b.y + 16, w: b.w - 16, h: b.h - 32 });
 
 test('docked, a panel is FLUSH to its area\'s top, side and bottom, with no shadow: the area draws the divider', async ({ page }) => {
   await shell(page);
   const [body, start, end] = [await box(page, 'shell .body'), await box(page, 'layout .area-start'), await box(page, 'layout .area-end')];
   const [column, ask] = [await box(page, 'col .root'), await box(page, 'ask .root')];
-  // A card: the column sits in the start area, the Assistant in the end, each inset by 16px.
+  // A card: the column sits in the start area, the Assistant in the end, each inset.
   expect(column).toEqual(inset(start));
   expect(ask).toEqual(inset(end));
   expect([start.x, start.y, start.h]).toEqual([body.x, body.y, body.h]);

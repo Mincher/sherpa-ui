@@ -31,8 +31,10 @@
   position: relative;
   z-index: var(--sherpa-layer-content, 1);
   min-block-size: 0;
-  /* The panel is a card INSET from the nav, the header, the window's edge and the content. TODO 871 */
-  padding: var(--sherpa-display-mode-space-xs, 8px);
+  /* The panel is a card INSET from the nav, the header, the window's edge and the content. TODO 871. Its top and bottom
+     are the host's: the shell's meet its Context's cards. TRAP T-a-panel-area-is-a-layout */
+  padding-block: var(--sherpa-panel-area-padding-block, var(--sherpa-display-mode-space-xs, 8px));
+  padding-inline: var(--sherpa-display-mode-space-xs, 8px);
   box-sizing: border-box;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   /* No width of its own: it holds its widest panel, until a reader drags it or a host sets it. TODO 858 */
@@ -141,8 +143,8 @@
   box-sizing: border-box;
   z-index: calc(var(--sherpa-layer-floating, 102) + 1000);
   /* The card an area would draw, unless the layout measured a half. */
-  inset-block-start: var(--_lit-y, var(--sherpa-display-mode-space-xs, 8px));
-  block-size: var(--_lit-h, calc(100% - 2 * var(--sherpa-display-mode-space-xs, 8px)));
+  inset-block-start: var(--_lit-y, var(--sherpa-panel-area-padding-block, var(--sherpa-display-mode-space-xs, 8px)));
+  block-size: var(--_lit-h, calc(100% - 2 * var(--sherpa-panel-area-padding-block, var(--sherpa-display-mode-space-xs, 8px))));
   inline-size: var(--_lit-w, calc(min(var(--_asked, calc(24rem + 2 * var(--sherpa-display-mode-space-xs, 8px))), var(--sherpa-panel-area-max-width, 33%)) - 2 * var(--sherpa-display-mode-space-xs, 8px)));
   border: var(--sherpa-display-mode-border-width-lg, 2px) dashed var(--sherpa-style-indicator-accent, #3b4ccd);
   border-radius: var(--sherpa-border-rounding-top-right, 4px);
