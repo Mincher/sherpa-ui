@@ -355,7 +355,8 @@
         "description": { "description": "Its own line, in place of its kind's.", "type": "string" },
         "values": { "description": "Each row's value, by the row's name, typed as its row takes it: a Filter's field, op and value are one condition.", "type": "object" },
         "version": { "description": "A use of a Custom Node: the version of its definition it follows (a hash). The editor shows an update where the library's differs.", "type": "string" },
-        "was": { "description": "A use of a Custom Node: the definition it was made from, kept so a change can show as a diff.", "$ref": "#/$defs/nodeDefinition" }
+        "was": { "description": "A use of a Custom Node: the definition it was made from, kept so a change can show as a diff.", "$ref": "#/$defs/nodeDefinition" },
+        "stage": { "description": "The stage it is in: one of its workflow's stages. Absent, it is in none; a workflow with no stages has one, and every node is in it.", "$ref": "#/$defs/id" }
       }
     },
     "route": {
@@ -395,6 +396,17 @@
         "x": { "type": "number" },
         "y": { "type": "number" },
         "routes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/innerRoute" } }
+      }
+    },
+    "stage": {
+      "description": "A stage: a column across the canvas, in order left to right. Its left edge is kept; it grows to hold its nodes, pushing the stages after it right. It changes no data: a runner ignores it.",
+      "type": "object", "additionalProperties": false, "required": ["id", "label", "x"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "description": "Its name, on its bar.", "type": "string", "minLength": 1 },
+        "description": { "description": "Its line: the bar's tip.", "type": "string" },
+        "colour": { "description": "A CSS colour its bar and band wear. Absent, the default look.", "type": "string" },
+        "x": { "description": "Its left edge, in plane px.", "type": "number" }
       }
     },
     "frame": {

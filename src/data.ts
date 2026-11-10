@@ -161,6 +161,7 @@ export {
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
 export {
   NODE_WIDTH,
+  nodeWidth,
   TIE_GAP,
   checkWorkflow,
   editWorkflow,
@@ -181,6 +182,11 @@ export {
 } from './core/data/workflow.js';
 /* A FRAME: nodes under one header; only which nodes is kept. TRAP T-a-frame-is-drawn-round-its-nodes */
 export { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './core/data/node-frames.js';
+export {
+  DEFAULT_STAGE, STAGE_GAP, STAGE_MIN, STAGE_PAD, fitStages, orderStages, restage, stageAt, stageBands, stageFaults, stageOf, stagesHeld, stagesOf,
+  type NodeStage, type StageBand,
+} from './core/data/node-stages.js';
+export { copyNodes, pasteNodes, type NodeClip } from './core/data/node-clipboard.js';
 /* A PORTAL: an In and an Out joined by a name; one resolver of the hop. TRAP T-a-portal-hop-is-resolved-once */
 export { PORTAL, connectionOf, connectionRow, portalFlow, portalLinks, portalNames, portalOf, type FlowRoute, type Portal, type PortalFlow } from './core/data/node-portals.js';
 /* A CUSTOM NODE: a workflow body saved under one name, used as an instance. TRAP T-a-custom-node-is-an-instance */

@@ -24,6 +24,7 @@
  * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied route joins.
  * - tiesAmong — The ties left when only some routes remain: a tie keeps its routes still there, and none, it goes.
  * - WorkflowEdit — One edit: a row, a node, a size, a route, a bend, a tie, nodes placed together, a node added or removed.
+ * - nodeWidth — A node's width on the canvas, in plane px: what a stage holds.
  * - editWorkflow — The workflow after one edit; the one given untouched.
  * - addCustomValue — A Value node made for a picklist row and routed into it: the row mirrors it, and keeps its own pick.
  */
@@ -39,6 +40,7 @@ import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 import { columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
+import { orderStages, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
 import { connectionRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
@@ -58,6 +60,8 @@ export interface WorkflowNode {
   /** A use of a Custom Node: the version of its definition it follows, and the definition it was made from. */
   version?: string;
   was?: NodeSnapshot;
+  /** The stage it is in: one of its workflow's `stages`. None, it is in no stage. */
+  stage?: string;
 }
 
 /** One workflow, as JSON (v2) — its nodes and its routes. A node's data comes in on its
@@ -74,6 +78,8 @@ export interface WorkflowDefinition {
   ties?: readonly NodeTie[];
   /** Frames: nodes under one header. A frame changes no data; its box is drawn round its nodes. TODO 778 */
   frames?: readonly NodeFrame[];
+  /** Stages: columns across the canvas, left to right; a node names its own. A stage changes no data. None, it has one. */
+  stages?: readonly NodeStage[];
 }
 
 /** A workflow as v1 saved it: the same, but its data rows left from a node's header. */
@@ -418,6 +424,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     }
   }
   problems.push(...frameFaults(workflow.frames, workflow.nodes.map((n) => n.id)));
+  problems.push(...stageFaults(workflow));
   return problems;
 }
 
@@ -746,7 +753,12 @@ export type WorkflowEdit =
   | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
   | { unframe: string }
   | { setFrame: { id: string; label?: string; description?: string } }
-  | { renamePortal: { from: string; to: string } };
+  | { renamePortal: { from: string; to: string } }
+  | { addStage: { id?: string; label?: string; description?: string; colour?: string } }
+  | { setStage: { id: string; label?: string; description?: string; colour?: string } }
+  | { removeStage: string }
+  | { orderStages: readonly string[] }
+  | { restage: readonly string[] };
 
 /** No value, empty text or an empty list: a row holding it holds none. */
 const empty = (value: unknown): boolean => value === '' || value == null || (Array.isArray(value) && !value.length);
@@ -769,6 +781,50 @@ function reshape(node: WorkflowNode, values: Readonly<Record<string, unknown>>, 
 /** Why an edit was refused, said once through `report`. */
 function refuse(message: string): void {
   report({ code: 'workflow-edit', message: `editWorkflow: ${message}.` });
+}
+
+/** A node's width on the canvas, in plane px: what a stage holds. */
+export const nodeWidth = (node: { size?: { w: number } }): number => NODE_WIDTH * (node.size?.w ?? 1);
+
+/** A stage edit: written out first where the workflow had only its one Stage 1. */
+function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addStage: unknown } | { setStage: unknown } | { removeStage: unknown } | { orderStages: unknown } | { restage: unknown }>): WorkflowDefinition {
+  if ('restage' in edit) return restage(workflow, edit.restage, nodeWidth);
+  if ('orderStages' in edit) return orderStages(workflow, edit.orderStages, nodeWidth);
+  const held = stagesHeld(workflow);
+  const stages = held.stages!;
+  if ('addStage' in edit) {
+    const free = (n: number): string => (stages.some((s) => s.id === `stage-${n}`) ? free(n + 1) : `stage-${n}`);
+    const id = edit.addStage.id ?? free(stages.length + 1);
+    if (stages.some((s) => s.id === id)) return refuse(`two stages would be "${id}"`), workflow;
+    const { bands } = stageBands(held, nodeWidth);
+    const x = Math.max(...bands.map((b) => b.right)) + STAGE_GAP;
+    const { id: _id, ...said } = edit.addStage;
+    return { ...held, stages: [...stages, { id, label: said.label?.trim() || `Stage ${stages.length + 1}`, ...said, x }] };
+  }
+  if ('setStage' in edit) {
+    const { id, ...set } = edit.setStage;
+    if (!stages.some((s) => s.id === id)) return refuse(`the stage "${id}" is not there`), workflow;
+    return { ...held, stages: stages.map((s) => {
+      if (s.id !== id) return s;
+      const next: NodeStage = { ...s, ...set, label: set.label?.trim() || s.label };
+      // An empty line or colour takes it away.
+      if (!next.description) delete next.description;
+      if (!next.colour) delete next.colour;
+      return next;
+    }) };
+  }
+  if (!stages.some((s) => s.id === edit.removeStage)) return refuse(`the stage "${edit.removeStage}" is not there`), workflow;
+  if (stages.length < 2) return refuse('a workflow keeps one stage at least'), workflow;
+  // Its nodes stay where they are, in no stage.
+  return {
+    ...held,
+    stages: stages.filter((s) => s.id !== edit.removeStage),
+    nodes: held.nodes.map((n) => {
+      if (n.stage !== edit.removeStage) return n;
+      const { stage: _was, ...bare } = n;
+      return bare;
+    }),
+  };
 }
 
 /** The workflow after one edit, a v2 — a v1 read as one first; the one given untouched. A
@@ -907,6 +963,9 @@ export function editWorkflow(
     if (!workflow.nodes.some((n) => portalOf(n)?.name === from)) return refuse(`no portal is named "${from}"`), workflow;
     return from === to ? workflow : { ...workflow, nodes: renamedPortals(workflow.nodes, from, to) };
   }
+  // — Stages: a new one after the last; its name, line and colour; one taken away, its nodes left in none; an order; a
+  // node let go, in the stage it stands in. A workflow keeps at least one. Will, 2026-11-10
+  if ('addStage' in edit || 'setStage' in edit || 'removeStage' in edit || 'orderStages' in edit || 'restage' in edit) return staged(workflow, edit);
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
   if ('remove' in edit) {
     const gone = (address: string): boolean => socketOf(address).node === edit.remove;
