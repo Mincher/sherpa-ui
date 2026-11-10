@@ -60,18 +60,18 @@
     <!-- The HEADER is the handle: a drag moves the node, the arrows move it, Enter selects it. It anchors the warning's tip. -->
     <div class="header sherpa-anchor" part="header" role="button" tabindex="0" aria-roledescription="node" aria-describedby="warning">
       <sherpa-container-header class="heading" part="heading" data-heading="Node" data-attr-data-icon="data-icon" data-attr-data-description="data-description"></sherpa-container-header>
-      <span class="socket socket-in sherpa-anchor" part="socket-in" aria-hidden="true"><i class="core"></i></span>
+      <span class="dock dock-in sherpa-anchor" part="dock-in" aria-hidden="true"><span class="socket socket-in" part="socket-in"><i class="core"></i></span></span>
       <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Input:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span>
-      <span class="socket socket-out sherpa-anchor" part="socket-out" aria-hidden="true"><i class="core"></i></span>
+      <span class="dock dock-out sherpa-anchor" part="dock-out" aria-hidden="true"><span class="socket socket-out" part="socket-out"><i class="core"></i></span></span>
       <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name name-out">Output:</span><span class="name name-true">True:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
     </div>
     <!-- The header's tip: the warning's words, the first tip after it. -->
     <span id="warning" class="tip tip-warning sherpa-tip" popover="manual" part="tip" role="tooltip" data-text="data-warning"></span>
     <div class="body" part="body"><slot data-accepts="item"></slot></div>
-    <!-- The FOOTER: only a fork has one, and its False socket. -->
+    <!-- The FOOTER: only a fork has one, its False socket's row: one dock high. TODO 887 -->
     <div class="footer" part="footer">
       <sherpa-container-footer class="foot" part="foot"></sherpa-container-footer>
-      <span class="socket socket-out socket-false sherpa-anchor" part="socket-false" aria-hidden="true"><i class="core"></i></span>
+      <span class="dock dock-false sherpa-anchor" part="dock-false" aria-hidden="true"><span class="socket socket-out socket-false" part="socket-false"><i class="core"></i></span></span>
       <span class="tip tip-false sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">False:</span><span class="word">a boolean</span></span>
     </div>
     <!-- The RESIZE handle: bottom right, shown on hover and focus. A drag grows the node up to double; the primary key (Ctrl, or Cmd on a Mac) keeps its aspect. -->

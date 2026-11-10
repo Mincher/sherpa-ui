@@ -81,7 +81,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `foot`, `footer`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `stack-in`, `stack-out`, `tip`
+`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `dock-false`, `dock-in`, `dock-out`, `foot`, `footer`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `stack-in`, `stack-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -108,12 +108,16 @@ What each class's base rule reads:
 | `--sherpa-display-mode-border-rounding-sm` | `.caption-badge` | `border-radius` |
 | `--sherpa-style-surface-base-2` | `.caption-badge` | `background` |
 | `--sherpa-style-content-base` | `.caption-badge` | `color` |
-| `--sherpa-style-border-width` | `.socket-false` | `outline` |
-| `--sherpa-display-mode-size-5xl` | `.footer` | `min-block-size` |
+| `--sherpa-layer-content` | `.dock` | `z-index` |
+| `--sherpa-style-border-width` | `.dock` | `outline` |
+| `--sherpa-style-border-width` | `.dock-in` | `inset-inline-start` |
+| `--sherpa-style-border-width` | `.dock-out` | `inset-inline-start` |
+| `--sherpa-style-border-width` | `.dock-false` | `inset-inline-start` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 | `--sherpa-style-border-width` | `.stack-in` | `border-width` |
 | `--sherpa-style-border-width` | `.stack-out` | `border-width` |
+| `--sherpa-style-border-width` | `.body` | `--_reach` |
 
 ## Settings it reads
 

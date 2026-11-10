@@ -880,7 +880,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (151)
+## SherpaElement and the shared sheets (152)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -913,6 +913,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-list-takes-its-children-as-data](traps/element-and-sheets.md#t-a-list-takes-its-children-as-data) — sherpa-element
 - [T-a-native-control-brings-its-own-margin](traps/element-and-sheets.md#t-a-native-control-brings-its-own-margin) — sherpa-base
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — sherpa-button-look
+- [T-a-node-is-three-columns](traps/element-and-sheets.md#t-a-node-is-three-columns) — sherpa-node-sockets
 - [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — node-graph
 - [T-a-node-row-wears-its-nodes-look](traps/element-and-sheets.md#t-a-node-row-wears-its-nodes-look) — sherpa-node-look
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
@@ -1034,7 +1035,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (149)
+## Other components (150)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1077,6 +1078,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-minimised-panel-is-a-tab](traps/menus-tips-overlays.md#t-a-minimised-panel-is-a-tab) — layout-panels
 - [T-a-native-name-where-a-native-element-does-the-job](traps/other-components.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — button
+- [T-a-node-is-three-columns](traps/element-and-sheets.md#t-a-node-is-three-columns) — node, node-row
 - [T-a-node-list-is-a-panels-content](traps/menus-tips-overlays.md#t-a-node-list-is-a-panels-content) — node-list
 - [T-a-node-moves-itself-and-reports](traps/other-components.md#t-a-node-moves-itself-and-reports) — node
 - [T-a-node-panel-lists-under-sticky-headings](traps/other-components.md#t-a-node-panel-lists-under-sticky-headings) — node-list

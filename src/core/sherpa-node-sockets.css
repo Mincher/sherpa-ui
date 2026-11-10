@@ -17,6 +17,8 @@
   --_d: inset(0 round 50%);
   --_round-square: inset(0 round 25%);
   --_socket-h: var(--_socket);
+  /* A socket's column: the socket and its press area, 28px. TRAP T-a-node-is-three-columns */
+  --_track: calc(var(--_socket) + 2 * var(--_hit));
 }
 
 /* Half outside the card: its middle is on the edge. The ink is the pinned
@@ -99,10 +101,10 @@
 .socket-false { --_shape: var(--_round-square); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
-/* Each tip hangs from its own socket: a name is scoped to its shadow root, so the same one serves every node. */
-.socket-in, .tip-in { --_anchor: --sherpa-socket-in; }
-.socket-out, .tip-out { --_anchor: --sherpa-socket-out; }
-.socket-false, .tip-false { --_anchor: --sherpa-socket-false; }
+/* Each tip hangs from its own socket's dock: a name is scoped to its shadow root, so the same one serves every node. */
+.dock-in, .tip-in { --_anchor: --sherpa-socket-in; }
+.dock-out, .tip-out { --_anchor: --sherpa-socket-out; }
+.dock-false, .tip-false { --_anchor: --sherpa-socket-false; }
 
 /* Each socket's tip says its type in words: one word shows. */
 .tip .word { display: none; }

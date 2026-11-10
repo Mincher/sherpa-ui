@@ -85,6 +85,19 @@ side (above).
    - B: one strip a side, from its first socket to its last.
    - I would go with **A**: a gap says "no socket here", and collapsed, the packed sockets read as one strip anyway.
 
+## Built — 2026-11-10 (TRAP T-a-node-is-three-columns)
+
+Simpler than the model above, measured at each step:
+
+- **Each row is its own grid of the same three tracks** (`--_track`, 28px), reaching past its grey box and the card's edge
+  by `--_reach`; no subgrid, and the node's root is not a grid. Every row's columns line up because every track is the same.
+- **Every socket is in a dock** (`dock-in`, `dock-out`, `dock-false`), outside the card, flush with its edge; the header's
+  and False's docks stand on the header's and the footer's middle, as the header's sockets always did.
+- **The host keeps the card's width**: the docks overhang about 27px a side. No place, `nodeWidth`, Arrange or Unfurl moves.
+- **A dock never sets its row's height**, and **the dock is the tip's anchor** (the trap says why).
+- **A fork's False row is 28px.** Collapsed is unchanged: one strip a side.
+- The node specs pass in Chromium (285), with the route tests: every line still meets its socket.
+
 ## Steps (each its own commit; the node specs and the gates green after each)
 
 1. **The grid and the card**: sherpa-node's root is the grid; the card is its middle column; the header's sockets are

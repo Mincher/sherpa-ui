@@ -98,15 +98,22 @@
             },
             {
               "el": "span",
-              "class": "socket socket-in sherpa-anchor",
-              "part": "socket-in",
+              "class": "dock dock-in sherpa-anchor",
+              "part": "dock-in",
               "attrs": {
                 "aria-hidden": "true"
               },
               "children": [
                 {
-                  "el": "i",
-                  "class": "core"
+                  "el": "span",
+                  "class": "socket socket-in",
+                  "part": "socket-in",
+                  "children": [
+                    {
+                      "el": "i",
+                      "class": "core"
+                    }
+                  ]
                 }
               ]
             },
@@ -143,15 +150,22 @@
             },
             {
               "el": "span",
-              "class": "socket socket-out sherpa-anchor",
-              "part": "socket-out",
+              "class": "dock dock-out sherpa-anchor",
+              "part": "dock-out",
               "attrs": {
                 "aria-hidden": "true"
               },
               "children": [
                 {
-                  "el": "i",
-                  "class": "core"
+                  "el": "span",
+                  "class": "socket socket-out",
+                  "part": "socket-out",
+                  "children": [
+                    {
+                      "el": "i",
+                      "class": "core"
+                    }
+                  ]
                 }
               ]
             },
@@ -224,15 +238,22 @@
             },
             {
               "el": "span",
-              "class": "socket socket-out socket-false sherpa-anchor",
-              "part": "socket-false",
+              "class": "dock dock-false sherpa-anchor",
+              "part": "dock-false",
               "attrs": {
                 "aria-hidden": "true"
               },
               "children": [
                 {
-                  "el": "i",
-                  "class": "core"
+                  "el": "span",
+                  "class": "socket socket-out socket-false",
+                  "part": "socket-false",
+                  "children": [
+                    {
+                      "el": "i",
+                      "class": "core"
+                    }
+                  ]
                 }
               ]
             },
@@ -631,6 +652,16 @@
     },
     {
       "$type": "state",
+      "name": "input-socket",
+      "selector": ":host([data-input-socket])"
+    },
+    {
+      "$type": "state",
+      "name": "output-socket",
+      "selector": ":host([data-output-socket])"
+    },
+    {
+      "$type": "state",
       "name": "branches",
       "selector": ":host([data-branches])"
     },
@@ -713,12 +744,16 @@
     "caption-badge.border-radius": "{sherpa.display-mode-border-rounding-sm}",
     "caption-badge.background": "{sherpa.style-surface-base-2}",
     "caption-badge.color": "{sherpa.style-content-base}",
-    "socket-false.outline": "{sherpa.style-border-width}",
-    "footer.min-block-size": "{sherpa.display-mode-size-5xl}",
+    "dock.z-index": "{sherpa.layer-content}",
+    "dock.outline": "{sherpa.style-border-width}",
+    "dock-in.inset-inline-start": "{sherpa.style-border-width}",
+    "dock-out.inset-inline-start": "{sherpa.style-border-width}",
+    "dock-false.inset-inline-start": "{sherpa.style-border-width}",
     "body.gap": "{sherpa.theme-gap-md}",
     "body.padding-block": "{sherpa.theme-gap-md}",
     "stack-in.border-width": "{sherpa.style-border-width}",
-    "stack-out.border-width": "{sherpa.style-border-width}"
+    "stack-out.border-width": "{sherpa.style-border-width}",
+    "body.--_reach": "{sherpa.style-border-width}"
   },
   "$extensions": {
     "sherpa": {

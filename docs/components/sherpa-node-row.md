@@ -2,7 +2,7 @@
 
 # sherpa-node-row
 
-One row of a [sherpa-node](sherpa-node.md): an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.
+One row of a [sherpa-node](sherpa-node.md): the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its DOCK, outside the card. Will, TODOs 78, 887.
 
 |  |  |
 |---|---|
@@ -53,7 +53,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 
 Style these from outside with `::part()`:
 
-`label`, `row`, `socket-in`, `socket-out`, `tip`
+`content`, `dock-in`, `dock-out`, `label`, `row`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -61,16 +61,15 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
-| `--sherpa-theme-gap-sm` | `.row` | `gap` |
+| `--sherpa-theme-gap-sm` | `.content` | `gap` |
 | `--sherpa-font-weight-medium` | `.tip-socket` | `font-weight` |
 | `--sherpa-font-size-body-small` | `.label` | `font-size` |
 | `--sherpa-font-weight-medium` | `.label` | `font-weight` |
 | `--sherpa-theme-content-line-height-small` | `.label` | `line-height` |
 | `--sherpa-style-content-base` | `.label` | `color` |
-| `--sherpa-display-mode-size-2xl` | `.socket` | `inset-block-end` |
-| `--sherpa-theme-padding-lg` | `.socket-out` | `inset-inline-start` |
-| `--sherpa-theme-padding-lg` | `.row` | `padding-inline-end` |
-| `--sherpa-style-surface-base-1` | `.socket-in` | `background` |
+| `--sherpa-layer-content` | `.dock` | `z-index` |
+| `--sherpa-display-mode-size-2xl` | `.dock` | `margin-block-end` |
+| `--sherpa-style-border-width` | `.dock` | `outline` |
 
 ## populate()
 

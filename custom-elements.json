@@ -7693,7 +7693,7 @@
           "name": "SherpaNodeRow",
           "tagName": "sherpa-node-row",
           "customElement": true,
-          "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
+          "description": "one row of a sherpa-node: the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its DOCK, outside the card. Will, TODOs 78, 887.",
           "attributes": [
             {
               "name": "data-collapsed",
@@ -7812,6 +7812,15 @@
             }
           ],
           "cssParts": [
+            {
+              "name": "content"
+            },
+            {
+              "name": "dock-in"
+            },
+            {
+              "name": "dock-out"
+            },
             {
               "name": "label"
             },
@@ -8502,6 +8511,15 @@
             },
             {
               "name": "caption-warn"
+            },
+            {
+              "name": "dock-false"
+            },
+            {
+              "name": "dock-in"
+            },
+            {
+              "name": "dock-out"
             },
             {
               "name": "foot"

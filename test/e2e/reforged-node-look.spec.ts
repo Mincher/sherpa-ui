@@ -99,16 +99,17 @@ test('807: no socket is double height, a many input included: the same row\'s ou
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   }, [id, side] as const);
   const ink = await inkOf(page, '--sherpa-style-active-indicator-accent');
-  /** How many pixel rows the socket's ink paints down one column, clear of the card's edge, in a box three times its height round it. */
+  /** How many pixel rows the socket's ink paints down its MIDDLE column, in a box three times its height round it. Its middle:
+   *  a dock may stand on a half pixel (the card does, here), and a column off the middle then counts one row fewer. TODO 887 */
   const painted = async (r: { x: number; y: number; w: number; h: number }, colour: Rgb): Promise<number> => {
-    const clip = { x: Math.round(r.x + r.w * 0.7), y: Math.round(r.y - r.h), w: 1, h: Math.round(r.h * 3) };
+    const clip = { x: Math.round(r.x + r.w / 2), y: Math.round(r.y - r.h), w: 1, h: Math.round(r.h * 3) };
     const ys = Array.from({ length: clip.h }, (_, n) => [0.5, (n + 0.5) / clip.h] as [number, number]);
     return (await paint(page, clip, ys)).filter((p) => near(p, colour, 24)).length;
   };
   // Painted: the many row's diamond is as tall as the plain row's (its fill sits inside the ring and the white inset).
   const plain = await painted(await rect('plain', 'output'), ink);
   const many = await painted(await rect('many', 'output'), ink);
-  expect(plain, 'the diamond paints at 7/10 of its width').toBeGreaterThanOrEqual(4);
+  expect(plain, 'the diamond paints down its middle').toBeGreaterThanOrEqual(4);
   expect(Math.abs(many - plain), `the many row's output paints ${many}px, the plain row's ${plain}px`).toBeLessThanOrEqual(1);
   const sizes = {
     plainIn: (await rect('plain', 'input')).h, plainOut: (await rect('plain', 'output')).h,

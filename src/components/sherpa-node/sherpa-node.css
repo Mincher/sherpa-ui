@@ -333,43 +333,54 @@
 .tip-warning { white-space: pre-line; }
 :host(:not([data-warning])) .tip-warning { display: none; }
 
-/* The whole node's sockets, on the header's edges; False, on the footer's. */
-.socket {
+/* The whole node's sockets stand outside the card, each in its DOCK (as each row's does): a D of the node's own fill and border,
+   flush with the card's edge, on the header's middle; a fork's False on its footer's. The input a reverse D, the outputs a D.
+   TRAP T-a-node-is-three-columns */
+.dock {
+  display: none;
+  position: absolute;
+  /* Over a neighbour's card: it overhangs its own, and a socket under another node takes no press. */
+  z-index: var(--sherpa-layer-content, 1);
   inset-block-start: 50%;
-  margin-block-start: calc(var(--_socket-h) / -2 - var(--_hit));
-}
-
-/* The header's sockets sit outside the card, each in a DOCK, a D of the node's own fill and border, flush with the card's edge:
-   the input a reverse D on the start edge, the output (and a fork's False, on the footer) a D on the end edge. */
-.header .socket-in, .header .socket-out, .socket-false {
+  margin-block-start: calc((var(--_socket-h) + 2 * var(--_hit)) / -2);
   background: var(--_category-fill, var(--_surface));
   outline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
-.header .socket-in {
-  inset-inline-start: calc(1px - (var(--_socket) / 2 + var(--_hit)));
+:host([data-input-socket]) .dock-in,
+:host([data-output-socket]) .dock-out { display: block; }
+.dock-in {
+  /* 1px over the card's OUTER edge, its border included: a whole pixel, so a socket's 1px line stays sharp. */
+  inset-inline-start: calc(1px - var(--sherpa-style-border-width, 0.5px) - var(--_track));
   /* No border on its flush side: the outline is cut at the box's end edge. */
   clip-path: inset(-1px 0 -1px -1px);
-  border-start-start-radius: calc(var(--_socket) / 2 + var(--_hit));
-  border-end-start-radius: calc(var(--_socket) / 2 + var(--_hit));
+  border-start-start-radius: calc(var(--_track) / 2);
+  border-end-start-radius: calc(var(--_track) / 2);
 }
-.header .socket-out, .socket-false {
-  inset-inline-start: calc(100% - 1px + var(--_socket) / 2 + var(--_hit));
+.dock-out, .dock-false {
+  inset-inline-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px);
   clip-path: inset(-1px -1px -1px 0);
-  border-start-end-radius: calc(var(--_socket) / 2 + var(--_hit));
-  border-end-end-radius: calc(var(--_socket) / 2 + var(--_hit));
+  border-start-end-radius: calc(var(--_track) / 2);
+  border-end-end-radius: calc(var(--_track) / 2);
+}
+/* In its dock, a socket is its dock's box. */
+.dock .socket {
+  position: relative;
+  inset: auto;
+  margin: 0;
 }
 
 /* ── A fork: True is the header's output, False the footer's ─────────── */
 .footer {
   position: relative;
-  /* No word in it now; the False socket sits on its middle. */
-  /* As tall as a header, so False sits as far from the bottom as True does from the top. */
-  min-block-size: var(--sherpa-display-mode-size-5xl, 56px);
+  /* False's row: only as tall as its socket and its dock. Will, TODO 887 */
+  min-block-size: var(--_track);
   border-end-start-radius: inherit;
   border-end-end-radius: inherit;
 }
 :host([data-branches]) .footer { display: block; }
-:host([data-branches]) .header .socket-out { display: block; }
+:host([data-branches]) .header .socket-out,
+:host([data-branches]) .dock-out,
+:host([data-branches]) .dock-false { display: block; }
 :host([data-branches]) .socket-false { display: block; --_shape: var(--_round-square); }
 :host([data-false-routed]) .socket-false .core { display: block; }
 :host([data-false-routed]) .socket-false { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
@@ -429,14 +440,12 @@
   min-block-size: 0;
 }
 :host([data-collapsed]) .foot { display: none; }
-:host([data-collapsed]) .socket-false {
+:host([data-collapsed]) .dock-false {
   inset-block-start: calc(var(--_stack-top) + (var(--_outs-now) - 1) * var(--_stack-step));
   margin-block-start: 0;
 }
-/* The stacks' D's take the place of each socket's own dock. */
-:host([data-collapsed]) .header .socket-in,
-:host([data-collapsed]) .header .socket-out,
-:host([data-collapsed]) .socket-false {
+/* The stacks' strips take the place of each socket's own dock. */
+:host([data-collapsed]) .dock {
   background: none;
   outline: none;
 }
@@ -468,14 +477,19 @@
   border-end-end-radius: calc(var(--_stack-step) / 2);
 }
 /* Hiding the unconnected: a header socket no route joins hides, and a fork's False no route leaves goes. */
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .socket-in,
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .socket-out { visibility: hidden; }
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .dock-in,
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .dock-out { visibility: hidden; }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-routed])) .footer { display: none; }
-/* A SECTION: rows on a grey box, 8px in from the card. Its rows span the box and take their inset from it, so an output socket sits
-   in the box's padding and an input's dock leaves its start edge. */
-.body { --_card-pad: var(--_pad-inline, 16px); }
+/* A SECTION: rows on a grey box, 8px in from the card. Its rows reach past the box and the card's edge (`--_reach`), so each socket's
+   dock stands outside the card, where the header's do; a row takes its field's inset from the box. TODO 887 */
+.body {
+  --_card-pad: var(--_pad-inline, 16px);
+  /* A row's reach: past the card's outer edge by its socket's column, less the 1px its dock overlaps that edge by. */
+  --_reach: calc(var(--sherpa-style-border-width, 0.5px) + var(--_track) - 1px);
+}
 .body ::slotted(.section) {
   --_pad-inline: var(--sherpa-theme-padding-md, 8px);
+  --_reach: calc(var(--sherpa-style-border-width, 0.5px) + var(--_card-pad) - var(--sherpa-theme-padding-md, 8px) + var(--_track) - 1px);
   --_section-fill: var(--sherpa-style-surface-base-1, #f5f5f8);
   display: flex;
   flex-direction: column;

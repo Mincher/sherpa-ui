@@ -2214,3 +2214,32 @@ Ask the trace before guessing: `LayoutInvalidationTracking` and `StyleRecalcInva
 - Site: `src/core/ui/node-lanes-ui.ts`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `src/components/sherpa-input-text/input-tags.ts`
+
+### T-a-node-is-three-columns
+
+**A node is three columns: its input sockets, its card, its output sockets** (Will, 2026-11-10, TODO 887; plan-887). Every
+socket stands OUTSIDE the card in its own DOCK (`part` `dock-in`, `dock-out`, `dock-false`), a D of the card's fill and
+border, flush with the card's edge: the input a reverse D, the outputs a D. A dock is the thing a look styles to join a
+socket to the card.
+
+- **A row is its own grid of the same three tracks** (`--_track`, 28px: the 16px socket and its 6px press area each side),
+  and it reaches past its grey box and the card's edge by `--_reach`, which the node sets for a row in a box and one on its
+  own. So every row's columns line up, and its sockets meet the card where the header's do. A row with no socket on a side
+  leaves that cell empty.
+- **A dock never sets its row's height**: on a field row it sits on the control's line (the field's last line, one
+  control high); on a label row it takes no height (`margin-block: -14px`) and sits on the label's middle. A dock that
+  sized its row made every label row 8px taller, and a node over the next one.
+- **A dock stands over a neighbour's card** (`z-index` on the content layer): it overhangs its own card, and a node set
+  close on its right covered a row's output, so a drag from it began on the neighbour.
+- **The dock is the tip's anchor, not the socket**: a tip is found as the first `.sherpa-tip` AFTER its anchor
+  (`top-layer-tips`), and the socket now sits inside its dock.
+- **The host is still the card's width** (`nodeWidth`): the docks overhang it 27px a side, as the header's always did, so
+  no place, Arrange or Unfurl moves.
+- **A fork's False row is one dock high** (28px), its dock at the card's bottom end.
+- **Collapsed, one strip a side, as before** (Will: "B when nodes are collapsed"): a dock is `display: contents` in a row,
+  and clear on the header and False, and the stacks draw the strip. CSS cannot count sockets across the rows' shadow roots,
+  so the strip's length is still the graph's count (`stackPlaces`).
+
+- Site: `src/core/sherpa-node-sockets.css`
+- Site: `src/components/sherpa-node/sherpa-node.css`
+- Site: `src/components/sherpa-node-row/sherpa-node-row.css`

@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-row",
-  "$description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
+  "$description": "one row of a sherpa-node: the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its DOCK, outside the card. Will, TODOs 78, 887.",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -19,30 +19,44 @@
       "part": "row",
       "children": [
         {
-          "el": "span",
-          "class": "label",
-          "part": "label",
-          "attrs": {
-            "data-text": "data-label"
-          }
+          "el": "div",
+          "class": "content",
+          "part": "content",
+          "children": [
+            {
+              "el": "span",
+              "class": "label",
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
+            },
+            {
+              "slot": "",
+              "attrs": {
+                "data-accepts": "input"
+              }
+            }
+          ]
         },
         {
-          "slot": "",
-          "attrs": {
-            "data-accepts": "input"
-          }
-        },
-        {
           "el": "span",
-          "class": "socket socket-in sherpa-anchor",
-          "part": "socket-in",
+          "class": "dock dock-in sherpa-anchor",
+          "part": "dock-in",
           "attrs": {
             "aria-hidden": "true"
           },
           "children": [
             {
-              "el": "i",
-              "class": "core"
+              "el": "span",
+              "class": "socket socket-in",
+              "part": "socket-in",
+              "children": [
+                {
+                  "el": "i",
+                  "class": "core"
+                }
+              ]
             }
           ]
         },
@@ -108,15 +122,22 @@
         },
         {
           "el": "span",
-          "class": "socket socket-out sherpa-anchor",
-          "part": "socket-out",
+          "class": "dock dock-out sherpa-anchor",
+          "part": "dock-out",
           "attrs": {
             "aria-hidden": "true"
           },
           "children": [
             {
-              "el": "i",
-              "class": "core"
+              "el": "span",
+              "class": "socket socket-out",
+              "part": "socket-out",
+              "children": [
+                {
+                  "el": "i",
+                  "class": "core"
+                }
+              ]
             }
           ]
         },
@@ -341,6 +362,11 @@
     },
     {
       "$type": "state",
+      "name": "input-socket",
+      "selector": ":host([data-input-socket])"
+    },
+    {
+      "$type": "state",
       "name": "output-socket",
       "selector": ":host([data-output-socket])"
     },
@@ -363,6 +389,11 @@
       "$type": "state",
       "name": "not-socket-value",
       "selector": ":host(:not([data-socket-value]))"
+    },
+    {
+      "$type": "state",
+      "name": "not-collapsed",
+      "selector": ":host(:not([data-collapsed]))"
     }
   ],
   "capabilities": [
@@ -373,16 +404,15 @@
     }
   ],
   "tokens": {
-    "row.gap": "{sherpa.theme-gap-sm}",
+    "content.gap": "{sherpa.theme-gap-sm}",
     "tip-socket.font-weight": "{sherpa.font-weight-medium}",
     "label.font-size": "{sherpa.font-size-body-small}",
     "label.font-weight": "{sherpa.font-weight-medium}",
     "label.line-height": "{sherpa.theme-content-line-height-small}",
     "label.color": "{sherpa.style-content-base}",
-    "socket.inset-block-end": "{sherpa.display-mode-size-2xl}",
-    "socket-out.inset-inline-start": "{sherpa.theme-padding-lg}",
-    "row.padding-inline-end": "{sherpa.theme-padding-lg}",
-    "socket-in.background": "{sherpa.style-surface-base-1}"
+    "dock.z-index": "{sherpa.layer-content}",
+    "dock.margin-block-end": "{sherpa.display-mode-size-2xl}",
+    "dock.outline": "{sherpa.style-border-width}"
   },
   "$extensions": {
     "sherpa": {

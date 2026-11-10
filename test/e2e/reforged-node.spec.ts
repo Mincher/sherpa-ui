@@ -150,9 +150,9 @@ test('the header and each row draw their sockets on the card\'s edges', async ({
     const matches = mid(rows[2]!.socketRect('output'))!;
     return {
       none: [rows[0]!.socketRect('input'), rows[0]!.socketRect('output'), rows[1]!.socketRect('output')],
-      // Each socket sits on the edge of its grey section: an input's middle 13px outside the card (the header's in line with it),
-      // an output's 13px inside it, not on the card's own edge (sections, TODO 874).
-      onEdges: [header[0]! - box.left + 13, value[0]! - box.left + 13, matches[0]! - box.right + 13].map((d) => Math.abs(d) <= 1),
+      // Each socket stands in its dock outside the card, its middle 13px past the edge: the header's, a row's input and a row's
+      // output alike (the node's three columns, TODO 887).
+      onEdges: [header[0]! - box.left + 13, value[0]! - box.left + 13, matches[0]! - box.right - 13].map((d) => Math.abs(d) <= 1),
       headerFirst: header[1]! < value[1]!,
       onControl: Math.abs(value[1]! - control(rows[1]!)) <= 1,
     };
