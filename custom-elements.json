@@ -7693,7 +7693,7 @@
           "name": "SherpaNodeRow",
           "tagName": "sherpa-node-row",
           "customElement": true,
-          "description": "one row of a sherpa-node: the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its DOCK, outside the card. Will, TODOs 78, 887.",
+          "description": "one row of a sherpa-node: the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its SOCKET TAB, outside the card. Will, TODOs 78, 887.",
           "attributes": [
             {
               "name": "data-collapsed",
@@ -7816,12 +7816,6 @@
               "name": "content"
             },
             {
-              "name": "dock-in"
-            },
-            {
-              "name": "dock-out"
-            },
-            {
               "name": "label"
             },
             {
@@ -7832,6 +7826,12 @@
             },
             {
               "name": "socket-out"
+            },
+            {
+              "name": "socket-tab-in"
+            },
+            {
+              "name": "socket-tab-out"
             },
             {
               "name": "tip"
@@ -8520,15 +8520,6 @@
               "name": "caption-warn"
             },
             {
-              "name": "dock-false"
-            },
-            {
-              "name": "dock-in"
-            },
-            {
-              "name": "dock-out"
-            },
-            {
               "name": "foot"
             },
             {
@@ -8554,6 +8545,15 @@
             },
             {
               "name": "socket-out"
+            },
+            {
+              "name": "socket-tab-false"
+            },
+            {
+              "name": "socket-tab-in"
+            },
+            {
+              "name": "socket-tab-out"
             },
             {
               "name": "stack-in"

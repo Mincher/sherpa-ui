@@ -137,7 +137,7 @@
 /**
  * sherpa-node-row.css — a row is the node's THREE columns: its input socket's cell,
  * its content, its output socket's cell. The side cells stand outside the card, so
- * each socket's dock joins the card's edge. Each socket lines up with the field's
+ * each socket's tab joins the card's edge. Each socket lines up with the field's
  * control, not its label. Will, TODO 887 · TRAP T-a-node-is-three-columns
  */
 
@@ -197,41 +197,67 @@
 /* A field the graph feeds shows as itself, and takes no press. Will, TODO 747 */
 ::slotted([readonly]) { pointer-events: none; }
 
-/* Each socket stands in its DOCK, a cell of its side: a D of the card's fill and border, flush with the card's edge, as the
-   header's docks are — the input a reverse D, the output a D. A row with no socket on a side leaves its cell empty. */
-.dock {
+/* Each socket stands in its SOCKET TAB, a cell of its side: a D flush with the card's edge, as the header's tabs are — the
+   input a reverse D, the output a D. A row with no socket on a side leaves its cell empty. In a grey box, a tab is the
+   box's grey, and the grey BLEEDS from the box across the card's edge into it (Will, 2026-11-11): the tab's own fill reaches
+   into the card, 1px under the box — ONE shape, so no seam can show where two meet — and its line is on its outer part
+   only (`::before`). TRAP T-a-node-is-three-columns */
+.socket-tab {
+  --_line: var(--sherpa-style-border-width, 0.5px);
+  /* How far it reaches into the card: to the grey box, and 1px under it; none past the edge where it stands in none. */
+  --_bleed: max(0px, calc(var(--_reach, 0px) - var(--_track) + 1px));
   display: none;
+  position: relative;
   grid-row: 1;
   /* Over a neighbour's card: it overhangs its own, and a socket under another node takes no press. */
   z-index: var(--sherpa-layer-content, 1);
   /* On the control's line: the field's last line, one control high. */
   align-self: end;
   margin-block-end: calc((var(--sherpa-display-mode-size-2xl, 32px) - var(--_socket-h) - 2 * var(--_hit)) / 2);
-  background: var(--_category-fill, var(--_surface));
-  outline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  background: var(--_section-fill, var(--_category-fill, var(--_surface)));
+}
+/* Its line: the card's border, on its three outer sides, over the card's edge and no further. */
+.socket-tab::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inline-size: var(--_track);
+  box-sizing: border-box;
+  border: var(--_line) solid var(--_border);
+  border-radius: inherit;
+  pointer-events: none;
 }
 /* With no field, a socket lines up with the label: on the row's middle, taking none of its height, so a row is as tall as
    its label, as before. */
-:host(:not(:state(has-content-slot))) .dock {
+:host(:not(:state(has-content-slot))) .socket-tab {
   align-self: center;
   margin-block: calc(var(--_track) / -2);
 }
-:host([data-input-socket]) .dock-in,
-:host([data-output-socket]) .dock-out { display: block; }
-.dock-in {
+:host([data-input-socket]) .socket-tab-in,
+:host([data-output-socket]) .socket-tab-out { display: block; }
+.socket-tab-in {
   grid-column: 1;
-  /* No border on its flush side: the outline is cut at the card's edge. */
-  clip-path: inset(-1px 0 -1px -1px);
+  margin-inline-end: calc(-1 * var(--_bleed));
   border-start-start-radius: calc(var(--_track) / 2);
   border-end-start-radius: calc(var(--_track) / 2);
 }
-.dock-out {
+.socket-tab-in::before {
+  inset-inline-start: 0;
+  border-inline-end-width: 0;
+}
+/* Reaching back into the card, its socket keeps its place. */
+.socket-tab-out {
   grid-column: 3;
-  clip-path: inset(-1px -1px -1px 0);
+  margin-inline-start: calc(-1 * var(--_bleed));
+  padding-inline-start: var(--_bleed);
   border-start-end-radius: calc(var(--_track) / 2);
   border-end-end-radius: calc(var(--_track) / 2);
 }
-/* In its dock, a socket is its cell's box: no place of its own. */
+.socket-tab-out::before {
+  inset-inline-end: 0;
+  border-inline-start-width: 0;
+}
+/* In its tab, a socket is its cell's box: no place of its own. */
 :host(:not([data-collapsed])) .socket {
   position: relative;
   inset: auto;
@@ -239,7 +265,7 @@
 }
 
 /* ── COLLAPSED (its node's): no room of its own; its sockets stand in the node's stacks, at the places its host gave them,
-   against the node's box — the row, its docks and its sections place nothing. The node's stack is their dock. Will, 2026-11-10 ── */
+   against the node's box — the row, its tabs and its sections place nothing. The node's stack is their tab. Will, 2026-11-10 ── */
 :host([data-collapsed]) {
   --_in-i: calc(var(--_in-at, 0) * (1 - var(--_routed-only, 0)) + var(--_in-at-routed, 0) * var(--_routed-only, 0));
   --_out-i: calc(var(--_out-at, 0) * (1 - var(--_routed-only, 0)) + var(--_out-at-routed, 0) * var(--_routed-only, 0));
@@ -248,7 +274,8 @@
   display: block;
   margin: 0;
 }
-:host([data-collapsed]) .dock { display: contents; }
+:host([data-collapsed]) .socket-tab { display: contents; }
+:host([data-collapsed]) .socket-tab::before { display: none; }
 :host([data-collapsed]) .socket {
   inset-block-end: auto;
   margin-block: 0;

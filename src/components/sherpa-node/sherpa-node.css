@@ -335,10 +335,10 @@
 .tip-warning { white-space: pre-line; }
 :host(:not([data-warning])) .tip-warning { display: none; }
 
-/* The whole node's sockets stand outside the card, each in its DOCK (as each row's does): a D of the node's own fill and border,
+/* The whole node's sockets stand outside the card, each in its SOCKET TAB (as each row's does): a D of the node's own fill and border,
    flush with the card's edge, on the header's middle; a fork's False on its footer's. The input a reverse D, the outputs a D.
    TRAP T-a-node-is-three-columns */
-.dock {
+.socket-tab {
   display: none;
   position: absolute;
   /* Over a neighbour's card: it overhangs its own, and a socket under another node takes no press. */
@@ -348,9 +348,9 @@
   background: var(--_category-fill, var(--_surface));
   outline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
-:host([data-input-socket]) .dock-in,
-:host([data-output-socket]) .dock-out { display: block; }
-.dock-in {
+:host([data-input-socket]) .socket-tab-in,
+:host([data-output-socket]) .socket-tab-out { display: block; }
+.socket-tab-in {
   /* 1px over the card's OUTER edge, its border included: a whole pixel, so a socket's 1px line stays sharp. */
   inset-inline-start: calc(1px - var(--sherpa-style-border-width, 0.5px) - var(--_track));
   /* No border on its flush side: the outline is cut at the box's end edge. */
@@ -358,14 +358,14 @@
   border-start-start-radius: calc(var(--_track) / 2);
   border-end-start-radius: calc(var(--_track) / 2);
 }
-.dock-out, .dock-false {
+.socket-tab-out, .socket-tab-false {
   inset-inline-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px);
   clip-path: inset(-1px -1px -1px 0);
   border-start-end-radius: calc(var(--_track) / 2);
   border-end-end-radius: calc(var(--_track) / 2);
 }
-/* In its dock, a socket is its dock's box. */
-.dock .socket {
+/* In its tab, a socket is its tab's box. */
+.socket-tab .socket {
   position: relative;
   inset: auto;
   margin: 0;
@@ -374,15 +374,15 @@
 /* ── A fork: True is the header's output, False the footer's ─────────── */
 .footer {
   position: relative;
-  /* False's row: only as tall as its socket and its dock. Will, TODO 887 */
+  /* False's row: only as tall as its socket and its tab. Will, TODO 887 */
   min-block-size: var(--_track);
   border-end-start-radius: inherit;
   border-end-end-radius: inherit;
 }
 :host([data-branches]) .footer { display: block; }
 :host([data-branches]) .header .socket-out,
-:host([data-branches]) .dock-out,
-:host([data-branches]) .dock-false { display: block; }
+:host([data-branches]) .socket-tab-out,
+:host([data-branches]) .socket-tab-false { display: block; }
 :host([data-branches]) .socket-false { display: block; --_shape: var(--_round-square); }
 :host([data-false-routed]) .socket-false .core { display: block; }
 :host([data-false-routed]) .socket-false { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
@@ -442,12 +442,12 @@
   min-block-size: 0;
 }
 :host([data-collapsed]) .foot { display: none; }
-:host([data-collapsed]) .dock-false {
+:host([data-collapsed]) .socket-tab-false {
   inset-block-start: calc(var(--_stack-top) + (var(--_outs-now) - 1) * var(--_stack-step));
   margin-block-start: 0;
 }
-/* The stacks' strips take the place of each socket's own dock. */
-:host([data-collapsed]) .dock {
+/* The stacks' strips take the place of each socket's own tab. */
+:host([data-collapsed]) .socket-tab {
   background: none;
   outline: none;
 }
@@ -479,14 +479,14 @@
   border-end-end-radius: calc(var(--_stack-step) / 2);
 }
 /* Hiding the unconnected: a header socket no route joins hides, and a fork's False no route leaves goes. */
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .dock-in,
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .dock-out { visibility: hidden; }
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .socket-tab-in,
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .socket-tab-out { visibility: hidden; }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-routed])) .footer { display: none; }
 /* A SECTION: rows on a grey box, 8px in from the card. Its rows reach past the box and the card's edge (`--_reach`), so each socket's
-   dock stands outside the card, where the header's do; a row takes its field's inset from the box. TODO 887 */
+   tab stands outside the card, where the header's do; a row takes its field's inset from the box. TODO 887 */
 .body {
   --_card-pad: var(--_pad-inline, 16px);
-  /* A row's reach: past the card's outer edge by its socket's column, less the 1px its dock overlaps that edge by. */
+  /* A row's reach: past the card's outer edge by its socket's column, less the 1px its tab overlaps that edge by. */
   --_reach: calc(var(--sherpa-style-border-width, 0.5px) + var(--_track) - 1px);
 }
 .body ::slotted(.section) {

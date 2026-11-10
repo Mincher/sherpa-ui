@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-row",
-  "$description": "one row of a sherpa-node: the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its DOCK, outside the card. Will, TODOs 78, 887.",
+  "$description": "one row of a sherpa-node: the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its SOCKET TAB, outside the card. Will, TODOs 78, 887.",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -41,8 +41,8 @@
         },
         {
           "el": "span",
-          "class": "dock dock-in sherpa-anchor",
-          "part": "dock-in",
+          "class": "socket-tab socket-tab-in sherpa-anchor",
+          "part": "socket-tab-in",
           "attrs": {
             "aria-hidden": "true"
           },
@@ -122,8 +122,8 @@
         },
         {
           "el": "span",
-          "class": "dock dock-out sherpa-anchor",
-          "part": "dock-out",
+          "class": "socket-tab socket-tab-out sherpa-anchor",
+          "part": "socket-tab-out",
           "attrs": {
             "aria-hidden": "true"
           },
@@ -410,9 +410,9 @@
     "label.font-weight": "{sherpa.font-weight-medium}",
     "label.line-height": "{sherpa.theme-content-line-height-small}",
     "label.color": "{sherpa.style-content-base}",
-    "dock.z-index": "{sherpa.layer-content}",
-    "dock.margin-block-end": "{sherpa.display-mode-size-2xl}",
-    "dock.outline": "{sherpa.style-border-width}"
+    "socket-tab.--_line": "{sherpa.style-border-width}",
+    "socket-tab.z-index": "{sherpa.layer-content}",
+    "socket-tab.margin-block-end": "{sherpa.display-mode-size-2xl}"
   },
   "$extensions": {
     "sherpa": {

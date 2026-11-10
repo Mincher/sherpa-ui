@@ -101,10 +101,10 @@
 .socket-false { --_shape: var(--_round-square); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
-/* Each tip hangs from its own socket's dock: a name is scoped to its shadow root, so the same one serves every node. */
-.dock-in, .tip-in { --_anchor: --sherpa-socket-in; }
-.dock-out, .tip-out { --_anchor: --sherpa-socket-out; }
-.dock-false, .tip-false { --_anchor: --sherpa-socket-false; }
+/* Each tip hangs from its own socket's tab: a name is scoped to its shadow root, so the same one serves every node. */
+.socket-tab-in, .tip-in { --_anchor: --sherpa-socket-in; }
+.socket-tab-out, .tip-out { --_anchor: --sherpa-socket-out; }
+.socket-tab-false, .tip-false { --_anchor: --sherpa-socket-false; }
 
 /* Each socket's tip says its type in words: one word shows. */
 .tip .word { display: none; }
