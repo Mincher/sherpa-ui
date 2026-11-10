@@ -183,3 +183,38 @@ test('dragged without Shift, a node stays in its stage, which grows with it; the
   await dragNode(page, 'Output', { x: one.x + 200, y: one.y + 300 });
   expect(Math.abs((await gap()) - before.gap)).toBeLessThanOrEqual(1);
 });
+
+test('a FRAME dragged follows the nodes\' rule: without Shift its nodes stay in their stage, which grows; with Shift they join the stage it is let go in', async ({ page }) => {
+  await addStage(page);
+  // Lower, so the frame's header (above its nodes) is clear of the stage bars.
+  await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { panTo(x: number, y: number): void }).panTo(360, 160));
+  await settle(page);
+  // Frame the Source and the Sort.
+  const pickHeader = async (heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`).click({ modifiers: ['Shift'] });
+  await pickHeader('Source');
+  await pickHeader('Sort');
+  await page.locator('sherpa-node-toolbar sherpa-button.frame').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  const frameHeader = page.locator('#cv > sherpa-node-frame >> .header[role="group"]');
+  await expect(frameHeader).toHaveCount(1);
+  const dragFrame = async (to: { x: number; y: number }, shift: boolean) => {
+    const h = (await frameHeader.boundingBox())!;
+    await page.mouse.move(h.x + 30, h.y + h.height / 2);
+    if (shift) await page.keyboard.down('Shift');
+    await page.mouse.down();
+    await page.mouse.move(to.x, to.y, { steps: 10 });
+    await page.mouse.up();
+    if (shift) await page.keyboard.up('Shift');
+    await settle(page);
+  };
+  const width = (await stage(page, 0).boundingBox())!.width;
+  const two = (await stage(page, 1).boundingBox())!;
+  await dragFrame({ x: two.x + 40, y: two.y + 200 }, false);
+  expect([await stageOf(page, 'start'), await stageOf(page, 'sort')]).toEqual(['stage-1', 'stage-1']);
+  expect((await stage(page, 0).boundingBox())!.width).toBeGreaterThan(width);
+  // Shift: out of stage 1, its middle let go over stage 2's middle, past stage 1 now.
+  const next = (await stage(page, 1).boundingBox())!;
+  const [frame, h] = [(await page.locator('#cv > sherpa-node-frame').boundingBox())!, (await frameHeader.boundingBox())!];
+  await dragFrame({ x: next.x + next.width / 2 - frame.width / 2 + (h.x + 30 - frame.x), y: next.y + 200 }, true);
+  expect([await stageOf(page, 'start'), await stageOf(page, 'sort')]).toEqual(['stage-2', 'stage-2']);
+});

@@ -134,16 +134,21 @@ export function stagesHeld<W extends Staged>(workflow: W): W {
 
 /**
  * The workflow with these nodes in the stage their middle stands in, by the bands as they stand without them
- * (`heldBands`), or in none. A node let go between stages, or past them, is in none.
+ * (`heldBands`), or in none. A node let go between stages, or past them, is in none. `together` (a frame's nodes): all
+ * in the stage under the middle of them all.
  */
-export function restage<W extends Staged>(workflow: W, ids: readonly string[], widthOf: WidthOf): W {
+export function restage<W extends Staged>(workflow: W, ids: readonly string[], widthOf: WidthOf, together = false): W {
   if (!workflow.stages?.length || !ids.length) return workflow;
   const moving = new Set(ids);
   const bands = heldBands(workflow, widthOf, moving);
+  // As ONE (a frame's nodes): the stage under the middle of them all.
+  const all = workflow.nodes.filter((n) => moving.has(n.id));
+  const middle = all.length ? (Math.min(...all.map((n) => n.x)) + Math.max(...all.map((n) => n.x + widthOf(n)))) / 2 : 0;
+  const one = together ? stageAt(bands, middle) : undefined;
   let changed = false;
   const nodes = workflow.nodes.map((n) => {
     if (!moving.has(n.id) || n.id.startsWith('#')) return n;
-    const at = stageAt(bands, n.x + widthOf(n) / 2);
+    const at = together ? one : stageAt(bands, n.x + widthOf(n) / 2);
     if (at === n.stage) return n;
     changed = true;
     const { stage: _was, ...bare } = n;

@@ -3,7 +3,7 @@ import { test, expect, type Page } from './harness';
 /**
  * A MOVED NODE LEAVES NO TRACE — TODO 799. On a canvas under 1 zoom, Chromium drew a node's rounded
  * hairline a screen px past its box and repainted only the box when the node moved: a faint empty box
- * stayed where it was. A drag, Arrange and Frame each move the Output node; round where it was and where
+ * stayed where it was. A drag and Arrange each move the Output node; round where it was and where
  * it is, the canvas reads as it does once ALL of it is repainted, and the old place as empty canvas.
  * Real pointer; read in PIXELS. TRAP T-a-scaled-hairline-paints-past-its-box
  */
@@ -137,15 +137,5 @@ test('Arrange: round where the Output was and where it is, the canvas reads as r
   await press(page, 'arrange');
   const now = await box(page, 'e1');
   expect(now).not.toEqual(was);
-  expect(await unrepainted(page, was, now)).toEqual({ count: 0, max: expect.any(Number) });
-});
-
-test('Frame: round where the Output was and where it is, the canvas reads as repainted', async ({ page }) => {
-  await start(page);
-  await pick(page, ['s1', 'p1', 'e1']);
-  const was = await box(page, 'e1');
-  await press(page, 'frame');
-  const now = await box(page, 'e1');
-  expect(apart(round(was), round(now))).toBe(true);
   expect(await unrepainted(page, was, now)).toEqual({ count: 0, max: expect.any(Number) });
 });

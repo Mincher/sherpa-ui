@@ -1,14 +1,13 @@
 /**
- * node-arrange.ts — lay picked nodes out on a grid: columns by flow, rows by fewest crossings; or in ONE column, as a
- * frame takes them. Pure: no DOM. Will, TODOs 752, 756, 778 · docs/history/plan-752-arrange.md
+ * node-arrange.ts — lay picked nodes out on a grid: columns by flow, rows by fewest crossings. Pure: no DOM. Will, TODOs 752, 756, 778 · docs/history/plan-752-arrange.md
  *
  * Map:
  * - ArrangeGraph — What a layout reads: the nodes' places, the routes, the ties.
- * - ArrangeOptions — The gaps, the grid, each node's drawn box, and one column or the grid.
+ * - ArrangeOptions — The gaps, the grid, and each node's drawn box.
  * - Arranged — Where each picked node and each tie goes.
  * - SocketHeights — Each socket's height in its node's box, as drawn: inputs by a route's `to`, outputs by its `from`.
  * - crossings — How many pairs of straight lines, edge to edge at mid height or socket to socket, cross in a layout.
- * - arrangeNodes — The picked nodes on a grid, by their routes, rows crossing least, ties in the gaps; or one column.
+ * - arrangeNodes — The picked nodes on a grid, by their routes, rows crossing least, ties in the gaps.
  */
 import { socketOf, type NodeRoute, type NodeTie } from './node-kinds.js';
 import { tieLimit } from './workflow.js';
@@ -27,8 +26,6 @@ export interface ArrangeOptions {
   /** Every place is a multiple of it. Default 4. */
   grid?: number;
   boxes: Readonly<Record<string, { w: number; h: number }>>;
-  /** ONE column, in flow order, sources first: what Frame lays its nodes in. TODO 778 */
-  column?: boolean;
 }
 
 /** Where each picked node and each tie goes. */
@@ -74,8 +71,7 @@ export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonl
  * top left (756), every place on the 4px grid, the block's top-left where the picked nodes' was. A tie whose routes all
  * join picked nodes stands in the gap before its shortest route's target, equally spaced with its
  * neighbours there, at the mean height of its routes, held inside `tieLimit`. A cycle: its closing
- * route is left out of the depth, so the walk ends. Fewer than two picked: nothing. With `column`, ONE column: by
- * depth, then by height, each a row of the grid; no tie is placed (TODO 778).
+ * route is left out of the depth, so the walk ends. Fewer than two picked: nothing.
  */
 export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], options: ArrangeOptions): Arranged {
   const grid = options.grid ?? 4;
@@ -110,15 +106,6 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
   const depth = new Map<string, number>(first.map((id) => [id, 0]));
   for (const id of order.reverse()) for (const [a, b] of edges) if (a === id) depth.set(b, Math.max(depth.get(b)!, depth.get(id)! + 1));
   const anchor = { x: near(Math.min(...ids.map((id) => at.get(id)!.x))), y: near(Math.min(...ids.map((id) => at.get(id)!.y))) };
-  // One column: the grid's with every node in it, ordered by the flow, then by height. Ties keep their place, held by their limit.
-  if (options.column) {
-    let y = anchor.y;
-    for (const id of [...first].sort((a, b) => depth.get(a)! - depth.get(b)! || first.indexOf(a) - first.indexOf(b))) {
-      out.nodes[id] = { x: anchor.x, y };
-      y += up(box(id).h) + up(options.gapY);
-    }
-    return out;
-  }
   const columns = Math.max(...depth.values()) + 1;
   // One item per node, and one per column a long route crosses, so a sweep sees every line.
   const layers: string[][] = Array.from({ length: columns }, () => []);

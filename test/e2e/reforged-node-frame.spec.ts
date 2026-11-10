@@ -77,7 +77,7 @@ async function grip(page: Page): Promise<[number, number]> {
   return [h.x + h.width * 0.3, h.y + h.height / 2];
 }
 
-test('Frame: two or more picked; one column, Arrange\'s gap apart, left edges kept; a frame round them, its header above; one step', async ({ page }) => {
+test('Frame: two or more picked; a bucket — every node stays where it stood; a frame round them, its header above; one step', async ({ page }) => {
   await start(page);
   const button = page.locator('sherpa-node-toolbar sherpa-button.frame');
   await expect(button).toHaveAttribute('disabled', '');
@@ -87,21 +87,11 @@ test('Frame: two or more picked; one column, Arrange\'s gap apart, left edges ke
   await expect(button).not.toHaveAttribute('disabled', '');
   const before = await flow(page);
   await press(page, 'frame');
-  const z = await zoom(page);
-  const gap = 3 * 56;
   const [s1, p1, e1, s2] = await Promise.all(['s1', 'p1', 'e1', 's2'].map((id) => box(page, id)));
-  // ONE column, sources first: the left edges are one, and each top a node's height and the gap below the last.
-  expect(Math.abs(s1!.x - p1!.x)).toBeLessThanOrEqual(1);
-  expect(Math.abs(p1!.x - e1!.x)).toBeLessThanOrEqual(1);
-  expect(s1!.y).toBeLessThan(p1!.y);
-  expect(p1!.y).toBeLessThan(e1!.y);
-  expect(Math.abs(p1!.y - (s1!.y + s1!.height) - gap * z)).toBeLessThanOrEqual(4 * z + 1);
-  expect(Math.abs(e1!.y - (p1!.y + p1!.height) - gap * z)).toBeLessThanOrEqual(4 * z + 1);
-  // The top-left of the picked nodes stays where it was.
+  // A BUCKET: no node moves (Will, 2026-11-10).
   const after = await flow(page);
   const at = (f: Flow, id: string) => f.nodes.find((n) => n.id === id)!;
-  expect(at(after, 's1')).toMatchObject({ x: 0, y: 0 });
-  expect(at(after, 's2')).toEqual(at(before, 's2'));
+  for (const id of ['s1', 'p1', 'e1', 's2']) expect(at(after, id)).toEqual(at(before, id));
   // A frame round the three, not the fourth; its header above the first node, with its title and Release.
   expect(after.frames).toEqual([{ id: 'frame-1', label: 'Frame 1', nodes: ['s1', 'p1', 'e1'] }]);
   await expect(frameEl(page)).toHaveCount(1);

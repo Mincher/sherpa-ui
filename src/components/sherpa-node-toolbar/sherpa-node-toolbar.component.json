@@ -204,7 +204,7 @@
                 "data-icon-start": "frame",
                 "data-action": "frame",
                 "aria-label": "Frame nodes",
-                "data-tip": "Frame nodes (F): one column, in a frame; pick two or more",
+                "data-tip": "Frame nodes (F): in a frame, where they stand; pick two or more",
                 "disabled": ""
               }
             }

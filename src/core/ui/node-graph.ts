@@ -18,7 +18,7 @@
  * - markFrame — Mark one frame as the one picked, or none: no node is picked with it.
  * - pickedFrame — The frame picked, by id, or none.
  * - pickedNodes — The nodes picked, by id: a click, a box, or the keys.
- * - arrangement — Where these nodes go, from the boxes they are drawn in: a grid, or one column.
+ * - arrangement — Where these nodes go, from the boxes they are drawn in: a grid.
  * - arrangePicked — Lay the picked nodes out on a grid and hand the host the places: one move, ties and bends with it.
  * - unfurlment — Where every node goes when the graph is unfurled, from the boxes, frames and socket heights drawn.
  * - unfurlGraph — Unfurl the whole graph and hand the host the places: one step; the view fits it after.
@@ -1507,13 +1507,13 @@ function laidAs(canvas: SherpaLayoutCanvas, drawn: Drawn): { gap: number; nodes:
   };
 }
 
-/** Where these nodes go, from the boxes they are drawn in: on a grid, or in ONE column (TODO 778). None, fewer than two. */
-export function arrangement(canvas: SherpaLayoutCanvas, picked: readonly string[], column = false): Arranged | undefined {
+/** Where these nodes go, from the boxes they are drawn in: on a grid. None, fewer than two. */
+export function arrangement(canvas: SherpaLayoutCanvas, picked: readonly string[]): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
   const ids = picked.filter((id) => !id.startsWith('#'));
   if (!drawn || ids.length < 2) return undefined;
   const { gap, nodes, boxes } = laidAs(canvas, drawn);
-  const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes, column });
+  const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
@@ -1583,8 +1583,8 @@ export function unfurlGraph(canvas: SherpaLayoutCanvas): Arranged | undefined {
 /** Say in `data-can-arrange`, and each flag given, whether two or more nodes are picked; stop lets go. */
 export function watchArrange(
   canvas: SherpaLayoutCanvas, toolbar: HTMLElement | null | undefined, allowed: () => boolean = () => true, flags: readonly string[] = ['data-can-arrange'],
-): () => void {
-  if (!toolbar) return () => undefined;
+): (() => void) & { tell(): void } {
+  if (!toolbar) return Object.assign(() => undefined, { tell: () => undefined });
   const tell = (): void => {
     const can = pickedNodes(canvas).filter((id) => !id.startsWith('#')).length > 1 && allowed();
     for (const flag of flags) toolbar.toggleAttribute(flag, can);
@@ -1592,7 +1592,7 @@ export function watchArrange(
   const watch = new MutationObserver(tell);
   watch.observe(canvas, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-current'] });
   tell();
-  return () => { watch.disconnect(); for (const flag of flags) toolbar.removeAttribute(flag); };
+  return Object.assign(() => { watch.disconnect(); for (const flag of flags) toolbar.removeAttribute(flag); }, { tell });
 }
 
 /** A toolbar's view toggles, kept by the canvas: Collapse all (pressed while every node is) and Hide unconnected
@@ -2530,8 +2530,9 @@ export function bindWorkflow(
     const ids = [...moved];
     moved.clear();
     if (path.length || readOnly()) return;
-    // Shift held: it joins the stage it was let go in. Else it is where its stage still is.
-    write(ids.length && shiftDrag ? editWorkflow(shown(), { restage: ids }, K()) : shown(), movedTag);
+    // Shift held: it joins the stage it was let go in — a frame's nodes as ONE. Else it is where its stage still is.
+    const framed = (shown().frames ?? []).some((f) => f.nodes.length === ids.length && f.nodes.every((id) => ids.includes(id)));
+    write(ids.length && shiftDrag ? editWorkflow(shown(), { restage: ids, together: framed }, K()) : shown(), movedTag);
     shiftDrag = false;
   };
   let shiftDrag = false;
@@ -2650,6 +2651,10 @@ export function bindWorkflow(
   const onBreak = (route: NodeRoute): void => write(editWorkflow(shown(), { cut: route }, K()));
   // Picked routes cut together are ONE step.
   const onBreakAll = (routes: NodeRoute[]): void => edit(() => { for (const route of routes) onBreak(route); });
+  // — Swimlanes on: the lanes place the nodes, so Arrange, Unfurl and the zip tie are off, and the ties are hidden till they
+  //   go; a frame is still a bucket. Will, 2026-11-10
+  const lanesOn = (): boolean => !path.length && !!shown().lanes?.length;
+  const SWIMLANES_OWN = 'Swimlanes are on: they place the nodes';
   // — Zip ties (562): a tie is a part of the draft, so each is one edit, and one step.
   let tying = false;
   const setTying = (on: boolean): void => {
@@ -2727,13 +2732,10 @@ export function bindWorkflow(
   /** Frame the picked nodes: ONE column, with Arrange's gap, and a frame round it, as ONE step. The frame is picked. */
   const framePicked = (focus = false): void => {
     const ids = pickedNodes(canvas).filter((id) => !id.startsWith('#'));
-    const placed = readOnly() ? undefined : arrangement(canvas, ids, true);
-    if (!placed) return;
+    if (readOnly() || ids.length < 2) return;
     const had = new Set((shown().frames ?? []).map((f) => f.id));
-    edit(() => {
-      const column = editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: 'reset' } }, K());
-      write(editWorkflow(column, { frame: { nodes: ids } }, K()));
-    });
+    // A frame is a bucket: its nodes stay where they are. Will, 2026-11-10
+    write(editWorkflow(shown(), { frame: { nodes: ids } }, K()));
     const made = (shown().frames ?? []).find((f) => !had.has(f.id));
     if (!made) return;
     const open = !!inspector?.open;
@@ -3183,7 +3185,7 @@ export function bindWorkflow(
         if (framePanel) picks.deselect();
       } else if (path.length && !routes) back();
       else if (!routes) return;
-    } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && (pickedRoutes(canvas).length || multi.size > 1 || (hit && !hit.field))) {
+    } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && !lanesOn() && (pickedRoutes(canvas).length || multi.size > 1 || (hit && !hit.field))) {
       // Picked routes first; else the routes of the picked nodes.
       if (pickedRoutes(canvas).length) tieRoutes(pickedRoutes(canvas));
       else tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
@@ -3221,6 +3223,7 @@ export function bindWorkflow(
     if (action === 'undo') undo();
     else if (action === 'redo') redo();
     // Zip tie with connectors picked: it ties them, at once; else the tool goes on or off. Will, 2026-11-10
+    else if ((action === 'tie' || action === 'arrange' || action === 'unfurl') && lanesOn()) report({ code: 'node-lanes', message: `${SWIMLANES_OWN}: turn them off to ${action === 'tie' ? 'tie connectors' : action}.` });
     else if (action === 'tie' && !tying && pickedRoutes(canvas).length > 1) tieRoutes(pickedRoutes(canvas));
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
@@ -3235,8 +3238,8 @@ export function bindWorkflow(
     else if (action === 'lanes' && !path.length && !readOnly()) write(editWorkflow(shown(), { lanes: shown().lanes?.length ? null : LANES_BY_FAMILY }, K()));
   };
   toolbar?.addEventListener('toolbar-select', onTool);
-  toolbar?.setAttribute('data-can-tie', '');
-  const unarrange = watchArrange(canvas, toolbar, () => !readOnly(), ['data-can-arrange', 'data-can-frame']);
+  const unarrange = watchArrange(canvas, toolbar, () => !readOnly() && !lanesOn(), ['data-can-arrange']);
+  const unframe = watchArrange(canvas, toolbar, () => !readOnly(), ['data-can-frame']);
   const unview = watchView(canvas, toolbar);
   tell();
   canvas.addEventListener('keydown', onKey, { capture: true });
@@ -3535,7 +3538,14 @@ export function bindWorkflow(
     const ro = readOnly();
     const body = doc ? doc.graph(stages.preview() ?? shown()) : workflowGraph(stages.preview() ?? shown(), facts, K());
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
-    drawGraph(canvas, graph, {
+    // Swimlanes on: the tie tool goes off, and the ties are hidden, not gone.
+    const laning = lanesOn();
+    if (laning && tying) {
+      tying = false;
+      toolbar?.removeAttribute('data-tie');
+    }
+    toolbar?.toggleAttribute('data-can-tie', !laning);
+    drawGraph(canvas, laning ? { ...graph, ties: [] } : graph, {
       onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, opens: (node) => !!use(node.id),
       ...(ro ? {} : { onMoveMany, onArrange }),
       onBox: pickBox, onPicked: tellPicked, onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
@@ -3558,7 +3568,8 @@ export function bindWorkflow(
     requestAnimationFrame(() => drawLanes(canvas, path.length ? null : (stages.preview() ?? shown()), heightOf, K()));
     toolbar?.toggleAttribute('data-can-lanes', !path.length && !ro);
     toolbar?.toggleAttribute('data-lanes', !!laned?.lanes?.length);
-    toolbar?.toggleAttribute('data-can-unfurl', !ro && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
+    toolbar?.toggleAttribute('data-can-unfurl', !ro && !laning && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
+    unarrange.tell();
     tellPath();
     if (simulation && !simulation.stale && simulation.sig !== dataSig()) {
       simulation.stale = true;
@@ -3661,6 +3672,7 @@ export function bindWorkflow(
     stop(): void {
       unwatch();
       unarrange();
+      unframe();
       unview();
       stages.stop();
       unwatchDoc?.();

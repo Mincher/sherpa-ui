@@ -1,11 +1,11 @@
 /**
  * A FRAME holds picked nodes under one header: the workflow keeps only which nodes (`frames`: id, title, line,
- * nodes), and its box is drawn round them. Frame lays them in ONE column, Arrange's gap apart, and frames them;
+ * nodes), and its box is drawn round them. A frame is a bucket: its nodes stay where they stand (Will, 2026-11-10);
  * Release takes the frame away and leaves every node where it is. A node is in one frame at most; one removed
  * leaves its frame, and a frame with none goes. It is saved and read back: in v2, the schema, a Custom Node's
  * body and an entity's graph. Will, TODO 778 · docs/history/plan-778-frames.md
  *
- *   node --test test/unit/a-frame-holds-nodes-in-a-column.test.mjs
+ *   node --test test/unit/a-frame-holds-its-nodes.test.mjs
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,7 +13,6 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { editWorkflow, finalGraph, readWorkflow, workflowFaults, workflowGraph, checkWorkflow } = await import(new URL('workflow.js', core));
-const { arrangeNodes } = await import(new URL('node-arrange.js', core));
 const { framesAmong } = await import(new URL('node-frames.js', core));
 const { innerOf, kindsOf } = await import(new URL('node-library.js', core));
 const { NODE_KINDS } = await import(new URL('node-kinds.js', core));
@@ -41,21 +40,6 @@ const refusals = (fn) => {
   try { fn(); } finally { stop(); }
   return said;
 };
-
-test('one column: flow order, sources first; left edges the block\'s; each top a node and Arrange\'s gap below the last; on the 4px grid', () => {
-  const out = arrangeNodes(flow(), ['e1', 'p1', 's1'], { gapX: GAP, gapY: GAP, boxes, column: true });
-  assert.deepEqual(Object.keys(out.nodes).sort(), ['e1', 'p1', 's1']);
-  const { s1, p1, e1 } = out.nodes;
-  assert.ok(s1.x === p1.x && p1.x === e1.x && s1.x === 0, 'one column, at the left of the block');
-  assert.equal(s1.y, 0);
-  assert.equal(p1.y, 192 + GAP, 'the height snapped up to the grid, then the gap');
-  assert.equal(e1.y, p1.y + 132 + GAP);
-  for (const p of Object.values(out.nodes)) assert.ok(p.x % 4 === 0 && p.y % 4 === 0);
-  assert.deepEqual(out.ties, {});
-  // The block's top-left is where the picked nodes' was, snapped.
-  const moved = arrangeNodes({ ...flow(), nodes: flow().nodes.map((n) => ({ ...n, x: n.x + 101, y: n.y + 59 })) }, ['s1', 'p1'], { gapX: GAP, gapY: GAP, boxes, column: true });
-  assert.deepEqual(moved.nodes.s1, { x: 100, y: 60 });
-});
 
 test('Frame: two or more nodes, a free id and a numbered title; a node taken from the frame it was in; a frame left with none goes', () => {
   const one = editWorkflow(flow(), { frame: { nodes: ['s1', 'p1'] } });
@@ -159,14 +143,13 @@ test('Save as Custom Node: a frame wholly picked goes inside, one partly picked 
   assert.deepEqual(workflowFaults(back), []);
 });
 
-test('Undo and Redo: a column and a frame as ONE step put back whole', () => {
+test('Undo and Redo: a frame is ONE step, put back whole; no node moves', () => {
   const journal = new Journal(10);
   const before = flow();
-  const placed = arrangeNodes(before, ['s1', 'p1', 'e1'], { gapX: GAP, gapY: GAP, boxes, column: true });
-  const after = editWorkflow(editWorkflow(before, { place: { nodes: placed.nodes, ties: placed.ties, bends: 'reset' } }), { frame: { nodes: ['s1', 'p1', 'e1'] } });
+  const after = editWorkflow(before, { frame: { nodes: ['s1', 'p1', 'e1'] } });
   journal.push({ before, after });
   assert.deepEqual(journal.back().before, flow());
   assert.equal(journal.canBack, false);
   assert.deepEqual(journal.forward().after.frames, [{ id: 'frame-1', label: 'Frame 1', nodes: ['s1', 'p1', 'e1'] }]);
-  assert.equal(after.nodes.find((n) => n.id === 'e1').x, 0);
+  assert.deepEqual(after.nodes.map((n) => [n.x, n.y]), before.nodes.map((n) => [n.x, n.y]));
 });

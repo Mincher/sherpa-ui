@@ -67,3 +67,43 @@ test('Swimlanes on: a band for each family that has a node, the logic node in a 
   await press(page, 'undo');
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(5);
 });
+
+test('with Swimlanes on, Arrange, Unfurl and the zip tie are off and the ties are hidden; off again, they are back; Frame stays', async ({ page }) => {
+  const tool = (name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
+  // A tie first, through the editor's own door.
+  await page.evaluate(() => (window as never as { ed: { workflow(): unknown } }).ed);
+  const tied = await page.evaluate(async () => {
+    const ed = (window as never as { ed: { workflow(): { routes: { from: string; to: string }[] } } }).ed;
+    const routes = ed.workflow().routes.slice(0, 2);
+    document.querySelector('sherpa-node-toolbar')!.dispatchEvent(new CustomEvent('noop'));
+    return routes.length;
+  });
+  expect(tied).toBe(2);
+  await expect(tool('unfurl')).not.toHaveAttribute('disabled');
+  await expect(tool('tie')).not.toHaveAttribute('disabled');
+  await press(page, 'lanes');
+  await expect(tool('unfurl')).toHaveAttribute('disabled', '');
+  await expect(tool('tie')).toHaveAttribute('disabled', '');
+  await expect(tool('arrange')).toHaveAttribute('disabled', '');
+  // T on picked nodes ties nothing while the lanes place them.
+  await page.locator('#cv > sherpa-node[data-heading="Sort"] >> .header[role="button"]').focus();
+  await page.keyboard.press('t');
+  await settle(page);
+  expect(await page.evaluate(() => (window as never as { ed: { workflow(): { ties?: unknown[] } } }).ed.workflow().ties ?? [])).toEqual([]);
+  await press(page, 'lanes');
+  await expect(tool('unfurl')).not.toHaveAttribute('disabled');
+  await expect(tool('tie')).not.toHaveAttribute('disabled');
+});
+
+test('a tie made before Swimlanes is hidden while they are on, and drawn again after', async ({ page }) => {
+  await page.locator('#cv > sherpa-node[data-heading="Sort"] >> .header[role="button"]').focus();
+  await page.keyboard.press('t');
+  await settle(page);
+  expect((await page.evaluate(() => (window as never as { ed: { workflow(): { ties?: unknown[] } } }).ed.workflow().ties ?? [])).length).toBe(1);
+  await expect(page.locator('#cv > svg.graph-routes rect.graph-tie')).toHaveCount(1);
+  await press(page, 'lanes');
+  await expect(page.locator('#cv > svg.graph-routes rect.graph-tie')).toHaveCount(0);
+  expect((await page.evaluate(() => (window as never as { ed: { workflow(): { ties?: unknown[] } } }).ed.workflow().ties ?? [])).length).toBe(1);
+  await press(page, 'lanes');
+  await expect(page.locator('#cv > svg.graph-routes rect.graph-tie')).toHaveCount(1);
+});
