@@ -1094,13 +1094,7 @@ function letGo(w: Work, scope: string, field: string, keys: readonly string[]): 
 
 /** Is this preset ON in a copy: its rows held on every field it names, in force. TODOs 510, 521 */
 export function presetIn(query: Query, scope: string, id: string, preset: Preset | undefined): boolean {
-  if (!preset) return false;
-  const entries = Object.entries(preset.readings).filter(([, given]) => answerTree(given));
-  // Each at its field's home, where a preset writes it.
-  return entries.length > 0 && entries.every(([field]) => {
-    const held = query.scopes[holderOf(query, field) ?? scope]?.readings[field];
-    return !!held?.byPreset?.[id] && !held.suspended;
-  });
+  return !!preset && presetHeld(query, scope, id, preset.readings);
 }
 
 /**
