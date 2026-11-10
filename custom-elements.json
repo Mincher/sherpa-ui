@@ -8342,6 +8342,13 @@
               }
             },
             {
+              "name": "data-joined",
+              "description": "joined to what is picked: downstream of a picked node, at an end of a picked route, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-linked",
               "description": "a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it",
               "type": {

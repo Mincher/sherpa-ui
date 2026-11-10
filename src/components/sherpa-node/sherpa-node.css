@@ -235,7 +235,9 @@
 :host([data-current]) .root,
 :host([data-linked]) .root,
 :host([data-warning]) .root { --_category-fill: initial; }
-@media (forced-colors: active) { :host([data-current]) .root, :host([data-linked]) .root { border-color: Highlight; } }
+/* JOINED to what is picked: the active border, on its own fill — not a pin, which would take the picked fill too. TODO 889 */
+:host([data-joined]) .root { --_border: var(--sherpa-style-active-border-base-1, #c046ff); }
+@media (forced-colors: active) { :host([data-current]) .root, :host([data-linked]) .root, :host([data-joined]) .root { border-color: Highlight; } }
 
 /* ── The header: always there, as it is the handle ───────────────────── */
 .header {

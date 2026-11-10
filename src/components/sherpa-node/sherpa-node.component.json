@@ -450,6 +450,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-joined",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "joined to what is picked: downstream of a picked node, at an end of a picked route, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-linked",
       "type": "boolean",
       "observed": true,
@@ -608,7 +617,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, inputs?, inputsRouted?, linked?, locked?, outputRouted?, outputSocket?, outputs?, outputsRouted?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
+    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, inputs?, inputsRouted?, joined?, linked?, locked?, outputRouted?, outputSocket?, outputs?, outputsRouted?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
@@ -634,6 +643,11 @@
       "$type": "state",
       "name": "warning",
       "selector": ":host([data-warning])"
+    },
+    {
+      "$type": "state",
+      "name": "joined",
+      "selector": ":host([data-joined])"
     },
     {
       "$type": "state",

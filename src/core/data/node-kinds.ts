@@ -36,6 +36,7 @@
  * - paletteFor — The palette's kinds a socket of a type could join, a Value first.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
+ * - downstreamOf — Every node the routes lead to from these, and on from each; these left out.
  * - FALSE_SOCKET — The footer's False, as an address names it after its node.
  * - rowOf — The row of a kind a name says.
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
@@ -520,6 +521,26 @@ export interface Socket {
 export function socketOf(address: string): Socket {
   const at = address.indexOf('/');
   return at < 0 ? { node: address } : { node: address.slice(0, at), row: address.slice(at + 1) };
+}
+
+/** Every node the routes lead to from these, and on from each; these left out. TODO 889 */
+export function downstreamOf(routes: readonly NodeRoute[], from: Iterable<string>): Set<string> {
+  const start = new Set(from);
+  const next = new Map<string, string[]>();
+  for (const route of routes) {
+    const [a, b] = [socketOf(route.from).node, socketOf(route.to).node];
+    next.set(a, [...(next.get(a) ?? []), b]);
+  }
+  const seen = new Set<string>();
+  const queue = [...start];
+  while (queue.length) {
+    for (const to of next.get(queue.pop()!) ?? []) {
+      if (seen.has(to) || start.has(to)) continue;
+      seen.add(to);
+      queue.push(to);
+    }
+  }
+  return seen;
 }
 
 /** The footer's False, as an address names it after its node: `node/#false`. A `#` part is no row. */

@@ -15,7 +15,7 @@ import { readFile } from 'node:fs/promises';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { NODE_KINDS, socketOf } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, downstreamOf, socketOf } = await import(new URL('node-kinds.js', core));
 const { checkWorkflow, editWorkflow, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { onReport } = await import(new URL('report.js', core));
 
@@ -54,6 +54,14 @@ test('a v2 is read as itself; anything else is no workflow, and says so', () => 
 test('a socket is a node\'s header, or one of its rows', () => {
   assert.deepEqual(socketOf('filter'), { node: 'filter' });
   assert.deepEqual(socketOf('filter/value'), { node: 'filter', row: 'value' });
+});
+
+test('downstream: every node the routes lead to from the given ones, and on from each; the given left out (TODO 889)', () => {
+  const routes = [{ from: 'a/rows', to: 'b' }, { from: 'b/x', to: 'c/y' }, { from: 'c', to: 'a' }, { from: 'd', to: 'c' }];
+  assert.deepEqual([...downstreamOf(routes, ['a'])].sort(), ['b', 'c'], 'a loop back to a stops at a');
+  assert.deepEqual([...downstreamOf(routes, ['d'])].sort(), ['a', 'b', 'c']);
+  assert.deepEqual([...downstreamOf(routes, ['a', 'b'])].sort(), ['c'], 'a given node is never its own downstream');
+  assert.deepEqual([...downstreamOf(routes, [])], []);
 });
 
 test('ONE registry: every kind once, with a header, its own row names, what it stands for and where it is drawn', () => {

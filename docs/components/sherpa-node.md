@@ -39,6 +39,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value \| object \| boolean \| any: an input is a D, its type in its ink |
 | `data-inputs` | number |  |  |
 | `data-inputs-routed` | number |  |  |
+| `data-joined` | boolean |  | joined to what is picked: downstream of a picked node, at an end of a picked route, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it |
 | `data-linked` | boolean |  | a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
@@ -129,6 +130,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, inputs?, inputsRouted?, linked?, locked?, outputRouted?, outputSocket?, outputs?, outputsRouted?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
+`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, inputs?, inputsRouted?, joined?, linked?, locked?, outputRouted?, outputSocket?, outputs?, outputsRouted?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

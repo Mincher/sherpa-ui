@@ -103,7 +103,7 @@ import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { FALSE_SOCKET, NODE_KINDS, categorySlug, fitOf, paletteOf, rowChoices, socketOf, socketType, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { FALSE_SOCKET, NODE_KINDS, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -232,6 +232,8 @@ interface Drawn {
   /** The nodes drawn collapsed, and whether a collapsed node hides its unrouted sockets: the view's, never the graph's. */
   collapsed: Set<string>;
   hideUnconnected: boolean;
+  /** The row whose field has focus, by its address: the nodes joined to it wear the active border. TODO 889 */
+  focusRow: string | null;
 }
 
 const drawnOn = new WeakMap<HTMLElement, Drawn>();
@@ -666,6 +668,8 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     return old ? morph(old, el) : el;
   });
   keepOrder(drawn.lines, [...fresh, ...(drawn.draft ? [drawn.draft] : [])], true);
+  // A route picked, or let go: what it joins wears the active border, or no longer.
+  markJoined(drawn);
 }
 
 /** A socket's box on the screen: a node's or a row's, on one side; a False is its footer's. */
@@ -1086,7 +1090,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     graph: { nodes: [], routes: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), beside: new Map(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
     lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
-    frames: new Map(), selectedFrame: null, collapsed: new Set(), hideUnconnected: false,
+    frames: new Map(), selectedFrame: null, collapsed: new Set(), hideUnconnected: false, focusRow: null,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -1360,6 +1364,17 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const frame = frameOf(event.target);
     if (frame) made.options.onRelease?.(frame.id);
   });
+  // A row's field in focus: the nodes joined to that row wear the active border, until it goes. TODO 889
+  canvas.addEventListener('focusin', (event) => {
+    const row = event.composedPath().find((el): el is HTMLElement => el instanceof HTMLElement && made.addresses.has(el));
+    const at = row ? made.addresses.get(row)! : null;
+    made.focusRow = at ? `${at[0]}/${at[1]}` : null;
+    markJoined(made);
+  });
+  canvas.addEventListener('focusout', () => {
+    made.focusRow = null;
+    markJoined(made);
+  });
   // A node ASKS to be picked: the drawing marks it, one of many, and tells its host.
   canvas.addEventListener('node-select', (event) => {
     const node = nodeOf(made, event.target);
@@ -1474,6 +1489,31 @@ function linkPortals(drawn: Drawn | undefined): void {
   const picked = currentOf(drawn.nodes);
   const lit = new Set(picked.flatMap((id) => portalLinks(drawn.graph.nodes, id)));
   for (const [id, el] of drawn.nodes) el.toggleAttribute('data-linked', lit.has(id) && !picked.includes(id));
+  markJoined(drawn);
+}
+
+/**
+ * The ACTIVE border on what is joined to the pick (`data-joined`): every node downstream of a picked node, each node a
+ * picked route joins, and each node joined to the row whose field has focus (its output drawn on another row's, too). A
+ * picked node wears the picked look instead. Will, TODO 889
+ */
+function markJoined(drawn: Drawn | undefined): void {
+  if (!drawn) return;
+  const picked = new Set(currentOf(drawn.nodes));
+  const joined = downstreamOf(drawn.routes, picked);
+  for (const route of drawn.picked) for (const end of [route.from, route.to]) joined.add(socketOf(end).node);
+  const focus = drawn.focusRow;
+  if (focus) {
+    const rows = new Set([focus, ...[...drawn.beside].flatMap(([row, wears]) => (wears === focus ? [row] : []))]);
+    for (const route of drawn.routes) {
+      if (rows.has(route.to)) joined.add(socketOf(route.from).node);
+      if (rows.has(route.from)) joined.add(socketOf(route.to).node);
+    }
+  }
+  for (const [id, el] of drawn.nodes) {
+    const on = joined.has(id) && !picked.has(id);
+    if (el.hasAttribute('data-joined') !== on) el.toggleAttribute('data-joined', on);
+  }
 }
 
 /** Mark one node as the one picked, or none. */
