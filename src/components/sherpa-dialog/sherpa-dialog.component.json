@@ -48,6 +48,7 @@
             {
               "slot": "header",
               "attrs": {
+                "class": "slotted",
                 "data-accepts": "header"
               }
             }
@@ -79,6 +80,7 @@
                 {
                   "slot": "",
                   "attrs": {
+                    "class": "slotted",
                     "data-accepts": "content"
                   }
                 }
@@ -94,6 +96,7 @@
             {
               "slot": "footer",
               "attrs": {
+                "class": "slotted",
                 "data-accepts": "footer"
               }
             }
@@ -223,7 +226,8 @@
   ],
   "tokens": {
     "root.color": "{sherpa.style-content-base}",
-    "root.box-shadow": "{sherpa.shadow-lg}"
+    "root.box-shadow": "{sherpa.shadow-lg}",
+    "slotted.color": "{sherpa.style-content-base}"
   },
   "$extensions": {
     "sherpa": {

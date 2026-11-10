@@ -238,3 +238,38 @@ test('confirm() writes what it is given, keeps what it is not, and resolves true
     kept: { heading: 'Delete it?', action: 'Delete', status: 'critical' }, no: false,
   });
 });
+
+test('a status is the chrome\'s: the card\'s edge takes it, and what its slots hold keeps the default unless it asks', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-dialog') as DialogEl;
+    el.setAttribute('data-status', 'critical');
+    el.setAttribute('data-heading', 'Delete it?');
+    el.innerHTML = `<p>It goes.</p><sherpa-button id="b">Keep</sherpa-button>
+      <sherpa-container-footer slot="footer"><sherpa-button id="c">Cancel</sherpa-button><sherpa-button id="d" data-status="critical">Delete</sherpa-button></sherpa-container-footer>`;
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.show!();
+    await window.__settled();
+    const ink = (n: Element) => getComputedStyle(n).color;
+    const edge = (id: string) => getComputedStyle(el.querySelector(`#${id}`)!.shadowRoot!.querySelector('button')!).borderTopColor;
+    const plain = document.createElement('sherpa-dialog') as DialogEl;
+    plain.innerHTML = '<p>Plain.</p>';
+    document.getElementById('root')!.appendChild(plain);
+    await plain.rendered;
+    plain.show!();
+    await window.__settled();
+    const out = {
+      card: getComputedStyle(el.shadowRoot!.querySelector('.root')!).borderTopColor,
+      plainCard: getComputedStyle(plain.shadowRoot!.querySelector('.root')!).borderTopColor,
+      words: ink(el.querySelector('p')!), plainWords: ink(plain.querySelector('p')!),
+      body: edge('b'), cancel: edge('c'), action: edge('d'),
+    };
+    plain.close!();
+    el.close!();
+    return out;
+  });
+  expect(r.card, 'the card takes the status').not.toBe(r.plainCard);
+  expect(r.words, 'slotted words keep the default ink').toBe(r.plainWords);
+  expect(r.body, 'a slotted control keeps its default edge').toBe(r.cancel);
+  expect(r.action, 'a control that asks for the status has it').toBe(r.card);
+});

@@ -88,6 +88,7 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-style-content-base` | `.root` | `color` |
 | `--sherpa-shadow-lg` | `.root` | `box-shadow` |
+| `--sherpa-style-content-base` | `.slotted` | `color` |
 
 ## populate()
 

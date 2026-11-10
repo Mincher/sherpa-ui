@@ -269,6 +269,8 @@ sherpa-dialog:
   # Dialog pins Style=default at its root. A data-status on the host still wins
   # (attribute beats tag), so the critical confirm dialog keeps working.
   '&': default
+  # The status is the chrome's: what a slot holds keeps the default. Will, TODO 741
+  '& .slotted': default
 
 sherpa-input-text:
   # Input Field (atom) pins Style=default; its State=error pins Style=critical.

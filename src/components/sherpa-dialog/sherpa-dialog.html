@@ -25,17 +25,17 @@
     <div class="header" part="header">
       <!-- Figma's Container Header, default variant, as the Dialog and Panel compose it. -->
       <sherpa-container-header class="heading" part="heading" data-attr-data-heading="data-heading"></sherpa-container-header>
-      <slot name="header" data-accepts="header"></slot>
+      <slot name="header" class="slotted" data-accepts="header"></slot>
     </div>
     <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
     <div class="body-edges sherpa-scroll-frame">
       <span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span>
       <div class="body sherpa-scroll-shadow" part="body">
-        <slot data-accepts="content"></slot>
+        <slot class="slotted" data-accepts="content"></slot>
       </div>
     </div>
     <div class="footer" part="footer">
-      <slot name="footer" data-accepts="footer"></slot>
+      <slot name="footer" class="slotted" data-accepts="footer"></slot>
     </div>
   </dialog>
 </template>
