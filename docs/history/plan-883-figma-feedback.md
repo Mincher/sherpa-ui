@@ -141,7 +141,7 @@ three or more.
 | `sherpa-container-header` → Container Header | lead control, badge, close (bordered-close), collapsed chevron, dismissible; the card's filter bar (`data-filter-toolbar`: shown, shut, panel, off) | S |
 | `sherpa-container-footer` → Container Footer | align start / end / between / stretch; dirty (Save shows on) | S |
 | `sherpa-panel` → Panel | collapsed | S |
-| `sherpa-dialog` → Dialog | `data-type="overlay"` beside modal; status | S |
+| `sherpa-dialog` → Dialog | `data-type="overlay"` beside modal; status, which is the CHROME's only: the card edge and the heading line take it, and what a slot holds keeps Style=default unless it sets its own `data-status` (741, `c28f6fb2c`) | S |
 | `sherpa-accordion` → Accordion | header badge, description, actions | S |
 | `sherpa-stack` → Stack | align, gap (none…2xl), min-item, wrap, scroll, grow, fill. **No docs frame** | S |
 | `sherpa-callout` → Callout | dismissible | S |
@@ -196,6 +196,7 @@ instance, pinned to its mode, in its component's docs frame (§8) — no new var
 | Node, Node Frame, Node Row | the input and output socket colours by type; current; step running / done / failed / skipped; branches; linked; JOINED (889, not built yet): the active border on the nodes a picked connector joins, on every node downstream of a picked node, and on each node joined to a focused row's field |
 | Charts (sparkline, bar, line, radial, gauge) | held-out and trend pins |
 | Code Block | copied = success |
+| Dialog | status on the chrome only; each slot pinned default (`'& .slotted': default`, 741) |
 | Progress Bar, Prompt Composer, Transfer List | disabled = inactive (*"No disabled variant in Figma"*) |
 
 ### 2.5 Records out of date
@@ -613,4 +614,5 @@ and are listed so their Figma effect is not missed. Each item is also in its row
 | sherpa-ui-f9 | `94e8ad74c` the panel group's look (above); `0d94d99bb` stages are a flex row with a 16px gap, a dragged node stays in its stage (behaviour); `aa9962e73` the Alt-drag ghost; `f562dc6e3` (before the read) Add stage and Arrange stages moved to the canvas's `columns-end`, a stage's ⋯ after its name, and `data-last` and the `stage-add` / `stage-arrange` events gone; `panel-mode-change` carries `{ mode, restore? }`. Its FYI on `659c83805` (stages, swimlanes, collapsed nodes, copy and paste, the toolbar toggles, Layout Canvas slots and `data-editing`, Input Text `data-type="color"`, workflow v2) was in §2.1 and §2.3 already. No Demos change since `3c5f523` | §2.1 |
 | sherpa-ui-f9, later the same day | Will's ruling: ONE node editor, before the Figma alignment — plan 885, done: `90e1b50bb`, `cec8b8a17`, `df20281cd`, `f27b89453`, Demos `8b7138e`. Then `cd7c0e646`, from Will's notes: with Swimlanes on, Arrange, Unfurl and Zip tie are off and zip ties are not drawn (Frame stays on); a frame is a bucket round nodes where they stand; a dragged frame keeps its stage, and with Shift joins one as a unit (behaviour). No part or attribute changed | §2.1, §3.1, §9, D4 |
 | sherpa-ui-f9, third update | New TODO rows from Will: 886–887 (a node becomes a grid of 3 columns: input sockets, rows, output sockets; NOT designed yet, so Figma does not follow it yet), 888 (zip ties are Unfurl anchors; behaviour), 889 (the active border shows what is joined: a picked connector's nodes, a picked node's downstream nodes, a focused row field's joined nodes; not built yet). Code with no visible change: `f7ea43c65` (a drag ~220 → ~6 ms a move; the canvas grid is its own part, `grid`), `0e30d2d0c` (a Query-editor drag is kept and is an Undo step) | §2.1, §2.4, C17, P7 |
+| sherpa-ui-fe, `c28f6fb2c` | 741: a Dialog's status is its chrome's only (the card edge and the heading line); what its slots hold keeps Style=default unless it sets its own `data-status`. Also restored `docs/history/TODO-ARCHIVE.md`, which `f27b89453` had cut to 2 lines | §2.3 Containers, §2.4 |
 | acp-module-d7 (Harness design) | No main component changed in either file. Its Harness screens use instances and hand-made frames: a two-row app header, a data bar of two-half chips, docked panels with mode buttons, stage bars, a zip-tie handle, run labels, all drawn locally from Apex parts. It names these as wanted library parts: **the stage bar, the zip-tie handle, the run label, the two-half chip, the panel-end header with its mode buttons**. Its notes: `acp-module/.working-notes/29-app-shell.md`, `30-sherpa-demos-patterns.md` | §2.1, §2.3, §3.5, P7 |
