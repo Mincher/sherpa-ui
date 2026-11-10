@@ -6707,6 +6707,7 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 - Site: `test/unit/a-query-is-drawn-as-nodes.test.mjs`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/e2e/reforged-node-graph.spec.ts`
+- Site: `src/core/data/query-document.ts`
 
 ### T-one-node-registry
 

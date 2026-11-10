@@ -190,6 +190,7 @@ export { copyNodes, pasteNodes, type NodeClip } from './core/data/node-clipboard
 export { JUNCTION_FAMILIES, LANES_BY_FAMILY, LANE_GAP, LANE_PAD, fitLanes, laneBands, laneFaults, laneOf, type LaneBand, type NodeLane } from './core/data/node-lanes.js';
 export { packBands, type Band, type BandGroup, type BandRules } from './core/data/node-bands.js';
 export { TIE_CLEAR, clearOfNodes, placeBeside, roomAround, type Box } from './core/data/tie-place.js';
+export { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, type GraphLayout, type ReconcileFacts, type Reconciled } from './core/data/query-document.js';
 /* A PORTAL: an In and an Out joined by a name; one resolver of the hop. TRAP T-a-portal-hop-is-resolved-once */
 export { PORTAL, connectionOf, connectionRow, portalFlow, portalLinks, portalNames, portalOf, type FlowRoute, type Portal, type PortalFlow } from './core/data/node-portals.js';
 /* A CUSTOM NODE: a workflow body saved under one name, used as an instance. TRAP T-a-custom-node-is-an-instance */
