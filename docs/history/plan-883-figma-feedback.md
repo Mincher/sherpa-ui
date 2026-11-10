@@ -93,7 +93,7 @@ phase and its output replaces §2.
 | `sherpa-node-stage` | a workflow stage: a bar and a band across the canvas. Each stage's ⋯ (Edit, Remove) sits right after its name; Add stage and ⋯ Arrange stages are one icon-button group in the canvas's `columns-end` slot, top right (`f562dc6e3`). Stages are a flex row with a 16px gap (`0d94d99bb`) | **Build** — ACP Module's Harness screens draw the stage bar by hand today |
 | `sherpa-node-lane` | a swimlane, or a junction | **Build** |
 | `sherpa-node-list` | the node palette: two tabs, sticky category headings | **Build** — composes Tab Group and Menu List Item |
-| `sherpa-node-toolbar` | the graph editor's icon buttons, and its toggles Collapse all, Hide unconnected and Swimlanes (`659c83805`) | **Build** — composes Toolbar and Button |
+| `sherpa-node-toolbar` | the graph editor's icon buttons, and its toggles Collapse all, Hide unconnected and Swimlanes (`659c83805`). On a page's filter graph (885) Fetch and Play are off, their tip "A page's filters run as the page loads: Fetch and Play run a workflow", and Save as Custom Node is off | **Build** — composes Toolbar and Button; show the workflow set and the page-filter set (the disabled buttons and their tip) |
 | `sherpa-outlet` | where the route's Context is drawn | **None** — a concept page explains it (§4) |
 | `sherpa-provider` | the data layer over a subtree | **None** — concept page |
 | `sherpa-router` | the one owner of the URL | **None** — concept page |
@@ -558,9 +558,12 @@ copy made now would go stale first.
 is ONE node editor, built before the Figma alignment. Today there are two:
 `bindWorkflow`, and `bindQueryEditor`, which draws a page's filters on Records and lacks
 the zip tie, frames, stages, lanes, copy and paste, and Fetch / Play. Plan 885
-(`docs/history/plan-885-one-node-editor.md`, sherpa-ui-f9) makes them one. For Figma:
-the page filter graph takes the workflow editor's toolbar and tools, and the two node
-editor screens become one design — one EXAMPLE page, one set of NODES parts.
+(`docs/history/plan-885-one-node-editor.md`, sherpa-ui-f9) makes them one. **Done
+2026-11-10**: `90e1b50bb`, `cec8b8a17`, `df20281cd`, `f27b89453`; Demos `8b7138e`. The
+Records "Page filters" graph IS the node editor: the same toolbar, all four groups;
+zip tie, frames, stages, lanes, copy and paste work there; Fetch, Play and Save as Custom
+Node are off. No component's parts, slots or attributes changed. For Figma: one EXAMPLE
+page, one set of NODES parts, and the toolbar in its two sets.
 
 ---
 
@@ -571,7 +574,7 @@ editor screens become one design — one EXAMPLE page, one set of NODES parts.
 | D1 | When code and Figma disagree on a look | **A:** the code wins on structure and states; each look is asked once, as a ❓ | B: the code wins on all of it |
 | D2 | Where to do the work | **A:** in the live file, a saved version before each phase; you publish | B: a Figma branch (needs an Organization plan) |
 | D3 | The node components | **A:** build them from the code, bound to Sherpa-UI variables; ACP Module swaps to them later | B: move ACP Module's `node` set into the library as it is |
-| D4 | Where 883 sits in the TODO, now that 885 (one node editor) comes first | **A:** P0–P6 as soon as 885 lands (they touch no node file); P7 after the node items in hand | B: all of 883 after every node item |
+| D4 | Where 883 sits in the TODO (885, one node editor, is done) | **A:** P0–P6 now (they touch no node file); P7 after the node items in hand | B: all of 883 after every node item |
 | D5 | Loader size | **A:** the Structure mode, as the code and Button do; drop the `Size` variant | B: keep the variant; the code follows |
 
 Smaller ❓s, asked in their phase: Pagination v1 or v2; View Header, keep or delete;
@@ -605,5 +608,5 @@ and are listed so their Figma effect is not missed. Each item is also in its row
 | sherpa-ui-fe, `b18c0ee94` | a panel peeking from its tab draws over the fixed region and its sticky Metric Group; the layer order | §2.7 |
 | sherpa-ui-fe, `864b78b1b` | `--sherpa-panel-area-padding-block` (8px; 16px in the App Shell): a docked card's top and bottom meet the first and last cards; the Layout Canvas keeps 8px; the dock preview follows | §2.1, §2.6 |
 | sherpa-ui-f9 | `94e8ad74c` the panel group's look (above); `0d94d99bb` stages are a flex row with a 16px gap, a dragged node stays in its stage (behaviour); `aa9962e73` the Alt-drag ghost; `f562dc6e3` (before the read) Add stage and Arrange stages moved to the canvas's `columns-end`, a stage's ⋯ after its name, and `data-last` and the `stage-add` / `stage-arrange` events gone; `panel-mode-change` carries `{ mode, restore? }`. Its FYI on `659c83805` (stages, swimlanes, collapsed nodes, copy and paste, the toolbar toggles, Layout Canvas slots and `data-editing`, Input Text `data-type="color"`, workflow v2) was in §2.1 and §2.3 already. No Demos change since `3c5f523` | §2.1 |
-| sherpa-ui-f9, later the same day | Will's ruling: ONE node editor, before the Figma alignment — plan 885. Commit ids to follow; folded in when they land | §3.1, §9, D4 |
+| sherpa-ui-f9, later the same day | Will's ruling: ONE node editor, before the Figma alignment — plan 885, done: `90e1b50bb`, `cec8b8a17`, `df20281cd`, `f27b89453`, Demos `8b7138e`. Next from Will's notes, ids to follow: in swimlane mode Unfurl, Arrange and Zip tie are off and the ties hidden; a frame is a bucket, it no longer forces its nodes into one column; a dragged frame keeps the stage rules nodes keep | §2.1, §3.1, §9, D4 |
 | acp-module-d7 (Harness design) | No main component changed in either file. Its Harness screens use instances and hand-made frames: a two-row app header, a data bar of two-half chips, docked panels with mode buttons, stage bars, a zip-tie handle, run labels, all drawn locally from Apex parts. It names these as wanted library parts: **the stage bar, the zip-tie handle, the run label, the two-half chip, the panel-end header with its mode buttons**. Its notes: `acp-module/.working-notes/29-app-shell.md`, `30-sherpa-demos-patterns.md` | §2.1, §2.3, §3.5, P7 |
