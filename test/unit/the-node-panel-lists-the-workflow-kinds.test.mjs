@@ -16,9 +16,9 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
   assert.deepEqual(palette.map((g) => g.category), ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['source'], [], ['value', 'field'], ['math'], ['condition'], ['time'], ['sort', 'group'], ['text', 'tag', 'portal'], ['output']]);
-  // Twelve items, in the plan's order: the Portal is a Utils (TODO 779).
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.kind.heading)), ['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output']);
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['source'], [], ['value', 'field'], ['math'], ['condition'], ['time'], ['sort', 'group'], ['text', 'tag', 'portal'], ['output', 'output']]);
+  // Thirteen items, in the plan's order: the Portal is a Utils (TODO 779); Notify, an Output of type Notification (plan 891).
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output', 'Notify']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -34,7 +34,8 @@ test('no Query-only kind is in it, and each workflow kind is', () => {
 });
 
 test('a search finds a family by its name, or by a type\'s: "round" finds Math, as Round', () => {
-  const items = paletteOf(NODE_KINDS).flatMap((g) => g.items);
+  // An alias (Notify) answers by its own name, not its family's types.
+  const items = paletteOf(NODE_KINDS).flatMap((g) => g.items).filter((i) => !i.type);
   const found = (q) => items.flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
   assert.deepEqual(found('round'), [['math', 'round']]);
   assert.deepEqual(found('ROUND '), [['math', 'round']], 'any case, trimmed');

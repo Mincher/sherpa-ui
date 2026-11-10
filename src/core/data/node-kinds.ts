@@ -138,10 +138,10 @@ export interface NodeType {
   group?: string;
   /** Its header's icon, over the kind's. */
   icon?: string;
-  /** Words the node panel's search finds it by, beside its label: "notify" finds Notification. */
-  tags?: readonly string[];
   /** What it would do, where it acts outside the graph: Simulate says it and does nothing (an Output's). */
   would?: string;
+  /** The node panel lists it as an item of its own too, by this name: Notify, an Output of type Notification. */
+  alias?: string;
   /** Its rows, after the kind's own. */
   rows?: readonly RowKind[];
   /** Its sockets, where they differ from the kind's. */
@@ -232,7 +232,7 @@ const [TITLE, MESSAGE, SENT] = [messageRow('title', 'Title'), messageRow('messag
 /** What an Output does, each a type in a family (plan 891). The host app adds its own: `addTypes`. */
 const OUTPUTS: Readonly<Record<string, NodeType>> = {
   notification: {
-    label: 'Notification', would: 'Would send a notification', group: 'Notification', icon: 'notifications', tags: ['notify'], help: 'Send a message in the app, by email or to a phone',
+    label: 'Notification', alias: 'Notify', would: 'Would send a notification', group: 'Notification', icon: 'notifications', help: 'Send a message by app, email or phone',
     rows: [
       pickRow('channels', 'Channels', [['app', 'In app'], ['email', 'Email'], ['push', 'Mobile push']], true),
       textRow('to', 'To'), TITLE, MESSAGE, textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
@@ -259,7 +259,7 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     rows: [pickRow('tone', 'Tone', [['info', 'Info'], ['success', 'Success'], ['warning', 'Warning'], ['critical', 'Critical']]), MESSAGE, textRow('action', 'Action'), propertyRow('shown', 'Shown', 'boolean')],
   },
   alert: {
-    label: 'Alert', would: 'Would raise an alert', group: 'Response', icon: 'status-warning', help: 'Raise an alert on a device or a customer (to be defined)',
+    label: 'Alert', would: 'Would raise an alert', group: 'Response', icon: 'status-warning', help: 'Raise an alert on a device or customer',
     rows: [
       pickRow('severity', 'Severity', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High'], ['critical', 'Critical']]), pickRow('on', 'On', [['device', 'Device'], ['customer', 'Customer']]),
       TITLE, MESSAGE, propertyRow('alertId', 'Alert ID', 'value'),
@@ -270,7 +270,7 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     rows: [countRow('code', 'Status', 100), objectIn('body', 'Body'), pickRow('encoding', 'Format', [['json', 'JSON'], ['csv', 'CSV'], ['text', 'Text']]), SENT],
   },
   result: {
-    label: 'Run result', would: 'Would end the run', group: 'Run result', icon: 'flag', help: 'End the run with a status and a summary',
+    label: 'Run result', would: 'Would end the run', group: 'Run result', icon: 'flag', help: 'End the run with a status and summary',
     rows: [pickRow('status', 'Status', [['succeeded', 'Succeeded'], ['skipped', 'Skipped'], ['failed', 'Failed'], ['deferred', 'Deferred']]), messageRow('summary', 'Summary')],
   },
 };
@@ -474,7 +474,7 @@ export function typeOf(kind: Pick<NodeKind, 'types' | 'defaultType'>, type?: unk
 
 /** The types of a family kind as a picklist reads them; none, it is no family. */
 export function typeChoices(kind: Pick<NodeKind, 'types'>): RowChoice[] | undefined {
-  return kind.types && Object.entries(kind.types).map(([value, t]) => ({ value, label: t.label }));
+  return kind.types && Object.entries(kind.types).map(([value, t]) => ({ value, label: t.label, ...(t.group ? { group: t.group } : {}), ...(t.help ? { title: t.help } : {}) }));
 }
 
 /** A family kind as an ordinary kind for one type, so a reader learns nothing of types: the type
@@ -530,6 +530,9 @@ const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variabl
 export interface PaletteItem {
   id: string;
   kind: NodeKind;
+  /** An alias's: the type it places, and its own name (`NodeType.alias`). */
+  type?: string;
+  heading?: string;
 }
 
 /** One category of the panel, and its kinds in the registry's order. */
@@ -551,6 +554,7 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
     if (graph === 'query' && !QUERY_CATEGORIES.includes(category)) continue;
     const items = groups.get(category) ?? [];
     items.push({ id, kind });
+    for (const [type, t] of Object.entries(kind.types ?? {})) if (t.alias) items.push({ id, kind, type, heading: t.alias });
     groups.set(category, items);
   }
   const known = new Set(NODE_CATEGORIES);
@@ -563,8 +567,7 @@ export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags'>,
   const q = query.trim().toLowerCase();
   if (!q || kind.heading.toLowerCase().includes(q) || kind.tags?.some((t) => t.toLowerCase().includes(q))) return {};
   const types = Object.entries(kind.types ?? {});
-  const said = (t: NodeType): string[] => [t.label, ...(t.tags ?? [])].map((w) => w.toLowerCase());
-  const hit = types.find(([, t]) => said(t).includes(q)) ?? types.find(([, t]) => said(t).some((w) => w.includes(q)));
+  const hit = types.find(([, t]) => t.label.toLowerCase() === q) ?? types.find(([, t]) => t.label.toLowerCase().includes(q));
   return hit ? { type: hit[0] } : undefined;
 }
 
@@ -586,7 +589,8 @@ export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in'): {
 
 /** The palette's kinds a socket of a type could join, a Value first (D16), then the palette's order. */
 export function paletteFor(palette: readonly PaletteGroup[], type: SocketType, side: 'out' | 'in'): PaletteItem[] {
-  const fit = palette.flatMap((g) => g.items).filter((i) => fitOf(i.kind, type, side));
+  // An alias is its family's item again: offered once.
+  const fit = palette.flatMap((g) => g.items).filter((i) => !i.type && fitOf(i.kind, type, side));
   return [...fit.filter((i) => i.id === 'value'), ...fit.filter((i) => i.id !== 'value')];
 }
 
@@ -662,10 +666,14 @@ export interface NodeTie {
   routes: readonly NodeRoute[];
 }
 
-/** One pick in a row's list: the value it keeps, and its words. */
+/** One pick in a row's list: the value it keeps, and its words; its section and its line, where a list has them. */
 export interface RowChoice {
   value: string;
   label: string;
+  /** Its section in the list: a family's types by their `group` (plan 891). */
+  group?: string;
+  /** What it does, in a line, on hover. */
+  title?: string;
 }
 
 /** What a row's list is read from that the registry does not say. */
@@ -794,6 +802,8 @@ export interface GraphRow extends RowKind {
   fault?: string;
   /** Routes drive its picklist: it shows what comes in, each marked Custom, and its own pick waits. */
   custom?: true;
+  /** A message's text as it reads: each value by its node's heading and label, `{Customers › Name}`. Plan 891 */
+  said?: string;
 }
 
 /** A node's size, in times its natural width and height; each from 1 (as it is) to 2 (double). */

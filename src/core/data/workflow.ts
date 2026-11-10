@@ -601,12 +601,16 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const op = kind.model === 'Condition' ? opWarning(at?.id, read) : undefined;
     if (op) warnings.push({ words: op });
     let sources: MessageSource[] | undefined;
+    // A message row's text as it reads: each value by its node's heading and its own label.
+    const spoken = new Map<string, string>();
     const rows = kind.rows.map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no route gives warns, by its row (plan 891).
       if (row.control === 'message' && valuesIn(has).length) {
         sources ??= valuesAt(workflow.nodes, flows, node.id, kinds, facts.fieldsOf);
         for (const words of unreachedValues(has, sources, workflow.nodes, kinds, !!facts.fieldsOf)) warnings.push({ row: row.name, words });
+        const words = new Map(sources.flatMap((s) => s.values.map((v) => [v.key, `{${s.heading} › ${v.label}}`] as const)));
+        spoken.set(row.name, String(has).replace(/\{[\w-]+\.[\w.-]+\}/g, (key) => words.get(key) ?? key));
       }
       // A Value row with no values to pick from is typed, as it was.
       const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
@@ -680,7 +684,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         : { ...own, value: shown.value }, true);
     });
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
-    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
+    const drawnRows = spoken.size ? rows.map((r) => (spoken.has(r.name) ? { ...r, said: spoken.get(r.name)! } : r)) : rows;
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, drawnRows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, routes) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));

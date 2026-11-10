@@ -151,7 +151,8 @@ test('a type change keeps in the draft only what loses its socket: a column into
 test('the panel: one Condition item naming its types; a search finds a type whole first; the Query\'s takes its tests, not Not or Is empty', () => {
   const items = paletteOf(NODE_KINDS).flatMap((g) => g.items);
   assert.equal(items.filter((i) => i.id === 'condition').length, 1);
-  const found = (q) => items.flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
+  // An alias (Notify) answers by its own name, not its family's types.
+  const found = (q) => items.filter((i) => !i.type).flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
   assert.deepEqual(found('equals'), [['condition', 'eq']]);
   // Not, not Does not equal; and an Output's Notification, as a reader types it (plan 891).
   assert.deepEqual(found('not'), [['condition', 'not'], ['output', 'notification']]);

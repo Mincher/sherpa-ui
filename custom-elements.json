@@ -7833,6 +7833,13 @@
               }
             },
             {
+              "name": "data-message",
+              "description": "a message's first lines, read only, under its name: each {value} in it drawn in purple, its braces off",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-output-at",
               "type": {
                 "text": "number"
@@ -7907,6 +7914,9 @@
             },
             {
               "name": "label"
+            },
+            {
+              "name": "message"
             },
             {
               "name": "row"

@@ -88,6 +88,8 @@ export class SherpaNodeList extends SherpaElement {
   #kinds = new WeakMap<Element, NodeKind>();
   /** The type a search found an item by, when its name did not match: placing it sets that type. */
   #found = new WeakMap<Element, string>();
+  /** The type each alias item places (`NodeType.alias`): Notify, a Notification. */
+  #alias = new WeakMap<Element, string>();
 
   override onRender(): void {
     this.on(this.root, 'click', this.#onClick);
@@ -108,9 +110,12 @@ export class SherpaNodeList extends SherpaElement {
   /** Stamp each category, its items and its tags, then apply the search. */
   #draw(): void {
     const fill = (list: Element, items: readonly PaletteItem[]): void => {
-      for (const { id, kind } of items) {
-        const item = this.cloneItem('template.item-tpl', { id, heading: kind.heading, icon: kind.icon, description: lineOf(kind), slug: categorySlug(kind.category) });
+      for (const { id, kind, type, heading } of items) {
+        // An alias places its type: its own name, its type's icon and line.
+        const t = type ? kind.types?.[type] : undefined;
+        const item = this.cloneItem('template.item-tpl', { id, heading: heading ?? kind.heading, icon: t?.icon ?? kind.icon, description: t?.help ?? lineOf(kind), slug: categorySlug(kind.category) });
         if (!item) continue;
+        if (type) this.#alias.set(item, type);
         // A preset is a file's: read only, and its line says so.
         if ('preset' in kind && kind.preset) item.toggleAttribute('data-preset', true);
         this.#kinds.set(item, kind);
@@ -184,9 +189,14 @@ export class SherpaNodeList extends SherpaElement {
     void this.$<SherpaElement>('.tabs')?.populate(TABS.map(({ id, label }) => ({ id, label, badge: query ? String(counts[id]) : '' })));
   }
 
-  /** Whether an item answers the search, its line said for how; and its `data-filtered`. */
+  /** Whether an item answers the search, its line said for how; and its `data-filtered`. An alias answers by its name. */
   #match(item: HTMLElement, query: string): boolean {
     const kind = this.#kinds.get(item);
+    if (this.#alias.has(item)) {
+      const hit = !query || (item.dataset['label'] ?? '').toLowerCase().includes(query);
+      item.toggleAttribute('data-filtered', !hit);
+      return hit;
+    }
     const hit = kind && paletteMatch(kind, query);
     const type = hit?.type ? kind!.types![hit.type]! : undefined;
     item.toggleAttribute('data-filtered', !hit);
@@ -207,9 +217,9 @@ export class SherpaNodeList extends SherpaElement {
     if (item) this.emit('node-add', this.#asked(item));
   };
 
-  /** What placing an item asks for: its kind, and the type a search found it by. */
+  /** What placing an item asks for: its kind, and the type an alias names or a search found it by. */
   #asked(item: HTMLElement): { kind: string | undefined; type?: string } {
-    const type = this.#found.get(item);
+    const type = this.#alias.get(item) ?? this.#found.get(item);
     return { kind: item.dataset['kind'], ...(type ? { type } : {}) };
   }
 

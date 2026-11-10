@@ -131,3 +131,17 @@ accessibility, its tests in three engines.
 Will: "your picks". **D1 A**: a type change keeps the other types' values and routes, drawn as a fault with a warning, as
 every family does. **D2 A**: a message field is a plain multiline field, with Insert value and the Preview; the WYSIWYG
 Markdown editor is TODO 892, after 891.
+
+## Built
+
+- **Step 1** (`467b15a3f`): the registry. A fixed list is a row's own (`pick`, its `choices`); a message is control
+  `message`; `addTypes`.
+- **Step 2** (`57beaaf35`): `node-messages.ts` — `valuesIn`, `valuesAt`, `unreachedValues`, `filled`; a value no route gives
+  warns on its row.
+- **Step 3** (`afe8fa13f`): Simulate fires no Output; its light says what it would do; its properties send stand-ins.
+- **Step 4**: the Type list is a native `<select>` with an `<optgroup>` per family, each type's line its `title`. A native
+  list draws no icon, in any engine; the header wears the picked type's icon. A message row shows its first two lines in
+  the node (`sherpa-node-row`'s `data-message`), each value by its node's heading and label, in purple; the Details
+  panel edits it in a multi-line field. The purple is the brand's 4 (`#8300B6`): no Style or Theme token is purple, so
+  the Figma concept session is asked which name Figma binds. Notify is an alias (`NodeType.alias`): an item of its own
+  in the Nodes panel, which places a Notification.

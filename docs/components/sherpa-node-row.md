@@ -29,6 +29,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 | `data-input-routed` | boolean |  | a route joins the input: its socket is filled, else hollow |
 | `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value \| object \| boolean \| any: an input is a D, its type in its ink |
 | `data-label` | text |  | the row's name, when it has no field: a field names itself |
+| `data-message` | text |  | a message's first lines, read only, under its name: each {value} in it drawn in purple, its braces off |
 | `data-output-at` | number |  |  |
 | `data-output-at-routed` | number |  |  |
 | `data-output-routed` | boolean |  | a route leaves the output: its socket is filled, else hollow |
@@ -53,7 +54,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 
 Style these from outside with `::part()`:
 
-`content`, `label`, `row`, `socket-in`, `socket-out`, `socket-tab-in`, `socket-tab-out`, `tip`
+`content`, `label`, `message`, `row`, `socket-in`, `socket-out`, `socket-tab-in`, `socket-tab-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -67,11 +68,14 @@ What each class's base rule reads:
 | `--sherpa-font-weight-medium` | `.label` | `font-weight` |
 | `--sherpa-theme-content-line-height-small` | `.label` | `line-height` |
 | `--sherpa-style-content-base` | `.label` | `color` |
+| `--sherpa-font-size-body-base` | `.message` | `font-size` |
+| `--sherpa-theme-content-line-height-base` | `.message` | `line-height` |
+| `--sherpa-style-content-base` | `.message` | `color` |
 | `--sherpa-layer-content` | `.socket-tab` | `z-index` |
 | `--sherpa-display-mode-size-2xl` | `.socket-tab` | `margin-block-end` |
 
 ## populate()
 
-`{ collapsed?, inputAt?, inputAtRouted?, inputMany?, inputRouted?, inputSocket?, label?, outputAt?, outputAtRouted?, outputRouted?, outputSocket?, property?, socketName?, socketValue? }`
+`{ collapsed?, inputAt?, inputAtRouted?, inputMany?, inputRouted?, inputSocket?, label?, message?, outputAt?, outputAtRouted?, outputRouted?, outputSocket?, property?, socketName?, socketValue? }`
 
 Its declared props by name: `label` sets data-label.

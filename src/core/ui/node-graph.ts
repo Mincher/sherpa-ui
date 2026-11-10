@@ -337,6 +337,7 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
   }
   const field = document.createElement('sherpa-input-text') as Field;
   field.setAttribute('name', row.name);
+  if (row.control === 'message') field.setAttribute('data-multiline', '');
   if (row.choices) field.setAttribute('data-type', 'select');
   else if (row.control === 'number') field.setAttribute('data-type', 'number');
   // A count's bounds are the platform's own: its steppers stop there. With no step, any number: the platform's is 1.
@@ -421,7 +422,8 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
       const line = document.createElement('sherpa-node-row');
       drawn.rows.set(`${node.id}/${row.name}`, line);
       drawn.addresses.set(line, [node.id, row.name]);
-      if (row.control) line.append(fieldFor(row, locked(row)));
+      // A message shows its first lines in the node; the Details panel edits it (plan 891).
+      if (row.control && row.control !== 'message') line.append(fieldFor(row, locked(row)));
       return line;
     });
     const section = (...kids: HTMLElement[]): HTMLElement[] => {
@@ -469,6 +471,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     else {
       line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
       line.toggleAttribute('data-property', !!row.property);
+      put(line, 'data-message', row.control === 'message' ? row.said ?? (typeof row.value === 'string' ? row.value : undefined) : undefined);
     }
   }
   // A section with no socket: a collapsed node draws none of it; none a route joins: hiding the unconnected, none of it.

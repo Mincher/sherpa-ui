@@ -47,7 +47,7 @@ type Popover = HTMLElement & { open?: boolean; show(trigger?: HTMLElement): void
 type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 /** One choice in a `data-type="select"` field. */
-export interface InputOption { value: string; label?: string; disabled?: boolean; title?: string }
+export interface InputOption { value: string; label?: string; disabled?: boolean; title?: string; group?: string }
 
 export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
@@ -175,7 +175,7 @@ export class SherpaInputText extends SherpaElement {
   }
 
   /**
-   * populate([{ value, label }]) — the choices a SELECT field offers. Or its `<option>` children
+   * populate([{ value, label, group }]) — the choices a SELECT field offers, a `group`'s in its <optgroup>. Or its `<option>` children
    *
    * Kept, so a variant re-stamp can put them back: `data-type` replaces the
    * whole tree and the <option>s with it.
@@ -344,6 +344,9 @@ export class SherpaInputText extends SherpaElement {
     const wanted = this.#held ?? this.getAttribute('value') ?? select.value;
     this.#held = null;
     const tpl = this.$<HTMLTemplateElement>('template.option-tpl');
+    const groupTpl = this.$<HTMLTemplateElement>('template.optgroup-tpl');
+    // Options in a `group` stand in its <optgroup>, in the order the groups first come.
+    const groups = new Map<string, HTMLOptGroupElement>();
     select.replaceChildren(
       ...this.#options.flatMap((option) => {
         const el = this.clone<HTMLOptionElement>(tpl);
@@ -353,7 +356,15 @@ export class SherpaInputText extends SherpaElement {
         // Listed, greyed and refused — with why, on hover.
         el.disabled = !!option.disabled;
         if (option.title) el.title = option.title;
-        return [el];
+        if (!option.group) return [el];
+        const held = groups.get(option.group);
+        if (held) { held.append(el); return []; }
+        const group = this.clone<HTMLOptGroupElement>(groupTpl);
+        if (!group) return [el];
+        group.label = option.group;
+        group.append(el);
+        groups.set(option.group, group);
+        return [group];
       }),
     );
     if (wanted && this.#options.some((o) => o.value === wanted)) select.value = wanted;

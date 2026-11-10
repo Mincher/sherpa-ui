@@ -75,12 +75,13 @@ test('it docks on the canvas as a card, 8px in from its top, bottom and left, wi
   expect(after).toBe(card!.left);
 });
 
-test('it lists each category with its families, twelve, never a Query-only one; "sor" shows only Sort', async ({ page }) => {
+test('it lists each category with its families, twelve, and Notify, never a Query-only one; "sor" shows only Sort', async ({ page }) => {
   await bind(page);
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output']);
   const names = () => page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
-  expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output']);
+  // Notify is an Output of type Notification, an item of its own (plan 891).
+  expect(await names()).toEqual(['Source', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output', 'Notify']);
   // A family's line is its synopsis, never its types (TODO 809).
   expect(await item(page, 'sort').getAttribute('data-description')).toBe('Put rows in order of a field');
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('sor');
@@ -89,7 +90,7 @@ test('it lists each category with its families, twelve, never a Query-only one; 
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('zzz');
   expect(await names()).toEqual([]);
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('');
-  expect((await names()).length).toBe(12);
+  expect((await names()).length).toBe(13);
   expect(await item(page, 'group').getAttribute('data-description')).toBe('Group rows by a field');
 });
 

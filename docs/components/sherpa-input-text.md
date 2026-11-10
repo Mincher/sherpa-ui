@@ -170,6 +170,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`[{ value, label }]`
+`[{ value, label, group }]`
 
-the choices a SELECT field offers. Or its `<option>` children
+the choices a SELECT field offers, a `group`'s in its &lt;optgroup>. Or its `<option>` children

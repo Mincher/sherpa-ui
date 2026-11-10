@@ -1,7 +1,7 @@
 /**
  * AN OUTPUT IS ONE NODE OF MANY TYPES: a family, its Type row first, its icon the type's. Run result is the default, so an
  * Output kept with no type opens as it was. A fixed list is a row's own (`pick`); one pick with none picked says so. A
- * search for "notify" finds Notification. The host app adds its own types (`addTypes`). Plan 891, step 1.
+ * Notify item in the panel places a Notification. The host app adds its own types (`addTypes`). Plan 891, steps 1 and 4.
  *
  *   node --test test/unit/an-output-is-one-node-of-many-types.test.mjs
  */
@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { NODE_KINDS, addTypes, fixedChoices, kindOfNode, paletteMatch, rowChoices } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, addTypes, fixedChoices, kindOfNode, paletteFor, paletteMatch, paletteOf, rowChoices } = await import(new URL('node-kinds.js', core));
 const { workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 const flow = (values, extra = []) => ({
@@ -64,14 +64,17 @@ test('a type change keeps the rows the types share, and the values of the rest f
   assert.deepEqual(workflowFaults(flow({ ...values, type: 'notification' })), [], 'the Toast\'s Tone is kept, not a fault');
 });
 
-test('the panel\'s search finds Notification by "notify"; the host adds its own types', () => {
-  assert.deepEqual(paletteMatch(NODE_KINDS.output, 'notify'), { type: 'notification' });
+test('the panel lists Notify, which places a Notification, once; the host adds its own types', () => {
+  const output = paletteOf(NODE_KINDS).find((g) => g.category === 'Output').items;
+  assert.deepEqual(output.map((i) => [i.id, i.type, i.heading]), [['output', undefined, undefined], ['output', 'notification', 'Notify']]);
+  assert.equal(paletteFor(paletteOf(NODE_KINDS), 'value', 'in').filter((i) => i.id === 'output').length, 1, 'a let-go socket offers the Output once');
+  assert.deepEqual(paletteMatch(NODE_KINDS.output, 'notification'), { type: 'notification' });
   assert.deepEqual(paletteMatch(NODE_KINDS.output, 'Run result'), { type: 'result' });
   const ticket = { label: 'Ticket', group: 'Request', icon: 'ticket', rows: [{ name: 'summary', label: 'Summary', control: 'message', input: 'value' }] };
-  const output = addTypes(NODE_KINDS.output, { ticket });
-  assert.deepEqual(Object.keys(output.types).slice(-2), ['result', 'ticket']);
+  const withTicket = addTypes(NODE_KINDS.output, { ticket });
+  assert.deepEqual(Object.keys(withTicket.types).slice(-2), ['result', 'ticket']);
   assert.equal(NODE_KINDS.output.types.ticket, undefined, 'the shipped family is left as it is');
-  const kinds = { ...NODE_KINDS, output };
+  const kinds = { ...NODE_KINDS, output: withTicket };
   const t = node(workflowGraph(flow({ type: 'ticket' }), {}, kinds), 'o');
   assert.deepEqual([t.icon, t.rows.map((r) => r.name)], ['ticket', ['type', 'summary']]);
 });
