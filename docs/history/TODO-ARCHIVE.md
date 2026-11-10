@@ -13380,3 +13380,4 @@ it is 200 (logged 2026-10-02). Since then, an item's `✅ Done` line is its reco
 - Shared constants swept; event detail shapes swept; toggle chips' owner settled
 - The panel-or-toolbar mode survives a reload — 24c3a57c
 | ✅ | 30h | 881 | **DONE 2026-11-10:** the canvas gains a `columns-end` slot at the top right of what the view shows; the stages' Add and Arrange stand there, and a stage's More sits beside its name. STAGES (Will, 2026-11-10) — Add stage and Arrange stages move OUT of the last stage's bar: to the right of all stages, or at the canvas's top right, inset clear of the panel tabs | nodes |
+| ✅ | 30i | 882 | **DONE 2026-11-10:** `clearOfNodes` (data/tie-place.ts) moves a new tie behind a node to the side with the most room, half way in, 48px at most, inside the tie's x range. ZIP TIE (Will, 2026-11-10) — a tie placed behind a node moves to the side of that node with the most room between it and the other nodes: a few x and y comparisons | nodes |

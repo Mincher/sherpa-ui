@@ -74,6 +74,7 @@ import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js'
 import { fitStages } from '../data/node-stages.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { drawLanes } from './node-lanes-ui.js';
+import { clearOfNodes, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
@@ -2837,7 +2838,16 @@ export function bindWorkflow(
     toolbar?.toggleAttribute('data-tie', on);
     draw();
   };
-  const onTie = (routes: NodeRoute[], at: { x: number; y: number }): void => take(editWorkflow(shown(), { tie: { routes, ...at } }, K()));
+  /** Each node's box on the plane, as drawn. */
+  const nodeBoxes = (): Box[] => [...(drawnOn.get(canvas)?.nodes.values() ?? [])].map((el) => {
+    const [x, y] = [Number(el.getAttribute('data-x')) || 0, Number(el.getAttribute('data-y')) || 0];
+    return { left: x, top: y, right: x + el.offsetWidth, bottom: y + el.offsetHeight };
+  });
+  // A new tie that would stand behind a node stands beside it, on the side with the most room. TODO 882
+  const onTie = (routes: NodeRoute[], at: { x: number; y: number }): void => {
+    const clear = clearOfNodes(at, (routes.length - 1) * TIE_GAP + 16, nodeBoxes(), tieLimit(shown(), { routes }));
+    take(editWorkflow(shown(), { tie: { routes, ...clear } }, K()));
+  };
   const onTieMove = (id: string, x: number, y: number): void => write(editWorkflow(shown(), { moveTie: { id, x, y } }, K()), `tie:${id}`);
   const onUntie = (id: string): void => write(editWorkflow(shown(), { untie: id }, K()));
   // — Bend points (744): a drag is one step, as a tie's is; a refusal reports and writes nothing.
