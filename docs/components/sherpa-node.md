@@ -110,10 +110,10 @@ What each class's base rule reads:
 | `--sherpa-style-surface-base-2` | `.caption-badge` | `background` |
 | `--sherpa-style-content-base` | `.caption-badge` | `color` |
 | `--sherpa-layer-content` | `.socket-tab` | `z-index` |
-| `--sherpa-style-border-width` | `.socket-tab` | `outline` |
 | `--sherpa-style-border-width` | `.socket-tab-in` | `inset-inline-start` |
 | `--sherpa-style-border-width` | `.socket-tab-out` | `inset-inline-start` |
 | `--sherpa-style-border-width` | `.socket-tab-false` | `inset-inline-start` |
+| `--sherpa-theme-gap-md` | `.footer` | `margin-block-end` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 | `--sherpa-style-border-width` | `.stack-in` | `border-width` |

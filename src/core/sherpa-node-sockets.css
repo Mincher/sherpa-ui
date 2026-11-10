@@ -101,6 +101,42 @@
 .socket-false { --_shape: var(--_round-square); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
+/* A SOCKET TAB: the D a socket stands in, outside the card — the card's fill (in a row in a grey box, the box's grey), and
+   the card's border on its three outer sides only, a `::before` that ends at the card's border. The input a reverse D, the
+   outputs a D. Not an outline or a clip-path: Chromium cut both where a tab stood on a fraction of a pixel, and an outline
+   paints over what reaches past it. Each host places its tabs. TRAP T-a-node-is-three-columns */
+.socket-tab {
+  --_line: var(--sherpa-style-border-width, 0.5px);
+  background: var(--_section-fill, var(--_category-fill, var(--_surface)));
+}
+.socket-tab::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  /* Its 1px over the card's edge, less the border's width: it ends where the card's border does. */
+  inline-size: calc(var(--_track) - 1px + var(--_line));
+  box-sizing: border-box;
+  border: var(--_line) solid var(--_border);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.socket-tab-in {
+  border-start-start-radius: calc(var(--_track) / 2);
+  border-end-start-radius: calc(var(--_track) / 2);
+}
+.socket-tab-in::before {
+  inset-inline-start: 0;
+  border-inline-end-width: 0;
+}
+.socket-tab-out, .socket-tab-false {
+  border-start-end-radius: calc(var(--_track) / 2);
+  border-end-end-radius: calc(var(--_track) / 2);
+}
+.socket-tab-out::before, .socket-tab-false::before {
+  inset-inline-end: 0;
+  border-inline-start-width: 0;
+}
+
 /* Each tip hangs from its own socket's tab: a name is scoped to its shadow root, so the same one serves every node. */
 .socket-tab-in, .tip-in { --_anchor: --sherpa-socket-in; }
 .socket-tab-out, .tip-out { --_anchor: --sherpa-socket-out; }

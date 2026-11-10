@@ -67,7 +67,6 @@ What each class's base rule reads:
 | `--sherpa-font-weight-medium` | `.label` | `font-weight` |
 | `--sherpa-theme-content-line-height-small` | `.label` | `line-height` |
 | `--sherpa-style-content-base` | `.label` | `color` |
-| `--sherpa-style-border-width` | `.socket-tab` | `--_line` |
 | `--sherpa-layer-content` | `.socket-tab` | `z-index` |
 | `--sherpa-display-mode-size-2xl` | `.socket-tab` | `margin-block-end` |
 

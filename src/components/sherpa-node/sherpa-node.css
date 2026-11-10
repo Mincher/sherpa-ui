@@ -335,9 +335,8 @@
 .tip-warning { white-space: pre-line; }
 :host(:not([data-warning])) .tip-warning { display: none; }
 
-/* The whole node's sockets stand outside the card, each in its SOCKET TAB (as each row's does): a D of the node's own fill and border,
-   flush with the card's edge, on the header's middle; a fork's False on its footer's. The input a reverse D, the outputs a D.
-   TRAP T-a-node-is-three-columns */
+/* The whole node's sockets stand outside the card, each in its SOCKET TAB (as each row's does; its look is the family's), on
+   the header's middle; a fork's False on its footer's. TRAP T-a-node-is-three-columns */
 .socket-tab {
   display: none;
   position: absolute;
@@ -345,25 +344,14 @@
   z-index: var(--sherpa-layer-content, 1);
   inset-block-start: 50%;
   margin-block-start: calc((var(--_socket-h) + 2 * var(--_hit)) / -2);
-  background: var(--_category-fill, var(--_surface));
-  outline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 :host([data-input-socket]) .socket-tab-in,
 :host([data-output-socket]) .socket-tab-out { display: block; }
 .socket-tab-in {
   /* 1px over the card's OUTER edge, its border included: a whole pixel, so a socket's 1px line stays sharp. */
   inset-inline-start: calc(1px - var(--sherpa-style-border-width, 0.5px) - var(--_track));
-  /* No border on its flush side: the outline is cut at the box's end edge. */
-  clip-path: inset(-1px 0 -1px -1px);
-  border-start-start-radius: calc(var(--_track) / 2);
-  border-end-start-radius: calc(var(--_track) / 2);
 }
-.socket-tab-out, .socket-tab-false {
-  inset-inline-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px);
-  clip-path: inset(-1px -1px -1px 0);
-  border-start-end-radius: calc(var(--_track) / 2);
-  border-end-end-radius: calc(var(--_track) / 2);
-}
+.socket-tab-out, .socket-tab-false { inset-inline-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px); }
 /* In its tab, a socket is its tab's box. */
 .socket-tab .socket {
   position: relative;
@@ -374,8 +362,10 @@
 /* ── A fork: True is the header's output, False the footer's ─────────── */
 .footer {
   position: relative;
-  /* False's row: only as tall as its socket and its tab. Will, TODO 887 */
+  /* False's row: only as tall as its socket and its tab (Will, TODO 887), and up off the card's bottom by the card's small
+     inset, so its tab stands clear of the corner (Will, 2026-11-11). */
   min-block-size: var(--_track);
+  margin-block-end: var(--sherpa-theme-gap-md, 8px);
   border-end-start-radius: inherit;
   border-end-end-radius: inherit;
 }
@@ -440,6 +430,7 @@
 :host([data-collapsed]) .footer {
   position: static;
   min-block-size: 0;
+  margin-block-end: 0;
 }
 :host([data-collapsed]) .foot { display: none; }
 :host([data-collapsed]) .socket-tab-false {
@@ -447,10 +438,8 @@
   margin-block-start: 0;
 }
 /* The stacks' strips take the place of each socket's own tab. */
-:host([data-collapsed]) .socket-tab {
-  background: none;
-  outline: none;
-}
+:host([data-collapsed]) .socket-tab { background: none; }
+:host([data-collapsed]) .socket-tab::before { display: none; }
 .stack {
   display: none;
   position: absolute;

@@ -201,9 +201,8 @@
    input a reverse D, the output a D. A row with no socket on a side leaves its cell empty. In a grey box, a tab is the
    box's grey, and the grey BLEEDS from the box across the card's edge into it (Will, 2026-11-11): the tab's own fill reaches
    into the card, 1px under the box — ONE shape, so no seam can show where two meet — and its line is on its outer part
-   only (`::before`). TRAP T-a-node-is-three-columns */
+   only (the family's look). TRAP T-a-node-is-three-columns */
 .socket-tab {
-  --_line: var(--sherpa-style-border-width, 0.5px);
   /* How far it reaches into the card: to the grey box, and 1px under it; none past the edge where it stands in none. */
   --_bleed: max(0px, calc(var(--_reach, 0px) - var(--_track) + 1px));
   display: none;
@@ -214,19 +213,6 @@
   /* On the control's line: the field's last line, one control high. */
   align-self: end;
   margin-block-end: calc((var(--sherpa-display-mode-size-2xl, 32px) - var(--_socket-h) - 2 * var(--_hit)) / 2);
-  background: var(--_section-fill, var(--_category-fill, var(--_surface)));
-}
-/* Its line: the card's border, on its three outer sides, to the card's border and no further (its 1px over the edge, less
-   the border's width). */
-.socket-tab::before {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  inline-size: calc(var(--_track) - 1px + var(--_line));
-  box-sizing: border-box;
-  border: var(--_line) solid var(--_border);
-  border-radius: inherit;
-  pointer-events: none;
 }
 /* With no field, a socket lines up with the label: on the row's middle, taking none of its height, so a row is as tall as
    its label, as before. */
@@ -239,24 +225,12 @@
 .socket-tab-in {
   grid-column: 1;
   margin-inline-end: calc(-1 * var(--_bleed));
-  border-start-start-radius: calc(var(--_track) / 2);
-  border-end-start-radius: calc(var(--_track) / 2);
-}
-.socket-tab-in::before {
-  inset-inline-start: 0;
-  border-inline-end-width: 0;
 }
 /* Reaching back into the card, its socket keeps its place. */
 .socket-tab-out {
   grid-column: 3;
   margin-inline-start: calc(-1 * var(--_bleed));
   padding-inline-start: var(--_bleed);
-  border-start-end-radius: calc(var(--_track) / 2);
-  border-end-end-radius: calc(var(--_track) / 2);
-}
-.socket-tab-out::before {
-  inset-inline-end: 0;
-  border-inline-start-width: 0;
 }
 /* In its tab, a socket is its cell's box: no place of its own. */
 :host(:not([data-collapsed])) .socket {

@@ -410,7 +410,6 @@
     "label.font-weight": "{sherpa.font-weight-medium}",
     "label.line-height": "{sherpa.theme-content-line-height-small}",
     "label.color": "{sherpa.style-content-base}",
-    "socket-tab.--_line": "{sherpa.style-border-width}",
     "socket-tab.z-index": "{sherpa.layer-content}",
     "socket-tab.margin-block-end": "{sherpa.display-mode-size-2xl}"
   },
