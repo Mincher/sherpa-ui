@@ -66,6 +66,7 @@ import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
+import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { graphRequest, keptEdit, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
@@ -1533,6 +1534,9 @@ export interface WatchOptions {
   onLit?(span: Span, node: string): void;
 }
 
+/** What the last copy took, shared by every graph in the tab: a paste goes into any of them. */
+let clipboard: NodeClip | null = null;
+
 const MS = new Intl.NumberFormat(undefined, { style: 'unit', unit: 'millisecond', unitDisplay: 'short', maximumFractionDigits: 1 });
 const COUNT = new Intl.NumberFormat();
 
@@ -2566,13 +2570,24 @@ export function bindWorkflow(
     if (!own) return write(editWorkflow(shown(), { node: node.id, row: row.name, value }, K(), facts), `row:${node.id}/${row.name}`);
     write(editWorkflow(shown(), { node: node.id, set: { [own]: String(value ?? '') } }, K()), `own:${node.id}/${own}`);
   };
+  // Alt and a drag on a node drags a COPY: the drag only measures how far; the copy is made where it lets go. Alt+Shift keeps the routes.
+  let lifting: { ids: string[]; head: string; at: { x: number; y: number }; connections: boolean; by?: { dx: number; dy: number } } | null = null;
   const onMove = (node: GraphNode, x: number, y: number): void => {
     if (node.id.startsWith('#')) return;
+    if (lifting) {
+      if (node.id === lifting.head) lifting.by = { dx: x - lifting.at.x, dy: y - lifting.at.y };
+      return;
+    }
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
   };
   // Picked nodes moved by one drag: ONE step. A tie whose routes all join them goes with them, and so do the
   // bends of a route with both ends among them; the rest stay. TODO 752
   const onMoveMany = (moves: { id: string; x: number; y: number }[]): void => {
+    if (lifting) {
+      const head = moves.find((m) => m.id === lifting!.head);
+      if (head) lifting.by = { dx: head.x - lifting.at.x, dy: head.y - lifting.at.y };
+      return;
+    }
     const nodes = Object.fromEntries(moves.filter((m) => !m.id.startsWith('#')).map((m) => [m.id, { x: m.x, y: m.y }]));
     const head = shown().nodes.find((n) => n.id === moves[0]?.id);
     if (!head || !nodes[head.id] || Object.keys(nodes).length < 2) return;
@@ -3020,11 +3035,84 @@ export function bindWorkflow(
       field: first instanceof Element && first.matches('input, select, textarea, [contenteditable], button, a'),
     } : undefined;
   };
+  // — Copy and paste: Cmd or Ctrl and C copies the picked nodes; V pastes them, and with Shift their routes too, in, between and out. Each paste is ONE step.
+  const paste = (connections: boolean, by: { dx: number; dy: number }): void => {
+    const clip = clipboard;
+    if (!clip || readOnly()) return;
+    const have: NodeClip = { nodes: clip.nodes.filter((n) => K()[n.kind]), routes: clip.routes };
+    if (!have.nodes.length) return;
+    let ids: string[] = [];
+    edit(() => {
+      const made = pasteNodes(shown(), have, { ...by, connections }, K());
+      ids = made.ids;
+      take(made.workflow);
+    });
+    ids = ids.filter((id) => shown().nodes.some((n) => n.id === id));
+    if (!ids.length) return;
+    multi.clear();
+    picks.clear();
+    for (const id of ids) multi.add(id);
+    markNodes(canvas, new Set(ids));
+    current = null;
+    if (ids.length === 1) {
+      multi.clear();
+      markNode(canvas, ids[0]!);
+      current = ids[0]!;
+      shut = !inspector?.open;
+      const node = graph.nodes.find((n) => n.id === ids[0]);
+      if (node) picks.peek(node, graph);
+    }
+  };
+  let pastes = 0;
+  const copyPicked = (ids: readonly string[]): void => {
+    const held = ids.filter((id) => !id.startsWith('#') && shown().nodes.some((n) => n.id === id));
+    if (!held.length) return;
+    clipboard = copyNodes(shown(), held);
+    pastes = 0;
+  };
+  const onLift = (down: PointerEvent): void => {
+    if (down.button !== 0 || !down.altKey || primaryKey(down) || readOnly()) return;
+    const hit = idOf(down);
+    if (!hit?.header || hit.field || hit.id.startsWith('#')) return;
+    const picked = pickedNodes(canvas);
+    const ids = (picked.includes(hit.id) ? picked : [hit.id]).filter((id) => !id.startsWith('#'));
+    const head = shown().nodes.find((n) => n.id === hit.id);
+    if (!head) return;
+    lifting = { ids, head: hit.id, at: { x: head.x, y: head.y }, connections: down.shiftKey };
+    const done = (): void => {
+      window.removeEventListener('pointerup', done);
+      window.removeEventListener('pointercancel', done);
+      const lift = lifting;
+      lifting = null;
+      if (!lift?.by || (!lift.by.dx && !lift.by.dy)) return;
+      // The originals go back where they were; the copies stand where the drag let go.
+      const was = clipboard;
+      clipboard = copyNodes(shown(), lift.ids);
+      paste(lift.connections, lift.by);
+      clipboard = was;
+      draw();
+    };
+    window.addEventListener('pointerup', done);
+    window.addEventListener('pointercancel', done);
+  };
   const onKey = (event: KeyboardEvent): void => {
     const hit = idOf(event);
     const first = event.composedPath()[0];
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
     const mod = primaryKey(event) && !event.altKey;
+    if (mod && !event.shiftKey && event.key.toLowerCase() === 'c' && (pickedNodes(canvas).length || hit)) {
+      copyPicked(pickedNodes(canvas).length ? pickedNodes(canvas) : [hit!.id]);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (mod && event.key.toLowerCase() === 'v' && clipboard) {
+      pastes++;
+      paste(event.shiftKey, { dx: 32 * pastes, dy: 32 * pastes });
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (mod && (event.key.toLowerCase() === 'z' || event.key.toLowerCase() === 'y')) {
       if (event.key.toLowerCase() === 'y' || event.shiftKey) redo();
       else undo();
@@ -3097,6 +3185,7 @@ export function bindWorkflow(
   const unarrange = watchArrange(canvas, toolbar, () => !readOnly(), ['data-can-arrange', 'data-can-frame']);
   tell();
   canvas.addEventListener('keydown', onKey, { capture: true });
+  canvas.addEventListener('pointerdown', onLift, { capture: true });
   canvas.addEventListener('click', onClick, { capture: true });
   canvas.addEventListener('dblclick', onDouble);
 
@@ -3500,6 +3589,7 @@ export function bindWorkflow(
       dialogCancel?.removeEventListener('click', onCancel);
       dialogField('label')?.removeEventListener('keydown', onSaveKey);
       canvas.removeEventListener('keydown', onKey, { capture: true });
+      canvas.removeEventListener('pointerdown', onLift, { capture: true });
       canvas.removeEventListener('click', onClick, { capture: true });
       canvas.removeEventListener('dblclick', onDouble);
       header?.removeEventListener('breadcrumb-select', onCrumb);

@@ -151,7 +151,8 @@ test('Save is a placeholder, off; Undo and Redo are off until there is a step, a
   expect(await can(page)).toEqual({ undo: false, redo: false, buttons: [true, true, true] });
   // By class: the toolbar's sections are Fetch, Play, Pause, Stop | Undo, Redo, Save | the graph's shape.
   const tips = await page.evaluate(() => ['save', 'undo', 'redo'].map((n) => document.querySelector('sherpa-node-toolbar')!.shadowRoot!.querySelector(`sherpa-button.${n}`)!.getAttribute('data-tip')));
-  expect(tips).toEqual(['Save', 'Undo (Ctrl+Z)', 'Redo (Shift+Ctrl+Z)']);
+  const key = (await primary(page)) === 'Meta' ? '⌘' : 'Ctrl';
+  expect(tips).toEqual(['Save', `Undo (${key}+Z)`, `Redo (Shift+${key}+Z)`]);
   await item(page, 'math').click();
   await settle(page);
   expect(await can(page)).toEqual({ undo: true, redo: false, buttons: [true, false, true] });

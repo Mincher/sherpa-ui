@@ -8,6 +8,7 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
+import { primaryLabel } from '../../core/ui/modifier-key.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
 
@@ -38,6 +39,8 @@ export class SherpaNodeToolbar extends SherpaElement {
 
   override onRender(): void {
     toolbarKeys(this.$('.tools')!);
+    // The tips name the primary key: ⌘ on a Mac, Ctrl elsewhere.
+    for (const tool of this.$$('[data-tip*="Ctrl"]')) tool.setAttribute('data-tip', tool.getAttribute('data-tip')!.replaceAll('Ctrl', primaryLabel));
     this.on(this.root, 'button-click', this.#onPress as EventListener);
     this.#sync();
   }
