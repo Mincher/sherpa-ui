@@ -111,4 +111,6 @@ is not in the repo (/private/tmp/claude-502/probe/hic-spike.mjs).
    paint. Firefox and WebKit failures that are there before 852 too are listed in TODO 890.
 5. **Tests**: a Playwright project on Google Chrome 157 (`channel: 'chrome'`) runs the canvas and node specs drawn; the
    bundled Chromium 153, Firefox and WebKit run them on the plain layer, as today. CI: the runner's Chrome.
+   **Built, 2026-11-11**: the `chrome` project runs every spec that puts a layout canvas on the page (364), all green
+   drawn; CI's `e2e-drawn` job installs Google Chrome and runs it.
 6. **Measure** in Demos (the Records graph, the Node editor page), both ways; the trap, the APP-GUIDE, the Map.

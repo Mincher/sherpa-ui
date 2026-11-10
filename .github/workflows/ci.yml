@@ -1,5 +1,6 @@
 # The pre-commit hook's gates in full, the build with its weight and the Node
-# tests, and the Chromium e2e run — on every push and pull request.
+# tests, the Chromium e2e run, and the drawn specs in Google Chrome — on every
+# push and pull request.
 # Each gate is the hook's own npm script; a gate step runs even when one before
 # it failed, so one run shows every red gate.
 name: CI
@@ -100,5 +101,27 @@ jobs:
         if: ${{ failure() }}
         with:
           name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+  # Google Chrome draws HTML in a canvas (157 on); the bundled Chromium does not. The specs with a layout canvas run here
+  # DRAWN, and reforged-canvas.spec fails if this Chrome cannot draw. Plan 852.
+  e2e-drawn:
+    name: Playwright, Google Chrome (drawn)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chrome
+      - run: npx playwright test --project=chrome
+      - uses: actions/upload-artifact@v7
+        if: ${{ failure() }}
+        with:
+          name: playwright-report-drawn
           path: playwright-report/
           retention-days: 14

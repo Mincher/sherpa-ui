@@ -89,8 +89,10 @@ npm run test:node         # the node unit tests alone — they import dist/, so 
 npm run test:ui           # the Playwright UI runner
 npm run test:headed
 npm run test:report       # open the last HTML report
+npx playwright test --project=chrome  # the layout-canvas specs DRAWN, in Google Chrome 157+ (plan 852)
 # CI (.github/workflows/ci.yml) runs the hook's gates in full, the build with
-# check:weight and test:node, and Chromium e2e, on every push and pull request.
+# check:weight and test:node, Chromium e2e, and the drawn specs in Google
+# Chrome, on every push and pull request.
 
 # The ACCESSIBILITY gate — axe-core over every component, WCAG 2.1 AA. It
 # writes a report per component to test/a11y/reports/ (not tracked), and
