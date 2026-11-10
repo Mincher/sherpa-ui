@@ -49,27 +49,30 @@ field gets the width back, and the output is easier to see.
 - **Each socket has a WRAPPER** (`part="dock"`), the thing a look styles to join it to the card: by default the card's
   fill and border on its three outer sides and none on the card's side, round on the outside, as the input's dock is now.
 
-## Collapsed: the same grid, packed
+## Collapsed: one strip a side, as now
 
-Collapsed, the fields go and every socket stands in its own column, in order (header, rows, False) — no counts, no places:
+Will's answer is B when a node is collapsed: one strip a side, from its first socket to its last. That is today's
+collapsed node, so it stays: every socket stands in one stack a side, in order (header, rows, False), each 28px under
+the last from the header's middle, on one strip of the card's fill and border; the graph gives each side's count and each
+socket's place (`stackPlaces`). Only its anchor moves: the stacks stand in the side columns, against the card's edge.
 
-- The rows and the grey boxes become `display: contents`, so each socket is a cell of the node's own grid.
-- The grid packs: `grid-auto-flow: row dense`. Each socket has its column and no row, so it takes the first free cell
-  in its column: the inputs stack down the start column, the outputs down the end, each in its own order.
-- Hiding the unconnected: an unrouted socket is `display: none`, so the routed ones close up. A hover, or a line being
-  dragged (`data-reveal`), shows them again.
-- The node is as tall as its longer stack, because the grid is: the header row, then one 28px row a socket.
+Packing the grid itself (`grid-auto-flow: row dense`, the rows `display: contents`) was looked at and set aside: CSS
+cannot count sockets across the rows' shadow roots, so a strip could not end at its last socket, and a 56px header row
+breaks the 28px steps from the header's middle.
 
 ## What goes
 
-- `stackPlaces()` in node-graph.ts, and its call per node per draw.
-- The node's `data-inputs`, `data-outputs`, `data-inputs-routed`, `data-outputs-routed`; the row's `data-input-at`,
-  `data-output-at`, `data-input-at-routed`, `data-output-at-routed` (no aliases: they go from the specs in the same change).
-- The `.stack` spans, the `--_stack-*` and `--_in-i`/`--_out-i` sums, and every socket offset (`inset-*`, the negative
-  margins) in sherpa-node.css, sherpa-node-row.css and sherpa-node-sockets.css.
+- Every EXPANDED socket offset (`inset-*`, the negative margins) in sherpa-node.css, sherpa-node-row.css and
+  sherpa-node-sockets.css: a cell places it.
 - The row's 24px end padding for an output socket: the field takes that width back (886).
+- The header's sockets inside the drag handle: they are its siblings.
 
-## Decisions for Will
+## Decisions — Will, 2026-11-10: 1 A; 2 A, "but B when nodes are collapsed"
+
+Will answered 1 A and 2 A here, and in the Harness session (relayed by acp-module-d7): "1. A. 2. A but B when nodes are
+collapsed." Asked which flips when collapsed, he picked "only the wrapper". So: the socket columns stand outside the
+card, expanded or collapsed; an expanded node has a wrapper a socket, a gap between; a collapsed node keeps one strip a
+side (above).
 
 1. **Where the socket columns stand.**
    - A: outside the card. The card keeps its width, and the field gets the output's 24px back; each wrapper is a tab
@@ -89,10 +92,9 @@ Collapsed, the fields go and every socket stands in its own column, in order (he
 2. **A row is a subgrid**: sherpa-node-row's cells, its sockets in wrappers; a grey box is a subgrid too, its fill on
    the middle column only (its own slice on each row, or `::slotted(.section)::before` if all three engines draw it —
    measured first). The output's end padding goes.
-3. **Collapsed is the packed grid**: `display: contents` and `dense`; `stackPlaces` and the eight attributes go, with
-   their specs.
-4. **Measure**: every route still meets its socket (the route tests, in three engines); a draw does less work (no
-   `stackPlaces`); the screenshots of a node, a fork and a collapsed node, before and after.
+3. **Collapsed keeps its stacks**: they stand in the side columns, against the card's edge; the rows and the grey boxes
+   are `display: contents` there, as now.
+4. **Measure**: every route still meets its socket (the route tests, in three engines); the screenshots of a node, a fork and a collapsed node, before and after.
 5. **Docs and Figma**: the specs, the reference, the trap for the grid (`T-a-node-is-a-grid`), and the structure sent to
    the Harness Figma session (acp-module-d7), which waits for this plan, and to sherpa-ui-6b (plan 883).
 
