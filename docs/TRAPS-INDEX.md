@@ -879,7 +879,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (149)
+## SherpaElement and the shared sheets (150)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -993,6 +993,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-observe-what-does-work](traps/element-and-sheets.md#t-observe-what-does-work) — sherpa-element
 - [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — node-graph
 - [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — filter-host-controller
+- [T-one-node-editor](traps/element-and-sheets.md#t-one-node-editor) — node-graph
 - [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — filter-host-controller
 - [T-one-tab-stop-per-set](traps/menus-tips-overlays.md#t-one-tab-stop-per-set) — roving-focus
 - [T-one-value-one-declaration](traps/data-grid.md#t-one-value-one-declaration) — sherpa-base

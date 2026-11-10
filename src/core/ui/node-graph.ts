@@ -40,8 +40,11 @@
  * - GraphEditor — What an editor's binding gives back: Save, and the undo.
  * - Undoable — An editor whose edits are steps.
  * - WorkflowEditor — A workflow's editor: Save and stop, and the Custom Nodes it opens, discards and holds.
+ * - handOver — Tell the app a definition to keep.
  * - QueryEditorOptions — What drawing a page's Query needs beyond its source: its definition, an inspector, a session.
  * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
+ * - watchQuery — Light a page's Query graph as its source loads: the Source by the load and by its store's reads — the page's…
+ * - GraphDocument — What the ONE node editor edits where it is not a stored workflow: a page's Query (plan 885).
  * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a node panel, a session, the kinds.
  * - bindWorkflow — Keep a workflow's draft drawn on a canvas, and write each edit to it.
  */
@@ -2076,7 +2079,7 @@ export interface WorkflowEditor extends GraphEditor, Undoable {
 }
 
 /** Tell the app a definition to keep. */
-function handOver(canvas: HTMLElement, definition: PageDefinition | WorkflowDefinition): void {
+export function handOver(canvas: HTMLElement, definition: PageDefinition | WorkflowDefinition): void {
   canvas.dispatchEvent(new CustomEvent('definition-save', { detail: { definition }, bubbles: true, composed: true }));
 }
 
@@ -2439,7 +2442,7 @@ export function bindQueryEditor(
  * trace — then what the walk counted. A load is the source's when it begins as the
  * source says `loading`. TRAP T-a-step-names-its-node
  */
-function watchQuery(
+export function watchQuery(
   canvas: SherpaLayoutCanvas,
   source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'results' | 'store' | 'addEventListener' | 'removeEventListener'>>,
   definition: PageDefinition,
@@ -2484,7 +2487,38 @@ function watchQuery(
 }
 
 /** What editing a workflow needs beyond it: its facts, an inspector, a session, the kinds. */
+/**
+ * What the ONE node editor edits where it is not a stored workflow: a page's Query (plan 885). The editor reads its
+ * definition, writes each edit back as one definition, and draws what the document says. TRAP T-one-node-editor
+ */
+export interface GraphDocument {
+  /** Its definition now, with its layout. */
+  read(): WorkflowDefinition;
+  /** What to draw for a definition read from it, as the document draws its nodes. */
+  graph(definition: WorkflowDefinition): FramedGraph;
+  /** The editor's next definition, ONE edit's worth: what it cannot take it says, in words. Read it again after. */
+  write(next: WorkflowDefinition): void;
+  /** Its own state for Undo; putting one back may settle later. */
+  snapshot(): unknown;
+  restore(snap: unknown): void | Promise<void>;
+  /** Hear it change from outside the editor (a chip, Apply, another tab). Returns the stop. */
+  watch(changed: () => void): () => void;
+  /** The kinds its graph draws and places, and the panel's palette of them. */
+  kinds: Readonly<Record<string, NodeKind>>;
+  palette(): ReturnType<typeof paletteOf>;
+  /** What a picked node's inspector shows beside its rows: a component's live copy. */
+  visual?(node: GraphNode): HTMLElement | null;
+  /** Save: what to hand over, or false where it may not be saved. */
+  save(): unknown;
+  /** Why Fetch and Play do not run it; none, they do. */
+  runs?: string;
+  /** Light its nodes as it runs. Returns the stop. */
+  lights?(canvas: SherpaLayoutCanvas): () => void;
+}
+
 export interface WorkflowEditorOptions extends WorkflowFacts {
+  /** The document to edit in place of a stored workflow: a page's Query. Its draft, its layout and its save are its own. */
+  document?: GraphDocument;
   inspector?: Inspector;
   /** The node panel floating on the canvas: it lists the kinds, and each node it asks for is placed. */
   panel?: SherpaNodeList;
@@ -2539,6 +2573,8 @@ interface Snap {
   defs: Record<string, NodeDefinition | undefined>;
   /** The open entity's own tags. */
   tags: readonly string[];
+  /** A document's own state (plan 885). */
+  doc?: unknown;
 }
 
 /** One Custom Node opened: its definition's id, the use that opened it, and its name. */
@@ -2563,8 +2599,10 @@ const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) =>
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
+  // A document keeps its own draft and layout: the session keeps none of it here.
+  const session = doc ? undefined : kept$;
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
     const d = v as { v?: unknown; id?: unknown; nodes?: unknown } | null;
@@ -2630,6 +2668,7 @@ export function bindWorkflow(
   const readOnly = (): boolean => preset || insidePreset();
   // A graph's own Group Input and Output are drawn, never placed; the rest are what the graph shown may place.
   const refreshPanel = (): void => {
+    if (doc) return void panel?.populate(doc.palette());
     const placeable = Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#')));
     // A loop is read through the draft: what it places now, not what was saved.
     void panel?.populate(paletteOf(offeredKinds(placeable, path.at(-1)?.kind ?? own, own ? { ...lib.nodes, [own]: { nodes: draft.nodes } } : lib.nodes)));
@@ -2647,9 +2686,15 @@ export function bindWorkflow(
   };
   /** Two steps as one: the first's before, the second's after, for every definition either changed. */
   const fold = (last: Change<Snap>, next: Change<Snap>): Change<Snap> => ({
-    before: { draft: last.before.draft, defs: { ...next.before.defs, ...last.before.defs }, tags: last.before.tags },
-    after: { draft: next.after.draft, defs: { ...last.after.defs, ...next.after.defs }, tags: next.after.tags },
+    before: { draft: last.before.draft, defs: { ...next.before.defs, ...last.before.defs }, tags: last.before.tags, doc: last.before.doc },
+    after: { draft: next.after.draft, defs: { ...last.after.defs, ...next.after.defs }, tags: next.after.tags, doc: next.after.doc },
   });
+  // — A DOCUMENT (plan 885): an edit's writes reach it as ONE definition when the edit ends, and what it keeps is read back.
+  //   Its own state is each step's; a change from outside the editor is a step too.
+  /** The document's state as the last step left it; a write of its own is not a change from outside. */
+  let docLast: unknown = doc?.snapshot();
+  let docWriting = false;
+  const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
   let depth = 0;
   let begun: { draft: WorkflowDefinition; nodes: NodeLibrary['nodes']; tags: readonly string[] } | undefined;
   let lastTag = '';
@@ -2663,11 +2708,23 @@ export function bindWorkflow(
       if (--depth === 0) {
         const was = begun!.nodes;
         const ids = [...new Set([...Object.keys(was), ...Object.keys(lib.nodes)])].filter((id) => was[id] !== lib.nodes[id]);
-        if (begun!.draft !== draft || begun!.tags !== ownTags || ids.length) {
+        const docBefore = docLast;
+        if (doc && draft !== begun!.draft) {
+          docWriting = true;
+          try {
+            doc.write(draft);
+          } finally {
+            docWriting = false;
+          }
+          draft = doc.read();
+          docLast = doc.snapshot();
+        }
+        const moved = doc ? !same(docBefore, docLast) : begun!.draft !== draft || begun!.tags !== ownTags || ids.length > 0;
+        if (moved) {
           const of = (nodes: NodeLibrary['nodes']): Snap['defs'] => Object.fromEntries(ids.map((id) => [id, nodes[id]]));
           const now = performance.now();
           const merge = tag && tag === lastTag && now - lastAt < 1000;
-          journal.push({ before: { draft: begun!.draft, defs: of(was), tags: begun!.tags }, after: { draft, defs: of(lib.nodes), tags: ownTags } }, merge ? fold : undefined);
+          journal.push({ before: { draft: begun!.draft, defs: of(was), tags: begun!.tags, doc: docBefore }, after: { draft, defs: of(lib.nodes), tags: ownTags, doc: docLast } }, merge ? fold : undefined);
           lastTag = tag;
           lastAt = now;
           tell();
@@ -2678,6 +2735,22 @@ export function bindWorkflow(
   /** Put the draft back as a step left it, and each definition the step changed, over the library as it is
    *  now: a refresh is not undone, and a Save is no wall. A definition a step made stays once saved: it is the app's. */
   const restore = (to: Snap): void => {
+    if (doc) {
+      // The document puts its own state back; the editor reads it once it has.
+      const settled = (): void => {
+        draft = doc.read();
+        docLast = doc.snapshot();
+        draw();
+        tell();
+      };
+      docWriting = true;
+      const put = doc.restore(to.doc);
+      docWriting = false;
+      lastTag = '';
+      settled();
+      if (put) void put.finally(settled);
+      return;
+    }
     draft = to.draft;
     ownTags = to.tags;
     session?.set(tagsAt, ownTags === handedTags ? undefined : ownTags);
@@ -2849,6 +2922,8 @@ export function bindWorkflow(
   // A route that would break the workflow is refused, and says why — a loop, one into a Rows row, a row's own fault; one
   // of another type joins, and the node it enters warns (TODO 770). Else the draft takes it, with the definition it changed.
   const take = (next: WorkflowDefinition, made?: { library: NodeLibrary; id: string }): void => {
+    // A document checks what it is given itself, and says what it refuses.
+    if (doc) return write(next);
     const was = new Set(workflowFaultsDeep(shown(), lib, K(), facts));
     const now = made ? { ...K(), ...kindsOf(made.library) } : K();
     const added = workflowFaultsDeep(next, made?.library ?? lib, now, facts).filter((f) => !was.has(f));
@@ -3506,7 +3581,7 @@ export function bindWorkflow(
   };
   const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
-      onEdit, extra: extraFor(node), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}), flow: { inner: innerGraph },
+      onEdit, extra: extraFor(node), ...(doc?.visual ? { visual: doc.visual(node) } : {}), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}), flow: { inner: innerGraph },
       ...(simulation?.result.nodes[node.id] ? { data: { node: simulation.result.nodes[node.id]!, stale: simulation.stale } } : {}),
       // With no pointer: beside the node it feeds, one column left, on the row's own line.
       onCustom: (row) => {
@@ -3745,7 +3820,8 @@ export function bindWorkflow(
   queue.addEventListener('task-notice', onNotice);
   // Fetch and Simulate wait for a path from a Source to an Output; inside a Custom Node's definition they wait for its use. TODO 836
   const tellPath = (): void => {
-    const read = path.length ? { ok: false, why: 'Open the graph that uses this Custom Node: Fetch and Simulate run on a whole graph' } : pathRead(graph, { inner: innerGraph });
+    const read = doc?.runs ? { ok: false, why: doc.runs }
+      : path.length ? { ok: false, why: 'Open the graph that uses this Custom Node: Fetch and Simulate run on a whole graph' } : pathRead(graph, { inner: innerGraph });
     for (const flag of ['data-can-fetch', 'data-can-play']) toolbar?.toggleAttribute(flag, read.ok);
     if (read.ok || !read.why) toolbar?.removeAttribute('data-path-why');
     else toolbar?.setAttribute('data-path-why', read.why);
@@ -3753,7 +3829,7 @@ export function bindWorkflow(
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
-    const body = workflowGraph(stages.preview() ?? shown(), facts, K());
+    const body = doc ? doc.graph(stages.preview() ?? shown()) : workflowGraph(stages.preview() ?? shown(), facts, K());
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     drawGraph(canvas, graph, {
       onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, opens: (node) => !!use(node.id),
@@ -3790,6 +3866,18 @@ export function bindWorkflow(
     else if (framePanel && inspector?.open) showFrame(framePanel);
     else picks.follow(graph);
   }
+  // A document changed from outside the editor (a chip, Apply, another tab): read again, and keep it as a step.
+  const unwatchDoc = doc?.watch(() => {
+    if (docWriting) return;
+    const before: Snap = { draft, defs: {}, tags: ownTags, doc: docLast };
+    draft = doc.read();
+    const now = doc.snapshot();
+    if (!same(now, docLast)) journal.push({ before, after: { draft, defs: {}, tags: ownTags, doc: now } });
+    docLast = now;
+    draw();
+    tell();
+  });
+  const unlights = doc?.lights?.(canvas);
   canvas.addEventListener('pointerdown', onPress, { capture: true });
   window.addEventListener('pointermove', onPointerMove, { capture: true });
   window.addEventListener('pointerup', onLetGo);
@@ -3799,6 +3887,13 @@ export function bindWorkflow(
   const unwatch = watchSteps(canvas, { claims: (span) => span.detail?.['graph'] === workflow.id });
   return {
     save(): boolean {
+      // A document saves itself: what it hands over, or nothing where it may not be saved.
+      if (doc) {
+        const out = doc.save();
+        if (out === false || out === undefined) return false;
+        handOver(canvas, out as PageDefinition | WorkflowDefinition);
+        return true;
+      }
       // Save writes the final graph: what the draft keeps for a node's other types stays behind.
       const final = finalGraph(draft, topKinds());
       const finished = { ...lib, nodes: { ...lib.nodes, ...Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, finalGraph(lib.nodes[id]!, topKinds())]] : []))) } };
@@ -3864,6 +3959,8 @@ export function bindWorkflow(
       unarrange();
       unview();
       stages.stop();
+      unwatchDoc?.();
+      unlights?.();
       drawLanes(canvas, null, heightOf, K());
       for (const flag of ['data-can-lanes', 'data-lanes']) toolbar?.removeAttribute(flag);
       canvas.removeEventListener('pointerdown', onPress, { capture: true });
