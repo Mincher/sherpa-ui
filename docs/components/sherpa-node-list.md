@@ -112,10 +112,10 @@ What each class's base rule reads:
 | `--sherpa-theme-padding-sm` | `.tag-heading` | `padding-block-start` |
 | `--sherpa-theme-padding-md` | `.tag-heading` | `padding-inline-start` |
 | `--sherpa-theme-padding-md` | `.empty` | `padding` |
-| `--sherpa-style-content-base-1` | `.empty` | `color` |
-| `--sherpa-font-size-body-sm` | `.empty` | `font-size` |
+| `--sherpa-style-content-secondary` | `.empty` | `color` |
+| `--sherpa-font-size-body-small` | `.empty` | `font-size` |
 | `--sherpa-theme-padding-md` | `.none` | `padding` |
-| `--sherpa-style-content-base-1` | `.none` | `color` |
+| `--sherpa-style-content-secondary` | `.none` | `color` |
 | `--sherpa-theme-padding-sm` | `.ghost` | `padding` |
 | `--sherpa-style-surface-base` | `.ghost` | `background` |
 | `--sherpa-display-mode-border-width-sm` | `.ghost` | `border-width` |

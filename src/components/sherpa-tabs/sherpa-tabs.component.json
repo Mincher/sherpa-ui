@@ -178,7 +178,7 @@
     "badge.border-radius": "{sherpa.display-mode-border-rounding-sm}",
     "badge.background": "{sherpa.style-surface-base-2}",
     "badge.color": "{sherpa.style-content-base}",
-    "badge.font-size": "{sherpa.font-size-body-sm}"
+    "badge.font-size": "{sherpa.font-size-body-small}"
   },
   "$extensions": {
     "sherpa": {

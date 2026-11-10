@@ -86,6 +86,21 @@ const THEME_ACTIVE = /--sherpa-theme-(surface|border|content)-active-/;
    zero as components move onto Style. TRAP T-a-state-colour-binds-the-style-mode */
 const THEME_COLOUR =
   /--sherpa-theme-(surface|border)-|--sherpa-theme-content-(body|active|info|critical|warning|success|urgent|link)-|--sherpa-display-mode-color-/;
+/* A `var(--sherpa-…)` nothing declares shows its fallback for ever, with no error (TODO 884). Declared: a CSS
+   `--sherpa-x:` in src/, or a TS `'--sherpa-x':` key or `setProperty('--sherpa-x'`, as a setting's look writes it.
+   A HOOK is a value only a host page sets; `--sherpa-filter-on-*` is one family, a page's re-pointed ON colours. */
+const HOOK = /^--sherpa-(content-min-width|quick-filter-label-size|filter-on-[\w-]+)$/;
+const DECLARED = new Set();
+(function declared(dir) {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) declared(p);
+    else if (/\.(css|ts)$/.test(e.name)) {
+      for (const m of readFileSync(p, 'utf8').matchAll(/(--sherpa-[\w-]+)['"]?\s*:|setProperty\(\s*[`'"](--sherpa-[\w-]+)/g)) DECLARED.add(m[1] ?? m[2]);
+    }
+  }
+})(join(ROOT, 'src'));
+
 const BASELINE = join(ROOT, 'scripts', 'lint-css-baseline.json');
 const UPDATE_BASELINE = process.argv.includes('--update-baseline');
 const themeReads = {};
@@ -124,6 +139,11 @@ function lintFile(file, cssRaw) {
 
   root.walkDecls((decl) => {
     const line = decl.source?.start?.line ?? 0;
+    for (const [, name] of decl.value.matchAll(/var\(\s*(--sherpa-[\w-]+)/g)) {
+      if (!DECLARED.has(name) && !HOOK.test(name)) {
+        report('error', file, line, 'undeclared-token', `${name} is declared nowhere, so it always shows its fallback. Fix the name; a value only a host page sets goes in HOOK.`);
+      }
+    }
     /* A focus ring written by hand drifts — a wrong token draws in the fallback
        colour only. It is the ONE shared outline, inside the box and 1px clear of
        its edge: `outline: var(--sherpa-focus-ring)` with its offset. */

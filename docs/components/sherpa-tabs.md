@@ -97,7 +97,7 @@ What each class's base rule reads:
 | `--sherpa-display-mode-border-rounding-sm` | `.badge` | `border-radius` |
 | `--sherpa-style-surface-base-2` | `.badge` | `background` |
 | `--sherpa-style-content-base` | `.badge` | `color` |
-| `--sherpa-font-size-body-sm` | `.badge` | `font-size` |
+| `--sherpa-font-size-body-small` | `.badge` | `font-size` |
 
 ## populate()
 
