@@ -95,3 +95,14 @@ test('Collapse all, then Hide unconnected: an unrouted socket hides, and a hover
   await press(page, 'collapse');
   await expect(page.locator('#cv > sherpa-node[data-collapsed]')).toHaveCount(0);
 });
+
+test('a collapsed node\'s name ends with what its first field holds: "Sort: Ascending"; expanded, its own name', async ({ page }) => {
+  const title = () => node(page, 'Sort').evaluate((el) => el.shadowRoot!.querySelector('.heading')!.getAttribute('data-heading'));
+  expect(await title()).toBe('Sort');
+  await header(page, 'Sort').dblclick();
+  await settle(page);
+  expect(await title()).toBe('Sort: Ascending');
+  await header(page, 'Sort').dblclick();
+  await settle(page);
+  expect(await title()).toBe('Sort');
+});

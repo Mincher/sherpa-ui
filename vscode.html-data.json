@@ -3052,7 +3052,7 @@
         },
         {
           "name": "data-collapsed",
-          "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value. Its host writes it",
+          "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it",
           "valueSet": "v"
         },
         {
@@ -3175,6 +3175,10 @@
               "name": "skipped"
             }
           ]
+        },
+        {
+          "name": "data-summary",
+          "description": "what its first field holds, in words: a collapsed node's name ends with it (\"Condition: Equals\"). Its host writes it"
         },
         {
           "name": "data-warning",

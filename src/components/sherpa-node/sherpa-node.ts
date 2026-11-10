@@ -60,6 +60,7 @@ export class SherpaNode extends SherpaElement {
     'data-locked': DATA_PROPS['data-locked'],
     'data-resizable': { type: 'boolean', kind: 'style' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
+    'data-summary': { type: 'string', kind: 'content' },
     'data-hide-unconnected': { type: 'boolean', kind: 'style' },
     'data-reveal': { type: 'boolean', kind: 'style' },
   } as const;
@@ -94,12 +95,21 @@ export class SherpaNode extends SherpaElement {
     this.#place();
     this.#fit();
     this.#sync();
+    this.#title();
   }
 
   override onChange(name: string): void {
     if (name === 'data-x' || name === 'data-y') this.#place();
     else if (name === 'data-scale-w' || name === 'data-scale-h') this.#fit();
     else if (name === 'data-current') this.#sync();
+    else if (name === 'data-heading' || name === 'data-collapsed' || name === 'data-summary') this.#title();
+  }
+
+  /** Its name, in its header: collapsed, followed by what its first field holds ("Condition: Equals"). Will, 2026-11-10 */
+  #title(): void {
+    const heading = this.getAttribute('data-heading') || 'Node';
+    const summary = this.hasAttribute('data-collapsed') ? this.getAttribute('data-summary') : null;
+    this.$('.heading')?.setAttribute('data-heading', summary ? `${heading}: ${summary}` : heading);
   }
 
   /** A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none. */

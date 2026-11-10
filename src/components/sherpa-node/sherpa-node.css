@@ -398,17 +398,29 @@
   --_row-min: var(--sherpa-display-mode-size-lg, 24px);
   --_socket-line: 50%;
 }
+/* Only the sockets and their wrappers show: no section fill (its docks keep it, from `--_section-fill`), and the
+   body's room is each section's own, so a node with none shown ends at its header. Will, 2026-11-10 */
+:host([data-collapsed]) .body {
+  gap: 0;
+  padding-block: 0;
+}
 :host([data-collapsed]) .body ::slotted(.section) {
   gap: var(--sherpa-theme-gap-sm, 4px);
-  padding-block: var(--sherpa-theme-padding-sm, 4px);
+  margin-block: var(--sherpa-theme-gap-sm, 4px);
+  padding-block: 0;
+  background: transparent;
 }
 :host([data-collapsed]) .body ::slotted(.section[data-bare]) { display: none; }
+/* A fork's footer is one socket wrapper high: False on its middle. */
+:host([data-collapsed]) .footer { min-block-size: calc(var(--_socket, 16px) + 2 * var(--_hit, 6px)); }
+:host([data-collapsed]) .foot { display: none; }
 /* Hiding the unconnected: a socket no route joins hides, till a hover, or a line dragged (`data-reveal`). */
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) { --_unrouted: hidden; --_unrouted-row: none; }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) .body ::slotted(.section[data-unrouted]) { display: none; }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .socket-in,
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .socket-out,
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-routed])) .socket-false { visibility: hidden; }
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .socket-out { visibility: hidden; }
+/* A fork's False no route leaves: its whole footer goes, so no room is left under the node. */
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-routed])) .footer { display: none; }
 :host(:state(has-content-slot)) .body { display: flex; }
 .body ::slotted(:not(sherpa-node-row, .section)) { padding-inline: var(--_pad-inline); }
 /* A SECTION: rows on a grey box, 8px in from the card. Its rows span the box and take their inset from it, so an output socket sits

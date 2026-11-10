@@ -8134,7 +8134,7 @@
             },
             {
               "name": "data-collapsed",
-              "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value. Its host writes it",
+              "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it",
               "type": {
                 "text": "boolean"
               }
@@ -8165,8 +8165,7 @@
               "description": "the node's name, in its header",
               "type": {
                 "text": "string"
-              },
-              "default": "\"Node\""
+              }
             },
             {
               "name": "data-hide-unconnected",
@@ -8266,6 +8265,13 @@
               "description": "how its step stands as a run lights it: running | done | failed | skipped. Its host writes it. Running, the node wears the active border",
               "type": {
                 "text": "'running' | 'done' | 'failed' | 'skipped'"
+              }
+            },
+            {
+              "name": "data-summary",
+              "description": "what its first field holds, in words: a collapsed node's name ends with it (\"Condition: Equals\"). Its host writes it",
+              "type": {
+                "text": "string"
               }
             },
             {

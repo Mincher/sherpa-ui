@@ -1329,6 +1329,10 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     el.toggleAttribute('data-output-routed', graph.routes.some((r) => r.from === node.id));
     el.toggleAttribute('data-false-routed', graph.routes.some((r) => r.from === `${node.id}/${FALSE_SOCKET}`));
     el.toggleAttribute('data-collapsed', drawn.collapsed.has(node.id));
+    // What its first field holds, in words: a collapsed node's name ends with it.
+    const first = node.rows.find((r) => r.control && !r.beside);
+    const words = first ? valueWords(first) : '';
+    put(el, 'data-summary', words && words.charAt(0).toUpperCase() + words.slice(1));
     el.toggleAttribute('data-hide-unconnected', drawn.hideUnconnected);
     drawRows(drawn, el, node);
   }

@@ -76,7 +76,6 @@
               "part": "heading",
               "attrs": {
                 "data-heading": "Node",
-                "data-attr-data-heading": "data-heading",
                 "data-attr-data-icon": "data-icon",
                 "data-attr-data-description": "data-description"
               }
@@ -307,7 +306,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value. Its host writes it"
+      "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it"
     },
     {
       "$type": "prop",
@@ -343,7 +342,6 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "default": "Node",
       "description": "the node's name, in its header"
     },
     {
@@ -493,6 +491,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-summary",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "what its first field holds, in words: a collapsed node's name ends with it (\"Condition: Equals\"). Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-warning",
       "type": "string",
       "observed": true,
@@ -532,7 +539,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, reveal?, scaleH?, scaleW?, step?, warning?, x?, y? }",
+    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {

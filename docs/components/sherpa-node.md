@@ -27,11 +27,11 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with its False socket, a rounded square |
 | `data-caption` | text |  | the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
-| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value. Its host writes it |
+| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
 | `data-false-routed` | boolean |  | a route leaves False: its socket is filled, else hollow |
-| `data-heading` | text | `Node` | the node's name, in its header |
+| `data-heading` | text |  | the node's name, in its header |
 | `data-hide-unconnected` | boolean |  | collapsed, a socket no route joins hides; a hover shows them. Its host writes it |
 | `data-icon` | text |  | a glyph before the name |
 | `data-input-many` | boolean |  | the header's input takes several routes: its socket is a double height D |
@@ -46,6 +46,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
 | `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |
 | `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it. Running, the node wears the active border |
+| `data-summary` | text |  | what its first field holds, in words: a collapsed node's name ends with it ("Condition: Equals"). Its host writes it |
 | `data-warning` | text |  | what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
 | `data-y` | number | `0` | where it sits down the canvas, in plane px |
@@ -118,6 +119,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, reveal?, scaleH?, scaleW?, step?, warning?, x?, y? }`
+`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.
