@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { mcpGraph } from '../../scripts/check-mcp-pack.mjs';
-import { IMPORTS, READS, components, patterns } from '../../mcp-server/lib/sherpa.js';
+import { IMPORTS, READS, components, patterns, schemaVersion } from '../../mcp-server/lib/sherpa.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** The contracts plan 700 serves. */
@@ -34,7 +34,7 @@ test('sherpa-ui packs every file the MCP reads and every entry it runs, no Figma
   const fill = (pattern, vars) => pattern.replace(/\{(\w+)\}/g, (_, v) => vars[v]);
   const want = new Set();
   for (const [key, pattern] of Object.entries(READS)) {
-    if (key === 'schema') for (const name of SCHEMAS) want.add(fill(pattern, { name }));
+    if (key === 'schema') for (const name of SCHEMAS) want.add(fill(pattern, { name, v: schemaVersion(name) }));
     else if (key === 'pattern') for (const name of patterns()) want.add(fill(pattern, { name }));
     else if (!pattern.includes('{')) want.add(pattern);
     else for (const { name } of components()) for (const kind of ['ts', 'html', 'css']) want.add(fill(pattern, { name, kind }));

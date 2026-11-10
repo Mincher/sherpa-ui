@@ -103,14 +103,13 @@ test('the check: two frames one id, a frame of no node, a node not there, a node
   }
 });
 
-test('saved and read back: JSON, the v2 schema, v1 read as v2, Save\'s final graph, and the drawn graph', () => {
+test('saved and read back: JSON, the v2 schema, Save\'s final graph, and the drawn graph', () => {
   const framed = editWorkflow(flow(), { frame: { nodes: ['s1', 'p1', 'e1'], description: 'the flow' } });
   const back = JSON.parse(JSON.stringify(finalGraph(framed)));
   assert.deepEqual(back.frames, framed.frames);
   assert.equal(checkWorkflow(back), true);
   assert.deepEqual(schemaCheck('workflow.v2.json')(back), []);
   assert.notDeepEqual(schemaCheck('workflow.v2.json')({ ...back, frames: [{ id: 'Bad id', nodes: [] }] }), []);
-  assert.deepEqual(readWorkflow({ ...back, v: 1 }).workflow.frames, framed.frames);
   // Save drops a node a frame names that is not there, and a frame left with none.
   const stale = { ...framed, frames: [{ id: 'frame-1', nodes: ['s1', 'gone'] }, { id: 'frame-2', nodes: ['gone'] }] };
   assert.deepEqual(finalGraph(stale).frames, [{ id: 'frame-1', nodes: ['s1'] }]);

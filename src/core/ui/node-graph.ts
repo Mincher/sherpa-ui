@@ -104,7 +104,7 @@ import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import { FALSE_SOCKET, NODE_KINDS, categorySlug, fitOf, paletteOf, rowChoices, socketOf, socketType, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
-import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
+import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -2328,15 +2328,15 @@ const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) =>
  *  an update keeps the draft's changes until Save or `discard`. TRAP T-a-workflow-is-its-definition
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
-  canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
+  canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
   { inspector, panel, session: kept$, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;
   const pointer = `/workflows/${workflow.id}`;
-  const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
+  const isDraft = (v: unknown): v is WorkflowDefinition => {
     const d = v as { v?: unknown; id?: unknown; nodes?: unknown } | null;
-    return !!d && typeof d === 'object' && (d.v === 2 || d.v === 1) && d.id === workflow.id && Array.isArray(d.nodes);
+    return !!d && typeof d === 'object' && d.v === 2 && d.id === workflow.id && Array.isArray(d.nodes);
   };
   session?.persist(pointer, { shared: false, guard: isDraft });
   // The definitions this tab edited: kept beside the draft, over the app's library.
@@ -2356,11 +2356,11 @@ export function bindWorkflow(
   const dirty = new Set(Object.keys(edited));
   const topKinds = (): Readonly<Record<string, NodeKind>> => ({ ...(doc?.kinds ?? kinds), ...kindsOf(lib) });
   // This tab's draft wins: a reload loses nothing. What a v1's read cannot map is said once.
-  const kept = session?.get(pointer) as WorkflowDefinition | WorkflowDefinitionV1 | undefined;
-  const read = readWorkflow(kept ?? structuredClone(workflow), topKinds());
+  const kept = session?.get(pointer) as WorkflowDefinition | undefined;
+  const read = readWorkflow(kept ?? structuredClone(workflow));
   for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
   let draft: WorkflowDefinition = read.workflow ?? { v: 2, id: workflow.id, nodes: [] };
-  let original: WorkflowDefinition = readWorkflow(structuredClone(workflow), topKinds()).workflow ?? draft;
+  let original: WorkflowDefinition = readWorkflow(structuredClone(workflow)).workflow ?? draft;
   /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
   const starting = original;
   /** It never changes: its JSON, once. */

@@ -18,7 +18,9 @@
  * - components — every element the package defines, from its custom-elements.json
  * - spec — a component's spec; null for a name that is no component
  * - example — a component's example, its markup joined; null when it has none
- * - schemas — each contract in schemas/ by name, `page` for page.v1.json, with its own title
+ * - schemaVersion — a contract's newest version on disk: 2 for workflow.v2.json; null, none
+ * - readSchema — a contract by name, at its newest version, as text; null when there is none
+ * - schemas — each contract in schemas/ by name, at its newest version, with its own title
  * - patterns — the name of each pattern sherpa-ui ships in patterns/, in order
  * - tokens — every token tokens.css declares: its layer, first value and how often it is set
  * - appFile — a file of an app's, by its path from the app's folder; null when not there or outside it
@@ -46,7 +48,7 @@ export const SHERPA_ROOT = installed('sherpa-ui') ?? fileURLToPath(new URL('../.
 /** Every sherpa-ui file the MCP reads, by its path in the package. */
 export const READS = {
   manifest: 'custom-elements.json',
-  schema: 'schemas/{name}.v1.json',
+  schema: 'schemas/{name}.v{v}.json',
   spec: 'src/components/{name}/{name}.component.json',
   example: 'src/components/{name}/{name}.example.json',
   source: 'src/components/{name}/{name}.{kind}',
@@ -136,13 +138,29 @@ export function example(name) {
   return { ...ex, html: [ex.html].flat().join('') };
 }
 
-/** Each contract in schemas/ by name, `page` for page.v1.json, with its own title. */
+/** A contract file's name and version: `workflow`, 2 for workflow.v2.json. */
+const versioned = (file) => {
+  const m = /^(.+)\.v(\d+)\.json$/.exec(file);
+  return m ? { name: m[1], v: Number(m[2]) } : null;
+};
+
+/** A contract's newest version on disk: 2 for workflow.v2.json; null, none. */
+export function schemaVersion(name) {
+  const vs = readdirSync(path.join(SHERPA_ROOT, path.dirname(READS.schema))).flatMap((f) => (versioned(f)?.name === name ? [versioned(f).v] : []));
+  return vs.length ? Math.max(...vs) : null;
+}
+
+/** A contract by name, at its newest version, as text; null when there is none. */
+export function readSchema(name) {
+  const v = schemaVersion(name);
+  return v === null ? null : read('schema', { name, v: String(v) });
+}
+
+/** Each contract in schemas/ by name, at its newest version — `page` for page.v1.json, `workflow` for workflow.v2.json —
+ *  with its own title. */
 export function schemas() {
-  const dir = path.join(SHERPA_ROOT, path.dirname(READS.schema));
-  return readdirSync(dir).filter((f) => f.endsWith('.v1.json')).sort().map((f) => {
-    const name = f.slice(0, -'.v1.json'.length);
-    return { name, title: JSON.parse(read('schema', { name })).title ?? name };
-  });
+  const names = new Set(readdirSync(path.join(SHERPA_ROOT, path.dirname(READS.schema))).flatMap((f) => versioned(f)?.name ?? []));
+  return [...names].sort().map((name) => ({ name, title: JSON.parse(readSchema(name)).title ?? name }));
 }
 
 /** The name of each pattern sherpa-ui ships in patterns/, in order: `records-list` for records-list.json. */

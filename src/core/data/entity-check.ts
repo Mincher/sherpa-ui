@@ -83,7 +83,7 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
 
   const kinds: Kinds = { ...kindsOf(libraryOf(others, types)), ...(facts.kinds ?? NODE_KINDS) };
   // A use of an entity is a node whose kind is its kind; it is the one place a family does not bound. An old kind reads as today's.
-  for (const node of readWorkflow({ v: 2, id: entity.id, nodes: entity.graph.nodes }, kinds).workflow?.nodes ?? []) {
+  for (const node of readWorkflow({ v: 2, id: entity.id, nodes: entity.graph.nodes }).workflow?.nodes ?? []) {
     const kind = kinds[node.kind];
     if (!kind || takes(type, kind)) continue;
     problems.push(`${at} places "${node.id}", of the family "${kind.category ?? 'Other'}", which a ${type.label} does not take: ${type.families!.join(', ')}`);

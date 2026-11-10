@@ -75,12 +75,12 @@ test('a route may pass through several ties, drawn from the workflow', () => {
   assert.equal(workflowGraph(flow).ties, undefined);
 });
 
-test('a tie is saved and read in v2, checks by its schema, and a v1 has none', () => {
+test('a tie is saved and read in v2, checks by its schema, and a v1 is no workflow', () => {
   const saved = JSON.parse(JSON.stringify(tied));
   assert.deepEqual(readWorkflow(saved).workflow.ties, tied.ties);
   assert.deepEqual(schemaCheck('workflow.v2.json')(saved), []);
   assert.notDeepEqual(schemaCheck('workflow.v2.json')({ ...saved, ties: [{ id: 'tie-1', x: 1, y: 1, routes: [] }] }), []);
-  assert.equal(readWorkflow({ ...flow, v: 1 }).workflow.ties, undefined);
+  assert.equal(readWorkflow({ ...flow, v: 1 }).workflow, undefined);
 });
 
 test('a Custom Node body holds a tie, and it is no part of the version', () => {

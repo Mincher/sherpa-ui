@@ -39,8 +39,8 @@ test('the schema takes the size, in v2 and in a Custom Node body, and refuses 3'
   assert.notDeepEqual(schemaCheck('workflow.v2.json')(editWorkflow(flow(), { resize: { node: 's', w: 3, h: 1 } })), []);
 });
 
-test('a v1 reads none, and the read keeps a v2 size', () => {
-  assert.equal(readWorkflow({ ...flow(), v: 1 }).workflow.nodes[0].size, undefined);
+test('a v1 is no workflow, and the read keeps a v2 size', () => {
+  assert.equal(readWorkflow({ ...flow(), v: 1 }).workflow, undefined);
   const ok = editWorkflow(flow(), { resize: { node: 's', w: 1.4, h: 1.1 } });
   assert.deepEqual(readWorkflow(ok).workflow.nodes[0].size, { w: 1.4, h: 1.1 });
 });

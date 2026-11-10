@@ -174,7 +174,6 @@ export {
   workflowFaults,
   workflowGraph,
   type WorkflowDefinition,
-  type WorkflowDefinitionV1,
   type WorkflowEdit,
   type WorkflowFacts,
   type WorkflowNode,

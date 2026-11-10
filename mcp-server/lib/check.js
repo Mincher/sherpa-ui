@@ -15,7 +15,7 @@
  */
 import path from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
-import { appFile, imported, load, read, schemas, spec } from './sherpa.js';
+import { appFile, imported, load, readSchema, schemas, spec } from './sherpa.js';
 
 const Ajv = Ajv2020.default ?? Ajv2020;
 let ajv;
@@ -33,7 +33,7 @@ export function schemaCheck(ref) {
   if (!ajv) {
     // Every contract first, so one's `$ref` into another resolves.
     ajv = new Ajv({ allErrors: true, strict: false });
-    for (const { name } of schemas()) ajv.addSchema(JSON.parse(read('schema', { name })));
+    for (const { name } of schemas()) ajv.addSchema(JSON.parse(readSchema(name)));
   }
   const validate = ajv.getSchema(new URL(ref, 'https://sherpa-ui.dev/schemas/').href);
   if (!validate) throw new Error(`schemaCheck: sherpa-ui's schemas/ has no ${ref}`);

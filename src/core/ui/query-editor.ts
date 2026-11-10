@@ -20,7 +20,7 @@ import type { FieldType } from '../data/filter-state.js';
 import { NODE_KINDS, paletteOf, type DrawnGraph, type GraphNode, type NodeKind } from '../data/node-kinds.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { VIEW } from '../data/query.js';
-import { queryGraph, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
+import { QUERY_DRAWN_ONLY, queryGraph, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
 import { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, rowRequest, type GraphLayout } from '../data/query-document.js';
 import { report } from '../data/report.js';
 import { valueKey } from '../data/store.js';
@@ -142,7 +142,10 @@ export function queryDocument(source: QuerySource, { definition, session, markup
       query.addEventListener('query-change', heard);
       return () => query.removeEventListener('query-change', heard);
     },
-    palette: () => paletteOf({ ...NODE_KINDS, ...customs() }, 'query'),
+    // What a reader may place: a kind the Query only draws is not offered.
+    palette: () => paletteOf({ ...NODE_KINDS, ...customs() }, 'query')
+      .map((group) => ({ ...group, items: group.items.filter((item) => !QUERY_DRAWN_ONLY.includes(item.id)) }))
+      .filter((group) => group.items.length),
     visual(node: GraphNode) {
       const id = node.ref?.['component'];
       const page = id ? markup.getElementById(id) : null;

@@ -15,7 +15,7 @@
  * - writeLayout — a layout as HTML: each `each` once per field of its kind, its tokens filled
  */
 import path from 'node:path';
-import { appFile, appFiles, load, patterns, read, spec } from './sherpa.js';
+import { appFile, appFiles, load, patterns, read, readSchema, spec } from './sherpa.js';
 import { checkPageFiles, heard, schemaCheck } from './check.js';
 
 /** The kinds of field a node may stand for one of (`each`), and the need's count of each. */
@@ -293,7 +293,7 @@ export async function checkPattern(pattern, { need } = {}) {
 
 /** How the need's fields are typed, from its contract: an integer is a number. */
 function needTypes() {
-  const props = JSON.parse(read('schema', { name: 'pattern' })).$defs.need.properties;
+  const props = JSON.parse(readSchema('pattern')).$defs.need.properties;
   return (field) => (props[field]?.type === 'integer' ? { type: 'number' } : {});
 }
 

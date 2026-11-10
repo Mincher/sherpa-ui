@@ -25,6 +25,7 @@
  * - PlaceFacts — What placing a node needs of the Query: its holds, fields, presets and which are on.
  * - KeptSource — A Source a reader placed that the page does not read: kept in the editor's draft, saved nowhere.
  * - PlaceAnswer — What placing a node asks: a command, a Source to keep, or why it cannot.
+ * - QUERY_DRAWN_ONLY — The kinds a Query draws and never places: its node panel offers neither.
  * - placeRequest — The command placing a node asks in a scope, a Source to keep, or why it cannot.
  * - keptEdit — The kept Sources after an edit of one's Store row; none, the edit is no kept Source's.
  * - RouteAnswer — What a new route asks: a command, or why it is refused; null, nothing to do.
@@ -703,6 +704,10 @@ export interface KeptSource {
 
 /** What placing a node asks: a command through the Query's door, a Source the editor keeps, or why it cannot. */
 export type PlaceAnswer = { request: QueryRequest } | { refused: string } | { keep: KeptSource };
+
+/** The kinds a Query draws and never places: a Field's tests are its chip's, and a status field the app's. Its node panel
+ *  offers neither; `placeRequest` still says why, to one that asks. Will, 2026-11-10 */
+export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status'];
 
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the

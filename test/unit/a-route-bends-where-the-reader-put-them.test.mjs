@@ -81,9 +81,8 @@ test('the schema takes via, in v2 and in a Custom Node body, and refuses a point
   assert.notDeepEqual(schemaCheck('workflow.v2.json')(bad), []);
 });
 
-test('a v1 reads none; a Custom Node version ignores a bend', () => {
-  const v1 = { v: 1, id: 'f', nodes: flow().nodes, routes: [{ ...route }] };
-  assert.equal('via' in readWorkflow(v1).workflow.routes[0], false);
+test('a v1 is no workflow; a Custom Node version ignores a bend', () => {
+  assert.equal(readWorkflow({ v: 1, id: 'f', nodes: flow().nodes, routes: [{ ...route }] }).workflow, undefined);
   const def = { v: 1, label: 'L', inputs: [], outputs: [], nodes: flow().nodes, routes: [{ ...route }] };
   const bent = { ...def, routes: [{ ...route, via: [{ x: 1, y: 2 }] }] };
   assert.equal(versionOf(bent), versionOf(def));

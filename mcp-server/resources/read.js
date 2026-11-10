@@ -1,7 +1,7 @@
 /**
  * read.js — the read tier's resources: sherpa-ui's own files, as they ship.
  *
- *   sherpa://schemas/{name}           a contract in schemas/: `page` is page.v1.json
+ *   sherpa://schemas/{name}           a contract in schemas/, newest version: `page` is page.v1.json
  *   sherpa://spec/{name}              a component's spec, as on disk
  *   sherpa://example/{name}           a component's example, as on disk
  *   sherpa://component/{name}/{kind}  a component's source: ts, html or css
@@ -14,7 +14,7 @@
  */
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-import { components, has, read, schemas } from '../lib/sherpa.js';
+import { components, has, read, schemaVersion, schemas } from '../lib/sherpa.js';
 
 const KINDS = { ts: 'text/typescript', html: 'text/html', css: 'text/css' };
 const JSON_TYPE = 'application/json';
@@ -48,9 +48,9 @@ export function register(server) {
     complete: { name: completes(() => schemas().map((s) => s.name)) },
   }), {
     title: 'A contract',
-    description: 'A JSON Schema in sherpa-ui\'s schemas/, by name: `page` is page.v1.json. The contracts of an app\'s files, the shapes they share (`defs`), a component\'s spec and example, and a pattern',
+    description: 'A JSON Schema in sherpa-ui\'s schemas/, by name, at its newest version: `page` is page.v1.json, `workflow` workflow.v2.json. The contracts of an app\'s files, the shapes they share (`defs`), a component\'s spec and example, and a pattern',
     mimeType: SCHEMA_TYPE,
-  }, async (uri, { name }) => contents(uri, 'schema', { name }, SCHEMA_TYPE));
+  }, async (uri, { name }) => contents(uri, 'schema', { name, v: String(schemaVersion(String(name)) ?? '') }, SCHEMA_TYPE));
 
   server.registerResource('spec', new ResourceTemplate('sherpa://spec/{name}', {
     list: perComponent('spec', (n) => `sherpa://spec/${n}`, 'spec', JSON_TYPE),

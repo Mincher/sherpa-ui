@@ -3,8 +3,8 @@
  * the routes between their sockets, checked by its schema and by checkWorkflow,
  * which reports each fault and never throws. Its kinds are the ONE registry's;
  * it draws as a graph, and each edit is a pure function that gives a new one.
- * It is a v2: a node's rows leave its Rows row. A v1 is read ONCE as v2, and
- * draws the same nodes and routes. Will, TODO 78 · plan 695 N1 · plan 713 M3, D8.
+ * It is a v2: a node's rows leave its Rows row; no v1 ships, and none is read
+ * (Will, 2026-11-10). Will, TODO 78 · plan 695 N1 · plan 713 M3, D8.
  * TRAP T-a-workflow-is-its-definition · TRAP T-one-node-registry
  *
  *   node --test test/unit/a-workflow-is-its-definition.test.mjs
@@ -22,20 +22,6 @@ const { onReport } = await import(new URL('report.js', core));
 const ROOT = new URL('../../', import.meta.url);
 const json = async (path) => JSON.parse(await readFile(new URL(path, ROOT), 'utf8'));
 const good = await json('test/unit/fixtures/active-customers.workflow.json');
-
-/** The fixture as v1 saved it, before it was read once as v2: its rows left the headers. */
-const SAVED_AS_V1 = {
-  $schema: '../../../schemas/workflow.v1.json',
-  v: 1, id: 'active-customers', label: 'Active customers',
-  nodes: [
-    { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'field', kind: 'field', x: 360, y: 0, values: { field: 'status' } },
-    { id: 'status', kind: 'value', x: 360, y: 160, values: { value: 'active' } },
-    { id: 'filter', kind: 'condition', x: 720, y: 0, values: { type: 'eq' } },
-    { id: 'end', kind: 'output', x: 1080, y: 0 },
-  ],
-  routes: [{ from: 'start', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: 'end' }],
-};
 
 /** What checkWorkflow says of a definition: its answer, and each fault. */
 function check(workflow, kinds) {
@@ -57,42 +43,11 @@ test('a real workflow passes its schema and the check', () => {
   assert.deepEqual(check(good), { ok: true, heard: [] });
 });
 
-/** A workflow by id: each node's kind, place and values, and each route by the nodes it joins and the row it enters. */
-const byId = (w) => ({
-  nodes: w.nodes.map((n) => [n.id, n.kind, n.x, n.y, n.values]),
-  routes: (w.routes ?? []).map((r) => [socketOf(r.from).node, socketOf(r.to).node, socketOf(r.to).row]),
-});
-
-test('a v1 is read ONCE as v2: each route that sent rows from a header leaves its Rows row; the rest is as it was', () => {
-  assert.deepEqual(schemaCheck('workflow.v1.json')(SAVED_AS_V1), []);
-  assert.notDeepEqual(schemaCheck('workflow.v2.json')(SAVED_AS_V1), [], 'a v1 is no v2 until it is read');
-  const { workflow, faults } = readWorkflow(SAVED_AS_V1);
-  assert.deepEqual(faults, []);
-  // The converted fixture IS the read: no v1 file is left, and the same graph by id.
-  assert.deepEqual(workflow, good);
-  // The same graph by id: no kind is renamed on the way (TODO 777).
-  assert.deepEqual(byId(good), byId(SAVED_AS_V1));
-  assert.deepEqual(good.routes.map((r) => r.from), ['start/rows', 'field/field', 'status/value', 'filter/rows']);
-  // A v2 is read as itself; a v1 checks, draws and edits as the v2 it reads as.
+test('a v2 is read as itself; anything else is no workflow, and says so', () => {
   assert.equal(readWorkflow(good).workflow, good);
-  assert.deepEqual(check(SAVED_AS_V1), { ok: true, heard: [] });
-  assert.deepEqual(workflowGraph(SAVED_AS_V1), workflowGraph(good));
-  assert.deepEqual(editWorkflow(SAVED_AS_V1, { node: 'filter', row: 'type', value: 'ne' }), editWorkflow(good, { node: 'filter', row: 'type', value: 'ne' }));
-  assert.equal(SAVED_AS_V1.v, 1, 'the one given is untouched');
-});
-
-test('a v1 the reader cannot map is reported, and the route that would mean another thing is dropped', () => {
-  // An app's kind that sent its rows from its header in v1, and forks now with no Rows row.
-  const kinds = { ...NODE_KINDS, tag: { heading: 'Tag', icon: 'price-tag', input: 'any', branches: true, rows: [{ name: 'label', label: 'Label', control: 'text' }], model: 'tag', graphs: ['workflow'] } };
-  const v1 = { ...structuredClone(SAVED_AS_V1), nodes: [...SAVED_AS_V1.nodes, { id: 'tag', kind: 'tag', x: 0, y: 0 }], routes: [...SAVED_AS_V1.routes, { from: 'tag', to: 'end' }] };
-  const said = 'the v1 route "tag" → "end" sends rows from the header of "tag", whose kind has no Rows row to send them from in v2';
-  const { workflow, faults } = readWorkflow(v1, kinds);
-  assert.deepEqual(faults, [said]);
-  assert.ok(!workflow.routes.some((r) => r.from === 'tag'), 'its header sends True now: the route is not kept');
-  assert.deepEqual(check(v1, kinds), { ok: false, heard: [`${said}.`] });
-  // Not a workflow at all: neither version.
-  for (const odd of [{ v: 3, id: 'x', nodes: [] }, { id: 'x' }, null]) {
-    assert.deepEqual(workflowFaults(odd), ['it is not a workflow definition: a v2, or a v1 to read as one']);
+  assert.deepEqual(good.routes.map((r) => r.from), ['start/rows', 'field/field', 'status/value', 'filter/rows']);
+  for (const odd of [{ v: 1, id: 'x', nodes: [] }, { v: 3, id: 'x', nodes: [] }, { id: 'x' }, null]) {
+    assert.deepEqual(workflowFaults(odd), ['it is not a workflow definition: a v2']);
   }
 });
 
@@ -222,6 +177,4 @@ test('SAVE round-trips: definition → graph → edit → definition, checked, a
   assert.deepEqual(check(saved), { ok: true, heard: [] });
   assert.equal(saved.nodes.find((n) => n.id === 'filter').values.type, 'ne');
   assert.equal(row('filter', 'type', workflowGraph(saved, { fieldsOf })).value, 'ne');
-  // A v1 edited is saved as v2.
-  assert.equal(editWorkflow(SAVED_AS_V1, { node: 'filter', row: 'type', value: 'ne' }).v, 2);
 });

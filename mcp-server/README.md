@@ -138,7 +138,7 @@ Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-
 
 #### `workflow_graph` — Draw a workflow as nodes
 
-A workflow definition (workflow.v2; a v1 is read as one, `readWorkflow`) as nodes and routes (`workflowGraph`) — each node its kind's header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a route that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.
+A workflow definition (workflow.v2) as nodes and routes (`workflowGraph`) — each node its kind's header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a route that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.
 
 - `workflow` — The workflow definition, as its JSON: `{ "v": 2, "id", "nodes", "routes" }`
 - `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
@@ -146,7 +146,7 @@ A workflow definition (workflow.v2; a v1 is read as one, `readWorkflow`) as node
 
 #### `edit_workflow` — Edit a workflow
 
-A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v2, a v1 read as one first. An edit is a row's value, `{ "node": "status", "row": "value", "value": "trial" }`; a node's own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there (beside it, where the input takes `many`), `{ "route": { "from": "status/value", "to": "filter/value" } }`; or routes cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.
+A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v2. An edit is a row's value, `{ "node": "status", "row": "value", "value": "trial" }`; a node's own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there (beside it, where the input takes `many`), `{ "route": { "from": "status/value", "to": "filter/value" } }`; or routes cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.
 
 - `workflow` — The workflow definition, as its JSON
 - `edits` — Each a WorkflowEdit, in turn
@@ -231,7 +231,7 @@ End the preview: its pages, its browser and its Node host, so nothing of it list
 
 | URI | Is |
 |---|---|
-| `sherpa://schemas/{name}` | **A contract.** A JSON Schema in sherpa-ui's schemas/, by name: `page` is page.v1.json. The contracts of an app's files, the shapes they share (`defs`), a component's spec and example, and a pattern |
+| `sherpa://schemas/{name}` | **A contract.** A JSON Schema in sherpa-ui's schemas/, by name, at its newest version: `page` is page.v1.json, `workflow` workflow.v2.json. The contracts of an app's files, the shapes they share (`defs`), a component's spec and example, and a pattern |
 | `sherpa://spec/{name}` | **A component's spec.** A component's `<name>.component.json`, as on disk: generated from its source and checked against the component schema |
 | `sherpa://example/{name}` | **A component's example.** A component's `<name>.example.json`, as on disk: its markup as a page writes it, the data it is given, and when to use it |
 | `sherpa://component/{name}/{kind}` | **A component's source.** A component's shipped .ts, .html or .css: its class, its template, its sheet |

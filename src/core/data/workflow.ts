@@ -1,15 +1,14 @@
 /**
  * workflow.ts — a workflow, set up from ONE JSON document: its nodes, their values and the
  * routes between their sockets. Its check, the graph it draws, and its edits, each pure.
- * Its kinds are the one registry's. A v1 is read ONCE into v2. Will, TODOs 78, 713
+ * Its kinds are the one registry's. It is a v2. Will, TODOs 78, 713
  * · docs/history/plan-78-workflow-data.md · TRAP T-a-workflow-is-its-definition · TRAP T-a-socket-says-its-type · TRAP T-a-condition-is-a-tree-of-nodes
  *
  * Map:
  * - WorkflowNode — One node, as a definition holds it: only what the reader may change.
  * - WorkflowDefinition — One workflow, as JSON (v2) — its nodes and its routes.
- * - WorkflowDefinitionV1 — A workflow as v1 saved it: its data rows left from a node's header.
  * - WorkflowRead — A workflow read as v2, and each fault the read met.
- * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row, once.
+ * - readWorkflow — A workflow as v2, or the fault that it is none.
  * - GROW_MIN — The least a node's size may be: its natural size, as 1.
  * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
  * - keptRoutes — The routes a node keeps for another of its types: drawn nowhere, no fault, not saved.
@@ -85,11 +84,6 @@ export interface WorkflowDefinition {
   lanes?: readonly NodeLane[];
 }
 
-/** A workflow as v1 saved it: the same, but its data rows left from a node's header. */
-export interface WorkflowDefinitionV1 extends Omit<WorkflowDefinition, 'v'> {
-  v: 1;
-}
-
 type Kinds = Readonly<Record<string, NodeKind>>;
 
 /** A workflow read as v2, and each fault the read met; no workflow, it is not one. */
@@ -106,32 +100,14 @@ const asList = (value: unknown): unknown[] => (Array.isArray(value) ? value
 const asOne = (value: unknown): unknown => (!Array.isArray(value) ? value : value.length === 1 ? value[0] : value.map(String).join(', '));
 
 /**
- * A workflow as v2: a v2 as it is, the one given; a v1 read ONCE — each route that left a
- * node's header, its data rows, now leaves its Rows row. One a v2 kind cannot send from
- * there (no Rows row, and its header sends only True) is dropped, and a fault says so: it
- * would mean another thing. A kind or a type is read as it is named: an old one is none
- * (TODO 777). Plan 713 D8. TRAP T-a-workflow-is-its-definition
+ * A workflow as v2, the one given; anything else is none, and says so. A kind or a type is
+ * read as it is named: an old one is none (TODO 777). No v1 ships: its read is gone (Will,
+ * 2026-11-10). TRAP T-a-workflow-is-its-definition
  */
-export function readWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS): WorkflowRead {
+export function readWorkflow(given: WorkflowDefinition): WorkflowRead {
   const v = (given as { v?: unknown } | null)?.v;
-  if ((v !== 1 && v !== 2) || !Array.isArray(given.nodes)) return { faults: ['it is not a workflow definition: a v2, or a v1 to read as one'] };
-  const workflow = given;
-  if (workflow.v === 2) return { workflow, faults: [] };
-  const faults: string[] = [];
-  const kindOf = new Map(workflow.nodes.map((n) => [n.id, kindOfNode(kinds, n)]));
-  const routes = (workflow.routes ?? []).flatMap((route): NodeRoute[] => {
-    const { node, row } = socketOf(route.from);
-    const kind = kindOf.get(node);
-    // A row's route, a header that still sends its own, or one the check says is none: as it is.
-    if (row !== undefined || !kind || (kind.output && !kind.branches)) return [route];
-    if (kind.rows.some((r) => r.name === ROWS.name && r.output)) return [{ ...route, from: `${node}/${ROWS.name}` }];
-    if (!kind.branches) return [route];
-    // Its header sends True now: the same route would say another thing.
-    faults.push(`the v1 route "${route.from}" → "${route.to}" sends rows from the header of "${node}", whose kind has no Rows row to send them from in v2`);
-    return [];
-  });
-  const $schema = typeof workflow.$schema === 'string' ? { $schema: workflow.$schema.replace(/workflow\.v1\.json$/, 'workflow.v2.json') } : {};
-  return { workflow: { ...workflow, ...$schema, v: 2, ...(workflow.routes ? { routes } : {}) }, faults };
+  if (v !== 2 || !Array.isArray(given.nodes)) return { faults: ['it is not a workflow definition: a v2'] };
+  return { workflow: given, faults: [] };
 }
 
 /** A node's size runs from its natural size to double it, each way. */
@@ -306,10 +282,10 @@ function typedWants(type: unknown, value: unknown): string | undefined {
 }
 
 /** Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
- *  A v1 is read as v2 first, and each fault of the read leads. A value its row cannot hold — a stranger
+ *  One that is no v2 is that fault alone. A value its row cannot hold — a stranger
  *  in a closed list, no date, a number off its step — is a fault where it is held and where a route brings it. */
-export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
-  const { workflow, faults } = readWorkflow(given, kinds);
+export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
+  const { workflow, faults } = readWorkflow(given);
   if (!workflow) return faults;
   const problems = [...faults];
   const byId = new Map<string, NodeKind>();
@@ -378,7 +354,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const there = fed.get(to) ?? [];
     if (!leaves) problems.push(`a route leaves "${from}", which is no output socket`);
     else if (!out) problems.push(`a route leaves "${from}", which sends any type: an output says the one it sends`);
-    // A Rows row only sends: a v1 habit, the rows in, says so.
+    // A Rows row only sends: a route into it says so.
     if (!into && socketOf(to).row === ROWS.name && byId.has(socketOf(to).node)) problems.push(`a route enters "${to}", a Rows row, which only sends: a node's rows come in on its header`);
     else if (!into) problems.push(`a route enters "${to}", which is no input socket`);
     if (there.includes(from)) problems.push(`the route "${from}" → "${to}" is there twice`);
@@ -433,7 +409,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
 }
 
 /** Check every node, kind and route; each fault reports, and it never throws. True when none is. */
-export function checkWorkflow(workflow: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
+export function checkWorkflow(workflow: WorkflowDefinition, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
   const problems = workflowFaults(workflow, kinds, facts);
   for (const problem of problems) {
     report({ code: 'workflow-definition', message: `checkWorkflow: ${problem}.`, at: { workflow: workflow?.id } });
@@ -558,23 +534,23 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRo
 
 /** What one output socket of a workflow sends, read through its routes and its portals: a Field's column, `{ rows, field }`,
  *  by what reaches its header and the fields of its Source. None: it sends nothing before a run. Plan 783 D2, TODO 779 */
-export function sentFrom(given: WorkflowDefinition | WorkflowDefinitionV1, from: string, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}, kinds: Kinds = NODE_KINDS): Reached | undefined {
-  const { workflow } = readWorkflow(given, kinds);
+export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}, kinds: Kinds = NODE_KINDS): Reached | undefined {
+  const { workflow } = readWorkflow(given);
   if (!workflow) return undefined;
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   const { routes } = flowOf(workflow, kinds).flow;
   return sender(held, routes, kinds, fieldsReach(held, routes, kinds, facts))(from);
 }
 
-/** A workflow as nodes and routes, a v1 read as v2: each node its kind's, at its own place,
+/** A workflow as nodes and routes: each node its kind's, at its own place,
  *  with its values. A row a route drives is read only. Where the route comes from a node that
  *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
  *  and its own pick stays in the draft; else it shows its own until N4 runs the flow, and one
  *  that holds none shows nothing, and says where its value comes from (TODO 774). What
  *  reaches an input that it cannot use reads null, and the node says why in `warnings`.
  *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
-export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): FramedGraph {
-  const { workflow } = readWorkflow(given, kinds);
+export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): FramedGraph {
+  const { workflow } = readWorkflow(given);
   if (!workflow) return { nodes: [], routes: [] };
   // A route kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
   // What each input reads, it reads as the data flows: through the portals (TODO 779).
@@ -832,12 +808,12 @@ function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addS
   };
 }
 
-/** The workflow after one edit, a v2 — a v1 read as one first; the one given untouched. A
+/** The workflow after one edit, a v2; the one given untouched. A
  *  value is typed as its row takes it. */
 export function editWorkflow(
-  given: WorkflowDefinition | WorkflowDefinitionV1, edit: WorkflowEdit, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
+  given: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
 ): WorkflowDefinition {
-  const workflow = readWorkflow(given, kinds).workflow;
+  const workflow = readWorkflow(given).workflow;
   if (!workflow) return given as WorkflowDefinition;
   const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
   // A route that is gone leaves its ties, and a tie with none goes.
@@ -1057,9 +1033,9 @@ function frameEdit(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { f
  * single value, or is not there. Plan 713 §5
  */
 export function addCustomValue(
-  given: WorkflowDefinition | WorkflowDefinitionV1, to: string, at: { x: number; y: number }, kinds: Kinds = NODE_KINDS,
+  given: WorkflowDefinition, to: string, at: { x: number; y: number }, kinds: Kinds = NODE_KINDS,
 ): WorkflowDefinition {
-  const workflow = readWorkflow(given, kinds).workflow;
+  const workflow = readWorkflow(given).workflow;
   const { node: id, row: name } = socketOf(to);
   const into = workflow?.nodes.find((n) => n.id === id);
   const row = into && name !== undefined ? rowOf(kindOfNode(kinds, into)?.rows ?? [], name) : undefined;

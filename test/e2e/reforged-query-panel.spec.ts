@@ -2,11 +2,11 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The Query editor's node panel — Will, TODO 734: "the query editor is a node editor". The panel
- * lists the kinds a Query takes placed (Sources, Logic, Presets, Saved filters, Status), and the page's
- * Preset Filters as its Custom Nodes (TODO 776); placing one, by a click or a drag, is a request
- * through the Query's one door: a Condition holds the scope's next field, a Preset switches on, a
- * Preset Filter switches itself on. A kind the Query cannot take is refused in words, and asks
- * nothing. Real pointer. TRAP T-one-command-one-door · TRAP T-a-preset-filter-is-a-preset-of-its-store
+ * lists the kinds a reader may place in a Query (Sources, Variables, Presets, Saved filters), and the
+ * page's Preset Filters as its Custom Nodes (TODO 776); a kind the Query only draws — a Condition, a
+ * Status — is not offered (Will, 2026-11-10). Placing one, by a click or a drag, is a request through
+ * the Query's one door: a Field holds the scope's next field, a Preset switches on, a Preset Filter
+ * switches itself on. One the Query cannot take now is refused in words, and asks nothing. Real pointer. TRAP T-one-command-one-door · TRAP T-a-preset-filter-is-a-preset-of-its-store
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -48,7 +48,10 @@ const said = (page: Page) => page.evaluate(() => (window as unknown as { said: s
 
 test('it lists the Query\'s kinds by category, 8px in from the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
-  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status']);
+  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Presets', 'Saved filters']);
+  // The Query draws a Condition and a Status, and places neither: they are not offered.
+  await expect(item(page, 'condition')).toHaveCount(0);
+  await expect(item(page, 'status')).toHaveCount(0);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('#cv > sherpa-overlay-panel')!].map((e) => {
     const r = (e.id === 'cv' ? e : e.shadowRoot!.querySelector('.root')!).getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };
@@ -57,12 +60,9 @@ test('it lists the Query\'s kinds by category, 8px in from the top, bottom and l
   expect([p!.top, p!.bottom, p!.left]).toEqual([c!.top + 8, c!.bottom - 8, c!.left + 8]);
 });
 
-test('a click on Field asks the Query to hold the next field; a Condition is refused in words; a click on Preset switches it on', async ({ page }) => {
+test('a click on Field asks the Query to hold the next field; a click on Preset switches it on', async ({ page }) => {
   await item(page, 'field').click();
   expect(await asked(page)).toEqual([{ scope: 'view', hold: ['region', 'plan'] }]);
-  // A Condition tests a Field (plan 783 D6): a Field's tests are its chip's.
-  await item(page, 'condition').click();
-  await expect.poll(() => said(page)).toEqual([expect.stringMatching(/^A Condition tests a Field: route one in\./)]);
   await item(page, 'preset').click();
   expect((await asked(page)).at(-1)).toEqual({ scope: 'view', preset: 'big', on: true });
   expect(await asked(page)).toHaveLength(2);
@@ -90,11 +90,8 @@ test('a drag of Field onto the canvas asks the same; a kind the Query cannot tak
   // A loaded WebKit can answer the drop a frame after the release: wait for it.
   await expect.poll(() => asked(page)).toEqual([{ scope: 'view', hold: ['region', 'plan'] }]);
   // The drag's window listeners are gone, so these clicks place. TRAP T-abort-signal-any-is-collected
-  await item(page, 'status').click();
   await item(page, 'saved').click();
-  await expect.poll(async () => (await said(page)).length).toBeGreaterThanOrEqual(2);
+  await expect.poll(async () => (await said(page)).length).toBeGreaterThanOrEqual(1);
   expect(await asked(page)).toHaveLength(1);
-  const words = await said(page);
-  expect(words[0]).toContain('statusFields()');
-  expect(words[1]).toContain('saved filter');
+  expect((await said(page))[0]).toContain('saved filter');
 });

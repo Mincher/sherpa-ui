@@ -9,7 +9,7 @@
  * - register — register the read tools on an MCP server
  */
 import { z } from 'zod/v3';
-import { components, example, read, spec, tokens } from '../lib/sherpa.js';
+import { components, example, read, readSchema, spec, tokens } from '../lib/sherpa.js';
 import { answer, refuse } from '../lib/reply.js';
 
 /** The spec keys a page uses. The rest (anatomy, templates, tokens) is how it draws. */
@@ -41,7 +41,7 @@ function contractOf(s) {
 
 /** What each key of a contract is, in the component schema's own words. */
 function legend(contract) {
-  const schema = JSON.parse(read('schema', { name: 'component' }));
+  const schema = JSON.parse(readSchema('component'));
   const ext = schema.$defs?.sherpaExtension?.properties ?? {};
   const rows = Object.keys(contract).filter((k) => k !== '$extensions').map((k) => [k, schema.properties[k]?.description]);
   for (const k of Object.keys(contract.$extensions?.sherpa ?? {})) rows.push([`$extensions.sherpa.${k}`, ext[k]?.description]);
