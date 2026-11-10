@@ -101,6 +101,9 @@
               "el": "sherpa-canvas",
               "class": "plane",
               "part": "plane",
+              "attrs": {
+                "data-attr-data-drawn": "data-drawn"
+              },
               "children": [
                 {
                   "slot": "",
@@ -295,6 +298,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-drawn",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "draw the content into a real canvas, where the engine can (sherpa-canvas); default, a plain layer"
+    },
+    {
+      "$type": "prop",
       "name": "data-editing",
       "type": "boolean",
       "observed": true,
@@ -447,7 +459,7 @@
     }
   ],
   "populate": {
-    "shape": "{ editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }",
+    "shape": "{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

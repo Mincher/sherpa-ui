@@ -1,6 +1,7 @@
 /**
- * sherpa-canvas — a REAL <canvas> its slotted elements are drawn into, where the engine draws HTML in a canvas (Chrome 157
- * on); else a plain layer, as a plane. Its view is its attributes. Will, 2026-11-11 (plan 852) · TRAP T-a-canvas-draws-live-html
+ * sherpa-canvas — a plane its slotted elements lay out on; with `data-drawn`, where the engine draws HTML in a canvas
+ * (Chrome 157 on), a REAL <canvas> they are drawn into. Its view is its attributes. Will, 2026-11-11 (plan 852: A, plain
+ * unless a page asks) · TRAP T-a-canvas-draws-live-html
  *
  * Map:
  * - drawsHtml — Whether this engine draws HTML in a canvas: one given `content="drawable"` reads it back.
@@ -28,7 +29,7 @@ export function drawsHtml(): boolean {
   return draws;
 }
 
-/** A real canvas its content is drawn into, through one view; or, without the engine's API, a plain layer the view moves. */
+/** A plain layer the view moves; or, asked and where the engine can, a real canvas its content is drawn into. */
 export class SherpaCanvas extends SherpaElement {
   static override css = new URL('./sherpa-canvas.css', import.meta.url);
   static override html = new URL('./sherpa-canvas.html', import.meta.url);
@@ -37,12 +38,15 @@ export class SherpaCanvas extends SherpaElement {
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-zoom': { type: 'number', kind: 'behaviour' },
+    // Asked for, not the default: measured at 2,000 nodes, drawn is slower to pan, zoom and drag (plan 852, step 6).
+    'data-drawn': { type: 'boolean', kind: 'template' },
   } as const;
   static override observed = ['data-x', 'data-y', 'data-zoom'];
+  static override variantAttrs = ['data-drawn'];
 
-  /** Drawn where the engine can; else plain. The engine does not change, so neither does the template. */
+  /** Drawn when asked, where the engine can; else plain. Named both ways, so a change either way re-stamps. */
   protected override get templateId(): string | null {
-    return drawsHtml() ? 'drawn' : null;
+    return this.hasAttribute('data-drawn') && drawsHtml() ? 'drawn' : 'default';
   }
 
   /** The canvas's 2D context, drawn mode only. */
@@ -54,11 +58,15 @@ export class SherpaCanvas extends SherpaElement {
 
   override onRender(): void {
     const canvas = this.#canvas();
+    // Re-stamped either way: what watched the last canvas stops, and nothing stays drawable for a canvas gone.
+    this.#moves?.disconnect();
+    this.#sizes?.disconnect();
+    this.#ctx = null;
+    if (!canvas) for (const el of this.#items()) el.removeAttribute('drawable');
     if (canvas) {
       this.#ctx = canvas.getContext('2d') as DrawingContext | null;
       this.on(canvas, 'paint', this.#draw);
       // Its grid in device pixels: sharp at any ratio, and set again as it is resized.
-      this.#sizes?.disconnect();
       this.#sizes = new ResizeObserver(([entry]) => {
         const box = entry?.devicePixelContentBoxSize?.[0];
         const [w, h] = box ? [box.inlineSize, box.blockSize] : [Math.round(canvas.clientWidth * devicePixelRatio), Math.round(canvas.clientHeight * devicePixelRatio)];
@@ -66,7 +74,6 @@ export class SherpaCanvas extends SherpaElement {
         canvas.requestPaint();
       });
       this.#sizes.observe(canvas, { box: 'device-pixel-content-box' });
-      this.#moves?.disconnect();
       this.#moves = new MutationObserver(() => canvas.requestPaint());
       this.$('slot')?.addEventListener('slotchange', () => this.#watch());
       this.#watch();

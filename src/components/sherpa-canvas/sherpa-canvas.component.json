@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-canvas",
-  "$description": "a REAL <canvas> its slotted elements are DRAWN into, where the engine draws HTML in a canvas (Chrome 157 on): each stays a live element — its fields take focus and typing, a press where it is drawn reaches it — drawn at its own place (its `--x`, `--y`) through the view its attributes set. Where the engine does not, the same elements lay out on a plain layer the view moves. Will, 2026-11-11 (plan 852). TRAP T-a-canvas-draws-live-html",
+  "$description": "a plane its slotted elements lay out on, each at its own place (its `--x`, `--y`), through the view its attributes set. With `data-drawn`, where the engine draws HTML in a canvas (Chrome 157 on), they are DRAWN into a REAL <canvas>: each stays a live element — its fields take focus and typing, a press where it is drawn reaches it. Will, 2026-11-11 (plan 852: plain unless a page asks). TRAP T-a-canvas-draws-live-html",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -53,6 +53,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-drawn",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "template",
+      "description": "draw into a real canvas, where the engine can (default: a plain layer)"
+    },
+    {
+      "$type": "prop",
       "name": "data-x",
       "type": "number",
       "observed": true,
@@ -93,7 +102,7 @@
     }
   ],
   "populate": {
-    "shape": "{ x?, y?, zoom? }",
+    "shape": "{ drawn?, x?, y?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "capabilities": [

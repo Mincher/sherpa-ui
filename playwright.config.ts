@@ -51,9 +51,9 @@ export default defineConfig({
        TRAP T-a-css-function-needs-its-longhand-first */
     { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: /phone\.spec\.ts/ },
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: /phone\.spec\.ts/ },
-    /* GOOGLE CHROME, the installed one: it DRAWS HTML in a canvas (157 on), which the bundled Chromium (153) does not — so
-       every spec that puts a layout canvas on the page runs drawn here, on the plain layer above. Plan 852.
-       TRAP T-a-canvas-draws-live-html */
+    /* GOOGLE CHROME, the installed one: it DRAWS HTML in a canvas (157 on), which the bundled Chromium (153) does not. A
+       canvas draws only when a page asks; here every layout canvas asks (test/e2e/fixture.ts), so each spec that puts one
+       on the page runs drawn here, plain above. Plan 852. TRAP T-a-canvas-draws-live-html */
     { name: 'chrome', use: { ...devices['Desktop Chrome'], channel: 'chrome' },
       testMatch: /reforged-(canvas|layout-canvas|layout-panels|node|panel-|overlay-panel-in|query-panel|query-undo|a-moved-node|a-node-lights|a-saved-node|a-template-binds|an-inactive-button|entity-use)[\w-]*\.spec\.ts/ },
     /* A PHONE — 412 wide, touch — runs the small phone set alone (Will, Q3:

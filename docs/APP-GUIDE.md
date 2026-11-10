@@ -333,6 +333,10 @@ A graph View is a View whose body is a canvas, showing one entity of a type
 - The outlet draws the View chip and, to its right, the graph chip: the
   type's presets (read only), the reader's own, then New graph…. The URL
   carries both, `?view=filters&graph=mine`; the type's first is left out.
+- The canvas lays its nodes out on a plain layer. `data-drawn` on the
+  `sherpa-layout-canvas` draws them into a real canvas, where the browser can
+  (Chrome 157 on). Measured at 2,000 nodes, that is slower to pan, zoom and
+  drag, and faster only to type, so leave it off. `T-a-canvas-draws-live-html`
 - `init` is handed `ctx.graph` (`{ view, type, id, origin }`), and the outlet
   fires `graph-change` `{ graph }` when it moves. Bind the canvas to
   `graphWorkflow(entities.get(id))` with `bindWorkflow`, `readOnly` on a

@@ -29,6 +29,19 @@ declare global {
   }
 }
 
+/** Every layout canvas the page makes asks to be drawn (`data-drawn`). Plan 852 */
+function askToDraw(): void {
+  const ask = (el: Element) => {
+    for (const c of [el, ...el.querySelectorAll('sherpa-layout-canvas')]) if (c.localName === 'sherpa-layout-canvas') c.setAttribute('data-drawn', '');
+  };
+  new MutationObserver((records) => { for (const r of records) for (const n of r.addedNodes) if (n instanceof Element) ask(n); })
+    .observe(document, { childList: true, subtree: true });
+}
+
 export const test = base.extend({
-  page: async ({ page }, use) => { await use(parkThePointer(page)); },
+  page: async ({ page }, use, info) => {
+    // Google Chrome is the one engine that draws HTML in a canvas, so there each layout canvas asks to.
+    if (info.project.name === 'chrome') await page.addInitScript(askToDraw);
+    await use(parkThePointer(page));
+  },
 });

@@ -2,7 +2,7 @@
 
 # sherpa-canvas
 
-A REAL &lt;canvas> its slotted elements are DRAWN into, where the engine draws HTML in a canvas (Chrome 157 on): each stays a live element — its fields take focus and typing, a press where it is drawn reaches it — drawn at its own place (its `--x`, `--y`) through the view its attributes set. Where the engine does not, the same elements lay out on a plain layer the view moves. Will, 2026-11-11 (plan 852). TRAP T-a-canvas-draws-live-html
+A plane its slotted elements lay out on, each at its own place (its `--x`, `--y`), through the view its attributes set. With `data-drawn`, where the engine draws HTML in a canvas (Chrome 157 on), they are DRAWN into a REAL &lt;canvas>: each stays a live element — its fields take focus and typing, a press where it is drawn reaches it. Will, 2026-11-11 (plan 852: plain unless a page asks). TRAP T-a-canvas-draws-live-html
 
 |  |  |
 |---|---|
@@ -23,6 +23,7 @@ For a surface of live elements, each at its own place: a real canvas draws them 
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-drawn` | boolean |  | draw into a real canvas, where the engine can (default: a plain layer) |
 | `data-x` | number | `0` | the view's pan across, in px |
 | `data-y` | number | `0` | the view's pan down, in px |
 | `data-zoom` | number | `1` | the view's scale |
@@ -47,6 +48,6 @@ Style these from outside with `::part()`:
 
 ## populate()
 
-`{ x?, y?, zoom? }`
+`{ drawn?, x?, y?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

@@ -52,6 +52,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
     // The card's area's width, handed back by the host. TRAP T-an-edge-resizes-its-box
     'data-panel-start-width': { type: 'number', kind: 'behaviour' },
     'data-panel-end-width': { type: 'number', kind: 'behaviour' },
+    // Handed to the plane, by its template. Plan 852
+    'data-drawn': { type: 'boolean', kind: 'behaviour' },
   } as const;
   static override observed = ['data-zoom', 'data-panel-start-width', 'data-panel-end-width'];
 

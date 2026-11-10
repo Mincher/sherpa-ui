@@ -1791,10 +1791,16 @@ cards to meet. The lit box of a drop at an empty edge reads the same inset.
 
 ### T-a-canvas-draws-live-html
 
-**`sherpa-canvas` draws its content into a REAL canvas, where the engine draws HTML in a canvas** (Chrome 157 on: the
-canvas's `content="drawable"`, each drawn element `drawable`, `drawElementImage` in its `paint` event); elsewhere its
-template is a plain layer, as a plane (Will, 2026-11-11; plan 852). A drawn element stays live: a press where it is DRAWN
-reaches it, its fields take focus and typing, assistive tech reads it; `getBoundingClientRect()` says where it is drawn.
+**`sherpa-canvas` with `data-drawn` draws its content into a REAL canvas, where the engine draws HTML in a canvas**
+(Chrome 157 on: the canvas's `content="drawable"`, each drawn element `drawable`, `drawElementImage` in its `paint`
+event). Without it, or where the engine cannot, its template is a plain layer, as a plane (Will, 2026-11-11; plan 852). A
+drawn element stays live: a press where it is DRAWN reaches it, its fields take focus and typing, assistive tech reads
+it; `getBoundingClientRect()` says where it is drawn.
+
+- **Plain is the default; drawn is ASKED for** (Will, plan 852: A). Measured in Demos at 2,000 nodes, drawn is slower to
+  pan (52 ms a step against 40), zoom (81 against 54) and drag (80 against 54), and faster only to type (41 against 68).
+  `sherpa-layout-canvas`'s `data-drawn` hands the ask to its plane. The template is picked by `data-drawn`, so it is in
+  `variantAttrs`, and `templateId` names `default` too: a null id never re-stamps, so the ask could not be taken back.
 
 - **Inside the canvas an element lays out in FLOW**: `position` computes to `static`, so `left`/`top` move nothing and
   `offsetLeft`/`offsetTop` read 0. Its `left`/`top` still resolve, from `--x`/`--y`: the canvas reads its place there.
@@ -1817,7 +1823,8 @@ reaches it, its fields take focus and typing, assistive tech reads it; `getBound
 - **It takes no press of its own** (`pointer-events: none`; its content `auto`): a press on its blank reaches what is
   under it, as the plane's 0×0 box let it.
 - Feature test: a canvas given `content="drawable"` reads it back, and `drawElementImage` exists. The bundled Playwright
-  Chromium (153) has only the trial API behind a flag: it draws the plain layer.
+  Chromium (153) has only the trial API behind a flag: it draws the plain layer. The `chrome` project runs in Google
+  Chrome, and its fixture makes every layout canvas ask, so the drawn path is tested.
 
 - Site: `src/components/sherpa-canvas/sherpa-canvas.ts`
 - Site: `src/components/sherpa-canvas/sherpa-canvas.html`

@@ -23,6 +23,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-drawn` | boolean |  | draw the content into a real canvas, where the engine can ([sherpa-canvas](sherpa-canvas.md)); default, a plain layer |
 | `data-editing` | boolean |  | an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the minimap and the controls stay |
 | `data-max-zoom` | number | `4` | the largest zoom |
 | `data-min-zoom` | number | `0.25` | the smallest zoom ; less where the content needs it, so all of it can be in view |
@@ -108,6 +109,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }`
+`{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

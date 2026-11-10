@@ -108,7 +108,7 @@
 | Component | What it is |
 |---|---|
 | [sherpa-badge](sherpa-badge.md) | A small count: Figma "Indicator (atom)/Type=count". |
-| [sherpa-canvas](sherpa-canvas.md) | A REAL &lt;canvas> its slotted elements are DRAWN into, where the engine draws HTML in a canvas (Chrome 157 on): each stays a live element — its fields take focus and typing, a press where it is drawn reaches it — drawn at its own place (its `--x`, `--y`) through the view its attributes set. |
+| [sherpa-canvas](sherpa-canvas.md) | A plane its slotted elements lay out on, each at its own place (its `--x`, `--y`), through the view its attributes set. |
 | [sherpa-data-viz-header](sherpa-data-viz-header.md) | The header strip of a metric or a chart's card. |
 | [sherpa-filter-panel](sherpa-filter-panel.md) | The CONTENT of a panel: every filter scope the page offers, a section each. |
 | [sherpa-layout-canvas](sherpa-layout-canvas.md) | An infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. |

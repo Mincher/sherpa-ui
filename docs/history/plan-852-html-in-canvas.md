@@ -140,3 +140,13 @@ the same, pixel for pixel.
   step are left, and the second is the engine's own (keeping every box, read only as it moves, changed nothing).
 - **So, at 2,000 nodes, drawn is slower than plain in a pan, a zoom and a drag** (by 12, 27 and 26 ms a step), and faster
   only in typing (by 27 ms a letter). The canvas's gain in the spike does not hold against today's plane.
+
+## Decided — 2026-11-11: A
+
+Will picked **A: plain by default; `sherpa-canvas` draws only when a page asks** (`data-drawn`). The page asks through
+`sherpa-layout-canvas`'s `data-drawn`, which its template hands to the plane. `data-drawn` picks the template, so it is in
+`variantAttrs`, and taking it away re-stamps the plain layer. Every part built in steps 1–5 stays: the places read from
+the model, the plane as a `sherpa-canvas`, the lines' one fitted SVG, the whole-px ring and the read-then-draw order. Plain
+uses them all. The `chrome` Playwright project still runs every layout-canvas spec drawn: its fixture makes each layout
+canvas ask (`test/e2e/fixture.ts`). A native `<select>`'s popup in a drawn node was never checked in a headed window;
+check it before a page asks.

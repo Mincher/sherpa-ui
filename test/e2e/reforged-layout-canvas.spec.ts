@@ -235,3 +235,15 @@ test('the smallest zoom gives way to the content: content wider than 25% shows i
   expect(Math.abs(r.floor - r.fitted)).toBeLessThan(0.005);
   expect(r.out).toBe(true);
 });
+
+test('its plane is drawn only when a page asks: data-drawn reaches the plane, and Google Chrome draws it (plan 852, A)', async ({ page }, info) => {
+  const drawn = () => page.evaluate((sel) => {
+    const plane = (eval(sel) as Canvas).shadowRoot!.querySelector('.plane')!;
+    return { asked: plane.hasAttribute('data-drawn'), canvas: !!plane.shadowRoot!.querySelector('canvas[content="drawable"]') };
+  }, canvas);
+  // The chrome project's fixture asks for every layout canvas; the other projects do not.
+  const asked = info.project.name === 'chrome';
+  expect(await drawn()).toEqual({ asked, canvas: asked });
+  await page.evaluate((sel) => (eval(sel) as Canvas).toggleAttribute('data-drawn'), canvas);
+  expect(await drawn()).toEqual({ asked: !asked, canvas: false });
+});

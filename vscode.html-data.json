@@ -618,8 +618,13 @@
     },
     {
       "name": "sherpa-canvas",
-      "description": "a REAL <canvas> its slotted elements are DRAWN into, where the engine draws HTML in a canvas (Chrome 157 on): each stays a live element — its fields take focus and typing, a press where it is drawn reaches it — drawn at its own place (its `--x`, `--y`) through the view its attributes set. Where the engine does not, the same elements lay out on a plain layer the view moves. Will, 2026-11-11 (plan 852). TRAP T-a-canvas-draws-live-html",
+      "description": "a plane its slotted elements lay out on, each at its own place (its `--x`, `--y`), through the view its attributes set. With `data-drawn`, where the engine draws HTML in a canvas (Chrome 157 on), they are DRAWN into a REAL <canvas>: each stays a live element — its fields take focus and typing, a press where it is drawn reaches it. Will, 2026-11-11 (plan 852: plain unless a page asks). TRAP T-a-canvas-draws-live-html",
       "attributes": [
+        {
+          "name": "data-drawn",
+          "description": "draw into a real canvas, where the engine can (default: a plain layer)",
+          "valueSet": "v"
+        },
         {
           "name": "data-x",
           "description": "the view's pan across, in px"
@@ -1825,6 +1830,11 @@
       "name": "sherpa-layout-canvas",
       "description": "an infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. Will, TODO 25. TRAP T-a-canvas-owns-its-view",
       "attributes": [
+        {
+          "name": "data-drawn",
+          "description": "draw the content into a real canvas, where the engine can (sherpa-canvas); default, a plain layer",
+          "valueSet": "v"
+        },
         {
           "name": "data-editing",
           "description": "an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the minimap and the controls stay",
