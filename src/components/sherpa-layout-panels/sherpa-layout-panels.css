@@ -92,6 +92,8 @@
   flex: 0 0 var(--_strip, 2.5rem);
   min-inline-size: var(--_strip, 2.5rem);
   max-inline-size: var(--_strip, 2.5rem);
+  /* A group's open overlay stands this far in from the edge: beside the tabs, never over them. */
+  --_tabs-inset: var(--_strip, 2.5rem);
 }
 :host(:state(start-floating)) .edge-start,
 :host(:state(end-floating)) .edge-end { display: none; }

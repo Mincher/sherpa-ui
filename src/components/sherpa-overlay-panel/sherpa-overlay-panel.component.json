@@ -757,12 +757,13 @@
     {
       "$type": "event",
       "name": "panel-mode-change",
-      "description": "A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own",
+      "description": "A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` (fixed panels stack; overlay and tab are a group, one open), floating on this one alone; with no area it is its own.",
       "bubbles": true,
       "cancelable": true,
       "composed": true,
       "detail": {
-        "mode": "PanelMode"
+        "mode": "PanelMode",
+        "restore": "true | undefined"
       }
     },
     {
@@ -858,8 +859,8 @@
         {
           "$type": "method",
           "name": "requestMode",
-          "args": "mode: PanelMode",
-          "description": "Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody answering, a panel with no area is its own."
+          "args": "mode: PanelMode, restore = false",
+          "description": "Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it. Nobody answering, a panel with no area is its own. `restore`: a tab opening to what it was, which its area's group may open in its own way."
         },
         {
           "$type": "method",

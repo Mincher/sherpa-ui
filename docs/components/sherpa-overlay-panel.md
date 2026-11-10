@@ -71,7 +71,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `notify()` | Say something changed: as a tab it turns active and wears a mark, until it is opened. |
 | `hide(reason: 'reader' \| 'width' \| 'page' = 'reader')` | Close it, and say why: `panel-close` reports it. |
 | `close()` | `hide()`, in the native &lt;dialog>'s spelling. |
-| `requestMode(mode: PanelMode)` | Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody answering, a panel with no area is its own. |
+| `requestMode(mode: PanelMode, restore = false)` | Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it. Nobody answering, a panel with no area is its own. `restore`: a tab opening to what it was, which its area's group may open in its own way. |
 | `minimise(on = !this.minimised)` | Shrink to a tab (`on`), or open from it as it was; with no word, the other of the two. The keys and the buttons come here. The area mirrors it on the panel beside this one. |
 
 ## Commands
@@ -93,7 +93,7 @@ Each one bubbles.
 | `panel-collapse` | `{ collapsed: boolean }` |  |
 | `panel-expand` | `{ maximised: boolean }` |  |
 | `panel-external` |  |  |
-| `panel-mode-change` | `{ mode: PanelMode }` | A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own A host may call `preventDefault()` to take it over. |
+| `panel-mode-change` | `{ mode: PanelMode; restore: true \| undefined }` | A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` (fixed panels stack; overlay and tab are a group, one open), floating on this one alone; with no area it is its own. A host may call `preventDefault()` to take it over. |
 | `panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | It shut: reader (the default), width or page |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |
 | `panel-drag` | `{ phase: 'cancel' \| 'end' \| 'move'; x: number; y: number }` | Floating, where the POINTER is (client px) while its header drags it: phase move, then end or cancel. |

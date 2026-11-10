@@ -138,6 +138,12 @@
   inline-size: min(33%, clamp(min(16rem, 92%), var(--_width, 24rem), 92%));
   box-shadow: var(--sherpa-shadow-lg);
 }
+/* In a group, the open one stands beside its area's tabs (`--_tabs-inset`), never over them. A peek stays where its tab was. */
+:host(:state(in-layout):state(overlaid):not(:state(peeking))) .root { margin-inline-end: var(--_tabs-inset, 0px); }
+:host(:state(in-layout):state(overlaid):state(tab-start):not(:state(peeking))) .root {
+  margin-inline-end: 0;
+  margin-inline-start: var(--_tabs-inset, 0px);
+}
 :host(:state(in-layout):state(overlaid):state(tab-start)) .root {
   inset-inline-start: 0;
   inset-inline-end: auto;

@@ -399,10 +399,11 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (mode === 'floating') this.#floatBox.raise();
   }
 
-  /** Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody
-   *  answering, a panel with no area is its own. TRAP T-a-panel-has-four-modes */
-  requestMode(mode: PanelMode): void {
-    if (this.emit('panel-mode-change', { mode }, { cancelable: true })) this.set('data-mode', mode);
+  /** Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it. Nobody answering, a panel with
+   *  no area is its own. `restore`: a tab opening to what it was, which its area's group may open in its own way.
+   *  TRAP T-a-panel-has-four-modes */
+  requestMode(mode: PanelMode, restore = false): void {
+    if (this.emit('panel-mode-change', { mode, ...(restore ? { restore } : {}) }, { cancelable: true })) this.set('data-mode', mode);
   }
 
   /** Floating, in its room: its box, moved by the header bar and resized by the corner. TRAP T-a-floating-panel-is-a-state */
@@ -699,7 +700,7 @@ export class SherpaOverlayPanel extends SherpaElement {
    *  The area mirrors it on the panel beside this one. TRAP T-an-area-holds-two-panels-stacked */
   minimise(on = !this.minimised): void {
     if (on === this.minimised) return;
-    this.requestMode(on ? 'tab' : this.was);
+    this.requestMode(on ? 'tab' : this.was, !on);
   }
 
   /** The open-elsewhere button — the host decides where. */

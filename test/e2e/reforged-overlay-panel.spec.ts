@@ -341,15 +341,16 @@ test.describe('The four modes in an area', () => {
     expect(fixed.root).toMatchObject({ x: fixed.start.x + 8, w: fixed.start.w - 16 });
   });
 
-  test('two panels stack top and bottom; a mode asked of one is written on both; floating takes only that one out', async ({ page }) => {
+  test('fixed, two panels stack; an overlay makes a group, one open and the other its tab; floating takes only that one out; docked back, it joins as the area is', async ({ page }) => {
     await stage(page, [{ id: 'one' }, { id: 'two' }]);
     const [one, two] = [await read(page, 'one'), await read(page, 'two')];
     // Each a half of the area's height, one above the other.
     expect(one.root.h).toBe(two.root.h);
     expect(two.root.y).toBeGreaterThan(one.root.y + one.root.h - 1);
     expect(one.root.x).toBe(two.root.x);
+    // An overlay is a GROUP: the one opened is open, the other its tab (Will, 2026-11-10).
     await press(page, 'dock-overlay', 'two');
-    expect([(await read(page, 'one')).mode, (await read(page, 'two')).mode]).toEqual(['overlay', 'overlay']);
+    expect([(await read(page, 'one')).mode, (await read(page, 'two')).mode]).toEqual(['tab', 'overlay']);
     await press(page, 'dock-fixed', 'one');
     expect([(await read(page, 'one')).mode, (await read(page, 'two')).mode]).toEqual(['fixed', 'fixed']);
     // Floating: that panel alone leaves for the float layer, and the other has the area to itself.
@@ -358,10 +359,37 @@ test.describe('The four modes in an area', () => {
     const left = await read(page, 'one');
     expect(left).toMatchObject({ mode: 'fixed', slot: 'panel-end' });
     expect(left.root.h).toBeGreaterThan(one.root.h);
-    // Docked back, it joins in the area's own mode.
+    // Docked back into a stack, it stacks; into a group, it opens and the other becomes its tab.
+    await press(page, 'float', 'two');
+    expect([(await read(page, 'one')).mode, (await read(page, 'two')).mode]).toEqual(['fixed', 'fixed']);
+    await press(page, 'float', 'two');
     await press(page, 'dock-overlay', 'one');
     await press(page, 'float', 'two');
     expect(await read(page, 'two')).toMatchObject({ mode: 'overlay', slot: 'panel-end' });
+    expect(await read(page, 'one')).toMatchObject({ mode: 'tab', slot: 'panel-end' });
+  });
+
+  test('a floating panel DROPPED on a group joins it open, in the area, and the other is its tab; the open one stands beside the tabs; opening the tab swaps them', async ({ page }) => {
+    await stage(page, [{ id: 'one' }, { id: 'two' }]);
+    await press(page, 'float', 'two');
+    await press(page, 'minimise', 'one');
+    expect((await read(page, 'one')).mode).toBe('tab');
+    // The drop: the area's own door, as a drag let go at its edge calls it.
+    await page.evaluate(() => {
+      const areas = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels') as HTMLElement & { dock(p: HTMLElement, s: string): boolean };
+      areas.dock(document.getElementById('two')!, 'end');
+    });
+    await page.evaluate(() => window.__settled());
+    const two = await read(page, 'two');
+    expect(two).toMatchObject({ mode: 'overlay', slot: 'panel-end' });
+    expect(await read(page, 'one')).toMatchObject({ mode: 'tab', slot: 'panel-end' });
+    // The open one stands beside the tab strip, not over the tab.
+    const tab = await page.evaluate(() => { const b = document.getElementById('one')!.shadowRoot!.querySelector('.tab')!.getBoundingClientRect(); return Math.round(b.x); });
+    expect(two.root.x + two.root.w).toBeLessThanOrEqual(tab + 1);
+    // The tab opened for good: it opens, and the other becomes a tab.
+    await page.evaluate(() => (document.getElementById('one') as PanelEl & { minimise(on: boolean): void }).minimise(false));
+    await page.evaluate(() => window.__settled());
+    expect([(await read(page, 'one')).mode, (await read(page, 'two')).mode]).toEqual(['overlay', 'tab']);
   });
 
   test('a third panel is not shown, and a panel asking to dock into a full area stays floating', async ({ page }) => {

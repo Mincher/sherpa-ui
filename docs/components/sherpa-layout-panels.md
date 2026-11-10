@@ -33,7 +33,7 @@ For a panel docked beside content, flush in its own area: the area takes the pan
 | `areaMin(side: PanelSide = 'start')` | The narrowest an area may be drawn, in px: its least, never over its own max. |
 | `docked(side: PanelSide)` | The panels docked in an area now: its slot's, open, not hidden as a third. |
 | `modeOf(side: PanelSide)` | The area's current mode: what its panels share. None, fixed. |
-| `dock(panel: HTMLElement, side: PanelSide, place: 'top' \| 'bottom' = 'bottom')` | Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there. False where the area is full. It joins in the area's current mode. |
+| `dock(panel: HTMLElement, side: PanelSide, place: 'top' \| 'bottom' = 'bottom')` | Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there. False where the area is full. It joins the area as it is: a stack, fixed; a group, open, the others its tabs. |
 
 ## Events
 

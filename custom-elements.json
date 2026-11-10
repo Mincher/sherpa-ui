@@ -5316,7 +5316,7 @@
                   "optional": true
                 }
               ],
-              "description": "Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there. False where the area is full. It joins in the area's current mode."
+              "description": "Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there. False where the area is full. It joins the area as it is: a stack, fixed; a group, open, the others its tabs."
             }
           ],
           "events": [
@@ -9149,9 +9149,13 @@
                   "type": {
                     "text": "PanelMode"
                   }
+                },
+                {
+                  "name": "restore",
+                  "optional": true
                 }
               ],
-              "description": "Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it on every panel in it. Nobody answering, a panel with no area is its own."
+              "description": "Ask for a mode: `panel-mode-change` goes up, and the area that holds the panel writes it. Nobody answering, a panel with no area is its own. `restore`: a tab opening to what it was, which its area's group may open in its own way."
             },
             {
               "kind": "method",
@@ -9193,9 +9197,9 @@
             },
             {
               "name": "panel-mode-change",
-              "description": "A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` on every panel in it, floating on this one alone; with no area it is its own",
+              "description": "A button, a tab or `requestMode` asked for a mode: the area that holds it writes `data-mode` (fixed panels stack; overlay and tab are a group, one open), floating on this one alone; with no area it is its own.",
               "type": {
-                "text": "CustomEvent<{ mode: PanelMode }>"
+                "text": "CustomEvent<{ mode: PanelMode; restore: true | undefined }>"
               }
             },
             {

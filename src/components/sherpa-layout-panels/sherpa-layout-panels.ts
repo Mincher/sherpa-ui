@@ -1,9 +1,10 @@
 /**
  * sherpa-layout-panels — a panel area each side of the content: the app shell's body and the
  * canvas compose it. Its CSS owns the width and the divider; this file follows each area's
- * panels and resizes an area by its inner edge. An area holds two panels at most, stacked top and bottom, and OWNS
- * how they present: a panel asks for a mode (`panel-mode-change`) and the area writes it on every panel in it, floating
- * apart. A floating panel is in the host's float layer, off its area. TRAP T-a-panel-area-is-a-layout
+ * panels and resizes an area by its inner edge. An area holds two panels at most and OWNS how they present: a panel asks
+ * for a mode (`panel-mode-change`) and the area writes it. Fixed, they STACK, top and bottom; overlay or tab, they are a
+ * GROUP, each its own tab and one open at a time. A floating panel is in the host's float layer, off its area.
+ * TRAP T-a-panel-area-is-a-layout
  * TRAP T-an-area-holds-two-panels-stacked
  * TRAP T-a-panel-has-four-modes
  * TRAP T-a-dragged-panel-docks-where-the-area-lights-up
@@ -134,8 +135,8 @@ export class SherpaLayoutPanels extends SherpaElement {
     this.#watch[side] = watch;
   }
 
-  /** What an area shows: open while a panel is; stacked while two are fixed; the strip while they are all tabs; its room
-   *  given back while none is fixed. A third panel is not shown. */
+  /** What an area shows: open while a panel is; stacked while two are fixed; the strip while one is a tab and none is fixed;
+   *  its room given back while none is fixed. A third panel is not shown. */
   #sync(side: PanelSide): void {
     const live = this.#panels(side).filter(isOpen);
     // At most two: a third is hidden, and said so once.
@@ -152,8 +153,9 @@ export class SherpaLayoutPanels extends SherpaElement {
     this.toggleState(`${side}-stack`, fixed.length === MAX_PANELS);
     // No fixed panel: the area gives its room back, as a floating panel does. TRAP T-a-minimised-panel-is-a-tab
     this.toggleState(`${side}-floating`, shown.length > 0 && fixed.length === 0);
-    // Only tabs: the area is as wide as the tabs, so the content sits beside them, not under them.
-    this.toggleState(`${side}-strip`, shown.length > 0 && shown.every((p) => modeOf(p) === 'tab'));
+    // A tab, and none fixed: the area is as wide as the tabs, so the content sits beside them, not under them; a group's open
+    // overlay stands beside them too.
+    this.toggleState(`${side}-strip`, shown.length > 0 && fixed.length === 0 && shown.some((p) => modeOf(p) === 'tab'));
   }
 
   /** The panels docked in an area now: its slot's, open, not hidden as a third. */
@@ -168,17 +170,36 @@ export class SherpaLayoutPanels extends SherpaElement {
   }
 
   /** Dock a floating panel into an area, as the second panel where one is there. `place` says above or below the one there.
-   *  False where the area is full. It joins in the area's current mode. */
+   *  False where the area is full. It joins the area as it is: a stack, fixed; a group, open, the others its tabs. */
   dock(panel: HTMLElement, side: PanelSide, place: 'top' | 'bottom' = 'bottom'): boolean {
     const peers = this.docked(side).filter((p) => p !== panel);
     if (peers.length >= MAX_PANELS) return false;
-    const mode = peers[0] ? modeOf(peers[0]) : 'fixed';
     panel.setAttribute('data-side', side);
     const [peer] = peers;
     if (peer && place === 'top') peer.before(panel);
     else if (peer) peer.after(panel);
-    panel.setAttribute('data-mode', mode);
+    this.#present(panel, peer ? this.#joins(peers) : 'fixed', peers);
     return true;
+  }
+
+  /** The mode a panel joining these takes: fixed beside a stack; open (overlay) in a group, which tabs the rest. */
+  #joins(peers: readonly HTMLElement[]): 'fixed' | 'overlay' {
+    return peers.some((p) => modeOf(p) === 'fixed') ? 'fixed' : 'overlay';
+  }
+
+  /**
+   * Write a mode on a panel and the panels beside it in its area. FIXED is shared: the area's panels stack, each its share of
+   * the height. OVERLAY and TAB are a GROUP: each panel its own tab on the edge, one open at a time — one opened as an
+   * overlay tabs the rest; one shrunk to a tab leaves the rest as they are, but a stack shrinks together. Will, 2026-11-10
+   * TRAP T-an-area-holds-two-panels-stacked
+   */
+  #present(panel: HTMLElement, mode: string, peers: readonly HTMLElement[]): void {
+    panel.setAttribute('data-mode', mode);
+    for (const p of peers) {
+      const now = modeOf(p);
+      if (mode === 'fixed') p.setAttribute('data-mode', 'fixed');
+      else if (mode === 'overlay' || now === 'fixed') p.setAttribute('data-mode', 'tab');
+    }
   }
 
   /** The panel being dragged, while it is; Escape clears it, and the drag lights nothing more. */
@@ -255,7 +276,7 @@ export class SherpaLayoutPanels extends SherpaElement {
    *  panel asking to dock joins the area in the area's mode, if there is room. Not a panel of ours, it is not ours to answer. */
   #onMode = (event: Event): void => {
     const panel = event.composedPath()[0];
-    const mode = (event as CustomEvent<{ mode?: string }>).detail?.mode;
+    const { mode, restore } = (event as CustomEvent<{ mode?: string; restore?: boolean }>).detail ?? {};
     if (!(panel instanceof HTMLElement) || !mode) return;
     const side = SIDES.find((s) => this.#panels(s).includes(panel));
     const floater = this.$<HTMLSlotElement>('slot[name="panel-float"]')?.assignedElements({ flatten: true }).includes(panel);
@@ -272,10 +293,11 @@ export class SherpaLayoutPanels extends SherpaElement {
       return;
     }
     const peers = this.docked(side ?? at).filter((p) => p !== panel);
-    // Joining an area, it takes the area's mode, if there is one; and not at all where the area is full.
+    // Joining an area, it joins it as it is; and not at all where the area is full.
     if (floater && peers.length >= MAX_PANELS) return;
-    const next = floater && peers[0] ? modeOf(peers[0]) : mode;
-    for (const p of [panel, ...peers]) p.setAttribute('data-mode', next);
+    // A tab opening while another of its group is open opens in the group, whatever it was before it shrank.
+    const opens = restore && mode === 'fixed' && peers.some((p) => modeOf(p) === 'overlay') ? 'overlay' : mode;
+    this.#present(panel, floater && peers[0] ? this.#joins(peers) : opens, peers);
   };
 
   /**

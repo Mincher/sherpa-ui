@@ -127,12 +127,13 @@ Fixed, overlay and tab are of an AREA: with no host a panel is an overlay on the
 Fixed and Overlay buttons are not drawn. The default is fixed in an area. `data-side` (`start`, else `end`) is the ONE orientation.
 
 **The AREA owns how its panels present.** A panel's header buttons, its tab and `minimise()` do not set its mode: they ASK,
-with `panel-mode-change { mode }` (a request, cancelable), and the `sherpa-layout-panels` that holds the panel writes `data-mode`
-on every panel in that area: two panels in an area are mirrored, so they cannot disagree. Floating is the exception: it is one
-panel's own, and takes it out of the area (it is slotted in `panel-float`, the host's float layer); the other keeps the area's
-mode. A floating panel asking to dock joins the area in the area's CURRENT mode, and not at all where the area holds two. With no
-area to answer, a panel writes its own. A tab remembers what it was (`was`), and opens to it. `area.dock(panel, side, place)` is the
-door for a drop to come: it docks a floating panel as the second panel, above or below the one there.
+with `panel-mode-change { mode, restore? }` (a request, cancelable), and the `sherpa-layout-panels` that holds the panel writes
+`data-mode` on the panels in that area (`T-an-area-holds-two-panels-stacked`: fixed panels STACK, overlay and tab are a GROUP,
+one open at a time; Will, 2026-11-10). Floating is the exception: it is one panel's own, and takes it out of the area (it is
+slotted in `panel-float`, the host's float layer). A floating panel asking to dock, or dropped, joins the area AS IT IS: beside a
+fixed panel, fixed; in a group, open, the others its tabs; and not at all where the area holds two. With no area to answer, a
+panel writes its own. A tab remembers what it was (`was`), and opens to it (`restore`); in a group with one open, it opens in
+the group. `area.dock(panel, side, place)` is the door a drop uses.
 
 **A host places a panel by its slot**: the panel sets its own `slot` from its side and mode (`panel-start`, `panel-end`, or
 `panel-float`), as a child of a canvas, a panel area or the app shell. Nothing moves in the DOM: there is no Pop.
@@ -232,14 +233,17 @@ asks for `tab` with `panel-mode-change`, and the area writes it on every panel i
 
 ### T-an-area-holds-two-panels-stacked
 
-**An area holds TWO panels at most, shown together, stacked top and bottom** (Will, 2026-11-09). It replaces the tab row of
-the old area (and `data-current`, the one in front). Fixed, two panels are two rows of the area, each half its height with the
-card gap between (`:state(start-stack)`); a third panel slotted there is hidden, and said so once in the console. The area's
-mode is its panels' mode (`T-a-panel-has-four-modes`): it mirrors a change on both, and a panel that floats leaves it.
+**An area holds TWO panels at most** (Will, 2026-11-09). FIXED, they are a STACK: two rows of the area, each half its height with
+the card gap between (`:state(start-stack)`). OVERLAY or TAB, they are a GROUP (Will, 2026-11-10): each panel its own tab on the
+edge, and ONE open at a time — one opened as an overlay tabs the other, so two overlays never lie on each other. A third panel
+slotted there is hidden, and said so once in the console. The area writes the modes (`T-a-panel-has-four-modes`): fixed on both;
+an overlay on the one asked and tab on the other; a tab on the one asked, and on a fixed one beside it (a stack shrinks together).
+A panel that floats leaves it; one that docks or is dropped joins it as it is.
 
 - **Overlay or tab: the area gives its room back.** With no fixed panel the area covers the layout and lets the press through
-  (`:state(*-floating)`); with only tabs it is the strip, as wide as the tabs, so the content sits beside them.
-- **A tab is the edge's**: each panel in a tabs-only area is its own tab, stacked down the edge; a tab restores the area's panels.
+  (`:state(*-floating)`); with a tab it is the strip, as wide as the tabs, so the content sits beside them, and a group's open
+  overlay stands beside the tabs (`--_tabs-inset`), never over them. A peek stays where its tab was, so the pointer stays on it.
+- **A tab is the edge's**: each tab stacks down the edge; opening one in a group opens it there, whatever it was before it shrank.
 - **Shown** means open: a shut panel takes no row.
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
@@ -258,7 +262,7 @@ mode is its panels' mode (`T-a-panel-has-four-modes`): it mirrors a change on bo
 - **What lights.** An empty side: ONE card at its edge, the width an area would take (`.zone-solo-*`). A side with ONE fixed
   panel: the area splits as it will stack, and the NEW half is lit (`.zone-*`, first or last row of the area), by the pointer's
   height: the upper half of the layout is above the panel there, the lower below. A side whose panel is an overlay or a tab has
-  no room to share: a card at the edge, and the drop docks in that mode. A side with TWO lights nothing (max 2).
+  no room to share: a card at the edge, and the drop joins its GROUP, open, the other its tab. A side with TWO lights nothing (max 2).
 - **A drop on it docks**: `dock(panel, side, place)`, in the area's current mode, `data-side` set; the layout reports
   `panel-dock { side, place: top | bottom | only }` and the shell and the canvas say it again as their own. A drop elsewhere
   leaves it floating. **Escape** clears the zones and the drop lands nowhere; the panel stays where it was dragged to.
