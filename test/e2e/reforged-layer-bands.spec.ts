@@ -143,3 +143,22 @@ test('where the bands meet, the higher is on top: bars over the page, a banner o
   expect(toast.w).toBeGreaterThan(0);
   expect(await topAt(page, toast.x + Math.round(toast.w / 2), toast.y + Math.round(toast.h / 2))).toBe('toasts');
 });
+
+test('a panel peeking from its tab in the shell\'s area is over the fixed region: a strip of tabs makes no layer of its own', async ({ page }) => {
+  await open(page);
+  await page.evaluate(() => {
+    const peek = document.getElementById('peek') as HTMLElement & { show(): void };
+    for (const a of ['data-minimisable', 'data-hover-open']) peek.setAttribute(a, '');
+    peek.setAttribute('data-side', 'end');
+    peek.setAttribute('data-mode', 'tab');
+    document.querySelector('sherpa-app-shell')!.append(peek);
+    peek.show();
+  });
+  await settle(page);
+  const tab = await box(page, 'peek', '.tab');
+  await page.mouse.move(tab.x + Math.round(tab.w / 2), tab.y + Math.round(tab.h / 2));
+  await expect.poll(() => page.evaluate(() => document.getElementById('peek')!.matches(':state(peeking)'))).toBe(true);
+  const [metrics, root] = [await box(page, 'metrics'), await box(page, 'peek', '.root')];
+  expect(root.x).toBeLessThan(metrics.x + metrics.w);
+  expect(await topAt(page, root.x + 40, metrics.y + Math.round(metrics.h / 2))).toBe('peek');
+});

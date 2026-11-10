@@ -942,6 +942,10 @@ end area. Plan: `docs/history/plan-796-panel-areas.md`.
 - **No stacking context** on the host or a floating area, so a floating box's
   z-index meets the panels beside the layout (`T-a-pressed-panel-comes-to-the-front`).
   A DOCKED area is `z-index: 1`, so it paints over a view drawn under the layout.
+  A STRIP of tabs is `auto`: the area is a flex item, and a flex item with a
+  z-index is a stacking context even unpositioned. At 1, a panel peeking from
+  its tab (101) was held in it, under the shell's fixed region (2) and its
+  sticky metric group (measured 2026-11-10, Records, Chromium).
 - **The room rule is the host's**: the shell's tablet rule reads `areaMin()` and
   hands back `data-no-room` (`T-the-panel-is-desktop-only`). The canvas has none.
 - **The canvas's view runs UNDER the layout** (`T-a-canvas-owns-its-view`): the

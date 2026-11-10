@@ -83,10 +83,10 @@
 }
 :host(:state(start-strip)) .area-start,
 :host(:state(end-strip)) .area-end {
-  /* Not a containing block: a peeking panel is sized by the layout, not by the strip. */
+  /* Not a containing block, nor a layer: a peeking panel is sized by the layout, and its z-index meets the content's. TRAP T-a-panel-area-is-a-layout */
   position: static;
   inset: auto;
-  z-index: var(--sherpa-layer-content, 1);
+  z-index: auto;
   flex: 0 0 var(--_strip, 2.5rem);
   min-inline-size: var(--_strip, 2.5rem);
   max-inline-size: var(--_strip, 2.5rem);
