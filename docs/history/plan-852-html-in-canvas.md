@@ -104,6 +104,11 @@ is not in the repo (/private/tmp/claude-502/probe/hic-spike.mjs).
 3. **`sherpa-layout-canvas` draws its plane with it**: its `.plane` IS a `sherpa-canvas`; pan and zoom set its view; a
    blank press passes through it to the view (`pointer-events: none`, its content `auto`).
 4. **The lines**: the routes' SVG is drawn too, its box the routes' bounds, so a click on a line still picks it.
+   **Built, 2026-11-11** (steps 1–4): `sherpa-canvas` (079c4265b); places from the model (aa975e4fe); the plane IS a
+   `sherpa-canvas`, and the lines' SVG has the routes' bounds (`fitLines`). Every canvas, layout-canvas and node spec
+   passes drawn in Chrome 157 and plain in Chromium (554). Found on the way: the source box past a node must be 64px
+   (32 cut a big socket's tab), and a node's drag scale is its DRAWN one, so a zoom shows in a drag after the next
+   paint. Firefox and WebKit failures that are there before 852 too are listed in TODO 890.
 5. **Tests**: a Playwright project on Google Chrome 157 (`channel: 'chrome'`) runs the canvas and node specs drawn; the
    bundled Chromium 153, Firefox and WebKit run them on the plain layer, as today. CI: the runner's Chrome.
 6. **Measure** in Demos (the Records graph, the Node editor page), both ways; the trap, the APP-GUIDE, the Map.

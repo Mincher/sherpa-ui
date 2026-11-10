@@ -67,7 +67,8 @@
       <div class="rows" part="rows"><slot name="rows" data-accepts="item"></slot></div>
       <!-- Columns BEHIND the plane: they follow it across, and stay at the top. A column's head may rise over the plane. -->
       <div class="columns" part="columns"><slot name="columns" data-accepts="item"></slot></div>
-      <div class="plane" part="plane"><slot data-accepts="content"></slot></div>
+      <!-- The PLANE: a sherpa-canvas, a real canvas where the engine draws HTML in one; its view, the canvas's. Plan 852 -->
+      <sherpa-canvas class="plane" part="plane"><slot data-accepts="content"></slot></sherpa-canvas>
       <div class="marquee" part="marquee" aria-hidden="true"></div>
       <!-- The inside shadow: the header and the nav cast it over the view. -->
       <div class="inset" part="inset" aria-hidden="true"></div>

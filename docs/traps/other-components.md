@@ -1797,8 +1797,15 @@ reaches it, its fields take focus and typing, assistive tech reads it; `getBound
   60 ms with 15 drawn, 17–22 ms with only those in view.
 - **An element not drawn has no drawn place**: its box reads as its hidden place in flow. Code must read a place from the
   model, never from layout (plan 852, step 2).
-- **What overhangs an element is drawn** from a source box `OVERHANG` px past it each way (a node's socket tabs, its
-  caption); without it, the snapshot is clipped to the element's own box.
+- **What overhangs an element is drawn** from a source box `OVERHANG` px (64) past it each way (a node's socket tabs, a
+  fork's True and False, its caption); without it, the snapshot is clipped to the element's own box. 32 cut a 40px
+  socket's tab.
+- **The node canvas's plane is one** (`sherpa-layout-canvas`'s `.plane`; plan 852, step 3): pan and zoom write its
+  `data-x`, `data-y`, `data-zoom`. A node's scale is the one it is DRAWN at, so a zoom shows in a drag only after the
+  canvas's next paint: a test that zooms and drags waits a frame.
+- **The lines are one SVG, drawn too** (step 4): its box is the routes' bounds and a handle past them (`fitLines`), its
+  `viewBox` at that box, so its coordinates stay the plane's. A 1×1 box drew no line. A line drawn by hand takes the
+  whole view, as it may go anywhere.
 - **One that moves while not drawn fires no `paint`**: a MutationObserver on each element's `style` asks for one.
 - **It takes no press of its own** (`pointer-events: none`; its content `auto`): a press on its blank reaches what is
   under it, as the plane's 0×0 box let it.

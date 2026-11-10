@@ -9,13 +9,14 @@
   pointer-events: none;
 }
 
-/* Each element at its place on the plane; it takes its own presses. */
+/* Each element at its place on the plane. */
 ::slotted(*) {
   position: absolute;
   left: var(--x, 0px);
   top: var(--y, 0px);
-  pointer-events: auto;
 }
+/* Its content takes presses, by inheritance — so an element's own `pointer-events` (a frame's body takes none) still holds. */
+slot { pointer-events: auto; }
 
 /* A plain layer: the view moves and scales it, from its start corner. */
 .surface {
@@ -28,6 +29,7 @@
 /* A real canvas, over its whole box: it draws the view. */
 canvas.surface {
   display: block;
+  pointer-events: none;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;

@@ -44,8 +44,11 @@ test('it sits where data-x and data-y say, with its name, icon and body', async 
     const el = eval(sel) as Canvas;
     const [a, b] = [...el.querySelectorAll<Node>('sherpa-node')];
     const heading = a!.shadowRoot!.querySelector('.heading')!;
+    // Where it is SEEN on the plane: drawn into a canvas, a node lays out in flow, so its offset reads 0.
+    const plane = el.shadowRoot!.querySelector('.plane')!.getBoundingClientRect();
+    const [ra, rb] = [a!.getBoundingClientRect(), b!.getBoundingClientRect()];
     return {
-      place: [a!.offsetLeft, a!.offsetTop, b!.offsetLeft],
+      place: [ra.left - plane.left, ra.top - plane.top, rb.left - plane.left].map(Math.round),
       heading: [heading.getAttribute('data-heading'), heading.getAttribute('data-icon')],
       body: [a, b].map((n) => getComputedStyle(n!.shadowRoot!.querySelector('.body')!).display),
       header: a!.shadowRoot!.querySelector('.header')!.getAttribute('role'),
@@ -55,9 +58,11 @@ test('it sits where data-x and data-y say, with its name, icon and body', async 
 });
 
 test('a drag on the header moves it in plane px at any zoom, reports each move, and pans nothing', async ({ page }) => {
-  const r = await page.evaluate(([sel, drag]) => {
+  const r = await page.evaluate(async ([sel, drag]) => {
     const el = eval(sel!) as Canvas;
     el.zoomTo(2);
+    // A node's scale is the one it is DRAWN at; a canvas draws the new zoom at its next paint.
+    await window.__settled();
     const view = { ...el.view };
     const a = el.querySelector<Node>('#a')!;
     const heard = eval(drag!)(a, 40, 20);

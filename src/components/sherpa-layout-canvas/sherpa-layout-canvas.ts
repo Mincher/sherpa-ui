@@ -13,6 +13,7 @@ import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.j
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-layout-panels/sherpa-layout-panels.js';
+import '../sherpa-canvas/sherpa-canvas.js';
 import { boxMode, type BoxMode } from '../../core/ui/box-pick.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { keepOrder } from '../../core/ui/keep-order.js';
@@ -279,9 +280,12 @@ export class SherpaLayoutCanvas extends SherpaElement {
       layer.style.setProperty('--_y', `${this.#y}px`);
       layer.style.setProperty('--_zoom', String(this.#zoom));
     }
+    // The plane is a sherpa-canvas: its view is its attributes. Plan 852
     const plane = this.$<HTMLElement>('.plane');
     if (plane) {
-      plane.style.transform = `translate(${this.#x}px, ${this.#y}px) scale(${this.#zoom})`;
+      plane.setAttribute('data-x', String(this.#x));
+      plane.setAttribute('data-y', String(this.#y));
+      plane.setAttribute('data-zoom', String(this.#zoom));
       if (this.#planeZoom !== this.#zoom) plane.style.setProperty('--_zoom', String((this.#planeZoom = this.#zoom)));
     }
     this.set('data-zoom', String(SherpaLayoutCanvas.#round(this.#zoom)));

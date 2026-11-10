@@ -670,8 +670,39 @@ function drawRoutes(drawn: Drawn): void {
     return old ? morph(old, el) : el;
   });
   keepOrder(drawn.lines, [...fresh, ...(drawn.draft ? [drawn.draft] : [])], true);
+  fitLines(drawn);
   // A route picked, or let go: what it joins wears the active border, or no longer.
   markJoined(drawn);
+}
+
+/**
+ * The lines' own box: round every route, tie and handle — and, while a line is drawn by hand, the whole view — so a canvas
+ * that draws the lines as one element draws them all (a 1px box drew none). Their coordinates stay the plane's: a viewBox
+ * at the box. Plan 852 step 4.
+ */
+function fitLines(drawn: Drawn): void {
+  const [xs, ys]: [number[], number[]] = [[], []];
+  for (const { dots } of drawn.lanes) for (const [x, y] of dots) { xs.push(x); ys.push(y); }
+  for (const tie of drawn.ties) {
+    const [x, y] = slotOf(drawn, tie, 0);
+    xs.push(x);
+    ys.push(y - TIE_GAP, y + tie.routes.length * TIE_GAP);
+  }
+  if (drawn.draft) {
+    const { x, y, zoom } = drawn.canvas.view;
+    xs.push(-x / zoom, (drawn.canvas.clientWidth - x) / zoom);
+    ys.push(-y / zoom, (drawn.canvas.clientHeight - y) / zoom);
+  }
+  // Past the lines by a handle and a selected line's width.
+  const PAD = 24;
+  const [l, t] = xs.length ? [Math.floor(Math.min(...xs)) - PAD, Math.floor(Math.min(...ys)) - PAD] : [0, 0];
+  const [r, b] = xs.length ? [Math.ceil(Math.max(...xs)) + PAD, Math.ceil(Math.max(...ys)) + PAD] : [1, 1];
+  const put = (name: string, value: string): void => { if (drawn.lines.getAttribute(name) !== value) drawn.lines.setAttribute(name, value); };
+  put('width', String(r - l));
+  put('height', String(b - t));
+  put('viewBox', `${l} ${t} ${r - l} ${b - t}`);
+  if (drawn.lines.style.getPropertyValue('--x') !== `${l}px`) drawn.lines.style.setProperty('--x', `${l}px`);
+  if (drawn.lines.style.getPropertyValue('--y') !== `${t}px`) drawn.lines.style.setProperty('--y', `${t}px`);
 }
 
 /** A socket's box on the screen: a node's or a row's, on one side; a False is its footer's. */
@@ -755,6 +786,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const reveal = (on: boolean): void => { for (const el of drawn.nodes.values()) el.toggleAttribute('data-reveal', on); };
   reveal(true);
   drawn.lines.append(draft);
+  fitLines(drawn);
   if (lifting) drawRoutes(drawn);
   const begin = onPlane(canvas, start);
   const follow = (e: PointerEvent): void => {
@@ -914,6 +946,7 @@ function dragLine(canvas: SherpaLayoutCanvas, drawn: Drawn, line: Element, down:
       ghost.setAttribute('stroke-dasharray', '6 4');
       drawn.draft = ghost;
       drawn.lines.append(ghost);
+      fitLines(drawn);
     }
     const [x, y] = planeOf(canvas, e);
     ghost.setAttribute('d', `M ${begin[0]} ${begin[1]} L ${x} ${y}`);
@@ -979,6 +1012,7 @@ function lineTie(canvas: SherpaLayoutCanvas, drawn: Drawn, down: PointerEvent): 
   draft.setAttribute('stroke-dasharray', '6 4');
   drawn.draft = draft;
   drawn.lines.append(draft);
+  fitLines(drawn);
   const follow = (e: PointerEvent): void => {
     const [x, y] = planeOf(canvas, e);
     draft.setAttribute('d', `M ${begin[0]} ${begin[1]} L ${x} ${y}`);

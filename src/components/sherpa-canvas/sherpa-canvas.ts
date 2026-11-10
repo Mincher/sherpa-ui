@@ -7,8 +7,9 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
-/** How far an element's drawing reaches past its own box, each way: what overhangs it — a node's socket tabs, its caption. */
-const OVERHANG = 32;
+/** How far an element's drawing reaches past its own box, each way: what overhangs it — a node's socket tabs (one track,
+ *  24px; a big socket's more), a fork's True and False, its caption. Drawn wider than that costs next to nothing. */
+const OVERHANG = 64;
 
 /** A canvas that draws HTML: the API as Chrome 157 ships it. */
 type DrawingCanvas = HTMLCanvasElement & { content?: string; requestPaint(): void };
@@ -92,9 +93,9 @@ export class SherpaCanvas extends SherpaElement {
     return this.$<DrawingCanvas>('canvas.surface');
   }
 
-  /** What it draws: every element slotted in, through any slot that forwards it, in order. */
-  #items(): HTMLElement[] {
-    return (this.$<HTMLSlotElement>('slot')?.assignedElements({ flatten: true }) ?? []).filter((el): el is HTMLElement => 'offsetWidth' in el);
+  /** What it draws: every element slotted in, through any slot that forwards it, in order — an SVG too. */
+  #items(): Element[] {
+    return this.$<HTMLSlotElement>('slot')?.assignedElements({ flatten: true }) ?? [];
   }
 
   /** Watch each element it draws for a move. */
@@ -130,7 +131,8 @@ export class SherpaCanvas extends SherpaElement {
     for (const el of this.#items()) {
       const style = getComputedStyle(el);
       const [left, top] = [parseFloat(style.left) || 0, parseFloat(style.top) || 0];
-      const [w, h] = [el.offsetWidth, el.offsetHeight];
+      // Its own box: an SVG has no offset size, only its CSS box.
+      const [w, h] = el instanceof HTMLElement ? [el.offsetWidth, el.offsetHeight] : [el.clientWidth, el.clientHeight];
       const seen = (left - OVERHANG) * zoom + x < vw && (top - OVERHANG) * zoom + y < vh
         && (left + w + OVERHANG) * zoom + x > 0 && (top + h + OVERHANG) * zoom + y > 0;
       if (!seen) {

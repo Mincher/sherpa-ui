@@ -99,13 +99,11 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
   -webkit-mask-position: calc(var(--_x) - var(--_cell) / 2) calc(var(--_y) - var(--_cell) / 2);
 }
 
-/* The PLANE: the content's own space, moved and scaled as one. */
+/* The PLANE: the content's own space, moved and scaled as one — a sherpa-canvas over the whole view, its view the canvas's
+   (a real canvas draws it where the engine can). It takes no press of its own: one on its blank is the view's. Plan 852 */
 .plane {
   position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  /* Its transform is written as it is, by the view: no variable a node would inherit. */
-  transform-origin: 0 0;
+  inset: 0;
 }
 
 /* Content sits where it says: `--x` and `--y` on the plane. Only the plane's: the card
@@ -218,7 +216,7 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
 :host([data-select-box]) .viewport { cursor: crosshair; }
 /* The Pan tool: a drag anywhere moves the view, and the content does not hear it. */
 :host(:state(panning)) .viewport { cursor: grab; }
-:host(:state(panning)) .plane { pointer-events: none; }
+:host(:state(panning)) .plane ::slotted(*) { pointer-events: none; }
 :host(:state(pan-ready)) .viewport { cursor: grab; }
 :host(:state(dragging)) .viewport { cursor: grabbing; }
 /* The INSIDE shadow: the view's top and start edges sit under the header and the nav. */

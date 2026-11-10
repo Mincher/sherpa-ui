@@ -2,14 +2,14 @@
   "app.js": {
     "files": 199,
     "brotli": {
-      "js": 337648,
+      "js": 337888,
       "fetched": 0
     }
   },
   "components.js": {
     "files": 160,
     "brotli": {
-      "js": 292994,
+      "js": 292998,
       "fetched": 8593
     }
   },
@@ -86,7 +86,7 @@
   "components/sherpa-canvas/sherpa-canvas.js": {
     "files": 11,
     "brotli": {
-      "js": 17980,
+      "js": 17986,
       "fetched": 0
     }
   },
@@ -210,9 +210,9 @@
     }
   },
   "components/sherpa-layout-canvas/sherpa-layout-canvas.js": {
-    "files": 47,
+    "files": 48,
     "brotli": {
-      "js": 79299,
+      "js": 80559,
       "fetched": 0
     }
   },
@@ -555,7 +555,7 @@
   "index.js": {
     "files": 271,
     "brotli": {
-      "js": 476370,
+      "js": 476614,
       "fetched": 8593
     }
   }

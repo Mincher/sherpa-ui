@@ -98,7 +98,7 @@
               ]
             },
             {
-              "el": "div",
+              "el": "sherpa-canvas",
               "class": "plane",
               "part": "plane",
               "children": [
