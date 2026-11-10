@@ -74,7 +74,7 @@ import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js'
 import { fitStages } from '../data/node-stages.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { drawLanes } from './node-lanes-ui.js';
-import { clearOfNodes, type Box } from '../data/tie-place.js';
+import { clearOfNodes, placeBeside, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
@@ -976,6 +976,41 @@ function lineTie(canvas: SherpaLayoutCanvas, drawn: Drawn, down: PointerEvent): 
   window.addEventListener('pointermove', follow);
   window.addEventListener('pointerup', stop);
   window.addEventListener('pointercancel', stop);
+}
+
+/**
+ * A GHOST of these nodes: a dashed box of each, its name in it, over every node, that a drag moves while the nodes stay.
+ * Removed when the drag lets go. Will, 2026-11-10
+ */
+function ghostOf(canvas: SherpaLayoutCanvas, ids: readonly string[]): { move(dx: number, dy: number): void; remove(): void } {
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('class', 'graph-ghost');
+  svg.setAttribute('width', '1');
+  svg.setAttribute('height', '1');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('style', '--x: 0px; --y: 0px; overflow: visible; pointer-events: none');
+  const group = document.createElementNS(SVG, 'g');
+  for (const id of ids) {
+    const el = drawnOn.get(canvas)?.nodes.get(id);
+    if (!el) continue;
+    const [x, y] = [Number(el.getAttribute('data-x')) || 0, Number(el.getAttribute('data-y')) || 0];
+    const box = document.createElementNS(SVG, 'rect');
+    for (const [k, v] of Object.entries({ x, y, width: el.offsetWidth, height: el.offsetHeight, rx: 4 })) box.setAttribute(k, String(v));
+    box.setAttribute('style', 'fill: var(--sherpa-style-surface-base, #ffffff); fill-opacity: 0.7;'
+      + ' stroke: var(--sherpa-style-active-indicator-accent, #3b4ccd); stroke-width: 1.5px; stroke-dasharray: 6 4');
+    const name = document.createElementNS(SVG, 'text');
+    name.setAttribute('x', String(x + 12));
+    name.setAttribute('y', String(y + 22));
+    name.setAttribute('style', 'fill: var(--sherpa-style-content-secondary, #35353d); font: 500 12px var(--sherpa-font-family-body, Inter, system-ui, sans-serif)');
+    name.textContent = el.getAttribute('data-heading') ?? '';
+    group.append(box, name);
+  }
+  svg.append(group);
+  canvas.append(svg);
+  return {
+    move: (dx, dy) => group.setAttribute('transform', `translate(${dx} ${dy})`),
+    remove: () => svg.remove(),
+  };
 }
 
 /** Where routes would be tied with no pointer: the middle of the way each takes, on the plane. */
@@ -2780,14 +2815,8 @@ export function bindWorkflow(
     if (!own) return write(editWorkflow(shown(), { node: node.id, row: row.name, value }, K(), facts), `row:${node.id}/${row.name}`);
     write(editWorkflow(shown(), { node: node.id, set: { [own]: String(value ?? '') } }, K()), `own:${node.id}/${own}`);
   };
-  // Alt and a drag on a node drags a COPY: the drag only measures how far; the copy is made where it lets go. Alt+Shift keeps the routes.
-  let lifting: { ids: string[]; head: string; at: { x: number; y: number }; connections: boolean; by?: { dx: number; dy: number } } | null = null;
   const onMove = (node: GraphNode, x: number, y: number): void => {
     if (node.id.startsWith('#')) return;
-    if (lifting) {
-      if (node.id === lifting.head) lifting.by = { dx: x - lifting.at.x, dy: y - lifting.at.y };
-      return;
-    }
     if (stages.arranging()) return;
     settling = pressing && shifted;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
@@ -2796,11 +2825,6 @@ export function bindWorkflow(
   // Picked nodes moved by one drag: ONE step. A tie whose routes all join them goes with them, and so do the
   // bends of a route with both ends among them; the rest stay. TODO 752
   const onMoveMany = (moves: { id: string; x: number; y: number }[]): void => {
-    if (lifting) {
-      const head = moves.find((m) => m.id === lifting!.head);
-      if (head) lifting.by = { dx: head.x - lifting.at.x, dy: head.y - lifting.at.y };
-      return;
-    }
     const nodes = Object.fromEntries(moves.filter((m) => !m.id.startsWith('#')).map((m) => [m.id, { x: m.x, y: m.y }]));
     const head = shown().nodes.find((n) => n.id === moves[0]?.id);
     if (!head || !nodes[head.id] || Object.keys(nodes).length < 2) return;
@@ -3291,37 +3315,57 @@ export function bindWorkflow(
       if (node) picks.peek(node, graph);
     }
   };
-  let pastes = 0;
+  /** Where a paste goes: beside what was copied, on the side with the most room; each paste after it finds the next. */
+  const pasteSpot = (clip: NodeClip): { dx: number; dy: number } => {
+    const sized = clip.nodes.map((n) => {
+      const el = drawnOn.get(canvas)?.nodes.get(n.id);
+      return { left: n.x, top: n.y, right: n.x + (el?.offsetWidth || nodeWidth(n)), bottom: n.y + (el?.offsetHeight || 120) };
+    });
+    const round = { left: Math.min(...sized.map((b) => b.left)), top: Math.min(...sized.map((b) => b.top)), right: Math.max(...sized.map((b) => b.right)), bottom: Math.max(...sized.map((b) => b.bottom)) };
+    return placeBeside(round, nodeBoxes());
+  };
   const copyPicked = (ids: readonly string[]): void => {
     const held = ids.filter((id) => !id.startsWith('#') && shown().nodes.some((n) => n.id === id));
     if (!held.length) return;
     clipboard = copyNodes(shown(), held);
-    pastes = 0;
   };
+  // Alt and a drag on a node drags a GHOST of it, the original staying where it is; let go, a copy stands where the ghost
+  // was. With Shift too, the copy keeps the routes. Escape lets go of it. Will, 2026-11-10
   const onLift = (down: PointerEvent): void => {
     if (down.button !== 0 || !down.altKey || primaryKey(down) || readOnly()) return;
     const hit = idOf(down);
     if (!hit?.header || hit.field || hit.id.startsWith('#')) return;
     const picked = pickedNodes(canvas);
     const ids = (picked.includes(hit.id) ? picked : [hit.id]).filter((id) => !id.startsWith('#'));
-    const head = shown().nodes.find((n) => n.id === hit.id);
-    if (!head) return;
-    lifting = { ids, head: hit.id, at: { x: head.x, y: head.y }, connections: down.shiftKey };
-    const done = (): void => {
-      window.removeEventListener('pointerup', done);
-      window.removeEventListener('pointercancel', done);
-      const lift = lifting;
-      lifting = null;
-      if (!lift?.by || (!lift.by.dx && !lift.by.dy)) return;
-      // The originals go back where they were; the copies stand where the drag let go.
-      const was = clipboard;
-      clipboard = copyNodes(shown(), lift.ids);
-      paste(lift.connections, lift.by);
-      clipboard = was;
-      draw();
+    if (!ids.length) return;
+    // The node's own drag never starts: the original stays.
+    down.preventDefault();
+    down.stopPropagation();
+    const ghost = ghostOf(canvas, ids);
+    const zoom = canvas.view.zoom || 1;
+    let by = { dx: 0, dy: 0 };
+    const follow = (e: PointerEvent): void => {
+      by = { dx: Math.round((e.clientX - down.clientX) / zoom), dy: Math.round((e.clientY - down.clientY) / zoom) };
+      ghost.move(by.dx, by.dy);
     };
-    window.addEventListener('pointerup', done);
-    window.addEventListener('pointercancel', done);
+    const end = (e: Event): void => {
+      if (e.type === 'keydown' && (e as KeyboardEvent).key !== 'Escape') return;
+      window.removeEventListener('pointermove', follow);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+      window.removeEventListener('keydown', end, { capture: true });
+      ghost.remove();
+      const moved = Math.hypot(by.dx * zoom, by.dy * zoom) >= 4;
+      if (e.type !== 'pointerup' || !moved) return;
+      const was = clipboard;
+      clipboard = copyNodes(shown(), ids);
+      paste(down.shiftKey || (e as PointerEvent).shiftKey, by);
+      clipboard = was;
+    };
+    window.addEventListener('pointermove', follow);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+    window.addEventListener('keydown', end, { capture: true });
   };
   const onKey = (event: KeyboardEvent): void => {
     const hit = idOf(event);
@@ -3335,8 +3379,7 @@ export function bindWorkflow(
       return;
     }
     if (mod && event.key.toLowerCase() === 'v' && clipboard) {
-      pastes++;
-      paste(event.shiftKey, { dx: 32 * pastes, dy: 32 * pastes });
+      paste(event.shiftKey, pasteSpot(clipboard));
       event.preventDefault();
       event.stopPropagation();
       return;

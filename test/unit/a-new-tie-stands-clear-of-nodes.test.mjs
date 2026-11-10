@@ -33,3 +33,17 @@ test('the room is shared: half way into a narrow gap, and never across the tie\'
   // The tie may not go past x 520: right is not offered, the next most room (left) is taken.
   assert.deepEqual(clearOfNodes({ x: 400, y: 350 }, 28, boxes, { min: 0, max: 520 }), { x: 300 - 20, y: 350 });
 });
+
+test('a pasted copy stands beside its original, on the side where it fits with the most room; one paste after another finds the next side', async () => {
+  const { placeBeside } = await import(new URL('../../dist/core/data/tie-place.js', import.meta.url));
+  const original = box(300, 300);
+  // Nothing near: right is first of the sides that fit with the most (endless) room.
+  const first = placeBeside(original, [original]);
+  assert.deepEqual(first, { dx: 200 + TIE_CLEAR, dy: 0 });
+  // That copy now stands there: the next paste goes to another side.
+  const copy = box(300 + first.dx, 300);
+  const second = placeBeside(original, [original, copy]);
+  assert.notDeepEqual(second, first);
+  // Boxed in left and right, room only below: below.
+  assert.deepEqual(placeBeside(original, [original, box(50, 300), box(550, 300), box(300, 150)]), { dx: 0, dy: 100 + TIE_CLEAR });
+});

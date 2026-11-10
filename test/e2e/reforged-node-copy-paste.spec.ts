@@ -63,6 +63,9 @@ test('Alt and a drag moves a copy and leaves the original', async ({ page }) => 
   await page.mouse.move(x, y);
   await page.mouse.down();
   await page.mouse.move(x + 20, y + 120, { steps: 6 });
+  // Mid-drag: the original has not moved; a ghost of it follows the pointer.
+  expect(await page.locator('#cv > sherpa-node[data-heading="Sort"]').first().getAttribute('data-x')).toBe(String(before.nodes[1]!.x));
+  await expect(page.locator('#cv > svg.graph-ghost rect')).toHaveCount(1);
   await page.mouse.move(x + 40, y + 200, { steps: 6 });
   await page.mouse.up();
   await page.keyboard.up('Alt');
@@ -73,6 +76,7 @@ test('Alt and a drag moves a copy and leaves the original', async ({ page }) => 
   expect(now.routes).toHaveLength(2);
   const copy = now.nodes.find((n) => n.kind === 'sort' && n.id !== 'sort')!;
   expect(copy.y).toBeGreaterThan(before.nodes[1]!.y + 50);
+  await expect(page.locator('#cv > svg.graph-ghost')).toHaveCount(0);
 });
 
 test('Alt+Shift and a drag moves a copy that keeps the routes in', async ({ page }) => {
