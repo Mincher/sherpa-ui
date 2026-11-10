@@ -1,12 +1,11 @@
 /**
  * sherpa-node-stage — one stage of a workflow: a column across a sherpa-layout-canvas, its bar at the top and its band
- * down the view. It owns no place: its host writes its edge and width, and it reports its menu, Add stage and, while
- * arranging, each drag of its bar. Will, 2026-11-10
+ * down the view. It owns no place: its host writes its edge and width, and it reports its menu and, while arranging,
+ * each drag of its bar. Will, 2026-11-10
  */
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-group/sherpa-group.js';
 import '../sherpa-menu/sherpa-menu.js';
 
 /** How far a pointer goes, in screen px, before a press is a drag. */
@@ -22,7 +21,6 @@ export class SherpaNodeStage extends SherpaElement {
     'data-colour': { type: 'string', kind: 'behaviour' },
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-w': { type: 'number', kind: 'behaviour' },
-    'data-last': { type: 'boolean', kind: 'style' },
     'data-removable': { type: 'boolean', kind: 'style' },
     'data-editing': { type: 'boolean', kind: 'style' },
     'data-locked': DATA_PROPS['data-locked'],
@@ -38,8 +36,6 @@ export class SherpaNodeStage extends SherpaElement {
     for (const type of ['pointermove', 'pointerup', 'pointercancel']) bar?.addEventListener(type, this.#onPointer as EventListener);
     bar?.addEventListener('keydown', this.#onKey);
     this.$('.more')?.addEventListener('menu-select', this.#onMenu);
-    this.$('.stages')?.addEventListener('menu-select', this.#onStages);
-    this.$('.add')?.addEventListener('button-click', this.#onAdd);
     this.#sync();
   }
 
@@ -62,18 +58,6 @@ export class SherpaNodeStage extends SherpaElement {
     event.stopPropagation();
     const action = (event as CustomEvent<{ value?: string }>).detail?.value;
     if (action === 'edit' || (action === 'remove' && this.hasAttribute('data-removable'))) queueMicrotask(() => this.emit('stage-menu-select', { action }));
-  };
-
-  /** The stages' More: Arrange stages, once the menu has shut. */
-  #onStages = (event: Event): void => {
-    event.stopPropagation();
-    if ((event as CustomEvent<{ value?: string }>).detail?.value === 'arrange') queueMicrotask(() => this.emit('stage-arrange'));
-  };
-
-  /** Add stage: its host adds one after the last. */
-  #onAdd = (event: Event): void => {
-    event.stopPropagation();
-    this.emit('stage-add');
   };
 
   /** Arranging, a drag on the bar takes hold; not one on More. */

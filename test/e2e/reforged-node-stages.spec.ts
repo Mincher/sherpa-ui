@@ -52,7 +52,7 @@ const flow = (page: Page) => page.evaluate(() => (window as never as { ed: { wor
 const stage = (page: Page, n: number) => page.locator('#cv > sherpa-node-stage').nth(n);
 const stageOf = async (page: Page, id: string) => (await flow(page)).nodes.find((n) => n.id === id)?.stage;
 const addStage = async (page: Page) => {
-  await stage(page, -1).locator('.add').click();
+  await page.locator('#cv > .stage-tools .add-stage').click();
   await settle(page);
 };
 const more = async (page: Page, n: number, action: string) => {
@@ -82,8 +82,11 @@ test('one stage round every node; Add stage puts an empty one after it', async (
   const w = await flow(page);
   expect(w.stages!.map((s) => s.label)).toEqual(['Stage 1', 'Stage 2']);
   expect(w.nodes.every((n) => n.stage === 'stage-1')).toBe(true);
-  await expect(stage(page, 1)).toHaveAttribute('data-last', '');
-  await expect(stage(page, 0).locator('.add')).toBeHidden();
+  // Add stage and Arrange stages stand at the canvas's top right, past every stage's bar.
+  const tools = (await page.locator('#cv > .stage-tools').boundingBox())!;
+  const canvas = (await page.locator('#cv').boundingBox())!;
+  expect(tools.x + tools.width).toBeGreaterThan(canvas.x + canvas.width - 64);
+  expect(tools.y).toBeLessThan(canvas.y + 40);
 });
 
 test('a node let go in a stage joins it; its old stage shrinks; Undo puts it back as one step', async ({ page }) => {
@@ -125,8 +128,8 @@ test('Arrange stages: the toolbar and panels hide, a footer shows; an arrow key 
   await addStage(page);
   const two = (await stage(page, 1).boundingBox())!;
   await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 });
-  await stage(page, 1).locator('.stages').click();
-  await stage(page, 1).locator('.stages sherpa-menu button[value="arrange"]').click();
+  await page.locator('#cv > .stage-tools .stages-more').click();
+  await page.locator('#cv > .stage-tools sherpa-menu button[value="arrange"]').click();
   await settle(page);
   await expect(page.locator('#cv')).toHaveAttribute('data-editing', '');
   await expect(page.locator('#cv sherpa-node-toolbar')).toBeHidden();
@@ -142,8 +145,8 @@ test('Arrange stages: the toolbar and panels hide, a footer shows; an arrow key 
   await expect(page.locator('#cv')).not.toHaveAttribute('data-editing');
   expect((await flow(page)).stages!.map((s) => s.id)).toEqual(['stage-1', 'stage-2']);
   // A drag of Stage 2's bar past Stage 1's middle, then Save: Stage 2 first, its node with it.
-  await stage(page, 1).locator('.stages').click();
-  await stage(page, 1).locator('.stages sherpa-menu button[value="arrange"]').click();
+  await page.locator('#cv > .stage-tools .stages-more').click();
+  await page.locator('#cv > .stage-tools sherpa-menu button[value="arrange"]').click();
   await settle(page);
   const end = (await flow(page)).nodes.find((n) => n.id === 'end')!.x;
   const bar = (await stage(page, 1).locator('.bar').boundingBox())!;

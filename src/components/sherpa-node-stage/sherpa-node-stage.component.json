@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-stage",
-  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage's bar ends with Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
+  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Add stage and Arrange stages are its host's, at the canvas's top right (its `columns-end` slot). Will, 2026-11-10",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -47,15 +47,6 @@
               }
             },
             {
-              "el": "span",
-              "class": "grip sherpa-icon-box",
-              "part": "grip",
-              "attrs": {
-                "data-icon": "drag-handle-horizontal",
-                "aria-hidden": "true"
-              }
-            },
-            {
               "el": "sherpa-button",
               "class": "more",
               "part": "more",
@@ -95,53 +86,13 @@
               ]
             },
             {
-              "el": "sherpa-group",
-              "class": "end",
-              "part": "end",
-              "children": [
-                {
-                  "el": "sherpa-button",
-                  "class": "add",
-                  "part": "add",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-icon-start": "plus",
-                    "aria-label": "Add stage",
-                    "data-tip": "Add stage"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "stages",
-                  "part": "stages",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-icon-start": "ellipsis-horizontal",
-                    "aria-label": "Stages",
-                    "aria-haspopup": "menu"
-                  },
-                  "children": [
-                    {
-                      "el": "sherpa-menu",
-                      "attrs": {
-                        "slot": "menu",
-                        "data-align": "end"
-                      },
-                      "children": [
-                        {
-                          "el": "button",
-                          "attrs": {
-                            "type": "button",
-                            "value": "arrange"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
+              "el": "span",
+              "class": "grip sherpa-icon-box",
+              "part": "grip",
+              "attrs": {
+                "data-icon": "drag-handle-horizontal",
+                "aria-hidden": "true"
+              }
             }
           ]
         },
@@ -207,7 +158,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "arranging the stages: the bar is a handle, and More, Add stage and Arrange stages hide. The HOST writes it"
+      "description": "arranging the stages: the bar is a handle, and More hides. The HOST writes it"
     },
     {
       "$type": "prop",
@@ -221,21 +172,12 @@
     },
     {
       "$type": "prop",
-      "name": "data-last",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "the last stage: its bar ends with Add stage and Arrange stages"
-    },
-    {
-      "$type": "prop",
       "name": "data-locked",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the host is read only: no More, no Add stage"
+      "description": "the host is read only: no More"
     },
     {
       "$type": "prop",
@@ -268,7 +210,7 @@
     }
   ],
   "populate": {
-    "shape": "{ colour?, description?, editing?, heading?, last?, locked?, removable?, w?, x? }",
+    "shape": "{ colour?, description?, editing?, heading?, locked?, removable?, w?, x? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -308,20 +250,6 @@
       "detail": {
         "action": "string"
       }
-    },
-    {
-      "$type": "event",
-      "name": "stage-add",
-      "description": "Add stage was pressed: its host adds a stage after the last",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "stage-arrange",
-      "description": "Arrange stages was picked: its host starts arranging",
-      "bubbles": true,
-      "composed": true
     },
     {
       "$type": "event",

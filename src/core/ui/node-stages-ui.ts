@@ -49,6 +49,8 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
   /** Arranging: the order so far, and the stage being dragged. */
   let arranging: { order: string[]; drag?: { id: string; dx: number } } | null = null;
   let footer: HTMLElement | null = null;
+  /** Add stage, and More with Arrange stages: made once, in the canvas's `columns-end` slot. */
+  const tools = stageTools(() => onAdd(), () => start());
   let editing: string | null = null;
   /** The colour the dialog opened with: a picker always holds one, so only a change is written. */
   let opened = '';
@@ -68,6 +70,9 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       el.remove();
       drawn.delete(id);
     }
+    // Add stage and Arrange stages, at the canvas's top right: not while arranging, nor read only.
+    if (w && !arranging && !host.readOnly()) canvas.append(tools);
+    else tools.remove();
     if (!w) return;
     const bands = bandsOf(w);
     const ro = host.readOnly();
@@ -87,7 +92,6 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       put(el, 'data-colour', stage.colour);
       el.setAttribute('data-x', String(band.left));
       el.setAttribute('data-w', String(band.right - band.left));
-      el.toggleAttribute('data-last', i === stages.length - 1);
       el.toggleAttribute('data-removable', stages.length > 1 && !ro);
       el.toggleAttribute('data-editing', !!arranging);
       el.toggleAttribute('data-locked', ro);
@@ -224,9 +228,7 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
   const cancel$ = host.dialog?.querySelector('[data-action="cancel"]');
   save$?.addEventListener('click', saveEdit);
   cancel$?.addEventListener('click', cancelEdit);
-  canvas.addEventListener('stage-add', onAdd);
   canvas.addEventListener('stage-menu-select', onMenu);
-  canvas.addEventListener('stage-arrange', start);
   canvas.addEventListener('stage-drag', onDrag);
   canvas.addEventListener('stage-step', onStep);
   canvas.addEventListener('keydown', onKey);
@@ -239,16 +241,51 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       leave();
       for (const el of drawn.values()) el.remove();
       drawn.clear();
+      tools.remove();
       save$?.removeEventListener('click', saveEdit);
       cancel$?.removeEventListener('click', cancelEdit);
-      canvas.removeEventListener('stage-add', onAdd);
       canvas.removeEventListener('stage-menu-select', onMenu);
-      canvas.removeEventListener('stage-arrange', start);
       canvas.removeEventListener('stage-drag', onDrag);
       canvas.removeEventListener('stage-step', onStep);
       canvas.removeEventListener('keydown', onKey);
     },
   };
+}
+
+/** Add stage, and More with Arrange stages, as one group. A pick is answered once the menu has shut: what it starts hides
+ *  the group, and a menu hidden while it shuts stays open in name. */
+function stageTools(add: () => void, arrange: () => void): HTMLElement {
+  const group = document.createElement('sherpa-group');
+  group.slot = 'columns-end';
+  group.className = 'stage-tools';
+  const button = (cls: string, icon: string, label: string): HTMLElement => {
+    const b = document.createElement('sherpa-button');
+    b.className = cls;
+    b.setAttribute('data-type', 'icon');
+    b.setAttribute('data-size', 'sm');
+    b.setAttribute('data-icon-start', icon);
+    b.setAttribute('aria-label', label);
+    return b;
+  };
+  const plus = button('add-stage', 'plus', 'Add stage');
+  plus.setAttribute('data-tip', 'Add stage');
+  plus.addEventListener('click', add);
+  const more = button('stages-more', 'ellipsis-horizontal', 'Stages');
+  more.setAttribute('aria-haspopup', 'menu');
+  const menu = document.createElement('sherpa-menu');
+  menu.slot = 'menu';
+  menu.setAttribute('data-align', 'end');
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.value = 'arrange';
+  item.textContent = 'Arrange stages';
+  menu.append(item);
+  more.append(menu);
+  more.addEventListener('menu-select', (event) => {
+    if ((event as CustomEvent<{ value?: string }>).detail?.value === 'arrange') queueMicrotask(arrange);
+  });
+  group.append(plus, more);
+  return group;
 }
 
 /** Set an attribute, or take it away when there is nothing to say. */

@@ -5005,6 +5005,10 @@
             {
               "name": "footer",
               "description": "the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel) (accepts: footer)"
+            },
+            {
+              "name": "columns-end",
+              "description": "controls at the END of the columns' head: the top right of what the view shows, clear of a panel's tabs (Add stage, Arrange stages) (accepts: control)"
             }
           ],
           "cssParts": [
@@ -5013,6 +5017,9 @@
             },
             {
               "name": "columns"
+            },
+            {
+              "name": "columns-end"
             },
             {
               "name": "controls"
@@ -7848,7 +7855,7 @@
           "name": "SherpaNodeStage",
           "tagName": "sherpa-node-stage",
           "customElement": true,
-          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage's bar ends with Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
+          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Add stage and Arrange stages are its host's, at the canvas's top right (its `columns-end` slot). Will, 2026-11-10",
           "attributes": [
             {
               "name": "data-colour",
@@ -7866,7 +7873,7 @@
             },
             {
               "name": "data-editing",
-              "description": "arranging the stages: the bar is a handle, and More, Add stage and Arrange stages hide. The HOST writes it",
+              "description": "arranging the stages: the bar is a handle, and More hides. The HOST writes it",
               "type": {
                 "text": "boolean"
               }
@@ -7880,15 +7887,8 @@
               "default": "\"Stage\""
             },
             {
-              "name": "data-last",
-              "description": "the last stage: its bar ends with Add stage and Arrange stages",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-locked",
-              "description": "the host is read only: no More, no Add stage",
+              "description": "the host is read only: no More",
               "type": {
                 "text": "boolean"
               }
@@ -7926,20 +7926,6 @@
               }
             },
             {
-              "name": "stage-add",
-              "description": "Add stage was pressed: its host adds a stage after the last",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "stage-arrange",
-              "description": "Arrange stages was picked: its host starts arranging",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
               "name": "stage-drag",
               "description": "Arranging, its bar was dragged.",
               "type": {
@@ -7956,9 +7942,6 @@
           ],
           "cssParts": [
             {
-              "name": "add"
-            },
-            {
               "name": "band"
             },
             {
@@ -7968,9 +7951,6 @@
               "name": "column"
             },
             {
-              "name": "end"
-            },
-            {
               "name": "grip"
             },
             {
@@ -7978,9 +7958,6 @@
             },
             {
               "name": "more"
-            },
-            {
-              "name": "stages"
             },
             {
               "name": "swatch"

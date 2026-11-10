@@ -2,7 +2,7 @@
 
 # sherpa-node-stage
 
-One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage's bar ends with Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10
+One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Add stage and Arrange stages are its host's, at the canvas's top right (its `columns-end` slot). Will, 2026-11-10
 
 |  |  |
 |---|---|
@@ -10,12 +10,12 @@ One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-
 
 ## When to use it
 
-For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in its `columns` slot, its bar along the top with its name and its band down the view. Its host writes where it stands and how wide (`data-x`, `data-w`, plane px), its colour, and `data-removable` while it is not the only one; More reports `stage-menu-select` (Edit, Remove). The last (`data-last`) shows Add stage (`stage-add`) and Arrange stages (`stage-arrange`). Arranging (`data-editing`), a drag on the bar reports `stage-drag`, and an arrow key `stage-step`; its host orders the stages. For nodes that belong together anywhere on the canvas, use `sherpa-node-frame`.
+For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in its `columns` slot, its bar along the top with its name and its band down the view. Its host writes where it stands and how wide (`data-x`, `data-w`, plane px), its colour, and `data-removable` while it is not the only one; More reports `stage-menu-select` (Edit, Remove). Add stage and Arrange stages are its host's, in the canvas's `columns-end` slot. Arranging (`data-editing`), a drag on the bar reports `stage-drag`, and an arrow key `stage-step`; its host orders the stages. For nodes that belong together anywhere on the canvas, use `sherpa-node-frame`.
 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 900px; block-size: 360px"><sherpa-node-stage slot="columns" data-heading="Intake" data-description="Where the rows come in" data-colour="#3b4ccd" data-x="40" data-w="360" data-removable></sherpa-node-stage><sherpa-node-stage slot="columns" data-heading="Decide" data-x="416" data-w="320" data-removable data-last></sherpa-node-stage><sherpa-node data-heading="Source" data-icon="storage" data-x="88" data-y="96" data-output-socket="object"></sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 900px; block-size: 360px"><sherpa-node-stage slot="columns" data-heading="Intake" data-description="Where the rows come in" data-colour="#3b4ccd" data-x="40" data-w="360" data-removable></sherpa-node-stage><sherpa-node-stage slot="columns" data-heading="Decide" data-x="416" data-w="320" data-removable></sherpa-node-stage><sherpa-node data-heading="Source" data-icon="storage" data-x="88" data-y="96" data-output-socket="object"></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes
@@ -24,10 +24,9 @@ For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in it
 |---|---|---|---|
 | `data-colour` | text |  | a CSS colour its bar and band wear; none, the default look |
 | `data-description` | text |  | its line: its bar's tip, under the name |
-| `data-editing` | boolean |  | arranging the stages: the bar is a handle, and More, Add stage and Arrange stages hide. The HOST writes it |
+| `data-editing` | boolean |  | arranging the stages: the bar is a handle, and More hides. The HOST writes it |
 | `data-heading` | text | `Stage` | its name, on its bar (default Stage) |
-| `data-last` | boolean |  | the last stage: its bar ends with Add stage and Arrange stages |
-| `data-locked` | boolean |  | the host is read only: no More, no Add stage |
+| `data-locked` | boolean |  | the host is read only: no More |
 | `data-removable` | boolean |  | More offers Remove: it is not the only stage. The HOST writes it |
 | `data-w` | number | `320` | its width, in plane px |
 | `data-x` | number | `0` | its left edge, in plane px |
@@ -39,8 +38,6 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `stage-menu-select` | `{ action: string }` | More's Edit or Remove was picked. |
-| `stage-add` |  | Add stage was pressed: its host adds a stage after the last |
-| `stage-arrange` |  | Arrange stages was picked: its host starts arranging |
 | `stage-drag` | `{ dx: number; phase: 'cancel' \| 'end' \| 'move' }` | Arranging, its bar was dragged. |
 | `stage-step` | `{ by: number }` | Arranging, an arrow key on its bar. |
 
@@ -48,7 +45,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add`, `band`, `bar`, `column`, `end`, `grip`, `heading`, `more`, `stages`, `swatch`, `tip`
+`band`, `bar`, `column`, `grip`, `heading`, `more`, `swatch`, `tip`
 
 ## CSS custom properties it reads
 
@@ -73,6 +70,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ colour?, description?, editing?, heading?, last?, locked?, removable?, w?, x? }`
+`{ colour?, description?, editing?, heading?, locked?, removable?, w?, x? }`
 
 Its declared props by name: `label` sets data-label.

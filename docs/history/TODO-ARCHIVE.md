@@ -13379,3 +13379,4 @@ it is 200 (logged 2026-10-02). Since then, an item's `✅ Done` line is its reco
 - A nav item goes to a Context
 - Shared constants swept; event detail shapes swept; toggle chips' owner settled
 - The panel-or-toolbar mode survives a reload — 24c3a57c
+| ✅ | 30h | 881 | **DONE 2026-11-10:** the canvas gains a `columns-end` slot at the top right of what the view shows; the stages' Add and Arrange stand there, and a stage's More sits beside its name. STAGES (Will, 2026-11-10) — Add stage and Arrange stages move OUT of the last stage's bar: to the right of all stages, or at the canvas's top right, inset clear of the panel tabs | nodes |

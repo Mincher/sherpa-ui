@@ -59,7 +59,7 @@
   background: var(--_colour);
 }
 .heading {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-inline-size: 0;
 }
 
@@ -75,7 +75,10 @@
 :host(:not([data-removable])) .remove { display: none; }
 
 /* Arranging: the bar is the handle. */
-.grip { display: none; }
+.grip {
+  display: none;
+  margin-inline-start: auto;
+}
 :host([data-editing]) .grip { display: inline-flex; }
 :host([data-editing]) .bar { cursor: grab; }
 :host(:state(dragging)) .bar { cursor: grabbing; }
@@ -94,13 +97,6 @@
   background: color-mix(in srgb, var(--_colour) 5%, transparent);
   border-inline: var(--sherpa-display-mode-border-width-base, 1px) dashed color-mix(in srgb, var(--_colour) 40%, transparent);
 }
-
-/* ── The last bar's end: Add stage and Arrange stages, in the bar, so a stage at the view's edge keeps them in view ── */
-.end {
-  flex: none;
-  display: none;
-}
-:host([data-last]:not([data-editing], [data-locked])) .end { display: inline-flex; }
 
 @media (forced-colors: active) {
   .bar { border-block-end-color: CanvasText; }
