@@ -357,7 +357,10 @@ A graph View is a View whose body is a canvas, showing one entity of a type
   edit there is the page's. `init` is handed `page` (`{ id, label, href, definition, source,
   components, markup, stores }`; `graph-change` carries the next): bind
   `bindQueryEditor(canvas, page.source, { definition, components, markup, stores, inspector,
-  panel, toolbar, session })`, then `page.source.load()`. `T-a-graph-is-a-view-of-a-type`
+  panel, toolbar, session, stageDialog })`, then `page.source.load()`. `T-a-graph-is-a-view-of-a-type`
+  It is the ONE node editor, on the page's Query as its document: every tool works there, and each
+  edit is asked of the Query as a chip asks; the layout (places, ties, frames, stages, lanes) is kept
+  for the tab beside it. `T-one-node-editor`
 
 ## 9. The session
 
