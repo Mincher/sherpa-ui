@@ -3276,6 +3276,8 @@ export function bindWorkflow(
     const action = (event as CustomEvent<{ action?: string }>).detail?.action;
     if (action === 'undo') undo();
     else if (action === 'redo') redo();
+    // Zip tie with connectors picked: it ties them, at once; else the tool goes on or off. Will, 2026-11-10
+    else if (action === 'tie' && !tying && pickedRoutes(canvas).length > 1) tieRoutes(pickedRoutes(canvas));
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
     else if (action === 'arrange') arrangePicked(canvas);

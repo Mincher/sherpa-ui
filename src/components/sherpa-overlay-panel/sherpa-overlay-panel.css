@@ -302,10 +302,12 @@
 :host(:state(floating)) :is(.dock-overlay, .dock-fixed) { display: none; }
 :host(:not([data-minimisable])) .minimise,
 :host([data-maximised]) .minimise,
+:host(:state(minimised)) .minimise,
 :host(:not([data-floatable])) .float,
 :host([data-maximised]) .float { display: none; }
 :host(:not([data-floatable]):not(:state(in-layout))) .docks { display: none; }
-:host(:not([data-minimisable]):not([data-expandable]):not([data-external])) .modes { display: none; }
+:host(:not([data-minimisable]):not([data-expandable]):not([data-external])) .modes,
+:host(:state(minimised):not([data-expandable]):not([data-external])) .modes { display: none; }
 
 /* The group's first and last SHOWN button wear its ends: the group derives them from :first-child and
    :last-child, which a hidden button still is. `#syncGroup` says which they are. */

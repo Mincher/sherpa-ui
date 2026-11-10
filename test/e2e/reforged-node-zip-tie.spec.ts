@@ -145,3 +145,23 @@ test('with no pointer: T on picked nodes ties their routes and unties them; Dele
   await settle(page);
   expect(await ties(page)).toHaveLength(0);
 });
+
+test('with two connectors picked, the Zip tie button ties them at once, and the tool stays off', async ({ page }) => {
+  // A click on each line's middle: the first picks it, Shift adds the second.
+  const mid = (n: number) => page.evaluate((i) => {
+    const hit = document.querySelector<SVGGeometryElement>(`#cv > svg.graph-routes .graph-hit[data-from="s${i}/rows"]`)!;
+    const p = hit.getPointAtLength(hit.getTotalLength() / 2);
+    const m = hit.getScreenCTM()!;
+    return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f };
+  }, n);
+  const a = await mid(1);
+  await page.mouse.click(a.x, a.y);
+  const b = await mid(2);
+  await page.keyboard.down('Shift');
+  await page.mouse.click(b.x, b.y);
+  await page.keyboard.up('Shift');
+  await settle(page);
+  await press(page, 'tie');
+  expect((await ties(page))[0]!.routes).toHaveLength(2);
+  await expect(page.locator('sherpa-node-toolbar')).not.toHaveAttribute('data-tie');
+});

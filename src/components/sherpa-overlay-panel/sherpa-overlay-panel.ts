@@ -391,6 +391,7 @@ export class SherpaOverlayPanel extends SherpaElement {
       this.set('data-updated', false);
     }
     this.toggleState('minimised', mode === 'tab');
+    this.#syncGroup();
     // The first float lifts it where it is drawn.
     if (mode === 'floating' && prev !== undefined && prev !== 'tab') this.#lift();
     this.#place();
@@ -447,7 +448,8 @@ export class SherpaOverlayPanel extends SherpaElement {
       'dock-overlay': docked,
       'dock-fixed': docked,
       float: has('data-floatable') && !maximised,
-      minimise: has('data-minimisable') && !maximised,
+      // A tab already: Minimise has nothing to do. Will, 2026-11-10
+      minimise: has('data-minimisable') && !maximised && !this.hasState('minimised'),
       expand: has('data-expandable') && !this.hasState('in-area'),
       external: has('data-external'),
     };
