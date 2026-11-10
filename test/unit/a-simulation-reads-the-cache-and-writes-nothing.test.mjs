@@ -228,7 +228,8 @@ test('a node\'s light: the rows it heard and said, "120 → 30", and its time; t
   const sim = simulateGraph(chain('status', 'eq', 'active'), { customers: rows });
   assert.equal(lightOf(sim.nodes.s, 3.4), '120 rows · 3 ms');
   assert.equal(lightOf(sim.nodes.c, 12.2), `120 → ${kept} · 12 ms`);
-  assert.equal(lightOf(sim.nodes.o, 0.2), `${kept} rows · <1 ms`);
+  // An Output says what it would do first: it does nothing (plan 891).
+  assert.equal(lightOf(sim.nodes.o, 0.2), `Would end the run · ${kept} rows · <1 ms`);
   assert.equal(lightOf(simulateGraph(chain('status', 'eq', 'active'), { customers: rows.slice(0, 1) }).nodes.s, 1500), '1 row · 1,500 ms');
   assert.equal(lightOf(simulateGraph(chain('status', 'eq', 'active'), {}).nodes.s, 2), 'Not fetched yet · 2 ms');
   assert.equal(lightOf({ incoming: [], outgoing: [] }, 5), '5 ms');

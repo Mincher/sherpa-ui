@@ -140,6 +140,8 @@ export interface NodeType {
   icon?: string;
   /** Words the node panel's search finds it by, beside its label: "notify" finds Notification. */
   tags?: readonly string[];
+  /** What it would do, where it acts outside the graph: Simulate says it and does nothing (an Output's). */
+  would?: string;
   /** Its rows, after the kind's own. */
   rows?: readonly RowKind[];
   /** Its sockets, where they differ from the kind's. */
@@ -178,6 +180,8 @@ export interface NodeKind {
   category?: string;
   /** A reader's words for a Custom Node: the panel lists it under each, inside its category, and its search finds it by one. */
   tags?: readonly string[];
+  /** What it would do, where it acts outside the graph: a type's (`NodeType.would`). */
+  would?: string;
   /** A FAMILY: one node, and its first row picks the type, kept as the node's `type` value. Its rows and sockets
    *  follow the type (`resolveKind`). With one type there is no row. Plan 749 */
   types?: Readonly<Record<string, NodeType>>;
@@ -228,7 +232,7 @@ const [TITLE, MESSAGE, SENT] = [messageRow('title', 'Title'), messageRow('messag
 /** What an Output does, each a type in a family (plan 891). The host app adds its own: `addTypes`. */
 const OUTPUTS: Readonly<Record<string, NodeType>> = {
   notification: {
-    label: 'Notification', group: 'Notification', icon: 'notifications', tags: ['notify'], help: 'Send a message in the app, by email or to a phone',
+    label: 'Notification', would: 'Would send a notification', group: 'Notification', icon: 'notifications', tags: ['notify'], help: 'Send a message in the app, by email or to a phone',
     rows: [
       pickRow('channels', 'Channels', [['app', 'In app'], ['email', 'Email'], ['push', 'Mobile push']], true),
       textRow('to', 'To'), TITLE, MESSAGE, textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
@@ -236,14 +240,14 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     ],
   },
   view: {
-    label: 'On a view', group: 'Content', icon: 'dashboard', help: 'Show content on a view',
+    label: 'On a view', would: 'Would show it on a view', group: 'Content', icon: 'dashboard', help: 'Show content on a view',
     rows: [
       textRow('view', 'View'), pickRow('place', 'Place', [['widget', 'Widget'], ['card', 'Card'], ['row', 'List row']]), objectIn('content', 'Content'), dateRow('until', 'Keep until'),
       propertyRow('contentId', 'Content ID', 'value'), propertyRow('link', 'Link', 'value'),
     ],
   },
   file: {
-    label: 'Generated file', group: 'Content', icon: 'file-lines', help: 'Make a file from the data',
+    label: 'Generated file', would: 'Would make a file', group: 'Content', icon: 'file-lines', help: 'Make a file from the data',
     rows: [
       pickRow('format', 'Format', [['pdf', 'PDF'], ['csv', 'CSV'], ['xlsx', 'XLSX'], ['docx', 'DOCX'], ['md', 'Markdown']]), textRow('template', 'Template'),
       messageRow('fileName', 'File name'), objectIn('data', 'Data'), textRow('saveTo', 'Save to'),
@@ -251,22 +255,22 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     ],
   },
   toast: {
-    label: 'Toast', group: 'Response', icon: 'megaphone', help: 'Show a short message on the screen',
+    label: 'Toast', would: 'Would show a toast', group: 'Response', icon: 'megaphone', help: 'Show a short message on the screen',
     rows: [pickRow('tone', 'Tone', [['info', 'Info'], ['success', 'Success'], ['warning', 'Warning'], ['critical', 'Critical']]), MESSAGE, textRow('action', 'Action'), propertyRow('shown', 'Shown', 'boolean')],
   },
   alert: {
-    label: 'Alert', group: 'Response', icon: 'status-warning', help: 'Raise an alert on a device or a customer (to be defined)',
+    label: 'Alert', would: 'Would raise an alert', group: 'Response', icon: 'status-warning', help: 'Raise an alert on a device or a customer (to be defined)',
     rows: [
       pickRow('severity', 'Severity', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High'], ['critical', 'Critical']]), pickRow('on', 'On', [['device', 'Device'], ['customer', 'Customer']]),
       TITLE, MESSAGE, propertyRow('alertId', 'Alert ID', 'value'),
     ],
   },
   api: {
-    label: 'API response', group: 'Response', icon: 'cloud', help: 'Answer the call that started the run',
+    label: 'API response', would: 'Would answer the call', group: 'Response', icon: 'cloud', help: 'Answer the call that started the run',
     rows: [countRow('code', 'Status', 100), objectIn('body', 'Body'), pickRow('encoding', 'Format', [['json', 'JSON'], ['csv', 'CSV'], ['text', 'Text']]), SENT],
   },
   result: {
-    label: 'Run result', group: 'Run result', icon: 'flag', help: 'End the run with a status and a summary',
+    label: 'Run result', would: 'Would end the run', group: 'Run result', icon: 'flag', help: 'End the run with a status and a summary',
     rows: [pickRow('status', 'Status', [['succeeded', 'Succeeded'], ['skipped', 'Skipped'], ['failed', 'Failed'], ['deferred', 'Deferred']]), messageRow('summary', 'Summary')],
   },
 };
@@ -482,10 +486,10 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
   const at = kind && typeOf(kind, type);
   if (!kind || !at) return kind;
   const { types, typeLabel, defaultType: _default, branches: forks, ...plain } = kind;
-  const { input, many, output, branches = forks, graphs = kind.graphs, needs, icon } = at.type;
+  const { input, many, output, branches = forks, graphs = kind.graphs, needs, icon, would } = at.type;
   const row: RowKind = { name: 'type', label: typeLabel ?? 'Type', control: 'type' };
   return {
-    ...plain, ...(icon ? { icon } : {}), ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}), ...(needs ? { needs } : {}),
+    ...plain, ...(icon ? { icon } : {}), ...(would ? { would } : {}), ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}), ...(needs ? { needs } : {}),
     ...(branches ? { branches: true as const } : {}), graphs,
     rows: [...(Object.keys(types!).length > 1 ? [row] : []), ...kind.rows, ...(at.type.rows ?? [])],
   };
@@ -820,6 +824,8 @@ export interface GraphNode {
   ref?: Readonly<Record<string, string>>;
   /** What reached it that it cannot use, each by its row (none: its header), in words: it reads null there (TODO 764). */
   warnings?: readonly { row?: string; words: string }[];
+  /** What it would do: an Output's, which Simulate says and never does. Plan 891 */
+  would?: string;
 }
 
 /** Nodes and routes, ready to draw: a workflow's, or a page's Query. */
@@ -852,6 +858,7 @@ export function kindNode(
     ...(k.output ? { output: k.output } : {}),
     ...(k.branches ? { branches: k.branches } : {}),
     ...(k.category ? { category: k.category } : {}),
+    ...(k.would ? { would: k.would } : {}),
     ...own,
   };
 }

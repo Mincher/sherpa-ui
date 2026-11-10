@@ -213,7 +213,8 @@ test('a simulation shows the node it is on, node by node, "Simulating… 1s", th
   expect(lights['s']).toMatch(/^done\|100,000 rows · (<1|[\d,]+) ms$/);
   expect(lights['f']).toMatch(/^done\|100,000 → 100,000 · (<1|[\d,]+) ms$/);
   expect(lights['c']).toMatch(new RegExp(`^done\\|100,000 → ${active.toLocaleString('en')} · (<1|[\\d,]+) ms$`));
-  expect(lights['o']).toMatch(new RegExp(`^done\\|${active.toLocaleString('en')} rows · (<1|[\\d,]+) ms$`));
+  // An Output says what it would do first: Simulate fires none (plan 891).
+  expect(lights['o']).toMatch(new RegExp(`^done\\|Would end the run · ${active.toLocaleString('en')} rows · (<1|[\\d,]+) ms$`));
 });
 
 test('a fetch that cannot go says so once, as a critical notice, and leaves nothing half done', async ({ page }) => {

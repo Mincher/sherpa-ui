@@ -9,7 +9,7 @@
  * Map:
  * - SimulateFacts — What a simulation reads beyond its graph and rows: the clock a relative date means.
  * - Slot — What one socket hears or says: its rows, a field's name or a value, and where it comes from.
- * - SimulatedNode — One node: each input socket's slot, and each output socket's.
+ * - SimulatedNode — One node: each input socket's slot, and each output socket's; an Output's, what it would do.
  * - Simulated — Every node's slots, and each fault in words.
  * - Sent — What an output socket sends: rows, a field, a value, or nothing and why.
  * - simulateGraph — The graph run on the cached rows: what each node hears and says, a row list on each socket.
@@ -23,7 +23,7 @@
  * - .stop — End the run, keeping the nodes done.
  * - .turn — Before a node: waits while paused, and says whether to go on.
  * - stepSimulation — Step a simulation node by node, giving the host a turn when one is due.
- * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87", or its value, and the time it took.
+ * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87"; an Output's, what it would do.
  * - trueOf — How many rows reach a node's True after a simulation: none where it has no True or has not run.
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
@@ -53,10 +53,11 @@ export interface Slot {
   note?: string;
 }
 
-/** One node: each input socket's slot, and each output socket's. */
+/** One node: each input socket's slot, and each output socket's; an Output's, what it would do. */
 export interface SimulatedNode {
   incoming: readonly Slot[];
   outgoing: readonly Slot[];
+  would?: string;
 }
 
 /** Every node's slots, by id, and each fault in words. */
@@ -207,7 +208,9 @@ export function lightOf(node: SimulatedNode, ms: number): string {
     : heard !== undefined || said !== undefined ? `${n((heard ?? said)!)} ${(heard ?? said) === 1 ? 'row' : 'rows'}`
       : valueWords(node.outgoing) ?? [...node.incoming, ...node.outgoing].find((s) => s.note)?.note ?? '';
   const time = ms < 1 ? '<1 ms' : `${Math.round(ms).toLocaleString('en')} ms`;
-  return [rows, time].filter(Boolean).join(' · ');
+  // An Output says what it would do, and its rows: it does nothing (plan 891).
+  const words = node.would ? [node.would, heard !== undefined ? rows : ''] : [rows];
+  return [...words, time].filter(Boolean).join(' · ');
 }
 
 /** How many rows reach a node's True after a simulation: none where it has no True or has not run. */
@@ -427,6 +430,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (node.kind === 'math') return math(node);
     if (node.kind === 'text') return text(node);
     if (node.kind === 'sort' || node.kind === 'group') return arranged(node, row);
+    // An Output fires nothing: each property sends a stand-in, so what it feeds runs too (plan 891).
+    if (node.kind === 'output') {
+      const out = node.rows.find((r) => r.name === row);
+      return { kind: 'value', value: out?.gives === 'boolean' ? true : `${out?.label ?? row}, simulated` };
+    }
     const ran = custom(node, row);
     if (ran) return ran;
     fault(`"${node.heading}" is not simulated yet`);
@@ -464,7 +472,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       ...node.rows.filter((r) => r.output).map((r) => slot(`${node.id}/${r.name}`, r.label, 'out')),
       ...(node.branches ? [slot(`${node.id}/${FALSE_SOCKET}`, 'False', 'out')] : []),
     ];
-    nodes[node.id] = { incoming, outgoing };
+    nodes[node.id] = { incoming, outgoing, ...(node.would ? { would: node.would } : {}) };
   };
   // In the order the data flows, so each node's step is mostly its own work and its time is its own; a loop keeps the graph's order.
   const order: string[] = [];
