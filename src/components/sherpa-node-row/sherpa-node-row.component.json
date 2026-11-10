@@ -57,23 +57,52 @@
           "children": [
             {
               "el": "span",
-              "class": "name"
+              "class": "tip-line tip-socket",
+              "attrs": {
+                "data-text": "data-socket-name"
+              }
             },
             {
               "el": "span",
-              "class": "word w-value"
+              "class": "tip-line tip-value",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "name"
+                },
+                {
+                  "el": "span",
+                  "attrs": {
+                    "data-text": "data-socket-value"
+                  }
+                }
+              ]
             },
             {
               "el": "span",
-              "class": "word w-object"
-            },
-            {
-              "el": "span",
-              "class": "word w-boolean"
-            },
-            {
-              "el": "span",
-              "class": "word w-any"
+              "class": "tip-line",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "name"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-value"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-object"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-boolean"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-any"
+                }
+              ]
             }
           ]
         },
@@ -102,19 +131,48 @@
           "children": [
             {
               "el": "span",
-              "class": "name"
+              "class": "tip-line tip-socket",
+              "attrs": {
+                "data-text": "data-socket-name"
+              }
             },
             {
               "el": "span",
-              "class": "word w-value"
+              "class": "tip-line tip-value",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "name"
+                },
+                {
+                  "el": "span",
+                  "attrs": {
+                    "data-text": "data-socket-value"
+                  }
+                }
+              ]
             },
             {
               "el": "span",
-              "class": "word w-object"
-            },
-            {
-              "el": "span",
-              "class": "word w-boolean"
+              "class": "tip-line",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "name"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-value"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-object"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-boolean"
+                }
+              ]
             }
           ]
         }
@@ -195,6 +253,24 @@
       "declared": true,
       "kind": "style",
       "description": "a property: its label reads in the input value's own type"
+    },
+    {
+      "$type": "prop",
+      "name": "data-socket-name",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "the row's name, the first line of each socket's tip: a collapsed node shows no label"
+    },
+    {
+      "$type": "prop",
+      "name": "data-socket-value",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "the row's value in words, a line of each socket's tip; unset, the line hides"
     }
   ],
   "slots": [
@@ -208,7 +284,7 @@
     }
   ],
   "populate": {
-    "shape": "{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket?, property? }",
+    "shape": "{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket?, property?, socketName?, socketValue? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -226,6 +302,21 @@
       "$type": "state",
       "name": "output-socket",
       "selector": ":host([data-output-socket])"
+    },
+    {
+      "$type": "state",
+      "name": "not-input-routed",
+      "selector": ":host(:not([data-input-routed]))"
+    },
+    {
+      "$type": "state",
+      "name": "not-output-routed",
+      "selector": ":host(:not([data-output-routed]))"
+    },
+    {
+      "$type": "state",
+      "name": "not-socket-value",
+      "selector": ":host(:not([data-socket-value]))"
     }
   ],
   "capabilities": [
@@ -237,6 +328,7 @@
   ],
   "tokens": {
     "row.gap": "{sherpa.theme-gap-sm}",
+    "tip-socket.font-weight": "{sherpa.font-weight-medium}",
     "label.font-size": "{sherpa.font-size-body-small}",
     "label.font-weight": "{sherpa.font-weight-medium}",
     "label.line-height": "{sherpa.theme-content-line-height-small}",

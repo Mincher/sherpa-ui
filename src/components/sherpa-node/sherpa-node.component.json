@@ -302,6 +302,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-collapsed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value. Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-current",
       "type": "boolean",
       "observed": true,
@@ -336,6 +345,15 @@
       "kind": "content",
       "default": "Node",
       "description": "the node's name, in its header"
+    },
+    {
+      "$type": "prop",
+      "name": "data-hide-unconnected",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "collapsed, a socket no route joins hides; a hover shows them. Its host writes it"
     },
     {
       "$type": "prop",
@@ -431,6 +449,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-reveal",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the hidden sockets show, as on a hover: a line is being dragged. Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-scale-h",
       "type": "number",
       "observed": true,
@@ -505,7 +532,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, badge?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }",
+    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, reveal?, scaleH?, scaleW?, step?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
@@ -556,6 +583,11 @@
       "$type": "state",
       "name": "false-routed",
       "selector": ":host([data-false-routed])"
+    },
+    {
+      "$type": "state",
+      "name": "collapsed",
+      "selector": ":host([data-collapsed])"
     },
     {
       "$type": "state",

@@ -29,6 +29,8 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 | `data-output-routed` | boolean |  | a route leaves the output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | an output socket on the end edge: value (a circle) \| object (a diamond) \| boolean (a circle) |
 | `data-property` | boolean |  | a property: its label reads in the input value's own type |
+| `data-socket-name` | text |  | the row's name, the first line of each socket's tip: a collapsed node shows no label |
+| `data-socket-value` | text |  | the row's value in words, a line of each socket's tip; unset, the line hides |
 
 ## Methods
 
@@ -55,6 +57,7 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-theme-gap-sm` | `.row` | `gap` |
+| `--sherpa-font-weight-medium` | `.tip-socket` | `font-weight` |
 | `--sherpa-font-size-body-small` | `.label` | `font-size` |
 | `--sherpa-font-weight-medium` | `.label` | `font-weight` |
 | `--sherpa-theme-content-line-height-small` | `.label` | `line-height` |
@@ -66,6 +69,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket?, property? }`
+`{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket?, property?, socketName?, socketValue? }`
 
 Its declared props by name: `label` sets data-label.

@@ -152,6 +152,19 @@
   padding-inline: var(--_pad-inline, 16px);
 }
 
+/* A COLLAPSED node (its `--_row-*` values): only the sockets show, one row a socket high; a row with none hides. */
+.row { min-block-size: var(--_row-min, auto); }
+/* Its unrouted sockets hide while the node hides them (`--_unrouted`); a row no route joins goes (`--_unrouted-row`).
+   The socketless rule comes after: a socketless row is unrouted too. */
+:host(:not([data-input-routed], [data-output-routed])) { display: var(--_unrouted-row, block); }
+:host(:not([data-input-socket], [data-output-socket])) { display: var(--_row-bare, block); }
+:host(:not([data-input-routed])) .socket-in,
+:host(:not([data-output-routed])) .socket-out { visibility: var(--_unrouted, visible); }
+
+/* A socket's tip names its row, and says its value. */
+.tip-socket { font-weight: var(--sherpa-font-weight-medium, 500); }
+:host(:not([data-socket-value])) .tip-value { display: none; }
+
 .label {
   display: none;
   font-size: var(--sherpa-font-size-body-small, 12px);
@@ -159,7 +172,7 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-style-content-base, #0c0b11);
 }
-:host([data-label]) .label { display: block; }
+:host([data-label]) .label { display: var(--_row-content, block); }
 /* A property reads as an input's value does. */
 :host([data-property]) .label {
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -168,16 +181,16 @@
 }
 
 ::slotted(*) {
-  display: block;
+  display: var(--_row-content, block);
   min-inline-size: 0;
 }
 
 /* A field the graph feeds shows as itself, and takes no press. Will, TODO 747 */
 ::slotted([readonly]) { pointer-events: none; }
 
-/* The control is the field's last line, one control high. */
+/* The control is the field's last line, one control high. A collapsed node centres it: `--_socket-line` is 50%. */
 .socket {
-  inset-block-end: calc(var(--sherpa-display-mode-size-2xl, 32px) / 2);
+  inset-block-end: var(--_socket-line, calc(var(--sherpa-display-mode-size-2xl, 32px) / 2));
   margin-block-end: calc(var(--_socket-h) / -2 - var(--_hit));
 }
 /* With no field, a socket lines up with the label. */

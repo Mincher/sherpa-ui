@@ -59,6 +59,9 @@ export class SherpaNode extends SherpaElement {
     'data-warning': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-resizable': { type: 'boolean', kind: 'style' },
+    'data-collapsed': { type: 'boolean', kind: 'style' },
+    'data-hide-unconnected': { type: 'boolean', kind: 'style' },
+    'data-reveal': { type: 'boolean', kind: 'style' },
   } as const;
   // The app's setting: the handle and Alt+Arrow exist only while it is on. A saved size still draws. Will, TODO 748
   static override settings = { 'data-resizable': 'resizeNodes' };

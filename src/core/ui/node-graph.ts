@@ -23,7 +23,11 @@
  * - unfurlment — Where every node goes when the graph is unfurled, from the boxes, frames and socket heights drawn.
  * - unfurlGraph — Unfurl the whole graph and hand the host the places: one step; the view fits it after.
  * - watchArrange — Tell a toolbar, in `data-can-arrange` and any flag given, when two or more nodes are picked.
+ * - watchView — A toolbar's view toggles, kept by the canvas: Collapse all (pressed while every node is) and Hide unconnected…
  * - markNodes — Mark several nodes as the ones picked.
+ * - collapseNodes — Collapse these nodes, or expand them; `'all'`, every node drawn.
+ * - collapsedNodes — The nodes drawn collapsed.
+ * - hideUnconnected — Whether a collapsed node hides the sockets no route joins; a hover, or a line dragged, shows them.
  * - markActive — Mark the one picked node whose panel is shown, in a stronger ring.
  * - markRoutes — Mark routes as the ones picked.
  * - pickedRoutes — The routes picked: by a click, a box, or the keys.
@@ -167,6 +171,8 @@ export interface DrawOptions {
   onFrameSelect?: (frame: NodeFrame) => void;
   /** A frame's Release, or Delete on its header: the frame goes, its nodes stay. Unset, the frames are read only. */
   onRelease?: (id: string) => void;
+  /** A node a double click on its header OPENS (a Custom Node's use): it does not collapse. */
+  opens?: (node: GraphNode) => boolean;
 }
 
 /** A field a row draws: a text field, a select or tags, a menu of ticks (a quick-filter chip), or a switch. */
@@ -224,6 +230,9 @@ interface Drawn {
   /** Each frame drawn, by id, and the one picked. TODO 778 */
   frames: Map<string, HTMLElement>;
   selectedFrame: string | null;
+  /** The nodes drawn collapsed, and whether a collapsed node hides its unrouted sockets: the view's, never the graph's. */
+  collapsed: Set<string>;
+  hideUnconnected: boolean;
 }
 
 const drawnOn = new WeakMap<HTMLElement, Drawn>();
@@ -235,6 +244,16 @@ function shown(row: GraphRow): string {
   if (value === undefined || value === null) return '';
   if (row.control === 'direction') return value === 'desc' ? 'Descending' : value === 'asc' ? 'Ascending' : String(value);
   return Array.isArray(value) ? value.join(', ') : String(value);
+}
+
+/** A row's value as its socket's tip says it: a pick by its label. */
+function valueWords(row: GraphRow): string {
+  const value = row.value;
+  if (row.choices && (typeof value === 'string' || Array.isArray(value))) {
+    const label = (v: unknown): string => row.choices!.find((c) => c.value === v)?.label ?? String(v);
+    return Array.isArray(value) ? value.map(label).join(', ') : label(value);
+  }
+  return shown(row);
 }
 
 /** Set an attribute, or take it away when there is nothing to say. */
@@ -419,12 +438,21 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     if (!worn.has(row.name) || row.beside) line.toggleAttribute('data-output-routed', sent.has(address));
     const field = line.firstElementChild as Field | null;
     if (row.beside) continue;
+    // Each socket's tip names its row and says its value: a collapsed node shows neither.
+    put(line, 'data-socket-name', row.label);
+    put(line, 'data-socket-value', routed.has(address) ? undefined : valueWords(row));
     if (field) fill(field, row);
     // A row with no field says what it reads; one that reads null, only its name.
     else {
       line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
       line.toggleAttribute('data-property', !!row.property);
     }
+  }
+  // A section with no socket: a collapsed node draws none of it; none a route joins: hiding the unconnected, none of it.
+  for (const box of el.querySelectorAll(':scope > .section')) {
+    const rows = [...box.children];
+    box.toggleAttribute('data-bare', !rows.some((r) => r.hasAttribute('data-input-socket') || r.hasAttribute('data-output-socket')));
+    box.toggleAttribute('data-unrouted', !rows.some((r) => r.hasAttribute('data-input-routed') || r.hasAttribute('data-output-routed')));
   }
 }
 
@@ -648,6 +676,9 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   draft.setAttribute('stroke-dasharray', '6 4');
   drawn.draft = draft;
   drawn.lifted = lifting ?? null;
+  // While a line is dragged, every hidden socket shows: the one it left, and each it may join.
+  const reveal = (on: boolean): void => { for (const el of drawn.nodes.values()) el.toggleAttribute('data-reveal', on); };
+  reveal(true);
   drawn.lines.append(draft);
   if (lifting) drawRoutes(canvas, drawn);
   const begin = onPlane(canvas, start);
@@ -672,6 +703,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
     window.removeEventListener('pointerup', stop);
     window.removeEventListener('pointercancel', stop);
     draft.remove();
+    reveal(false);
     drawn.draft = null;
     drawn.lifted = null;
     drawRoutes(canvas, drawn);
@@ -958,7 +990,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     graph: { nodes: [], routes: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), beside: new Map(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
     lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
-    frames: new Map(), selectedFrame: null,
+    frames: new Map(), selectedFrame: null, collapsed: new Set(), hideUnconnected: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -997,6 +1029,16 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     }
     drawRoutes(canvas, made);
     made.options.onMove?.(node, x, y);
+  });
+  // A double click on a node's header collapses or expands it, unless it opens (a Custom Node's use).
+  canvas.addEventListener('dblclick', (event) => {
+    const path = event.composedPath();
+    const el = path.find((n): n is HTMLElement => n instanceof HTMLElement && n.localName === 'sherpa-node');
+    const onHeader = path.some((n) => n instanceof Element && n.classList.contains('header'));
+    const node = el && nodeOf(made, el);
+    if (!node || !onHeader || made.options.opens?.(node)) return;
+    if (path.some((n) => n instanceof Element && n.matches('input, select, textarea, button'))) return;
+    toggleCollapsed(canvas, made, [node.id], !made.collapsed.has(node.id));
   });
   // With nodes picked and the canvas itself focused: Ctrl or Cmd and an arrow moves them, 8px (32 with Shift). TODO 752
   canvas.addEventListener('keydown', (event) => {
@@ -1284,6 +1326,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     el.toggleAttribute('data-input-routed', graph.routes.some((r) => r.to === node.id));
     el.toggleAttribute('data-output-routed', graph.routes.some((r) => r.from === node.id));
     el.toggleAttribute('data-false-routed', graph.routes.some((r) => r.from === `${node.id}/${FALSE_SOCKET}`));
+    el.toggleAttribute('data-collapsed', drawn.collapsed.has(node.id));
+    el.toggleAttribute('data-hide-unconnected', drawn.hideUnconnected);
     drawRows(drawn, el, node);
   }
   // Frames: behind the lines and the nodes, each round its nodes. TODO 778
@@ -1479,11 +1523,71 @@ export function watchArrange(
   return () => { watch.disconnect(); for (const flag of flags) toolbar.removeAttribute(flag); };
 }
 
+/** A toolbar's view toggles, kept by the canvas: Collapse all (pressed while every node is) and Hide unconnected
+ *  (on while a node is collapsed). The toolbar's presses are heard here. Returns the stop. */
+export function watchView(canvas: SherpaLayoutCanvas, toolbar: HTMLElement | null | undefined): () => void {
+  if (!toolbar) return () => undefined;
+  const tell = (): void => {
+    const nodes = drawnOn.get(canvas)?.nodes.size ?? 0;
+    const shut = collapsedNodes(canvas).length;
+    toolbar.toggleAttribute('data-can-collapse', nodes > 0);
+    toolbar.toggleAttribute('data-collapsed', nodes > 0 && shut === nodes);
+    toolbar.toggleAttribute('data-can-hide', shut > 0);
+    toolbar.toggleAttribute('data-hide-unconnected', !!drawnOn.get(canvas)?.hideUnconnected);
+  };
+  const onTool = (event: Event): void => {
+    const action = (event as CustomEvent<{ action?: string }>).detail?.action;
+    if (action === 'collapse') collapseNodes(canvas, 'all', !toolbar.hasAttribute('data-collapsed'));
+    else if (action === 'hide') hideUnconnected(canvas, !drawnOn.get(canvas)?.hideUnconnected);
+    else return;
+    tell();
+  };
+  const watch = new MutationObserver(tell);
+  watch.observe(canvas, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-collapsed'] });
+  toolbar.addEventListener('toolbar-select', onTool);
+  tell();
+  return () => {
+    watch.disconnect();
+    toolbar.removeEventListener('toolbar-select', onTool);
+    for (const flag of ['data-can-collapse', 'data-collapsed', 'data-can-hide', 'data-hide-unconnected']) toolbar.removeAttribute(flag);
+  };
+}
+
 /** Mark several nodes as the ones picked. */
 export function markNodes(canvas: SherpaLayoutCanvas, ids: ReadonlySet<string>): void {
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', ids.has(key));
   if (ids.size) unpickFrame(drawnOn.get(canvas));
   linkPortals(drawnOn.get(canvas));
+}
+
+/** Collapse or expand nodes, and tell the host. */
+function toggleCollapsed(canvas: SherpaLayoutCanvas, drawn: Drawn, ids: readonly string[], on: boolean): void {
+  for (const id of ids) {
+    if (on) drawn.collapsed.add(id);
+    else drawn.collapsed.delete(id);
+    drawn.nodes.get(id)?.toggleAttribute('data-collapsed', on);
+  }
+  drawRoutes(canvas, drawn);
+}
+
+/** Collapse these nodes, or expand them; `'all'`, every node drawn. A collapsed node shows only its sockets. */
+export function collapseNodes(canvas: SherpaLayoutCanvas, ids: readonly string[] | 'all', on: boolean): void {
+  const drawn = drawnOn.get(canvas);
+  if (drawn) toggleCollapsed(canvas, drawn, ids === 'all' ? [...drawn.nodes.keys()] : ids, on);
+}
+
+/** The nodes drawn collapsed. */
+export function collapsedNodes(canvas: SherpaLayoutCanvas): string[] {
+  const drawn = drawnOn.get(canvas);
+  return drawn ? [...drawn.collapsed].filter((id) => drawn.nodes.has(id)) : [];
+}
+
+/** Whether a collapsed node hides the sockets no route joins; a hover, or a line dragged, shows them. */
+export function hideUnconnected(canvas: SherpaLayoutCanvas, on: boolean): void {
+  const drawn = drawnOn.get(canvas);
+  if (!drawn) return;
+  drawn.hideUnconnected = on;
+  for (const el of drawn.nodes.values()) el.toggleAttribute('data-hide-unconnected', on);
 }
 
 /** Mark the one of the picked nodes whose panel is shown: a stronger ring than the others'. */
@@ -2203,6 +2307,7 @@ export function bindQueryEditor(
     else if (action === 'unfurl') unfurlGraph(canvas);
   };
   const unarrange = watchArrange(canvas, toolbar);
+  const unview = watchView(canvas, toolbar);
   const onKey = (event: KeyboardEvent): void => {
     const first = event.composedPath()[0];
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
@@ -2232,6 +2337,7 @@ export function bindQueryEditor(
       query.removeEventListener('query-change', onChange);
       toolbar?.removeEventListener('toolbar-select', onTool);
       unarrange();
+      unview();
       toolbar?.removeAttribute('data-can-unfurl');
       panel?.removeEventListener('node-add', onAdded);
       canvas.removeEventListener('keydown', onKey, { capture: true });
@@ -3183,6 +3289,7 @@ export function bindWorkflow(
   toolbar?.addEventListener('toolbar-select', onTool);
   toolbar?.setAttribute('data-can-tie', '');
   const unarrange = watchArrange(canvas, toolbar, () => !readOnly(), ['data-can-arrange', 'data-can-frame']);
+  const unview = watchView(canvas, toolbar);
   tell();
   canvas.addEventListener('keydown', onKey, { capture: true });
   canvas.addEventListener('pointerdown', onLift, { capture: true });
@@ -3480,7 +3587,7 @@ export function bindWorkflow(
     const body = workflowGraph(shown(), facts, K());
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     drawGraph(canvas, graph, {
-      onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
+      onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, opens: (node) => !!use(node.id),
       ...(ro ? {} : { onMoveMany, onArrange }),
       onBox: pickBox, onPicked: tellPicked, onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
       ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop, onRemove: onRemoveNodes, onRelease: release }),
@@ -3573,6 +3680,7 @@ export function bindWorkflow(
     stop(): void {
       unwatch();
       unarrange();
+      unview();
       for (const task of queue.list()) if (ours(task)) queue.cancel(task.id);
       runningOff();
       unlightNodes();

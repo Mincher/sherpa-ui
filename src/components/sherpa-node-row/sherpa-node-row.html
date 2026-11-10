@@ -10,6 +10,8 @@
     data-output-routed  a route leaves the output: its socket is filled, else hollow
     data-input-many     the input takes several routes: its socket is a double height D
     data-property       a property: its label reads in the input value's own type
+    data-socket-name    the row's name, the first line of each socket's tip: a collapsed node shows no label
+    data-socket-value   the row's value in words, a line of each socket's tip; unset, the line hides
 
   Slots:
     (default)   the field: a sherpa-input-text — a text field, a select or a number
@@ -21,8 +23,8 @@
     <span class="label" part="label" data-text="data-label"></span>
     <slot data-accepts="input"></slot>
     <span class="socket socket-in sherpa-anchor" part="socket-in" aria-hidden="true"><i class="core"></i></span>
-    <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Input:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span>
+    <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="tip-line tip-socket" data-text="data-socket-name"></span><span class="tip-line tip-value"><span class="name">Value:</span> <span data-text="data-socket-value"></span></span><span class="tip-line"><span class="name">Input:</span> <span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span></span>
     <span class="socket socket-out sherpa-anchor" part="socket-out" aria-hidden="true"><i class="core"></i></span>
-    <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Output:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
+    <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="tip-line tip-socket" data-text="data-socket-name"></span><span class="tip-line tip-value"><span class="name">Value:</span> <span data-text="data-socket-value"></span></span><span class="tip-line"><span class="name">Output:</span> <span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span></span>
   </div>
 </template>

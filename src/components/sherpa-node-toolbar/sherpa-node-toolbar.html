@@ -1,6 +1,6 @@
 <!--
   sherpa-node-toolbar — a graph editor's tools, one object of icon buttons: Save, Undo and
-  Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
+  Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, then the view's Collapse all and Hide unconnected. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
   Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step
 
   Public API:
@@ -21,16 +21,20 @@
     data-can-frame  Frame nodes can be pressed: two or more nodes are picked; written by the editor
     data-tie        The Zip tie tool is on; written by the editor, shown as pressed
     data-picked-routes  How many connectors are picked; written by the editor, said in the Tie tool's tip
+    data-can-collapse   Collapse all can be pressed: the graph has a node; written by the editor
+    data-collapsed      Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor
+    data-can-hide       Hide unconnected can be pressed: a node is collapsed; written by the editor
+    data-hide-unconnected  Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor
 
   Slots:
     (none)
 
   Fires:
-    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' | 'unfurl' | 'fetch' | 'play' | 'pause' | 'stop' | 'frame' }
+    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' | 'unfurl' | 'fetch' | 'play' | 'pause' | 'stop' | 'frame' | 'collapse' | 'hide' }
 -->
 <template id="default">
-  <!-- Three sections, each a button group, with a small divider between them: the data (Fetch, then Play, Pause, Stop), the history (Undo, Redo, Save),
-       and the graph's shape (Zip tie, Save as Custom Node, Arrange, Unfurl, Frame). -->
+  <!-- Four sections, each a button group, with a small divider between them: the data (Fetch, then Play, Pause, Stop), the history (Undo, Redo, Save),
+       the graph's shape (Zip tie, Save as Custom Node, Arrange, Unfurl, Frame), and the view (Collapse all, Hide unconnected). -->
   <span class="tools" part="tools" role="toolbar" aria-label="Editor">
     <sherpa-group class="section" part="section">
       <sherpa-button class="fetch" data-type="icon" data-icon-start="cloud" data-action="fetch"
@@ -63,6 +67,13 @@
                      aria-label="Unfurl graph" data-tip="Unfurl graph: every node round the most connected one, fewer lines crossing" disabled></sherpa-button>
       <sherpa-button class="frame" data-type="icon" data-icon-start="frame" data-action="frame"
                      aria-label="Frame nodes" data-tip="Frame nodes (F): one column, in a frame; pick two or more" disabled></sherpa-button>
+    </sherpa-group>
+    <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
+    <sherpa-group class="section" part="section">
+      <sherpa-button class="collapse" data-type="icon" data-icon-start="density-compact" data-action="collapse"
+                     aria-label="Collapse all nodes" data-tip="Collapse all nodes" aria-pressed="false" disabled></sherpa-button>
+      <sherpa-button class="hide" data-type="icon" data-icon-start="hide" data-action="hide"
+                     aria-label="Hide unconnected sockets" data-tip="Hide unconnected sockets on collapsed nodes: a hover shows them" aria-pressed="false" disabled></sherpa-button>
     </sherpa-group>
   </span>
 </template>

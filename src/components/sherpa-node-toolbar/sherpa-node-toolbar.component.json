@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-toolbar",
-  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
+  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, then the view's Collapse all and Hide unconnected. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
   "element": {
     "$type": "element",
     "tag": "span",
@@ -209,6 +209,48 @@
               }
             }
           ]
+        },
+        {
+          "el": "span",
+          "class": "divider",
+          "part": "divider",
+          "attrs": {
+            "role": "separator",
+            "aria-orientation": "vertical"
+          }
+        },
+        {
+          "el": "sherpa-group",
+          "class": "section",
+          "part": "section",
+          "children": [
+            {
+              "el": "sherpa-button",
+              "class": "collapse",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "density-compact",
+                "data-action": "collapse",
+                "aria-label": "Collapse all nodes",
+                "data-tip": "Collapse all nodes",
+                "aria-pressed": "false",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "hide",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "hide",
+                "data-action": "hide",
+                "aria-label": "Hide unconnected sockets",
+                "data-tip": "Hide unconnected sockets on collapsed nodes: a hover shows them",
+                "aria-pressed": "false",
+                "disabled": ""
+              }
+            }
+          ]
         }
       ]
     }
@@ -231,6 +273,15 @@
       "declared": true,
       "kind": "behaviour",
       "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-can-collapse",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Collapse all can be pressed: the graph has a node; written by the editor"
     },
     {
       "$type": "prop",
@@ -258,6 +309,15 @@
       "declared": true,
       "kind": "behaviour",
       "description": "Save as Custom Node can be pressed: two or more nodes are picked; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-can-hide",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Hide unconnected can be pressed: a node is collapsed; written by the editor"
     },
     {
       "$type": "prop",
@@ -315,12 +375,30 @@
     },
     {
       "$type": "prop",
+      "name": "data-collapsed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-fetching",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "behaviour",
       "description": "A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-hide-unconnected",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor"
     },
     {
       "$type": "prop",
@@ -369,7 +447,7 @@
     }
   ],
   "populate": {
-    "shape": "{ cached?, canArrange?, canFetch?, canFrame?, canGroup?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, fetching?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
+    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

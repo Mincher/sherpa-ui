@@ -390,6 +390,25 @@
   gap: var(--sherpa-theme-gap-md, 8px);
   padding-block: var(--sherpa-theme-gap-md, 8px) var(--_pad);
 }
+
+/* ── COLLAPSED: each row a socket high, its label and field gone; a section with no socket goes. Will, 2026-11-10 ── */
+:host([data-collapsed]) {
+  --_row-content: none;
+  --_row-bare: none;
+  --_row-min: var(--sherpa-display-mode-size-lg, 24px);
+  --_socket-line: 50%;
+}
+:host([data-collapsed]) .body ::slotted(.section) {
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding-block: var(--sherpa-theme-padding-sm, 4px);
+}
+:host([data-collapsed]) .body ::slotted(.section[data-bare]) { display: none; }
+/* Hiding the unconnected: a socket no route joins hides, till a hover, or a line dragged (`data-reveal`). */
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) { --_unrouted: hidden; --_unrouted-row: none; }
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) .body ::slotted(.section[data-unrouted]) { display: none; }
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .socket-in,
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .socket-out,
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-routed])) .socket-false { visibility: hidden; }
 :host(:state(has-content-slot)) .body { display: flex; }
 .body ::slotted(:not(sherpa-node-row, .section)) { padding-inline: var(--_pad-inline); }
 /* A SECTION: rows on a grey box, 8px in from the card. Its rows span the box and take their inset from it, so an output socket sits

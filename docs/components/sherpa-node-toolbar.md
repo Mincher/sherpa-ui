@@ -2,7 +2,7 @@
 
 # sherpa-node-toolbar
 
-A graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step
+A graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, then the view's Collapse all and Hide unconnected. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step
 
 |  |  |
 |---|---|
@@ -24,16 +24,20 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 |---|---|---|---|
 | `data-cached` | boolean |  | Rows are cached: Fetch reads Refetch; written by the editor |
 | `data-can-arrange` | boolean |  | Arrange nodes can be pressed: two or more nodes are picked; written by the editor |
+| `data-can-collapse` | boolean |  | Collapse all can be pressed: the graph has a node; written by the editor |
 | `data-can-fetch` | boolean |  | Fetch can be pressed: a path joins a Source to an Output; written by the editor |
 | `data-can-frame` | boolean |  | Frame nodes can be pressed: two or more nodes are picked; written by the editor |
 | `data-can-group` | boolean |  | Save as Custom Node can be pressed: two or more nodes are picked; written by the editor |
+| `data-can-hide` | boolean |  | Hide unconnected can be pressed: a node is collapsed; written by the editor |
 | `data-can-play` | boolean |  | Play can be pressed: the same; written by the editor |
 | `data-can-redo` | boolean |  | Redo can be pressed |
 | `data-can-save` | boolean |  | Save can be pressed (default off: Save is a placeholder until a host wants it) |
 | `data-can-tie` | boolean |  | The Zip tie tool can be pressed; written by the editor |
 | `data-can-undo` | boolean |  | Undo can be pressed; written by the editor that owns the history |
 | `data-can-unfurl` | boolean |  | Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor |
+| `data-collapsed` | boolean |  | Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor |
 | `data-fetching` | boolean |  | A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor |
+| `data-hide-unconnected` | boolean |  | Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor |
 | `data-path-why` | text |  | Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor |
 | `data-paused` | boolean |  | A simulation is paused at its node: Play goes on, Pause is off; written by the editor |
 | `data-picked-routes` | number |  | How many connectors are picked; written by the editor, said in the Tie tool's tip |
@@ -69,6 +73,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ cached?, canArrange?, canFetch?, canFrame?, canGroup?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, fetching?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }`
+`{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }`
 
 Its declared props by name: `label` sets data-label.

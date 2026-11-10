@@ -20,6 +20,8 @@ export class SherpaNodeRow extends SherpaElement {
     'data-output-routed': SHARED_PROPS['data-output-routed'],
     'data-input-many': SHARED_PROPS['data-input-many'],
     'data-property': { type: 'boolean', kind: 'style' },
+    'data-socket-name': { type: 'string', kind: 'content' },
+    'data-socket-value': { type: 'string', kind: 'content' },
   } as const;
 
   /** A socket's box on the screen, for a connector to join; null when the row has none. */

@@ -7619,6 +7619,20 @@
               "type": {
                 "text": "boolean"
               }
+            },
+            {
+              "name": "data-socket-name",
+              "description": "the row's name, the first line of each socket's tip: a collapsed node shows no label",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-socket-value",
+              "description": "the row's value in words, a line of each socket's tip; unset, the line hides",
+              "type": {
+                "text": "string"
+              }
             }
           ],
           "members": [
@@ -7689,7 +7703,7 @@
           "name": "SherpaNodeToolbar",
           "tagName": "sherpa-node-toolbar",
           "customElement": true,
-          "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
+          "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, then the view's Collapse all and Hide unconnected. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODOs 560, 569, 836. TRAP T-an-edit-is-a-step",
           "attributes": [
             {
               "name": "data-cached",
@@ -7701,6 +7715,13 @@
             {
               "name": "data-can-arrange",
               "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-can-collapse",
+              "description": "Collapse all can be pressed: the graph has a node; written by the editor",
               "type": {
                 "text": "boolean"
               }
@@ -7722,6 +7743,13 @@
             {
               "name": "data-can-group",
               "description": "Save as Custom Node can be pressed: two or more nodes are picked; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-can-hide",
+              "description": "Hide unconnected can be pressed: a node is collapsed; written by the editor",
               "type": {
                 "text": "boolean"
               }
@@ -7769,8 +7797,22 @@
               }
             },
             {
+              "name": "data-collapsed",
+              "description": "Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-fetching",
               "description": "A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-hide-unconnected",
+              "description": "Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor",
               "type": {
                 "text": "boolean"
               }
@@ -7899,6 +7941,13 @@
               }
             },
             {
+              "name": "data-collapsed",
+              "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value. Its host writes it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-current",
               "description": "the selected node; the HOST writes it, one node of many",
               "type": {
@@ -7926,6 +7975,13 @@
                 "text": "string"
               },
               "default": "\"Node\""
+            },
+            {
+              "name": "data-hide-unconnected",
+              "description": "collapsed, a socket no route joins hides; a hover shows them. Its host writes it",
+              "type": {
+                "text": "boolean"
+              }
             },
             {
               "name": "data-icon",
@@ -7986,6 +8042,13 @@
             {
               "name": "data-resizable",
               "description": "the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way. It follows the app's `resizeNodes` setting.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-reveal",
+              "description": "the hidden sockets show, as on a hover: a line is being dragged. Its host writes it",
               "type": {
                 "text": "boolean"
               }

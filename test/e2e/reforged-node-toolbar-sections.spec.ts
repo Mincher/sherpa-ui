@@ -2,8 +2,8 @@ import { test, expect } from './harness';
 import type { Page } from '@playwright/test';
 
 /**
- * The node editor's toolbar is three sections with a small divider between each: Fetch, Play, Pause and Stop;
- * Undo, Redo and Save; the graph's shape. Play goes on from a pause; Pause and Stop can be pressed only while a
+ * The node editor's toolbar is four sections with a small divider between each: Fetch, Play, Pause and Stop;
+ * Undo, Redo and Save; the graph's shape; the view (Collapse all, Hide unconnected). Play goes on from a pause; Pause and Stop can be pressed only while a
  * run is on. Real pointer where it presses; the states read from the buttons.
  */
 async function mount(page: Page): Promise<void> {
@@ -22,12 +22,12 @@ const set = (page: Page, attrs: Record<string, boolean>) => page.evaluate(async 
   await window.__settled();
 }, attrs);
 
-test('three button groups: Fetch, Play, Pause, Stop | Undo, Redo, Save | the graph\'s shape, with a divider between each', async ({ page }) => {
+test('four button groups: Fetch, Play, Pause, Stop | Undo, Redo, Save | the graph\'s shape | the view, with a divider between each', async ({ page }) => {
   await mount(page);
   const order = await page.evaluate(() => [...document.querySelector('#bar')!.shadowRoot!.querySelectorAll('.tools > *')].flatMap((n) => (n.classList.contains('divider') ? ['|'] : n.localName === 'sherpa-group' ? [...n.children].map((c) => c.className.split(' ')[0]) : [n.className])));
-  expect(order).toEqual(['fetch', 'play', 'pause', 'stop', '|', 'undo', 'redo', 'save', '|', 'tie', 'group', 'arrange', 'unfurl', 'frame']);
+  expect(order).toEqual(['fetch', 'play', 'pause', 'stop', '|', 'undo', 'redo', 'save', '|', 'tie', 'group', 'arrange', 'unfurl', 'frame', '|', 'collapse', 'hide']);
   const dividers = await page.evaluate(() => [...document.querySelector('#bar')!.shadowRoot!.querySelectorAll('.divider')].map((d) => { const r = d.getBoundingClientRect(); return [r.width > 0, r.height > 0]; }));
-  expect(dividers).toEqual([[true, true], [true, true]]);
+  expect(dividers).toEqual([[true, true], [true, true], [true, true]]);
 });
 
 test('Play starts; while it runs Play and Fetch wait and Pause and Stop work; paused, Play goes on and Pause is off', async ({ page }) => {
@@ -83,7 +83,7 @@ test('each section is its own sherpa-group, and the gap each side of a divider i
     const [a, b] = [groups[0]!.getBoundingClientRect(), groups[1]!.getBoundingClientRect()];
     return { groups: groups.length, before: Math.round(div.left - a.right), after: Math.round(b.left - div.right) };
   });
-  expect(read.groups).toBe(3);
+  expect(read.groups).toBe(4);
   expect(read.before).toBeGreaterThanOrEqual(8);
   expect(read.after).toBeGreaterThanOrEqual(8);
 });
