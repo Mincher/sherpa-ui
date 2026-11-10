@@ -270,8 +270,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
     return seen;
   }
 
-  /** The zoom the plane last took: a pan leaves the nodes' styles alone. */
-  #planeZoom: number | null = null;
+  /** The ring the plane's pieces last took, in whole plane px: a pan, and most zoom steps, leave the nodes' styles alone. */
+  #planeRing: number | null = null;
 
   /** Write the view where CSS reads it — only on the layers that draw by it — redraw the minimap's frame, and report. */
   #apply(report = true): void {
@@ -286,7 +286,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
       plane.setAttribute('data-x', String(this.#x));
       plane.setAttribute('data-y', String(this.#y));
       plane.setAttribute('data-zoom', String(this.#zoom));
-      if (this.#planeZoom !== this.#zoom) plane.style.setProperty('--_zoom', String((this.#planeZoom = this.#zoom)));
+      // Every node inherits it, and one write restyles them all (1.5s at 2,000): whole px change 4 times from 0.25 to 1.
+      // TRAP T-a-scaled-hairline-paints-past-its-box
+      const ring = Math.ceil(1 / this.#zoom);
+      if (this.#planeRing !== ring) plane.style.setProperty('--_ring', `${(this.#planeRing = ring)}px`);
     }
     this.set('data-zoom', String(SherpaLayoutCanvas.#round(this.#zoom)));
     const at = Math.round(this.#zoom * 100);

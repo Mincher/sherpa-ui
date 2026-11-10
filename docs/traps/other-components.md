@@ -1315,8 +1315,8 @@ and a change to the value it just wrote is not heard as a host's.
 
 ### T-a-scaled-hairline-paints-past-its-box
 
-**Every piece on the canvas's plane wears a clear ring one screen px wide**
-(`box-shadow: 0 0 0 calc(1px / var(--_zoom)) transparent`, in the canvas's
+**Every piece on the canvas's plane wears a clear ring one screen px wide or
+more** (`box-shadow: 0 0 0 var(--_ring) transparent`, in the canvas's
 `.plane ::slotted(*)`), because Chromium paints a ROUNDED hairline past its box
 and repaints only the box when it moves. TODO 799, measured 2026-11-05.
 
@@ -1341,6 +1341,10 @@ and repaints only the box when it moves. TODO 799, measured 2026-11-05.
   zoom, which covers the most the bleed can reach (half a device px). Of the
   clear things tried, only a box shadow grows what a move repaints: a clear 2px
   `outline` on the node, or a clear `::before` 2px past it, left all 128 pixels.
+- **The ring is in WHOLE plane px, `ceil(1 / zoom)`**, never `1px / zoom`: every
+  node inherits the plane's value, and one write restyles them all — 1.5 s a zoom
+  step at 2,000 nodes (Demos, 2026-11-11), 55 ms with whole px, which change 4
+  times from 0.25 to 1. Plan 852.
 - **Forced colours drop every box shadow**, so the ring goes there, and the line
   can stay in Chromium under 1 zoom.
 - A piece's own `box-shadow`, set in the page's CSS, wins over the ring.
@@ -1349,6 +1353,7 @@ and repaints only the box when it moves. TODO 799, measured 2026-11-05.
   which repaints all of it. The two must match round the old place and the new.
 
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `test/e2e/reforged-a-moved-node-leaves-no-trace.spec.ts`
 
 ### T-a-node-moves-itself-and-reports
@@ -1797,6 +1802,8 @@ reaches it, its fields take focus and typing, assistive tech reads it; `getBound
   60 ms with 15 drawn, 17–22 ms with only those in view.
 - **An element not drawn has no drawn place**: its box reads as its hidden place in flow. Code must read a place from the
   model, never from layout (plan 852, step 2).
+- **Every box is read before the first draw**, and `drawable` written after the last: a draw dirties layout, so a
+  read after one laid the whole canvas out again — 16 layouts a pan step at 2,000 nodes, now 2 (one is the engine's).
 - **What overhangs an element is drawn** from a source box `OVERHANG` px (64) past it each way (a node's socket tabs, a
   fork's True and False, its caption); without it, the snapshot is clipped to the element's own box. 32 cut a 40px
   socket's tab.

@@ -124,33 +124,35 @@ export class SherpaCanvas extends SherpaElement {
     const [x, y, zoom] = [this.num('data-x', 0), this.num('data-y', 0), this.num('data-zoom', 1)];
     const k = canvas.clientWidth ? canvas.width / canvas.clientWidth : devicePixelRatio;
     const [vw, vh] = [canvas.clientWidth, canvas.clientHeight];
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(k * zoom, 0, 0, k * zoom, k * x, k * y);
-    let again = false;
-    for (const el of this.#items()) {
+    // EVERY box read first: a draw dirties layout, so a read after one lays the whole canvas out again (16 layouts a pan
+    // step at 2,000 nodes, 2026-11-11).
+    const items = this.#items().map((el) => {
       const style = getComputedStyle(el);
       const [left, top] = [parseFloat(style.left) || 0, parseFloat(style.top) || 0];
       // Its own box: an SVG has no offset size, only its CSS box.
       const [w, h] = el instanceof HTMLElement ? [el.offsetWidth, el.offsetHeight] : [el.clientWidth, el.clientHeight];
       const seen = (left - OVERHANG) * zoom + x < vw && (top - OVERHANG) * zoom + y < vh
         && (left + w + OVERHANG) * zoom + x > 0 && (top + h + OVERHANG) * zoom + y > 0;
-      if (!seen) {
-        if (el.hasAttribute('drawable')) el.removeAttribute('drawable');
-        continue;
-      }
-      // Newly drawable: it has no snapshot until the next paint.
-      if (!el.hasAttribute('drawable')) {
-        el.setAttribute('drawable', '');
-        again = true;
-        continue;
-      }
+      return { el, left, top, w, h, seen };
+    });
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k * zoom, 0, 0, k * zoom, k * x, k * y);
+    let again = false;
+    for (const { el, left, top, w, h, seen } of items) {
+      if (!seen || !el.hasAttribute('drawable')) continue;
       try {
         const [sw, sh] = [w + 2 * OVERHANG, h + 2 * OVERHANG];
         ctx.drawElementImage(el, -OVERHANG, -OVERHANG, sw, sh, left - OVERHANG, top - OVERHANG, sw, sh);
       } catch {
         again = true;
       }
+    }
+    // Then the writes: what the view shows is drawable, the rest not. One newly drawable has no snapshot until the next paint.
+    for (const { el, seen } of items) {
+      if (seen === el.hasAttribute('drawable')) continue;
+      el.toggleAttribute('drawable', seen);
+      again ||= seen;
     }
     if (again) canvas.requestPaint();
   };

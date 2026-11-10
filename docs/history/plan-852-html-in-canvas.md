@@ -114,3 +114,29 @@ is not in the repo (/private/tmp/claude-502/probe/hic-spike.mjs).
    **Built, 2026-11-11**: the `chrome` project runs every spec that puts a layout canvas on the page (364), all green
    drawn; CI's `e2e-drawn` job installs Google Chrome and runs it.
 6. **Measure** in Demos (the Records graph, the Node editor page), both ways; the trap, the APP-GUIDE, the Map.
+
+## Measured in Demos — 2026-11-11 (step 6)
+
+Chrome 157, DPR 2, 1440×900, the Node editor (`?context=node-editor`), its own graph and 2,000 more nodes as in the spike;
+drawn, and plain in the SAME Chrome (`drawElementImage` taken away before load). Main-thread ms per act, two runs each;
+the script is not in the repo.
+
+| 2,000 nodes | drawn, as built | drawn, fixed | plain, as built | plain, fixed |
+|---|---:|---:|---:|---:|
+| First load | 4,430 | 4,030 | 4,120 | 4,045 |
+| A pan step | 257 | 52 | 43 | 40 |
+| A zoom step | 1,996 | 81 | 1,638 | 54 |
+| A node drag, a move | 97 | 80 | 71 | 54 |
+| A typed letter | — | 41 | — | 68 |
+
+With the Workflows graph alone (5 nodes) and Page filters (7), the two are the same within a ms or two, and they look
+the same, pixel for pixel.
+
+- **The zoom cost was the hairline ring, not the plane**: the plane's `--_zoom` reached every node, and each zoom step
+  restyled them all (1.5 s at 2,000), drawn or plain. The ring is in whole plane px now (TRAP
+  T-a-scaled-hairline-paints-past-its-box). The spike's DOM plane carried it too, so its "zoom 2,106 → 71" compared the
+  canvas against that cost: plain, without it, zooms in 54.
+- **The drawn pan laid the canvas out 16 times a step**: a read after a draw. Every box is read first now; 2 layouts a
+  step are left, and the second is the engine's own (keeping every box, read only as it moves, changed nothing).
+- **So, at 2,000 nodes, drawn is slower than plain in a pan, a zoom and a drag** (by 12, 27 and 26 ms a step), and faster
+  only in typing (by 27 ms a letter). The canvas's gain in the spike does not hold against today's plane.
