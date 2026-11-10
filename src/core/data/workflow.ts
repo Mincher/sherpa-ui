@@ -42,6 +42,7 @@ import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } fr
 import { laneFaults, type NodeLane } from './node-lanes.js';
 import { orderStages, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
 import { connectionRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
+import { unreachedValues, valuesAt, valuesIn, type MessageSource } from './node-messages.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -599,8 +600,14 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const { type, known, of } = read ?? {};
     const op = kind.model === 'Condition' ? opWarning(at?.id, read) : undefined;
     if (op) warnings.push({ words: op });
+    let sources: MessageSource[] | undefined;
     const rows = kind.rows.map((row): GraphRow => {
       const has = values[row.name];
+      // A message's values: each one no route gives warns, by its row (plan 891).
+      if (row.control === 'message' && valuesIn(has).length) {
+        sources ??= valuesAt(workflow.nodes, flows, node.id, kinds, facts.fieldsOf);
+        for (const words of unreachedValues(has, sources, workflow.nodes, kinds, !!facts.fieldsOf)) warnings.push({ row: row.name, words });
+      }
       // A Value row with no values to pick from is typed, as it was.
       const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
       // A Unit says its words for the count beside it: "1 day", "7 days".
