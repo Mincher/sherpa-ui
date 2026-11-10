@@ -181,7 +181,7 @@ test('the Query editor unfurls too: every node moves, none overlaps, the places 
   expect(overlaps(now)).toEqual([]);
   expect(Object.keys(now).filter((id) => now[id]!.x !== was[id]!.x || now[id]!.y !== was[id]!.y).length).toBeGreaterThan(1);
   expect((await lines(page)).backwards).toBe(0);
-  const kept = await page.evaluate(() => (window as never as { session: { get(k: string): Record<string, { x: number; y: number }> } }).session.get('/nodes/records'));
+  const kept = await page.evaluate(() => (window as never as { session: { get(k: string): { places: Record<string, { x: number; y: number }> } } }).session.get('/node-layout/records').places);
   for (const [id, r] of Object.entries(now)) if (kept[id]) expect([kept[id]!.x, kept[id]!.y]).toEqual([r.x, r.y]);
   expect(Object.keys(kept).length).toBeGreaterThan(1);
 });

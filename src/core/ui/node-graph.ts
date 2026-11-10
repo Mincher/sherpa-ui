@@ -41,8 +41,6 @@
  * - Undoable — An editor whose edits are steps.
  * - WorkflowEditor — A workflow's editor: Save and stop, and the Custom Nodes it opens, discards and holds.
  * - handOver — Tell the app a definition to keep.
- * - QueryEditorOptions — What drawing a page's Query needs beyond its source: its definition, an inspector, a session.
- * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
  * - watchQuery — Light a page's Query graph as its source loads: the Source by the load and by its store's reads — the page's…
  * - GraphDocument — What the ONE node editor edits where it is not a stored workflow: a page's Query (plan 885).
  * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a node panel, a session, the kinds.
@@ -68,7 +66,7 @@ import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/s
 import { primaryKey } from './modifier-key.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
 import { dotsThrough, handlesOf, pathThrough, piece, waypointsOf, type Pt } from './route-path.js';
-import { bendFault, clampBend, clampedVia, dropBend, placeBend, type Bend } from '../data/route-bends.js';
+import { clampedVia } from '../data/route-bends.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
@@ -79,12 +77,9 @@ import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { drawLanes } from './node-lanes-ui.js';
 import { clearOfNodes, placeBeside, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
-import type { Query } from '../data/query.js';
-import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
-import { graphRequest, keptEdit, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
+import { type PageDefinition } from '../data/page-definition.js';
+import { queryStepNode, statusTallies, traceQuerySteps } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
-import { VIEW } from '../data/query.js';
-import { valueKey } from '../data/store.js';
 import { report } from '../data/report.js';
 import {
   checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
@@ -92,8 +87,8 @@ import {
 } from '../data/node-library.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
-import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
-import { PRESET_FILTER, offeredKinds } from '../data/entity-types.js';
+import { entityKind, type EntityRef } from '../data/entity.js';
+import { offeredKinds } from '../data/entity-types.js';
 import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
@@ -106,16 +101,9 @@ import { SherpaToast } from '../../components/sherpa-toast/sherpa-toast.js';
 import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalLinks, portalOf } from '../data/node-portals.js';
-import type { FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import {
-  FALSE_SOCKET, NODE_KINDS, categorySlug, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
-  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
-} from '../data/node-kinds.js';
-import {
-  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph,
-  type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
-} from '../data/workflow.js';
+import { FALSE_SOCKET, NODE_KINDS, categorySlug, fitOf, paletteOf, rowChoices, socketOf, socketType, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -2148,293 +2136,7 @@ function pickedIn(
   };
 }
 
-/** The Sources a reader keeps in a Query, as a session keeps them. */
-function isKept(v: unknown): v is KeptSource[] {
-  return Array.isArray(v) && v.every((k: Partial<KeptSource> | null) => typeof k?.id === 'string' && typeof k.store === 'string');
-}
 
-/** Each node's place, as a session keeps it. */
-function isPlaces(v: unknown): v is NodePlaces {
-  return !!v && typeof v === 'object' && !Array.isArray(v)
-    && Object.values(v).every((p: { x?: unknown; y?: unknown; size?: { w?: unknown; h?: unknown } } | null) => typeof p?.x === 'number' && typeof p?.y === 'number'
-      && (p.size === undefined || (typeof p.size.w === 'number' && typeof p.size.h === 'number')));
-}
-
-/** What drawing a page's Query needs beyond its source: the definition, the page's
- *  components, an inspector, and a session to keep each node's place. */
-export interface QueryEditorOptions extends QueryGraphFacts {
-  definition: PageDefinition;
-  /** The overlay panel a picked node opens in: its rows again, and a component's live visual. */
-  inspector?: Inspector;
-  /** Where a moved node's place is kept for the tab (TODO 551): it survives a reload, and the session's end forgets it. */
-  session?: SessionStore;
-  /** A `sherpa-node-toolbar`: its Undo and Redo step the Query's draft, and it says when they can be pressed. */
-  toolbar?: HTMLElement;
-  /** The node panel floating on the canvas: it lists the kinds a Query takes placed, and each one asked for is a request. */
-  panel?: SherpaNodeList;
-  /** Where a component node's live copy is copied from, by id: the page's markup where the page is not on screen. Default, the document. */
-  markup?: NonElementParentNode;
-}
-
-/** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
- *  It draws what the controls show — the draft — and ASKS through the one door a chip
- *  asks through: whether a change applies at once or waits for Apply is the Query's,
- *  and so is a slot's Sort and Group. TRAP T-one-command-one-door */
-export function bindQueryEditor(
-  canvas: SherpaLayoutCanvas,
-  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state' | 'results' | 'addEventListener' | 'removeEventListener'>>,
-  { definition, inspector, session, toolbar, panel, markup = document, ...facts }: QueryEditorOptions,
-): GraphEditor & Undoable {
-  const query = source.query;
-  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
-  const values = facts.values ?? ((field: string) => source.valuesFor?.(field)?.map((v) => valueKey(v)));
-  // A moved node's place: the reader's for the tab. TODO 551
-  const pointer = `/nodes/${definition.id}`;
-  session?.persist(pointer, { shared: false, guard: isPlaces });
-  let places: NodePlaces = (session?.get(pointer) as NodePlaces | undefined) ?? {};
-  const onMove = (node: GraphNode, x: number, y: number): void => {
-    places = { ...places, [node.id]: { ...places[node.id], x, y } };
-    session?.set(pointer, places);
-  };
-  // Picked nodes moved together, or arranged: every place in one write, and an arranged route's bends reset. TODO 752
-  const onMoveMany = (moves: { id: string; x: number; y: number }[]): void => {
-    places = { ...places, ...Object.fromEntries(moves.map((m) => [m.id, { ...places[m.id], x: m.x, y: m.y }])) };
-    session?.set(pointer, places);
-  };
-  const onArrange = (placed: Arranged): void => {
-    onMoveMany(Object.entries(placed.nodes).map(([id, p]) => ({ id, ...p })));
-    const touched = (r: NodeRoute): boolean => socketOf(r.from).node in placed.nodes || socketOf(r.to).node in placed.nodes;
-    keepBends(Object.fromEntries(Object.entries(bends).filter(([key]) => !graph.routes.some((r) => bendKey(r) === key && touched(r)))));
-  };
-  // A resized node's size: the reader's for the tab, kept beside its place. TODO 740
-  const onResize = (node: GraphNode, size: NodeSize): void => {
-    places = { ...places, [node.id]: { x: node.x, y: node.y, ...places[node.id], size } };
-    session?.set(pointer, places);
-  };
-  // A Source the page does not read is the editor's, kept for the tab beside the places: placed, its Store picked, deleted,
-  // each an Undo step. Save writes the page's definition, so it is never saved. TRAP T-a-second-source-is-kept
-  const keptAt = `/node-sources/${definition.id}`;
-  session?.persist(keptAt, { shared: false, guard: isKept });
-  let kept: readonly KeptSource[] = (session?.get(keptAt) as KeptSource[] | undefined) ?? [];
-  const keep = (next: readonly KeptSource[]): void => {
-    kept = next;
-    session?.set(keptAt, kept);
-    draw();
-    note();
-  };
-  const onEdit = (edit: GraphEdit): void => {
-    const edited = keptEdit(kept, edit);
-    if (edited) return keep(edited);
-    const request = graphRequest(edit, { type: typeOf });
-    if (!request) return;
-    query.ask(request);
-    // The page size is the source's, not the Query's: no query-change tells it.
-    if (edit.node.kind === 'source') draw();
-  };
-  const onConnect = (route: NodeRoute): void => {
-    const answer = routeRequest(graph, route, { type: typeOf, values });
-    if (answer && 'refused' in answer) report({ code: 'query-route', message: answer.refused });
-    else if (answer) query.ask(answer.request);
-  };
-  // A node the reader asked for, from the panel or "Add a node": a request through the one door, or a fault in words.
-  // The graph is derived, so a placed node appears where the Query draws it. TRAP T-one-command-one-door
-  const place = (kind: string, context?: AddContext): void => {
-    const from = context && graph.nodes.find((n) => n.id === socketOf(context.socket).node);
-    // A Preset Filter is asked of the scope that declares it. TODO 776
-    const own = customs().find((c) => c.id === kind)?.scope;
-    const answer = placeRequest(kind, own ?? from?.ref?.['scope'] ?? VIEW, {
-      holds: (scope) => query.scope(scope), fields: (scope) => query.fields(scope),
-      presets: (scope) => query.presets(scope), on: (scope, id) => query.presetOn(scope, id),
-      kept, ...(definition.source?.store ? { store: definition.source.store } : {}), ...(facts.stores ? { stores: facts.stores } : {}),
-    });
-    if ('refused' in answer) report({ code: 'query-place', message: answer.refused });
-    else if ('keep' in answer) keep([...kept, answer.keep]);
-    else query.ask(answer.request);
-  };
-  const onAdded = (event: Event): void => {
-    const { kind, context } = (event as CustomEvent<{ kind: string; context?: AddContext }>).detail;
-    place(kind, context);
-  };
-  panel?.addEventListener('node-add', onAdded);
-  // The page's Preset Filters, as its Query declares them: Custom Nodes, each switched on where it is declared. TODO 776
-  const scopesOf = (): string[] => [...new Set([VIEW, ...Object.keys(definition.source?.scopes ?? {}), ...Object.keys(query.draft.scopes)])];
-  const customs = (): { id: string; label: string; scope: string }[] => scopesOf().flatMap((scope) => query.presets(scope)
-    .filter((p) => entityRefOf(p.id).type === PRESET_FILTER).map((p) => ({ id: p.id, label: p.label, scope })));
-  let listed = '';
-  const fillPanel = (): void => {
-    const now = customs();
-    const said = JSON.stringify(now);
-    if (said === listed) return;
-    listed = said;
-    const kinds: Record<string, NodeKind> = Object.fromEntries(now.map((c) => [c.id, {
-      heading: c.label, icon: 'filter', description: 'This page\'s Preset Filter.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes',
-    }]));
-    void panel?.populate(paletteOf({ ...NODE_KINDS, ...kinds }, 'query'));
-  };
-  // The node in the inspector, and its live visual: kept while the same component is shown.
-  let visual: { id: string; el: HTMLElement } | null = null;
-  const visualOf = (node: GraphNode): HTMLElement | null => {
-    const id = node.ref?.['component'];
-    const page = id ? markup.getElementById(id) : null;
-    if (!id || !page) return null;
-    if (visual?.id === id) return visual.el;
-    // A COPY of the page's own component: it asks the provider as the page's does,
-    // so it draws what the Query says. Its ids would clash, so it has none.
-    const el = document.importNode(page, true) as HTMLElement;
-    for (const one of [el, ...el.querySelectorAll('[id]')]) one.removeAttribute('id');
-    const scope = node.ref?.['scope'];
-    if (scope && scope !== VIEW) el.setAttribute('data-scope', scope);
-    el.style.blockSize = '18rem';
-    visual = { id, el };
-    return el;
-  };
-  let inspected: string | null = null;
-  const picks = pickedIn(canvas, inspector, (node, now) => {
-    inspected = node.id;
-    inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node), ...(node.ref?.['kept'] ? { onRemove: () => removeNodes([node.id]) } : {}) });
-  }, () => { visual = null; inspected = null; }, () => removeNodes(inspected ? [inspected] : []));
-  keepOpen(inspector);
-  let graph: DrawnGraph = { nodes: [], routes: [] };
-  /** A cut is reported, never applied: once, however many routes are picked. */
-  const cutRefused = (): void => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' });
-  // A bend is a LAYOUT fact, kept for the tab beside the nodes' places: the Query's routes are readings, which hold none. TODO 744
-  const bendsAt = `/node-bends/${definition.id}`;
-  session?.persist(bendsAt, { shared: false, guard: (v): v is Record<string, Bend[]> => !!v && typeof v === 'object' && !Array.isArray(v) && Object.values(v).every((b) => !bendFault(b)) });
-  let bends = (session?.get(bendsAt) as Record<string, Bend[]> | undefined) ?? {};
-  const bendKey = (r: NodeRoute): string => `${r.from}>${r.to}`;
-  const keepBends = (next: Record<string, Bend[] | undefined>): void => {
-    bends = Object.fromEntries(Object.entries(next).flatMap(([k, v]) => (v ? [[k, v]] : [])));
-    session?.set(bendsAt, bends);
-    draw();
-  };
-  const onBend = (route: NodeRoute, at: number, x: number, y: number, insert: boolean): void => {
-    const [a, b] = [socketOf(route.from).node, socketOf(route.to).node].map((id) => graph.nodes.find((n) => n.id === id));
-    const placed = a && b ? clampBend({ from: a.x + NODE_WIDTH, to: b.x }, bends[bendKey(route)], at, x, insert) : x;
-    keepBends({ ...bends, [bendKey(route)]: placeBend(bends[bendKey(route)], at, placed, y, insert).via });
-  };
-  const onUnbend = (route: NodeRoute, index: number): void => keepBends({ ...bends, [bendKey(route)]: dropBend(bends[bendKey(route)], index) });
-  const removeRefused = (): void => report({ code: 'query-remove', message: 'The Query\'s nodes are its readings: turn a condition off, or clear it, to take it from its scope.' });
-  // A kept Source goes; any other node is a reading, and stays.
-  const removeNodes = (ids: readonly string[]): void => {
-    const gone = kept.filter((k) => ids.includes(k.id));
-    if (gone.length) {
-      if (gone.some((k) => k.id === inspected)) picks.deselect();
-      keep(kept.filter((k) => !gone.includes(k)));
-    }
-    if (gone.length < ids.length) removeRefused();
-  };
-  const draw = (): void => {
-    const read = placed(queryGraph(query.draft, definition, {
-      ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null, kept,
-    }), places);
-    graph = { ...read, routes: read.routes.map((r) => (bends[bendKey(r)] ? { ...r, via: bends[bendKey(r)]! } : r)) };
-    fillPanel();
-    drawGraph(canvas, graph, {
-      onEdit, onMove, onMoveMany, onArrange, onResize, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect, onBend, onUnbend,
-      onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
-      // Its routes are readings, which another field or scope takes: a moved end is a new route.
-      onReroute: (_was, now) => onConnect(now),
-      ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
-      onBreak: cutRefused, onBreakAll: cutRefused, onRemove: removeNodes,
-      // A box picks, and opens no panel (756); an open one shows the one node, and shuts for several or none. TODO 735
-      onBox: (ids) => {
-        const node = ids.length === 1 ? graph.nodes.find((n) => n.id === ids[0]) : undefined;
-        if (node) picks.peek(node, graph);
-        else picks.deselect();
-      },
-      onPicked: (routes) => toolbar?.setAttribute('data-picked-routes', String(routes.length)),
-    });
-    toolbar?.toggleAttribute('data-can-unfurl', graph.nodes.length > 1);
-    picks.follow(graph);
-  };
-  draw();
-  // — Undo and Redo: the Query's draft, as copies, before and after each change anyone made (a chip's too), and the kept Sources.
-  //   A step is put back through the Query's own whole restore, so every reader redraws as for any edit.
-  //   Where a scope waits for Apply a step moves the DRAFT only (`restoreDraft`): an Apply is no step. TRAP T-an-edit-is-a-step
-  const journal = new Journal<{ query: Query; kept: readonly KeptSource[] }>(HISTORY);
-  let last = { query: query.draft, kept };
-  let restoring = false;
-  const tell = (): void => {
-    toolbar?.toggleAttribute('data-can-undo', journal.canBack);
-    toolbar?.toggleAttribute('data-can-redo', journal.canForward);
-    canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
-  };
-  const note = (): void => {
-    if (restoring) return;
-    const now = { query: query.draft, kept };
-    if (JSON.stringify(now) !== JSON.stringify(last)) journal.push({ before: last, after: now });
-    last = now;
-    tell();
-  };
-  const onChange = (): void => {
-    draw();
-    note();
-  };
-  const step = (to: { query: Query; kept: readonly KeptSource[] } | undefined): boolean => {
-    if (!to) return false;
-    restoring = true;
-    kept = to.kept;
-    session?.set(keptAt, kept);
-    draw();
-    const asked = JSON.stringify(to.query) === JSON.stringify(query.draft) ? Promise.resolve() : query.restoreDraft(to.query, { by: 'undo' });
-    void asked.finally(() => {
-      restoring = false;
-      last = { query: query.draft, kept };
-      tell();
-    });
-    return true;
-  };
-  const undo = (): boolean => !restoring && journal.canBack && step(journal.back()?.before);
-  const redo = (): boolean => !restoring && journal.canForward && step(journal.forward()?.after);
-  const onTool = (event: Event): void => {
-    const action = (event as CustomEvent<{ action?: string }>).detail?.action;
-    if (action === 'undo') undo();
-    else if (action === 'redo') redo();
-    else if (action === 'arrange') arrangePicked(canvas);
-    else if (action === 'unfurl') unfurlGraph(canvas);
-  };
-  const unarrange = watchArrange(canvas, toolbar);
-  const unview = watchView(canvas, toolbar);
-  const onKey = (event: KeyboardEvent): void => {
-    const first = event.composedPath()[0];
-    if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
-    const key = event.key.toLowerCase();
-    if (!primaryKey(event) || event.altKey || (key !== 'z' && key !== 'y')) return;
-    if (key === 'y' || event.shiftKey) redo();
-    else undo();
-    event.preventDefault();
-    event.stopPropagation();
-  };
-  query.addEventListener('query-change', onChange);
-  toolbar?.addEventListener('toolbar-select', onTool);
-  canvas.addEventListener('keydown', onKey, { capture: true });
-  tell();
-  const unwatch = watchQuery(canvas, source, definition);
-  return {
-    undo,
-    redo,
-    can: () => ({ undo: journal.canBack, redo: journal.canForward }),
-    save(): boolean {
-      const page = pageWithQuery(definition, query.draft, { pageSize: source.state?.pageSize ?? null, type: (f) => typeOf(f) as FieldType | undefined });
-      if (!checkPage(page)) return false;
-      handOver(canvas, page);
-      return true;
-    },
-    stop(): void {
-      query.removeEventListener('query-change', onChange);
-      toolbar?.removeEventListener('toolbar-select', onTool);
-      unarrange();
-      unview();
-      toolbar?.removeAttribute('data-can-unfurl');
-      panel?.removeEventListener('node-add', onAdded);
-      canvas.removeEventListener('keydown', onKey, { capture: true });
-      toolbar?.removeAttribute('data-can-undo');
-      toolbar?.removeAttribute('data-can-redo');
-      unwatch();
-      picks.stop();
-    },
-  };
-}
 
 /**
  * Light a page's Query graph as its source loads: the Source by the load and by its
@@ -2624,7 +2326,7 @@ export function bindWorkflow(
   let handedTags: readonly string[] = own ? tidyTags(lib.nodes[own]?.tags) : [];
   let ownTags: readonly string[] = (session?.get(tagsAt) as string[] | undefined) ?? handedTags;
   const dirty = new Set(Object.keys(edited));
-  const topKinds = (): Readonly<Record<string, NodeKind>> => ({ ...kinds, ...kindsOf(lib) });
+  const topKinds = (): Readonly<Record<string, NodeKind>> => ({ ...(doc?.kinds ?? kinds), ...kindsOf(lib) });
   // This tab's draft wins: a reload loses nothing. What a v1's read cannot map is said once.
   const kept = session?.get(pointer) as WorkflowDefinition | WorkflowDefinitionV1 | undefined;
   const read = readWorkflow(kept ?? structuredClone(workflow), topKinds());
@@ -2718,6 +2420,8 @@ export function bindWorkflow(
           }
           draft = doc.read();
           docLast = doc.snapshot();
+          // What it kept is drawn: its ids, its new nodes, its refusals undone.
+          draw();
         }
         const moved = doc ? !same(docBefore, docLast) : begun!.draft !== draft || begun!.tags !== ownTags || ids.length > 0;
         if (moved) {

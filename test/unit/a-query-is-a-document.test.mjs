@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { queryGraph } = await import(new URL('query-graph.js', core));
-const { queryDefinition, reconcileQuery, layoutOf, laidOut, isGraphLayout } = await import(new URL('query-document.js', core));
+const { queryDefinition, reconcileQuery, rowRequest, layoutOf, laidOut, isGraphLayout } = await import(new URL('query-document.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));
 const { NODE_KINDS } = await import(new URL('node-kinds.js', core));
@@ -39,6 +39,11 @@ const opened = async () => {
   /** Write a definition: reconcile it, ask each request, keep the layout. What it refused comes back. */
   const write = (next) => {
     const done = reconcileQuery(read(), next, graph(), { ...facts, place, kept: [] });
+    // As the document does: each row against the Query as the last one left it.
+    for (const row of done.edits) {
+      const asked = rowRequest(graph(), row, { ...facts, kept: [] });
+      if (asked?.request) q.ask(asked.request);
+    }
     for (const request of done.requests) q.ask(request);
     layout = done.layout;
     return done;
@@ -58,7 +63,7 @@ test('read: the Query\'s nodes and routes, each node\'s rows as its values', asy
 test('a row\'s new value is the Query\'s request, and reads back', async () => {
   const { read, write, q } = await opened();
   const done = write(editWorkflow(read(), { node: 'when-view-seats.1', row: 'b', value: '7' }, NODE_KINDS));
-  assert.equal(done.requests.length, 1);
+  assert.deepEqual(done.edits, [{ node: 'when-view-seats.1', row: 'b', value: '7' }]);
   assert.deepEqual(done.refused, []);
   assert.deepEqual(values(read(), 'when-view-seats.1'), { type: 'lt', b: 7 });
   assert.equal(q.draft.scopes.view.readings.seats.tree.or[0].value, 7);
@@ -73,7 +78,7 @@ test('the layout never reaches the Query: a move, a tie, a frame, stages and lan
   def = editWorkflow(def, { addStage: { label: 'Decide' } }, NODE_KINDS);
   def = editWorkflow(def, { lanes: LANES_BY_FAMILY }, NODE_KINDS);
   const done = write(def);
-  assert.deepEqual(done.requests, []);
+  assert.deepEqual([done.edits, done.requests], [[], []]);
   assert.equal(JSON.stringify(q.draft), was, 'the Query is as it was');
   const back = read();
   assert.deepEqual([back.nodes.find((n) => n.id === 'field-view-seats').x, back.nodes.find((n) => n.id === 'field-view-seats').y], [999, 444]);
@@ -88,9 +93,9 @@ test('a cut route, or a removed reading, is refused in words, and the Query is a
   const { read, write, q } = await opened();
   const was = JSON.stringify(q.draft);
   const cut = write(editWorkflow(read(), { cut: { from: 'when-view-seats.1', to: 'when-view-seats' } }, NODE_KINDS));
-  assert.equal(cut.refused.length, 1);
+  assert.deepEqual(cut.refused.map((r) => r.code), ['query-route']);
   const gone = write(editWorkflow(read(), { remove: 'when-view-seats.2.1' }, NODE_KINDS));
-  assert.equal(gone.refused.length, 1);
+  assert.deepEqual(gone.refused.map((r) => r.code), ['query-remove']);
   assert.equal(JSON.stringify(q.draft), was);
 });
 

@@ -19,11 +19,13 @@ export {
   type PersistOptions as SessionPersistOptions,
 } from './core/browser/session.js';
 export { bindSettings, persistSettings } from './core/ui/bind-settings.js';
-/* A graph of nodes on a canvas, and the two editors drawn there: a page's Query, a workflow. TODOs 555, 551 */
+/* A graph of nodes on a canvas, and the ONE editor drawn there: a workflow, or a document such as a page's Query. TODOs 555, 551, 885 */
 export {
-  bindQueryEditor, bindWorkflow, drawGraph, inspectNode, markNode, watchSteps,
-  type DrawOptions, type GraphEditor, type InspectOptions, type Inspector, type QueryEditorOptions, type WatchOptions, type WorkflowEditor, type WorkflowEditorOptions,
+  bindWorkflow, drawGraph, inspectNode, markNode, watchSteps,
+  type DrawOptions, type GraphDocument, type GraphEditor, type InspectOptions, type Inspector, type WatchOptions, type WorkflowEditor, type WorkflowEditorOptions,
 } from './core/ui/node-graph.js';
+// ONE node editor on a page's Query: the Query as a document (plan 885). TRAP T-one-node-editor
+export { bindQueryEditor, queryDocument, type QueryEditorOptions } from './core/ui/query-editor.js';
 // A page's state as ONE document, and its one keeper: each part in its tier. TRAP T-one-page-one-document
 export {
   PageKeeper, NODES_PAGE, sessionTier, localTier, memoryTier, viewSig,

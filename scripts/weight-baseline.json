@@ -1,8 +1,8 @@
 {
   "app.js": {
-    "files": 195,
+    "files": 197,
     "brotli": {
-      "js": 333800,
+      "js": 334858,
       "fetched": 0
     }
   },
@@ -541,14 +541,14 @@
   "data.js": {
     "files": 94,
     "brotli": {
-      "js": 138674,
+      "js": 138851,
       "fetched": 0
     }
   },
   "index.js": {
-    "files": 267,
+    "files": 268,
     "brotli": {
-      "js": 472273,
+      "js": 471917,
       "fetched": 8593
     }
   }

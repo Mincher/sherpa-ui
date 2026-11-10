@@ -1259,3 +1259,21 @@ controls it binds to steer, and a binding skips an event whose ORIGIN
 
 - Site: `src/core/ui/bind-source.ts`
 - Site: `test/e2e/reforged-nested-binding.spec.ts`
+
+### T-one-node-editor
+
+**There is ONE node editor** (Will, 2026-11-10: "It was never my intention to have multiple implementations of node graphs,
+editing, or the node editor"; plan 885). `bindWorkflow` edits a stored workflow, or a DOCUMENT given as `document`: a page's
+Query today (`bindQueryEditor` is that, and only that). A document is read as a v2 definition with its layout, and an edit's
+writes reach it as ONE definition when the edit ends (`edit()`'s outermost close), so a placed node and the route that joins it
+arrive together. It reconciles them into what it holds — for a Query, the Query's own requests, a chip's door
+(`T-the-node-editor-asks-the-query`) — and the editor reads it back: the document's ids win. Undo keeps the document's own
+state (`snapshot`, `restore`), and a change from outside (a chip, Apply) is a step, as the Query editor's was.
+
+So every tool reaches every graph: a tool ends in a definition write, and a layout fact (places, bends, ties, frames, stages,
+lanes) is kept by the document (a Query keeps it in the session, beside the Query, which holds none of it). Never add a tool to
+one kind of graph only, and never write a second editor.
+
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/app.ts`
+- Site: `src/core/ui/query-editor.ts`

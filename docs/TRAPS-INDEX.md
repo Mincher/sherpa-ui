@@ -314,7 +314,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — persist-view
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (96)
+## The join and the app layer (97)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](traps/join-and-app.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -383,6 +383,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-nav-child-rows-carry-no-icon](traps/join-and-app.md#t-nav-child-rows-carry-no-icon) — outlet
 - [T-navigating-sets-up-the-page](traps/join-and-app.md#t-navigating-sets-up-the-page) — provider
 - [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — bind-source
+- [T-one-node-editor](traps/join-and-app.md#t-one-node-editor) — app
 - [T-one-page-one-document](traps/storage.md#t-one-page-one-document) — app, provider
 - [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — bind-source
 - [T-one-way-to-build-an-element](traps/join-and-app.md#t-one-way-to-build-an-element) — apply-state
@@ -923,7 +924,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-row-says-its-own-fault](traps/data-layer.md#t-a-row-says-its-own-fault) — node-graph
 - [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — filter-host-controller, shared-constants
 - [T-a-scroll-shadow-is-drawn-over-the-content](traps/element-and-sheets.md#t-a-scroll-shadow-is-drawn-over-the-content) — sherpa-base
-- [T-a-second-source-is-kept](traps/data-layer.md#t-a-second-source-is-kept) — node-graph
+- [T-a-second-source-is-kept](traps/data-layer.md#t-a-second-source-is-kept) — query-editor
 - [T-a-setting-is-declared-once](traps/data-layer.md#t-a-setting-is-declared-once) — sherpa-element
 - [T-a-shared-edge-is-halved-on-both-sides](traps/element-and-sheets.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
 - [T-a-shared-enum-is-not-every-enum](traps/element-and-sheets.md#t-a-shared-enum-is-not-every-enum) — sherpa-element
@@ -951,7 +952,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-abort-controller-per-connect](traps/menus-tips-overlays.md#t-abort-controller-per-connect) — sherpa-element
 - [T-abort-signal-any-is-collected](traps/element-and-sheets.md#t-abort-signal-any-is-collected) — sherpa-element
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — edge-resize
-- [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-graph
+- [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-graph, query-editor
 - [T-an-entity-is-used-as-a-node](traps/data-layer.md#t-an-entity-is-used-as-a-node) — node-graph
 - [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — icon-names, render-icon, settled, sherpa-element
 - [T-an-inactive-button-keeps-its-tip](traps/element-and-sheets.md#t-an-inactive-button-keeps-its-tip) — roving-focus, sherpa-button-look, tab-stops
@@ -991,9 +992,9 @@ files. An entry that only tests cite is under Tests only.
 - [T-non-value-rows-is-one-selector](traps/element-and-sheets.md#t-non-value-rows-is-one-selector) — shared-constants
 - [T-number-coercion](traps/element-and-sheets.md#t-number-coercion) — sherpa-element
 - [T-observe-what-does-work](traps/element-and-sheets.md#t-observe-what-does-work) — sherpa-element
-- [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — node-graph
+- [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — query-editor
 - [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — filter-host-controller
-- [T-one-node-editor](traps/element-and-sheets.md#t-one-node-editor) — node-graph
+- [T-one-node-editor](traps/join-and-app.md#t-one-node-editor) — node-graph, query-editor
 - [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — filter-host-controller
 - [T-one-tab-stop-per-set](traps/menus-tips-overlays.md#t-one-tab-stop-per-set) — roving-focus
 - [T-one-value-one-declaration](traps/data-grid.md#t-one-value-one-declaration) — sherpa-base
@@ -1021,7 +1022,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-app-layer-is-opt-in](traps/join-and-app.md#t-the-app-layer-is-opt-in) — components, index
 - [T-the-base-class-names-nothing-visual](traps/element-and-sheets.md#t-the-base-class-names-nothing-visual) — sherpa-element
 - [T-the-layers-are-one-scale](traps/element-and-sheets.md#t-the-layers-are-one-scale) — sherpa-layers
-- [T-the-node-editor-asks-the-query](traps/data-layer.md#t-the-node-editor-asks-the-query) — node-graph
+- [T-the-node-editor-asks-the-query](traps/data-layer.md#t-the-node-editor-asks-the-query) — node-graph, query-editor
 - [T-the-panel-keys-are-shift-and-a-number](traps/element-and-sheets.md#t-the-panel-keys-are-shift-and-a-number) — panel-keys
 - [T-the-shared-vocabulary-is-declared-once](traps/element-and-sheets.md#t-the-shared-vocabulary-is-declared-once) — sherpa-element
 - [T-the-templates-text-is-the-default](traps/element-and-sheets.md#t-the-templates-text-is-the-default) — directives

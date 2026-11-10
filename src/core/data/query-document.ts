@@ -11,9 +11,11 @@
  * - laidOut — A Query's derived graph, at the places, sizes and bends its layout gives.
  * - queryDefinition — A Query's drawn graph, and its layout, as a definition.
  * - layoutOf — The layout a definition holds.
+ * - RowEdit — One row's new value, by its node's id and the row's name.
  * - Reconciled — What a written definition asks of the Query.
  * - ReconcileFacts — What a reconcile needs of the Query: its types and values, its placing, and the kept Sources.
- * - reconcileQuery — What changed between two definitions, as requests, kept Sources, layout and refusals.
+ * - reconcileQuery — What changed between two definitions, as row edits, requests, kept Sources, layout and refusals.
+ * - rowRequest — What one row's new value asks, against the Query's graph as it is now.
  */
 import { placed, socketOf, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeRoute, type NodeTie } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
@@ -92,54 +94,61 @@ export function layoutOf(definition: WorkflowDefinition): GraphLayout {
   };
 }
 
-/** What a written definition asks of the Query: its requests, in order; the kept Sources, where they changed; the
+/** One row's new value, by its node's id and the row's name: asked of the Query as the edit of that row. */
+export interface RowEdit {
+  node: string;
+  row: string;
+  value: unknown;
+}
+
+/** What a written definition asks of the Query: its rows' new values, in order (a node's type first), to ask one at a
+ *  time against the Query as each leaves it (`rowRequest`); its other requests; the kept Sources, where they changed; the
  *  layout to keep; and what it cannot do, in words. */
 export interface Reconciled {
+  edits: RowEdit[];
   requests: QueryRequest[];
   kept?: KeptSource[];
   layout: GraphLayout;
-  refused: string[];
+  /** What it cannot do: a code (query-route, query-remove, query-place) and the words. */
+  refused: { code: string; message: string }[];
 }
 
 /** What a reconcile needs of the Query: its types and values, what placing a node needs, and the Sources the editor keeps. */
 export interface ReconcileFacts extends Pick<QueryGraphFacts, 'type' | 'values'> {
   place: PlaceFacts;
   kept: readonly KeptSource[];
+  /** The scope a kind of node belongs in wherever it is placed: a Preset Filter's declaring scope. */
+  scopeOf?: (kind: string) => string | undefined;
 }
 
-const READINGS = 'The Query\'s nodes and routes are its readings: turn a condition off, or clear it, to take it from its scope.';
+/** The words a cut or a removal is refused in: the Query's routes and nodes are its readings. */
+const ROUTES_READ = 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.';
+const NODES_READ = 'The Query\'s nodes are its readings: turn a condition off, or clear it, to take it from its scope.';
 
 /**
  * What changed between two definitions of a Query, as the Query's own requests: a row's new value (`graphRequest`, or a
  * kept Source's Store); a new route (`routeRequest`); a new node (`placeRequest`, in the scope of the node it joins, else
  * the View). A route cut, or a reading removed, is refused; a kept Source removed goes. The layout is the written one's.
- * `graph` is the Query's graph as `before` was drawn from it.
+ * `graph` is the Query's graph as `before` was drawn from it. A kind that belongs in one scope (`scopeOf`) is placed there.
  */
 export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefinition, graph: DrawnGraph, facts: ReconcileFacts): Reconciled {
+  const edits: RowEdit[] = [];
   const requests: QueryRequest[] = [];
-  const refused = new Set<string>();
+  const refused = new Map<string, { code: string; message: string }>();
+  const refuse = (code: string, message: string): void => { refused.set(`${code}:${message}`, { code, message }); };
   let kept: KeptSource[] | undefined;
   const drawn = new Map(graph.nodes.map((n) => [n.id, n]));
   const was = new Map(before.nodes.map((n) => [n.id, n]));
   const now = new Map(after.nodes.map((n) => [n.id, n]));
-  // A row's new value: each row whose value changed, as the edit of that row.
+  // A row's new value: each row whose value changed, a node's type first — the Query may reshape the rest itself.
   for (const node of after.nodes) {
     const old = was.get(node.id);
     const live = drawn.get(node.id);
     if (!old || !live) continue;
-    for (const name of new Set([...Object.keys(old.values ?? {}), ...Object.keys(node.values ?? {})])) {
-      const [a, b] = [old.values?.[name], node.values?.[name]];
-      if (JSON.stringify(a) === JSON.stringify(b)) continue;
-      const row = live.rows.find((r) => r.name === name);
-      if (!row) continue;
-      const edit: GraphEdit = { node: live, row, value: b };
-      const keptNext = keptEdit(kept ?? facts.kept, edit);
-      if (keptNext) kept = keptNext;
-      else {
-        const request = graphRequest(edit, facts);
-        if (request) requests.push(request);
-      }
-    }
+    const names = [...new Set([...Object.keys(old.values ?? {}), ...Object.keys(node.values ?? {})])]
+      .filter((name) => JSON.stringify(old.values?.[name]) !== JSON.stringify(node.values?.[name]) && live.rows.some((r) => r.name === name))
+      .sort((a, b) => Number(b === 'type') - Number(a === 'type'));
+    for (const name of names) edits.push({ node: node.id, row: name, value: node.values?.[name] });
   }
   // A new node: placed in the scope of the node it joins, else the View. Its own routes are the Query's to draw.
   const added = after.nodes.filter((n) => !was.has(n.id) && !drawn.has(n.id));
@@ -149,9 +158,9 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
       const [a, b] = [socketOf(r.from).node, socketOf(r.to).node];
       return a === node.id ? [b] : b === node.id ? [a] : [];
     });
-    const scope = joined.map((id) => drawn.get(id)?.ref?.['scope']).find(Boolean) ?? VIEW;
+    const scope = facts.scopeOf?.(node.kind) ?? joined.map((id) => drawn.get(id)?.ref?.['scope']).find(Boolean) ?? VIEW;
     const answer = placeRequest(node.kind, scope, { ...facts.place, kept: kept ?? facts.kept });
-    if ('refused' in answer) refused.add(answer.refused);
+    if ('refused' in answer) refuse('query-place', answer.refused);
     else if ('keep' in answer) kept = [...(kept ?? facts.kept), answer.keep];
     else requests.push(answer.request);
   }
@@ -162,17 +171,32 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
   for (const route of after.routes ?? []) {
     if (had.has(key(route)) || fresh.has(socketOf(route.from).node) || fresh.has(socketOf(route.to).node)) continue;
     const answer = routeRequest(graph, route, facts);
-    if (answer && 'refused' in answer) refused.add(answer.refused);
+    if (answer && 'refused' in answer) refuse('query-route', answer.refused);
     else if (answer) requests.push(answer.request);
   }
   for (const route of before.routes ?? []) {
-    if (!has.has(key(route)) && now.has(socketOf(route.from).node) && now.has(socketOf(route.to).node)) refused.add(READINGS);
+    if (!has.has(key(route)) && now.has(socketOf(route.from).node) && now.has(socketOf(route.to).node)) refuse('query-route', ROUTES_READ);
   }
   for (const node of before.nodes) {
     if (now.has(node.id)) continue;
     const own = drawn.get(node.id)?.ref?.['kept'];
     if (own) kept = (kept ?? facts.kept).filter((k) => k.id !== own);
-    else refused.add(READINGS);
+    else refuse('query-remove', NODES_READ);
   }
-  return { requests, ...(kept ? { kept } : {}), layout: layoutOf({ ...after, nodes: after.nodes.filter((n) => !fresh.has(n.id)) }), refused: [...refused] };
+  return { edits, requests, ...(kept ? { kept } : {}), layout: layoutOf({ ...after, nodes: after.nodes.filter((n) => !fresh.has(n.id)) }), refused: [...refused.values()] };
+}
+
+/**
+ * What one row's new value asks, against the Query's graph AS IT IS NOW: the Query's request, or a kept Source's new Store;
+ * nothing where the row already says it (the Query reshaped it when the type changed) or is gone.
+ */
+export function rowRequest(graph: DrawnGraph, edit: RowEdit, facts: Pick<ReconcileFacts, 'type' | 'kept'>): { request: QueryRequest } | { kept: KeptSource[] } | null {
+  const node = graph.nodes.find((n) => n.id === edit.node);
+  const row = node?.rows.find((r) => r.name === edit.row);
+  if (!node || !row || JSON.stringify(row.value ?? null) === JSON.stringify(edit.value ?? null)) return null;
+  const graphEdit: GraphEdit = { node, row, value: edit.value };
+  const kept = keptEdit(facts.kept, graphEdit);
+  if (kept) return { kept };
+  const request = graphRequest(graphEdit, facts);
+  return request ? { request } : null;
 }

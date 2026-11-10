@@ -6708,6 +6708,7 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/e2e/reforged-node-graph.spec.ts`
 - Site: `src/core/data/query-document.ts`
+- Site: `src/core/ui/query-editor.ts`
 
 ### T-one-node-registry
 
@@ -6769,9 +6770,9 @@ app registered that the page does not read.
   that waits for Will.
 
 - Site: `src/core/data/query-graph.ts`
-- Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-source-is-where-rows-come-from.test.mjs`
 - Site: `test/e2e/reforged-node-sources.spec.ts`
+- Site: `src/core/ui/query-editor.ts`
 
 ### T-a-field-reads-its-sources-fields
 
@@ -7361,7 +7362,6 @@ request's scope — with none named, or none drawing there, every source's.
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/bind-source.ts`
-- Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/one-command-one-door.test.mjs`
 - Site: `src/data.ts`
 - Site: `src/core/data/query-graph.ts`
@@ -7369,6 +7369,7 @@ request's scope — with none named, or none drawing there, every source's.
 - Site: `mcp-server/tools/query.js`
 - Site: `test/unit/the-mcp-query-tier.test.mjs`
 - Site: `test/e2e/reforged-query-panel.spec.ts`
+- Site: `src/core/ui/query-editor.ts`
 
 ### T-a-setting-is-declared-once
 

@@ -229,6 +229,6 @@ test('the Query editor arranges too: picked nodes in columns, their places kept 
   const now = await rects(page);
   for (const r of Object.values(now)) { expect(r.x % 4).toBe(0); expect(r.y % 4).toBe(0); }
   expect(new Set(Object.values(now).map((r) => r.x)).size).toBeGreaterThan(1);
-  const kept = await page.evaluate(() => JSON.stringify(Object.values((window as never as { session: { get(k: string): unknown } }).session.get('/nodes/records') ?? {})).length);
+  const kept = await page.evaluate(() => JSON.stringify(Object.values((window as never as { session: { get(k: string): { places?: object } | undefined } }).session.get('/node-layout/records')?.places ?? {})).length);
   expect(kept).toBeGreaterThan(10);
 });
