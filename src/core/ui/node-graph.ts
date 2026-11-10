@@ -458,6 +458,40 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
   }
 }
 
+/**
+ * A collapsed node's two stacks: each socket's place, in its order — the header's, then the rows', then a fork's False —
+ * among all, and among the routed only; and each stack's counts. Written on the node and its rows.
+ */
+function stackPlaces(el: HTMLElement, collapsed: boolean): void {
+  const at = { in: 0, out: 0, inRouted: 0, outRouted: 0 };
+  if (el.hasAttribute('data-input-socket')) {
+    at.in++;
+    if (el.hasAttribute('data-input-routed')) at.inRouted++;
+  }
+  if (el.hasAttribute('data-output-socket')) {
+    at.out++;
+    if (el.hasAttribute('data-output-routed')) at.outRouted++;
+  }
+  for (const row of el.querySelectorAll<HTMLElement>('sherpa-node-row')) {
+    row.toggleAttribute('data-collapsed', collapsed);
+    const side = (socket: string, routed: string, all: 'in' | 'out', only: 'inRouted' | 'outRouted', name: string): void => {
+      const has = row.hasAttribute(socket);
+      put(row, `data-${name}-at`, has ? String(at[all]++) : undefined);
+      put(row, `data-${name}-at-routed`, has && row.hasAttribute(routed) ? String(at[only]++) : undefined);
+    };
+    side('data-input-socket', 'data-input-routed', 'in', 'inRouted', 'input');
+    side('data-output-socket', 'data-output-routed', 'out', 'outRouted', 'output');
+  }
+  if (el.hasAttribute('data-branches')) {
+    at.out++;
+    if (el.hasAttribute('data-false-routed')) at.outRouted++;
+  }
+  el.setAttribute('data-inputs', String(at.in));
+  el.setAttribute('data-outputs', String(at.out));
+  el.setAttribute('data-inputs-routed', String(at.inRouted));
+  el.setAttribute('data-outputs-routed', String(at.outRouted));
+}
+
 /** A socket's middle, on the canvas's plane. */
 function onPlane(canvas: SherpaLayoutCanvas, rect: DOMRect): [number, number] {
   const box = canvas.getBoundingClientRect();
@@ -1335,6 +1369,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     put(el, 'data-summary', words && words.charAt(0).toUpperCase() + words.slice(1));
     el.toggleAttribute('data-hide-unconnected', drawn.hideUnconnected);
     drawRows(drawn, el, node);
+    stackPlaces(el, drawn.collapsed.has(node.id));
   }
   // Frames: behind the lines and the nodes, each round its nodes. TODO 778
   const frames = graph.frames ?? [];
@@ -1571,7 +1606,9 @@ function toggleCollapsed(canvas: SherpaLayoutCanvas, drawn: Drawn, ids: readonly
   for (const id of ids) {
     if (on) drawn.collapsed.add(id);
     else drawn.collapsed.delete(id);
-    drawn.nodes.get(id)?.toggleAttribute('data-collapsed', on);
+    const el = drawn.nodes.get(id);
+    el?.toggleAttribute('data-collapsed', on);
+    if (el) stackPlaces(el, on);
   }
   drawRoutes(canvas, drawn);
 }

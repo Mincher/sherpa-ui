@@ -12,6 +12,9 @@
     data-property       a property: its label reads in the input value's own type
     data-socket-name    the row's name, the first line of each socket's tip: a collapsed node shows no label
     data-socket-value   the row's value in words, a line of each socket's tip; unset, the line hides
+    data-collapsed      its node is collapsed: its sockets stand in the node's stacks. Its host writes it
+    data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them
+    data-input-at-routed, data-output-at-routed  the same, among the routed only; unset, the socket is not routed
 
   Slots:
     (default)   the field: a sherpa-input-text — a text field, a select or a number

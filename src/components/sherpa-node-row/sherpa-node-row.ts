@@ -22,7 +22,29 @@ export class SherpaNodeRow extends SherpaElement {
     'data-property': { type: 'boolean', kind: 'style' },
     'data-socket-name': { type: 'string', kind: 'content' },
     'data-socket-value': { type: 'string', kind: 'content' },
+    'data-collapsed': { type: 'boolean', kind: 'style' },
+    'data-input-at': { type: 'number', kind: 'behaviour' },
+    'data-output-at': { type: 'number', kind: 'behaviour' },
+    'data-input-at-routed': { type: 'number', kind: 'behaviour' },
+    'data-output-at-routed': { type: 'number', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-input-at', 'data-output-at', 'data-input-at-routed', 'data-output-at-routed'];
+
+  override onRender(): void {
+    this.#places();
+  }
+
+  override onChange(): void {
+    this.#places();
+  }
+
+  /** Its sockets' places in a collapsed node's stacks, where the CSS reads them. */
+  #places(): void {
+    for (const [attr, prop] of [['data-input-at', '--_in-at'], ['data-output-at', '--_out-at'], ['data-input-at-routed', '--_in-at-routed'], ['data-output-at-routed', '--_out-at-routed']] as const) {
+      if (this.hasAttribute(attr)) this.style.setProperty(prop, String(this.num(attr, 0)));
+      else this.style.removeProperty(prop);
+    }
+  }
 
   /** A socket's box on the screen, for a connector to join; null when the row has none. */
   socketRect(side: SocketSide): DOMRect | null {

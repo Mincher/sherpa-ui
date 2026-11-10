@@ -27,7 +27,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with its False socket, a rounded square |
 | `data-caption` | text |  | the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
-| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it |
+| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it data-inputs, data-outputs how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-routed, data-outputs-routed the same, of the routed ones only: hiding the unconnected, the stacks hold these. Its host writes them |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
 | `data-false-routed` | boolean |  | a route leaves False: its socket is filled, else hollow |
@@ -37,10 +37,14 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-input-many` | boolean |  | the header's input takes several routes: its socket is a double height D |
 | `data-input-routed` | boolean |  | a route joins the header's input: its socket is filled, else hollow |
 | `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value \| object \| boolean \| any: an input is a D, its type in its ink |
+| `data-inputs` | number |  |  |
+| `data-inputs-routed` | number |  |  |
 | `data-linked` | boolean |  | a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a circle) |
+| `data-outputs` | number |  |  |
+| `data-outputs-routed` | number |  |  |
 | `data-resizable` | boolean |  | the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way |
 | `data-reveal` | boolean |  | the hidden sockets show, as on a hover: a line is being dragged. Its host writes it |
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
@@ -77,7 +81,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `foot`, `footer`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
+`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `foot`, `footer`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `stack-in`, `stack-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -108,6 +112,8 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-5xl` | `.footer` | `min-block-size` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
+| `--sherpa-style-border-width` | `.stack-in` | `border-width` |
+| `--sherpa-style-border-width` | `.stack-out` | `border-width` |
 
 ## Settings it reads
 
@@ -119,6 +125,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, linked?, locked?, outputRouted?, outputSocket?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
+`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, inputs?, inputsRouted?, linked?, locked?, outputRouted?, outputSocket?, outputs?, outputsRouted?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

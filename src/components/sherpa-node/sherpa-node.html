@@ -31,6 +31,8 @@
     data-resizable    the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way
     data-collapsed    collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its
                       name reads "Heading: summary". Its host writes it
+    data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them
+    data-inputs-routed, data-outputs-routed  the same, of the routed ones only: hiding the unconnected, the stacks hold these. Its host writes them
     data-summary      what its first field holds, in words: a collapsed node's name ends with it ("Condition: Equals"). Its host writes it
     data-hide-unconnected  collapsed, a socket no route joins hides; a hover shows them. Its host writes it
     data-reveal       the hidden sockets show, as on a hover: a line is being dragged. Its host writes it
@@ -45,6 +47,9 @@
 -->
 <template id="default">
   <div class="root" part="root">
+    <!-- COLLAPSED, the two stacks every socket stands in: a D of the node's fill on each side. -->
+    <span class="stack stack-in" part="stack-in" aria-hidden="true"></span>
+    <span class="stack stack-out" part="stack-out" aria-hidden="true"></span>
     <!-- The TAB on its top edge, right-aligned: what its step does or did. It moves no row, so no route moves. TODO 845 -->
     <span class="caption" part="caption">
       <span class="caption-icon sherpa-icon-box" part="caption-icon" aria-hidden="true" data-icon="play"></span>

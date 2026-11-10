@@ -153,7 +153,6 @@
 }
 
 /* A COLLAPSED node (its `--_row-*` values): only the sockets show, one row a socket high; a row with none hides. */
-.row { min-block-size: var(--_row-min, auto); }
 /* Its unrouted sockets hide while the node hides them (`--_unrouted`); a row no route joins goes (`--_unrouted-row`).
    The socketless rule comes after: a socketless row is unrouted too. */
 :host(:not([data-input-routed], [data-output-routed])) { display: var(--_unrouted-row, block); }
@@ -188,9 +187,9 @@
 /* A field the graph feeds shows as itself, and takes no press. Will, TODO 747 */
 ::slotted([readonly]) { pointer-events: none; }
 
-/* The control is the field's last line, one control high. A collapsed node centres it: `--_socket-line` is 50%. */
+/* The control is the field's last line, one control high. */
 .socket {
-  inset-block-end: var(--_socket-line, calc(var(--sherpa-display-mode-size-2xl, 32px) / 2));
+  inset-block-end: calc(var(--sherpa-display-mode-size-2xl, 32px) / 2);
   margin-block-end: calc(var(--_socket-h) / -2 - var(--_hit));
 }
 /* With no field, a socket lines up with the label. */
@@ -209,4 +208,28 @@
   background: var(--_section-fill, var(--sherpa-style-surface-base-1, #f5f5f8));
   border-start-start-radius: calc(var(--_socket, 16px) / 2 + var(--_hit, 6px));
   border-end-start-radius: calc(var(--_socket, 16px) / 2 + var(--_hit, 6px));
+}
+
+/* ── COLLAPSED (its node's): no room of its own; its sockets stand in the node's stacks, at the places its host gave them,
+   against the node's box — the row and its sections place nothing. The node's stack is their dock. Will, 2026-11-10 ── */
+:host([data-collapsed]) {
+  --_in-i: calc(var(--_in-at, 0) * (1 - var(--_routed-only, 0)) + var(--_in-at-routed, 0) * var(--_routed-only, 0));
+  --_out-i: calc(var(--_out-at, 0) * (1 - var(--_routed-only, 0)) + var(--_out-at-routed, 0) * var(--_routed-only, 0));
+}
+:host([data-collapsed]) .row {
+  position: static;
+  padding: 0;
+}
+:host([data-collapsed]) .socket {
+  inset-block-end: auto;
+  margin-block: 0;
+}
+:host([data-collapsed]) .socket-in {
+  inset-block-start: calc(var(--_stack-top) + var(--_in-i) * var(--_stack-step));
+  inset-inline-start: calc(1px - var(--_socket) / 2 - var(--_hit));
+  background: none;
+}
+:host([data-collapsed]) .socket-out {
+  inset-block-start: calc(var(--_stack-top) + var(--_out-i) * var(--_stack-step));
+  inset-inline-start: calc(100% - 1px + var(--_socket) / 2 + var(--_hit));
 }

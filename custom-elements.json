@@ -7593,6 +7593,25 @@
           "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
           "attributes": [
             {
+              "name": "data-collapsed",
+              "description": "its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-routed, data-output-at-routed  the same, among the routed only; unset, the socket is not routed",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-input-at",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-input-at-routed",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
               "name": "data-input-many",
               "description": "the input takes several routes: its socket is a double height D",
               "type": {
@@ -7618,6 +7637,18 @@
               "description": "the row's name, when it has no field: a field names itself",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-output-at",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-output-at-routed",
+              "type": {
+                "text": "number"
               }
             },
             {
@@ -8134,7 +8165,7 @@
             },
             {
               "name": "data-collapsed",
-              "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it",
+              "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-routed, data-outputs-routed  the same, of the routed ones only: hiding the unconnected, the stacks hold these. Its host writes them",
               "type": {
                 "text": "boolean"
               }
@@ -8203,6 +8234,18 @@
               }
             },
             {
+              "name": "data-inputs",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-inputs-routed",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
               "name": "data-linked",
               "description": "a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it",
               "type": {
@@ -8228,6 +8271,18 @@
               "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a circle)",
               "type": {
                 "text": "'value' | 'object' | 'boolean'"
+              }
+            },
+            {
+              "name": "data-outputs",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-outputs-routed",
+              "type": {
+                "text": "number"
               }
             },
             {
@@ -8387,6 +8442,12 @@
             },
             {
               "name": "socket-out"
+            },
+            {
+              "name": "stack-in"
+            },
+            {
+              "name": "stack-out"
             },
             {
               "name": "tip"

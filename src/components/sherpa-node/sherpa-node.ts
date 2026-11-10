@@ -61,12 +61,16 @@ export class SherpaNode extends SherpaElement {
     'data-resizable': { type: 'boolean', kind: 'style' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
     'data-summary': { type: 'string', kind: 'content' },
+    'data-inputs': { type: 'number', kind: 'behaviour' },
+    'data-outputs': { type: 'number', kind: 'behaviour' },
+    'data-inputs-routed': { type: 'number', kind: 'behaviour' },
+    'data-outputs-routed': { type: 'number', kind: 'behaviour' },
     'data-hide-unconnected': { type: 'boolean', kind: 'style' },
     'data-reveal': { type: 'boolean', kind: 'style' },
   } as const;
   // The app's setting: the handle and Alt+Arrow exist only while it is on. A saved size still draws. Will, TODO 748
   static override settings = { 'data-resizable': 'resizeNodes' };
-  static override observed = ['data-x', 'data-y', 'data-scale-w', 'data-scale-h'];
+  static override observed = ['data-x', 'data-y', 'data-scale-w', 'data-scale-h', 'data-inputs', 'data-outputs', 'data-inputs-routed', 'data-outputs-routed'];
 
   /** The drag in progress: the pointer, where it took hold, the place then, and the canvas's zoom. */
   #drag: { id: number; x: number; y: number; from: [number, number]; zoom: number } | null = null;
@@ -96,6 +100,9 @@ export class SherpaNode extends SherpaElement {
     this.#fit();
     this.#sync();
     this.#title();
+    this.#stacks();
+    // The stacks start at the header's middle: its height, where the CSS reads it.
+    if (header) new ResizeObserver(() => this.style.setProperty('--_head-h', `${header.offsetHeight}px`)).observe(header);
   }
 
   override onChange(name: string): void {
@@ -103,6 +110,14 @@ export class SherpaNode extends SherpaElement {
     else if (name === 'data-scale-w' || name === 'data-scale-h') this.#fit();
     else if (name === 'data-current') this.#sync();
     else if (name === 'data-heading' || name === 'data-collapsed' || name === 'data-summary') this.#title();
+    else if (name.startsWith('data-inputs') || name.startsWith('data-outputs')) this.#stacks();
+  }
+
+  /** The stacks' counts, where the CSS reads them. */
+  #stacks(): void {
+    for (const [attr, prop] of [['data-inputs', '--_ins'], ['data-outputs', '--_outs'], ['data-inputs-routed', '--_ins-routed'], ['data-outputs-routed', '--_outs-routed']] as const) {
+      this.style.setProperty(prop, String(this.num(attr, 0)));
+    }
   }
 
   /** Its name, in its header: collapsed, followed by what its first field holds ("Condition: Equals"). Will, 2026-11-10 */

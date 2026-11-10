@@ -391,38 +391,86 @@
   padding-block: var(--sherpa-theme-gap-md, 8px) var(--_pad);
 }
 
-/* ── COLLAPSED: each row a socket high, its label and field gone; a section with no socket goes. Will, 2026-11-10 ── */
+:host(:state(has-content-slot)) .body { display: flex; }
+.body ::slotted(:not(sherpa-node-row, .section)) { padding-inline: var(--_pad-inline); }
+
+/* ── COLLAPSED: the rows go; every socket stands in ONE stack a side, in its order — the header's, the rows', a fork's
+   False — each a wrapper's height under the last, from the header's middle. Each side's stack is one D of the node's
+   fill and border. The graph says each socket's place (`data-input-at`, …) and each side's count. Will, 2026-11-10 ── */
 :host([data-collapsed]) {
   --_row-content: none;
   --_row-bare: none;
-  --_row-min: var(--sherpa-display-mode-size-lg, 24px);
-  --_socket-line: 50%;
+  --_stack-step: calc(var(--_socket, 16px) + 2 * var(--_hit, 6px));
+  --_stack-top: calc(var(--_head-h, 56px) / 2 - var(--_stack-step) / 2);
+  /* Hiding the unconnected, only the routed sockets stand in the stacks. */
+  --_routed-only: 0;
+  --_ins-now: calc(var(--_ins, 0) * (1 - var(--_routed-only)) + var(--_ins-routed, 0) * var(--_routed-only));
+  --_outs-now: calc(var(--_outs, 0) * (1 - var(--_routed-only)) + var(--_outs-routed, 0) * var(--_routed-only));
 }
-/* Only the sockets and their wrappers show: no section fill (its docks keep it, from `--_section-fill`), and the
-   body's room is each section's own, so a node with none shown ends at its header. Will, 2026-11-10 */
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) {
+  --_routed-only: 1;
+  --_unrouted: hidden;
+  --_unrouted-row: none;
+}
+/* The body holds no row's room: only what the stacks reach past the header. */
 :host([data-collapsed]) .body {
+  display: block;
+  position: static;
   gap: 0;
   padding-block: 0;
+  min-block-size: max(0px, calc(var(--_stack-top) + max(var(--_ins-now), var(--_outs-now)) * var(--_stack-step) - var(--_head-h, 56px) + var(--sherpa-theme-gap-sm, 4px)));
 }
-:host([data-collapsed]) .body ::slotted(.section) {
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  margin-block: var(--sherpa-theme-gap-sm, 4px);
-  padding-block: 0;
-  background: transparent;
-}
+:host([data-collapsed]) .body ::slotted(.section) { display: contents; }
 :host([data-collapsed]) .body ::slotted(.section[data-bare]) { display: none; }
-/* A fork's footer is one socket wrapper high: False on its middle. */
-:host([data-collapsed]) .footer { min-block-size: calc(var(--_socket, 16px) + 2 * var(--_hit, 6px)); }
-:host([data-collapsed]) .foot { display: none; }
-/* Hiding the unconnected: a socket no route joins hides, till a hover, or a line dragged (`data-reveal`). */
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) { --_unrouted: hidden; --_unrouted-row: none; }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) .body ::slotted(.section[data-unrouted]) { display: none; }
+/* A fork's footer has no room of its own: False stands last in the outputs' stack. */
+:host([data-collapsed]) .footer {
+  position: static;
+  min-block-size: 0;
+}
+:host([data-collapsed]) .foot { display: none; }
+:host([data-collapsed]) .socket-false {
+  inset-block-start: calc(var(--_stack-top) + (var(--_outs-now) - 1) * var(--_stack-step));
+  margin-block-start: 0;
+}
+/* The stacks' D's take the place of each socket's own dock. */
+:host([data-collapsed]) .header .socket-in,
+:host([data-collapsed]) .header .socket-out,
+:host([data-collapsed]) .socket-false {
+  background: none;
+  outline: none;
+}
+.stack {
+  display: none;
+  position: absolute;
+  box-sizing: border-box;
+  inset-block-start: var(--_stack-top);
+  inline-size: var(--_stack-step);
+  background: var(--_category-fill, var(--_surface));
+  border: 0 solid var(--_border);
+}
+:host([data-collapsed]) .stack { display: block; }
+.stack-in {
+  inset-inline-start: calc(1px - var(--_stack-step));
+  block-size: calc(var(--_ins-now) * var(--_stack-step));
+  /* None in it: no line either. */
+  border-width: calc(min(1, var(--_ins-now)) * var(--sherpa-style-border-width, 0.5px));
+  border-inline-end-width: 0;
+  border-start-start-radius: calc(var(--_stack-step) / 2);
+  border-end-start-radius: calc(var(--_stack-step) / 2);
+}
+.stack-out {
+  inset-inline-start: calc(100% - 1px);
+  block-size: calc(var(--_outs-now) * var(--_stack-step));
+  border-width: calc(min(1, var(--_outs-now)) * var(--sherpa-style-border-width, 0.5px));
+  border-inline-start-width: 0;
+  border-start-end-radius: calc(var(--_stack-step) / 2);
+  border-end-end-radius: calc(var(--_stack-step) / 2);
+}
+/* Hiding the unconnected: a header socket no route joins hides, and a fork's False no route leaves goes. */
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .socket-in,
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .socket-out { visibility: hidden; }
-/* A fork's False no route leaves: its whole footer goes, so no room is left under the node. */
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-routed])) .footer { display: none; }
-:host(:state(has-content-slot)) .body { display: flex; }
-.body ::slotted(:not(sherpa-node-row, .section)) { padding-inline: var(--_pad-inline); }
 /* A SECTION: rows on a grey box, 8px in from the card. Its rows span the box and take their inset from it, so an output socket sits
    in the box's padding and an input's dock leaves its start edge. */
 .body { --_card-pad: var(--_pad-inline, 16px); }
