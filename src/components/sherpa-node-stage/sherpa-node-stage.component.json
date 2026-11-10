@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-stage",
-  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage also shows Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
+  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage's bar ends with Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -13,175 +13,173 @@
     "default"
   ],
   "anatomy": {
-    "roots": [
-      {
-        "el": "div",
-        "class": "column",
-        "part": "column",
-        "children": [
-          {
-            "el": "div",
-            "class": "bar sherpa-anchor",
-            "part": "bar",
-            "attrs": {
-              "role": "group",
-              "tabindex": "0",
-              "aria-roledescription": "stage",
-              "aria-label": "Stage",
-              "data-attr-aria-label": "data-heading"
+    "root": {
+      "el": "div",
+      "class": "column",
+      "part": "column",
+      "children": [
+        {
+          "el": "div",
+          "class": "bar sherpa-anchor",
+          "part": "bar",
+          "attrs": {
+            "role": "group",
+            "tabindex": "0",
+            "aria-roledescription": "stage",
+            "aria-label": "Stage",
+            "data-attr-aria-label": "data-heading"
+          },
+          "children": [
+            {
+              "el": "span",
+              "class": "swatch",
+              "part": "swatch",
+              "attrs": {
+                "aria-hidden": "true"
+              }
             },
-            "children": [
-              {
-                "el": "span",
-                "class": "swatch",
-                "part": "swatch",
-                "attrs": {
-                  "aria-hidden": "true"
-                }
+            {
+              "el": "span",
+              "class": "heading sherpa-truncate",
+              "part": "heading",
+              "attrs": {
+                "data-text": "data-heading"
+              }
+            },
+            {
+              "el": "span",
+              "class": "grip sherpa-icon-box",
+              "part": "grip",
+              "attrs": {
+                "data-icon": "drag-handle-horizontal",
+                "aria-hidden": "true"
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "more",
+              "part": "more",
+              "attrs": {
+                "data-type": "icon",
+                "data-size": "sm",
+                "data-look": "transparent",
+                "data-icon-start": "ellipsis-horizontal",
+                "aria-label": "Stage options",
+                "aria-haspopup": "menu"
               },
-              {
-                "el": "span",
-                "class": "heading sherpa-truncate",
-                "part": "heading",
-                "attrs": {
-                  "data-text": "data-heading"
-                }
-              },
-              {
-                "el": "span",
-                "class": "grip sherpa-icon-box",
-                "part": "grip",
-                "attrs": {
-                  "data-icon": "drag-handle-horizontal",
-                  "aria-hidden": "true"
-                }
-              },
-              {
-                "el": "sherpa-button",
-                "class": "more",
-                "part": "more",
-                "attrs": {
-                  "data-type": "icon",
-                  "data-size": "sm",
-                  "data-look": "transparent",
-                  "data-icon-start": "ellipsis-horizontal",
-                  "aria-label": "Stage options",
-                  "aria-haspopup": "menu"
-                },
-                "children": [
-                  {
-                    "el": "sherpa-menu",
-                    "attrs": {
-                      "slot": "menu",
-                      "data-align": "end"
-                    },
-                    "children": [
-                      {
-                        "el": "button",
-                        "attrs": {
-                          "type": "button",
-                          "value": "edit"
-                        }
-                      },
-                      {
-                        "el": "button",
-                        "class": "remove",
-                        "attrs": {
-                          "type": "button",
-                          "value": "remove"
-                        }
+              "children": [
+                {
+                  "el": "sherpa-menu",
+                  "attrs": {
+                    "slot": "menu",
+                    "data-align": "end"
+                  },
+                  "children": [
+                    {
+                      "el": "button",
+                      "attrs": {
+                        "type": "button",
+                        "value": "edit"
                       }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "el": "span",
-            "class": "tip sherpa-tip",
-            "part": "tip",
-            "attrs": {
-              "popover": "manual",
-              "aria-hidden": "true"
-            },
-            "children": [
-              {
-                "el": "span",
-                "class": "tip-line tip-name",
-                "attrs": {
-                  "data-text": "data-heading"
-                }
-              },
-              {
-                "el": "span",
-                "class": "tip-line",
-                "attrs": {
-                  "data-text": "data-description"
-                }
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "band",
-            "part": "band",
-            "attrs": {
-              "aria-hidden": "true"
-            }
-          }
-        ]
-      },
-      {
-        "el": "sherpa-group",
-        "class": "end",
-        "part": "end",
-        "children": [
-          {
-            "el": "sherpa-button",
-            "class": "add",
-            "part": "add",
-            "attrs": {
-              "data-type": "icon",
-              "data-size": "sm",
-              "data-icon-start": "plus",
-              "aria-label": "Add stage",
-              "data-tip": "Add stage"
-            }
-          },
-          {
-            "el": "sherpa-button",
-            "class": "stages",
-            "part": "stages",
-            "attrs": {
-              "data-type": "icon",
-              "data-size": "sm",
-              "data-icon-start": "ellipsis-horizontal",
-              "aria-label": "Stages",
-              "aria-haspopup": "menu"
-            },
-            "children": [
-              {
-                "el": "sherpa-menu",
-                "attrs": {
-                  "slot": "menu",
-                  "data-align": "end"
-                },
-                "children": [
-                  {
-                    "el": "button",
-                    "attrs": {
-                      "type": "button",
-                      "value": "arrange"
+                    },
+                    {
+                      "el": "button",
+                      "class": "remove",
+                      "attrs": {
+                        "type": "button",
+                        "value": "remove"
+                      }
                     }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "sherpa-group",
+              "class": "end",
+              "part": "end",
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "add",
+                  "part": "add",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-icon-start": "plus",
+                    "aria-label": "Add stage",
+                    "data-tip": "Add stage"
                   }
-                ]
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "stages",
+                  "part": "stages",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-icon-start": "ellipsis-horizontal",
+                    "aria-label": "Stages",
+                    "aria-haspopup": "menu"
+                  },
+                  "children": [
+                    {
+                      "el": "sherpa-menu",
+                      "attrs": {
+                        "slot": "menu",
+                        "data-align": "end"
+                      },
+                      "children": [
+                        {
+                          "el": "button",
+                          "attrs": {
+                            "type": "button",
+                            "value": "arrange"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "el": "span",
+          "class": "tip sherpa-tip",
+          "part": "tip",
+          "attrs": {
+            "popover": "manual",
+            "aria-hidden": "true"
+          },
+          "children": [
+            {
+              "el": "span",
+              "class": "tip-line tip-name",
+              "attrs": {
+                "data-text": "data-heading"
               }
-            ]
+            },
+            {
+              "el": "span",
+              "class": "tip-line",
+              "attrs": {
+                "data-text": "data-description"
+              }
+            }
+          ]
+        },
+        {
+          "el": "div",
+          "class": "band",
+          "part": "band",
+          "attrs": {
+            "aria-hidden": "true"
           }
-        ]
-      }
-    ]
+        }
+      ]
+    }
   },
   "props": [
     {
@@ -228,7 +226,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the last stage: Add stage and Arrange stages show after its bar"
+      "description": "the last stage: its bar ends with Add stage and Arrange stages"
     },
     {
       "$type": "prop",
@@ -361,9 +359,6 @@
     "tip-name.font-weight": "{sherpa.font-weight-medium}",
     "swatch.inline-size": "{sherpa.display-mode-size-2xs}",
     "swatch.block-size": "{sherpa.display-mode-size-2xs}",
-    "band.border-inline": "{sherpa.display-mode-border-width-base}",
-    "end.inset-block-start": "{sherpa.display-mode-size-xl}",
-    "end.inset-inline-start": "{sherpa.theme-gap-md}",
-    "end.z-index": "{sherpa.layer-content}"
+    "band.border-inline": "{sherpa.display-mode-border-width-base}"
   }
 }

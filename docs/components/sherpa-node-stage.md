@@ -2,7 +2,7 @@
 
 # sherpa-node-stage
 
-One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage also shows Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10
+One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage's bar ends with Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10
 
 |  |  |
 |---|---|
@@ -26,7 +26,7 @@ For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in it
 | `data-description` | text |  | its line: its bar's tip, under the name |
 | `data-editing` | boolean |  | arranging the stages: the bar is a handle, and More, Add stage and Arrange stages hide. The HOST writes it |
 | `data-heading` | text | `Stage` | its name, on its bar (default Stage) |
-| `data-last` | boolean |  | the last stage: Add stage and Arrange stages show after its bar |
+| `data-last` | boolean |  | the last stage: its bar ends with Add stage and Arrange stages |
 | `data-locked` | boolean |  | the host is read only: no More, no Add stage |
 | `data-removable` | boolean |  | More offers Remove: it is not the only stage. The HOST writes it |
 | `data-w` | number | `320` | its width, in plane px |
@@ -70,9 +70,6 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-2xs` | `.swatch` | `inline-size` |
 | `--sherpa-display-mode-size-2xs` | `.swatch` | `block-size` |
 | `--sherpa-display-mode-border-width-base` | `.band` | `border-inline` |
-| `--sherpa-display-mode-size-xl` | `.end` | `inset-block-start` |
-| `--sherpa-theme-gap-md` | `.end` | `inset-inline-start` |
-| `--sherpa-layer-content` | `.end` | `z-index` |
 
 ## populate()
 

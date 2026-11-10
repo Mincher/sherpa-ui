@@ -9,7 +9,7 @@
   "components.js": {
     "files": 156,
     "brotli": {
-      "js": 287878,
+      "js": 287828,
       "fetched": 8593
     }
   },
@@ -317,7 +317,7 @@
   "components/sherpa-node-stage/sherpa-node-stage.js": {
     "files": 41,
     "brotli": {
-      "js": 70238,
+      "js": 70188,
       "fetched": 0
     }
   },
@@ -541,7 +541,7 @@
   "index.js": {
     "files": 261,
     "brotli": {
-      "js": 464502,
+      "js": 464452,
       "fetched": 8593
     }
   }

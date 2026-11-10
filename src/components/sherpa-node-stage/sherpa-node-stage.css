@@ -95,14 +95,10 @@
   border-inline: var(--sherpa-display-mode-border-width-base, 1px) dashed color-mix(in srgb, var(--_colour) 40%, transparent);
 }
 
-/* ── After the last: Add stage and Arrange stages ─────────────────────── */
+/* ── The last bar's end: Add stage and Arrange stages, in the bar, so a stage at the view's edge keeps them in view ── */
 .end {
-  position: absolute;
-  inset-block-start: calc((var(--_head) - var(--sherpa-display-mode-size-xl, 28px)) / 2);
-  inset-inline-start: calc(100% + var(--sherpa-theme-gap-md, 8px));
-  z-index: var(--sherpa-layer-content, 1);
+  flex: none;
   display: none;
-  pointer-events: auto;
 }
 :host([data-last]:not([data-editing], [data-locked])) .end { display: inline-flex; }
 

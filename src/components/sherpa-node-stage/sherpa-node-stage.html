@@ -2,7 +2,7 @@
   sherpa-node-stage — one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs
   along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands
   and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and
-  Remove. The last stage also shows Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an
+  Remove. The last stage's bar ends with Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an
   arrow key there, reports how far: its host orders the stages. Will, 2026-11-10
 
   Public API:
@@ -11,7 +11,7 @@
     data-colour       a CSS colour its bar and band wear; none, the default look
     data-x            its left edge, in plane px (default 0)
     data-w            its width, in plane px (default 320)
-    data-last         the last stage: Add stage and Arrange stages show after its bar
+    data-last         the last stage: its bar ends with Add stage and Arrange stages
     data-removable    More offers Remove: it is not the only stage. The HOST writes it
     data-editing      arranging the stages: the bar is a handle, and More, Add stage and Arrange stages hide. The HOST writes it
     data-locked       the host is read only: no More, no Add stage
@@ -41,20 +41,20 @@
           <button type="button" value="remove" class="remove">Remove</button>
         </sherpa-menu>
       </sherpa-button>
+      <!-- The LAST stage's bar ends with Add stage, and More with Arrange stages. -->
+      <sherpa-group class="end" part="end">
+        <sherpa-button class="add" part="add" data-type="icon" data-size="sm" data-icon-start="plus"
+                       aria-label="Add stage" data-tip="Add stage"></sherpa-button>
+        <sherpa-button class="stages" part="stages" data-type="icon" data-size="sm" data-icon-start="ellipsis-horizontal"
+                       aria-label="Stages" aria-haspopup="menu">
+          <sherpa-menu slot="menu" data-align="end">
+            <button type="button" value="arrange">Arrange stages</button>
+          </sherpa-menu>
+        </sherpa-button>
+      </sherpa-group>
     </div>
     <span class="tip sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="tip-line tip-name" data-text="data-heading"></span><span class="tip-line" data-text="data-description"></span></span>
     <!-- The BAND, down the view: it takes no press. -->
     <div class="band" part="band" aria-hidden="true"></div>
   </div>
-  <!-- After the LAST stage: Add stage, and More with Arrange stages. -->
-  <sherpa-group class="end" part="end">
-    <sherpa-button class="add" part="add" data-type="icon" data-size="sm" data-icon-start="plus"
-                   aria-label="Add stage" data-tip="Add stage"></sherpa-button>
-    <sherpa-button class="stages" part="stages" data-type="icon" data-size="sm" data-icon-start="ellipsis-horizontal"
-                   aria-label="Stages" aria-haspopup="menu">
-      <sherpa-menu slot="menu" data-align="end">
-        <button type="button" value="arrange">Arrange stages</button>
-      </sherpa-menu>
-    </sherpa-button>
-  </sherpa-group>
 </template>

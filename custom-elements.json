@@ -7724,7 +7724,7 @@
           "name": "SherpaNodeStage",
           "tagName": "sherpa-node-stage",
           "customElement": true,
-          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage also shows Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
+          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage's bar ends with Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
           "attributes": [
             {
               "name": "data-colour",
@@ -7757,7 +7757,7 @@
             },
             {
               "name": "data-last",
-              "description": "the last stage: Add stage and Arrange stages show after its bar",
+              "description": "the last stage: its bar ends with Add stage and Arrange stages",
               "type": {
                 "text": "boolean"
               }
