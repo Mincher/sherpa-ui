@@ -69,12 +69,29 @@ is not in the repo (/private/tmp/claude-502/probe/hic-spike.mjs).
   caption and a fork's True and False tabs. In the canvas, the node's box must hold its tabs: the card inset in a host as
   wide as tab, card and tab (the Harness Figma node already is).
 
-Still to check by hand before a build: keyboard focus and its ring, text selection, a `<select>`'s popup, a socket's tip
-(a top-layer popover anchored to a drawn element), forced colours, and what a screen reader reads.
+**Hand checks, 2026-11-11** (Chrome 157, two real nodes drawn, the canvas TWO shadow roots deep as ours will be):
+- A canvas two shadow roots deep draws a node slotted through both, and hit testing reaches it.
+- **A source box past the element's own draws what overhangs it**: `drawElementImage(el, -P, -P, w + 2P, h + 2P, x - P,
+  y - P, w + 2P, h + 2P)` draws the side tabs, a fork's True above and False below. A node's box need not change.
+- **`getBoundingClientRect()` says where an element is DRAWN** (100, 100, where it was drawn; its layout box is at 0, 0).
+  So every place our code reads from it — a socket's box for its line, a tip's anchor, a test's click — follows the
+  drawing.
+- A click where a field is drawn focuses it; typing, Shift+arrow selection and the focus ring (drawn in the node's
+  snapshot) all work; a socket's tip opens beside its tab.
+- Not seen headless: a native `<select>`'s popup. To check in a real window.
 
 ## Decide after the spike
 
-**The numbers say go** for speed: faster in every act at 2,000 nodes, and 30 times faster to zoom. It goes ahead if the
-hand checks above lose nothing a reader uses; then a plan of steps: the wrapper, the paint loop, the lines on the canvas, tests in Chrome 157 (a Playwright project on
-`channel: 'chrome'`, since the bundled Chromium is 153), and the fallback held by the same specs in Firefox and WebKit.
-Stop, if not: the numbers go in this file, and the DOM plane stays.
+**Will, 2026-11-11: "let's make it so".** The steps, each its own commit, every spec green after each:
+
+1. **`sherpa-canvas`** — a component wrapping a real `<canvas content="drawable">` round a slot (Will: "a wrapper around a
+   real canvas that allows us to set attributes in the templates"). Its view is its attributes, `data-x`, `data-y`,
+   `data-zoom`, set in a template; it draws each element slotted in at its own layout place (its `--x`, `--y`) through
+   that view, with a source box past it for what overhangs, and only what the view shows is `drawable`. It sizes its grid
+   to device pixels. Where the engine has no API, its template is a plain layer the view moves by a CSS transform — today's
+   plane — and the same elements lay out the same.
+2. **`sherpa-layout-canvas` draws its plane with it**: its `.plane` IS a `sherpa-canvas`; pan and zoom set its view.
+3. **The lines**: the routes' SVG is drawn too, its box the routes' bounds, so a click on a line still picks it.
+4. **Tests**: a Playwright project on Google Chrome 157 (`channel: 'chrome'`) runs the canvas and node specs drawn; the
+   bundled Chromium 153, Firefox and WebKit run them on the plain layer, as today. CI: the runner's Chrome.
+5. **Measure** in Demos (the Records graph, the Node editor page), both ways; the trap, the APP-GUIDE, the Map.
