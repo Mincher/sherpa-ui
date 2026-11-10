@@ -181,7 +181,7 @@
   "src/core/data/node-shelf.ts": 35,
   "src/core/data/node-simulate.ts": 479,
   "src/core/data/node-stages.ts": 199,
-  "src/core/data/node-unfurl.ts": 401,
+  "src/core/data/node-unfurl.ts": 418,
   "src/core/data/notices.ts": 47,
   "src/core/data/outbox.ts": 65,
   "src/core/data/page-definition.ts": 303,

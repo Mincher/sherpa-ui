@@ -138,18 +138,22 @@ test('no two nodes closer than the gap, every place on the 4px grid, every line 
   }
 });
 
-test('parts stand side by side in the order they stood, left to right; lone nodes stand in one column after them', () => {
-  // The small part `x › y` stood left of `a › b › c`, as a Source and its In portal stand before the Out it reaches.
+test('the MAIN part keeps its place; every other part and lone node stack on its left, top to bottom as they stood, clear of its lines', () => {
+  // The main part a › b › c; a small chain x › y and two lone nodes stood about.
   const g = graphOf([['a', 900, 0], ['b', 1300, 0], ['c', 1700, 0], ['x', 0, 600], ['y', 400, 600], ['lone', 300, 300], ['alone', 50, 50]],
     [R('a', 'b'), R('b', 'c'), R('a', 'c/b'), R('x', 'y')]);
   const out = unfurl(g).nodes;
   const right = (ns) => Math.max(...ns.map((id) => out[id].x + 240));
   const left = (ns) => Math.min(...ns.map((id) => out[id].x));
-  assert.ok(left(['a', 'b', 'c']) >= right(['x', 'y']) + GAP, 'the part that stood second is right of the first');
-  assert.deepEqual(out.x, { x: 0, y: 600 }, 'the first part\'s anchor keeps its place');
-  assert.ok(left(['lone', 'alone']) >= right(['a', 'b', 'c']) + GAP, 'lone nodes after');
-  assert.equal(out.lone.x, out.alone.x);
-  assert.ok(out.lone.y - out.alone.y >= 120 + GAP, 'top to bottom as they stood');
+  // The main part's anchor keeps its place.
+  assert.ok(['a', 'b', 'c'].some((id) => out[id].x === g.nodes.find((n) => n.id === id).x && out[id].y === g.nodes.find((n) => n.id === id).y), 'the main part\'s anchor keeps its place');
+  // The stack is wholly left of the main part: none of its lines, which run left to right inside it, cross the stack.
+  assert.ok(right(['x', 'y', 'lone', 'alone']) + GAP <= left(['a', 'b', 'c']), 'the stack stands left of the main part');
+  // Top to bottom as they stood: alone (50), lone (300), the chain (600); each on the stack's left edge.
+  assert.ok(out.alone.y < out.lone.y && out.lone.y < out.x.y, 'top to bottom as they stood');
+  assert.equal(out.alone.x, out.lone.x);
+  assert.equal(out.x.x, out.alone.x, 'the chain starts on the stack\'s left edge');
+  assert.equal(out.y.y, out.x.y, 'the chain keeps its own shape');
   assert.deepEqual(clearance(g, out), []);
 });
 

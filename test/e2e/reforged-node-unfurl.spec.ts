@@ -243,12 +243,13 @@ test('a graph reads left to right: Sources and a Portal In left, a Portal Out an
   expect((await flow(page)).nodes.find((n) => n.id === 'src')!.x).toBe(2000);
 });
 
-test('a lone Source stands left of the graph and a lone Output right of it', async ({ page }) => {
+test('a lone Source stands leftmost; a lone Output, isolated, stands in the stack after it, left of the graph (Will, 2026-11-10)', async ({ page }) => {
   await start(page, [['a', 'source', 400, 0, { store: 'users' }], ['f', 'field', 800, 0], ['c', 'condition', 1200, 0, { type: 'eq', b: 'x' }], ['lone-out', 'output', 0, 0], ['lone-src', 'source', 1600, 300, { store: 'users' }]],
     [{ from: 'a/rows', to: 'f' }, { from: 'f/field', to: 'c' }]);
   await button(page).click();
   await settle(page);
   const now = await rects(page);
-  expect(now['lone-src']!.x + now['lone-src']!.w).toBeLessThanOrEqual(Math.min(now['a']!.x, now['f']!.x, now['c']!.x));
-  expect(now['lone-out']!.x).toBeGreaterThanOrEqual(Math.max(...['a', 'f', 'c'].map((id) => now[id]!.x + now[id]!.w)));
+  const graphLeft = Math.min(now['a']!.x, now['f']!.x, now['c']!.x);
+  expect(now['lone-src']!.x + now['lone-src']!.w).toBeLessThanOrEqual(now['lone-out']!.x);
+  expect(now['lone-out']!.x + now['lone-out']!.w).toBeLessThanOrEqual(graphLeft);
 });

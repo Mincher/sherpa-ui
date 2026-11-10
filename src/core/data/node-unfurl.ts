@@ -83,8 +83,9 @@ function project(want: readonly number[], weight: readonly number[], gap: readon
  * weight nears its heaviest neighbour's; then each moved out in x past its sources and anything in its height band.
  * A neighbour is read at the socket it joins, the topmost where several routes join two nodes (Will, TODO 827): the
  * cells that hang from one cell stand on their ring in its sockets' order, and each line is pulled level; then the
- * order whose lines cross least, socket to socket, wins. A frame is one cell, so its nodes keep their column. Parts stand side by
- * side in the order they stood, lone nodes in a column after; the first part's anchor keeps its place; every place on the grid. A tie whose
+ * order whose lines cross least, socket to socket, wins. A frame is one cell, so its nodes keep their column. The MAIN part
+ * (the most nodes) keeps its anchor's place; every other part and lone node but a Source stack on its left, top to bottom as
+ * they stood, lone Sources left of them; every place on the grid. A tie whose
  * routes all join moved nodes goes to their middle, held by `tieLimit`. Fewer than two: nothing.
  */
 export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options: UnfurlOptions): Arranged {
@@ -339,8 +340,9 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     return { anchor, list, x: best!.x, y: best!.y };
   };
 
-  // Parts side by side, tops level, in the order they stood, left to right: a part that sends through a portal keeps
-  // its place before the parts it reaches. Lone nodes in one column after, top to bottom.
+  // The MAIN part — the most nodes — keeps its place. Every other part (a chain) and every lone node but a Source stand in
+  // ONE stack on its left, top to bottom, in the order they stood: clear of every line the main part draws, which runs left
+  // to right inside it; top to bottom as they stood. Lone Sources and Portal Ins stand left of the stack. Will, 2026-11-10
   const stood = (list: readonly number[]): [number, number] => {
     const ns = list.flatMap((c) => cells[c]!.members.map((m) => at.get(m.id)!));
     return [Math.min(...ns.map((nd) => nd.x)), Math.min(...ns.map((nd) => nd.y))];
@@ -352,33 +354,48 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
   const laid = parts.filter((l) => l.length > 1).map(unfurlPart).sort((a, b) => before(a.list, b.list, byKey(a.anchor, b.anchor)));
   const lone = parts.filter((l) => l.length === 1).map((l) => l[0]!).sort((a, b) => before([a], [b], byKey(a, b)));
   const corner = new Map<number, { x: number; y: number }>();
-  let [edge, top] = [0, 0];
-  laid.forEach((p, k) => {
-    const minX = Math.min(...p.list.map((c) => p.x.get(c)! - cells[c]!.w / 2));
-    const minY = Math.min(...p.list.map((c) => p.y.get(c)! - cells[c]!.h / 2));
-    const maxX = Math.max(...p.list.map((c) => p.x.get(c)! + cells[c]!.w / 2));
-    const [dx, dy] = k ? [edge - minX, top - minY] : [0, 0];
-    if (!k) top = minY;
-    for (const c of p.list) corner.set(c, { x: p.x.get(c)! - cells[c]!.w / 2 + dx, y: p.y.get(c)! - cells[c]!.h / 2 + dy });
-    edge = maxX + dx + gapX + grid;
+  const extent = (p: (typeof laid)[number]): { minX: number; minY: number; maxX: number; maxY: number } => ({
+    minX: Math.min(...p.list.map((c) => p.x.get(c)! - cells[c]!.w / 2)), minY: Math.min(...p.list.map((c) => p.y.get(c)! - cells[c]!.h / 2)),
+    maxX: Math.max(...p.list.map((c) => p.x.get(c)! + cells[c]!.w / 2)), maxY: Math.max(...p.list.map((c) => p.y.get(c)! + cells[c]!.h / 2)),
   });
-  // Lone nodes in columns by their band: Sources and Portal Ins before the parts, the rest after them, Outputs and Portal Outs last.
+  const mainPart = laid.reduce<(typeof laid)[number] | undefined>((m, p) => (!m || p.list.length > m.list.length ? p : m), undefined);
+  let [left, top] = [0, 0];
+  if (mainPart) {
+    const e = extent(mainPart);
+    [left, top] = [e.minX, e.minY];
+    for (const c of mainPart.list) corner.set(c, { x: mainPart.x.get(c)! - cells[c]!.w / 2, y: mainPart.y.get(c)! - cells[c]!.h / 2 });
+  }
   const bandOf = (c: number): 'left' | 'right' | undefined => graph.bands?.[cells[c]!.key];
-  const columns = [lone.filter((c) => bandOf(c) === 'left'), lone.filter((c) => !bandOf(c)), lone.filter((c) => bandOf(c) === 'right')];
-  const [first] = columns;
-  if (first!.length) {
-    const wide = Math.max(...first!.map((c) => cells[c]!.w));
-    const start = laid.length ? Math.min(...laid.flatMap((p) => p.list.map((c) => corner.get(c)!.x))) : edge;
-    let y0 = top;
-    for (const c of first!) { corner.set(c, { x: start - wide - gapX - grid + (wide - cells[c]!.w) / 2, y: y0 }); y0 += cells[c]!.h + gapY + grid; }
+  // The stack: each other part whole, each lone node but a Source, in the order they stood.
+  type Item = { cells: readonly number[]; w: number; h: number; place: (x: number, y: number) => void };
+  const items: Item[] = [
+    ...laid.filter((p) => p !== mainPart).map((p): Item => {
+      const e = extent(p);
+      return { cells: p.list, w: e.maxX - e.minX, h: e.maxY - e.minY, place: (x, y) => { for (const c of p.list) corner.set(c, { x: x + p.x.get(c)! - cells[c]!.w / 2 - e.minX, y: y + p.y.get(c)! - cells[c]!.h / 2 - e.minY }); } };
+    }),
+    ...lone.filter((c) => bandOf(c) !== 'left').map((c): Item => ({ cells: [c], w: cells[c]!.w, h: cells[c]!.h, place: (x, y) => corner.set(c, { x, y }) })),
+  ].sort((a, b) => {
+    // Top to bottom as they stood.
+    const [[ax, ay], [bx, by]] = [stood(a.cells), stood(b.cells)];
+    return ay - by || ax - bx || byKey(a.cells[0]!, b.cells[0]!);
+  });
+  const stackW = items.length ? Math.max(...items.map((i) => i.w)) : 0;
+  const stackX = mainPart ? left - (items.length ? stackW + gapX + grid : 0) : 0;
+  let y0 = top;
+  for (const item of items) {
+    item.place(stackX, y0);
+    y0 += item.h + gapY + grid;
   }
-  for (const column of columns.slice(1)) {
-    let below = top;
-    for (const c of column) { corner.set(c, { x: edge, y: below }); below += cells[c]!.h + gapY + grid; }
-    if (column.length) edge += Math.max(...column.map((c) => cells[c]!.w)) + gapX + grid;
+  // Lone Sources and Portal Ins: one column, left of the stack.
+  const sources = lone.filter((c) => bandOf(c) === 'left');
+  if (sources.length) {
+    const wide = Math.max(...sources.map((c) => cells[c]!.w));
+    const start = items.length || mainPart ? stackX : 0;
+    let ys = top;
+    for (const c of sources) { corner.set(c, { x: start - wide - gapX - grid + (wide - cells[c]!.w) / 2, y: ys }); ys += cells[c]!.h + gapY + grid; }
   }
-  // The first part's anchor keeps its place.
-  const main = laid[0]?.anchor ?? lone[0]!;
+  // The main part's anchor keeps its place; with none, the first lone node's.
+  const main = mainPart?.anchor ?? lone[0]!;
   const [lead] = cells[main]!.members;
   const was = at.get(lead!.id)!;
   const shift = { x: near(was.x) - lead!.dx - corner.get(main)!.x, y: near(was.y) - lead!.dy - corner.get(main)!.y };

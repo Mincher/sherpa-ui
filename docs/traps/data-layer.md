@@ -8005,8 +8005,9 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
 
 - **A graph reads left to right** (Will, TODO 839). Sources and a Portal In stand left, Outputs and a Portal Out right
   (`bands`); an In hands on to each Out of its name with no line, and that hop (`hops`) holds the order a route would, so
-  a portal pair makes one part, never two stood in the order they were: it cannot flip. A lone Source or In has its
-  column before the parts, a lone Output or Out after them.
+  a portal pair makes one part, never two stood in the order they were: it cannot flip. The MAIN part (the most nodes)
+  keeps its place; every other part and every lone node but a Source or In stands in ONE stack on its left, top to bottom
+  as they stood, wholly clear of the main part's lines (Will, 2026-11-10); a lone Source or In has its column left of that.
 
 - Site: `src/core/data/node-unfurl.ts`
 - Site: `src/core/ui/node-graph.ts`
