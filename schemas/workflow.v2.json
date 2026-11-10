@@ -18,6 +18,7 @@
     "routes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/route" } },
     "ties": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/tie" } },
     "frames": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/frame" } },
-    "stages": { "type": "array", "minItems": 1, "items": { "$ref": "defs.v1.json#/$defs/stage" } }
+    "stages": { "type": "array", "minItems": 1, "items": { "$ref": "defs.v1.json#/$defs/stage" } },
+    "lanes": { "type": "array", "minItems": 1, "items": { "$ref": "defs.v1.json#/$defs/lane" } }
   }
 }

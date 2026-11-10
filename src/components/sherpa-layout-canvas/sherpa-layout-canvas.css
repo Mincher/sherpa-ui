@@ -130,6 +130,20 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
   /* No `--width`: the declaration is dropped, and the column is as wide as it draws. */
   inline-size: calc(var(--width) * var(--_zoom));
 }
+/* ── The rows ─────────────────────────────────────────────────────────── */
+/* A strip behind it all, the whole width: each row at its `--y` down the plane, `--height` tall, scaled as the plane is;
+   never moved across. It takes no press, and makes no stacking context of its own. */
+.rows {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.rows ::slotted(*) {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--_y) + var(--y, 0px) * var(--_zoom));
+  block-size: calc(var(--height, 0px) * var(--_zoom));
+}
 /* With columns, what the view shows starts under their head: Fit, the banners and the stage keep clear of it. */
 :host { --_columns-head: var(--sherpa-display-mode-size-3xl, 40px); }
 :host(:state(has-columns)) .stage { margin-block-start: var(--_columns-head); }

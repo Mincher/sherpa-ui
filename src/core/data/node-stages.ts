@@ -20,6 +20,7 @@
  * - orderStages — The workflow with its stages in a new order, each packed after the one before, its nodes with it.
  * - stageFaults — Every fault in a workflow's stages, in words.
  */
+import { packBands } from './node-bands.js';
 
 /** One stage: its id, its name, line and colour, and where its left edge stands (plane px). */
 export interface NodeStage {
@@ -76,24 +77,13 @@ export function stageOf(workflow: Staged, node: Staged['nodes'][number]): string
  * before the last one ends, plus STAGE_GAP, is pushed right, its nodes with it.
  */
 export function stageBands(workflow: Staged, widthOf: WidthOf): { bands: StageBand[]; moves: Record<string, number> } {
-  const bands: StageBand[] = [];
-  const moves: Record<string, number> = {};
-  let end = -Infinity;
-  for (const stage of stagesOf(workflow)) {
-    const members = workflow.nodes.filter((n) => stageOf(workflow, n) === stage.id);
-    let left = members.length ? Math.min(...members.map((n) => n.x)) - STAGE_PAD : stage.x;
-    let right = members.length ? Math.max(...members.map((n) => n.x + widthOf(n))) + STAGE_PAD : left;
-    const push = end + STAGE_GAP - left;
-    if (push > 0) {
-      left += push;
-      right += push;
-      for (const n of members) moves[n.id] = n.x + push;
-    }
-    right = Math.max(right, left + STAGE_MIN);
-    bands.push({ id: stage.id, left: Math.round(left), right: Math.round(right) });
-    end = right;
-  }
-  return { bands, moves };
+  const groups = stagesOf(workflow).map((stage) => ({
+    id: stage.id,
+    at: stage.x,
+    members: workflow.nodes.filter((n) => stageOf(workflow, n) === stage.id).map((n) => ({ id: n.id, start: n.x, size: widthOf(n) })),
+  }));
+  const { bands, moves } = packBands(groups, { min: STAGE_MIN, pad: STAGE_PAD, gap: STAGE_GAP });
+  return { bands: bands.map((b) => ({ id: b.id, left: b.start, right: b.end })), moves };
 }
 
 /** The workflow with each stage's left edge, and every node a push moved, as its bands say. Unchanged, the same one. */

@@ -511,6 +511,14 @@ Give `bindWorkflow` a `stageDialog` for Edit, one field to a row:
 Arrange stages puts the canvas in its edit mode (`data-editing`): the panels and the
 toolbar hide, and a footer offers Cancel and Save.
 
+### Swimlanes
+
+The toolbar's Swimlanes turns on a row for each family of nodes (`LANES_BY_FAMILY`:
+Data, Values, Organise, Agentic, Custom, Output), kept in the workflow's `lanes`. A
+node stands in its family's lane; a logic node stands in the junction just above the
+lowest lane it joins. A lane grows to hold its nodes and pushes the ones under it
+down; a lane with no node takes no room. Off, the rows go and the nodes stay.
+
 ### Entities
 
 An entity is a graph saved under a TYPE, an id and a name (`entity.v1`): `{ v, type,

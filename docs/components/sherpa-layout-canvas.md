@@ -66,6 +66,7 @@ Each one bubbles.
 | `panel-end` | panel |  |
 | `panel-float` | panel | the floating cards, off their areas: they float in the canvas |
 | `banner` | content | notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
+| `rows` | item | a strip of ROWS behind the view, the whole width: each stands at its `--y` down the plane, `--height` tall (plane px); it pans and zooms down, never across. |
 | `columns` | item | a strip of COLUMNS over the view, from its top: each stands at its `--x` across the plane, `--width` wide (plane px, as `--x` and `--y` are); it pans and zooms across, never down. |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
 | `toolbar` | toolbar | tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar) |
@@ -75,7 +76,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`banner`, `columns`, `controls`, `footer`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `stage`, `toolbar`, `viewport`
+`banner`, `columns`, `controls`, `footer`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `rows`, `stage`, `toolbar`, `viewport`
 
 ## CSS custom properties it reads
 

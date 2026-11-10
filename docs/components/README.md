@@ -2,7 +2,7 @@
 
 # Components
 
-74 components. Each page is written from the component's spec and its example. 74 of 74 say when to use them.
+75 components. Each page is written from the component's spec and its example. 75 of 75 say when to use them.
 
 ## Chart
 
@@ -115,6 +115,7 @@
 | [sherpa-metric-group](sherpa-metric-group.md) | One row of 1 to 4 metrics, across every column of the layout grid. |
 | [sherpa-node](sherpa-node.md) | One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. |
 | [sherpa-node-frame](sherpa-node-frame.md) | A FRAME on a [sherpa-layout-canvas](sherpa-layout-canvas.md): nodes under one header, with a title, a line and Release. |
+| [sherpa-node-lane](sherpa-node-lane.md) | One SWIMLANE of a workflow: a row down a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `rows` slot, the whole width, faint in its colour, its name at the start of what the view shows. |
 | [sherpa-node-list](sherpa-node-list.md) | The nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes), then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. |
 | [sherpa-node-row](sherpa-node-row.md) | One row of a [sherpa-node](sherpa-node.md): an input socket, a field and an output socket. |
 | [sherpa-node-stage](sherpa-node-stage.md) | One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. |

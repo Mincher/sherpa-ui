@@ -4987,6 +4987,10 @@
               "description": "notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) (accepts: content)"
             },
             {
+              "name": "rows",
+              "description": "a strip of ROWS behind the view, the whole width: each stands at its `--y` down the plane, `--height` tall (plane px); it pans and zooms down, never across. (accepts: item)"
+            },
+            {
               "name": "columns",
               "description": "a strip of COLUMNS over the view, from its top: each stands at its `--x` across the plane, `--width` wide (plane px, as `--x` and `--y` are); it pans and zooms across, never down. (accepts: item)"
             },
@@ -5030,6 +5034,9 @@
             },
             {
               "name": "plane"
+            },
+            {
+              "name": "rows"
             },
             {
               "name": "stage"
@@ -7511,6 +7518,92 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-node-lane/sherpa-node-lane.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaNodeLane",
+          "tagName": "sherpa-node-lane",
+          "customElement": true,
+          "description": "one SWIMLANE of a workflow: a row down a sherpa-layout-canvas, in its `rows` slot, the whole width, faint in its colour, its name at the start of what the view shows. A JUNCTION is the band between two lanes where a logic node stands: no fill, a dotted edge. Its host writes where it stands and how tall (data-y, data-h, plane px): it pans and zooms down, never across. It takes no press. Will, 2026-11-10",
+          "attributes": [
+            {
+              "name": "data-colour",
+              "description": "a CSS colour its band wears; none, the default look",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-h",
+              "description": "its height, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            },
+            {
+              "name": "data-heading",
+              "description": "its name (default Lane)",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Lane\""
+            },
+            {
+              "name": "data-type",
+              "description": "lane | junction : a junction has no fill, and a dotted edge",
+              "type": {
+                "text": "'lane' | 'junction'"
+              },
+              "default": "\"lane\""
+            },
+            {
+              "name": "data-y",
+              "description": "its top, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "band"
+            },
+            {
+              "name": "heading"
+            },
+            {
+              "name": "label"
+            },
+            {
+              "name": "swatch"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaNodeLane",
+          "declaration": {
+            "name": "SherpaNodeLane",
+            "module": "dist/components/sherpa-node-lane/sherpa-node-lane.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-node-lane",
+          "declaration": {
+            "name": "SherpaNodeLane",
+            "module": "dist/components/sherpa-node-lane/sherpa-node-lane.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-node-list/sherpa-node-list.js",
       "declarations": [
         {
@@ -7978,6 +8071,13 @@
               }
             },
             {
+              "name": "data-can-lanes",
+              "description": "Swimlanes can be pressed: the workflow takes them; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-can-play",
               "description": "Play can be pressed: the same; written by the editor",
               "type": {
@@ -8036,6 +8136,13 @@
             {
               "name": "data-hide-unconnected",
               "description": "Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-lanes",
+              "description": "The workflow has swimlanes: shown as pressed; written by the editor",
               "type": {
                 "text": "boolean"
               }

@@ -409,6 +409,16 @@
         "x": { "description": "Its left edge, in plane px.", "type": "number" }
       }
     },
+    "lane": {
+      "description": "A swimlane: a row down the canvas, in order top to bottom, for the families of nodes it names (a node's kind's category, in lower case: ai, sources…). A logic node, whose family no lane names, stands in the junction between the lanes it joins. It grows to hold its nodes, pushing the lanes under it down. It changes no data: a runner ignores it.",
+      "type": "object", "additionalProperties": false, "required": ["id", "label", "families"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "description": "Its name.", "type": "string", "minLength": 1 },
+        "families": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "colour": { "description": "A CSS colour its band wears. Absent, the default look.", "type": "string" }
+      }
+    },
     "frame": {
       "description": "A frame: nodes under one header, a title and a line. Only which nodes is kept: its box is drawn round them, and a node is in one frame at most. It changes no data: a runner ignores it. TODO 778",
       "type": "object", "additionalProperties": false, "required": ["id", "nodes"],

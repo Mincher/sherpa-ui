@@ -2794,6 +2794,40 @@
       ]
     },
     {
+      "name": "sherpa-node-lane",
+      "description": "one SWIMLANE of a workflow: a row down a sherpa-layout-canvas, in its `rows` slot, the whole width, faint in its colour, its name at the start of what the view shows. A JUNCTION is the band between two lanes where a logic node stands: no fill, a dotted edge. Its host writes where it stands and how tall (data-y, data-h, plane px): it pans and zooms down, never across. It takes no press. Will, 2026-11-10",
+      "attributes": [
+        {
+          "name": "data-colour",
+          "description": "a CSS colour its band wears; none, the default look"
+        },
+        {
+          "name": "data-h",
+          "description": "its height, in plane px"
+        },
+        {
+          "name": "data-heading",
+          "description": "its name (default Lane)"
+        },
+        {
+          "name": "data-type",
+          "description": "lane | junction : a junction has no fill, and a dotted edge",
+          "values": [
+            {
+              "name": "lane"
+            },
+            {
+              "name": "junction"
+            }
+          ]
+        },
+        {
+          "name": "data-y",
+          "description": "its top, in plane px"
+        }
+      ]
+    },
+    {
       "name": "sherpa-node-list",
       "description": "the nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes), then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places",
       "attributes": []
@@ -2972,6 +3006,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-can-lanes",
+          "description": "Swimlanes can be pressed: the workflow takes them; written by the editor",
+          "valueSet": "v"
+        },
+        {
           "name": "data-can-play",
           "description": "Play can be pressed: the same; written by the editor",
           "valueSet": "v"
@@ -3014,6 +3053,11 @@
         {
           "name": "data-hide-unconnected",
           "description": "Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-lanes",
+          "description": "The workflow has swimlanes: shown as pressed; written by the editor",
           "valueSet": "v"
         },
         {

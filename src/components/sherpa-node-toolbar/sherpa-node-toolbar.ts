@@ -39,6 +39,8 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-collapsed': { type: 'boolean', kind: 'behaviour' },
     'data-can-hide': { type: 'boolean', kind: 'behaviour' },
     'data-hide-unconnected': { type: 'boolean', kind: 'behaviour' },
+    'data-can-lanes': { type: 'boolean', kind: 'behaviour' },
+    'data-lanes': { type: 'boolean', kind: 'behaviour' },
   } as const;
   static override observed = ['data-picked-routes', 'data-path-why'];
 
@@ -59,7 +61,7 @@ export class SherpaNodeToolbar extends SherpaElement {
 
   /** Each tool can be pressed when its flag is set. */
   #sync(): void {
-    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'fetch', 'play', 'frame', 'collapse', 'hide']) {
+    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'fetch', 'play', 'frame', 'collapse', 'hide', 'lanes']) {
       this.$(`.${action}`)?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${action}`));
     }
     const running = this.hasAttribute('data-simulating');
@@ -98,6 +100,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     collapse?.setAttribute('aria-label', all ? 'Expand all nodes' : 'Collapse all nodes');
     collapse?.setAttribute('data-tip', all ? 'Expand all nodes' : 'Collapse all nodes: only their sockets show (double click a header for one)');
     this.$('.hide')?.setAttribute('aria-pressed', String(this.hasAttribute('data-hide-unconnected')));
+    this.$('.lanes')?.setAttribute('aria-pressed', String(this.hasAttribute('data-lanes')));
   }
 
   /** A tool was pressed: say which, if it can be. */

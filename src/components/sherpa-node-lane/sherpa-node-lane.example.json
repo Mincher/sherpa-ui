@@ -1,0 +1,11 @@
+{
+  "html": [
+    "<sherpa-layout-canvas style=\"inline-size: 900px; block-size: 420px\">",
+    "<sherpa-node-lane slot=\"rows\" data-heading=\"Data\" data-y=\"40\" data-h=\"140\"></sherpa-node-lane>",
+    "<sherpa-node-lane slot=\"rows\" data-type=\"junction\" data-heading=\"Junction\" data-y=\"196\" data-h=\"80\"></sherpa-node-lane>",
+    "<sherpa-node-lane slot=\"rows\" data-heading=\"Agentic\" data-colour=\"#7b3bcd\" data-y=\"292\" data-h=\"120\"></sherpa-node-lane>",
+    "<sherpa-node data-heading=\"Source\" data-icon=\"storage\" data-x=\"120\" data-y=\"80\" data-output-socket=\"object\"></sherpa-node>",
+    "</sherpa-layout-canvas>"
+  ],
+  "use": "For the swimlanes of a workflow on a `sherpa-layout-canvas`: one row each, in its `rows` slot, the whole width, its name at the start of what the view shows. Its host writes where it stands and how tall (`data-y`, `data-h`, plane px) and its colour; `data-type=\"junction\"` is the band between two lanes where a logic node stands. It takes no press. For columns across the canvas, use `sherpa-node-stage`."
+}

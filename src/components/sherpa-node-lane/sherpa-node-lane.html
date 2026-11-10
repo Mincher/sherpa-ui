@@ -1,0 +1,26 @@
+<!--
+  sherpa-node-lane — one SWIMLANE of a workflow: a row down a sherpa-layout-canvas, in its `rows` slot, the whole width,
+  faint in its colour, its name at the start of what the view shows. A JUNCTION is the band between two lanes where a
+  logic node stands: no fill, a dotted edge. Its host writes where it stands and how tall (data-y, data-h, plane px): it
+  pans and zooms down, never across. It takes no press. Will, 2026-11-10
+
+  Public API:
+    data-heading  its name (default Lane)
+    data-type     lane | junction (default lane): a junction has no fill, and a dotted edge
+    data-colour   a CSS colour its band wears; none, the default look
+    data-y        its top, in plane px (default 0)
+    data-h        its height, in plane px (default 0)
+
+  Slots:
+    (none)
+
+  Fires: nothing. It is drawn by its host.
+-->
+<template id="default">
+  <div class="band" part="band" role="presentation">
+    <span class="label" part="label">
+      <span class="swatch" part="swatch" aria-hidden="true"></span>
+      <span class="heading" part="heading" data-text="data-heading">Lane</span>
+    </span>
+  </div>
+</template>

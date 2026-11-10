@@ -29,6 +29,7 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 | `data-can-frame` | boolean |  | Frame nodes can be pressed: two or more nodes are picked; written by the editor |
 | `data-can-group` | boolean |  | Save as Custom Node can be pressed: two or more nodes are picked; written by the editor |
 | `data-can-hide` | boolean |  | Hide unconnected can be pressed: a node is collapsed; written by the editor |
+| `data-can-lanes` | boolean |  | Swimlanes can be pressed: the workflow takes them; written by the editor |
 | `data-can-play` | boolean |  | Play can be pressed: the same; written by the editor |
 | `data-can-redo` | boolean |  | Redo can be pressed |
 | `data-can-save` | boolean |  | Save can be pressed (default off: Save is a placeholder until a host wants it) |
@@ -38,6 +39,7 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 | `data-collapsed` | boolean |  | Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor |
 | `data-fetching` | boolean |  | A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor |
 | `data-hide-unconnected` | boolean |  | Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor |
+| `data-lanes` | boolean |  | The workflow has swimlanes: shown as pressed; written by the editor |
 | `data-path-why` | text |  | Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor |
 | `data-paused` | boolean |  | A simulation is paused at its node: Play goes on, Pause is off; written by the editor |
 | `data-picked-routes` | number |  | How many connectors are picked; written by the editor, said in the Tie tool's tip |
@@ -73,6 +75,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }`
+`{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }`
 
 Its declared props by name: `label` sets data-label.

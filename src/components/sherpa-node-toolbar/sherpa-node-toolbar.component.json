@@ -249,6 +249,19 @@
                 "aria-pressed": "false",
                 "disabled": ""
               }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "lanes",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "list",
+                "data-action": "lanes",
+                "aria-label": "Swimlanes",
+                "data-tip": "Swimlanes: a row for each family of nodes; a logic node stands between the rows it joins",
+                "aria-pressed": "false",
+                "disabled": ""
+              }
             }
           ]
         }
@@ -318,6 +331,15 @@
       "declared": true,
       "kind": "behaviour",
       "description": "Hide unconnected can be pressed: a node is collapsed; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-can-lanes",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Swimlanes can be pressed: the workflow takes them; written by the editor"
     },
     {
       "$type": "prop",
@@ -402,6 +424,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-lanes",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "The workflow has swimlanes: shown as pressed; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-path-why",
       "type": "string",
       "observed": true,
@@ -447,7 +478,7 @@
     }
   ],
   "populate": {
-    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
+    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

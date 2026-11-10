@@ -127,6 +127,7 @@ export { SherpaNode } from './components/sherpa-node/sherpa-node.js';
 export { SherpaNodeRow } from './components/sherpa-node-row/sherpa-node-row.js';
 export { SherpaNodeFrame } from './components/sherpa-node-frame/sherpa-node-frame.js';
 export { SherpaNodeStage } from './components/sherpa-node-stage/sherpa-node-stage.js';
+export { SherpaNodeLane } from './components/sherpa-node-lane/sherpa-node-lane.js';
 export { SherpaNodeToolbar } from './components/sherpa-node-toolbar/sherpa-node-toolbar.js';
 export { SherpaNodeList, type AddContext } from './components/sherpa-node-list/sherpa-node-list.js';
 export type { SocketSide } from './components/sherpa-node/node-sockets.js';

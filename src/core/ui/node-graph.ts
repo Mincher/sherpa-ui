@@ -72,6 +72,8 @@ import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
+import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
+import { drawLanes } from './node-lanes-ui.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
@@ -175,6 +177,8 @@ export interface DrawOptions {
   onRelease?: (id: string) => void;
   /** A node a double click on its header OPENS (a Custom Node's use): it does not collapse. */
   opens?: (node: GraphNode) => boolean;
+  /** Nodes were collapsed or expanded: their heights changed. */
+  onCollapse?: () => void;
 }
 
 /** A field a row draws: a text field, a select or tags, a menu of ticks (a quick-filter chip), or a switch. */
@@ -1611,6 +1615,7 @@ function toggleCollapsed(canvas: SherpaLayoutCanvas, drawn: Drawn, ids: readonly
     if (el) stackPlaces(el, on);
   }
   drawRoutes(canvas, drawn);
+  drawn.options.onCollapse?.();
 }
 
 /** Collapse these nodes, or expand them; `'all'`, every node drawn. A collapsed node shows only its sockets. */
@@ -2700,6 +2705,8 @@ export function bindWorkflow(
   let settling = false;
   const moved = new Set<string>();
   let movedTag = '';
+  /** A node's height as drawn, in plane px: what a lane holds. Not drawn yet, a node's usual height. */
+  const heightOf = (node: { id: string }): number => drawnOn.get(canvas)?.nodes.get(node.id)?.offsetHeight || 120;
   const settle = (): void => {
     settling = false;
     const ids = [...moved];
@@ -2722,7 +2729,7 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this workflow is a preset, read only: change a copy of it.', at: { workflow: workflow.id } });
     } else if (!path.length) {
       // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
-      draft = settling ? next : fitStages(next, nodeWidth);
+      draft = settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K());
       session?.set(pointer, draft);
     } else if (readOnly()) {
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
@@ -3376,6 +3383,8 @@ export function bindWorkflow(
     else if (action === 'pause') pause();
     else if (action === 'stop') stop();
     else if (action === 'frame') framePicked();
+    // Swimlanes on, a lane for each family; off, none. One step; the nodes stay where they are. Will, 2026-11-10
+    else if (action === 'lanes' && !path.length && !readOnly()) write(editWorkflow(shown(), { lanes: shown().lanes?.length ? null : LANES_BY_FAMILY }, K()));
   };
   toolbar?.addEventListener('toolbar-select', onTool);
   toolbar?.setAttribute('data-can-tie', '');
@@ -3690,8 +3699,16 @@ export function bindWorkflow(
       notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
       locked: (node) => ro || node.id.startsWith('#') || !!stages.arranging(),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
+      // A collapsed or expanded node changes height: its lane fits again.
+      onCollapse: () => { if (!path.length && shown().lanes?.length) write(shown()); },
     });
     stages.draw();
+    const laned = path.length ? null : (stages.preview() ?? shown());
+    drawLanes(canvas, laned, heightOf, K());
+    // A node's height lands when its parts render: the lanes draw again then.
+    requestAnimationFrame(() => drawLanes(canvas, path.length ? null : (stages.preview() ?? shown()), heightOf, K()));
+    toolbar?.toggleAttribute('data-can-lanes', !path.length && !ro);
+    toolbar?.toggleAttribute('data-lanes', !!laned?.lanes?.length);
     toolbar?.toggleAttribute('data-can-unfurl', !ro && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
     tellPath();
     if (simulation && !simulation.stale && simulation.sig !== dataSig()) {
@@ -3777,6 +3794,8 @@ export function bindWorkflow(
       unarrange();
       unview();
       stages.stop();
+      drawLanes(canvas, null, heightOf, K());
+      for (const flag of ['data-can-lanes', 'data-lanes']) toolbar?.removeAttribute(flag);
       canvas.removeEventListener('pointerdown', onPress, { capture: true });
       window.removeEventListener('pointerup', onLetGo);
       window.removeEventListener('pointercancel', onLetGo);

@@ -40,6 +40,7 @@ import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 import { columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
+import { laneFaults, type NodeLane } from './node-lanes.js';
 import { orderStages, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
 import { connectionRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
 
@@ -80,6 +81,8 @@ export interface WorkflowDefinition {
   frames?: readonly NodeFrame[];
   /** Stages: columns across the canvas, left to right; a node names its own. A stage changes no data. None, it has one. */
   stages?: readonly NodeStage[];
+  /** Swimlanes: rows down the canvas, one for each family of nodes, top to bottom; a logic node stands in a junction. None, off. */
+  lanes?: readonly NodeLane[];
 }
 
 /** A workflow as v1 saved it: the same, but its data rows left from a node's header. */
@@ -425,6 +428,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   }
   problems.push(...frameFaults(workflow.frames, workflow.nodes.map((n) => n.id)));
   problems.push(...stageFaults(workflow));
+  problems.push(...laneFaults(workflow));
   return problems;
 }
 
@@ -758,7 +762,8 @@ export type WorkflowEdit =
   | { setStage: { id: string; label?: string; description?: string; colour?: string } }
   | { removeStage: string }
   | { orderStages: readonly string[] }
-  | { restage: readonly string[] };
+  | { restage: readonly string[] }
+  | { lanes: readonly NodeLane[] | null };
 
 /** No value, empty text or an empty list: a row holding it holds none. */
 const empty = (value: unknown): boolean => value === '' || value == null || (Array.isArray(value) && !value.length);
@@ -965,6 +970,11 @@ export function editWorkflow(
   }
   // — Stages: a new one after the last; its name, line and colour; one taken away, its nodes left in none; an order; a
   // node let go, in the stage it stands in. A workflow keeps at least one. Will, 2026-11-10
+  // — Swimlanes: on, with the lanes given; null, off. The nodes stay where they are. Will, 2026-11-10
+  if ('lanes' in edit) {
+    const { lanes: _was, ...bare } = workflow;
+    return edit.lanes?.length ? { ...bare, lanes: edit.lanes.map((l) => ({ ...l, families: [...l.families] })) } : bare;
+  }
   if ('addStage' in edit || 'setStage' in edit || 'removeStage' in edit || 'orderStages' in edit || 'restage' in edit) return staged(workflow, edit);
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
   if ('remove' in edit) {
