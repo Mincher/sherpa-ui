@@ -289,7 +289,7 @@ Paths in this section are in `../Sherpa Demos/app/`.
 | **Records** (`templates/records.html`) | context-header: banners + metrics with sparklines; three chart cards, their header's filter bar shut; the Records card (§3.2 #2); the Add / Edit form dialog, the Delete confirm | View "Renewals" groups the grid by tier; the bulk-selection state | "2 · Records Table", older |
 | **Devices** (`templates/devices.html`) | as Records: no Add, not selectable; the Details panel (laptop icon) | View "Servers" groups by customer | none |
 | **Assistant** (`templates/chat.html`) | no app header; a Container: a thread Stack of Chat Messages (one holds a Code Block), a Loader, a Container Footer with the Prompt Composer | the same thread inside the Assistant overlay panel, the composer in its footer | "4 · AI Chat", older |
-| **Node Editor** (`templates/node-editor.html`) | header with the View chip and the graph chip only; a Layout Canvas: banners, the Node Toolbar, the Nodes panel (start, Node List), the inspector (end); stages, lanes, frames, the minimap | the dialogs Save as Custom Node (with Tags), Edit stage (with Colour), Update all instances (critical); the four graph Views | none — after P7 |
+| **Node Editor** (`templates/node-editor.html`) | ONE node editor (plan 885, below): the workflow editor and a page's filter graph (Records › Open in Node Editor) are one design. Header with the View chip and the graph chip only; a Layout Canvas: banners, the Node Toolbar, the Nodes panel (start, Node List), the inspector (end); stages, lanes, frames, the minimap | the dialogs Save as Custom Node (with Tags), Edit stage (with Colour), Update all instances (critical); the four graph Views | none — after P7 |
 | **Learn filtering** (`templates/learn-filtering.html`) | a demo column (a grid, a toolbar, charts, by lesson) + a doc rail (callout, small section headers, prose, live switches, "pictures" of chips, an accordion of code blocks) | lessons 6, 7, 11 and 12, the four demo layouts | none |
 | **Settings** (`templates/profile.html`, `accessibility.html`, `appearance.html`, `application.html`, `filtering.html`) | a reading-width Stack of sections: Section Header + List of List Items with a trailing Switch; Appearance uses Fieldset radios; Profile is a form with its footer pinned below the scroll | a dependent switch (`data-setting-needs`) disabled | "3 · Settings Form (dark)", older |
 
@@ -554,6 +554,14 @@ P7 is late on purpose: the node editor changed on 2026-11-10 (stages, lanes,
 collapsed nodes), and work in hand (713, 719, 557–562) will change it again. A Figma
 copy made now would go stale first.
 
+**885 comes first.** Will ruled on 2026-11-10 (reported by sherpa-ui-f9) that there
+is ONE node editor, built before the Figma alignment. Today there are two:
+`bindWorkflow`, and `bindQueryEditor`, which draws a page's filters on Records and lacks
+the zip tie, frames, stages, lanes, copy and paste, and Fetch / Play. Plan 885
+(`docs/history/plan-885-one-node-editor.md`, sherpa-ui-f9) makes them one. For Figma:
+the page filter graph takes the workflow editor's toolbar and tools, and the two node
+editor screens become one design — one EXAMPLE page, one set of NODES parts.
+
 ---
 
 ## 10. Decisions for Will
@@ -563,7 +571,7 @@ copy made now would go stale first.
 | D1 | When code and Figma disagree on a look | **A:** the code wins on structure and states; each look is asked once, as a ❓ | B: the code wins on all of it |
 | D2 | Where to do the work | **A:** in the live file, a saved version before each phase; you publish | B: a Figma branch (needs an Organization plan) |
 | D3 | The node components | **A:** build them from the code, bound to Sherpa-UI variables; ACP Module swaps to them later | B: move ACP Module's `node` set into the library as it is |
-| D4 | Where 883 sits in the TODO | **A:** P0–P6 now, in their own lane (they touch no node file); P7 after the node items | B: all of it after the node items |
+| D4 | Where 883 sits in the TODO, now that 885 (one node editor) comes first | **A:** P0–P6 as soon as 885 lands (they touch no node file); P7 after the node items in hand | B: all of 883 after every node item |
 | D5 | Loader size | **A:** the Structure mode, as the code and Button do; drop the `Size` variant | B: keep the variant; the code follows |
 
 Smaller ❓s, asked in their phase: Pagination v1 or v2; View Header, keep or delete;
@@ -597,4 +605,5 @@ and are listed so their Figma effect is not missed. Each item is also in its row
 | sherpa-ui-fe, `b18c0ee94` | a panel peeking from its tab draws over the fixed region and its sticky Metric Group; the layer order | §2.7 |
 | sherpa-ui-fe, `864b78b1b` | `--sherpa-panel-area-padding-block` (8px; 16px in the App Shell): a docked card's top and bottom meet the first and last cards; the Layout Canvas keeps 8px; the dock preview follows | §2.1, §2.6 |
 | sherpa-ui-f9 | `94e8ad74c` the panel group's look (above); `0d94d99bb` stages are a flex row with a 16px gap, a dragged node stays in its stage (behaviour); `aa9962e73` the Alt-drag ghost; `f562dc6e3` (before the read) Add stage and Arrange stages moved to the canvas's `columns-end`, a stage's ⋯ after its name, and `data-last` and the `stage-add` / `stage-arrange` events gone; `panel-mode-change` carries `{ mode, restore? }`. Its FYI on `659c83805` (stages, swimlanes, collapsed nodes, copy and paste, the toolbar toggles, Layout Canvas slots and `data-editing`, Input Text `data-type="color"`, workflow v2) was in §2.1 and §2.3 already. No Demos change since `3c5f523` | §2.1 |
+| sherpa-ui-f9, later the same day | Will's ruling: ONE node editor, before the Figma alignment — plan 885. Commit ids to follow; folded in when they land | §3.1, §9, D4 |
 | acp-module-d7 (Harness design) | No main component changed in either file. Its Harness screens use instances and hand-made frames: a two-row app header, a data bar of two-half chips, docked panels with mode buttons, stage bars, a zip-tie handle, run labels, all drawn locally from Apex parts. It names these as wanted library parts: **the stage bar, the zip-tie handle, the run label, the two-half chip, the panel-end header with its mode buttons**. Its notes: `acp-module/.working-notes/29-app-shell.md`, `30-sherpa-demos-patterns.md` | §2.1, §2.3, §3.5, P7 |
