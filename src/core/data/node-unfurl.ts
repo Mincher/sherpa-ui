@@ -12,7 +12,7 @@
 import { crossings, type Arranged, type SocketHeights } from './node-arrange.js';
 import { socketOf, type NodeRoute, type NodeTie } from './node-kinds.js';
 import type { NodeFrame } from './node-frames.js';
-import { tieLimit } from './workflow.js';
+import { TIE_GAP, tieLimit } from './workflow.js';
 
 /** What an unfurl reads: the nodes' places, the routes, the ties and the frames. */
 export interface UnfurlGraph {
@@ -49,8 +49,11 @@ const ARC = Math.PI / 3;
 const BULGE = 8;
 const REACH = 0.5;
 
-/** One cell: a node, or a frame and its nodes, each at its offset in the cell's box. */
-interface Cell { key: string; w: number; h: number; members: { id: string; dx: number; dy: number }[] }
+/** One cell: a node, or a frame and its nodes, each at its offset in the cell's box; or a TIE, no node in it, at its middle. */
+interface Cell { key: string; w: number; h: number; members: { id: string; dx: number; dy: number }[]; tie?: { x: number; y: number } }
+/** A tie's cell: the bar's width, and its slots' top and step down it. */
+const TIE_W = 4;
+const TIE_TOP = 8;
 /** One route or more between two cells, in their main direction, and the topmost socket each joins them by. */
 interface Link { s: number; t: number; m: number; ps: number; pt: number }
 /** A link as one of its cells sees it: the other cell, its socket on this one (`port`) and on the other (`far`). */
@@ -85,8 +88,10 @@ function project(want: readonly number[], weight: readonly number[], gap: readon
  * cells that hang from one cell stand on their ring in its sockets' order, and each line is pulled level; then the
  * order whose lines cross least, socket to socket, wins. A frame is one cell, so its nodes keep their column. The MAIN part
  * (the most nodes) keeps its anchor's place; every other part and lone node but a Source stack on its left, top to bottom as
- * they stood, lone Sources left of them; every place on the grid. A tie whose
- * routes all join moved nodes goes to their middle, held by `tieLimit`. Fewer than two: nothing.
+ * they stood, lone Sources left of them; every place on the grid. A TIE is a cell of no width that its routes pass through,
+ * at their slots: it stands in the flow, what feeds it on its left and what it feeds on its right, in its slots' order, and a
+ * tie of many routes is the anchor, keeping its place (Will, TODO 888). A tie it cannot hold so (a route ends outside the
+ * moved nodes, or in one cell) goes to its routes' middle if they all moved. Each held by `tieLimit`. Fewer than two: nothing.
  */
 export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options: UnfurlOptions): Arranged {
   const grid = options.grid ?? 4;
@@ -112,6 +117,17 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
       members: members.map((id) => ({ id, dx: at.get(id)!.x - left + margin.side, dy: at.get(id)!.y - top + margin.top })) });
   }
   for (const id of picked) if (!cellOf.has(id)) { cellOf.set(id, cells.length); cells.push({ key: id, ...box(id), members: [{ id, dx: 0, dy: 0 }] }); }
+  // A TIE whose every route joins two moved cells: a cell its routes pass through, slot by slot. Will, TODO 888
+  const tieCell = new Map<string, number>();
+  const through = new Map<string, { cell: number; slot: number; x: number }[]>();
+  const key = (r: NodeRoute): string => `${r.from}>${r.to}`;
+  for (const tie of [...(graph.ties ?? [])].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+    const ends = tie.routes.map((r) => [cellOf.get(socketOf(r.from).node), cellOf.get(socketOf(r.to).node)]);
+    if (!ends.length || ends.some(([a, b]) => a === undefined || b === undefined || a === b)) continue;
+    tieCell.set(tie.id, cells.length);
+    tie.routes.forEach((r, slot) => through.set(key(r), [...(through.get(key(r)) ?? []), { cell: cells.length, slot, x: tie.x }]));
+    cells.push({ key: `#tie:${tie.id}`, w: TIE_W, h: (tie.routes.length - 1) * TIE_GAP + 2 * TIE_TOP, members: [], tie: { x: tie.x, y: tie.y } });
+  }
   // A socket's height in its cell: its node's offset there, and its own height in the node, else mid height.
   const offset = new Map(cells.flatMap((cell) => cell.members.map((m) => [m.id, m.dy] as const)));
   const heightOf = (address: string, heights: SocketHeights['inputs'] | undefined): number => {
@@ -123,14 +139,20 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
   const n = cells.length;
   const weight = new Array<number>(n).fill(0);
   const pairs = new Map<number, { a: number; b: number; m: number; ab: number; pa: number; pb: number }>();
-  // A hop holds the order as a route does, with no line to cross or to read at a socket.
+  // A hop holds the order as a route does, with no line to cross or to read at a socket. A route through ties is a piece
+  // to each, left to right, and one on: at a tie, its slot is its socket.
+  const pieces: { a: number; b: number; out: number; into: number }[] = [];
   for (const r of [...graph.routes, ...(graph.hops ?? [])]) {
     const [a, b] = [cellOf.get(socketOf(r.from).node), cellOf.get(socketOf(r.to).node)];
     if (a === undefined || b === undefined || a === b) continue;
+    const stops = [...(through.get(key(r)) ?? [])].sort((p, q) => p.x - q.x).map((t) => ({ cell: t.cell, at: TIE_TOP + t.slot * TIE_GAP }));
+    const ends = [{ cell: a, at: heightOf(r.from, options.sockets?.outputs) }, ...stops, { cell: b, at: heightOf(r.to, options.sockets?.inputs) }];
+    for (let i = 1; i < ends.length; i++) pieces.push({ a: ends[i - 1]!.cell, b: ends[i]!.cell, out: ends[i - 1]!.at, into: ends[i]!.at });
+  }
+  for (const { a, b, out, into } of pieces) {
     weight[a]!++;
     weight[b]!++;
     const [lo, hi] = a < b ? [a, b] : [b, a];
-    const [out, into] = [heightOf(r.from, options.sockets?.outputs), heightOf(r.to, options.sockets?.inputs)];
     const pair = pairs.get(lo * n + hi) ?? { a: lo, b: hi, m: 0, ab: 0, pa: Infinity, pb: Infinity };
     pair.m++;
     if (a === lo) pair.ab++;
@@ -394,24 +416,32 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     let ys = top;
     for (const c of sources) { corner.set(c, { x: start - wide - gapX - grid + (wide - cells[c]!.w) / 2, y: ys }); ys += cells[c]!.h + gapY + grid; }
   }
-  // The main part's anchor keeps its place; with none, the first lone node's.
+  // The main part's anchor keeps its place — a tie's, its middle where it was; with none, the first lone node's.
   const main = mainPart?.anchor ?? lone[0]!;
-  const [lead] = cells[main]!.members;
-  const was = at.get(lead!.id)!;
-  const shift = { x: near(was.x) - lead!.dx - corner.get(main)!.x, y: near(was.y) - lead!.dy - corner.get(main)!.y };
+  const home = (cell: Cell): { x: number; y: number } => {
+    if (cell.tie) return { x: cell.tie.x - cell.w / 2, y: cell.tie.y - cell.h / 2 };
+    const [lead] = cell.members;
+    const was = at.get(lead!.id)!;
+    return { x: near(was.x) - lead!.dx, y: near(was.y) - lead!.dy };
+  };
+  const shift = { x: home(cells[main]!).x - corner.get(main)!.x, y: home(cells[main]!).y - corner.get(main)!.y };
   cells.forEach((cell, c) => {
     for (const m of cell.members) out.nodes[m.id] = { x: near(corner.get(c)!.x + shift.x + m.dx), y: near(corner.get(c)!.y + shift.y + m.dy) };
   });
-  // Ties: each whose routes all join moved nodes, at the middle of its routes, held inside its limit.
+  // Ties: one held as a cell where its cell stands; else, its routes all joining moved nodes, at their middle. Each held
+  // inside its limit.
   const final = { ...Object.fromEntries(graph.nodes.map((nd) => [nd.id, { x: nd.x, y: nd.y }])), ...out.nodes };
   const moved = { nodes: graph.nodes.map((nd) => ({ id: nd.id, x: final[nd.id]!.x })) };
   for (const tie of graph.ties ?? []) {
+    const c = tieCell.get(tie.id);
     const ends = tie.routes.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const);
-    if (!ends.length || !ends.every(([a, b]) => a in out.nodes && b in out.nodes)) continue;
+    if (c === undefined && (!ends.length || !ends.every(([a, b]) => a in out.nodes && b in out.nodes))) continue;
     const mids = ends.map(([a, b]) => ({ x: (final[a]!.x + box(a).w + final[b]!.x) / 2, y: (final[a]!.y + box(a).h / 2 + final[b]!.y + box(b).h / 2) / 2 }));
+    const spot = c !== undefined
+      ? { x: corner.get(c)!.x + shift.x + cells[c]!.w / 2, y: corner.get(c)!.y + shift.y + cells[c]!.h / 2 }
+      : { x: mids.reduce((s, p) => s + p.x, 0) / mids.length, y: mids.reduce((s, p) => s + p.y, 0) / mids.length };
     const limit = tieLimit(moved, tie);
-    const spot = mids.reduce((s, p) => s + p.x, 0) / mids.length;
-    out.ties[tie.id] = { x: Math.round(limit ? Math.min(limit.max, Math.max(limit.min, spot)) : spot), y: near(mids.reduce((s, p) => s + p.y, 0) / mids.length) };
+    out.ties[tie.id] = { x: Math.round(limit ? Math.min(limit.max, Math.max(limit.min, spot.x)) : spot.x), y: near(spot.y) };
   }
   return out;
 }

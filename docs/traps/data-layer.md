@@ -8009,6 +8009,13 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   keeps its place; every other part and every lone node but a Source or In stands in ONE stack on its left, top to bottom
   as they stood, wholly clear of the main part's lines (Will, 2026-11-10); a lone Source or In has its column left of that.
 
+- **A tie is a point in the flow** (Will, TODO 888: "use zip ties as anchor points"). A tie whose every route joins two
+  moved cells is a cell of no width (`#tie:<id>`), and each route through it is a piece to it and one on, its slot the
+  socket on both: so what feeds it stands on its left and what it feeds on its right, in its slots' order, and its lines
+  never cross at it. Its weight is two a route, so a tie of many is the anchor and keeps its place, as the central node
+  would. A tie it cannot hold so still goes to its routes' middle. Before, every tie went to the middle after the
+  nodes moved: a tie a reader had placed was thrown away.
+
 - Site: `src/core/data/node-unfurl.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/unfurl-spreads-the-graph-from-its-hub.test.mjs`

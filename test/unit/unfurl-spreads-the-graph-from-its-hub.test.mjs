@@ -186,6 +186,24 @@ test('a tie whose routes all join moved nodes stands between them, inside its li
   assert.equal(Object.keys(unfurl(loop).nodes).length, 3);
 });
 
+test('a tie is a point in the flow (TODO 888): what feeds it on its left, what it feeds on its right, in its slots\' order; a tie of many routes keeps its place', () => {
+  // Fed and feeding out of order, and far from the tie: an unfurl puts them round it.
+  const g = graphOf([['a', 0, 900], ['b', 1400, 0], ['c', 200, 300], ['x', 0, 0], ['y', 600, 1200], ['z', 1800, 600]],
+    [R('a/rows', 'x'), R('b/rows', 'y'), R('c/rows', 'z')],
+    { ties: [{ id: 't', x: 1000, y: 400, routes: [R('a/rows', 'x'), R('b/rows', 'y'), R('c/rows', 'z')] }] });
+  const out = unfurl(g);
+  // The tie is the anchor (six route ends against one each): it keeps its place.
+  assert.deepEqual(out.ties.t, { x: 1000, y: 400 });
+  // Its feeders all stand left of it, what it feeds all right.
+  for (const id of ['a', 'b', 'c']) assert.ok(out.nodes[id].x + 240 <= out.ties.t.x, `${id} feeds it from its left`);
+  for (const id of ['x', 'y', 'z']) assert.ok(out.nodes[id].x >= out.ties.t.x, `${id} stands on its right`);
+  // In its slots' order, top to bottom, on both sides: no line crosses another at the tie.
+  const order = (list) => [...list].sort((p, q) => out.nodes[p].y - out.nodes[q].y);
+  assert.deepEqual(order(['a', 'b', 'c']), ['a', 'b', 'c']);
+  assert.deepEqual(order(['x', 'y', 'z']), ['x', 'y', 'z']);
+  assert.deepEqual(clearance(g, out.nodes), []);
+});
+
 test('only the nodes it is given move; fewer than two, nothing', () => {
   const g = graphOf([['#in', -400, 0], ['a', 0, 0], ['b', 600, 300], ['#out', 1200, 0]], [R('#in/x', 'a'), R('a', 'b'), R('b', '#out/y')]);
   const out = unfurlNodes(g, ['a', 'b', 'gone'], opts(g));
