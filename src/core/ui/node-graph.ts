@@ -12,6 +12,7 @@
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
+ * - relayRoutes — Draw the lines again, from where the sockets are drawn now: nodes moved by hand, not by a draw.
  * - tieSpot — Where routes would be tied with no pointer: the middle of the way each takes, on the plane.
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
@@ -64,6 +65,7 @@ import '../../components/sherpa-switch/sherpa-switch.js';
 import type { AddContext, SherpaNodeList } from '../../components/sherpa-node-list/sherpa-node-list.js';
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 import { primaryKey } from './modifier-key.js';
+import { keepOrder, morph } from './keep-order.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
 import { dotsThrough, handlesOf, pathThrough, piece, waypointsOf, type Pt } from './route-path.js';
 import { clampedVia } from '../data/route-bends.js';
@@ -344,8 +346,24 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
   return field;
 }
 
+/** What each field was last filled with: the same again, while the field still shows it, is skipped — a draw fills every
+ *  field, and a fill sets values a field then measures (a tags field: a forced layout each). */
+const filled = new WeakMap<Field, string>();
+
+/** Whether a field shows its row's value as a fill would put it. */
+function shows(field: Field, row: GraphRow): boolean {
+  if (row.control === 'tags') return JSON.stringify(field.tags ?? []) === JSON.stringify([row.value ?? []].flat().map(String));
+  if (row.control === 'switch') return !!field.checked === !!row.value;
+  if (row.control === 'datetime') return field.value === formatDateTime(String(row.value ?? ''));
+  if (row.multiple) return JSON.stringify(field.values ?? []) === JSON.stringify(Array.isArray(row.value) ? row.value.map(String) : []);
+  return field.value === (row.choices ? String(row.value ?? '') : shown(row));
+}
+
 /** Give a field its row's value, and its words: its fault, red, in the field's own message. TRAP T-a-row-says-its-own-fault */
 function fill(field: Field, row: GraphRow, note?: string): void {
+  const said = JSON.stringify([row.label, note ?? row.hint, row.fault, row.control, row.multiple, row.value, row.choices]);
+  if (filled.get(field) === said && shows(field, row)) return;
+  filled.set(field, said);
   field.setAttribute('data-label', row.label);
   put(field, 'data-description', note ?? row.hint);
   put(field, 'data-error', row.fault);
@@ -377,13 +395,21 @@ function read(field: Field, row: GraphRow): unknown {
 
 /** The input addresses a route drives: their fields mirror what comes in, read only. */
 function driven(graph: DrawnGraph): Set<string> {
-  return new Set(graph.routes.map((r) => r.to));
+  return routesOf(graph).routed;
+}
+
+/** A graph's routed inputs and sending outputs, by address: worked out once a graph. */
+const routeSets = new WeakMap<DrawnGraph, { routed: Set<string>; sent: Set<string> }>();
+function routesOf(graph: DrawnGraph): { routed: Set<string>; sent: Set<string> } {
+  let sets = routeSets.get(graph);
+  if (!sets) routeSets.set(graph, (sets = { routed: new Set(graph.routes.map((r) => r.to)), sent: new Set(graph.routes.map((r) => r.from)) }));
+  return sets;
 }
 
 /** One node's rows, made again when their shape changed and given their values. */
 function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
-  const routed = driven(drawn.graph);
-  const sent = new Set(drawn.graph.routes.map((r) => r.from));
+  // Read once a draw, not once a node.
+  const { routed, sent } = routesOf(drawn.graph);
   const locked = (row: GraphRow): boolean => !row.editable || routed.has(`${node.id}/${row.name}`);
   const shape = JSON.stringify(node.rows.map((r) => [r.name, r.control, r.input, r.output, r.beside, locked(r), r.choices]));
   if (drawn.shapes.get(node.id) !== shape) {
@@ -577,6 +603,12 @@ function placeFrames(drawn: Drawn): void {
 }
 
 /** A curve for each route, from its output socket to its input socket; the frames round their nodes first. */
+/** Draw the lines again, from where the sockets are drawn now: nodes moved by hand, not by a draw. */
+export function relayRoutes(canvas: SherpaLayoutCanvas): void {
+  const drawn = drawnOn.get(canvas);
+  if (drawn) drawRoutes(canvas, drawn);
+}
+
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   placeFrames(drawn);
   const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
@@ -635,7 +667,15 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     if (drawn.target === tie.id) bar.setAttribute('data-target', '');
     return bar;
   });
-  drawn.lines.replaceChildren(...paths, ...bars, ...(drawn.selectedTie ? [shadowFilter(drawn.shadow)] : []), ...(drawn.draft ? [drawn.draft] : []));
+  // The lines drawn last time, by what each is, take what changed: a node dragged moves its lines and leaves the rest.
+  // TRAP T-a-redraw-keeps-what-it-can
+  const keyOf = (el: Element): string => `${el.localName}:${el.getAttribute('data-from')}>${el.getAttribute('data-to')}:${el.getAttribute('data-tie')}`;
+  const was = new Map([...drawn.lines.children].map((el) => [keyOf(el), el]));
+  const fresh = [...paths, ...bars, ...(drawn.selectedTie ? [shadowFilter(drawn.shadow)] : [])].map((el) => {
+    const old = was.get(keyOf(el));
+    return old ? morph(old, el) : el;
+  });
+  keepOrder(drawn.lines, [...fresh, ...(drawn.draft ? [drawn.draft] : [])], true);
 }
 
 /** A socket's box on the screen: a node's or a row's, on one side; a False is its footer's. */
@@ -2411,7 +2451,7 @@ export function bindWorkflow(
         const was = begun!.nodes;
         const ids = [...new Set([...Object.keys(was), ...Object.keys(lib.nodes)])].filter((id) => was[id] !== lib.nodes[id]);
         const docBefore = docLast;
-        if (doc && draft !== begun!.draft) {
+        if (doc && draft !== begun!.draft && !dragging) {
           docWriting = true;
           try {
             doc.write(draft);
@@ -2519,6 +2559,8 @@ export function bindWorkflow(
   let pressing = false;
   let shifted = false;
   let settling = false;
+  /** A pointer drag of nodes is under way: a write draws only what moves, and a document hears it when it ends. */
+  let dragging = false;
   const moved = new Set<string>();
   let movedTag = '';
   /** A drag just ended: the click it ends with is no Shift-click pick. */
@@ -2527,6 +2569,7 @@ export function bindWorkflow(
   const heightOf = (node: { id: string }): number => drawnOn.get(canvas)?.nodes.get(node.id)?.offsetHeight || 120;
   const settle = (): void => {
     settling = false;
+    dragging = false;
     const ids = [...moved];
     moved.clear();
     if (path.length || readOnly()) return;
@@ -2567,8 +2610,26 @@ export function bindWorkflow(
       const id = path.at(-1)!.kind;
       setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [], ties: next.ties ?? [], frames: next.frames ?? [] }), [id]);
     }
-    draw();
+    // Mid-drag, only what moves is drawn: a whole draw a pointer move cost 220ms on 45 nodes (2026-11-10). The drag's end draws all.
+    if (dragging) drawMoves();
+    else draw();
   }, tag);
+  /** Mid-drag: each node where the draft says (a stage that grew pushes others), the lines, the stages and lanes. */
+  const drawMoves = (): void => {
+    const els = drawnOn.get(canvas)?.nodes;
+    if (!els || path.length) return draw();
+    let moved = false;
+    for (const n of (stages.preview() ?? shown()).nodes) {
+      const el = els.get(n.id);
+      if (!el) continue;
+      const [x, y] = [String(n.x), String(n.y)];
+      if (el.getAttribute('data-x') !== x) { el.setAttribute('data-x', x); moved = true; }
+      if (el.getAttribute('data-y') !== y) { el.setAttribute('data-y', y); moved = true; }
+    }
+    if (moved) relayRoutes(canvas);
+    stages.draw();
+    drawLanes(canvas, stages.preview() ?? shown(), heightOf, K());
+  };
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     // A Custom Node's tags are its definition's: one step, and the panel's headings follow. TODO 819
     if (row.name === '#tags') {
@@ -2597,6 +2658,7 @@ export function bindWorkflow(
     if (node.id.startsWith('#')) return;
     if (stages.arranging()) return;
     settling = pressing && shifted;
+    dragging = pressing;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
     dragged([node.id], `move:${node.id}`);
   };
@@ -2612,6 +2674,7 @@ export function bindWorkflow(
     if (stages.arranging()) return;
     const tag = `move:${Object.keys(nodes).sort().join(',')}`;
     settling = pressing && shifted;
+    dragging = pressing;
     write(editWorkflow(shown(), { place: { nodes, ties, bends: { dx, dy } } }, K()), tag);
     dragged(Object.keys(nodes), tag);
   };

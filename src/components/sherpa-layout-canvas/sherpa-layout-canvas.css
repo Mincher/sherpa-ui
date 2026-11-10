@@ -14,9 +14,6 @@
   overflow: hidden;
   block-size: 100%;
   min-block-size: 20rem;
-  --_x: 0px;
-  --_y: 0px;
-  --_zoom: 1;
   /* One grid step, on the spacing grid; it scales with the zoom. */
   --_step: var(--sherpa-display-mode-size-xl, 24px);
   --_inset: var(--sherpa-display-mode-space-base, 16px);
@@ -75,10 +72,18 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
   outline-offset: var(--sherpa-focus-offset);
 }
 
+/* THE VIEW'S place and zoom (`--_x`, `--_y`, `--_zoom`) are written on ONLY the layers that draw by them — the grid and
+   the column and row strips — never on the host: every node would inherit them, and a pan step restyled all of them (34ms on
+   45 nodes, 2026-11-10). The plane takes its transform as it is, and its zoom alone, for the hairline below. */
+.grid, .columns, .rows {
+  --_x: 0px;
+  --_y: 0px;
+  --_zoom: 1;
+}
+
 /* THE GRID: a cross at every step, moving and scaling with the plane. A MASK,
    so the cross wears a token rather than a colour baked into an image. */
-.viewport::before {
-  content: "";
+.grid {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -99,7 +104,7 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
-  transform: translate(var(--_x), var(--_y)) scale(var(--_zoom));
+  /* Its transform is written as it is, by the view: no variable a node would inherit. */
   transform-origin: 0 0;
 }
 

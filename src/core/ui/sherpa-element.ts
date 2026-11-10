@@ -676,6 +676,8 @@ export abstract class SherpaElement extends Base {
   protected toggleState(name: string, on?: boolean): boolean {
     const { states } = this.internals;
     const want = on ?? !states.has(name);
+    // A state set again is a restyle of the whole subtree in Chromium: only a change is written. TRAP T-a-redraw-keeps-what-it-can
+    if (want === states.has(name)) return want;
     if (want) states.add(name);
     else states.delete(name);
     return want;

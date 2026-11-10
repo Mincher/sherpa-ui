@@ -880,7 +880,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (150)
+## SherpaElement and the shared sheets (151)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -921,6 +921,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — float-box, sherpa-float
 - [T-a-property-set-before-upgrade-shadows-its-accessor](traps/element-and-sheets.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — filter-host-controller
+- [T-a-redraw-keeps-what-it-can](traps/element-and-sheets.md#t-a-redraw-keeps-what-it-can) — keep-order, node-graph, node-stages-ui, sherpa-element
 - [T-a-row-says-its-own-fault](traps/data-layer.md#t-a-row-says-its-own-fault) — node-graph
 - [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — filter-host-controller, shared-constants
 - [T-a-scroll-shadow-is-drawn-over-the-content](traps/element-and-sheets.md#t-a-scroll-shadow-is-drawn-over-the-content) — sherpa-base
@@ -1033,7 +1034,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (148)
+## Other components (149)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1089,6 +1090,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — layout-canvas, layout-panels
 - [T-a-rail-may-stay-shut](traps/join-and-app.md#t-a-rail-may-stay-shut) — nav, nav-item
 - [T-a-range-is-bounded-by-the-data](traps/data-layer.md#t-a-range-is-bounded-by-the-data) — calendar
+- [T-a-redraw-keeps-what-it-can](traps/element-and-sheets.md#t-a-redraw-keeps-what-it-can) — input-text, layout-canvas
 - [T-a-row-span-is-keyed-by-value](traps/other-components.md#t-a-row-span-is-keyed-by-value) — container
 - [T-a-saved-view-is-the-readers-own](traps/storage.md#t-a-saved-view-is-the-readers-own) — app-header
 - [T-a-scaled-hairline-paints-past-its-box](traps/other-components.md#t-a-scaled-hairline-paints-past-its-box) — layout-canvas

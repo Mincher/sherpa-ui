@@ -2187,3 +2187,29 @@ clones them again (`onConnect`). The filter panel clones its search (`descriptio
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel.spec.ts`
+
+### T-a-redraw-keeps-what-it-can
+
+**A redraw changes only what changed: an element taken out and put back is a style and a layout again, and so is a value
+written again** (measured on the Records filter graph, 2026-11-10: a node drag cost ~220 ms a move, now ~6 ms). Four things
+each cost a frame on their own:
+
+- **Rebuilt lines.** `drawRoutes` made every connector new on each move, and `replaceChildren` took the old ones out. Each
+  element in or out re-checks every `:has()` round it, up to `<html>` (the app shell's grid rules have `:has(> …)`), and the
+  layout then starts at the page root. Now the lines drawn last time, keyed by what each is, are `morph`ed to the new ones,
+  and `keepOrder` moves only one out of place.
+- **`append` of what is already there** moves it: the stage tools and each stage left the canvas and came back each draw.
+- **A `:state()` set again** (`states.add` of one already on) restyles the host's whole subtree in Chromium.
+  `toggleState` writes only a change.
+- **A count read straight after each draw** (`offsetTop`, then a write) is a layout per field: a graph of tag fields did one
+  each. A tag field's `count()` waits for the next frame, with every other field's: all read, then all written.
+
+The minimap is the same: its items are kept and take the new boxes, and a style is written only where its value changed.
+Ask the trace before guessing: `LayoutInvalidationTracking` and `StyleRecalcInvalidationTracking` name each element and why.
+
+- Site: `src/core/ui/keep-order.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/core/ui/node-stages-ui.ts`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
+- Site: `src/components/sherpa-input-text/input-tags.ts`

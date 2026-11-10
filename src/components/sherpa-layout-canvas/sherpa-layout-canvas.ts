@@ -15,6 +15,7 @@ import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-layout-panels/sherpa-layout-panels.js';
 import { boxMode, type BoxMode } from '../../core/ui/box-pick.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
+import { keepOrder } from '../../core/ui/keep-order.js';
 
 /** One press of Zoom in or Zoom out. */
 const ZOOM_STEP = 1.25;
@@ -75,6 +76,15 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   /** Redraws the minimap when a piece of content moves. */
   #moves: MutationObserver | null = null;
+  /** Each piece's box and the box round them, measured once: a piece added, moved or resized measures again. A pan or a
+   *  zoom never does — a measure is a layout, and a pan step that forced one cost 35ms on 45 nodes (2026-11-10). */
+  #measured: { boxes: Box[]; box: Box | null } | null = null;
+  /** What the view shows: measured again only when the canvas or its card is resized. */
+  #seenBox: { left: number; top: number; width: number; height: number } | null = null;
+  /** The minimap's size: measured again only when the canvas is resized. */
+  #mapSize: { w: number; h: number } | null = null;
+  /** Watches each piece's size: a node collapsed or grown measures again. */
+  #pieces: ResizeObserver | null = null;
 
   override onRender(): void {
     // TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
@@ -95,7 +105,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) {
       minimap?.addEventListener(type, this.#onMinimap as EventListener);
     }
-    this.$('slot:not([name])')?.addEventListener('slotchange', () => this.#drawMinimap());
+    this.$('slot:not([name])')?.addEventListener('slotchange', () => { this.#watchPieces(); this.#remeasure(); });
     // The card's area: its width in, and its resize reported as the canvas's own.
     const panels = this.$('.panels');
     this.mirrorAttrs(panels!, ['data-panel-start-width', 'data-panel-end-width']);
@@ -108,6 +118,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
   override onConnect(): void {
     // The canvas, and what its view shows: the card docks, floats or is resized.
     this.#observer = new ResizeObserver(() => {
+      this.#seenBox = null;
+      this.#mapSize = null;
       this.#syncSeen();
       this.#drawMinimap();
     });
@@ -123,10 +135,12 @@ export class SherpaLayoutCanvas extends SherpaElement {
     });
     this.on(window, 'blur', () => this.#onSpace(null, false));
     // A piece says where it sits in its own style; the canvas writes only its own.
+    // Only a piece's: a column or a row (a stage, a lane) is no content.
     this.#moves = new MutationObserver((records) => {
-      if (records.some((r) => r.target.parentElement === this)) this.#drawMinimap();
+      if (records.some((r) => r.target.parentElement === this && !(r.target as Element).slot)) this.#remeasure();
     });
     this.#moves.observe(this, { attributes: true, attributeFilter: ['style'], subtree: true });
+    this.#watchPieces();
   }
 
   override onDisconnect(): void {
@@ -134,6 +148,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.#observer = null;
     this.#moves?.disconnect();
     this.#moves = null;
+    this.#pieces?.disconnect();
+    this.#pieces = null;
   }
 
   override onChange(name: string, _old: string | null, value: string | null): void {
@@ -141,6 +157,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     if (name === 'data-zoom' && value != null && Number(value) !== SherpaLayoutCanvas.#round(this.#zoom)) {
       this.zoomTo(coerceNum(value, this.#zoom));
     } else if (name === 'data-no-minimap') {
+      this.#mapSize = null;
       this.#drawMinimap();
     } else if (name === 'data-panel-start-width' || name === 'data-panel-end-width') {
       const panels = this.$('.panels');
@@ -241,17 +258,31 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   /** What the view SHOWS: the stage beside the card, in the view's px. The view runs under the card. */
   #seen(): { left: number; top: number; width: number; height: number } {
+    if (this.#seenBox) return this.#seenBox;
     const view = this.$<HTMLElement>('.viewport')?.getBoundingClientRect();
     const stage = this.$<HTMLElement>('.stage')?.getBoundingClientRect() ?? view;
     if (!view || !stage) return { left: 0, top: 0, width: 0, height: 0 };
-    return { left: stage.left - view.left, top: stage.top - view.top, width: stage.width, height: stage.height };
+    const seen = { left: stage.left - view.left, top: stage.top - view.top, width: stage.width, height: stage.height };
+    // Kept once it is laid out: a resize lets it go.
+    if (seen.width && seen.height) this.#seenBox = seen;
+    return seen;
   }
 
-  /** Write the view where CSS reads it, redraw the minimap, and report. */
+  /** The zoom the plane last took: a pan leaves the nodes' styles alone. */
+  #planeZoom: number | null = null;
+
+  /** Write the view where CSS reads it — only on the layers that draw by it — redraw the minimap's frame, and report. */
   #apply(report = true): void {
-    this.style.setProperty('--_x', `${this.#x}px`);
-    this.style.setProperty('--_y', `${this.#y}px`);
-    this.style.setProperty('--_zoom', String(this.#zoom));
+    for (const layer of this.$$<HTMLElement>('.grid, .columns, .rows')) {
+      layer.style.setProperty('--_x', `${this.#x}px`);
+      layer.style.setProperty('--_y', `${this.#y}px`);
+      layer.style.setProperty('--_zoom', String(this.#zoom));
+    }
+    const plane = this.$<HTMLElement>('.plane');
+    if (plane) {
+      plane.style.transform = `translate(${this.#x}px, ${this.#y}px) scale(${this.#zoom})`;
+      if (this.#planeZoom !== this.#zoom) plane.style.setProperty('--_zoom', String((this.#planeZoom = this.#zoom)));
+    }
     this.set('data-zoom', String(SherpaLayoutCanvas.#round(this.#zoom)));
     const at = Math.round(this.#zoom * 100);
     this.$('.viewport')?.setAttribute('aria-label', `Canvas, ${at}%`);
@@ -259,7 +290,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
     for (const [sel, off] of [['.zoom-in', this.#zoom >= max], ['.zoom-out', this.#zoom <= min]] as const) {
       this.$(sel)?.toggleAttribute('disabled', off);
     }
-    this.#drawMinimap();
+    // A pan or a zoom moves only the view's frame on the minimap: the content holds still there.
+    this.#drawMinimapView();
     if (report) this.emit('canvas-change', this.view);
   }
 
@@ -375,21 +407,51 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   /** Every piece of content's box on the plane, and the box round them all. */
   #boxes(): Box[] {
-    // The content's own slot: the banners' comes first in the template.
-    const slot = this.$<HTMLSlotElement>('slot:not([name])');
-    return (slot?.assignedElements() ?? []).filter((el): el is HTMLElement => el instanceof HTMLElement)
-      .map((el) => ({ left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }));
+    return this.#measure().boxes;
   }
 
   /** The box round every piece of content, or null for none. */
   #contentBox(): Box | null {
-    const boxes = this.#boxes();
-    if (!boxes.length) return null;
-    return boxes.reduce((a, b) => ({
+    return this.#measure().box;
+  }
+
+  /** Every piece's box, and the box round them: measured once, kept till a piece is added, moved or resized. */
+  #measure(): { boxes: Box[]; box: Box | null } {
+    if (this.#measured) return this.#measured;
+    // The content's own slot: the banners' comes first in the template.
+    const boxes = this.#pieceEls().map((el) => ({ left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }));
+    const box = boxes.length ? boxes.reduce((a, b) => ({
       left: Math.min(a.left, b.left), top: Math.min(a.top, b.top),
       right: Math.max(a.right, b.right), bottom: Math.max(a.bottom, b.bottom),
-    }));
+    })) : null;
+    return (this.#measured = { boxes, box });
   }
+
+  /** The pieces: what the content's own slot holds. */
+  #pieceEls(): HTMLElement[] {
+    return (this.$<HTMLSlotElement>('slot:not([name])')?.assignedElements() ?? []).filter((el): el is HTMLElement => el instanceof HTMLElement);
+  }
+
+  /** Watch each piece's size: one collapsed or grown is measured again. */
+  #watchPieces(): void {
+    this.#pieces?.disconnect();
+    this.#pieces ??= new ResizeObserver(() => this.#remeasure());
+    for (const el of this.#pieceEls()) this.#pieces.observe(el);
+  }
+
+  /** A piece was added, moved or resized: measure again, and draw the minimap from it — once a frame, however many moved:
+   *  a drag moves a piece each pointer move, and a measure then is a forced layout. */
+  #remeasure(): void {
+    this.#measured = null;
+    if (this.#minimapQueued) return;
+    this.#minimapQueued = true;
+    requestAnimationFrame(() => {
+      this.#minimapQueued = false;
+      this.#drawMinimap();
+    });
+  }
+  /** A minimap draw waits for the next frame. */
+  #minimapQueued = false;
 
   /** What the view shows, as a box on the plane. */
   #viewBox(): Box {
@@ -407,12 +469,15 @@ export class SherpaLayoutCanvas extends SherpaElement {
     const around = this.#contentBox() ?? this.#viewBox();
     const w = Math.max(1, around.right - around.left);
     const h = Math.max(1, around.bottom - around.top);
-    const scale = MINIMAP_CONTENT * Math.min(map.clientWidth / w, map.clientHeight / h);
+    // Its size, kept: it changes only as the canvas does.
+    const size = this.#mapSize ?? { w: map.clientWidth, h: map.clientHeight };
+    if (size.w && size.h) this.#mapSize = size;
+    const scale = MINIMAP_CONTENT * Math.min(size.w / w, size.h / h);
     if (!Number.isFinite(scale) || scale <= 0) return null;
     // The content in the middle of the map.
-    const left = around.left + (w - map.clientWidth / scale) / 2;
-    const top = around.top + (h - map.clientHeight / scale) / 2;
-    return { box: { left, top, right: left + map.clientWidth / scale, bottom: top + map.clientHeight / scale }, scale };
+    const left = around.left + (w - size.w / scale) / 2;
+    const top = around.top + (h - size.h / scale) / 2;
+    return { box: { left, top, right: left + size.w / scale, bottom: top + size.h / scale }, scale };
   }
 
   /** Draw the content and the view, small. */
@@ -421,19 +486,31 @@ export class SherpaLayoutCanvas extends SherpaElement {
     const viewEl = this.$<HTMLElement>('.minimap-view');
     const mapped = this.#minimapScale();
     if (!items || !viewEl || !mapped) return;
-    const { box, scale } = mapped;
-    const place = (el: HTMLElement, b: Box): void => {
-      el.style.left = `${(b.left - box.left) * scale}px`;
-      el.style.top = `${(b.top - box.top) * scale}px`;
-      el.style.width = `${(b.right - b.left) * scale}px`;
-      el.style.height = `${(b.bottom - b.top) * scale}px`;
-    };
-    items.replaceChildren(...this.#boxes().map((b) => {
-      const item = this.clone<HTMLElement>('template.minimap-item-tpl')!;
+    const place = (el: HTMLElement, b: Box): void => this.#onMapAt(el, b, mapped);
+    // The items drawn last time take the new boxes: one taken out and put back is a layout again. TRAP T-a-redraw-keeps-what-it-can
+    const had = [...items.children] as HTMLElement[];
+    keepOrder(items, this.#boxes().map((b, i) => {
+      const item = had[i] ?? this.clone<HTMLElement>('template.minimap-item-tpl')!;
       place(item, b);
       return item;
-    }));
+    }), true);
     place(viewEl, this.#viewBox());
+  }
+
+  /** The view's frame on the minimap, alone: a pan or a zoom moves it, and the content holds still. */
+  #drawMinimapView(): void {
+    const viewEl = this.$<HTMLElement>('.minimap-view');
+    const mapped = this.#minimapScale();
+    if (!viewEl || !mapped) return;
+    this.#onMapAt(viewEl, this.#viewBox(), mapped);
+  }
+
+  /** Place one item on the minimap: a box on the plane, scaled. Only a value that changed is written — the same one
+   *  written again is a restyle. */
+  #onMapAt(el: HTMLElement, b: Box, { box, scale }: { box: Box; scale: number }): void {
+    const px = (v: number): string => `${Math.round(v * 100) / 100}px`;
+    const at = { left: px((b.left - box.left) * scale), top: px((b.top - box.top) * scale), width: px((b.right - b.left) * scale), height: px((b.bottom - b.top) * scale) };
+    for (const [k, v] of Object.entries(at) as [keyof typeof at, string][]) if (el.style[k] !== v) el.style[k] = v;
   }
 
   /** A press puts the view's middle there; a drag on the frame keeps its hold. Either

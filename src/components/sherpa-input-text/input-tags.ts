@@ -87,7 +87,10 @@ export class InputTags {
   }
 
   suggest(list: readonly { value: string; label?: string }[]): void {
-    this.#suggestions = list.map((s) => ({ value: String(s.value), ...(s.label ? { label: s.label } : {}) }));
+    const next = list.map((s) => ({ value: String(s.value), ...(s.label ? { label: s.label } : {}) }));
+    // The same list again draws nothing: a draw measures the chips, a forced layout.
+    if (JSON.stringify(next) === JSON.stringify(this.#suggestions)) return;
+    this.#suggestions = next;
     this.draw();
   }
 
@@ -104,7 +107,10 @@ export class InputTags {
 
   /** Take new tags silently. A repeat is dropped. */
   set(tags: readonly string[]): void {
-    this.#tags = [...new Set(tags.map((tag) => tag.replace(/,/g, '').trim()).filter(Boolean))];
+    const next = [...new Set(tags.map((tag) => tag.replace(/,/g, '').trim()).filter(Boolean))];
+    // The same tags again draw nothing: a draw measures the chips, a forced layout.
+    if (next.length === this.#tags.length && next.every((t, i) => t === this.#tags[i])) return;
+    this.#tags = next;
     this.draw();
   }
 
@@ -281,18 +287,42 @@ export class InputTags {
     this.#shown().at(-1)?.focus();
   }
 
-  /** CSS clips what wraps; JS only counts it, and marks it out of the tab order. */
+  /** CSS clips what wraps; JS only counts it, and marks it out of the tab order: in the next frame, with every other
+   *  tag field's — all read, then all written. A count straight after each draw is a layout each. TRAP T-a-redraw-keeps-what-it-can */
   count(): void {
-    const host = this.#host;
-    const chips = host.$$<HTMLElement>('.tags > .tag');
+    InputTags.#queued.add(this);
+    if (!InputTags.#frame) InputTags.#frame = requestAnimationFrame(() => InputTags.#countQueued());
+  }
+
+  /** The tag fields waiting for the next frame's count. */
+  static #queued = new Set<InputTags>();
+  /** That frame, once asked for. */
+  static #frame = 0;
+  /** Count every waiting field: all read first, then all written — one layout. */
+  static #countQueued(): void {
+    InputTags.#frame = 0;
+    const read = [...InputTags.#queued].map((tags) => [tags, tags.#wrapped()] as const);
+    InputTags.#queued.clear();
+    for (const [tags, wrapped] of read) tags.#mark(wrapped);
+  }
+
+  /** Its chips, and those wrapped below the first line. */
+  #wrapped(): { chips: HTMLElement[]; hidden: Set<HTMLElement> } {
+    const chips = this.#host.$$<HTMLElement>('.tags > .tag');
     const top = chips[0]?.offsetTop ?? 0;
-    const hidden = chips.filter((chip) => chip.offsetTop > top);
-    for (const chip of chips) chip.toggleAttribute('inert', hidden.includes(chip));
-    host.set('data-overflow', hidden.length ? String(hidden.length) : null);
+    return { chips, hidden: new Set(chips.filter((chip) => chip.offsetTop > top)) };
+  }
+
+  /** Mark the wrapped chips inert, and say how many: only what changed is written. */
+  #mark({ chips, hidden }: { chips: HTMLElement[]; hidden: Set<HTMLElement> }): void {
+    const host = this.#host;
+    for (const chip of chips) if (chip.hasAttribute('inert') !== hidden.has(chip)) chip.toggleAttribute('inert', hidden.has(chip));
+    host.set('data-overflow', hidden.size ? String(hidden.size) : null);
     const more = host.$('.more');
-    if (more) {
-      more.textContent = `+${hidden.length}`;
-      more.setAttribute('aria-label', `${hidden.length} ${host.word('more')}`);
+    const label = `${hidden.size} ${host.word('more')}`;
+    if (more && more.getAttribute('aria-label') !== label) {
+      more.textContent = `+${hidden.size}`;
+      more.setAttribute('aria-label', label);
     }
   }
 

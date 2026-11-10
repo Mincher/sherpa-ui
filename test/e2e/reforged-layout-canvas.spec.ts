@@ -42,7 +42,7 @@ test('four controls at the bottom right, a minimap, and a crosshair grid', async
       bottomRight: Math.round(host.right - controls.right) === 16 && Math.round(host.bottom - controls.bottom) === 16,
       bottomLeft: Math.round(minimap.left - host.left) === 16,
       items: sr.querySelectorAll('.minimap-item').length,
-      grid: getComputedStyle(sr.querySelector('.viewport')!, '::before').maskImage.includes('svg'),
+      grid: getComputedStyle(sr.querySelector('.viewport > .grid')!).maskImage.includes('svg'),
     };
   }, canvas);
   expect(r).toEqual({
@@ -190,7 +190,8 @@ test('a piece that moves moves its minimap item', async ({ page }) => {
     const item = () => el.shadowRoot!.querySelector('.minimap-item')!.getBoundingClientRect().left;
     const before = item();
     el.querySelector<HTMLElement>('#a')!.style.setProperty('--x', '700px');
-    await new Promise((done) => setTimeout(done));
+    // The minimap follows by the next frame: once a frame, however many pieces moved.
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
     return { moved: item() !== before };
   }, canvas);
   expect(r.moved).toBe(true);

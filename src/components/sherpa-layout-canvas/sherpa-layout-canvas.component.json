@@ -65,6 +65,14 @@
           "children": [
             {
               "el": "div",
+              "class": "grid",
+              "part": "grid",
+              "attrs": {
+                "aria-hidden": "true"
+              }
+            },
+            {
+              "el": "div",
               "class": "rows",
               "part": "rows",
               "children": [
@@ -530,6 +538,7 @@
     "banner.margin-inline": "{sherpa.display-mode-size-2xl}",
     "banner.z-index": "{sherpa.layer-content}",
     "banner.gap": "{sherpa.display-mode-space-xs}",
+    "grid.background-color": "{sherpa.style-border-base}",
     "columns-end.inset-inline-end": "{sherpa.display-mode-space-xs}",
     "columns-end.z-index": "{sherpa.layer-content}",
     "footer.z-index": "{sherpa.layer-content}",

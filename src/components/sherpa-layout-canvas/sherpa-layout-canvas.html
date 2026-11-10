@@ -61,6 +61,8 @@
     <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->
     <div class="viewport" part="viewport" tabindex="0" role="group"
          aria-roledescription="canvas" aria-label="Canvas">
+      <!-- The grid of crosses: it moves and scales with the plane. -->
+      <div class="grid" part="grid" aria-hidden="true"></div>
       <!-- Rows BEHIND it all: they follow the plane down, and run the whole width. -->
       <div class="rows" part="rows"><slot name="rows" data-accepts="item"></slot></div>
       <!-- Columns BEHIND the plane: they follow it across, and stay at the top. A column's head may rise over the plane. -->

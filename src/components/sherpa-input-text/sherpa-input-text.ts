@@ -366,7 +366,11 @@ export class SherpaInputText extends SherpaElement {
     this.#syncIds();
     this.#syncIcons();
     // The tags are read before the attributes: `value` is theirs here. Without one, tags a host set before this render stay.
-    if (this.#isTags) this.#tagger.set(this.hasAttribute('value') ? splitTags(this.getAttribute('value') ?? '') : this.#tagger.tags);
+    if (this.#isTags) {
+      this.#tagger.set(this.hasAttribute('value') ? splitTags(this.getAttribute('value') ?? '') : this.#tagger.tags);
+      // Rendered now: its chips are drawn, whether or not the tags changed (the same tags set again draw nothing).
+      this.#tagger.draw();
+    }
     this.#syncAttrs();
     this.$('.clear')?.addEventListener('click', this.#onClear);
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.

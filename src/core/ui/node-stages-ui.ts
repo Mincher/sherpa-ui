@@ -10,6 +10,7 @@
  */
 import { editWorkflow, nodeWidth, type WorkflowDefinition } from '../data/workflow.js';
 import { heldBands, orderStages, stageBands, stagesOf, type StageBand } from '../data/node-stages.js';
+import { keepOrder } from './keep-order.js';
 
 /** What the stages need of their editor. */
 export interface StageHost {
@@ -73,7 +74,8 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       drawn.delete(id);
     }
     // Add stage and Arrange stages, at the canvas's top right: not while arranging, nor read only.
-    if (w && !arranging && !host.readOnly()) canvas.append(tools);
+    // Taken out and put back is a restyle of the canvas: placed once. TRAP T-a-redraw-keeps-what-it-can
+    if (w && !arranging && !host.readOnly()) { if (tools.parentNode !== canvas) canvas.append(tools); }
     else tools.remove();
     if (!w) return;
     const out = host.moving?.() ?? new Set<string>();
@@ -87,8 +89,6 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
         el.dataset['stage'] = stage.id;
         drawn.set(stage.id, el);
       }
-      // In order: the DOM's is the reading order.
-      canvas.append(el);
       const band = bands[i]!;
       el.setAttribute('data-heading', stage.label);
       put(el, 'data-description', stage.description);
@@ -99,6 +99,8 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       el.toggleAttribute('data-editing', !!arranging);
       el.toggleAttribute('data-locked', ro);
     });
+    // In order: the DOM's is the reading order. Only one out of place moves.
+    keepOrder(canvas, stages.map((stage) => drawn.get(stage.id)!));
   };
 
   const stageOfEvent = (event: Event): string | undefined =>
