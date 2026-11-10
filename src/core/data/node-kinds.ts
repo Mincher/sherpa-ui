@@ -198,8 +198,9 @@ const countRow = (name: string, label: string, min: number): RowKind => ({ ...nu
 /** A list in, an object (D17): what Floor, Ceiling, Average and Join read. It takes several. Will, D9 */
 const LIST: RowKind = { name: 'values', label: 'Values', input: 'object', many: true, needs: 'list' };
 const NUMBERS: RowKind = { ...LIST, needs: 'numbers' };
-/** What a Math or Text node gives, as a Value gives its own: from a row, its header forking (D2). */
-const RESULT: RowKind = { name: 'result', label: 'Result', output: 'value' };
+/** What a Math or Text node gives, as a Value gives its own: from a row, its header forking (D2). A PROPERTY, as Count and
+ *  Results are: it stands in the Properties box, not the Parameters (Will, 2026-11-11). */
+const RESULT: RowKind = { name: 'result', label: 'Result', output: 'value', property: true };
 const NUMBER: RowKind = { ...RESULT, gives: 'number' };
 const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'), textRow('separator', 'Separator')];
 /** A portal's name: picked from the graph's names, or New name… (TODO 779). */
