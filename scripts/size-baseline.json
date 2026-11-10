@@ -39,7 +39,7 @@
   "src/components/sherpa-input-text/input-tags.ts": 369,
   "src/components/sherpa-input-text/sherpa-input-text.ts": 639,
   "src/components/sherpa-key-value-list/sherpa-key-value-list.ts": 70,
-  "src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts": 564,
+  "src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts": 565,
   "src/components/sherpa-layout-grid/grid-lines.ts": 76,
   "src/components/sherpa-layout-grid/grid-resize.ts": 362,
   "src/components/sherpa-layout-grid/grouped-grid.ts": 116,
@@ -251,7 +251,7 @@
   "src/core/ui/mark-text.ts": 74,
   "src/core/ui/modifier-key.ts": 23,
   "src/core/ui/more-menu.ts": 193,
-  "src/core/ui/node-graph.ts": 3835,
+  "src/core/ui/node-graph.ts": 3844,
   "src/core/ui/node-group-panel.ts": 186,
   "src/core/ui/node-lanes-ui.ts": 46,
   "src/core/ui/node-stages-ui.ts": 301,
@@ -451,5 +451,6 @@
   "src/core/sherpa-tip.html": 8,
   "src/components/sherpa-canvas/sherpa-canvas.ts": 158,
   "src/components/sherpa-canvas/sherpa-canvas.css": 35,
-  "src/components/sherpa-canvas/sherpa-canvas.html": 23
+  "src/components/sherpa-canvas/sherpa-canvas.html": 23,
+  "src/core/ui/plane.ts": 46
 }

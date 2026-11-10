@@ -65,6 +65,7 @@ import type { AddContext, SherpaNodeList } from '../../components/sherpa-node-li
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 import { primaryKey } from './modifier-key.js';
 import { keepOrder, morph } from './keep-order.js';
+import { boxOf, pointIn } from './plane.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
 import { dotsThrough, handlesOf, pathThrough, waypointsOf, type Pt } from './route-path.js';
 import { clampedVia } from '../data/route-bends.js';
@@ -185,6 +186,8 @@ const CHANGES = ['change', 'quick-filter-change'] as const;
 
 /** What a canvas has drawn: each node and row by its address, the lines, and the routes they draw. */
 interface Drawn {
+  /** The canvas it is drawn on. */
+  canvas: SherpaLayoutCanvas;
   graph: FramedGraph;
   options: DrawOptions;
   nodes: Map<string, HTMLElement>;
@@ -580,8 +583,9 @@ function placeFrames(drawn: Drawn): void {
   const boxes = [...drawn.frames].map(([id, el]) => {
     const cards = (drawn.graph.frames?.find((f) => f.id === id)?.nodes ?? []).flatMap((n) => drawn.nodes.get(n) ?? []);
     if (!cards.length) return [el, null] as const;
-    const [left, top] = [Math.min(...cards.map((c) => c.offsetLeft)), Math.min(...cards.map((c) => c.offsetTop))];
-    const [right, bottom] = [Math.max(...cards.map((c) => c.offsetLeft + c.offsetWidth)), Math.max(...cards.map((c) => c.offsetTop + c.offsetHeight))];
+    const placed = cards.map(boxOf);
+    const [left, top] = [Math.min(...placed.map((b) => b.left)), Math.min(...placed.map((b) => b.top))];
+    const [right, bottom] = [Math.max(...placed.map((b) => b.right)), Math.max(...placed.map((b) => b.bottom))];
     return [el, { x: left, y: top, w: right - left, h: bottom - top }] as const;
   });
   // Every read first, then every write: one layout.
@@ -597,19 +601,17 @@ function relayRoutes(canvas: SherpaLayoutCanvas, graph?: FramedGraph): void {
   const drawn = drawnOn.get(canvas);
   if (!drawn) return;
   if (graph) [drawn.graph, drawn.routes, drawn.ties] = [graph, graph.routes, graph.ties ?? []];
-  drawRoutes(canvas, drawn);
+  drawRoutes(drawn);
 }
 
 /** A curve for each route, from its output socket to its input socket; the frames round their nodes first. */
-function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
+function drawRoutes(drawn: Drawn): void {
   placeFrames(drawn);
   const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
   const lanes: Drawn['lanes'] = [];
   const paths = drawn.routes.flatMap((route) => {
-    const a = socketAt(drawn, route.from, 'output');
-    const b = socketAt(drawn, route.to, 'input');
-    if (!a || !b || same(drawn.lifted, route)) return [];
-    const [from, to] = [onPlane(canvas, a), onPlane(canvas, b)];
+    const [from, to] = [socketPoint(drawn, route.from, 'output'), socketPoint(drawn, route.to, 'input')];
+    if (!from || !to || same(drawn.lifted, route)) return [];
     // The ties it passes, or else the bend points it holds, left to right: a flat piece to each.
     const stops = drawn.ties.flatMap((tie) => {
       const n = tie.routes.findIndex((r) => same(r, route));
@@ -680,6 +682,13 @@ function socketAt(drawn: Drawn, address: string, side: SocketSide): DOMRect | nu
   return el?.socketRect?.(side) ?? null;
 }
 
+/** A socket's middle on the plane, through its node: a node a canvas does not draw (out of its view) still has its sockets. */
+function socketPoint(drawn: Drawn, address: string, side: SocketSide): [number, number] | null {
+  const rect = socketAt(drawn, address, side);
+  const node = drawn.nodes.get(socketOf(address).node);
+  return rect && node ? pointIn(node, rect, drawn.canvas.view.zoom) : null;
+}
+
 /** Where a drawn node or row is: `node`, or `node/row`. */
 function addressOf(drawn: Drawn, el: HTMLElement): string | null {
   const row = drawn.addresses.get(el);
@@ -746,7 +755,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const reveal = (on: boolean): void => { for (const el of drawn.nodes.values()) el.toggleAttribute('data-reveal', on); };
   reveal(true);
   drawn.lines.append(draft);
-  if (lifting) drawRoutes(canvas, drawn);
+  if (lifting) drawRoutes(drawn);
   const begin = onPlane(canvas, start);
   const follow = (e: PointerEvent): void => {
     draft.setAttribute('d', out || lifting ? pathThrough([begin, planeOf(canvas, e)]) : pathThrough([planeOf(canvas, e), begin]));
@@ -767,7 +776,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
     reveal(false);
     drawn.draft = null;
     drawn.lifted = null;
-    drawRoutes(canvas, drawn);
+    drawRoutes(drawn);
     if (e.type !== 'pointerup') return;
     const onNode = e.composedPath().some((n) => n instanceof HTMLElement && addressOf(drawn, n) !== null);
     const bare = !onNode && !socketNear(drawn, 'input', e.clientX, e.clientY) && !socketNear(drawn, 'output', e.clientX, e.clientY);
@@ -819,7 +828,7 @@ function pickRoute(canvas: SherpaLayoutCanvas, drawn: Drawn, route: NodeRoute, s
   drawn.picked = shift ? (held ? drawn.picked.filter((r) => r.from !== route.from || r.to !== route.to) : [...drawn.picked, route]) : [route];
   drawn.selectedTie = null;
   unpickFrame(drawn);
-  drawRoutes(canvas, drawn);
+  drawRoutes(drawn);
   drawn.options.onPicked?.(drawn.picked);
   // The canvas's own keys hear the break.
   canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
@@ -839,7 +848,7 @@ function pickHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, handle: Drawn['han
     drawn.picked = [];
     drawn.options.onPicked?.([]);
   }
-  drawRoutes(canvas, drawn);
+  drawRoutes(drawn);
   drawn.options.onBendPicked?.(handle && !handle.proposed ? { route: handle.route, index: handle.index } : null);
   if (handle) canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
 }
@@ -925,7 +934,7 @@ function dragLine(canvas: SherpaLayoutCanvas, drawn: Drawn, line: Element, down:
     setTimeout(() => { drawn.dragged = false; });
     const target = e.type === 'pointerup' ? tieAt(e) : null;
     drawn.target = null;
-    drawRoutes(canvas, drawn);
+    drawRoutes(drawn);
     if (target) drawn.options.onTieDrop?.(target, route);
   };
   window.addEventListener('pointermove', follow);
@@ -942,7 +951,7 @@ function dragTie(canvas: SherpaLayoutCanvas, drawn: Drawn, id: string, down: Poi
   drawn.selectedTie = id;
   drawn.picked = [];
   unpickFrame(drawn);
-  drawRoutes(canvas, drawn);
+  drawRoutes(drawn);
   canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   const [px, py] = planeOf(canvas, down);
   const [x0, y0] = [tieX(drawn, tie), tie.y];
@@ -1044,18 +1053,18 @@ export function tieSpot(canvas: SherpaLayoutCanvas, routes: readonly NodeRoute[]
 /** Clear what is picked: every node, and every route. */
 function deselect(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   markNode(canvas, null);
-  unpickRoutes(canvas, drawn);
+  unpickRoutes(drawn);
   drawn.options.onDeselect?.();
 }
 
 /** No route, tie or bend picked; the editor is told, where any was. */
-function unpickRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
+function unpickRoutes(drawn: Drawn): void {
   if (!drawn.picked.length && !drawn.selectedTie && !drawn.handle) return;
   drawn.picked = [];
   drawn.selectedTie = null;
   if (drawn.handle) drawn.options.onBendPicked?.(null);
   drawn.handle = null;
-  drawRoutes(canvas, drawn);
+  drawRoutes(drawn);
   drawn.options.onPicked?.([]);
 }
 
@@ -1087,20 +1096,20 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     + ' stroke: var(--sherpa-style-border-base, #b3b3c3); stroke-width: 2px');
   canvas.prepend(lines);
   const made: Drawn = {
-    graph: { nodes: [], routes: [] }, options: {},
+    canvas, graph: { nodes: [], routes: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), beside: new Map(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
     lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
     frames: new Map(), selectedFrame: null, collapsed: new Set(), hideUnconnected: false, focusRow: null,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
-      drawRoutes(canvas, made);
+      drawRoutes(made);
       if (!made.fitted && made.nodes.size) { made.fitted = true; canvas.fit(); }
     }),
   };
   canvas.addEventListener('node-move', (event) => {
     const node = nodeOf(made, event.target);
     const { x, y } = (event as CustomEvent<{ x: number; y: number }>).detail;
-    if (!node) return drawRoutes(canvas, made);
+    if (!node) return drawRoutes(made);
     const group = pickedNodes(canvas);
     // A drag on a node outside the pick picks only it, as a click would.
     if (group.length && !group.includes(node.id) && made.options.onSelect) {
@@ -1123,11 +1132,11 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
         el.setAttribute('data-y', String(to[1]));
         moves.push({ id, x: to[0], y: to[1] });
       }
-      drawRoutes(canvas, made);
+      drawRoutes(made);
       made.options.onMoveMany(moves);
       return;
     }
-    drawRoutes(canvas, made);
+    drawRoutes(made);
     made.options.onMove?.(node, x, y);
   });
   // A double click on a node's header collapses or expands it, unless it opens (a Custom Node's use).
@@ -1138,7 +1147,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const node = el && nodeOf(made, el);
     if (!node || !onHeader || made.options.opens?.(node)) return;
     if (path.some((n) => n instanceof Element && n.matches('input, select, textarea, button'))) return;
-    toggleCollapsed(canvas, made, [node.id], !made.collapsed.has(node.id));
+    toggleCollapsed(made, [node.id], !made.collapsed.has(node.id));
   });
   // With nodes picked and the canvas itself focused: Ctrl or Cmd and an arrow moves them, 8px (32 with Shift). TODO 752
   canvas.addEventListener('keydown', (event) => {
@@ -1159,7 +1168,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       made.nodes.get(m.id)?.setAttribute('data-x', String(m.x));
       made.nodes.get(m.id)?.setAttribute('data-y', String(m.y));
     }
-    drawRoutes(canvas, made);
+    drawRoutes(made);
     const only = moves.length === 1 ? made.graph.nodes.find((n) => n.id === moves[0]!.id) : undefined;
     if (only) made.options.onMove?.(only, moves[0]!.x, moves[0]!.y);
     else made.options.onMoveMany?.(moves);
@@ -1167,7 +1176,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     event.stopPropagation();
   }, { capture: true });
   canvas.addEventListener('node-resize', (event) => {
-    drawRoutes(canvas, made);
+    drawRoutes(made);
     const node = nodeOf(made, event.target);
     if (node) made.options.onResize?.(node, (event as CustomEvent<NodeSize>).detail);
   });
@@ -1264,7 +1273,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       if (ids.length) made.options.onRemove!(ids, routes);
       else if (routes.length > 1 && made.options.onBreakAll) made.options.onBreakAll(routes);
       else for (const route of routes) made.options.onBreak?.(route);
-      drawRoutes(canvas, made);
+      drawRoutes(made);
       made.options.onPicked?.([]);
     } else return;
     event.preventDefault();
@@ -1283,7 +1292,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const mine = routes.map(({ from, to }) => ({ from, to }));
     made.picked = event.altKey ? made.picked.filter((r) => !has(r)) : event.shiftKey ? [...made.picked.filter((r) => !has(r)), ...mine] : mine;
     made.selectedTie = null;
-    drawRoutes(canvas, made);
+    drawRoutes(made);
     made.options.onPicked?.(made.picked);
     event.preventDefault();
     event.stopPropagation();
@@ -1293,7 +1302,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   canvas.setAttribute('data-select-box', '');
   canvas.addEventListener('canvas-box', (event) => {
     const { mode, ...box } = (event as CustomEvent<PickBox & { mode: BoxMode }>).detail;
-    const boxes = [...made.nodes].map(([id, el]) => [id, { left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }] as const);
+    const boxes = [...made.nodes].map(([id, el]) => [id, boxOf(el)] as const);
     const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
     let ids: Set<string>;
     let hit: { nodes: string[]; routes: NodeRoute[] };
@@ -1314,7 +1323,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     made.picked = hit.routes.map(({ from, to }) => ({ from, to }));
     made.selectedTie = null;
     markNodes(canvas, ids);
-    drawRoutes(canvas, made);
+    drawRoutes(made);
     if (ids.size || made.picked.length) made.options.onBox?.([...ids]);
     else deselect(canvas, made);
     made.options.onPicked?.(made.picked);
@@ -1356,7 +1365,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       m.el.setAttribute('data-x', String(m.x));
       m.el.setAttribute('data-y', String(m.y));
     }
-    drawRoutes(canvas, made);
+    drawRoutes(made);
     if (moves.length === 1) made.options.onMove?.(moves[0]!.node, moves[0]!.x, moves[0]!.y);
     else if (moves.length) made.options.onMoveMany?.(moves.map(({ id, x, y }) => ({ id, x, y })));
   });
@@ -1480,7 +1489,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     options.onPicked?.(left);
   }
   linkPortals(drawn);
-  requestAnimationFrame(() => drawRoutes(canvas, drawn));
+  requestAnimationFrame(() => drawRoutes(drawn));
 }
 
 /** Each portal of a picked portal's name, lit as picked is (`data-linked`): In and Out alike. TODO 779 */
@@ -1539,7 +1548,7 @@ export function markFrame(canvas: SherpaLayoutCanvas, id: string | null): void {
   if (!drawn) return;
   if (id) {
     markNode(canvas, null);
-    unpickRoutes(canvas, drawn);
+    unpickRoutes(drawn);
   }
   drawn.selectedFrame = id && drawn.frames.has(id) ? id : null;
   for (const [key, el] of drawn.frames) el.toggleAttribute('data-current', key === drawn.selectedFrame);
@@ -1619,8 +1628,8 @@ export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
   const sockets: { inputs: Record<string, number>; outputs: Record<string, number> } = { inputs: {}, outputs: {} };
   for (const route of drawn.routes) {
     for (const [address, side, into] of [[route.from, 'output', sockets.outputs], [route.to, 'input', sockets.inputs]] as const) {
-      const [rect, el] = [socketAt(drawn, address, side), drawn.nodes.get(socketOf(address).node)];
-      if (rect && el) into[address] = onPlane(canvas, rect)[1] - (Number(el.getAttribute('data-y')) || 0);
+      const [at, el] = [socketPoint(drawn, address, side), drawn.nodes.get(socketOf(address).node)];
+      if (at && el) into[address] = at[1] - (Number(el.getAttribute('data-y')) || 0);
     }
   }
   // A graph reads left to right: Sources and Portal Ins stand left, Outputs and Portal Outs right; an In hands on to each Out of
@@ -1700,7 +1709,7 @@ export function markNodes(canvas: SherpaLayoutCanvas, ids: ReadonlySet<string>):
 }
 
 /** Collapse or expand nodes, and tell the host. */
-function toggleCollapsed(canvas: SherpaLayoutCanvas, drawn: Drawn, ids: readonly string[], on: boolean): void {
+function toggleCollapsed(drawn: Drawn, ids: readonly string[], on: boolean): void {
   for (const id of ids) {
     if (on) drawn.collapsed.add(id);
     else drawn.collapsed.delete(id);
@@ -1708,14 +1717,14 @@ function toggleCollapsed(canvas: SherpaLayoutCanvas, drawn: Drawn, ids: readonly
     el?.toggleAttribute('data-collapsed', on);
     if (el) stackPlaces(el, on);
   }
-  drawRoutes(canvas, drawn);
+  drawRoutes(drawn);
   drawn.options.onCollapse?.();
 }
 
 /** Collapse these nodes, or expand them; `'all'`, every node drawn. A collapsed node shows only its sockets. */
 export function collapseNodes(canvas: SherpaLayoutCanvas, ids: readonly string[] | 'all', on: boolean): void {
   const drawn = drawnOn.get(canvas);
-  if (drawn) toggleCollapsed(canvas, drawn, ids === 'all' ? [...drawn.nodes.keys()] : ids, on);
+  if (drawn) toggleCollapsed(drawn, ids === 'all' ? [...drawn.nodes.keys()] : ids, on);
 }
 
 /** The nodes drawn collapsed. */
@@ -1742,7 +1751,7 @@ export function markRoutes(canvas: SherpaLayoutCanvas, routes: readonly NodeRout
   const drawn = drawnOn.get(canvas);
   if (!drawn) return;
   drawn.picked = routes.map(({ from, to }) => ({ from, to }));
-  drawRoutes(canvas, drawn);
+  drawRoutes(drawn);
   drawn.options.onPicked?.(drawn.picked);
 }
 

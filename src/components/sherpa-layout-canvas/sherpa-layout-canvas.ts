@@ -16,6 +16,7 @@ import '../sherpa-layout-panels/sherpa-layout-panels.js';
 import { boxMode, type BoxMode } from '../../core/ui/box-pick.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { keepOrder } from '../../core/ui/keep-order.js';
+import { boxOf } from '../../core/ui/plane.js';
 
 /** One press of Zoom in or Zoom out. */
 const ZOOM_STEP = 1.25;
@@ -418,8 +419,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
   /** Every piece's box, and the box round them: measured once, kept till a piece is added, moved or resized. */
   #measure(): { boxes: Box[]; box: Box | null } {
     if (this.#measured) return this.#measured;
-    // The content's own slot: the banners' comes first in the template.
-    const boxes = this.#pieceEls().map((el) => ({ left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }));
+    // Each piece's place is its own (`--x`, `--y`), never its layout: drawn into a canvas, a piece lays out in flow.
+    const boxes = this.#pieceEls().map(boxOf);
     const box = boxes.length ? boxes.reduce((a, b) => ({
       left: Math.min(a.left, b.left), top: Math.min(a.top, b.top),
       right: Math.max(a.right, b.right), bottom: Math.max(a.bottom, b.bottom),
