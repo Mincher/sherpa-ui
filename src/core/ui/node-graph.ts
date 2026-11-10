@@ -392,11 +392,6 @@ function read(field: Field, row: GraphRow): unknown {
   return row.control === 'switch' ? !!field.checked : row.multiple ? [...(field.values ?? [])] : field.value;
 }
 
-/** The input addresses a route drives: their fields mirror what comes in, read only. */
-function driven(graph: DrawnGraph): Set<string> {
-  return routesOf(graph).routed;
-}
-
 /** A graph's routed inputs and sending outputs, by address: worked out once a graph. */
 const routeSets = new WeakMap<DrawnGraph, { routed: Set<string>; sent: Set<string> }>();
 function routesOf(graph: DrawnGraph): { routed: Set<string>; sent: Set<string> } {
@@ -594,10 +589,13 @@ function placeFrames(drawn: Drawn): void {
   }
 }
 
-/** Draw the lines again, from where the sockets are drawn now: nodes moved by hand, not by a draw. */
-function relayRoutes(canvas: SherpaLayoutCanvas): void {
+/** Draw the lines again, from where the sockets are drawn now: nodes moved by hand, not by a draw. With a graph, its
+ *  routes and ties: a tie or a bend dragged, the nodes as they are. */
+function relayRoutes(canvas: SherpaLayoutCanvas, graph?: FramedGraph): void {
   const drawn = drawnOn.get(canvas);
-  if (drawn) drawRoutes(canvas, drawn);
+  if (!drawn) return;
+  if (graph) [drawn.graph, drawn.routes, drawn.ties] = [graph, graph.routes, graph.ties ?? []];
+  drawRoutes(canvas, drawn);
 }
 
 /** A curve for each route, from its output socket to its input socket; the frames round their nodes first. */
@@ -1042,15 +1040,19 @@ export function tieSpot(canvas: SherpaLayoutCanvas, routes: readonly NodeRoute[]
 /** Clear what is picked: every node, and every route. */
 function deselect(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   markNode(canvas, null);
-  if (drawn.picked.length || drawn.selectedTie || drawn.handle) {
-    drawn.picked = [];
-    drawn.selectedTie = null;
-    if (drawn.handle) drawn.options.onBendPicked?.(null);
-    drawn.handle = null;
-    drawRoutes(canvas, drawn);
-    drawn.options.onPicked?.([]);
-  }
+  unpickRoutes(canvas, drawn);
   drawn.options.onDeselect?.();
+}
+
+/** No route, tie or bend picked; the editor is told, where any was. */
+function unpickRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
+  if (!drawn.picked.length && !drawn.selectedTie && !drawn.handle) return;
+  drawn.picked = [];
+  drawn.selectedTie = null;
+  if (drawn.handle) drawn.options.onBendPicked?.(null);
+  drawn.handle = null;
+  drawRoutes(canvas, drawn);
+  drawn.options.onPicked?.([]);
 }
 
 /** The drawn node an event came from. */
@@ -1247,7 +1249,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const first = event.composedPath()[0];
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
     const remove = event.key === 'Delete' || event.key === 'Backspace';
-    const ids = remove && made.options.onRemove ? [...made.nodes].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id) : [];
+    const ids = remove && made.options.onRemove ? currentOf(made.nodes) : [];
     if (event.target !== canvas && !ids.length) return;
     if (!made.picked.length && !ids.length) return;
     if (event.key === 'Escape') {
@@ -1296,7 +1298,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       ids = new Set(hit.nodes);
     } else {
       const cover = boxCover(box, boxes, made.lanes);
-      const held = new Set([...made.nodes].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id));
+      const held = new Set(currentOf(made.nodes));
       if (mode === 'add') {
         ids = new Set([...held, ...cover.nodes]);
         hit = { nodes: [...ids], routes: [...made.picked, ...cover.routes.filter((r) => !made.picked.some((p) => same(p, r)))] };
@@ -1469,7 +1471,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
 /** Each portal of a picked portal's name, lit as picked is (`data-linked`): In and Out alike. TODO 779 */
 function linkPortals(drawn: Drawn | undefined): void {
   if (!drawn) return;
-  const picked = [...drawn.nodes].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id);
+  const picked = currentOf(drawn.nodes);
   const lit = new Set(picked.flatMap((id) => portalLinks(drawn.graph.nodes, id)));
   for (const [id, el] of drawn.nodes) el.toggleAttribute('data-linked', lit.has(id) && !picked.includes(id));
 }
@@ -1497,14 +1499,7 @@ export function markFrame(canvas: SherpaLayoutCanvas, id: string | null): void {
   if (!drawn) return;
   if (id) {
     markNode(canvas, null);
-    if (drawn.picked.length || drawn.selectedTie || drawn.handle) {
-      drawn.picked = [];
-      drawn.selectedTie = null;
-      if (drawn.handle) drawn.options.onBendPicked?.(null);
-      drawn.handle = null;
-      drawRoutes(canvas, drawn);
-      drawn.options.onPicked?.([]);
-    }
+    unpickRoutes(canvas, drawn);
   }
   drawn.selectedFrame = id && drawn.frames.has(id) ? id : null;
   for (const [key, el] of drawn.frames) el.toggleAttribute('data-current', key === drawn.selectedFrame);
@@ -1517,7 +1512,12 @@ export function pickedFrame(canvas: SherpaLayoutCanvas): string | null {
 
 /** The nodes picked, by id: a click, a box, or the keys. */
 export function pickedNodes(canvas: SherpaLayoutCanvas): string[] {
-  return [...(drawnOn.get(canvas)?.nodes ?? [])].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id);
+  return currentOf(drawnOn.get(canvas)?.nodes ?? new Map());
+}
+
+/** The ids of the nodes marked picked. */
+function currentOf(nodes: ReadonlyMap<string, HTMLElement>): string[] {
+  return [...nodes].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id);
 }
 
 /** The gaps of an arrangement: one spacing token, read from the canvas, three times over (Will, TODO 756). The fallback mirrors the token's value. */
@@ -1902,7 +1902,8 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     const part = row === FALSE_SOCKET ? 'False' : row ? from?.rows.find((r) => r.name === row)?.label : from?.branches && address === from.id ? 'True' : undefined;
     return [from?.heading ?? id, part].filter(Boolean).join(' › ');
   };
-  const routed = driven(graph);
+  // The inputs a route drives: their fields mirror what comes in, read only.
+  const routed = routesOf(graph).routed;
   const fields = new WeakMap<Element, GraphRow>();
   const button = (label: string, act: () => void, tip?: string): HTMLElement => {
     const el = document.createElement('sherpa-button');
@@ -2558,8 +2559,10 @@ export function bindWorkflow(
   let pressing = false;
   let shifted = false;
   let settling = false;
-  /** A pointer drag of nodes is under way: a write draws only what moves, and a document hears it when it ends. */
+  /** A pointer drag is under way: a write draws only what moves — of nodes, or a size; of a tie or a bend, only the
+   *  lines (`linesOnly`) — and a document hears it when it ends. */
   let dragging = false;
+  let linesOnly = false;
   const moved = new Set<string>();
   let movedTag = '';
   /** A drag just ended: the click it ends with is no Shift-click pick. */
@@ -2591,6 +2594,11 @@ export function bindWorkflow(
   const onPointerMove = (event: PointerEvent): void => { if (pressing) shifted = event.shiftKey; };
   const onLetGo = (): void => {
     pressing = false;
+    // A tie, a bend or a size let go: the whole draft, written and drawn once, as one step with the drag's.
+    if (!moved.size && dragging) {
+      dragging = linesOnly = false;
+      return write(shown(), lastTag);
+    }
     if (!moved.size) return;
     justDragged = true;
     setTimeout(() => { justDragged = false; });
@@ -2611,10 +2619,16 @@ export function bindWorkflow(
       setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [], ties: next.ties ?? [], frames: next.frames ?? [] }), [id]);
     }
     // Mid-drag, only what moves is drawn: a whole draw a pointer move cost 220ms on 45 nodes (2026-11-10). The drag's end draws all.
-    if (dragging) drawMoves();
+    if (dragging && linesOnly) relayRoutes(canvas, lineGraph());
+    else if (dragging) drawMoves();
     else if (doc) drawSoon = true;
     else draw();
   }, tag);
+  /** Mid-drag of a tie or a bend: the routes and ties as the draft has them, the nodes as drawn. */
+  const lineGraph = (): FramedGraph => {
+    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), facts, K());
+    return lanesOn() ? { ...body, ties: [] } : body;
+  };
   /** Mid-drag: each node where the draft says (a stage that grew pushes others), the lines, the stages and lanes. */
   const drawMoves = (): void => {
     const els = drawnOn.get(canvas)?.nodes;
@@ -2686,6 +2700,7 @@ export function bindWorkflow(
   };
   const onResize = (node: GraphNode, size: NodeSize): void => {
     if (node.id.startsWith('#')) return;
+    dragging = pressing;
     write(editWorkflow(shown(), { resize: { node: node.id, ...size } }, K()), `size:${node.id}`);
   };
   // A route that would break the workflow is refused, and says why — a loop, one into a Rows row, a row's own fault; one
@@ -2736,11 +2751,15 @@ export function bindWorkflow(
     const clear = clearOfNodes(at, (routes.length - 1) * TIE_GAP + 16, nodeBoxes(), tieLimit(shown(), { routes }));
     take(editWorkflow(shown(), { tie: { routes, ...clear } }, K()));
   };
-  const onTieMove = (id: string, x: number, y: number): void => write(editWorkflow(shown(), { moveTie: { id, x, y } }, K()), `tie:${id}`);
+  const onTieMove = (id: string, x: number, y: number): void => {
+    dragging = linesOnly = pressing;
+    write(editWorkflow(shown(), { moveTie: { id, x, y } }, K()), `tie:${id}`);
+  };
   const onUntie = (id: string): void => write(editWorkflow(shown(), { untie: id }, K()));
   // — Bend points (744): a drag is one step, as a tie's is; a refusal reports and writes nothing.
   const onBend = (route: NodeRoute, at: number, x: number, y: number, insert: boolean, drag: number): void => {
     const next = editWorkflow(shown(), { bend: { route, at, x, y, insert } }, K());
+    dragging = linesOnly = pressing;
     if (next !== shown()) write(next, `bend:${route.from}>${route.to}:${drag}`);
   };
   const onUnbend = (route: NodeRoute, index: number): void => {
