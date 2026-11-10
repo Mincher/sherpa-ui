@@ -83,7 +83,7 @@ phase and its output replaces §2.
 | `sherpa-data-viz-header` | the header strip of a chart or metric card | **Link** — Figma `Data Viz Header` (1456:30467) is it; the spec does not say so |
 | `sherpa-layout-grid` | the grid a view places its content on | **Build** — Layout Grid and `.Layout Grid Item` (ACP Module already has a local `.Layout Grid Item`) |
 | `sherpa-layout-panels` | a panel AREA each side of the content; a docked panel fills it flush. Two panels in one area (`94e8ad74c`): fixed, they stack, each half the height; overlay or tab, they are a GROUP — each has its tab on the edge, one is open, and the open one stands beside the tab strip, inset by its width (2.5rem), not over it; a dropped floating panel joins as it is. A docked card is inset 8px at its sides and `--sherpa-panel-area-padding-block` top and bottom: 8px, but 16px in the App Shell (`--sherpa-layout-grid-padding`), so its top and bottom meet the first and last cards (`864b78b1b`); the dock preview takes the same inset | **Build** — show one panel, two stacked, and a group (one open overlay beside the other's vertical tab); and the layer order (§2.7) |
-| `sherpa-layout-canvas` | an infinite canvas: pan, zoom, crosshair grid; slots `columns`, `rows`, `columns-end`, `toolbar`, `footer`, `banner`, minimap, edit mode | **Build** |
+| `sherpa-layout-canvas` | an infinite canvas: pan, zoom, crosshair grid (its own element now, part `grid`, Style `border-base`: `f7ea43c65`); slots `columns`, `rows`, `columns-end`, `toolbar`, `footer`, `banner`, minimap, edit mode | **Build** |
 | `sherpa-group` | a row, column or grid of controls that reads as ONE object | **Build** — the Grouping collections exist; no component shows them |
 | `sherpa-metric-group` | one row of 1 to 4 metrics across the layout grid; sticky | **Build** |
 | `sherpa-filter-panel` | the content of a panel: every filter scope the page offers, a section each | **Build** — composes Filter Toolbar sections inside Overlay Panel |
@@ -193,7 +193,7 @@ instance, pinned to its mode, in its component's docs frame (§8) — no new var
 | Filter Chip | on = active (re-pointable as `--sherpa-filter-on-*`); persistent on; on with no values = warning; on by a preset = info; soloed = info (*"refined in Figma later"*); unavailable = inactive; superseded; pending; failed |
 | Data Grid | a flagged head stays default; row action transparent, danger row transparent/critical; group count default; a cell's filter chip default, on = critical |
 | Menu | current row transparent/active; disabled inactive |
-| Node, Node Frame, Node Row | the input and output socket colours by type; current; step running / done / failed / skipped; branches; linked |
+| Node, Node Frame, Node Row | the input and output socket colours by type; current; step running / done / failed / skipped; branches; linked; JOINED (889, not built yet): the active border on the nodes a picked connector joins, on every node downstream of a picked node, and on each node joined to a focused row's field |
 | Charts (sparkline, bar, line, radial, gauge) | held-out and trend pins |
 | Code Block | copied = success |
 | Progress Bar, Prompt Composer, Transfer List | disabled = inactive (*"No disabled variant in Figma"*) |
@@ -404,7 +404,7 @@ it, so a change to the doc is a change to the page (P11).
 | C14 | **Counts, Limit, Apply and pending** | a count is the rows that reach a chip, View first, then each scope in order; Limit greys what the filters before it rule out; local changes apply at once, remote ones wait for Apply; pending = warning | QUERY-DESIGN §5; TRAPs `T-one-walk-counts-and-limits-in-order`, `T-a-pending-chip-reads-as-a-warning` | a waterfall of three chips; draft → applied |
 | C15 | **Data states, reach and news** | loading, empty, no-matches, error; reach ok, unreached, down; a notice waits for the reader — no grid moves under its reader | TRAP `T-a-container-shows-its-datas-state`; APP-GUIDE §4, §6 | one card four times, and the banner strip |
 | C16 | **Settings and page state** | a setting is declared once, scoped app / page / component; `data-setting`; the settings that change a look (filter mode, results, section labels, toggle shapes, large nav, value borders) | APP-GUIDE §9 | a setting → visual-effect table |
-| C17 | **Nodes: node, row, socket, route** | a node is a card at x and y; its header names and drags it; rows of input, field, output; socket types; a fork's True and False; step states | node references; APP-GUIDE | the node anatomy; the socket table |
+| C17 | **Nodes: node, row, socket, route** | a node is a card at x and y; its header names and drags it; rows of input, field, output; socket types; a fork's True and False; step states; what the active border shows (889) | node references; APP-GUIDE | the node anatomy; the socket table |
 | C18 | **The canvas: stages, lanes, frames, portals** | stages across the top, lanes down the side, junctions; frames behind lines, lines behind nodes; edit mode | APP-GUIDE "Stages", "Swimlanes" | an annotated canvas |
 | C19 | **Entities, Custom Nodes, graph Views, Simulate** | an entity is a graph under a type; the graph chip; Update available; Open in Node Editor; Simulate writes nothing | APP-GUIDE "Entities", "Custom Nodes", §8 | the header with the graph chip; a lit simulation |
 
@@ -552,7 +552,10 @@ Figma version is saved. Sizes are sittings (one `figma_execute` session each).
 
 P7 is late on purpose: the node editor changed on 2026-11-10 (stages, lanes,
 collapsed nodes), and work in hand (713, 719, 557–562) will change it again. A Figma
-copy made now would go stale first.
+copy made now would go stale first. Also in hand: 886–887 make a node a grid of 3
+columns (input sockets, rows, output sockets), not yet designed, so P7 does not draw
+the node's socket layout until they land; 888 (zip ties as Unfurl anchors) is behaviour;
+889 (the active border shows what is joined) is a state P7 draws.
 
 **885 comes first.** Will ruled on 2026-11-10 (reported by sherpa-ui-f9) that there
 is ONE node editor, built before the Figma alignment. Today there are two:
@@ -609,4 +612,5 @@ and are listed so their Figma effect is not missed. Each item is also in its row
 | sherpa-ui-fe, `864b78b1b` | `--sherpa-panel-area-padding-block` (8px; 16px in the App Shell): a docked card's top and bottom meet the first and last cards; the Layout Canvas keeps 8px; the dock preview follows | §2.1, §2.6 |
 | sherpa-ui-f9 | `94e8ad74c` the panel group's look (above); `0d94d99bb` stages are a flex row with a 16px gap, a dragged node stays in its stage (behaviour); `aa9962e73` the Alt-drag ghost; `f562dc6e3` (before the read) Add stage and Arrange stages moved to the canvas's `columns-end`, a stage's ⋯ after its name, and `data-last` and the `stage-add` / `stage-arrange` events gone; `panel-mode-change` carries `{ mode, restore? }`. Its FYI on `659c83805` (stages, swimlanes, collapsed nodes, copy and paste, the toolbar toggles, Layout Canvas slots and `data-editing`, Input Text `data-type="color"`, workflow v2) was in §2.1 and §2.3 already. No Demos change since `3c5f523` | §2.1 |
 | sherpa-ui-f9, later the same day | Will's ruling: ONE node editor, before the Figma alignment — plan 885, done: `90e1b50bb`, `cec8b8a17`, `df20281cd`, `f27b89453`, Demos `8b7138e`. Then `cd7c0e646`, from Will's notes: with Swimlanes on, Arrange, Unfurl and Zip tie are off and zip ties are not drawn (Frame stays on); a frame is a bucket round nodes where they stand; a dragged frame keeps its stage, and with Shift joins one as a unit (behaviour). No part or attribute changed | §2.1, §3.1, §9, D4 |
+| sherpa-ui-f9, third update | New TODO rows from Will: 886–887 (a node becomes a grid of 3 columns: input sockets, rows, output sockets; NOT designed yet, so Figma does not follow it yet), 888 (zip ties are Unfurl anchors; behaviour), 889 (the active border shows what is joined: a picked connector's nodes, a picked node's downstream nodes, a focused row field's joined nodes; not built yet). Code with no visible change: `f7ea43c65` (a drag ~220 → ~6 ms a move; the canvas grid is its own part, `grid`), `0e30d2d0c` (a Query-editor drag is kept and is an Undo step) | §2.1, §2.4, C17, P7 |
 | acp-module-d7 (Harness design) | No main component changed in either file. Its Harness screens use instances and hand-made frames: a two-row app header, a data bar of two-half chips, docked panels with mode buttons, stage bars, a zip-tie handle, run labels, all drawn locally from Apex parts. It names these as wanted library parts: **the stage bar, the zip-tie handle, the run label, the two-half chip, the panel-end header with its mode buttons**. Its notes: `acp-module/.working-notes/29-app-shell.md`, `30-sherpa-demos-patterns.md` | §2.1, §2.3, §3.5, P7 |
