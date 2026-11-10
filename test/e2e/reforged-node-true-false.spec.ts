@@ -26,7 +26,8 @@ test.beforeEach(async ({ page }) => {
     } as never, { session: new SessionStore(), stores: ['users'], fieldsOf: { users: { role: { label: 'Role' } } } });
     await window.__settled();
     canvas.zoomTo(1);
-    canvas.panTo(0, 0);
+    // Down from the stage strip: a Condition's True tab hangs ABOVE its card (TODO 887).
+    canvas.panTo(0, 32);
     await window.__settled();
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
@@ -103,7 +104,8 @@ test('a Source\'s Rows leave from its Store row, beside its input socket: no Row
   // The line starts on the Store row, where the socket is.
   const start = await page.evaluate(() => { const d = document.querySelector('#cv svg.graph-routes path[data-from="s/rows"]')!.getAttribute('d')!; return d.match(/M\s*([-\d.]+)[ ,]+([-\d.]+)/)!.slice(1).map(Number); });
   const box = (await page.locator('#cv').boundingBox())!;
-  expect(Math.abs(start[1]! + box.y - middle(out)[1])).toBeLessThan(12);
+  const panned = await page.locator('#cv').evaluate((c) => (c as unknown as { view: { y: number } }).view.y);
+  expect(Math.abs(start[1]! + box.y + panned - middle(out)[1])).toBeLessThan(12);
 });
 
 test('a Condition\'s True and False join an Output by the real pointer; no other node has either to drag', async ({ page }) => {

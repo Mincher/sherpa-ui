@@ -52,14 +52,14 @@ test('a picked node lights every node downstream of it, and not itself', async (
 
 test('a picked route lights the two nodes it joins', async ({ page }) => {
   const at = await page.evaluate(() => {
-    const hit = document.querySelector<SVGPolylineElement>('#cv .graph-hit[data-from="c"][data-to="or"]')!;
+    const hit = document.querySelector<SVGPolylineElement>('#cv .graph-hit[data-from="f/field"][data-to="c"]')!;
     const pts = hit.points;
     const p = pts.getItem(Math.floor(pts.numberOfItems / 2));
     const s = new DOMPoint(p.x, p.y).matrixTransform(hit.getScreenCTM()!);
     return [s.x, s.y] as [number, number];
   });
   await page.mouse.click(...at);
-  await expect.poll(() => joined(page)).toEqual(['Active', 'Either']);
+  await expect.poll(() => joined(page)).toEqual(['Active', 'Field']);
 });
 
 test('a row\'s field in focus lights each node joined to that row; a Store lights what its Source\'s Rows feed', async ({ page }) => {

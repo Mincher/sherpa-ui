@@ -72,7 +72,8 @@ test('a Source\'s row is its node\'s: the same tint, the same two round corners,
 
 test('a Condition\'s row has no tint and a plain 4px; a Custom Node\'s, its node\'s tint', async ({ page }) => {
   const [row, node] = [await rowLook(page, 'condition'), await nodeLook(page, 'Condition')];
-  expect(row.radii).toEqual(node.radii);
+  // A Condition is a fork: open, its end corners are square for its True and False tabs (TODO 887); its start ones are its look.
+  expect([row.radii[0], row.radii[3]]).toEqual([node.radii[0], node.radii[3]]);
   expect(new Set(row.radii).size).toBe(1);
   expect(near(row.fill, node.fill), `its fill ${row.fill} is its node's ${node.fill}`).toBe(true);
   // Custom Nodes is a tab of its own.

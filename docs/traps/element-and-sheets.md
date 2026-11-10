@@ -2229,7 +2229,8 @@ border, its three outer sides). Drawn as two shapes — the tab, and a shadow fo
 edge on a fraction of a pixel and showed a faint seam and a different shade (Will saw it); an outline would draw over the
 bleed besides, as an element's outline paints above its children.
 
-- **A row is its own grid of the same three tracks** (`--_track`, 28px: the 16px socket and its 6px press area each side),
+- **A row is its own grid of the same three tracks** (`--_track`, 24px: the 16px socket and 4px each side — Will narrowed it,
+  2026-11-11; a tab is 28px tall, `--_tab-h`, and the socket's 6px press area reaches past its sides, `--_tab-inset`),
   and it reaches past its grey box and the card's edge by `--_reach`, which the node sets for a row in a box and one on its
   own. So every row's columns line up, and its sockets meet the card where the header's do. A row with no socket on a side
   leaves that cell empty.
@@ -2242,7 +2243,10 @@ bleed besides, as an element's outline paints above its children.
   (`top-layer-tips`), and the socket sits inside its tab.
 - **The host is still the card's width** (`nodeWidth`): the tabs overhang it 27px a side, as the header's always did, so
   no place, Arrange or Unfurl moves.
-- **A fork's False row is one socket tab high** (28px), its tab at the card's bottom end.
+- **A fork's True and False tabs HANG from the card's top and bottom edges**, at its end (Will, 2026-11-11): round on the
+  outer side, square where they join the card, and the card's end corners square to meet them; the caption steps aside
+  for True. So a fork's footer takes no room, and True stands ABOVE the card: a node at the very top of the view puts it
+  under the stage strip (two specs pan down for it). Collapsed, both stand in the end strip as before.
 - **Collapsed, one strip a side, as before** (Will: "B when nodes are collapsed"): a tab is `display: contents` in a row,
   and clear on the header and False, and the stacks draw the strip. CSS cannot count sockets across the rows' shadow roots,
   so the strip's length is still the graph's count (`stackPlaces`).

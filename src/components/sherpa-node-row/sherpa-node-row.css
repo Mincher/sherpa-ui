@@ -218,7 +218,7 @@
    its label, as before. */
 :host(:not(:state(has-content-slot))) .socket-tab {
   align-self: center;
-  margin-block: calc(var(--_track) / -2);
+  margin-block: calc(var(--_tab-h) / -2);
 }
 :host([data-input-socket]) .socket-tab-in,
 :host([data-output-socket]) .socket-tab-out { display: block; }
@@ -236,7 +236,7 @@
 :host(:not([data-collapsed])) .socket {
   position: relative;
   inset: auto;
-  margin: 0;
+  margin: 0 var(--_tab-inset);
 }
 
 /* ── COLLAPSED (its node's): no room of its own; its sockets stand in the node's stacks, at the places its host gave them,
@@ -257,10 +257,11 @@
 }
 :host([data-collapsed]) .socket-in {
   inset-block-start: calc(var(--_stack-top) + var(--_in-i) * var(--_stack-step));
-  inset-inline-start: calc(1px - var(--_socket) / 2 - var(--_hit));
+  /* On its tab's middle, as the header's is. */
+  inset-inline-start: calc(1px - var(--sherpa-style-border-width, 0.5px) - var(--_track) / 2);
   background: none;
 }
 :host([data-collapsed]) .socket-out {
   inset-block-start: calc(var(--_stack-top) + var(--_out-i) * var(--_stack-step));
-  inset-inline-start: calc(100% - 1px + var(--_socket) / 2 + var(--_hit));
+  inset-inline-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px + var(--_track) / 2);
 }

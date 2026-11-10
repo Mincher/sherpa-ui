@@ -17,8 +17,12 @@
   --_d: 50%;
   --_round-square: 25%;
   --_socket-h: var(--_socket);
-  /* A socket's column: the socket and its press area, 28px. TRAP T-a-node-is-three-columns */
-  --_track: calc(var(--_socket) + 2 * var(--_hit));
+  /* A socket's column, its tab's width: the socket and a small inset each side, 24px (Will, 2026-11-11: narrower, the
+     sockets nearer the card). Its tab is as tall as the socket and its press area, 28px; the press area may reach past the
+     tab's sides (`--_tab-inset`). TRAP T-a-node-is-three-columns */
+  --_track: calc(var(--_socket) + 2 * var(--sherpa-theme-padding-sm, 4px));
+  --_tab-h: calc(var(--_socket) + 2 * var(--_hit));
+  --_tab-inset: calc((var(--_track) - var(--_socket)) / 2 - var(--_hit));
 }
 
 /* Half outside the card: its middle is on the edge. The ink is the pinned
@@ -121,16 +125,16 @@
   pointer-events: none;
 }
 .socket-tab-in {
-  border-start-start-radius: calc(var(--_track) / 2);
-  border-end-start-radius: calc(var(--_track) / 2);
+  border-start-start-radius: calc(var(--_tab-h) / 2);
+  border-end-start-radius: calc(var(--_tab-h) / 2);
 }
 .socket-tab-in::before {
   inset-inline-start: 0;
   border-inline-end-width: 0;
 }
 .socket-tab-out, .socket-tab-false {
-  border-start-end-radius: calc(var(--_track) / 2);
-  border-end-end-radius: calc(var(--_track) / 2);
+  border-start-end-radius: calc(var(--_tab-h) / 2);
+  border-end-end-radius: calc(var(--_tab-h) / 2);
 }
 .socket-tab-out::before, .socket-tab-false::before {
   inset-inline-end: 0;

@@ -113,10 +113,11 @@ What each class's base rule reads:
 | `--sherpa-style-border-width` | `.socket-tab-in` | `inset-inline-start` |
 | `--sherpa-style-border-width` | `.socket-tab-out` | `inset-inline-start` |
 | `--sherpa-style-border-width` | `.socket-tab-false` | `inset-inline-start` |
-| `--sherpa-theme-gap-md` | `.footer` | `margin-block-end` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
+| `--sherpa-style-border-width` | `.stack-in` | `inset-inline-start` |
 | `--sherpa-style-border-width` | `.stack-in` | `border-width` |
+| `--sherpa-style-border-width` | `.stack-out` | `inset-inline-start` |
 | `--sherpa-style-border-width` | `.stack-out` | `border-width` |
 | `--sherpa-style-border-width` | `.body` | `--_reach` |
 
