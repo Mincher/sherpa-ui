@@ -227,7 +227,8 @@ instance, pinned to its mode, in its component's docs frame (§8) — no new var
 ### 2.6 Side finding: three dead token names
 
 A component reads a token that nothing declares, so it always shows its fallback, with
-no error. Queued as TODO 884, not Figma work:
+no error. Queued as TODO 884, not Figma work — **done 2026-11-10** (`30d6d98bd`, with
+a `lint:css` gate, `undeclared-token`):
 
 | Reads | File | Live name |
 |---|---|---|
