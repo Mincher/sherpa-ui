@@ -2690,8 +2690,9 @@ export function bindWorkflow(
       refreshPanel();
     });
   };
-  // — Stages (the top workflow's): a node let go joins the stage it stands in, as the drag ENDS; then the stages fit.
-  // Mid-drag, a stage it grows would push the next away from the pointer. Will, 2026-11-10
+  // — Stages (the top workflow's): a dragged node stays in its stage, which grows with it as it goes, the rest a flex row
+  // after it. With SHIFT held it leaves its stage: the stages hold still as they stood, and let go, it joins the stage it
+  // stands in, or none. Will, 2026-11-10
   // Its callbacks are read when a stage is pressed, or the canvas drawn: by then each is set.
   const stages: Stages = bindStages(canvas, {
     workflow: () => (path.length ? null : shown()),
@@ -2700,12 +2701,16 @@ export function bindWorkflow(
     readOnly: () => readOnly(),
     nodeElement: (id) => drawnOn.get(canvas)?.nodes.get(id),
     dialog: stageDialog ?? null,
+    moving: () => (settling ? moved : new Set()),
   });
-  /** A pointer is down on the canvas, and the nodes a drag has moved: written when it lets go. */
+  /** A pointer is down on the canvas; Shift is held; the nodes a drag has moved: written when it lets go. */
   let pressing = false;
+  let shifted = false;
   let settling = false;
   const moved = new Set<string>();
   let movedTag = '';
+  /** A drag just ended: the click it ends with is no Shift-click pick. */
+  let justDragged = false;
   /** A node's height as drawn, in plane px: what a lane holds. Not drawn yet, a node's usual height. */
   const heightOf = (node: { id: string }): number => drawnOn.get(canvas)?.nodes.get(node.id)?.offsetHeight || 120;
   const settle = (): void => {
@@ -2713,17 +2718,28 @@ export function bindWorkflow(
     const ids = [...moved];
     moved.clear();
     if (path.length || readOnly()) return;
-    write(ids.length ? editWorkflow(shown(), { restage: ids }, K()) : shown(), movedTag);
+    // Shift held: it joins the stage it was let go in. Else it is where its stage still is.
+    write(ids.length && shiftDrag ? editWorkflow(shown(), { restage: ids }, K()) : shown(), movedTag);
+    shiftDrag = false;
   };
+  let shiftDrag = false;
   const dragged = (ids: readonly string[], tag: string): void => {
     for (const id of ids) moved.add(id);
     movedTag = tag;
+    if (pressing && shifted) shiftDrag = true;
     if (!pressing) settle();
   };
-  const onPress = (): void => { pressing = true; };
+  const onPress = (event: PointerEvent): void => {
+    pressing = true;
+    shifted = event.shiftKey;
+  };
+  const onPointerMove = (event: PointerEvent): void => { if (pressing) shifted = event.shiftKey; };
   const onLetGo = (): void => {
     pressing = false;
-    if (moved.size) settle();
+    if (!moved.size) return;
+    justDragged = true;
+    setTimeout(() => { justDragged = false; });
+    settle();
   };
   const write = (next: WorkflowDefinition, tag?: string): void => edit(() => {
     if (!path.length && preset) {
@@ -2773,7 +2789,7 @@ export function bindWorkflow(
       return;
     }
     if (stages.arranging()) return;
-    settling = pressing;
+    settling = pressing && shifted;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
     dragged([node.id], `move:${node.id}`);
   };
@@ -2793,7 +2809,7 @@ export function bindWorkflow(
     const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.routes.length && t.routes.every(inside)).map((t) => [t.id, { x: t.x + dx, y: t.y + dy }]));
     if (stages.arranging()) return;
     const tag = `move:${Object.keys(nodes).sort().join(',')}`;
-    settling = pressing;
+    settling = pressing && shifted;
     write(editWorkflow(shown(), { place: { nodes, ties, bends: { dx, dy } } }, K()), tag);
     dragged(Object.keys(nodes), tag);
   };
@@ -3359,7 +3375,7 @@ export function bindWorkflow(
   };
   const onClick = (event: MouseEvent): void => {
     const hit = idOf(event);
-    if (!hit || hit.field || !event.shiftKey) return;
+    if (!hit || hit.field || !event.shiftKey || justDragged) return;
     event.preventDefault();
     event.stopPropagation();
     toggle(hit.id);
@@ -3732,6 +3748,7 @@ export function bindWorkflow(
     else picks.follow(graph);
   }
   canvas.addEventListener('pointerdown', onPress, { capture: true });
+  window.addEventListener('pointermove', onPointerMove, { capture: true });
   window.addEventListener('pointerup', onLetGo);
   window.addEventListener('pointercancel', onLetGo);
   draw();
@@ -3807,6 +3824,7 @@ export function bindWorkflow(
       drawLanes(canvas, null, heightOf, K());
       for (const flag of ['data-can-lanes', 'data-lanes']) toolbar?.removeAttribute(flag);
       canvas.removeEventListener('pointerdown', onPress, { capture: true });
+      window.removeEventListener('pointermove', onPointerMove, { capture: true });
       window.removeEventListener('pointerup', onLetGo);
       window.removeEventListener('pointercancel', onLetGo);
       for (const task of queue.list()) if (ours(task)) queue.cancel(task.id);

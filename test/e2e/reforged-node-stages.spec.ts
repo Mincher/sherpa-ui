@@ -61,13 +61,15 @@ const more = async (page: Page, n: number, action: string) => {
   await stage(page, n).locator(`.more sherpa-menu button[value="${action}"]`).click();
   await settle(page);
 };
-/** Drag a node by its header to a point on the screen. */
-const dragNode = async (page: Page, heading: string, to: { x: number; y: number }) => {
+/** Drag a node by its header to a point on the screen; with Shift held, out of its stage. */
+const dragNode = async (page: Page, heading: string, to: { x: number; y: number }, shift = false) => {
   const box = (await page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`).boundingBox())!;
   await page.mouse.move(box.x + 20, box.y + 10);
+  if (shift) await page.keyboard.down('Shift');
   await page.mouse.down();
   await page.mouse.move(to.x, to.y, { steps: 10 });
   await page.mouse.up();
+  if (shift) await page.keyboard.up('Shift');
   await settle(page);
 };
 
@@ -89,11 +91,11 @@ test('one stage round every node; Add stage puts an empty one after it', async (
   expect(tools.y).toBeLessThan(canvas.y + 40);
 });
 
-test('a node let go in a stage joins it; its old stage shrinks; Undo puts it back as one step', async ({ page }) => {
+test('Shift-dragged, a node leaves its stage and joins the one it is let go in; its old stage shrinks; Undo puts it back as one step', async ({ page }) => {
   await addStage(page);
   const two = (await stage(page, 1).boundingBox())!;
   const before = (await stage(page, 0).boundingBox())!.width;
-  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 });
+  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 }, true);
   expect(await stageOf(page, 'end')).toBe('stage-2');
   expect((await stage(page, 0).boundingBox())!.width).toBeLessThan(before);
   await page.locator('sherpa-node-toolbar sherpa-button.undo').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
@@ -127,7 +129,7 @@ test('Edit names, describes and colours a stage; Remove leaves its nodes where t
 test('Arrange stages: the toolbar and panels hide, a footer shows; an arrow key or a drag orders them; Cancel keeps, Save writes', async ({ page }) => {
   await addStage(page);
   const two = (await stage(page, 1).boundingBox())!;
-  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 });
+  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 }, true);
   await page.locator('#cv > .stage-tools .stages-more').click();
   await page.locator('#cv > .stage-tools sherpa-menu button[value="arrange"]').click();
   await settle(page);
@@ -164,4 +166,20 @@ test('Arrange stages: the toolbar and panels hide, a footer shows; an arrow key 
   expect(moved).toBeLessThan(end);
   expect(Math.max(...w.nodes.filter((n) => n.stage === 'stage-2').map((n) => n.x))).toBeLessThan(Math.min(...w.nodes.filter((n) => n.stage === 'stage-1').map((n) => n.x)));
   await expect(page.locator('#cv sherpa-node-toolbar')).toBeVisible();
+});
+
+test('dragged without Shift, a node stays in its stage, which grows with it; the stage after keeps the same gap', async ({ page }) => {
+  await addStage(page);
+  const gap = async () => { const [a, b] = [(await stage(page, 0).boundingBox())!, (await stage(page, 1).boundingBox())!]; return Math.round(b.x - (a.x + a.width)); };
+  const before = { gap: await gap(), width: (await stage(page, 0).boundingBox())!.width };
+  const two = (await stage(page, 1).boundingBox())!;
+  // Into stage 2's band, no Shift: it stays in stage 1, which grows to hold it; stage 2 moves on, the gap the same.
+  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 });
+  expect(await stageOf(page, 'end')).toBe('stage-1');
+  expect((await stage(page, 0).boundingBox())!.width).toBeGreaterThan(before.width);
+  expect(Math.abs((await gap()) - before.gap)).toBeLessThanOrEqual(1);
+  // Back left: stage 1 shrinks, and stage 2 is drawn back after it, the gap the same.
+  const one = (await stage(page, 0).boundingBox())!;
+  await dragNode(page, 'Output', { x: one.x + 200, y: one.y + 300 });
+  expect(Math.abs((await gap()) - before.gap)).toBeLessThanOrEqual(1);
 });

@@ -45,15 +45,14 @@ test('a node let go in the next stage joins it; a stage that grows pushes the ne
   // b let go in stage 2: it joins it.
   w = editWorkflow(editWorkflow(w, { node: 'b', set: { x: two.left + 40 } }), { restage: ['b'] });
   assert.equal(w.nodes.find((n) => n.id === 'b').stage, 'stage-2');
-  // a dragged far right, still in stage 1's band by its middle? No: its middle is in stage 2 now, so it joins stage 2.
-  const back = editWorkflow(editWorkflow(w, { node: 'a', set: { x: 0 } }), { restage: ['a'] });
+  const back = fitStages(editWorkflow(editWorkflow(w, { node: 'a', set: { x: 0 } }), { restage: ['a'] }), nodeWidth);
   assert.equal(back.nodes.find((n) => n.id === 'a').stage, 'stage-1');
   // Stage 1 grows: a node of it placed out to its right edge pushes stage 2 and b along.
   const grown = { ...back, nodes: [...back.nodes, { id: 'c', kind: 'sort', x: two.left - STAGE_PAD - NODE_WIDTH / 2, y: 200, stage: 'stage-1' }] };
   const fit = fitStages(grown, nodeWidth);
   const [one, next] = stageBands(fit, nodeWidth).bands;
   assert.ok(next.left >= one.right + STAGE_GAP, 'stage 2 starts after stage 1 ends');
-  assert.ok(fit.nodes.find((n) => n.id === 'b').x > w.nodes.find((n) => n.id === 'b').x, 'b moved with its stage');
+  assert.ok(fit.nodes.find((n) => n.id === 'b').x > back.nodes.find((n) => n.id === 'b').x, 'b moved with its stage');
 });
 
 test('a node let go between or past the stages is in none', () => {
@@ -83,9 +82,10 @@ test('Remove leaves its nodes where they are, in none; the last stage stays', ()
 test('an order packs the stages left to right from where the first stood, each node moving with its own', () => {
   let w = editWorkflow(flow(), { addStage: { label: 'Out' } });
   const two = stageBands(w, nodeWidth).bands[1];
-  w = editWorkflow(editWorkflow(w, { node: 'b', set: { x: two.left + 40 } }), { restage: ['b'] });
+  // As the editor writes it: let go, restaged, then laid out.
+  w = fitStages(editWorkflow(editWorkflow(w, { node: 'b', set: { x: two.left + 40 } }), { restage: ['b'] }), nodeWidth);
   const before = stageBands(w, nodeWidth).bands;
-  const swapped = editWorkflow(w, { orderStages: ['stage-2', 'stage-1'] });
+  const swapped = fitStages(editWorkflow(w, { orderStages: ['stage-2', 'stage-1'] }), nodeWidth);
   assert.deepEqual(swapped.stages.map((s) => s.id), ['stage-2', 'stage-1']);
   const after = stageBands(swapped, nodeWidth).bands;
   assert.equal(after[0].left, before[0].left, 'the first starts where the first stood');
@@ -102,4 +102,19 @@ test('stages are saved and read back: the schema takes them, and a node in a sta
   assert.equal(checkWorkflow({ ...w, nodes: [{ ...w.nodes[0], stage: 'stage-9' }, w.nodes[1]] }), false);
   stop();
   assert.match(said.join(), /stage-9/);
+});
+
+test('a FLEX row: a stage that shrinks draws the next back, its nodes with it, the gap kept; a node left of its stage\'s start is held at it', async () => {
+  let w = editWorkflow(flow(), { addStage: { label: 'Out' } });
+  const two = stageBands(w, nodeWidth).bands[1];
+  w = fitStages(editWorkflow(editWorkflow(w, { node: 'b', set: { x: two.left + 40 } }), { restage: ['b'] }), nodeWidth);
+  // Stage 1 now holds only a: it shrank, and stage 2 stands the gap after it, b with it.
+  const [one, next] = stageBands(w, nodeWidth).bands;
+  assert.equal(next.left, one.right + STAGE_GAP);
+  const b = w.nodes.find((n) => n.id === 'b');
+  // It stood 40px in, which is inside the pad: it is held at the pad.
+  assert.equal(b.x, next.left + STAGE_PAD, 'b moves with its stage');
+  // b dragged left past stage 2's start, in it still: held at the start.
+  const held = fitStages({ ...w, nodes: w.nodes.map((n) => (n.id === 'b' ? { ...n, x: 0 } : n)) }, nodeWidth);
+  assert.equal(held.nodes.find((n) => n.id === 'b').x, stageBands(held, nodeWidth).bands[1].left + STAGE_PAD);
 });

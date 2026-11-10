@@ -9,7 +9,7 @@
  * - bindStages — Bind a workflow editor's stages to its canvas.
  */
 import { editWorkflow, nodeWidth, type WorkflowDefinition } from '../data/workflow.js';
-import { orderStages, stageBands, stagesOf, type StageBand } from '../data/node-stages.js';
+import { heldBands, orderStages, stageBands, stagesOf, type StageBand } from '../data/node-stages.js';
 
 /** What the stages need of their editor. */
 export interface StageHost {
@@ -22,6 +22,8 @@ export interface StageHost {
   readOnly(): boolean;
   /** A node's drawn element, to move with its stage while one is dragged. */
   nodeElement(id: string): HTMLElement | undefined;
+  /** The nodes a Shift-drag has taken out of their stages: the stages hold still as they stood, without them. */
+  moving?(): ReadonlySet<string>;
   /** A `sherpa-dialog` that asks a stage's name, line and colour: fields `[name=label]`, `[name=description]` and
    *  `[name=colour]` (a colour field), buttons `[data-action=save]` and `[data-action=cancel]`. Without it, Edit is not offered. */
   dialog?: (HTMLElement & { show(): void; hide(): void }) | null;
@@ -74,7 +76,8 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     if (w && !arranging && !host.readOnly()) canvas.append(tools);
     else tools.remove();
     if (!w) return;
-    const bands = bandsOf(w);
+    const out = host.moving?.() ?? new Set<string>();
+    const bands = out.size ? heldBands(w, nodeWidth, out) : bandsOf(w);
     const ro = host.readOnly();
     stages.forEach((stage, i) => {
       let el = drawn.get(stage.id);

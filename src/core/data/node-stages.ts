@@ -13,6 +13,7 @@
  * - stagesOf — A workflow's stages: its own, or the one it has with none.
  * - stageOf — The stage a node is in, or none.
  * - stageBands — Each stage's band, and the moves that keep each clear of the one before.
+ * - heldBands — Each stage's band as it stands, its left edge where it was last laid out, not laid out again; nodes `moving`…
  * - fitStages — The workflow with each stage's left edge, and every node a push moved, as its bands say.
  * - stageAt — The stage whose band holds a place across the canvas, or none.
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
@@ -20,7 +21,7 @@
  * - orderStages — The workflow with its stages in a new order, each packed after the one before, its nodes with it.
  * - stageFaults — Every fault in a workflow's stages, in words.
  */
-import { packBands } from './node-bands.js';
+import { packBands, type BandGroup } from './node-bands.js';
 
 /** One stage: its id, its name, line and colour, and where its left edge stands (plane px). */
 export interface NodeStage {
@@ -77,13 +78,32 @@ export function stageOf(workflow: Staged, node: Staged['nodes'][number]): string
  * before the last one ends, plus STAGE_GAP, is pushed right, its nodes with it.
  */
 export function stageBands(workflow: Staged, widthOf: WidthOf): { bands: StageBand[]; moves: Record<string, number> } {
-  const groups = stagesOf(workflow).map((stage) => ({
-    id: stage.id,
-    at: stage.x,
-    members: workflow.nodes.filter((n) => stageOf(workflow, n) === stage.id).map((n) => ({ id: n.id, start: n.x, size: widthOf(n) })),
-  }));
-  const { bands, moves } = packBands(groups, { min: STAGE_MIN, pad: STAGE_PAD, gap: STAGE_GAP });
-  return { bands: bands.map((b) => ({ id: b.id, left: b.start, right: b.end })), moves };
+  const stages = stagesOf(workflow);
+  const member = (n: Staged['nodes'][number]): { id: string; start: number; size: number } => ({ id: n.id, start: n.x, size: widthOf(n) });
+  // Nodes in NO stage are a band of their own where they stand, with no bar: the stages after them keep clear of them.
+  const loose = workflow.stages?.length ? workflow.nodes.filter((n) => !n.id.startsWith('#') && !stageOf(workflow, n)) : [];
+  const after = (n: Staged['nodes'][number]): number => stages.filter((s) => s.x <= n.x).length;
+  const groups: BandGroup[] = [];
+  for (let i = 0; i <= stages.length; i++) {
+    const free = loose.filter((n) => after(n) === i);
+    if (free.length) groups.push({ id: `loose:${i}`, at: Math.min(...free.map((n) => n.x)) - STAGE_PAD, members: free.map(member), min: 0 });
+    const stage = stages[i];
+    if (stage) groups.push({ id: stage.id, at: stage.x, members: workflow.nodes.filter((n) => stageOf(workflow, n) === stage.id).map(member) });
+  }
+  const { bands, moves } = packBands(groups, { min: STAGE_MIN, pad: STAGE_PAD, gap: STAGE_GAP, flex: true });
+  return { bands: bands.filter((b) => !b.id.startsWith('loose:')).map((b) => ({ id: b.id, left: b.start, right: b.end })), moves };
+}
+
+/**
+ * Each stage's band as it stands, its left edge where it was last laid out, not laid out again; nodes `moving` are not in
+ * it. A drag that takes nodes out of their stage draws these, so no stage follows them or slides away under them.
+ */
+export function heldBands(workflow: Staged, widthOf: WidthOf, moving: ReadonlySet<string> = new Set()): StageBand[] {
+  return stagesOf(workflow).map((stage) => {
+    const members = workflow.nodes.filter((n) => !moving.has(n.id) && stageOf(workflow, n) === stage.id);
+    const right = members.length ? Math.max(...members.map((n) => n.x + widthOf(n))) + STAGE_PAD : stage.x;
+    return { id: stage.id, left: stage.x, right: Math.round(Math.max(right, stage.x + STAGE_MIN)) };
+  });
 }
 
 /** The workflow with each stage's left edge, and every node a push moved, as its bands say. Unchanged, the same one. */
@@ -113,13 +133,13 @@ export function stagesHeld<W extends Staged>(workflow: W): W {
 }
 
 /**
- * The workflow with these nodes in the stage their middle stands in, by the bands the OTHER nodes make, or
- * in none. A node let go between stages, or past them, is in none.
+ * The workflow with these nodes in the stage their middle stands in, by the bands as they stand without them
+ * (`heldBands`), or in none. A node let go between stages, or past them, is in none.
  */
 export function restage<W extends Staged>(workflow: W, ids: readonly string[], widthOf: WidthOf): W {
   if (!workflow.stages?.length || !ids.length) return workflow;
   const moving = new Set(ids);
-  const { bands } = stageBands({ ...workflow, nodes: workflow.nodes.filter((n) => !moving.has(n.id)) }, widthOf);
+  const bands = heldBands(workflow, widthOf, moving);
   let changed = false;
   const nodes = workflow.nodes.map((n) => {
     if (!moving.has(n.id) || n.id.startsWith('#')) return n;
