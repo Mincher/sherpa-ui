@@ -1035,10 +1035,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (150)
+## Other components (151)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
+- [T-a-canvas-draws-live-html](traps/other-components.md#t-a-canvas-draws-live-html) — canvas
 - [T-a-canvas-owns-its-view](traps/other-components.md#t-a-canvas-owns-its-view) — layout-canvas
 - [T-a-chart-scope-is-its-legend-field](traps/data-layer.md#t-a-chart-scope-is-its-legend-field) — filter-panel
 - [T-a-click-does-not-clear-indeterminate](traps/other-components.md#t-a-click-does-not-clear-indeterminate) — select-checkbox
@@ -1188,11 +1189,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (79)
+## Build, tools and the MCP (80)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-build-is-swapped-in-whole](traps/build-tools-mcp.md#t-a-build-is-swapped-in-whole) — build-reforged, sherpa-ui
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
+- [T-a-canvas-draws-live-html](traps/other-components.md#t-a-canvas-draws-live-html) — playwright.config
 - [T-a-cli-is-run-through-a-link](traps/build-tools-mcp.md#t-a-cli-is-run-through-a-link) — check-usage, sherpa-ui
 - [T-a-component-ships-its-example](traps/build-tools-mcp.md#t-a-component-ships-its-example) — read, write-reference
 - [T-a-constructed-event-is-not-a-dispatched-one](traps/build-tools-mcp.md#t-a-constructed-event-is-not-a-dispatched-one) — generate-component-spec

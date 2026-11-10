@@ -1628,6 +1628,82 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-canvas/sherpa-canvas.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaCanvas",
+          "tagName": "sherpa-canvas",
+          "customElement": true,
+          "description": "a REAL <canvas> its slotted elements are DRAWN into, where the engine draws HTML in a canvas (Chrome 157 on): each stays a live element — its fields take focus and typing, a press where it is drawn reaches it — drawn at its own place (its `--x`, `--y`) through the view its attributes set. Where the engine does not, the same elements lay out on a plain layer the view moves. Will, 2026-11-11 (plan 852). TRAP T-a-canvas-draws-live-html",
+          "attributes": [
+            {
+              "name": "data-x",
+              "description": "the view's pan across, in px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            },
+            {
+              "name": "data-y",
+              "description": "the view's pan down, in px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            },
+            {
+              "name": "data-zoom",
+              "description": "the view's scale",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"1\""
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "paint",
+              "parameters": [],
+              "description": "Draw again, next frame: something the canvas cannot see moved."
+            }
+          ],
+          "slots": [
+            {
+              "name": "",
+              "description": "what it draws: each element at its --x and --y (accepts: content)"
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "surface"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaCanvas",
+          "declaration": {
+            "name": "SherpaCanvas",
+            "module": "dist/components/sherpa-canvas/sherpa-canvas.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-canvas",
+          "declaration": {
+            "name": "SherpaCanvas",
+            "module": "dist/components/sherpa-canvas/sherpa-canvas.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-chart-legend/sherpa-chart-legend.js",
       "declarations": [
         {

@@ -1,0 +1,9 @@
+{
+  "html": [
+    "<sherpa-canvas data-x=\"20\" data-y=\"20\" style=\"inline-size: 600px; block-size: 320px\">",
+    "<sherpa-node data-heading=\"Source\" data-icon=\"storage\" data-output-socket=\"object\" data-x=\"0\" data-y=\"0\"></sherpa-node>",
+    "<sherpa-node data-heading=\"Output\" data-icon=\"flag\" data-input-socket=\"object\" data-x=\"320\" data-y=\"80\"></sherpa-node>",
+    "</sherpa-canvas>"
+  ],
+  "use": "For a surface of live elements, each at its own place: a real canvas draws them where the engine draws HTML in a canvas (Chrome 157 on) — they stay live, a press where one is drawn reaches it — and a plain layer holds them where it does not. Its view is its attributes: `data-x` and `data-y` pan it, `data-zoom` scales it. Each element stands at its `--x` and `--y` (a `sherpa-node` writes them from its `data-x` and `data-y`). `sherpa-layout-canvas` draws its plane with it; use that for a canvas a reader pans and zooms."
+}

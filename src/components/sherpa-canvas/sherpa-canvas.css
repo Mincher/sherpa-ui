@@ -1,0 +1,34 @@
+/**
+ * sherpa-canvas.css — the surface its content is drawn on: a real canvas over its whole box, or a plain layer the view
+ * moves. It takes no press of its own: one on its blank goes on to what is under it. TRAP T-a-canvas-draws-live-html
+ */
+
+:host {
+  display: block;
+  position: relative;
+  pointer-events: none;
+}
+
+/* Each element at its place on the plane; it takes its own presses. */
+::slotted(*) {
+  position: absolute;
+  left: var(--x, 0px);
+  top: var(--y, 0px);
+  pointer-events: auto;
+}
+
+/* A plain layer: the view moves and scales it, from its start corner. */
+.surface {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform-origin: 0 0;
+}
+
+/* A real canvas, over its whole box: it draws the view. */
+canvas.surface {
+  display: block;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}

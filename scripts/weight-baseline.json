@@ -7,9 +7,9 @@
     }
   },
   "components.js": {
-    "files": 158,
+    "files": 159,
     "brotli": {
-      "js": 291480,
+      "js": 292774,
       "fetched": 8593
     }
   },
@@ -80,6 +80,13 @@
     "files": 14,
     "brotli": {
       "js": 21140,
+      "fetched": 0
+    }
+  },
+  "components/sherpa-canvas/sherpa-canvas.js": {
+    "files": 11,
+    "brotli": {
+      "js": 17980,
       "fetched": 0
     }
   },
@@ -546,9 +553,9 @@
     }
   },
   "index.js": {
-    "files": 269,
+    "files": 270,
     "brotli": {
-      "js": 474845,
+      "js": 476139,
       "fetched": 8593
     }
   }

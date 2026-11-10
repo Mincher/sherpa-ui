@@ -617,6 +617,24 @@
       ]
     },
     {
+      "name": "sherpa-canvas",
+      "description": "a REAL <canvas> its slotted elements are DRAWN into, where the engine draws HTML in a canvas (Chrome 157 on): each stays a live element — its fields take focus and typing, a press where it is drawn reaches it — drawn at its own place (its `--x`, `--y`) through the view its attributes set. Where the engine does not, the same elements lay out on a plain layer the view moves. Will, 2026-11-11 (plan 852). TRAP T-a-canvas-draws-live-html",
+      "attributes": [
+        {
+          "name": "data-x",
+          "description": "the view's pan across, in px"
+        },
+        {
+          "name": "data-y",
+          "description": "the view's pan down, in px"
+        },
+        {
+          "name": "data-zoom",
+          "description": "the view's scale"
+        }
+      ]
+    },
+    {
       "name": "sherpa-chart-legend",
       "description": "a legend for charts. Figma \"Chart Legend\" (1098:37846). A list, or a strip when its chart is square or narrower: its chart says.",
       "attributes": [

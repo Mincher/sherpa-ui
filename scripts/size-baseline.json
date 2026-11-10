@@ -1,6 +1,6 @@
 {
   "src/app.ts": 69,
-  "src/components.ts": 135,
+  "src/components.ts": 136,
   "src/components/sherpa-accordion/sherpa-accordion.ts": 75,
   "src/components/sherpa-app-header/sherpa-app-header.ts": 215,
   "src/components/sherpa-app-shell/sherpa-app-shell.ts": 138,
@@ -448,5 +448,8 @@
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 44,
   "src/core/sherpa-filter-menu.html": 8,
   "src/core/sherpa-show-as.html": 26,
-  "src/core/sherpa-tip.html": 8
+  "src/core/sherpa-tip.html": 8,
+  "src/components/sherpa-canvas/sherpa-canvas.ts": 158,
+  "src/components/sherpa-canvas/sherpa-canvas.css": 35,
+  "src/components/sherpa-canvas/sherpa-canvas.html": 23
 }

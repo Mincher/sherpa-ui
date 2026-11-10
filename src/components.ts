@@ -121,6 +121,7 @@ export type { FilterDef, FilterOption } from './core/ui/filter-def.js';
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
 export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
 export type { GridLayout } from './components/sherpa-layout-grid/grid-resize.js';
+export { SherpaCanvas, drawsHtml } from './components/sherpa-canvas/sherpa-canvas.js';
 export { SherpaLayoutCanvas } from './components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 export { SherpaLayoutPanels, type PanelSide } from './components/sherpa-layout-panels/sherpa-layout-panels.js';
 export { SherpaNode } from './components/sherpa-node/sherpa-node.js';

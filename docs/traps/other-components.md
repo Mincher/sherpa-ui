@@ -1783,3 +1783,31 @@ cards to meet. The lit box of a drop at an empty edge reads the same inset.
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `test/e2e/reforged-shell-one-line-at-a-panel-area.spec.ts`
 - Site: `test/e2e/reforged-layout-panels.spec.ts`
+
+### T-a-canvas-draws-live-html
+
+**`sherpa-canvas` draws its content into a REAL canvas, where the engine draws HTML in a canvas** (Chrome 157 on: the
+canvas's `content="drawable"`, each drawn element `drawable`, `drawElementImage` in its `paint` event); elsewhere its
+template is a plain layer, as a plane (Will, 2026-11-11; plan 852). A drawn element stays live: a press where it is DRAWN
+reaches it, its fields take focus and typing, assistive tech reads it; `getBoundingClientRect()` says where it is drawn.
+
+- **Inside the canvas an element lays out in FLOW**: `position` computes to `static`, so `left`/`top` move nothing and
+  `offsetLeft`/`offsetTop` read 0. Its `left`/`top` still resolve, from `--x`/`--y`: the canvas reads its place there.
+- **Only what the view shows is `drawable`.** Each `drawable` costs every paint, drawn or not: 2,000 of them cost a step
+  60 ms with 15 drawn, 17–22 ms with only those in view.
+- **An element not drawn has no drawn place**: its box reads as its hidden place in flow. Code must read a place from the
+  model, never from layout (plan 852, step 2).
+- **What overhangs an element is drawn** from a source box `OVERHANG` px past it each way (a node's socket tabs, its
+  caption); without it, the snapshot is clipped to the element's own box.
+- **One that moves while not drawn fires no `paint`**: a MutationObserver on each element's `style` asks for one.
+- **It takes no press of its own** (`pointer-events: none`; its content `auto`): a press on its blank reaches what is
+  under it, as the plane's 0×0 box let it.
+- Feature test: a canvas given `content="drawable"` reads it back, and `drawElementImage` exists. The bundled Playwright
+  Chromium (153) has only the trial API behind a flag: it draws the plain layer.
+
+- Site: `src/components/sherpa-canvas/sherpa-canvas.ts`
+- Site: `src/components/sherpa-canvas/sherpa-canvas.html`
+- Site: `src/components/sherpa-canvas/sherpa-canvas.css`
+- Site: `playwright.config.ts`
+- Site: `test/e2e/reforged-canvas.spec.ts`
+

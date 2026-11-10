@@ -51,6 +51,9 @@ export default defineConfig({
        TRAP T-a-css-function-needs-its-longhand-first */
     { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: /phone\.spec\.ts/ },
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: /phone\.spec\.ts/ },
+    /* GOOGLE CHROME, the installed one: it DRAWS HTML in a canvas (157 on), which the bundled Chromium (153) does not — so
+       the canvas and the node specs run drawn here, on the plain layer above. Plan 852. TRAP T-a-canvas-draws-live-html */
+    { name: 'chrome', use: { ...devices['Desktop Chrome'], channel: 'chrome' }, testMatch: /reforged-(canvas|layout-canvas|node)[\w-]*\.spec\.ts/ },
     /* A PHONE — 412 wide, touch — runs the small phone set alone (Will, Q3:
        mobile browsers, not Safari). An Android phone is Chromium. */
     { name: 'phone', use: { ...devices['Pixel 7'] }, testMatch: /phone\.spec\.ts/ },
