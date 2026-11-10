@@ -2,7 +2,7 @@
  * sherpa-node-sockets.css — a node's sockets: its header's, and each row's.
  * Adopted before their own sheet by sherpa-node and sherpa-node-row. It draws
  * them on the host's start and end edges; each host places them down its box.
- * A socket is its type's SHAPE (a clip-path) in its type's pinned ink; hollow
+ * A socket is its type's SHAPE (its corners) in its type's pinned ink; hollow
  * until a route joins it. TRAP T-a-socket-is-drawn-by-its-type
  */
 
@@ -11,11 +11,11 @@
   /* The press reaches this far past the drawn box, on every side: 28px in all. Short of the header's glyph, which still drags the node. */
   --_hit: 6px; /* off-grid-ok */
   --_ring: var(--sherpa-display-mode-border-width-lg, 2px);
-  --_circle: circle(50%);
-  --_square: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  /* A fully round input; and the rounded square (4), on this box. */
-  --_d: inset(0 round 50%);
-  --_round-square: inset(0 round 25%);
+  /* Each shape is its CORNERS: a clip-path's round shape was cut flat on one side in Chromium, where it landed on a
+     fraction of a pixel (Will saw it, 2026-11-11). A circle; a fully round input; the rounded square (4). */
+  --_circle: 50%;
+  --_d: 50%;
+  --_round-square: 25%;
   --_socket-h: var(--_socket);
   /* A socket's column: the socket and its press area, 28px. TRAP T-a-node-is-three-columns */
   --_track: calc(var(--_socket) + 2 * var(--_hit));
@@ -38,7 +38,7 @@
   position: absolute;
   inset: 0;
   background: var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
-  clip-path: var(--_shape, var(--_circle));
+  border-radius: var(--_shape, var(--_circle));
 }
 /* HOLLOW: the card's own face inside the ring. A routed socket is filled. */
 .socket::after {
@@ -46,7 +46,7 @@
   position: absolute;
   inset: var(--_ring);
   background: var(--sherpa-style-surface-base, #ffffff);
-  clip-path: var(--_shape, var(--_circle));
+  border-radius: var(--_shape, var(--_circle));
 }
 /* A CONNECTED socket: a 1px ring of its ink, a 1px inset of the card's face, then the ink again in its shape. */
 .core {
@@ -55,7 +55,7 @@
   z-index: var(--sherpa-layer-content, 1);
   inset: calc(var(--_ring) * 2);
   background: var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
-  clip-path: var(--_shape, var(--_circle));
+  border-radius: var(--_shape, var(--_circle));
   pointer-events: none;
 }
 :host([data-input-routed]) .socket-in .core,
@@ -82,12 +82,12 @@
 
 /* An OUTPUT keeps its type's SHAPE: a value a circle, an object a diamond, a boolean
    a circle, like a value: its colour says boolean. False is a rounded square. Will, TODOs 713, 740, 874 */
-/* An object is a square, 1px border, turned 45deg: no clip path. It is as wide across its corners as the box. */
+/* An object is a square, 1px border, turned 45deg: no corners. It is as wide across its corners as the box. */
 :host([data-output-socket="object"]) .socket-out { --_dia: calc(var(--_socket) * 0.1464); }
 :host([data-output-socket="object"]) .socket-out::before {
   inset: var(--_dia);
   box-sizing: border-box;
-  clip-path: none;
+  border-radius: 0;
   transform: rotate(45deg);
   background: var(--sherpa-style-surface-base, #ffffff);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
@@ -95,7 +95,7 @@
 :host([data-output-socket="object"]) .socket-out::after { display: none; }
 :host([data-output-socket="object"]) .socket-out .core {
   inset: calc(var(--_dia) + var(--_ring) * 1.5);
-  clip-path: none;
+  border-radius: 0;
   transform: rotate(45deg);
 }
 .socket-false { --_shape: var(--_round-square); }

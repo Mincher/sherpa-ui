@@ -1958,10 +1958,12 @@ read both `define(` and `customElements.define(`.
 ### T-a-socket-is-drawn-by-its-type
 
 **A socket is its type's SHAPE, in its type's ink, hollow until a route joins
-it** (Will, TODO 713; plan-713 §2, M2). The shape is a `clip-path` on the socket
-and its inner face — never an image — so one box draws all four: a value a
-circle, an object a diamond, a boolean a circle (its ink says boolean),
-and `any` (an input only) a square.
+it** (Will, TODO 713; plan-713 §2, M2). The shape is the socket's and its inner
+face's CORNERS (`border-radius`; an object a square turned 45deg) — never an image —
+so one box draws them all: a value a circle, an object a diamond, a boolean a circle
+(its ink says boolean), an input round, False a rounded square. Not a `clip-path`: a
+round one was cut flat on one side in Chromium where the socket stood on a fraction
+of a pixel, as it does in a socket tab (Will saw it, 2026-11-11).
 
 - **The ink is a PIN, not a colour rule.** Each type pins its own Style mode on
   the socket part (`state-pins.yaml`): value `info`, object `active`, boolean

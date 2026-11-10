@@ -324,7 +324,7 @@
   "src/components/sherpa-node-frame/sherpa-node-frame.css": 92,
   "src/components/sherpa-node-lane/sherpa-node-lane.css": 59,
   "src/components/sherpa-node-list/sherpa-node-list.css": 130,
-  "src/components/sherpa-node-row/sherpa-node-row.css": 292,
+  "src/components/sherpa-node-row/sherpa-node-row.css": 293,
   "src/components/sherpa-node-stage/sherpa-node-stage.css": 106,
   "src/components/sherpa-node-toolbar/sherpa-node-toolbar.css": 36,
   "src/components/sherpa-node/sherpa-node-routes.css": 45,
