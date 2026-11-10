@@ -921,7 +921,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — float-box, sherpa-float
 - [T-a-property-set-before-upgrade-shadows-its-accessor](traps/element-and-sheets.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — filter-host-controller
-- [T-a-redraw-keeps-what-it-can](traps/element-and-sheets.md#t-a-redraw-keeps-what-it-can) — keep-order, node-graph, node-stages-ui, sherpa-element
+- [T-a-redraw-keeps-what-it-can](traps/element-and-sheets.md#t-a-redraw-keeps-what-it-can) — keep-order, node-graph, node-lanes-ui, node-stages-ui, sherpa-element
 - [T-a-row-says-its-own-fault](traps/data-layer.md#t-a-row-says-its-own-fault) — node-graph
 - [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — filter-host-controller, shared-constants
 - [T-a-scroll-shadow-is-drawn-over-the-content](traps/element-and-sheets.md#t-a-scroll-shadow-is-drawn-over-the-content) — sherpa-base

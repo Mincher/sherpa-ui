@@ -69,8 +69,10 @@ export function queryDocument(source: QuerySource, { definition, session, markup
   const derived = (): DrawnGraph => queryGraph(query.draft, definition, {
     ...facts, type: typeOf, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null, kept,
   });
-  // The graph `read` last gave: a reconcile reads its nodes' rows and refs.
-  let drawn = laidOut(derived(), layout);
+  // The graph `read` last gave, and the definition made from it: a reconcile reads its nodes' rows and refs, and a draw of
+  // that definition is that graph. The Query has not moved since: each change is read again first.
+  let drawn: DrawnGraph | null = null;
+  let lastRead: ReturnType<typeof queryDefinition> | null = null;
   // The page's Preset Filters, as its Query declares them: placed as Custom Nodes. TODO 776
   const scopesOf = (): string[] => [...new Set([VIEW, ...Object.keys(definition.source?.scopes ?? {}), ...Object.keys(query.draft.scopes)])];
   const customs = (): Record<string, NodeKind> => Object.fromEntries(scopesOf().flatMap((scope) => query.presets(scope)
@@ -87,15 +89,16 @@ export function queryDocument(source: QuerySource, { definition, session, markup
     },
     read() {
       drawn = laidOut(derived(), layout);
-      return queryDefinition(definition.id, drawn, layout);
+      return (lastRead = queryDefinition(definition.id, drawn, layout));
     },
     graph(def) {
-      const g = laidOut(derived(), layoutOf(def));
+      const g = def === lastRead && drawn ? drawn : laidOut(derived(), layoutOf(def));
       return { ...g, ...(def.ties ? { ties: def.ties } : {}), ...(def.frames ? { frames: def.frames } : {}) };
     },
     write(next) {
-      const before = queryDefinition(definition.id, drawn, layout);
-      const done = reconcileQuery(before, next, drawn, {
+      const was = drawn ?? laidOut(derived(), layout);
+      const before = lastRead && drawn ? lastRead : queryDefinition(definition.id, was, layout);
+      const done = reconcileQuery(before, next, was, {
         type: typeOf, values, kept,
         // A Preset Filter is placed in the scope that declares it. TODO 776
         scopeOf: (kind) => scopesOf().find((scope) => query.presets(scope).some((p) => p.id === kind)),
@@ -111,9 +114,9 @@ export function queryDocument(source: QuerySource, { definition, session, markup
       session?.set(layoutAt, layout);
       quiet++;
       try {
-        // Each row against the Query as the last one left it: a type changed first may reshape the rest.
-        for (const row of done.edits) {
-          const asked = rowRequest(derived(), row, { type: typeOf, kept });
+        // Each row against the Query as the last one left it: a type changed first may reshape the rest. The first, as read.
+        for (const [i, row] of done.edits.entries()) {
+          const asked = rowRequest(i || done.kept ? derived() : was, row, { type: typeOf, kept });
           if (asked && 'kept' in asked) keep(asked.kept);
           else if (asked) query.ask(asked.request);
         }
@@ -167,11 +170,12 @@ export function queryDocument(source: QuerySource, { definition, session, markup
  *  through the one door a chip asks through. TRAP T-one-command-one-door */
 export function bindQueryEditor(canvas: SherpaLayoutCanvas, source: QuerySource, options: QueryEditorOptions): WorkflowEditor {
   const doc = queryDocument(source, options);
-  const { inspector, toolbar, panel, session, stageDialog, header } = options;
+  const { inspector, toolbar, panel, stageDialog, header } = options;
+  // Its kinds and its session are the document's: the editor reads them there.
   return bindWorkflow(canvas, doc.read(), {
-    document: doc, kinds: doc.kinds,
+    document: doc,
     ...(inspector ? { inspector } : {}), ...(toolbar ? { toolbar } : {}), ...(panel ? { panel } : {}),
-    ...(session ? { session } : {}), ...(stageDialog ? { stageDialog } : {}), ...(header ? { header } : {}),
+    ...(stageDialog ? { stageDialog } : {}), ...(header ? { header } : {}),
   });
 }
 

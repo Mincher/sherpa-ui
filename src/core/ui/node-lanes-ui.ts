@@ -8,6 +8,7 @@
 import type { NodeKind } from '../data/node-kinds.js';
 import { laneBands } from '../data/node-lanes.js';
 import type { WorkflowDefinition } from '../data/workflow.js';
+import { keepOrder } from './keep-order.js';
 
 const drawnOn = new WeakMap<HTMLElement, Map<string, HTMLElement>>();
 
@@ -31,7 +32,6 @@ export function drawLanes(
       el.slot = 'rows';
       drawn.set(band.id, el);
     }
-    canvas.append(el);
     el.setAttribute('data-heading', band.label);
     el.setAttribute('data-type', band.junction ? 'junction' : 'lane');
     const colour = colours.get(band.id);
@@ -40,4 +40,6 @@ export function drawLanes(
     el.setAttribute('data-y', String(band.top));
     el.setAttribute('data-h', String(band.bottom - band.top));
   }
+  // In order, top to bottom: only one out of place moves (a drag draws them each move). TRAP T-a-redraw-keeps-what-it-can
+  keepOrder(canvas, bands.map((band) => drawn.get(band.id)!));
 }

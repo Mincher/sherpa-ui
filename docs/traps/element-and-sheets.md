@@ -2211,5 +2211,6 @@ Ask the trace before guessing: `LayoutInvalidationTracking` and `StyleRecalcInva
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `src/core/ui/node-stages-ui.ts`
+- Site: `src/core/ui/node-lanes-ui.ts`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `src/components/sherpa-input-text/input-tags.ts`

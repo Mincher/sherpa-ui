@@ -107,3 +107,11 @@ test('a new node is placed through the Query: a Field holds the scope\'s next fi
   assert.deepEqual(q.scope('view'), ['seats', 'plan'], 'the scope holds its next field, Plan');
   assert.ok(!read().nodes.some((n) => n.id === 'field-1'), 'the editor\'s own id is never the Query\'s');
 });
+
+test('a row cleared on the Arrange node asks for none, never the word "undefined"', async () => {
+  const { read, write, q } = await opened();
+  q.ask({ scope: 'view', search: 'Pr' });
+  write(editWorkflow(read(), { node: 'arrange-view', row: 'search', value: '' }, NODE_KINDS));
+  assert.equal(q.draft.scopes.view.search ?? '', '');
+  assert.ok(!read().nodes.some((n) => n.id === 'arrange-view'), 'nothing is arranged now');
+});

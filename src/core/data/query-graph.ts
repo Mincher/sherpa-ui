@@ -672,7 +672,8 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
     return { scope, field, reading: treeReading(next, type as FieldType | undefined) };
   }
   if (node.kind === 'arrange') {
-    const pick = (name: string): string => String(row.name === name ? value : was[name] ?? '');
+    // A row cleared has no value: it asks for none, never the word "undefined".
+    const pick = (name: string): string => String((row.name === name ? value : was[name]) ?? '');
     if (row.name === 'group') return { scope, group: pick('group') || null };
     if (row.name === 'search') return { scope, search: pick('search') };
     return { scope, sort: pick('sort') || null, direction: pick('direction') === 'desc' ? 'desc' : 'asc' };

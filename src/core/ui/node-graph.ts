@@ -12,7 +12,6 @@
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
- * - relayRoutes — Draw the lines again, from where the sockets are drawn now: nodes moved by hand, not by a draw.
  * - tieSpot — Where routes would be tied with no pointer: the middle of the way each takes, on the plane.
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
@@ -67,7 +66,7 @@ import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/s
 import { primaryKey } from './modifier-key.js';
 import { keepOrder, morph } from './keep-order.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
-import { dotsThrough, handlesOf, pathThrough, piece, waypointsOf, type Pt } from './route-path.js';
+import { dotsThrough, handlesOf, pathThrough, waypointsOf, type Pt } from './route-path.js';
 import { clampedVia } from '../data/route-bends.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
@@ -516,14 +515,7 @@ function stackPlaces(el: HTMLElement, collapsed: boolean): void {
 
 /** A socket's middle, on the canvas's plane. */
 function onPlane(canvas: SherpaLayoutCanvas, rect: DOMRect): [number, number] {
-  const box = canvas.getBoundingClientRect();
-  const { x, y, zoom } = canvas.view;
-  return [(rect.left + rect.width / 2 - box.left - x) / zoom, (rect.top + rect.height / 2 - box.top - y) / zoom];
-}
-
-/** A route's curve on the plane: out of one socket, into the next. */
-function curve(from: Pt, to: Pt): string {
-  return `M ${from[0]} ${from[1]} ${piece(from, to)}`;
+  return planeOf(canvas, { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 });
 }
 
 /** A tie's place as drawn: its x kept within the limit of its routes' nodes. Drawing never writes. */
@@ -602,13 +594,13 @@ function placeFrames(drawn: Drawn): void {
   }
 }
 
-/** A curve for each route, from its output socket to its input socket; the frames round their nodes first. */
 /** Draw the lines again, from where the sockets are drawn now: nodes moved by hand, not by a draw. */
-export function relayRoutes(canvas: SherpaLayoutCanvas): void {
+function relayRoutes(canvas: SherpaLayoutCanvas): void {
   const drawn = drawnOn.get(canvas);
   if (drawn) drawRoutes(canvas, drawn);
 }
 
+/** A curve for each route, from its output socket to its input socket; the frames round their nodes first. */
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   placeFrames(drawn);
   const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
@@ -754,18 +746,13 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   drawn.lines.append(draft);
   if (lifting) drawRoutes(canvas, drawn);
   const begin = onPlane(canvas, start);
-  const plane = (e: PointerEvent): [number, number] => {
-    const box = canvas.getBoundingClientRect();
-    const { x, y, zoom } = canvas.view;
-    return [(e.clientX - box.left - x) / zoom, (e.clientY - box.top - y) / zoom];
-  };
   const follow = (e: PointerEvent): void => {
-    draft.setAttribute('d', out || lifting ? curve(begin, plane(e)) : curve(plane(e), begin));
+    draft.setAttribute('d', out || lifting ? pathThrough([begin, planeOf(canvas, e)]) : pathThrough([planeOf(canvas, e), begin]));
   };
   // "Add a node" for a line let go on the bare canvas: the socket's type, what an output gives (a Field's column), and where.
   const addFrom = (socket: string, side: 'out' | 'in', e: PointerEvent): void => {
     const type = typeAt(drawn, socket, side === 'out' ? 'output' : 'input');
-    const [x, y] = plane(e);
+    const [x, y] = planeOf(canvas, e);
     const { node, row } = socketOf(socket);
     const gives = side === 'out' ? drawn.graph.nodes.find((n) => n.id === node)?.rows.find((r) => r.name === row)?.gives : undefined;
     if (type) drawn.options.onAdd?.({ socket, type, side, ...(gives ? { gives } : {}), client: { x: e.clientX, y: e.clientY }, at: { x: Math.round(x), y: Math.round(y) } });
@@ -795,7 +782,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
       const source = socketNear(drawn, 'output', e.clientX, e.clientY);
       if (source && socketOf(source).node !== socketOf(own).node) drawn.options.onConnect?.({ from: source, to: own });
       else if (bare) {
-        const [x, y] = plane(e);
+        const [x, y] = planeOf(canvas, e);
         if (takesCustom(drawn, own)) drawn.options.onCustom?.(own, { x, y });
         else addFrom(own, 'in', e);
       }
@@ -2375,6 +2362,8 @@ export function bindWorkflow(
   let original: WorkflowDefinition = readWorkflow(structuredClone(workflow), topKinds()).workflow ?? draft;
   /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
   const starting = original;
+  /** It never changes: its JSON, once. */
+  const startingJSON = JSON.stringify(starting);
   /** The view bar of the app header, where its ⋮ holds Reset node graph (TODO 837). */
   const resetBar = (): HTMLElement | null | undefined => header?.querySelector<HTMLElement>('sherpa-quick-filter-toolbar[data-type="view"]');
   const edits = (): Record<string, NodeDefinition> => Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : [])));
@@ -2424,7 +2413,7 @@ export function bindWorkflow(
     toolbar?.toggleAttribute('data-can-redo', journal.canForward);
     canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
     // Reset node graph is off while the graph is as it was when the editor loaded (a preset's never changes).
-    resetBar()?.toggleAttribute('data-graph-unchanged', (draft === starting || JSON.stringify(draft) === JSON.stringify(starting)) && !dirty.size && ownTags === handedTags);
+    resetBar()?.toggleAttribute('data-graph-unchanged', (draft === starting || JSON.stringify(draft) === startingJSON) && !dirty.size && ownTags === handedTags);
   };
   /** Two steps as one: the first's before, the second's after, for every definition either changed. */
   const fold = (last: Change<Snap>, next: Change<Snap>): Change<Snap> => ({
@@ -2435,12 +2424,17 @@ export function bindWorkflow(
   //   Its own state is each step's; a change from outside the editor is a step too.
   /** The document's state as the last step left it; a write of its own is not a change from outside. */
   let docLast: unknown = doc?.snapshot();
+  /** The definition the document last gave: a draft that is not it has edits the document has not heard — a drag's, say,
+   *  which it hears only as the drag ends, from a write that may change nothing more. */
+  let docRead = draft;
   let docWriting = false;
-  const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+  const same = (a: unknown, b: unknown): boolean => a === b || JSON.stringify(a) === JSON.stringify(b);
   let depth = 0;
   let begun: { draft: WorkflowDefinition; nodes: NodeLibrary['nodes']; tags: readonly string[] } | undefined;
   let lastTag = '';
   let lastAt = 0;
+  /** A document's edit draws once, as it ends: a write inside it only says so. */
+  let drawSoon = false;
   /** One edit, however many writes it makes: ONE step. The same `tag` within a second (a drag, a typed word) is one too. */
   const edit = (fn: () => void, tag = ''): void => {
     if (depth++ === 0) begun = { draft, nodes: lib.nodes, tags: ownTags };
@@ -2451,16 +2445,21 @@ export function bindWorkflow(
         const was = begun!.nodes;
         const ids = [...new Set([...Object.keys(was), ...Object.keys(lib.nodes)])].filter((id) => was[id] !== lib.nodes[id]);
         const docBefore = docLast;
-        if (doc && draft !== begun!.draft && !dragging) {
+        if (doc && draft !== docRead && !dragging) {
           docWriting = true;
           try {
             doc.write(draft);
           } finally {
             docWriting = false;
           }
-          draft = doc.read();
+          draft = docRead = doc.read();
           docLast = doc.snapshot();
           // What it kept is drawn: its ids, its new nodes, its refusals undone.
+          drawSoon = true;
+        }
+        // ONE draw for the edit, of what the document kept: each write's own draw of the editor's draft was thrown away.
+        if (drawSoon) {
+          drawSoon = false;
           draw();
         }
         const moved = doc ? !same(docBefore, docLast) : begun!.draft !== draft || begun!.tags !== ownTags || ids.length > 0;
@@ -2482,7 +2481,7 @@ export function bindWorkflow(
     if (doc) {
       // The document puts its own state back; the editor reads it once it has.
       const settled = (): void => {
-        draft = doc.read();
+        draft = docRead = doc.read();
         docLast = doc.snapshot();
         draw();
         tell();
@@ -2603,7 +2602,8 @@ export function bindWorkflow(
     } else if (!path.length) {
       // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
       draft = settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K());
-      session?.set(pointer, draft);
+      // Kept for the tab as the drag ends, not each pointer move: each is the whole workflow as JSON.
+      if (!dragging) session?.set(pointer, draft);
     } else if (readOnly()) {
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
     } else {
@@ -2612,6 +2612,7 @@ export function bindWorkflow(
     }
     // Mid-drag, only what moves is drawn: a whole draw a pointer move cost 220ms on 45 nodes (2026-11-10). The drag's end draws all.
     if (dragging) drawMoves();
+    else if (doc) drawSoon = true;
     else draw();
   }, tag);
   /** Mid-drag: each node where the draft says (a stage that grew pushes others), the lines, the stages and lanes. */
@@ -2841,9 +2842,8 @@ export function bindWorkflow(
     picks.peek(node, graph);
   };
   const planeAt = (clientX: number, clientY: number): { x: number; y: number } => {
-    const box = canvas.getBoundingClientRect();
-    const { x, y, zoom } = canvas.view;
-    return { x: (clientX - box.left - x) / zoom, y: (clientY - box.top - y) / zoom };
+    const [x, y] = planeOf(canvas, { clientX, clientY });
+    return { x, y };
   };
   const onAdded = (event: Event): void => {
     const { kind, type, point, context } = (event as CustomEvent<{ kind: string; type?: string; point?: { x: number; y: number }; context?: AddContext }>).detail;
@@ -3648,7 +3648,7 @@ export function bindWorkflow(
   const unwatchDoc = doc?.watch(() => {
     if (docWriting) return;
     const before: Snap = { draft, defs: {}, tags: ownTags, doc: docLast };
-    draft = doc.read();
+    draft = docRead = doc.read();
     const now = doc.snapshot();
     if (!same(now, docLast)) journal.push({ before, after: { draft, defs: {}, tags: ownTags, doc: now } });
     docLast = now;
