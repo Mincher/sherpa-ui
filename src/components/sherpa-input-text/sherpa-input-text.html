@@ -9,6 +9,8 @@
                      with Sherpa's own up and down steppers — Figma "Input Number" (937:39395)
                      "find" for a search that steps through what a host found:
                      Previous and Next, and Enter / Shift+Enter
+                     "color" for a colour: the platform's own picker, its swatch the field's width;
+                     `value` is the colour as #rrggbb
                      "tags" for several words in one field: `value` is the comma string
                      ("a,b,c"), `.tags` the array. Enter, a comma or leaving the field makes
                      the typed word a tag; a tag the row has no room for waits behind a "+N".
@@ -111,6 +113,19 @@
     <span class="message" part="message" data-text="data-error"></span>
   </label>
   <template class="option-tpl"><option></option></template>
+</template>
+
+<!-- A COLOUR is the same field over `<input type="color">`: the platform's own picker,
+     its swatch filling the row. Will, 2026-11-10 -->
+<template id="color">
+  <label class="field" part="field">
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
+    <span class="control-row sherpa-border-edges" part="control-row">
+      <input class="control" part="control" type="color" />
+    </span>
+    <span class="message" part="message" data-text="data-error"></span>
+  </label>
 </template>
 
 <!-- A NUMBER is the same field over `<input type="number">`: the platform's own

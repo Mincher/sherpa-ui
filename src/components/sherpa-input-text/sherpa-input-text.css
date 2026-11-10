@@ -147,6 +147,22 @@
 .control::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
 .control:focus-visible { outline: none; }
 
+/* ── COLOUR ── the platform's picker, its swatch the row's width, inset as text is. */
+:host([data-type="color"]) .control {
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  padding: 0;
+  cursor: pointer;
+}
+:host([data-type="color"]) .control::-webkit-color-swatch-wrapper { padding: 0; }
+:host([data-type="color"]) .control::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+:host([data-type="color"]) .control::-moz-color-swatch {
+  border: none;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
 /* ── NUMBER ── right-aligned, and Sherpa's own steppers in place of the
    native spinner. Figma "Input Number" (937:39395).
    TRAP T-a-number-input-wears-sherpas-steppers */

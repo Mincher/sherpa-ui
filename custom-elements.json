@@ -4433,9 +4433,9 @@
             },
             {
               "name": "data-type",
-              "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked",
+              "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"color\" for a colour: the platform's own picker, its swatch the field's width; `value` is the colour as #rrggbb \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked",
               "type": {
-                "text": "'minimal' | 'select' | 'number' | 'find' | 'tags'"
+                "text": "'minimal' | 'select' | 'number' | 'find' | 'tags' | 'color'"
               }
             },
             {
@@ -4808,6 +4808,13 @@
           "description": "an infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. Will, TODO 25. TRAP T-a-canvas-owns-its-view",
           "attributes": [
             {
+              "name": "data-editing",
+              "description": "an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the minimap and the controls stay",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-max-zoom",
               "description": "the largest zoom",
               "type": {
@@ -4980,12 +4987,20 @@
               "description": "notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) (accepts: content)"
             },
             {
+              "name": "columns",
+              "description": "a strip of COLUMNS over the view, from its top: each stands at its `--x` across the plane, `--width` wide (plane px, as `--x` and `--y` are); it pans and zooms across, never down. (accepts: item)"
+            },
+            {
               "name": "",
               "description": "the content, placed on the canvas at its `--x` and `--y` (px) (accepts: content)"
             },
             {
               "name": "toolbar",
               "description": "tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar) (accepts: toolbar)"
+            },
+            {
+              "name": "footer",
+              "description": "the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel) (accepts: footer)"
             }
           ],
           "cssParts": [
@@ -4993,7 +5008,13 @@
               "name": "banner"
             },
             {
+              "name": "columns"
+            },
+            {
               "name": "controls"
+            },
+            {
+              "name": "footer"
             },
             {
               "name": "inset"
@@ -7690,6 +7711,177 @@
           "declaration": {
             "name": "SherpaNodeRow",
             "module": "dist/components/sherpa-node-row/sherpa-node-row.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "dist/components/sherpa-node-stage/sherpa-node-stage.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaNodeStage",
+          "tagName": "sherpa-node-stage",
+          "customElement": true,
+          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage also shows Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
+          "attributes": [
+            {
+              "name": "data-colour",
+              "description": "a CSS colour its bar and band wear; none, the default look",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-description",
+              "description": "its line: its bar's tip, under the name",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-editing",
+              "description": "arranging the stages: the bar is a handle, and More, Add stage and Arrange stages hide. The HOST writes it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-heading",
+              "description": "its name, on its bar (default Stage)",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Stage\""
+            },
+            {
+              "name": "data-last",
+              "description": "the last stage: Add stage and Arrange stages show after its bar",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-locked",
+              "description": "the host is read only: no More, no Add stage",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-removable",
+              "description": "More offers Remove: it is not the only stage. The HOST writes it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-w",
+              "description": "its width, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"320\""
+            },
+            {
+              "name": "data-x",
+              "description": "its left edge, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            }
+          ],
+          "events": [
+            {
+              "name": "stage-menu-select",
+              "description": "More's Edit or Remove was picked.",
+              "type": {
+                "text": "CustomEvent<{ action: string }>"
+              }
+            },
+            {
+              "name": "stage-add",
+              "description": "Add stage was pressed: its host adds a stage after the last",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "stage-arrange",
+              "description": "Arrange stages was picked: its host starts arranging",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "stage-drag",
+              "description": "Arranging, its bar was dragged.",
+              "type": {
+                "text": "CustomEvent<{ dx: number; phase: 'cancel' | 'end' | 'move' }>"
+              }
+            },
+            {
+              "name": "stage-step",
+              "description": "Arranging, an arrow key on its bar.",
+              "type": {
+                "text": "CustomEvent<{ by: number }>"
+              }
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "add"
+            },
+            {
+              "name": "band"
+            },
+            {
+              "name": "bar"
+            },
+            {
+              "name": "column"
+            },
+            {
+              "name": "end"
+            },
+            {
+              "name": "grip"
+            },
+            {
+              "name": "heading"
+            },
+            {
+              "name": "more"
+            },
+            {
+              "name": "stages"
+            },
+            {
+              "name": "swatch"
+            },
+            {
+              "name": "tip"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaNodeStage",
+          "declaration": {
+            "name": "SherpaNodeStage",
+            "module": "dist/components/sherpa-node-stage/sherpa-node-stage.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-node-stage",
+          "declaration": {
+            "name": "SherpaNodeStage",
+            "module": "dist/components/sherpa-node-stage/sherpa-node-stage.js"
           }
         }
       ]

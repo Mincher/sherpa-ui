@@ -1,0 +1,113 @@
+/**
+ * sherpa-node-stage.css — a stage's column: its bar along the canvas's top, its band down the view, faint in its colour.
+ * The canvas places it by `--x` and sizes it by `--width`, which its host's data-x and data-w write.
+ */
+
+:host {
+  display: block;
+  block-size: 100%;
+  /* Only the bar, and what follows the last, take the pointer: a drag on the band pans or boxes. */
+  pointer-events: none;
+  /* Its colour: the host's, else the default look. */
+  --_colour: var(--sherpa-style-border-base, #b3b3c3);
+  /* The canvas's strip head: the bar is its height. */
+  --_head: var(--_columns-head, var(--sherpa-display-mode-size-3xl, 40px));
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+}
+
+/* ── The bar ──────────────────────────────────────────────────────────── */
+/* The bar rises over the canvas's content; the band stays behind it, so the nodes keep their own colours. */
+.bar {
+  --_anchor: --sherpa-stage-bar;
+  position: relative;
+  z-index: var(--sherpa-layer-content, 1);
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  box-sizing: border-box;
+  block-size: var(--_head);
+  padding-inline: var(--sherpa-theme-padding-lg, 16px) var(--sherpa-theme-padding-sm, 4px);
+  pointer-events: auto;
+  background: color-mix(in srgb, var(--_colour) 12%, var(--sherpa-style-surface-base, #ffffff));
+  border-block-end: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--_colour);
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+}
+.bar:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+.tip { --_anchor: --sherpa-stage-bar; }
+/* The tip says its line: with none, it has nothing the bar does not. */
+:host(:not([data-description])) .tip { display: none; }
+.tip-name { font-weight: var(--sherpa-font-weight-medium, 500); }
+
+.swatch {
+  flex: none;
+  inline-size: var(--sherpa-display-mode-size-2xs, 8px);
+  block-size: var(--sherpa-display-mode-size-2xs, 8px);
+  border-radius: 50%;
+  background: var(--_colour);
+}
+.heading {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+/* More shows on a hover, or a focus in the bar, and while its menu is open: the open menu inherits its visibility, so a
+   hidden More would hide the menu the pointer moves onto. Never while arranging, nor read only. */
+.more { visibility: hidden; }
+.bar:hover .more,
+.bar:focus-within .more,
+.more:has(> sherpa-menu[open]) { visibility: visible; }
+:host([data-editing]) .more,
+:host([data-locked]) .more { display: none; }
+/* The only stage cannot go: no Remove. */
+:host(:not([data-removable])) .remove { display: none; }
+
+/* Arranging: the bar is the handle. */
+.grip { display: none; }
+:host([data-editing]) .grip { display: inline-flex; }
+:host([data-editing]) .bar { cursor: grab; }
+:host(:state(dragging)) .bar { cursor: grabbing; }
+:host(:state(dragging)) .column {
+  box-shadow:
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-sm, 16px)
+    -4px
+    var(--sherpa-style-surface-shadow, #15151e80);
+}
+
+/* ── The band ─────────────────────────────────────────────────────────── */
+.band {
+  flex: 1 1 auto;
+  background: color-mix(in srgb, var(--_colour) 5%, transparent);
+  border-inline: var(--sherpa-display-mode-border-width-base, 1px) dashed color-mix(in srgb, var(--_colour) 40%, transparent);
+}
+
+/* ── After the last: Add stage and Arrange stages ─────────────────────── */
+.end {
+  position: absolute;
+  inset-block-start: calc((var(--_head) - var(--sherpa-display-mode-size-xl, 28px)) / 2);
+  inset-inline-start: calc(100% + var(--sherpa-theme-gap-md, 8px));
+  z-index: var(--sherpa-layer-content, 1);
+  display: none;
+  pointer-events: auto;
+}
+:host([data-last]:not([data-editing], [data-locked])) .end { display: inline-flex; }
+
+@media (forced-colors: active) {
+  .bar { border-block-end-color: CanvasText; }
+  .swatch { forced-color-adjust: none; background: CanvasText; }
+  .band { border-inline-color: CanvasText; }
+}

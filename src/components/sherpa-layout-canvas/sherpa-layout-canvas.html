@@ -9,6 +9,8 @@
     data-min-zoom    the smallest zoom (default 0.25)
     data-max-zoom    the largest zoom (default 4)
     data-no-minimap  no minimap
+    data-editing     an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the
+                     minimap and the controls stay
     data-select-box  a plain left drag on blank canvas draws a box and reports it (canvas-box)
                      instead of panning; Space + drag, the middle button and the Pan tool still pan
     data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed
@@ -24,6 +26,11 @@
                 with `data-mode="floating"` leaves for panel-float and floats anywhere in the canvas
     toolbar     tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not
                 pan or zoom (a node toolbar)
+    columns     a strip of COLUMNS over the view, from its top: each stands at its `--x` across the plane, `--width` wide (plane
+                px, as `--x` and `--y` are); it pans and zooms across, never down. They draw BEHIND the content; a part with
+                a z-index of its own (a column's head) draws over it. Only a column's own parts take a press (a workflow's
+                stages). Fit keeps content clear of the strip's head
+    footer      the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel)
 
   Fires:
     canvas-change — the view moved: panned or zoomed. detail: { x, y, zoom }
@@ -49,6 +56,8 @@
     <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->
     <div class="viewport" part="viewport" tabindex="0" role="group"
          aria-roledescription="canvas" aria-label="Canvas">
+      <!-- Columns BEHIND the plane: they follow it across, and stay at the top. A column's head may rise over the plane. -->
+      <div class="columns" part="columns"><slot name="columns" data-accepts="item"></slot></div>
       <div class="plane" part="plane"><slot data-accepts="content"></slot></div>
       <div class="marquee" part="marquee" aria-hidden="true"></div>
       <!-- The inside shadow: the header and the nav cast it over the view. -->
@@ -57,6 +66,8 @@
 
     <!-- Tools floating at the bottom centre of the canvas, never over the card, in the controls' style. -->
     <div class="toolbar" part="toolbar"><slot name="toolbar" data-accepts="toolbar"></slot></div>
+    <!-- The edit mode's footer: the whole width of the canvas, along its bottom. -->
+    <div class="footer" part="footer"><slot name="footer" data-accepts="footer"></slot></div>
 
     <!-- What floats beside the card: what the view shows is this box. -->
     <div class="stage" part="stage">

@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
     });
     await window.__settled();
     canvas.zoomTo(0.6);
-    canvas.panTo(60, 40);
+    canvas.panTo(60, 88); // below the stage strip
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
 });
@@ -416,7 +416,7 @@ test('756: in the Query editor a box picks with the panel a tab; a click on a no
     bindQueryEditor(q as never, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } }, inspector: document.getElementById('inspector') as never, toolbar: q.querySelector('sherpa-node-toolbar') as never });
     await window.__settled();
     q.zoomTo(0.6);
-    q.panTo(40, 40);
+    q.panTo(40, 88); // below the stage strip
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
   const first = await page.evaluate(() => document.querySelector('#cv > sherpa-node')!.getAttribute('data-heading')!);

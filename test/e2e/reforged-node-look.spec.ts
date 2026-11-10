@@ -196,7 +196,7 @@ const BIND = `async () => {
     fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } }, stores: ['users'] });
   await window.__settled();
   canvas.zoomTo(0.8);
-  canvas.panTo(40, 60);
+  canvas.panTo(40, 108); // below the stage strip
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }`;
 
@@ -308,7 +308,7 @@ async function bindCategories(page: Page): Promise<void> {
     await window.__settled();
     // At zoom 1 a border is one whole pixel, so its ink reads true.
     canvas.zoomTo(1);
-    canvas.panTo(20, 20);
+    canvas.panTo(20, 44); // below the stage strip, the second row clear of the toolbar
     canvas.scrollIntoView({ block: 'start' });
     await new Promise((d) => requestAnimationFrame(() => requestAnimationFrame(d)));
   }, CATS);

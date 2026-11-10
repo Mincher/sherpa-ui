@@ -71,6 +71,8 @@ import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
+import { fitStages } from '../data/node-stages.js';
+import { bindStages, type Stages } from './node-stages-ui.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { graphRequest, keptEdit, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
@@ -105,7 +107,7 @@ import {
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
-  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, readWorkflow, tieLimit, workflowFaults, workflowGraph,
+  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -2416,6 +2418,9 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   header?: HTMLElement & { populate(data: { breadcrumb: { label: string }[] }): unknown };
   /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`; a tags input `[name=tags]` if it is to be tagged. Without it Save as Custom Node is not offered. */
   customDialog?: HTMLElement & { show(): void; hide(): void };
+  /** A `sherpa-dialog` that asks a stage's name, line and colour: fields `[name=label]`, `[name=description]` and
+   *  `[name=colour]`, buttons `[data-action=save]` and `[data-action=cancel]`. Without it, a stage's Edit does nothing. */
+  stageDialog?: HTMLElement & { show(): void; hide(): void };
   /** A `sherpa-dialog` (status critical) that confirms the two bulk updates. Without it they are not offered. */
   confirm?: HTMLElement & { confirm(ask: { heading?: string; words?: string; action?: string; critical?: boolean }): Promise<boolean> };
   /** "Update all instances" was confirmed: the app's other workflows are its own to update. */
@@ -2476,7 +2481,7 @@ const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) =>
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
@@ -2638,12 +2643,46 @@ export function bindWorkflow(
       refreshPanel();
     });
   };
+  // — Stages (the top workflow's): a node let go joins the stage it stands in, as the drag ENDS; then the stages fit.
+  // Mid-drag, a stage it grows would push the next away from the pointer. Will, 2026-11-10
+  // Its callbacks are read when a stage is pressed, or the canvas drawn: by then each is set.
+  const stages: Stages = bindStages(canvas, {
+    workflow: () => (path.length ? null : shown()),
+    write: (next) => write(next),
+    redraw: () => draw(),
+    readOnly: () => readOnly(),
+    nodeElement: (id) => drawnOn.get(canvas)?.nodes.get(id),
+    dialog: stageDialog ?? null,
+  });
+  /** A pointer is down on the canvas, and the nodes a drag has moved: written when it lets go. */
+  let pressing = false;
+  let settling = false;
+  const moved = new Set<string>();
+  let movedTag = '';
+  const settle = (): void => {
+    settling = false;
+    const ids = [...moved];
+    moved.clear();
+    if (path.length || readOnly()) return;
+    write(ids.length ? editWorkflow(shown(), { restage: ids }, K()) : shown(), movedTag);
+  };
+  const dragged = (ids: readonly string[], tag: string): void => {
+    for (const id of ids) moved.add(id);
+    movedTag = tag;
+    if (!pressing) settle();
+  };
+  const onPress = (): void => { pressing = true; };
+  const onLetGo = (): void => {
+    pressing = false;
+    if (moved.size) settle();
+  };
   const write = (next: WorkflowDefinition, tag?: string): void => edit(() => {
     if (!path.length && preset) {
       report({ code: 'node-readonly', message: 'bindWorkflow: this workflow is a preset, read only: change a copy of it.', at: { workflow: workflow.id } });
     } else if (!path.length) {
-      draft = next;
-      session?.set(pointer, next);
+      // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
+      draft = settling ? next : fitStages(next, nodeWidth);
+      session?.set(pointer, draft);
     } else if (readOnly()) {
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
     } else {
@@ -2684,7 +2723,10 @@ export function bindWorkflow(
       if (node.id === lifting.head) lifting.by = { dx: x - lifting.at.x, dy: y - lifting.at.y };
       return;
     }
+    if (stages.arranging()) return;
+    settling = pressing;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
+    dragged([node.id], `move:${node.id}`);
   };
   // Picked nodes moved by one drag: ONE step. A tie whose routes all join them goes with them, and so do the
   // bends of a route with both ends among them; the rest stay. TODO 752
@@ -2700,7 +2742,11 @@ export function bindWorkflow(
     const [dx, dy] = [nodes[head.id]!.x - head.x, nodes[head.id]!.y - head.y];
     const inside = (r: NodeRoute): boolean => socketOf(r.from).node in nodes && socketOf(r.to).node in nodes;
     const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.routes.length && t.routes.every(inside)).map((t) => [t.id, { x: t.x + dx, y: t.y + dy }]));
-    write(editWorkflow(shown(), { place: { nodes, ties, bends: { dx, dy } } }, K()), `move:${Object.keys(nodes).sort().join(',')}`);
+    if (stages.arranging()) return;
+    const tag = `move:${Object.keys(nodes).sort().join(',')}`;
+    settling = pressing;
+    write(editWorkflow(shown(), { place: { nodes, ties, bends: { dx, dy } } }, K()), tag);
+    dragged(Object.keys(nodes), tag);
   };
   // Arrange: every place, tie and bend in ONE edit. TODO 752
   const onArrange = (placed: Arranged): void => {
@@ -2841,6 +2887,8 @@ export function bindWorkflow(
         const own = fit.row ? `${id}/${fit.row}` : id;
         join(shown(), context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket });
       }
+      // In the stage it is let go in.
+      if (!path.length) write(editWorkflow(shown(), { restage: [id] }, K()));
     });
     const node = graph.nodes.find((n) => n.id === id);
     if (!node) return;
@@ -3151,7 +3199,7 @@ export function bindWorkflow(
     edit(() => {
       const made = pasteNodes(shown(), have, { ...by, connections }, K());
       ids = made.ids;
-      take(made.workflow);
+      take(path.length ? made.workflow : editWorkflow(made.workflow, { restage: made.ids }, K()));
     });
     ids = ids.filter((id) => shown().nodes.some((n) => n.id === id));
     if (!ids.length) return;
@@ -3586,7 +3634,7 @@ export function bindWorkflow(
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
-    const body = workflowGraph(shown(), facts, K());
+    const body = workflowGraph(stages.preview() ?? shown(), facts, K());
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     drawGraph(canvas, graph, {
       onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, opens: (node) => !!use(node.id),
@@ -3599,9 +3647,10 @@ export function bindWorkflow(
         picks.select(node, graph);
       },
       notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
-      locked: (node) => ro || node.id.startsWith('#'),
+      locked: (node) => ro || node.id.startsWith('#') || !!stages.arranging(),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
     });
+    stages.draw();
     toolbar?.toggleAttribute('data-can-unfurl', !ro && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
     tellPath();
     if (simulation && !simulation.stale && simulation.sig !== dataSig()) {
@@ -3614,6 +3663,9 @@ export function bindWorkflow(
     else if (framePanel && inspector?.open) showFrame(framePanel);
     else picks.follow(graph);
   }
+  canvas.addEventListener('pointerdown', onPress, { capture: true });
+  window.addEventListener('pointerup', onLetGo);
+  window.addEventListener('pointercancel', onLetGo);
   draw();
   // A run lights its nodes: each step names its node, and the run its workflow. N4 reports.
   const unwatch = watchSteps(canvas, { claims: (span) => span.detail?.['graph'] === workflow.id });
@@ -3683,6 +3735,10 @@ export function bindWorkflow(
       unwatch();
       unarrange();
       unview();
+      stages.stop();
+      canvas.removeEventListener('pointerdown', onPress, { capture: true });
+      window.removeEventListener('pointerup', onLetGo);
+      window.removeEventListener('pointercancel', onLetGo);
       for (const task of queue.list()) if (ours(task)) queue.cancel(task.id);
       runningOff();
       unlightNodes();

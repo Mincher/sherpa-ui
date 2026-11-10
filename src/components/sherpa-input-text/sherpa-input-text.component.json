@@ -15,6 +15,7 @@
     "default",
     "multiline",
     "select",
+    "color",
     "number",
     "find",
     "tags",
@@ -315,6 +316,54 @@
           "children": [
             {
               "el": "option"
+            }
+          ]
+        }
+      ],
+      "color": [
+        {
+          "el": "label",
+          "class": "field",
+          "part": "field",
+          "children": [
+            {
+              "el": "span",
+              "class": "label",
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
+            },
+            {
+              "el": "span",
+              "class": "description",
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
+            },
+            {
+              "el": "span",
+              "class": "control-row sherpa-border-edges",
+              "part": "control-row",
+              "children": [
+                {
+                  "el": "input",
+                  "class": "control",
+                  "part": "control",
+                  "attrs": {
+                    "type": "color"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "span",
+              "class": "message",
+              "part": "message",
+              "attrs": {
+                "data-text": "data-error"
+              }
             }
           ]
         }
@@ -1065,9 +1114,10 @@
         "select",
         "number",
         "find",
-        "tags"
+        "tags",
+        "color"
       ],
-      "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked"
+      "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"color\" for a colour: the platform's own picker, its swatch the field's width; `value` is the colour as #rrggbb \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked"
     },
     {
       "$type": "prop",
@@ -1200,6 +1250,11 @@
     "description": "the choices a SELECT field offers. Or its `<option>` children"
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "color",
+      "selector": ":host([data-type=\"color\"])"
+    },
     {
       "$type": "state",
       "name": "number",

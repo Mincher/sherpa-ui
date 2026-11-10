@@ -8,7 +8,7 @@ A labelled text field. Templates: default (label + description + control + messa
 |---|---|
 | Category | control |
 | Built on | the native `<label>`, which gives click-forwarding |
-| Templates | `default`, `multiline`, `select`, `number`, `find`, `tags`, `minimal` |
+| Templates | `default`, `multiline`, `select`, `color`, `number`, `find`, `tags`, `minimal` |
 | Figma | Input Field (atom) |
 | Source | [.ts](../../src/components/sherpa-input-text/sherpa-input-text.ts) · [.html](../../src/components/sherpa-input-text/sherpa-input-text.html) · [.css](../../src/components/sherpa-input-text/sherpa-input-text.css) · [.component.json](../../src/components/sherpa-input-text/sherpa-input-text.component.json) · [.example.json](../../src/components/sherpa-input-text/sherpa-input-text.example.json) |
 
@@ -60,7 +60,7 @@ For a typed value with a label, help text and an error message. Set `data-type` 
 | `data-replace` | boolean |  | a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous and Next |
 | `data-rules` | text |  | names a validation rule the platform has no idea about (e.g. "email") — see the TS for the rule set |
 | `data-state` | `error` `success` `warning` |  |  |
-| `data-type` | `minimal` `select` `number` `find` `tags` |  | "minimal" for the bare inline field (default is the full molecule); "select" for one of a known set; "number" for a number, right-aligned, with Sherpa's own up and down steppers — Figma "Input Number" (937:39395) "find" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter "tags" for several words in one field: `value` is the comma string ("a,b,c"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a "+N". The menu button, and the +N, open one menu of every value, ticked |
+| `data-type` | `minimal` `select` `number` `find` `tags` `color` |  | "minimal" for the bare inline field (default is the full molecule); "select" for one of a known set; "number" for a number, right-aligned, with Sherpa's own up and down steppers — Figma "Input Number" (937:39395) "find" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter "color" for a colour: the platform's own picker, its swatch the field's width; `value` is the colour as #rrggbb "tags" for several words in one field: `value` is the comma string ("a,b,c"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a "+N". The menu button, and the +N, open one menu of every value, ticked |
 | `autocomplete` | text, native |  | native attributes, reflected to the inner control |
 | `disabled` | boolean, native | `false` | native attributes, reflected to the inner control |
 | `inputmode` | text, native |  | native attributes, reflected to the inner control |

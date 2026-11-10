@@ -114,6 +114,42 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
   box-shadow: 0 0 0 calc(1px / var(--_zoom, 1)) transparent;
 }
 
+/* ── The columns ──────────────────────────────────────────────────────── */
+/* A strip behind the plane, from the view's top: each column at its `--x` across the plane, `--width` wide, scaled as the
+   plane is; never moved down. The layer takes no press, so a drag on it pans or boxes; a column's own parts take theirs.
+   It makes no stacking context of its own (no z-index, no transform): a part with a z-index rises over the plane. */
+.columns {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.columns ::slotted(*) {
+  position: absolute;
+  inset-block-start: 0;
+  left: calc(var(--_x) + var(--x, 0px) * var(--_zoom));
+  /* No `--width`: the declaration is dropped, and the column is as wide as it draws. */
+  inline-size: calc(var(--width) * var(--_zoom));
+}
+/* With columns, what the view shows starts under their head: Fit, the banners and the stage keep clear of it. */
+:host { --_columns-head: var(--sherpa-display-mode-size-3xl, 40px); }
+:host(:state(has-columns)) .stage { margin-block-start: var(--_columns-head); }
+:host(:state(has-columns)) .banner { margin-block-start: calc(var(--_float) + var(--_columns-head)); }
+
+/* ── The edit mode ────────────────────────────────────────────────────── */
+/* The panels and the toolbar hide; the footer shows along the bottom, and what the view shows (the minimap and the
+   controls with it) stops above it. */
+.footer {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: none;
+  z-index: var(--sherpa-layer-content, 1);
+}
+:host([data-editing]) .footer { display: block; }
+:host([data-editing]) .toolbar { display: none; }
+:host([data-editing]) slot[name^="panel"]::slotted(*) { display: none; }
+:host([data-editing]) .stage { margin-block-end: var(--_footer-h, var(--sherpa-display-mode-size-5xl, 56px)); }
+
 /* ── The stage ────────────────────────────────────────────────────────── */
 /* The cell beside the card, over the view: what the view SHOWS, so Fit, a zoom and the
    minimap's frame read it. Its clicks pass to the view but on what floats in it. */

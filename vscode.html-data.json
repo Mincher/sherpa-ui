@@ -1702,7 +1702,7 @@
         },
         {
           "name": "data-type",
-          "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked",
+          "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"color\" for a colour: the platform's own picker, its swatch the field's width; `value` is the colour as #rrggbb \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked",
           "values": [
             {
               "name": "minimal"
@@ -1718,6 +1718,9 @@
             },
             {
               "name": "tags"
+            },
+            {
+              "name": "color"
             }
           ]
         },
@@ -1804,6 +1807,11 @@
       "name": "sherpa-layout-canvas",
       "description": "an infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. Will, TODO 25. TRAP T-a-canvas-owns-its-view",
       "attributes": [
+        {
+          "name": "data-editing",
+          "description": "an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the minimap and the controls stay",
+          "valueSet": "v"
+        },
         {
           "name": "data-max-zoom",
           "description": "the largest zoom"
@@ -2858,6 +2866,52 @@
         {
           "name": "data-socket-value",
           "description": "the row's value in words, a line of each socket's tip; unset, the line hides"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-node-stage",
+      "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. The last stage also shows Add stage, and a More of its own: Arrange stages. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Will, 2026-11-10",
+      "attributes": [
+        {
+          "name": "data-colour",
+          "description": "a CSS colour its bar and band wear; none, the default look"
+        },
+        {
+          "name": "data-description",
+          "description": "its line: its bar's tip, under the name"
+        },
+        {
+          "name": "data-editing",
+          "description": "arranging the stages: the bar is a handle, and More, Add stage and Arrange stages hide. The HOST writes it",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-heading",
+          "description": "its name, on its bar (default Stage)"
+        },
+        {
+          "name": "data-last",
+          "description": "the last stage: Add stage and Arrange stages show after its bar",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-locked",
+          "description": "the host is read only: no More, no Add stage",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-removable",
+          "description": "More offers Remove: it is not the only stage. The HOST writes it",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-w",
+          "description": "its width, in plane px"
+        },
+        {
+          "name": "data-x",
+          "description": "its left edge, in plane px"
         }
       ]
     },

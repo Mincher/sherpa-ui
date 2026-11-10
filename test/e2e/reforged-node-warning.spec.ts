@@ -43,7 +43,7 @@ test.beforeEach(async ({ page }) => {
     w['ed'] = bindWorkflow(canvas as never, flow as never, { session: new SessionStore(), inspector: document.getElementById('inspector') as never, stores: ['users'] });
     await window.__settled();
     canvas.zoomTo(1);
-    canvas.panTo(0, 0);
+    canvas.panTo(0, 48); // below the stage strip
     await window.__settled();
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });

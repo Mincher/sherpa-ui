@@ -2,7 +2,7 @@
 
 # Components
 
-73 components. Each page is written from the component's spec and its example. 73 of 73 say when to use them.
+74 components. Each page is written from the component's spec and its example. 74 of 74 say when to use them.
 
 ## Chart
 
@@ -117,6 +117,7 @@
 | [sherpa-node-frame](sherpa-node-frame.md) | A FRAME on a [sherpa-layout-canvas](sherpa-layout-canvas.md): nodes under one header, with a title, a line and Release. |
 | [sherpa-node-list](sherpa-node-list.md) | The nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes), then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. |
 | [sherpa-node-row](sherpa-node-row.md) | One row of a [sherpa-node](sherpa-node.md): an input socket, a field and an output socket. |
+| [sherpa-node-stage](sherpa-node-stage.md) | One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. |
 | [sherpa-node-toolbar](sherpa-node-toolbar.md) | A graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes, Unfurl graph, Fetch, Play, Pause, Stop and Frame nodes, then the view's Collapse all and Hide unconnected. |
 | [sherpa-outlet](sherpa-outlet.md) | Where the route's Context is drawn. |
 | [sherpa-provider](sherpa-provider.md) | The data layer, over a SUBTREE of the page. |

@@ -65,6 +65,19 @@
           "children": [
             {
               "el": "div",
+              "class": "columns",
+              "part": "columns",
+              "children": [
+                {
+                  "slot": "columns",
+                  "attrs": {
+                    "data-accepts": "item"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "div",
               "class": "plane",
               "part": "plane",
               "children": [
@@ -103,6 +116,19 @@
               "slot": "toolbar",
               "attrs": {
                 "data-accepts": "toolbar"
+              }
+            }
+          ]
+        },
+        {
+          "el": "div",
+          "class": "footer",
+          "part": "footer",
+          "children": [
+            {
+              "slot": "footer",
+              "attrs": {
+                "data-accepts": "footer"
               }
             }
           ]
@@ -235,6 +261,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-editing",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the minimap and the controls stay"
+    },
+    {
+      "$type": "prop",
       "name": "data-max-zoom",
       "type": "number",
       "observed": false,
@@ -330,6 +365,14 @@
     },
     {
       "$type": "slot",
+      "name": "columns",
+      "accepts": [
+        "item"
+      ],
+      "description": "a strip of COLUMNS over the view, from its top: each stands at its `--x` across the plane, `--width` wide (plane px, as `--x` and `--y` are); it pans and zooms across, never down."
+    },
+    {
+      "$type": "slot",
       "name": "",
       "accepts": [
         "content"
@@ -343,13 +386,26 @@
         "toolbar"
       ],
       "description": "tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar)"
+    },
+    {
+      "$type": "slot",
+      "name": "footer",
+      "accepts": [
+        "footer"
+      ],
+      "description": "the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel)"
     }
   ],
   "populate": {
-    "shape": "{ maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }",
+    "shape": "{ editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "editing",
+      "selector": ":host([data-editing])"
+    },
     {
       "$type": "state",
       "name": "select-box",
@@ -432,6 +488,7 @@
     "banner.margin-inline": "{sherpa.display-mode-size-2xl}",
     "banner.z-index": "{sherpa.layer-content}",
     "banner.gap": "{sherpa.display-mode-space-xs}",
+    "footer.z-index": "{sherpa.layer-content}",
     "inset.box-shadow": "{sherpa.style-surface-shadow}",
     "marquee.border-width": "{sherpa.display-mode-border-width-base}",
     "marquee.border-color": "{sherpa.style-active-border-base-1}",

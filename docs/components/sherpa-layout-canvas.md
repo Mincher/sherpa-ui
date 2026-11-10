@@ -23,6 +23,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-editing` | boolean |  | an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the minimap and the controls stay |
 | `data-max-zoom` | number | `4` | the largest zoom |
 | `data-min-zoom` | number | `0.25` | the smallest zoom |
 | `data-no-minimap` | boolean |  | no minimap |
@@ -65,14 +66,16 @@ Each one bubbles.
 | `panel-end` | panel |  |
 | `panel-float` | panel | the floating cards, off their areas: they float in the canvas |
 | `banner` | content | notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
+| `columns` | item | a strip of COLUMNS over the view, from its top: each stands at its `--x` across the plane, `--width` wide (plane px, as `--x` and `--y` are); it pans and zooms across, never down. |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
 | `toolbar` | toolbar | tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar) |
+| `footer` | footer | the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel) |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`banner`, `controls`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `stage`, `toolbar`, `viewport`
+`banner`, `columns`, `controls`, `footer`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `stage`, `toolbar`, `viewport`
 
 ## CSS custom properties it reads
 
@@ -83,6 +86,7 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-2xl` | `.banner` | `margin-inline` |
 | `--sherpa-layer-content` | `.banner` | `z-index` |
 | `--sherpa-display-mode-space-xs` | `.banner` | `gap` |
+| `--sherpa-layer-content` | `.footer` | `z-index` |
 | `--sherpa-style-surface-shadow` | `.inset` | `box-shadow` |
 | `--sherpa-display-mode-border-width-base` | `.marquee` | `border-width` |
 | `--sherpa-style-active-border-base-1` | `.marquee` | `border-color` |
@@ -99,6 +103,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }`
+`{ editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

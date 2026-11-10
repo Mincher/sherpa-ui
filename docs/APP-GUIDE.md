@@ -486,6 +486,31 @@ inside it the Group Input's and Output's, edit its definition's tags
 being edited is a draft in its tab until it is saved, as a workflow is.
 `T-a-node-panel-lists-under-sticky-headings`
 
+### Stages
+
+A workflow's canvas has STAGES: columns across the top, left to right. A graph has
+one at least, Stage 1, round every node; the workflow keeps them in `stages`, and a
+node names its own in `stage`. A node let go in a stage joins it, and a stage grows
+to hold its nodes. Add stage, Edit, Remove and Arrange stages are on the stage bars.
+Give `bindWorkflow` a `stageDialog` for Edit, one field to a row:
+
+```html
+<sherpa-dialog id="stage" data-heading="Edit stage">
+  <sherpa-stack data-gap="md">
+    <sherpa-input-text name="label" data-label="Name" required></sherpa-input-text>
+    <sherpa-input-text name="description" data-label="Description" data-multiline></sherpa-input-text>
+    <sherpa-input-text name="colour" data-label="Colour" data-type="color"></sherpa-input-text>
+  </sherpa-stack>
+  <sherpa-container-footer slot="footer">
+    <sherpa-button data-action="cancel">Cancel</sherpa-button>
+    <sherpa-button data-action="save" data-look="saturated">Save</sherpa-button>
+  </sherpa-container-footer>
+</sherpa-dialog>
+```
+
+Arrange stages puts the canvas in its edit mode (`data-editing`): the panels and the
+toolbar hide, and a footer offers Cancel and Save.
+
 ### Entities
 
 An entity is a graph saved under a TYPE, an id and a name (`entity.v1`): `{ v, type,

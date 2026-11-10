@@ -65,7 +65,7 @@ export class SherpaInputText extends SherpaElement {
     /* Written BY the field: there is something to clear. */
     /* Which control the field draws. `select` is one of a known set — the
        platform's own element, not a re-implemented listbox. */
-    'data-type': { type: 'enum', kind: 'template', values: ['minimal', 'select', 'number', 'find', 'tags'] },
+    'data-type': { type: 'enum', kind: 'template', values: ['minimal', 'select', 'number', 'find', 'tags', 'color'] },
     'data-multiline': { type: 'boolean', kind: 'template' },
     /* A Find offers Find & Replace. TRAP T-a-find-asks-its-host-to-step */
     'data-replace': { type: 'boolean', kind: 'style' },
@@ -160,6 +160,7 @@ export class SherpaInputText extends SherpaElement {
     if (type === 'minimal') return 'minimal';
     if (type === 'select') return 'select';
     if (type === 'number') return 'number';
+    if (type === 'color') return 'color';
     if (type === 'find') return 'find';
     if (type === 'tags') return 'tags';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
@@ -554,6 +555,8 @@ export class SherpaInputText extends SherpaElement {
       if (!this.hasAttribute('inputmode')) c.setAttribute('inputmode', 'decimal');
       if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', this.word('placeholder'));
     }
+    // A colour keeps its type: the mirror would take it away.
+    if (this.dataset['type'] === 'color') c.setAttribute('type', 'color');
     // A Find says what it is for; its type is the template's.
     if (this.dataset['type'] === 'find') {
       c.setAttribute('type', 'text');

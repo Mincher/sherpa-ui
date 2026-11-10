@@ -53,7 +53,7 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
     });
     await window.__settled();
     canvas.zoomTo(0.4);
-    canvas.panTo(20, 20);
+    canvas.panTo(20, 68); // below the stage strip
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   }, [ROWS, options.limit ?? null, options.delay ?? 5, options.collect ?? true, options.known ?? true, options.big ?? 0, options.calc ?? false] as const);
 }
