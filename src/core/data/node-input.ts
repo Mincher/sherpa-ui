@@ -66,11 +66,11 @@ export interface InputNeeds {
 /** What an input needs, by its kind's own description — a row's, or a header's: its `needs`; a number or a date by
  *  its control; one of a fixed list; a list where it picks several; a comparison's Value by its field's
  *  `type`; else its socket's type (TODO 770). None: an `any` that says nothing takes anything. */
-export function needOf(input: Pick<RowKind, 'needs' | 'control' | 'multiple' | 'input'>, type?: string): Need | undefined {
+export function needOf(input: Pick<RowKind, 'needs' | 'control' | 'multiple' | 'input'> & Partial<Pick<RowKind, 'choices'>>, type?: string): Need | undefined {
   if (input.needs) return input.needs;
   if (input.control === 'number') return 'number';
   if (input.control === 'datetime') return 'date';
-  if (fixedChoices(input.control)) return 'choice';
+  if (!input.multiple && fixedChoices(input)) return 'choice';
   if (input.multiple && input.input === 'object') return type === 'number' ? 'numbers' : 'list';
   if (input.control === 'values' && (type === 'number' || type === 'date')) return type;
   return input.input === 'any' ? undefined : input.input;

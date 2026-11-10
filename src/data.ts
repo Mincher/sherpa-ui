@@ -124,6 +124,7 @@ export {
   ROWS,
   SOCKET_WORDS,
   accepts,
+  addTypes,
   fitOf,
   paletteFor,
   kindIn,

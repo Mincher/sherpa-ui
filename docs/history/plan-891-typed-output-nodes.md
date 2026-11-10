@@ -125,3 +125,9 @@ accessibility, its tests in three engines.
 - Running an Output for real (N4, held).
 - The later types in the notes: Write a record, Value Ledger entry, Webhook, a chat channel (Teams, Slack).
 - "Ask N-zo to write the first draft": the host's.
+
+## Decided — 2026-11-10
+
+Will: "your picks". **D1 A**: a type change keeps the other types' values and routes, drawn as a fault with a warning, as
+every family does. **D2 A**: a message field is a plain multiline field, with Insert value and the Preview; the WYSIWYG
+Markdown editor is TODO 892, after 891.

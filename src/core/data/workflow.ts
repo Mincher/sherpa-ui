@@ -314,7 +314,7 @@ export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = NODE_KI
       // A value is typed as its row's control takes it. TRAP T-a-value-is-typed-once
       else if (row?.control === 'number' && typeof value !== 'number') problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no number`);
       else if (row?.multiple && !Array.isArray(value)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no list`);
-      else if (row && fixedChoices(row.control) && ![value].flat().every((v) => fixedChoices(row.control)!.some((c) => c.value === String(v)))) {
+      else if (row && fixedChoices(row) && value !== '' && ![value].flat().every((v) => fixedChoices(row)!.some((c) => c.value === String(v)))) {
         problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is none of its choices`);
       } else {
         const fault = row && faultOf(row, value, read);
@@ -625,7 +625,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       };
       const address = `${node.id}/${row.name}`;
       const need = row.input ? needOf(row, typedRow(row) ? type : undefined) : undefined;
-      const fixed = fixedChoices(row.control);
+      const fixed = fixedChoices(row);
       const reads = need ? readsAt(address, { label: row.label, needs: need, ...(fixed ? { choices: fixed } : {}) }) : new Map<NodeRoute, ReturnType<typeof readInput>>();
       const bad = [...reads].filter(([, read]) => read.warning).map(([r]) => r);
       // What a route brings, as the row reads it: coerced, where COERCIONS reads it.

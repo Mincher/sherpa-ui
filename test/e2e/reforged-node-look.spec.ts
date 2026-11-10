@@ -285,11 +285,11 @@ test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothin
 // — 756: every category, picked, takes the SAME active fill and border; the panel's node adds the same ring.
 const CATS = { Sources: 'source', Variables: 'value', Logic: 'condition', Organise: 'sort', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
 async function bindCategories(page: Page): Promise<void> {
-  await page.setViewportSize({ width: 1900, height: 900 });
+  await page.setViewportSize({ width: 1900, height: 1100 });
   await page.evaluate(async (cats) => {
     document.querySelector('#root sherpa-layout-canvas')!.remove();
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 1200px; block-size: 720px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1200px; block-size: 1000px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
     await customElements.whenDefined('sherpa-node-toolbar');
     const canvas = document.getElementById('cv') as Canvas;

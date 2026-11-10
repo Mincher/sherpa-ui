@@ -266,7 +266,7 @@ test('an input let go on the bare canvas offers a Value first', async ({ page })
   await page.mouse.move(x1! + 300, y1! + 190, { steps: 8 });
   await page.mouse.up();
   const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
-  // A Sort's header takes any type: the kinds that give one, a Value first.
+  // A Sort's header takes any type: the kinds that give one, a Value first; an Output too, by its properties (plan 891).
   expect(choices[0]).toBe('value');
-  expect(choices).not.toContain('output');
+  expect(choices).toContain('output');
 });

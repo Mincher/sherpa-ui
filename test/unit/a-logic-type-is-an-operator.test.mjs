@@ -153,7 +153,8 @@ test('the panel: one Condition item naming its types; a search finds a type whol
   assert.equal(items.filter((i) => i.id === 'condition').length, 1);
   const found = (q) => items.flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
   assert.deepEqual(found('equals'), [['condition', 'eq']]);
-  assert.deepEqual(found('not'), [['condition', 'not']], 'Not, not Does not equal');
+  // Not, not Does not equal; and an Output's Notification, as a reader types it (plan 891).
+  assert.deepEqual(found('not'), [['condition', 'not'], ['output', 'notification']]);
   assert.deepEqual(found('is empty'), [['condition', 'empty']]);
   assert.deepEqual(found('at least'), [['condition', 'gte']]);
   assert.deepEqual(found('and'), [['condition', 'and']]);

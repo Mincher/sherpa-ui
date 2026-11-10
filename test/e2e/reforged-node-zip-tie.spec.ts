@@ -20,8 +20,8 @@ test.beforeEach(async ({ page }) => {
     const node = (id: string, kind: string, x: number, y: number) => ({ id, kind, x, y, heading: id });
     const flow = { v: 2 as const, id: 'z', nodes: [
       node('s1', 'source', 0, 0), node('e1', 'output', 700, 0),
-      node('s2', 'source', 0, 220), node('e2', 'output', 700, 220),
-      node('s3', 'source', 0, 440), node('e3', 'output', 700, 440),
+      node('s2', 'source', 0, 480), node('e2', 'output', 700, 480),
+      node('s3', 'source', 0, 960), node('e3', 'output', 700, 960),
     ], routes: [1, 2, 3].map((n) => ({ from: `s${n}/rows`, to: `e${n}` })) };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow, {

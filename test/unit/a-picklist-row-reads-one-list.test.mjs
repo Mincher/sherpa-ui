@@ -52,8 +52,8 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
   assert.deepEqual(rowChoices({ control: 'values' }, { values: ['a', 'b'] }).map((c) => c.value), ['a', 'b']);
   assert.equal(rowChoices({ control: 'text' }), undefined);
   assert.equal(rowChoices({}), undefined);
-  assert.equal(fixedChoices('field'), undefined, 'an open list is not fixed');
-  assert.equal(fixedChoices('direction').length, 2);
+  assert.equal(fixedChoices({ control: 'field' }), undefined, 'an open list is not fixed');
+  assert.equal(fixedChoices({ control: 'direction' }).length, 2);
   // A pick the list lacks is offered, so a select shows it and nothing is lost.
   assert.deepEqual(rowChoices({ control: 'field', value: 'gone' }, { fields }).at(-1), { value: 'gone', label: 'gone' });
 });

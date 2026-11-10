@@ -170,8 +170,9 @@ test('Arrange: columns by flow, three tokens apart, on the grid, anchor kept, fe
   expect(Math.abs(spot(after, 'e1').x - (spot(after, 's1').x + now['s1']!.w) - gap)).toBeLessThanOrEqual(1);
   // rows in a column
   const [top, low] = [spot(after, 's1'), spot(after, 's2')].sort((a, b) => a.y - b.y);
-  const topId = top === spot(after, 's1') ? 's1' : 's2';
-  expect(Math.abs(low!.y - (top!.y + now[topId]!.h) - gap)).toBeLessThanOrEqual(4);
+  // A grid row is as tall as its tallest node: here an Output, with its Type, Status and Summary (plan 891).
+  const tallest = Math.max(...four.filter((id) => spot(after, id).y === top!.y).map((id) => now[id]!.h));
+  expect(Math.abs(low!.y - (top!.y + tallest) - gap)).toBeLessThanOrEqual(4);
   // 756: a grid, so the top edges of a row are one y in every column
   const tops = (ids: string[]) => ids.map((id) => spot(after, id).y).sort((a, b) => a - b);
   expect(tops(['s1', 's2'])).toEqual(tops(['e1', 'e2']));

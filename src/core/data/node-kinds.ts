@@ -9,13 +9,14 @@
  * - SOCKET_WORDS — Each socket type in words, as a fault or a tip says it.
  * - accepts — Whether an input reads what an output of a type sends: its own type, or any; else it reads null.
  * - truthy — The road a value takes: True, unless it is nothing. Will, D2.
- * - RowControl — The control a row draws: text, a number, a switch, or the list a picklist reads.
+ * - RowControl — The control a row draws: text, a message, a number, a switch, or the list a picklist reads.
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
  * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
+ * - addTypes — A family with more types: an app's own beside the shipped ones, as a Ticket Output.
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - categorySlug — A category as the slug a node's, and its panel row's, `data-category` says.
@@ -46,7 +47,7 @@
  * - RowChoice — One pick in a row's list: the value it keeps, and its words.
  * - RowFacts — What a row's list is read from that the registry does not say.
  * - rowChoices — The list a picklist row reads, a Type row's the family's types; none, it is no picklist.
- * - fixedChoices — A fixed list, the same on every page; none, the list is open or the control is no picklist.
+ * - fixedChoices — A fixed list: a pick row's own, or one the same on every page; none, an open list or no picklist.
  * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
  * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
  * - rowFault — A value's fault a row cannot say, in words: a closed list's stranger, no date, a number off its step.
@@ -89,12 +90,13 @@ export function truthy(value: unknown): boolean {
   return (proto !== Object.prototype && proto !== null) || Object.keys(value).length > 0;
 }
 
-/** The control a row draws: text, a number, a switch, tags (a list, D17) or a date and time; else the
- *  list a picklist reads — the fields, the field's values, units, a span's way (last or next),
- *  directions, presentations, Apply on, stores, scopes, a family's types or a graph's portal names (`rowChoices`). */
+/** The control a row draws: text, a message (text with values, `{node.name}`; plan 891), a number, a switch, tags (a
+ *  list, D17) or a date and time; else the list a picklist reads — the row's own (`pick`), the fields, the field's values,
+ *  units, a span's way (last or next), directions, presentations, Apply on, stores, scopes, a family's types or a graph's
+ *  portal names (`rowChoices`). */
 export type RowControl =
-  | 'text' | 'number' | 'switch' | 'tags' | 'datetime'
-  | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal';
+  | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
+  | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -121,6 +123,8 @@ export interface RowKind {
   beside?: string;
   /** A PROPERTY row: output only, a value the node provides from its own data or logic (`propertyRow`). TODO 835 */
   property?: true;
+  /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
+  choices?: readonly RowChoice[];
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -130,6 +134,12 @@ export type NodeGraph = 'query' | 'workflow';
 export interface NodeType {
   label: string;
   help?: string;
+  /** Its section in the Type picker: an Output's family, as Notification or Request. Plan 891 */
+  group?: string;
+  /** Its header's icon, over the kind's. */
+  icon?: string;
+  /** Words the node panel's search finds it by, beside its label: "notify" finds Notification. */
+  tags?: readonly string[];
   /** Its rows, after the kind's own. */
   rows?: readonly RowKind[];
   /** Its sockets, where they differ from the kind's. */
@@ -205,6 +215,66 @@ const NUMBER: RowKind = { ...RESULT, gives: 'number' };
 const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'), textRow('separator', 'Separator')];
 /** A portal's name: picked from the graph's names, or New name… (TODO 779). */
 const PORTAL_NAME: RowKind = { name: 'name', label: 'Name', control: 'portal' };
+
+/** An Output's rows (plan 891). A message field takes text with values; each parameter can be routed too. */
+const messageRow = (name: string, label: string): RowKind => ({ name, label, control: 'message', input: 'value' });
+const pickRow = (name: string, label: string, choices: readonly (readonly [string, string])[], multiple?: true): RowKind => ({
+  name, label, control: 'pick', choices: choices.map(([value, words]) => ({ value, label: words })),
+  ...(multiple ? { multiple, input: 'object' as const } : { input: 'value' as const }),
+});
+const objectIn = (name: string, label: string): RowKind => ({ name, label, input: 'object' });
+const [TITLE, MESSAGE, SENT] = [messageRow('title', 'Title'), messageRow('message', 'Message'), propertyRow('sent', 'Sent', 'boolean')];
+
+/** What an Output does, each a type in a family (plan 891). The host app adds its own: `addTypes`. */
+const OUTPUTS: Readonly<Record<string, NodeType>> = {
+  notification: {
+    label: 'Notification', group: 'Notification', icon: 'notifications', tags: ['notify'], help: 'Send a message in the app, by email or to a phone',
+    rows: [
+      pickRow('channels', 'Channels', [['app', 'In app'], ['email', 'Email'], ['push', 'Mobile push']], true),
+      textRow('to', 'To'), TITLE, MESSAGE, textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
+      SENT, propertyRow('delivered', 'Delivered', 'value'), propertyRow('messageId', 'Message ID', 'value'),
+    ],
+  },
+  view: {
+    label: 'On a view', group: 'Content', icon: 'dashboard', help: 'Show content on a view',
+    rows: [
+      textRow('view', 'View'), pickRow('place', 'Place', [['widget', 'Widget'], ['card', 'Card'], ['row', 'List row']]), objectIn('content', 'Content'), dateRow('until', 'Keep until'),
+      propertyRow('contentId', 'Content ID', 'value'), propertyRow('link', 'Link', 'value'),
+    ],
+  },
+  file: {
+    label: 'Generated file', group: 'Content', icon: 'file-lines', help: 'Make a file from the data',
+    rows: [
+      pickRow('format', 'Format', [['pdf', 'PDF'], ['csv', 'CSV'], ['xlsx', 'XLSX'], ['docx', 'DOCX'], ['md', 'Markdown']]), textRow('template', 'Template'),
+      messageRow('fileName', 'File name'), objectIn('data', 'Data'), textRow('saveTo', 'Save to'),
+      propertyRow('file', 'File', 'object'), propertyRow('link', 'Link', 'value'),
+    ],
+  },
+  toast: {
+    label: 'Toast', group: 'Response', icon: 'megaphone', help: 'Show a short message on the screen',
+    rows: [pickRow('tone', 'Tone', [['info', 'Info'], ['success', 'Success'], ['warning', 'Warning'], ['critical', 'Critical']]), MESSAGE, textRow('action', 'Action'), propertyRow('shown', 'Shown', 'boolean')],
+  },
+  alert: {
+    label: 'Alert', group: 'Response', icon: 'status-warning', help: 'Raise an alert on a device or a customer (to be defined)',
+    rows: [
+      pickRow('severity', 'Severity', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High'], ['critical', 'Critical']]), pickRow('on', 'On', [['device', 'Device'], ['customer', 'Customer']]),
+      TITLE, MESSAGE, propertyRow('alertId', 'Alert ID', 'value'),
+    ],
+  },
+  api: {
+    label: 'API response', group: 'Response', icon: 'cloud', help: 'Answer the call that started the run',
+    rows: [countRow('code', 'Status', 100), objectIn('body', 'Body'), pickRow('encoding', 'Format', [['json', 'JSON'], ['csv', 'CSV'], ['text', 'Text']]), SENT],
+  },
+  result: {
+    label: 'Run result', group: 'Run result', icon: 'flag', help: 'End the run with a status and a summary',
+    rows: [pickRow('status', 'Status', [['succeeded', 'Succeeded'], ['skipped', 'Skipped'], ['failed', 'Failed'], ['deferred', 'Deferred']]), messageRow('summary', 'Summary')],
+  },
+};
+
+/** A family with more types: the host app's own beside the shipped ones, as `addTypes(NODE_KINDS.output, { ticket })`. */
+export function addTypes(kind: NodeKind, types: Readonly<Record<string, NodeType>>): NodeKind {
+  return { ...kind, types: { ...kind.types, ...types } };
+}
 
 /** The operators whose value is a list: Is one of, Is not one of. */
 export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
@@ -380,8 +450,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'portal', graphs: ['workflow'], category: 'Utils',
   },
+  // One Output, many types; Run result, the default, is what an Output with no type was (plan 891). It may sit mid-graph:
+  // its properties route on.
   output: {
-    heading: 'Output', icon: 'flag', description: 'End the flow with a result', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
+    heading: 'Output', icon: 'flag', description: 'Do something with what the flow found', input: 'any',
+    typeLabel: 'Type', defaultType: 'result', types: OUTPUTS, rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
   },
 };
 
@@ -409,10 +482,10 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
   const at = kind && typeOf(kind, type);
   if (!kind || !at) return kind;
   const { types, typeLabel, defaultType: _default, branches: forks, ...plain } = kind;
-  const { input, many, output, branches = forks, graphs = kind.graphs, needs } = at.type;
+  const { input, many, output, branches = forks, graphs = kind.graphs, needs, icon } = at.type;
   const row: RowKind = { name: 'type', label: typeLabel ?? 'Type', control: 'type' };
   return {
-    ...plain, ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}), ...(needs ? { needs } : {}),
+    ...plain, ...(icon ? { icon } : {}), ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}), ...(needs ? { needs } : {}),
     ...(branches ? { branches: true as const } : {}), graphs,
     rows: [...(Object.keys(types!).length > 1 ? [row] : []), ...kind.rows, ...(at.type.rows ?? [])],
   };
@@ -486,7 +559,8 @@ export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags'>,
   const q = query.trim().toLowerCase();
   if (!q || kind.heading.toLowerCase().includes(q) || kind.tags?.some((t) => t.toLowerCase().includes(q))) return {};
   const types = Object.entries(kind.types ?? {});
-  const hit = types.find(([, t]) => t.label.toLowerCase() === q) ?? types.find(([, t]) => t.label.toLowerCase().includes(q));
+  const said = (t: NodeType): string[] => [t.label, ...(t.tags ?? [])].map((w) => w.toLowerCase());
+  const hit = types.find(([, t]) => said(t).includes(q)) ?? types.find(([, t]) => said(t).some((w) => w.includes(q)));
   return hit ? { type: hit[0] } : undefined;
 }
 
@@ -628,7 +702,9 @@ const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
  *  An open list — fields, values, stores, scopes — also offers each of the row's own
  *  values it lacks, so a select shows it. A tags row's list is the field's values, and only them:
  *  it is CLOSED to them (`rowFault`); none known, its tags are free. */
-export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
+export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind, 'choices' | 'multiple'>> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
+  // A row's own list; one pick with none picked says so, as a Store row does: a select would show its first.
+  if (row.control === 'pick') return [...(row.multiple || (row.value != null && row.value !== '') ? [] : [{ value: '', label: 'Pick one' }]), ...(row.choices ?? [])];
   if (row.control === 'unit' && facts.count !== undefined) return unitWords(facts.count);
   const fixed = row.control && FIXED[row.control];
   if (fixed) return [...fixed];
@@ -656,9 +732,11 @@ function portalChoices(value: unknown, names: readonly string[]): RowChoice[] {
   return [...(own ? [] : [{ value: '', label: 'Pick a name' }]), ...listed.map((v) => ({ value: v, label: v })), { value: nextPortalName(listed), label: 'New name…' }];
 }
 
-/** A fixed list, the same on every page — directions, units, spans, Apply on, presentations; none, an open list or no picklist. */
-export function fixedChoices(control: RowControl | undefined): readonly RowChoice[] | undefined {
-  return control ? FIXED[control] : undefined;
+/** A fixed list, the same on every page — a `pick` row's own, directions, units, spans, Apply on, presentations; none, an
+ *  open list or no picklist. */
+export function fixedChoices(row: Pick<RowKind, 'control' | 'choices'> | undefined): readonly RowChoice[] | undefined {
+  if (row?.control === 'pick') return row.choices;
+  return row?.control ? FIXED[row.control] : undefined;
 }
 
 /** What a picklist row shows while routes drive it (D7): what comes in, read only, each pick
