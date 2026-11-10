@@ -27,7 +27,7 @@ Read live on 2026-11-10, read only. Nothing in Figma was changed.
 | … that name a Figma twin in their spec | 57 |
 | … with no Figma twin | 18 (3 of them draw nothing) |
 | Figma components and sets (not icons) | 80, on 50 `✅` pages and the BACKLOG page `sherpa-app-shell` |
-| … that no code component claims | 25: 19 atoms and wrappers, 2 the code has but does not link (Badge, Data Viz Header), 2 merges, 2 deprecated (§2.2) |
+| … that no code component claims | 25: 17 atoms and wrappers, 3 the code has but does not link (Badge, Data Viz Header, Checkbox - Advanced), 2 to merge, 1 to check (View Header), 2 deprecated (§2.2) |
 | Specs whose record of Figma is out of date (`resync-figma.mjs --check`) | 14 |
 | Twins where the code shows parts, types or states Figma cannot | 43 of 57, and 3 more need only a disabled or drag-over example |
 | State pins in `state-pins.yaml` (a code state and its Style mode) | 143, on 39 components; the docs frames show 3 of them (default, active, inactive) |
@@ -37,8 +37,8 @@ Read live on 2026-11-10, read only. Nothing in Figma was changed.
 
 Four gaps, largest first:
 
-1. **Whole families are code only**: layout (5 components), nodes (7 and the canvas),
-   the Filter Panel.
+1. **Whole families are code only**: layout (5 components, the canvas among them),
+   nodes (7), the Filter Panel.
 2. **The filter system outgrew its Figma**: Filter Chip, Filter Toolbar and Menu have
    about 4 times the types and states Figma shows.
 3. **Docs in Figma are stale everywhere**: events, props, collections and sizes in the
@@ -82,15 +82,15 @@ phase and its output replaces §2.
 | `sherpa-badge` | a small count | **Link** — Figma `Badge` (145:3385) is it; the spec has no `figmaName` and `name-map.yaml` still says "Indicator (atom)" |
 | `sherpa-data-viz-header` | the header strip of a chart or metric card | **Link** — Figma `Data Viz Header` (1456:30467) is it; the spec does not say so |
 | `sherpa-layout-grid` | the grid a view places its content on | **Build** — Layout Grid and `.Layout Grid Item` (ACP Module already has a local `.Layout Grid Item`) |
-| `sherpa-layout-panels` | a panel AREA each side of the content; a docked panel fills it flush. Two panels in one area: fixed, they stack; overlay or tab, they are a group, one open and the rest its tabs beside it (`94e8ad74c`). A docked card is inset 8px at its sides and `--sherpa-panel-area-padding-block` top and bottom: 8px, but 16px in the App Shell (`--sherpa-layout-grid-padding`), so its top and bottom meet the first and last cards (`864b78b1b`); the dock preview takes the same inset | **Build** — show one panel, two stacked, and a group with its tabs; and the layer order (§2.7) |
+| `sherpa-layout-panels` | a panel AREA each side of the content; a docked panel fills it flush. Two panels in one area (`94e8ad74c`): fixed, they stack, each half the height; overlay or tab, they are a GROUP — each has its tab on the edge, one is open, and the open one stands beside the tab strip, inset by its width (2.5rem), not over it; a dropped floating panel joins as it is. A docked card is inset 8px at its sides and `--sherpa-panel-area-padding-block` top and bottom: 8px, but 16px in the App Shell (`--sherpa-layout-grid-padding`), so its top and bottom meet the first and last cards (`864b78b1b`); the dock preview takes the same inset | **Build** — show one panel, two stacked, and a group (one open overlay beside the other's vertical tab); and the layer order (§2.7) |
 | `sherpa-layout-canvas` | an infinite canvas: pan, zoom, crosshair grid; slots `columns`, `rows`, `columns-end`, `toolbar`, `footer`, `banner`, minimap, edit mode | **Build** |
 | `sherpa-group` | a row, column or grid of controls that reads as ONE object | **Build** — the Grouping collections exist; no component shows them |
 | `sherpa-metric-group` | one row of 1 to 4 metrics across the layout grid; sticky | **Build** |
 | `sherpa-filter-panel` | the content of a panel: every filter scope the page offers, a section each | **Build** — composes Filter Toolbar sections inside Overlay Panel |
-| `sherpa-node` | one node: header, rows, footer, sockets, categories, run steps, collapsed | **Build** — from the code; ACP Module's `node` set (2715:20841, 20 variants) is the older source (plan 740) |
+| `sherpa-node` | one node: header, rows, footer, sockets, categories, run steps (with their caption tab, the "run label"), collapsed. Alt-drag draws a GHOST (`aa9962e73`): a dashed box the node's size, Style `surface-base` at 70%, a 1.5px `active-indicator-accent` stroke dashed 6 / 4, the node's name in 12px medium `content-secondary` — every value a live token | **Build** — from the code. ACP Module's local `node` set (2715:20841, 20 variants) and its `Graph / Node`, `Graph / Socket`, `Graph / Route`, `Graph / Frame` and `Graph / Portal` are the older source (plan 740) |
 | `sherpa-node-row` | input socket, field, output socket | **Build**, with a `.Socket` atom (ACP Module has `socket`) |
 | `sherpa-node-frame` | a frame round nodes: title, line, Release | **Build** |
-| `sherpa-node-stage` | a workflow stage: a bar and a band across the canvas | **Build** |
+| `sherpa-node-stage` | a workflow stage: a bar and a band across the canvas. Each stage's ⋯ (Edit, Remove) sits right after its name; Add stage and ⋯ Arrange stages are one icon-button group in the canvas's `columns-end` slot, top right (`f562dc6e3`). Stages are a flex row with a 16px gap (`0d94d99bb`) | **Build** — ACP Module's Harness screens draw the stage bar by hand today |
 | `sherpa-node-lane` | a swimlane, or a junction | **Build** |
 | `sherpa-node-list` | the node palette: two tabs, sticky category headings | **Build** — composes Tab Group and Menu List Item |
 | `sherpa-node-toolbar` | the graph editor's icon buttons, and its toggles Collapse all, Hide unconnected and Swimlanes (`659c83805`) | **Build** — composes Toolbar and Button |
@@ -102,7 +102,7 @@ phase and its output replaces §2.
 
 | Figma | Page | Proposed |
 |---|---|---|
-| Checkbox (Atom), Radio (Atom), Progress Step (atom), Connector (atom), Legend Swatch, Tab, File Item, Chart Axis, Calendar Cell's `time-clock`, Navigation Header | their parents' pages | **Keep as atoms.** Rename to the dot prefix (`.Tab`), the house rule for a sub-component |
+| Checkbox (Atom), Radio (Atom), Progress Step (atom), Connector (atom), Legend Swatch, Tab, File Item, Chart Axis, `time-clock`, Navigation Header | their parents' pages | **Keep as atoms.** Rename to the dot prefix (`.Tab`), the house rule for a sub-component |
 | Input Text, Number, Select, Search, Date, Password, Text Area (937:*) | ✅ Input | **Keep.** They are the one-to-many wrappers of `sherpa-input-text`'s `data-type`; add Tags and Color (§2.3) |
 | Checkbox - Advanced (1334:8173) | ✅ Checkbox | **Link** to `sherpa-select-checkbox data-advanced`; it has no description |
 | Pagination v2 (1118:30032) | ✅ Pagination | **Merge** into Pagination, then delete one (❓ which is current) |
@@ -154,7 +154,7 @@ three or more.
 | Component → Figma | Code has, Figma lacks | Size |
 |---|---|---|
 | `sherpa-app-shell` → App Shell | the regions as slots: nav, header, context-header, panel-start, panel-end, panel-float, overlay; no-header, no-nav, no-room; the five nav states (the Navigation collection has the modes). On a BACKLOG page today; **no docs frame** | L |
-| `sherpa-app-header` → App Header | every optional part as a boolean: account, AI, back, help, Labs, loading bar, menu, notifications, theme toggle; slots breadcrumbs and filters (the View toolbar); the View chip, custom view, query and view actions. Figma has 3 slots and no booleans | M |
+| `sherpa-app-header` → App Header | every optional part as a boolean: account, AI, back, help, Labs, loading bar, menu, notifications, theme toggle; slots breadcrumbs and filters (the View toolbar); the View chip, custom view, query and view actions. Figma has 3 slots and no booleans. **A consumer waits for it:** ACP Module's Harness screens (81 of them) compose this two-row header from Apex parts, because the library's cannot show it | M |
 | `sherpa-nav` → Primary Navigation | searchable, large, menu, footer slot. The header's Pin button now shows the `sidebar` icon, not `thumbtack-angle` (sherpa-ui-1b, 2026-11-10, not yet committed; waits on Will): Navigation Header (1051:7815) swaps its Pin icon to match | S |
 | `sherpa-nav-item` → Navigation Item | tiers 2 and 3; type promo; expanded; status dot | S |
 | `sherpa-nav-section` → Navigation Section | collapsed | S |
@@ -237,8 +237,9 @@ no error. Queued as TODO 884, not Figma work:
 
 The other 23 are page hooks on purpose (`--sherpa-filter-on-*`, `--sherpa-nav-scale`,
 `--sherpa-toggle-shape`, `--sherpa-content-min-width`, …). Each needs one line in the
-docs that a page or a setting sets it (§8). Since the read, `864b78b1b` adds one more:
-`--sherpa-panel-area-padding-block` (Layout Panels; the App Shell sets it).
+docs that a page or a setting sets it (§8). One more, which the scan could not count
+because the App Shell declares it: `--sherpa-panel-area-padding-block` (Layout Panels
+reads it; `864b78b1b`).
 
 ### 2.7 The layer order (new, `b18c0ee94`)
 
@@ -264,7 +265,8 @@ Panels page and concept C7 show this order as a stack picture.
 
 ## 3. Layouts, patterns and examples (from Demos)
 
-Sherpa is app agnostic (D4): nothing about one app lives in the library. So the Figma
+Sherpa is app agnostic (Will's earlier ruling; memory `sherpa-is-app-agnostic`):
+nothing about one app lives in the library. So the Figma
 file gets two kinds of page:
 
 - **PATTERNS** — the library's own, one per `patterns/*.json` (schema
@@ -348,11 +350,28 @@ not Figma work; each becomes a TODO row when P9 reaches its example, if Will wan
 | an input and a Remove button in a row | `index.html:26-31` | an editable list row |
 | a panel alone in a browser tab | `index.html:22-24` | the shell's panel-only state |
 
-Two attribute slips found on the way: Demos writes `data-side-setting` on the filter
-panel (`index.html:83`), which no spec lists and `sherpa-usage.json` does not declare,
-so `check-usage` should report it and does not; and it writes `data-by-preset` bare,
+Two attribute slips found on the way, in TODO row 884: Demos writes
+`data-side-setting` on the filter panel (`index.html:83`), which no spec lists and
+`sherpa-usage.json` did not declare — `check-usage` reported it (exit 1), so Demos'
+`npm test` stopped at its `pretest`. Fixed the same day in Demos `3c3e2e4`: it is
+Demos' own marker (`app/panel-float.js:63`), now under `own`. And it writes `data-by-preset` bare,
 where the spec takes the preset's name (`views/learn-filtering-views.html:770-771`).
-Both go in the TODO with 884.
+
+### 3.5 What ACP Module draws by hand
+
+ACP Module (the Harness design, a second consumer) does not use the Sherpa-UI library:
+its screens draw these from Apex parts and plain frames. Each is a library part this
+plan builds, so the Harness can swap to it.
+
+| Drawn by hand in ACP Module | The library part | Phase |
+|---|---|---|
+| the two-row app header (back, breadcrumbs, title, Save ▾, Ask N-zo, Labs, theme, bell, account, help; the View chip, View Context, fixed chips, Filters, Refresh, ⋮) | App Header with every boolean, and its View toolbar | P3 |
+| the data bar (Organise │ Presets │ Custom · Suggest · Filters · Save · Refresh · ⋮) | Filter Toolbar, its sections and actions | P2 |
+| the two-half chip (field │ value) | Filter Chip, its body and caret halves | P2 |
+| docked panels (Details, Filters, N-zo) with a header of mode buttons | Overlay Panel's header in each mode, inside Layout Panels | P3, P6 |
+| stage bars | Node Stage | P7 |
+| the zip-tie handle, route vectors | `.Zip Tie`, `.Route` | P7 |
+| run labels | the node step caption | P7 |
 
 ---
 
@@ -462,7 +481,7 @@ T2 and T3 replace the session-only `__buildDocs` of August (memory
 
 ## 7. The target file structure
 
-New sections in **bold**. Pages keep the `✅ Title Case` name of the build skill (§6).
+New sections in **bold**. Pages keep the `✅ Title Case` name the build skill sets (its §6).
 
 | Section | Pages |
 |---|---|
@@ -522,9 +541,9 @@ Figma version is saved. Sizes are sittings (one `figma_execute` session each).
 | **P2 Filters** | Filter Chip, Filter Toolbar (portrait), Menu's filter body, then the Filter Panel. Biggest gap, most used in Demos | T1: these four at 0 gaps | L |
 | **P3 Containers and the app frame** | Overlay Panel states, Container states, Header, Footer, Panel, Dialog; App Shell, App Header, Nav | T1: 0 gaps | L |
 | **P4 Data** | Data Grid as a composed component; Bar, Line, Sparkline; Donut pie; Legend states; Metric; Metric Group | T1: 0 gaps | L |
-| **P5 Controls** | the S rows of §2.3, in one batch | T1: 0 gaps | M |
-| **P6 Layout** | Layout Grid and Item, Layout Panels, Group, Stack docs, Layout Canvas | T1: 0 gaps | M |
-| **P7 Nodes** | the NODES section, from the code; then ACP Module swaps its local `node` and `socket` for library instances (❓ D3) | T1: 0 gaps | L |
+| **P5 Controls and the rest** | Input Text and its wrappers (with the `data-state` → `data-status` rename, §4.3), Calendar and Calendar Cell; then every S row of §2.3 still open, in one batch | T1: 0 gaps | M |
+| **P6 Layout** | Layout Grid and Item, Layout Panels (one panel, two stacked, a group; the layer order, §2.7), Group, Stack docs, Layout Canvas | T1: 0 gaps | M |
+| **P7 Nodes** | the NODES section, from the code, with the parts the graph draws and no element owns: `.Route` (with bend points), `.Zip Tie` handle, `.Portal` (In and Out); then ACP Module swaps its local `Graph / *` parts for library instances (❓ D3) | T1: 0 gaps | L |
 | **P8 Docs** | T3 docs frames for every component; descriptions | T1: 0 stale docs | M |
 | **P9 Patterns and examples** | the three PATTERNS pages from their JSON, a frame per state; the eight EXAMPLES pages (§3.1), from live instances; settle the chart card's header (§3.2); queue §3.4's rows that Will wants | each pattern JSON and each Demos Context has its page | L |
 | **P10 Concepts** | §4's pages | each concept of §4 has its page | L |
@@ -564,16 +583,17 @@ markup) — only if your Figma plan has it.
 
 ---
 
-## 12. Changes folded in after the read
+## 12. What the other agents reported
 
 The read was at `659c83805`. Will asked (2026-11-10) that the work other agents had
-in hand be added when it was done. Each item is also in its row above.
+in hand be added when it was done. All four replied. `94e8ad74c`, `0d94d99bb` and
+`aa9962e73` landed after the read; `b18c0ee94`, `864b78b1b` and `f562dc6e3` were in it,
+and are listed so their Figma effect is not missed. Each item is also in its row above.
 
 | From | Change | Where in this plan |
 |---|---|---|
 | sherpa-ui-1b (not yet committed; waits on Will) | `sherpa-nav`: the header's Pin button shows the `sidebar` icon, not `thumbtack-angle`; the spec, manifest and reference were made again. No other change | §2.3, Navigation |
 | sherpa-ui-fe, `b18c0ee94` | a panel peeking from its tab draws over the fixed region and its sticky Metric Group; the layer order | §2.7 |
 | sherpa-ui-fe, `864b78b1b` | `--sherpa-panel-area-padding-block` (8px; 16px in the App Shell): a docked card's top and bottom meet the first and last cards; the Layout Canvas keeps 8px; the dock preview follows | §2.1, §2.6 |
-| `94e8ad74c` | two panels in one area: fixed ones stack; overlay and tab ones are a group, one open, the rest its tabs beside it; a dropped panel joins as it is | §2.1, C7 |
-| sherpa-ui-f9 | PENDING — asked; its FYI on `659c83805` (stages, swimlanes, collapsed nodes, copy and paste, the toolbar's Collapse all, Hide unconnected and Swimlanes, Layout Canvas slots and `data-editing`, Input Text `data-type="color"`, workflow v2) is already in §2.1 and §2.3 | — |
-| acp-module-d7 | PENDING — asked whether its ACP Module work touches the node, socket, `.Layout Grid Item`, nav v2 or Filter Toolbar parts | — |
+| sherpa-ui-f9 | `94e8ad74c` the panel group's look (above); `0d94d99bb` stages are a flex row with a 16px gap, a dragged node stays in its stage (behaviour); `aa9962e73` the Alt-drag ghost; `f562dc6e3` (before the read) Add stage and Arrange stages moved to the canvas's `columns-end`, a stage's ⋯ after its name, and `data-last` and the `stage-add` / `stage-arrange` events gone; `panel-mode-change` carries `{ mode, restore? }`. Its FYI on `659c83805` (stages, swimlanes, collapsed nodes, copy and paste, the toolbar toggles, Layout Canvas slots and `data-editing`, Input Text `data-type="color"`, workflow v2) was in §2.1 and §2.3 already. No Demos change since `3c5f523` | §2.1 |
+| acp-module-d7 (Harness design) | No main component changed in either file. Its Harness screens use instances and hand-made frames: a two-row app header, a data bar of two-half chips, docked panels with mode buttons, stage bars, a zip-tie handle, run labels, all drawn locally from Apex parts. It names these as wanted library parts: **the stage bar, the zip-tie handle, the run label, the two-half chip, the panel-end header with its mode buttons**. Its notes: `acp-module/.working-notes/29-app-shell.md`, `30-sherpa-demos-patterns.md` | §2.1, §2.3, §3.5, P7 |
