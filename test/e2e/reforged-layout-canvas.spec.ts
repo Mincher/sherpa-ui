@@ -211,3 +211,26 @@ test('a zoom resizes the minimap\'s frame; the content on the minimap holds its 
   }, canvas);
   expect(r).toEqual({ halved: true, held: true });
 });
+
+test('the smallest zoom gives way to the content: content wider than 25% shows is all in view at Fit, and Zoom out reaches it (Will, 2026-11-10)', async ({ page }) => {
+  const r = await page.evaluate(async (sel) => {
+    const el = eval(sel) as Canvas;
+    // Far apart: at 25% the 800px canvas shows 3200px of plane, and this content is 8000px across.
+    el.querySelector<HTMLElement>('#b')!.style.setProperty('--x', '8000px');
+    await new Promise((done) => requestAnimationFrame(done));
+    el.fit();
+    const host = el.getBoundingClientRect();
+    const inView = ['#a', '#b'].every((id) => {
+      const b = el.querySelector(id)!.getBoundingClientRect();
+      return b.left >= host.left && b.right <= host.right;
+    });
+    const fitted = el.view.zoom;
+    el.zoomTo(0.01);
+    return { fitted, inView, floor: el.view.zoom, out: el.shadowRoot!.querySelector('.zoom-out')!.hasAttribute('disabled') };
+  }, canvas);
+  expect(r.inView).toBe(true);
+  expect(r.fitted).toBeLessThan(0.25);
+  // Zoom out stops where all the content is in view, no further.
+  expect(Math.abs(r.floor - r.fitted)).toBeLessThan(0.005);
+  expect(r.out).toBe(true);
+});

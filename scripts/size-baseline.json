@@ -39,7 +39,7 @@
   "src/components/sherpa-input-text/input-tags.ts": 339,
   "src/components/sherpa-input-text/sherpa-input-text.ts": 635,
   "src/components/sherpa-key-value-list/sherpa-key-value-list.ts": 70,
-  "src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts": 476,
+  "src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts": 487,
   "src/components/sherpa-layout-grid/grid-lines.ts": 76,
   "src/components/sherpa-layout-grid/grid-resize.ts": 362,
   "src/components/sherpa-layout-grid/grouped-grid.ts": 116,

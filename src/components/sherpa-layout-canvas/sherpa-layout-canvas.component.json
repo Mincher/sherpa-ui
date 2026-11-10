@@ -312,7 +312,7 @@
       "declared": true,
       "kind": "behaviour",
       "default": "0.25",
-      "description": "the smallest zoom"
+      "description": "the smallest zoom ; less where the content needs it, so all of it can be in view"
     },
     {
       "$type": "prop",

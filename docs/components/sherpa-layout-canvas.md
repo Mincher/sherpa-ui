@@ -25,7 +25,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 |---|---|---|---|
 | `data-editing` | boolean |  | an edit mode: the panels and the toolbar hide, and the footer shows along the bottom; the view, the minimap and the controls stay |
 | `data-max-zoom` | number | `4` | the largest zoom |
-| `data-min-zoom` | number | `0.25` | the smallest zoom |
+| `data-min-zoom` | number | `0.25` | the smallest zoom ; less where the content needs it, so all of it can be in view |
 | `data-no-minimap` | boolean |  | no minimap |
 | `data-panel-end-width` | number |  |  |
 | `data-panel-start-width` | number |  |  |

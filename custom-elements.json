@@ -4824,7 +4824,7 @@
             },
             {
               "name": "data-min-zoom",
-              "description": "the smallest zoom",
+              "description": "the smallest zoom ; less where the content needs it, so all of it can be in view",
               "type": {
                 "text": "number"
               },

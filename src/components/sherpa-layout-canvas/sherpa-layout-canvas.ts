@@ -217,9 +217,20 @@ export class SherpaLayoutCanvas extends SherpaElement {
     return Math.round(zoom * 1000) / 1000;
   }
 
-  /** How near and how far it may zoom. */
+  /** How near and how far it may zoom: out, never short of ALL the content in view (Will, 2026-11-10). */
   #bounds(): [number, number] {
-    return [coerceNum(this.dataset['minZoom'], 0.25), coerceNum(this.dataset['maxZoom'], 4)];
+    const min = coerceNum(this.dataset['minZoom'], 0.25);
+    const fit = this.#fitZoom();
+    return [fit === null ? min : Math.min(min, fit), coerceNum(this.dataset['maxZoom'], 4)];
+  }
+
+  /** The zoom that shows all the content in what the view shows, its padding round it; none with no content. */
+  #fitZoom(): number | null {
+    const box = this.#contentBox();
+    const seen = this.#seen();
+    if (!box || !seen.width || !seen.height) return null;
+    const [w, h] = [Math.max(1, box.right - box.left), Math.max(1, box.bottom - box.top)];
+    return Math.max(0.01, Math.min((seen.width - FIT_PADDING * 2) / w, (seen.height - FIT_PADDING * 2) / h));
   }
 
   /** The zoom, inside its bounds. */
