@@ -30,7 +30,8 @@ const filter = (id, label = id) => ({
       { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: 'active' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
+    // The test's True into the Group Output: no node has a True socket (plan 944).
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
   },
 });
 const heard = async (run) => {

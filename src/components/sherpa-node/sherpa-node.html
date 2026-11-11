@@ -13,8 +13,6 @@
     data-output-socket  the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a circle)
     data-input-connected   a connection joins the header's input: its socket is filled, else hollow
     data-output-connected  a connection leaves the header's output: its socket is filled, else hollow
-    data-branches       a fork: the header's output is True, and a footer shows with its False socket, a rounded square
-    data-false-connected   a connection leaves False: its socket is filled, else hollow
     data-category     its kind's category, in lower case: sources | custom-nodes | variables | math | logic | time | utils | collections | output | ai; each has its look
     data-input-many   the header's input takes several connections: its socket is a double height D
     data-scale-w      its width, in times its natural width: 1 to 2 (default 1)
@@ -27,13 +25,12 @@
     data-linked       a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it
     data-step         how its step stands as a run lights it: running | done | failed | skipped. Its host writes it. Running, the node wears the active border
     data-caption      the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it
-    data-badge        a short count on its tab's right: the rows true after a simulation. Its host writes it
     data-warning      what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it
     data-locked       the host owns the place: a drag or a key reports, and moves nothing
     data-resizable    the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way
     data-collapsed    collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its
                       name reads "Heading: summary". Its host writes it
-    data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them
+    data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's and the rows'. Its host writes them
     data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them
     data-summary      what its first field holds, in words: a collapsed node's name ends with it ("Condition: Equals"). Its host writes it
     data-hide-unconnected  collapsed, a socket no connection joins hides; a hover shows them. Its host writes it
@@ -57,7 +54,6 @@
       <span class="caption-icon sherpa-icon-box" part="caption-icon" aria-hidden="true" data-icon="play"></span>
       <span class="caption-warn sherpa-icon-box" part="caption-warn" aria-hidden="true" data-icon="status-warning"></span>
       <span class="caption-text sherpa-truncate" part="caption-text" data-text="data-caption"></span>
-      <span class="caption-badge" part="caption-badge" data-text="data-badge"></span>
     </span>
     <!-- The HEADER is the handle: a drag moves the node, the arrows move it, Enter selects it. It anchors the warning's tip. -->
     <div class="header sherpa-anchor" part="header" role="button" tabindex="0" aria-roledescription="node" aria-describedby="warning">
@@ -65,17 +61,11 @@
       <span class="socket-tab socket-tab-in sherpa-anchor" part="socket-tab-in" aria-hidden="true"><span class="socket socket-in" part="socket-in"><i class="core"></i></span></span>
       <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Input:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span>
       <span class="socket-tab socket-tab-out sherpa-anchor" part="socket-tab-out" aria-hidden="true"><span class="socket socket-out" part="socket-out"><i class="core"></i></span></span>
-      <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name name-out">Output:</span><span class="name name-true">True:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
+      <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name name-out">Output:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
     </div>
     <!-- The header's tip: the warning's words, the first tip after it. -->
     <span id="warning" class="tip tip-warning sherpa-tip" popover="manual" part="tip" role="tooltip" data-text="data-warning"></span>
     <div class="body" part="body"><slot data-accepts="item"></slot></div>
-    <!-- The FOOTER: only a fork has one, its False socket's row: one socket tab high. TODO 887 -->
-    <div class="footer" part="footer">
-      <sherpa-container-footer class="foot" part="foot"></sherpa-container-footer>
-      <span class="socket-tab socket-tab-false sherpa-anchor" part="socket-tab-false" aria-hidden="true"><span class="socket socket-out socket-false" part="socket-false"><i class="core"></i></span></span>
-      <span class="tip tip-false sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">False:</span><span class="word">a boolean</span></span>
-    </div>
     <!-- The RESIZE handle: bottom right, shown on hover and focus. A drag grows the node up to double; the primary key (Ctrl, or Cmd on a Mac) keeps its aspect. -->
     <span class="resize" part="resize" aria-hidden="true" title="Drag to resize. Hold Ctrl to keep the shape."></span>
   </div>

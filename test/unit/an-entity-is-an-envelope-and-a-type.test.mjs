@@ -31,7 +31,8 @@ const ACTIVE = {
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }],
+    // The test's True into the Group Output: no node has a True socket (plan 944).
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter/true', to: '#out/where' }],
   },
   settings: { source: 'customers' },
 };
@@ -163,7 +164,8 @@ test('a Custom Node is the type `node`: the envelope wraps today\'s definition, 
     v: 1, label: 'Org permissions', category: 'Logic', icon: 'lock', description: 'Who may.',
     inputs: [{ name: 'users', label: 'Users', type: 'object' }], outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
     nodes: [{ id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-    connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+    // An output made from the test's True property (plan 944).
+    connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' }],
   };
   const entity = E.nodeEntityOf('org-permissions', definition);
   assert.deepEqual(entity.settings.inputs, definition.inputs);

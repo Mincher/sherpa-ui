@@ -360,7 +360,7 @@
       }
     },
     "connection": {
-      "description": "Joins an output socket to any input socket. NODE_KINDS says each socket's type: an input reads what it needs of what comes, and one of another type reads null, and its node warns (TODO 770). A node's data comes in on its header, which takes any, and leaves from its Rows row (\"node/rows\"), which only sends; where it forks, its header sends True and \"node/#false\" False. An input takes one connection, unless it takes many.",
+      "description": "Joins an output socket to any input socket. NODE_KINDS says each socket's type: an input reads what it needs of what comes, and one of another type reads null, and its node warns (TODO 770). A node's data comes in on its header, which takes any, and leaves from its Rows row (\"node/rows\"), which only sends; a test's True is its row \"node/true\", and only a Check node branches, by \"node/yes\" and \"node/no\". An input takes one connection, unless it takes many.",
       "type": "object",
       "additionalProperties": false,
       "required": ["from", "to"],
@@ -436,12 +436,12 @@
       }
     },
     "socket": {
-      "description": "A node's header socket, \"node\" (its input is its data; its output is True, where the node forks); a row's, \"node/row\" (\"node/rows\" sends its data rows); its footer's False, \"node/#false\"; or a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826).",
-      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false|@[a-z#][a-z0-9#/@-]*))?$"
+      "description": "A node's header socket, \"node\" (its input is its data); a row's, \"node/row\" (\"node/rows\" sends its data rows, \"node/true\" a test's 1 or 0); or a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826).",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?$"
     },
     "innerSocket": {
       "description": "An address inside a Custom Node's body: a node's socket, or the Group Input's (\"#in\", \"#in/<name>\") or Group Output's (\"#out\", \"#out/<name>\"); a portal Out's row names its source, \"node/@#in/<name>\" for one that comes in by the Group Input.",
-      "type": "string", "pattern": "^((#in|#out)(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false|@[a-z#][a-z0-9#/@-]*))?)$"
+      "type": "string", "pattern": "^((#in|#out)(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?)$"
     },
     "innerConnection": {
       "description": "A connection inside a Custom Node's body: it may start at the Group Input and end at the Group Output.",

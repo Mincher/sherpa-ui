@@ -25,7 +25,7 @@
  */
 import { typedValue } from './filter-state.js';
 import { isDateTime } from './format-date.js';
-import { FALSE_SOCKET, SOCKET_WORDS, fixedChoices, kindOfNode, resolveKind, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
+import { SOCKET_WORDS, fixedChoices, kindOfNode, resolveKind, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
 
 /** What reaches an input, as finely as its source says: its socket's type, or rows, a list, a number or a Field's
  *  column, `{ rows, field }` (an object, plan 783 D2). */
@@ -82,7 +82,7 @@ export function needOf(input: Pick<RowKind, 'needs' | 'control' | 'multiple' | '
 export function givenAt(node: { kind: string; values?: Readonly<Record<string, unknown>> } | undefined, row: string | undefined, kinds: Readonly<Record<string, NodeKind>>): Reached | undefined {
   const kind = kindOfNode(kinds, node);
   if (!kind) return undefined;
-  if (row === undefined || row === FALSE_SOCKET) {
+  if (row === undefined) {
     const type = socketType(kind, row, 'output');
     return type && type !== 'any' ? { kind: type } : undefined;
   }

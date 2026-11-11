@@ -83,20 +83,21 @@ test('1-to-many: every Out of the name draws the same rows; many-to-1: an In of 
   assert.deepEqual(rowsOf(g, 'o2'), rowsOf(g, 'o'));
   assert.deepEqual(lines(portalFlow(w.nodes, w.connections).connections).filter((r) => r.includes(' → n')), ['s/rows → n']);
   assert.equal(at(g, 'o').rows.find((r) => r.name === 'name').hint, '2 rows, from 1 In portal, with 1 other Out portal');
-  // Two Ins of one name, a Condition's True into each: an Out draws both rows; And takes each, a part each.
+  // Two Ins of one name, a Condition's True row into each (plan 944): an Out draws both rows; And takes each, a part each.
   const both = flow([
     source(), field('f', 'status'), field('p', 'plan', 600, 200), cond('a', 'eq', 'active'), cond('b', 'eq', 'Pro', 900, 200),
     portal('i1', 'in', 'ok', 1200, 0), portal('i2', 'in', 'ok', 1200, 200), portal('o', 'out', 'ok', 1500), cond('and', 'and', undefined, 1800),
   ], [
     { from: 's/rows', to: 'f' }, { from: 's/rows', to: 'p' }, { from: 'f/field', to: 'a' }, { from: 'p/field', to: 'b' },
-    { from: 'a', to: 'i1' }, { from: 'b', to: 'i2' }, { from: 'o/@a', to: 'and' }, { from: 'o/@b', to: 'and' }, { from: 'and', to: '#out/where' },
+    { from: 'a/true', to: 'i1' }, { from: 'b/true', to: 'i2' }, { from: 'o/@a/true', to: 'and' }, { from: 'o/@b/true', to: 'and' }, { from: 'and/true', to: '#out/where' },
   ]);
   const gb = workflowGraph(both, facts);
-  assert.deepEqual(rowsOf(gb, 'o'), [['@a', 'Condition › True', 'boolean'], ['@b', 'Condition › True', 'boolean']]);
+  // True is a number, 1 or 0: a value socket (plan 944).
+  assert.deepEqual(rowsOf(gb, 'o'), [['@a/true', 'Condition › True', 'value'], ['@b/true', 'Condition › True', 'value']]);
   assert.deepEqual(said(gb), {});
   assert.deepEqual(conditionAt(gb, '#out/where').tree, { and: [{ field: 'status', op: 'eq', value: 'active' }, { field: 'plan', op: 'eq', value: 'Pro' }] });
   // Many-to-many: a second Out draws the same two rows; its rows into Or.
-  const many = flow([...both.nodes, portal('o2', 'out', 'ok', 1500, 300), cond('or', 'or', undefined, 1800, 300)], [...both.connections, { from: 'o2/@a', to: 'or' }, { from: 'o2/@b', to: 'or' }]);
+  const many = flow([...both.nodes, portal('o2', 'out', 'ok', 1500, 300), cond('or', 'or', undefined, 1800, 300)], [...both.connections, { from: 'o2/@a/true', to: 'or' }, { from: 'o2/@b/true', to: 'or' }]);
   const gm = workflowGraph(many, facts);
   assert.deepEqual(rowsOf(gm, 'o2'), rowsOf(gm, 'o'));
   assert.deepEqual(nodeFlow(gm, 'or').definition, { where: { or: [{ field: 'status', op: 'eq', value: 'active' }, { field: 'plan', op: 'eq', value: 'Pro' }] } });
@@ -141,9 +142,9 @@ test('an Out no In names warns and has no rows; one of no name, too; a row of an
 });
 
 test('a loop through a row is a loop', () => {
-  // A Condition's rows into an In; its Out's row into a Count, whose count is the Condition's Value B.
-  const round = flow([source(), field('f', 'status'), cond('c', 'eq'), portal('i', 'in', 'back', 1200), portal('o', 'out', 'back', 1500), { id: 'n', kind: 'group', x: 1800, y: 0 }],
-    [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'i' }, { from: 'o/@c/rows', to: 'n' }, { from: 'n/count', to: 'c/b' }]);
+  // A Condition's rows into an In; its Out's row into a Math Count, whose Result is the Condition's Value B (plan 944).
+  const round = flow([source(), field('f', 'status'), cond('c', 'eq'), portal('i', 'in', 'back', 1200), portal('o', 'out', 'back', 1500), { id: 'n', kind: 'math', x: 1800, y: 0, values: { type: 'count' } }],
+    [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'i' }, { from: 'o/@c/rows', to: 'n/rows' }, { from: 'n/result', to: 'c/b' }]);
   assert.deepEqual(workflowFaults(round, undefined, facts), ['its connections run in a loop, through the portal "back"']);
   assert.equal(checkWorkflow(round, undefined, facts), false);
   // Without the row's connect the same graph has none.
@@ -155,12 +156,13 @@ const throughPortal = {
   v: 2, type: 'preset-filter', id: 'portal-active', label: 'Active, through a portal', settings: { source: 'customers' },
   graph: {
     nodes: [source('start'), field('field', 'status', 300), portal('in', 'in', 'status', 600), portal('out', 'out', 'status', 900), cond('status', 'eq', 'active', 1200)],
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'in' }, { from: 'out/@field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
+    // The test's True into the Group Output (plan 944).
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'in' }, { from: 'out/@field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
   },
 };
 const straightFilter = {
   ...throughPortal, id: 'straight-active',
-  graph: { nodes: [source('start'), field('field', 'status', 300), cond('status', 'eq', 'active', 1200)], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }] },
+  graph: { nodes: [source('start'), field('field', 'status', 300), cond('status', 'eq', 'active', 1200)], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }] },
 };
 
 test('a Preset Filter through a portal row compiles to the same preset as the one connected straight', () => {
@@ -171,7 +173,7 @@ test('a Preset Filter through a portal row compiles to the same preset as the on
   // Its Where through a row too: the condition still reaches it.
   const where = { ...throughPortal, id: 'via-where', graph: {
     nodes: [...straightFilter.graph.nodes, portal('wi', 'in', 'where', 1500), portal('wo', 'out', 'where', 1800)],
-    connections: [...straightFilter.graph.connections.filter((r) => r.to !== '#out/where'), { from: 'status', to: 'wi' }, { from: 'wo/@status', to: '#out/where' }],
+    connections: [...straightFilter.graph.connections.filter((r) => r.to !== '#out/where'), { from: 'status/true', to: 'wi' }, { from: 'wo/@status/true', to: '#out/where' }],
   } };
   assert.deepEqual(presetOfEntity(where, facts).preset.where, b.preset.where);
 });

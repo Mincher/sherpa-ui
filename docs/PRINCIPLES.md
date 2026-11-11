@@ -159,13 +159,13 @@ only when one is asked for. "View" is kept for saved views — `SavedView` and a
 | **Route** | a full path along Connections, from a Start node to an End node | `routesOf`, `routeRead` |
 | **Start node** | where a Route starts: a Source; inside a Custom Node, its Group Input | `isSource` |
 | **End node** | where a Route ends: an Output; inside a Custom Node, its Group Output | `isOutput` |
-| **Branch** | one of the Routes that leave a node with more than one outgoing Connection; a Condition that forks (`branches`) starts two | `branchesAt` |
+| **Branch** | one of the Routes that leave a node with more than one outgoing Connection; a Check node starts two, Yes and No | `branchesAt` |
 
 The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and keeps its word.
 
-**True and False steer** (Will, 2026-11-11, TODO 939): True is "if true, do this", False "if false, do this". Each
-sends true or false and carries no rows; a node down a Branch not taken does not run. A property carries the rows,
-connected on its own: Results, the rows that pass.
+**A Check branches** (Will, 2026-11-11, plan 944): no node has a True or a False socket. A test has a True property, 1
+or 0, beside its Results, the rows that pass. The Check node sends its Data on Yes where its test holds, on No where it
+does not, and nothing after the other way runs. Counting rows is a Math type, Count.
 
 **20. Tokens.** Read a token as `var(--sherpa-x, <the value it resolves to>)`.
 The fallback is required, and it is the token's own value. A private value is

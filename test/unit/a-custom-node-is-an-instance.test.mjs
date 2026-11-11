@@ -25,9 +25,10 @@ const ORG = {
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'role-field', kind: 'field', x: 0, y: 0, values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }],
+  // An output made from the test's True property (plan 944).
   connections: [
     { from: '#in/users', to: 'role-field' }, { from: 'role-field/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
-    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
   ],
 };
 const library = (nodes = {}) => ({ v: 1, nodes: { 'org-permissions': structuredClone(ORG), ...structuredClone(nodes) } });
@@ -169,7 +170,7 @@ test('definitionDiff: each kind of change, plain data; a version ignores where a
   assert.deepEqual(change((d) => { d.nodes[1].values.type = 'ne'; }).nodes.changed, ['has-role']);
   assert.deepEqual(change((d) => d.nodes.push({ id: 'more', kind: 'group', x: 0, y: 0 })).nodes.added, ['more']);
   assert.deepEqual(change((d) => d.nodes.pop()).nodes.removed, ['has-role']);
-  assert.deepEqual(change((d) => d.connections.pop()).connections.removed, [{ from: 'has-role', to: '#out' }]);
+  assert.deepEqual(change((d) => d.connections.pop()).connections.removed, [{ from: 'has-role/true', to: '#out' }]);
   assert.deepEqual(change((d) => { d.label = 'Org rules'; }).label, { from: 'Org permissions', to: 'Org rules' });
   assert.equal(change((d) => { d.category = 'Other'; }).stale, false, 'a category is no change to a use');
   assert.equal(lib.definitionDiff({ kind: 'org-permissions' }, l).known, false, 'a use that recorded nothing is stale, with nothing listed');

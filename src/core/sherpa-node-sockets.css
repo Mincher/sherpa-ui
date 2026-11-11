@@ -12,10 +12,9 @@
   --_hit: 6px; /* off-grid-ok */
   --_ring: var(--sherpa-display-mode-border-width-lg, 2px);
   /* Each shape is its CORNERS: a clip-path's round shape was cut flat on one side in Chromium, where it landed on a
-     fraction of a pixel (Will saw it, 2026-11-11). A circle; a fully round input; the rounded square (4). */
+     fraction of a pixel (Will saw it, 2026-11-11). A circle; a fully round input. */
   --_circle: 50%;
   --_d: 50%;
-  --_round-square: 25%;
   --_socket-h: var(--_socket);
   /* A socket's column, its tab's width: the socket and a small inset each side, 24px (Will, 2026-11-11: narrower, the
      sockets nearer the card). Its tab is as tall as the socket and its press area, 28px; the press area may reach past the
@@ -63,9 +62,9 @@
   pointer-events: none;
 }
 :host([data-input-connected]) .socket-in .core,
-:host([data-output-connected]) .socket-out:not(.socket-false) .core { display: block; }
+:host([data-output-connected]) .socket-out .core { display: block; }
 :host([data-input-connected]) .socket-in,
-:host([data-output-connected]) .socket-out:not(.socket-false) { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
+:host([data-output-connected]) .socket-out { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
 
 /* An INPUT takes the pointer too: its connection's end drags to another input, or a picklist's
    input drags out a line. Will, TODOs 557, 558.
@@ -102,7 +101,6 @@
   border-radius: 0;
   transform: rotate(45deg);
 }
-.socket-false { --_shape: var(--_round-square); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
 /* A SOCKET TAB: the D a socket stands in, outside the card — the card's fill (in a row in a grey box, the box's grey), and
@@ -132,11 +130,11 @@
   inset-inline-start: 0;
   border-inline-end-width: 0;
 }
-.socket-tab-out, .socket-tab-false {
+.socket-tab-out {
   border-start-end-radius: calc(var(--_tab-h) / 2);
   border-end-end-radius: calc(var(--_tab-h) / 2);
 }
-.socket-tab-out::before, .socket-tab-false::before {
+.socket-tab-out::before {
   inset-inline-end: 0;
   border-inline-start-width: 0;
 }
@@ -144,11 +142,10 @@
 /* Each tip hangs from its own socket's tab: a name is scoped to its shadow root, so the same one serves every node. */
 .socket-tab-in, .tip-in { --_anchor: --sherpa-socket-in; }
 .socket-tab-out, .tip-out { --_anchor: --sherpa-socket-out; }
-.socket-tab-false, .tip-false { --_anchor: --sherpa-socket-false; }
 /* A tip opens on its socket's side: an input's to its start, an output's to its end; where it does not fit, the anchor's
    fallbacks try round the socket. Will, TODO 895 */
 .tip-in { --_area: inline-start; }
-.tip-out, .tip-false { --_area: inline-end; }
+.tip-out { --_area: inline-end; }
 
 /* Each socket's tip says its type in words: one word shows. */
 .tip .word { display: none; }

@@ -64,14 +64,6 @@
               "attrs": {
                 "data-text": "data-caption"
               }
-            },
-            {
-              "el": "span",
-              "class": "caption-badge",
-              "part": "caption-badge",
-              "attrs": {
-                "data-text": "data-badge"
-              }
             }
           ]
         },
@@ -184,10 +176,6 @@
                 },
                 {
                   "el": "span",
-                  "class": "name name-true"
-                },
-                {
-                  "el": "span",
                   "class": "word w-value"
                 },
                 {
@@ -227,58 +215,6 @@
           ]
         },
         {
-          "el": "div",
-          "class": "footer",
-          "part": "footer",
-          "children": [
-            {
-              "el": "sherpa-container-footer",
-              "class": "foot",
-              "part": "foot"
-            },
-            {
-              "el": "span",
-              "class": "socket-tab socket-tab-false sherpa-anchor",
-              "part": "socket-tab-false",
-              "attrs": {
-                "aria-hidden": "true"
-              },
-              "children": [
-                {
-                  "el": "span",
-                  "class": "socket socket-out socket-false",
-                  "part": "socket-false",
-                  "children": [
-                    {
-                      "el": "i",
-                      "class": "core"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "el": "span",
-              "class": "tip tip-false sherpa-tip",
-              "part": "tip",
-              "attrs": {
-                "popover": "manual",
-                "aria-hidden": "true"
-              },
-              "children": [
-                {
-                  "el": "span",
-                  "class": "name"
-                },
-                {
-                  "el": "span",
-                  "class": "word"
-                }
-              ]
-            }
-          ]
-        },
-        {
           "el": "span",
           "class": "resize",
           "part": "resize",
@@ -299,24 +235,6 @@
       "declared": true,
       "kind": "style",
       "description": "the one picked node whose panel is shown, in a stronger ring; the HOST writes it"
-    },
-    {
-      "$type": "prop",
-      "name": "data-badge",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "content",
-      "description": "a short count on its tab's right: the rows true after a simulation. Its host writes it"
-    },
-    {
-      "$type": "prop",
-      "name": "data-branches",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "a fork: the header's output is True, and a footer shows with its False socket, a rounded square"
     },
     {
       "$type": "prop",
@@ -343,7 +261,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them"
+      "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's and the rows'. Its host writes them data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them"
     },
     {
       "$type": "prop",
@@ -362,15 +280,6 @@
       "declared": true,
       "kind": "content",
       "description": "a line under the name"
-    },
-    {
-      "$type": "prop",
-      "name": "data-false-connected",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "a connection leaves False: its socket is filled, else hollow"
     },
     {
       "$type": "prop",
@@ -626,7 +535,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseConnected?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
+    "shape": "{ active?, caption?, category?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
@@ -682,16 +591,6 @@
       "$type": "state",
       "name": "output-socket",
       "selector": ":host([data-output-socket])"
-    },
-    {
-      "$type": "state",
-      "name": "branches",
-      "selector": ":host([data-branches])"
-    },
-    {
-      "$type": "state",
-      "name": "false-connected",
-      "selector": ":host([data-false-connected])"
     },
     {
       "$type": "state",
@@ -764,14 +663,9 @@
     "caption.font-family": "{sherpa.font-family-mono}",
     "caption.font-size": "{sherpa.font-size-body-xs}",
     "caption.line-height": "{sherpa.theme-content-line-height-small}",
-    "caption-badge.padding-inline": "{sherpa.theme-padding-sm}",
-    "caption-badge.border-radius": "{sherpa.display-mode-border-rounding-sm}",
-    "caption-badge.background": "{sherpa.style-surface-base-2}",
-    "caption-badge.color": "{sherpa.style-content-base}",
     "socket-tab.z-index": "{sherpa.layer-content}",
     "socket-tab-in.inset-inline-start": "{sherpa.style-border-width}",
     "socket-tab-out.inset-inline-start": "{sherpa.style-border-width}",
-    "socket-tab-false.inset-inline-start": "{sherpa.style-border-width}",
     "body.gap": "{sherpa.theme-gap-md}",
     "body.padding-block": "{sherpa.theme-gap-md}",
     "stack-in.inset-inline-start": "{sherpa.style-border-width}",
@@ -787,7 +681,7 @@
           "$type": "method",
           "name": "socketRect",
           "args": "side: SocketSide",
-          "description": "A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none."
+          "description": "A socket's box on the screen, for a connector to join: the header's; null when it has none."
         }
       ]
     }

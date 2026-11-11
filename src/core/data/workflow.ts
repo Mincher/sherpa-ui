@@ -32,7 +32,7 @@ import { inNewWords } from './entity.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, FALSE_SOCKET, joinsTests, steers, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -123,7 +123,7 @@ const inGrowth = (n: unknown): boolean => typeof n === 'number' && n >= GROW_MIN
 /** Whether a value or a socket names a row the node holds only under ANOTHER of its types. */
 function keptRow(node: Pick<WorkflowNode, 'kind' | 'values'> | undefined, row: string | undefined, kinds: Kinds): boolean {
   const kind = node && kinds[node.kind];
-  if (!node || !kind?.types || row === undefined || row === FALSE_SOCKET || rowOf(kindOfNode(kinds, node)!.rows, row)) return false;
+  if (!node || !kind?.types || row === undefined || rowOf(kindOfNode(kinds, node)!.rows, row)) return false;
   return !!rowOfOtherType(kind, node.values?.['type'], row);
 }
 
@@ -194,7 +194,7 @@ function rowsOf(held: ReadonlyMap<string, WorkflowNode>, flow: PortalFlow, kinds
     const { node: id, row } = socketOf(source);
     const from = held.get(id);
     const kind = kindOf(from);
-    const part = row === FALSE_SOCKET ? 'False' : row === undefined ? (kind?.branches ? 'True' : undefined) : rowOf(kind?.rows ?? [], row)?.label;
+    const part = row === undefined ? undefined : rowOf(kind?.rows ?? [], row)?.label;
     const output = (kind && socketType(kind, row, 'output')) || 'object';
     return { name: addressRow(source), label: [from?.heading ? nodeTitle(kind?.heading ?? id, from.heading) : kind?.heading ?? id, part].filter(Boolean).join(' › '), output: output === 'any' ? 'object' : output };
   };
@@ -250,6 +250,11 @@ function fieldAt(node: WorkflowNode, connections: readonly NodeConnection[], sen
 
 /** A row a node's field types: a value picked or typed, tags, a Start or an End. TRAP T-a-value-is-typed-once */
 const typedRow = (row: Pick<RowKind, 'control'> | undefined): boolean => ['values', 'tags', 'text'].includes(row?.control ?? '');
+
+/** The socket a given is drawn as: a value or a number a circle, a boolean a circle in its ink, else a diamond. */
+function socketOfGiven(given: string | undefined): SocketType {
+  return given === 'value' || given === 'number' ? 'value' : given === 'boolean' ? 'boolean' : 'object';
+}
 
 /** A value's or a column's type as a Condition's input: a number, a date, a boolean, or text (TODO 940). A list is data. */
 const FIELD_INPUTS: Readonly<Record<string, ConditionInput>> = { text: 'text', number: 'number', integer: 'number', decimal: 'number', date: 'date', boolean: 'boolean', list: 'data' };
@@ -520,6 +525,16 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
     const node = held.get(id);
     const kind = kindOfNode(kinds, node);
     const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
+    // A Check's Yes and No send what reaches its Data, else its test (plan 944).
+    if (out?.passes && !busy.has(id)) {
+      const into = connections.find((r) => r.to === `${id}/${out.passes}`) ?? connections.find((r) => r.to === id);
+      busy.add(id);
+      try {
+        return into ? sends(into.from) : undefined;
+      } finally {
+        busy.delete(id);
+      }
+    }
     const passes = out?.gives === 'rows' && !!kind!.input;
     if (!kind || !out || (out.gives !== 'field' && !passes) || busy.has(id)) return givenAt(node, row, kinds);
     const picked = passes ? undefined : pickedField(held, connections, reach(id), from);
@@ -533,7 +548,7 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
         return { from: r.from, got: got && need && readInput({ label: kind.heading, needs: need }, got).warning ? null : got };
       });
       if (passes) {
-        // A test's True or False steers and carries no rows (TODO 939): only rows, a column or an object do.
+        // Results carry rows where rows, a column or an object come in; a test of one value has none.
         const carries = heard.some(({ got }) => !!got && ['rows', 'field', 'object'].includes(got.kind));
         return carries ? { kind: 'rows' } : undefined;
       }
@@ -596,12 +611,6 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   };
   const reach = fieldsReach(held, flows, kinds, facts);
   const sent = sender(held, flows, kinds, reach);
-  /** Does a connection come from a STEER, a fork's True or False (TODO 939)? */
-  const steerFrom = (from: string): boolean => {
-    const { node: id, row } = socketOf(from);
-    const at = held.get(id);
-    return steers(at && kindOf(at), row);
-  };
   /** Whether ROWS reach a node's header (TODO 924): true where rows, a column, an object, or a test that may be over rows
    *  comes in; false where only values, or tests of one, do; undefined where nothing it can use is joined. */
   const heardOf = new Map<string, boolean | undefined>();
@@ -612,7 +621,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const at = held.get(id);
     const need = at && needOf(kindOf(at) ?? {});
     // A steer into a node's header gates it, and is no data; a joiner (And, Or, Not) takes it as an input: no rows.
-    const answers = flows.filter((c) => c.to === id && !(steerFrom(c.from) && !joinsTests(at))).flatMap((c) => {
+    const answers = flows.filter((c) => c.to === id).flatMap((c) => {
       const got = sent(c.from);
       // What it cannot use, it reads as null, and says so: no answer here.
       if (!got || (need && readInput({ label: '', needs: need }, got).warning)) return [];
@@ -646,7 +655,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const at = typeOf(family, values['type']);
     // What comes in on a Condition's header picks the types that fit (TODO 940). One its pick does not fit is IGNORED where
     // another fits (D2); where none does, the pick stays and the node warns (D1).
-    const inputs = kind.model === 'Condition' ? flows.filter((c) => c.to === node.id && !(steerFrom(c.from) && !joinsTests(node))).flatMap((c) => {
+    const inputs = kind.model === 'Condition' ? flows.filter((c) => c.to === node.id).flatMap((c) => {
       const is = inputOf(c.from);
       // Data in its own words: rows, an object, a list.
       const said = is === 'data' ? INPUT_WORDS[sent(c.from)!.kind] : is && CONDITION_INPUT_WORDS[is];
@@ -660,7 +669,6 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const warnings: { row?: string; words: string }[] = [];
     const readsAt = (to: string, input: InputNeeds): Map<NodeConnection, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
       // A steer into the header gates the node: it is no data, so it is not read, and nothing warns (TODO 939).
-      if (to === node.id && r.to === to && steerFrom(r.from) && !joinsTests(node)) return [];
       // What its type ignores is not read, and warns nothing (TODO 940 D2).
       if (to === node.id && r.to === to && ignored.some((i) => i.from === r.from)) return [];
       const got = r.to === to ? sent(r.from) : undefined;
@@ -690,7 +698,6 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const rowless = !!kind.input && kind.rows.some((r) => r.name === ROWS.name) && rowsHeard(node.id) === false;
     // A Condition's Count also says the counts that pass: it shows where a number comes in (TODO 939; Will, 2026-11-11: a
     // Count into Between passes through).
-    const countless = rowless && !inputs.some((i) => i.is === 'number');
     const rows = kind.rows.map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no connection gives warns, by its row (plan 891).
@@ -715,11 +722,13 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
       const closed = plain.control === 'tags' && list ? { closed: true as const } : {};
       // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A).
-      const idle = !!row.property && (row.name === ROWS.name ? rowless : row.name === 'count' && countless);
+      const idle = !!row.property && row.name === ROWS.name && rowless;
       if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {
-        warnings.push({ row: row.name, words: `${row.label} has no rows${row.name === 'count' ? ' to count' : ''}: a value comes in` });
+        warnings.push({ row: row.name, words: `${row.label} has no rows: a value comes in` });
       }
-      const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed, ...(idle ? { idle: true as const } : {}) };
+      // A Check's Yes and No are drawn as what they send: what reaches its Data (plan 944).
+      const through = row.passes ? { output: socketOfGiven(sent(`${node.id}/${row.name}`)?.kind) } : {};
+      const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed, ...(idle ? { idle: true as const } : {}), ...through };
       // A fault of the value it shows, in words, as `workflowFaults` finds it: its own, or what a connection brings.
       const said = (shown: GraphRow, connected = false): GraphRow => {
         const value = shown.control === 'number' ? typedValue('number', shown.value) : shown.value;
@@ -761,10 +770,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       if (row.control === 'switch') {
         if (!ins.length) return bad.length ? { ...own, value: null } : own;
         const says = ins.map((r) => {
-          const { node: id, row: out } = socketOf(r.from);
-          if (out === FALSE_SOCKET) return false;
           const value = reading(r)?.value;
-          return out === undefined ? !!kinds[held.get(id)?.kind ?? '']?.branches : truthOf(value) ?? truthy(value);
+          return truthOf(value) ?? truthy(value);
         });
         const at = (r: NodeConnection): string => { const n = held.get(socketOf(r.from).node); return n?.heading ? nodeTitle(kinds[n.kind]?.heading ?? r.from, n.heading) : kinds[n?.kind ?? '']?.heading ?? r.from; };
         return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };

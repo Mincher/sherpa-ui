@@ -44,9 +44,6 @@
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
- * - FALSE_SOCKET — The footer's False, as an address names it after its node.
- * - steers — Does an output socket STEER — a fork's True or False — and carry no rows?
- * - joinsTests — Does a node join tests (And, Or, Not), so a steer into it is an input, not a gate?
  * - rowOf — The row of a kind a name says.
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several connections.
@@ -134,6 +131,8 @@ export interface RowKind {
   beside?: string;
   /** A PROPERTY row: output only, a value the node provides from its own data or logic (`propertyRow`). TODO 835 */
   property?: true;
+  /** A property that sends on what reaches the row of this name: a Check's Yes and No, its Data (plan 944). */
+  passes?: string;
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
   /** A `message` row of one line, as a title or a file name: its editor has no toolbar and takes no line break. TODO 913 */
@@ -161,7 +160,6 @@ export interface NodeType {
   input?: SocketType;
   many?: true;
   output?: SocketType;
-  branches?: boolean;
   /** Where it is drawn, where not every graph of its kind: Not and Is empty are a workflow's alone. */
   graphs?: readonly NodeGraph[];
   /** What its header's input can use, over the kind's. */
@@ -175,15 +173,13 @@ export interface NodeKind {
   /** Its synopsis: what it is, in a few words, on one line. The panel's line, and a node's when it has none of its own (809). */
   description?: string;
   /** The whole node's sockets, on its header. Its input is its DATA, of any type (D1): its rows
-   *  and values say what it does with it. With `branches`, its output is True. */
+   *  and values say what it does with it. */
   input?: SocketType;
   /** What its header's input can use; what it cannot is null, and the node a warning (TODO 764). None: anything. */
   needs?: Need;
   /** Its header input takes several connections (D4). */
   many?: true;
   output?: SocketType;
-  /** A fork: True on the header's output, False on the footer's (`node/#false`), both booleans. */
-  branches?: true;
   /** Its fixed rows; a Query node adds its own after them (a scope's fields). */
   rows: readonly RowKind[];
   /** The data layer's name for what it stands for: a shape, or the function a workflow runs it by. */
@@ -211,7 +207,8 @@ export interface NodeKind {
 export const propertyRow = (name: string, label: string, gives: Given = 'number'): RowKind => ({ name, label, output: propertySocket(gives), gives, property: true });
 /** The socket a property's given takes: a number, text or value a circle; a boolean a circle; rows, a list, a field or an object a diamond. */
 const propertySocket = (gives: Given): SocketType => (gives === 'boolean' ? 'boolean' : ['object', 'list', 'rows', 'field'].includes(gives) ? 'object' : 'value');
-const COUNT = propertyRow('count', 'Count');
+/** A test's True: 1 where it holds, 0 where not (Will, plan 944). No node has a True or a False socket. */
+const TRUE = propertyRow('true', 'True');
 /** Results: the data rows a node sends on, a property like Count; they come in on its header (D1). It keeps the address `node/rows`. Plan 713 §3 */
 export const ROWS: Readonly<RowKind> = propertyRow('rows', 'Results', 'rows');
 
@@ -245,10 +242,11 @@ const [TITLE, MESSAGE, SENT] = [messageRow('title', 'Title', true), messageRow('
 /** The AI nodes' rows (plan 926): the model an AI node asks, and its instructions. */
 const MODEL_IN: RowKind = { name: 'model', label: 'Model', input: 'object', needs: 'model' };
 const INSTRUCTIONS = messageRow('instructions', 'Instructions');
-/** What an AI node EXPECTS, its Type picker, the same for each (D2 A): True/false forks, as a Condition does; the rest give
- *  an Answer, a property. An AI answer is fuzzy, so the reader says what shape it takes, and the sockets follow. */
+/** What an AI node EXPECTS, its Type picker, the same for each (D2 A): True/false gives a True, 1 or 0, as a Condition does
+ *  (plan 944); the rest an Answer, a property. An AI answer is fuzzy, so the reader says what shape it takes, and the sockets
+ *  follow. */
 const expects = (rows: readonly RowKind[], would: string): Readonly<Record<string, NodeType>> => ({
-  boolean: { label: 'True/false', help: 'True or false: a way on for each', branches: true, rows, would },
+  boolean: { label: 'True/false', help: 'True, 1 or 0', rows: [...rows, TRUE], would },
   text: { label: 'Text', help: 'A text answer', rows: [...rows, propertyRow('answer', 'Answer', 'value')], would },
   number: { label: 'Number', help: 'A number', rows: [...rows, propertyRow('answer', 'Answer', 'number')], would },
   data: { label: 'Data', help: 'Rows of data', rows: [...rows, propertyRow('answer', 'Answer', 'rows')], would },
@@ -351,7 +349,7 @@ function compareType(op: FilterOp): NodeType {
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows, COUNT] };
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows, TRUE] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -367,11 +365,11 @@ const [PASS, FAIL] = [propertyRow('pass', 'Pass'), propertyRow('fail', 'Fail')];
 const LOGIC: Readonly<Record<string, NodeType>> = {
   // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
   // empty; Results are the rows of the true inputs, Count their rows and the sum of the true counts (TODO 939).
-  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, COUNT, PASS, FAIL] },
-  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, COUNT, PASS, FAIL] },
+  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, TRUE, PASS, FAIL] },
+  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, TRUE, PASS, FAIL] },
   ...compareTypes(FIGMA_OPS),
-  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [ROWS], graphs: ['workflow'] },
-  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [ROWS], graphs: ['workflow'] },
+  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [ROWS, TRUE], graphs: ['workflow'] },
+  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [ROWS, TRUE], graphs: ['workflow'] },
   ...compareTypes(SHERPA_OPS),
 };
 
@@ -403,13 +401,12 @@ export function conditionFits(inputs: readonly ConditionInput[]): ReadonlySet<st
 }
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
- *  A kind a workflow runs forks (`branches`): its True and False are a boolean only, whether it gave anything,
- *  never rows (D2); rows that do not match are not sent: set the Check to its inverse. The Query's own steps do not: nothing connects a branch from them. */
+ *  Only the Check node branches (plan 944): a test has a True property, 1 or 0, and no True or False socket. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
   source: {
     heading: 'Source', icon: 'storage', description: 'Connect a data source',
-    rows: [{ ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' }, COUNT], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
+    rows: [{ ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
@@ -423,8 +420,19 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Logic: one test per Condition, And and Or joining tests (plan 783 D4). TRAP T-a-condition-is-a-tree-of-nodes
   condition: {
-    heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition', branches: true,
+    heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition',
     typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
+  },
+  // The ONE node that branches (Will, plan 944, D1 A): its test on its header, true where it is above zero, true, or not
+  // empty; its Data goes on by Yes where the test holds, by No where not, and the other sends nothing.
+  check: {
+    heading: 'Check', icon: 'diverging-arrows', description: 'Send the data on by Yes or by No', input: 'any',
+    rows: [
+      { name: 'data', label: 'Data', input: 'any' },
+      { name: 'yes', label: 'Yes', output: 'object', property: true, passes: 'data' },
+      { name: 'no', label: 'No', output: 'object', property: true, passes: 'data' },
+    ],
+    model: 'check', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
@@ -475,7 +483,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Rows in, a column out, `{ rows, field }`; one record in, that field's value. Its True: the field is there. Plan 783 D1, D2
   field: {
     heading: 'Field', icon: 'price-tag', description: 'Target a field from a connected Source', input: 'any', needs: 'object',
-    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' }, COUNT], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
+    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' }], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
   math: {
@@ -491,6 +499,8 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       floor: { label: 'Floor', help: 'Lowest value from the list', rows: [NUMBERS, NUMBER] },
       ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [NUMBERS, NUMBER] },
       average: { label: 'Average', help: 'Average value of the list', rows: [NUMBERS, NUMBER] },
+      // Rows in, how many out: Count is no property (Will, plan 944, D3 A).
+      count: { label: 'Count', help: 'How many rows come in', rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, NUMBER] },
     },
     rows: [], model: 'math', graphs: ['workflow'], category: 'Math',
   },
@@ -513,7 +523,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   group: {
     heading: 'Group', icon: 'group', description: 'Group rows by a field', input: 'any', needs: 'field',
-    rows: [ROWS, COUNT], model: 'groupRows', graphs: ['workflow'], category: 'Organise',
+    rows: [ROWS], model: 'groupRows', graphs: ['workflow'], category: 'Organise',
   },
   // Text from text, given from its Result row: a list, where Split by makes one.
   text: {
@@ -599,12 +609,12 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
 export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKind | undefined {
   const at = kind && typeOf(kind, type);
   if (!kind || !at) return kind;
-  const { types, typeLabel, defaultType: _default, branches: forks, ...plain } = kind;
-  const { input, many, output, branches = forks, graphs = kind.graphs, needs, icon, would } = at.type;
+  const { types, typeLabel, defaultType: _default, ...plain } = kind;
+  const { input, many, output, graphs = kind.graphs, needs, icon, would } = at.type;
   const row: RowKind = { name: 'type', label: typeLabel ?? 'Type', control: 'type' };
   return {
     ...plain, ...(icon ? { icon } : {}), ...(would ? { would } : {}), ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}), ...(needs ? { needs } : {}),
-    ...(branches ? { branches: true as const } : {}), graphs,
+    graphs,
     rows: [...(Object.keys(types!).length > 1 ? [row] : []), ...kind.rows, ...(at.type.rows ?? [])],
   };
 }
@@ -740,33 +750,18 @@ export function downstreamOf(connections: readonly NodeConnection[], from: Itera
   return seen;
 }
 
-/** The footer's False, as an address names it after its node: `node/#false`. A `#` part is no row. */
-export const FALSE_SOCKET = '#false';
-
-/** Does an output socket STEER — a fork's True or False: "if true, do this" — and carry no rows (Will, TODO 939)? */
-export function steers(kind: Pick<NodeKind, 'branches'> | undefined, row: string | undefined): boolean {
-  return !!kind?.branches && (row === undefined || row === FALSE_SOCKET);
-}
-
-/** Does a node JOIN tests — And, Or, Not — so a steer into its header is one of its inputs, not a gate? */
-export function joinsTests(node: { kind: string; values?: Readonly<Record<string, unknown>> } | undefined): boolean {
-  return node?.kind === 'condition' && ['and', 'or', 'not'].includes(String(node.values?.['type'] ?? ''));
-}
-
 /** The sockets a kind says, or a node drawn of it. */
-type Sockets = Pick<NodeKind, 'input' | 'output' | 'many' | 'branches'> & { rows: readonly RowKind[] };
+type Sockets = Pick<NodeKind, 'input' | 'output' | 'many'> & { rows: readonly RowKind[] };
 
 /** The row of a kind a name says. */
 export function rowOf<R extends Pick<RowKind, 'name'>>(rows: readonly R[], name: string): R | undefined {
   return rows.find((r) => r.name === name);
 }
 
-/** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row), a
- *  row's, or its footer's False — on one side; none, it has no such socket. */
+/** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row) or a row's — on one side;
+ *  none, it has no such socket. */
 export function socketType(kind: Sockets, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
-  const fork = side === 'output' && kind.branches ? 'boolean' : undefined;
-  if (row === FALSE_SOCKET) return fork;
-  return row === undefined ? fork ?? kind[side] : rowOf(kind.rows, row)?.[side];
+  return row === undefined ? kind[side] : rowOf(kind.rows, row)?.[side];
 }
 
 /** Whether an input of a kind, or of a node drawn of it, takes several connections: its header's (no row), or a row's. */
@@ -954,7 +949,6 @@ export interface GraphNode {
   input?: SocketType;
   many?: true;
   output?: SocketType;
-  branches?: true;
   rows: readonly GraphRow[];
   x: number;
   y: number;
@@ -1001,7 +995,6 @@ export function kindNode(
     ...(k.input ? { input: k.input } : {}),
     ...(k.many ? { many: k.many } : {}),
     ...(k.output ? { output: k.output } : {}),
-    ...(k.branches ? { branches: k.branches } : {}),
     ...(k.category ? { category: k.category } : {}),
     ...(k.would ? { would: k.would } : {}),
     ...own,

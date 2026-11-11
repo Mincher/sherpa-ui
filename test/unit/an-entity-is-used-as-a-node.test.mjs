@@ -31,7 +31,8 @@ const filter = (id, label, value = 'active', extra = {}) => ({
       { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: value } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
+    // The test's True into the Group Output: no node has a True socket (plan 944).
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
   },
   settings: { source: 'customers' }, ...extra,
 });
@@ -159,7 +160,8 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
   const taken = {
     v: 1, label: 'Taken', inputs: [{ name: 'rows', type: 'object' }], outputs: [],
     nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: 'x' } }],
-    connections: [{ from: '#in/rows', to: 'c' }, { from: 'c', to: '#out' }],
+    // An output made from the test's True property (plan 944).
+    connections: [{ from: '#in/rows', to: 'c' }, { from: 'c/true', to: '#out' }],
   };
   assert.equal(await k.saveNode('active-copy', taken), true);
   const made = lib.copyToMine(k.nodeLibrary(), 'preset-filter:active');

@@ -493,22 +493,20 @@ inside it the Group Input's and Output's, edit its definition's tags
 being edited is a draft in its tab until it is saved, as a workflow is.
 `T-a-node-panel-lists-under-sticky-headings`
 
-### True and False steer
+### Check, True and Count
 
-A Condition's True says "if true, do this", and its False "if false, do this". Each
-sends true or false, and no rows. A node down a Branch not taken does not run, and
-Simulate's light says Not taken. The rows go by a property, connected on its own:
-Results, the rows that pass. Give a node both: the True into its header, the Results
-into a row that takes data (a Generated file's Data).
+No node has a True or a False socket (plan 944). A Condition has a True property: 1
+where its test holds, 0 where not. Its Results are the rows that pass. A **Check** node
+is the one that branches: its test on its header, its Data on a row. Yes sends the Data
+where the test holds, No where it does not. The other way is not taken: nothing after
+it runs, and Simulate's light says Not taken. With no Data, a Check sends its test.
 
 And and Or take anything, several. An input is true where it is above zero, true, or
-not empty. Their properties follow what comes in. Rows in: Results (Or, the rows of
-every true input; And, the rows in all of them) and Count. Numbers in: Count, the sum
-of the true ones. Pass and Fail say how many inputs pass and how many fail. A test's
-Results into an And or an Or say its condition, as its True does, so the Query reads
-the same tree. A Condition fed one value, as a Count, tests that value against Value B
-(Not and Is empty by its truth): it passes or fails, and keeps no rows. Its Count
-shows, and passes the number on where it passes (0 where it fails).
+not empty. Results: Or, the rows of every true input; And, the rows in all of them. Pass
+and Fail say how many inputs pass and how many fail. A test's True, or its Results, into
+an And or an Or say its condition, so the Query reads the same tree. A Condition fed one
+value tests that value against Value B (Not and Is empty by its truth). To count rows,
+use a Math node of type Count: rows in, how many out.
 
 A Condition's Operation list follows what comes in on its header. A value or a column
 lists the operations its type takes (text, a number, a date, a boolean). Rows or an
@@ -557,8 +555,8 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
 
 The AI category has five nodes. A **Provider** and a **Model** say which model; a
 **Prompt**, a **Runbook** and a **Skill** ask it. Each of the last three has
-**Expects** as its Type picker: True/false forks, as a Condition does; Text,
-Number, Data and List give an Answer, a property. With no Model joined, a node
+**Expects** as its Type picker: True/false gives a True, 1 or 0, as a Condition does;
+Text, Number, Data and List give an Answer, a property. With no Model joined, a node
 warns "Join a Model"; with no Provider, a Model warns "Join a Provider".
 
 Sherpa ships no providers, models, runbooks or skills. Register yours once, at
@@ -578,7 +576,7 @@ registerAiCatalog({
   the Runbook node opens it read only, with the trail back, and the Nodes panel
   never lists it as a Custom Node.
 - Simulate asks no model. A node says what it would do, and each answer is a
-  stand-in by its shape: True, words, 0, no rows, an empty list.
+  stand-in by its shape: True 1, words, 0, no rows, an empty list.
 
 ### Stages
 

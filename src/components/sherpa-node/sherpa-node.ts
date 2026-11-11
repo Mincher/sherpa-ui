@@ -13,7 +13,6 @@
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps it.
 import '../sherpa-container-header/sherpa-container-header.js';
-import '../sherpa-container-footer/sherpa-container-footer.js';
 import { primaryKey, primaryLabel } from '../../core/ui/modifier-key.js';
 import { SOCKETS, socketRect, type SocketSide } from './node-sockets.js';
 import { nodeTitle } from '../../core/data/node-title.js';
@@ -44,8 +43,6 @@ export class SherpaNode extends SherpaElement {
     'data-output-socket': SHARED_PROPS['data-output-socket'],
     'data-input-connected': SHARED_PROPS['data-input-connected'],
     'data-output-connected': SHARED_PROPS['data-output-connected'],
-    'data-branches': { type: 'boolean', kind: 'style' },
-    'data-false-connected': { type: 'boolean', kind: 'style' },
     'data-input-many': SHARED_PROPS['data-input-many'],
     'data-category': { type: 'string', kind: 'style' },
     'data-scale-w': { type: 'number', kind: 'behaviour' },
@@ -58,7 +55,6 @@ export class SherpaNode extends SherpaElement {
     'data-linked': { type: 'boolean', kind: 'style' },
     'data-step': { type: 'enum', kind: 'style', values: ['running', 'done', 'failed', 'skipped'] },
     'data-caption': { type: 'string', kind: 'content' },
-    'data-badge': { type: 'string', kind: 'content' },
     'data-warning': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-resizable': { type: 'boolean', kind: 'style' },
@@ -132,9 +128,9 @@ export class SherpaNode extends SherpaElement {
     this.$('.heading')?.setAttribute('data-heading', summary ? `${heading}: ${summary}` : heading);
   }
 
-  /** A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none. */
+  /** A socket's box on the screen, for a connector to join: the header's; null when it has none. */
   socketRect(side: SocketSide): DOMRect | null {
-    return socketRect(this.$<HTMLElement>(side === 'false' ? `.footer ${SOCKETS[side]}` : `.header ${SOCKETS[side]}`));
+    return socketRect(this.$<HTMLElement>(`.header ${SOCKETS[side]}`));
   }
 
   /** Where the canvas puts it. */

@@ -3226,15 +3226,6 @@
           "valueSet": "v"
         },
         {
-          "name": "data-badge",
-          "description": "a short count on its tab's right: the rows true after a simulation. Its host writes it"
-        },
-        {
-          "name": "data-branches",
-          "description": "a fork: the header's output is True, and a footer shows with its False socket, a rounded square",
-          "valueSet": "v"
-        },
-        {
           "name": "data-caption",
           "description": "the TAB on its top edge: what its step does or did, its time and rows (\"Simulating… 1s\"). A running tab leads with a play icon. Its host writes it"
         },
@@ -3244,7 +3235,7 @@
         },
         {
           "name": "data-collapsed",
-          "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them",
+          "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's and the rows'. Its host writes them data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them",
           "valueSet": "v"
         },
         {
@@ -3255,11 +3246,6 @@
         {
           "name": "data-description",
           "description": "a line under the name"
-        },
-        {
-          "name": "data-false-connected",
-          "description": "a connection leaves False: its socket is filled, else hollow",
-          "valueSet": "v"
         },
         {
           "name": "data-heading",

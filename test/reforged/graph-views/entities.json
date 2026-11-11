@@ -13,7 +13,7 @@
         "connections": [
           { "from": "start/rows", "to": "field" },
           { "from": "field/field", "to": "status" },
-          { "from": "status", "to": "#out/where" }
+          { "from": "status/true", "to": "#out/where" }
         ]
       }
     }

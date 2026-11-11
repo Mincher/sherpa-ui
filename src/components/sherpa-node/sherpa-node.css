@@ -158,44 +158,6 @@
   --_status-surface-strong: var(--sherpa-style-success-surface-base-2);
   --_status-data-viz-border: var(--sherpa-style-success-border-data-viz);
 }
-
-:host(sherpa-node[data-branches]) .header .socket-out {
-  --sherpa-style-border-base: var(--sherpa-style-success-border-base);
-  --sherpa-style-border-base-1: var(--sherpa-style-success-border-base-1);
-  --sherpa-style-border-width: var(--sherpa-style-success-border-width);
-  --sherpa-style-border-data-viz: var(--sherpa-style-success-border-data-viz);
-  --sherpa-style-content-base: var(--sherpa-style-success-content-base);
-  --sherpa-style-content-inverse: var(--sherpa-style-success-content-inverse);
-  --sherpa-style-content-secondary: var(--sherpa-style-success-content-secondary);
-  --sherpa-style-content-tertiary: var(--sherpa-style-success-content-tertiary);
-  --sherpa-style-indicator-accent: var(--sherpa-style-success-indicator-accent);
-  --sherpa-style-surface-base: var(--sherpa-style-success-surface-base);
-  --sherpa-style-surface-base-1: var(--sherpa-style-success-surface-base-1);
-  --sherpa-style-surface-base-2: var(--sherpa-style-success-surface-base-2);
-  --sherpa-style-surface-shadow: var(--sherpa-style-success-surface-shadow);
-  --sherpa-style-surface-data-viz: var(--sherpa-style-success-surface-data-viz);
-  --_status-surface-strong: var(--sherpa-style-success-surface-base-2);
-  --_status-data-viz-border: var(--sherpa-style-success-border-data-viz);
-}
-
-:host(sherpa-node[data-branches]) .socket-false {
-  --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
-  --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
-  --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
-  --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
-  --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
-  --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
-  --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
-  --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
-  --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
-  --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
-  --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
-  --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
-  --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
-  --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-  --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-  --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-}
 /* == end sherpa:tokens == */
 
 /**
@@ -322,14 +284,6 @@
 .caption-icon, .caption-warn { display: none; flex: none; }
 /* A warned node's tab wears the warning icon: the tab takes the node's own pin, so its colour is the warning's. */
 :host([data-warning]) .caption-warn { display: inline-flex; }
-/* The count of rows true, a small pill after the words; gone while empty. */
-.caption-badge {
-  padding-inline: var(--sherpa-theme-padding-sm, 4px);
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--sherpa-style-surface-base-2, #ebebf0);
-  color: var(--sherpa-style-content-base, #0c0b11);
-}
-.caption-badge:empty { display: none; }
 :host([data-step="running"]) .caption-icon { display: inline-flex; }
 /* Lit by its step, the node takes its pin's look, not its category's tint. */
 :host([data-step="running"]) .root { --_category-fill: initial; --_category-head: initial; }
@@ -340,7 +294,7 @@
 :host(:not([data-warning])) .tip-warning { display: none; }
 
 /* The whole node's sockets stand outside the card, each in its SOCKET TAB (as each row's does; its look is the family's), on
-   the header's middle; a fork's False on its footer's. TRAP T-a-node-is-three-columns */
+   the header's middle. TRAP T-a-node-is-three-columns */
 .socket-tab {
   display: none;
   position: absolute;
@@ -356,7 +310,7 @@
   /* 1px over the card's OUTER edge, its border included: a whole pixel, so a socket's 1px line stays sharp. */
   inset-inline-start: calc(1px - var(--sherpa-style-border-width, 0.5px) - var(--_track));
 }
-.socket-tab-out, .socket-tab-false { inset-inline-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px); }
+.socket-tab-out { inset-inline-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px); }
 /* In its tab, a socket is its tab's box, its press area reaching past the tab's sides. */
 .socket-tab .socket {
   position: relative;
@@ -364,72 +318,6 @@
   margin: 0 var(--_tab-inset);
 }
 
-/* ── A fork: True is the header's output, False the footer's ─────────── */
-.footer {
-  position: relative;
-  /* False's row: only as tall as its socket and its tab. Will, TODO 887 */
-  min-block-size: var(--_tab-h);
-  border-end-start-radius: inherit;
-  border-end-end-radius: inherit;
-}
-/* Open, a fork's two tabs HANG from the card's top and bottom edges, at its end — True above, False below — each round on
-   its outer side and square where it joins the card; the card's end corners square to meet them, and its caption steps
-   aside for True (Will, 2026-11-11). Collapsed, they stand in the end strip as every socket does. */
-:host([data-branches]:not([data-collapsed])) .root {
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
-}
-:host([data-branches]:not([data-collapsed])) .header .socket-tab-out,
-:host([data-branches]:not([data-collapsed])) .socket-tab-false {
-  inset-inline: auto calc(-1 * var(--sherpa-style-border-width, 0.5px));
-  inline-size: var(--_tab-h);
-  block-size: var(--_track);
-  margin: 0;
-  border-radius: 0;
-}
-:host([data-branches]:not([data-collapsed])) .header .socket-tab-out {
-  inset-block-start: calc(1px - var(--sherpa-style-border-width, 0.5px) - var(--_track));
-  border-start-start-radius: calc(var(--_tab-h) / 2);
-  border-start-end-radius: calc(var(--_tab-h) / 2);
-}
-:host([data-branches]:not([data-collapsed])) .socket-tab-false {
-  inset-block-start: calc(100% + var(--sherpa-style-border-width, 0.5px) - 1px);
-  border-end-start-radius: calc(var(--_tab-h) / 2);
-  border-end-end-radius: calc(var(--_tab-h) / 2);
-}
-/* Its line on its three outer sides, to the card's border; its socket on its middle, the press area past its ends. */
-:host([data-branches]:not([data-collapsed])) .header .socket-tab-out::before,
-:host([data-branches]:not([data-collapsed])) .socket-tab-false::before {
-  inset-inline: 0;
-  inline-size: auto;
-  block-size: calc(var(--_track) - 1px + var(--_line));
-  border-width: var(--_line);
-}
-:host([data-branches]:not([data-collapsed])) .header .socket-tab-out::before {
-  inset-block: 0 auto;
-  border-block-end-width: 0;
-}
-:host([data-branches]:not([data-collapsed])) .socket-tab-false::before {
-  inset-block: auto 0;
-  border-block-start-width: 0;
-}
-:host([data-branches]:not([data-collapsed])) .header .socket-tab-out .socket,
-:host([data-branches]:not([data-collapsed])) .socket-tab-false .socket { margin: var(--_tab-inset) 0; }
-/* False hangs below the card: its row inside takes no room. */
-:host([data-branches]:not([data-collapsed])) .footer { min-block-size: 0; }
-:host([data-branches]:not([data-collapsed])) .caption { inset-inline-end: calc(var(--_tab-h) - var(--sherpa-style-border-width, 0.5px)); }
-:host([data-branches]) .footer { display: block; }
-:host([data-branches]) .header .socket-out,
-:host([data-branches]) .socket-tab-out,
-:host([data-branches]) .socket-tab-false { display: block; }
-:host([data-branches]) .socket-false { display: block; --_shape: var(--_round-square); }
-:host([data-false-connected]) .socket-false .core { display: block; }
-:host([data-false-connected]) .socket-false { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
-.tip-false .word { display: inline; }
-.name-true { display: none; }
-:host([data-branches]) .header .name-out { display: none; }
-:host([data-branches]) .header .name-true { display: inline; }
-:host([data-branches]) .header .tip-out .w-boolean { display: inline; }
 
 /* ── The rows: only when there are some. Each spans the card, so its
    sockets sit on the card's edges; it takes its inset from --_pad-inline. ── */
@@ -481,16 +369,6 @@
 /* A box whose rows are all idle (TODO 924) goes, collapsed or not. */
 .body ::slotted(.section[data-idle]) { display: none; }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) .body ::slotted(.section[data-unconnected]) { display: none; }
-/* A fork's footer has no room of its own: False stands last in the outputs' stack. */
-:host([data-collapsed]) .footer {
-  position: static;
-  min-block-size: 0;
-}
-:host([data-collapsed]) .foot { display: none; }
-:host([data-collapsed]) .socket-tab-false {
-  inset-block-start: calc(var(--_stack-top) + (var(--_outs-now) - 1) * var(--_stack-step));
-  margin-block-start: 0;
-}
 /* The header's own sockets are each stack's first: at its top, not the grown header's middle. */
 :host([data-collapsed]) .header :is(.socket-tab-in, .socket-tab-out) {
   inset-block-start: var(--_stack-top);
@@ -526,10 +404,9 @@
   border-start-end-radius: calc(var(--_stack-step) / 2);
   border-end-end-radius: calc(var(--_stack-step) / 2);
 }
-/* Hiding the unconnected: a header socket no connection joins hides, and a fork's False no connection leaves goes. */
+/* Hiding the unconnected: a header socket no connection joins hides. */
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-connected])) .header .socket-tab-in,
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-connected])) .header .socket-tab-out { visibility: hidden; }
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-connected])) .footer { display: none; }
 /* A SECTION: rows on a grey box, 8px in from the card. Its rows reach past the box and the card's edge (`--_reach`), so each socket's
    tab stands outside the card, where the header's do; a row takes its field's inset from the box. TODO 887 */
 .body {

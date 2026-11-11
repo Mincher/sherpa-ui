@@ -15,7 +15,7 @@
  * - leafOf — One test as its node says it: the Field on its header, a comparison, Time's or a Tag's; or why it says none.
  * - nodeFlow — A node's flow, read from its graph; a fault in words for a node it does not hold.
  */
-import { FALSE_SOCKET, ROWS, socketOf, type DrawnGraph, type GraphNode, type GraphRow, type NodeConnection } from './node-kinds.js';
+import { ROWS, socketOf, type DrawnGraph, type GraphNode, type GraphRow, type NodeConnection } from './node-kinds.js';
 import { coerce, readInput, truthOf } from './node-input.js';
 import { portalFlow } from './node-portals.js';
 import { OP_LABELS, OP_TAKES, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
@@ -52,13 +52,16 @@ export interface ConditionRead {
   faults: string[];
 }
 
-/** A socket address in words: "Source › Rows"; a source's header is its True where the node forks. */
-function said(graph: DrawnGraph, address: string, source: boolean): string {
+/** A socket address in words: "Source › Rows", "Condition › True". */
+function said(graph: DrawnGraph, address: string): string {
   const { node: id, row } = socketOf(address);
   const from = graph.nodes.find((n) => n.id === id);
-  const part = row === FALSE_SOCKET ? 'False' : row ? from?.rows.find((r) => r.name === row)?.label : source && from?.branches ? 'True' : undefined;
+  const part = row ? from?.rows.find((r) => r.name === row)?.label : undefined;
   return [from?.heading ?? id, part].filter(Boolean).join(' › ');
 }
+
+/** A test's True (1 or 0, plan 944) and its Results say its tree. */
+const SAYS_TREE = new Set([ROWS.name, 'true']);
 
 /** No condition, and why. */
 const none = (fault: string): ConditionRead => ({ faults: [fault] });
@@ -105,10 +108,9 @@ function readFrom(graph: Flowing, from: string, facts: ConditionFacts, walk: Wal
   const { node: id, row: at } = socketOf(from);
   const node = graph.nodes.find((n) => n.id === id);
   // A test's Results are the rows that pass it: they say its tree, as its True does (TODO 939).
-  const row = at === ROWS.name && node && TESTS.has(node.kind) ? undefined : at;
+  const row = at !== undefined && SAYS_TREE.has(at) && node && TESTS.has(node.kind) ? undefined : at;
   if (!node) return none(`a connection comes from "${id}", which the graph does not hold`);
   if (walk.seen.has(node.id)) return none(`"${node.heading}" reads itself, in a loop`);
-  if (row === FALSE_SOCKET) return none(`"${node.heading}" › False is a boolean only, not rows: to keep the other rows, set the Check to its inverse`);
   return readNode(graph, node, row, facts, { ...walk, seen: new Set([...walk.seen, node.id]) });
 }
 
@@ -164,12 +166,12 @@ function carried(graph: Flowing, node: GraphNode, facts: ConditionFacts, walk: W
 function partFrom(graph: Flowing, via: NodeConnection, facts: ConditionFacts, walk: Walk): ConditionRead {
   const { node: id, row } = socketOf(via.from);
   const from = graph.nodes.find((n) => n.id === id);
-  const run: ConditionRead = { tree: { boolean: said(graph, via.from, true) }, faults: [] };
-  if (!from || (row === undefined && (TESTS.has(from.kind) || facts.inner?.(from))) || (row === ROWS.name && TESTS.has(from.kind))) {
+  const run: ConditionRead = { tree: { boolean: said(graph, via.from) }, faults: [] };
+  if (!from || (row === undefined && (TESTS.has(from.kind) || facts.inner?.(from))) || (row !== undefined && SAYS_TREE.has(row) && TESTS.has(from.kind))) {
     const nested = readFrom(graph, via.from, facts, walk);
     return nested.tree !== undefined || !from ? nested : { ...run, faults: nested.faults };
   }
-  const out = row === undefined || row === FALSE_SOCKET ? undefined : from.rows.find((r) => r.name === row);
+  const out = row === undefined ? undefined : from.rows.find((r) => r.name === row);
   if (!out) return run;
   if (out.control && (out.value === undefined || out.value === '')) return { faults: [] };
   const kind = out.gives ?? out.output;
@@ -204,8 +206,8 @@ function readNode(graph: Flowing, node: GraphNode, row: string | undefined, fact
 export function nodeFlow(graph: DrawnGraph, id: string, facts: ConditionFacts = {}): NodeFlow | { fault: string } {
   const node = graph.nodes.find((n) => n.id === id);
   if (!node) return { fault: `the graph holds no node "${id}"` };
-  const into = (address: string): string[] => graph.connections.filter((r) => r.to === address).map((r) => said(graph, r.from, true));
-  const onward = (address: string): string[] => graph.connections.filter((r) => r.from === address).map((r) => said(graph, r.to, false));
+  const into = (address: string): string[] => graph.connections.filter((r) => r.to === address).map((r) => said(graph, r.from));
+  const onward = (address: string): string[] => graph.connections.filter((r) => r.from === address).map((r) => said(graph, r.to));
   const warned = (row?: string): { warning: string } | Record<string, never> => {
     const words = (node.warnings ?? []).filter((w) => w.row === row).map((w) => w.words);
     return words.length ? { warning: words.join('\n') } : {};
@@ -213,14 +215,13 @@ export function nodeFlow(graph: DrawnGraph, id: string, facts: ConditionFacts = 
   const incoming: Record<string, unknown>[] = [
     // What its type ignores, by where from, and why (TODO 940).
     ...(node.input ? [{ socket: 'In', type: node.input, from: into(node.id), ...('warning' in warned() ? { value: null } : {}), ...warned(),
-      ...(node.ignored ? { ignored: node.ignored.from.map((f) => said(graph, f, true)), why: node.ignored.words } : {}) }] : []),
+      ...(node.ignored ? { ignored: node.ignored.from.map((f) => said(graph, f)), why: node.ignored.words } : {}) }] : []),
     ...node.rows.filter((r) => r.input).map((r) => ({
       socket: r.label, type: r.input, from: into(`${node.id}/${r.name}`), ...(r.value !== undefined && r.value !== '' ? { value: r.value } : {}), ...warned(r.name),
     })),
   ];
   const outgoing: Record<string, unknown>[] = [
-    ...(node.output || node.branches ? [{ socket: node.branches ? 'True' : 'Out', type: node.output ?? 'boolean', to: onward(node.id) }] : []),
-    ...(node.branches ? [{ socket: 'False', type: 'boolean', to: onward(`${node.id}/${FALSE_SOCKET}`) }] : []),
+    ...(node.output ? [{ socket: 'Out', type: node.output, to: onward(node.id) }] : []),
     ...node.rows.filter((r) => r.output).map((r) => ({
       socket: r.label, type: r.output, to: onward(`${node.id}/${r.name}`), ...(r.control && r.value !== undefined ? { carries: inJson(r) } : {}),
     })),

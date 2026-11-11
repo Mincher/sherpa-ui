@@ -36,8 +36,8 @@ test('the values a node can name: each node before it, nearest first; its rows a
   assert.deepEqual(at.map((s) => s.node), ['f', 'n', 's'], 'nearest first; the lone Value is no connection\'s');
   assert.deepEqual(at.find((s) => s.node === 'f').values.map((v) => v.key), ['{f.file}', '{f.link}']);
   assert.deepEqual(at.find((s) => s.node === 'n').values.map((v) => [v.key, v.label]), [['{n.result}', 'Result']]);
-  // A Source: its Count, then its store's fields; Results, a set of rows, is no value a message can say.
-  assert.deepEqual(at.find((s) => s.node === 's').values.map((v) => [v.key, v.of]), [['{s.count}', 'number'], ['{s.name}', 'string'], ['{s.seats}', 'number']]);
+  // A Source: its store's fields; it has no Count (plan 944), and Results, a set of rows, is no value a message can say.
+  assert.deepEqual(at.find((s) => s.node === 's').values.map((v) => [v.key, v.of]), [['{s.name}', 'string'], ['{s.seats}', 'number']]);
   assert.equal(at.find((s) => s.node === 's').heading, 'Customers');
 });
 

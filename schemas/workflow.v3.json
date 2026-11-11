@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/workflow.v3.json",
   "title": "Sherpa-UI workflow definition",
-  "description": "One workflow, as JSON: its nodes, their values, and the connections between their sockets. A node's data comes in on its header, of any type, and leaves from its Rows row (\"node/rows\"); where it forks, its header sends True and \"node/#false\" False. What each node IS comes from its kind. checkWorkflow() reads it; readWorkflow() reads a v1 as one. docs/history/plan-713-node-model.md",
+  "description": "One workflow, as JSON: its nodes, their values, and the connections between their sockets. A node's data comes in on its header, of any type, and leaves from its Rows row (\"node/rows\"); a test's True is its row \"node/true\", and only a Check node branches, by \"node/yes\" and \"node/no\". What each node IS comes from its kind. checkWorkflow() reads it; readWorkflow() reads a v1 as one. docs/history/plan-713-node-model.md",
   "type": "object",
   "additionalProperties": false,
   "required": ["v", "id", "nodes"],

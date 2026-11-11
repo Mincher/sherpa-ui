@@ -10,12 +10,12 @@ One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canv
 
 ## When to use it
 
-For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a connection joins it; a fork (`data-branches`) sends True from the header and False from a footer; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`.
+For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a connection joins it; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`.
 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-connected></sherpa-node><sherpa-node data-heading="Pick" data-icon="price-tag" data-x="40" data-y="200" data-input-socket="any" data-input-connected data-warning="Pick takes an object; it was given a boolean"></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-connected data-branches data-current><sherpa-node-row data-input-socket="object" data-input-connected data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-connected></sherpa-node><sherpa-node data-heading="Pick" data-icon="price-tag" data-x="40" data-y="200" data-input-socket="any" data-input-connected data-warning="Pick takes an object; it was given a boolean"></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-connected data-current><sherpa-node-row data-input-socket="object" data-input-connected data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes
@@ -23,14 +23,11 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-active` | boolean |  | the one picked node whose panel is shown, in a stronger ring; the HOST writes it |
-| `data-badge` | text |  | a short count on its tab's right: the rows true after a simulation. Its host writes it |
-| `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with its False socket, a rounded square |
 | `data-caption` | text |  | the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
-| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it data-inputs, data-outputs how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-connected, data-outputs-connected the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them |
+| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it data-inputs, data-outputs how many sockets each side's stack holds, collapsed: the header's and the rows'. Its host writes them data-inputs-connected, data-outputs-connected the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
-| `data-false-connected` | boolean |  | a connection leaves False: its socket is filled, else hollow |
 | `data-heading` | text |  | the node's name, in its header |
 | `data-hide-unconnected` | boolean |  | collapsed, a socket no connection joins hides; a hover shows them. Its host writes it |
 | `data-icon` | text |  | a glyph before the name |
@@ -61,7 +58,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 
 | Method | What it does |
 |---|---|
-| `socketRect(side: SocketSide)` | A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none. |
+| `socketRect(side: SocketSide)` | A socket's box on the screen, for a connector to join: the header's; null when it has none. |
 
 ## Events
 
@@ -83,7 +80,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `caption-badge`, `caption-icon`, `caption-text`, `caption-warn`, `foot`, `footer`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `socket-tab-false`, `socket-tab-in`, `socket-tab-out`, `stack-in`, `stack-out`, `tip`
+`body`, `caption`, `caption-icon`, `caption-text`, `caption-warn`, `header`, `heading`, `resize`, `root`, `socket-in`, `socket-out`, `socket-tab-in`, `socket-tab-out`, `stack-in`, `stack-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -107,14 +104,9 @@ What each class's base rule reads:
 | `--sherpa-font-family-mono` | `.caption` | `font-family` |
 | `--sherpa-font-size-body-xs` | `.caption` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
-| `--sherpa-theme-padding-sm` | `.caption-badge` | `padding-inline` |
-| `--sherpa-display-mode-border-rounding-sm` | `.caption-badge` | `border-radius` |
-| `--sherpa-style-surface-base-2` | `.caption-badge` | `background` |
-| `--sherpa-style-content-base` | `.caption-badge` | `color` |
 | `--sherpa-layer-content` | `.socket-tab` | `z-index` |
 | `--sherpa-style-border-width` | `.socket-tab-in` | `inset-inline-start` |
 | `--sherpa-style-border-width` | `.socket-tab-out` | `inset-inline-start` |
-| `--sherpa-style-border-width` | `.socket-tab-false` | `inset-inline-start` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 | `--sherpa-style-border-width` | `.stack-in` | `inset-inline-start` |
@@ -133,6 +125,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseConnected?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
+`{ active?, caption?, category?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

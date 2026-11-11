@@ -100,7 +100,7 @@ import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { nodeTitle } from '../data/node-title.js';
 import { isSource, routeRead } from '../data/node-routes.js';
-import { lightOf, noTrue, trueOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
+import { lightOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
 import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
@@ -109,7 +109,7 @@ import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { FALSE_SOCKET, nodeKinds, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { nodeKinds, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -269,7 +269,6 @@ function valueWords(row: GraphRow): string {
 
 /** Set an attribute, or take it away when there is nothing to say. */
 /** The header's words when a simulation finds no row true. */
-const NO_TRUE = 'No true matches: no row passes this test, so True is false.';
 
 function put(el: Element, name: string, value: string | undefined): void {
   if (value === undefined || value === '') el.removeAttribute(name);
@@ -534,10 +533,6 @@ function stackPlaces(el: HTMLElement, collapsed: boolean): void {
     side('data-input-socket', 'data-input-connected', 'in', 'inConnected', 'input');
     side('data-output-socket', 'data-output-connected', 'out', 'outConnected', 'output');
   }
-  if (el.hasAttribute('data-branches')) {
-    at.out++;
-    if (el.hasAttribute('data-false-connected')) at.outConnected++;
-  }
   el.setAttribute('data-inputs', String(at.in));
   el.setAttribute('data-outputs', String(at.out));
   el.setAttribute('data-inputs-connected', String(at.inConnected));
@@ -560,13 +555,12 @@ function slotOf(drawn: Drawn, tie: NodeTie, n: number): [number, number] {
   return [tieX(drawn, tie), tie.y + (n - (tie.connections.length - 1) / 2) * TIE_GAP];
 }
 
-/** The type a connection carries, from its output socket: a row's, the header's (True, on a fork) or False. */
+/** The type a connection carries, from its output socket: a row's, or the header's. */
 function outputType(graph: DrawnGraph, from: string): string {
   const { node: id, row } = socketOf(from);
   const node = graph.nodes.find((n) => n.id === id);
-  if (row === FALSE_SOCKET) return 'false';
   if (row !== undefined) return node?.rows.find((r) => r.name === row)?.output ?? '';
-  return node?.branches ? 'boolean' : node?.output ?? '';
+  return node?.output ?? '';
 }
 
 /** The handles of one connection: a dot at each bend point, and a proposed one at the middle of each piece, saved only once moved. They show on hover, and when the connection or the handle is picked. */
@@ -745,10 +739,9 @@ function fitLines(drawn: Drawn): void {
   if (drawn.lines.style.getPropertyValue('--y') !== `${t}px`) drawn.lines.style.setProperty('--y', `${t}px`);
 }
 
-/** A socket's box on the screen: a node's or a row's, on one side; a False is its footer's. */
+/** A socket's box on the screen: a node's or a row's, on one side. */
 function socketAt(drawn: Drawn, address: string, side: SocketSide): DOMRect | null {
   const { node, row } = socketOf(address);
-  if (row === FALSE_SOCKET) return (drawn.nodes.get(node) as HasSockets | undefined)?.socketRect?.('false') ?? null;
   const el = (row === undefined ? drawn.nodes.get(node) : drawn.rows.get(address)) as HasSockets | undefined;
   return el?.socketRect?.(side) ?? null;
 }
@@ -808,12 +801,11 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const wornAs = (address: string): string => (out ? [...drawn.beside].find(([, to]) => to === address)?.[0] ?? address : address);
   const own = owner ? addressOf(drawn, owner) : null;
   if (!owner || !own) return;
-  const fork = hit.classList.contains('socket-false');
   // What the line is joined to at its start: the output it leaves, or the input it runs back to.
   const lifting = out ? undefined : drawn.connections.findLast((r) => r.to === own);
   if (!out && !lifting && !takesCustom(drawn, own) && !(drawn.options.onAdd && typeAt(drawn, own, 'input'))) return;
-  const from = out ? (fork ? `${own}/${FALSE_SOCKET}` : wornAs(own)) : lifting?.from;
-  const start = out ? (owner as HasSockets).socketRect?.(fork ? 'false' : 'output') : lifting ? socketAt(drawn, lifting.from, 'output') : (owner as HasSockets).socketRect?.('input');
+  const from = out ? wornAs(own) : lifting?.from;
+  const start = out ? (owner as HasSockets).socketRect?.('output') : lifting ? socketAt(drawn, lifting.from, 'output') : (owner as HasSockets).socketRect?.('input');
   if (!start) return;
   event.preventDefault();
   event.stopPropagation();
@@ -1520,10 +1512,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     put(el, 'data-category', portal ? `portal-${portal.side}` : categorySlug(node.category));
     put(el, 'data-scale-w', node.size ? String(node.size.w) : undefined);
     put(el, 'data-scale-h', node.size ? String(node.size.h) : undefined);
-    el.toggleAttribute('data-branches', !!node.branches);
     el.toggleAttribute('data-input-connected', graph.connections.some((r) => r.to === node.id));
     el.toggleAttribute('data-output-connected', graph.connections.some((r) => r.from === node.id));
-    el.toggleAttribute('data-false-connected', graph.connections.some((r) => r.from === `${node.id}/${FALSE_SOCKET}`));
     el.toggleAttribute('data-collapsed', drawn.collapsed.has(node.id));
     // What its first field holds, in words: a collapsed node's name ends with it.
     const first = node.rows.find((r) => r.control && !r.beside);
@@ -2042,7 +2032,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   const name = (address: string): string => {
     const { node: id, row } = socketOf(address);
     const from = graph.nodes.find((n) => n.id === id);
-    const part = row === FALSE_SOCKET ? 'False' : row ? from?.rows.find((r) => r.name === row)?.label : from?.branches && address === from.id ? 'True' : undefined;
+    const part = row ? from?.rows.find((r) => r.name === row)?.label : undefined;
     return [from?.heading ?? id, part].filter(Boolean).join(' › ');
   };
   // The inputs a connection drives: their fields mirror what comes in, read only.
@@ -2076,8 +2066,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   header.setAttribute('data-orientation', 'vertical');
   const whole = [
     ...graph.connections.filter((r) => r.to === node.id).map((r) => ({ key: 'In', value: name(r.from) })),
-    ...graph.connections.filter((r) => r.from === node.id).map((r) => ({ key: node.branches ? 'True' : 'Out', value: name(r.to) })),
-    ...graph.connections.filter((r) => r.from === `${node.id}/${FALSE_SOCKET}`).map((r) => ({ key: 'False', value: name(r.to) })),
+    ...graph.connections.filter((r) => r.from === node.id).map((r) => ({ key: 'Out', value: name(r.to) })),
   ];
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
@@ -3645,7 +3634,6 @@ export function bindWorkflow(
       const el = drawnOn.get(canvas)?.nodes.get(id);
       el?.removeAttribute('data-step');
       el?.removeAttribute('data-caption');
-      el?.removeAttribute('data-badge');
     }
     lit = { kind, ids };
     paintRunning();
@@ -3665,11 +3653,7 @@ export function bindWorkflow(
       if (!el) continue;
       el.setAttribute('data-step', 'done');
       put(el, 'data-caption', `${lightOf(node, simulation.times[id] ?? 0)}${simulation.stale ? ' · stale' : ''}`);
-      // Where it forks: the rows that are true, on the tab; where its True is false, the header says so too.
-      const hits = trueOf(node);
-      put(el, 'data-badge', hits === undefined ? undefined : hits.toLocaleString('en'));
-      const own = graph.nodes.find((n) => n.id === id)?.warnings?.map((w) => w.words) ?? [];
-      put(el, 'data-warning', (noTrue(node) ? [...own, NO_TRUE] : own).join('\n'));
+      put(el, 'data-warning', graph.nodes.find((n) => n.id === id)?.warnings?.map((w) => w.words).join('\n'));
     }
   };
   /** Take the lights off. */
@@ -3678,7 +3662,6 @@ export function bindWorkflow(
       const el = drawnOn.get(canvas)?.nodes.get(id);
       el?.removeAttribute('data-step');
       el?.removeAttribute('data-caption');
-      el?.removeAttribute('data-badge');
       if (el) put(el, 'data-warning', graph.nodes.find((n) => n.id === id)?.warnings?.map((w) => w.words).join('\n'));
     }
   };

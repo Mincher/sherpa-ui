@@ -14,7 +14,7 @@
  * - headerInput — A connection let go on a use's header: a new input of its definition, joined to the use's new row.
  * - heldInputs — Each connection a use's header holds from before, read once as its own new input; a preset's stays.
  */
-import { NODE_KINDS, nodeKinds, FALSE_SOCKET, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeConnection, type SocketType } from './node-kinds.js';
+import { NODE_KINDS, nodeKinds, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeConnection, type SocketType } from './node-kinds.js';
 import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tidyTags } from './tags.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
@@ -54,7 +54,7 @@ function wordsOf(address: string, workflow: WorkflowDefinition, kinds: Kinds): s
   const source = node?.kind === PORTAL ? addressOf(row) : undefined;
   if (source !== undefined) return wordsOf(source, workflow, kinds);
   const kind = kindOfNode(kinds, node);
-  const part = row === FALSE_SOCKET ? 'False' : row === undefined ? (kind?.branches ? 'True' : '') : (rowOf(kind?.rows ?? [], row)?.label ?? row);
+  const part = row === undefined ? '' : (rowOf(kind?.rows ?? [], row)?.label ?? row);
   return [nameOf(node, kinds), part].filter(Boolean).join(' › ');
 }
 
@@ -232,7 +232,6 @@ export function ungroupUse(
   }
   for (const r of connections.filter((x) => socketOf(x.from).node === useId)) {
     const { row } = socketOf(r.from);
-    if (row === FALSE_SOCKET) continue;
     for (const inner of (definition.connections ?? []).filter((x) => x.to === sockets('out', row))) for (const from of expand(inner.from)) joined.push({ from, to: r.to });
   }
   // A parameter nothing fed: the row it reached holds its value.

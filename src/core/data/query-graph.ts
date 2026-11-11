@@ -41,7 +41,7 @@ import { entityRefOf } from './entity.js';
 import { PRESET_FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
-  FALSE_SOCKET, LIST_OPS, NODE_KINDS, ROWS, kindNode, resolveKind, rowChoices, rowOf, socketOf,
+  LIST_OPS, NODE_KINDS, ROWS, kindNode, resolveKind, rowChoices, rowOf, socketOf,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeConnection, type RowChoice,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
@@ -53,6 +53,7 @@ export const QUERY_NODE = {
   source: 'source',
   status: (field: string): string => `status-${field}`,
   statusWhen: (field: string, value: string): string => `status-${field}.${value}`,
+  statusCheck: (field: string, value: string): string => `check-status-${field}.${value}`,
   scope: (scope: string): string => `scope-${scope}`,
   condition: (scope: string, field: string): string => `when-${scope}-${field}`,
   field: (scope: string, field: string): string => `field-${scope}-${field}`,
@@ -338,7 +339,7 @@ export function queryGraphFaults(graph: DrawnGraph, domains: Readonly<Record<str
     const [a, b] = [socketOf(from), socketOf(to)];
     const [start, end] = [node(a.node), node(b.node)];
     if (!start || !end) faults.push(`A connection from "${from}" to "${to}" ends at a node that is not drawn.`);
-    else if (a.row === FALSE_SOCKET && !start.branches) faults.push(`"${start.heading}" has no False to connection from "${from}".`);
+    else if (a.row !== undefined && !start.rows.some((r) => r.name === a.row)) faults.push(`A connection from "${from}" leaves a row "${start.heading}" does not have.`);
     else if (b.row !== undefined && !end.rows.some((r) => r.name === b.row)) faults.push(`A connection into "${to}" ends at a row "${end.heading}" does not have.`);
   }
   return faults;
@@ -365,7 +366,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     return id;
   };
   // A field's whole tree (plan 783 D6): a Field node per field it reads, a test per leaf on its Field, an And or an Or per
-  // group, a part's True into its group's header. `into`: the connections into its Fields, where a status chain hands rows on.
+  // group, a part's True (1 or 0, plan 944) into its group's header. `into`: the connections into its Fields, where a status
+  // chain hands rows on. It returns where the root's True leaves: a Condition's True row, else its header (Time's Out).
   const treeNodes = (
     column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
     apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, into = [] }: { back?: number; into?: readonly string[] } = {},
@@ -378,9 +380,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const id = `field-${base}${fields.length > 1 || !root.startsWith('when-') ? `-${f}` : ''}`;
       const row: GraphRow = { name: 'field', label: 'Field', control: 'field', output: 'object', gives: 'field', value: f, editable: true, choices: ctx.fields };
       add(column - depth(tree) * back, id, 'field', [apply(row)], { heading: ctx.label(f), ref: { ...ref, field: f, tree: whole } });
-      // Its header takes rows only where a chain hands them on; it forks nowhere in a Query.
+      // Its header takes rows only where a chain hands them on.
       const made = nodes.at(-1)!;
-      delete made.branches;
       if (!into.length) delete made.input;
       for (const from of into) connections.push({ from, to: id });
       return [f, id] as const;
@@ -394,13 +395,13 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       if (parts) {
         add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS })], { ...at, ref: nodeRef }, parts[0]);
         parts[1].forEach((p, i) => connections.push({ from: walk(p, [...path, i + 1]), to: id }));
-        return id;
+        return `${id}/true`;
       }
       const leaf = part as ConditionLeaf;
       const drawn = leafRows(leaf, ctx);
       add(column - path.length * back, id, drawn.kind, drawn.rows.map(off), { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
       connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
-      return id;
+      return drawn.kind === 'condition' ? `${id}/true` : id;
     };
     return walk(tree, []);
   };
@@ -419,12 +420,10 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       return row.name === 'pageSize' ? { ...row, value, editable: true } : owned({ ...row, value }, row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row));
     }),
   ]);
-  delete nodes.at(-1)!.branches;
   // Each Source the reader placed, under it: its Store theirs to pick, and nothing the Query reads. TODO 808
   for (const kept of facts.kept ?? []) {
     add(0, kept.id, 'source', rowsOf('source', { store: kept.store }).map((row) => (row.name === ROWS.name ? row
       : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(source?.store) }] });
-    delete nodes.at(-1)!.branches;
   }
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
   const everyField = known.map((f) => ({ value: f, label: label(f) }));
@@ -435,25 +434,28 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     const values = (domain.values ?? []).map(String);
     const whens = values.map((v) => domain.when?.[v]);
     const rows = values.map((value, i): GraphRow => ({
-      name: value, label: value, input: 'boolean', value: domain.statuses?.[value] ?? '',
+      name: value, label: value, input: 'any', value: domain.statuses?.[value] ?? '',
       hint: whens[i] === undefined ? 'Every row the values before it left. ' + FROM_STORE : !isCondition(whens[i]) ? `Its \`when\` is not a condition. ${FROM_STORE}` : FROM_STORE,
     }));
     connections.push({ from: sent(QUERY_NODE.source), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
-    // Each value's `when` is a tree of tests on a Field per field it names; False hands the rows it left to the next value's Fields.
+    // Each value's `when` is a tree of tests on a Field per field it names, into a Check (plan 944, D2 A): Yes hands its value
+    // the rows, No hands the rows it left to the next value's Fields and Check, in the order the first match is taken.
     let before: string | null = null;
     let at = 0;
     values.forEach((value, i) => {
       const when = whens[i];
       if (!isCondition(when)) {
-        if (before && when === undefined) connections.push({ from: `${before}/${FALSE_SOCKET}`, to: `${node}/${value}` });
+        if (before && when === undefined) connections.push({ from: `${before}/no`, to: `${node}/${value}` });
         before = null;
         return;
       }
-      const id = treeNodes(0.5 + at++ * 0.01, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
+      const column = 0.5 + at++ * 0.01;
+      const said = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
         heading: value, description: groupWords(when),
-      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/${FALSE_SOCKET}`] : [] });
-      connections.push({ from: id, to: `${node}/${value}` });
-      before = id;
+      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/no`] : [] });
+      const check = add(column + 0.002, QUERY_NODE.statusCheck(field, value), 'check', rowsOf('check', {}), { heading: value, ref: { status: field, value } });
+      connections.push({ from: said, to: check }, { from: before ? `${before}/no` : sent(QUERY_NODE.source), to: `${check}/data` }, { from: `${check}/yes`, to: `${node}/${value}` });
+      before = check;
     });
   }
   // What the View's rows come from: each status field's, else the Source's.
