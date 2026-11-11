@@ -1,7 +1,7 @@
 /**
  * SWIMLANES are rows down a workflow's canvas, one for each family of nodes. A node stands in the lane its family names;
- * a logic node, whose family no lane names, stands in the JUNCTION between the lanes of the nodes it joins, or in the one
- * lane they share. A band grows to hold its nodes and pushes the bands under it down; a band with no node takes no room.
+ * a logic node, whose family no lane names, stands in the JUNCTION between the lanes of the nodes it joins, or under the one
+ * lane they share: never in a lane. A portal is one too, an In and an Out of one name joined (TODO 915). A band grows to hold its nodes and pushes the bands under it down; a band with no node takes no room.
  * On and off is one edit, and the nodes stay where they are. Will, 2026-11-10
  *
  *   node --test test/unit/a-lane-holds-its-family.test.mjs
@@ -37,6 +37,34 @@ test('a node stands in its family\'s lane; a logic node in the junction between 
   // It joins Data, Values and Organise: the junction just above the lowest, under Values.
   assert.equal(at('cond'), 'junction:values');
   assert.equal(at('lone'), undefined);
+});
+
+test('a condition joined to one lane stands in the junction under it, never in it; a portal stands with the conditions it links (915)', () => {
+  const w = editWorkflow({
+    v: 2, id: 'p',
+    nodes: [
+      { id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'b', kind: 'value', x: 0, y: 200 }, { id: 'is', kind: 'condition', x: 300, y: 100 },
+      // The condition sends through a portal, In and Out of one name, to an Output.
+      { id: 'in', kind: 'portal', x: 600, y: 100, values: { type: 'in', name: 'ok' } },
+      { id: 'out-p', kind: 'portal', x: 900, y: 100, values: { type: 'out', name: 'ok' } },
+      { id: 'end', kind: 'output', x: 1200, y: 100 },
+      // A portal of another name, fed by values only.
+      { id: 'alone', kind: 'portal', x: 600, y: 400, values: { type: 'in', name: 'other' } },
+    ],
+    routes: [
+      { from: 'a/value', to: 'is' }, { from: 'b/value', to: 'is/b' }, { from: 'is', to: 'in' },
+      { from: 'out-p', to: 'end' }, { from: 'b/value', to: 'alone' },
+    ],
+  }, { lanes: LANES_BY_FAMILY });
+  const at = (id) => laneOf(w, id, NODE_KINDS);
+  // Through the portal's name it reaches the Output: Values and Output, the junction above Output.
+  assert.equal(at('is'), 'junction:custom');
+  assert.equal(at('in'), 'junction:custom');
+  assert.equal(at('out-p'), 'junction:custom');
+  // Joined to Values only: the junction under Values, not the lane.
+  assert.equal(at('alone'), 'junction:values');
+  const lone = editWorkflow({ v: 2, id: 'q', nodes: [{ id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'is', kind: 'condition', x: 300, y: 0 }], routes: [{ from: 'a/value', to: 'is' }] }, { lanes: LANES_BY_FAMILY });
+  assert.equal(laneOf(lone, 'is', NODE_KINDS), 'junction:values');
 });
 
 test('the bands stand top to bottom in the lanes\' order, a gap apart; a band with no node takes no room', () => {

@@ -561,9 +561,11 @@ Stage 2): one added or moved before Stage 1 is Stage 1. Give `bindWorkflow` a
 
 The toolbar's Swimlanes turns on a row for each family of nodes (`LANES_BY_FAMILY`:
 Data, Values, Organise, Agentic, Custom, Output), kept in the workflow's `lanes`. A
-node stands in its family's lane; a logic node stands in the junction just above the
-lowest lane it joins. A lane grows to hold its nodes and pushes the ones under it
-down; a lane with no node takes no room. Off, the rows go and the nodes stay.
+node stands in its family's lane, and wears its colour. A logic node or a portal
+stands in a junction, never a lane: the one just above the lowest lane it joins, or
+under the one lane it joins; an In and an Out portal of one name count as joined. A
+lane grows to hold its nodes and pushes the ones under it down; a lane with no node
+takes no room. Off, the rows go and the nodes stay.
 
 ### Entities
 

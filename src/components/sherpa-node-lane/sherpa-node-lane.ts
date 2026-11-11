@@ -5,12 +5,13 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaNodeLane extends SherpaElement {
-  static override css = new URL('./sherpa-node-lane.css', import.meta.url);
+  static override css = [new URL('../../core/sherpa-node-look.css', import.meta.url), new URL('./sherpa-node-lane.css', import.meta.url)];
   static override html = new URL('./sherpa-node-lane.html', import.meta.url);
 
   static override props = {
     'data-heading': { type: 'string', kind: 'content' },
     'data-type': { type: 'enum', kind: 'style', values: ['lane', 'junction'] },
+    'data-category': { type: 'string', kind: 'style' },
     'data-colour': { type: 'string', kind: 'behaviour' },
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-h': { type: 'number', kind: 'behaviour' },

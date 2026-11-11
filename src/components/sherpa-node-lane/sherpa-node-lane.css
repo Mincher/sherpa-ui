@@ -1,12 +1,13 @@
 /**
  * sherpa-node-lane.css — a lane's band, the canvas's whole width, faint in its colour, and its name at the start of what
- * the view shows (the canvas's `--_seen-start`). The canvas places it by `--y` and sizes it by `--height`.
+ * the view shows (the canvas's `--_seen-start`). The canvas places it by `--y` and sizes it by `--height`. Its colour is its
+ * category's ink, from `sherpa-node-look.css`, as its nodes wear; a junction has none, and stays grey. Will, TODO 916
  */
 
 :host {
   display: block;
   pointer-events: none;
-  --_colour: var(--sherpa-style-border-base, #b3b3c3);
+  --_colour: var(--_category-ink, var(--sherpa-style-border-base, #b3b3c3));
 }
 
 .band {

@@ -22,7 +22,8 @@ For the swimlanes of a workflow on a `sherpa-layout-canvas`: one row each, in it
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
-| `data-colour` | text |  | a CSS colour its band wears; none, the default look |
+| `data-category` | text |  | the node category its nodes are: it wears that category's ink, as they do (TODO 916) |
+| `data-colour` | text |  | a CSS colour its band wears, over its category's; none, the default look |
 | `data-h` | number | `0` | its height, in plane px |
 | `data-heading` | text | `Lane` | its name (default Lane) |
 | `data-type` | `lane` `junction` | `lane` | lane \| junction : a junction has no fill, and a dotted edge |
@@ -57,6 +58,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ colour?, h?, heading?, type?, y? }`
+`{ category?, colour?, h?, heading?, type?, y? }`
 
 Its declared props by name: `label` sets data-label.

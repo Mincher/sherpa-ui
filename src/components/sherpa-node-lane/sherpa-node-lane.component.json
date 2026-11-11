@@ -53,12 +53,21 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-category",
+      "type": "string",
+      "observed": false,
+      "declared": true,
+      "kind": "style",
+      "description": "the node category its nodes are: it wears that category's ink, as they do (TODO 916)"
+    },
+    {
+      "$type": "prop",
       "name": "data-colour",
       "type": "string",
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "a CSS colour its band wears; none, the default look"
+      "description": "a CSS colour its band wears, over its category's; none, the default look"
     },
     {
       "$type": "prop",
@@ -106,7 +115,7 @@
     }
   ],
   "populate": {
-    "shape": "{ colour?, h?, heading?, type?, y? }",
+    "shape": "{ category?, colour?, h?, heading?, type?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

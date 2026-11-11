@@ -59,6 +59,14 @@ test('Swimlanes on: a band for each family that has a node, the logic node in a 
     expect(s.top).toBeGreaterThanOrEqual(bands[band]!.top);
     expect(s.bottom).toBeLessThanOrEqual(bands[band]!.bottom);
   }
+  // Each lane wears its first family's ink, as its nodes do; the junction stays grey (TODO 916).
+  const inks = await page.locator('#cv > sherpa-node-lane').evaluateAll((ls) => ls.map((l) => getComputedStyle(l.shadowRoot!.querySelector('.swatch')!).backgroundColor));
+  const ink = (heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluate((n) => getComputedStyle(n).getPropertyValue('--_category-ink').trim());
+  const solid = async (heading: string) => page.evaluate((c) => { const el = document.createElement('i'); el.style.color = c; document.body.append(el); const v = getComputedStyle(el).color; el.remove(); return v; }, await ink(heading));
+  expect(inks[0]).toBe(await solid('Source'));
+  expect(inks[1]).toBe(await solid('Value'));
+  expect(inks[4]).toBe(await solid('Output'));
+  expect(await page.locator('#cv > sherpa-node-lane').nth(2).getAttribute('data-category')).toBeNull();
   // Off: the rows go, the nodes stay where the lanes put them; Undo turns them back on.
   const placed = await span(page, 'Output');
   await press(page, 'lanes');

@@ -7923,8 +7923,15 @@
           "description": "one SWIMLANE of a workflow: a row down a sherpa-layout-canvas, in its `rows` slot, the whole width, faint in its colour, its name at the start of what the view shows. A JUNCTION is the band between two lanes where a logic node stands: no fill, a dotted edge. Its host writes where it stands and how tall (data-y, data-h, plane px): it pans and zooms down, never across. It takes no press. Will, 2026-11-10",
           "attributes": [
             {
+              "name": "data-category",
+              "description": "the node category its nodes are: it wears that category's ink, as they do (TODO 916)",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-colour",
-              "description": "a CSS colour its band wears; none, the default look",
+              "description": "a CSS colour its band wears, over its category's; none, the default look",
               "type": {
                 "text": "string"
               }

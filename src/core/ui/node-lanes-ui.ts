@@ -19,7 +19,7 @@ export function drawLanes(
   let drawn = drawnOn.get(canvas);
   if (!drawn) drawnOn.set(canvas, (drawn = new Map()));
   const bands = workflow ? laneBands(workflow, heightOf, kinds).bands : [];
-  const colours = new Map((workflow?.lanes ?? []).map((l) => [l.id, l.colour]));
+  const lanes = new Map((workflow?.lanes ?? []).map((l) => [l.id, l]));
   for (const [id, el] of drawn) {
     if (bands.some((b) => b.id === id)) continue;
     el.remove();
@@ -34,12 +34,19 @@ export function drawLanes(
     }
     el.setAttribute('data-heading', band.label);
     el.setAttribute('data-type', band.junction ? 'junction' : 'lane');
-    const colour = colours.get(band.id);
-    if (colour) el.setAttribute('data-colour', colour);
-    else el.removeAttribute('data-colour');
+    // A lane wears its first family's ink, as its nodes do; a junction none (TODO 916). Its own colour wins.
+    const lane = lanes.get(band.id);
+    put(el, 'data-category', lane?.families[0]);
+    put(el, 'data-colour', lane?.colour);
     el.setAttribute('data-y', String(band.top));
     el.setAttribute('data-h', String(band.bottom - band.top));
   }
   // In order, top to bottom: only one out of place moves (a drag draws them each move). TRAP T-a-redraw-keeps-what-it-can
   keepOrder(canvas, bands.map((band) => drawn.get(band.id)!));
+}
+
+/** Set an attribute, or take it away when there is nothing to say. */
+function put(el: Element, name: string, value: string | undefined): void {
+  if (value) el.setAttribute(name, value);
+  else el.removeAttribute(name);
 }
