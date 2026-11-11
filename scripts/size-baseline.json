@@ -179,7 +179,7 @@
   "src/core/data/node-group.ts": 320,
   "src/core/data/node-input.ts": 221,
   "src/core/data/node-kinds.ts": 963,
-  "src/core/data/node-lanes.ts": 177,
+  "src/core/data/node-lanes.ts": 185,
   "src/core/data/node-library.ts": 458,
   "src/core/data/node-messages.ts": 104,
   "src/core/data/node-paths.ts": 70,

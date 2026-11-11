@@ -39,7 +39,7 @@ test('a node stands in its family\'s lane; a logic node in the junction between 
   assert.equal(at('lone'), undefined);
 });
 
-test('a condition joined to one lane stands in the junction under it, never in it; a portal stands with the conditions it links (915)', () => {
+test('a condition fed from one lane stands in the junction under it, never in it; a portal stands with the conditions it links (915, 928)', () => {
   const w = editWorkflow({
     v: 2, id: 'p',
     nodes: [
@@ -57,11 +57,10 @@ test('a condition joined to one lane stands in the junction under it, never in i
     ],
   }, { lanes: LANES_BY_FAMILY });
   const at = (id) => laneOf(w, id, NODE_KINDS);
-  // Through the portal's name it reaches the Output: Values and Output, the junction above Output.
-  assert.equal(at('is'), 'junction:custom');
-  assert.equal(at('in'), 'junction:custom');
-  assert.equal(at('out-p'), 'junction:custom');
-  // Joined to Values only: the junction under Values, not the lane.
+  // Fed from Values: the junction under Values, though it reaches the Output; a portal by what feeds it, an Out by its In.
+  assert.equal(at('is'), 'junction:values');
+  assert.equal(at('in'), 'junction:values');
+  assert.equal(at('out-p'), 'junction:values');
   assert.equal(at('alone'), 'junction:values');
   const lone = editWorkflow({ v: 2, id: 'q', nodes: [{ id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'is', kind: 'condition', x: 300, y: 0 }], routes: [{ from: 'a/value', to: 'is' }] }, { lanes: LANES_BY_FAMILY });
   assert.equal(laneOf(lone, 'is', NODE_KINDS), 'junction:values');
@@ -102,3 +101,25 @@ test('lanes on and off is one edit; off, the nodes stay; the schema takes them; 
   const twice = { ...w, lanes: [...w.lanes, { id: 'more', label: 'More', families: ['ai'] }] };
   assert.equal(checkWorkflow(twice), false);
 });
+
+test('lane A › junction › lane A › junction is ONE junction lane: each stands under the lane its inputs come from (928)', () => {
+  const w = editWorkflow({
+    v: 2, id: 'j',
+    nodes: [
+      { id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'c1', kind: 'condition', x: 300, y: 0 },
+      { id: 'm', kind: 'math', x: 600, y: 0 }, { id: 'c2', kind: 'condition', x: 900, y: 0 },
+      { id: 'end', kind: 'output', x: 1200, y: 0 }, { id: 'c0', kind: 'condition', x: 900, y: 600 },
+    ],
+    routes: [
+      { from: 'a/value', to: 'c1' }, { from: 'c1', to: 'm/a' }, { from: 'm/result', to: 'c2' }, { from: 'c2', to: 'end' },
+      // Fed from no lane: by what it joins, the Output.
+      { from: 'c0', to: 'end' },
+    ],
+  }, { lanes: LANES_BY_FAMILY });
+  const at = (id) => laneOf(w, id, NODE_KINDS);
+  assert.deepEqual([at('a'), at('m'), at('c1'), at('c2'), at('end')], ['values', 'values', 'junction:values', 'junction:values', 'output']);
+  assert.equal(at('c0'), 'junction:output');
+  const bands = laneBands(w, H, NODE_KINDS).bands.map((b) => b.id);
+  assert.deepEqual(bands, ['values', 'junction:values', 'output', 'junction:output']);
+});
+

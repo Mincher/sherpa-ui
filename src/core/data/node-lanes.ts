@@ -1,7 +1,7 @@
 /**
  * node-lanes.ts — SWIMLANES: rows down a workflow's canvas, one for each family of nodes (AI nodes in Agentic). A node is in
- * the lane its family names; a logic node or a portal, which has no lane, is in a JUNCTION: between the lanes of the nodes
- * it joins, or under the one lane they share — never in a lane (Will, TODO 915).
+ * the lane its family names; a logic node or a portal, which has no lane, is in a JUNCTION, never a lane: under the lane
+ * its inputs come from, so the junction nodes one lane feeds share one junction (Will, TODOs 915, 928).
  * A lane grows to hold its nodes and pushes the ones under it, and their nodes, down; a lane or a junction with no node
  * takes no room. It changes no data: a runner ignores it. Pure: no DOM. Will, 2026-11-10
  *
@@ -78,9 +78,9 @@ function familyOf(node: Laned['nodes'][number], kinds: Kinds): string | undefine
 }
 
 /**
- * The band a node stands in: the lane its family names; a logic node or a portal (`JUNCTION_KINDS`), the junction just above
- * the lowest lane of the laned nodes it joins — through other logic nodes and portals, an In and an Out of one name as
- * joined — or the junction under the one lane they all share; else none.
+ * The band a node stands in: the lane its family names; a logic node or a portal (`JUNCTION_KINDS`), the junction under the
+ * lowest lane its inputs come from — through other logic nodes and portals, an Out's In among them (TODO 928). Fed from no
+ * lane: the junction under the one lane it joins, or just above the lowest of several (915). Else none.
  */
 export function laneOf(workflow: Laned, id: string, kinds: Kinds): string | undefined {
   const lanes = workflow.lanes ?? [];
@@ -91,39 +91,47 @@ export function laneOf(workflow: Laned, id: string, kinds: Kinds): string | unde
     const family = node && !JUNCTION_KINDS.includes(node.kind) && familyOf(node, kinds);
     return family ? lanes.findIndex((l) => l.families.includes(family)) : -1;
   };
-  // A portal's other end: every portal of its name.
-  const named = (nodeId: string): string[] => {
+  // A portal's other end: every portal of its name; going against the flow, an Out's In only.
+  const named = (nodeId: string, back: boolean): string[] => {
     const node = byId.get(nodeId);
     const name = node?.kind === 'portal' ? node.values?.['name'] : undefined;
-    return name ? workflow.nodes.filter((n) => n.kind === 'portal' && n.id !== nodeId && n.values?.['name'] === name).map((n) => n.id) : [];
+    if (!name || (back && node!.values?.['type'] !== 'out')) return [];
+    return workflow.nodes.filter((n) => n.kind === 'portal' && n.id !== nodeId && n.values?.['name'] === name && (!back || n.values?.['type'] !== 'out')).map((n) => n.id);
   };
   const own = laneIndex(id);
   if (own >= 0) return lanes[own]!.id;
-  // Every laned node it joins, either way, through other logic nodes: the lanes it stands between.
   const routes = workflow.routes ?? [];
-  const joined = new Set<number>();
-  const seen = new Set([id]);
-  let ring = [id];
-  while (ring.length) {
-    const next: string[] = [];
-    for (const at of ring) {
-      const others = [...routes.map((r) => {
-        const [from, to] = [socketOf(r.from).node, socketOf(r.to).node];
-        return to === at ? from : from === at ? to : undefined;
-      }), ...named(at)];
-      for (const other of others) {
-        if (!other || seen.has(other) || other.startsWith('#')) continue;
-        seen.add(other);
-        const lane = laneIndex(other);
-        if (lane >= 0) joined.add(lane);
-        else next.push(other);
+  // The lanes of the laned nodes it reaches through other junction nodes: going against the flow (`back`), or either way.
+  const reached = (back: boolean): Set<number> => {
+    const lanesMet = new Set<number>();
+    const seen = new Set([id]);
+    let ring = [id];
+    while (ring.length) {
+      const next: string[] = [];
+      for (const at of ring) {
+        const others = [...routes.map((r) => {
+          const [from, to] = [socketOf(r.from).node, socketOf(r.to).node];
+          return to === at ? from : !back && from === at ? to : undefined;
+        }), ...named(at, back)];
+        for (const other of others) {
+          if (!other || seen.has(other) || other.startsWith('#')) continue;
+          seen.add(other);
+          const lane = laneIndex(other);
+          if (lane >= 0) lanesMet.add(lane);
+          else next.push(other);
+        }
       }
+      ring = next;
     }
-    ring = next;
-  }
+    return lanesMet;
+  };
+  // Under the lane its inputs come from, the lowest of them: junction nodes fed from one lane share its junction (TODO 928).
+  const fed = reached(true);
+  if (fed.size) return junctionOf(lanes[Math.max(...fed)]!);
+  // Fed from no lane: by every lane it joins — under the one, or just above the lowest of several (915).
+  const joined = reached(false);
   if (!joined.size) return undefined;
   const [top, bottom] = [Math.min(...joined), Math.max(...joined)];
-  // One lane: the junction under it. Several: the junction just above the lowest.
   return junctionOf(lanes[top === bottom ? top : bottom - 1]!);
 }
 
