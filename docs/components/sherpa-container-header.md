@@ -98,6 +98,7 @@ What each class's base rule reads:
 | `--sherpa-font-family-body` | `.metadata` | `font-family` |
 | `--sherpa-font-size-body-small` | `.metadata` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.metadata` | `line-height` |
+| `--sherpa-theme-padding-md` | `.header` | `padding-inline-start` |
 
 ## populate()
 

@@ -148,8 +148,15 @@
     <sherpa-container-footer class="footer" part="footer" data-align="stretch">
       <slot name="footer" data-accepts="control,input"></slot>
     </sherpa-container-footer>
-    <!-- Floating, the bottom-right corner resizes it: drag it, or the arrow keys on it. -->
-    <div class="corner sherpa-float-corner" part="corner" role="button" tabindex="0" aria-label="Resize panel"
-         title="Drag to resize, or use the arrow keys"></div>
+    <!-- Floating, every edge and corner resizes it, the one across held; Shift on a corner keeps its shape. None is drawn: a
+         cursor says each. The bottom-right one takes the arrow keys too. TODO 903 -->
+    <div class="edge-n sherpa-float-edge" data-edge="n" aria-hidden="true"></div>
+    <div class="edge-e sherpa-float-edge" data-edge="e" aria-hidden="true"></div>
+    <div class="edge-s sherpa-float-edge" data-edge="s" aria-hidden="true"></div>
+    <div class="edge-w sherpa-float-edge" data-edge="w" aria-hidden="true"></div>
+    <div class="edge-nw sherpa-float-edge" data-edge="nw" aria-hidden="true"></div>
+    <div class="edge-ne sherpa-float-edge" data-edge="ne" aria-hidden="true"></div>
+    <div class="edge-sw sherpa-float-edge" data-edge="sw" aria-hidden="true"></div>
+    <div class="corner sherpa-float-edge" part="corner" data-edge="se" role="button" tabindex="0" aria-label="Resize panel"></div>
   </dialog>
 </template>

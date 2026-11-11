@@ -571,7 +571,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (132)
+## Menus, tips and overlays (133)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -669,6 +669,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-drill-crumbs-carry-no-href](traps/menus-tips-overlays.md#t-drill-crumbs-carry-no-href) — menu
 - [T-equals-answers-with-the-fields-own-values](traps/menus-tips-overlays.md#t-equals-answers-with-the-fields-own-values) — menu
 - [T-every-chip-menu-gets-clear-and-search](traps/filters.md#t-every-chip-menu-gets-clear-and-search) — menu
+- [T-firefox-restyles-no-has-focus-visible](traps/menus-tips-overlays.md#t-firefox-restyles-no-has-focus-visible) — overlay-panel
 - [T-footer-row-raises-on-any-flag](traps/menus-tips-overlays.md#t-footer-row-raises-on-any-flag) — menu
 - [T-grid-slider-spans-real-values](traps/data-layer.md#t-grid-slider-spans-real-values) — menu
 - [T-grouping-is-an-attribute-and-a-class](traps/menus-tips-overlays.md#t-grouping-is-an-attribute-and-a-class) — menu

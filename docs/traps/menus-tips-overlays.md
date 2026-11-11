@@ -2158,3 +2158,15 @@ with no box by its first child that has one.
 - Site: `src/components/sherpa-node-row/sherpa-node-row.css`
 - Site: `test/e2e/reforged-node-collapse.spec.ts`
 
+### T-firefox-restyles-no-has-focus-visible
+
+Firefox does not restyle a rule whose `:has()` holds `:focus-visible`, inside a shadow root: measured (Firefox, TODO 931),
+the floating panel's grip had the keys' focus and matched `:focus-visible`, the header matched
+`:has(> .grip:focus-visible)` in a `matches()` call, and the rule's custom property still read empty — the title never
+made room for the grip. Chromium and WebKit restyled it. So the panel sets a state on the grip's focus and blur
+(`grip-shown`, its `:focus-visible` read then), and the CSS selects the state. The grip's OWN `:focus-visible` rule works:
+only the `:has()` is not re-checked.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `test/e2e/reforged-overlay-panel-minimise.spec.ts`
+

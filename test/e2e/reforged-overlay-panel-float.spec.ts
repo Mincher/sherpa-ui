@@ -204,39 +204,61 @@ test('its header bar drags it anywhere in the window, never past it; a press on 
   await drawnAt(page, far);
 });
 
-test('its corner resizes it, to its min and no smaller, and to the window edge and no further', async ({ page }) => {
+test('every edge and corner resizes it, the one across held; Shift on a corner keeps its shape; none is drawn, a cursor says each (903)', async ({ page }) => {
   await stage(page);
   await floatSmall(page);
   await drag(page, await bar(page), [-600, 100]);
   const from = await box(page);
+  // None is drawn: each is a bare strip. A cursor says each: across, down, a corner.
+  const edges: Record<string, [string, string, string]> = await page.evaluate(() => Object.fromEntries([...document.getElementById('float')!.shadowRoot!.querySelectorAll<HTMLElement>('.sherpa-float-edge')]
+    .map((e) => [e.dataset['edge'], [getComputedStyle(e).cursor, getComputedStyle(e).backgroundImage, getComputedStyle(e).backgroundColor]])));
+  expect(Object.fromEntries(Object.entries(edges).map(([k, v]) => [k, v[0]]))).toEqual({
+    n: 'ns-resize', e: 'ew-resize', s: 'ns-resize', w: 'ew-resize', nw: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', se: 'nwse-resize',
+  });
+  for (const [, look] of Object.entries(edges)) expect([look[1], look[2]]).toEqual(['none', 'rgba(0, 0, 0, 0)']);
+  const at = async (cls: string): Promise<[number, number]> => centre(await rect(page, cls));
 
-  // The corner shows on hover: its two lines are ink, not the surface.
-  await page.mouse.move(W - 8, 8);
-  await expect.poll(() => style(page, '.corner', 'opacity')).toBe('0');
-  await page.mouse.move(from.x + from.w / 2, from.y + from.h / 2);
-  await expect.poll(() => style(page, '.corner', 'opacity')).toBe('1');
-  const c = await rect(page, '.corner');
-  // In its bottom-right corner, inside the border.
-  expect(Math.abs(c.x + c.w - (from.x + from.w))).toBeLessThanOrEqual(1);
-  expect(Math.abs(c.y + c.h - (from.y + from.h))).toBeLessThanOrEqual(1);
-  const line = await pixels(page, c.x, c.y + 12, c.w);
-  const surface = line[0]!;
-  expect(line.some((p) => !near(p, surface, 40)), `the corner draws lines: ${JSON.stringify(line)}`).toBe(true);
+  // The left edge: its place and width change, the right edge held.
+  await drag(page, await at('.edge-w'), [-100, 0]);
+  expect(await box(page)).toEqual({ x: from.x - 100, y: from.y, w: from.w + 100, h: from.h });
+  // The top edge: its place and height, the bottom held.
+  await drag(page, await at('.edge-n'), [0, 40]);
+  const two = { x: from.x - 100, y: from.y + 40, w: from.w + 100, h: from.h - 40 };
+  expect(await box(page)).toEqual(two);
+  expect(await attrs(page)).toMatchObject({ 'data-x': String(two.x), 'data-y': String(two.y), 'data-width': String(two.w), 'data-height': String(two.h) });
 
-  await drag(page, [c.x + c.w / 2, c.y + c.h / 2], [-2000, -2000]);
+  // The bottom-right corner: to its min and no smaller, and to the window's edge and no further.
+  await drag(page, await at('.corner'), [-2000, -2000]);
   const small = await box(page);
-  expect(small).toEqual({ x: from.x, y: from.y, w: 320, h: 192 });
+  expect(small).toEqual({ x: two.x, y: two.y, w: 320, h: 192 });
   await drawnAt(page, small);
-  expect(await attrs(page)).toMatchObject({ 'data-width': '320', 'data-height': '192' });
-
-  const c2 = await rect(page, '.corner');
-  await drag(page, [c2.x + c2.w / 2, c2.y + c2.h / 2], [3000, 3000]);
+  await drag(page, await at('.corner'), [3000, 3000]);
   const big = await box(page);
-  expect(big).toEqual({ x: from.x, y: from.y, w: W - from.x, h: H - from.y });
+  expect(big).toEqual({ x: two.x, y: two.y, w: W - two.x, h: H - two.y });
   expect((await heard(page)).slice(-2)).toEqual([
     { 'panel-resize': { width: 320, height: 192 } },
     { 'panel-resize': { width: big.w, height: big.h } },
   ]);
+
+  // Shift on the top-left corner keeps its shape, the bottom-right held.
+  await drag(page, await at('.corner'), [-(big.w - 400), -(big.h - 300)]);
+  const was = await box(page);
+  const [cx, cy] = await at('.edge-nw');
+  await page.keyboard.down('Shift');
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx - 20, cy - 5, { steps: 2 });
+  // Held to its shape, the corner's cursor says so.
+  expect(await style(page, '.edge-nw', 'cursor')).toBe('zoom-in');
+  await page.mouse.move(cx - 80, cy - 10, { steps: 3 });
+  await page.mouse.up();
+  await page.keyboard.up('Shift');
+  await page.evaluate(() => window.__settled());
+  const kept = await box(page);
+  expect(Math.abs(kept.w / kept.h - was.w / was.h)).toBeLessThanOrEqual(0.02);
+  expect(kept.w).toBeGreaterThan(was.w);
+  expect([kept.x + kept.w, kept.y + kept.h]).toEqual([was.x + was.w, was.y + was.h]);
+  expect(await style(page, '.edge-nw', 'cursor')).toBe('nwse-resize');
 });
 
 test('a host hands the box back by its attributes; the keys move it from the grip and resize it from the corner, by 16px, Shift by 64', async ({ page }) => {
@@ -268,7 +290,7 @@ test('a host hands the box back by its attributes; the keys move it from the gri
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Shift+ArrowUp');
   expect(await box(page)).toEqual({ x: from.x - 16, y: from.y + 64, w: from.w + 16, h: from.h - 64 });
-  expect(await style(page, '.corner', 'opacity')).toBe('1');
+  expect(await style(page, '.corner', 'outline-style')).not.toBe('none');
   for (let i = 0; i < 12; i++) await page.keyboard.press('Shift+ArrowLeft');
   expect((await box(page)).w).toBe(320);
   expect((await heard(page)).slice(-1)).toEqual([{ 'panel-resize': { width: 320, height: from.h - 64 } }]);

@@ -113,7 +113,11 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.tab-open')?.addEventListener('click', this.#onTab);
     // The pointer on the tab peeks the panel open and hides the tab; the pointer leaving the PANEL shuts it to the tab again.
     this.$('.tab')?.addEventListener('pointerenter', this.#onPeek);
-    this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
+    this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$$<HTMLElement>('.sherpa-float-edge'));
+    // The grip shows with the keys' focus, and the title makes room: a state, as Firefox restyles no `:has(:focus-visible)`.
+    // TRAP T-firefox-restyles-no-has-focus-visible
+    const grip = this.$('.grip');
+    if (grip) for (const type of ['focus', 'blur']) grip.addEventListener(type, () => this.toggleState('grip-shown', grip.matches(':focus-visible')));
     this.#floatBox.draw();
     // Attributes put on it before this first render (a kept state, handed back as it connects) raised no change: read them now.
     this.#last = this.#mode();

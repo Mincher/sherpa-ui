@@ -145,7 +145,8 @@ test('the header\'s mode buttons are ONE group with the ends on its first and la
   expect(r.floatX).toBe(r.dockedX);
 });
 
-test('floating, the grip nudges the title right while the pointer is on the header', async ({ page }) => {
+// TRAP T-firefox-restyles-no-has-focus-visible
+test('floating, a hover on the header moves nothing; the grip, with the keys\' focus, steps the title right (931)', async ({ page }) => {
   await stage(page, { floating: true });
   const titleX = () => page.evaluate(() => {
     const sr = document.getElementById('tabbed')!.shadowRoot!;
@@ -154,10 +155,12 @@ test('floating, the grip nudges the title right while the pointer is on the head
   await page.mouse.move(1500, 880);
   const bare = await titleX();
   const bar = await part(page, '.header');
-  await page.mouse.move(bar.x + bar.w - 120, bar.y + 4);
-  expect(await titleX()).toBeGreaterThan(bare);
-  await page.mouse.move(1500, 880);
+  await page.mouse.move(bar.x + bar.w - 120, bar.y + 20);
   expect(await titleX()).toBe(bare);
+  await page.mouse.move(1500, 880);
+  // The keys reach the grip: it shows, and the title makes room for it.
+  await page.keyboard.press('Tab');
+  expect(await titleX()).toBeGreaterThan(bare);
 });
 
 test('opened, the focus is the container\'s, not the grip\'s; Tab goes on to the grip', async ({ page }) => {
