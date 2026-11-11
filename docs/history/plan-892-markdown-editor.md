@@ -54,3 +54,24 @@ a line, its pipes drawn faint), rules, escapes and values.
 4. An Output's message field is the editor: `fieldFor`, `fill` and `read` in `node-graph.ts`; Insert value puts a value at
    the caret (`node-output-panel.ts`). `reforged-node-output-types.spec.ts` follows.
 5. The maps, the manifest, the reference and the baselines.
+
+## For Will to pick
+
+- **Title and File name are message rows too** (`messageRow` in `node-kinds.ts`), so each is the full editor, toolbar and
+  all. CG-05 draws Title as one line with its values. A: a row says it is one line (`RowKind`), and a one-line message is
+  the editor with no toolbar and no line breaks. B: leave them as they are.
+
+## Built
+
+- **Step 1** (`d2e90063d`): this plan.
+- **Step 2** (`6fa9a876e`): `markdown-text.ts` — the text read as lines, blocks and parts, each a range of the text; and
+  each edit, with the selection after it. 11 node unit tests (`a-markdown-text-is-its-own-model`).
+- **Step 3** (`5845274c2`): `sherpa-markdown-editor`. Every edit is the text's: a key (`beforeinput`), a paste, a cut, a
+  tool; an IME's is read back from the drawn text. Its own Undo and Redo (typing within a second is one step). The caret
+  is read from the shadow root's own selection (Chromium) or `getComposedRanges` (Firefox, WebKit); a caret Firefox puts
+  inside a value goes after it. State pins as the input field's (`state-pins.yaml`, projected). The a11y gate: no failures. E2e spec, 11
+  tests, in Chromium, Firefox and WebKit.
+- **Step 4** (`eb8e1c0ac`): an Output's message field is the editor (`messageField`); Insert value names each value by its
+  node and label in the field and puts the pick at the caret; the Output tab's Preview draws each message read only.
+- The icons are the design's but two: Undo and Redo are Sherpa's own pair (`arrow-rotate-left`, `arrow-rotate-right`),
+  as the node toolbar has them; the numbered list says "1.", as the set has no icon for it.
