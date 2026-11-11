@@ -196,8 +196,8 @@ const FED = [{ from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b
 
 test('the sockets\' order: what feeds rows a and b stands in that order, and what the rows and False send, in theirs (Will, TODO 827)', async ({ page }) => {
   await start(page, ROWS, FED);
-  // A number into the Condition: its Count hides, having no rows to count (TODO 924), so one crossing, not two.
-  expect(await atSockets(page)).toEqual({ crossed: 1, swapped: 2 });
+  // A number into the Condition: its Count shows, passing the number on (Will, 2026-11-11), so two crossings.
+  expect(await atSockets(page)).toEqual({ crossed: 2, swapped: 2 });
   await button(page).click();
   await settle(page);
   const now = await rects(page);

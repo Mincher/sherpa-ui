@@ -639,8 +639,6 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const at = held.get(socketOf(from).node);
     return at?.kind === 'value' ? FIELD_INPUTS[String(at.values?.['type'] ?? 'text')] ?? 'text' : 'text';
   };
-  /** Does a joiner hear a COUNT — a number or a value — whose sum its Count says (TODO 939)? */
-  const countsHeard = (id: string): boolean => flows.some((c) => c.to === id && ['number', 'value'].includes(givenAt(held.get(socketOf(c.from).node), socketOf(c.from).row, kinds)?.kind ?? ''));
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const family = kinds[node.kind]!;
@@ -692,8 +690,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // Its Results and Count say ROWS: where only a value, or a test of one, reaches its header, they have nothing to say.
     // Nothing usable joined: they show (TODO 924).
     const rowless = !!kind.input && kind.rows.some((r) => r.name === ROWS.name) && rowsHeard(node.id) === false;
-    // A joiner's Count also says the sum of its true counts: it shows where counts come in (TODO 939).
-    const countless = rowless && !(joinsTests(node) && countsHeard(node.id));
+    // A Condition's Count also says the counts that pass: it shows where a number comes in (TODO 939; Will, 2026-11-11: a
+    // Count into Between passes through).
+    const countless = rowless && !inputs.some((i) => i.is === 'number');
     const rows = kind.rows.map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no connection gives warns, by its row (plan 891).

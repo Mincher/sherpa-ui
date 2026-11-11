@@ -1,8 +1,9 @@
 /**
  * RESULTS AND COUNT NEED ROWS: a node's Results (the rows that pass) and Count (how many) say rows, so where only a value,
  * or a test of one, reaches its header, they have nothing to say and hide (`idle`). Rows, or a Field's column, through
- * any chain of tests, and they show; nothing joined, they show. One a connection still leaves stays, and its node says
- * why. Every other property always shows. Will, TODO 924 (D1 A)
+ * any chain of tests, and they show; nothing joined, they show. A NUMBER in, and a Condition's Count shows: it passes the
+ * number on where it passes (Will, 2026-11-11, after 939). One a connection still leaves stays, and its node says why.
+ * Every other property always shows. Will, TODO 924 (D1 A)
  *
  *   node --test test/unit/results-and-count-need-rows.test.mjs
  */
@@ -21,9 +22,9 @@ const words = (g, id) => (g.nodes.find((n) => n.id === id).warnings ?? []).map((
 const source = [N('s', 'source', { store: 'users' }), N('f', 'field', { field: 'status' })];
 const fromSource = [{ from: 's/rows', to: 'f' }];
 
-test('Will\'s case: a Count into a Condition\'s header is one test, True or False — its Results and Count hide', () => {
+test('Will\'s case: a Count into a Condition\'s header is one test, True or False — its Results hide, its Count shows: it passes the count on (2026-11-11)', () => {
   const g = graphOf([...source, N('c', 'condition', { type: 'gt', b: '0' })], [...fromSource, { from: 'f/count', to: 'c' }]);
-  assert.deepEqual(idle(g, 'c'), ['rows', 'count']);
+  assert.deepEqual(idle(g, 'c'), ['rows']);
   assert.deepEqual(words(g, 'c'), []);
 });
 
@@ -46,7 +47,8 @@ test('through a chain: an And fed a test\'s Results shows them; an And of steers
     { from: 'byValue', to: 'values' }, { from: 'alsoValue', to: 'values' },
     { from: 'f/count', to: 'counts' }, { from: 'n/value', to: 'counts' },
   ]);
-  assert.deepEqual(idle(g, 'byValue'), ['rows', 'count']);
+  // A number in: Count shows, the number that passes.
+  assert.deepEqual(idle(g, 'byValue'), ['rows']);
   assert.deepEqual(idle(g, 'mixed'), []);
   assert.deepEqual(idle(g, 'values'), ['rows', 'count']);
   // Counts in: Count, the sum of the true ones, shows; Results, with no rows, does not.
@@ -58,7 +60,7 @@ test('one a connection still leaves stays, and its node says why it sends nothin
     [...source, N('c', 'condition', { type: 'gt', b: '0' }), N('sorted', 'sort', { direction: 'asc' })],
     [...fromSource, { from: 'f/count', to: 'c' }, { from: 'c/rows', to: 'sorted' }],
   );
-  assert.deepEqual(idle(g, 'c'), ['rows', 'count']);
+  assert.deepEqual(idle(g, 'c'), ['rows']);
   assert.deepEqual(words(g, 'c'), ['rows: Results has no rows: a value comes in']);
 });
 

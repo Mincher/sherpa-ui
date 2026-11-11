@@ -3,7 +3,7 @@
  * true or false and carries no rows. A node down a Branch not taken does not run. And and Or take anything, several: an
  * input is true where it is above zero, true, or not empty. Their Results are the rows of the true inputs, Count those
  * rows and the SUM of the true counts, Pass and Fail how many inputs pass and fail. A test's Results say its tree, as its True.
- * A test of one value, as a Count into Greater than, passes or fails.
+ * A test of one value, as a Count into Greater than, passes or fails, and its Count passes the number on.
  *
  *   node --test test/unit/true-and-false-steer.test.mjs
  */
@@ -92,4 +92,19 @@ test('a test of one value passes or fails — a Count into Greater than, Not, Is
   assert.deepEqual(['g', 'n', 'e'].map((id) => out(sim, id, id).value), [true, false, false]);
   // The true-rows count, and its warning, only where rows came in.
   assert.deepEqual(['t', 'g', 'n', 'or'].map((id) => trueOf(sim.nodes[id])), [2, undefined, undefined, undefined]);
+});
+
+test('Will\'s graph: Source › Field\'s Count › Between 0 and 100 is True, and its Count passes the count on; no warning', () => {
+  const rows = Array.from({ length: 40 }, (_, i) => ({ id: i, name: `n${i}` }));
+  const graph = (end) => graphOf(
+    [N('s', 'source', { store: 'users' }), N('f', 'field', { field: 'name' }), N('c', 'condition', { type: 'between', start: '0', end }), N('m', 'math', { type: 'add', b: '1' })],
+    [C('s/rows', 'f'), C('f/count', 'c'), C('c/count', 'm/a')],
+  );
+  const c = graph('100').nodes.find((n) => n.id === 'c');
+  assert.deepEqual([c.warnings, c.rows.filter((r) => r.idle).map((r) => r.name)], [undefined, ['rows']], 'Count shows: a number comes in; Results hides');
+  const sim = simulateGraph(graph('100'), { users: rows });
+  assert.deepEqual([out(sim, 'c', 'c').value, out(sim, 'c', 'c/count').value, out(sim, 'm', 'm/result').value], [true, 40, 41]);
+  // Outside the range: False, and a Count of 0.
+  const off = simulateGraph(graph('30'), { users: rows });
+  assert.deepEqual([out(off, 'c', 'c').value, out(off, 'c', 'c/count').value], [false, 0]);
 });

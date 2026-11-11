@@ -507,7 +507,8 @@ every true input; And, the rows in all of them) and Count. Numbers in: Count, th
 of the true ones. Pass and Fail say how many inputs pass and how many fail. A test's
 Results into an And or an Or say its condition, as its True does, so the Query reads
 the same tree. A Condition fed one value, as a Count, tests that value against Value B
-(Not and Is empty by its truth): it passes or fails, and keeps no rows.
+(Not and Is empty by its truth): it passes or fails, and keeps no rows. Its Count
+shows, and passes the number on where it passes (0 where it fails).
 
 A Condition's Operation list follows what comes in on its header. A value or a column
 lists the operations its type takes (text, a number, a date, a boolean). Rows or an

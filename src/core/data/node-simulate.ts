@@ -298,15 +298,18 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (type === 'empty' && rows) return { kept: [], lost: [], passed: !rows.length };
     const sent = came.find((s) => s.kind === 'value' && s.value !== undefined);
     if (!sent) return undefined;
-    if (type === 'not') return { kept: [], lost: [], passed: !(truthOf(sent.value) ?? truthy(sent.value)) };
-    if (type === 'empty') return { kept: [], lost: [], passed: !truthy(sent.value) };
+    // A number that passes goes on as its Count, as an Or's true counts do; one that fails, 0.
+    const n = typeof sent.value === 'number' ? sent.value : typeof sent.value === 'string' && sent.value.trim() !== '' ? Number(sent.value) : NaN;
+    const said = (passed: boolean): Verdict => ({ kept: [], lost: [], passed, ...(Number.isFinite(n) ? { count: passed ? n : 0 } : {}) });
+    if (type === 'not') return said(!(truthOf(sent.value) ?? truthy(sent.value)));
+    if (type === 'empty') return said(!truthy(sent.value));
     if (!(type in OP_LABELS)) return undefined;
     const range = OP_TAKES[type as FilterOp] === 'range';
     const against = range ? [heard(node, 'start'), heard(node, 'end')] : [heard(node, 'b')];
     const empty = against.find((a) => a.note);
     if (empty) return { note: empty.note! };
     const b = range ? against.map((a) => a.value) : against[0]!.value;
-    return { kept: [], lost: [], passed: filterTest(['value', type, b] as Filter, now)({ value: sent.value }) };
+    return said(filterTest(['value', type, b] as Filter, now)({ value: sent.value }));
   };
 
   /** A Condition's verdict, by its kind: a test keeps rows; And and Or join their inputs, each true where it is above zero,
@@ -471,6 +474,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       return { kind: 'value', value: read[row] };
     }
     if (node.kind === 'group' && row === 'count') return arranged(node, row);
+    // A test of one number: its Count is that number where it passes, else 0 (Will, 2026-11-11).
+    if (TESTS.has(node.kind) && row === 'count') {
+      const read = verdict(node);
+      if (typeof read !== 'string' && !('note' in read) && read.count !== undefined) return { kind: 'value', value: read.count };
+    }
     if (row !== undefined && node.rows.find((r) => r.name === row)?.property && row === 'count') {
       const on = node.kind === 'field' ? { rows: rowsInto(node.id) } : sends(`${node.id}/${node.rows.find((r) => r.gives === 'rows')?.name ?? 'rows'}`);
       return on.rows ? { kind: 'value', value: on.rows.length } : { kind: 'value', note: 'No rows to count' };
