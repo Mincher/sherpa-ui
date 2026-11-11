@@ -34,8 +34,6 @@
     rows        a strip of ROWS behind the view, the whole width: each stands at its `--y` down the plane, `--height` tall
                 (plane px); it pans and zooms down, never across. Behind the columns and the content; it takes no press
                 (a workflow's swimlanes)
-    columns-end  controls at the END of the columns' head: the top right of what the view shows, clear of a panel's tabs
-                (Add stage, Arrange stages)
     footer      the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel)
 
   Fires:
@@ -82,8 +80,6 @@
 
     <!-- What floats beside the card: what the view shows is this box. -->
     <div class="stage" part="stage">
-      <!-- The columns' own controls, at the end of their head: they do not pan or zoom. -->
-      <div class="columns-end" part="columns-end"><slot name="columns-end" data-accepts="control"></slot></div>
       <!-- The WHOLE canvas small, and where the view sits on it. A drag moves the view. -->
       <div class="minimap sherpa-border-edges sherpa-border-corners" part="minimap" aria-hidden="true">
         <div class="minimap-items"></div>

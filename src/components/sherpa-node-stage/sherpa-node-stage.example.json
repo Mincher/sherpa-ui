@@ -1,10 +1,10 @@
 {
   "html": [
     "<sherpa-layout-canvas style=\"inline-size: 900px; block-size: 360px\">",
-    "<sherpa-node-stage slot=\"columns\" data-heading=\"Intake\" data-description=\"Where the rows come in\" data-colour=\"#3b4ccd\" data-x=\"40\" data-w=\"360\" data-removable></sherpa-node-stage>",
-    "<sherpa-node-stage slot=\"columns\" data-heading=\"Decide\" data-x=\"416\" data-w=\"320\" data-removable></sherpa-node-stage>",
+    "<sherpa-node-stage slot=\"columns\" data-heading=\"Intake\" data-description=\"Where the rows come in\" data-colour=\"#3b4ccd\" data-x=\"40\" data-w=\"360\" data-removable data-first></sherpa-node-stage>",
+    "<sherpa-node-stage slot=\"columns\" data-heading=\"Decide\" data-x=\"416\" data-w=\"320\" data-removable data-last></sherpa-node-stage>",
     "<sherpa-node data-heading=\"Source\" data-icon=\"storage\" data-x=\"88\" data-y=\"96\" data-output-socket=\"object\"></sherpa-node>",
     "</sherpa-layout-canvas>"
   ],
-  "use": "For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in its `columns` slot, its bar along the top with its name and its band down the view. Its host writes where it stands and how wide (`data-x`, `data-w`, plane px), its colour, and `data-removable` while it is not the only one; More reports `stage-menu-select` (Edit, Remove). Add stage and Arrange stages are its host's, in the canvas's `columns-end` slot. Arranging (`data-editing`), a drag on the bar reports `stage-drag`, and an arrow key `stage-step`; its host orders the stages. For nodes that belong together anywhere on the canvas, use `sherpa-node-frame`."
+  "use": "For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in its `columns` slot, its bar along the top with its name and its band down the view. Its host writes where it stands and how wide (`data-x`, `data-w`, plane px), its colour, and `data-removable` while it is not the only one; `data-first` and `data-last` turn Move left and Move right off at the ends. More reports `stage-menu-select` (Edit, Add stage before, Add stage after, Remove), and Move left and Move right `stage-move`; its host adds, moves and names the stages. For nodes that belong together anywhere on the canvas, use `sherpa-node-frame`."
 }

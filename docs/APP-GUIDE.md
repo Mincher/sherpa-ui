@@ -533,8 +533,10 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
 A workflow's canvas has STAGES: columns across the top, left to right. A graph has
 one at least, Stage 1, round every node; the workflow keeps them in `stages`, and a
 node names its own in `stage`. A node let go in a stage joins it, and a stage grows
-to hold its nodes. Add stage, Edit, Remove and Arrange stages are on the stage bars.
-Give `bindWorkflow` a `stageDialog` for Edit, one field to a row:
+to hold its nodes. Each stage bar has Move left and Move right, and More: Edit, Add
+stage before, Add stage after and Remove. A default name is its place (Stage 1,
+Stage 2): one added or moved before Stage 1 is Stage 1. Give `bindWorkflow` a
+`stageDialog` for Edit, one field to a row:
 
 ```html
 <sherpa-dialog id="stage" data-heading="Edit stage">
@@ -549,9 +551,6 @@ Give `bindWorkflow` a `stageDialog` for Edit, one field to a row:
   </sherpa-container-footer>
 </sherpa-dialog>
 ```
-
-Arrange stages puts the canvas in its edit mode (`data-editing`): the panels and the
-toolbar hide, and a footer offers Cancel and Save.
 
 ### Swimlanes
 

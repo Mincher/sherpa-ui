@@ -1,15 +1,15 @@
 /**
  * node-stages-ui.ts — a workflow editor's STAGES on its canvas: one sherpa-node-stage each, in the canvas's `columns`
- * slot; Add stage, Edit (a dialog: name, line, colour), Remove, and Arrange stages, an edit mode with a footer of its
- * own, Save and Cancel. Each change is one edit through its host. Will, 2026-11-10
+ * slot; on each, Move left and Move right, and More: Edit (a dialog: name, line, colour), Add stage before, Add stage
+ * after and Remove. Each change is one edit through its host. Will, 2026-11-10 · TODO 893
  *
  * Map:
- * - StageHost — What the stages need of their editor: its workflow, its write, its redraw, and the stage dialog.
- * - Stages — The stages bound to a canvas: drawn, previewed while arranging, and stopped.
+ * - StageHost — What the stages need of their editor: its workflow, its write, and the stage dialog.
+ * - Stages — The stages bound to a canvas: drawn, and stopped.
  * - bindStages — Bind a workflow editor's stages to its canvas.
  */
 import { editWorkflow, nodeWidth, type WorkflowDefinition } from '../data/workflow.js';
-import { heldBands, orderStages, stageBands, stagesOf, type StageBand } from '../data/node-stages.js';
+import { heldBands, stageBands, stagesOf } from '../data/node-stages.js';
 import { keepOrder } from './keep-order.js';
 
 /** What the stages need of their editor. */
@@ -18,11 +18,7 @@ export interface StageHost {
   workflow(): WorkflowDefinition | null;
   /** Write a changed workflow: one step. */
   write(next: WorkflowDefinition): void;
-  /** Draw the canvas again: while arranging, from `preview()`. */
-  redraw(): void;
   readOnly(): boolean;
-  /** A node's drawn element, to move with its stage while one is dragged. */
-  nodeElement(id: string): HTMLElement | undefined;
   /** The nodes a Shift-drag has taken out of their stages: the stages hold still as they stood, without them. */
   moving?(): ReadonlySet<string>;
   /** A `sherpa-dialog` that asks a stage's name, line and colour: fields `[name=label]`, `[name=description]` and
@@ -34,9 +30,6 @@ export interface StageHost {
 export interface Stages {
   /** Draw the stages of what the canvas shows; none where it takes no stages. */
   draw(): void;
-  /** While arranging, the workflow as the new order would leave it; else none. */
-  preview(): WorkflowDefinition | null;
-  arranging(): boolean;
   stop(): void;
 }
 
@@ -49,37 +42,21 @@ type Field = HTMLElement & { value: string };
 /** Bind a workflow editor's stages to its canvas. */
 export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
   const drawn = new Map<string, StageElement>();
-  /** Arranging: the order so far, and the stage being dragged. */
-  let arranging: { order: string[]; drag?: { id: string; dx: number } } | null = null;
-  let footer: HTMLElement | null = null;
-  /** Add stage, and More with Arrange stages: made once, in the canvas's `columns-end` slot. */
-  const tools = stageTools(() => onAdd(), () => start());
   let editing: string | null = null;
   /** The colour the dialog opened with: a picker always holds one, so only a change is written. */
   let opened = '';
 
-  const preview = (): WorkflowDefinition | null => {
-    const w = host.workflow();
-    return w && arranging ? orderStages(w, arranging.order, nodeWidth) : null;
-  };
-  const shown = (): WorkflowDefinition | null => preview() ?? host.workflow();
-  const bandsOf = (w: WorkflowDefinition): StageBand[] => stageBands(w, nodeWidth).bands;
-
   const draw = (): void => {
-    const w = shown();
+    const w = host.workflow();
     const stages = w ? stagesOf(w) : [];
     for (const [id, el] of drawn) {
       if (stages.some((s) => s.id === id)) continue;
       el.remove();
       drawn.delete(id);
     }
-    // Add stage and Arrange stages, at the canvas's top right: not while arranging, nor read only.
-    // Taken out and put back is a restyle of the canvas: placed once. TRAP T-a-redraw-keeps-what-it-can
-    if (w && !arranging && !host.readOnly()) { if (tools.parentNode !== canvas) canvas.append(tools); }
-    else tools.remove();
     if (!w) return;
     const out = host.moving?.() ?? new Set<string>();
-    const bands = out.size ? heldBands(w, nodeWidth, out) : bandsOf(w);
+    const bands = out.size ? heldBands(w, nodeWidth, out) : stageBands(w, nodeWidth).bands;
     const ro = host.readOnly();
     stages.forEach((stage, i) => {
       let el = drawn.get(stage.id);
@@ -96,21 +73,18 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       el.setAttribute('data-x', String(band.left));
       el.setAttribute('data-w', String(band.right - band.left));
       el.toggleAttribute('data-removable', stages.length > 1 && !ro);
-      el.toggleAttribute('data-editing', !!arranging);
+      el.toggleAttribute('data-first', i === 0);
+      el.toggleAttribute('data-last', i === stages.length - 1);
       el.toggleAttribute('data-locked', ro);
     });
-    // In order: the DOM's is the reading order. Only one out of place moves.
+    // In order: the DOM's is the reading order. Only one out of place moves. TRAP T-a-redraw-keeps-what-it-can
     keepOrder(canvas, stages.map((stage) => drawn.get(stage.id)!));
   };
 
   const stageOfEvent = (event: Event): string | undefined =>
     (event.target instanceof HTMLElement && event.target.localName === 'sherpa-node-stage' ? event.target.dataset['stage'] : undefined);
 
-  // — Add, Edit, Remove —
-  const onAdd = (): void => {
-    const w = host.workflow();
-    if (w && !host.readOnly()) host.write(editWorkflow(w, { addStage: {} }));
-  };
+  // — Edit, Add before or after, Remove, Move —
   const field = (name: string): Field | null => host.dialog?.querySelector<Field>(`[name="${name}"]`) ?? null;
   const openEdit = (id: string): void => {
     const stage = stagesOf(host.workflow() ?? { nodes: [] }).find((s) => s.id === id);
@@ -145,88 +119,32 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     const action = (event as CustomEvent<{ action: string }>).detail?.action;
     const w = host.workflow();
     if (!id || !w) return;
-    if (action === 'edit') openEdit(id);
-    else if (action === 'remove' && !host.readOnly()) host.write(editWorkflow(w, { removeStage: id }));
+    if (action === 'edit') return openEdit(id);
+    if (host.readOnly()) return;
+    if (action === 'remove') host.write(editWorkflow(w, { removeStage: id }));
+    else if (action === 'add-before') host.write(editWorkflow(w, { addStage: { before: id } }));
+    else if (action === 'add-after') host.write(editWorkflow(w, { addStage: { after: id } }));
   };
-
-  // — Arrange stages: an edit mode, its own footer; Save writes the order as one step, Cancel or Escape leaves it —
-  const start = (): void => {
-    const w = host.workflow();
-    if (!w || host.readOnly() || arranging) return;
-    arranging = { order: stagesOf(w).map((s) => s.id) };
-    canvas.setAttribute('data-editing', '');
-    footer = arrangeFooter();
-    canvas.append(footer);
-    host.redraw();
-  };
-  const leave = (): void => {
-    if (!arranging) return;
-    arranging = null;
-    canvas.removeAttribute('data-editing');
-    footer?.remove();
-    footer = null;
-    host.redraw();
-  };
-  const save = (): void => {
-    const w = host.workflow();
-    const order = arranging?.order;
-    leave();
-    if (w && order) host.write(editWorkflow(w, { orderStages: order }));
-  };
-  /** The footer's Cancel and Save: made once each time the mode starts, gone when it ends. */
-  const arrangeFooter = (): HTMLElement => {
-    const bar = document.createElement('sherpa-container-footer');
-    bar.slot = 'footer';
-    const button = (label: string, action: string, look?: string): HTMLElement => {
-      const b = document.createElement('sherpa-button');
-      b.setAttribute('data-label', label);
-      b.setAttribute('data-action', action);
-      if (look) b.setAttribute('data-look', look);
-      b.addEventListener('click', action === 'save' ? save : leave);
-      return b;
-    };
-    bar.append(button('Cancel', 'cancel'), button('Save', 'save', 'saturated'));
-    return bar;
-  };
-  /** A dragged stage, and its nodes, follow the pointer; let go, the stages take the order their middles say. */
-  const onDrag = (event: Event): void => {
-    const id = stageOfEvent(event);
-    const { dx, phase } = (event as CustomEvent<{ dx: number; phase: 'move' | 'end' | 'cancel' }>).detail;
-    const w = preview();
-    if (!id || !arranging || !w) return;
-    const bands = bandsOf(w);
-    const band = bands.find((b) => b.id === id);
-    if (!band) return;
-    if (phase === 'move') {
-      drawn.get(id)?.setAttribute('data-x', String(band.left + dx));
-      for (const n of w.nodes) if (n.stage === id) host.nodeElement(n.id)?.setAttribute('data-x', String(n.x + dx));
-      return;
-    }
-    if (phase === 'end') {
-      const middle = (b: StageBand): number => (b.left + b.right) / 2 + (b.id === id ? dx : 0);
-      arranging.order = [...bands].sort((a, b) => middle(a) - middle(b)).map((b) => b.id);
-    }
-    host.redraw();
-  };
-  const onStep = (event: Event): void => {
+  /** Move left or right: one place along the row, its nodes with it, one step. */
+  const onMove = (event: Event): void => {
     const id = stageOfEvent(event);
     const { by } = (event as CustomEvent<{ by: number }>).detail;
-    if (!id || !arranging) return;
-    const order = arranging.order;
+    const w = host.workflow();
+    if (!id || !w || host.readOnly()) return;
+    const order = stagesOf(w).map((s) => s.id);
     const at = order.indexOf(id);
-    const to = Math.max(0, Math.min(order.length - 1, at + by));
-    if (at < 0 || to === at) return;
+    const to = at + by;
+    if (at < 0 || to < 0 || to >= order.length) return;
     order.splice(at, 1);
     order.splice(to, 0, id);
-    host.redraw();
-    // The keys stay on the stage they moved.
-    requestAnimationFrame(() => drawn.get(id)?.shadowRoot?.querySelector<HTMLElement>('.bar')?.focus());
-  };
-  const onKey = (event: KeyboardEvent): void => {
-    if (arranging && event.key === 'Escape') {
-      event.preventDefault();
-      leave();
-    }
+    host.write(editWorkflow(w, { orderStages: order }));
+    // The keys stay on the stage that moved: at its button, or its bar where that button is now off (at an end).
+    const side = by < 0 ? '.move-left' : '.move-right';
+    requestAnimationFrame(() => {
+      const root = drawn.get(id)?.shadowRoot;
+      const button = root?.querySelector<HTMLElement>(side);
+      (button && !button.hasAttribute('disabled') ? button : root?.querySelector<HTMLElement>('.bar'))?.focus();
+    });
   };
 
   const save$ = host.dialog?.querySelector('[data-action="save"]');
@@ -234,63 +152,19 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
   save$?.addEventListener('click', saveEdit);
   cancel$?.addEventListener('click', cancelEdit);
   canvas.addEventListener('stage-menu-select', onMenu);
-  canvas.addEventListener('stage-drag', onDrag);
-  canvas.addEventListener('stage-step', onStep);
-  canvas.addEventListener('keydown', onKey);
+  canvas.addEventListener('stage-move', onMove);
 
   return {
     draw,
-    preview,
-    arranging: () => !!arranging,
     stop(): void {
-      leave();
       for (const el of drawn.values()) el.remove();
       drawn.clear();
-      tools.remove();
       save$?.removeEventListener('click', saveEdit);
       cancel$?.removeEventListener('click', cancelEdit);
       canvas.removeEventListener('stage-menu-select', onMenu);
-      canvas.removeEventListener('stage-drag', onDrag);
-      canvas.removeEventListener('stage-step', onStep);
-      canvas.removeEventListener('keydown', onKey);
+      canvas.removeEventListener('stage-move', onMove);
     },
   };
-}
-
-/** Add stage, and More with Arrange stages, as one group. A pick is answered once the menu has shut: what it starts hides
- *  the group, and a menu hidden while it shuts stays open in name. */
-function stageTools(add: () => void, arrange: () => void): HTMLElement {
-  const group = document.createElement('sherpa-group');
-  group.slot = 'columns-end';
-  group.className = 'stage-tools';
-  const button = (cls: string, icon: string, label: string): HTMLElement => {
-    const b = document.createElement('sherpa-button');
-    b.className = cls;
-    b.setAttribute('data-type', 'icon');
-    b.setAttribute('data-size', 'sm');
-    b.setAttribute('data-icon-start', icon);
-    b.setAttribute('aria-label', label);
-    return b;
-  };
-  const plus = button('add-stage', 'plus', 'Add stage');
-  plus.setAttribute('data-tip', 'Add stage');
-  plus.addEventListener('click', add);
-  const more = button('stages-more', 'ellipsis-horizontal', 'Stages');
-  more.setAttribute('aria-haspopup', 'menu');
-  const menu = document.createElement('sherpa-menu');
-  menu.slot = 'menu';
-  menu.setAttribute('data-align', 'end');
-  const item = document.createElement('button');
-  item.type = 'button';
-  item.value = 'arrange';
-  item.textContent = 'Arrange stages';
-  menu.append(item);
-  more.append(menu);
-  more.addEventListener('menu-select', (event) => {
-    if ((event as CustomEvent<{ value?: string }>).detail?.value === 'arrange') queueMicrotask(arrange);
-  });
-  group.append(plus, more);
-  return group;
 }
 
 /** Set an attribute, or take it away when there is nothing to say. */

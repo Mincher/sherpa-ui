@@ -5095,10 +5095,6 @@
             {
               "name": "footer",
               "description": "the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel) (accepts: footer)"
-            },
-            {
-              "name": "columns-end",
-              "description": "controls at the END of the columns' head: the top right of what the view shows, clear of a panel's tabs (Add stage, Arrange stages) (accepts: control)"
             }
           ],
           "cssParts": [
@@ -5107,9 +5103,6 @@
             },
             {
               "name": "columns"
-            },
-            {
-              "name": "columns-end"
             },
             {
               "name": "controls"
@@ -7967,7 +7960,7 @@
           "name": "SherpaNodeStage",
           "tagName": "sherpa-node-stage",
           "customElement": true,
-          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Add stage and Arrange stages are its host's, at the canvas's top right (its `columns-end` slot). Will, 2026-11-10",
+          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Will, 2026-11-10 · TODO 893",
           "attributes": [
             {
               "name": "data-colour",
@@ -7984,8 +7977,8 @@
               }
             },
             {
-              "name": "data-editing",
-              "description": "arranging the stages: the bar is a handle, and More hides. The HOST writes it",
+              "name": "data-first",
+              "description": "it is the first stage: Move left is off. The HOST writes it",
               "type": {
                 "text": "boolean"
               }
@@ -7999,8 +7992,15 @@
               "default": "\"Stage\""
             },
             {
+              "name": "data-last",
+              "description": "it is the last stage: Move right is off. The HOST writes it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-locked",
-              "description": "the host is read only: no More",
+              "description": "the host is read only: no Move and no More",
               "type": {
                 "text": "boolean"
               }
@@ -8032,27 +8032,23 @@
           "events": [
             {
               "name": "stage-menu-select",
-              "description": "More's Edit or Remove was picked.",
+              "description": "More's Edit, Add stage before, Add stage after or Remove was picked.",
               "type": {
                 "text": "CustomEvent<{ action: string }>"
               }
             },
             {
-              "name": "stage-drag",
-              "description": "Arranging, its bar was dragged.",
+              "name": "stage-move",
+              "description": "Move left or Move right was pressed.",
               "type": {
-                "text": "CustomEvent<{ dx: number; phase: 'cancel' | 'end' | 'move' }>"
-              }
-            },
-            {
-              "name": "stage-step",
-              "description": "Arranging, an arrow key on its bar.",
-              "type": {
-                "text": "CustomEvent<{ by: number }>"
+                "text": "CustomEvent<{ by: -1 | 1 }>"
               }
             }
           ],
           "cssParts": [
+            {
+              "name": "actions"
+            },
             {
               "name": "band"
             },
@@ -8063,13 +8059,16 @@
               "name": "column"
             },
             {
-              "name": "grip"
-            },
-            {
               "name": "heading"
             },
             {
               "name": "more"
+            },
+            {
+              "name": "move-left"
+            },
+            {
+              "name": "move-right"
             },
             {
               "name": "swatch"

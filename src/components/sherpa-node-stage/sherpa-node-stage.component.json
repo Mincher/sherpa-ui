@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-stage",
-  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows More: Edit and Remove. Arranging, a drag on the bar, or an arrow key there, reports how far: its host orders the stages. Add stage and Arrange stages are its host's, at the canvas's top right (its `columns-end` slot). Will, 2026-11-10",
+  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Will, 2026-11-10 · TODO 893",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -47,52 +47,90 @@
               }
             },
             {
-              "el": "sherpa-button",
-              "class": "more",
-              "part": "more",
-              "attrs": {
-                "data-type": "icon",
-                "data-size": "sm",
-                "data-look": "transparent",
-                "data-icon-start": "ellipsis-horizontal",
-                "aria-label": "Stage options",
-                "aria-haspopup": "menu"
-              },
+              "el": "span",
+              "class": "actions",
+              "part": "actions",
               "children": [
                 {
-                  "el": "sherpa-menu",
+                  "el": "sherpa-button",
+                  "class": "move move-left",
+                  "part": "move-left",
                   "attrs": {
-                    "slot": "menu",
-                    "data-align": "end"
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-look": "transparent",
+                    "data-icon-start": "chevron-left",
+                    "aria-label": "Move left",
+                    "data-tip": "Move left"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "move move-right",
+                  "part": "move-right",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-look": "transparent",
+                    "data-icon-start": "chevron-right",
+                    "aria-label": "Move right",
+                    "data-tip": "Move right"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "more",
+                  "part": "more",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-look": "transparent",
+                    "data-icon-start": "ellipsis-horizontal",
+                    "aria-label": "Stage options",
+                    "aria-haspopup": "menu"
                   },
                   "children": [
                     {
-                      "el": "button",
+                      "el": "sherpa-menu",
                       "attrs": {
-                        "type": "button",
-                        "value": "edit"
-                      }
-                    },
-                    {
-                      "el": "button",
-                      "class": "remove",
-                      "attrs": {
-                        "type": "button",
-                        "value": "remove"
-                      }
+                        "slot": "menu",
+                        "data-align": "end"
+                      },
+                      "children": [
+                        {
+                          "el": "button",
+                          "attrs": {
+                            "type": "button",
+                            "value": "edit"
+                          }
+                        },
+                        {
+                          "el": "button",
+                          "attrs": {
+                            "type": "button",
+                            "value": "add-before"
+                          }
+                        },
+                        {
+                          "el": "button",
+                          "attrs": {
+                            "type": "button",
+                            "value": "add-after"
+                          }
+                        },
+                        {
+                          "el": "button",
+                          "class": "remove",
+                          "attrs": {
+                            "type": "button",
+                            "value": "remove"
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
               ]
-            },
-            {
-              "el": "span",
-              "class": "grip sherpa-icon-box",
-              "part": "grip",
-              "attrs": {
-                "data-icon": "drag-handle-horizontal",
-                "aria-hidden": "true"
-              }
             }
           ]
         },
@@ -153,12 +191,12 @@
     },
     {
       "$type": "prop",
-      "name": "data-editing",
+      "name": "data-first",
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style",
-      "description": "arranging the stages: the bar is a handle, and More hides. The HOST writes it"
+      "kind": "behaviour",
+      "description": "it is the first stage: Move left is off. The HOST writes it"
     },
     {
       "$type": "prop",
@@ -172,12 +210,21 @@
     },
     {
       "$type": "prop",
+      "name": "data-last",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "it is the last stage: Move right is off. The HOST writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-locked",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the host is read only: no More"
+      "description": "the host is read only: no Move and no More"
     },
     {
       "$type": "prop",
@@ -210,15 +257,10 @@
     }
   ],
   "populate": {
-    "shape": "{ colour?, description?, editing?, heading?, locked?, removable?, w?, x? }",
+    "shape": "{ colour?, description?, first?, heading?, last?, locked?, removable?, w?, x? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "editing",
-      "selector": ":host([data-editing])"
-    },
     {
       "$type": "state",
       "name": "locked",
@@ -244,7 +286,7 @@
     {
       "$type": "event",
       "name": "stage-menu-select",
-      "description": "More's Edit or Remove was picked.",
+      "description": "More's Edit, Add stage before, Add stage after or Remove was picked.",
       "bubbles": true,
       "composed": true,
       "detail": {
@@ -253,23 +295,12 @@
     },
     {
       "$type": "event",
-      "name": "stage-drag",
-      "description": "Arranging, its bar was dragged.",
+      "name": "stage-move",
+      "description": "Move left or Move right was pressed.",
       "bubbles": true,
       "composed": true,
       "detail": {
-        "dx": "number",
-        "phase": "'cancel' | 'end' | 'move'"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "stage-step",
-      "description": "Arranging, an arrow key on its bar.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "by": "number"
+        "by": "-1 | 1"
       }
     }
   ],

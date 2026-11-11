@@ -118,3 +118,32 @@ test('a FLEX row: a stage that shrinks draws the next back, its nodes with it, t
   const held = fitStages({ ...w, nodes: w.nodes.map((n) => (n.id === 'b' ? { ...n, x: 0 } : n)) }, nodeWidth);
   assert.equal(held.nodes.find((n) => n.id === 'b').x, stageBands(held, nodeWidth).bands[1].left + STAGE_PAD);
 });
+
+test('Add stage before or after a stage puts it there, the stages after moving on with their nodes; a default name is its place', () => {
+  let w = editWorkflow(flow(), { addStage: {} });
+  w = fitStages(editWorkflow(editWorkflow(w, { node: 'b', set: { x: stageBands(w, nodeWidth).bands[1].left + 40 } }), { restage: ['b'] }), nodeWidth);
+  const bx = w.nodes.find((n) => n.id === 'b').x;
+  // Before Stage 1: the new one is Stage 1, the old Stage 1 and 2 are 2 and 3, and b moves on with its stage.
+  const before = fitStages(editWorkflow(w, { addStage: { before: 'stage-1' } }), nodeWidth);
+  assert.deepEqual(before.stages.map((s) => [s.id, s.label]), [['stage-3', 'Stage 1'], ['stage-1', 'Stage 2'], ['stage-2', 'Stage 3']]);
+  assert.ok(before.nodes.find((n) => n.id === 'b').x > bx, 'b moves on with its stage');
+  assert.ok(before.nodes.every((n) => n.stage !== 'stage-3'), 'the new stage is empty');
+  // After Stage 1: between the two.
+  const after = editWorkflow(w, { addStage: { after: 'stage-1' } });
+  assert.deepEqual(after.stages.map((s) => [s.id, s.label]), [['stage-1', 'Stage 1'], ['stage-3', 'Stage 2'], ['stage-2', 'Stage 3']]);
+  // A stage not there is refused.
+  const { said, stop } = heard();
+  assert.equal(editWorkflow(w, { addStage: { after: 'nope' } }), w);
+  stop();
+  assert.match(said.join(' '), /the stage "nope" is not there/);
+});
+
+test('a default name follows its place on a move and a removal; a name of its own stays', () => {
+  let w = editWorkflow(editWorkflow(flow(), { addStage: {} }), { addStage: {} });
+  w = editWorkflow(w, { setStage: { id: 'stage-2', label: 'Decide' } });
+  // Stage 3 moved first: it is Stage 1, the old Stage 1 is Stage 2; Decide keeps its name.
+  const moved = editWorkflow(w, { orderStages: ['stage-3', 'stage-1', 'stage-2'] });
+  assert.deepEqual(moved.stages.map((s) => [s.id, s.label]), [['stage-3', 'Stage 1'], ['stage-1', 'Stage 2'], ['stage-2', 'Decide']]);
+  const removed = editWorkflow(moved, { removeStage: 'stage-3' });
+  assert.deepEqual(removed.stages.map((s) => [s.id, s.label]), [['stage-1', 'Stage 1'], ['stage-2', 'Decide']]);
+});

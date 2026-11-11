@@ -2200,7 +2200,7 @@ each cost a frame on their own:
   element in or out re-checks every `:has()` round it, up to `<html>` (the app shell's grid rules have `:has(> …)`), and the
   layout then starts at the page root. Now the lines drawn last time, keyed by what each is, are `morph`ed to the new ones,
   and `keepOrder` moves only one out of place.
-- **`append` of what is already there** moves it: the stage tools and each stage left the canvas and came back each draw.
+- **`append` of what is already there** moves it: each stage left the canvas and came back each draw.
 - **A `:state()` set again** (`states.add` of one already on) restyles the host's whole subtree in Chromium.
   `toggleState` writes only a change.
 - **A count read straight after each draw** (`offsetTop`, then a write) is a layout per field: a graph of tag fields did one

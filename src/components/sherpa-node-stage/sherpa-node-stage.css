@@ -63,33 +63,20 @@
   min-inline-size: 0;
 }
 
-/* More shows on a hover, or a focus in the bar, and while its menu is open: the open menu inherits its visibility, so a
-   hidden More would hide the menu the pointer moves onto. Never while arranging, nor read only. */
-.more { visibility: hidden; }
-.bar:hover .more,
-.bar:focus-within .more,
-.more:has(> sherpa-menu[open]) { visibility: visible; }
-:host([data-editing]) .more,
-:host([data-locked]) .more { display: none; }
+/* Move and More stand at the bar's end, and show on a hover, or a focus in the bar, and while More's menu is open: the
+   open menu inherits its visibility, so a hidden More would hide the menu the pointer moves onto. Never read only. */
+.actions {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+  visibility: hidden;
+}
+.bar:hover .actions,
+.bar:focus-within .actions,
+.actions:has(sherpa-menu[open]) { visibility: visible; }
+:host([data-locked]) .actions { display: none; }
 /* The only stage cannot go: no Remove. */
 :host(:not([data-removable])) .remove { display: none; }
-
-/* Arranging: the bar is the handle. */
-.grip {
-  display: none;
-  margin-inline-start: auto;
-}
-:host([data-editing]) .grip { display: inline-flex; }
-:host([data-editing]) .bar { cursor: grab; }
-:host(:state(dragging)) .bar { cursor: grabbing; }
-:host(:state(dragging)) .column {
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-sm, 16px)
-    -4px
-    var(--sherpa-style-surface-shadow, #15151e80);
-}
 
 /* ── The band ─────────────────────────────────────────────────────────── */
 .band {

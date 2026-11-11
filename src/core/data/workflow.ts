@@ -743,7 +743,7 @@ export type WorkflowEdit =
   | { unframe: string }
   | { setFrame: { id: string; label?: string; description?: string } }
   | { renamePortal: { from: string; to: string } }
-  | { addStage: { id?: string; label?: string; description?: string; colour?: string } }
+  | { addStage: { id?: string; label?: string; description?: string; colour?: string; before?: string; after?: string } }
   | { setStage: { id: string; label?: string; description?: string; colour?: string } }
   | { removeStage: string }
   | { orderStages: readonly string[] }
@@ -776,10 +776,20 @@ function refuse(message: string): void {
 /** A node's width on the canvas, in plane px: what a stage holds. */
 export const nodeWidth = (node: { size?: { w: number } }): number => NODE_WIDTH * (node.size?.w ?? 1);
 
+/** A stage's default name: its place, "Stage 2". */
+const DEFAULT_STAGE = /^Stage \d+$/;
+
+/** Each stage of a default name takes its place's: one put before Stage 1 is Stage 1, the old one Stage 2. Will, TODO 893 */
+function numbered(workflow: WorkflowDefinition): WorkflowDefinition {
+  const stages = workflow.stages ?? [];
+  if (stages.every((s, i) => !DEFAULT_STAGE.test(s.label) || s.label === `Stage ${i + 1}`)) return workflow;
+  return { ...workflow, stages: stages.map((s, i) => (DEFAULT_STAGE.test(s.label) ? { ...s, label: `Stage ${i + 1}` } : s)) };
+}
+
 /** A stage edit: written out first where the workflow had only its one Stage 1. */
 function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addStage: unknown } | { setStage: unknown } | { removeStage: unknown } | { orderStages: unknown } | { restage: unknown }>): WorkflowDefinition {
   if ('restage' in edit) return restage(workflow, edit.restage, nodeWidth, !!edit.together);
-  if ('orderStages' in edit) return orderStages(workflow, edit.orderStages, nodeWidth);
+  if ('orderStages' in edit) return numbered(orderStages(workflow, edit.orderStages, nodeWidth));
   const held = stagesHeld(workflow);
   const stages = held.stages!;
   if ('addStage' in edit) {
@@ -788,8 +798,14 @@ function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addS
     if (stages.some((s) => s.id === id)) return refuse(`two stages would be "${id}"`), workflow;
     const { bands } = stageBands(held, nodeWidth);
     const x = Math.max(...bands.map((b) => b.right)) + STAGE_GAP;
-    const { id: _id, ...said } = edit.addStage;
-    return { ...held, stages: [...stages, { id, label: said.label?.trim() || `Stage ${stages.length + 1}`, ...said, x }] };
+    const { id: _id, before, after, ...said } = edit.addStage;
+    // Before or after a stage: put last, then ordered into its place, the stages after it moving on with their nodes.
+    const next = before ?? after;
+    const at = next === undefined ? stages.length : stages.findIndex((s) => s.id === next) + (after === undefined ? 0 : 1);
+    if (next !== undefined && !stages.some((s) => s.id === next)) return refuse(`the stage "${next}" is not there`), workflow;
+    const added = { ...held, stages: [...stages, { id, label: said.label?.trim() || `Stage ${stages.length + 1}`, ...said, x }] };
+    const order = [...stages.slice(0, at).map((s) => s.id), id, ...stages.slice(at).map((s) => s.id)];
+    return numbered(at === stages.length ? added : orderStages(added, order, nodeWidth));
   }
   if ('setStage' in edit) {
     const { id, ...set } = edit.setStage;
@@ -806,7 +822,7 @@ function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addS
   if (!stages.some((s) => s.id === edit.removeStage)) return refuse(`the stage "${edit.removeStage}" is not there`), workflow;
   if (stages.length < 2) return refuse('a workflow keeps one stage at least'), workflow;
   // Its nodes stay where they are, in no stage.
-  return {
+  return numbered({
     ...held,
     stages: stages.filter((s) => s.id !== edit.removeStage),
     nodes: held.nodes.map((n) => {
@@ -814,7 +830,7 @@ function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addS
       const { stage: _was, ...bare } = n;
       return bare;
     }),
-  };
+  });
 }
 
 /** The workflow after one edit, a v2; the one given untouched. A

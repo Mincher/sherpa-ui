@@ -72,13 +72,12 @@ Each one bubbles.
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
 | `toolbar` | toolbar | tools FLOATING at the bottom centre, 16px up (level with the zoom controls), beside the panel: they do not pan or zoom (a node toolbar) |
 | `footer` | footer | the edit mode's footer, along the canvas's bottom edge: shown only with `data-editing` (Save and Cancel) |
-| `columns-end` | control | controls at the END of the columns' head: the top right of what the view shows, clear of a panel's tabs (Add stage, Arrange stages) |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`banner`, `columns`, `columns-end`, `controls`, `footer`, `grid`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `rows`, `stage`, `toolbar`, `viewport`
+`banner`, `columns`, `controls`, `footer`, `grid`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `rows`, `stage`, `toolbar`, `viewport`
 
 ## CSS custom properties it reads
 
@@ -90,8 +89,6 @@ What each class's base rule reads:
 | `--sherpa-layer-content` | `.banner` | `z-index` |
 | `--sherpa-display-mode-space-xs` | `.banner` | `gap` |
 | `--sherpa-style-border-base` | `.grid` | `background-color` |
-| `--sherpa-display-mode-space-xs` | `.columns-end` | `inset-inline-end` |
-| `--sherpa-layer-content` | `.columns-end` | `z-index` |
 | `--sherpa-layer-content` | `.footer` | `z-index` |
 | `--sherpa-style-surface-shadow` | `.inset` | `box-shadow` |
 | `--sherpa-display-mode-border-width-base` | `.marquee` | `border-width` |

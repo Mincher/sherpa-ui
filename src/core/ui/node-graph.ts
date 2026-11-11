@@ -2644,9 +2644,7 @@ export function bindWorkflow(
   const stages: Stages = bindStages(canvas, {
     workflow: () => (path.length ? null : shown()),
     write: (next) => write(next),
-    redraw: () => draw(),
     readOnly: () => readOnly(),
-    nodeElement: (id) => drawnOn.get(canvas)?.nodes.get(id),
     dialog: stageDialog ?? null,
     moving: () => (settling ? moved : new Set()),
   });
@@ -2729,7 +2727,7 @@ export function bindWorkflow(
     const els = drawnOn.get(canvas)?.nodes;
     if (!els || path.length) return draw();
     let moved = false;
-    for (const n of (stages.preview() ?? shown()).nodes) {
+    for (const n of shown().nodes) {
       const el = els.get(n.id);
       if (!el) continue;
       const [x, y] = [String(n.x), String(n.y)];
@@ -2738,7 +2736,7 @@ export function bindWorkflow(
     }
     if (moved) relayRoutes(canvas);
     stages.draw();
-    drawLanes(canvas, stages.preview() ?? shown(), heightOf, K());
+    drawLanes(canvas, shown(), heightOf, K());
   };
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     // A Custom Node's tags are its definition's: one step, and the panel's headings follow. TODO 819
@@ -2766,7 +2764,6 @@ export function bindWorkflow(
   };
   const onMove = (node: GraphNode, x: number, y: number): void => {
     if (node.id.startsWith('#')) return;
-    if (stages.arranging()) return;
     settling = pressing && shifted;
     dragging = pressing;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
@@ -2781,7 +2778,6 @@ export function bindWorkflow(
     const [dx, dy] = [nodes[head.id]!.x - head.x, nodes[head.id]!.y - head.y];
     const inside = (r: NodeRoute): boolean => socketOf(r.from).node in nodes && socketOf(r.to).node in nodes;
     const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.routes.length && t.routes.every(inside)).map((t) => [t.id, { x: t.x + dx, y: t.y + dy }]));
-    if (stages.arranging()) return;
     const tag = `move:${Object.keys(nodes).sort().join(',')}`;
     settling = pressing && shifted;
     dragging = pressing;
@@ -3733,7 +3729,7 @@ export function bindWorkflow(
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
-    const body = doc ? doc.graph(stages.preview() ?? shown()) : workflowGraph(stages.preview() ?? shown(), facts, K());
+    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), facts, K());
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     // Swimlanes on: the tie tool goes off, and the ties are hidden, not gone.
     const laning = lanesOn();
@@ -3753,16 +3749,16 @@ export function bindWorkflow(
         picks.select(node, graph);
       },
       notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
-      locked: (node) => ro || node.id.startsWith('#') || !!stages.arranging(),
+      locked: (node) => ro || node.id.startsWith('#'),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
       // A collapsed or expanded node changes height: its lane fits again.
       onCollapse: () => { if (!path.length && shown().lanes?.length) write(shown()); },
     });
     stages.draw();
-    const laned = path.length ? null : (stages.preview() ?? shown());
+    const laned = path.length ? null : shown();
     drawLanes(canvas, laned, heightOf, K());
     // A node's height lands when its parts render: the lanes draw again then.
-    requestAnimationFrame(() => drawLanes(canvas, path.length ? null : (stages.preview() ?? shown()), heightOf, K()));
+    requestAnimationFrame(() => drawLanes(canvas, path.length ? null : shown(), heightOf, K()));
     toolbar?.toggleAttribute('data-can-lanes', !path.length && !ro);
     toolbar?.toggleAttribute('data-lanes', !!laned?.lanes?.length);
     toolbar?.toggleAttribute('data-can-unfurl', !ro && !laning && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);

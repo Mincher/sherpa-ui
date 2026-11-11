@@ -151,18 +151,6 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
 :host { --_columns-head: var(--sherpa-display-mode-size-3xl, 40px); }
 :host(:state(has-columns)) .stage { margin-block-start: var(--_columns-head); }
 :host(:state(has-columns)) .banner { margin-block-start: calc(var(--_float) + var(--_columns-head)); }
-/* The columns' controls: in the head's row, at the end of what the view shows, so a panel's tabs never cover them. */
-.columns-end {
-  position: absolute;
-  inset-block-start: calc(-1 * var(--_columns-head));
-  inset-inline-end: var(--sherpa-display-mode-space-xs, 8px);
-  z-index: var(--sherpa-layer-content, 1);
-  display: flex;
-  align-items: center;
-  block-size: var(--_columns-head);
-  pointer-events: auto;
-}
-:host([data-editing]) .columns-end { display: none; }
 
 /* ── The edit mode ────────────────────────────────────────────────────── */
 /* The panels and the toolbar hide; the footer shows along the bottom, and what the view shows (the minimap and the

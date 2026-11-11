@@ -1,11 +1,10 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * STAGES on a workflow's canvas — Will, 2026-11-10. A graph has one stage at least, Stage 1, round every node. Add stage
- * puts a new one after the last; a node let go in a stage joins it, and a stage grows to hold its nodes. More on a bar
- * offers Edit (name, line, colour) and Remove (its nodes stay, in none). Arrange stages is an edit mode: the toolbar and the
- * panels hide, a footer offers Cancel and Save; a drag or an arrow key on a bar orders the stages, each node with its own.
- * Real pointer and keys.
+ * STAGES on a workflow's canvas — Will, 2026-11-10. A graph has one stage at least, Stage 1, round every node; a node let
+ * go in a stage joins it, and a stage grows to hold its nodes. More, at the end of a bar, offers Edit (name, line, colour),
+ * Add stage before, Add stage after and Remove (its nodes stay, in none); Move left and Move right beside it move the stage
+ * one place, each node with it. A default name is its place: Stage 1, Stage 2. Real pointer and keys. TODO 893
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -51,14 +50,20 @@ const settle = (page: Page) => page.evaluate(() => window.__settled().then(() =>
 const flow = (page: Page) => page.evaluate(() => (window as never as { ed: { workflow(): Flow } }).ed.workflow());
 const stage = (page: Page, n: number) => page.locator('#cv > sherpa-node-stage').nth(n);
 const stageOf = async (page: Page, id: string) => (await flow(page)).nodes.find((n) => n.id === id)?.stage;
+/** Add stage after the last, by its More. */
 const addStage = async (page: Page) => {
-  await page.locator('#cv > .stage-tools .add-stage').click();
-  await settle(page);
+  await more(page, await page.locator('#cv > sherpa-node-stage').count() - 1, 'add-after');
 };
-const more = async (page: Page, n: number, action: string) => {
+async function more(page: Page, n: number, action: string): Promise<void> {
   await stage(page, n).locator('.bar').hover();
   await stage(page, n).locator('.more').click();
   await stage(page, n).locator(`.more sherpa-menu button[value="${action}"]`).click();
+  await settle(page);
+}
+/** Press a stage's Move left or Move right. */
+const move = async (page: Page, n: number, side: 'left' | 'right') => {
+  await stage(page, n).locator('.bar').hover();
+  await stage(page, n).locator(`.move-${side}`).click();
   await settle(page);
 };
 /** Drag a node by its header to a point on the screen; with Shift held, out of its stage. */
@@ -73,7 +78,7 @@ const dragNode = async (page: Page, heading: string, to: { x: number; y: number 
   await settle(page);
 };
 
-test('one stage round every node; Add stage puts an empty one after it', async ({ page }) => {
+test('one stage round every node; Add stage after puts an empty one after it; More stands at the bar\'s end', async ({ page }) => {
   await expect(page.locator('#cv > sherpa-node-stage')).toHaveCount(1);
   await expect(stage(page, 0)).toHaveAttribute('data-heading', 'Stage 1');
   await expect(stage(page, 0)).not.toHaveAttribute('data-removable');
@@ -84,11 +89,21 @@ test('one stage round every node; Add stage puts an empty one after it', async (
   const w = await flow(page);
   expect(w.stages!.map((s) => s.label)).toEqual(['Stage 1', 'Stage 2']);
   expect(w.nodes.every((n) => n.stage === 'stage-1')).toBe(true);
-  // Add stage and Arrange stages stand at the canvas's top right, past every stage's bar.
-  const tools = (await page.locator('#cv > .stage-tools').boundingBox())!;
-  const canvas = (await page.locator('#cv').boundingBox())!;
-  expect(tools.x + tools.width).toBeGreaterThan(canvas.x + canvas.width - 64);
-  expect(tools.y).toBeLessThan(canvas.y + 40);
+  // More stands at the right end of its bar; no stage tools stand at the canvas's top right any more.
+  await stage(page, 0).locator('.bar').hover();
+  const [bar, more$] = [(await stage(page, 0).locator('.bar').boundingBox())!, (await stage(page, 0).locator('.more').boundingBox())!];
+  expect(bar.x + bar.width - (more$.x + more$.width)).toBeLessThan(12);
+  await expect(page.locator('#cv > .stage-tools')).toHaveCount(0);
+});
+
+test('Add stage before Stage 1 is Stage 1, and the old one Stage 2: a default name is its place', async ({ page }) => {
+  await more(page, 0, 'add-before');
+  const w = await flow(page);
+  expect(w.stages!.map((s) => [s.id, s.label])).toEqual([['stage-2', 'Stage 1'], ['stage-1', 'Stage 2']]);
+  await expect(stage(page, 0)).toHaveAttribute('data-heading', 'Stage 1');
+  await expect(stage(page, 1)).toHaveAttribute('data-heading', 'Stage 2');
+  // Its nodes moved on with the old Stage 1, and the new one is empty.
+  expect(w.nodes.every((n) => n.stage === 'stage-1')).toBe(true);
 });
 
 test('Shift-dragged, a node leaves its stage and joins the one it is let go in; its old stage shrinks; Undo puts it back as one step', async ({ page }) => {
@@ -126,46 +141,36 @@ test('Edit names, describes and colours a stage; Remove leaves its nodes where t
   await expect(stage(page, 0)).not.toHaveAttribute('data-removable');
 });
 
-test('Arrange stages: the toolbar and panels hide, a footer shows; an arrow key or a drag orders them; Cancel keeps, Save writes', async ({ page }) => {
+test('Move left and Move right move a stage one place, its nodes with it, one step each; off at the ends; its default name follows', async ({ page, browserName }) => {
+  // Safari's Tab skips buttons unless Option is held: its own setting.
+  const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
   await addStage(page);
   const two = (await stage(page, 1).boundingBox())!;
   await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 }, true);
-  await page.locator('#cv > .stage-tools .stages-more').click();
-  await page.locator('#cv > .stage-tools sherpa-menu button[value="arrange"]').click();
-  await settle(page);
-  await expect(page.locator('#cv')).toHaveAttribute('data-editing', '');
-  await expect(page.locator('#cv sherpa-node-toolbar')).toBeHidden();
-  await expect(page.locator('#nodes')).toBeHidden();
-  await expect(page.locator('#cv > sherpa-container-footer')).toBeVisible();
-  // An arrow key moves Stage 2 first; Cancel leaves the order as it was.
-  await stage(page, 1).locator('.bar').focus();
-  await page.keyboard.press('ArrowLeft');
-  await settle(page);
-  await expect(stage(page, 0)).toHaveAttribute('data-heading', 'Stage 2');
-  await page.locator('#cv > sherpa-container-footer sherpa-button[data-action="cancel"]').click();
-  await settle(page);
-  await expect(page.locator('#cv')).not.toHaveAttribute('data-editing');
-  expect((await flow(page)).stages!.map((s) => s.id)).toEqual(['stage-1', 'stage-2']);
-  // A drag of Stage 2's bar past Stage 1's middle, then Save: Stage 2 first, its node with it.
-  await page.locator('#cv > .stage-tools .stages-more').click();
-  await page.locator('#cv > .stage-tools sherpa-menu button[value="arrange"]').click();
-  await settle(page);
+  await expect(stage(page, 0).locator('.move-left')).toHaveAttribute('disabled', '');
+  await expect(stage(page, 1).locator('.move-right')).toHaveAttribute('disabled', '');
   const end = (await flow(page)).nodes.find((n) => n.id === 'end')!.x;
-  const bar = (await stage(page, 1).locator('.bar').boundingBox())!;
-  const first = (await stage(page, 0).boundingBox())!;
-  await page.mouse.move(bar.x + 40, bar.y + bar.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(first.x - 20, bar.y + bar.height / 2, { steps: 12 });
-  await page.mouse.up();
-  await settle(page);
-  await page.locator('#cv > sherpa-container-footer sherpa-button[data-action="save"]').click();
-  await settle(page);
-  const w = await flow(page);
-  expect(w.stages!.map((s) => s.id)).toEqual(['stage-2', 'stage-1']);
-  const moved = w.nodes.find((n) => n.id === 'end')!.x;
-  expect(moved).toBeLessThan(end);
+  await move(page, 1, 'left');
+  let w = await flow(page);
+  expect(w.stages!.map((s) => [s.id, s.label])).toEqual([['stage-2', 'Stage 1'], ['stage-1', 'Stage 2']]);
+  expect(w.nodes.find((n) => n.id === 'end')!.x).toBeLessThan(end);
   expect(Math.max(...w.nodes.filter((n) => n.stage === 'stage-2').map((n) => n.x))).toBeLessThan(Math.min(...w.nodes.filter((n) => n.stage === 'stage-1').map((n) => n.x)));
-  await expect(page.locator('#cv sherpa-node-toolbar')).toBeVisible();
+  // The keys stay on the stage that moved (its bar: Move left is off at the start). Tab goes on to Move left, off but
+  // focusable, then Move right; Enter puts it back.
+  expect(await stage(page, 0).evaluate((el) => el.shadowRoot!.activeElement?.className)).toContain('bar');
+  await page.keyboard.press(tab);
+  await page.keyboard.press('Enter');
+  await settle(page);
+  expect((await flow(page)).stages!.map((s) => s.id)).toEqual(['stage-2', 'stage-1']);
+  await page.keyboard.press(tab);
+  await page.keyboard.press('Enter');
+  await settle(page);
+  w = await flow(page);
+  expect(w.stages!.map((s) => s.id)).toEqual(['stage-1', 'stage-2']);
+  // Each move is one step: Undo takes the last back.
+  await page.locator('sherpa-node-toolbar sherpa-button.undo').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect((await flow(page)).stages!.map((s) => s.id)).toEqual(['stage-2', 'stage-1']);
 });
 
 test('dragged without Shift, a node stays in its stage, which grows with it; the stage after keeps the same gap', async ({ page }) => {
