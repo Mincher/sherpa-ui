@@ -289,11 +289,11 @@ test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothin
 // — 756: every category, picked, takes the SAME active fill and border; the panel's node adds the same ring.
 const CATS = { Sources: 'source', Variables: 'value', Logic: 'condition', Organise: 'sort', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
 async function bindCategories(page: Page): Promise<void> {
-  await page.setViewportSize({ width: 1900, height: 1100 });
+  await page.setViewportSize({ width: 1900, height: 1300 });
   await page.evaluate(async (cats) => {
     document.querySelector('#root sherpa-layout-canvas')!.remove();
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 1200px; block-size: 1000px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1200px; block-size: 1200px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
     await customElements.whenDefined('sherpa-node-toolbar');
     const canvas = document.getElementById('cv') as Canvas;
@@ -303,7 +303,8 @@ async function bindCategories(page: Page): Promise<void> {
     const body = { v: 1, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'out', label: 'Out', type: 'object' }], nodes: [], connections: [{ from: '#in/rows', to: '#out/out' }] };
     const library = { v: 1, nodes: { mine: { ...body, label: 'Mine' }, agent: { ...body, label: 'Agent', category: 'AI' } } };
     const nodes = Object.entries(cats).map(([heading, kind], i) => {
-      // The second row below the first's tallest, a Condition with its Operation row.
+      // The second row below the first's tallest, a Condition with its Operation row. The canvas holds the second row's
+    // tallest, an Output with its Summary's text area (TODO 943): a card past it reads the page's white.
       const at = { id: kind, x: (i % 4) * 290, y: i < 4 ? 0 : 460, heading };
       return kind in library.nodes ? { ...useOf(library as never, kind, at), heading } : { kind, ...at };
     });

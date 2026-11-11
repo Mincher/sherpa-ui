@@ -2988,10 +2988,6 @@
           "description": "the row's name, when it has no field: a field names itself"
         },
         {
-          "name": "data-message",
-          "description": "a message's first lines, read only, under its name: each {value} in it drawn in purple, its braces off"
-        },
-        {
           "name": "data-output-at"
         },
         {

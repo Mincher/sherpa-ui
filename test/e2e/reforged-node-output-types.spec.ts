@@ -2,9 +2,9 @@ import { test, expect, type Page } from './harness';
 
 /**
  * An Output of many types, as the node draws it (plan 891, step 4): its Type list has a section per family, each type its
- * line on hover; its header wears its type's icon. A message row shows its first lines, each value by its node's heading
- * and label, in purple, and the Details panel edits it in the Markdown editor (plan 892), its values purple chips. The
- * Nodes panel's Notify places an Output of type Notification.
+ * line on hover; its header wears its type's icon. A message row is a text area in the node, a title one line (Will,
+ * 2026-11-11), and the Details panel edits it in the Markdown editor (plan 892), its values purple chips. The Nodes panel's
+ * Notify places an Output of type Notification.
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -66,30 +66,24 @@ test('its Type list has a section per family, each type its line on hover; its h
   expect(r.title).toBe('Show a short message on the screen');
 });
 
-test('a message row shows its first lines, each value by its node and label, in purple; the Details panel edits it as Markdown', async ({ page }) => {
-  const r = await page.evaluate((sel) => {
-    const row = document.querySelector(sel)!.querySelector('sherpa-node-row[data-message]')!;
-    const parts = [...row.shadowRoot!.querySelectorAll('.message .part')];
-    return {
-      said: row.getAttribute('data-message'), field: !!row.querySelector('sherpa-input-text'),
-      parts: parts.map((p) => [p.textContent, p.hasAttribute('data-value')]),
-      ink: getComputedStyle(parts[1]!).color, plain: getComputedStyle(parts[0]!).color,
-      shown: getComputedStyle(row.shadowRoot!.querySelector('.message')!).display !== 'none',
-    };
-  }, output);
-  expect(r.said).toBe('Hi {Customers › Name}');
-  expect(r.field).toBe(false);
-  expect(r.parts).toEqual([['Hi ', false], ['Customers › Name', true]]);
-  expect(r.ink).toBe('rgb(131, 0, 182)');
-  expect(r.plain).not.toBe(r.ink);
-  expect(r.shown).toBe(true);
+test('a message row is a text area in the node, a title one line; typed there, it changes; the Details panel edits it as Markdown', async ({ page }) => {
+  // In the node (Will, 2026-11-11): the Message a text area, the Title one line, each its raw text.
+  const node = (name: string) => page.locator(`${output} sherpa-input-text[name="${name}"]`);
+  await expect(node('message')).toHaveAttribute('data-multiline', '');
+  await expect(node('title')).not.toHaveAttribute('data-multiline');
+  expect(await node('message').evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {s.name}');
+  // Typed in the node, the message changes.
+  await node('message').locator('textarea').fill('Hi {s.name}, thanks');
+  await node('message').locator('textarea').blur();
+  await settle(page);
+  expect(await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { kind: string; values?: Record<string, unknown> }[] } } }).editor.workflow().nodes.find((n) => n.kind === 'output')?.values?.['message'])).toBe('Hi {s.name}, thanks');
   // Picked, its Details panel edits the message in the Markdown editor: its value a chip of its node and label.
   const head = (await page.locator(output).boundingBox())!;
   await page.mouse.click(head.x + head.width / 2, head.y + 10);
   await settle(page);
   const field = page.locator('#inspector sherpa-markdown-editor[name="message"]');
   await expect(field).toHaveCount(1);
-  expect(await field.evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {s.name}');
+  expect(await field.evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {s.name}, thanks');
   expect(await field.evaluate((f) => f.shadowRoot!.querySelector('.value')?.textContent)).toBe('Customers › Name');
   // Its Title is one line, with no toolbar; its Message is many (TODO 913).
   await expect(page.locator('#inspector sherpa-markdown-editor[name="title"]')).toHaveAttribute('data-single-line', '');
@@ -134,7 +128,8 @@ test('Insert value lists the values from before it, by node; a pick puts the val
   expect(values).toEqual(['{s.count}', '{s.name}']);
   await insert.locator('sherpa-menu button[value="{s.name}"]').click();
   await settle(page);
-  await expect(page.locator(`${output} sherpa-node-row[data-message]`)).toHaveAttribute('data-message', 'Hi {Customers › Name} {Customers › Name}');
+  const inNode = () => page.locator(`${output} sherpa-input-text[name="message"]`).evaluate((f) => (f as HTMLElement & { value: string }).value);
+  expect(await inNode()).toBe('Hi {s.name} {s.name}');
   // At the caret: after "Hi", a value goes before the one there.
   const message = page.locator('#inspector sherpa-markdown-editor[name="message"]');
   await message.locator('.content').click();
@@ -143,7 +138,7 @@ test('Insert value lists the values from before it, by node; a pick puts the val
   await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"]').click();
   await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"] sherpa-menu button[value="{s.count}"]').click();
   await settle(page);
-  await expect(page.locator(`${output} sherpa-node-row[data-message]`)).toHaveAttribute('data-message', 'Hi {Customers › Count} {Customers › Name} {Customers › Name}');
+  expect(await inNode()).toBe('Hi {s.count} {s.name} {s.name}');
 });
 
 test('Send a test asks the host, with the node, its type and its values; Sherpa sends nothing', async ({ page, browserName }) => {

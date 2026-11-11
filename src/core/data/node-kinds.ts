@@ -932,8 +932,6 @@ export interface GraphRow extends RowKind {
   fault?: string;
   /** Connections drive its picklist: it shows what comes in, each marked Custom, and its own pick waits. */
   custom?: true;
-  /** A message's text as it reads: each value by its node's heading and label, `{Customers › Name}`. Plan 891 */
-  said?: string;
   /** A property with nothing to say: Results or Count where no rows reach its node, only a value (TODO 924). */
   idle?: true;
 }

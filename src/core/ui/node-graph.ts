@@ -314,7 +314,7 @@ function datePicker(field: Field): HTMLElement {
   return button;
 }
 
-function fieldFor(row: GraphRow, locked: boolean): Field {
+function fieldFor(row: GraphRow, locked: boolean, inNode = false): Field {
   if (row.control === 'tags') {
     // Each word a tag; a closed list takes only its choices.
     const field = document.createElement('sherpa-input-text') as Field;
@@ -340,6 +340,14 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
   if (row.control === 'switch') {
     const field = document.createElement('sherpa-switch') as Field;
     if (locked) lock(field);
+    return field;
+  }
+  // In the node, a message is a text area, a title one line (Will, 2026-11-11); the Details panel edits it as Markdown.
+  if (row.control === 'message' && inNode) {
+    const field = document.createElement('sherpa-input-text') as Field;
+    field.setAttribute('name', row.name);
+    if (!row.singleLine) field.setAttribute('data-multiline', '');
+    if (locked) lock(field, true);
     return field;
   }
   // A message is Markdown, edited as it reads (plan 892).
@@ -434,8 +442,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
       const line = document.createElement('sherpa-node-row');
       drawn.rows.set(`${node.id}/${row.name}`, line);
       drawn.addresses.set(line, [node.id, row.name]);
-      // A message shows its first lines in the node; the Details panel edits it (plan 891).
-      if (row.control && row.control !== 'message') line.append(fieldFor(row, locked(row)));
+      if (row.control) line.append(fieldFor(row, locked(row), true));
       return line;
     });
     const section = (...kids: HTMLElement[]): HTMLElement[] => {
@@ -485,7 +492,6 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     else {
       line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
       line.toggleAttribute('data-property', !!row.property);
-      put(line, 'data-message', row.control === 'message' ? row.said ?? (typeof row.value === 'string' ? row.value : undefined) : undefined);
     }
   }
   // A section with no socket: a collapsed node draws none of it; none a connection joins: hiding the unconnected, none of it.

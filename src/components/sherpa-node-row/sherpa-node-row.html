@@ -6,7 +6,6 @@
 
   Public API:
     data-label          the row's name, when it has no field: a field names itself
-    data-message        a message's first lines, read only, under its name: each {value} in it drawn in purple, its braces off
     data-input-socket   an input socket on the start edge: value | object | boolean | any: an input is a D, its type in its ink
     data-output-socket  an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a circle)
     data-input-connected   a connection joins the input: its socket is filled, else hollow
@@ -30,12 +29,10 @@
     <div class="content" part="content">
       <span class="label" part="label" data-text="data-label"></span>
       <slot data-accepts="input"></slot>
-      <p class="message" part="message"></p>
     </div>
     <span class="socket-tab socket-tab-in sherpa-anchor" part="socket-tab-in" aria-hidden="true"><span class="socket socket-in" part="socket-in"><i class="core"></i></span></span>
     <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="tip-line tip-socket" data-text="data-socket-name"></span><span class="tip-line tip-value"><span class="name">Value:</span> <span data-text="data-socket-value"></span></span><span class="tip-line"><span class="name">Input:</span> <span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span></span>
     <span class="socket-tab socket-tab-out sherpa-anchor" part="socket-tab-out" aria-hidden="true"><span class="socket socket-out" part="socket-out"><i class="core"></i></span></span>
     <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="tip-line tip-socket" data-text="data-socket-name"></span><span class="tip-line tip-value"><span class="name">Value:</span> <span data-text="data-socket-value"></span></span><span class="tip-line"><span class="name">Output:</span> <span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span></span>
   </div>
-  <template class="message-part-tpl"><span class="part" data-text="text" data-attr-data-value="value"></span></template>
 </template>

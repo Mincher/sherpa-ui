@@ -1,7 +1,6 @@
 /**
  * sherpa-node-row — one row of a sherpa-node: an input socket, a field and an output socket.
- * Any of the three may be absent: a row may only pick a key of its input. Will, TODO 78. A message row shows its first
- * lines, its values in purple (plan 891).
+ * Any of the three may be absent: a row may only pick a key of its input. Will, TODO 78.
  */
 import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { SOCKETS, socketRect, type SocketSide } from '../sherpa-node/node-sockets.js';
@@ -22,7 +21,6 @@ export class SherpaNodeRow extends SherpaElement {
     'data-input-many': SHARED_PROPS['data-input-many'],
     'data-property': { type: 'boolean', kind: 'style' },
     'data-idle': { type: 'boolean', kind: 'style' },
-    'data-message': { type: 'string', kind: 'behaviour' },
     'data-socket-name': { type: 'string', kind: 'content' },
     'data-socket-value': { type: 'string', kind: 'content' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
@@ -31,23 +29,14 @@ export class SherpaNodeRow extends SherpaElement {
     'data-input-at-connected': { type: 'number', kind: 'behaviour' },
     'data-output-at-connected': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-input-at', 'data-output-at', 'data-input-at-connected', 'data-output-at-connected', 'data-message'];
+  static override observed = ['data-input-at', 'data-output-at', 'data-input-at-connected', 'data-output-at-connected'];
 
   override onRender(): void {
     this.#places();
-    this.#message();
   }
 
-  override onChange(name: string): void {
-    if (name === 'data-message') this.#message();
-    else this.#places();
-  }
-
-  /** A message's text in parts: each `{value}` its own, marked, its braces off. */
-  #message(): void {
-    const text = this.getAttribute('data-message') ?? '';
-    const parts = text.split(/(\{[^{}]+\})/).filter(Boolean).map((t) => (/^\{[^{}]+\}$/.test(t) ? { text: t.slice(1, -1), value: 'value' } : { text: t }));
-    this.renderItems('.message', 'template.message-part-tpl', parts);
+  override onChange(): void {
+    this.#places();
   }
 
   /** Its sockets' places in a collapsed node's stacks, where the CSS reads them. */

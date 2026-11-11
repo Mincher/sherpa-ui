@@ -685,8 +685,6 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     }
     const types = family.types ? typeChoices(family)!.filter((c) => !fits || fits.has(c.value) || c.value === at?.id) : undefined;
     let sources: MessageSource[] | undefined;
-    // A message row's text as it reads: each value by its node's heading and its own label.
-    const spoken = new Map<string, string>();
     // Its Results and Count say ROWS: where only a value, or a test of one, reaches its header, they have nothing to say.
     // Nothing usable joined: they show (TODO 924).
     const rowless = !!kind.input && kind.rows.some((r) => r.name === ROWS.name) && rowsHeard(node.id) === false;
@@ -699,8 +697,6 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       if (row.control === 'message' && valuesIn(has).length) {
         sources ??= valuesAt(workflow.nodes, flows, node.id, kinds, facts.fieldsOf);
         for (const words of unreachedValues(has, sources, workflow.nodes, kinds, !!facts.fieldsOf)) warnings.push({ row: row.name, words });
-        const words = new Map(sources.flatMap((s) => s.values.map((v) => [v.key, `{${s.heading} › ${v.label}}`] as const)));
-        spoken.set(row.name, String(has).replace(/\{[\w-]+\.[\w.-]+\}/g, (key) => words.get(key) ?? key));
       }
       // A Value row with no values to pick from is typed, as it was.
       const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
@@ -792,9 +788,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // A title of its own stays the node's; its kind rides beside it, drawn before it. TRAP T-a-custom-title-follows-its-kind
     const titled = node.heading && node.heading !== family.heading;
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(titled ? { kindHeading: family.heading } : {}), ...(node.description ? { description: node.description } : {}) };
-    const drawnRows = spoken.size ? rows.map((r) => (spoken.has(r.name) ? { ...r, said: spoken.get(r.name)! } : r)) : rows;
     const ignores = ignored.length ? { ignored: { from: ignored.map((i) => i.from), words: `Ignored: ${takes}` } } : {};
-    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, drawnRows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores };
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, connections) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
