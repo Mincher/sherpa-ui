@@ -151,3 +151,17 @@ Each step is one commit with both suites green. A step that changes the wire cha
   S1's test proves it.
 - **Volume.** About 3,000 changes in tests and code, mechanical but many. The router's files are excluded by name,
   and each step's diff is read whole before it is committed.
+
+## Built (2026-11-11)
+
+| Step | Commit | What |
+|---|---|---|
+| S0 | `0bc124ca8`, `530cafa32` | PRINCIPLES 19 and LEXICON 12 say the words; the plan renumbered 931 → 934 |
+| S1, S2, S4, S5 | `4c94bbf44` | route → connection in the data, the drawing, the MCP, the tests and the traps; entity v2, entities v2, workflow v3; the old read once (`T-a-saved-graph-is-read-in-the-new-words`) |
+| S3 | `207cdde69` | path → Route: `node-routes.ts`, `routeRead`, `routesOf`, `branchesAt` (`T-a-route-is-start-to-end`) |
+| S6 | Demos `e2ab9dc`, `fa50b6c` | Demos and N-zo in the words; N-zo's `read_graph` gives Routes and Branches |
+| S7 | this commit | `test/unit/the-graph-words-hold.test.mjs`: no file brings back a retired name. It fails on a planted `graph.routes`, `NodeRoute` and `data-input-routed`, and passes without them |
+
+"Route" itself is not banned: it now names a full path. The gate holds the retired NAMES of the old meaning, and keeps
+the frozen schemas, this plan, the lexicon and the history, which name the old to say what moved.
+
