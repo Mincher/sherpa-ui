@@ -24,6 +24,7 @@
  * - .turn — Before a node: waits while paused, and says whether to go on.
  * - stepSimulation — Step a simulation node by node, giving the host a turn when one is due.
  * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87"; an Output's, what it would do.
+ * - noTrue — Whether a fork heard rows and its True is false: "No true matches" says so, and only then.
  * - trueOf — How many rows reach a node's True after a simulation: none where it has no True or has not run.
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
@@ -232,6 +233,12 @@ export function lightOf(node: SimulatedNode, ms: number): string {
   // An Output says what it would do, and its rows: it does nothing (plan 891).
   const words = node.would ? [node.would, heard !== undefined ? rows : ''] : [rows];
   return [...words, time].filter(Boolean).join(' · ');
+}
+
+/** Whether a fork heard rows and its True is FALSE: "No true matches" says so, and only then. An And whose inputs each hold
+ *  rows is True though no row is in all of them; its 0 rows say nothing false (Will, 2026-11-11). */
+export function noTrue(node: SimulatedNode): boolean {
+  return trueOf(node) !== undefined && node.outgoing.find((s) => s.label === 'True')?.value === false;
 }
 
 /** How many rows a fork's Results send after a simulation — what passed: none where it forks not, has not run, or no rows

@@ -108,3 +108,18 @@ test('Will\'s graph: Source › Field\'s Count › Between 0 and 100 is True, an
   const off = simulateGraph(graph('30'), { users: rows });
   assert.deepEqual([out(off, 'c', 'c').value, out(off, 'c', 'c/count').value], [false, 0]);
 });
+
+test('Will\'s And of two tests\' Results that share no row: True, Pass 2, 0 rows — and no "No true matches"; a test nothing passes has it', async () => {
+  const { noTrue, trueOf } = await import(new URL('node-simulate.js', core));
+  const rows = [{ id: 1, status: 'active', plan: 'Free' }, { id: 2, status: 'trial', plan: 'Pro' }];
+  const g = graphOf(
+    [N('s', 'source', { store: 'users' }), N('f1', 'field', { field: 'status' }), N('f2', 'field', { field: 'plan' }),
+      N('c1', 'condition', { type: 'eq', b: 'active' }), N('c2', 'condition', { type: 'eq', b: 'Pro' }), N('c3', 'condition', { type: 'eq', b: 'gone' }),
+      N('and', 'condition', { type: 'and' }), N('o', 'output')],
+    [C('s/rows', 'f1'), C('s/rows', 'f2'), C('f1/field', 'c1'), C('f2/field', 'c2'), C('f1/field', 'c3'), C('c1/rows', 'and'), C('c2/rows', 'and'), C('and/pass', 'o')],
+  );
+  const sim = simulateGraph(g, { users: rows });
+  assert.deepEqual([out(sim, 'and', 'and').value, out(sim, 'and', 'and/pass').value, trueOf(sim.nodes.and), noTrue(sim.nodes.and)], [true, 2, 0, false]);
+  // A test no row passes: its True is false, and it says so.
+  assert.deepEqual([out(sim, 'c3', 'c3').value, trueOf(sim.nodes.c3), noTrue(sim.nodes.c3)], [false, 0, true]);
+});

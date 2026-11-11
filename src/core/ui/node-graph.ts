@@ -100,7 +100,7 @@ import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { nodeTitle } from '../data/node-title.js';
 import { isSource, routeRead } from '../data/node-routes.js';
-import { lightOf, trueOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
+import { lightOf, noTrue, trueOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
 import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
@@ -3665,11 +3665,11 @@ export function bindWorkflow(
       if (!el) continue;
       el.setAttribute('data-step', 'done');
       put(el, 'data-caption', `${lightOf(node, simulation.times[id] ?? 0)}${simulation.stale ? ' · stale' : ''}`);
-      // Where it forks: the rows that are true, on the tab; none, and the tab and the header say so.
+      // Where it forks: the rows that are true, on the tab; where its True is false, the header says so too.
       const hits = trueOf(node);
       put(el, 'data-badge', hits === undefined ? undefined : hits.toLocaleString('en'));
       const own = graph.nodes.find((n) => n.id === id)?.warnings?.map((w) => w.words) ?? [];
-      put(el, 'data-warning', (hits === 0 ? [...own, NO_TRUE] : own).join('\n'));
+      put(el, 'data-warning', (noTrue(node) ? [...own, NO_TRUE] : own).join('\n'));
     }
   };
   /** Take the lights off. */
