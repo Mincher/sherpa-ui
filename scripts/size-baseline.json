@@ -257,7 +257,7 @@
   "src/core/ui/mark-text.ts": 74,
   "src/core/ui/modifier-key.ts": 23,
   "src/core/ui/more-menu.ts": 193,
-  "src/core/ui/node-graph.ts": 3930,
+  "src/core/ui/node-graph.ts": 3951,
   "src/core/ui/node-group-panel.ts": 186,
   "src/core/ui/node-lanes-ui.ts": 53,
   "src/core/ui/node-output-panel.ts": 120,

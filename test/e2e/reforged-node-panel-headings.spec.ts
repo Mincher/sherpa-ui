@@ -93,7 +93,7 @@ const dark = (p: [number, number, number]): boolean => Math.max(...p) < 160;
 
 test('one list, no accordions: a heading sticks while its items scroll under it, and the next one pushes it on', async ({ page }) => {
   expect(await page.locator('sherpa-node-list sherpa-accordion').count()).toBe(0);
-  expect(await shown(page)).toEqual(['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output']);
+  expect(await shown(page)).toEqual(['Sources', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
   const list = await rect(page, '.categories');
   // The wheel, over the list, until Variables' first item passes under its heading. Each engine
   // scrolls its own distance for a notch, so it turns until it has.

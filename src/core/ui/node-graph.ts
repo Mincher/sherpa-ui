@@ -88,6 +88,7 @@ import {
   checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
+import { aiCatalog } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
 import { entityKind, type EntityRef } from '../data/entity.js';
@@ -2429,6 +2430,8 @@ interface Opened {
   kind: string;
   use: string;
   label: string;
+  /** A Runbook node's sub-graph, opened read only: `kind` is the definition its runbook names (plan 926 D3). */
+  runbook?: true;
 }
 
 /** Whether a value is a library's edits: definitions by id. */
@@ -2504,7 +2507,8 @@ export function bindWorkflow(
     let inner: Inner | undefined;
     for (const step of path) {
       const use = at.nodes.find((n) => n.id === step.use);
-      inner = use && innerOf(use, lib, topKinds());
+      // A runbook's sub-graph is the definition it names, not its node's kind.
+      inner = use && innerOf(step.runbook ? { id: use.id, kind: step.kind } : use, lib, topKinds());
       if (!inner) return undefined;
       at = inner.workflow;
     }
@@ -2513,7 +2517,7 @@ export function bindWorkflow(
   const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : draft);
   const K = (): Readonly<Record<string, NodeKind>> => (path.length ? innerNow()?.kinds ?? topKinds() : topKinds());
   /** A preset's inside is read only (D15), at any depth; a preset workflow, everywhere. */
-  const insidePreset = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset);
+  const insidePreset = (): boolean => path.some((s) => s.runbook || lib.nodes[s.kind]?.preset);
   const readOnly = (): boolean => preset || insidePreset();
   // A graph's own Group Input and Output are drawn, never placed; the rest are what the graph shown may place.
   const refreshPanel = (): void => {
@@ -3036,6 +3040,15 @@ export function bindWorkflow(
     if (focus) focusNode(canvas, focus);
     else canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   };
+  /** A Runbook node's predefined runbook: its sub-graph opens read only, with the trail back (plan 926 D3 A). */
+  const openRunbook = (id: string): void => {
+    const at = shown().nodes.find((n) => n.id === id);
+    const picked = at?.kind === 'runbook' ? aiCatalog().runbooks[String(at.values?.['runbook'] ?? '')] : undefined;
+    if (!picked?.graph || !lib.nodes[picked.graph]) return;
+    path = [...path, { kind: picked.graph, use: id, label: picked.label, runbook: true }];
+    enter(null);
+    if (inspector) showScope();
+  };
   const open = (id: string): void => {
     const at = use(id);
     if (!at) return;
@@ -3057,7 +3070,7 @@ export function bindWorkflow(
   /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
   const copy = (): void => edit(() => {
     const step = path.at(-1);
-    if (!step) return;
+    if (!step || step.runbook) return;
     const made = copyToMine(lib, step.kind);
     if (!made.id) return;
     setLib(made.library, [made.id]);
@@ -3078,6 +3091,12 @@ export function bindWorkflow(
     note.setAttribute('data-gap', 'md');
     const words = document.createElement('p');
     words.style.margin = '0';
+    // A runbook's steps are the app's: read only, with nothing to copy.
+    if (path.at(-1)?.runbook) {
+      words.textContent = 'These are the runbook\'s steps: read only.';
+      note.append(words);
+      return [note];
+    }
     words.textContent = 'This Custom Node is a preset: its inside is read only. Copy it to your nodes to change it.';
     const button = document.createElement('sherpa-button');
     button.setAttribute('data-label', 'Copy to my nodes');
@@ -3403,7 +3422,9 @@ export function bindWorkflow(
   };
   const onDouble = (event: MouseEvent): void => {
     const hit = idOf(event);
-    if (hit?.header && !hit.field && use(hit.id)) open(hit.id);
+    if (!hit?.header || hit.field) return;
+    if (use(hit.id)) open(hit.id);
+    else openRunbook(hit.id);
   };
   const undo = (): boolean => {
     const step = journal.back();
