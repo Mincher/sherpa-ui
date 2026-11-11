@@ -28,9 +28,14 @@ data to pass on but gets wired up separately.)"
    - An input is TRUE where it is above zero, true, or not empty. It is false where it is 0, false, null or empty.
    - Or is true where any input is true; its Results are the rows of the true inputs, together.
    - And is true where every input is true (D3).
-4. **924** follows: a test's True is no longer rows. A node's Results show where rows reach its header, by a property or
+4. **A Condition's Properties follow what comes in** (Will, later the same day: "the data types going in is shown as the
+   data types going out"). Rows in: Results, and Count, how many rows pass. Counts (numbers) in: Count alone, the SUM of
+   the true ones (Will: an Or of 3, 0 and 5 has a Count of 8). Both: both. 924's rule, made general.
+   **Pass and Fail** (Will, later still): two properties, whole numbers — how many of its inputs pass the check, and how
+   many fail it. An Or of 3, 0 and 5: Pass 2, Fail 1.
+5. **924** follows: a test's True is no longer rows. A node's Results show where rows reach its header, by a property or
    by rows.
-5. **Words:** PRINCIPLES 19 and the APP-GUIDE say it once: "True and False steer; a property carries the rows."
+6. **Words:** PRINCIPLES 19 and the APP-GUIDE say it once: "True and False steer; a property carries the rows."
 
 ## Decisions for Will
 
