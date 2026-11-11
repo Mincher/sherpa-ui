@@ -30,6 +30,9 @@ category when creating a custom node so that we know if a custom node is a Runbo
 
 ## Decisions for Will
 
+**Will, 2026-11-11: D1 B (the category replaces the AI node's predefined runbooks; it keeps New runbook), D2 A, D3 A.**
+
+
 - **D1. 926's Runbook AI node beside the Runbooks category.**
   - **A (recommended):** keep both, from ONE list. The AI node runs a runbook with a model and an expected answer. A
     Runbooks node places the runbook's steps on the canvas. The AI node's Runbook pick lists the Runbooks-category
