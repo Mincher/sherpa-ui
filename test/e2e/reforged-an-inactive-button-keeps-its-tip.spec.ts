@@ -55,8 +55,8 @@ test('an inactive tool opens its tip on a hover, and a press does nothing', asyn
     await page.mouse.move(at.x, at.y);
     await expect.poll(async () => (await tipOf(page, tool)).open).toBe(true);
   }
-  // It says WHY it is off.
-  expect((await tipOf(page, 'group')).text).toContain('pick two or more');
+  // It names the act, in a few words (894, PRINCIPLES 24).
+  expect((await tipOf(page, 'group')).text).toContain('Save as Custom Node');
   expect(await page.locator('#bar sherpa-button.group .trigger').evaluate((t) => getComputedStyle(t).cursor)).toBe('not-allowed');
 
   // A real press, on the off tool, reaches nothing.

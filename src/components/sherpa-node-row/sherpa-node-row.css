@@ -269,6 +269,8 @@
   margin: 0;
 }
 :host([data-collapsed]) .socket-tab { display: contents; }
+/* A tab drawn as contents has no box, so it anchors nothing: its socket is the tip's anchor. TRAP T-an-anchor-drawn-as-contents-has-no-box */
+:host([data-collapsed]) .socket { anchor-name: var(--_anchor); }
 :host([data-collapsed]) .socket-tab::before { display: none; }
 :host([data-collapsed]) .socket {
   inset-block-end: auto;

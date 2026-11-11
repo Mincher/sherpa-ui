@@ -139,3 +139,38 @@ test('collapsed, every socket stands in one stack a side, in its order, from the
   expect(shut.height).toBeLessThan(open.height);
   expect(shut.height).toBeLessThan(shut.header + (ins.length + 1) * step);
 });
+
+// TRAP T-an-anchor-drawn-as-contents-has-no-box
+test('collapsed, a row socket\'s tip still hangs from its socket, as a header socket\'s does (920)', async ({ page }) => {
+  await header(page, 'Sort').dblclick();
+  await settle(page);
+  await expect(node(page, 'Sort')).toHaveAttribute('data-collapsed', '');
+  // Each socket a row draws, and the header's: its middle on screen, and how far its tip opens from it.
+  const sockets = await node(page, 'Sort').evaluate((el) => [
+    ...[...el.querySelectorAll('sherpa-node-row')].flatMap((row) => (['in', 'out'] as const)
+      .filter((side) => row.hasAttribute(`data-${side === 'in' ? 'input' : 'output'}-socket`))
+      .map((side) => ({ at: `${row.getAttribute('data-socket-name')} ${side}`, row: [...el.querySelectorAll('sherpa-node-row')].indexOf(row), side }))),
+    { at: 'header in', row: -1, side: 'in' as const },
+  ]);
+  expect(sockets.length).toBeGreaterThan(1);
+  for (const s of sockets) {
+    const box = await node(page, 'Sort').evaluate((el, { row, side }) => {
+      const root = row < 0 ? el.shadowRoot! : el.querySelectorAll('sherpa-node-row')[row]!.shadowRoot!;
+      const r = root.querySelector(`${row < 0 ? '.header ' : ''}.socket-${side}`)!.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height };
+    }, s);
+    await page.mouse.move(box.x, box.y);
+    await settle(page);
+    const away = await node(page, 'Sort').evaluate((el, { row, side, x, y, w, h }) => {
+      const root = row < 0 ? el.shadowRoot! : el.querySelectorAll('sherpa-node-row')[row]!.shadowRoot!;
+      const tip = root.querySelector<HTMLElement>(`${row < 0 ? '.header ' : ''}.tip-${side}`)!;
+      if (!tip.matches(':popover-open')) return null;
+      const t = tip.getBoundingClientRect();
+      return Math.max(0, x - w / 2 - t.right, t.left - x - w / 2, y - h / 2 - t.bottom, t.top - y - h / 2);
+    }, { ...s, ...box });
+    expect(away, `${s.at}: its tip opens`).not.toBeNull();
+    expect(away!, `${s.at}: its tip beside its socket`).toBeLessThanOrEqual(16);
+    await page.mouse.move(5, 5);
+    await settle(page);
+  }
+});

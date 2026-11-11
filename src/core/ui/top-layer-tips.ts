@@ -59,9 +59,16 @@ function share(anchor: Element, tip: HTMLElement): void {
  *  UNTRANSFORMED box, so a tip on a scaled canvas lands on the plane's coordinates, not the screen's. */
 const PLACED = ['position-area', 'position-try-fallbacks', 'inset', 'margin'] as const;
 
+/** The box a tip hangs from: the anchor's; one drawn as contents has none, so its first child with a box.
+ *  TRAP T-an-anchor-drawn-as-contents-has-no-box */
+function boxOf(anchor: Element): DOMRect {
+  if (anchor.getClientRects().length) return anchor.getBoundingClientRect();
+  for (const child of anchor.children) if (child.getClientRects().length) return child.getBoundingClientRect();
+  return anchor.getBoundingClientRect();
+}
 /** Is the tip next to its anchor on screen? Else sit it above, or below at the top edge, and keep it in the window. */
 function keepNear(anchor: Element, tip: HTMLElement): void {
-  const a = anchor.getBoundingClientRect();
+  const a = boxOf(anchor);
   const t = tip.getBoundingClientRect();
   const away = Math.max(0, a.left - t.right, t.left - a.right, a.top - t.bottom, t.top - a.bottom);
   if (away <= 24) return;

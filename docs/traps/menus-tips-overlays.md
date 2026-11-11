@@ -2135,3 +2135,22 @@ menu button, for a card that is a dialog of native controls
 - Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
 - Site: `test/e2e/reforged-a-menu-opens-by-its-keys.spec.ts`
+
+### T-an-anchor-drawn-as-contents-has-no-box
+
+An anchor drawn as `display: contents` has no box, so it anchors NOTHING: its
+`anchor-name` names no box, its tip's `position-anchor` finds none, and its
+`getBoundingClientRect()` is 0 × 0 at the window's corner. A collapsed node's row
+draws its socket tabs as contents (its sockets stand in the node's stacks), and
+each row socket's tip opened at the TOP LEFT of the view (Will, TODO 920); the
+header's, a box, stayed put. Measured: the tip reads the window's corner, and
+`keepNear` took that as the anchor and sat it there.
+
+Two halves, so a tip finds its socket however the row is drawn: collapsed, the
+row names the SOCKET with the tab's anchor; and `keepNear` measures an anchor
+with no box by its first child that has one.
+
+- Site: `src/core/ui/top-layer-tips.ts`
+- Site: `src/components/sherpa-node-row/sherpa-node-row.css`
+- Site: `test/e2e/reforged-node-collapse.spec.ts`
+

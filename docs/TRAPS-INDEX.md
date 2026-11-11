@@ -571,7 +571,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (131)
+## Menus, tips and overlays (132)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -640,6 +640,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-action-row-can-keep-its-menu-open](traps/menus-tips-overlays.md#t-an-action-row-can-keep-its-menu-open) — menu
 - [T-an-action-says-what-it-does](traps/filters.md#t-an-action-says-what-it-does) — menu
 - [T-an-advanced-row-rules-out-nothing](traps/menus-tips-overlays.md#t-an-advanced-row-rules-out-nothing) — menu
+- [T-an-anchor-drawn-as-contents-has-no-box](traps/menus-tips-overlays.md#t-an-anchor-drawn-as-contents-has-no-box) — top-layer-tips
 - [T-an-area-holds-two-panels-stacked](traps/menus-tips-overlays.md#t-an-area-holds-two-panels-stacked) — overlay-panel
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — overlay-panel
 - [T-an-fr-track-floors-at-min-content](traps/menus-tips-overlays.md#t-an-fr-track-floors-at-min-content) — menu
@@ -1035,7 +1036,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (152)
+## Other components (153)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1120,6 +1121,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-accordion-action-is-not-a-toggle](traps/other-components.md#t-an-accordion-action-is-not-a-toggle) — accordion
 - [T-an-accordion-chevron-rides-the-heading-row](traps/other-components.md#t-an-accordion-chevron-rides-the-heading-row) — accordion
 - [T-an-action-says-what-it-does](traps/filters.md#t-an-action-says-what-it-does) — button
+- [T-an-anchor-drawn-as-contents-has-no-box](traps/menus-tips-overlays.md#t-an-anchor-drawn-as-contents-has-no-box) — node-row
 - [T-an-area-holds-two-panels-stacked](traps/menus-tips-overlays.md#t-an-area-holds-two-panels-stacked) — layout-panels
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — layout-canvas, layout-panels
 - [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-toolbar
