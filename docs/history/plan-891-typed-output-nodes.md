@@ -152,3 +152,10 @@ Markdown editor is TODO 892, after 891.
   Preview has no Email / In app switch: a plain message reads the same on each, so the switch waits for the Markdown
   editor (TODO 892). In WebKit the inspector is open but not drawn, whatever node is picked (TODO 890): the spec's two
   inspector presses are `fixme` there.
+- **Step 5** (`b7efecb4f`) as above.
+- **Step 6** (`7a90daa85`; Demos `2e7d754`): an app registers its own types, `registerNodeTypes(kind, types)`, as it
+  registers an entity type; `nodeKinds()` is the shipped kinds with them, and every "no kinds given" default reads it, so
+  an app's Ticket draws, checks and saves. A Notification takes Attachments (a File). Demos registers its four
+  (`app/output-types.js`), ships a fifth workflow, Patch deployment, and answers Send a test with a toast. To see it in a
+  browser that has its workflows already: Reset all, then Node editor › Workflows › Patch deployment.
+
