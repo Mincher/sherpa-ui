@@ -1,0 +1,122 @@
+<!--
+  sherpa-markdown-editor — a Markdown text, edited as it reads: bold reads bold, a heading large, a list draws its
+  bullets, and a mark shows while the caret is in its span. Its toolbar: Undo and Redo, the text style, Bold and Italic,
+  the lists, Outdent and Indent, a link, a comment, code, an image and a table; and the switch to the Markdown itself.
+  A value `{node.name}` reads as a purple chip of its words (`.valueLabels`), and `insertValue(key)` puts one at the caret.
+  Figma "Markdown Editor" (ACP file, 2306:17891). Will, plan 892
+
+  Public API:
+    value             the Markdown text (also a JS property)
+    placeholder       words in the empty box
+    name / required / disabled / readonly
+                      native attributes; readonly shows the text as it reads, with no toolbar
+    data-label        the field's label (hidden when empty)
+    data-description  a line under the label
+    data-error        a message under the box, in the critical bar
+    data-view         formatted | markdown: the text as it reads (default), or the Markdown itself. The switch writes it
+    data-help-href    where "More about markdown" goes (default CommonMark's help); empty hides it
+
+  Slots:
+    (none)
+
+  Fires:
+    input — the text changed: typed, pasted or pressed. detail: { value }
+    change — the text changed while the editor held focus, and focus left it. detail: { value }
+    view-change — the switch picked a view. detail: { view }
+-->
+<template id="default">
+  <div class="field" part="field">
+    <span class="label" part="label" id="label" data-text="data-label"></span>
+    <span class="description" part="description" id="description" data-text="data-description"></span>
+    <!-- The toolbar's groups, a divider between; the view switch at its end. -->
+    <div class="bar" part="bar" role="toolbar" aria-label="Formatting" aria-controls="content">
+      <div class="tools" part="tools">
+        <sherpa-group class="section" part="section">
+          <sherpa-button class="tool" data-action="undo" data-type="icon" data-size="sm" data-icon-start="arrow-rotate-left"
+                         aria-label="Undo" data-tip="Undo (Ctrl+Z)" disabled></sherpa-button>
+          <sherpa-button class="tool" data-action="redo" data-type="icon" data-size="sm" data-icon-start="arrow-rotate-right"
+                         aria-label="Redo" data-tip="Redo (Shift+Ctrl+Z)" disabled></sherpa-button>
+        </sherpa-group>
+        <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
+        <sherpa-group class="section" part="section">
+          <sherpa-button class="style" part="style" data-size="sm" data-label="Normal text" data-icon-end="triangle-down"
+                         aria-haspopup="menu" data-tip="Text style">
+            <sherpa-menu slot="menu" class="styles" data-heading="Text style">
+              <button type="button" value="paragraph">Normal text</button>
+              <button type="button" value="h1">Heading 1</button>
+              <button type="button" value="h2">Heading 2</button>
+              <button type="button" value="h3">Heading 3</button>
+              <button type="button" value="quote">Quote</button>
+              <button type="button" value="code">Code block</button>
+            </sherpa-menu>
+          </sherpa-button>
+          <sherpa-button class="tool bold" data-action="strong" data-size="sm" data-label="B"
+                         aria-label="Bold" data-tip="Bold (Ctrl+B)" aria-pressed="false"></sherpa-button>
+          <sherpa-button class="tool italic" data-action="em" data-size="sm" data-label="I"
+                         aria-label="Italic" data-tip="Italic (Ctrl+I)" aria-pressed="false"></sherpa-button>
+        </sherpa-group>
+        <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
+        <sherpa-group class="section" part="section">
+          <sherpa-button class="tool" data-action="bullet" data-type="icon" data-size="sm" data-icon-start="list"
+                         aria-label="Bulleted list" aria-pressed="false"></sherpa-button>
+          <!-- The icon set has no numbered list: it says "1.", as Bold says "B". -->
+          <sherpa-button class="tool" data-action="number" data-size="sm" data-label="1."
+                         aria-label="Numbered list" aria-pressed="false"></sherpa-button>
+        </sherpa-group>
+        <sherpa-group class="section" part="section">
+          <sherpa-button class="tool" data-action="outdent" data-type="icon" data-size="sm" data-icon-start="chevron-w-terminator-left"
+                         aria-label="Outdent" data-tip="Outdent a list item (Shift+Tab)" disabled></sherpa-button>
+          <sherpa-button class="tool" data-action="indent" data-type="icon" data-size="sm" data-icon-start="chevron-w-terminator-right"
+                         aria-label="Indent" data-tip="Indent a list item (Tab)" disabled></sherpa-button>
+        </sherpa-group>
+        <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
+        <sherpa-group class="section" part="section">
+          <sherpa-button class="tool" data-action="link" data-type="icon" data-size="sm" data-icon-start="link-simple"
+                         aria-label="Link" data-tip="Link (Ctrl+K): type its address" aria-pressed="false"></sherpa-button>
+          <sherpa-button class="tool" data-action="comment" data-type="icon" data-size="sm" data-icon-start="chat"
+                         aria-label="Comment" data-tip="Comment: words the Markdown keeps and a reader does not see"></sherpa-button>
+          <sherpa-button class="tool" data-action="code" data-type="icon" data-size="sm" data-icon-start="command-line"
+                         aria-label="Code" data-tip="Code: in a line, or a block of lines" aria-pressed="false"></sherpa-button>
+          <sherpa-button class="tool" data-action="image" data-type="icon" data-size="sm" data-icon-start="folder-w-plus-badge"
+                         aria-label="Image" data-tip="Image: type its address"></sherpa-button>
+          <sherpa-button class="tool" data-action="table" data-type="icon" data-size="sm" data-icon-start="table-columns"
+                         aria-label="Table" data-tip="Table: two columns, a heading row and a row"></sherpa-button>
+        </sherpa-group>
+      </div>
+      <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
+      <sherpa-group class="section views" part="views" role="group" aria-label="View">
+        <sherpa-button class="view" data-view="formatted" data-type="icon" data-size="sm" data-icon-start="doc-w-markup-tag"
+                       aria-label="Formatted" data-tip="Formatted: the text as it reads" aria-pressed="true"></sherpa-button>
+        <sherpa-button class="view" data-view="markdown" data-type="icon" data-size="sm" data-icon-start="notepad"
+                       aria-label="Markdown" data-tip="Markdown: the text itself" aria-pressed="false"></sherpa-button>
+      </sherpa-group>
+    </div>
+    <div class="box sherpa-border-edges" part="box">
+      <div class="content" part="content" id="content" contenteditable="true" role="textbox" aria-multiline="true"
+           aria-labelledby="label" aria-describedby="description message" data-attr-aria-placeholder="placeholder"
+           spellcheck="true"></div>
+      <textarea class="source" part="source" aria-labelledby="label" aria-describedby="description message"
+                spellcheck="false"></textarea>
+    </div>
+    <span class="message" part="message" id="message" data-text="data-error"></span>
+    <a class="help" part="help" href="https://commonmark.org/help/" target="_blank" rel="noopener">More about markdown<i
+       class="help-icon sherpa-icon-box" data-icon="open-externally" aria-hidden="true"></i></a>
+  </div>
+  <!-- The text's parts, as the editor draws them. -->
+  <template class="line-tpl"><div class="line"></div></template>
+  <template class="lead-tpl"><span class="mark lead"></span></template>
+  <template class="mark-tpl"><span class="mark"></span></template>
+  <template class="span-tpl"><span class="span"></span></template>
+  <template class="value-tpl"><span class="value" contenteditable="false"></span></template>
+  <template class="break-tpl"><br /></template>
+  <template class="words">
+    <span data-word="link">link</span>
+    <span data-word="image">description</span>
+    <span data-word="comment">comment</span>
+    <span data-word="column">Column</span>
+    <span data-word="h4">Heading 4</span>
+    <span data-word="h5">Heading 5</span>
+    <span data-word="h6">Heading 6</span>
+    <span data-word="required">Fill this in.</span>
+  </template>
+</template>

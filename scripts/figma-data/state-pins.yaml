@@ -281,6 +281,15 @@ sherpa-input-text:
   # The validation bar pins Saturated=critical.
   '& .message': saturated/critical
 
+sherpa-markdown-editor:
+  # Its box is an Input Field, as sherpa-input-text's: Style=default; an error pins critical.
+  '&': default
+  '&[data-error]': critical
+  # No Figma disabled design: the inactive mode.
+  '&[disabled]': inactive
+  # The validation bar pins Saturated=critical.
+  '& .message': saturated/critical
+
 sherpa-metric:
   # Figma pins the tile Style=success for a rise. The trend IS the status, so a
   # bare data-trend still colours the delta, the shadow and the sparkline.

@@ -1,0 +1,8 @@
+{
+  "html": [
+    "<sherpa-markdown-editor name=\"message\" data-label=\"Message\" data-description=\"What the reader gets: Markdown, with values\" placeholder=\"Write the message\"",
+    " value=\"## Patch plan&#10;Hi {recipient.first_name},&#10;**{runs.planned} Runs** are planned for {customer.name}:&#10;- Servers: an *MSP admin* approves first&#10;- Workstations: tonight\">",
+    "</sherpa-markdown-editor>"
+  ],
+  "use": "For a long text a reader formats — a message, a note, a runbook's steps — written in Markdown and shown as it reads as they type, with a switch to the Markdown itself. Its `value` is the Markdown; `{node.name}` values read as purple chips (`.valueLabels` gives their words), and `insertValue(key)` puts one at the caret. For one line of plain text, use `sherpa-input-text`; for a chat prompt, `sherpa-prompt-composer`."
+}

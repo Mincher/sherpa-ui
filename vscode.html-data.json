@@ -2255,6 +2255,67 @@
       ]
     },
     {
+      "name": "sherpa-markdown-editor",
+      "description": "a Markdown text, edited as it reads: bold reads bold, a heading large, a list draws its bullets, and a mark shows while the caret is in its span. Its toolbar: Undo and Redo, the text style, Bold and Italic, the lists, Outdent and Indent, a link, a comment, code, an image and a table; and the switch to the Markdown itself. A value `{node.name}` reads as a purple chip of its words (`.valueLabels`), and `insertValue(key)` puts one at the caret. Figma \"Markdown Editor\" (ACP file, 2306:17891). Will, plan 892",
+      "attributes": [
+        {
+          "name": "data-description",
+          "description": "a line under the label"
+        },
+        {
+          "name": "data-error",
+          "description": "a message under the box, in the critical bar"
+        },
+        {
+          "name": "data-help-href",
+          "description": "where \"More about markdown\" goes (default CommonMark's help); empty hides it"
+        },
+        {
+          "name": "data-label",
+          "description": "the field's label (hidden when empty)"
+        },
+        {
+          "name": "data-view",
+          "description": "formatted | markdown: the text as it reads (default), or the Markdown itself. The switch writes it",
+          "values": [
+            {
+              "name": "formatted"
+            },
+            {
+              "name": "markdown"
+            }
+          ]
+        },
+        {
+          "name": "disabled",
+          "description": "native attributes; readonly shows the text as it reads, with no toolbar",
+          "valueSet": "v"
+        },
+        {
+          "name": "name",
+          "description": "native attributes; readonly shows the text as it reads, with no toolbar"
+        },
+        {
+          "name": "placeholder",
+          "description": "words in the empty box"
+        },
+        {
+          "name": "readonly",
+          "description": "native attributes; readonly shows the text as it reads, with no toolbar",
+          "valueSet": "v"
+        },
+        {
+          "name": "required",
+          "description": "native attributes; readonly shows the text as it reads, with no toolbar",
+          "valueSet": "v"
+        },
+        {
+          "name": "value",
+          "description": "the Markdown text (also a JS property)"
+        }
+      ]
+    },
+    {
       "name": "sherpa-menu",
       "description": "a floating list of choices or actions. Figma \"Menu\" SET (1156:29240), Type axis List | Calendar.",
       "attributes": [
