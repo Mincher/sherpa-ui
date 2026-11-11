@@ -311,9 +311,10 @@ test('a fork shows its footer with False in red, and True on the header in green
   expect(near(open!, critical)).toBe(false);
 });
 
-test('a socket\'s tip says its type in words', async ({ page }) => {
+test('a socket\'s tip says its type in words, on its socket\'s side: an input\'s to the left, an output\'s to the right', async ({ page }) => {
   await socketNode(page, 'tip', 'data-input-socket="any" data-output-socket="boolean" data-branches');
   const words: string[] = [];
+  const sides: string[] = [];
   for (const side of ['input', 'output', 'false']) {
     const r = (await rectOf(page, 'tip', side))!;
     await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
@@ -322,9 +323,15 @@ test('a socket\'s tip says its type in words', async ({ page }) => {
       return tip?.matches(':popover-open') ? tip.innerText.replace(/\s+/g, ' ').trim() : false;
     }, side === 'input' ? '.tip-in' : side === 'output' ? '.tip-out' : '.tip-false');
     words.push(await text.jsonValue() as string);
+    // Where the tip stands against its socket (TODO 895): wholly left of it, or wholly right.
+    sides.push(await page.evaluate(([cls, at]) => {
+      const t = document.querySelector('#tip')!.shadowRoot!.querySelector<HTMLElement>(cls)!.getBoundingClientRect();
+      return t.right <= at.x + 1 ? 'left' : t.left >= at.x + at.width - 1 ? 'right' : `over ${Math.round(t.left)}–${Math.round(t.right)}`;
+    }, [side === 'input' ? '.tip-in' : side === 'output' ? '.tip-out' : '.tip-false', { x: r.x, width: r.width }] as const));
     await page.mouse.move(-1, -1);
   }
   expect(words).toEqual(['Input: any type', 'True: a boolean', 'False: a boolean']);
+  expect(sides).toEqual(['left', 'right', 'right']);
 });
 
 test('a route takes the ink of its FROM socket\'s type', async ({ page }) => {

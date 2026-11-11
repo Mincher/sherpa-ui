@@ -145,6 +145,10 @@
 .socket-tab-in, .tip-in { --_anchor: --sherpa-socket-in; }
 .socket-tab-out, .tip-out { --_anchor: --sherpa-socket-out; }
 .socket-tab-false, .tip-false { --_anchor: --sherpa-socket-false; }
+/* A tip opens on its socket's side: an input's to its start, an output's to its end; where it does not fit, the anchor's
+   fallbacks try round the socket. Will, TODO 895 */
+.tip-in { --_area: inline-start; }
+.tip-out, .tip-false { --_area: inline-end; }
 
 /* Each socket's tip says its type in words: one word shows. */
 .tip .word { display: none; }
