@@ -3,8 +3,8 @@ import { test, expect, type Page } from './harness';
 /**
  * An Output of many types, as the node draws it (plan 891, step 4): its Type list has a section per family, each type its
  * line on hover; its header wears its type's icon. A message row shows its first lines, each value by its node's heading
- * and label, in purple, and the Details panel edits it in a multi-line field. The Nodes panel's Notify places an Output of
- * type Notification.
+ * and label, in purple, and the Details panel edits it in the Markdown editor (plan 892), its values purple chips. The
+ * Nodes panel's Notify places an Output of type Notification.
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -66,7 +66,7 @@ test('its Type list has a section per family, each type its line on hover; its h
   expect(r.title).toBe('Show a short message on the screen');
 });
 
-test('a message row shows its first lines, each value by its node and label, in purple; the Details panel edits it', async ({ page }) => {
+test('a message row shows its first lines, each value by its node and label, in purple; the Details panel edits it as Markdown', async ({ page }) => {
   const r = await page.evaluate((sel) => {
     const row = document.querySelector(sel)!.querySelector('sherpa-node-row[data-message]')!;
     const parts = [...row.shadowRoot!.querySelectorAll('.message .part')];
@@ -83,13 +83,14 @@ test('a message row shows its first lines, each value by its node and label, in 
   expect(r.ink).toBe('rgb(131, 0, 182)');
   expect(r.plain).not.toBe(r.ink);
   expect(r.shown).toBe(true);
-  // Picked, its Details panel edits the message in a multi-line field.
+  // Picked, its Details panel edits the message in the Markdown editor: its value a chip of its node and label.
   const head = (await page.locator(output).boundingBox())!;
   await page.mouse.click(head.x + head.width / 2, head.y + 10);
   await settle(page);
-  const field = page.locator('#inspector sherpa-input-text[name="message"]');
-  await expect(field).toHaveAttribute('data-multiline', '');
+  const field = page.locator('#inspector sherpa-markdown-editor[name="message"]');
+  await expect(field).toHaveCount(1);
   expect(await field.evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {s.name}');
+  expect(await field.evaluate((f) => f.shadowRoot!.querySelector('.value')?.textContent)).toBe('Customers › Name');
 });
 
 test('the Nodes panel\'s Notify places an Output of type Notification', async ({ page }) => {
@@ -119,7 +120,7 @@ async function pickOutput(page: Page): Promise<void> {
 /** In WebKit the inspector's dialog is open, yet computes `display: none`, whatever node is picked: TODO 890. */
 const inspectorHidden = ({ browserName }: { browserName: string }): boolean => browserName === 'webkit';
 
-test('Insert value lists the values from before it, by node; a pick puts the value in the message', async ({ page, browserName }) => {
+test('Insert value lists the values from before it, by node; a pick puts the value at the message\'s caret', async ({ page, browserName }) => {
   test.fixme(inspectorHidden({ browserName }), 'TODO 890: in WebKit the inspector is open but not drawn');
   await pickOutput(page);
   // One for each message field: Title's and Message's.
@@ -131,6 +132,15 @@ test('Insert value lists the values from before it, by node; a pick puts the val
   await insert.locator('sherpa-menu button[value="{s.name}"]').click();
   await settle(page);
   await expect(page.locator(`${output} sherpa-node-row[data-message]`)).toHaveAttribute('data-message', 'Hi {Customers › Name} {Customers › Name}');
+  // At the caret: after "Hi", a value goes before the one there.
+  const message = page.locator('#inspector sherpa-markdown-editor[name="message"]');
+  await message.locator('.content').click();
+  await page.keyboard.press(await page.evaluate(() => (/mac/i.test(navigator.platform) ? 'Meta+ArrowLeft' : 'Home')));
+  for (let i = 0; i < 2; i++) await page.keyboard.press('ArrowRight');
+  await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"]').click();
+  await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"] sherpa-menu button[value="{s.count}"]').click();
+  await settle(page);
+  await expect(page.locator(`${output} sherpa-node-row[data-message]`)).toHaveAttribute('data-message', 'Hi {Customers › Count} {Customers › Name} {Customers › Name}');
 });
 
 test('Send a test asks the host, with the node, its type and its values; Sherpa sends nothing', async ({ page, browserName }) => {
@@ -142,17 +152,25 @@ test('Send a test asks the host, with the node, its type and its values; Sherpa 
   expect(asked).toEqual({ node: 'o', type: 'notification', values: { type: 'notification', message: 'Hi {s.name}' } });
 });
 
-test('the Output tab: the Preview of each message, and where each property is routed', async ({ page }) => {
+test('the Output tab: the Preview of each message as it reads, and where each property is routed', async ({ page }) => {
   await pickOutput(page);
-  const pairs = await page.evaluate(() => [...document.querySelectorAll('#inspector [data-tab="output"] sherpa-key-value-list')].map((list) => {
+  const r = await page.evaluate(() => {
+    const tab = document.querySelector('#inspector [data-tab="output"]')!;
+    const previews = [...tab.querySelectorAll<HTMLElement & { value: string }>('sherpa-markdown-editor.output-message')];
+    const list = tab.querySelector('sherpa-key-value-list')!;
     const keys = [...list.shadowRoot!.querySelectorAll('.key')].map((k) => k.textContent);
     const values = [...list.shadowRoot!.querySelectorAll('.value')].map((v) => v.textContent);
-    return keys.map((k, i) => [k, values[i]]);
-  }));
+    return {
+      previews: previews.map((p) => [p.dataset['label'], p.value, p.hasAttribute('readonly')]),
+      chip: previews[1]?.shadowRoot!.querySelector('.value')?.textContent,
+      properties: keys.map((k, i) => [k, values[i]]),
+    };
+  });
   const tabs = await page.locator('#inspector sherpa-tabs').first().evaluate((t) => [...t.querySelectorAll(':scope > [data-tab]')].map((p) => (p as HTMLElement).dataset['tab']));
   expect(tabs.slice(0, 2)).toEqual(['details', 'output']);
-  // Not simulated: each value as written, and the panel says how to see them put in.
-  expect(pairs[0]).toEqual([['Title', '—'], ['Message', 'Hi {s.name}']]);
-  expect(pairs[1]).toEqual([['Sent', 'Not used'], ['Delivered', 'Not used'], ['Message ID', 'Not used']]);
+  // Not simulated: each message as written, read only, its value by its node and label; the panel says how to see them put in.
+  expect(r.previews).toEqual([['Title', '', true], ['Message', 'Hi {s.name}', true]]);
+  expect(r.chip).toBe('Customers › Name');
+  expect(r.properties).toEqual([['Sent', 'Not used'], ['Delivered', 'Not used'], ['Message ID', 'Not used']]);
   await expect(page.locator('#inspector [data-tab="output"] .output-note')).toHaveText('Press Simulate to see the values put in.');
 });

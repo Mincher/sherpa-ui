@@ -92,7 +92,7 @@ import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-gr
 import { entityKind, type EntityRef } from '../data/entity.js';
 import { offeredKinds } from '../data/entity-types.js';
 import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel.js';
-import { outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
+import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
 import { valuesAt, valuesIn } from '../data/node-messages.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
@@ -337,9 +337,14 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
     if (locked) lock(field);
     return field;
   }
+  // A message is Markdown, edited as it reads (plan 892).
+  if (row.control === 'message') {
+    const field: Field = messageField(row.name);
+    if (locked) lock(field, true);
+    return field;
+  }
   const field = document.createElement('sherpa-input-text') as Field;
   field.setAttribute('name', row.name);
-  if (row.control === 'message') field.setAttribute('data-multiline', '');
   if (row.choices) field.setAttribute('data-type', 'select');
   else if (row.control === 'number') field.setAttribute('data-type', 'number');
   // A count's bounds are the platform's own: its steppers stop there. With no step, any number: the platform's is 1.
