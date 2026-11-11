@@ -210,7 +210,7 @@
 :host([data-message]:not([data-message=""])) .message { display: var(--_row-content, -webkit-box); }
 .part[data-value] {
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-display-mode-color-brand-color-4, #8300b6); /* theme-direct */
+  color: var(--sherpa-theme-content-active-1, #8300b6); /* theme-direct */
 }
 
 /* A field the graph feeds shows as itself, and takes no press. Will, TODO 747 */
