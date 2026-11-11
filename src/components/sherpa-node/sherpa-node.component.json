@@ -459,6 +459,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-kind",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "its kind's name, where the node has a name of its own: the header says it first (\"Field: Device type\"). Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-linked",
       "type": "boolean",
       "observed": true,
@@ -617,7 +626,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseConnected?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
+    "shape": "{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseConnected?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {

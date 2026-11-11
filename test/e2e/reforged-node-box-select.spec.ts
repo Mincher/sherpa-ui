@@ -393,10 +393,11 @@ test('756: a box picks one node or several with the panel a tab, and the toolbar
   const [hx, hy] = await header(page, 'e1');
   await page.mouse.click(hx, hy);
   await settle(page);
-  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'e1' });
+  // A title of its own follows its kind.
+  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'Output: e1' });
   // Open, a box over one node shows that node; over two, a tab each.
   await drag(page, [b.left - 14, b.top - 14], [b.right + 14, b.bottom + 14]);
-  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 's2' });
+  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'Source: s2' });
   await drag(page, [a.left - 14, a.top - 14], [b.right + 14, b.bottom + 14]);
   expect(await panel(page)).toEqual({ open: true, tab: true, heading: '2 nodes picked' });
   expect((await picked(page)).nodes).toEqual(['s1', 's2']);

@@ -16,6 +16,7 @@ import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import { primaryKey, primaryLabel } from '../../core/ui/modifier-key.js';
 import { SOCKETS, socketRect, type SocketSide } from './node-sockets.js';
+import { nodeTitle } from '../../core/data/node-title.js';
 
 /** One arrow key's move, in plane px; Shift moves four times as far. */
 const MOVE_STEP = 8;
@@ -36,6 +37,7 @@ export class SherpaNode extends SherpaElement {
 
   static override props = {
     'data-heading': { type: 'string', kind: 'content' },
+    'data-kind': { type: 'string', kind: 'content' },
     'data-icon': { type: 'string', kind: 'content' },
     'data-description': { type: 'string', kind: 'content' },
     'data-input-socket': SHARED_PROPS['data-input-socket'],
@@ -110,7 +112,7 @@ export class SherpaNode extends SherpaElement {
     if (name === 'data-x' || name === 'data-y') this.#place();
     else if (name === 'data-scale-w' || name === 'data-scale-h') this.#fit();
     else if (name === 'data-current') this.#sync();
-    else if (name === 'data-heading' || name === 'data-collapsed' || name === 'data-summary') this.#title();
+    else if (name === 'data-heading' || name === 'data-kind' || name === 'data-collapsed' || name === 'data-summary') this.#title();
     else if (name.startsWith('data-inputs') || name.startsWith('data-outputs')) this.#stacks();
   }
 
@@ -121,9 +123,11 @@ export class SherpaNode extends SherpaElement {
     }
   }
 
-  /** Its name, in its header: collapsed, followed by what its first field holds ("Condition: Equals"). Will, 2026-11-10 */
+  /** Its name, in its header: a name of its own after its kind ("Field: Device type"); collapsed, followed by what its
+   *  first field holds ("Condition: Equals"). Will, 2026-11-10, 2026-11-11 · TRAP T-a-custom-title-follows-its-kind */
   #title(): void {
-    const heading = this.getAttribute('data-heading') || 'Node';
+    const own = this.getAttribute('data-heading') || 'Node';
+    const heading = nodeTitle(this.getAttribute('data-kind') || own, own);
     const summary = this.hasAttribute('data-collapsed') ? this.getAttribute('data-summary') : null;
     this.$('.heading')?.setAttribute('data-heading', summary ? `${heading}: ${summary}` : heading);
   }

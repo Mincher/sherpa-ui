@@ -8113,3 +8113,26 @@ no place where Routes part. A Condition that forks (`branches`) is where its Tru
 
 - Site: `src/core/data/node-routes.ts`
 - Site: `test/unit/a-graph-has-a-route-from-a-source-to-an-output.test.mjs`
+
+### T-a-custom-title-follows-its-kind
+
+**A node's title of its own follows its kind: "Field: Device type", "Condition: Under 8 GB RAM".** Will, 2026-11-11:
+N-zo titled each node it made in its own words ("RAM (GB)", "Is a laptop"), and a reader could no longer see what
+each node was. A title of its own is allowed; `nodeTitle` (node-title.ts, tiny, so sherpa-node reads it too) puts
+the kind before it. The KIND, never a family's type: a Condition titled by the reader says "Condition", and its
+check stays in its Type row. One with no title of its own is as it was; one that already starts with its kind and a
+colon is as it is, so none reads "Field: Field: …".
+
+The DATA keeps the node's own title, and so does `data-heading`: `workflowGraph` gives a titled node its kind's
+name beside it (`kindHeading`), the drawing writes it as `data-kind`, and sherpa-node's header says both. Measured:
+putting the kind INTO the heading broke 20 specs that find a node by `sherpa-node[data-heading="…"]`, and the
+inspector's Name field would have saved the kind into the title. A label that names a node in words (a portal's
+row, where a value comes from) says both; a node's own warning names it by its own words, as its header stands above it.
+
+- Site: `src/core/data/node-title.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/components/sherpa-node/sherpa-node.ts`
+- Site: `test/unit/a-custom-title-follows-its-kind.test.mjs`
+- Site: `test/e2e/reforged-node-title-follows-its-kind.spec.ts`

@@ -3318,6 +3318,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-kind",
+          "description": "its kind's name, where the node has a name of its own: the header says it first (\"Field: Device type\"). Its host writes it"
+        },
+        {
           "name": "data-linked",
           "description": "a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it",
           "valueSet": "v"

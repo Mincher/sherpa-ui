@@ -902,6 +902,8 @@ export interface GraphNode {
   id: string;
   kind: string;
   heading: string;
+  /** Its kind's name, where it has a title of its own: drawn before that title. TRAP T-a-custom-title-follows-its-kind */
+  kindHeading?: string;
   icon: string;
   description?: string;
   input?: SocketType;

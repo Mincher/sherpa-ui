@@ -113,7 +113,7 @@ test('a CLOSED list refuses a stranger and says so; a known value, typed in any 
 test('a Value › List connected to Is one of OVERRIDES its tags (D7): read only, its own kept; cut, they are back', async ({ page }) => {
   await bind(page, [{ from: 'l/value', to: 'p/b' }], ['Pro']);
   expect(await shown(page, 'By plan', 'b')).toMatchObject({ tags: ['Team', 'Free'], readonly: true });
-  expect(await page.locator(field('By plan', 'b')).getAttribute('data-description')).toBe('Custom values, from Plans › Value');
+  expect(await page.locator(field('By plan', 'b')).getAttribute('data-description')).toBe('Custom values, from Value: Plans › Value');
   // Read only: no tag can be taken off, and the draft keeps the row's own.
   expect(await page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll('.tags > .tag')].map((c) => c.hasAttribute('data-dismissible')), field('By plan', 'b'))).toEqual([false, false]);
   expect((await values(page))['p']!['b']).toEqual(['Pro']);

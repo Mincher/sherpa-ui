@@ -98,6 +98,7 @@ import { messageField, outputPane, testButton, valueMenu, type OutputFacts } fro
 import { valuesAt, valuesIn } from '../data/node-messages.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
+import { nodeTitle } from '../data/node-title.js';
 import { isSource, routeRead } from '../data/node-routes.js';
 import { lightOf, trueOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
@@ -1486,6 +1487,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
       el.setAttribute('data-y', String(node.y));
     }
     el.setAttribute('data-heading', node.heading);
+    // A title of its own is drawn after its kind's name. TRAP T-a-custom-title-follows-its-kind
+    put(el, 'data-kind', node.kindHeading);
     put(el, 'data-icon', node.icon);
     put(el, 'data-description', node.description);
     el.toggleAttribute('data-locked', !!options.locked?.(node));
@@ -2090,7 +2093,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     panel.replaceChildren(strip);
   } else panel.replaceChildren(body);
   if (whole.length) (header as HTMLElement & { populate(items: unknown): void }).populate(whole);
-  panel.setAttribute('data-heading', tabs?.heading ?? node.heading);
+  panel.setAttribute('data-heading', tabs?.heading ?? nodeTitle(node.kindHeading ?? node.heading, node.heading));
   put(panel, 'data-icon', node.icon);
   inspecting.set(panel, { node, fields, options });
 }

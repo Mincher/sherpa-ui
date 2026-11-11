@@ -27,6 +27,7 @@
  * - editWorkflow — The workflow after one edit; the one given untouched.
  * - addCustomValue — A Value node made for a picklist row and connected to it: the row mirrors it, and keeps its own pick.
  */
+import { nodeTitle } from './node-title.js';
 import { inNewWords } from './entity.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
@@ -195,7 +196,7 @@ function rowsOf(held: ReadonlyMap<string, WorkflowNode>, flow: PortalFlow, kinds
     const kind = kindOf(from);
     const part = row === FALSE_SOCKET ? 'False' : row === undefined ? (kind?.branches ? 'True' : undefined) : rowOf(kind?.rows ?? [], row)?.label;
     const output = (kind && socketType(kind, row, 'output')) || 'object';
-    return { name: addressRow(source), label: [from?.heading ?? kind?.heading ?? id, part].filter(Boolean).join(' › '), output: output === 'any' ? 'object' : output };
+    return { name: addressRow(source), label: [from?.heading ? nodeTitle(kind?.heading ?? id, from.heading) : kind?.heading ?? id, part].filter(Boolean).join(' › '), output: output === 'any' ? 'object' : output };
   };
   return kindOf;
 }
@@ -575,7 +576,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
     const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
-    return [at?.heading ?? kinds[at?.kind ?? '']?.heading ?? id, out?.label].filter(Boolean).join(' › ');
+    return [at?.heading ? nodeTitle(kinds[at.kind]?.heading ?? id, at.heading) : kinds[at?.kind ?? '']?.heading ?? id, out?.label].filter(Boolean).join(' › ');
   };
   // What a connection brings: its output row's value, where its node holds one; and where from, in words.
   const brings = (from: string): { value: unknown; said: string } | undefined => {
@@ -721,7 +722,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
           const value = reading(r)?.value;
           return out === undefined ? !!kinds[held.get(id)?.kind ?? '']?.branches : truthOf(value) ?? truthy(value);
         });
-        const at = (r: NodeConnection): string => { const n = held.get(socketOf(r.from).node); return n?.heading ?? kinds[n?.kind ?? '']?.heading ?? r.from; };
+        const at = (r: NodeConnection): string => { const n = held.get(socketOf(r.from).node); return n?.heading ? nodeTitle(kinds[n.kind]?.heading ?? r.from, n.heading) : kinds[n?.kind ?? '']?.heading ?? r.from; };
         return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };
       }
       // Only what it cannot use came in: it reads null, read only.
@@ -740,7 +741,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         ? { ...own, ...shown, hint: `Custom ${row.multiple ? 'values' : 'value'}, from ${from}${told.hint ? `. ${told.hint}` : ''}` }
         : { ...own, value: shown.value }, true);
     });
-    const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
+    // A title of its own stays the node's; its kind rides beside it, drawn before it. TRAP T-a-custom-title-follows-its-kind
+    const titled = node.heading && node.heading !== family.heading;
+    const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(titled ? { kindHeading: family.heading } : {}), ...(node.description ? { description: node.description } : {}) };
     const drawnRows = spoken.size ? rows.map((r) => (spoken.has(r.name) ? { ...r, said: spoken.get(r.name)! } : r)) : rows;
     return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, drawnRows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
   });
