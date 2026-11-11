@@ -66,7 +66,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-made-up-key-never-leaves-the-data-layer](traps/data-layer.md#t-a-made-up-key-never-leaves-the-data-layer) — base-store, data, held-set, row-key
 - [T-a-needle-comes-from-either-direction](traps/data-layer.md#t-a-needle-comes-from-either-direction) — data-source-types, source-view, store
 - [T-a-newer-write-wins](traps/data-layer.md#t-a-newer-write-wins) — data-handler, fake-remote, notices, request-store, store
-- [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — data, node-input, workflow
+- [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — data, node-input, node-simulate, workflow
 - [T-a-notice-is-heard-never-ordered](traps/data-layer.md#t-a-notice-is-heard-never-ordered) — notices, updates
 - [T-a-page-goes-out-as-json](traps/data-layer.md#t-a-page-goes-out-as-json) — data-source-types, query-context
 - [T-a-page-is-checked-as-it-opens](traps/data-layer.md#t-a-page-is-checked-as-it-opens) — page-definition

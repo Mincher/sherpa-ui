@@ -6452,8 +6452,11 @@ types allow is drawn; no family fences what a graph places.
   ": connect a Field in".
 - **One door, `readInput`**: the value, or `null` and the words — `<input> takes <need>; it was
   given <what>` — all from `INPUT_WORDS` (a socket type in the words its tip says). The runner
-  (N4) reads through the same door. Text that reads as a number is a number, as the row reads it
-  (`T-a-value-is-typed-once`).
+  (N4) reads through the same door, and so does Simulate (`heard`, Will 2026-11-11: "fixed
+  generically on how to handle data types"): a connected value is read by the row's need, whatever
+  node sends it — a Math Result, a Count, a True — and a Condition tests against what a connection
+  brings to Value B or Start and End, not the row's own. Text that reads as a number is a number,
+  as the row reads it (`T-a-value-is-typed-once`).
 - **Drawn**: `workflowGraph` puts each on the node as `warnings` (by row; none, the header), the
   row reads `null` (read only, not "X Custom"), and `nodeFlow`'s incoming says `value: null`
   with the warning. `drawGraph` writes `data-warning`; `sherpa-node` pins the warning Style mode
@@ -6486,6 +6489,7 @@ types allow is drawn; no family fences what a graph places.
 
 - Site: `src/core/data/node-input.ts`
 - Site: `src/core/data/workflow.ts`
+- Site: `src/core/data/node-simulate.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `src/components/sherpa-node/sherpa-node.ts`
 - Site: `src/components/sherpa-node/sherpa-node.html`
@@ -6495,6 +6499,7 @@ types allow is drawn; no family fences what a graph places.
 - Site: `test/unit/and-or-take-any-boolean.test.mjs`
 - Site: `test/unit/a-boolean-reads-as-its-need.test.mjs`
 - Site: `test/unit/a-field-is-a-node.test.mjs`
+- Site: `test/unit/a-run-reads-each-input-by-its-need.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
 ### T-a-changed-key-moves-the-row

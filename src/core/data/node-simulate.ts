@@ -28,7 +28,7 @@
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
 import { filterTest, OP_LABELS, OP_TAKES, type Filter, type FilterOp, type Row } from './store.js';
-import { truthOf } from './node-input.js';
+import { needOf, readInput, truthOf, type Given } from './node-input.js';
 import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
 import { FALSE_SOCKET, socketOf, steers, truthy, type DrawnGraph, type GraphNode } from './node-kinds.js';
@@ -203,6 +203,11 @@ export async function stepSimulation(run: SimulationRun, options: SteppingOption
   return run.result();
 }
 
+/** A run's value as a coercion names what is given: a boolean, a number, a list, an object, or a value. */
+function givenOf(value: unknown): Given {
+  return typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : Array.isArray(value) ? 'list' : value && typeof value === 'object' ? 'object' : 'value';
+}
+
 /** What a node that sends a value says on its light, as = 42. */
 function valueWords(slots: readonly Slot[]): string | undefined {
   const said = slots.find((s) => s.kind === 'value' && s.value !== undefined);
@@ -216,7 +221,9 @@ function valueWords(slots: readonly Slot[]): string | undefined {
 export function lightOf(node: SimulatedNode, ms: number): string {
   const count = (slots: readonly Slot[]): number | undefined => slots.find((s) => s.rows)?.rows?.length;
   const n = (v: number): string => v.toLocaleString('en');
-  const [heard, said] = [count(node.incoming), count(node.outgoing)];
+  // Fed, but by no rows: a test of one value. It says its value, not "0 rows".
+  const heard = count(node.incoming);
+  const said = heard === undefined && node.incoming.some((s) => s.from.length) ? undefined : count(node.outgoing);
   const rows = heard !== undefined && said !== undefined ? `${n(heard)} → ${n(said)}`
     : heard !== undefined || said !== undefined ? `${n((heard ?? said)!)} ${(heard ?? said) === 1 ? 'row' : 'rows'}`
       : valueWords(node.outgoing) ?? [...node.incoming, ...node.outgoing].find((s) => s.note)?.note ?? '';
@@ -280,11 +287,23 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
     const base = fed?.rows;
     if (!base) return { note: fed?.note ?? 'No rows reach it' };
-    const keep = filterTest([read.leaf.field, read.leaf.op, read.leaf.value] as Filter, now);
+    const keep = filterTest([read.leaf.field, read.leaf.op, ranValue(node, read.leaf.value)] as Filter, now);
     const kept: Row[] = [];
     const lost: Row[] = [];
     for (const row of base) (keep(row) ? kept : lost).push(row);
     return { kept, lost };
+  };
+
+  /** What a Condition tests against in a RUN: where a connection reaches Value B, the Values, or Start and End, the value it
+   *  brings (a Math result, a Count), read by `heard`; else the leaf's own, as the graph holds it. */
+  const ranValue = (node: GraphNode, held: unknown): unknown => {
+    const joined = (name: string): boolean => node.kind === 'condition' && into(`${node.id}/${name}`).length > 0;
+    const range = ['start', 'end'];
+    if (range.some(joined)) {
+      const at = (name: string): unknown => (joined(name) ? heard(node, name).value : node.rows.find((r) => r.name === name)?.value);
+      return range.map(at).filter((v) => v != null && v !== '');
+    }
+    return joined('b') ? heard(node, 'b').value : held;
   };
 
   /** A test of ONE value, with no Field: a Count into Greater than (Will, 2026-11-11) tests it against Value B, the Values,
@@ -297,7 +316,9 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     const rows = came.find((s) => s.rows)?.rows;
     if (type === 'empty' && rows) return { kept: [], lost: [], passed: !rows.length };
     const sent = came.find((s) => s.kind === 'value' && s.value !== undefined);
-    if (!sent) return undefined;
+    // A value that did not come — a Math that could not add — says why, where its rows would.
+    const quiet = came.find((s) => s.kind === 'value' && s.note);
+    if (!sent) return quiet ? { note: quiet.note! } : undefined;
     // A number that passes goes on as its Count, as an Or's true counts do; one that fails, 0.
     const n = typeof sent.value === 'number' ? sent.value : typeof sent.value === 'string' && sent.value.trim() !== '' ? Number(sent.value) : NaN;
     const said = (passed: boolean): Verdict => ({ kept: [], lost: [], passed, ...(Number.isFinite(n) ? { count: passed ? n : 0 } : {}) });
@@ -339,13 +360,18 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return test(node);
   };
 
-  /** What an input row hears: a connected value, else the row's own, as its control reads it. */
+  /** What an input row hears: a connected value, read as the row's need reads it by the ONE table the drawn graph reads
+   *  (`readInput`, COERCIONS) — a True into a number is 1, a number into a boolean its truth; what it cannot use is nothing,
+   *  and why. Else the row's own value. TRAP T-a-node-reads-null-from-what-it-cannot-use */
   const heard = (node: GraphNode, name: string): Sent => {
-    const came = into(`${node.id}/${name}`).map((p) => p.sent);
-    const first = came[0];
-    if (first) return first.kind === 'value' ? first : { kind: 'value', note: first.note ?? 'Nothing it can use arrives' };
+    const first = into(`${node.id}/${name}`)[0]?.sent;
     const own = node.rows.find((r) => r.name === name);
-    return own?.value === undefined || own.value === '' ? { kind: 'value', note: `${own?.label ?? name} is empty` } : { kind: 'value', value: own.value };
+    if (!first) return own?.value === undefined || own.value === '' ? { kind: 'value', note: `${own?.label ?? name} is empty` } : { kind: 'value', value: own.value };
+    if (first.kind !== 'value') return { kind: 'value', note: first.note ?? 'Nothing it can use arrives' };
+    const needs = own && needOf(own);
+    if (first.note || first.value === undefined || !needs) return first;
+    const read = readInput({ label: own.label, needs }, { kind: givenOf(first.value), value: first.value });
+    return read.warning ? { kind: 'value', note: read.warning } : { ...first, value: read.value };
   };
   const number = (sent: Sent): number | string => {
     if (sent.note) return sent.note;
