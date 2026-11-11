@@ -340,7 +340,7 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
   }
   // A message is Markdown, edited as it reads (plan 892).
   if (row.control === 'message') {
-    const field: Field = messageField(row.name);
+    const field: Field = messageField(row.name, row.singleLine);
     if (locked) lock(field, true);
     return field;
   }

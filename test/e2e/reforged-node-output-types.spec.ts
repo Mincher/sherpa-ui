@@ -91,6 +91,9 @@ test('a message row shows its first lines, each value by its node and label, in 
   await expect(field).toHaveCount(1);
   expect(await field.evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {s.name}');
   expect(await field.evaluate((f) => f.shadowRoot!.querySelector('.value')?.textContent)).toBe('Customers › Name');
+  // Its Title is one line, with no toolbar; its Message is many (TODO 913).
+  await expect(page.locator('#inspector sherpa-markdown-editor[name="title"]')).toHaveAttribute('data-single-line', '');
+  await expect(field).not.toHaveAttribute('data-single-line');
 });
 
 test('the Nodes panel\'s Notify places an Output of type Notification', async ({ page }) => {

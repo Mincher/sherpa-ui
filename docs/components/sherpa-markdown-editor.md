@@ -26,6 +26,7 @@ For a long text a reader formats — a message, a note, a runbook's steps — wr
 | `data-error` | text |  | a message under the box, in the critical bar |
 | `data-help-href` | text |  | where "More about markdown" goes (default CommonMark's help); empty hides it |
 | `data-label` | text |  | the field's label (hidden when empty) |
+| `data-single-line` | boolean |  | boolean: one line, as a title or a file name. No toolbar; Enter adds no line, and a paste's line breaks are spaces |
 | `data-view` | `formatted` `markdown` |  | formatted \| markdown: the text as it reads (default), or the Markdown itself. The switch writes it |
 | `disabled` | boolean, native | `false` | native attributes; readonly shows the text as it reads, with no toolbar |
 | `name` | text, native |  | native attributes; readonly shows the text as it reads, with no toolbar |
@@ -126,6 +127,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ description?, error?, helpHref?, label?, view? }`
+`{ description?, error?, helpHref?, label?, singleLine?, view? }`
 
 Its declared props by name: `label` sets data-label.

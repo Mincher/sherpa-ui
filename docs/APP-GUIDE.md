@@ -520,7 +520,8 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
 - A `message` row takes text with values, `{node.name}`: a row or property of a node
   before it, or a field of the rows a Source sends. Its Insert value menu lists
   them; one no route gives is a warning on its row. The node shows its first
-  lines, each value in purple.
+  lines, each value in purple. `singleLine: true` makes it one line, as a title:
+  no toolbar, and no line break goes in.
 - A `pick` row picks from its own `choices`. A type's `group` is its section in
   the Type list.
 - Simulate never fires an Output: its light says its `would`, and each property

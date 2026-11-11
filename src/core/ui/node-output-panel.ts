@@ -46,8 +46,8 @@ const labelsOf = (facts: OutputFacts): Record<string, string> =>
   Object.fromEntries(facts.sources.flatMap((s) => s.values.map((v) => [v.key, `${s.heading} › ${v.label}`])));
 
 /** A message row's field: the Markdown editor (plan 892), named for its row. The node shows its first lines. */
-export function messageField(name: string): SherpaMarkdownEditor {
-  return make('sherpa-markdown-editor', { name }) as SherpaMarkdownEditor;
+export function messageField(name: string, singleLine?: boolean): SherpaMarkdownEditor {
+  return make('sherpa-markdown-editor', { name, ...(singleLine ? { 'data-single-line': '' } : {}) }) as SherpaMarkdownEditor;
 }
 
 /** A message field's Insert value: a button after it, opening a menu of the values its routes give, a section per node,

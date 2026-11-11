@@ -293,6 +293,10 @@
 :host([readonly]) :is(.bar, .help) { display: none; }
 :host([readonly]) .content { min-block-size: 0; }
 
+/* One line: a title or a file name. No toolbar, as tall as its line (TODO 913). */
+:host([data-single-line]) :is(.bar, .help) { display: none; }
+:host([data-single-line]) :is(.content, .source) { min-block-size: 0; }
+
 /* ── Disabled: a PIN (inactive), never opacity ─────────────────────── */
 :host(:disabled) :is(.box, .content, .source) { cursor: not-allowed; }
 :host(:disabled) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }

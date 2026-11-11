@@ -193,6 +193,33 @@ test('a paste is its plain text; change goes out when focus leaves; the form sub
   expect(sent).toEqual([true, '- a\n- b']);
 });
 
+test('one line: no toolbar, Enter adds no line, a paste\'s line breaks are spaces, and still Markdown (TODO 913)', async ({ page }) => {
+  await mount(page, { 'data-single-line': '', 'data-label': 'Title' });
+  await expect(page.locator(`${editor} .bar`)).toBeHidden();
+  await expect(page.locator(`${editor} .help`)).toBeHidden();
+  await expect(page.locator(content)).toHaveAttribute('aria-multiline', 'false');
+  await page.locator(content).click();
+  await page.keyboard.type('Patch');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Shift+Enter');
+  await page.keyboard.type(' **due**');
+  expect(await value(page)).toBe('Patch **due**');
+  await expect(page.locator(`${content} .span[data-kind="strong"]`)).toHaveCount(1);
+  await page.evaluate(() => {
+    const paste = new ClipboardEvent('paste', { bubbles: true, cancelable: true, composed: true });
+    Object.defineProperty(paste, 'clipboardData', { value: { getData: (type: string) => (type === 'text/plain' ? ' now\r\n  and\nlater' : '') } });
+    document.querySelector('sherpa-markdown-editor')!.shadowRoot!.querySelector('.content')!.dispatchEvent(paste);
+  });
+  expect(await value(page)).toBe('Patch **due** now and later');
+  // One line high: no taller than its line and its padding.
+  const high = await page.locator(content).evaluate((el) => el.getBoundingClientRect().height);
+  expect(high).toBeLessThan(40);
+  // Off again, the box is many lines.
+  await page.locator(editor).evaluate((el) => el.removeAttribute('data-single-line'));
+  await expect(page.locator(`${editor} .bar`)).toBeVisible();
+  await expect(page.locator(content)).toHaveAttribute('aria-multiline', 'true');
+});
+
 test('Link puts the selection in a link, its address selected to type over', async ({ page }) => {
   await mount(page, { value: 'see docs' });
   await page.locator(content).click();

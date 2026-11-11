@@ -128,6 +128,8 @@ export interface RowKind {
   property?: true;
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
+  /** A `message` row of one line, as a title or a file name: its editor has no toolbar and takes no line break. TODO 913 */
+  singleLine?: true;
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -224,13 +226,13 @@ const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'),
 const PORTAL_NAME: RowKind = { name: 'name', label: 'Name', control: 'portal' };
 
 /** An Output's rows (plan 891). A message field takes text with values; each parameter can be routed too. */
-const messageRow = (name: string, label: string): RowKind => ({ name, label, control: 'message', input: 'value' });
+const messageRow = (name: string, label: string, singleLine?: true): RowKind => ({ name, label, control: 'message', input: 'value', ...(singleLine ? { singleLine } : {}) });
 const pickRow = (name: string, label: string, choices: readonly (readonly [string, string])[], multiple?: true): RowKind => ({
   name, label, control: 'pick', choices: choices.map(([value, words]) => ({ value, label: words })),
   ...(multiple ? { multiple, input: 'object' as const } : { input: 'value' as const }),
 });
 const objectIn = (name: string, label: string): RowKind => ({ name, label, input: 'object' });
-const [TITLE, MESSAGE, SENT] = [messageRow('title', 'Title'), messageRow('message', 'Message'), propertyRow('sent', 'Sent', 'boolean')];
+const [TITLE, MESSAGE, SENT] = [messageRow('title', 'Title', true), messageRow('message', 'Message'), propertyRow('sent', 'Sent', 'boolean')];
 
 /** What an Output does, each a type in a family (plan 891). The host app adds its own: `addTypes`. */
 const OUTPUTS: Readonly<Record<string, NodeType>> = {
@@ -253,7 +255,7 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     label: 'Generated file', would: 'Would make a file', group: 'Content', icon: 'file-lines', help: 'Make a file from the data',
     rows: [
       pickRow('format', 'Format', [['pdf', 'PDF'], ['csv', 'CSV'], ['xlsx', 'XLSX'], ['docx', 'DOCX'], ['md', 'Markdown']]), textRow('template', 'Template'),
-      messageRow('fileName', 'File name'), objectIn('data', 'Data'), textRow('saveTo', 'Save to'),
+      messageRow('fileName', 'File name', true), objectIn('data', 'Data'), textRow('saveTo', 'Save to'),
       propertyRow('file', 'File', 'object'), propertyRow('link', 'Link', 'value'),
     ],
   },

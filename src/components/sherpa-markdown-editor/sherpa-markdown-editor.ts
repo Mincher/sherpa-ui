@@ -39,6 +39,7 @@ export class SherpaMarkdownEditor extends SherpaElement {
     'data-error': { type: 'string', kind: 'content' },
     'data-view': { type: 'enum', kind: 'behaviour', values: ['formatted', 'markdown'] },
     'data-help-href': { type: 'string', kind: 'behaviour' },
+    'data-single-line': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   /** A form cannot see inside a shadow root: the host takes part for it. */
@@ -467,6 +468,10 @@ export class SherpaMarkdownEditor extends SherpaElement {
 
   /* ── Typing ─────────────────────────────────────────────────────────── */
 
+  /** Is it one line: no line break goes in (TODO 913)? */
+  #single(): boolean {
+    return this.hasAttribute('data-single-line');
+  }
   /** Does it take no edit: disabled, or read only? */
   #off(): boolean {
     return this.matches(':disabled') || this.hasAttribute('readonly');
@@ -490,8 +495,8 @@ export class SherpaMarkdownEditor extends SherpaElement {
         edit = typeText(t, start, end, event.data ?? '');
         typing = true;
         break;
-      case 'insertParagraph': edit = breakLine(t, start, end); break;
-      case 'insertLineBreak': edit = breakLine(t, start, end, true); break;
+      case 'insertParagraph': if (!this.#single()) edit = breakLine(t, start, end); break;
+      case 'insertLineBreak': if (!this.#single()) edit = breakLine(t, start, end, true); break;
       case 'deleteContentBackward': case 'deleteWordBackward': case 'deleteSoftLineBackward': case 'deleteHardLineBackward':
         edit = deleteBack(t, start, end, unit(event.inputType));
         break;
@@ -533,8 +538,9 @@ export class SherpaMarkdownEditor extends SherpaElement {
     event.preventDefault();
     if (this.#off()) return;
     const said = (event.clipboardData?.getData('text/plain') ?? '').replace(/\r\n?/g, '\n');
+    const text = this.#single() ? said.replace(/\s*\n\s*/g, ' ') : said;
     const { start, end } = this.#readSel();
-    this.#commit(typeText(this.value, start, end, said));
+    this.#commit(typeText(this.value, start, end, text));
   };
 
   /** A copy is the Markdown of the selection, its hidden marks too; a cut takes it out. */
@@ -558,7 +564,9 @@ export class SherpaMarkdownEditor extends SherpaElement {
     // Composed: this editor's own goes out instead.
     event.stopPropagation();
     const source = event.target as HTMLTextAreaElement;
-    this.#commit({ text: source.value, start: source.selectionStart, end: source.selectionEnd }, true);
+    // One line: a break typed is a space, so the caret stays where it was.
+    const text = this.#single() ? source.value.replace(/\n/g, ' ') : source.value;
+    this.#commit({ text, start: source.selectionStart, end: source.selectionEnd }, true);
   };
 
   /** The keys: Undo, Redo, Bold, Italic and Link; in a list item, Tab and Shift+Tab move it. */
@@ -696,6 +704,7 @@ export class SherpaMarkdownEditor extends SherpaElement {
     content.contentEditable = off || readonly ? 'false' : 'true';
     content.setAttribute('aria-disabled', String(off));
     content.setAttribute('aria-readonly', String(readonly));
+    content.setAttribute('aria-multiline', String(!this.#single()));
     content.setAttribute('aria-required', String(this.hasAttribute('required')));
     content.tabIndex = off ? -1 : 0;
     this.mirrorAttrs(source, ['placeholder', 'required', 'readonly']);

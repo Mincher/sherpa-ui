@@ -2280,6 +2280,11 @@
           "description": "the field's label (hidden when empty)"
         },
         {
+          "name": "data-single-line",
+          "description": "boolean: one line, as a title or a file name. No toolbar; Enter adds no line, and a paste's line breaks are spaces",
+          "valueSet": "v"
+        },
+        {
           "name": "data-view",
           "description": "formatted | markdown: the text as it reads (default), or the Markdown itself. The switch writes it",
           "values": [
