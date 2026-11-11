@@ -58,7 +58,7 @@ export interface WorkflowNode {
   /** A use of a Custom Node: the version of its definition it follows, and the definition it was made from. */
   version?: string;
   was?: NodeSnapshot;
-  /** The stage it is in: one of its workflow's `stages`. None, it is in no stage. */
+  /** The stage it is in: one of its workflow's `stages`. None, with stages written, it joins the nearest at the next fit. */
   stage?: string;
 }
 
@@ -821,15 +821,13 @@ function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addS
   }
   if (!stages.some((s) => s.id === edit.removeStage)) return refuse(`the stage "${edit.removeStage}" is not there`), workflow;
   if (stages.length < 2) return refuse('a workflow keeps one stage at least'), workflow;
-  // Its nodes stay where they are, in no stage.
+  // Its nodes stay where they stand, in the stage before it, or the first after it where it was the first (TODO 899).
+  const at = stages.findIndex((s) => s.id === edit.removeStage);
+  const into = (stages[at - 1] ?? stages[at + 1])!.id;
   return numbered({
     ...held,
     stages: stages.filter((s) => s.id !== edit.removeStage),
-    nodes: held.nodes.map((n) => {
-      if (n.stage !== edit.removeStage) return n;
-      const { stage: _was, ...bare } = n;
-      return bare;
-    }),
+    nodes: held.nodes.map((n) => (n.stage === edit.removeStage ? { ...n, stage: into } : n)),
   });
 }
 
@@ -969,8 +967,8 @@ export function editWorkflow(
     if (!workflow.nodes.some((n) => portalOf(n)?.name === from)) return refuse(`no portal is named "${from}"`), workflow;
     return from === to ? workflow : { ...workflow, nodes: renamedPortals(workflow.nodes, from, to) };
   }
-  // — Stages: a new one after the last; its name, line and colour; one taken away, its nodes left in none; an order; a
-  // node let go, in the stage it stands in. A workflow keeps at least one. Will, 2026-11-10
+  // — Stages: a new one after the last; its name, line and colour; one taken away, its nodes in the one before; an order;
+  // a node let go, in the stage it stands in, or the nearest. A workflow keeps at least one. Will, 2026-11-10, TODO 899
   // — Swimlanes: on, with the lanes given; null, off. The nodes stay where they are. Will, 2026-11-10
   if ('lanes' in edit) {
     const { lanes: _was, ...bare } = workflow;

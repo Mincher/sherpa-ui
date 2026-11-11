@@ -3,7 +3,7 @@ import { test, expect, type Page } from './harness';
 /**
  * STAGES on a workflow's canvas — Will, 2026-11-10. A graph has one stage at least, Stage 1, round every node; a node let
  * go in a stage joins it, and a stage grows to hold its nodes. More, at the end of a bar, offers Edit (name, line, colour),
- * Add stage before, Add stage after and Remove (its nodes stay, in none); Move left and Move right beside it move the stage
+ * Add stage before, Add stage after and Remove (its nodes stay where they stand, in the next stage); Move left and Move right beside it move the stage
  * one place, each node with it. A default name is its place: Stage 1, Stage 2. Real pointer and keys. TODO 893
  */
 test.beforeEach(async ({ page }) => {
@@ -120,7 +120,7 @@ test('Shift-dragged, a node leaves its stage and joins the one it is let go in; 
   expect(await stageOf(page, 'end')).toBe('stage-1');
 });
 
-test('Edit names, describes and colours a stage; Remove leaves its nodes where they are, in none', async ({ page }) => {
+test('Edit names, describes and colours a stage; Remove leaves its nodes where they are, in the stage after it', async ({ page }) => {
   await addStage(page);
   await more(page, 1, 'edit');
   await page.locator('#stage sherpa-input-text[name="label"] input').fill('Deliver');
@@ -134,12 +134,12 @@ test('Edit names, describes and colours a stage; Remove leaves its nodes where t
   await settle(page);
   expect((await flow(page)).stages![1]).toMatchObject({ label: 'Deliver', description: 'Where the rows go out', colour: green });
   await expect(stage(page, 1)).toHaveAttribute('data-colour', green);
-  // Remove Stage 1: its nodes stay put, in no stage.
+  // Remove Stage 1: its nodes stay put, in the stage after it, the first now (899).
   const xs = (await flow(page)).nodes.map((n) => n.x);
   await more(page, 0, 'remove');
   const w = await flow(page);
   expect(w.stages!.map((s) => s.label)).toEqual(['Deliver']);
-  expect(w.nodes.map((n) => [n.x, n.stage])).toEqual(xs.map((x) => [x, undefined]));
+  expect(w.nodes.map((n) => [n.x, n.stage])).toEqual(xs.map((x) => [x, 'stage-2']));
   // The last stage cannot be removed.
   await expect(stage(page, 0)).not.toHaveAttribute('data-removable');
 });

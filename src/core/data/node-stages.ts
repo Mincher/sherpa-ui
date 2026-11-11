@@ -1,7 +1,8 @@
 /**
- * node-stages.ts — STAGES: columns across a workflow's canvas, left to right. A node is in one stage at most; a stage
- * grows to hold its nodes, and pushes the stages after it, and their nodes, right. It changes no data: a runner ignores
- * it. Pure: no DOM. A workflow with no `stages` has one, Stage 1, and every node is in it. Will, 2026-11-10
+ * node-stages.ts — STAGES: columns across a workflow's canvas, left to right. Every node is in one stage, the nearest where
+ * it stands in none (TODO 899). A stage grows to hold its nodes, and pushes the stages after it, and their nodes, right. It
+ * changes no data: a runner ignores it. Pure: no DOM. A workflow with no `stages` has one, Stage 1, and every node is in
+ * it. Will, 2026-11-10
  *
  * Map:
  * - NodeStage — One stage: its id, its name, line and colour, and where its left edge stands.
@@ -14,10 +15,10 @@
  * - stageOf — The stage a node is in, or none.
  * - stageBands — Each stage's band, and the moves that keep each clear of the one before.
  * - heldBands — Each stage's band as it stands, its left edge where it was last laid out, not laid out again; nodes `moving`…
- * - fitStages — The workflow with each stage's left edge, and every node a push moved, as its bands say.
+ * - fitStages — The workflow with every node in a stage, each stage's edge, and the nodes a push moved.
  * - stageAt — The stage whose band holds a place across the canvas, or none.
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
- * - restage — The workflow with these nodes in the stage their middle stands in, or the point given does; else in none.
+ * - restage — The workflow with these nodes in the stage their middle stands in, or the point given does; else the nearest.
  * - orderStages — The workflow with its stages in a new order, each packed after the one before, its nodes with it.
  * - stageFaults — Every fault in a workflow's stages, in words.
  */
@@ -106,23 +107,33 @@ export function heldBands(workflow: Staged, widthOf: WidthOf, moving: ReadonlySe
   });
 }
 
-/** The workflow with each stage's left edge, and every node a push moved, as its bands say. Unchanged, the same one. */
-export function fitStages<W extends Staged>(workflow: W, widthOf: WidthOf): W {
-  if (!workflow.stages?.length) return workflow;
+/** The workflow with every node in a stage — one in none joins the nearest — each stage's left edge, and every node a
+ *  push moved, as its bands say. Unchanged, the same one. */
+export function fitStages<W extends Staged>(given: W, widthOf: WidthOf): W {
+  if (!given.stages?.length) return given;
+  const loose = given.nodes.filter((n) => !n.id.startsWith('#') && !stageOf(given, n)).map((n) => n.id);
+  const workflow = loose.length ? restage(given, loose, widthOf) : given;
+  const stages = given.stages;
   const { bands, moves } = stageBands(workflow, widthOf);
   const moved = Object.keys(moves).length > 0;
-  const placed = workflow.stages.some((s, i) => s.x !== bands[i]!.left);
+  const placed = stages.some((s, i) => s.x !== bands[i]!.left);
   if (!moved && !placed) return workflow;
   return {
     ...workflow,
     nodes: moved ? workflow.nodes.map((n) => (n.id in moves ? { ...n, x: Math.round(moves[n.id]!) } : n)) : workflow.nodes,
-    stages: workflow.stages.map((s, i) => (s.x === bands[i]!.left ? s : { ...s, x: bands[i]!.left })),
+    stages: stages.map((s, i) => (s.x === bands[i]!.left ? s : { ...s, x: bands[i]!.left })),
   };
 }
 
 /** The stage whose band holds a place across the canvas, or none. */
 export function stageAt(bands: readonly StageBand[], x: number): string | undefined {
   return bands.find((b) => x >= b.left && x < b.right)?.id;
+}
+
+/** The stage whose band holds x, else the one whose edge is nearest it: the left of two as near. */
+function stageNear(bands: readonly StageBand[], x: number): string | undefined {
+  const away = (b: StageBand): number => (x < b.left ? b.left - x : x >= b.right ? x - b.right : 0);
+  return bands.reduce<StageBand | undefined>((best, b) => (!best || away(b) < away(best) ? b : best), undefined)?.id;
 }
 
 /** The workflow with its stages written out: its one Stage 1, at its place, and every node in it. Written, the same one. */
@@ -134,8 +145,9 @@ export function stagesHeld<W extends Staged>(workflow: W): W {
 
 /**
  * The workflow with these nodes in the stage their middle stands in, by the bands as they stand without them
- * (`heldBands`), or in none. A node let go between stages, or past them, is in none. `together` (a frame's nodes): all
- * in the stage under the middle of them all. `by`: the stage under that x, for them all — where a new node was let go.
+ * (`heldBands`). A node let go between stages, or past them, joins the nearest: none stands outside a stage (TODO 899).
+ * `together` (a frame's nodes): all in the stage under the middle of them all. `by`: the stage under that x, for them all
+ * — where a new node was let go.
  */
 export function restage<W extends Staged>(workflow: W, ids: readonly string[], widthOf: WidthOf, together = false, by?: number): W {
   if (!workflow.stages?.length || !ids.length) return workflow;
@@ -144,11 +156,11 @@ export function restage<W extends Staged>(workflow: W, ids: readonly string[], w
   // As ONE (a frame's nodes): the stage under the middle of them all.
   const all = workflow.nodes.filter((n) => moving.has(n.id));
   const middle = all.length ? (Math.min(...all.map((n) => n.x)) + Math.max(...all.map((n) => n.x + widthOf(n)))) / 2 : 0;
-  const one = by !== undefined ? stageAt(bands, by) : together ? stageAt(bands, middle) : undefined;
+  const one = by !== undefined ? stageNear(bands, by) : together ? stageNear(bands, middle) : undefined;
   let changed = false;
   const nodes = workflow.nodes.map((n) => {
     if (!moving.has(n.id) || n.id.startsWith('#')) return n;
-    const at = by !== undefined || together ? one : stageAt(bands, n.x + widthOf(n) / 2);
+    const at = by !== undefined || together ? one : stageNear(bands, n.x + widthOf(n) / 2);
     if (at === n.stage) return n;
     changed = true;
     const { stage: _was, ...bare } = n;
