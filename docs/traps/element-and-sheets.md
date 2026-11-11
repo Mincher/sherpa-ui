@@ -779,6 +779,7 @@ ours it defers to the control's OWN native validity, which is already doing
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
 - Site: `src/core/ui/form-value.ts`
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-swatch-picker/sherpa-swatch-picker.ts`
 
 ### T-parent-chain-walk-not-a-selector
 

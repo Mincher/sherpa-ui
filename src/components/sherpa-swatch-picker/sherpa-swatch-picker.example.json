@@ -1,0 +1,6 @@
+{
+  "html": [
+    "<sherpa-swatch-picker name=\"colour\" data-label=\"Colour\" value=\"var(--sherpa-data-viz-series-border-3)\"></sherpa-swatch-picker>"
+  ],
+  "use": "To pick a colour from Sherpa's palette, the data-viz series: a stage's, a series'. Its value is the token itself, as `var(--sherpa-data-viz-series-border-3)`. For any colour at all, use `sherpa-input-text` with `data-type=\"color\"`."
+}

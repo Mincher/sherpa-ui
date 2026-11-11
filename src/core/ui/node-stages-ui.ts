@@ -10,6 +10,7 @@
  */
 import { editWorkflow, nodeWidth, type WorkflowDefinition } from '../data/workflow.js';
 import { heldBands, stageBands, stagesOf } from '../data/node-stages.js';
+import { randomSwatch } from './swatches.js';
 import { keepOrder } from './keep-order.js';
 
 /** What the stages need of their editor. */
@@ -22,7 +23,8 @@ export interface StageHost {
   /** The nodes a Shift-drag has taken out of their stages: the stages hold still as they stood, without them. */
   moving?(): ReadonlySet<string>;
   /** A `sherpa-dialog` that asks a stage's name, line and colour: fields `[name=label]`, `[name=description]` and
-   *  `[name=colour]` (a colour field), buttons `[data-action=save]` and `[data-action=cancel]`. Without it, Edit is not offered. */
+   *  `[name=colour]` (a `sherpa-swatch-picker`), buttons `[data-action=save]` and `[data-action=cancel]`. Without it, Edit is
+   *  not offered. */
   dialog?: (HTMLElement & { show(): void; hide(): void }) | null;
 }
 
@@ -35,15 +37,13 @@ export interface Stages {
 
 type StageElement = HTMLElement & { rendered?: Promise<void> };
 
-/** The default look's colour, as a picker shows it: the stage's own CSS default. */
-const DEFAULT_COLOUR = '#b3b3c3';
 type Field = HTMLElement & { value: string };
 
 /** Bind a workflow editor's stages to its canvas. */
 export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
   const drawn = new Map<string, StageElement>();
   let editing: string | null = null;
-  /** The colour the dialog opened with: a picker always holds one, so only a change is written. */
+  /** The colour the dialog opened with: only a change is written. */
   let opened = '';
 
   const draw = (): void => {
@@ -92,8 +92,7 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     editing = id;
     field('label')!.value = stage.label;
     if (field('description')) field('description')!.value = stage.description ?? '';
-    // A picker holds a colour always: none set, it shows the default look's.
-    opened = stage.colour ?? DEFAULT_COLOUR;
+    opened = stage.colour ?? '';
     if (field('colour')) field('colour')!.value = opened;
     host.dialog.show();
     field('label')?.focus();
@@ -105,7 +104,7 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     if (!label) return void field('label')?.setAttribute('data-error', 'A stage needs a name.');
     field('label')?.removeAttribute('data-error');
     const colour = field('colour')?.value;
-    const changed = colour && colour.toLowerCase() !== opened.toLowerCase() ? { colour } : {};
+    const changed = colour && colour !== opened ? { colour } : {};
     host.write(editWorkflow(w, { setStage: { id: editing, label, description: field('description')?.value ?? '', ...changed } }));
     editing = null;
     host.dialog?.hide();
@@ -121,9 +120,14 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     if (!id || !w) return;
     if (action === 'edit') return openEdit(id);
     if (host.readOnly()) return;
-    if (action === 'remove') host.write(editWorkflow(w, { removeStage: id }));
-    else if (action === 'add-before') host.write(editWorkflow(w, { addStage: { before: id } }));
-    else if (action === 'add-after') host.write(editWorkflow(w, { addStage: { after: id } }));
+    if (action === 'remove') return host.write(editWorkflow(w, { removeStage: id }));
+    // A new stage takes a palette colour at random, one its neighbours do not wear. Will, TODO 904
+    const stages = stagesOf(w);
+    const at = stages.findIndex((s) => s.id === id);
+    const near = action === 'add-before' ? [stages[at - 1], stages[at]] : [stages[at], stages[at + 1]];
+    const colour = randomSwatch(near.map((s) => s?.colour));
+    if (action === 'add-before') host.write(editWorkflow(w, { addStage: { before: id, colour } }));
+    else if (action === 'add-after') host.write(editWorkflow(w, { addStage: { after: id, colour } }));
   };
   /** Move left or right: one place along the row, its nodes with it, one step. */
   const onMove = (event: Event): void => {

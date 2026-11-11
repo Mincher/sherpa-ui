@@ -1,0 +1,127 @@
+/**
+ * sherpa-swatch-picker.css — a field's name and line, a button as tall as a text field wearing the colour now, and a grid
+ * of swatches in a popover under it. Will, TODO 904
+ */
+
+:host { display: block; }
+
+.field {
+  --_border: var(--sherpa-style-border-base, #b3b3c3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+}
+.label {
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
+}
+.description {
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
+}
+.label:empty,
+.description:empty { display: none; }
+
+/* The button: as a text field's box, the colour now and its name. */
+.trigger {
+  anchor-name: --sherpa-swatch-trigger;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  inline-size: 100%;
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding-inline: var(--sherpa-theme-padding-md, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  text-align: start;
+  cursor: pointer;
+}
+.trigger:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+.trigger:disabled {
+  cursor: not-allowed;
+  color: var(--sherpa-style-inactive-content-base, #8a8a9a);
+  background: var(--sherpa-style-inactive-surface-base, #f5f5f8);
+}
+.current {
+  flex: none;
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--_ink, transparent);
+  box-shadow: inset 0 0 0 var(--sherpa-style-border-width, 0.5px) var(--_border);
+}
+.name { flex: 1 1 auto; min-inline-size: 0; }
+.chevron { flex: none; }
+
+/* The GRID: a popover under the button, five swatches a row. */
+.swatches {
+  position-anchor: --sherpa-swatch-trigger;
+  position-area: block-end span-inline-end;
+  position-try-fallbacks: flip-block;
+  inset: auto;
+  margin: var(--sherpa-display-mode-space-2xs, 4px) 0;
+  padding: var(--sherpa-theme-padding-md, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  box-shadow:
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-sm, 16px)
+    -4px
+    var(--sherpa-style-surface-shadow, #15151e80);
+}
+.swatches:popover-open {
+  display: grid;
+  grid-template-columns: repeat(5, var(--sherpa-display-mode-size-2xl, 32px));
+  gap: var(--sherpa-theme-gap-md, 8px);
+}
+
+/* A SWATCH: its fill, its border the colour itself; the native radio over it, unseen, takes the press and the keys. */
+.swatch {
+  position: relative;
+  display: block;
+  inline-size: var(--sherpa-display-mode-size-2xl, 32px);
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  cursor: pointer;
+}
+.swatch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.chip {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--_fill, transparent);
+  border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--_ink, transparent);
+  box-sizing: border-box;
+}
+/* The one picked: a ring round it. Focused, the focus ring. */
+.swatch:has(input:checked) .chip {
+  box-shadow: 0 0 0 var(--sherpa-display-mode-border-width-lg, 2px) var(--sherpa-style-surface-base, #ffffff),
+    0 0 0 calc(2 * var(--sherpa-display-mode-border-width-lg, 2px)) var(--_ink, transparent);
+}
+.swatch:has(input:focus-visible) .chip {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+
+@media (forced-colors: active) {
+  .chip, .current { forced-color-adjust: none; }
+  .swatch:has(input:checked) .chip { outline: 2px solid Highlight; }
+}

@@ -1168,7 +1168,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — filter-panel
 - [T-scroll-state-is-chromium-only](traps/other-components.md#t-scroll-state-is-chromium-only) — app-header
 - [T-select-card-keeps-both-footer-controls](traps/other-components.md#t-select-card-keeps-both-footer-controls) — select-card
-- [T-shadow-input-needs-element-internals](traps/element-and-sheets.md#t-shadow-input-needs-element-internals) — input-text, select-checkbox, select-radio, switch
+- [T-shadow-input-needs-element-internals](traps/element-and-sheets.md#t-shadow-input-needs-element-internals) — input-text, select-checkbox, select-radio, swatch-picker, switch
 - [T-signal-not-a-teardown-list](traps/data-layer.md#t-signal-not-a-teardown-list) — layout-grid
 - [T-slider-second-thumb-is-revealed-not-built](traps/other-components.md#t-slider-second-thumb-is-revealed-not-built) — slider
 - [T-slot-assigns-direct-children-only](traps/other-components.md#t-slot-assigns-direct-children-only) — calendar

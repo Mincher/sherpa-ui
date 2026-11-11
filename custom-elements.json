@@ -13701,6 +13701,145 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-swatch-picker/sherpa-swatch-picker.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaSwatchPicker",
+          "tagName": "sherpa-swatch-picker",
+          "customElement": true,
+          "description": "a colour picked from a palette: a button wearing the colour now, which opens a grid of swatches. The grid is native radios in a popover, so the arrows move the pick and Escape shuts it. Will, TODO 904",
+          "attributes": [
+            {
+              "name": "data-description",
+              "description": "a helper line under its name",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-label",
+              "description": "its name, above the button",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "disabled",
+              "description": "native boolean",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "name": "name",
+              "description": "what a form submits it under",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "value",
+              "description": "the colour picked: a CSS colour, as `var(--sherpa-data-viz-series-border-3)`; one the palette has not shows on the button, and no swatch is ticked",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "focus",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "text": "FocusOptions"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Focus its control: the first focusable part inside."
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "parameters": [],
+              "description": "Is it acceptable, as its form sees it?"
+            },
+            {
+              "kind": "method",
+              "name": "reportValidity",
+              "parameters": [],
+              "description": "Check, and show the browser's message on the control."
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "description": "A swatch was picked.",
+              "type": {
+                "text": "CustomEvent<{ value: string }>"
+              }
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "current"
+            },
+            {
+              "name": "description"
+            },
+            {
+              "name": "field"
+            },
+            {
+              "name": "label"
+            },
+            {
+              "name": "name"
+            },
+            {
+              "name": "swatch"
+            },
+            {
+              "name": "swatches"
+            },
+            {
+              "name": "trigger"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaSwatchPicker",
+          "declaration": {
+            "name": "SherpaSwatchPicker",
+            "module": "dist/components/sherpa-swatch-picker/sherpa-swatch-picker.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-swatch-picker",
+          "declaration": {
+            "name": "SherpaSwatchPicker",
+            "module": "dist/components/sherpa-swatch-picker/sherpa-swatch-picker.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-switch/sherpa-switch.js",
       "declarations": [
         {

@@ -1,0 +1,31 @@
+<!--
+  sherpa-swatch-picker — a colour picked from a palette: a button wearing the colour now, which opens a grid of swatches.
+  The grid is native radios in a popover, so the arrows move the pick and Escape shuts it. Will, TODO 904
+
+  Public API:
+    data-label        its name, above the button
+    data-description  a helper line under its name
+    value             the colour picked: a CSS colour, as `var(--sherpa-data-viz-series-border-3)`; one the palette has not
+                      shows on the button, and no swatch is ticked
+    name              what a form submits it under
+    disabled          native boolean
+
+  Slots:
+    (none)
+
+  Fires:
+    change — a swatch was picked. detail: { value }
+-->
+<template id="default">
+  <div class="field" part="field">
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
+    <button type="button" class="trigger sherpa-border-edges" part="trigger" popovertarget="swatches" aria-haspopup="true">
+      <span class="current" part="current" aria-hidden="true"></span>
+      <span class="name" part="name"></span>
+      <i class="chevron sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
+    </button>
+    <fieldset class="swatches" part="swatches" id="swatches" popover aria-label="Colours"></fieldset>
+  </div>
+  <template class="swatch-tpl"><label class="swatch" part="swatch" data-attr-title="label"><input type="radio" name="swatch" data-attr-value="value" data-attr-aria-label="label" /><span class="chip" aria-hidden="true"></span></label></template>
+</template>

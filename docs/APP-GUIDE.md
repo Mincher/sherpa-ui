@@ -543,7 +543,7 @@ Stage 2): one added or moved before Stage 1 is Stage 1. Give `bindWorkflow` a
   <sherpa-stack data-gap="md">
     <sherpa-input-text name="label" data-label="Name" required></sherpa-input-text>
     <sherpa-input-text name="description" data-label="Description" data-multiline></sherpa-input-text>
-    <sherpa-input-text name="colour" data-label="Colour" data-type="color"></sherpa-input-text>
+    <sherpa-swatch-picker name="colour" data-label="Colour"></sherpa-swatch-picker>
   </sherpa-stack>
   <sherpa-container-footer slot="footer">
     <sherpa-button data-action="cancel">Cancel</sherpa-button>

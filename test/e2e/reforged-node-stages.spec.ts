@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
         <sherpa-stack data-gap="md">
           <sherpa-input-text name="label" data-label="Name" required></sherpa-input-text>
           <sherpa-input-text name="description" data-label="Description" data-multiline></sherpa-input-text>
-          <sherpa-input-text name="colour" data-label="Colour" data-type="color"></sherpa-input-text>
+          <sherpa-swatch-picker name="colour" data-label="Colour"></sherpa-swatch-picker>
         </sherpa-stack>
         <sherpa-container-footer slot="footer">
           <sherpa-button data-action="cancel">Cancel</sherpa-button>
@@ -100,6 +100,8 @@ test('Add stage before Stage 1 is Stage 1, and the old one Stage 2: a default na
   await more(page, 0, 'add-before');
   const w = await flow(page);
   expect(w.stages!.map((s) => [s.id, s.label])).toEqual([['stage-2', 'Stage 1'], ['stage-1', 'Stage 2']]);
+  // A new stage takes a palette colour at random (TODO 904).
+  expect(w.stages![0]!.colour).toMatch(/^var\(--sherpa-data-viz-series-border-(10|[1-9])\)$/);
   await expect(stage(page, 0)).toHaveAttribute('data-heading', 'Stage 1');
   await expect(stage(page, 1)).toHaveAttribute('data-heading', 'Stage 2');
   // Its nodes moved on with the old Stage 1, and the new one is empty.
@@ -123,14 +125,15 @@ test('Edit names, describes and colours a stage; Remove leaves its nodes where t
   await more(page, 1, 'edit');
   await page.locator('#stage sherpa-input-text[name="label"] input').fill('Deliver');
   await page.locator('#stage sherpa-input-text[name="description"] textarea').fill('Where the rows go out');
-  await page.locator('#stage sherpa-input-text[name="colour"] input').evaluate((i: HTMLInputElement) => {
-    i.value = '#2e9e6b';
-    i.dispatchEvent(new Event('input', { bubbles: true }));
-  });
+  // The colour: a swatch from the palette's grid (TODO 904).
+  await page.locator('#stage sherpa-swatch-picker[name="colour"] .trigger').click();
+  await page.locator('#stage sherpa-swatch-picker[name="colour"] .swatch[title="Green"]').click();
+  const green = 'var(--sherpa-data-viz-series-border-9)';
+  await expect(page.locator('#stage sherpa-swatch-picker[name="colour"]')).toHaveAttribute('value', green);
   await page.locator('#stage sherpa-button[data-action="save"]').click();
   await settle(page);
-  expect((await flow(page)).stages![1]).toMatchObject({ label: 'Deliver', description: 'Where the rows go out', colour: '#2e9e6b' });
-  await expect(stage(page, 1)).toHaveAttribute('data-colour', '#2e9e6b');
+  expect((await flow(page)).stages![1]).toMatchObject({ label: 'Deliver', description: 'Where the rows go out', colour: green });
+  await expect(stage(page, 1)).toHaveAttribute('data-colour', green);
   // Remove Stage 1: its nodes stay put, in no stage.
   const xs = (await flow(page)).nodes.map((n) => n.x);
   await more(page, 0, 'remove');

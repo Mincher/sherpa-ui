@@ -63,6 +63,7 @@ export {
   type NavConfig,
 } from './components/sherpa-nav/sherpa-nav.js';
 export { SherpaLoader } from './components/sherpa-loader/sherpa-loader.js';
+export { SherpaSwatchPicker } from './components/sherpa-swatch-picker/sherpa-swatch-picker.js';
 export { SherpaSwitch } from './components/sherpa-switch/sherpa-switch.js';
 export { SherpaSelectCheckbox } from './components/sherpa-select-checkbox/sherpa-select-checkbox.js';
 export { SherpaSelectRadio } from './components/sherpa-select-radio/sherpa-select-radio.js';

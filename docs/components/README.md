@@ -2,7 +2,7 @@
 
 # Components
 
-77 components. Each page is written from the component's spec and its example. 77 of 77 say when to use them.
+78 components. Each page is written from the component's spec and its example. 78 of 78 say when to use them.
 
 ## Chart
 
@@ -125,3 +125,4 @@
 | [sherpa-outlet](sherpa-outlet.md) | Where the route's Context is drawn. |
 | [sherpa-provider](sherpa-provider.md) | The data layer, over a SUBTREE of the page. |
 | [sherpa-router](sherpa-router.md) | The ONE owner of the URL, on the Navigation API. |
+| [sherpa-swatch-picker](sherpa-swatch-picker.md) | A colour picked from a palette: a button wearing the colour now, which opens a grid of swatches. |
