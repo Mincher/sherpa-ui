@@ -67,6 +67,7 @@ import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
 import type { Given, Need } from './node-input.js';
 import { nextPortalName } from './node-portals.js';
+import { modelChoices, providerChoices, runbookChoices, skillChoices } from './ai-catalog.js';
 import { report } from './report.js';
 
 /** What a socket carries: one value; an object — a record, rows, or a list, for an array is
@@ -95,11 +96,12 @@ export function truthy(value: unknown): boolean {
 
 /** The control a row draws: text, a message (text with values, `{node.name}`; plan 891), a number, a switch, tags (a
  *  list, D17) or a date and time; else the list a picklist reads — the row's own (`pick`), the fields, the field's values,
- *  units, a span's way (last or next), directions, presentations, Apply on, stores, scopes, a family's types or a graph's
- *  portal names (`rowChoices`). */
+ *  units, a span's way (last or next), directions, presentations, Apply on, stores, scopes, a family's types, a graph's
+ *  portal names, or the app's AI providers, a provider's models, its runbooks or its skills (`rowChoices`; plan 926). */
 export type RowControl =
   | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
-  | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal';
+  | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal'
+  | 'provider' | 'model' | 'runbook' | 'skill';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -233,6 +235,19 @@ const pickRow = (name: string, label: string, choices: readonly (readonly [strin
 });
 const objectIn = (name: string, label: string): RowKind => ({ name, label, input: 'object' });
 const [TITLE, MESSAGE, SENT] = [messageRow('title', 'Title', true), messageRow('message', 'Message'), propertyRow('sent', 'Sent', 'boolean')];
+
+/** The AI nodes' rows (plan 926): the model an AI node asks, and its instructions. */
+const MODEL_IN: RowKind = { name: 'model', label: 'Model', input: 'object', needs: 'model' };
+const INSTRUCTIONS = messageRow('instructions', 'Instructions');
+/** What an AI node EXPECTS, its Type picker, the same for each (D2 A): True/false forks, as a Condition does; the rest give
+ *  an Answer, a property. An AI answer is fuzzy, so the reader says what shape it takes, and the sockets follow. */
+const expects = (rows: readonly RowKind[], would: string): Readonly<Record<string, NodeType>> => ({
+  boolean: { label: 'True/false', help: 'True or false: a way on for each', branches: true, rows, would },
+  text: { label: 'Text', help: 'A text answer', rows: [...rows, propertyRow('answer', 'Answer', 'value')], would },
+  number: { label: 'Number', help: 'A number', rows: [...rows, propertyRow('answer', 'Answer', 'number')], would },
+  data: { label: 'Data', help: 'Rows of data', rows: [...rows, propertyRow('answer', 'Answer', 'rows')], would },
+  list: { label: 'List', help: 'A list of values', rows: [...rows, propertyRow('answer', 'Answer', 'list')], would },
+});
 
 /** What an Output does, each a type in a family (plan 891). The host app adds its own: `addTypes`. */
 const OUTPUTS: Readonly<Record<string, NodeType>> = {
@@ -491,6 +506,31 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'portal', graphs: ['workflow'], category: 'Utils',
   },
+  // AI (plan 926): a Provider and a Model say which model; a Prompt, a Runbook and a Skill ask it, each giving what it
+  // Expects. The app gives the lists (`registerAiCatalog`). Simulate asks no model: each says what it would do.
+  provider: {
+    heading: 'Provider', icon: 'buildings', description: 'Pick an AI provider',
+    rows: [{ name: 'provider', label: 'Provider', control: 'provider', output: 'object', gives: 'provider' }], model: 'aiProvider', graphs: ['workflow'], category: 'AI',
+  },
+  model: {
+    heading: 'Model', icon: 'microchip-ai', description: 'Pick a model of the joined provider',
+    rows: [{ name: 'provider', label: 'Provider', input: 'object', needs: 'provider' }, { name: 'model', label: 'Model', control: 'model', output: 'object', gives: 'model' }],
+    model: 'aiModel', graphs: ['workflow'], category: 'AI',
+  },
+  prompt: {
+    heading: 'Prompt', icon: 'chat', description: 'Ask the joined model, in your words', input: 'any', typeLabel: 'Expects', defaultType: 'text',
+    types: expects([MODEL_IN, messageRow('prompt', 'Prompt')], 'Would ask the model'), rows: [], model: 'aiPrompt', graphs: ['workflow'], category: 'AI',
+  },
+  runbook: {
+    heading: 'Runbook', icon: 'book-open-lines', description: 'Run a runbook, or write a new one', input: 'any', typeLabel: 'Expects', defaultType: 'text',
+    types: expects([MODEL_IN, { name: 'runbook', label: 'Runbook', control: 'runbook', input: 'value' }, INSTRUCTIONS], 'Would run the runbook'),
+    rows: [], model: 'aiRunbook', graphs: ['workflow'], category: 'AI',
+  },
+  skill: {
+    heading: 'Skill', icon: 'wand-magic-sparkles', description: 'Use a skill, or write a new one', input: 'any', typeLabel: 'Expects', defaultType: 'text',
+    types: expects([MODEL_IN, { name: 'skill', label: 'Skill', control: 'skill', input: 'value' }, INSTRUCTIONS], 'Would use the skill'),
+    rows: [], model: 'aiSkill', graphs: ['workflow'], category: 'AI',
+  },
   // One Output, many types; Run result, the default, is what an Output with no type was (plan 891). It may sit mid-graph:
   // its properties route on.
   output: {
@@ -557,7 +597,7 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
+export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
  *  its Custom Nodes, its page's Preset Filters (TODO 776). */
@@ -728,6 +768,8 @@ export interface RowFacts {
   count?: number;
   /** Every name the graph's portals hold, in order: what a portal's Name row picks. */
   portals?: readonly string[];
+  /** The provider joined into a Model node: what its Model row picks from (plan 926). */
+  provider?: unknown;
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
@@ -759,6 +801,10 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (fixed) return [...fixed];
   if (row.control === 'type') return facts.types && [...facts.types];
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
+  // The app's AI catalog (plan 926): one with none picked says so, as a pick does.
+  const ai = row.control === 'provider' ? providerChoices() : row.control === 'model' ? modelChoices(facts.provider)
+    : row.control === 'runbook' ? runbookChoices() : row.control === 'skill' ? skillChoices() : undefined;
+  if (ai) return [...(row.value != null && row.value !== '' ? [] : [{ value: '', label: 'Pick one' }]), ...ai];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;
   const open = row.control === 'field' ? Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }))

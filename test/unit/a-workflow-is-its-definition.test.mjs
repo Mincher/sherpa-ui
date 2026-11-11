@@ -74,7 +74,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  assert.deepEqual(drawnIn('workflow'), ['source', 'condition', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'output']);
+  assert.deepEqual(drawnIn('workflow'), ['source', 'condition', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'provider', 'model', 'prompt', 'runbook', 'skill', 'output']);
   // Sort and Group are kinds of their own, in Organise; Collection and its Count are gone, a Count a property row (plan 835).
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort.category, NODE_KINDS.group.category], [undefined, undefined, 'Organise', 'Organise']);
   assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'preset', 'saved', 'arrange', 'presentation', 'component', 'field']);

@@ -430,9 +430,16 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (node.kind === 'math') return math(node);
     if (node.kind === 'text') return text(node);
     if (node.kind === 'sort' || node.kind === 'group') return arranged(node, row);
-    // An Output fires nothing: each property sends a stand-in, so what it feeds runs too (plan 891).
-    if (node.kind === 'output') {
+    // A Provider or a Model sends its pick (plan 926).
+    if (node.kind === 'provider' || node.kind === 'model') return { kind: 'value', value: node.rows.find((r) => r.name === row)?.value };
+    // An Output, or an AI node, acts outside the graph, so it fires nothing: each output sends a stand-in, by what it gives,
+    // so what it feeds runs too (plans 891, 926). A True/false AI node goes on True.
+    if (node.kind === 'output' || node.would) {
+      if (node.branches) return { kind: 'value', value: row !== FALSE_SOCKET };
       const out = node.rows.find((r) => r.name === row);
+      if (out?.gives === 'rows') return { kind: 'rows', rows: [] };
+      if (out?.gives === 'number') return { kind: 'value', value: 0 };
+      if (out?.gives === 'list') return { kind: 'value', value: [] };
       return { kind: 'value', value: out?.gives === 'boolean' ? true : `${out?.label ?? row}, simulated` };
     }
     const ran = custom(node, row);

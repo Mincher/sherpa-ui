@@ -29,16 +29,17 @@ import { FALSE_SOCKET, SOCKET_WORDS, fixedChoices, kindOfNode, resolveKind, rowO
 
 /** What reaches an input, as finely as its source says: its socket's type, or rows, a list, a number or a Field's
  *  column, `{ rows, field }` (an object, plan 783 D2). */
-export type Given = 'value' | 'number' | 'boolean' | 'object' | 'list' | 'rows' | 'field';
+export type Given = 'value' | 'number' | 'boolean' | 'object' | 'list' | 'rows' | 'field' | 'provider' | 'model';
 
 /** What an input can use: its socket's type, or finer. `choice`: one of its fixed list; `numbers`: a list of numbers;
  *  `field`: a Field's column; `tested`: what a comparison tests, a column or one value. */
-export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'field' | 'tested';
+export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'field' | 'tested' | 'provider' | 'model';
 
 /** Each need and each given in words: the one place a warning's words come from. */
 export const INPUT_WORDS: Readonly<Record<Exclude<Need, 'choice'> | Given, string>> = {
   value: SOCKET_WORDS.value, object: SOCKET_WORDS.object, boolean: SOCKET_WORDS.boolean,
   number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', field: 'a field', tested: 'a field or a value',
+  provider: 'a provider', model: 'a model',
 };
 
 /** The field a column says: its name, its words, its type (none: text) and the values its store says it takes. */
@@ -175,6 +176,8 @@ function fits(need: Need, { kind, value, field }: Reached, choices: readonly Row
     case 'number': return (kind === 'value' || kind === 'number') && (!held || isNumber(value));
     case 'date': return column ? field?.type === 'date' : kind === 'value' && (!held || isDateTime(String(value)));
     case 'choice': return kind === 'value' && (!held || choices.some((c) => c.value === String(value)));
+    case 'provider': return kind === 'provider';
+    case 'model': return kind === 'model';
   }
 }
 

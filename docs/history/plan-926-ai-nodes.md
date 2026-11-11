@@ -91,6 +91,9 @@ The panel gets an **AI** section, in the AI ink: Provider, Model, Prompt, Runboo
 
 ## Decisions for Will
 
+**Will, 2026-11-11: A, A, A.**
+
+
 - **D1. Where the provider, model, runbook and skill lists come from.**
   - **A (recommended):** the host app registers them (`registerAiCatalog`). Sherpa ships none, and Demos registers Anthropic, a few runbooks and a few skills.
   - **B:** Sherpa ships a default Anthropic list, and an app adds more.

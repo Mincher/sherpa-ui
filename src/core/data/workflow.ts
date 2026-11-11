@@ -40,6 +40,7 @@ import { laneFaults, type NodeLane } from './node-lanes.js';
 import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
 import { connectionRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
 import { unreachedValues, valuesAt, valuesIn, type MessageSource } from './node-messages.js';
+import { NEW_CHOICE } from './ai-catalog.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -540,6 +541,14 @@ export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<Wo
   return sender(held, routes, kinds, fieldsReach(held, routes, kinds, facts))(from);
 }
 
+/** The provider a Model node's Provider row is joined to: the pick of the Provider node its route comes from (plan 926). */
+function providerInto(nodes: readonly WorkflowNode[], routes: readonly { from: string; to: string }[], id: string): unknown {
+  const route = routes.find((r) => r.to === `${id}/provider`);
+  const from = route && socketOf(route.from);
+  const node = from && nodes.find((n) => n.id === from.node);
+  return node?.kind === 'provider' ? node.values?.['provider'] : undefined;
+}
+
 /** A workflow as nodes and routes: each node its kind's, at its own place,
  *  with its values. A row a route drives is read only. Where the route comes from a node that
  *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
@@ -615,7 +624,10 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};
       // A Field row picks from the fields of the Source its rows come from (TODO 817).
       const fields = row.control === 'field' ? reach(node.id).fields : undefined;
+      // A Model row picks from the models of the Provider joined to its node (plan 926).
+      const provider = row.control === 'model' ? providerInto(workflow.nodes, flows, node.id) : undefined;
       const list = rowChoices({ ...plain, value: has }, {
+        ...(provider ? { provider } : {}),
         ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(family)! } : {}), ...(known ? { values: known } : {}), ...count,
         ...(row.control === 'portal' ? { portals: names } : {}),
       });
@@ -644,6 +656,14 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       };
       const ins = flows.filter((r) => r.to === address && !bad.includes(r));
       const coming = ins.flatMap((r) => reading(r) ?? []);
+      // An AI node asks a model, and a Model node a provider: with none joined, it says so (plan 926).
+      if (!ins.length && !bad.length && (row.needs === 'model' || row.needs === 'provider')) {
+        warnings.push({ row: row.name, words: row.needs === 'model' ? 'Join a Model' : 'Join a Provider' });
+      }
+      // A new runbook or skill is its instructions: with none, it has nothing to do.
+      if (row.name === 'instructions' && [values['runbook'], values['skill']].includes(NEW_CHOICE) && !String(has ?? '').trim() && !ins.length) {
+        warnings.push({ row: row.name, words: 'Write its instructions' });
+      }
       // A Field row says its field and its type; one the rows do not have warns, and sends nothing (D8). No Source, it says
       // so, where its header says nothing worse.
       const picked = row.gives === 'field' ? pickedField(held, flows, reach(node.id), address) : undefined;

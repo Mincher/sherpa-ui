@@ -1,8 +1,8 @@
 /**
  * ONLY A CONDITION FORKS — Will, 2026-11-06 (TODO 831): "not all nodes need a true/false socket. At this stage it's
  * probably just Condition nodes. Don't completely remove the ability for other nodes to support this. Just hide
- * them for now." `branches` stays a kind option: on for Condition alone, so it alone draws True on its header and a
- * False footer; any other kind draws none and can opt in again. A check that is no Condition (Time, Tag, a Preset,
+ * them for now." `branches` stays a kind option: on for Condition, so it draws True on its header and a False footer.
+ * An AI node opts in again, in its True/false type only (Will, plan 926 D2); any other kind draws none. A check that is no Condition (Time, Tag, a Preset,
  * a Saved filter, a use of a Custom Node) sends one boolean from its header, as `Out`, with no False.
  *
  *   node --test test/unit/only-a-condition-forks.test.mjs
@@ -21,9 +21,12 @@ const { nodeFlow } = await import(new URL('node-flow.js', core));
 const node = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
 const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
 
-test('Condition alone forks, in every type; every other shipped kind, type and Custom Node use does not', () => {
+test('Condition forks, in every type, and an AI node that expects True/false (plan 926 D2); every other shipped kind, type and Custom Node use does not', () => {
   const forks = Object.entries(NODE_KINDS).filter(([id, k]) => Object.keys(k.types ?? { one: 1 }).some((t) => resolveKind(k, t).branches)).map(([id]) => id);
-  assert.deepEqual(forks, ['condition']);
+  assert.deepEqual(forks, ['condition', 'prompt', 'runbook', 'skill']);
+  for (const id of ['prompt', 'runbook', 'skill']) {
+    assert.deepEqual(Object.keys(NODE_KINDS[id].types).filter((t) => resolveKind(NODE_KINDS[id], t).branches), ['boolean'], id);
+  }
   for (const type of Object.keys(NODE_KINDS.condition.types)) assert.equal(resolveKind(NODE_KINDS.condition, type).branches, true, type);
   assert.equal(nodeKindOf({ v: 1, label: 'Mine', inputs: [], outputs: [], nodes: [] }).branches, undefined);
 });
