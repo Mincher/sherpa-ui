@@ -14,6 +14,8 @@ test('the grip sits beside the first row, not centred on a tall header', async (
     el.show();
     await window.__settled();
     const sr = el.shadowRoot!;
+    // It shows only with the keys' focus (TODO 931).
+    (sr.querySelector('.grip') as HTMLElement).focus({ focusVisible: true } as FocusOptions);
     const header = sr.querySelector('.header')!.getBoundingClientRect();
     const grip = sr.querySelector('.grip')!.getBoundingClientRect();
     const title = sr.querySelector('.header')!.shadowRoot!.querySelector('.title')!.getBoundingClientRect();

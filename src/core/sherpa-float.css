@@ -35,8 +35,8 @@
 }
 :host(:state(moving)) .sherpa-float-bar { cursor: grabbing; }
 
-/* The grip shows where to take hold; it is never a target. Shown on hover, and
-   to the keys, which it takes: opacity, not visibility, keeps it a tab stop. */
+/* The grip is for the KEYS alone (Will, TODO 931): a pointer takes hold of the bar, whose cursor says so, and it is never
+   a target. Unfocused it shows nothing and takes no room, still a tab stop; focused, it shows what the arrows move. */
 .sherpa-float-grip {
   display: none;
   flex: none;
@@ -44,12 +44,15 @@
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   color: var(--sherpa-style-content-secondary, #35353d);
   pointer-events: none;
-  opacity: 0;
 }
 :host(:state(floating):not([data-maximised])) .sherpa-float-grip { display: inline-flex; }
-.sherpa-float-bar:hover .sherpa-float-grip,
-.sherpa-float-grip:focus-visible,
-:host(:state(moving)) .sherpa-float-grip { opacity: 1; }
+.sherpa-float-grip:not(:focus-visible) {
+  position: absolute;
+  inline-size: 1px; /* off-grid-ok */
+  block-size: 1px; /* off-grid-ok */
+  overflow: hidden;
+  clip-path: inset(50%);
+}
 .sherpa-float-grip:focus-visible {
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);

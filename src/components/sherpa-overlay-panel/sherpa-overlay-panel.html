@@ -80,8 +80,8 @@
     <!-- DEFAULT variant, not data-type="panel" — that inks the title link-blue.
          The header's own collapse/dismiss events are re-emitted as the panel's. -->
     <sherpa-container-header class="header sherpa-float-bar" part="header" data-bordered-close>
-      <!-- Floating, the header bar moves it, and this shows where to take hold: on hover,
-           and for the keys. A press on it is a press on the bar. TRAP T-a-floating-panel-is-a-state -->
+      <!-- Floating, the header bar moves it. This grip is for the keys alone: it shows only while it has their focus
+           (TODO 931). TRAP T-a-floating-panel-is-a-state -->
       <span slot="lead" class="grip sherpa-float-grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
             tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
       <slot name="icon" slot="icon" data-accepts="icon"></slot>

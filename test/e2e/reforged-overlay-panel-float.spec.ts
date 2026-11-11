@@ -175,12 +175,10 @@ test('its header bar drags it anywhere in the window, never past it; a press on 
   await stage(page);
   const from = await floatSmall(page);
 
-  // The grip shows while the bar is pointed at, and only then.
-  await page.mouse.move(8, H - 8);
-  await expect.poll(() => style(page, '.grip', 'opacity')).toBe('0');
+  // The bar takes hold, its cursor says so; the grip is for the keys alone, so a pointer on the bar shows none (TODO 931).
   await page.mouse.move(...(await bar(page)));
-  await expect.poll(() => style(page, '.grip', 'opacity')).toBe('1');
   expect(await style(page, '.header', 'cursor')).toBe('grab');
+  expect(await page.evaluate(() => document.getElementById('float')!.shadowRoot!.querySelector('.grip')!.getBoundingClientRect().width)).toBeLessThanOrEqual(1);
 
   await drag(page, await bar(page), [-500, 120]);
   const moved = await box(page);

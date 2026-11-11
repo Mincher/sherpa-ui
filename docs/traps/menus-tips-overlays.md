@@ -167,10 +167,12 @@ floats, as Dock says where it goes; Float goes while it is maximised.
   kept while docked; the first float lifts it in place, 16px in on each side.
 - **The header bar moves it**, by `dragXY` in `src/core/ui/drag-xy.ts`, beside
   `resizeByEdge`; a press on one of its controls is that control's. A 4px slop,
-  so a click on the title moves nothing. The grip shows where to take hold and
-  is never a target; it takes the arrows (Shift: four steps). It hides by
-  OPACITY: a `visibility: hidden` box takes no focus, so the keys could never
-  reach it. The corner grows to the window's edge from where the panel is, never
+  so a click on the title moves nothing. The grip is for the KEYS alone (Will,
+  TODO 931): it takes the arrows (Shift: four steps), is never a target, and
+  shows only while it has their focus; a pointer on the bar sees no grip, the
+  cursor says it. Unfocused it is clipped to a pixel, never `display: none` or
+  `visibility: hidden`: a box that is not drawn takes no focus, so the keys could
+  never reach it. The corner grows to the window's edge from where the panel is, never
   past it, or the clamp would push its left edge instead.
 - **A release outside the window is lost in Firefox** (Playwright's, at least):
   a move with no button held ends the drag where it got to, so the handle is
