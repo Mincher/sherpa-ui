@@ -44,3 +44,12 @@
 :host([data-category="presets"]) { --_category-ink: var(--sherpa-theme-border-active-2, #c046ff); /* theme-direct */ }
 :host([data-category="time"]) { --_category-ink: var(--sherpa-data-viz-series-border-6, #a88d59); /* theme-direct */ }
 :host([data-category="utils"]) { --_category-ink: var(--sherpa-data-viz-series-border-10, #8a8a9a); /* theme-direct */ }
+
+/* A PORTAL: an In blue, an Out orange — its header and its border, a nod to the game. Will, TODO 907 */
+:host([data-category="portal-in"]) { --_category-ink: var(--sherpa-theme-border-info-2, #008bba); /* theme-direct */ }
+:host([data-category="portal-out"]) { --_category-ink: var(--sherpa-theme-border-urgent-2, #ff7300); /* theme-direct */ }
+:host([data-category^="portal-"]) {
+  --_category-head: color-mix(in srgb, var(--_category-ink) 20%, var(--sherpa-style-surface-base, #ffffff));
+}
+/* On its card, where the regions sheet declares the border; picked, linked or warned, its state's look wins. */
+:host([data-category^="portal-"]:not([data-current], [data-linked], [data-warning])) .root { --_border: var(--_category-ink); }

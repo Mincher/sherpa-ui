@@ -248,3 +248,20 @@ test('a name or a route that would make a loop through a row is refused: the dra
   expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/rows → in', 'count/count → test/b']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
 });
+
+test('907: an In portal wears blue, an Out orange — its header and its border, a nod to the game', async ({ page }) => {
+  await bind(page, LINKED);
+  const looks = await page.evaluate((sel) => [...document.querySelectorAll<HTMLElement>(sel)].filter((n) => n.dataset['category']?.startsWith('portal-')).map((n) => {
+    const root = getComputedStyle(n.shadowRoot!.querySelector('.root')!);
+    const header = getComputedStyle(n.shadowRoot!.querySelector('.header')!);
+    return [n.dataset['category'], root.borderTopColor, header.backgroundColor];
+  }), cards);
+  const ink = { in: 'rgb(0, 139, 186)', out: 'rgb(255, 115, 0)' };
+  expect(looks.length).toBeGreaterThan(1);
+  for (const [category, border, fill] of looks) {
+    const side = category === 'portal-in' ? 'in' : 'out';
+    expect(border, `${category}'s border`).toBe(ink[side]);
+    expect(fill, `${category}'s header`).not.toBe('rgba(0, 0, 0, 0)');
+  }
+  expect(new Set(looks.map(([c]) => c))).toEqual(new Set(['portal-in', 'portal-out']));
+});

@@ -1479,7 +1479,9 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     put(el, 'data-input-socket', socketType(node, undefined, 'input'));
     put(el, 'data-output-socket', socketType(node, undefined, 'output'));
     el.toggleAttribute('data-input-many', !!node.many);
-    put(el, 'data-category', categorySlug(node.category));
+    // A portal's look is its side's: In blue, Out orange (Will, TODO 907).
+    const portal = portalOf(node);
+    put(el, 'data-category', portal ? `portal-${portal.side}` : categorySlug(node.category));
     put(el, 'data-scale-w', node.size ? String(node.size.w) : undefined);
     put(el, 'data-scale-h', node.size ? String(node.size.h) : undefined);
     el.toggleAttribute('data-branches', !!node.branches);
