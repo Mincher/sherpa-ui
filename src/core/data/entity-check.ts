@@ -34,16 +34,18 @@ export interface EntityFacts {
  *  own — with a Group Input `#in` where it has inputs and a Group Output `#out` where it has outputs,
  *  as a Custom Node's inside is drawn; and the kinds those need. TRAP T-a-graph-is-a-view-of-a-type */
 export function graphWorkflow(entity: Entity, kinds: Kinds = nodeKinds(), types: Readonly<Record<string, EntityType>> = entityTypes()): { workflow: WorkflowDefinition; kinds: Kinds } {
-  const { nodes, routes = [], ties, frames } = entity.graph;
+  const { nodes, routes = [], ties, frames, stages, lanes, beforeLanes } = entity.graph;
+  // Its canvas's layout, as it was saved (TODO 933).
+  const laid = { ...(stages ? { stages } : {}), ...(lanes ? { lanes } : {}), ...(beforeLanes ? { beforeLanes } : {}) };
   const inner = innerOf({ id: entity.id, kind: entityKind(entity) }, libraryOf([entity], types), kinds);
-  if (!inner) return { workflow: { v: 2, id: entity.id, label: entity.label, nodes, routes, ...(ties ? { ties } : {}), ...(frames ? { frames } : {}) }, kinds };
+  if (!inner) return { workflow: { v: 2, id: entity.id, label: entity.label, nodes, routes, ...(ties ? { ties } : {}), ...(frames ? { frames } : {}), ...laid }, kinds };
   const { inputs, outputs } = socketsOf(entity, types[entity.type]);
   const touched = (end: string): boolean => routes.some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
   const kept = (id: string): boolean => (id === '#in' ? !!inputs.length || touched('#in') : id === '#out' ? !!outputs.length || touched('#out') : true);
   const drawn = inner.workflow.nodes.filter((n) => kept(n.id));
   // Its own kind is not offered on its own canvas (a graph that holds itself is a loop); a group kind only where its node is drawn.
   const offered = Object.entries(inner.kinds).filter(([id]) => id !== entityKind(entity) && (!id.startsWith('#') || drawn.some((n) => n.kind === id)));
-  return { workflow: { ...inner.workflow, label: entity.label, nodes: drawn }, kinds: Object.fromEntries(offered) };
+  return { workflow: { ...inner.workflow, label: entity.label, nodes: drawn, ...laid }, kinds: Object.fromEntries(offered) };
 }
 
 /** The way round a loop of entities that starts at one, as labels; none when it does not come back. */

@@ -19,7 +19,7 @@
  */
 import type { NodeRoute, NodeTie } from './node-kinds.js';
 import type { NodeDefinition, NodeOutput, NodeSocket } from './node-library.js';
-import type { WorkflowNode } from './workflow.js';
+import type { WorkflowDefinition, WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
 
 /** The id of the envelope's schema, for the `$schema` of a file. */
@@ -39,6 +39,10 @@ export interface EntityGraph {
   routes?: readonly NodeRoute[];
   ties?: readonly NodeTie[];
   frames?: readonly NodeFrame[];
+  /** How its canvas lays it out, kept by a Save as the frames are (TODO 933). */
+  stages?: WorkflowDefinition['stages'];
+  lanes?: WorkflowDefinition['lanes'];
+  beforeLanes?: WorkflowDefinition['beforeLanes'];
 }
 
 /** One entity, as JSON. `origin` is set when it is read and never written. */

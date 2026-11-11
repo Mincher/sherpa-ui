@@ -126,11 +126,15 @@ export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' |
 }
 
 /** What a canvas's workflow keeps as an entity's graph: its own nodes (not `#in` and `#out`), its routes, ties and frames. */
-export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes' | 'ties' | 'frames'>): EntityGraph {
+export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>): EntityGraph {
   return {
     nodes: workflow.nodes.filter((n) => !n.id.startsWith('#')), routes: workflow.routes ?? [],
     ...(workflow.ties?.length ? { ties: workflow.ties } : {}),
     ...(workflow.frames?.length ? { frames: workflow.frames } : {}),
+    // Its stages and swimlanes, as its frames: a Save that dropped them lost them on the next load (TODO 933).
+    ...(workflow.stages?.length ? { stages: workflow.stages } : {}),
+    ...(workflow.lanes?.length ? { lanes: workflow.lanes } : {}),
+    ...(workflow.beforeLanes ? { beforeLanes: workflow.beforeLanes } : {}),
   };
 }
 

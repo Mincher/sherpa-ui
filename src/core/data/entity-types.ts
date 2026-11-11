@@ -161,10 +161,15 @@ export function offeredKinds<K extends Pick<NodeKind, 'model' | 'category'>>(
 }
 
 /** A workflow's graph as an entity of a type, ready to check and save. */
-export function entityOf(workflow: Pick<WorkflowDefinition, 'id' | 'label' | 'nodes' | 'routes' | 'ties' | 'frames'>, type: string, settings?: Readonly<Record<string, unknown>>): Entity {
+export function entityOf(workflow: Pick<WorkflowDefinition, 'id' | 'label' | 'nodes' | 'routes' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>, type: string, settings?: Readonly<Record<string, unknown>>): Entity {
+  // Its stages and swimlanes are kept as its frames are: a Save that dropped them lost them on the next load (TODO 933).
+  const { stages, lanes, beforeLanes } = workflow;
   return {
     $schema: ENTITY_SCHEMA, v: 1, type, id: workflow.id, label: workflow.label ?? workflow.id,
-    graph: { nodes: workflow.nodes, ...(workflow.routes ? { routes: workflow.routes } : {}), ...(workflow.ties ? { ties: workflow.ties } : {}), ...(workflow.frames ? { frames: workflow.frames } : {}) },
+    graph: {
+      nodes: workflow.nodes, ...(workflow.routes ? { routes: workflow.routes } : {}), ...(workflow.ties ? { ties: workflow.ties } : {}), ...(workflow.frames ? { frames: workflow.frames } : {}),
+      ...(stages ? { stages } : {}), ...(lanes ? { lanes } : {}), ...(beforeLanes ? { beforeLanes } : {}),
+    },
     ...(settings ? { settings } : {}),
   };
 }

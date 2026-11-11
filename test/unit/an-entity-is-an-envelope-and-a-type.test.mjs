@@ -188,3 +188,20 @@ test('a workflow becomes an entity of a type, and is checked as one', () => {
   assert.deepEqual(workflowFaults({ ...workflow, routes: workflow.routes.slice(0, 2) }, NODE_KINDS).filter((f) => /#out/.test(f)), []);
   assert.ok(editWorkflow);
 });
+
+test('a Save keeps the canvas\'s layout: stages, swimlanes and the places before them come back on the next load (933)', async () => {
+  const { LANES_BY_FAMILY } = await import(new URL('node-lanes.js', core));
+  let w = editWorkflow({ v: 2, id: 'laid', label: 'Laid out', nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 400, y: 0 }], routes: [] }, { addStage: {} });
+  w = editWorkflow(w, { lanes: LANES_BY_FAMILY });
+  const entity = T.entityOf(w, 'workflow');
+  assert.deepEqual(schemaCheck('entity.v1.json')(entity), []);
+  assert.deepEqual([entity.graph.stages.length, entity.graph.lanes.length, Object.keys(entity.graph.beforeLanes)], [2, LANES_BY_FAMILY.length, ['s', 'v']]);
+  // The editor's Save, the graph alone, keeps them too.
+  const { graphOfWorkflow } = await import(new URL('graph-views.js', core));
+  const saved = graphOfWorkflow(w);
+  assert.deepEqual([saved.stages, saved.lanes, saved.beforeLanes], [w.stages, w.lanes, w.beforeLanes]);
+  const back = C.graphWorkflow(entity).workflow;
+  assert.deepEqual([back.stages, back.lanes, back.beforeLanes], [w.stages, w.lanes, w.beforeLanes]);
+  // Off after the load: each node goes back.
+  assert.deepEqual(editWorkflow(back, { lanes: null }).nodes.map((n) => [n.id, n.x, n.y]), [['s', 0, 0], ['v', 400, 0]]);
+});
