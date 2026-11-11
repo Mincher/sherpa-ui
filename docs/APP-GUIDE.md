@@ -493,6 +493,37 @@ inside it the Group Input's and Output's, edit its definition's tags
 being edited is a draft in its tab until it is saved, as a workflow is.
 `T-a-node-panel-lists-under-sticky-headings`
 
+### Outputs
+
+An Output is ONE node of many types, its Type row first: Notification, On a view,
+Generated file, Toast, Alert, API response and Run result (the default, so an Output
+kept with no type is one). Each type has its parameters, its icon, and its
+properties: output rows, so an Output may feed the nodes after it. The Nodes panel
+lists Notify too: an Output of type Notification. Add your own types beside them:
+
+```js
+const ticket = {
+  label: 'Ticket', group: 'Request', icon: 'ticket', help: 'Open a ticket on a board', would: 'Would open a ticket',
+  rows: [
+    { name: 'summary', label: 'Summary', control: 'message', input: 'value' },
+    { name: 'priority', label: 'Priority', control: 'pick', input: 'value', choices: [{ value: 'p1', label: 'P1' }, { value: 'p2', label: 'P2' }] },
+    propertyRow('ticketId', 'Ticket ID', 'value'),
+  ],
+};
+const kinds = { ...NODE_KINDS, output: addTypes(NODE_KINDS.output, { ticket }) };
+```
+
+- A `message` row takes text with values, `{node.name}`: a row or property of a node
+  before it, or a field of the rows a Source sends. Its Insert value menu lists
+  them; one no route gives is a warning on its row. The node shows its first
+  lines, each value in purple.
+- A `pick` row picks from its own `choices`. A type's `group` is its section in
+  the Type list.
+- Simulate never fires an Output: its light says its `would`, and each property
+  sends a stand-in. Send a test, in its Details, fires `output-test`
+  `{ node, type, values }` on the canvas: send the test to the reader there.
+  Sherpa sends nothing.
+
 ### Stages
 
 A workflow's canvas has STAGES: columns across the top, left to right. A graph has

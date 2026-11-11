@@ -106,3 +106,53 @@ test('the Nodes panel\'s Notify places an Output of type Notification', async ({
   });
   expect(added).toEqual(['notification']);
 });
+
+/** Pick the Output, so the inspector shows it, open. */
+async function pickOutput(page: Page): Promise<void> {
+  const head = (await page.locator(output).boundingBox())!;
+  await page.mouse.click(head.x + head.width / 2, head.y + 10);
+  await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
+  await settle(page);
+}
+
+/** In WebKit the inspector's dialog is open, yet computes `display: none`, whatever node is picked: TODO 890. */
+const inspectorHidden = ({ browserName }: { browserName: string }): boolean => browserName === 'webkit';
+
+test('Insert value lists the values from before it, by node; a pick puts the value in the message', async ({ page, browserName }) => {
+  test.fixme(inspectorHidden({ browserName }), 'TODO 890: in WebKit the inspector is open but not drawn');
+  await pickOutput(page);
+  // One for each message field: Title's and Message's.
+  await expect(page.locator('#inspector sherpa-button.insert-value')).toHaveCount(2);
+  const insert = page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"]');
+  await insert.click();
+  const values = await insert.locator('sherpa-menu button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
+  expect(values).toEqual(['{s.count}', '{s.name}']);
+  await insert.locator('sherpa-menu button[value="{s.name}"]').click();
+  await settle(page);
+  await expect(page.locator(`${output} sherpa-node-row[data-message]`)).toHaveAttribute('data-message', 'Hi {Customers › Name} {Customers › Name}');
+});
+
+test('Send a test asks the host, with the node, its type and its values; Sherpa sends nothing', async ({ page, browserName }) => {
+  test.fixme(inspectorHidden({ browserName }), 'TODO 890: in WebKit the inspector is open but not drawn');
+  await pickOutput(page);
+  await page.evaluate(() => document.addEventListener('output-test', (e) => { (window as never as { asked: unknown }).asked = (e as CustomEvent).detail; }));
+  await page.locator('#inspector sherpa-button.send-test').click();
+  const asked = await page.evaluate(() => (window as never as { asked: unknown }).asked);
+  expect(asked).toEqual({ node: 'o', type: 'notification', values: { type: 'notification', message: 'Hi {s.name}' } });
+});
+
+test('the Output tab: the Preview of each message, and where each property is routed', async ({ page }) => {
+  await pickOutput(page);
+  const pairs = await page.evaluate(() => [...document.querySelectorAll('#inspector [data-tab="output"] sherpa-key-value-list')].map((list) => {
+    const keys = [...list.shadowRoot!.querySelectorAll('.key')].map((k) => k.textContent);
+    const values = [...list.shadowRoot!.querySelectorAll('.value')].map((v) => v.textContent);
+    return keys.map((k, i) => [k, values[i]]);
+  }));
+  const tabs = await page.locator('#inspector sherpa-tabs').first().evaluate((t) => [...t.querySelectorAll(':scope > [data-tab]')].map((p) => (p as HTMLElement).dataset['tab']));
+  expect(tabs.slice(0, 2)).toEqual(['details', 'output']);
+  // Not simulated: each value as written, and the panel says how to see them put in.
+  expect(pairs[0]).toEqual([['Title', '—'], ['Message', 'Hi {s.name}']]);
+  expect(pairs[1]).toEqual([['Sent', 'Not used'], ['Delivered', 'Not used'], ['Message ID', 'Not used']]);
+  await expect(page.locator('#inspector [data-tab="output"] .output-note')).toHaveText('Press Simulate to see the values put in.');
+});

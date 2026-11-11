@@ -92,6 +92,8 @@ import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-gr
 import { entityKind, type EntityRef } from '../data/entity.js';
 import { offeredKinds } from '../data/entity-types.js';
 import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel.js';
+import { outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
+import { valuesAt, valuesIn } from '../data/node-messages.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { isSource, pathRead } from '../data/node-paths.js';
@@ -102,9 +104,9 @@ import { TaskQueue, type Task, type TaskNotice } from '../data/task-queue.js';
 import { SherpaToast } from '../../components/sherpa-toast/sherpa-toast.js';
 import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
-import { portalLinks, portalOf } from '../data/node-portals.js';
+import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { FALSE_SOCKET, NODE_KINDS, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { FALSE_SOCKET, NODE_KINDS, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -1927,6 +1929,8 @@ export interface InspectOptions {
   flow?: ConditionFacts;
   /** What the node heard and said in the last simulation: its rows per socket. TODO 836 */
   data?: { node: SimulatedNode; stale: boolean };
+  /** An Output's: the values its messages can name, their samples, and Send a test. Plan 891 */
+  output?: OutputFacts;
 }
 
 /** What an inspector holds: its node, the fields by their element, and whom it tells. */
@@ -1940,10 +1944,10 @@ const inspecting = new WeakMap<HTMLElement, Inspecting>();
 
 const contentTab = new WeakMap<HTMLElement, string>();
 
-/** A node's body: Details, and a JSON and a Data tab when it has them. The reader's tab is kept per inspector. */
-function contentTabs(panel: HTMLElement, details: HTMLElement, json?: HTMLElement, data?: HTMLElement): HTMLElement {
-  if (!json && !data) return details;
-  const pages = [{ id: 'details', label: 'Details', el: details }, ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : [])];
+/** A node's body: Details, and an Output, a JSON and a Data tab when it has them. The reader's tab is kept per inspector. */
+function contentTabs(panel: HTMLElement, details: HTMLElement, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement): HTMLElement {
+  if (!json && !data && !output) return details;
+  const pages = [{ id: 'details', label: 'Details', el: details }, ...(output ? [{ id: 'output', label: 'Output', el: output }] : []), ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : [])];
   const asked = contentTab.get(panel);
   const current = pages.some((p) => p.id === asked) ? asked! : 'details';
   const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
@@ -2010,7 +2014,9 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     const cuts = options.onCut ? ins.map((r) => button(`Cut route from ${name(r.from)}`, () => options.onCut!(r))) : [];
     const custom = options.onCustom && row.editable && !ins.length && row.input === 'value' && !row.many && rowChoices(row) !== undefined
       ? [button('Custom value', () => options.onCustom!(row))] : [];
-    return [field, ...cuts, ...custom];
+    // A message takes the values its routes give, by Insert value (plan 891).
+    const insert = options.output && row.control === 'message' && row.editable && !routed.has(at) ? [valueMenu(field, row.label, options.output)] : [];
+    return [field, ...insert, ...cuts, ...custom];
   });
   // The whole node's routes: in, and out — its True and False where it forks.
   const header = document.createElement('sherpa-key-value-list');
@@ -2026,8 +2032,11 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   stack.setAttribute('data-scroll', '');
   const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
   const flow = nodeFlow(graph, node.id, options.flow);
-  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...remove);
-  const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined);
+  const test = options.output ? testButton(options.output) : undefined;
+  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...(test ? [test] : []), ...remove);
+  const routedTo = (row: string): string[] => graph.routes.filter((r) => r.from === `${node.id}/${row}`).map((r) => name(r.to));
+  const output = options.output ? outputPane(node, options.output, routedTo) : undefined;
+  const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined, output);
   const { tabs } = options;
   if (tabs) {
     const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
@@ -3454,10 +3463,30 @@ export function bindWorkflow(
     const rename: GraphRow[] = portal?.name ? [{ name: '#rename', label: 'Rename', control: 'text', value: portal.name, editable, hint: `Every portal named "${portal.name}" takes the new name` }] : [];
     return { ...node, rows: [...own, ...node.rows, ...rename] };
   };
+  /** An Output's inspector: the values its messages can name, each one's sample from the last simulation, and Send a test,
+   *  asked of the host as `output-test`: Sherpa sends nothing. Plan 891 */
+  const outputFacts = (node: GraphNode): OutputFacts => {
+    const flow = shown();
+    const ran = simulation?.result.nodes;
+    const held = flow.nodes.find((n) => n.id === node.id);
+    const sample = (key: string): unknown => {
+      const part = valuesIn(key)[0];
+      const out = part && ran?.[part.node]?.outgoing;
+      if (!part || !out) return undefined;
+      const slot = out.find((s) => s.socket === `${part.node}/${part.name}`);
+      return slot ? slot.value ?? slot.rows?.length : out.find((s) => s.rows?.length)?.rows?.[0]?.[part.name];
+    };
+    const type = typeOf(K()[node.kind] ?? {}, held?.values?.['type'])?.id;
+    return {
+      sources: valuesAt(flow.nodes, portalFlow(flow.nodes, flow.routes ?? []).routes, node.id, K(), facts.fieldsOf), sample, simulated: !!ran,
+      onTest: () => canvas.dispatchEvent(new CustomEvent('output-test', { bubbles: true, composed: true, detail: { node: node.id, ...(type ? { type } : {}), values: { ...held?.values } } })),
+    };
+  };
   const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
       onEdit, extra: extraFor(node), ...(doc?.visual ? { visual: doc.visual(node) } : {}), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}), flow: { inner: innerGraph },
       ...(simulation?.result.nodes[node.id] ? { data: { node: simulation.result.nodes[node.id]!, stale: simulation.stale } } : {}),
+      ...(node.kind === 'output' && !doc ? { output: outputFacts(node) } : {}),
       // With no pointer: beside the node it feeds, one column left, on the row's own line.
       onCustom: (row) => {
         const at = shown().nodes.find((n) => n.id === node.id);

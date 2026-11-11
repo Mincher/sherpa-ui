@@ -139,9 +139,16 @@ Markdown editor is TODO 892, after 891.
 - **Step 2** (`57beaaf35`): `node-messages.ts` — `valuesIn`, `valuesAt`, `unreachedValues`, `filled`; a value no route gives
   warns on its row.
 - **Step 3** (`afe8fa13f`): Simulate fires no Output; its light says what it would do; its properties send stand-ins.
-- **Step 4**: the Type list is a native `<select>` with an `<optgroup>` per family, each type's line its `title`. A native
+- **Step 4** (`358dd2746`): the Type list is a native `<select>` with an `<optgroup>` per family, each type's line its `title`. A native
   list draws no icon, in any engine; the header wears the picked type's icon. A message row shows its first two lines in
   the node (`sherpa-node-row`'s `data-message`), each value by its node's heading and label, in purple; the Details
   panel edits it in a multi-line field. The purple is the brand's 4 (`#8300B6`): no Style or Theme token is purple, so
   the Figma concept session is asked which name Figma binds. Notify is an alias (`NodeType.alias`): an item of its own
   in the Nodes panel, which places a Notification.
+- **Step 5**: the Details panel (`node-output-panel.ts`). Each message field has its Insert value (a menu of the values
+  before it, a section per node, each with its sample; a pick puts it at the field's end). Send a test fires
+  `output-test` `{ node, type, values }` on the canvas: the host sends it. The Output tab, after Details: the Preview, each
+  message with the last simulation's values put in, and each property with where it is routed, or "Not used". The
+  Preview has no Email / In app switch: a plain message reads the same on each, so the switch waits for the Markdown
+  editor (TODO 892). In WebKit the inspector is open but not drawn, whatever node is picked (TODO 890): the spec's two
+  inspector presses are `fixme` there.
