@@ -107,7 +107,7 @@ test('a collapsed node\'s name ends with what its first field holds: "Sort: Asce
   expect(await title()).toBe('Sort');
 });
 
-test('collapsed, every socket stands in one stack a side, in its order, from the header\'s middle; the node is as tall as its longest stack', async ({ page }) => {
+test('collapsed, every socket stands in one stack a side, in its order, in the header\'s middle; the node is its header alone, as tall as its longest stack (935)', async ({ page }) => {
   const centre = (r: DOMRect) => ({ x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) });
   const read = () => node(page, 'Sort').evaluate((el) => {
     const rect = (e: Element | null | undefined) => (e ? e.getBoundingClientRect() : null);
@@ -137,7 +137,14 @@ test('collapsed, every socket stands in one stack a side, in its order, from the
   // The Sort's header has no output: its first row output stands at the header's middle.
   expect(Math.abs(outs[0]!.y - head.y)).toBeLessThanOrEqual(1);
   expect(shut.height).toBeLessThan(open.height);
-  expect(shut.height).toBeLessThan(shut.header + (ins.length + 1) * step);
+  // The node is its header alone, grown to hold its taller stack (TODO 935).
+  expect(shut.height - shut.header).toBeLessThanOrEqual(2);
+  expect(shut.header).toBeGreaterThanOrEqual(Math.max(ins.length + 1, outs.length) * step);
+  // The stack stands in the header's middle.
+  const top = head.y - step / 2;
+  const bottom = Math.max(ins.at(-1)!.y, outs.at(-1)!.y) + step / 2;
+  const box = await node(page, 'Sort').evaluate((el) => el.shadowRoot!.querySelector('.header')!.getBoundingClientRect().toJSON());
+  expect(Math.abs((top - box.y) - (box.y + box.height - bottom))).toBeLessThanOrEqual(2);
 });
 
 // TRAP T-an-anchor-drawn-as-contents-has-no-box

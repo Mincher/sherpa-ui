@@ -446,14 +446,16 @@
 :host(:state(has-content-slot)) .body { display: flex; }
 .body ::slotted(:not(sherpa-node-row, .section)) { padding-inline: var(--_pad-inline); }
 
-/* ── COLLAPSED: the rows go; every socket stands in ONE stack a side, in its order — the header's, the rows', a fork's
-   False — each a wrapper's height under the last, from the header's middle. Each side's stack is one D of the node's
-   fill and border. The graph says each socket's place (`data-input-at`, …) and each side's count. Will, 2026-11-10 ── */
+/* ── COLLAPSED: the node is its header alone (Will, TODO 935); every socket stands in ONE stack a side, in its order — the
+   header's, the rows', a fork's False — each a wrapper's height under the last. The header grows to the taller stack, and
+   the stacks stand in its middle. Each side's stack is one D of the node's fill and border. The graph says each socket's
+   place (`data-input-at`, …) and each side's count. Will, 2026-11-10 ── */
 :host([data-collapsed]) {
   --_row-content: none;
   --_row-bare: none;
   --_stack-step: calc(var(--_socket, 16px) + 2 * var(--_hit, 6px));
-  --_stack-top: calc(var(--_head-h, 56px) / 2 - var(--_stack-step) / 2);
+  --_stack-h: calc(max(var(--_ins-now), var(--_outs-now), 1) * var(--_stack-step));
+  --_stack-top: calc((var(--_head-h, 56px) - var(--_stack-h)) / 2);
   /* Hiding the unconnected, only the connected sockets stand in the stacks. */
   --_connected-only: 0;
   --_ins-now: calc(var(--_ins, 0) * (1 - var(--_connected-only)) + var(--_ins-connected, 0) * var(--_connected-only));
@@ -464,13 +466,15 @@
   --_unconnected: hidden;
   --_unconnected-row: none;
 }
-/* The body holds no row's room: only what the stacks reach past the header. */
+/* The header is as tall as the taller stack, and a gap each side; the body holds no room: its rows' sockets stand in the
+   header's stacks. */
+:host([data-collapsed]) .header { min-block-size: calc(var(--_stack-h) + 2 * var(--sherpa-theme-gap-sm, 4px)); }
 :host([data-collapsed]) .body {
   display: block;
   position: static;
   gap: 0;
   padding-block: 0;
-  min-block-size: max(0px, calc(var(--_stack-top) + max(var(--_ins-now), var(--_outs-now)) * var(--_stack-step) - var(--_head-h, 56px) + var(--sherpa-theme-gap-sm, 4px)));
+  min-block-size: 0;
 }
 :host([data-collapsed]) .body ::slotted(.section) { display: contents; }
 :host([data-collapsed]) .body ::slotted(.section[data-bare]) { display: none; }
@@ -485,6 +489,11 @@
 :host([data-collapsed]) .foot { display: none; }
 :host([data-collapsed]) .socket-tab-false {
   inset-block-start: calc(var(--_stack-top) + (var(--_outs-now) - 1) * var(--_stack-step));
+  margin-block-start: 0;
+}
+/* The header's own sockets are each stack's first: at its top, not the grown header's middle. */
+:host([data-collapsed]) .header :is(.socket-tab-in, .socket-tab-out) {
+  inset-block-start: var(--_stack-top);
   margin-block-start: 0;
 }
 /* The stacks' strips take the place of each socket's own tab. */
