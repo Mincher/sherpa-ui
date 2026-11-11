@@ -2,7 +2,7 @@
 
 # Components
 
-76 components. Each page is written from the component's spec and its example. 76 of 76 say when to use them.
+77 components. Each page is written from the component's spec and its example. 77 of 77 say when to use them.
 
 ## Chart
 
@@ -113,6 +113,7 @@
 | [sherpa-filter-panel](sherpa-filter-panel.md) | The CONTENT of a panel: every filter scope the page offers, a section each. |
 | [sherpa-layout-canvas](sherpa-layout-canvas.md) | An infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. |
 | [sherpa-layout-panels](sherpa-layout-panels.md) | A panel AREA each side of the content. |
+| [sherpa-markdown-editor](sherpa-markdown-editor.md) | A Markdown text, edited as it reads: bold reads bold, a heading large, a list draws its bullets, and a mark shows while the caret is in its span. |
 | [sherpa-metric-group](sherpa-metric-group.md) | One row of 1 to 4 metrics, across every column of the layout grid. |
 | [sherpa-node](sherpa-node.md) | One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. |
 | [sherpa-node-frame](sherpa-node-frame.md) | A FRAME on a [sherpa-layout-canvas](sherpa-layout-canvas.md): nodes under one header, with a title, a line and Release. |

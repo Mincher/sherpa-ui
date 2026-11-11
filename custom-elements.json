@@ -6034,6 +6034,273 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-markdown-editor/sherpa-markdown-editor.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaMarkdownEditor",
+          "tagName": "sherpa-markdown-editor",
+          "customElement": true,
+          "description": "a Markdown text, edited as it reads: bold reads bold, a heading large, a list draws its bullets, and a mark shows while the caret is in its span. Its toolbar: Undo and Redo, the text style, Bold and Italic, the lists, Outdent and Indent, a link, a comment, code, an image and a table; and the switch to the Markdown itself. A value `{node.name}` reads as a purple chip of its words (`.valueLabels`), and `insertValue(key)` puts one at the caret. Figma \"Markdown Editor\" (ACP file, 2306:17891). Will, plan 892",
+          "attributes": [
+            {
+              "name": "data-description",
+              "description": "a line under the label",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-error",
+              "description": "a message under the box, in the critical bar",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-help-href",
+              "description": "where \"More about markdown\" goes (default CommonMark's help); empty hides it",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-label",
+              "description": "the field's label (hidden when empty)",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-view",
+              "description": "formatted | markdown: the text as it reads (default), or the Markdown itself. The switch writes it",
+              "type": {
+                "text": "'formatted' | 'markdown'"
+              }
+            },
+            {
+              "name": "disabled",
+              "description": "native attributes; readonly shows the text as it reads, with no toolbar",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "name": "name",
+              "description": "native attributes; readonly shows the text as it reads, with no toolbar",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "placeholder",
+              "description": "words in the empty box",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "readonly",
+              "description": "native attributes; readonly shows the text as it reads, with no toolbar",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "name": "required",
+              "description": "native attributes; readonly shows the text as it reads, with no toolbar",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "name": "value",
+              "description": "the Markdown text (also a JS property)",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "valueLabels",
+              "type": {
+                "text": "Readonly<Record<string, string>>"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "parameters": [],
+              "description": "Is it acceptable, as its form sees it?"
+            },
+            {
+              "kind": "method",
+              "name": "reportValidity",
+              "parameters": [],
+              "description": "Check, and show the browser's message on the control."
+            },
+            {
+              "kind": "method",
+              "name": "insertValue",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Put a value at the caret — over the selection — as typed: `input` goes out."
+            },
+            {
+              "kind": "method",
+              "name": "focus",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "text": "FocusOptions"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "The box takes the focus, in the view shown."
+            },
+            {
+              "kind": "method",
+              "name": "formDisabledCallback",
+              "parameters": [],
+              "description": "Inside a disabled `<fieldset>`, as by its own `disabled`."
+            },
+            {
+              "kind": "method",
+              "name": "formResetCallback",
+              "parameters": [],
+              "description": "Its form was reset: the text it was given in markup."
+            },
+            {
+              "kind": "method",
+              "name": "formStateRestoreCallback",
+              "parameters": [
+                {
+                  "name": "state",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Back, or a session restored: the text the form kept."
+            }
+          ],
+          "events": [
+            {
+              "name": "input",
+              "description": "The text changed: typed, pasted or pressed.",
+              "type": {
+                "text": "CustomEvent<{ value: string }>"
+              }
+            },
+            {
+              "name": "change",
+              "description": "The text changed while the editor held focus, and focus left it.",
+              "type": {
+                "text": "CustomEvent<{ value: string }>"
+              }
+            },
+            {
+              "name": "view-change",
+              "description": "The switch picked a view.",
+              "type": {
+                "text": "CustomEvent<{ view: 'formatted' | 'markdown' }>"
+              }
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "bar"
+            },
+            {
+              "name": "box"
+            },
+            {
+              "name": "content"
+            },
+            {
+              "name": "description"
+            },
+            {
+              "name": "divider"
+            },
+            {
+              "name": "field"
+            },
+            {
+              "name": "help"
+            },
+            {
+              "name": "label"
+            },
+            {
+              "name": "message"
+            },
+            {
+              "name": "section"
+            },
+            {
+              "name": "source"
+            },
+            {
+              "name": "style"
+            },
+            {
+              "name": "tools"
+            },
+            {
+              "name": "views"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaMarkdownEditor",
+          "declaration": {
+            "name": "SherpaMarkdownEditor",
+            "module": "dist/components/sherpa-markdown-editor/sherpa-markdown-editor.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-markdown-editor",
+          "declaration": {
+            "name": "SherpaMarkdownEditor",
+            "module": "dist/components/sherpa-markdown-editor/sherpa-markdown-editor.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-menu/sherpa-menu.js",
       "declarations": [
         {

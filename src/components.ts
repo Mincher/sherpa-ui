@@ -54,6 +54,7 @@ export { SherpaChip } from './components/sherpa-chip/sherpa-chip.js';
 export { SherpaContainer } from './components/sherpa-container/sherpa-container.js';
 export { SherpaStack } from './components/sherpa-stack/sherpa-stack.js';
 export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-text.js';
+export { SherpaMarkdownEditor } from './components/sherpa-markdown-editor/sherpa-markdown-editor.js';
 export {
   SherpaNav,
   type NavEntry,

@@ -1,0 +1,302 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-markdown-editor) {
+  --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+  --_status-surface-strong: initial;
+  --_status-data-viz-border: initial;
+}
+
+:host(sherpa-markdown-editor[data-error]) { --_mode: critical; --_mode-viz: critical; }
+:host(sherpa-markdown-editor[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+
+:host(sherpa-markdown-editor) .message {
+  --sherpa-style-border-base: var(--sherpa-style-saturated-critical-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-saturated-critical-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-saturated-critical-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-saturated-critical-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-saturated-critical-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-saturated-critical-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-saturated-critical-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-saturated-critical-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-saturated-critical-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-saturated-critical-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-saturated-critical-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-saturated-critical-surface-shadow);
+  --_status-surface-strong: var(--sherpa-style-saturated-critical-surface-base-2);
+}
+/* == end sherpa:tokens == */
+
+/* sherpa-markdown-editor.css — the field: its label, toolbar, box, message and help link; the text as it reads. */
+
+:host {
+  display: block;
+  container: sherpa-markdown-editor / inline-size;
+}
+
+/* The Style names the field binds: error and disabled are PINS. */
+.field {
+  --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
+  --_border-error: var(--sherpa-style-indicator-accent, #b72200);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+}
+
+.label {
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
+}
+.description {
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
+}
+.label:empty,
+.description:empty,
+.message:empty {
+  display: none;
+}
+
+/* ── The toolbar: its groups, a divider between, the view switch at its end. Figma: space/base around the switch's
+   divider, space/xs between the groups. */
+.bar,
+.tools {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-base, 16px);
+}
+.tools {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  min-inline-size: 0;
+}
+.views { margin-inline-start: auto; }
+.divider {
+  flex: none;
+  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
+  block-size: var(--sherpa-display-mode-space-sm, 12px);
+  background: var(--sherpa-style-border-base, #b3b3c3);
+}
+.bold::part(trigger) { font-weight: var(--sherpa-font-weight-bold, 700); }
+.italic::part(trigger) { font-style: italic; }
+
+/* A narrow field keeps its tools close, and drops the dividers. */
+@container sherpa-markdown-editor (max-width: 480px) {
+  .bar,
+  .tools { gap: var(--sherpa-display-mode-space-2xs, 4px); }
+  .tools > .divider { display: none; }
+}
+
+/* ── The box ─────────────────────────────────────────────────────────── */
+.box {
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.box:focus-within {
+  border-color: var(--_border-focus);
+  box-shadow: inset 0 0 0 2px var(--_border-focus);
+}
+:host([data-error]) .box:focus-within { box-shadow: inset 0 0 0 2px var(--_border-error); }
+
+.content,
+.source {
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  /* Figma's box is 96 high at rest: its text area, inside its padding. */
+  min-block-size: 80px;
+  max-block-size: 400px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+}
+.content:focus,
+.source:focus { outline: none; }
+.content {
+  position: relative;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* The Markdown itself: a plain text area, in the code face. */
+.source {
+  display: none;
+  resize: vertical;
+  field-sizing: content;
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+}
+:host([data-view="markdown"]) .content { display: none; }
+:host([data-view="markdown"]) .source { display: block; }
+.source::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
+:host(:state(empty)) .content::before {
+  content: attr(aria-placeholder);
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
+  pointer-events: none;
+}
+
+/* ── The text as it reads: a line a block ────────────────────────────── */
+.line { min-block-size: var(--sherpa-theme-content-line-height-base, 20px); }
+.line[data-block="heading"] { font-weight: var(--sherpa-font-weight-semibold, 600); }
+.line[data-level="1"] {
+  font-size: var(--sherpa-font-size-heading-h1, 24px);
+  line-height: var(--sherpa-theme-content-line-height-h1, 32px);
+}
+.line[data-level="2"] {
+  font-size: var(--sherpa-font-size-heading-h2, 20px);
+  line-height: var(--sherpa-theme-content-line-height-h2, 28px);
+}
+.line[data-level="3"] {
+  font-size: var(--sherpa-font-size-heading-h3, 16px);
+  line-height: var(--sherpa-theme-content-line-height-h3, 24px);
+}
+
+/* A list item: its bullet or number in the room its depth leaves. */
+.line:is([data-block="bullet"], [data-block="number"]) {
+  --_at: calc(var(--_depth, 0) * 24px);
+  position: relative;
+  padding-inline-start: calc(var(--_at) + 24px);
+}
+.line[data-depth="1"] { --_depth: 1; }
+.line[data-depth="2"] { --_depth: 2; }
+.line[data-depth="3"] { --_depth: 3; }
+.line[data-depth="4"] { --_depth: 4; }
+.line[data-depth="5"] { --_depth: 5; }
+.line[data-depth="6"] { --_depth: 6; }
+.line:is([data-block="bullet"], [data-block="number"])::before {
+  position: absolute;
+  inset-inline-start: var(--_at);
+  inline-size: 20px;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  color: var(--sherpa-style-content-secondary, #35353d);
+}
+.line[data-block="bullet"]::before { content: "•"; }
+.line[data-block="bullet"][data-depth="1"]::before,
+.line[data-block="bullet"][data-depth="3"]::before { content: "◦"; }
+.line[data-block="number"]::before { content: attr(data-number) "."; }
+
+.line[data-block="quote"] {
+  padding-inline-start: var(--sherpa-display-mode-space-sm, 12px);
+  border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
+  color: var(--sherpa-style-content-secondary, #35353d);
+}
+
+/* Code, a table and a rule keep their marks in sight, in the code face. */
+.line:is([data-block="code"], [data-block="fence"], [data-block="table"], [data-block="table-rule"]) {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+}
+.line:is([data-block="code"], [data-block="fence"]) {
+  padding-inline: var(--sherpa-display-mode-space-xs, 8px);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
+}
+.line:is([data-block="fence"], [data-block="table-rule"], [data-block="rule"]) { color: var(--sherpa-style-content-secondary, #35353d); }
+.line[data-block="table"]:not(.line[data-block="table"] + .line) { font-weight: var(--sherpa-font-weight-semibold, 600); }
+
+/* ── Inline ─────────────────────────────────────────────────────────── */
+/* A mark shows while the caret is in its span; a block's mark never: its look says it. */
+.mark { color: var(--sherpa-style-content-secondary, #35353d); }
+.lead,
+.span > .mark { display: none; }
+.span[data-open] > .mark { display: inline; }
+
+.span[data-kind="strong"] { font-weight: var(--sherpa-font-weight-bold, 700); }
+.span[data-kind="em"] { font-style: italic; }
+.span[data-kind="strike"] { text-decoration: line-through; }
+.span[data-kind="code"] {
+  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+}
+.span[data-kind="link"] {
+  color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */
+  text-decoration: underline;
+}
+.span[data-kind="image"] { text-decoration: underline dotted; }
+.span:is([data-kind="comment"], [data-kind="image"]) {
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-style: italic;
+}
+
+/* A value: its words in the node row's purple. */
+.value {
+  color: var(--sherpa-theme-content-active-1, #8300b6); /* theme-direct */
+  font-weight: var(--sherpa-font-weight-medium, 500);
+}
+
+/* ── Validation: a filled critical bar under the box ─────────────────── */
+:host([data-error]) .box:has(~ .message:not(:empty)) {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+.message {
+  margin-block-start: calc(var(--sherpa-theme-gap-sm, 4px) * -1);
+  padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
+  border-radius: 0 0 var(--sherpa-border-rounding-bottom-right, 4px) var(--sherpa-border-rounding-bottom-left, 4px);
+  background: var(--sherpa-style-surface-base, #b72200);
+  color: var(--sherpa-style-content-base, #ffffff);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+}
+
+/* ── More about markdown ─────────────────────────────────────────────── */
+.help {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  text-decoration: none;
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+}
+.help:hover { text-decoration: underline; }
+.help:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+.help-icon { --_icon-size: var(--sherpa-theme-size-icon-xs, 14px); }
+:host([data-help-href=""]) .help { display: none; }
+
+/* Read only: the text as it reads, as tall as it is, and nothing to press. */
+:host([readonly]) :is(.bar, .help) { display: none; }
+:host([readonly]) .content { min-block-size: 0; }
+
+/* ── Disabled: a PIN (inactive), never opacity ─────────────────────── */
+:host(:disabled) :is(.box, .content, .source) { cursor: not-allowed; }
+:host(:disabled) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
+
+@media (forced-colors: active) {
+  .value { text-decoration: underline; }
+}
