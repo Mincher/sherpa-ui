@@ -162,7 +162,7 @@ export {
   type SocketType,
 } from './core/data/node-kinds.js';
 /* The AI nodes' lists: the app's providers and models, runbooks and skills (plan 926). */
-export { NEW_CHOICE, aiCatalog, registerAiCatalog, type AiCatalog } from './core/data/ai-catalog.js';
+export { NEW_CHOICE, aiCatalog, registerAiCatalog, runbookGraphs, type AiCatalog } from './core/data/ai-catalog.js';
 /* A message field's values, `{node.name}` (plan 891). */
 export { filled, unreachedValues, valuesAt, valuesIn, type MessagePart, type MessageSource, type MessageValue } from './core/data/node-messages.js';
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */

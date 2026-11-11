@@ -88,7 +88,7 @@ import {
   checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
-import { aiCatalog } from '../data/ai-catalog.js';
+import { aiCatalog, aiWords, runbookGraphs } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
 import { entityKind, type EntityRef } from '../data/entity.js';
@@ -251,6 +251,8 @@ function shown(row: GraphRow): string {
   const value = row.value;
   if (value === undefined || value === null) return '';
   if (row.control === 'direction') return value === 'desc' ? 'Descending' : value === 'asc' ? 'Ascending' : String(value);
+  // A joined provider or model, by its words (plan 926).
+  if (row.needs === 'provider' || row.needs === 'model') return aiWords(row.needs, value) ?? String(value);
   return Array.isArray(value) ? value.join(', ') : String(value);
 }
 
@@ -2522,7 +2524,9 @@ export function bindWorkflow(
   // A graph's own Group Input and Output are drawn, never placed; the rest are what the graph shown may place.
   const refreshPanel = (): void => {
     if (doc) return void panel?.populate(doc.palette());
-    const placeable = Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#')));
+    // A runbook's steps are reached through its Runbook node, never placed (plan 926 D3).
+    const steps = runbookGraphs();
+    const placeable = Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#') && !steps.has(id)));
     // A loop is read through the draft: what it places now, not what was saved.
     void panel?.populate(paletteOf(offeredKinds(placeable, path.at(-1)?.kind ?? own, own ? { ...lib.nodes, [own]: { nodes: draft.nodes } } : lib.nodes)));
   };

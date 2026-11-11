@@ -12,6 +12,8 @@
  * - modelChoices — A Model row's list: the models of one provider.
  * - runbookChoices — A Runbook row's list: each runbook registered, then New runbook.
  * - skillChoices — A Skill row's list: each skill registered, then New skill.
+ * - runbookGraphs — The definitions the runbooks name: reached through a Runbook node, never placed as Custom Nodes.
+ * - aiWords — A provider's or a model's words, by its id: what a row it is joined to says.
  */
 import type { RowChoice } from './node-kinds.js';
 
@@ -74,4 +76,16 @@ export function runbookChoices(): RowChoice[] {
 /** A Skill row's list: each skill registered, then New skill. */
 export function skillChoices(): RowChoice[] {
   return [...listed(held.skills), { value: NEW_CHOICE, label: 'New skill' }];
+}
+
+/** The definitions the runbooks name: reached through a Runbook node, never placed as Custom Nodes (plan 926 D3). */
+export function runbookGraphs(): ReadonlySet<string> {
+  return new Set(Object.values(held.runbooks).flatMap((r) => (r.graph ? [r.graph] : [])));
+}
+
+/** A provider's or a model's words, by its id: what a row it is joined to says, "Claude Opus 5.5" for `opus`. */
+export function aiWords(needs: 'provider' | 'model', id: unknown): string | undefined {
+  if (typeof id !== 'string') return undefined;
+  if (needs === 'provider') return held.providers[id]?.label;
+  return Object.values(held.providers).find((p) => p.models[id])?.models[id];
 }

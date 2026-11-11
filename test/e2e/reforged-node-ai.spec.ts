@@ -59,6 +59,8 @@ const rows = (page: Page, heading: string) => node(page, heading).evaluate((el) 
 test('the panel lists the AI nodes under AI, in its ink', async ({ page }) => {
   const items = page.locator('sherpa-node-list sherpa-list-item[data-category="ai"]');
   expect(await items.evaluateAll((els) => els.map((el) => el.getAttribute('data-kind')))).toEqual(['provider', 'model', 'prompt', 'runbook', 'skill']);
+  // A runbook's steps are reached through its Runbook node: never a Custom Node of the panel.
+  expect(await page.locator('sherpa-node-list sherpa-list-item[data-kind="patch-review"]').count()).toBe(0);
 });
 
 test('a Model lists the joined Provider\'s models; Expects sets the sockets: True/false forks, Text gives an Answer', async ({ page }) => {
@@ -72,8 +74,9 @@ test('a Model lists the joined Provider\'s models; Expects sets the sockets: Tru
   await settle(page);
   await expect(node(page, 'Prompt')).toHaveAttribute('data-branches', '');
   expect(await rows(page, 'Prompt')).not.toContain('Answer');
-  // No warning: a model is joined.
+  // No warning: a model is joined, and its row says it by its words.
   await expect(node(page, 'Prompt')).not.toHaveAttribute('data-warning');
+  await expect(node(page, 'Prompt').locator('sherpa-node-row[data-socket-name="Model"]')).toHaveAttribute('data-label', 'Model: Claude Opus 5.5');
 });
 
 test('a Runbook\'s predefined runbook opens on a double click: its steps, read only, nothing to copy; a crumb goes back', async ({ page }) => {

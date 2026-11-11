@@ -110,3 +110,17 @@ The panel gets an **AI** section, in the AI ink: Provider, Model, Prompt, Runboo
 2. **The editor.** The panel's AI section, the pick rows from the catalog, the instructions row shown only for New, and drill into a runbook. End-to-end tests in three engines.
 3. **Demos.** The catalog, three runbook definitions, and an example workflow with a Prompt that expects True/false and forks to two Outputs.
 4. **Docs.** An APP-GUIDE section "AI nodes", the map, and the traps if any.
+
+## Built (2026-11-11)
+
+- **Step 1, the data layer** (`0f9a0744d`): `ai-catalog.ts` (`registerAiCatalog`, the picks), the five kinds, `expects()`
+  for the Type picker, `provider` and `model` in `Given` and `Need`, the two warnings, Simulate's stand-ins.
+- **Step 2, the editor** (`6d8e0abf9`, and the commit after it): the panel's AI section, a Runbook's runbook opening read
+  only on a double click (no Copy to my nodes), runbook steps never listed as Custom Nodes, a joined provider or model
+  said by its words.
+- **Step 3, Demos** (`eff77e2`): the catalog, a Runbook entity type with three preset runbooks, a Runbooks View, and
+  Device triage, by AI.
+
+Not as planned: the Instructions row always shows. A row cannot hide by another's value yet, so for a predefined
+runbook or skill it adds to it.
+

@@ -529,6 +529,33 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
   `{ node, type, values }` on the canvas: send the test to the reader there.
   Sherpa sends nothing.
 
+### AI nodes
+
+The AI category has five nodes. A **Provider** and a **Model** say which model; a
+**Prompt**, a **Runbook** and a **Skill** ask it. Each of the last three has
+**Expects** as its Type picker: True/false forks, as a Condition does; Text,
+Number, Data and List give an Answer, a property. With no Model joined, a node
+warns "Join a Model"; with no Provider, a Model warns "Join a Provider".
+
+Sherpa ships no providers, models, runbooks or skills. Register yours once, at
+load, before a graph opens:
+
+```js
+registerAiCatalog({
+  providers: { anthropic: { label: 'Anthropic', models: { opus: 'Claude Opus 5.5' } } },
+  runbooks: { 'patch-review': { label: 'Patch review', help: 'Check patches first', graph: 'runbook:patch-review' } },
+  skills: { 'summarise-tickets': { label: 'Summarise tickets' } },
+});
+```
+
+- A Model lists the models of the Provider joined to it.
+- A Runbook and a Skill list yours, then New; a new one is its Instructions.
+- A runbook's `graph` names a definition in your node library. A double click on
+  the Runbook node opens it read only, with the trail back, and the Nodes panel
+  never lists it as a Custom Node.
+- Simulate asks no model. A node says what it would do, and each answer is a
+  stand-in by its shape: True, words, 0, no rows, an empty list.
+
 ### Stages
 
 A workflow's canvas has STAGES: columns across the top, left to right. A graph has
