@@ -173,6 +173,21 @@ shown. First use: `sherpa-overlay-panel` (TODO 303).
 the chip shows again, inactive, since the page's definition sets the Primary
 (TODO 664). Not hidden, so not a `data-no-*` name.
 
+## 12. The graph's words — Will, 2026-11-11 (plan 931)
+
+**Today.** A graph's one link is a "route" (`graph.routes`, `NodeRoute`, `data-input-routed`), and a full path from a
+Source to an Output is a "path" (`node-paths.ts`). A portal's row that names a source's address is a "connection row".
+
+**Rule.** PRINCIPLES 19's graph words: a **Connection** is one link, a **Connector** the line drawn for it, a **Route**
+a full path from a Start node to an End node, a **Branch** one of the Routes leaving a node with several Connections.
+
+**Moves.** route → **connection** in the data and its API (`graph.connections`, `NodeConnection`, `keptConnections`,
+`data-input-connected`, …; entity v2, workflow v3, read once from the old); route → **connector** in the drawing
+(`svg.graph-connectors`, `connector-bends.ts`, `connector-path.ts`); path → **route** (`node-routes.ts`, `RouteRead`,
+`routeRead`) with `routesOf` and `branchesAt`; connection row → **address row** (`addressRow`, `addressOf`, D1). A
+Condition's `branches` stays (D3). Demos' Ticket output row `connection` → **`integration`** (D4). The URL router's
+route stays. Every move is in `docs/history/plan-931-graph-terms.md`.
+
 ---
 
 ## What a yes does

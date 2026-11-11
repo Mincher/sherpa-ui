@@ -150,6 +150,19 @@ Area. A View row picks THROUGH the chip, so the two never disagree. Add an Area
 only when one is asked for. "View" is kept for saved views — `SavedView` and a
 `PageState`'s `views`, `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events.
 
+**The graph's words** (Will, 2026-11-11, plan 931). One meaning each, so an agent says what a graph holds.
+
+| Term | Is | Where |
+|---|---|---|
+| **Connection** | one link from a node's socket to a node, or to one of its sockets | a graph's `connections`, `NodeConnection` |
+| **Connector** | the line drawn for one Connection; its bends and zip ties are the line's | the canvas, `connector-*` |
+| **Route** | a full path along Connections, from a Start node to an End node | `routesOf`, `routeRead` |
+| **Start node** | where a Route starts: a Source; inside a Custom Node, its Group Input | `isSource` |
+| **End node** | where a Route ends: an Output; inside a Custom Node, its Group Output | `isOutput` |
+| **Branch** | one of the Routes that leave a node with more than one outgoing Connection; a Condition that forks (`branches`) starts two | `branchesAt` |
+
+The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and keeps its word.
+
 **20. Tokens.** Read a token as `var(--sherpa-x, <the value it resolves to>)`.
 The fallback is required, and it is the token's own value. A private value is
 `--_*`. These are all projected from Figma by `scripts/project-tokens.mjs`:
