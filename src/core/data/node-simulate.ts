@@ -27,10 +27,11 @@
  * - trueOf — How many rows reach a node's True after a simulation: none where it has no True or has not run.
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
-import { filterTest, type Filter, type Row } from './store.js';
+import { filterTest, OP_LABELS, OP_TAKES, type Filter, type FilterOp, type Row } from './store.js';
+import { truthOf } from './node-input.js';
 import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
-import { FALSE_SOCKET, socketOf, steers, type DrawnGraph, type GraphNode } from './node-kinds.js';
+import { FALSE_SOCKET, socketOf, steers, truthy, type DrawnGraph, type GraphNode } from './node-kinds.js';
 
 /** What a simulation reads beyond its graph and rows: the clock a relative date means (left out, the machine's), and
  *  where a fetch stopped at its cap, by store, in words: a Source says it beside its rows. */
@@ -226,10 +227,12 @@ export function lightOf(node: SimulatedNode, ms: number): string {
   return [...words, time].filter(Boolean).join(' · ');
 }
 
-/** How many rows a fork's Results send after a simulation — what passed: none where it forks not or has not run. Its True
- *  steers, and carries none (TODO 939). */
+/** How many rows a fork's Results send after a simulation — what passed: none where it forks not, has not run, or no rows
+ *  came in. Its True steers, and carries none (TODO 939). */
 export function trueOf(node: SimulatedNode): number | undefined {
   if (!node.outgoing.some((s) => s.label === 'True')) return undefined;
+  // Only where rows came in: a test of one value, or an Or of counts, has no rows to pass (Will, 2026-11-11).
+  if (!node.incoming.some((s) => s.rows)) return undefined;
   return node.outgoing.find((s) => s.label === 'Results')?.rows?.length;
 }
 
@@ -269,11 +272,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return lists.length ? union(lists) : undefined;
   };
 
-  /** What a test says: the rows of its Field that its leaf keeps, and those it does not; a fault in words; or, where no rows
-   *  reach it, why: that was said upstream. */
-  const test = (node: GraphNode): { kept: Row[]; lost: Row[] } | string | { note: string } => {
+  /** What a test says: the rows of its Field that its leaf keeps, and those it does not; of one value, whether it passes; a
+   *  fault in words; or, where no rows reach it, why: that was said upstream. */
+  const test = (node: GraphNode): Verdict | string | { note: string } => {
     const read = leafOf(graph, node);
-    if ('fault' in read) return read.fault;
+    if ('fault' in read) return valueTest(node) ?? read.fault;
     const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
     const base = fed?.rows;
     if (!base) return { note: fed?.note ?? 'No rows reach it' };
@@ -282,6 +285,28 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     const lost: Row[] = [];
     for (const row of base) (keep(row) ? kept : lost).push(row);
     return { kept, lost };
+  };
+
+  /** A test of ONE value, with no Field: a Count into Greater than (Will, 2026-11-11) tests it against Value B, the Values,
+   *  or Start and End; Not and Is empty read its truth, and Is empty rows by whether any came. It passes or fails, and keeps
+   *  no rows. None where nothing it can test comes in. */
+  const valueTest = (node: GraphNode): Verdict | { note: string } | undefined => {
+    const came = into(node.id).map((p) => p.sent);
+    if (came.some((s) => s.kind === 'field')) return undefined;
+    const type = String(node.rows.find((r) => r.name === 'type')?.value ?? '');
+    const rows = came.find((s) => s.rows)?.rows;
+    if (type === 'empty' && rows) return { kept: [], lost: [], passed: !rows.length };
+    const sent = came.find((s) => s.kind === 'value' && s.value !== undefined);
+    if (!sent) return undefined;
+    if (type === 'not') return { kept: [], lost: [], passed: !(truthOf(sent.value) ?? truthy(sent.value)) };
+    if (type === 'empty') return { kept: [], lost: [], passed: !truthy(sent.value) };
+    if (!(type in OP_LABELS)) return undefined;
+    const range = OP_TAKES[type as FilterOp] === 'range';
+    const against = range ? [heard(node, 'start'), heard(node, 'end')] : [heard(node, 'b')];
+    const empty = against.find((a) => a.note);
+    if (empty) return { note: empty.note! };
+    const b = range ? against.map((a) => a.value) : against[0]!.value;
+    return { kept: [], lost: [], passed: filterTest(['value', type, b] as Filter, now)({ value: sent.value }) };
   };
 
   /** A Condition's verdict, by its kind: a test keeps rows; And and Or join their inputs, each true where it is above zero,

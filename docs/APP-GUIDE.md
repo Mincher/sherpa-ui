@@ -506,7 +506,8 @@ not empty. Their properties follow what comes in. Rows in: Results (Or, the rows
 every true input; And, the rows in all of them) and Count. Numbers in: Count, the sum
 of the true ones. Pass and Fail say how many inputs pass and how many fail. A test's
 Results into an And or an Or say its condition, as its True does, so the Query reads
-the same tree.
+the same tree. A Condition fed one value, as a Count, tests that value against Value B
+(Not and Is empty by its truth): it passes or fails, and keeps no rows.
 
 A Condition's Operation list follows what comes in on its header. A value or a column
 lists the operations its type takes (text, a number, a date, a boolean). Rows or an

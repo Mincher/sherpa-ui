@@ -269,7 +269,7 @@ function valueWords(row: GraphRow): string {
 
 /** Set an attribute, or take it away when there is nothing to say. */
 /** The header's words when a simulation finds no row true. */
-const NO_TRUE = 'No true matches: no row passes this test, so nothing reaches True.';
+const NO_TRUE = 'No true matches: no row passes this test, so True is false.';
 
 function put(el: Element, name: string, value: string | undefined): void {
   if (value === undefined || value === '') el.removeAttribute(name);

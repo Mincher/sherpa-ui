@@ -3,6 +3,7 @@
  * true or false and carries no rows. A node down a Branch not taken does not run. And and Or take anything, several: an
  * input is true where it is above zero, true, or not empty. Their Results are the rows of the true inputs, Count those
  * rows and the SUM of the true counts, Pass and Fail how many inputs pass and fail. A test's Results say its tree, as its True.
+ * A test of one value, as a Count into Greater than, passes or fails.
  *
  *   node --test test/unit/true-and-false-steer.test.mjs
  */
@@ -74,4 +75,21 @@ test('a test\'s Results into an Or say its tree, as its True does: the Query rea
   const where = (from) => nodeFlow(graphOf(nodes, [...base, ...from.map((x) => C(x, 'or'))]), 'or').definition.where;
   const tree = { or: [{ field: 'status', op: 'eq', value: 'active' }, { field: 'status', op: 'eq', value: 'trial' }] };
   assert.deepEqual([where(['a', 't']), where(['a/rows', 't/rows'])], [tree, tree]);
+});
+
+test('a test of one value passes or fails — a Count into Greater than, Not, Is empty — with no fault; no true-rows count where no rows came (Will, 2026-11-11)', async () => {
+  const { trueOf } = await import(new URL('node-simulate.js', core));
+  const rows = [{ id: 1, status: 'a' }, { id: 2, status: 'a' }, { id: 3, status: 'b' }];
+  const g = graphOf(
+    [N('s', 'source', { store: 'users' }), N('f', 'field', { field: 'status' }), N('t', 'condition', { type: 'eq', b: 'a' }),
+      N('g', 'condition', { type: 'gt', b: '1' }), N('n', 'condition', { type: 'not' }), N('e', 'condition', { type: 'empty' }),
+      ...counts(3, 0), N('or', 'condition', { type: 'or' })],
+    [C('s/rows', 'f'), C('f/field', 't'), C('t/count', 'g'), C('s/count', 'n'), C('s/count', 'e'), C('n0/value', 'or'), C('n1/value', 'or')],
+  );
+  const sim = simulateGraph(g, { users: rows });
+  assert.deepEqual(sim.faults, []);
+  // 2 rows pass t: 2 > 1 is true; Not 3 is false; 3 is not empty.
+  assert.deepEqual(['g', 'n', 'e'].map((id) => out(sim, id, id).value), [true, false, false]);
+  // The true-rows count, and its warning, only where rows came in.
+  assert.deepEqual(['t', 'g', 'n', 'or'].map((id) => trueOf(sim.nodes[id])), [2, undefined, undefined, undefined]);
 });
