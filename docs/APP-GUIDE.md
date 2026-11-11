@@ -499,7 +499,8 @@ An Output is ONE node of many types, its Type row first: Notification, On a view
 Generated file, Toast, Alert, API response and Run result (the default, so an Output
 kept with no type is one). Each type has its parameters, its icon, and its
 properties: output rows, so an Output may feed the nodes after it. The Nodes panel
-lists Notify too: an Output of type Notification. Add your own types beside them:
+lists Notify too: an Output of type Notification. Add your own types beside them,
+from your own file, before a graph opens: then every editor, check and save reads them.
 
 ```js
 const ticket = {
@@ -510,8 +511,11 @@ const ticket = {
     propertyRow('ticketId', 'Ticket ID', 'value'),
   ],
 };
-const kinds = { ...NODE_KINDS, output: addTypes(NODE_KINDS.output, { ticket }) };
+registerNodeTypes('output', { ticket });
 ```
+
+`addTypes(NODE_KINDS.output, { ticket })` gives the family with them, for one
+editor's `kinds` alone; its graphs then save only where you check them yourself.
 
 - A `message` row takes text with values, `{node.name}`: a row or property of a node
   before it, or a field of the rows a Source sends. Its Insert value menu lists

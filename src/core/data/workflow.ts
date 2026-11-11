@@ -30,10 +30,7 @@
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import {
-  NODE_KINDS, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
-  type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type SocketType,
-} from './node-kinds.js';
+import { nodeKinds, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -145,7 +142,7 @@ function retyped(route: NodeRoute, byId: ReadonlyMap<string, WorkflowNode>, kind
  *  another type has; and out of a portal's row whose route into an In is gone (TODO 826). The draft keeps them, so
  *  picking it back joins them again; none is drawn, none is a fault, and Save leaves them out (`finalGraph`). A route
  *  into a socket that is there is live, whatever it carries (TODO 770). Will, 2026-11-05 */
-export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = NODE_KINDS): NodeRoute[] {
+export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = nodeKinds()): NodeRoute[] {
   return flowOf(workflow, kinds).kept;
 }
 
@@ -200,7 +197,7 @@ function rowsOf(held: ReadonlyMap<string, WorkflowNode>, flow: PortalFlow, kinds
 /** A graph as Save writes it: each node with the values of its type's rows, and only the routes they join.
  *  What the draft keeps for another type is left out; so are the bends of a tied route, which the draft keeps
  *  unseen for its untying. Its ties keep the routes still there. Will, 2026-11-05 */
-export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'routes' | 'ties' | 'frames'>>>(workflow: W, kinds: Kinds = NODE_KINDS): W {
+export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'routes' | 'ties' | 'frames'>>>(workflow: W, kinds: Kinds = nodeKinds()): W {
   const gone = keptRoutes({ nodes: workflow.nodes, routes: workflow.routes ?? [] }, kinds);
   const nodes = workflow.nodes.map((node): WorkflowNode => {
     const lost = Object.keys(node.values ?? {}).filter((name) => keptRow(node, name, kinds));
@@ -285,7 +282,7 @@ function typedWants(type: unknown, value: unknown): string | undefined {
 /** Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  *  One that is no v2 is that fault alone. A value its row cannot hold — a stranger
  *  in a closed list, no date, a number off its step — is a fault where it is held and where a route brings it. */
-export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
+export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
   const { workflow, faults } = readWorkflow(given);
   if (!workflow) return faults;
   const problems = [...faults];
@@ -410,7 +407,7 @@ export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = NODE_KI
 }
 
 /** Check every node, kind and route; each fault reports, and it never throws. True when none is. */
-export function checkWorkflow(workflow: WorkflowDefinition, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
+export function checkWorkflow(workflow: WorkflowDefinition, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
   const problems = workflowFaults(workflow, kinds, facts);
   for (const problem of problems) {
     report({ code: 'workflow-definition', message: `checkWorkflow: ${problem}.`, at: { workflow: workflow?.id } });
@@ -535,7 +532,7 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRo
 
 /** What one output socket of a workflow sends, read through its routes and its portals: a Field's column, `{ rows, field }`,
  *  by what reaches its header and the fields of its Source. None: it sends nothing before a run. Plan 783 D2, TODO 779 */
-export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}, kinds: Kinds = NODE_KINDS): Reached | undefined {
+export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}, kinds: Kinds = nodeKinds()): Reached | undefined {
   const { workflow } = readWorkflow(given);
   if (!workflow) return undefined;
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
@@ -550,7 +547,7 @@ export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<Wo
  *  that holds none shows nothing, and says where its value comes from (TODO 774). What
  *  reaches an input that it cannot use reads null, and the node says why in `warnings`.
  *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
-export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): FramedGraph {
+export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = {}, kinds: Kinds = nodeKinds()): FramedGraph {
   const { workflow } = readWorkflow(given);
   if (!workflow) return { nodes: [], routes: [] };
   // A route kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
@@ -823,7 +820,7 @@ function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addS
 /** The workflow after one edit, a v2; the one given untouched. A
  *  value is typed as its row takes it. */
 export function editWorkflow(
-  given: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
+  given: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
 ): WorkflowDefinition {
   const workflow = readWorkflow(given).workflow;
   if (!workflow) return given as WorkflowDefinition;
@@ -1045,7 +1042,7 @@ function frameEdit(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { f
  * single value, or is not there. Plan 713 §5
  */
 export function addCustomValue(
-  given: WorkflowDefinition, to: string, at: { x: number; y: number }, kinds: Kinds = NODE_KINDS,
+  given: WorkflowDefinition, to: string, at: { x: number; y: number }, kinds: Kinds = nodeKinds(),
 ): WorkflowDefinition {
   const workflow = readWorkflow(given).workflow;
   const { node: id, row: name } = socketOf(to);

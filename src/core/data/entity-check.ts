@@ -10,7 +10,7 @@
  * - checkEntity — Check an entity; each fault reports. True when none is.
  */
 import { report } from './report.js';
-import { NODE_KINDS, type NodeKind } from './node-kinds.js';
+import { nodeKinds, type NodeKind } from './node-kinds.js';
 import { innerOf, kindsOf, nodeLibraryFaults } from './node-library.js';
 import { entityKind, isEntity, usesOf, type Entity } from './entity.js';
 import { asNode, entityTypes, libraryOf, socketsOf, takes, type EntityType } from './entity-types.js';
@@ -33,7 +33,7 @@ export interface EntityFacts {
 /** An entity's graph as the workflow its canvas edits — its id the entity's, so its tab draft is its
  *  own — with a Group Input `#in` where it has inputs and a Group Output `#out` where it has outputs,
  *  as a Custom Node's inside is drawn; and the kinds those need. TRAP T-a-graph-is-a-view-of-a-type */
-export function graphWorkflow(entity: Entity, kinds: Kinds = NODE_KINDS, types: Readonly<Record<string, EntityType>> = entityTypes()): { workflow: WorkflowDefinition; kinds: Kinds } {
+export function graphWorkflow(entity: Entity, kinds: Kinds = nodeKinds(), types: Readonly<Record<string, EntityType>> = entityTypes()): { workflow: WorkflowDefinition; kinds: Kinds } {
   const { nodes, routes = [], ties, frames } = entity.graph;
   const inner = innerOf({ id: entity.id, kind: entityKind(entity) }, libraryOf([entity], types), kinds);
   if (!inner) return { workflow: { v: 2, id: entity.id, label: entity.label, nodes, routes, ...(ties ? { ties } : {}), ...(frames ? { frames } : {}) }, kinds };
@@ -81,7 +81,7 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
   const all = [...others, entity];
   for (const fault of type.settingsFaults?.(entity.settings ?? {}) ?? []) problems.push(`${at}: ${fault}`);
 
-  const kinds: Kinds = { ...kindsOf(libraryOf(others, types)), ...(facts.kinds ?? NODE_KINDS) };
+  const kinds: Kinds = { ...kindsOf(libraryOf(others, types)), ...(facts.kinds ?? nodeKinds()) };
   // A use of an entity is a node whose kind is its kind; it is the one place a family does not bound. An old kind reads as today's.
   for (const node of readWorkflow({ v: 2, id: entity.id, nodes: entity.graph.nodes }).workflow?.nodes ?? []) {
     const kind = kinds[node.kind];

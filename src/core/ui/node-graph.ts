@@ -106,7 +106,7 @@ import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { FALSE_SOCKET, NODE_KINDS, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { FALSE_SOCKET, nodeKinds, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -2424,7 +2424,7 @@ const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) =>
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
-  { inspector, panel, session: kept$, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = nodeKinds(), library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;

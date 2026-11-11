@@ -33,7 +33,7 @@ test('an Output kept with no type is a Run result: its Type row, Status and Summ
 test('each type draws its own rows and icon; its properties are output rows, so it can route on', () => {
   const o = node(workflowGraph(flow({ type: 'notification', channels: ['email'], priority: 'high' })), 'o');
   assert.equal(o.icon, 'notifications');
-  assert.deepEqual(o.rows.map((r) => r.name), ['type', 'channels', 'to', 'title', 'message', 'url', 'priority', 'sent', 'delivered', 'messageId']);
+  assert.deepEqual(o.rows.map((r) => r.name), ['type', 'channels', 'to', 'title', 'message', 'attachments', 'url', 'priority', 'sent', 'delivered', 'messageId']);
   assert.deepEqual([row(o, 'channels').multiple, row(o, 'channels').input], [true, 'object']);
   assert.deepEqual([row(o, 'sent').property, row(o, 'sent').output], [true, 'boolean']);
   // A File routes on into the next Output's Data.
@@ -77,4 +77,22 @@ test('the panel lists Notify, which places a Notification, once; the host adds i
   const kinds = { ...NODE_KINDS, output: withTicket };
   const t = node(workflowGraph(flow({ type: 'ticket' }), {}, kinds), 'o');
   assert.deepEqual([t.icon, t.rows.map((r) => r.name)], ['ticket', ['type', 'summary']]);
+});
+
+test('an app registers its own types: every check and editor reads them; a clash is refused; it takes them back', async () => {
+  const { nodeKinds, registerNodeTypes } = await import(new URL('node-kinds.js', core));
+  const { workflowFaults } = await import(new URL('workflow.js', core));
+  const ticket = { label: 'Ticket', group: 'Request', icon: 'ticket', rows: [{ name: 'summary', label: 'Summary', control: 'message', input: 'value' }] };
+  const kept = flow({ type: 'ticket' });
+  assert.match(workflowFaults(kept).join(' '), /"ticket" as its Type, which is none of its choices/, 'not yet registered');
+  const back = registerNodeTypes('output', { ticket });
+  assert.equal(typeof back, 'function');
+  assert.ok(nodeKinds().output.types.ticket);
+  assert.equal(NODE_KINDS.output.types.ticket, undefined, 'the shipped registry is left as it is');
+  assert.deepEqual(workflowFaults(kept), [], 'a check with no kinds given reads the registered');
+  assert.equal(registerNodeTypes('output', { result: ticket }), undefined, 'a shipped type is not replaced');
+  assert.equal(registerNodeTypes('source', { ticket }), undefined, 'no family');
+  back();
+  assert.equal(nodeKinds().output.types.ticket, undefined);
+  assert.equal(nodeKinds(), NODE_KINDS);
 });

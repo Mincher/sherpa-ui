@@ -17,6 +17,8 @@
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
  * - addTypes — A family with more types: an app's own beside the shipped ones, as a Ticket Output.
+ * - registerNodeTypes — An app adds its own types to a shipped family, from its own file: an Output's Ticket.
+ * - nodeKinds — Every kind the library ships, with the types apps added: what a check and an editor read.
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - categorySlug — A category as the slug a node's, and its panel row's, `data-category` says.
@@ -65,6 +67,7 @@ import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
 import type { Given, Need } from './node-input.js';
 import { nextPortalName } from './node-portals.js';
+import { report } from './report.js';
 
 /** What a socket carries: one value; an object — a record, rows, or a list, for an array is
  *  an object (D17); a boolean, True or False; or, an input only, any of them (D1). */
@@ -235,7 +238,7 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     label: 'Notification', alias: 'Notify', would: 'Would send a notification', group: 'Notification', icon: 'notifications', help: 'Send a message by app, email or phone',
     rows: [
       pickRow('channels', 'Channels', [['app', 'In app'], ['email', 'Email'], ['push', 'Mobile push']], true),
-      textRow('to', 'To'), TITLE, MESSAGE, textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
+      textRow('to', 'To'), TITLE, MESSAGE, objectIn('attachments', 'Attachments'), textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
       SENT, propertyRow('delivered', 'Delivered', 'value'), propertyRow('messageId', 'Message ID', 'value'),
     ],
   },
@@ -278,6 +281,38 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
 /** A family with more types: the host app's own beside the shipped ones, as `addTypes(NODE_KINDS.output, { ticket })`. */
 export function addTypes(kind: NodeKind, types: Readonly<Record<string, NodeType>>): NodeKind {
   return { ...kind, types: { ...kind.types, ...types } };
+}
+
+/** The types each app adds to a shipped family, by the family's kind id. */
+const added = new Map<string, Readonly<Record<string, NodeType>>>();
+let joined: Readonly<Record<string, NodeKind>> | undefined;
+
+/** An app adds its own types to a shipped family, from its own file: an Output's Ticket. A kind that is no shipped family,
+ *  or a type the family ships, is refused and reported. It answers how to take them back, or none when refused. Plan 891 */
+export function registerNodeTypes(kind: string, types: Readonly<Record<string, NodeType>>): (() => void) | undefined {
+  const family = NODE_KINDS[kind];
+  if (!family?.types) {
+    report({ code: 'node-types', message: `registerNodeTypes: "${kind}" is no family the library ships.`, at: { kind } });
+    return undefined;
+  }
+  const clash = Object.keys(types).find((id) => Object.hasOwn(family.types!, id));
+  if (clash) {
+    report({ code: 'node-types', message: `registerNodeTypes: "${clash}" is a type "${kind}" ships, which an app does not replace.`, at: { kind, type: clash } });
+    return undefined;
+  }
+  added.set(kind, { ...added.get(kind), ...types });
+  joined = undefined;
+  return () => {
+    const now = Object.fromEntries(Object.entries(added.get(kind) ?? {}).filter(([id, t]) => types[id] !== t));
+    if (Object.keys(now).length) added.set(kind, now);
+    else added.delete(kind);
+    joined = undefined;
+  };
+}
+
+/** Every kind the library ships, with the types apps added (`registerNodeTypes`): what a check and an editor read. */
+export function nodeKinds(): Readonly<Record<string, NodeKind>> {
+  return (joined ??= added.size ? { ...NODE_KINDS, ...Object.fromEntries([...added].map(([id, types]) => [id, addTypes(NODE_KINDS[id]!, types)])) } : NODE_KINDS);
 }
 
 /** The operators whose value is a list: Is one of, Is not one of. */

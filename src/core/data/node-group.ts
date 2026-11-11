@@ -14,7 +14,7 @@
  * - headerInput — A route let go on a use's header: a new input of its definition, and the route into the use's new row.
  * - heldInputs — Each route a use's header holds from before, read once as its own new input; a preset's stays.
  */
-import { NODE_KINDS, FALSE_SOCKET, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
+import { NODE_KINDS, nodeKinds, FALSE_SOCKET, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
 import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tidyTags } from './tags.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
@@ -94,7 +94,7 @@ function freeName(base: string, taken: Set<string>): string {
  * and returns, and a result with a fault the workflow did not have.
  */
 export function groupNodes(
-  workflow: WorkflowDefinition, picked: readonly string[], library: NodeLibrary, ask: GroupAsk, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
+  workflow: WorkflowDefinition, picked: readonly string[], library: NodeLibrary, ask: GroupAsk, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
 ): Grouped {
   const all: Kinds = { ...kindsOf(library), ...kinds };
   const ids = new Set(picked.filter((id) => workflow.nodes.some((n) => n.id === id)));
@@ -199,7 +199,7 @@ export function groupNodes(
  * when the use is none. TRAP T-a-custom-node-header-adds-an-input
  */
 export function ungroupUse(
-  workflow: WorkflowDefinition, useId: string, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
+  workflow: WorkflowDefinition, useId: string, library: NodeLibrary, kinds: Kinds = nodeKinds(),
 ): { workflow: WorkflowDefinition } | { fault: string } {
   const use = workflow.nodes.find((n) => n.id === useId);
   const definition = use && library?.nodes?.[use.kind];
@@ -278,7 +278,7 @@ export function ungroupUse(
  * what is no use's header. TRAP T-a-custom-node-header-adds-an-input
  */
 export function headerInput(
-  workflow: WorkflowDefinition, route: NodeRoute, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
+  workflow: WorkflowDefinition, route: NodeRoute, library: NodeLibrary, kinds: Kinds = nodeKinds(),
 ): { workflow: WorkflowDefinition; library: NodeLibrary; id: string } | { fault: string } {
   const all: Kinds = { ...kindsOf(library), ...kinds };
   const { node: useId, row } = socketOf(route.to);
@@ -305,7 +305,7 @@ export function headerInput(
 /** Each route a use's header holds from a file saved before, read ONCE as its own new input, as
  *  headerInput makes one; a preset's stays where it is. Save writes the new form. */
 export function heldInputs(
-  workflow: WorkflowDefinition, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
+  workflow: WorkflowDefinition, library: NodeLibrary, kinds: Kinds = nodeKinds(),
 ): { workflow: WorkflowDefinition; library: NodeLibrary; ids: string[] } {
   let read = { workflow, library };
   const ids = new Set<string>();

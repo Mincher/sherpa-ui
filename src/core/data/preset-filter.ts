@@ -18,7 +18,7 @@ import { PRESET_FILTER, entityTypes, libraryOf, type EntityType } from './entity
 import { graphWorkflow } from './entity-check.js';
 import { innerOf, kindsOf } from './node-library.js';
 import { conditionAt, leafOf, type Said } from './node-flow.js';
-import { NODE_KINDS, type DrawnGraph, type GraphNode, type NodeKind } from './node-kinds.js';
+import { nodeKinds, type DrawnGraph, type GraphNode, type NodeKind } from './node-kinds.js';
 import { groupOf, type Condition, type ConditionLeaf } from './store.js';
 import { whereOfTree, type Where } from './where.js';
 import { editedCondition } from './query-graph.js';
@@ -77,7 +77,7 @@ function leavesRead(tree: Said): { tree: Condition } | { fault: string } {
 export function presetOfEntity(entity: Entity, facts: PresetFilterFacts = {}): { preset: PagePreset } | { fault: string } {
   const types = facts.types ?? entityTypes();
   const library = libraryOf([entity, ...(facts.entities ?? []).filter((e) => e.id !== entity.id)], types);
-  const kinds = { ...kindsOf(library), ...(facts.kinds ?? NODE_KINDS) };
+  const kinds = { ...kindsOf(library), ...(facts.kinds ?? nodeKinds()) };
   // Its Fields read its store's rows, where no Source's reach them: a preset of its store.
   const store = sourceOf(entity);
   const drawn = { ...(facts.fieldsOf ? { fieldsOf: facts.fieldsOf } : {}), ...(store ? { rowsFrom: store } : {}) };

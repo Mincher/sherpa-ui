@@ -35,7 +35,7 @@
 import { withoutBends } from './route-bends.js';
 import { tidyTags } from './tags.js';
 import { report } from './report.js';
-import { NODE_KINDS, rowOf, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
+import { NODE_KINDS, nodeKinds, rowOf, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
 
@@ -227,7 +227,7 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
 /** The graph inside one use, for the checks, the drawing and a runner: the definition's body with
  *  its Group Input and Output, and this instance's parameters over the defaults. None, the use is
  *  of no definition in the library. */
-export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, library: NodeLibrary, kinds: Kinds = NODE_KINDS): Inner | undefined {
+export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, library: NodeLibrary, kinds: Kinds = nodeKinds()): Inner | undefined {
   const definition = library?.nodes?.[use.kind];
   return definition && !shipped(kinds, use.kind) ? inside(use.id, definition, { ...kindsOf(library), ...kinds }, use.values) : undefined;
 }
@@ -277,7 +277,7 @@ function nested(
 /** Every fault in a library, in words: a library that is none, an id a shipped kind owns, a
  *  socket that is not one, a body that fails the workflow's own checks (named by its path), and a
  *  Custom Node that holds itself, at any depth. A kind the app adds is given in `kinds`. */
-export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
+export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
   const given = library as { v?: unknown; nodes?: unknown } | null;
   if (given?.v !== 1 || !given.nodes || typeof given.nodes !== 'object' || Array.isArray(given.nodes)) return ['it is not a Custom Node library: a v1 with its nodes by id'];
   const problems: string[] = [];
@@ -314,7 +314,7 @@ export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = NODE_KIND
 }
 
 /** Check a library; each fault reports, and it never throws. True when none is. */
-export function checkNodeLibrary(library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
+export function checkNodeLibrary(library: NodeLibrary, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
   const problems = nodeLibraryFaults(library, kinds, facts);
   for (const problem of problems) report({ code: 'node-library', message: `checkNodeLibrary: ${problem}.`, at: {} });
   return !problems.length;
@@ -322,7 +322,7 @@ export function checkNodeLibrary(library: NodeLibrary, kinds: Kinds = NODE_KINDS
 
 /** A workflow's faults, and the faults inside each use, named by path ("Org permissions ›
  *  Condition: …"). The same checks run in a use as at the top, so the same faults come. */
-export function workflowFaultsDeep(workflow: WorkflowDefinition, library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
+export function workflowFaultsDeep(workflow: WorkflowDefinition, library: NodeLibrary, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
   const base: Kinds = { ...kindsOf(library), ...kinds };
   return [...new Set(nested(workflow, base, base, library, facts, [], []))];
 }
@@ -406,7 +406,7 @@ export function staleUses(workflow: WorkflowDefinition, library: NodeLibrary): s
  * the EDITOR gives the draft and keeps the saved copy, so an updated instance holds its draft
  * changes until the reader saves or discards them (D11); the confirmation is its too.
  */
-export function updateInstance(workflow: WorkflowDefinition, id: string, library: NodeLibrary, kinds: Kinds = NODE_KINDS): WorkflowDefinition {
+export function updateInstance(workflow: WorkflowDefinition, id: string, library: NodeLibrary, kinds: Kinds = nodeKinds()): WorkflowDefinition {
   const use = workflow.nodes.find((n) => n.id === id);
   const definition = use && library?.nodes?.[use.kind];
   if (!use || !definition || shipped(kinds, use.kind)) return workflow;
@@ -418,7 +418,7 @@ export function updateInstance(workflow: WorkflowDefinition, id: string, library
 
 /** The workflow with every use of one definition brought to the library's (Update all instances on
  *  graph). Every workflow of the app is the caller's loop (Update all instances). */
-export function updateAll(workflow: WorkflowDefinition, kind: string, library: NodeLibrary, kinds: Kinds = NODE_KINDS): WorkflowDefinition {
+export function updateAll(workflow: WorkflowDefinition, kind: string, library: NodeLibrary, kinds: Kinds = nodeKinds()): WorkflowDefinition {
   return workflow.nodes.filter((n) => n.kind === kind).reduce((w, n) => updateInstance(w, n.id, library, kinds), workflow);
 }
 
