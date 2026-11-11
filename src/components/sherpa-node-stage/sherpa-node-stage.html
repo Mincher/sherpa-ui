@@ -2,8 +2,8 @@
   sherpa-node-stage — one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs
   along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands
   and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end,
-  Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Will,
-  2026-11-10 · TODO 893
+  Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge,
+  in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900). Will, 2026-11-10 · TODO 893
 
   Public API:
     data-heading      its name, on its bar (default Stage)
@@ -11,10 +11,13 @@
     data-colour       a CSS colour its bar and band wear; none, the default look
     data-x            its left edge, in plane px (default 0)
     data-w            its width, in plane px (default 320)
+    data-min-w        the least width its edge asks, in plane px: the separator's range. The HOST writes it
+    data-max-w        the most width its edge asks, in plane px. The HOST writes it
+    data-fixed        its edge takes no drag: the setting Allow stage resizing is off
     data-removable    More offers Remove: it is not the only stage. The HOST writes it
     data-first        it is the first stage: Move left is off. The HOST writes it
-    data-last         it is the last stage: Move right is off. The HOST writes it
-    data-locked       the host is read only: no Move and no More
+    data-last         it is the last stage: Move right is off, and it has no edge to drag. The HOST writes it
+    data-locked       the host is read only: no Move, no More and no edge
 
   Slots:
     (none)
@@ -22,6 +25,8 @@
   Fires:
     stage-menu-select — More's Edit, Add stage before, Add stage after or Remove was picked. detail: { action: 'edit' | 'add-before' | 'add-after' | 'remove' }
     stage-move — Move left or Move right was pressed. detail: { by } — -1 left, 1 right
+    stage-resize — its end edge was dragged, or moved by a key. detail: { width, done } — the width asked, in plane px;
+                   `done` on the release or the key
 -->
 <template id="default">
   <div class="column" part="column">
@@ -50,4 +55,7 @@
     <!-- The BAND, down the view: it takes no press. -->
     <div class="band" part="band" aria-hidden="true"></div>
   </div>
+  <!-- Its END edge, in the gap after it: drag it, or the arrow keys, Home and End. TRAP T-an-edge-resizes-its-box -->
+  <div class="edge sherpa-anchor" part="edge" role="separator" aria-orientation="vertical" aria-label="Resize stage" tabindex="0"></div>
+  <span class="tip sherpa-tip edge-tip" popover="manual" part="edge-tip" aria-hidden="true">Resize stage</span>
 </template>

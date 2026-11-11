@@ -406,7 +406,8 @@
         "label": { "description": "Its name, on its bar.", "type": "string", "minLength": 1 },
         "description": { "description": "Its line: the bar's tip.", "type": "string" },
         "colour": { "description": "A CSS colour its bar and band wear. Absent, the default look.", "type": "string" },
-        "x": { "description": "Its left edge, in plane px.", "type": "number" }
+        "x": { "description": "Its left edge, in plane px.", "type": "number" },
+        "w": { "description": "Its width, where its edge was dragged: its nodes may make it wider. Absent, as wide as they need.", "type": "number", "exclusiveMinimum": 0 }
       }
     },
     "lane": {

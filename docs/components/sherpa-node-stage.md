@@ -2,7 +2,7 @@
 
 # sherpa-node-stage
 
-One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Will, 2026-11-10 · TODO 893
+One STAGE of a workflow: a column across a [sherpa-layout-canvas](sherpa-layout-canvas.md), in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge, in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900). Will, 2026-11-10 · TODO 893
 
 |  |  |
 |---|---|
@@ -25,9 +25,12 @@ For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in it
 | `data-colour` | text |  | a CSS colour its bar and band wear; none, the default look |
 | `data-description` | text |  | its line: its bar's tip, under the name |
 | `data-first` | boolean |  | it is the first stage: Move left is off. The HOST writes it |
+| `data-fixed` | boolean |  | its edge takes no drag: the setting Allow stage resizing is off |
 | `data-heading` | text | `Stage` | its name, on its bar (default Stage) |
-| `data-last` | boolean |  | it is the last stage: Move right is off. The HOST writes it |
-| `data-locked` | boolean |  | the host is read only: no Move and no More |
+| `data-last` | boolean |  | it is the last stage: Move right is off, and it has no edge to drag. The HOST writes it |
+| `data-locked` | boolean |  | the host is read only: no Move, no More and no edge |
+| `data-max-w` | number |  | the most width its edge asks, in plane px. The HOST writes it |
+| `data-min-w` | number |  | the least width its edge asks, in plane px: the separator's range. The HOST writes it |
 | `data-removable` | boolean |  | More offers Remove: it is not the only stage. The HOST writes it |
 | `data-w` | number | `320` | its width, in plane px |
 | `data-x` | number | `0` | its left edge, in plane px |
@@ -40,12 +43,13 @@ Each one bubbles.
 |---|---|---|
 | `stage-menu-select` | `{ action: string }` | More's Edit, Add stage before, Add stage after or Remove was picked. |
 | `stage-move` | `{ by: -1 \| 1 }` | Move left or Move right was pressed. |
+| `stage-resize` | `{ done: boolean; width: number }` | Its end edge was dragged, or moved by a key. |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`actions`, `band`, `bar`, `column`, `heading`, `more`, `move-left`, `move-right`, `swatch`, `tip`
+`actions`, `band`, `bar`, `column`, `edge`, `edge-tip`, `heading`, `more`, `move-left`, `move-right`, `swatch`, `tip`
 
 ## CSS custom properties it reads
 
@@ -67,9 +71,19 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-2xs` | `.swatch` | `inline-size` |
 | `--sherpa-display-mode-size-2xs` | `.swatch` | `block-size` |
 | `--sherpa-display-mode-border-width-base` | `.band` | `border-inline` |
+| `--sherpa-layer-content` | `.edge` | `z-index` |
+| `--sherpa-display-mode-space-xs` | `.edge` | `inline-size` |
+
+## Settings it reads
+
+Each of the app's settings, onto one of its attributes:
+
+| Setting | Attribute |
+|---|---|
+| `resizeStages` | `data-fixed`, on while it is off |
 
 ## populate()
 
-`{ colour?, description?, first?, heading?, last?, locked?, removable?, w?, x? }`
+`{ colour?, description?, first?, fixed?, heading?, last?, locked?, maxW?, minW?, removable?, w?, x? }`
 
 Its declared props by name: `label` sets data-label.

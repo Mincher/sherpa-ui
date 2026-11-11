@@ -8262,7 +8262,7 @@
           "name": "SherpaNodeStage",
           "tagName": "sherpa-node-stage",
           "customElement": true,
-          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Will, 2026-11-10 · TODO 893",
+          "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge, in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900). Will, 2026-11-10 · TODO 893",
           "attributes": [
             {
               "name": "data-colour",
@@ -8286,6 +8286,13 @@
               }
             },
             {
+              "name": "data-fixed",
+              "description": "its edge takes no drag: the setting Allow stage resizing is off. On while the app's `resizeStages` setting is off.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-heading",
               "description": "its name, on its bar (default Stage)",
               "type": {
@@ -8295,16 +8302,30 @@
             },
             {
               "name": "data-last",
-              "description": "it is the last stage: Move right is off. The HOST writes it",
+              "description": "it is the last stage: Move right is off, and it has no edge to drag. The HOST writes it",
               "type": {
                 "text": "boolean"
               }
             },
             {
               "name": "data-locked",
-              "description": "the host is read only: no Move and no More",
+              "description": "the host is read only: no Move, no More and no edge",
               "type": {
                 "text": "boolean"
+              }
+            },
+            {
+              "name": "data-max-w",
+              "description": "the most width its edge asks, in plane px. The HOST writes it",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-min-w",
+              "description": "the least width its edge asks, in plane px: the separator's range. The HOST writes it",
+              "type": {
+                "text": "number"
               }
             },
             {
@@ -8345,6 +8366,13 @@
               "type": {
                 "text": "CustomEvent<{ by: -1 | 1 }>"
               }
+            },
+            {
+              "name": "stage-resize",
+              "description": "Its end edge was dragged, or moved by a key.",
+              "type": {
+                "text": "CustomEvent<{ done: boolean; width: number }>"
+              }
             }
           ],
           "cssParts": [
@@ -8359,6 +8387,12 @@
             },
             {
               "name": "column"
+            },
+            {
+              "name": "edge"
+            },
+            {
+              "name": "edge-tip"
             },
             {
               "name": "heading"
@@ -10647,7 +10681,7 @@
               "name": "setting-change",
               "description": "A reader changed a setting here: a bar's ⋮, the panel's mode.",
               "type": {
-                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
+                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'resizeStages' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
               }
             },
             {

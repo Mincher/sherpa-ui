@@ -1123,7 +1123,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-action-says-what-it-does](traps/filters.md#t-an-action-says-what-it-does) — button
 - [T-an-anchor-drawn-as-contents-has-no-box](traps/menus-tips-overlays.md#t-an-anchor-drawn-as-contents-has-no-box) — node-row
 - [T-an-area-holds-two-panels-stacked](traps/menus-tips-overlays.md#t-an-area-holds-two-panels-stacked) — layout-panels
-- [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — layout-canvas, layout-panels
+- [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — layout-canvas, layout-panels, node-stage
 - [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-toolbar
 - [T-an-expandable-row-is-not-a-destination](traps/other-components.md#t-an-expandable-row-is-not-a-destination) — nav-item
 - [T-an-icon-button-still-slots-its-menu](traps/other-components.md#t-an-icon-button-still-slots-its-menu) — button

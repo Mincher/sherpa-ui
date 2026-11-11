@@ -226,3 +226,43 @@ test('a FRAME dragged follows the nodes\' rule: without Shift its nodes stay in 
   await dragFrame({ x: next.x + next.width / 2 - frame.width / 2 + (h.x + 30 - frame.x), y: next.y + 200 }, true);
   expect([await stageOf(page, 'start'), await stageOf(page, 'sort')]).toEqual(['stage-2', 'stage-2']);
 });
+
+test('the edge between two stages, dragged, widens the one before as the one after narrows; no node moves; one step; the keys too (900)', async ({ page }) => {
+  await addStage(page);
+  type Two = [[number, number], [number, number]];
+  const bands = async (): Promise<Two> => page.locator('#cv > sherpa-node-stage').evaluateAll((els) => els.map((el) => [Number(el.getAttribute('data-x')), Number(el.getAttribute('data-w'))]) as Two);
+  const [[x1, w1], [x2, w2]] = await bands();
+  const xs = (await flow(page)).nodes.map((n) => n.x);
+  // The last stage has no edge; the first's shows a line on a hover.
+  await expect(stage(page, 1).locator('.edge')).toBeHidden();
+  const edge = stage(page, 0).locator('.edge');
+  const box = (await edge.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  expect(await edge.evaluate((el) => getComputedStyle(el, '::before').borderInlineStartColor)).not.toBe('rgba(0, 0, 0, 0)');
+  // Dragged 70 screen px on, at a zoom of 0.7: 100 plane px.
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 35, box.y + box.height / 2, { steps: 4 });
+  await page.mouse.move(box.x + box.width / 2 + 70, box.y + box.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await settle(page);
+  const [[a, aw], [b, bw]] = await bands();
+  expect([a, b]).toEqual([x1, x2 + 100]);
+  expect(Math.abs(aw - (w1 + 100))).toBeLessThanOrEqual(1);
+  expect(Math.abs(b + bw - (x2 + w2))).toBeLessThanOrEqual(1);
+  expect((await flow(page)).nodes.map((n) => n.x)).toEqual(xs);
+  // One step: Undo puts both back.
+  await page.locator('sherpa-node-toolbar sherpa-button.undo').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect(await bands()).toEqual([[x1, w1], [x2, w2]]);
+  // The keys: ArrowRight widens by one step; Home goes to the least, the room its nodes need.
+  await edge.focus();
+  await page.keyboard.press('ArrowRight');
+  await settle(page);
+  expect((await bands())[0][1]).toBeGreaterThan(w1);
+  await page.keyboard.press('Home');
+  await settle(page);
+  expect((await bands())[0][1]).toBe(Number(await stage(page, 0).getAttribute('data-min-w')));
+  // Locked out by the setting: no edge.
+  await stage(page, 0).evaluate((el) => el.setAttribute('data-fixed', ''));
+  await expect(edge).toBeHidden();
+});

@@ -535,7 +535,10 @@ A workflow's canvas has STAGES: columns across the top, left to right. A graph h
 one at least, Stage 1, round every node; the workflow keeps them in `stages`, and a
 node names its own in `stage`. Every node is in a stage: one let go in a stage joins
 it, one let go between or past them joins the nearest, and a stage grows to hold its
-nodes. Remove puts a stage's nodes in the stage before it. Each stage bar has Move left and Move right, and More: Edit, Add
+nodes. Remove puts a stage's nodes in the stage before it. The gap between two
+stages is a separator: drag it, or use the arrow keys, Home and End, and the stage
+before grows as the one after shrinks, no node moving (a stage keeps `w`, its width).
+The setting `resizeStages` (on) turns it off. Each stage bar has Move left and Move right, and More: Edit, Add
 stage before, Add stage after and Remove. A default name is its place (Stage 1,
 Stage 2): one added or moved before Stage 1 is Stage 1. Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:

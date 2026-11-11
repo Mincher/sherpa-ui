@@ -187,7 +187,7 @@ export {
 /* A FRAME: nodes under one header; only which nodes is kept. TRAP T-a-frame-is-drawn-round-its-nodes */
 export { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './core/data/node-frames.js';
 export {
-  DEFAULT_STAGE, STAGE_GAP, STAGE_MIN, STAGE_PAD, fitStages, heldBands, orderStages, restage, stageAt, stageBands, stageFaults, stageOf, stagesHeld, stagesOf,
+  DEFAULT_STAGE, STAGE_GAP, STAGE_LEAST, STAGE_MIN, STAGE_PAD, fitStages, heldBands, orderStages, resizeStage, restage, stageAt, stageBands, stageFaults, stageOf, stageWidthRange, stagesHeld, stagesOf,
   type NodeStage, type StageBand,
 } from './core/data/node-stages.js';
 export { copyNodes, pasteNodes, type NodeClip } from './core/data/node-clipboard.js';

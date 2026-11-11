@@ -1,7 +1,8 @@
 /**
  * node-stages-ui.ts — a workflow editor's STAGES on its canvas: one sherpa-node-stage each, in the canvas's `columns`
  * slot; on each, Move left and Move right, and More: Edit (a dialog: name, line, colour), Add stage before, Add stage
- * after and Remove. Each change is one edit through its host. Will, 2026-11-10 · TODO 893
+ * after and Remove; and the edge between two, dragged (TODO 900). Each change is one edit through its host. Will,
+ * 2026-11-10 · TODO 893
  *
  * Map:
  * - StageHost — What the stages need of their editor: its workflow, its write, and the stage dialog.
@@ -9,7 +10,7 @@
  * - bindStages — Bind a workflow editor's stages to its canvas.
  */
 import { editWorkflow, nodeWidth, type WorkflowDefinition } from '../data/workflow.js';
-import { heldBands, stageBands, stagesOf } from '../data/node-stages.js';
+import { heldBands, stageBands, stageWidthRange, stagesOf } from '../data/node-stages.js';
 import { randomSwatch } from './swatches.js';
 import { keepOrder } from './keep-order.js';
 
@@ -45,9 +46,12 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
   let editing: string | null = null;
   /** The colour the dialog opened with: only a change is written. */
   let opened = '';
+  /** An edge being dragged: the workflow as it stood at the press, and what the drag would make of it, drawn till the
+   *  release writes it as ONE step. */
+  let resizing: { from: WorkflowDefinition; now: WorkflowDefinition } | null = null;
 
   const draw = (): void => {
-    const w = host.workflow();
+    const w = resizing?.now ?? host.workflow();
     const stages = w ? stagesOf(w) : [];
     for (const [id, el] of drawn) {
       if (stages.some((s) => s.id === id)) continue;
@@ -72,6 +76,9 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       put(el, 'data-colour', stage.colour);
       el.setAttribute('data-x', String(band.left));
       el.setAttribute('data-w', String(band.right - band.left));
+      const range = stageWidthRange(w, stage.id, nodeWidth);
+      put(el, 'data-min-w', range ? String(range.least) : undefined);
+      put(el, 'data-max-w', range ? String(range.most) : undefined);
       el.toggleAttribute('data-removable', stages.length > 1 && !ro);
       el.toggleAttribute('data-first', i === 0);
       el.toggleAttribute('data-last', i === stages.length - 1);
@@ -151,12 +158,25 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     });
   };
 
+  /** An edge dragged or keyed: the stage this wide, the next as much narrower. Drawn as it goes; written on the release. */
+  const onResize = (event: Event): void => {
+    const id = stageOfEvent(event);
+    const { width, done } = (event as CustomEvent<{ width: number; done: boolean }>).detail;
+    const from = resizing?.from ?? host.workflow();
+    if (!id || !from || host.readOnly()) return;
+    const now = editWorkflow(from, { resizeStage: { id, w: width } });
+    resizing = done ? null : { from, now };
+    if (done && now !== from) host.write(now);
+    else draw();
+  };
+
   const save$ = host.dialog?.querySelector('[data-action="save"]');
   const cancel$ = host.dialog?.querySelector('[data-action="cancel"]');
   save$?.addEventListener('click', saveEdit);
   cancel$?.addEventListener('click', cancelEdit);
   canvas.addEventListener('stage-menu-select', onMenu);
   canvas.addEventListener('stage-move', onMove);
+  canvas.addEventListener('stage-resize', onResize);
 
   return {
     draw,
@@ -167,6 +187,7 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       cancel$?.removeEventListener('click', cancelEdit);
       canvas.removeEventListener('stage-menu-select', onMenu);
       canvas.removeEventListener('stage-move', onMove);
+      canvas.removeEventListener('stage-resize', onResize);
     },
   };
 }

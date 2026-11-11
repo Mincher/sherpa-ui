@@ -1469,6 +1469,8 @@ last values standing.
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
 - Site: `test/e2e/reforged-edge-resize.spec.ts`
+- Site: `src/components/sherpa-node-stage/sherpa-node-stage.html`
+- Site: `src/components/sherpa-node-stage/sherpa-node-stage.css`
 
 ### T-two-conditions-over-one-field-are-alternatives
 

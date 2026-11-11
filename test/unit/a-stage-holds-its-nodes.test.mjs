@@ -12,7 +12,7 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { editWorkflow, checkWorkflow, nodeWidth, NODE_WIDTH } = await import(new URL('workflow.js', core));
-const { stagesOf, stageBands, heldBands, fitStages, STAGE_MIN, STAGE_PAD, STAGE_GAP } = await import(new URL('node-stages.js', core));
+const { stagesOf, stageBands, heldBands, fitStages, stageWidthRange, STAGE_MIN, STAGE_PAD, STAGE_GAP } = await import(new URL('node-stages.js', core));
 const { onReport } = await import(new URL('report.js', core));
 
 const flow = () => ({
@@ -89,6 +89,36 @@ test('a new node goes in the stage under the point it was let go at, though its 
   w = editWorkflow(w, { add: { id: 'c', kind: 'sort', x: at, y: 200 } });
   assert.notEqual(editWorkflow(w, { restage: ['c'] }).nodes.find((n) => n.id === 'c').stage, 'stage-1', 'by its middle: not stage 1');
   assert.equal(editWorkflow(w, { restage: ['c'], by: at }).nodes.find((n) => n.id === 'c').stage, 'stage-1', 'by the point: stage 1');
+});
+
+test('an edge dragged makes a stage wider and the next as much narrower, no node moving; each keeps room for its nodes (900)', () => {
+  let w = editWorkflow(flow(), { addStage: {} });
+  w = fitStages(editWorkflow(editWorkflow(w, { node: 'b', set: { x: stageBands(w, nodeWidth).bands[1].left + 40 } }), { restage: ['b'] }), nodeWidth);
+  // Packed, stage 2 has no room before b: the edge stays (moving b is 901's). Moved on in its stage, b leaves room.
+  assert.equal(editWorkflow(w, { resizeStage: { id: 'stage-1', w: 900 } }), w);
+  w = fitStages(editWorkflow(w, { node: 'b', set: { x: w.nodes.find((n) => n.id === 'b').x + 200 } }), nodeWidth);
+  const [one, two] = stageBands(w, nodeWidth).bands;
+  const xs = w.nodes.map((n) => n.x);
+  // Stage 1 wider by 40: stage 2 starts 40 on, its end where it was.
+  const wide = fitStages(editWorkflow(w, { resizeStage: { id: 'stage-1', w: one.right - one.left + 40 } }), nodeWidth);
+  const [a, b] = stageBands(wide, nodeWidth).bands;
+  assert.deepEqual([a.left, a.right, b.left, b.right], [one.left, one.right + 40, two.left + 40, two.right]);
+  assert.deepEqual(wide.nodes.map((n) => n.x), xs, 'no node moves');
+  assert.equal(wide.stages[0].w, a.right - a.left);
+  // Too far either way: the edge stops at room for each stage's nodes.
+  const range = stageWidthRange(w, 'stage-1', nodeWidth);
+  const node = w.nodes.find((n) => n.id === 'a');
+  assert.equal(range.least, node.x + nodeWidth(node) + STAGE_PAD - one.left);
+  const tight = fitStages(editWorkflow(w, { resizeStage: { id: 'stage-1', w: 10 } }), nodeWidth);
+  assert.equal(stageBands(tight, nodeWidth).bands[0].right - one.left, range.least);
+  const far = fitStages(editWorkflow(w, { resizeStage: { id: 'stage-1', w: 99999 } }), nodeWidth);
+  const nb = w.nodes.find((n) => n.id === 'b');
+  assert.equal(stageBands(far, nodeWidth).bands[1].left, nb.x - STAGE_PAD, 'stage 2 keeps its pad before b');
+  assert.deepEqual(far.nodes.map((n) => n.x), xs);
+  // The last stage has no edge to drag.
+  assert.equal(editWorkflow(w, { resizeStage: { id: 'stage-2', w: 900 } }), w);
+  assert.equal(stageWidthRange(w, 'stage-2', nodeWidth), null);
+  assert.equal(checkWorkflow(wide), true);
 });
 
 test('Edit names, lines and colours a stage; an empty line or colour takes it away', () => {

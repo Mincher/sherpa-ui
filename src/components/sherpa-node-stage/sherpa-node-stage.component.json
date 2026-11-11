@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-stage",
-  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Will, 2026-11-10 · TODO 893",
+  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge, in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900). Will, 2026-11-10 · TODO 893",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -13,162 +13,184 @@
     "default"
   ],
   "anatomy": {
-    "root": {
-      "el": "div",
-      "class": "column",
-      "part": "column",
-      "children": [
-        {
-          "el": "div",
-          "class": "bar sherpa-anchor",
-          "part": "bar",
-          "attrs": {
-            "role": "group",
-            "tabindex": "0",
-            "aria-roledescription": "stage",
-            "aria-label": "Stage",
-            "data-attr-aria-label": "data-heading"
-          },
-          "children": [
-            {
-              "el": "span",
-              "class": "swatch",
-              "part": "swatch",
-              "attrs": {
-                "aria-hidden": "true"
-              }
+    "roots": [
+      {
+        "el": "div",
+        "class": "column",
+        "part": "column",
+        "children": [
+          {
+            "el": "div",
+            "class": "bar sherpa-anchor",
+            "part": "bar",
+            "attrs": {
+              "role": "group",
+              "tabindex": "0",
+              "aria-roledescription": "stage",
+              "aria-label": "Stage",
+              "data-attr-aria-label": "data-heading"
             },
-            {
-              "el": "span",
-              "class": "heading sherpa-truncate",
-              "part": "heading",
-              "attrs": {
-                "data-text": "data-heading"
-              }
-            },
-            {
-              "el": "span",
-              "class": "actions",
-              "part": "actions",
-              "children": [
-                {
-                  "el": "sherpa-button",
-                  "class": "move move-left",
-                  "part": "move-left",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-look": "transparent",
-                    "data-icon-start": "chevron-left",
-                    "aria-label": "Move left",
-                    "data-tip": "Move left"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "move move-right",
-                  "part": "move-right",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-look": "transparent",
-                    "data-icon-start": "chevron-right",
-                    "aria-label": "Move right",
-                    "data-tip": "Move right"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "more",
-                  "part": "more",
-                  "attrs": {
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-look": "transparent",
-                    "data-icon-start": "ellipsis-horizontal",
-                    "aria-label": "Stage options",
-                    "aria-haspopup": "menu"
-                  },
-                  "children": [
-                    {
-                      "el": "sherpa-menu",
-                      "attrs": {
-                        "slot": "menu",
-                        "data-align": "end"
-                      },
-                      "children": [
-                        {
-                          "el": "button",
-                          "attrs": {
-                            "type": "button",
-                            "value": "edit"
-                          }
-                        },
-                        {
-                          "el": "button",
-                          "attrs": {
-                            "type": "button",
-                            "value": "add-before"
-                          }
-                        },
-                        {
-                          "el": "button",
-                          "attrs": {
-                            "type": "button",
-                            "value": "add-after"
-                          }
-                        },
-                        {
-                          "el": "button",
-                          "class": "remove",
-                          "attrs": {
-                            "type": "button",
-                            "value": "remove"
-                          }
-                        }
-                      ]
-                    }
-                  ]
+            "children": [
+              {
+                "el": "span",
+                "class": "swatch",
+                "part": "swatch",
+                "attrs": {
+                  "aria-hidden": "true"
                 }
-              ]
-            }
-          ]
-        },
-        {
-          "el": "span",
-          "class": "tip sherpa-tip",
-          "part": "tip",
-          "attrs": {
-            "popover": "manual",
-            "aria-hidden": "true"
+              },
+              {
+                "el": "span",
+                "class": "heading sherpa-truncate",
+                "part": "heading",
+                "attrs": {
+                  "data-text": "data-heading"
+                }
+              },
+              {
+                "el": "span",
+                "class": "actions",
+                "part": "actions",
+                "children": [
+                  {
+                    "el": "sherpa-button",
+                    "class": "move move-left",
+                    "part": "move-left",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-size": "sm",
+                      "data-look": "transparent",
+                      "data-icon-start": "chevron-left",
+                      "aria-label": "Move left",
+                      "data-tip": "Move left"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "move move-right",
+                    "part": "move-right",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-size": "sm",
+                      "data-look": "transparent",
+                      "data-icon-start": "chevron-right",
+                      "aria-label": "Move right",
+                      "data-tip": "Move right"
+                    }
+                  },
+                  {
+                    "el": "sherpa-button",
+                    "class": "more",
+                    "part": "more",
+                    "attrs": {
+                      "data-type": "icon",
+                      "data-size": "sm",
+                      "data-look": "transparent",
+                      "data-icon-start": "ellipsis-horizontal",
+                      "aria-label": "Stage options",
+                      "aria-haspopup": "menu"
+                    },
+                    "children": [
+                      {
+                        "el": "sherpa-menu",
+                        "attrs": {
+                          "slot": "menu",
+                          "data-align": "end"
+                        },
+                        "children": [
+                          {
+                            "el": "button",
+                            "attrs": {
+                              "type": "button",
+                              "value": "edit"
+                            }
+                          },
+                          {
+                            "el": "button",
+                            "attrs": {
+                              "type": "button",
+                              "value": "add-before"
+                            }
+                          },
+                          {
+                            "el": "button",
+                            "attrs": {
+                              "type": "button",
+                              "value": "add-after"
+                            }
+                          },
+                          {
+                            "el": "button",
+                            "class": "remove",
+                            "attrs": {
+                              "type": "button",
+                              "value": "remove"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           },
-          "children": [
-            {
-              "el": "span",
-              "class": "tip-line tip-name",
-              "attrs": {
-                "data-text": "data-heading"
-              }
+          {
+            "el": "span",
+            "class": "tip sherpa-tip",
+            "part": "tip",
+            "attrs": {
+              "popover": "manual",
+              "aria-hidden": "true"
             },
-            {
-              "el": "span",
-              "class": "tip-line",
-              "attrs": {
-                "data-text": "data-description"
+            "children": [
+              {
+                "el": "span",
+                "class": "tip-line tip-name",
+                "attrs": {
+                  "data-text": "data-heading"
+                }
+              },
+              {
+                "el": "span",
+                "class": "tip-line",
+                "attrs": {
+                  "data-text": "data-description"
+                }
               }
+            ]
+          },
+          {
+            "el": "div",
+            "class": "band",
+            "part": "band",
+            "attrs": {
+              "aria-hidden": "true"
             }
-          ]
-        },
-        {
-          "el": "div",
-          "class": "band",
-          "part": "band",
-          "attrs": {
-            "aria-hidden": "true"
           }
+        ]
+      },
+      {
+        "el": "div",
+        "class": "edge sherpa-anchor",
+        "part": "edge",
+        "attrs": {
+          "role": "separator",
+          "aria-orientation": "vertical",
+          "aria-label": "Resize stage",
+          "tabindex": "0"
         }
-      ]
-    }
+      },
+      {
+        "el": "span",
+        "class": "tip sherpa-tip edge-tip",
+        "part": "edge-tip",
+        "attrs": {
+          "popover": "manual",
+          "aria-hidden": "true"
+        }
+      }
+    ]
   },
   "props": [
     {
@@ -200,6 +222,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-fixed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "its edge takes no drag: the setting Allow stage resizing is off"
+    },
+    {
+      "$type": "prop",
       "name": "data-heading",
       "type": "string",
       "observed": true,
@@ -215,7 +246,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "it is the last stage: Move right is off. The HOST writes it"
+      "description": "it is the last stage: Move right is off, and it has no edge to drag. The HOST writes it"
     },
     {
       "$type": "prop",
@@ -224,7 +255,25 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the host is read only: no Move and no More"
+      "description": "the host is read only: no Move, no More and no edge"
+    },
+    {
+      "$type": "prop",
+      "name": "data-max-w",
+      "type": "number",
+      "observed": false,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the most width its edge asks, in plane px. The HOST writes it"
+    },
+    {
+      "$type": "prop",
+      "name": "data-min-w",
+      "type": "number",
+      "observed": false,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the least width its edge asks, in plane px: the separator's range. The HOST writes it"
     },
     {
       "$type": "prop",
@@ -257,14 +306,27 @@
     }
   ],
   "populate": {
-    "shape": "{ colour?, description?, first?, heading?, last?, locked?, removable?, w?, x? }",
+    "shape": "{ colour?, description?, first?, fixed?, heading?, last?, locked?, maxW?, minW?, removable?, w?, x? }",
     "description": "Its declared props by name: `label` sets data-label."
+  },
+  "settings": {
+    "data-fixed": "!resizeStages"
   },
   "states": [
     {
       "$type": "state",
       "name": "locked",
       "selector": ":host([data-locked])"
+    },
+    {
+      "$type": "state",
+      "name": "last",
+      "selector": ":host([data-last])"
+    },
+    {
+      "$type": "state",
+      "name": "fixed",
+      "selector": ":host([data-fixed])"
     },
     {
       "$type": "state",
@@ -302,6 +364,17 @@
       "detail": {
         "by": "-1 | 1"
       }
+    },
+    {
+      "$type": "event",
+      "name": "stage-resize",
+      "description": "Its end edge was dragged, or moved by a key.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "done": "boolean",
+        "width": "number"
+      }
     }
   ],
   "tokens": {
@@ -318,6 +391,8 @@
     "tip-name.font-weight": "{sherpa.font-weight-medium}",
     "swatch.inline-size": "{sherpa.display-mode-size-2xs}",
     "swatch.block-size": "{sherpa.display-mode-size-2xs}",
-    "band.border-inline": "{sherpa.display-mode-border-width-base}"
+    "band.border-inline": "{sherpa.display-mode-border-width-base}",
+    "edge.z-index": "{sherpa.layer-content}",
+    "edge.inline-size": "{sherpa.display-mode-space-xs}"
   }
 }

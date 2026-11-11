@@ -37,7 +37,7 @@ import type { NodeSnapshot } from './node-library.js';
 import { columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 import { laneFaults, type NodeLane } from './node-lanes.js';
-import { orderStages, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
+import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
 import { connectionRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
 import { unreachedValues, valuesAt, valuesIn, type MessageSource } from './node-messages.js';
 
@@ -747,6 +747,7 @@ export type WorkflowEdit =
   | { setStage: { id: string; label?: string; description?: string; colour?: string } }
   | { removeStage: string }
   | { orderStages: readonly string[] }
+  | { resizeStage: { id: string; w: number } }
   | { restage: readonly string[]; together?: boolean; by?: number }
   | { lanes: readonly NodeLane[] | null };
 
@@ -787,8 +788,9 @@ function numbered(workflow: WorkflowDefinition): WorkflowDefinition {
 }
 
 /** A stage edit: written out first where the workflow had only its one Stage 1. */
-function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addStage: unknown } | { setStage: unknown } | { removeStage: unknown } | { orderStages: unknown } | { restage: unknown }>): WorkflowDefinition {
+function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addStage: unknown } | { setStage: unknown } | { removeStage: unknown } | { orderStages: unknown } | { resizeStage: unknown } | { restage: unknown }>): WorkflowDefinition {
   if ('restage' in edit) return restage(workflow, edit.restage, nodeWidth, !!edit.together, edit.by);
+  if ('resizeStage' in edit) return resizeStage(workflow, edit.resizeStage.id, edit.resizeStage.w, nodeWidth);
   if ('orderStages' in edit) return numbered(orderStages(workflow, edit.orderStages, nodeWidth));
   const held = stagesHeld(workflow);
   const stages = held.stages!;
@@ -968,13 +970,13 @@ export function editWorkflow(
     return from === to ? workflow : { ...workflow, nodes: renamedPortals(workflow.nodes, from, to) };
   }
   // — Stages: a new one after the last; its name, line and colour; one taken away, its nodes in the one before; an order;
-  // a node let go, in the stage it stands in, or the nearest. A workflow keeps at least one. Will, 2026-11-10, TODO 899
+  // a node let go, in the stage it stands in, or the nearest; an edge dragged (900). A workflow keeps at least one.
   // — Swimlanes: on, with the lanes given; null, off. The nodes stay where they are. Will, 2026-11-10
   if ('lanes' in edit) {
     const { lanes: _was, ...bare } = workflow;
     return edit.lanes?.length ? { ...bare, lanes: edit.lanes.map((l) => ({ ...l, families: [...l.families] })) } : bare;
   }
-  if ('addStage' in edit || 'setStage' in edit || 'removeStage' in edit || 'orderStages' in edit || 'restage' in edit) return staged(workflow, edit);
+  if ('addStage' in edit || 'setStage' in edit || 'removeStage' in edit || 'orderStages' in edit || 'resizeStage' in edit || 'restage' in edit) return staged(workflow, edit);
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
   if ('remove' in edit) {
     const gone = (address: string): boolean => socketOf(address).node === edit.remove;

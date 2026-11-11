@@ -4,6 +4,7 @@
  * 2026-11-10 · TODO 893
  */
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { resizeByEdge } from '../../core/ui/edge-resize.js';
 // Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -21,17 +22,34 @@ export class SherpaNodeStage extends SherpaElement {
     'data-colour': { type: 'string', kind: 'behaviour' },
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-w': { type: 'number', kind: 'behaviour' },
+    'data-min-w': { type: 'number', kind: 'behaviour' },
+    'data-max-w': { type: 'number', kind: 'behaviour' },
+    'data-fixed': { type: 'boolean', kind: 'style' },
     'data-removable': { type: 'boolean', kind: 'style' },
     'data-first': { type: 'boolean', kind: 'behaviour' },
     'data-last': { type: 'boolean', kind: 'behaviour' },
     'data-locked': DATA_PROPS['data-locked'],
   } as const;
   static override observed = ['data-x', 'data-w', 'data-colour'];
+  /** Off, its edge takes no drag. Will, TODO 900 */
+  static override settings = { 'data-fixed': '!resizeStages' };
 
   override onRender(): void {
     this.$('.more')?.addEventListener('menu-select', this.#onMenu);
     for (const [cls, by] of [['.move-left', -1], ['.move-right', 1]] as const) {
       this.$(cls)?.addEventListener('button-click', () => this.emit('stage-move', { by }));
+    }
+    const edge = this.$('.edge');
+    if (edge) {
+      // The helper works in screen px; the stage asks in plane px.
+      resizeByEdge(edge, {
+        measure: () => this.num('data-w', 320) * this.#zoom(),
+        apply: (px, done) => this.emit('stage-resize', { width: Math.round(px / this.#zoom()), done }),
+        grows: 1,
+        min: () => this.num('data-min-w', 0) * this.#zoom(),
+        max: () => this.num('data-max-w', this.num('data-w', 320)) * this.#zoom(),
+        describe: () => ({ now: this.num('data-w', 320), min: this.num('data-min-w', 0), max: this.num('data-max-w', this.num('data-w', 320)) }),
+      });
     }
     this.#sync();
   }
@@ -49,6 +67,11 @@ export class SherpaNodeStage extends SherpaElement {
     else this.style.removeProperty('--_colour');
     this.$('.move-left')?.toggleAttribute('disabled', this.hasAttribute('data-first'));
     this.$('.move-right')?.toggleAttribute('disabled', this.hasAttribute('data-last'));
+  }
+
+  /** The canvas's zoom, as its columns are drawn at it. */
+  #zoom(): number {
+    return parseFloat(getComputedStyle(this).getPropertyValue('--_zoom')) || 1;
   }
 
   /** More's pick. Reported once the menu has shut: what the host does next may hide the button it hangs from, and a menu

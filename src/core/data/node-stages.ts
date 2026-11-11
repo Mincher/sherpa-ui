@@ -10,6 +10,7 @@
  * - STAGE_MIN — How wide an empty stage is.
  * - STAGE_PAD — How far a stage reaches past its nodes, each side.
  * - STAGE_GAP — The gap between two stages.
+ * - STAGE_LEAST — How narrow a stage's edge drags it, at the least.
  * - DEFAULT_STAGE — The stage a workflow with none has.
  * - stagesOf — A workflow's stages: its own, or the one it has with none.
  * - stageOf — The stage a node is in, or none.
@@ -20,6 +21,8 @@
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
  * - restage — The workflow with these nodes in the stage their middle stands in, or the point given does; else the nearest.
  * - orderStages — The workflow with its stages in a new order, each packed after the one before, its nodes with it.
+ * - stageWidthRange — The widths a stage's end edge can give it: room for its nodes, and for the next one's.
+ * - resizeStage — The workflow with a stage this wide and the next as much narrower, by the edge between them; no node moves.
  * - stageFaults — Every fault in a workflow's stages, in words.
  */
 import { packBands, type BandGroup } from './node-bands.js';
@@ -32,6 +35,8 @@ export interface NodeStage {
   /** A CSS colour: the stage's bar and band wear it. None, the default look. */
   colour?: string;
   x: number;
+  /** Its width, where its edge was dragged (TODO 900): its nodes may make it wider. None, as wide as they need. */
+  w?: number;
 }
 
 /** One stage as drawn: its left and right edges, in plane px. */
@@ -47,6 +52,8 @@ export const STAGE_MIN = 320;
 export const STAGE_PAD = 48;
 /** The gap between two stages. */
 export const STAGE_GAP = 16;
+/** How narrow a stage's edge drags it, at the least: its pad, each side. */
+export const STAGE_LEAST = 2 * STAGE_PAD;
 /** The stage a workflow with none has. */
 export const DEFAULT_STAGE: NodeStage = { id: 'stage-1', label: 'Stage 1', x: 0 };
 
@@ -89,7 +96,7 @@ export function stageBands(workflow: Staged, widthOf: WidthOf): { bands: StageBa
     const free = loose.filter((n) => after(n) === i);
     if (free.length) groups.push({ id: `loose:${i}`, at: Math.min(...free.map((n) => n.x)) - STAGE_PAD, members: free.map(member), min: 0 });
     const stage = stages[i];
-    if (stage) groups.push({ id: stage.id, at: stage.x, members: workflow.nodes.filter((n) => stageOf(workflow, n) === stage.id).map(member) });
+    if (stage) groups.push({ id: stage.id, at: stage.x, members: workflow.nodes.filter((n) => stageOf(workflow, n) === stage.id).map(member), ...(stage.w ? { min: stage.w } : {}) });
   }
   const { bands, moves } = packBands(groups, { min: STAGE_MIN, pad: STAGE_PAD, gap: STAGE_GAP, flex: true });
   return { bands: bands.filter((b) => !b.id.startsWith('loose:')).map((b) => ({ id: b.id, left: b.start, right: b.end })), moves };
@@ -103,7 +110,7 @@ export function heldBands(workflow: Staged, widthOf: WidthOf, moving: ReadonlySe
   return stagesOf(workflow).map((stage) => {
     const members = workflow.nodes.filter((n) => !moving.has(n.id) && stageOf(workflow, n) === stage.id);
     const right = members.length ? Math.max(...members.map((n) => n.x + widthOf(n))) + STAGE_PAD : stage.x;
-    return { id: stage.id, left: stage.x, right: Math.round(Math.max(right, stage.x + STAGE_MIN)) };
+    return { id: stage.id, left: stage.x, right: Math.round(Math.max(right, stage.x + (stage.w ?? STAGE_MIN))) };
   });
 }
 
@@ -192,6 +199,41 @@ export function orderStages<W extends Staged>(workflow: W, ids: readonly string[
     return by ? { ...n, x: n.x + by } : n;
   });
   return { ...held, stages: placed, nodes };
+}
+
+/** The widths the stage `id`'s END edge can give it, in plane px: room for its own nodes and STAGE_LEAST, and the same for
+ *  the next stage's. None for the last, or one not there. */
+export function stageWidthRange(workflow: Staged, id: string, widthOf: WidthOf): { least: number; most: number } | null {
+  const stages = workflow.stages ?? [];
+  const at = stages.findIndex((s) => s.id === id);
+  if (at < 0 || at === stages.length - 1) return null;
+  const { bands } = stageBands(workflow, widthOf);
+  const [a, b] = [bands[at]!, bands[at + 1]!];
+  const of = (stage: string): Staged['nodes'] => workflow.nodes.filter((n) => stageOf(workflow, n) === stage);
+  const least = Math.max(STAGE_LEAST, ...of(a.id).map((n) => n.x + widthOf(n) + STAGE_PAD - a.left));
+  const most = Math.min(b.right - STAGE_LEAST, ...of(b.id).map((n) => n.x - STAGE_PAD)) - STAGE_GAP - a.left;
+  return { least: Math.round(least), most: Math.round(Math.max(most, least)) };
+}
+
+/**
+ * The workflow with the stage `id` `w` wide, by its END edge, and the stage after it starting as far on, as much
+ * narrower: its right edge stays, and no node moves (TODO 900). Each keeps room for its nodes and STAGE_LEAST; the edge
+ * stops there. The last stage has no edge to drag: the same one.
+ */
+export function resizeStage<W extends Staged>(workflow: W, id: string, w: number, widthOf: WidthOf): W {
+  const range = stageWidthRange(workflow, id, widthOf);
+  if (!range) return workflow;
+  const stages = workflow.stages!;
+  const at = stages.findIndex((s) => s.id === id);
+  const { bands } = stageBands(workflow, widthOf);
+  const [a, b] = [bands[at]!, bands[at + 1]!];
+  const edge = a.left + Math.round(Math.min(Math.max(w, range.least), range.most));
+  if (edge === a.right) return workflow;
+  const start = edge + STAGE_GAP;
+  return {
+    ...workflow,
+    stages: stages.map((s, i) => (i === at ? { ...s, x: a.left, w: edge - a.left } : i === at + 1 ? { ...s, x: start, w: b.right - start } : s)),
+  };
 }
 
 /** Every fault in a workflow's stages, in words: two of one id, one with no name, a node in a stage not there. */
