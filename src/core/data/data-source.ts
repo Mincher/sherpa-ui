@@ -801,8 +801,8 @@ export class DataSource extends EventTarget {
     this.#skipped = skipped ?? [];
     // The SHARED filter stood still: no load follows, whatever one component's own did.
     const still = sameFilter(filter, this.#filter);
-    // A draft edit loads nothing: remote, or a scope that waits. TODO 406
-    const same = this.#context.waiting() && still && sameFilter(only, this.#only);
+    // A draft edit loads nothing: remote, or a scope that waits (406). A MOVE keeps the shared filter, not the View's or a scope's: a chart reads those (912).
+    const same = this.#context.waiting() && still && sameFilter(only, this.#only) && sameFilter(view, this.#viewFilter) && sameFilter(scoped, this.#scoped);
     this.#only = only;
     this.#filter = filter;
     this.#viewFilter = view;
