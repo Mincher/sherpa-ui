@@ -40,6 +40,8 @@ export class SherpaCanvas extends SherpaElement {
     'data-zoom': { type: 'number', kind: 'behaviour' },
     // Asked for, not the default: measured at 2,000 nodes, drawn is slower to pan, zoom and drag (plan 852, step 6).
     'data-drawn': { type: 'boolean', kind: 'template' },
+    // A view change eases, on the plain layer: its host's step zoom. TODO 896
+    'data-ease': { type: 'boolean', kind: 'style' },
   } as const;
   static override observed = ['data-x', 'data-y', 'data-zoom'];
   static override variantAttrs = ['data-drawn'];

@@ -21,6 +21,10 @@ import { boxOf } from '../../core/ui/plane.js';
 
 /** One press of Zoom in or Zoom out. */
 const ZOOM_STEP = 1.25;
+/** One notch of Ctrl or ⌘ + wheel: 10%. Will, TODO 896 */
+const WHEEL_STEP = 1.1;
+/** How long a step zoom eases, and a little over: the motion token's slow (300ms). */
+const EASE_MS = 400;
 /** One arrow key's pan, in screen px; Shift pans four times as far. */
 const PAN_STEP = 32;
 /** What Fit leaves round the content, in screen px. */
@@ -102,8 +106,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
       viewport?.addEventListener(type, this.#onPointer as EventListener);
     }
     this.$('.pan')?.addEventListener('button-click', this.#onPanTool);
-    this.$('.zoom-in')?.addEventListener('button-click', () => this.zoomBy(ZOOM_STEP));
-    this.$('.zoom-out')?.addEventListener('button-click', () => this.zoomBy(1 / ZOOM_STEP));
+    this.$('.zoom-in')?.addEventListener('button-click', () => { this.#ease(); this.zoomBy(ZOOM_STEP); });
+    this.$('.zoom-out')?.addEventListener('button-click', () => { this.#ease(); this.zoomBy(1 / ZOOM_STEP); });
     this.$('.options')?.addEventListener('menu-select', this.#onOption);
     const minimap = this.$<HTMLElement>('.minimap');
     for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) {
@@ -312,11 +316,37 @@ export class SherpaLayoutCanvas extends SherpaElement {
     event.preventDefault();
     if (event.ctrlKey || event.metaKey) {
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-      this.zoomTo(this.#zoom * Math.exp(-event.deltaY * 0.01), event.clientX - rect.left, event.clientY - rect.top);
+      // A wheel's notch is a step of 10%, eased; a trackpad's pinch, small and many, follows the fingers.
+      const notch = event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL || Math.abs(event.deltaY) >= 50;
+      if (notch) this.#ease();
+      else this.#still();
+      const factor = notch ? WHEEL_STEP ** -Math.sign(event.deltaY) : Math.exp(-event.deltaY * 0.01);
+      this.zoomTo(this.#zoom * factor, event.clientX - rect.left, event.clientY - rect.top);
     } else {
+      this.#still();
       this.panTo(this.#x - event.deltaX, this.#y - event.deltaY);
     }
   };
+
+  /** The timer that ends a step zoom's easing. */
+  #easing: ReturnType<typeof setTimeout> | undefined;
+  /** A reader's step zoom: the view eases from where it was, the grid, the strips and the plane as one (CSS reads
+   *  `:state(easing)`, and the plane `data-ease`). Off by itself once it has eased. TODO 896 */
+  #ease(): void {
+    // A plane drawn into a real canvas paints each view at once: the rest would ease without it.
+    if (this.$('.plane')?.shadowRoot?.querySelector('canvas')) return;
+    this.toggleState('easing', true);
+    this.$('.plane')?.setAttribute('data-ease', '');
+    clearTimeout(this.#easing);
+    this.#easing = setTimeout(() => this.#still(), EASE_MS);
+  }
+
+  /** Follow at once: a pan or a pinch never eases. */
+  #still(): void {
+    clearTimeout(this.#easing);
+    this.toggleState('easing', false);
+    this.$('.plane')?.removeAttribute('data-ease');
+  }
 
   /** A drag pans with the Pan tool on, with Space held, or with the middle button. On blank canvas a plain
    *  left drag pans too — or, with `data-select-box`, draws a box and reports it. */
@@ -325,6 +355,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
     const pan = event.button === 1 || (event.button === 0 && (this.hasState('panning') || (this.#space && blank) || (blank && !this.hasAttribute('data-select-box'))));
     const box = !pan && event.button === 0 && blank;
     if (!pan && !box) return;
+    // A drag follows the pointer at once.
+    this.#still();
     event.preventDefault();
     this.#drag = { id: event.pointerId, x: event.clientX, y: event.clientY, from: [this.#x, this.#y], box, mode: boxMode(event) };
     // A synthetic pointer has nothing to capture.
@@ -390,10 +422,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
       ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step],
     };
     const move = moves[event.key];
+    const zoom = event.key === '+' || event.key === '=' ? this.#zoom * ZOOM_STEP : event.key === '-' || event.key === '_' ? this.#zoom / ZOOM_STEP
+      : event.key === '0' ? 1 : undefined;
     if (move) this.panTo(this.#x + move[0], this.#y + move[1]);
-    else if (event.key === '+' || event.key === '=') this.zoomBy(ZOOM_STEP);
-    else if (event.key === '-' || event.key === '_') this.zoomBy(1 / ZOOM_STEP);
-    else if (event.key === '0') this.zoomTo(1);
+    else if (zoom !== undefined) { this.#ease(); this.zoomTo(zoom); }
     else return;
     event.preventDefault();
   };
@@ -408,6 +440,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
   /** Fit, 100%, or the minimap on or off. */
   #onOption = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
+    if (value === 'fit' || value === 'actual') this.#ease();
     if (value === 'fit') this.fit();
     else if (value === 'actual') this.zoomTo(1);
     else if (value === 'minimap') this.toggleAttribute('data-no-minimap');

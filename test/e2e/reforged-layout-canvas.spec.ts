@@ -247,3 +247,44 @@ test('its plane is drawn only when a page asks: data-drawn reaches the plane, an
   await page.evaluate((sel) => (eval(sel) as Canvas).toggleAttribute('data-drawn'), canvas);
   expect(await drawn()).toEqual({ asked: !asked, canvas: false });
 });
+
+test('a Ctrl+wheel notch zooms 10%, a pinch follows the fingers; a step zoom eases, a pan does not; Reduce motion makes it instant (TODO 896)', async ({ page }) => {
+  const r = await page.evaluate(async (sel) => {
+    const el = eval(sel) as Canvas;
+    const sr = el.shadowRoot!;
+    const viewport = sr.querySelector<HTMLElement>('.viewport')!;
+    const wheel = (deltaY: number, ctrlKey = true) => viewport.dispatchEvent(new WheelEvent('wheel', { deltaY, ctrlKey, bubbles: true, cancelable: true }));
+    const eased = () => ({
+      state: el.matches(':state(easing)'), plane: sr.querySelector('.plane')!.hasAttribute('data-ease'),
+      grid: getComputedStyle(sr.querySelector('.grid')!).transitionDuration,
+      surface: getComputedStyle(sr.querySelector('.plane')!.shadowRoot!.querySelector('.surface')!).transitionDuration,
+    });
+    const drawn = !!sr.querySelector('.plane')!.shadowRoot!.querySelector('canvas');
+    el.zoomTo(1);
+    wheel(-100);
+    const notch = el.view.zoom;
+    const easing = eased();
+    wheel(-4);
+    const pinch = el.view.zoom;
+    const pinched = eased();
+    el.zoomTo(1);
+    wheel(100);
+    const down = el.view.zoom;
+    wheel(30, false);
+    const panned = eased();
+    // Reduce motion: the page's motion scale is 0, and every motion token with it.
+    document.documentElement.style.setProperty('--sherpa-motion-scale', '0');
+    sr.querySelector('.zoom-in')!.shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
+    const reduced = eased();
+    document.documentElement.style.removeProperty('--sherpa-motion-scale');
+    return { drawn, notch, easing, pinch: Math.round(pinch * 1000) / 1000, pinched, down: Math.round(down * 1000) / 1000, panned, reduced };
+  }, canvas);
+  expect(r.notch).toBeCloseTo(1.1, 5);
+  // A plane drawn into a real canvas (Google Chrome, asked) paints each view at once, so nothing eases there.
+  expect(r.easing).toEqual(r.drawn ? { state: false, plane: false, grid: '0s', surface: '0s' } : { state: true, plane: true, grid: '0.3s', surface: '0.3s' });
+  expect(r.pinch).toBeCloseTo(1.1 * Math.exp(0.04), 3);
+  expect(r.pinched.state).toBe(false);
+  expect(r.down).toBeCloseTo(1 / 1.1, 3);
+  expect(r.panned).toEqual({ state: false, plane: false, grid: '0s', surface: '0s' });
+  expect(r.reduced).toMatchObject({ state: !r.drawn, grid: '0s', surface: '0s' });
+});

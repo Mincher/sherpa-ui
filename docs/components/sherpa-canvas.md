@@ -24,6 +24,7 @@ For a surface of live elements, each at its own place: a real canvas draws them 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-drawn` | boolean |  | draw into a real canvas, where the engine can (default: a plain layer) |
+| `data-ease` | boolean |  | a view change eases there, on the plain layer (its host's step zoom) |
 | `data-x` | number | `0` | the view's pan across, in px |
 | `data-y` | number | `0` | the view's pan down, in px |
 | `data-zoom` | number | `1` | the view's scale |
@@ -48,6 +49,6 @@ Style these from outside with `::part()`:
 
 ## populate()
 
-`{ drawn?, x?, y?, zoom? }`
+`{ drawn?, ease?, x?, y?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

@@ -100,6 +100,8 @@ export const SETTINGS = {
   navLarge: { ...on('/nav/large', 'app'), look: { props: { true: { '--sherpa-nav-scale': '1.5' } } } },
   // A node's resize handle and Alt+Arrow. Will, TODO 748
   resizeNodes: off('/nodes/resize', 'app'),
+  // Every Sherpa motion token is instant: transitions and travels land at once. Will, TODO 896
+  reduceMotion: { ...off('/a11y/reduceMotion', 'app'), look: { props: { true: { '--sherpa-motion-scale': '0' } } } },
   // A toggle shows its state by a shape too. Will, TODO 497
   toggleShapes: { ...off('/a11y/toggleShapes', 'app'), look: { props: { true: { '--sherpa-toggle-shape': 'inline-flex' } } } },
   // An on chip's value half wears its look's border only. Will, TODO 669

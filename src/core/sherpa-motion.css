@@ -5,10 +5,12 @@
  * TRAP T-motion-is-owned-here.
  */
 
+/* Each duration times `--sherpa-motion-scale`, inherited from the page: the app's Reduce motion setting makes it 0.
+   Will, TODO 896 */
 :host {
-  --sherpa-motion-fast: 100ms;    /* a state flip: hover, press, tint */
-  --sherpa-motion-base: 120ms;    /* the default — most transitions */
-  --sherpa-motion-slow: 300ms;    /* something that TRAVELS: a bar growing */
+  --sherpa-motion-fast: calc(100ms * var(--sherpa-motion-scale, 1));    /* a state flip: hover, press, tint */
+  --sherpa-motion-base: calc(120ms * var(--sherpa-motion-scale, 1));    /* the default — most transitions */
+  --sherpa-motion-slow: calc(300ms * var(--sherpa-motion-scale, 1));    /* something that TRAVELS: a bar growing */
   --sherpa-motion-ease: ease;
 }
 

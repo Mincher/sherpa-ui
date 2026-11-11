@@ -62,6 +62,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-ease",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a view change eases there, on the plain layer (its host's step zoom)"
+    },
+    {
+      "$type": "prop",
       "name": "data-x",
       "type": "number",
       "observed": true,
@@ -102,9 +111,16 @@
     }
   ],
   "populate": {
-    "shape": "{ drawn?, x?, y?, zoom? }",
+    "shape": "{ drawn?, ease?, x?, y?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
+  "states": [
+    {
+      "$type": "state",
+      "name": "ease",
+      "selector": ":host([data-ease])"
+    }
+  ],
   "capabilities": [
     {
       "$type": "capability",

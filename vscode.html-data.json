@@ -626,6 +626,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-ease",
+          "description": "a view change eases there, on the plain layer (its host's step zoom)",
+          "valueSet": "v"
+        },
+        {
           "name": "data-x",
           "description": "the view's pan across, in px"
         },

@@ -147,6 +147,25 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
   top: calc(var(--_y) + var(--y, 0px) * var(--_zoom));
   block-size: calc(var(--height, 0px) * var(--_zoom));
 }
+/* A reader's STEP zoom (a wheel's notch, Zoom in or out, a key, Fit) eases from where the view was: the grid, the strips
+   and the plane, under one timing, so they move as one. A pan or a pinch never eases. Reduce motion makes it instant.
+   Will, TODO 896 */
+:host(:state(easing)) .grid {
+  transition-property: mask-size, mask-position, -webkit-mask-size, -webkit-mask-position;
+  transition-duration: var(--sherpa-motion-slow, 300ms);
+  transition-timing-function: var(--sherpa-motion-ease, ease);
+}
+:host(:state(easing)) .columns ::slotted(*) {
+  transition-property: left, inline-size;
+  transition-duration: var(--sherpa-motion-slow, 300ms);
+  transition-timing-function: var(--sherpa-motion-ease, ease);
+}
+:host(:state(easing)) .rows ::slotted(*) {
+  transition-property: top, block-size;
+  transition-duration: var(--sherpa-motion-slow, 300ms);
+  transition-timing-function: var(--sherpa-motion-ease, ease);
+}
+
 /* With columns, what the view shows starts under their head: Fit, the banners and the stage keep clear of it. */
 :host { --_columns-head: var(--sherpa-display-mode-size-3xl, 40px); }
 :host(:state(has-columns)) .stage { margin-block-start: var(--_columns-head); }

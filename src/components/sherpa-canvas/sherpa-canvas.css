@@ -25,6 +25,10 @@ slot { pointer-events: auto; }
   inset-inline-start: 0;
   transform-origin: 0 0;
 }
+/* Its host's step zoom: the view eases there, as the host's own layers do. */
+:host([data-ease]) div.surface {
+  transition: transform var(--sherpa-motion-slow, 300ms) var(--sherpa-motion-ease, ease);
+}
 
 /* A real canvas, over its whole box: it draws the view. */
 canvas.surface {
