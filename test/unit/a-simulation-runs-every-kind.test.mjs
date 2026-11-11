@@ -1,6 +1,6 @@
 /**
  * SIMULATE runs the rest of the kinds: a Value, Math and Text send a value, Sort puts the rows in a field's order, Group
- * gathers each value's rows and counts the groups, Time and Tag test as a Condition does, and a Custom Node's body is run as
+ * gathers each value's rows, Time and Tag test as a Condition does, and a Custom Node's body is run as
  * a graph of its own, its Group Input fed what the use hears. A value that cannot be made says why, in words, and sends no
  * number. The simulator is generic: it names no kind but by its row names. Will, TODO 836 P6
  * · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
@@ -82,12 +82,13 @@ test('Sort puts the rows in their field\'s order, each way; the same rows, none 
   assert.equal(new Set(asc).size, ROWS.length);
 });
 
-test('Group gathers each value\'s rows, the groups in the order they first appear; its Count is the groups', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'plan' }), N('x', 'group'), N('o', 'output')],
-    [R('s/rows', 'f'), R('f/field', 'x'), R('x/rows', 'o')]);
+test('Group gathers each value\'s rows, the groups in the order they first appear; it has no Count row (plan 944)', () => {
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'plan' }), N('x', 'group'), N('o', 'output'), N('m', 'math', { type: 'count' })],
+    [R('s/rows', 'f'), R('f/field', 'x'), R('x/rows', 'o'), R('x/rows', 'm/rows')]);
   const sim = simulateGraph(g, { customers: ROWS });
   assert.deepEqual(out(sim, 'x', 'x/rows').rows.map((r) => r.id), [1, 3, 2, 5, 4]);
-  assert.equal(out(sim, 'x', 'x/count').value, 3);
+  // A Math Count counts the rows it sends, none lost (plan 944).
+  assert.deepEqual([out(sim, 'x', 'x/count'), out(sim, 'm', 'm/result').value], [undefined, 5]);
 });
 
 test('Sort and Group with no Field connected in say so and send no rows', () => {

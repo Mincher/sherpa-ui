@@ -28,15 +28,16 @@ const kinds = {
     rows: TYPES.map((t) => ({ name: t, label: `Takes ${t}`, input: t })),
   },
 };
-/** What sends each type: a Value's value, a Source's rows, a Condition's True. */
-const SENDS = { value: 'v/value', object: 's/rows', boolean: 'c' };
+/** What sends each type: a Value's value, a Source's rows, a Time's header (a Condition's True is a number now, plan 944). */
+const SENDS = { value: 'v/value', object: 's/rows', boolean: 't' };
 const SAID = { value: '"abc"', object: INPUT_WORDS.rows, boolean: INPUT_WORDS.boolean };
 const flow = (connections) => ({
   v: 3, id: 'w',
   nodes: [
     { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'abc' } },
     { id: 's', kind: 'source', x: 0, y: 200, values: { store: 'users' } },
-    { id: 'c', kind: 'condition', x: 0, y: 400 },
+    { id: 't', kind: 'time', x: 0, y: 400 },
+    { id: 'c', kind: 'condition', x: 0, y: 600 },
     { id: 'k', kind: 'sink', x: 360, y: 0 },
   ],
   connections,
@@ -55,7 +56,9 @@ test('every output type into every typed input joins, no fault: its own is read;
   }
   // A typed header the same: the Sink's takes a boolean.
   assert.deepEqual(warnings(flow([{ from: 'v/value', to: 'k' }])), [['', 'Sink takes a boolean; it was given "abc"']]);
-  assert.deepEqual(warnings(flow([{ from: 'c', to: 'k' }])), undefined);
+  assert.deepEqual(warnings(flow([{ from: 't', to: 'k' }])), undefined);
+  // A Condition's True is 1 or 0: a boolean reads it as one, no warning; an object does not (plan 944).
+  assert.deepEqual(['k', 'k/boolean', 'k/object'].map((to) => warnings(flow([{ from: 'c/true', to }]))), [undefined, undefined, [['object', 'Takes object takes an object; it was given a number']]]);
   // A socket's words are its tip's.
   for (const t of TYPES) assert.equal(INPUT_WORDS[t], SOCKET_WORDS[t]);
 });
@@ -88,9 +91,10 @@ test('the graph\'s shape stays refused, in words: a loop, twice, two into one, n
   assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 'v/value', to: 'c' }]), ['two connections enter "c", which takes one']);
   assert.deepEqual(faults([{ from: 's/rows', to: 'c/nowhere' }]), ['a connection enters "c/nowhere", which is no input socket']);
   assert.deepEqual(faults([{ from: 's/rows', to: 'c/rows' }]), ['a connection enters "c/rows", a Rows row, which only sends: a node\'s rows come in on its header']);
-  // And takes any boolean (TODO 780, plan 783 D4): a Condition's True and another's.
+  // And takes any boolean (TODO 780, plan 783 D4): a Condition's True and another's, each a row now (plan 944).
   const and = { id: 'a', kind: 'condition', x: 900, y: 0, values: { type: 'and' } };
-  assert.deepEqual(faults([{ from: 'd', to: 'a' }, { from: 'c', to: 'a' }], [and]), []);
+  assert.deepEqual(faults([{ from: 'd/true', to: 'a' }, { from: 'c/true', to: 'a' }], [and]), []);
+  assert.deepEqual(faults([{ from: 'd', to: 'a' }], [and]), ['a connection leaves "d", which is no output socket']);
   const odd = { id: 'o', kind: 'odd', x: 0, y: 600 };
   const withOdd = { ...kinds, odd: { heading: 'Odd', icon: 'flag', output: 'any', rows: [], model: 'x', graphs: ['workflow'] } };
   assert.deepEqual(workflowFaults({ ...base, nodes: [...base.nodes, odd], connections: [{ from: 'o', to: 'k' }] }, withOdd).slice(0, 1), ['a connection leaves "o", which sends any type: an output says the one it sends']);

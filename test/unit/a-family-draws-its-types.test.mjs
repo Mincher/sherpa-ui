@@ -23,6 +23,8 @@ test('each family: its types in order, the Type row first, and the rows, sockets
     math: {
       add: ['a', 'b', 'result'], subtract: ['a', 'b', 'result'], multiply: ['a', 'b', 'result'], divide: ['a', 'b', 'result'], ratio: ['a', 'b', 'result'],
       round: ['places', 'a', 'result'], increment: ['a', 'b', 'result'], floor: ['values', 'result'], ceiling: ['values', 'result'], average: ['values', 'result'],
+      // Count: how many rows come in (plan 944).
+      count: ['rows', 'result'],
     },
     time: { between: ['start', 'end'], duration: ['when', 'n', 'unit'] },
     text: { append: ['a', 'b', 'result'], prepend: ['a', 'b', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'] },
@@ -36,9 +38,10 @@ test('each family: its types in order, the Type row first, and the rows, sockets
       assert.deepEqual(kind.rows.map((r) => r.name), [...(id === 'tag' ? [] : ['type']), ...names], `${id} › ${type}`);
     }
   }
-  assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average']);
+  assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average', 'Count']);
   // Sort and Group are kinds of their own, in Organise, and take the Field they work on on their header (plan 835): no types.
-  assert.deepEqual(['sort', 'group'].map((k) => [NODE_KINDS[k].types, NODE_KINDS[k].category, NODE_KINDS[k].rows.map((r) => r.name)]), [[undefined, 'Organise', ['rows', 'direction']], [undefined, 'Organise', ['rows', 'count']]]);
+  // A Group has no Count row now (plan 944).
+  assert.deepEqual(['sort', 'group'].map((k) => [NODE_KINDS[k].types, NODE_KINDS[k].category, NODE_KINDS[k].rows.map((r) => r.name)]), [[undefined, 'Organise', ['rows', 'direction']], [undefined, 'Organise', ['rows']]]);
   assert.deepEqual(['value', 'math', 'time', 'text'].map((k) => NODE_KINDS[k].typeLabel), ['Type', 'Operation', 'Check', 'Operation']);
   // Each Math, Time and Text type says what it does, under its select.
   for (const id of ['math', 'time', 'text']) for (const [type, t] of Object.entries(NODE_KINDS[id].types)) assert.ok(t.help, `${id} › ${type} has a hint`);
@@ -48,6 +51,8 @@ test('each family: its types in order, the Type row first, and the rows, sockets
   assert.deepEqual(floor.map((r) => [r.name, r.input, r.output, r.many]), [['type', undefined, undefined, undefined], ['values', 'object', undefined, true], ['result', undefined, 'value', undefined]]);
   assert.equal(resolveKind(NODE_KINDS.text, 'split').rows.at(-1).output, 'object');
   assert.equal(resolveKind(NODE_KINDS.value, 'list').rows.at(-1).output, 'object');
+  // Count reads rows on its Rows row, one connection, and gives a number (plan 944).
+  assert.deepEqual(resolveKind(NODE_KINDS.math, 'count').rows.slice(1).map((r) => [r.name, r.input, r.needs, r.output, r.gives, r.many]), [['rows', 'object', 'rows', undefined, undefined, undefined], ['result', undefined, undefined, 'value', 'number', undefined]]);
   // Time takes the date on its header, of any type (D1), and sends a boolean: True, it holds (no False now, TODO 831).
   assert.deepEqual([NODE_KINDS.time.input, NODE_KINDS.time.output], ['any', 'boolean']);
   assert.deepEqual(resolveKind(NODE_KINDS.time, 'duration').rows.slice(1).map((r) => r.control), ['span', 'number', 'unit']);

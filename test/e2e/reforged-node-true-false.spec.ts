@@ -1,9 +1,10 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * Only a Condition draws True and False (Will, TODO 831: "just hide them for now"), and a Source's Rows leave
- * from the Store row that makes them, not from a Rows line of their own (TODO 830). Read by boxes and pixels, and
- * made by the real pointer: the Store row's socket joins a Field; a Condition's True and False join an Output.
+ * No node has a True or a False socket (Will, plan 944): a Condition's True is a property row, 1 or 0, and only a Check
+ * branches, by its Yes and No. A Source's Rows leave from the Store row that makes them, not from a Rows line of their own
+ * (TODO 830). Read by boxes and pixels, and made by the real pointer: the Store row's socket joins a Field; a Condition's
+ * True joins a Check; the Check's Yes and No join an Output each.
  * TRAP T-a-socket-says-its-type
  */
 test.beforeEach(async ({ page }) => {
@@ -14,19 +15,21 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const canvas = document.getElementById('cv')! as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
+    // Five columns, none overlapping: a Check and a second Output join the old set (plan 944).
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, {
       v: 3, id: 'g',
       nodes: [
-        { id: 's', kind: 'source', x: 20, y: 40, values: { store: 'users' } }, { id: 'f', kind: 'field', x: 420, y: 40 },
-        { id: 'v', kind: 'value', x: 20, y: 420 }, { id: 'm', kind: 'math', x: 420, y: 420 },
-        { id: 'c', kind: 'condition', x: 820, y: 40 }, { id: 't', kind: 'time', x: 820, y: 540 },
-        { id: 'o', kind: 'output', x: 1160, y: 40 },
+        { id: 's', kind: 'source', x: 20, y: 40, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 20, y: 300, values: { value: 'admin' } },
+        { id: 'f', kind: 'field', x: 300, y: 40 }, { id: 'm', kind: 'math', x: 300, y: 260 },
+        { id: 'c', kind: 'condition', x: 580, y: 40 },
+        { id: 'k', kind: 'check', x: 860, y: 40 }, { id: 't', kind: 'time', x: 860, y: 320 },
+        { id: 'o', kind: 'output', x: 1140, y: 40 }, { id: 'o2', kind: 'output', x: 1140, y: 460 },
       ],
       connections: [],
     } as never, { session: new SessionStore(), stores: ['users'], fieldsOf: { users: { role: { label: 'Role' } } } });
     await window.__settled();
     canvas.zoomTo(1);
-    // Down from the stage strip: a Condition's True tab hangs ABOVE its card (TODO 887).
+    // Down from the stage strip.
     canvas.panTo(0, 32);
     await window.__settled();
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
@@ -34,11 +37,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
-const card = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`);
+const card = (page: Page, heading: string, nth = 0) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).nth(nth);
 type Box = { x: number; y: number; w: number; h: number } | null;
-/** A socket's box on the screen: a node's (`side`), or one of its rows'. */
-const socket = (page: Page, heading: string, side: string, row?: string): Promise<Box> => card(page, heading).evaluate((el, [s, r]) => {
-  const host = (r ? el.querySelector(`sherpa-node-row:has(${r})`) : el) as (HTMLElement & { socketRect(side: string): DOMRect | null }) | null;
+/** A socket's box on the screen: a node's (`side`), or one of its rows', by a selector on the row. */
+const socket = (page: Page, heading: string, side: string, row?: string, nth = 0): Promise<Box> => card(page, heading, nth).evaluate((el, [s, r]) => {
+  const host = (r ? el.querySelector(`sherpa-node-row${r}`) : el) as (HTMLElement & { socketRect(side: string): DOMRect | null }) | null;
   const b = host?.socketRect(s!);
   return b ? { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) } : null;
 }, [side, row] as const);
@@ -67,30 +70,48 @@ async function inked(page: Page, b: NonNullable<Box>): Promise<number> {
     return n;
   }, shot.toString('base64'));
 }
-const STORE = '[name="store"]';
+const STORE = ':has([name="store"])';
+/** A row with no field, by the name its socket says. */
+const named = (name: string) => `[data-socket-name="${name}"]`;
+/** A node's rows as drawn: their label, input, output, whether a property, and the box they stand in. */
+const rowsOf = (page: Page, heading: string) => card(page, heading).locator('sherpa-node-row').evaluateAll((els) => els.filter((e) => e.checkVisibility()).map((e) => [
+  e.getAttribute('data-socket-name') ?? e.getAttribute('data-label'), e.getAttribute('data-input-socket'), e.getAttribute('data-output-socket'),
+  e.hasAttribute('data-property'), e.closest('.section')?.firstElementChild?.getAttribute('data-label') ?? null,
+]));
 
-test('only a Condition draws True and False: a header socket and a footer; no other node draws either', async ({ page }) => {
-  expect(await page.locator('#cv > sherpa-node[data-branches]').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')))).toEqual(['Condition']);
-  const c = (await socket(page, 'Condition', 'output'))!;
-  const f = (await socket(page, 'Condition', 'false'))!;
-  expect([c.w > 0, f.w > 0, f.y > c.y]).toEqual([true, true, true]);
-  // The others: a Field and a Math and a Value send from a row; none has a header output or a False.
+test('no node has a True or a False socket: a Condition\'s True is a property row; only a Check has two ways, Yes and No (plan 944)', async ({ page }) => {
+  // No fork anywhere: no data-branches, no footer, no False socket.
+  expect(await page.locator('#cv > sherpa-node[data-branches]').count()).toBe(0);
+  expect(await page.locator('#cv > sherpa-node').evaluateAll((els) => els.filter((e) => e.shadowRoot!.querySelector('.footer, .socket-false, .socket-tab-false')).length)).toBe(0);
+  // A Condition sends nothing from its header: its Results and its True are rows of its Properties box, output only.
+  expect(await socket(page, 'Condition', 'output')).toBeNull();
+  const tests = await rowsOf(page, 'Condition');
+  expect(tests.filter((r) => r[3])).toEqual([['Results', null, 'object', true, 'Properties'], ['True', null, 'value', true, 'Properties']]);
+  // A Check: its test on its header, its Data on a row, and Yes and No as properties; with no Data, each an object.
+  expect(await card(page, 'Check').getAttribute('data-input-socket')).toBe('any');
+  expect(await socket(page, 'Check', 'output')).toBeNull();
+  expect(await rowsOf(page, 'Check')).toEqual([
+    ['Parameters', null, null, false, 'Parameters'], ['Data', 'any', null, false, 'Parameters'],
+    ['Properties', null, null, false, 'Properties'], ['Yes', null, 'object', true, 'Properties'], ['No', null, 'object', true, 'Properties'],
+  ]);
+  // The others: a Field, a Math and a Value send from a row; none has a header output.
   for (const heading of ['Source', 'Field', 'Value', 'Math', 'Output']) {
     expect(await socket(page, heading, 'output'), `${heading}: no header output`).toBeNull();
-    expect(await socket(page, heading, 'false'), `${heading}: no False`).toBeNull();
   }
-  // A Time is a check: one boolean from its header, and no False.
+  // A Time still sends one boolean from its header.
   expect(await socket(page, 'Time', 'output')).not.toBeNull();
-  expect(await socket(page, 'Time', 'false')).toBeNull();
-  // Pixels: both sockets are drawn, inked inside their boxes.
-  expect(await inked(page, c), 'the True socket is drawn').toBeGreaterThan(8);
-  expect(await inked(page, f), 'the False socket is drawn').toBeGreaterThan(8);
+  expect(await card(page, 'Time').getAttribute('data-output-socket')).toBe('boolean');
+  // Pixels: True, Yes and No are drawn, inked inside their boxes.
+  expect(await inked(page, (await socket(page, 'Condition', 'output', named('True')))!), 'the True socket is drawn').toBeGreaterThan(8);
+  expect(await inked(page, (await socket(page, 'Check', 'output', named('Yes')))!), 'the Yes socket is drawn').toBeGreaterThan(8);
+  expect(await inked(page, (await socket(page, 'Check', 'output', named('No')))!), 'the No socket is drawn').toBeGreaterThan(8);
 });
 
 test('a Source\'s Rows leave from its Store row, beside its input socket: no Rows line, the pointer joins a Field there', async ({ page }) => {
-  const rows = await card(page, 'Source').locator('sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-input-socket'), e.getAttribute('data-output-socket')]));
-  // The Store row under "Parameters", then under "Properties" the Count property row: output only (plan 835).
-  expect(rows).toEqual([['Parameters', null, null], [null, 'value', 'object'], ['Properties', null, null], ['Count', null, 'value']]);
+  const rows = await card(page, 'Source').locator('sherpa-node-row').evaluateAll((els) => els.filter((e) => e.checkVisibility()).map((e) => [e.getAttribute('data-label'), e.getAttribute('data-input-socket'), e.getAttribute('data-output-socket')]));
+  // The Store row under "Parameters", and no Properties box: its Count is gone (plan 944), and its Rows are the Store row's.
+  // Soft, so the rest is still measured.
+  expect.soft(rows).toEqual([['Parameters', null, null], [null, 'value', 'object']]);
   const [out, inn] = [(await socket(page, 'Source', 'output', STORE))!, (await socket(page, 'Source', 'input', STORE))!];
   // One row: both sockets on its line, the Rows on its right.
   expect([Math.abs(out.y - inn.y) <= 1, out.x > inn.x]).toEqual([true, true]);
@@ -108,9 +129,14 @@ test('a Source\'s Rows leave from its Store row, beside its input socket: no Row
   expect(Math.abs(start[1]! + box.y + panned - middle(out)[1])).toBeLessThan(12);
 });
 
-test('a Condition\'s True and False join an Output by the real pointer; no other node has either to drag', async ({ page }) => {
-  await drag(page, middle((await socket(page, 'Condition', 'output'))!), middle((await socket(page, 'Output', 'input'))!));
-  expect(await connections(page)).toEqual(['c → o']);
-  await drag(page, middle((await socket(page, 'Condition', 'false'))!), middle((await socket(page, 'Time', 'input'))!));
-  expect(await connections(page)).toEqual(['c → o', 'c/#false → t']);
+test('only a Check branches: a Condition\'s True joins its test, and its Yes and No an Output each, by the real pointer (plan 944)', async ({ page }) => {
+  await drag(page, middle((await socket(page, 'Condition', 'output', named('True')))!), middle((await socket(page, 'Check', 'input'))!));
+  expect(await connections(page)).toEqual(['c/true → k']);
+  await drag(page, middle((await socket(page, 'Check', 'output', named('Yes')))!), middle((await socket(page, 'Output', 'input'))!));
+  await drag(page, middle((await socket(page, 'Check', 'output', named('No')))!), middle((await socket(page, 'Output', 'input', undefined, 1))!));
+  expect(await connections(page)).toEqual(['c/true → k', 'k/no → o2', 'k/yes → o']);
+  // A value into its Data: Yes and No are drawn as what they send, a value each. An empty Value sends nothing (D2).
+  await drag(page, middle((await socket(page, 'Value', 'output', named('Value')))!), middle((await socket(page, 'Check', 'input', named('Data')))!));
+  expect(await connections(page)).toEqual(['c/true → k', 'k/no → o2', 'k/yes → o', 'v/value → k/data']);
+  expect((await rowsOf(page, 'Check')).filter((r) => r[3]).map((r) => [r[0], r[2]])).toEqual([['Yes', 'value'], ['No', 'value']]);
 });

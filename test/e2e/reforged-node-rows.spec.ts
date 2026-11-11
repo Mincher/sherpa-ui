@@ -3,7 +3,8 @@ import { test, expect, type Page } from './harness';
 /**
  * A node's rows: a MULTI-select row is one select — the quick-filter chip the panel draws,
  * a menu of ticks — never a list of checkboxes (TODO 731); a SWITCH row has a boolean input
- * socket, and a connected True drives it, a False clears it, cut restores (TODO 732). Pixels
+ * socket, and a connected true value drives it, a false one clears it, cut restores (TODO 732); a Condition's True,
+ * a row now (plan 944), drives it read only. Pixels
  * for the socket; real clicks for the menu. Plan 713 D7, D17.
  */
 type Canvas = HTMLElement & { rendered: Promise<void> };
@@ -34,6 +35,9 @@ const BIND = `async (connections, OWN = false) => {
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } },
     { id: 'gate', kind: 'gate', x: 720, y: 0, values: { on: OWN } },
     { id: 'status', kind: 'field', x: 0, y: 520, values: { field: 'status' } },
+    // A boolean each way: no node has a True or a False socket (plan 944).
+    { id: 'yes', kind: 'value', x: 360, y: 440, values: { type: 'boolean', value: 'true' } },
+    { id: 'no', kind: 'value', x: 360, y: 720, values: { type: 'boolean', value: 'false' } },
   ], connections: [{ from: 'start/rows', to: 'status' }, { from: 'status/field', to: 'filter' }, ...connections] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), kinds,
@@ -116,7 +120,8 @@ test('a switch row has a boolean input socket: hollow until a connection joins i
 });
 
 test('a connected socket is filled: the shape is ink in the middle, not at its far corners', async ({ page }) => {
-  await bind(page, [{ from: 'filter', to: 'gate/on' }]);
+  // A Condition's True, a row (plan 944).
+  await bind(page, [{ from: 'filter/true', to: 'gate/on' }]);
   const green = await ink(page);
   // Three corners: the fourth, bottom right, is inked or not by the fraction of a pixel the fitted view puts the socket on.
   const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.04, .04], [.04, .96]])).map((p) => (near(p, green) ? 1 : 0));
@@ -128,9 +133,9 @@ const sw = (page: Page) => page.evaluate((sel) => {
   return { on: s.checked, locked: s.hasAttribute('readonly') && !s.hasAttribute('disabled'), note: s.getAttribute('data-description') };
 }, GATE);
 
-test('a connected True drives the switch on, read only and marked Custom; cut the connection and its own state is back', async ({ page }) => {
-  await bind(page, [{ from: 'filter', to: 'gate/on' }]);
-  expect(await sw(page)).toEqual({ on: true, locked: true, note: 'Custom, from Condition' });
+test('a connected true value drives the switch on, read only and marked Custom; cut the connection and its own state is back (plan 944)', async ({ page }) => {
+  await bind(page, [{ from: 'yes/value', to: 'gate/on' }]);
+  expect(await sw(page)).toEqual({ on: true, locked: true, note: 'Custom, from Value' });
   // Pick the connector, then Delete: the connection is cut.
   const [mx, my] = await page.evaluate(() => {
     const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-connectors polyline[data-to="gate/on"]')!;
@@ -148,8 +153,13 @@ test('a connected True drives the switch on, read only and marked Custom; cut th
   expect((await draft(page))['gate']).toEqual({ on: true });
 });
 
-test('a connected False clears the switch: off, though its own state is on', async ({ page }) => {
-  await bind(page, [{ from: 'filter/#false', to: 'gate/on' }], true);
+test('a connected false value clears the switch: off, though its own state is on (plan 944)', async ({ page }) => {
+  await bind(page, [{ from: 'no/value', to: 'gate/on' }], true);
   expect((await sw(page)).on).toBe(false);
   expect((await sw(page)).locked).toBe(true);
+});
+
+test('a Condition\'s True, a row, drives the switch read only and marked Custom (plan 944)', async ({ page }) => {
+  await bind(page, [{ from: 'filter/true', to: 'gate/on' }], true);
+  expect(await sw(page)).toMatchObject({ locked: true, note: 'Custom, from Condition' });
 });

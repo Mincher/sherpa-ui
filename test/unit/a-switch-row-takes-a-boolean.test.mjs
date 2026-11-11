@@ -1,6 +1,7 @@
 /**
  * A SWITCH ROW HAS A BOOLEAN INPUT: a Scope's Filters, a Preset's and a Saved filter's On.
- * A connection into it DRIVES it — True from a True socket, False from a False socket — read
+ * A connection into it DRIVES it — on from a true value, off from a false one; a number reads as
+ * 1 or 0, as a test's True is (plan 944: no True or False socket) — read
  * only and marked Custom; cut the connection and the row's own state is back, for the draft kept
  * it. A page's Query has no way to say "driven by a node", so it refuses the connection by name.
  * Will, 2026-11-04 · plan 713 D7, TODO 732.
@@ -27,28 +28,37 @@ test('every switch row of every kind takes a boolean, and no other row is change
   assert.equal(accepts('value', 'boolean'), false);
 });
 
-test('a True drives a switch on, a False off, marked Custom; cutting the connection gives its own state back', () => {
+test('a true value drives a switch on, a false one off, marked Custom; cutting the connection gives its own state back', () => {
   assert.deepEqual(drivenSwitch([]), { value: false, custom: true });
   assert.deepEqual(drivenSwitch([false, true]), { value: true, custom: true });
   const kinds = { ...NODE_KINDS, gate: { heading: 'Gate', icon: 'flag', rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'x', graphs: ['workflow'] } };
+  // A boolean Value, true and false, a number 1 and 0, and a Condition, whose True is a row (plan 944).
   const w = (from) => ({
     v: 3, id: 'g', nodes: [
       { id: 'f', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: 'a' } },
       { id: 'gate', kind: 'gate', x: 360, y: 0, values: { on: false } },
+      { id: 'yes', kind: 'value', x: 0, y: 0, values: { type: 'boolean', value: 'true' } },
+      { id: 'no', kind: 'value', x: 0, y: 0, values: { type: 'boolean', value: 'false' } },
+      { id: 'one', kind: 'value', x: 0, y: 0, values: { type: 'integer', value: 1 } },
+      { id: 'zero', kind: 'value', x: 0, y: 0, values: { type: 'integer', value: 0 } },
     ], connections: [{ from, to: 'gate/on' }],
   });
   const on = (flow) => workflowGraph(flow, {}, kinds).nodes[1].rows[0];
-  assert.deepEqual(workflowFaults(w('f'), kinds), []);
-  const t = on(w('f'));
-  assert.deepEqual([t.value, t.custom, t.hint], [true, true, 'Custom, from Condition']);
-  const f = on(w('f/#false'));
+  assert.deepEqual(workflowFaults(w('yes/value'), kinds), []);
+  const t = on(w('yes/value'));
+  assert.deepEqual([t.value, t.custom, t.hint], [true, true, 'Custom, from Value']);
+  const f = on(w('no/value'));
   assert.deepEqual([f.value, f.custom], [false, true]);
+  assert.deepEqual([on(w('one/value')).value, on(w('zero/value')).value], [true, false], 'a number reads as 1 or 0');
+  // A Condition's True drives it too, and its header and False send nothing (plan 944).
+  assert.deepEqual([workflowFaults(w('f/true'), kinds), on(w('f/true')).custom, on(w('f/true')).hint], [[], true, 'Custom, from Condition']);
+  assert.deepEqual(workflowFaults(w('f/#false'), kinds), ['a connection leaves "f/#false", which is no output socket']);
   // The row's own state was kept: cut, and it is back.
-  const cut = editWorkflow(w('f'), { cut: 'gate/on' }, kinds);
+  const cut = editWorkflow(w('yes/value'), { cut: 'gate/on' }, kinds);
   const back = on(cut);
   assert.deepEqual([back.value, back.custom], [false, undefined]);
   // A value is no boolean: it joins (TODO 770), but cannot drive it — the switch reads null, off, and the node warns.
-  const fed = { ...w('f'), nodes: [...w('f').nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'yes' } }], connections: [{ from: 'v/value', to: 'gate/on' }] };
+  const fed = { ...w('f/true'), nodes: [...w('f/true').nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'yes' } }], connections: [{ from: 'v/value', to: 'gate/on' }] };
   assert.deepEqual(workflowFaults(fed, kinds), []);
   const gate = workflowGraph(fed, {}, kinds).nodes[1];
   assert.deepEqual([gate.rows[0].value, gate.rows[0].custom, gate.warnings], [null, undefined, [{ row: 'on', words: 'On takes a boolean; it was given "yes"' }]]);

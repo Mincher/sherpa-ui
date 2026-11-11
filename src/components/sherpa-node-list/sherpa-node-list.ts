@@ -261,9 +261,9 @@ export class SherpaNodeList extends SherpaElement {
 
   /** Open "Add a node" where a line was let go: the kinds a socket of its type could join, a Value first. */
   askAdd(context: AddContext): void {
-    // A family that fits only as another type says which: "Collection › Count".
+    // A family that fits only as another type says which: "Math › Count".
     const choices = paletteFor(this.#palette, context.type, context.side).filter(({ kind }) => !context.gives || takesGiven(kind, context.gives)).map(({ id, kind }) => {
-      const type = fitOf(kind, context.type, context.side)?.type;
+      const type = fitOf(kind, context.type, context.side, context.gives)?.type;
       return { id, heading: type ? `${kind.heading} › ${kind.types![type]!.label}` : kind.heading };
     });
     if (!choices.length) return;

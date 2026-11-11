@@ -186,17 +186,21 @@ test('the Query editor unfurls too: every node moves, none overlaps, the places 
   expect(Object.keys(kept).length).toBeGreaterThan(1);
 });
 
-// Two Values into a Math node's rows a and b, and a Condition's rows and False out to two Outputs: each pair stood upside down.
+// Two Values into a Math node's rows a and b, and a Check's Yes and No out to two Outputs: each pair stood upside down. The
+// Condition's True is the Check's test: no node has a True or a False socket (plan 944).
 const ROWS: [string, string, number, number, Record<string, unknown>?][] = [
   ['two', 'value', 0, 0, { type: 'integer', value: '2' }], ['one', 'value', 0, 700, { type: 'integer', value: '1' }],
-  ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }],
-  ['no', 'output', 1500, 0], ['yes', 'output', 1500, 600],
+  ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }], ['check', 'check', 1500, 300],
+  ['no', 'output', 2000, 0], ['yes', 'output', 2000, 600],
 ];
-const FED = [{ from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' }, { from: 'test/rows', to: 'yes' }, { from: 'test/#false', to: 'no' }];
+const FED = [
+  { from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' }, { from: 'test/true', to: 'check' },
+  { from: 'check/yes', to: 'yes' }, { from: 'check/no', to: 'no' },
+];
 
-test('the sockets\' order: what feeds rows a and b stands in that order, and what the rows and False send, in theirs (Will, TODO 827)', async ({ page }) => {
+test('the sockets\' order: what feeds rows a and b stands in that order, and what a Check\'s Yes and No send, in theirs (Will, TODO 827; plan 944)', async ({ page }) => {
   await start(page, ROWS, FED);
-  // A number into the Condition: its Count shows, passing the number on (Will, 2026-11-11), so two crossings.
+  // Measured (plan 944): each upside-down pair crosses once, rows a and b and Yes and No, so two crossings and two swaps.
   expect(await atSockets(page)).toEqual({ crossed: 2, swapped: 2 });
   await button(page).click();
   await settle(page);

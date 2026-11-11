@@ -41,11 +41,11 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
     { id: 'tag', kind: 'tag', x: 300, y: 400 }, { id: 'p', kind: 'field', x: 300, y: 600 }, { id: 't', kind: 'time', x: 300, y: 800 },
     { id: 'end', kind: 'output', x: 600, y: 0 }, value('yes', true, 'boolean'),
   ];
-  // A header's words name a family's type: Equals, Between. A True or a False STEERS — it gates, and is no data, so it
-  // warns nothing (TODO 939) — so a plain boolean is what each is given here.
+  // A header's words name a family's type: Equals, Between. A plain boolean is what each is given here; a test's True, 1 or
+  // 0, is a row (plan 944).
   const wrong = flow(nodes, [
     { from: 's/rows', to: 'c' }, { from: 'yes/value', to: 'col' }, { from: 'yes/value', to: 'tag' }, { from: 'yes/value', to: 'p' }, { from: 's/rows', to: 't' }, { from: 'v/value', to: 'end' },
-    { from: 'c', to: 'end' }, { from: 'c/#false', to: 'end' },
+    { from: 'c/true', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(wrong)), {
     fld: [lone],
@@ -57,7 +57,7 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
   }, 'the Output takes anything');
   // A comparison and a Tag test a Field's column; a Group takes a column. Rows with no Field into a Tag warn.
   const right = flow([...nodes, value('d', '2024-01-31', 'date')], [
-    { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 'fld/field', to: 'col' }, { from: 'fld/field', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 'c', to: 'end' },
+    { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 'fld/field', to: 'col' }, { from: 'fld/field', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 'c/true', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(right)), {});
   assert.deepEqual(said(drawn(flow(nodes, [{ from: 's/rows', to: 'tag' }]))), { fld: [lone], tag: [['', 'Tag takes a field; it was given rows: connect a Field in']], p: [lone] });
@@ -190,7 +190,9 @@ test('the words come from one place: the kind says what it needs, INPUT_WORDS sa
   assert.deepEqual(readInput({ label: 'Value A', needs: 'number' }, { kind: 'rows' }), { value: null, warning: 'Value A takes a number; it was given rows' });
   assert.deepEqual(readInput({ label: 'Anything' }, { kind: 'boolean' }), { value: undefined });
   // What a socket sends: rows from a Rows row, a list from a List, a number from a Result; nothing from a Value that holds none.
-  assert.deepEqual([givenAt(store, 'rows', NODE_KINDS), givenAt(value('l', ['a'], 'list'), 'value', NODE_KINDS), givenAt({ kind: 'math' }, 'result', NODE_KINDS), givenAt(value('e'), 'value', NODE_KINDS), givenAt({ kind: 'condition' }, '#false', NODE_KINDS)],
-    [{ kind: 'rows' }, { kind: 'list', value: ['a'] }, { kind: 'number' }, undefined, { kind: 'boolean' }]);
+  // A test's True is a number, 1 or 0; there is no False (plan 944).
+  assert.deepEqual([givenAt(store, 'rows', NODE_KINDS), givenAt(value('l', ['a'], 'list'), 'value', NODE_KINDS), givenAt({ kind: 'math' }, 'result', NODE_KINDS), givenAt(value('e'), 'value', NODE_KINDS),
+    givenAt({ kind: 'condition' }, 'true', NODE_KINDS), givenAt({ kind: 'condition' }, '#false', NODE_KINDS)],
+  [{ kind: 'rows' }, { kind: 'list', value: ['a'] }, { kind: 'number' }, undefined, { kind: 'number' }, undefined]);
   for (const name of ['INPUT_WORDS', 'givenAt', 'needOf', 'readInput']) assert.equal(typeof data[name], name === 'INPUT_WORDS' ? 'object' : 'function', `sherpa-ui/data exports ${name}`);
 });

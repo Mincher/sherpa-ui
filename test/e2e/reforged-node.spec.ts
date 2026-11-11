@@ -224,7 +224,7 @@ const SHAPES: Record<string, number[]> = {
   object: [1, 0, 0, 0, 0, 1, 0],
   boolean: [1, 0, 0, 0, 0, 1, 1],
   any: [1, 1, 1, 1, 1, 1, 1],
-  // An INPUT is round, whatever its type (TODOs 740, 807); the dock behind it is grey, not ink; False is a rounded square.
+  // An INPUT is round, whatever its type (TODOs 740, 807); the dock behind it is grey, not ink.
   input: [1, 0, 0, 0, 0, 1, 1],
 };
 
@@ -242,7 +242,7 @@ async function socketNode(page: Page, id: string, attrs: string): Promise<{ x: n
     const r = await page.evaluate((nodeId) => {
       const n = document.querySelector<Sock>(`#${nodeId}`)!;
       n.scrollIntoView({ block: 'center' });
-      return { in: n.socketRect('input')?.toJSON() ?? null, out: n.socketRect('output')?.toJSON() ?? null, fls: n.socketRect('false')?.toJSON() ?? null };
+      return { in: n.socketRect('input')?.toJSON() ?? null, out: n.socketRect('output')?.toJSON() ?? null };
     }, id);
     return { ...box, ...r } as never;
   });
@@ -287,51 +287,37 @@ test('an output socket pins its own type: a value info, an object active, a bool
   expect(seen).toEqual({ value: true, object: true, boolean: true });
 });
 
-test('a fork shows its footer with False in red, and True on the header in green; a node with no fork has neither footer nor False', async ({ page }) => {
-  const critical = await inkOf(page, '--sherpa-style-critical-indicator-accent');
+test('no node has a footer or a False, data-branches or not; a boolean output is one green circle on the header (plan 944)', async ({ page }) => {
   const success = await inkOf(page, '--sherpa-style-success-indicator-accent');
-  await socketNode(page, 'plain', 'data-output-socket="object"');
-  expect(await rectOf(page, 'plain', 'false')).toBeNull();
-  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#plain')!.shadowRoot!.querySelector('.footer')!).display)).toBe('none');
-
+  // The old fork's attributes say nothing now: no footer, no False socket, no False tip.
   await socketNode(page, 'fork', 'data-branches data-output-socket="boolean" data-output-connected data-false-connected');
-  const [yes] = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), [[.5, .5]]);
-  const [no] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
-  expect(near(yes!, success), 'True is green').toBe(true);
-  expect(near(no!, critical), 'False is red').toBe(true);
-  // False is a rounded square, True a circle: two shapes (TODOs 740, 874).
-  const square = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), PROBES);
-  // Its fill is a rounded square inside the white inset: the centre and the edges' middles ink, the corners not (two corners sit on a fraction of a pixel, and are left out).
-  expect(square.map((p) => (near(p, critical) ? 1 : 0)).filter((_, i) => i !== 1 && i !== 4)).toEqual([1, 0, 0, 1, 1]);
+  expect(await page.evaluate(() => document.querySelector('#fork')!.shadowRoot!.querySelector('.footer, .socket-false, .tip-false'))).toBeNull();
   const circle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
   expect(circle.map((p) => (near(p, success) ? 1 : 0))).toEqual(SHAPES['boolean']);
-  // Unconnected, False is hollow.
-  await socketNode(page, 'fork', 'data-branches');
-  const [open] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
-  expect(near(open!, critical)).toBe(false);
 });
 
 test('a socket\'s tip says its type in words, on its socket\'s side: an input\'s to the left, an output\'s to the right', async ({ page }) => {
-  await socketNode(page, 'tip', 'data-input-socket="any" data-output-socket="boolean" data-branches');
+  await socketNode(page, 'tip', 'data-input-socket="any" data-output-socket="boolean"');
   const words: string[] = [];
   const sides: string[] = [];
-  for (const side of ['input', 'output', 'false']) {
+  for (const side of ['input', 'output']) {
     const r = (await rectOf(page, 'tip', side))!;
     await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
     const text = await page.waitForFunction((cls) => {
       const tip = document.querySelector('#tip')!.shadowRoot!.querySelector<HTMLElement>(cls);
       return tip?.matches(':popover-open') ? tip.innerText.replace(/\s+/g, ' ').trim() : false;
-    }, side === 'input' ? '.tip-in' : side === 'output' ? '.tip-out' : '.tip-false');
+    }, side === 'input' ? '.tip-in' : '.tip-out');
     words.push(await text.jsonValue() as string);
     // Where the tip stands against its socket (TODO 895): wholly left of it, or wholly right.
     sides.push(await page.evaluate(([cls, at]) => {
       const t = document.querySelector('#tip')!.shadowRoot!.querySelector<HTMLElement>(cls)!.getBoundingClientRect();
       return t.right <= at.x + 1 ? 'left' : t.left >= at.x + at.width - 1 ? 'right' : `over ${Math.round(t.left)}–${Math.round(t.right)}`;
-    }, [side === 'input' ? '.tip-in' : side === 'output' ? '.tip-out' : '.tip-false', { x: r.x, width: r.width }] as const));
+    }, [side === 'input' ? '.tip-in' : '.tip-out', { x: r.x, width: r.width }] as const));
     await page.mouse.move(-1, -1);
   }
-  expect(words).toEqual(['Input: any type', 'True: a boolean', 'False: a boolean']);
-  expect(sides).toEqual(['left', 'right', 'right']);
+  // A boolean output is an Output, not a True: no node has a True or a False socket (plan 944).
+  expect(words).toEqual(['Input: any type', 'Output: a boolean']);
+  expect(sides).toEqual(['left', 'right']);
 });
 
 test('a connection takes the ink of its FROM socket\'s type', async ({ page }) => {
@@ -343,9 +329,10 @@ test('a connection takes the ink of its FROM socket\'s type', async ({ page }) =
     await (canvas.querySelector('#r') as Sock).rendered;
     return [...canvas.querySelectorAll('svg.graph-connectors path')].map((p) => getComputedStyle(p).stroke);
   });
-  const inks = await Promise.all(['info', 'active', 'success', 'critical'].map((m) => inkOf(page, `--sherpa-style-${m}-indicator-accent`)));
-  expect(r.slice(0, 4).map((c) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number))).toEqual(inks);
-  expect(r[4]).toBe('rgb(1, 2, 3)');
+  const inks = await Promise.all(['info', 'active', 'success'].map((m) => inkOf(page, `--sherpa-style-${m}-indicator-accent`)));
+  expect(r.slice(0, 3).map((c) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number))).toEqual(inks);
+  // A 'false' line has no ink of its own now (plan 944): it is drawn as a line of no type.
+  expect(r.slice(3)).toEqual(['rgb(1, 2, 3)', 'rgb(1, 2, 3)']);
 });
 
 test('in forced colours the shapes stay and the colours go', async ({ page, browserName }) => {

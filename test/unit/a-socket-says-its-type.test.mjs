@@ -1,12 +1,12 @@
 /**
  * A SOCKET SAYS ITS TYPE: a value, an object, a boolean, or — an input only — any.
  * One function, accepts(), says which output an input reads as its own; the registry says
- * each socket's type, whether an input takes many connections, and whether a node forks
- * into True (its header) and False (`node/#false`). Any connection joins any input (TODO
- * 770): one of another type reads null, and its node warns; workflowFaults refuses
- * only a socket that is not there. One rowChoices() says every list a picklist row reads. A
- * node's data comes in on its header, of any type, and leaves its Rows row; each
- * kind a workflow runs forks. Will, TODO 713 (D1, D2, D4, D17) · plan 713 M1, M3.
+ * each socket's type and whether an input takes many connections. No node has a True or a
+ * False socket: a test's True is a row, and only a Check branches, by its Yes and No rows
+ * (plan 944). Any connection joins any input (TODO 770): one of another type reads null,
+ * and its node warns; workflowFaults refuses only a socket that is not there. One
+ * rowChoices() says every list a picklist row reads. A node's data comes in on its header,
+ * of any type, and leaves its Rows row. Will, TODO 713 (D1, D2, D4, D17) · plan 713 M1, M3.
  * TRAP T-a-socket-says-its-type
  *
  *   node --test test/unit/a-socket-says-its-type.test.mjs
@@ -44,8 +44,11 @@ test('True and False are truthiness (D2): nothing is False, anything else True',
 // An app's kinds beside the library's, one for each new part of a socket.
 const kinds = {
   ...NODE_KINDS,
-  // A fork: any comes in (D1); True on its header, False on its footer.
-  fork: { heading: 'Fork', icon: 'function', input: 'any', branches: true, rows: [{ name: 'rows', label: 'Rows', input: 'object', output: 'object' }], model: 'fork', graphs: ['workflow'] },
+  // An app's fork: any comes in (D1); a boolean leaves each of its Yes and No rows, as no header does (plan 944).
+  fork: {
+    heading: 'Fork', icon: 'function', input: 'any', model: 'fork', graphs: ['workflow'],
+    rows: [{ name: 'rows', label: 'Rows', input: 'object', output: 'object' }, { name: 'yes', label: 'Yes', output: 'boolean' }, { name: 'no', label: 'No', output: 'boolean' }],
+  },
   // Booleans in, many; a multi-select row: one object in, one out (D17).
   gate: {
     heading: 'Gate', icon: 'flag', input: 'boolean', many: true, model: 'gate', graphs: ['workflow'],
@@ -55,27 +58,33 @@ const kinds = {
   odd: { heading: 'Odd', icon: 'flag', output: 'any', rows: [], model: 'odd', graphs: ['workflow'] },
 };
 
-test('the registry says each socket: a row\'s, the header\'s — True where it forks — and the footer\'s False', () => {
-  assert.equal(FALSE_SOCKET, '#false');
+test('the registry says each socket: a row\'s and the header\'s; no node has a True or a False socket (plan 944)', () => {
+  assert.equal(FALSE_SOCKET, undefined, 'no False socket (plan 944)');
   assert.equal(socketType(kinds.fork, undefined, 'input'), 'any');
-  assert.equal(socketType(kinds.fork, undefined, 'output'), 'boolean');
-  assert.equal(socketType(kinds.fork, '#false', 'output'), 'boolean');
-  assert.equal(socketType(kinds.fork, '#false', 'input'), undefined, 'False is an output only');
+  assert.equal(socketType(kinds.fork, undefined, 'output'), undefined, 'its header sends nothing');
+  assert.equal(socketType(kinds.fork, 'yes', 'output'), 'boolean');
+  assert.equal(socketType(kinds.fork, 'no', 'input'), undefined, 'No is an output only');
   assert.equal(socketType(kinds.fork, 'rows', 'input'), 'object');
-  assert.equal(socketType(NODE_KINDS.output, '#false', 'output'), undefined, 'no fork, no False');
+  // A kind that still says `branches` forks no more (plan 944).
+  assert.deepEqual(['#false', undefined].map((row) => socketType({ ...kinds.fork, branches: true }, row, 'output')), [undefined, undefined]);
+  assert.equal(socketType(NODE_KINDS.output, '#false', 'output'), undefined, 'no False');
   assert.equal(socketType(NODE_KINDS.output, undefined, 'output'), undefined, 'the end sends nothing');
-  assert.equal(socketType(NODE_KINDS.condition, undefined, 'output'), 'boolean', 'a Condition\'s True');
+  // A Condition's header sends nothing: its True is a row, 1 or 0 (plan 944).
+  assert.equal(socketType(NODE_KINDS.condition, undefined, 'output'), undefined, 'a Condition\'s header sends nothing');
+  assert.equal(socketType(resolveKind(NODE_KINDS.condition), 'true', 'output'), 'value', 'a Condition\'s True');
+  // A Check: its test on its header, its Data on a row, and its Yes and No rows (plan 944).
+  assert.deepEqual([[undefined, 'input'], ['data', 'input'], ['yes', 'output'], ['no', 'output'], [undefined, 'output']].map(([row, side]) => socketType(NODE_KINDS.check, row, side)), ['any', 'any', 'object', 'object', undefined]);
   assert.equal(takesMany(kinds.gate), true);
   assert.equal(takesMany(kinds.gate, 'tags'), false);
   assert.equal(takesMany(NODE_KINDS.output), false);
-  // A drawn node carries its fork and its many, for the footer and the tip to read.
+  // A drawn node carries its many, for the tip to read; no fork (plan 944).
   const drawn = kindNode(kinds, 'gate', 'g', []);
-  assert.deepEqual([drawn.many, kindNode(kinds, 'fork', 'f', []).branches, kindNode(NODE_KINDS, 'output', 'x', []).branches], [true, true, undefined]);
+  assert.deepEqual([drawn.many, kindNode({ ...kinds, old: { ...kinds.fork, branches: true } }, 'old', 'f', []).branches], [true, undefined]);
   // A drawn node says its sockets as its kind does.
   assert.equal(socketType(kindNode(NODE_KINDS, 'condition', 'x', resolveKind(NODE_KINDS.condition).rows), 'rows', 'output'), 'object');
 });
 
-test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; only Condition forks (TODO 831)', () => {
+test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; only Check branches (plan 944)', () => {
   assert.deepEqual(ROWS, { name: 'rows', label: 'Results', output: 'object', gives: 'rows', property: true });
   const all = Object.entries(NODE_KINDS);
   // A header input takes any; no header sends rows: a Rows row does, first.
@@ -94,29 +103,32 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
   assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), [
     ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'tag › includes',
   ]);
-  // True and False: a Condition, and an AI node that expects True/false (plan 926 D2) — a type of its own, so no kind says
-  // `branches` but Condition (Will, TODO 831). A check that sends
-  // a boolean, and no False, says `output`: a Preset and a Saved filter (a scope's row), a Time and a Tag.
-  assert.deepEqual(named((k) => k.branches), ['condition']);
+  // No kind forks (plan 944): only a Check branches, by Yes and No rows that pass on its Data. A check that sends
+  // a boolean on its header says `output`: a Preset and a Saved filter (a scope's row), a Time and a Tag.
+  assert.deepEqual(named((k) => k.branches), []);
+  assert.deepEqual(named((k) => k.rows.some((r) => r.passes)), ['check']);
   assert.deepEqual(named((k) => k.output === 'boolean'), ['preset', 'saved', 'time', 'tag']);
-  // A type forks as its family does, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
+  // No type forks, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
   // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
-  const forks = (name, id) => ['prompt', 'runbook', 'skill'].includes(name) && id === 'boolean';
-  for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [forks(name, id) || undefined, undefined], `${name} › ${id}`);
+  for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], `${name} › ${id}`);
+  // A True row, 1 or 0: every Condition type, and an AI node that expects True/false (plan 944).
+  assert.deepEqual(typed.filter(([, rows]) => rows.some((r) => r.name === 'true')).map(([name]) => name), [
+    ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'prompt › boolean', 'runbook › boolean', 'skill › boolean',
+  ]);
   assert.deepEqual(all.filter(([, k]) => Object.values(k.types ?? {}).some((t) => t.input)).map(([n]) => n), ['condition', 'portal']);
   // A comparison tests what comes in on its header (plan 783 D3): a Field's column, or a value.
   // And and Or take anything, several (TODO 939); Not one boolean.
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
-  // No fork: every other kind a workflow runs, the end and a portal, which passes on what reaches it (TODO 779), among them.
-  assert.deepEqual(named((k) => k.graphs.includes('workflow') && !k.branches), ['source', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'provider', 'model', 'prompt', 'runbook', 'skill', 'output']);
+  // Every kind a workflow runs, the Check, the end and a portal, which passes on what reaches it (TODO 779), among them.
+  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['source', 'condition', 'check', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'provider', 'model', 'prompt', 'runbook', 'skill', 'output']);
 });
 
-test('every shipped kind says its types once: no output sends any; a fork says no output of its own; a multi-select row is an object, one connection in', () => {
+test('every shipped kind says its types once: no output sends any; none forks; a multi-select row is an object, one connection in', () => {
   for (const [name, kind] of Object.entries(NODE_KINDS)) {
     assert.notEqual(kind.output, 'any', name);
-    if (kind.branches) assert.equal(kind.output, undefined, `${name}: its header's output is True`);
-    else if (kind.output) assert.equal(kind.output, 'boolean', `${name}: a header sends a boolean or nothing`);
+    assert.equal(kind.branches, undefined, `${name}: no kind forks (plan 944)`);
+    if (kind.output) assert.equal(kind.output, 'boolean', `${name}: a header sends a boolean or nothing`);
     for (const row of kind.rows) {
       assert.notEqual(row.output, 'any', `${name}/${row.name}`);
       if (!row.multiple) continue;
@@ -126,31 +138,32 @@ test('every shipped kind says its types once: no output sends any; a fork says n
   }
 });
 
-// Sound: rows into the fork; its True and its False into a gate that takes many.
+// Sound: rows into the fork; its Yes and its No into a gate that takes many; a Math Count's number into a Log (plan 944).
 const node = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
 const sound = {
   v: 3, id: 'typed',
-  nodes: [node('start', 'source'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'group'), node('end', 'output')],
+  nodes: [node('start', 'source'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'math', { type: 'count' }), node('end', 'output')],
   connections: [
-    { from: 'start/rows', to: 'f/rows' }, { from: 'f', to: 'g' }, { from: 'f/#false', to: 'g' },
-    { from: 'f/rows', to: 'end' }, { from: 'v/value', to: 'l' }, { from: 'c/count', to: 'l' }, { from: 'start/rows', to: 'c' },
+    { from: 'start/rows', to: 'f/rows' }, { from: 'f/yes', to: 'g' }, { from: 'f/no', to: 'g' },
+    { from: 'f/rows', to: 'end' }, { from: 'v/value', to: 'l' }, { from: 'c/result', to: 'l' }, { from: 'start/rows', to: 'c/rows' },
   ],
 };
 const planted = (change) => workflowFaults({ ...structuredClone(sound), ...change }, kinds);
 
-test('a sound typed workflow has no fault, and its schema takes `node/#false`', () => {
+test('a sound typed workflow has no fault, and its schema takes it', () => {
   assert.deepEqual(workflowFaults(sound, kinds), []);
   assert.deepEqual(schemaCheck('workflow.v3.json')(sound), []);
   const socket = schemaCheck('defs.v1.json#/$defs/socket');
-  assert.deepEqual(socket('f/#false'), []);
-  assert.notDeepEqual(socket('f/#true'), [], 'only the footer\'s False is a # part');
+  // A test's True and a Check's Yes are rows (plan 944).
+  assert.deepEqual([socket('c/true'), socket('k/yes')], [[], []]);
+  assert.notDeepEqual(socket('f/#true'), [], 'a # part is no row');
   assert.notDeepEqual(socket('f/#false/more'), []);
 });
 
 test('a connection of another type joins, no fault: the input reads null, and its node warns in words (TODO 770)', () => {
   const nodes = [...sound.nodes, node('x', 'value', { value: 'x' })];
   const cases = [
-    [{ from: 'f', to: 'g/tags' }, 'Tags takes a list; it was given a boolean'],
+    [{ from: 'f/yes', to: 'g/tags' }, 'Tags takes a list; it was given a boolean'],
     [{ from: 'start/rows', to: 'g/note' }, 'Note takes a value; it was given rows'],
     // A typed header needs its type: a Gate's, a boolean.
     [{ from: 'x/value', to: 'g' }, 'Gate takes a boolean; it was given "x"'],
@@ -162,27 +175,31 @@ test('a connection of another type joins, no fault: the input reads null, and it
     assert.deepEqual(workflowFaults(w, kinds), [], `${connection.from} → ${connection.to} is no fault`);
     assert.deepEqual(workflowGraph(w, {}, kinds).nodes.find((n) => n.id === 'g').warnings?.map((x) => x.words), [words]);
   }
-  // A True into a value row reads as the word, true or false: COERCIONS, no warning (TODO 781).
-  const word = { ...structuredClone(sound), nodes, connections: [...sound.connections, { from: 'f', to: 'g/note' }] };
+  // A boolean into a value row reads as the word, true or false: COERCIONS, no warning (TODO 781).
+  const word = { ...structuredClone(sound), nodes, connections: [...sound.connections, { from: 'f/yes', to: 'g/note' }] };
   assert.deepEqual([workflowFaults(word, kinds), workflowGraph(word, {}, kinds).nodes.find((n) => n.id === 'g').warnings], [[], undefined]);
 });
 
 test('a socket that is not there is refused, in words; so is an output that says it sends any type', () => {
-  const nodes = sound.nodes;
+  const nodes = [...sound.nodes, node('t', 'condition')];
   const cases = [
     [[{ from: 'end/#false', to: 'g' }], 'a connection leaves "end/#false", which is no output socket'],
-    [[{ from: 'f', to: 'g/#false' }], 'a connection enters "g/#false", which is no input socket'],
+    [[{ from: 'f/yes', to: 'g/#false' }], 'a connection enters "g/#false", which is no input socket'],
+    // A Condition's header and its old False send nothing (plan 944): its True is a row.
+    [[{ from: 't', to: 'g' }], 'a connection leaves "t", which is no output socket'],
+    [[{ from: 't/#false', to: 'g' }], 'a connection leaves "t/#false", which is no output socket'],
   ];
-  for (const [connections, said] of cases) assert.ok(planted({ connections: [...sound.connections, ...connections] }).includes(said), `${said} — heard: ${planted({ connections: [...sound.connections, ...connections] }).join(' | ')}`);
+  for (const [connections, said] of cases) assert.ok(planted({ nodes, connections: [...sound.connections, ...connections] }).includes(said), `${said} — heard: ${planted({ nodes, connections: [...sound.connections, ...connections] }).join(' | ')}`);
+  assert.deepEqual(planted({ nodes, connections: [...sound.connections, { from: 't/true', to: 'l' }] }), [], 'its True row sends');
   const odd = planted({ nodes: [...nodes, node('o', 'odd')], connections: [...sound.connections, { from: 'o', to: 'l' }] });
   assert.ok(odd.includes('a connection leaves "o", which sends any type: an output says the one it sends'), odd.join(' | '));
 });
 
 test('a second connection into an input that is not `many` is a fault; into a `many` one it is not, unless it is the same connection; any type joins an any', () => {
   assert.ok(planted({ connections: [...sound.connections, { from: 'start/rows', to: 'g/tags' }, { from: 'f/rows', to: 'g/tags' }] }).includes('two connections enter "g/tags", which takes one'));
-  assert.ok(planted({ connections: [...sound.connections, { from: 'f', to: 'g' }] }).includes('the connection "f" → "g" is there twice'));
+  assert.ok(planted({ connections: [...sound.connections, { from: 'f/yes', to: 'g' }] }).includes('the connection "f/yes" → "g" is there twice'));
   // An any input that takes many: values from two nodes join, and an object beside them too (TODO 770).
-  assert.deepEqual(planted({ connections: sound.connections.filter((r) => r.to !== 'l').concat({ from: 'v/value', to: 'l' }, { from: 'c/count', to: 'l' }) }), []);
+  assert.deepEqual(planted({ connections: sound.connections.filter((r) => r.to !== 'l').concat({ from: 'v/value', to: 'l' }, { from: 'c/result', to: 'l' }) }), []);
   const mixed = { ...structuredClone(sound), connections: [...sound.connections, { from: 'start/rows', to: 'l' }] };
   assert.deepEqual([workflowFaults(mixed, kinds), workflowGraph(mixed, {}, kinds).nodes.find((n) => n.id === 'l').warnings], [[], undefined]);
   // A multi-select row holds a list.
@@ -191,11 +208,11 @@ test('a second connection into an input that is not `many` is a fault; into a `m
 
 test('an edit keeps every connection into a `many` input, replaces the one into any other, and cuts one connection or all', () => {
   const into = (w, to) => w.connections.filter((r) => r.to === to).map((r) => r.from);
-  const more = editWorkflow({ ...sound, nodes: [...sound.nodes, node('f2', 'fork')] }, { connection: { from: 'f2', to: 'g' } }, kinds);
-  assert.deepEqual(into(more, 'g'), ['f', 'f/#false', 'f2'], 'beside them, in connection order');
-  assert.equal(editWorkflow(sound, { connection: { from: 'f', to: 'g' } }, kinds), sound, 'a connection already there changes nothing');
+  const more = editWorkflow({ ...sound, nodes: [...sound.nodes, node('f2', 'fork')] }, { connection: { from: 'f2/yes', to: 'g' } }, kinds);
+  assert.deepEqual(into(more, 'g'), ['f/yes', 'f/no', 'f2/yes'], 'beside them, in connection order');
+  assert.equal(editWorkflow(sound, { connection: { from: 'f/yes', to: 'g' } }, kinds), sound, 'a connection already there changes nothing');
   assert.deepEqual(into(editWorkflow(sound, { connection: { from: 'start/rows', to: 'end' } }, kinds), 'end'), ['start/rows'], 'one input, one connection');
-  assert.deepEqual(into(editWorkflow(more, { cut: { from: 'f/#false', to: 'g' } }, kinds), 'g'), ['f', 'f2']);
+  assert.deepEqual(into(editWorkflow(more, { cut: { from: 'f/no', to: 'g' } }, kinds), 'g'), ['f/yes', 'f2/yes']);
   assert.deepEqual(into(editWorkflow(more, { cut: 'g' }, kinds), 'g'), []);
   // A multi-select row's value is a list; an empty one is no value.
   const ticked = editWorkflow(sound, { node: 'g', row: 'tags', value: 'status' }, kinds);

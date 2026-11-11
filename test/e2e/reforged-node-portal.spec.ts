@@ -40,7 +40,7 @@ const BARE = {
   ],
   connections: [],
 };
-/** Source → In "rows"; two Outs "rows", their row into the Field and the Count; an In "other" alone. */
+/** Source → In "rows"; two Outs "rows", their row into the Field and the Group; an In "other" alone. */
 const LINKED = {
   v: 3, id: 'g',
   nodes: [
@@ -224,28 +224,28 @@ test('Rename, typed in the inspector, renames every portal of the name, one step
 });
 
 test('a name or a connection that would make a loop through a row is refused: the draft keeps what it had, and the select draws it back', async ({ page }) => {
-  // The Condition's rows into the In "back". The Out named "other" holds a connection kept from a row it had, into the Count,
-  // whose count is the Condition's Value B: named "back" again, that row would close a loop.
+  // The Condition's rows into the In "back". The Out named "other" holds a connection kept from a row it had, into a Math
+  // Count's Rows, whose Result is the Condition's Value B (plan 944): named "back" again, that row would close a loop.
   const LOOP = {
     v: 3, id: 'g',
     nodes: [
       node('start', 'source', 0, 0, { store: 'customers' }), node('pick', 'field', 360, 0, { field: 'status' }), node('test', 'condition', 720, 0, { type: 'eq' }),
       node('in', 'portal', 1080, 0, { type: 'in', name: 'back' }, 'In back'), node('out', 'portal', 0, 360, { type: 'out', name: 'other' }, 'Out'),
-      node('out2', 'portal', 0, 620, { type: 'out', name: 'back' }, 'Out back'), node('count', 'group', 360, 360),
+      node('out2', 'portal', 0, 620, { type: 'out', name: 'back' }, 'Out back'), node('count', 'math', 360, 360, { type: 'count' }),
     ],
-    connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'test' }, { from: 'test/rows', to: 'in' }, { from: 'out/@test/rows', to: 'count' }, { from: 'count/count', to: 'test/b' }],
+    connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'test' }, { from: 'test/rows', to: 'in' }, { from: 'out/@test/rows', to: 'count/rows' }, { from: 'count/result', to: 'test/b' }],
   };
   await bind(page, LOOP);
   await name(page, 'Out').locator('select').selectOption('back');
   await settle(page);
   expect((await flow(page)).nodes.find((n) => n.id === 'out')!.values).toEqual({ type: 'out', name: 'other' });
   await expect(name(page, 'Out')).toHaveJSProperty('value', 'other');
-  // The other Out's row into the Count: the same loop, refused.
+  // The other Out's row into the Count's Rows: the same loop, refused.
   const before = await connections(page);
   expect(await rows(page, 'Out back')).toEqual(['Condition › Results']);
-  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Results'), await socket(page, 'Group', 'input'));
+  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Results'), await socket(page, 'Math', 'input', 'Rows'));
   expect(await connections(page)).toEqual(before);
-  expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/rows → in', 'count/count → test/b']);
+  expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/rows → in', 'count/result → test/b']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
 });
 

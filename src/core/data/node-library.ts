@@ -156,7 +156,7 @@ function snapshotOf(d: NodeSnapshot): NodeSnapshot {
 }
 
 /** A definition as a NodeKind: a row per input and output, `model: 'graph'`, its header taking
- *  any type (D1) and forking True and False. Its category is its own, or "Custom Nodes". */
+ *  any type (D1) and sending a boolean, its True. Its category is its own, or "Custom Nodes". */
 export function nodeKindOf(definition: NodeDefinition): CustomKind {
   const rows: RowKind[] = [
     ...definition.inputs.map((i): RowKind => ({

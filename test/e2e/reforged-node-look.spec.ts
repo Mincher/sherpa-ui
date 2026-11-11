@@ -3,7 +3,7 @@ import { test, expect, type Page } from './harness';
 /**
  * The node look, its sockets and its resize handle — Will, TODO 740, from his Figma. A node's kind's
  * category (`data-category`) gives its radius and fill; an input is a D, a many input double height;
- * True is a circle and False a rounded square. On hover or focus a handle shows at the bottom right:
+ * a boolean output is a circle, and no node has a False (plan 944). On hover or focus a handle shows at the bottom right:
  * a drag grows the node to at most double each way, non-uniformly, and the primary key (Cmd on a Mac,
  * Ctrl elsewhere) keeps its aspect. Real pointer events; pixels, never computed style alone.
  */
@@ -87,15 +87,15 @@ test('a many input is the height of a single: 16px, whatever the connections it 
   expect(sizes.one).toBe(16);
 });
 
-test('807: no socket is double height, a many input included: the same row\'s output, and a fork\'s True and False, keep their own, in pixels', async ({ page }) => {
+test('807: no socket is double height, a many input included: the same row\'s output, and a header\'s boolean output, keep their own, in pixels (plan 944)', async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.querySelector('#root sherpa-layout-canvas')!;
     const row = (id: string, many: boolean) => `<sherpa-node-row id="${id}" data-label="${id}" data-input-socket="value"${many ? ' data-input-many' : ''} data-input-connected data-output-socket="object" data-output-connected></sherpa-node-row>`;
     // A node each, so nothing else paints down the socket's column.
     el.insertAdjacentHTML('beforeend', `<sherpa-node id="a" data-heading="Plain" data-x="300" data-y="200">${row('plain', false)}</sherpa-node>`
       + `<sherpa-node id="b" data-heading="Many" data-x="300" data-y="340">${row('many', true)}</sherpa-node>`
-      + '<sherpa-node id="fork" data-heading="Fork" data-x="560" data-y="200" data-input-socket="boolean" data-input-many data-input-connected data-branches data-output-connected data-false-connected></sherpa-node>');
-    await Promise.all([...el.querySelectorAll<Node>('#a, #b, #fork, sherpa-node-row')].map((n) => n.rendered));
+      + '<sherpa-node id="head" data-heading="Head" data-x="560" data-y="200" data-input-socket="boolean" data-input-many data-input-connected data-output-socket="boolean" data-output-connected></sherpa-node>');
+    await Promise.all([...el.querySelectorAll<Node>('#a, #b, #head, sherpa-node-row')].map((n) => n.rendered));
     await window.__settled();
   });
   const rect = (id: string, side: string) => page.evaluate(([i, s]) => {
@@ -118,9 +118,10 @@ test('807: no socket is double height, a many input included: the same row\'s ou
   const sizes = {
     plainIn: (await rect('plain', 'input')).h, plainOut: (await rect('plain', 'output')).h,
     manyIn: (await rect('many', 'input')).h, manyOut: (await rect('many', 'output')).h,
-    forkIn: (await rect('fork', 'input')).h, forkOut: (await rect('fork', 'output')).h, forkFalse: (await rect('fork', 'false')).h,
+    headIn: (await rect('head', 'input')).h, headOut: (await rect('head', 'output')).h,
   };
-  expect(sizes).toEqual({ plainIn: 16, plainOut: 16, manyIn: 16, manyOut: 16, forkIn: 16, forkOut: 16, forkFalse: 16 });
+  // No False to measure: a header's boolean output is the one it has (plan 944).
+  expect(sizes).toEqual({ plainIn: 16, plainOut: 16, manyIn: 16, manyOut: 16, headIn: 16, headOut: 16 });
 });
 
 test('the handle shows on hover at the bottom right, hides without it, and shows on focus', async ({ page }) => {

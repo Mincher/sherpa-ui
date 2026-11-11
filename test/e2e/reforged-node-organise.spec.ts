@@ -2,8 +2,9 @@ import { test, expect, type Page } from './harness';
 
 /**
  * ORGANISE AND PROPERTY ROWS — Will, TODO 835. Sort and Group are two kinds in an Organise category; Collection and its Count
- * type are gone. A property row is output only: a Source, a Field and a Group each draw a Count row with an output socket and
- * none in, and its connection is any output's. Real pointer and keys; the platform's own select. Plan 835
+ * type are gone. A property row is output only: an output socket and none in, and its connection is any output's. No node has
+ * a Count property: a Math of type Count gives how many rows come in (plan 944). Real pointer and keys; the platform's own
+ * select. Plan 835
  */
 type Flow = { nodes: { id: string; kind: string; heading?: string; values?: Record<string, unknown> }[]; connections: { from: string; to: string }[] };
 type Ed = { workflow(): Flow; undo(): boolean; save(): boolean };
@@ -91,35 +92,37 @@ test('the panel lists Organise: Sort and Group; a Group dragged from it is place
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;
   await place(page, 'group', [box.x + 560, box.y + 420]);
   expect((await flow(page)).nodes.map((n) => n.kind)).toEqual(['source', 'math', 'field', 'group']);
-  // Its rows: Rows, then its Count property, which sends and takes nothing.
+  // Its one property, Results: an output, and no input. It has no Count (plan 944).
   await expect(card(page, 'Group')).toHaveAttribute('data-category', 'organise');
-  await expect(rowOf(page, 'Group', 'Count')).toHaveAttribute('data-output-socket', 'value');
-  await expect(rowOf(page, 'Group', 'Count')).not.toHaveAttribute('data-input-socket');
+  await expect(rowOf(page, 'Group', 'Results')).toHaveAttribute('data-output-socket', 'object');
+  await expect(rowOf(page, 'Group', 'Results')).not.toHaveAttribute('data-input-socket');
+  await expect(rowOf(page, 'Group', 'Count')).toHaveCount(0);
 });
 
-test('a property row connects like any output: the Source\'s Count into a Math\'s Value A by the real pointer, and a Field\'s into Value B', async ({ page }) => {
-  await bind(page, BARE);
-  for (const heading of ['Source', 'Field']) {
-    await expect(rowOf(page, heading, 'Count')).toHaveAttribute('data-output-socket', 'value');
-    await expect(rowOf(page, heading, 'Count')).not.toHaveAttribute('data-input-socket');
-  }
-  await drag(page, await socket(page, 'Source', 'output', 'Count'), await socket(page, 'Math', 'input', '[name="a"]'));
-  await drag(page, await socket(page, 'Field', 'output', 'Count'), await socket(page, 'Math', 'input', '[name="b"]'));
-  expect(await connections(page)).toEqual(['start/count → add/a', 'pick/count → add/b']);
-  expect(await lines(page)).toEqual(['start/count → add/a', 'pick/count → add/b']);
-  // A number into a number: no warning; the rows say where their values come from.
+test('a property row connects like any output: the Source\'s Results into a Math of type Count by the real pointer, and its Result into Value A (plan 944)', async ({ page }) => {
+  // A Math of type Count beside the bare graph: a Source and a Field have no Count property (plan 944).
+  await bind(page, { ...BARE, nodes: [...BARE.nodes, { ...node('count', 'math', 760, 0, { type: 'count' }), heading: 'How many' }] });
+  for (const heading of ['Source', 'Field']) await expect(rowOf(page, heading, 'Count')).toHaveCount(0);
+  await expect(rowOf(page, 'How many', 'Result')).toHaveAttribute('data-output-socket', 'value');
+  await expect(rowOf(page, 'How many', 'Result')).not.toHaveAttribute('data-input-socket');
+  // The Source's Results, worn on its Store row, into the Count's Rows; its Result into Value A.
+  await drag(page, await socket(page, 'Source', 'output', '[name="store"]'), await socket(page, 'How many', 'input', 'Rows'));
+  await drag(page, await socket(page, 'How many', 'output', 'Result'), await socket(page, 'Math', 'input', '[name="a"]'));
+  expect(await connections(page)).toEqual(['start/rows → count/rows', 'count/result → add/a']);
+  expect(await lines(page)).toEqual(['start/rows → count/rows', 'count/result → add/a']);
+  // Rows into a Count, a number into a number: no warning; the row says where its value comes from.
+  await expect(card(page, 'How many')).not.toHaveAttribute('data-warning');
   await expect(card(page, 'Math')).not.toHaveAttribute('data-warning');
-  await expect(card(page, 'Math').locator('sherpa-input-text[name="a"]')).toHaveAttribute('data-description', /Source › Count/);
-  await expect(card(page, 'Math').locator('sherpa-input-text[name="b"]')).toHaveAttribute('data-description', /Field › Count/);
+  await expect(card(page, 'Math').locator('sherpa-input-text[name="a"]')).toHaveAttribute('data-description', /How many › Result/);
   // A count into a Sort's header, which takes a field, warns as any number does: the graph stays open.
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;
   await place(page, 'sort', [box.x + 560, box.y + 460]);
-  await drag(page, await socket(page, 'Source', 'output', 'Count'), await socket(page, 'Sort', 'input'));
+  await drag(page, await socket(page, 'How many', 'output', 'Result'), await socket(page, 'Sort', 'input'));
   await expect(card(page, 'Sort')).toHaveAttribute('data-warning', 'Sort takes a field; it was given a number');
-  // Save hands the graph over, the Count connections among its rows.
+  // Save hands the graph over, the Count's connections among its rows.
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
   const saved = await page.evaluate(() => JSON.parse(JSON.stringify((window as never as { saved: Flow[] }).saved.at(-1))) as Flow);
-  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/count → add/a', 'pick/count → add/b', 'start/count → sort-1']);
+  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/rows → count/rows', 'count/result → add/a', 'count/result → sort-1']);
 });
 
 test('a saved Collection draws nothing and says why: nothing converts it', async ({ page }) => {

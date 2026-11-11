@@ -41,11 +41,14 @@ import { entityRefOf } from './entity.js';
 import { PRESET_FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
-  LIST_OPS, NODE_KINDS, ROWS, kindNode, resolveKind, rowChoices, rowOf, socketOf,
+  LIST_OPS, NODE_KINDS, ROWS, kindNode, propertyRow, resolveKind, rowChoices, rowOf, socketOf,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeConnection, type RowChoice,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
+
+/** A Condition's True in the Query, as a workflow's: 1 or 0, the line its tree leaves by (plan 944). */
+const TRUE_ROW: GraphRow = propertyRow('true', 'True');
 
 /** Each Query node's id, as a step names it: the one scheme the graph is drawn by.
  *  TRAP T-a-step-names-its-node */
@@ -393,13 +396,13 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const off = part.off ? (row: GraphRow): GraphRow => apply({ ...row, hint: 'Off: kept, not applied.' }) : apply;
       const parts = groupOf(part);
       if (parts) {
-        add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS })], { ...at, ref: nodeRef }, parts[0]);
+        add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS }), TRUE_ROW], { ...at, ref: nodeRef }, parts[0]);
         parts[1].forEach((p, i) => connections.push({ from: walk(p, [...path, i + 1]), to: id }));
         return `${id}/true`;
       }
       const leaf = part as ConditionLeaf;
       const drawn = leafRows(leaf, ctx);
-      add(column - path.length * back, id, drawn.kind, drawn.rows.map(off), { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
+      add(column - path.length * back, id, drawn.kind, drawn.kind === 'condition' ? [...drawn.rows.map(off), TRUE_ROW] : drawn.rows.map(off), { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
       connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
       return drawn.kind === 'condition' ? `${id}/true` : id;
     };
@@ -491,7 +494,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     const rows: GraphRow[] = [
       ...rowsOf('scope', { [SWITCH]: !scope.suspended }).map((row) => (row.name === SWITCH ? { ...row, editable: true } : row)),
       ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'boolean' })),
-      ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'boolean' })),
+      ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'any' })),
     ];
     const node = add(top ? 4 : 6, QUERY_NODE.scope(id), 'scope', rows, {
       heading: named ?? (top ? 'View' : id),
@@ -512,7 +515,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const entity = entityRefOf(p.id).type === PRESET_FILTER;
       const from = add(into, QUERY_NODE.preset(id, p.id), saved ? 'saved' : 'preset', [
         ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })),
-        ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'boolean' })),
+        ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'any' })),
       ], { heading: p.label, ref: { scope: id, preset: p.id }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
       connections.push({ from, to: `${node}/@${p.id}` });
       // What it writes: each field a Condition, the definition's to change.
@@ -575,7 +578,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     }));
     const from = add(3, QUERY_NODE.saved(id), 'saved', [
       ...rowsOf('saved', { on: false }).map((row) => ({ ...row, hint: NOT_ADDED })),
-      ...wrote.map(({ name, field, scope }): GraphRow => ({ name, label: scope === VIEW ? label(field) : `${label(field)} (${scope})`, input: 'boolean' })),
+      ...wrote.map(({ name, field, scope }): GraphRow => ({ name, label: scope === VIEW ? label(field) : `${label(field)} (${scope})`, input: 'any' })),
     ], { heading: set.label, ref: { saved: id } });
     // What it would add: each field a Condition the saved filter owns, and no connection out.
     for (const { name, field, tree } of wrote) {
@@ -709,7 +712,7 @@ export type PlaceAnswer = { request: QueryRequest } | { refused: string } | { ke
 
 /** The kinds a Query draws and never places: a Field's tests are its chip's, and a status field the app's. Its node panel
  *  offers neither; `placeRequest` still says why, to one that asks. Will, 2026-11-10 */
-export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status'];
+export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'check'];
 
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the
@@ -774,8 +777,10 @@ export function connectionRequest(graph: DrawnGraph, { from, to }: NodeConnectio
   if (rowOf(target?.rows ?? [], field)?.control === 'switch') {
     return { refused: `The Query takes no connection into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], field)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };
   }
-  // A condition's True, at its tree's root: its header. Its False says nothing a scope's field takes.
-  if (!['condition', 'time'].includes(was?.kind ?? '') || socketOf(from).row !== undefined || was!.ref?.['superseded'] || was!.ref?.['path'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
+  // A condition's True, at its tree's root: a Condition's True row, a Time's header (plan 944).
+  const via = socketOf(from).row;
+  const fromTrue = was?.kind === 'condition' ? via === 'true' : was?.kind === 'time' && via === undefined;
+  if (!fromTrue || was!.ref?.['superseded'] || was!.ref?.['path'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
     return { refused: `The Query has no connection from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition's True goes into a field of a scope.` };
   }
   if (scope === there && old === field) return null;

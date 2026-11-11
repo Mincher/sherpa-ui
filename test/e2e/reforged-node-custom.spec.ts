@@ -14,11 +14,11 @@ const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
-  // The users' Role, a Field; Equals the Role given, as Value B (plan 783).
+  // The users' Role, a Field; Equals the Role given, as Value B (plan 783). Its True property is the output (plan 944).
   nodes: [{ id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
   connections: [
     { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
-    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
   ],
 };
 
@@ -350,7 +350,7 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   // Save hands the definition over with its two new inputs.
   expect(await ed(page, 'ed.save()')).toBe(true);
   expect(await ed(page, "window.savedNodes.find(([id]) => id === 'org-permissions')[1].inputs.map((i) => i.name)")).toEqual(['users', 'role', 'start-rows', 'perm']);
-  // Ungroup: the Source goes on to the Field through its row; the True and Users rows feed nothing inside, so their connections go.
+  // Ungroup: the Source goes on to the Field through its row; the Org permissions and Users rows feed nothing inside, so their connections go.
   await header(page, 'Org permissions').nth(1).click();
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());

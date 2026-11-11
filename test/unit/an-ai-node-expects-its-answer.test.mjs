@@ -1,7 +1,7 @@
 /**
  * AI NODES: a Provider and a Model say which model; a Prompt, a Runbook and a Skill ask it. Each of the three EXPECTS an
- * answer — True/false, Text, Number, Data or List — its Type picker, and its sockets follow: True/false forks, as a
- * Condition does; the rest give an Answer. The app gives the lists (`registerAiCatalog`); Sherpa ships none. With no
+ * answer — True/false, Text, Number, Data or List — its Type picker, and its sockets follow: True/false gives a True row,
+ * 1 or 0, as a Condition does (plan 944); the rest give an Answer. The app gives the lists (`registerAiCatalog`); Sherpa ships none. With no
  * Model or Provider joined, a node says so. Simulate asks no model. Will, plan 926 (D1 A, D2 A)
  *
  *   node --test test/unit/an-ai-node-expects-its-answer.test.mjs
@@ -46,16 +46,16 @@ test('Expects is the Type picker of a Prompt, a Runbook and a Skill; its sockets
     assert.deepEqual(Object.keys(NODE_KINDS[id].types), ['boolean', 'text', 'number', 'data', 'list'], id);
   }
   const of = (type) => kindOfNode(NODE_KINDS, { kind: 'prompt', values: { type } });
-  // True/false forks: True on the header, False on the footer; no Answer.
-  assert.equal(of('boolean').branches, true);
-  assert.equal(of('boolean').rows.some((r) => r.name === 'answer'), false);
+  // True/false gives a True, 1 or 0, as a Condition does; no fork, and no Answer (plan 944).
+  assert.equal(of('boolean').branches, undefined);
+  assert.deepEqual(of('boolean').rows.filter((r) => r.property).map((r) => [r.name, r.label, r.output, r.gives]), [['true', 'True', 'value', 'number']]);
   // The rest give an Answer, a property, as finely as the pick says.
   const answer = (type) => of(type).rows.find((r) => r.name === 'answer');
   assert.deepEqual([answer('text').output, answer('text').gives], ['value', 'value']);
   assert.deepEqual([answer('number').output, answer('number').gives], ['value', 'number']);
   assert.deepEqual([answer('data').output, answer('data').gives], ['object', 'rows']);
   assert.deepEqual([answer('list').output, answer('list').gives], ['object', 'list']);
-  assert.ok(!of('text').branches);
+  assert.ok(!of('text').rows.some((r) => r.name === 'true'));
   // Text is the default.
   assert.equal(kindOfNode(NODE_KINDS, { kind: 'prompt' }).rows.find((r) => r.name === 'answer').gives, 'value');
 });
@@ -120,10 +120,10 @@ test('Simulate asks no model: it says what it would do, and each answer is a sta
   assert.equal(out(run('number'), 'q/answer').value, 0);
   assert.deepEqual(out(run('data'), 'q/answer').rows, []);
   assert.deepEqual(out(run('list'), 'q/answer').value, []);
-  // True/false goes on True.
+  // True/false: its True is 1, and there is no fork (plan 944).
   const fork = run('boolean');
-  assert.equal(out(fork, 'q').value, true);
-  assert.equal(out(fork, 'q/#false').value, false);
+  assert.equal(out(fork, 'q/true').value, 1);
+  assert.deepEqual([out(fork, 'q'), out(fork, 'q/#false')], [undefined, undefined]);
   // A Model sends its pick.
   assert.equal(text.nodes.m.outgoing.find((s) => s.socket === 'm/model').value, 'opus');
 });

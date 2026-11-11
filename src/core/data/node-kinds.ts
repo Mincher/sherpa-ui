@@ -426,7 +426,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // The ONE node that branches (Will, plan 944, D1 A): its test on its header, true where it is above zero, true, or not
   // empty; its Data goes on by Yes where the test holds, by No where not, and the other sends nothing.
   check: {
-    heading: 'Check', icon: 'diverging-arrows', description: 'Send the data on by Yes or by No', input: 'any',
+    heading: 'Check', icon: 'diverging-arrows', description: 'Send the data on by Yes or No', input: 'any',
     rows: [
       { name: 'data', label: 'Data', input: 'any' },
       { name: 'yes', label: 'Yes', output: 'object', property: true, passes: 'data' },
@@ -699,11 +699,19 @@ export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags'>,
  *  or row INPUT that takes the type; on a dragged INPUT's, its header or row OUTPUT the input takes.
  *  A family tries its default type first, then the rest in order; `type` names one other than the
  *  default. `{}` the header, `{ row }` a row; none, no type of it fits. */
-export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string; type?: string } | undefined {
+export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in', gives?: string): { row?: string; type?: string } | undefined {
   const key = side === 'out' ? 'input' : 'output';
   const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : accepts(t, type));
   const first = typeOf(family)?.id;
-  for (const id of [first, ...Object.keys(family.types ?? {}).filter((t) => t !== first)]) {
+  const ids = [first, ...Object.keys(family.types ?? {}).filter((t) => t !== first)];
+  // A row that needs just what the line gives comes first: rows into Math are its Count, not its Floor (plan 944).
+  if (gives && side === 'out') {
+    for (const id of ids) {
+      const row = resolveKind(family, id).rows.find((r) => r.input && r.needs === gives);
+      if (row) return { row: row.name, ...(id !== first ? { type: id! } : {}) };
+    }
+  }
+  for (const id of ids) {
     const kind = resolveKind(family, id);
     const row = fits(kind[key]) ? undefined : kind.rows.find((r) => fits(r[key]));
     if (fits(kind[key]) || row) return { ...(row ? { row: row.name } : {}), ...(id !== first ? { type: id! } : {}) };

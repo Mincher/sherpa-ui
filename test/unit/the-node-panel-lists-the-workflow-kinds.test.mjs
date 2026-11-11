@@ -16,10 +16,10 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
   assert.deepEqual(palette.map((g) => g.category), ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['source'], [], ['value', 'field'], ['math'], ['condition'], ['provider', 'model', 'prompt', 'runbook', 'skill'], ['time'], ['sort', 'group'], ['text', 'tag', 'portal'], ['output', 'output']]);
-  // Eighteen items, in the plan's order: the Portal is a Utils (TODO 779); Notify, an Output of type Notification (plan 891);
-  // the AI nodes after Logic (plan 926).
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Source', 'Value', 'Field', 'Math', 'Condition', 'Provider', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output', 'Notify']);
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['source'], [], ['value', 'field'], ['math'], ['condition', 'check'], ['provider', 'model', 'prompt', 'runbook', 'skill'], ['time'], ['sort', 'group'], ['text', 'tag', 'portal'], ['output', 'output']]);
+  // Nineteen items, in the plan's order: the Portal is a Utils (TODO 779); Notify, an Output of type Notification (plan 891);
+  // the AI nodes after Logic (plan 926); the Check after Condition (plan 944).
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Provider', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output', 'Notify']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -48,8 +48,10 @@ test('a search finds a family by its name, or by a type\'s: "round" finds Math, 
   assert.deepEqual(found('math'), [['math', undefined]]);
   // An AI node's Expects is a type too: Text finds each, as Text (plan 926).
   assert.deepEqual(found('text'), [['value', 'text'], ['prompt', 'text'], ['runbook', 'text'], ['skill', 'text'], ['text', undefined]]);
+  // Math's Count counts rows (plan 944).
+  assert.deepEqual(found('count'), [['math', 'count']]);
   assert.deepEqual(found('zzz'), []);
-  assert.equal(found('').length, 17, 'nothing typed finds all');
+  assert.equal(found('').length, 18, 'nothing typed finds all');
 });
 
 test("an app's own kind goes after the known categories; one with none is Other", () => {
@@ -65,16 +67,18 @@ test('a socket is offered the kinds that could join it, a Value first', () => {
   const fromValue = paletteFor(palette, 'value', 'out').map((i) => i.id);
   assert.ok(fromValue.includes('condition') && fromValue.includes('output') && !fromValue.includes('value'));
   assert.ok(fromValue.includes('math') && fromValue.includes('time'));
-  // An input that takes a value is fed by a kind that gives one: a Value first; a Source, a Field, a Group and a Condition, as their Count property row.
+  // An input that takes a value is fed by a kind that gives one: a Value first; a Math its Result, a Condition its True.
+  // No Group: its Count row is gone (plan 944).
   const into = paletteFor(palette, 'value', 'in').map((i) => i.id);
   assert.equal(into[0], 'value');
-  assert.ok(into.includes('group') && into.includes('math'));
-  assert.deepEqual(fitOf(NODE_KINDS['group'], 'value', 'in'), { row: 'count' });
+  assert.ok(into.includes('condition') && into.includes('math') && !into.includes('group'));
+  assert.deepEqual(fitOf(NODE_KINDS['condition'], 'value', 'in'), { row: 'true' });
+  assert.equal(fitOf(NODE_KINDS['group'], 'value', 'in'), undefined);
   assert.deepEqual(fitOf(NODE_KINDS['sort'], 'object', 'out'), {}, 'a Sort takes the rows on its header');
   // A list into a Math's own type: Floor takes it, in its Values row.
   assert.deepEqual(fitOf(NODE_KINDS['math'], 'object', 'out'), { row: 'values', type: 'floor' });
   assert.deepEqual(fitOf(NODE_KINDS['text'], 'object', 'in'), { row: 'result', type: 'split' });
-  // Nothing is fed a boolean but a True, and a Value gives none.
+  // A boolean comes from a header's Out, a Time's or a Tag's (plan 944); a Value gives none.
   assert.ok(!paletteFor(palette, 'boolean', 'in').some((i) => i.id === 'value'));
   assert.deepEqual(fitOf(NODE_KINDS['value'], 'value', 'in'), { row: 'value' });
   assert.deepEqual(fitOf(NODE_KINDS['output'], 'object', 'out'), {});
@@ -88,8 +92,9 @@ test('"Add a node" from what an output gives lists only the kinds that can use i
   // A column fits what takes a field, rows, an object or a list; a number's a Math's list, a date's a Time.
   // A portal's In takes anything (TODO 779).
   // An AI node's header reads anything: the data it asks about (plan 926).
-  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'prompt', 'runbook', 'skill', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'output']);
-  // Rows fit no Tag (it takes a Field), no Math and no Time: their inputs never read rows.
-  assert.deepEqual(offered('rows'), ['field', 'condition', 'prompt', 'runbook', 'skill', 'portal', 'output']);
-  assert.deepEqual([takesGiven(NODE_KINDS.math, 'rows'), takesGiven(NODE_KINDS.math, 'field'), takesGiven(NODE_KINDS.value, 'field')], [false, true, false]);
+  // A Check's Data takes anything (plan 944).
+  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'output']);
+  // Rows fit no Tag (it takes a Field) and no Time: their inputs never read rows. Math does, as Count (plan 944).
+  assert.deepEqual(offered('rows'), ['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'portal', 'output']);
+  assert.deepEqual([takesGiven(NODE_KINDS.math, 'rows'), takesGiven(NODE_KINDS.math, 'field'), takesGiven(NODE_KINDS.value, 'field')], [true, true, false]);
 });

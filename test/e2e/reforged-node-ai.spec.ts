@@ -3,8 +3,8 @@ import { test, expect, type Page } from './harness';
 /**
  * AI NODES on the canvas — Will, plan 926. The Nodes panel's AI section: Provider, Model, Prompt, Runbook, Skill. A Model
  * lists the joined Provider's models, from the app's catalog. Expects, a Prompt's Type picker, sets its sockets: True/false
- * forks, the rest give an Answer. A Runbook's predefined runbook opens on a double click: its steps, read only, with
- * nothing to copy; Escape goes back. Real pointer and keys.
+ * gives a True property, 1 or 0, and no fork (plan 944); the rest give an Answer. A Runbook's predefined runbook opens on a
+ * double click: its steps, read only, with nothing to copy; Escape goes back. Real pointer and keys.
  */
 const RUNBOOK = {
   v: 1, label: 'Patch review', category: 'Logic', preset: true,
@@ -63,16 +63,19 @@ test('the panel lists the AI nodes under AI, in its ink', async ({ page }) => {
   expect(await page.locator('sherpa-node-list sherpa-list-item[data-kind="patch-review"]').count()).toBe(0);
 });
 
-test('a Model lists the joined Provider\'s models; Expects sets the sockets: True/false forks, Text gives an Answer', async ({ page }) => {
+test('a Model lists the joined Provider\'s models; Expects sets the sockets: True/false gives a True, Text gives an Answer', async ({ page }) => {
   const models = await node(page, 'Model').locator('sherpa-input-text[name="model"]').evaluate((el) => [...el.shadowRoot!.querySelectorAll('select option')].map((o) => o.textContent));
   expect(models).toEqual(['Claude Opus 5.5', 'Claude Sonnet 5.5']);
-  // Text: an Answer row; no fork.
+  // Text: an Answer row, and no True.
   expect(await rows(page, 'Prompt')).toContain('Answer');
-  await expect(node(page, 'Prompt')).not.toHaveAttribute('data-branches');
-  // Picked True/false: it forks, as a Condition does, and the Answer goes.
+  expect(await rows(page, 'Prompt')).not.toContain('True');
+  // Picked True/false: a True property, a value, as a Condition has; no fork, and the Answer goes (plan 944).
   await node(page, 'Prompt').locator('sherpa-input-text[name="type"] select').selectOption('boolean');
   await settle(page);
-  await expect(node(page, 'Prompt')).toHaveAttribute('data-branches', '');
+  const yes = node(page, 'Prompt').locator('sherpa-node-row[data-socket-name="True"]');
+  await expect(yes).toHaveAttribute('data-property', '');
+  await expect(yes).toHaveAttribute('data-output-socket', 'value');
+  await expect(node(page, 'Prompt')).not.toHaveAttribute('data-output-socket');
   expect(await rows(page, 'Prompt')).not.toContain('Answer');
   // No warning: a model is joined, and its row says it by its words.
   await expect(node(page, 'Prompt')).not.toHaveAttribute('data-warning');

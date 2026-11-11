@@ -31,7 +31,8 @@ test.beforeEach(async ({ page }) => {
     };
     (window as never as { editor: unknown }).editor = bindWorkflow(el as never, flow as never, {
       session: new SessionStore(), inspector: inspector as never, panel: el.querySelector('sherpa-node-list') as never,
-      fieldsOf: { customers: { name: { label: 'Name' } } }, stores: ['customers'],
+      // Two fields, so a pick at the caret shows where it went: a Source has no Count to name (plan 944).
+      fieldsOf: { customers: { name: { label: 'Name' }, email: { label: 'Email' } } }, stores: ['customers'],
     } as never);
     (window as never as { saved: unknown[] }).saved = [];
     document.addEventListener('definition-save', (e) => (window as never as { saved: unknown[] }).saved.push((e as CustomEvent).detail.definition));
@@ -125,7 +126,8 @@ test('Insert value lists the values from before it, by node; a pick puts the val
   const insert = page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"]');
   await insert.click();
   const values = await insert.locator('sherpa-menu button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
-  expect(values).toEqual(['{s.count}', '{s.name}']);
+  // The Source's fields alone: it has no Count (plan 944).
+  expect(values).toEqual(['{s.name}', '{s.email}']);
   await insert.locator('sherpa-menu button[value="{s.name}"]').click();
   await settle(page);
   const inNode = () => page.locator(`${output} sherpa-input-text[name="message"]`).evaluate((f) => (f as HTMLElement & { value: string }).value);
@@ -136,9 +138,9 @@ test('Insert value lists the values from before it, by node; a pick puts the val
   await page.keyboard.press(await page.evaluate(() => (/mac/i.test(navigator.platform) ? 'Meta+ArrowLeft' : 'Home')));
   for (let i = 0; i < 2; i++) await page.keyboard.press('ArrowRight');
   await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"]').click();
-  await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"] sherpa-menu button[value="{s.count}"]').click();
+  await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"] sherpa-menu button[value="{s.email}"]').click();
   await settle(page);
-  expect(await inNode()).toBe('Hi {s.count} {s.name} {s.name}');
+  expect(await inNode()).toBe('Hi {s.email} {s.name} {s.name}');
 });
 
 test('Send a test asks the host, with the node, its type and its values; Sherpa sends nothing', async ({ page, browserName }) => {

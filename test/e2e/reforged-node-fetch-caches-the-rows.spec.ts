@@ -15,8 +15,8 @@ const STATES = ['active', 'trial', 'suspended', 'churned'];
 const ROWS = Array.from({ length: 120 }, (_, id) => ({ id, status: STATES[(id * 7) % 4] }));
 const ACTIVE = ROWS.filter((r) => r.status === 'active');
 
-async function start(page: Page, options: { limit?: { rows?: number }; delay?: number; collect?: boolean; known?: boolean; big?: number; calc?: boolean } = {}): Promise<void> {
-  await page.evaluate(async ([given, limit, delay, collect, known, big, calc]) => {
+async function start(page: Page, options: { limit?: { rows?: number }; delay?: number; collect?: boolean; known?: boolean; big?: number; calc?: boolean; count?: boolean } = {}): Promise<void> {
+  await page.evaluate(async ([given, limit, delay, collect, known, big, calc, count]) => {
     const rows = big ? Array.from({ length: big }, (_, id) => ({ id, status: ['active', 'trial', 'suspended', 'churned'][(id * 7) % 4]!, seats: id % 100 })) : given;
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
@@ -45,6 +45,11 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
       nodes.push({ id: 'v', kind: 'value', x: 0, y: 300, heading: 'v', values: { type: 'integer', value: '21' } }, { id: 'm', kind: 'math', x: 360, y: 300, heading: 'm', values: { type: 'multiply', b: 2 } });
       connections.push({ from: 'v/value', to: 'm/a' });
     }
+    // A Math Count of the Source's rows, and one of the Condition's Results: counting is a Math type (plan 944).
+    if (count) {
+      nodes.push({ id: 'ns', kind: 'math', x: 360, y: 300, heading: 'ns', values: { type: 'count' } }, { id: 'nc', kind: 'math', x: 1080, y: 300, heading: 'nc', values: { type: 'count' } });
+      connections.push({ from: 's/rows', to: 'ns/rows' }, { from: 'c/rows', to: 'nc/rows' });
+    }
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, id: 'w', nodes, connections } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!,
@@ -55,7 +60,7 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
     canvas.zoomTo(0.4);
     canvas.panTo(20, 68); // below the stage strip
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [ROWS, options.limit ?? null, options.delay ?? 5, options.collect ?? true, options.known ?? true, options.big ?? 0, options.calc ?? false] as const);
+  }, [ROWS, options.limit ?? null, options.delay ?? 5, options.collect ?? true, options.known ?? true, options.big ?? 0, options.calc ?? false, options.count ?? false] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const tool = (page: Page, name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
@@ -106,14 +111,16 @@ test('nothing is read until Fetch is pressed: Simulate says "not fetched yet"; F
   expect(record?.total).toBeUndefined();
 });
 
-test('a Count row is the row count: the Source\'s is its rows, the Condition\'s those it kept', async ({ page }) => {
-  await start(page);
+test('a Math Count is the row count: of the Source\'s rows, and of those the Condition kept; its True is 1 (plan 944)', async ({ page }) => {
+  await start(page, { count: true });
   await press(page, 'fetch');
-  await expect.poll(() => sim(page)).toBeDefined();
+  await expect.poll(async () => (await sim(page))?.nodes['nc'] !== undefined).toBe(true);
   const s = (await sim(page))!;
-  expect(out(s, 's', 's/count').value).toBe(120);
-  expect(out(s, 'c', 'c/count').value).toBe(ACTIVE.length);
-  expect(out(s, 'f', 'f/count').value).toBe(120);
+  expect(out(s, 'ns', 'ns/result').value).toBe(120);
+  expect(out(s, 'nc', 'nc/result').value).toBe(ACTIVE.length);
+  expect(out(s, 'c', 'c/true').value).toBe(1);
+  // No node has a Count property, nor a True or a False socket.
+  expect(Object.values(s.nodes).flatMap((n) => n.outgoing.map((x) => x.socket)).filter((x) => /\/(count|#false)$/.test(x) || x === 'c')).toEqual([]);
 });
 
 test('an edit and Simulate read no more: the last simulation is stale after the edit, and the store is read once', async ({ page }) => {
@@ -256,11 +263,10 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   const pane = page.locator('#inspector .data-pane');
   await expect(pane).toBeVisible();
   const lines = await pane.locator('.data-line').allTextContents();
-  // True and False steer, true or false; the rows that pass go by Results (TODO 939).
-  expect(lines).toContain('True: true');
-  expect(lines).toContain('False: false');
+  // Each socket by its label: True is 1 where a row passes; the rows that pass go by Results. No False, no Count (plan 944).
+  expect(lines).toContain('True: 1');
   expect(lines).toContain(`Results: ${ACTIVE.length} rows`);
-  expect(lines).toContain('Count: ' + ACTIVE.length);
+  expect(lines.filter((l) => /^(False|Count):/.test(l))).toEqual([]);
   const code = await pane.locator('sherpa-code-block').evaluateAll((els) => els.map((e) => JSON.parse(e.getAttribute('data-code')!) as { status: string }[]));
   expect(code.some((c) => c.length === ACTIVE.length && c.every((r) => r.status === 'active'))).toBe(true);
   // Each socket's rows are in the grid the pages use: a column for each field, a row for each of the rows (the first 50), the
@@ -271,7 +277,7 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   })));
   expect(grids.every((g) => g.heads.join() === 'id,status' && g.height <= 280)).toBe(true);
   expect(grids.filter((g) => g.body === ACTIVE.length).every((g) => g.first[1] === 'active')).toBe(true);
-  // In and Results: True and False carry no rows (TODO 939).
+  // In and Results: True, a number, carries no rows (plan 944).
   expect(grids.map((g) => g.body).sort((a, b) => a - b)).toEqual([ACTIVE.length, 50]);
   expect(await page.locator('#inspector .data-pane sherpa-accordion.data-json[open]').count()).toBe(0);
   // The Source's has 120 rows and writes out 50.

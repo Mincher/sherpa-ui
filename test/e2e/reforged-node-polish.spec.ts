@@ -1,8 +1,8 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * Node polish — Will, TODO 743. A fork's footer keeps its False SOCKET and loses the word; a socket's tip hangs
- * beside its socket, panned and zoomed; Backspace and Delete remove
+ * Node polish — Will, TODO 743. A Condition has no False, word or socket, and its True is a property row (plan 944);
+ * a socket's tip hangs beside its socket, panned and zoomed; Backspace and Delete remove
  * the picked nodes and their connections as ONE step; the Pan tool's icon is four arrows. Real pointer and key; pixels.
  */
 const ORG = {
@@ -12,7 +12,8 @@ const ORG = {
   nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }],
   connections: [
     { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
-    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+    // The test's True, a property row, as an output of its own: a Condition's header sends nothing (plan 944).
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
   ],
 };
 
@@ -84,16 +85,23 @@ const gapBetween = (a: { x: number; y: number; w: number; h: number }, b: { x: n
   Math.max(0, a.x - (b.x + b.w), b.x - (a.x + a.w), a.y - (b.y + b.h), b.y - (a.y + a.h));
 const flow = (page: Page) => page.evaluate(() => (window as never as { ed: { workflow(): { nodes: { id: string }[]; connections?: unknown[] } } }).ed.workflow());
 
-test('a fork shows no False word, and keeps its False socket', async ({ page }) => {
+test('a Condition shows no False, word or socket, and no footer; its True is a property row, drawn and joined (plan 944)', async ({ page }) => {
   await bind(page);
   await page.evaluate(() => (window as never as { ed: { open(id: string): void } }).ed.open('perm'));
   await settle(page);
   const cond = await page.locator('#cv > sherpa-node[data-heading="Condition"]').evaluate((n) => {
-    const f = n.shadowRoot!.querySelector('.footer') as HTMLElement;
-    return { text: (n as HTMLElement).innerText + f.innerText, sock: n.shadowRoot!.querySelector('.socket-false')!.getBoundingClientRect().width };
+    const row = n.querySelector('sherpa-node-row[data-socket-name="True"]') as HTMLElement & { socketRect(s: string): DOMRect | null };
+    return {
+      text: (n as HTMLElement).innerText, old: !!n.shadowRoot!.querySelector('.footer, .socket-false'),
+      true: [row.getAttribute('data-output-socket'), row.hasAttribute('data-property'), row.hasAttribute('data-output-connected')],
+      // Its drawn box, in plane px: 16, at the canvas's zoom.
+      sock: (row.socketRect('output')?.width ?? 0) / (document.getElementById('cv') as unknown as { view: { zoom: number } }).view.zoom,
+    };
   });
   expect(cond.text).not.toMatch(/False/);
-  expect(cond.sock).toBeGreaterThan(8);
+  expect(cond.old).toBe(false);
+  expect(cond.true).toEqual(['value', true, true]);
+  expect(cond.sock).toBeCloseTo(16, 0);
 });
 
 test('a socket tip sits beside its socket on hover, after a pan and a zoom, never at the viewport corner', async ({ page }) => {

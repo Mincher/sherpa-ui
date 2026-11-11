@@ -460,7 +460,8 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     el.replaceChildren(
       ...section(...lines(node.rows.filter((r) => r.control === 'type'))),
       ...(inputs.length ? section(titled('Parameters'), ...inputs) : []),
-      ...(node.rows.some((r) => r.property) ? section(titled('Properties'), ...lines(node.rows.filter((r) => r.property))) : []),
+      // A property drawn beside another row (a Source's Results) leaves no box of its own.
+      ...(node.rows.some((r) => r.property && !r.beside) ? section(titled('Properties'), ...lines(node.rows.filter((r) => r.property))) : []),
     );
     for (const row of node.rows) {
       const wearer = row.beside && drawn.rows.get(`${node.id}/${row.beside}`);
@@ -481,7 +482,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     if (!worn.has(row.name) || row.beside) line.toggleAttribute('data-output-connected', sent.has(address));
     const field = line.firstElementChild as Field | null;
     if (row.beside) continue;
-    // A Results or Count with no rows to say hides, unless a connection still leaves it (TODO 924).
+    // A Results with no rows to say hides, unless a connection still leaves it (TODO 924).
     line.toggleAttribute('data-idle', !!row.idle);
     // Each socket's tip names its row and says its value: a collapsed node shows neither.
     put(line, 'data-socket-name', row.label);
@@ -2978,7 +2979,7 @@ export function bindWorkflow(
     const free = (n: number): string => (shown().nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
     const id = free(1);
     edit(() => {
-      const fit = context && fitOf(K()[kind]!, context.type, context.side);
+      const fit = context && fitOf(K()[kind]!, context.type, context.side, context.gives);
       // A node let go by its output sits left of the point, so its output meets the line. A family takes the type it fits, or was found by.
       const x = Math.round(at.x - (context?.side === 'in' ? 280 : 0));
       const typed = type ?? fit?.type;

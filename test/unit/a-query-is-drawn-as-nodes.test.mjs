@@ -3,9 +3,9 @@
  * fields as rows, a Condition into each answered field, Arrange, Presentation
  * and the components — derived from the live Query, never kept; presets, saved
  * filters, status fields and superseded answers too. The rows go from each node's
- * Rows row into the next one's header; a Condition's and a preset's True go into
- * their scope's row. Each edit is the command a chip asks, and Save writes the
- * page definition. Will, TODO 555 · plan 695 N1 · plan 713 M3.
+ * Rows row into the next one's header; a Condition's True row (plan 944) and a
+ * preset's header go into their scope's row. Each edit is the command a chip
+ * asks, and Save writes the page definition. Will, TODO 555 · plan 695 N1 · plan 713 M3.
  * TRAP T-the-node-editor-asks-the-query
  *
  *   node --test test/unit/a-query-is-drawn-as-nodes.test.mjs
@@ -53,8 +53,8 @@ const components = [
 ];
 const graph = queryGraph(query, definition, { components });
 const node = (id) => graph.nodes.find((n) => n.id === id);
-/** A node's rows by name, but its Rows row: that only sends its data on. */
-const own = (n) => n.rows.filter((r) => r.name !== ROWS.name);
+/** A node's rows by name, but its Rows and True rows: they only send (plan 944). */
+const own = (n) => n.rows.filter((r) => r.name !== ROWS.name && r.name !== 'true');
 const values = (id) => Object.fromEntries(own(node(id)).map((r) => [r.name, r.value]));
 const row = (id, name) => node(id).rows.find((r) => r.name === name);
 
@@ -65,11 +65,11 @@ test('the Records page\'s Query: its Source, each scope, its conditions, Arrange
     'scope:scope-data', 'field:field-data-status', 'condition:when-data-status', 'arrange:arrange-data', 'component:component-grid',
     'scope:scope-r-bar', 'presentation:show-r-bar', 'component:component-r-bar',
   ]);
-  // The rows from each Rows row into the next header; each Field into its test, and the test's True into its row.
+  // The rows from each Rows row into the next header; each Field into its test, and the test's True row into its row (plan 944).
   assert.deepEqual(graph.connections.map((r) => `${r.from} → ${r.to}`), [
-    'source/rows → scope-view', 'field-view-region/field → when-view-region', 'when-view-region → scope-view/region',
+    'source/rows → scope-view', 'field-view-region/field → when-view-region', 'when-view-region/true → scope-view/region',
     'scope-view/rows → show-r-donut', 'show-r-donut/rows → component-r-donut', 'scope-view/rows → component-r-line',
-    'scope-view/rows → scope-data', 'field-data-status/field → when-data-status', 'when-data-status → scope-data/status', 'scope-data/rows → arrange-data', 'arrange-data/rows → component-grid',
+    'scope-view/rows → scope-data', 'field-data-status/field → when-data-status', 'when-data-status/true → scope-data/status', 'scope-data/rows → arrange-data', 'arrange-data/rows → component-grid',
     'scope-view/rows → scope-r-bar', 'scope-r-bar/rows → show-r-bar', 'show-r-bar/rows → component-r-bar',
   ]);
 });
@@ -83,20 +83,25 @@ test('each data node sends its rows from its Rows row, first; its header takes t
     if (n.kind === 'source') assert.deepEqual([n.input, n.branches], [undefined, undefined], n.id);
     else if (data) assert.equal(n.input, 'any', `${n.id}: its header takes any`);
   }
-  // A test takes its Field's column on its header; a Query's Field takes nothing, and sends its column.
-  assert.deepEqual([node('when-view-region').branches, node('when-view-region').input, socketType(node('when-view-region'), undefined, 'output')], [true, 'any', 'boolean']);
+  // A test takes its Field's column on its header, and sends its True from its True row, 1 or 0 (plan 944);
+  // a Query's Field takes nothing, and sends its column.
+  assert.deepEqual([node('when-view-region').branches, node('when-view-region').input, socketType(node('when-view-region'), undefined, 'output'), socketType(node('when-view-region'), 'true', 'output')], [undefined, 'any', undefined, 'value']);
   assert.deepEqual([node('field-view-region').input, node('field-view-region').branches, socketType(node('field-view-region'), 'field', 'output')], [undefined, undefined, 'object']);
-  assert.deepEqual([row('scope-view', 'region').input, row('scope-view', 'rows').output], ['boolean', 'object']);
+  // The scope's row takes what a True sends.
+  assert.ok(accepts(socketType(node('when-view-region'), 'true', 'output'), row('scope-view', 'region').input));
+  assert.equal(row('scope-view', 'rows').output, 'object');
 });
 
 test('each node shows what the Query and the definition say', () => {
   // One Source: its store, then how the page reads it (TODO 808).
   assert.equal(node('source').heading, 'Source');
-  assert.deepEqual(values('source'), { store: 'customers', pageSize: 25, search: ['name', 'email'], applyOn: 'change', count: undefined });
+  // No Count row now (plan 944).
+  assert.deepEqual(values('source'), { store: 'customers', pageSize: 25, search: ['name', 'email'], applyOn: 'change' });
   // Its Rows, the filter Switch, then each held field with a socket for its condition's True.
   assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
     ['rows', 'Results', undefined, undefined, undefined],
-    ['#filters', 'Filters', 'boolean', 'switch', true], ['region', 'Region', 'boolean', undefined, undefined], ['created', 'created', 'boolean', undefined, undefined],
+    // A field's row takes its condition's True, a number (plan 944).
+    ['#filters', 'Filters', 'boolean', 'switch', true], ['region', 'Region', 'any', undefined, undefined], ['created', 'created', 'any', undefined, undefined],
   ]);
   // A scope's name is the definition's, else its one component's, else its id.
   assert.deepEqual([node('scope-view').heading, node('scope-data').heading, node('scope-r-bar').heading], ['View Context', 'Customer records', 'By status']);
@@ -152,7 +157,7 @@ test('what a reader may change: everything a door takes — read only only what 
   assert.deepEqual(editable('arrange-data'), { sort: true, direction: true, group: true, search: true });
   assert.deepEqual(editable('scope-view')['#filters'], true);
   // The page size changes live; the rest of the Source is the definition's, and says so.
-  assert.deepEqual(editable('source'), { store: false, pageSize: true, search: false, applyOn: false, count: false });
+  assert.deepEqual(editable('source'), { store: false, pageSize: true, search: false, applyOn: false });
   assert.match(row('source', 'search').hint, /page definition/);
   assert.equal(row('source', 'rows').hint, undefined, 'its Rows row says nothing of the definition');
   // A slot's presentation changes; one on the View has no slot to keep it, and says so.
@@ -194,7 +199,7 @@ test('a field whose values are known is PICKED, as its chip picks: Is one of or 
   const values = (field) => (field === 'status' ? ['active', 'trial', 'churned'] : undefined);
   const picked = queryGraph({ v: 1, scopes: { view: { holds: ['status', 'name'], readings: readingsOf({ status: { eq: 'trial' }, name: { contains: 'north' } }) } } },
     definition, { values });
-  const rows = (id) => Object.fromEntries(picked.nodes.find((n) => n.id === id).rows.map((r) => [r.name, [r.control, r.value]]));
+  const rows = (id) => Object.fromEntries(picked.nodes.find((n) => n.id === id).rows.filter((r) => !r.property).map((r) => [r.name, [r.control, r.value]]));
   // Equals is Is one of with one tick: it reads back as that.
   assert.deepEqual(rows('when-view-status'), { type: ['type', 'in'], b: ['values', ['trial']] });
   assert.deepEqual(picked.nodes.find((n) => n.id === 'when-view-status').rows[0].choices.map((c) => c.label), ['Is one of', 'Is not one of']);
@@ -241,7 +246,7 @@ test('a PRESET is a node into its scope\'s row: its on, from the Query, and what
   const wrote = nodeIn(off, 'when-preset-data-big-seats');
   assert.deepEqual([wrote.kind, wrote.rows.every((r) => !r.editable), wrote.ref.scope], ['condition', true, undefined], 'read only: the definition owns it');
   assert.ok(nodeIn(off, 'field-preset-data-big-seats').rows.every((r) => !r.editable), 'its Field too');
-  assert.ok(off.connections.some((r) => r.from === 'when-preset-data-big-seats' && r.to === 'preset-data-big/seats'));
+  assert.ok(off.connections.some((r) => r.from === 'when-preset-data-big-seats/true' && r.to === 'preset-data-big/seats'), 'from its True (plan 944)');
   assert.deepEqual(nodeIn(off, 'preset-data-big').ref, { scope: 'data', preset: 'big' });
   // Its True into its row: a boolean into a boolean.
   assert.ok(off.connections.some((r) => r.from === 'preset-data-big' && r.to === 'scope-data/@big'));
@@ -266,7 +271,7 @@ test('a SAVED FILTER is a node: on no bar it says what it would add, and no conn
   const wrote = nodeIn(g, 'when-saved-trials-view:status');
   assert.ok(wrote.kind === 'condition' && wrote.rows.every((r) => !r.editable), 'its condition is a Condition node, read only');
   assert.ok(g.connections.some((r) => r.from === 'field-saved-trials-view:status/field' && r.to === wrote.id), 'on its Field');
-  assert.ok(g.connections.some((r) => r.from === wrote.id && r.to === 'saved-trials/view:status'));
+  assert.ok(g.connections.some((r) => r.from === `${wrote.id}/true` && r.to === 'saved-trials/view:status'), 'from its True (plan 944)');
   // Added to a bar, it is a preset `saved:<id>`: drawn as the saved kind, connected to its scope.
   const onBar = draw({ presets: (s) => (s === 'view' ? [{ id: 'saved:trials', label: 'Trials', readings: readingsOf({ status: { in: ['trial'] } }) }] : []) });
   assert.equal(nodeIn(onBar, 'saved-trials'), undefined);
@@ -282,8 +287,10 @@ test('a STATUS FIELD is a node between the Source and the View: each value, and 
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
     ['Results', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
-  // The Source's rows get their status, then reach the View: never the Source's straight.
-  assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), ['source/rows → status-health', 'status-health/rows → scope-view']);
+  // The Source's rows get their status, then reach the View: never the Source's straight. They are the first Check's Data too (plan 944).
+  assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), [
+    'source/rows → status-health', 'source/rows → check-status-health.at risk/data', 'status-health/rows → scope-view',
+  ]);
   assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'scope-view').x);
 });
 
@@ -294,13 +301,15 @@ test('a SUPERSEDED answer is drawn kept, not in force: read only, into its scope
   } }, page);
   const kept = nodeIn(g, 'kept-data-status');
   assert.equal(kept.description, 'Superseded: kept, not in force.');
-  assert.ok([kept, nodeIn(g, 'field-kept-data-status-status')].every((n) => n.rows.every((r) => !r.editable && /View holds/.test(r.hint))));
-  assert.ok(g.connections.some((r) => r.from === 'kept-data-status' && r.to === 'scope-data/status'));
+  assert.ok([kept, nodeIn(g, 'field-kept-data-status-status')].every((n) => n.rows.filter((r) => !r.property).every((r) => !r.editable && /View holds/.test(r.hint))));
+  // From its True (plan 944).
+  assert.ok(g.connections.some((r) => r.from === 'kept-data-status/true' && r.to === 'scope-data/status'));
   // It moves nowhere: a connection from it is refused.
-  assert.ok('refused' in connectionRequest(g, { from: 'kept-data-status', to: 'scope-view/status' }));
-  // Nor does a condition's False: only its True goes into a field.
-  assert.ok('refused' in connectionRequest(queryGraph({ v: 1, scopes: { view: { holds: ['status'], readings: readingsOf({ status: { in: ['active'] } }) }, data: { holds: ['status'], readings: {} } } }, page),
-    { from: 'when-view-status/#false', to: 'scope-data/status' }));
+  assert.ok('refused' in connectionRequest(g, { from: 'kept-data-status/true', to: 'scope-view/status' }));
+  // Nor does a row that is no True: only its True goes into a field. No False now (plan 944).
+  const moves = queryGraph({ v: 1, scopes: { view: { holds: ['status'], readings: readingsOf({ status: { in: ['active'] } }) }, data: { holds: ['status'], readings: {} } } }, page);
+  assert.ok('refused' in connectionRequest(moves, { from: 'when-view-status/#false', to: 'scope-data/status' }));
+  assert.ok('request' in connectionRequest(moves, { from: 'when-view-status/true', to: 'scope-data/status' }), 'its True moves it');
 });
 
 test('every edit is the command a chip asks — a value typed by its field, the Switch, a preset, Sort, a page size', async () => {

@@ -34,7 +34,8 @@ test.beforeEach(async ({ page }) => {
         { id: 't', kind: 'time', x: 380, y: 340 },
         { id: 'end', kind: 'output', x: 840, y: 440 },
       ],
-      connections: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c', to: 'end' }],
+      // A Condition sends by its True property, not its header (plan 944).
+      connections: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c/true', to: 'end' }],
     };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     const w = window as unknown as Record<string, unknown>;
@@ -163,10 +164,10 @@ test('a connection made by hand warns at once; Undo takes the warning away, Redo
   expect(handed).toEqual([true, true]);
 });
 
-/** A drawn socket's middle on the screen: a node's header's, or a row's by its field's name. */
+/** A drawn socket's middle on the screen: a node's header's, or a row's by its field's name or its label. */
 const socketAt = (page: Page, heading: string, row: string | null, side: string) => page.evaluate(([hd, r, sd]) => {
   const n = document.querySelector(`#cv > sherpa-node[data-heading="${hd}"]`)!;
-  const host = (r ? [...n.querySelectorAll('sherpa-node-row')].find((x) => x.querySelector(`[name="${r}"]`) || x.getAttribute('data-label') === r) : n) as HTMLElement & { socketRect(side: string): DOMRect };
+  const host = (r ? [...n.querySelectorAll('sherpa-node-row')].find((x) => x.querySelector(`[name="${r}"]`) || x.getAttribute('data-label') === r || x.getAttribute('data-socket-name') === r) : n) as HTMLElement & { socketRect(side: string): DOMRect };
   const b = host.socketRect(sd!);
   return [b.left + b.width / 2, b.top + b.height / 2] as [number, number];
 }, [heading, row, side] as const);
@@ -194,14 +195,14 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   expect(box.text).toBe('Value A takes a number; it was given "abc"\nValue B takes a number; it was given rows');
   expect(box.box.h, 'two lines').toBeGreaterThan(24);
   await page.mouse.move(2, 2);
-  // Time's True into the Condition's header joins: a comparison tests a boolean as a value. Its rows back into Time
-  // would make a loop: refused.
+  // Time's header, a boolean, into the Condition's header joins: a comparison tests a boolean as a value. A line back
+  // into Time would make a loop: refused.
   await drag(page, await socketAt(page, 'Time', null, 'output'), await socketAt(page, 'Condition', null, 'input'));
   expect(await lines(page)).toContain('t>c');
   expect(await warning(page, 'Condition')).toBeNull();
   const before = await lines(page);
-  // Its Results hide (a boolean is no rows, TODO 924, 939): its True back into Time makes the loop.
-  await drag(page, await socketAt(page, 'Condition', null, 'output'), await socketAt(page, 'Time', null, 'input'));
+  // Its Results hide (a boolean is no rows, TODO 924, 939): its True property back into Time makes the loop (plan 944).
+  await drag(page, await socketAt(page, 'Condition', 'True', 'output'), await socketAt(page, 'Time', null, 'input'));
   expect(await lines(page)).toEqual(before);
   await expect.poll(() => heard.some((m) => m.includes('its connections run in a loop'))).toBe(true);
 });

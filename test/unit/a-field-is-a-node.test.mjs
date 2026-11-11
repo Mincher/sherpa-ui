@@ -31,9 +31,9 @@ test('Pick became Field: one node in Variables, in both graphs; its Field row an
   assert.equal(NODE_KINDS.pick, undefined);
   const kind = NODE_KINDS.field;
   assert.deepEqual([kind.heading, kind.category, kind.input, kind.needs, kind.branches, kind.graphs], ['Field', 'Variables', 'any', 'object', undefined, ['query', 'workflow']]);
-  assert.deepEqual(kind.rows.map((r) => [r.name, r.control, r.input, r.output, r.gives]), [['field', 'field', 'value', 'object', 'field'], ['count', undefined, undefined, 'value', 'number']]);
-  // Count is a PROPERTY row: output only, no control and no value (plan 835).
-  assert.deepEqual(kind.rows.map((r) => !!r.property), [false, true]);
+  // Its Count row is gone: Math › Count counts rows (plan 944).
+  assert.deepEqual(kind.rows.map((r) => [r.name, r.control, r.input, r.output, r.gives]), [['field', 'field', 'value', 'object', 'field']]);
+  assert.deepEqual(kind.rows.map((r) => !!r.property), [false]);
   assert.equal(kindIn(kind, 'query'), kind);
   assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Variables').items.map((i) => i.id), ['value', 'field']);
   // A saved Pick reads with today's fault, in words: nothing converts it (D9).
