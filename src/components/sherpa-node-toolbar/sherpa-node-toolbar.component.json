@@ -475,15 +475,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-path-why",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor"
-    },
-    {
-      "$type": "prop",
       "name": "data-paused",
       "type": "boolean",
       "observed": true,
@@ -499,6 +490,15 @@
       "declared": true,
       "kind": "behaviour",
       "description": "How many connectors are picked; written by the editor, said in the Tie tool's tip"
+    },
+    {
+      "$type": "prop",
+      "name": "data-route-why",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor"
     },
     {
       "$type": "prop",
@@ -520,7 +520,7 @@
     }
   ],
   "populate": {
-    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedConnections?, simulating?, tie? }",
+    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, paused?, pickedConnections?, routeWhy?, simulating?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

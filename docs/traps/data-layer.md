@@ -8040,14 +8040,14 @@ each node's incoming and outgoing slots, a row list on each socket. It is not N4
   Group Input to its Group Output. Fetch and Simulate are inactive without one, and the tip says which part is missing.
   Inside a Custom Node's definition they are inactive: they run on a whole graph.
 
-- Site: `src/core/data/node-paths.ts`
+- Site: `src/core/data/node-routes.ts`
 - Site: `src/core/data/node-simulate.ts`
 - Site: `src/core/browser/source-cache.ts`
 - Site: `src/core/ui/node-graph.ts`
-- Site: `test/unit/a-graph-has-a-path-from-a-source-to-an-output.test.mjs`
+- Site: `test/unit/a-graph-has-a-route-from-a-source-to-an-output.test.mjs`
 - Site: `test/unit/a-simulation-reads-the-cache-and-writes-nothing.test.mjs`
 - Site: `test/unit/a-simulation-runs-every-kind.test.mjs`
-- Site: `test/e2e/reforged-node-fetch-needs-a-path.spec.ts`
+- Site: `test/e2e/reforged-node-fetch-needs-a-route.spec.ts`
 - Site: `test/e2e/reforged-node-fetch-caches-the-rows.spec.ts`
 
 ### T-a-task-queue-knows-nothing-of-what-it-runs
@@ -8099,3 +8099,17 @@ its zip tie's.
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-workflow-is-its-definition.test.mjs`
 - Site: `test/unit/an-entity-shelf-is-one-door.test.mjs`
+
+### T-a-route-is-start-to-end
+
+**A Route is a FULL path along Connections, from a Start node to an End node; a Branch is one of the Routes that
+part at a node.** Will, 2026-11-11 (plan 934): a Connector shows a Connection, not a Route, so an agent that reads a
+graph must say "two Routes branch at the Condition", not "two routes". `routesOf` lists each Route as its node ids:
+from each Source, and inside a Custom Node from its Group Input, to each Output, and inside to its Group Output, as
+the data flows (a portal hop resolved). A Value or a Field that nothing comes into FEEDS a Route; it starts none
+(D5). `branchesAt` groups the Routes through a node by the node each goes to next: fewer than two, and the node is
+no place where Routes part. A Condition that forks (`branches`) is where its True and False Branches start (D3).
+`routeRead`, which Fetch and Simulate ask, is whether a Route exists at all. A loop is walked once.
+
+- Site: `src/core/data/node-routes.ts`
+- Site: `test/unit/a-graph-has-a-route-from-a-source-to-an-output.test.mjs`

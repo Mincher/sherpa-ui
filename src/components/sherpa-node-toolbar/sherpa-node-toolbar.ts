@@ -27,7 +27,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-unfurl': { type: 'boolean', kind: 'behaviour' },
     'data-can-fetch': { type: 'boolean', kind: 'behaviour' },
     'data-can-play': { type: 'boolean', kind: 'behaviour' },
-    'data-path-why': { type: 'string', kind: 'behaviour' },
+    'data-route-why': { type: 'string', kind: 'behaviour' },
     'data-cached': { type: 'boolean', kind: 'behaviour' },
     'data-fetching': { type: 'boolean', kind: 'behaviour' },
     'data-simulating': { type: 'boolean', kind: 'behaviour' },
@@ -44,7 +44,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-lanes': { type: 'boolean', kind: 'behaviour' },
     'data-lanes': { type: 'boolean', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-picked-connections', 'data-path-why'];
+  static override observed = ['data-picked-connections', 'data-route-why'];
 
   override onRender(): void {
     toolbarKeys(this.$('.tools')!);
@@ -70,7 +70,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     const paused = this.hasAttribute('data-paused');
     const waiting = this.hasAttribute('data-fetching') || running;
     // Fetch and Play say why they are off: the graph has no path from a Source to an Output. TODO 836
-    const why = this.getAttribute('data-path-why');
+    const why = this.getAttribute('data-route-why');
     for (const name of ['fetch', 'play'] as const) {
       const tool = this.$(`.${name}`);
       const own = (this.#tips[name] ??= tool?.getAttribute('data-tip') ?? '');

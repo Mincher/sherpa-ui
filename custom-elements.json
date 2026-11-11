@@ -8593,13 +8593,6 @@
               }
             },
             {
-              "name": "data-path-why",
-              "description": "Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
               "name": "data-paused",
               "description": "A simulation is paused at its node: Play goes on, Pause is off; written by the editor",
               "type": {
@@ -8611,6 +8604,13 @@
               "description": "How many connectors are picked; written by the editor, said in the Tie tool's tip",
               "type": {
                 "text": "number"
+              }
+            },
+            {
+              "name": "data-route-why",
+              "description": "Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor",
+              "type": {
+                "text": "string"
               }
             },
             {

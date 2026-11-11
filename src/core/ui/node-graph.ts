@@ -98,7 +98,7 @@ import { messageField, outputPane, testButton, valueMenu, type OutputFacts } fro
 import { valuesAt, valuesIn } from '../data/node-messages.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
-import { isSource, pathRead } from '../data/node-paths.js';
+import { isSource, routeRead } from '../data/node-routes.js';
 import { lightOf, trueOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
@@ -3704,7 +3704,7 @@ export function bindWorkflow(
   });
   /** Ask for a task of this graph; a second while one runs is blocked, and said. */
   const request = async (kind: 'fetch' | 'simulate', by: string, run: Parameters<TaskQueue['submit']>[0]['run']): Promise<void> => {
-    if (path.length || !pathRead(graph, { inner: innerGraph }).ok) return;
+    if (path.length || !routeRead(graph, { inner: innerGraph }).ok) return;
     const { task, accepted } = queue.submit({ kind, requestedBy: by, key: taskKey, run });
     if (accepted) await ended(task.id);
   };
@@ -3734,7 +3734,7 @@ export function bindWorkflow(
   const fetchRows = (by = 'host'): Promise<void> => request('fetch', by, async ({ signal, state }) => {
     const stores = storesOf();
     const said: string[] = [];
-    for (const id of pathRead(graph, { inner: innerGraph }).sources) {
+    for (const id of routeRead(graph, { inner: innerGraph }).sources) {
       const name = stores.get(id);
       const store = name ? await storeFor(name) : undefined;
       if (!name || !store) throw new Error(`the Source "${id}" names a store the page cannot reach`);
@@ -3777,10 +3777,10 @@ export function bindWorkflow(
   // Fetch and Simulate wait for a path from a Source to an Output; inside a Custom Node's definition they wait for its use. TODO 836
   const tellPath = (): void => {
     const read = doc?.runs ? { ok: false, why: doc.runs }
-      : path.length ? { ok: false, why: 'Open the graph that uses this Custom Node: Fetch and Simulate run on a whole graph' } : pathRead(graph, { inner: innerGraph });
+      : path.length ? { ok: false, why: 'Open the graph that uses this Custom Node: Fetch and Simulate run on a whole graph' } : routeRead(graph, { inner: innerGraph });
     for (const flag of ['data-can-fetch', 'data-can-play']) toolbar?.toggleAttribute(flag, read.ok);
-    if (read.ok || !read.why) toolbar?.removeAttribute('data-path-why');
-    else toolbar?.setAttribute('data-path-why', read.why);
+    if (read.ok || !read.why) toolbar?.removeAttribute('data-route-why');
+    else toolbar?.setAttribute('data-route-why', read.why);
   };
   function draw(): void {
     if (path.length && !innerNow()) path = [];
@@ -3956,7 +3956,7 @@ export function bindWorkflow(
       toolbar?.removeAttribute('data-tie');
       toolbar?.removeAttribute('data-can-group');
       toolbar?.removeAttribute('data-can-unfurl');
-      for (const flag of ['data-can-fetch', 'data-can-play', 'data-path-why', 'data-cached', 'data-fetching', 'data-simulating', 'data-paused']) toolbar?.removeAttribute(flag);
+      for (const flag of ['data-can-fetch', 'data-can-play', 'data-route-why', 'data-cached', 'data-fetching', 'data-simulating', 'data-paused']) toolbar?.removeAttribute(flag);
       dialogSave?.removeEventListener('click', saveAs);
       dialogCancel?.removeEventListener('click', onCancel);
       dialogField('label')?.removeEventListener('keydown', onSaveKey);

@@ -1,7 +1,7 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * FETCH and SIMULATE wait for a PATH from a Source to an Output — Will, TODO 836 (plan-836 P1). With none, both are
+ * FETCH and SIMULATE wait for a ROUTE from a Source to an Output — Will, TODO 836 (plan-836 P1). With none, both are
  * inactive and their tip says which part is missing; a connection drawn with the pointer from the Source's Rows to the Output
  * turns them on; Undo turns them off again. A press says `toolbar-select` and does nothing more yet. A preset graph reads
  * only, so it can fetch and simulate. Real pointer and keys; tips are read from the buttons. TRAP T-a-simulation-reads-the-cache-and-writes-nothing
@@ -39,7 +39,7 @@ const heard = (page: Page) => page.evaluate(() => (window as never as { heard: s
 
 const SOURCE: Node = ['Source', 'source', 0, 0, { store: 'users' }];
 const OUTPUT: Node = ['Output', 'output', 600, 0];
-const NO_PATH = 'Join a Source to an Output';
+const NO_ROUTE = 'Join a Source to an Output';
 
 /** The Source's Rows socket (it is drawn on its Results row), then the Output's input, in screen px. */
 const sockets = (page: Page) => page.evaluate(() => {
@@ -49,7 +49,7 @@ const sockets = (page: Page) => page.evaluate(() => {
   return { from: mid(row.socketRect('output')), to: mid(out.socketRect('input')) };
 });
 
-test('with no path both tools are inactive and say which part is missing: no Source, no Output, or no path', async ({ page }) => {
+test('with no Route both tools are inactive and say which part is missing: no Source, no Output, or no Route', async ({ page }) => {
   await start(page, [OUTPUT]);
   for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).toHaveAttribute('disabled', '');
@@ -62,7 +62,7 @@ test('with no path both tools are inactive and say which part is missing: no Sou
   await start(page, [SOURCE, OUTPUT]);
   for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).toHaveAttribute('disabled', '');
-    expect(await tip(page, name)).toBe(NO_PATH);
+    expect(await tip(page, name)).toBe(NO_ROUTE);
   }
   // A press on an inactive tool says nothing.
   await tool(page, 'fetch').click({ force: true });
@@ -80,17 +80,17 @@ test('a connection drawn by the pointer from the Source to the Output turns both
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.workflow().connections.length)).toBe(1);
   for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).not.toHaveAttribute('disabled', '');
-    expect(await tip(page, name)).not.toBe(NO_PATH);
+    expect(await tip(page, name)).not.toBe(NO_ROUTE);
   }
   expect(await tip(page, 'fetch')).toBe('Fetch data');
   expect(await tip(page, 'play')).toBe('Simulate');
   await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
   await settle(page);
   await expect(tool(page, 'fetch')).toHaveAttribute('disabled', '');
-  expect(await tip(page, 'fetch')).toBe(NO_PATH);
+  expect(await tip(page, 'fetch')).toBe(NO_ROUTE);
 });
 
-test('with a path, a press and Enter on the focused tool say fetch and simulate', async ({ page }) => {
+test('with a Route, a press and Enter on the focused tool say fetch and simulate', async ({ page }) => {
   await start(page, [SOURCE, OUTPUT], [{ from: 'Source/rows', to: 'Output' }]);
   await expect(tool(page, 'fetch')).not.toHaveAttribute('disabled', '');
   await tool(page, 'fetch').click();
