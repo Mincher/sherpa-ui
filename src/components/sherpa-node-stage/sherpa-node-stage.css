@@ -81,7 +81,8 @@
 /* ── The band ─────────────────────────────────────────────────────────── */
 .band {
   flex: 1 1 auto;
-  background: color-mix(in srgb, var(--_colour) 5%, transparent);
+  /* Half what it was, 5%: the band stays behind the nodes. Will, TODO 898 */
+  background: color-mix(in srgb, var(--_colour) 2.5%, transparent);
   border-inline: var(--sherpa-display-mode-border-width-base, 1px) dashed color-mix(in srgb, var(--_colour) 40%, transparent);
 }
 

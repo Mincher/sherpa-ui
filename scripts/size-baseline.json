@@ -330,7 +330,7 @@
   "src/components/sherpa-node-lane/sherpa-node-lane.css": 59,
   "src/components/sherpa-node-list/sherpa-node-list.css": 130,
   "src/components/sherpa-node-row/sherpa-node-row.css": 287,
-  "src/components/sherpa-node-stage/sherpa-node-stage.css": 93,
+  "src/components/sherpa-node-stage/sherpa-node-stage.css": 94,
   "src/components/sherpa-node-toolbar/sherpa-node-toolbar.css": 36,
   "src/components/sherpa-node/sherpa-node-routes.css": 45,
   "src/components/sherpa-node/sherpa-node.css": 540,
