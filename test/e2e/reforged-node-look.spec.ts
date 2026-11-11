@@ -59,16 +59,19 @@ test('each category has its own radius and its own painted fill; one with no cat
     return [id, [s.borderTopLeftRadius, s.borderTopRightRadius, s.borderBottomRightRadius, s.borderBottomLeftRadius].map(parseFloat)];
   })));
   expect(radii).toEqual({ sources: [16, 4, 4, 16], 'custom-nodes': [4, 4, 4, 4], logic: [4, 4, 4, 4], output: [4, 16, 16, 4], ai: [16, 16, 16, 4], big: [4, 4, 4, 4] });
-  const fills: Record<string, string> = { sources: '--sherpa-theme-surface-info-base', 'custom-nodes': '--sherpa-theme-surface-info-base', output: '--sherpa-theme-surface-success-base', ai: '--sherpa-theme-surface-active-base' };
-  // Read above the header's category ink, the 2px line along its bottom (TODO 897).
+  // Sources and Output keep their own tint; every other category's header is a pale of its ink, 12% over the surface.
+  // These nodes are all header: read above its ink, the 2px line along its bottom (TODO 897).
+  const fills: Record<string, string> = { sources: '--sherpa-theme-surface-info-base', output: '--sherpa-theme-surface-success-base' };
   for (const [id, token] of Object.entries(fills)) {
-    const b = await box(page, id);
-    const [pixel] = await paint(page, b, [[.5, .8]]);
+    const [pixel] = await paint(page, await box(page, id), [[.5, .8]]);
     expect(near(pixel!, await inkOf(page, token)), `${id} paints ${token}`).toBe(true);
   }
-  const [logic] = await paint(page, await box(page, 'logic'), [[.5, .8]]);
-  const [info] = await paint(page, await box(page, 'sources'), [[.5, .8]]);
-  expect(near(logic!, info!, 2), 'a Logic node is not the info tint').toBe(false);
+  const heads: Record<string, string> = { 'custom-nodes': '--sherpa-data-viz-series-border-3', logic: '--sherpa-data-viz-series-border-8', ai: '--sherpa-theme-border-active-2' };
+  for (const [id, token] of Object.entries(heads)) {
+    const ink = await inkOf(page, token);
+    const [pixel] = await paint(page, await box(page, id), [[.5, .8]]);
+    expect(near(pixel!, ink.map((v) => v * 0.12 + 255 * 0.88) as Rgb, 3), `${id}'s head is a pale of ${token}`).toBe(true);
+  }
 });
 
 test('a many input is the height of a single: 16px, whatever the routes it takes (cb0b01a4c)', async ({ page }) => {
@@ -425,8 +428,8 @@ test('897: each category wears its own ink, a 2px line under its node\'s header 
     return { nodes, row: ink(shadow), inset: shadow.includes('inset') && /\b2px 0px 0px\b/.test(shadow) };
   });
   expect(r.nodes).toEqual({
-    sources: 'rgb(54, 145, 187)', variables: 'rgb(0, 167, 144)', logic: 'rgb(201, 46, 97)', organise: 'rgb(167, 120, 176)',
-    output: 'rgb(0, 172, 67)', 'custom-nodes': 'rgb(97, 114, 200)', ai: 'rgb(158, 3, 219)',
+    sources: 'rgb(0, 139, 186)', variables: 'rgb(255, 196, 76)', logic: 'rgb(201, 46, 97)', organise: 'rgb(59, 76, 205)',
+    output: 'rgb(0, 172, 67)', 'custom-nodes': 'rgb(0, 167, 144)', ai: 'rgb(192, 70, 255)',
   });
   // Every category a different ink.
   expect(new Set(Object.values(r.nodes)).size).toBe(Object.keys(r.nodes).length);

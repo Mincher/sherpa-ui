@@ -234,7 +234,7 @@
    A warning, the same: its pin's look. TODO 764. A portal of the picked one's name, the same as picked. TODO 779 */
 :host([data-current]) .root,
 :host([data-linked]) .root,
-:host([data-warning]) .root { --_category-fill: initial; }
+:host([data-warning]) .root { --_category-fill: initial; --_category-head: initial; }
 /* JOINED to what is picked: the active border, on its own fill — not a pin, which would take the picked fill too. TODO 889 */
 :host([data-joined]) .root { --_border: var(--sherpa-style-active-border-base-1, #c046ff); }
 @media (forced-colors: active) { :host([data-current]) .root, :host([data-linked]) .root, :host([data-joined]) .root { border-color: Highlight; } }
@@ -244,7 +244,9 @@
   display: flex;
   align-items: stretch;
   position: relative;
-  /* Its category's ink, a line along its bottom: inset, so nothing in or below it moves. TODO 897 */
+  /* Its category's head, a pale of its ink, and the ink a line along its bottom: inset, so nothing in or below it moves.
+     TODO 897 */
+  background: var(--_category-head, transparent);
   box-shadow: inset 0 calc(-1 * var(--sherpa-display-mode-border-width-lg, 2px)) 0 var(--_category-ink, transparent);
   cursor: grab;
   user-select: none;
@@ -330,7 +332,7 @@
 .caption-badge:empty { display: none; }
 :host([data-step="running"]) .caption-icon { display: inline-flex; }
 /* Lit by its step, the node takes its pin's look, not its category's tint. */
-:host([data-step="running"]) .root { --_category-fill: initial; }
+:host([data-step="running"]) .root { --_category-fill: initial; --_category-head: initial; }
 
 /* ── The warning's tip hangs from the header: a line for each input it cannot use. TODO 764 ── */
 .header, .tip-warning { --_anchor: --sherpa-node-warning; }

@@ -1,6 +1,7 @@
 /**
  * sherpa-node-look.css — a node's look by its kind's category (the Figma's columns), one place: its tinted fill, its
- * corner radii and its ink, as the custom properties `--_category-fill`, `--_node-radius` and `--_category-ink`. A node on the canvas and a row of it in the
+ * corner radii, its ink and its head, as the custom properties `--_category-fill`, `--_node-radius`, `--_category-ink` and
+ * `--_category-head`. A node on the canvas and a row of it in the
  * Nodes panel adopt it, so they look alike. Will, TODOs 740, 840 · TRAP T-a-node-row-wears-its-nodes-look
  *
  * Radius from the Display Mode scale (medium = base 4px, x-large = xl 16px); a tinted fill from the Theme tier, since a
@@ -11,8 +12,7 @@
   --_node-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px)
     var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px);
 }
-:host([data-category="sources"]),
-:host([data-category="custom-nodes"]) { --_category-fill: var(--sherpa-theme-surface-info-base, #d4f0ff); /* theme-direct */ }
+:host([data-category="sources"]) { --_category-fill: var(--sherpa-theme-surface-info-base, #d4f0ff); /* theme-direct */ }
 :host([data-category="output"]) {
   --_node-radius: var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px)
     var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
@@ -21,22 +21,26 @@
 :host([data-category="ai"]) {
   --_node-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-xl, 16px)
     var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
-  --_category-fill: var(--sherpa-theme-surface-active-base, #f8ebff); /* theme-direct */
 }
 
-/* Each category's INK: a vibrant colour to tell the kinds apart at a glance — a 2px line under a node's header, and down a
-   Nodes panel row's start edge. Each an existing token: the data-viz series, and the warning accent for Time and Status.
-   The Query editor's own categories take inks no kind beside them there wears. Will, TODO 897 */
-:host([data-category="sources"]) { --_category-ink: var(--sherpa-data-viz-series-border-4, #3691bb); /* theme-direct */ }
-:host([data-category="custom-nodes"]) { --_category-ink: var(--sherpa-data-viz-series-border-5, #6172c8); /* theme-direct */ }
-:host([data-category="variables"]) { --_category-ink: var(--sherpa-data-viz-series-border-3, #00a790); /* theme-direct */ }
-:host([data-category="math"]) { --_category-ink: var(--sherpa-data-viz-series-border-1, #8364c8); /* theme-direct */ }
+/* Each category's INK: a vibrant colour, each hue its own, to tell the kinds apart at a glance — a 2px line under a node's
+   header and down a Nodes panel row's start — and its HEAD, a pale of it, the header's and the row's fill. Sources and
+   Output keep their own fills. Each an existing token: Theme's step 2 (the range's 3) and the data-viz series'. The kinds
+   seen together most — Sources, Variables, Logic, Output — take the hues furthest apart; the Query editor's own categories
+   take inks no kind beside them there wears. Will, TODO 897 */
+:host([data-category]) { --_category-head: color-mix(in srgb, var(--_category-ink, transparent) 12%, var(--sherpa-style-surface-base, #ffffff)); }
+:host([data-category="sources"]),
+:host([data-category="output"]) { --_category-head: initial; }
+:host([data-category="sources"]) { --_category-ink: var(--sherpa-theme-border-info-2, #008bba); /* theme-direct */ }
+:host([data-category="variables"]) { --_category-ink: var(--sherpa-theme-border-warning-2, #ffc44c); /* theme-direct */ }
 :host([data-category="logic"]) { --_category-ink: var(--sherpa-data-viz-series-border-8, #c92e61); /* theme-direct */ }
-:host([data-category="time"]),
-:host([data-category="status"]) { --_category-ink: var(--sherpa-style-warning-indicator-accent, #ffc44c); }
-:host([data-category="organise"]),
-:host([data-category="saved-filters"]) { --_category-ink: var(--sherpa-data-viz-series-border-7, #a778b0); /* theme-direct */ }
-:host([data-category="utils"]) { --_category-ink: var(--sherpa-data-viz-series-border-6, #a88d59); /* theme-direct */ }
 :host([data-category="output"]) { --_category-ink: var(--sherpa-data-viz-series-border-9, #00ac43); /* theme-direct */ }
+:host([data-category="math"]),
+:host([data-category="status"]) { --_category-ink: var(--sherpa-theme-border-urgent-2, #ff7300); /* theme-direct */ }
+:host([data-category="organise"]),
+:host([data-category="saved-filters"]) { --_category-ink: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */ }
+:host([data-category="custom-nodes"]) { --_category-ink: var(--sherpa-data-viz-series-border-3, #00a790); /* theme-direct */ }
 :host([data-category="ai"]),
-:host([data-category="presets"]) { --_category-ink: var(--sherpa-data-viz-series-border-2, #9e03db); /* theme-direct */ }
+:host([data-category="presets"]) { --_category-ink: var(--sherpa-theme-border-active-2, #c046ff); /* theme-direct */ }
+:host([data-category="time"]) { --_category-ink: var(--sherpa-data-viz-series-border-6, #a88d59); /* theme-direct */ }
+:host([data-category="utils"]) { --_category-ink: var(--sherpa-data-viz-series-border-10, #8a8a9a); /* theme-direct */ }
