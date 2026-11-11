@@ -1,9 +1,9 @@
 /*
  * sherpa-float.css — a FLOATING box: anywhere in its room, by the box its bar and
- * corner ask for, never under its floor nor past its room. Adopted before their own
+ * edges ask for, never under its floor nor past its room. Adopted before their own
  * sheet by the overlay panel and the node panel; each positions its box (fixed in the
  * window, absolute in its canvas), and float-box.ts writes `--_float-*` on it.
- * Picked by class: .sherpa-float, -bar, -grip and -corner. TRAP T-a-floating-panel-is-a-state
+ * Picked by class: .sherpa-float, -bar, -grip and -edge. TRAP T-a-floating-panel-is-a-state
  */
 
 :host {
@@ -58,32 +58,40 @@
   outline-offset: var(--sherpa-focus-offset);
 }
 
-/* The corner: two diagonal lines, as a node's. Shown on hover, focus and while held;
-   a collapsed box has none. */
-.sherpa-float-corner {
+/* Its EDGES and CORNERS: each resizes it, the one across held; Shift on a corner keeps its shape (Will, TODO 903). None
+   is drawn: a cursor says each — across, down, a corner, and a corner held to its shape. A strip just inside the box's
+   edge, a square at each corner; a collapsed box has none. */
+.sherpa-float-edge {
+  --_hit: var(--sherpa-display-mode-space-xs, 8px);
   display: none;
   position: absolute;
-  right: 0;
-  bottom: 0;
   z-index: 1;
-  inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
-  cursor: nwse-resize;
   touch-action: none;
-  opacity: 0;
-  color: var(--sherpa-style-content-secondary, #35353d);
-  background: linear-gradient(135deg, transparent 0 50%, currentColor 50% calc(50% + 1px), transparent calc(50% + 1px) 70%, currentColor 70% calc(70% + 1px), transparent calc(70% + 1px));
 }
-:host(:state(floating):not([data-maximised]):not([data-collapsed])) .sherpa-float-corner { display: block; }
-.sherpa-float:hover .sherpa-float-corner,
-.sherpa-float-corner:focus-visible,
-:host(:state(sizing)) .sherpa-float-corner { opacity: 1; }
-.sherpa-float-corner:focus-visible {
+:host(:state(floating):not([data-maximised]):not([data-collapsed])) .sherpa-float-edge { display: block; }
+.sherpa-float-edge[data-edge="n"], .sherpa-float-edge[data-edge="s"] { left: var(--_hit); right: var(--_hit); block-size: var(--_hit); cursor: ns-resize; }
+.sherpa-float-edge[data-edge="e"], .sherpa-float-edge[data-edge="w"] { top: var(--_hit); bottom: var(--_hit); inline-size: var(--_hit); cursor: ew-resize; }
+.sherpa-float-edge[data-edge="n"] { top: 0; }
+.sherpa-float-edge[data-edge="s"] { bottom: 0; }
+.sherpa-float-edge[data-edge="e"] { right: 0; }
+.sherpa-float-edge[data-edge="w"] { left: 0; }
+.sherpa-float-edge[data-edge*="n"][data-edge$="e"], .sherpa-float-edge[data-edge*="n"][data-edge$="w"],
+.sherpa-float-edge[data-edge*="s"][data-edge$="e"], .sherpa-float-edge[data-edge*="s"][data-edge$="w"] {
+  inline-size: calc(var(--_hit) * 2);
+  block-size: calc(var(--_hit) * 2);
+}
+.sherpa-float-edge[data-edge="nw"] { top: 0; left: 0; cursor: nwse-resize; }
+.sherpa-float-edge[data-edge="se"] { bottom: 0; right: 0; cursor: nwse-resize; }
+.sherpa-float-edge[data-edge="ne"] { top: 0; right: 0; cursor: nesw-resize; }
+.sherpa-float-edge[data-edge="sw"] { bottom: 0; left: 0; cursor: nesw-resize; }
+/* Held to its shape: Shift on a corner. */
+:host(:state(uniform)) .sherpa-float-edge:is([data-edge="nw"], [data-edge="ne"], [data-edge="sw"], [data-edge="se"]) { cursor: zoom-in; }
+.sherpa-float-edge:focus-visible {
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);
 }
 
 @media (forced-colors: active) {
   .sherpa-float-grip { color: CanvasText; }
-  .sherpa-float-corner { forced-color-adjust: none; color: CanvasText; }
+  .sherpa-float-edge:focus-visible { outline-color: Highlight; }
 }

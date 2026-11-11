@@ -667,8 +667,9 @@ provider.addEventListener('filters-save-as', saveAs);
 - A panel has ONE mode, `data-mode`: `fixed`, `overlay`, `floating` or `tab`, and one side, `data-side` (`start`, else
   `end`). Put it in the app shell or a canvas as a child, and it is docked in that side's area; the panel sets its own slot. An
   area holds two panels at most, stacked top and bottom, and owns how they present: a panel's header buttons ask
-  (`panel-mode-change`) and the area writes the mode on both. An overlay panel with `data-floatable` floats: its header bar moves it, its
-  corner resizes it, and Dock puts it back in its area, in the area's mode. It reports `panel-mode-change`, `panel-move` and
+  (`panel-mode-change`) and the area writes the mode on both. An overlay panel with `data-floatable` floats: its header bar moves it,
+  any edge or corner resizes it, the one across held (Shift on a corner keeps its shape; the keys, on its grip and its
+  bottom-right corner), and Dock puts it back in its area, in the area's mode. It reports `panel-mode-change`, `panel-move` and
   `panel-resize`; keep `data-mode`, `data-side`, `data-x`,
   `data-y`, `data-width` and `data-height` in the session and hand them back. The
   Nodes panel is an overlay panel in the canvas with `data-side="start"` and

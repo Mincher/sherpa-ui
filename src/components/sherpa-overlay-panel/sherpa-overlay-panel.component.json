@@ -337,13 +337,69 @@
           },
           {
             "el": "div",
-            "class": "corner sherpa-float-corner",
+            "class": "edge-n sherpa-float-edge",
+            "attrs": {
+              "data-edge": "n",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "edge-e sherpa-float-edge",
+            "attrs": {
+              "data-edge": "e",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "edge-s sherpa-float-edge",
+            "attrs": {
+              "data-edge": "s",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "edge-w sherpa-float-edge",
+            "attrs": {
+              "data-edge": "w",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "edge-nw sherpa-float-edge",
+            "attrs": {
+              "data-edge": "nw",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "edge-ne sherpa-float-edge",
+            "attrs": {
+              "data-edge": "ne",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "edge-sw sherpa-float-edge",
+            "attrs": {
+              "data-edge": "sw",
+              "aria-hidden": "true"
+            }
+          },
+          {
+            "el": "div",
+            "class": "corner sherpa-float-edge",
             "part": "corner",
             "attrs": {
+              "data-edge": "se",
               "role": "button",
               "tabindex": "0",
-              "aria-label": "Resize panel",
-              "title": "Drag to resize, or use the arrow keys"
+              "aria-label": "Resize panel"
             }
           }
         ]

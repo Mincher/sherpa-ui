@@ -22,8 +22,9 @@ export interface XY {
 export interface DragXYOptions {
   /** The value as it is drawn now. */
   measure: () => XY;
-  /** Write the value asked for. `done` on release or a key: the moment to report. */
-  apply: (to: XY, done: boolean) => void;
+  /** Write the value asked for. `done` on release or a key: the moment to report. `shift`: Shift is held on the pointer's
+   *  drag (a key's Shift is four steps instead). */
+  apply: (to: XY, done: boolean, shift?: boolean) => void;
   /** Where the arrows are heard: the handle itself, by default. */
   keys?: HTMLElement | null;
   /** How far one arrow steps it; Shift steps four times as far. */
@@ -76,7 +77,7 @@ export function dragXY(handle: HTMLElement, options: DragXYOptions): void {
       if (!moved) options.hold?.(true);
       moved = true;
       last = at(e);
-      options.apply(last, false);
+      options.apply(last, false, e.shiftKey);
       options.track?.({ x: e.clientX, y: e.clientY }, 'move');
     };
     // A lost capture ends it too, or a handle taken away mid-drag would stay held.
@@ -89,7 +90,7 @@ export function dragXY(handle: HTMLElement, options: DragXYOptions): void {
       if (!moved) return;
       options.hold?.(false);
       // Only a release says where: a cancelled drag keeps where it got to.
-      options.apply(e.type === 'pointerup' ? at(e) : last, true);
+      options.apply(e.type === 'pointerup' ? at(e) : last, true, e.shiftKey);
       options.track?.({ x: e.clientX, y: e.clientY }, e.type === 'pointerup' ? 'end' : 'cancel');
     };
     handle.addEventListener('pointermove', move);

@@ -169,9 +169,9 @@ slot[name="heading"] { display: contents; }
   .description { display: none; }
 }
 
-/* The slotted lead (a panel's grip) reserves nothing while hidden. While the pointer is on the header the
-   content steps right by `--_lead-width`, which only a host where the lead shows sets. */
-:host(:hover) .header {
+/* The slotted lead (a panel's grip) reserves nothing while hidden: the content steps right by `--_lead-width`, which its
+   host sets only while the lead shows (a floating panel's grip, with the keys' focus: TODO 931). */
+.header {
   padding-inline-start: calc(var(--sherpa-theme-padding-md, 8px) + var(--_lead-width, 0px));
 }
 ::slotted([slot="lead"]) {
