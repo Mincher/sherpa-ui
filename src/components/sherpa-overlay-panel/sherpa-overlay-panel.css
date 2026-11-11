@@ -217,6 +217,8 @@
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
   min-block-size: 0;
+  /* The tab writes vertically: its long side is the INLINE one, so 0 there, or a long title runs past it (Will, 2026-11-11). */
+  min-inline-size: 0;
   padding: var(--sherpa-display-mode-space-sm, 8px) var(--sherpa-display-mode-space-xs, 4px);
   font: inherit;
   color: inherit;
@@ -224,7 +226,7 @@
   border: 0;
   cursor: pointer;
 }
-.tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab-title { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab-open:focus-visible { outline: var(--sherpa-focus-ring); outline-offset: var(--sherpa-focus-offset); }
 /* Updated: active, and the mark the app header's bell wears, an exclamation for a count. */
 :host([data-updated]) .tab {

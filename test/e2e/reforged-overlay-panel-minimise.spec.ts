@@ -195,3 +195,19 @@ test('a press on a tab shows its panel as a docked overlay, hover or none; a pre
   await press(page, '.dock-overlay:not([disabled]), .dock-fixed:not([disabled])');
   expect(await state()).toBe('overlay');
 });
+
+test('a long title is cut inside its tab, with an ellipsis: the tab keeps its own length (Will, 2026-11-11)', async ({ page }) => {
+  await stage(page);
+  await page.evaluate(() => document.getElementById('tabbed')!.setAttribute('data-heading', 'Condition: Windows laptops with low RAM or low storage space'));
+  await press(page, '.minimise');
+  const tab = await part(page, '.tab');
+  const button = await part(page, '.tab-open');
+  const title = await part(page, '.tab-title');
+  expect(tab.h).toBeLessThanOrEqual(161);
+  expect(button.y + button.h).toBeLessThanOrEqual(tab.y + tab.h + 1);
+  expect(title.y + title.h).toBeLessThanOrEqual(tab.y + tab.h + 1);
+  expect(await page.evaluate(() => {
+    const t = document.getElementById('tabbed')!.shadowRoot!.querySelector('.tab-title')!;
+    return t.scrollHeight > t.clientHeight + 1;
+  })).toBe(true);
+});
