@@ -3,7 +3,8 @@
  * One test per Condition, and And and Or join tests (plan 783 D4): 780's rule, which the Group row kept, is theirs
  * now. A test's True brings its whole tree; any other boolean — a True or False, a value that says true or false,
  * 1 or 0 — is a CONSTANT one the graph holds, folded into the group; one only a run gives is named by where it
- * comes from. Anything else reads null, and the node warns. No connection into it is a fault.
+ * comes from. Since TODO 939 they take ANYTHING else too — rows, a count, a value, each true where it is above zero,
+ * true, or not empty — with no warning; it says nothing in a Query's tree. No connection into it is a fault.
  *
  *   node --test test/unit/and-or-take-any-boolean.test.mjs
  *
@@ -87,11 +88,11 @@ test('a boolean only a run gives is named by where it comes from; a test that sa
   assert.deepEqual(nodeFlow(off, 'j').definition.where, { and: [ACTIVE, { boolean: 'Condition › False' }] });
 });
 
-test('anything else reads null and warns in words, and says nothing in the tree; no fault', () => {
-  for (const [nodes, from, given] of [[[], 's/rows', 'rows'], [[value('yes')], 'v/value', '"yes"'], [[value(['a'], 'list')], 'v/value', 'a list']]) {
+test('anything else joins too (TODO 939): rows, a value, a list — no warning, and nothing in the Query\'s tree; no fault', () => {
+  for (const [nodes, from] of [[[], 's/rows'], [[value('yes')], 'v/value'], [[value(['a'], 'list')], 'v/value']]) {
     for (const join of ['and', 'or']) {
       const r = read(flow(nodes, from, join));
-      assert.deepEqual(r, { faults: [], warnings: [{ words: `${join === 'and' ? 'And' : 'Or'} takes a boolean; it was given ${given}` }], where: ACTIVE }, `${join}: ${from}`);
+      assert.deepEqual(r, { faults: [], warnings: undefined, where: ACTIVE }, `${join}: ${from}`);
     }
   }
 });

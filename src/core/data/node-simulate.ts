@@ -9,7 +9,7 @@
  * Map:
  * - SimulateFacts — What a simulation reads beyond its graph and rows: the clock a relative date means.
  * - Slot — What one socket hears or says: its rows, a field's name or a value, and where it comes from.
- * - SimulatedNode — One node: each input socket's slot, and each output socket's; an Output's, what it would do.
+ * - SimulatedNode — One node: each input socket's slot, and each output socket's; an Output's, what it would do; Not taken.
  * - Simulated — Every node's slots, and each fault in words.
  * - Sent — What an output socket sends: rows, a field, a value, or nothing and why.
  * - simulateGraph — The graph run on the cached rows: what each node hears and says, a row list on each socket.
@@ -30,7 +30,7 @@
 import { filterTest, type Filter, type Row } from './store.js';
 import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
-import { FALSE_SOCKET, socketOf, type DrawnGraph, type GraphNode } from './node-kinds.js';
+import { FALSE_SOCKET, socketOf, steers, type DrawnGraph, type GraphNode } from './node-kinds.js';
 
 /** What a simulation reads beyond its graph and rows: the clock a relative date means (left out, the machine's), and
  *  where a fetch stopped at its cap, by store, in words: a Source says it beside its rows. */
@@ -53,11 +53,12 @@ export interface Slot {
   note?: string;
 }
 
-/** One node: each input socket's slot, and each output socket's; an Output's, what it would do. */
+/** One node: each input socket's slot, and each output socket's; an Output's, what it would do; down a Branch not taken, so. */
 export interface SimulatedNode {
   incoming: readonly Slot[];
   outgoing: readonly Slot[];
   would?: string;
+  notTaken?: true;
 }
 
 /** Every node's slots, by id, and each fault in words. */
@@ -68,6 +69,17 @@ export interface Simulated {
 
 /** What an output socket sends: rows, a field (its name, and the rows into it), or nothing and why. */
 export type Sent = { kind: 'rows' | 'field' | 'value'; rows?: readonly Row[]; value?: unknown; note?: string };
+
+/** A test's verdict: the rows it keeps and those it does not; a joiner's, too, whether it passed, how many inputs pass and
+ *  fail, and its Count. */
+interface Verdict {
+  kept: Row[];
+  lost: Row[];
+  passed?: boolean;
+  pass?: number;
+  fail?: number;
+  count?: number;
+}
 
 /** The kinds whose True is a test of a field. */
 const TESTS = new Set(['condition', 'time', 'tag']);
@@ -208,14 +220,17 @@ export function lightOf(node: SimulatedNode, ms: number): string {
     : heard !== undefined || said !== undefined ? `${n((heard ?? said)!)} ${(heard ?? said) === 1 ? 'row' : 'rows'}`
       : valueWords(node.outgoing) ?? [...node.incoming, ...node.outgoing].find((s) => s.note)?.note ?? '';
   const time = ms < 1 ? '<1 ms' : `${Math.round(ms).toLocaleString('en')} ms`;
+  if (node.notTaken) return `Not taken · ${time}`;
   // An Output says what it would do, and its rows: it does nothing (plan 891).
   const words = node.would ? [node.would, heard !== undefined ? rows : ''] : [rows];
   return [...words, time].filter(Boolean).join(' · ');
 }
 
-/** How many rows reach a node's True after a simulation: none where it has no True or has not run. */
+/** How many rows a fork's Results send after a simulation — what passed: none where it forks not or has not run. Its True
+ *  steers, and carries none (TODO 939). */
 export function trueOf(node: SimulatedNode): number | undefined {
-  return node.outgoing.find((s) => s.label === 'True')?.rows?.length;
+  if (!node.outgoing.some((s) => s.label === 'True')) return undefined;
+  return node.outgoing.find((s) => s.label === 'Results')?.rows?.length;
 }
 
 /** Begin a simulation: nothing runs until it is stepped. */
@@ -229,8 +244,24 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   const sent = new Map<string, Sent>();
   const busy = new Set<string>();
 
-  /** What flows into a node's header, as each connection brings it. */
-  const into = (address: string): { from: string; sent: Sent }[] => connections.filter((r) => r.to === address).map((r) => ({ from: r.from, sent: sends(r.from) }));
+  /** Does a connection come from a STEER, a fork's True or False (TODO 939)? */
+  const steer = (from: string): boolean => {
+    const { node: id, row } = socketOf(from);
+    return steers(held.get(id), row);
+  };
+  /** Does a node join tests (And, Or, Not): a steer into it is one of its inputs, not its gate. */
+  const joins = (node: GraphNode | undefined): boolean =>
+    node?.kind === 'condition' && ['and', 'or', 'not'].includes(String(node.rows.find((r) => r.name === 'type')?.value ?? ''));
+  /** What flows into a socket, as each connection brings it. Into a header, a steer is no data: it gates the node; a joiner
+   *  takes it as an input. */
+  const into = (address: string): { from: string; sent: Sent }[] => {
+    const { node: id, row } = socketOf(address);
+    const gated = row === undefined && !joins(held.get(id));
+    return connections.filter((r) => r.to === address && !(gated && steer(r.from))).map((r) => ({ from: r.from, sent: sends(r.from) }));
+  };
+  /** Whether a node runs: every steer into its header was taken, its True or its False (TODO 939). */
+  const taken = (node: GraphNode): boolean =>
+    joins(node) || connections.filter((r) => r.to === node.id && steer(r.from)).every((r) => sends(r.from).value !== false);
   /** The rows that reach a socket, each once; none at all when none of its connections brings rows (not fetched, not simulated). */
   const rowsInto = (address: string): Row[] | undefined => {
     const lists = into(address).flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
@@ -252,19 +283,29 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return { kept, lost };
   };
 
-  /** A Condition's rows, by its kind: a test keeps, And and Or join what the parts kept. */
-  const verdict = (node: GraphNode): { kept: Row[]; lost: Row[] } | string | { note: string } => {
+  /** A Condition's verdict, by its kind: a test keeps rows; And and Or join their inputs, each true where it is above zero,
+   *  true, or not empty. `passed` steers its True; Pass and Fail count its inputs; Count is its rows and the sum of its true
+   *  counts (TODO 939). */
+  const verdict = (node: GraphNode): Verdict | string | { note: string } => {
     const type = node.rows.find((r) => r.name === 'type')?.value;
     if (node.kind === 'condition' && (type === 'and' || type === 'or')) {
       const came = into(node.id);
-      if (!came.length) return `"${node.heading}" joins no tests: connection their True in`;
-      const lacking = came.find((p) => !p.sent.rows);
-      if (lacking) return { note: lacking.sent.note ?? 'No rows reach it' };
-      const parts = came.flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
-      const kept = type === 'and' ? common(parts) : union(parts);
-      const all = union(parts);
+      if (!came.length) return `"${node.heading}" joins nothing: connect its inputs in`;
+      const each = came.map(({ sent: s }) => {
+        if (s.rows) return { ok: s.rows.length > 0, rows: s.rows };
+        const v = s.value;
+        if (typeof v === 'boolean') return { ok: v };
+        const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v)) ? Number(v) : undefined;
+        if (n !== undefined) return { ok: n > 0, n };
+        return { ok: v != null && v !== '' && !(Array.isArray(v) && !v.length) };
+      });
+      const pass = each.filter((e) => e.ok).length;
+      const passed = type === 'or' ? pass > 0 : pass === each.length;
+      const parts = each.flatMap((e) => (e.rows ? [e.rows] : []));
+      const kept = type === 'or' ? union(each.flatMap((e) => (e.ok && e.rows ? [e.rows] : []))) : passed ? common(parts) : [];
       const keeps = new Set(kept);
-      return { kept, lost: all.filter((row) => !keeps.has(row)) };
+      const sum = each.reduce((total, e) => total + (e.ok && e.n !== undefined ? e.n : 0), 0);
+      return { kept, lost: union(parts).filter((row) => !keeps.has(row)), passed, pass, fail: each.length - pass, count: (parts.length ? kept.length : 0) + sum };
     }
     return test(node);
   };
@@ -396,6 +437,13 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
 
   /** What one output socket of a node sends. A Count property row sends how many rows the node sends on: a number. TODO 835 */
   function make(node: GraphNode, row: string | undefined): Sent {
+    // Down a Branch not taken, it does not run: a steer it sends is false, so what it steers does not run either (TODO 939).
+    if (!taken(node)) return steers(node, row) ? { kind: 'value', value: false, note: 'Not taken' } : { kind: 'value', note: 'Not taken' };
+    if (joins(node) && (row === 'count' || row === 'pass' || row === 'fail')) {
+      const read = verdict(node);
+      if (typeof read === 'string' || 'note' in read) return { kind: 'value', note: typeof read === 'string' ? read : read.note };
+      return { kind: 'value', value: read[row] };
+    }
     if (node.kind === 'group' && row === 'count') return arranged(node, row);
     if (row !== undefined && node.rows.find((r) => r.name === row)?.property && row === 'count') {
       const on = node.kind === 'field' ? { rows: rowsInto(node.id) } : sends(`${node.id}/${node.rows.find((r) => r.gives === 'rows')?.name ?? 'rows'}`);
@@ -424,7 +472,12 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
         return { kind: 'rows', note: read };
       }
       if ('note' in read) return { kind: 'rows', note: read.note };
-      return { kind: 'rows', rows: row === FALSE_SOCKET ? read.lost : read.kept };
+      // A fork's True and False STEER: true or false, and no rows; its Results carry the rows that pass (TODO 939).
+      if (steers(node, row)) {
+        const passed = read.passed ?? read.kept.length > 0;
+        return { kind: 'value', value: row === FALSE_SOCKET ? !passed : passed };
+      }
+      return { kind: 'rows', rows: read.kept };
     }
     if (node.kind === 'value') return valued(node);
     if (node.kind === 'math') return math(node);
@@ -479,7 +532,9 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       ...node.rows.filter((r) => r.output).map((r) => slot(`${node.id}/${r.name}`, r.label, 'out')),
       ...(node.branches ? [slot(`${node.id}/${FALSE_SOCKET}`, 'False', 'out')] : []),
     ];
-    nodes[node.id] = { incoming, outgoing, ...(node.would ? { would: node.would } : {}) };
+    // Down a Branch not taken it does nothing, so it would do nothing (TODO 939).
+    const ran = taken(node);
+    nodes[node.id] = { incoming, outgoing, ...(node.would && ran ? { would: node.would } : {}), ...(ran ? {} : { notTaken: true as const }) };
   };
   // In the order the data flows, so each node's step is mostly its own work and its time is its own; a loop keeps the graph's order.
   const order: string[] = [];

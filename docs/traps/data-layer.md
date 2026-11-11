@@ -6393,17 +6393,17 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
   type does not take is a WARNING, never a fault: "Contains takes a text field; it was given the
   Seats column" (graphs stay open).
 - **Every type leads with Rows**: the rows it lets through, for a node that needs rows. It sends rows
-  only where rows reached its header — rows, a column, an object, or a test's True that carries them
-  (`sender`); a test of two values sends none.
+  only where rows reached its header — rows, a column, an object, or a test's Results (`sender`); a
+  True steers and carries none (TODO 939). A test of two values sends none.
 - **In the last and In the next are Time › Duration's**, not Logic's: two nodes would do one check.
-- **The header's input is the type's.** And and Or take many booleans, and Not takes one; Is empty
-  takes any value; a comparison any. Each one forks: True on the header, False on the footer. Nothing
+- **The header's input is the type's.** And and Or take many of anything (TODO 939), and Not one
+  boolean; Is empty takes any value; a comparison any. Each one forks: True on the header, False on the footer. Nothing
   runs (N4): a runner reads a value as `truthy` reads it (D2).
-- **A header's warning names the type** where the family has several: "Sort takes a field", "And
+- **A header's warning names the type** where the family has several: "Sort takes a field", "Not
   takes a boolean", not "Collection" or "Condition".
 - **What a type change orphans is the draft's** (Will, 2026-11-05), and only a socket that is GONE
-  orphans a connection (TODO 770). A column into a Condition switched to And stays joined: And's header is
-  there, reads null, and the node warns ("And takes a boolean; it was given the Status column"). A
+  orphans a connection (TODO 770). A column into a Condition switched to Not stays joined: Not's header is
+  there, reads null, and the node warns ("Not takes a boolean; it was given the Status column"). A
   Value B switched away from is kept for its type, and Save leaves it out (`finalGraph`).
 - **The Query draws its trees with it** (plan 783 D6): And, Or and the comparisons; Not and Is empty
   are a workflow's alone (`graphs`).
@@ -6824,7 +6824,9 @@ sockets only, never types.
   `branches`, a kind says no header `output` of its own. True and False are
   TRUTHINESS (Will, D2): `truthy()` says nothing — none, false, 0, NaN, blank
   text, an empty list, set or record — is False, and the rest True. A value is
-  typed first: the TEXT "false" is something.
+  typed first: the TEXT "false" is something. True and False STEER (TODO 939):
+  each sends true or false and no rows, and a node down a Branch not taken does
+  not run (Simulate: Not taken). Results, a property, carries the rows.
 - **Only a Condition forks, for now** (Will, TODO 831: "not all nodes need a true/false
   socket… Don't completely remove the ability… Just hide them for now"). `branches` stays
   a kind option; no other shipped kind, type or Custom Node use sets it, so none draws True
@@ -6876,8 +6878,9 @@ its choices".
   or 0 (`truthOf`) — is a CONSTANT part: true always holds, false never. One the graph holds folds
   into its group in `nodeFlow`'s `where`: true drops out of And and ends Or, false the other way, so
   `where` may be `true` or `false`; one only a run gives is named by where it comes from,
-  `{ boolean: "Source › True" }`. Anything else reads null and warns
-  (`T-a-node-reads-null-from-what-it-cannot-use`). No connection into it is a fault. A Preset Filter's
+  `{ boolean: "Source › True" }`. Since TODO 939 anything else joins too, with no warning — rows, a
+  count, a value, each true where it is above zero, true, or not empty — and says nothing in the tree;
+  a test's Results bring its tree, as its True does. No connection into it is a fault. A Preset Filter's
   use brings its tree too, read inside (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
 - **The Query holds no constant.** A page's `where` cannot say one, and the Query editor takes no
   connection into an And or an Or (`connectionRequest`), so it draws none. Folded, a constant compiles as no

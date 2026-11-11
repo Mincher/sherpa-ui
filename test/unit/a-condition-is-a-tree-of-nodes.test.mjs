@@ -63,8 +63,8 @@ test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the 
     'field-view-seats/field → when-view-seats.2.2', 'when-view-seats.2.2 → when-view-seats.2',
     'when-view-seats.2 → when-view-seats', 'when-view-seats → scope-view/seats',
   ]);
-  // An And or an Or takes many booleans; a leaf the Field's column; the Field takes nothing in a Query.
-  assert.deepEqual([node(g, 'when-view-seats').input, node(g, 'when-view-seats').many, node(g, 'when-view-seats.1').input, node(g, 'field-view-seats').input], ['boolean', true, 'any', undefined]);
+  // An And or an Or takes many of anything (TODO 939); a leaf the Field's column; the Field takes nothing in a Query.
+  assert.deepEqual([node(g, 'when-view-seats').input, node(g, 'when-view-seats').many, node(g, 'when-view-seats.1').input, node(g, 'field-view-seats').input], ['any', true, 'any', undefined]);
   for (const { from, to } of g.connections) {
     const [a, b] = [socketOf(from), socketOf(to)];
     assert.ok(accepts(socketType(node(g, a.node), a.row, 'output'), socketType(node(g, b.node), b.row, 'input')), `${from} → ${to}`);
@@ -155,7 +155,8 @@ const seatsFlow = () => ({
   ],
   connections: [
     { from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'a' }, { from: 'seats/field', to: 'b' }, { from: 'seats/field', to: 'c' },
-    { from: 'b', to: 'and' }, { from: 'c', to: 'and' }, { from: 'a', to: 'or' }, { from: 'and', to: 'or' }, { from: 'or/rows', to: 'end' },
+    // The rows go by Results; a True steers and carries none (TODO 939).
+    { from: 'b/rows', to: 'and' }, { from: 'c/rows', to: 'and' }, { from: 'a/rows', to: 'or' }, { from: 'and/rows', to: 'or' }, { from: 'or/rows', to: 'end' },
   ],
 });
 const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
@@ -167,7 +168,7 @@ test('in a workflow, A or (B and C) is one Field into three Conditions, an And a
   assert.deepEqual(workflowFaults(w, NODE_KINDS, { fieldsOf }), []);
   const g = workflowGraph(w, { fieldsOf });
   for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'b', 'count'], id);
-  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows'], id);
+  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'count', 'pass', 'fail'], id);
   assert.ok(g.nodes.every((n) => !n.warnings), 'every connection reads what it needs');
   // Each Condition's operators are the Field's type's; an edit types Value B by it.
   assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, 70);

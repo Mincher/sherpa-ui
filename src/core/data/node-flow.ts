@@ -102,8 +102,10 @@ function readAt(graph: Flowing, address: string, facts: ConditionFacts, walk: Wa
 
 /** The condition an output socket sends: a test's True, a use's, or a fault where it says none. */
 function readFrom(graph: Flowing, from: string, facts: ConditionFacts, walk: Walk): ConditionRead {
-  const { node: id, row } = socketOf(from);
+  const { node: id, row: at } = socketOf(from);
   const node = graph.nodes.find((n) => n.id === id);
+  // A test's Results are the rows that pass it: they say its tree, as its True does (TODO 939).
+  const row = at === ROWS.name && node && TESTS.has(node.kind) ? undefined : at;
   if (!node) return none(`a connection comes from "${id}", which the graph does not hold`);
   if (walk.seen.has(node.id)) return none(`"${node.heading}" reads itself, in a loop`);
   if (row === FALSE_SOCKET) return none(`"${node.heading}" › False is a boolean only, not rows: to keep the other rows, set the Check to its inverse`);
@@ -155,14 +157,14 @@ function carried(graph: Flowing, node: GraphNode, facts: ConditionFacts, walk: W
   }));
 }
 
-/** One part And or Or joins: a test's True or a use's brings its tree — one that says none is a boolean a run gives, and
+/** One part And or Or joins: a test's True, its Results or a use's brings its tree — one that says none is a boolean a run gives, and
  *  why stays said; a value the graph holds that says true or false is a CONSTANT, which folds; a boolean only a run gives
  *  is named by where it comes from; what the header cannot use (null) says nothing. TODO 780, plan 783 D4 */
 function partFrom(graph: Flowing, via: NodeConnection, facts: ConditionFacts, walk: Walk): ConditionRead {
   const { node: id, row } = socketOf(via.from);
   const from = graph.nodes.find((n) => n.id === id);
   const run: ConditionRead = { tree: { boolean: said(graph, via.from, true) }, faults: [] };
-  if (!from || (row === undefined && (TESTS.has(from.kind) || facts.inner?.(from)))) {
+  if (!from || (row === undefined && (TESTS.has(from.kind) || facts.inner?.(from))) || (row === ROWS.name && TESTS.has(from.kind))) {
     const nested = readFrom(graph, via.from, facts, walk);
     return nested.tree !== undefined || !from ? nested : { ...run, faults: nested.faults };
   }

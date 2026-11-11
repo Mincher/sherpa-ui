@@ -32,7 +32,7 @@ import { inNewWords } from './entity.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, FALSE_SOCKET, joinsTests, steers, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -525,8 +525,8 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
         return { from: r.from, got: got && need && readInput({ label: kind.heading, needs: need }, got).warning ? null : got };
       });
       if (passes) {
-        const carries = heard.some(({ from: f, got }) => !!got && (['rows', 'field', 'object'].includes(got.kind)
-          || (got.kind === 'boolean' && sends(`${socketOf(f).node}/${ROWS.name}`)?.kind === 'rows')));
+        // A test's True or False steers and carries no rows (TODO 939): only rows, a column or an object do.
+        const carries = heard.some(({ got }) => !!got && ['rows', 'field', 'object'].includes(got.kind));
         return carries ? { kind: 'rows' } : undefined;
       }
       return columnOf(picked!.field, heard[0]?.got);
@@ -588,6 +588,12 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   };
   const reach = fieldsReach(held, flows, kinds, facts);
   const sent = sender(held, flows, kinds, reach);
+  /** Does a connection come from a STEER, a fork's True or False (TODO 939)? */
+  const steerFrom = (from: string): boolean => {
+    const { node: id, row } = socketOf(from);
+    const at = held.get(id);
+    return steers(at && kindOf(at), row);
+  };
   /** Whether ROWS reach a node's header (TODO 924): true where rows, a column, an object, or a test that may be over rows
    *  comes in; false where only values, or tests of one, do; undefined where nothing it can use is joined. */
   const heardOf = new Map<string, boolean | undefined>();
@@ -597,7 +603,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     seen.add(id);
     const at = held.get(id);
     const need = at && needOf(kindOf(at) ?? {});
-    const answers = flows.filter((c) => c.to === id).flatMap((c) => {
+    // A steer into a node's header gates it, and is no data; a joiner (And, Or, Not) takes it as an input: no rows.
+    const answers = flows.filter((c) => c.to === id && !(steerFrom(c.from) && !joinsTests(at))).flatMap((c) => {
       const got = sent(c.from);
       // What it cannot use, it reads as null, and says so: no answer here.
       if (!got || (need && readInput({ label: '', needs: need }, got).warning)) return [];
@@ -606,15 +613,15 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const from = held.get(fromId);
       const given = givenAt(from, row, kinds)?.kind ?? got.kind;
       if (given === 'field') return [rowsHeard(fromId, seen) !== false];
-      if (given !== 'boolean') return [!['value', 'number', 'provider', 'model'].includes(given)];
-      // A test's True: over rows where its own header hears rows; one with no Results of its own may be, so it shows.
-      const tested = from && kindOf(from)?.rows.some((r) => r.name === ROWS.name);
-      return [!tested || rowsHeard(fromId, seen) !== false];
+      // A boolean — a check's, or a steer into a joiner — is no rows (TODO 939).
+      return [!['value', 'number', 'boolean', 'provider', 'model'].includes(given)];
     });
     const heard = answers.length ? answers.some(Boolean) : undefined;
     heardOf.set(id, heard);
     return heard;
   };
+  /** Does a joiner hear a COUNT — a number or a value — whose sum its Count says (TODO 939)? */
+  const countsHeard = (id: string): boolean => flows.some((c) => c.to === id && ['number', 'value'].includes(givenAt(held.get(socketOf(c.from).node), socketOf(c.from).row, kinds)?.kind ?? ''));
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const family = kinds[node.kind]!;
@@ -623,6 +630,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // What each connection into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
     const warnings: { row?: string; words: string }[] = [];
     const readsAt = (to: string, input: InputNeeds): Map<NodeConnection, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
+      // A steer into the header gates the node: it is no data, so it is not read, and nothing warns (TODO 939).
+      if (to === node.id && r.to === to && steerFrom(r.from) && !joinsTests(node)) return [];
       const got = r.to === to ? sent(r.from) : undefined;
       const read = got && readInput(input, got);
       if (read?.warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: read.warning });
@@ -645,6 +654,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // Its Results and Count say ROWS: where only a value, or a test of one, reaches its header, they have nothing to say.
     // Nothing usable joined: they show (TODO 924).
     const rowless = !!kind.input && kind.rows.some((r) => r.name === ROWS.name) && rowsHeard(node.id) === false;
+    // A joiner's Count also says the sum of its true counts: it shows where counts come in (TODO 939).
+    const countless = rowless && !(joinsTests(node) && countsHeard(node.id));
     const rows = kind.rows.map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no connection gives warns, by its row (plan 891).
@@ -671,7 +682,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
       const closed = plain.control === 'tags' && list ? { closed: true as const } : {};
       // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A).
-      const idle = rowless && !!row.property && [ROWS.name, 'count'].includes(row.name);
+      const idle = !!row.property && (row.name === ROWS.name ? rowless : row.name === 'count' && countless);
       if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {
         warnings.push({ row: row.name, words: `${row.label} has no rows${row.name === 'count' ? ' to count' : ''}: a value comes in` });
       }

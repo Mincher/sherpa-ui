@@ -41,7 +41,7 @@ test('a Source sends the cached rows; a Field sends its name and the rows into i
   assert.deepEqual(sim.faults, []);
 });
 
-test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, in; its False is the rest', () => {
+test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, in; its True and False steer, and carry no rows (939)', () => {
   const tests = [['status', 'eq', 'active'], ['status', 'ne', 'trial'], ['seats', 'gt', 50], ['seats', 'lt', 10], ['region', 'eq', 'EMEA'], ['status', 'in', ['trial', 'churned']]];
   for (let round = 0; round < 20; round++) {
     const rows = rowsOf(10 + Math.floor(rnd() * 90));
@@ -49,8 +49,9 @@ test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, 
     const sim = simulateGraph(chain(field, type, b), { customers: rows });
     const kept = filterRows(rows, [field, type, b]);
     assert.deepEqual(out(sim, 'c', 'c/rows').rows, kept, `${field} ${type}`);
-    assert.deepEqual(out(sim, 'c', 'c/#false').rows, rows.filter((r) => !kept.includes(r)), `${field} ${type} False`);
-    assert.equal(out(sim, 'c', 'c').rows.length, kept.length, 'its True is the same rows');
+    // True where any row passes, False the other way: a steer, no rows.
+    assert.deepEqual([out(sim, 'c', 'c').value, out(sim, 'c', 'c').rows], [kept.length > 0, undefined], `${field} ${type} True`);
+    assert.deepEqual([out(sim, 'c', 'c/#false').value, out(sim, 'c', 'c/#false').rows], [kept.length === 0, undefined], `${field} ${type} False`);
   }
 });
 
@@ -65,11 +66,11 @@ test('two tests in a row are And: the second keeps what the first kept', () => {
   assert.deepEqual(into(sim, 'o', 'o').rows, rows.filter((r) => r.status === 'active' && r.region === 'EMEA'));
 });
 
-test('And keeps what every part kept, Or what any part kept; the rows are the cache\'s own', () => {
+test('And keeps what every part kept, Or what any part kept, their Results in; the rows are the cache\'s own (939)', () => {
   const rows = rowsOf(80);
   const parts = [N('s', 'source', { store: 'customers' }), N('f1', 'field', { field: 'status' }), N('a', 'condition', { type: 'eq', b: 'active' }),
     N('f2', 'field', { field: 'region' }), N('b', 'condition', { type: 'eq', b: 'EMEA' })];
-  const wired = [R('s/rows', 'f1'), R('s/rows', 'f2'), R('f1/field', 'a'), R('f2/field', 'b'), R('a', 'j'), R('b', 'j'), R('j/rows', 'o')];
+  const wired = [R('s/rows', 'f1'), R('s/rows', 'f2'), R('f1/field', 'a'), R('f2/field', 'b'), R('a/rows', 'j'), R('b/rows', 'j'), R('j/rows', 'o')];
   for (const [type, keep] of [['and', (r) => r.status === 'active' && r.region === 'EMEA'], ['or', (r) => r.status === 'active' || r.region === 'EMEA']]) {
     const sim = simulateGraph(graphOf([...parts, N('j', 'condition', { type }), N('o', 'output')], wired), { customers: rows });
     const got = into(sim, 'o', 'o').rows;

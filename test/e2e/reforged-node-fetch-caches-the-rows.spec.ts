@@ -256,8 +256,10 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   const pane = page.locator('#inspector .data-pane');
   await expect(pane).toBeVisible();
   const lines = await pane.locator('.data-line').allTextContents();
-  expect(lines).toContain(`True: ${ACTIVE.length} rows`);
-  expect(lines).toContain('False: ' + (120 - ACTIVE.length) + ' rows');
+  // True and False steer, true or false; the rows that pass go by Results (TODO 939).
+  expect(lines).toContain('True: true');
+  expect(lines).toContain('False: false');
+  expect(lines).toContain(`Results: ${ACTIVE.length} rows`);
   expect(lines).toContain('Count: ' + ACTIVE.length);
   const code = await pane.locator('sherpa-code-block').evaluateAll((els) => els.map((e) => JSON.parse(e.getAttribute('data-code')!) as { status: string }[]));
   expect(code.some((c) => c.length === ACTIVE.length && c.every((r) => r.status === 'active'))).toBe(true);
@@ -269,7 +271,8 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   })));
   expect(grids.every((g) => g.heads.join() === 'id,status' && g.height <= 280)).toBe(true);
   expect(grids.filter((g) => g.body === ACTIVE.length).every((g) => g.first[1] === 'active')).toBe(true);
-  expect(grids.map((g) => g.body).sort((a, b) => a - b)).toEqual([ACTIVE.length, ACTIVE.length, 50, 50]);
+  // In and Results: True and False carry no rows (TODO 939).
+  expect(grids.map((g) => g.body).sort((a, b) => a - b)).toEqual([ACTIVE.length, 50]);
   expect(await page.locator('#inspector .data-pane sherpa-accordion.data-json[open]').count()).toBe(0);
   // The Source's has 120 rows and writes out 50.
   const source = (await page.locator('#cv > sherpa-node[data-heading="s"]').boundingBox())!;

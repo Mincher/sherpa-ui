@@ -163,6 +163,10 @@ only when one is asked for. "View" is kept for saved views — `SavedView` and a
 
 The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and keeps its word.
 
+**True and False steer** (Will, 2026-11-11, TODO 939): True is "if true, do this", False "if false, do this". Each
+sends true or false and carries no rows; a node down a Branch not taken does not run. A property carries the rows,
+connected on its own: Results, the rows that pass.
+
 **20. Tokens.** Read a token as `var(--sherpa-x, <the value it resolves to>)`.
 The fallback is required, and it is the token's own value. A private value is
 `--_*`. These are all projected from Figma by `scripts/project-tokens.mjs`:

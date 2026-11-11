@@ -51,8 +51,9 @@ test('a property row is output only: no control, no input, no value; one definit
   // One definition: the very same row object, on each.
   const same = ['source', 'field', 'group'].map((id) => NODE_KINDS[id].rows.find((r) => r.property && r.name !== 'rows'));
   assert.ok(same.every((r) => r === same[0]));
-  // Not where a count means nothing: a Sort is the rows it was given; And and Or join booleans.
-  assert.deepEqual([NODE_KINDS.sort.rows, resolveKind(NODE_KINDS.condition, 'and').rows].flat().filter((r) => r.property && r.name !== 'rows'), []);
+  // Not where a count means nothing: a Sort is the rows it was given. And and Or say their Count, Pass and Fail (TODO 939).
+  assert.deepEqual(NODE_KINDS.sort.rows.filter((r) => r.property && r.name !== 'rows'), []);
+  assert.deepEqual(resolveKind(NODE_KINDS.condition, 'and').rows.filter((r) => r.property && r.name !== 'rows').map((r) => [r.name, r.gives]), [['count', 'number'], ['pass', 'number'], ['fail', 'number']]);
 });
 
 test('a property row sends a number before a run, as a Result does: it connects like any output, into a number or a value', () => {

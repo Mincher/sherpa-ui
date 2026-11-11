@@ -493,6 +493,21 @@ inside it the Group Input's and Output's, edit its definition's tags
 being edited is a draft in its tab until it is saved, as a workflow is.
 `T-a-node-panel-lists-under-sticky-headings`
 
+### True and False steer
+
+A Condition's True says "if true, do this", and its False "if false, do this". Each
+sends true or false, and no rows. A node down a Branch not taken does not run, and
+Simulate's light says Not taken. The rows go by a property, connected on its own:
+Results, the rows that pass. Give a node both: the True into its header, the Results
+into a row that takes data (a Generated file's Data).
+
+And and Or take anything, several. An input is true where it is above zero, true, or
+not empty. Their properties follow what comes in. Rows in: Results (Or, the rows of
+every true input; And, the rows in all of them) and Count. Numbers in: Count, the sum
+of the true ones. Pass and Fail say how many inputs pass and how many fail. A test's
+Results into an And or an Or say its condition, as its True does, so the Query reads
+the same tree.
+
 ### Outputs
 
 An Output is ONE node of many types, its Type row first: Notification, On a view,
@@ -508,7 +523,7 @@ const ticket = {
   rows: [
     { name: 'summary', label: 'Summary', control: 'message', input: 'value' },
     { name: 'priority', label: 'Priority', control: 'pick', input: 'value', choices: [{ value: 'p1', label: 'P1' }, { value: 'p2', label: 'P2' }] },
-    propertyRow('ticketId', 'Ticket ID', 'value'),
+    propertyRow('ticket-id', 'Ticket ID', 'value'),
   ],
 };
 registerNodeTypes('output', { ticket });

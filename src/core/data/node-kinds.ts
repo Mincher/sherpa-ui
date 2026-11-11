@@ -41,6 +41,8 @@
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
  * - FALSE_SOCKET — The footer's False, as an address names it after its node.
+ * - steers — Does an output socket STEER — a fork's True or False — and carry no rows?
+ * - joinsTests — Does a node join tests (And, Or, Not), so a steer into it is an input, not a gate?
  * - rowOf — The row of a kind a name says.
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several connections.
@@ -356,9 +358,13 @@ const compareTypes = (ops: readonly FilterOp[]): Record<string, NodeType> => Obj
 /** Logic's types, one test each (plan 783 D4): And and Or join the tests that come in, booleans on the header, read as
  *  `truthOf` reads them; then the comparisons. Each leads with Rows: the rows it lets through. A Query draws its tree
  *  with these: Not and Is empty are a workflow's alone. Plan 749 P5 */
+/** How many of a joiner's inputs pass its check, and how many fail it (Will, TODO 939). */
+const [PASS, FAIL] = [propertyRow('pass', 'Pass'), propertyRow('fail', 'Fail')];
 const LOGIC: Readonly<Record<string, NodeType>> = {
-  and: { label: 'And', help: 'True when every value that comes in is true', input: 'boolean', many: true, rows: [ROWS] },
-  or: { label: 'Or', help: 'True when any value that comes in is true', input: 'boolean', many: true, rows: [ROWS] },
+  // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
+  // empty; Results are the rows of the true inputs, Count their rows and the sum of the true counts (TODO 939).
+  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, COUNT, PASS, FAIL] },
+  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, COUNT, PASS, FAIL] },
   ...compareTypes(FIGMA_OPS),
   not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [ROWS], graphs: ['workflow'] },
   empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [ROWS], graphs: ['workflow'] },
@@ -705,6 +711,16 @@ export function downstreamOf(connections: readonly NodeConnection[], from: Itera
 
 /** The footer's False, as an address names it after its node: `node/#false`. A `#` part is no row. */
 export const FALSE_SOCKET = '#false';
+
+/** Does an output socket STEER — a fork's True or False: "if true, do this" — and carry no rows (Will, TODO 939)? */
+export function steers(kind: Pick<NodeKind, 'branches'> | undefined, row: string | undefined): boolean {
+  return !!kind?.branches && (row === undefined || row === FALSE_SOCKET);
+}
+
+/** Does a node JOIN tests — And, Or, Not — so a steer into its header is one of its inputs, not a gate? */
+export function joinsTests(node: { kind: string; values?: Readonly<Record<string, unknown>> } | undefined): boolean {
+  return node?.kind === 'condition' && ['and', 'or', 'not'].includes(String(node.values?.['type'] ?? ''));
+}
 
 /** The sockets a kind says, or a node drawn of it. */
 type Sockets = Pick<NodeKind, 'input' | 'output' | 'many' | 'branches'> & { rows: readonly RowKind[] };

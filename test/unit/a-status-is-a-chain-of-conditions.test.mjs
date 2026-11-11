@@ -36,7 +36,7 @@ test('Health is 3 value rows, and per `when` a Field per field, a test per rule 
   ]);
   const roots = g.nodes.filter((n) => n.kind === 'condition' && !/\.\d+$/.test(n.id));
   assert.deepEqual(roots.map((n) => [n.id, n.heading, n.branches, n.input, n.rows[0].value]), [
-    ['status-health.At risk', 'At risk', true, 'boolean', 'or'], ['status-health.Watch', 'Watch', true, 'boolean', 'or'],
+    ['status-health.At risk', 'At risk', true, 'any', 'or'], ['status-health.Watch', 'Watch', true, 'any', 'or'],
   ]);
   const fields = g.nodes.filter((n) => n.kind === 'field');
   assert.deepEqual(fields.map((n) => [n.id, n.rows[0].value, n.input]), [

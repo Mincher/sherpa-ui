@@ -65,7 +65,7 @@ test('a Value\'s 1 into Or is a constant part: no warning, and Status or 1 alway
   expect(await where(page)).toEqual({ field: 'status', op: 'eq', value: 'active' });
 });
 
-test('the Source\'s rows dropped on Or\'s header join, no refusal, read null, and Or warns', async ({ page }) => {
+test('the Source\'s rows dropped on Or\'s header join, no refusal, and Or takes them: no warning (939)', async ({ page }) => {
   const heard: string[] = [];
   page.on('console', (m) => { if (/bindWorkflow/.test(m.text())) heard.push(m.text()); });
   expect(await page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-connectors path[data-to="or"]')].map((p) => (p as SVGElement).dataset['from']).sort())).toEqual(['c', 'one/value']);
@@ -76,6 +76,6 @@ test('the Source\'s rows dropped on Or\'s header join, no refusal, read null, an
     return [r.left + r.width / 2, r.top + r.height / 2] as [number, number];
   });
   await drag(page, rows, await socketAt(page, OR, 'input'));
-  expect(await page.locator(OR).getAttribute('data-warning')).toBe('Either takes a boolean; it was given rows');
+  expect(await page.locator(OR).getAttribute('data-warning')).toBeNull();
   expect(heard, 'no refusal').toEqual([]);
 });

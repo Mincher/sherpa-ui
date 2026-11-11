@@ -200,7 +200,8 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   expect(await lines(page)).toContain('t>c');
   expect(await warning(page, 'Condition')).toBeNull();
   const before = await lines(page);
-  await drag(page, await socketAt(page, 'Condition', 'Results', 'output'), await socketAt(page, 'Time', null, 'input'));
+  // Its Results hide (a boolean is no rows, TODO 924, 939): its True back into Time makes the loop.
+  await drag(page, await socketAt(page, 'Condition', null, 'output'), await socketAt(page, 'Time', null, 'input'));
   expect(await lines(page)).toEqual(before);
   await expect.poll(() => heard.some((m) => m.includes('its connections run in a loop'))).toBe(true);
 });

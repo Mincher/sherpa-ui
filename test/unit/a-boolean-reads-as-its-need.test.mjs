@@ -74,11 +74,11 @@ test('in a graph: True into a text row reads the word, never 1; written into JSO
 
 test('in a graph: a number and the words read as a boolean where one is needed; other text reads null and warns', () => {
   const v = (id, value, type) => ({ id, kind: 'value', x: 0, y: 0, values: { value, ...(type ? { type } : {}) } });
-  // And takes any boolean (plan 783 D4): a number, the words; anything else warns.
+  // And takes anything (TODO 939): a number, the words, and other text too, with no warning.
   const c = { id: 'c', kind: 'condition', x: 360, y: 0, values: { type: 'and' } };
   const into = (src) => workflowGraph(flow([src, c], [{ from: `${src.id}/value`, to: 'c' }]));
   for (const src of [v('two', '2', 'integer'), v('zero', '0', 'integer'), v('word', 'FALSE')]) assert.equal(at(into(src), 'c').warnings, undefined, src.id);
-  assert.deepEqual(at(into(v('maybe', 'maybe')), 'c').warnings, [{ words: 'And takes a boolean; it was given "maybe"' }]);
+  assert.deepEqual(at(into(v('maybe', 'maybe')), 'c').warnings, undefined);
   // A text Value that says "true" into a number: text is typed first, so it is no boolean, and no number.
   const text = workflowGraph(flow([v('t', 'true'), { id: 'm', kind: 'math', x: 360, y: 0 }], [{ from: 't/value', to: 'm/a' }]));
   assert.deepEqual(at(text, 'm').warnings, [{ row: 'a', words: 'Value A takes a number; it was given "true"' }]);

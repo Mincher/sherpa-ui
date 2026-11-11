@@ -39,18 +39,20 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
     value('v', 'active'), store, { id: 'fld', kind: 'field', x: 150, y: 0, values: { field: 'status' } },
     { id: 'c', kind: 'condition', x: 300, y: 0 }, { id: 'col', kind: 'group', x: 300, y: 200 },
     { id: 'tag', kind: 'tag', x: 300, y: 400 }, { id: 'p', kind: 'field', x: 300, y: 600 }, { id: 't', kind: 'time', x: 300, y: 800 },
-    { id: 'end', kind: 'output', x: 600, y: 0 },
+    { id: 'end', kind: 'output', x: 600, y: 0 }, value('yes', true, 'boolean'),
   ];
-  // A header's words name a family's type: Equals, Between.
+  // A header's words name a family's type: Equals, Between. A True or a False STEERS — it gates, and is no data, so it
+  // warns nothing (TODO 939) — so a plain boolean is what each is given here.
   const wrong = flow(nodes, [
-    { from: 's/rows', to: 'c' }, { from: 'c', to: 'col' }, { from: 'c', to: 'tag' }, { from: 'c/#false', to: 'p' }, { from: 's/rows', to: 't' }, { from: 'v/value', to: 'end' },
+    { from: 's/rows', to: 'c' }, { from: 'yes/value', to: 'col' }, { from: 'yes/value', to: 'tag' }, { from: 'yes/value', to: 'p' }, { from: 's/rows', to: 't' }, { from: 'v/value', to: 'end' },
+    { from: 'c', to: 'end' }, { from: 'c/#false', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(wrong)), {
     fld: [lone],
     c: [['', 'Equals takes a field or a value; it was given rows: connect a Field in']],
-    col: [['', 'Group takes a field; it was given a boolean']],
-    tag: [['', 'Tag takes a field; it was given a boolean']],
-    p: [['', 'Field takes an object; it was given a boolean']],
+    col: [['', 'Group takes a field; it was given "true"']],
+    tag: [['', 'Tag takes a field; it was given "true"']],
+    p: [['', 'Field takes an object; it was given "true"']],
     t: [['', 'Between takes a date; it was given rows']],
   }, 'the Output takes anything');
   // A comparison and a Tag test a Field's column; a Group takes a column. Rows with no Field into a Tag warn.

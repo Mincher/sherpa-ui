@@ -33,20 +33,24 @@ test('a Field\'s column in, and they show; nothing joined, they show', () => {
   assert.deepEqual(idle(g, 'lone'), []);
 });
 
-test('through a chain of tests: an And of tests over rows shows them; an And of tests of one value hides them', () => {
+test('through a chain: an And fed a test\'s Results shows them; an And of steers alone hides them; an Or of counts shows its Count (939)', () => {
   const nodes = [
     ...source, N('n', 'value', { type: 'integer', value: 3 }),
     N('byRows', 'condition', { type: 'eq', b: 'active' }), N('byValue', 'condition', { type: 'gt', b: '1' }), N('alsoValue', 'condition', { type: 'lt', b: '9' }),
-    N('mixed', 'condition', { type: 'and' }), N('values', 'condition', { type: 'and' }),
+    N('mixed', 'condition', { type: 'and' }), N('values', 'condition', { type: 'and' }), N('counts', 'condition', { type: 'or' }),
   ];
   const g = graphOf(nodes, [
     ...fromSource, { from: 'f/field', to: 'byRows' }, { from: 'n/value', to: 'byValue' }, { from: 'n/value', to: 'alsoValue' },
-    { from: 'byRows', to: 'mixed' }, { from: 'byValue', to: 'mixed' },
+    // Rows go by Results; a True steers, and carries none.
+    { from: 'byRows/rows', to: 'mixed' }, { from: 'byValue', to: 'mixed' },
     { from: 'byValue', to: 'values' }, { from: 'alsoValue', to: 'values' },
+    { from: 'f/count', to: 'counts' }, { from: 'n/value', to: 'counts' },
   ]);
   assert.deepEqual(idle(g, 'byValue'), ['rows', 'count']);
   assert.deepEqual(idle(g, 'mixed'), []);
-  assert.deepEqual(idle(g, 'values'), ['rows']);
+  assert.deepEqual(idle(g, 'values'), ['rows', 'count']);
+  // Counts in: Count, the sum of the true ones, shows; Results, with no rows, does not.
+  assert.deepEqual(idle(g, 'counts'), ['rows']);
 });
 
 test('one a connection still leaves stays, and its node says why it sends nothing (D1 A)', () => {
