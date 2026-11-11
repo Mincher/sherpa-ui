@@ -91,7 +91,7 @@ test('nothing is read until Fetch is pressed: Simulate says "not fetched yet"; F
   expect(out(s, 's', 's/rows').note).toBe('Not fetched yet');
   expect(s.faults).toContain('"s" is not fetched yet');
   expect(await loads(page)).toBe(0);
-  await expect(tool(page, 'fetch')).toHaveAttribute('data-tip', /^Fetch the rows/);
+  await expect(tool(page, 'fetch')).toHaveAttribute('data-tip', 'Fetch data');
   await press(page, 'fetch');
   await expect.poll(async () => (await sim(page))?.faults.length).toBe(0);
   s = (await sim(page))!;
@@ -138,7 +138,7 @@ test('Fetch is a task: both tools wait while it runs and its button says busy; a
   await press(page, 'fetch');
   await expect(page.locator('sherpa-node-toolbar')).toHaveAttribute('data-fetching', '');
   await expect(tool(page, 'fetch')).toHaveAttribute('aria-busy', 'true');
-  await expect(tool(page, 'fetch')).toHaveAttribute('data-tip', 'Fetching: wait for it to end');
+  await expect(tool(page, 'fetch')).toHaveAttribute('data-tip', 'Fetching…');
   for (const name of ['fetch', 'play']) await expect(tool(page, name)).toHaveAttribute('disabled', '');
   // The keys still ask, and the queue says what is in the way, for each.
   await page.locator('#cv').evaluate((cv) => (cv.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());

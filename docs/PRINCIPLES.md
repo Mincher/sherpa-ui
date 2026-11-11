@@ -193,6 +193,10 @@ regions are exempt because a generator owns them: everything above
 of 10 or more characters IN the directive comment (typescript-eslint strict,
 `ban-ts-comment`). The count of zero has no gate.
 
+
+**24. A tooltip names the act in as few words as carry it** (Will, 2026-11-11, TODO 894): Fetch data, Simulate, Pause
+simulation, Stop simulation. A key it answers to may follow in brackets, `Undo (⌘Z)`; a line of description only when one
+is asked for. Every tip in Sherpa, not only the node editor's.
 ---
 
 ## The doors on `SherpaElement`

@@ -38,8 +38,8 @@
                 "data-type": "icon",
                 "data-icon-start": "cloud",
                 "data-action": "fetch",
-                "aria-label": "Fetch",
-                "data-tip": "Fetch the rows of every Source on a path to an Output, once; Play then runs on them",
+                "aria-label": "Fetch data",
+                "data-tip": "Fetch data",
                 "disabled": ""
               }
             },
@@ -50,8 +50,8 @@
                 "data-type": "icon",
                 "data-icon-start": "play",
                 "data-action": "play",
-                "aria-label": "Play",
-                "data-tip": "Play: what each node sends, on the rows fetched",
+                "aria-label": "Simulate",
+                "data-tip": "Simulate",
                 "disabled": ""
               }
             },
@@ -62,8 +62,8 @@
                 "data-type": "icon",
                 "data-icon-start": "pause",
                 "data-action": "pause",
-                "aria-label": "Pause",
-                "data-tip": "Pause at this node: the node's own requests finish, and nothing goes on",
+                "aria-label": "Pause simulation",
+                "data-tip": "Pause simulation",
                 "disabled": ""
               }
             },
@@ -74,8 +74,8 @@
                 "data-type": "icon",
                 "data-icon-start": "stop",
                 "data-action": "stop",
-                "aria-label": "Stop",
-                "data-tip": "Stop the simulation",
+                "aria-label": "Stop simulation",
+                "data-tip": "Stop simulation",
                 "disabled": ""
               }
             }
@@ -155,7 +155,7 @@
                 "data-icon-start": "zip-tie",
                 "data-action": "tie",
                 "aria-label": "Zip tie",
-                "data-tip": "Zip tie: drag across connectors (T on picked nodes)",
+                "data-tip": "Zip tie (T)",
                 "aria-pressed": "false",
                 "disabled": ""
               }
@@ -168,7 +168,7 @@
                 "data-icon-start": "group",
                 "data-action": "group",
                 "aria-label": "Save as Custom Node",
-                "data-tip": "Save as Custom Node (Ctrl+G): pick two or more nodes",
+                "data-tip": "Save as Custom Node (Ctrl+G)",
                 "disabled": ""
               }
             },
@@ -180,7 +180,7 @@
                 "data-icon-start": "arrange",
                 "data-action": "arrange",
                 "aria-label": "Arrange nodes",
-                "data-tip": "Arrange nodes on a grid: pick two or more",
+                "data-tip": "Arrange nodes",
                 "disabled": ""
               }
             },
@@ -192,7 +192,7 @@
                 "data-icon-start": "unfurl",
                 "data-action": "unfurl",
                 "aria-label": "Unfurl graph",
-                "data-tip": "Unfurl graph: every node round the most connected one, fewer lines crossing",
+                "data-tip": "Unfurl graph",
                 "disabled": ""
               }
             },
@@ -204,7 +204,7 @@
                 "data-icon-start": "frame",
                 "data-action": "frame",
                 "aria-label": "Frame nodes",
-                "data-tip": "Frame nodes (F): in a frame, where they stand; pick two or more",
+                "data-tip": "Frame nodes (F)",
                 "disabled": ""
               }
             }
@@ -245,7 +245,7 @@
                 "data-icon-start": "hide",
                 "data-action": "hide",
                 "aria-label": "Hide unconnected sockets",
-                "data-tip": "Hide unconnected sockets on collapsed nodes: a hover shows them",
+                "data-tip": "Hide unconnected sockets",
                 "aria-pressed": "false",
                 "disabled": ""
               }
@@ -258,7 +258,7 @@
                 "data-icon-start": "list",
                 "data-action": "lanes",
                 "aria-label": "Swimlanes",
-                "data-tip": "Swimlanes: a row for each family of nodes; a logic node stands between the rows it joins",
+                "data-tip": "Swimlanes",
                 "aria-pressed": "false",
                 "disabled": ""
               }

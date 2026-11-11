@@ -2030,7 +2030,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   stack.setAttribute('data-gap', 'lg');
   // A node of many rows scrolls, in the panel or in its tab: a run that fits by shrinking lays its fields over its buttons.
   stack.setAttribute('data-scroll', '');
-  const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
+  const remove = options.onRemove ? [button('Remove node', options.onRemove)] : [];
   const flow = nodeFlow(graph, node.id, options.flow);
   const test = options.output ? testButton(options.output) : undefined;
   stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...(test ? [test] : []), ...remove);

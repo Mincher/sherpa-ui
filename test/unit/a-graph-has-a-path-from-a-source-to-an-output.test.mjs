@@ -27,11 +27,11 @@ test('a Source joined to an Output is a path; its Source is named', () => {
 });
 
 test('no Source, no Output, or no path: Fetch and Simulate say which', () => {
-  assert.equal(pathRead(graphOf([OUT], [])).why, 'Add a Source: Fetch and Simulate read its rows');
-  assert.equal(pathRead(graphOf([SRC], [])).why, 'Add an Output: Fetch and Simulate need a path to one');
+  assert.equal(pathRead(graphOf([OUT], [])).why, 'Add a Source first');
+  assert.equal(pathRead(graphOf([SRC], [])).why, 'Add an Output first');
   const cut = pathRead(graphOf([SRC, FIELD, OUT], [R('s/rows', 'f')]));
   assert.equal(cut.ok, false);
-  assert.equal(cut.why, 'No path from a Source to an Output: join Source › … › Output');
+  assert.equal(cut.why, 'Join a Source to an Output');
   assert.deepEqual(cut.unjoined, ['s']);
 });
 

@@ -61,9 +61,9 @@ function reach(graph: DrawnGraph, start: string, facts: PathFacts, depth: number
 export function pathRead(graph: DrawnGraph, facts: PathFacts = {}): PathRead {
   const sources = graph.nodes.filter(isSource).map((n) => n.id);
   const outputs = new Set(graph.nodes.filter(isOutput).map((n) => n.id));
-  if (!sources.length) return { ok: false, sources: [], unjoined: [], why: 'Add a Source: Fetch and Simulate read its rows' };
-  if (!outputs.size) return { ok: false, sources: [], unjoined: sources, why: 'Add an Output: Fetch and Simulate need a path to one' };
+  if (!sources.length) return { ok: false, sources: [], unjoined: [], why: 'Add a Source first' };
+  if (!outputs.size) return { ok: false, sources: [], unjoined: sources, why: 'Add an Output first' };
   const joined = sources.filter((id) => [...reach(graph, id, facts, 0)].some((n) => outputs.has(n)));
-  if (!joined.length) return { ok: false, sources: [], unjoined: sources, why: 'No path from a Source to an Output: join Source › … › Output' };
+  if (!joined.length) return { ok: false, sources: [], unjoined: sources, why: 'Join a Source to an Output' };
   return { ok: true, sources: joined, unjoined: sources.filter((id) => !joined.includes(id)) };
 }

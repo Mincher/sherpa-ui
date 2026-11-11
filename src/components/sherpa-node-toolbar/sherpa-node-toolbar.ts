@@ -72,13 +72,13 @@ export class SherpaNodeToolbar extends SherpaElement {
     for (const name of ['fetch', 'play'] as const) {
       const tool = this.$(`.${name}`);
       const own = (this.#tips[name] ??= tool?.getAttribute('data-tip') ?? '');
-      // A fetch that runs says how to stop it; rows cached say Refetch; a paused run says Play goes on; else the tool's own words.
+      // A fetch or a run going on says so; rows cached say Refetch; a paused run says Resume; else the tool's own words.
       // One task at a time for the graph: Fetch waits while either runs, Play while a fetch does or a run is not paused.
       const busy = name === 'fetch' ? this.hasAttribute('data-fetching') : running && !paused;
       const off = name === 'fetch' ? waiting : this.hasAttribute('data-fetching') || (running && !paused);
-      const now = busy ? `${name === 'fetch' ? 'Fetching' : 'Simulating'}: wait for it to end`
-        : name === 'play' && paused ? 'Play: go on from this node'
-          : name === 'fetch' && this.hasAttribute('data-cached') ? 'Refetch: read every Source on a path again' : own;
+      const now = busy ? `${name === 'fetch' ? 'Fetching' : 'Simulating'}…`
+        : name === 'play' && paused ? 'Resume simulation'
+          : name === 'fetch' && this.hasAttribute('data-cached') ? 'Refetch data' : own;
       tool?.setAttribute('data-tip', !this.hasAttribute('data-can-play') && why ? why : now);
       tool?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${name}`) || off);
       tool?.setAttribute('aria-busy', String(busy));
@@ -90,7 +90,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     tie?.setAttribute('aria-pressed', String(this.hasAttribute('data-tie')));
     // The count of connectors picked, where the Tie tool says what T will tie.
     const picked = this.num('data-picked-routes', 0);
-    const words = picked ? `Zip tie: ${picked} ${picked === 1 ? 'connector' : 'connectors'} picked (T ties them)` : 'Zip tie: drag across connectors (T on picked nodes)';
+    const words = picked ? `Tie ${picked} ${picked === 1 ? 'connector' : 'connectors'} (T)` : 'Zip tie (T)';
     tie?.setAttribute('data-tip', words);
     tie?.setAttribute('aria-label', picked ? words : 'Zip tie');
     // The view's two toggles: Collapse all, pressed while every node is collapsed; Hide unconnected, while it hides. Off is kept.
@@ -98,7 +98,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     const collapse = this.$('.collapse');
     collapse?.setAttribute('aria-pressed', String(all));
     collapse?.setAttribute('aria-label', all ? 'Expand all nodes' : 'Collapse all nodes');
-    collapse?.setAttribute('data-tip', all ? 'Expand all nodes' : 'Collapse all nodes: only their sockets show (double click a header for one)');
+    collapse?.setAttribute('data-tip', all ? 'Expand all nodes' : 'Collapse all nodes');
     this.$('.hide')?.setAttribute('aria-pressed', String(this.hasAttribute('data-hide-unconnected')));
     this.$('.lanes')?.setAttribute('aria-pressed', String(this.hasAttribute('data-lanes')));
   }

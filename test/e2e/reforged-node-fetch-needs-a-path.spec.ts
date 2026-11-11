@@ -39,7 +39,7 @@ const heard = (page: Page) => page.evaluate(() => (window as never as { heard: s
 
 const SOURCE: Node = ['Source', 'source', 0, 0, { store: 'users' }];
 const OUTPUT: Node = ['Output', 'output', 600, 0];
-const NO_PATH = 'No path from a Source to an Output: join Source › … › Output';
+const NO_PATH = 'Join a Source to an Output';
 
 /** The Source's Rows socket (it is drawn on its Results row), then the Output's input, in screen px. */
 const sockets = (page: Page) => page.evaluate(() => {
@@ -53,11 +53,11 @@ test('with no path both tools are inactive and say which part is missing: no Sou
   await start(page, [OUTPUT]);
   for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).toHaveAttribute('disabled', '');
-    expect(await tip(page, name)).toBe('Add a Source: Fetch and Simulate read its rows');
+    expect(await tip(page, name)).toBe('Add a Source first');
   }
   await page.evaluate(() => document.getElementById('root')!.replaceChildren());
   await start(page, [SOURCE]);
-  expect(await tip(page, 'fetch')).toBe('Add an Output: Fetch and Simulate need a path to one');
+  expect(await tip(page, 'fetch')).toBe('Add an Output first');
   await page.evaluate(() => document.getElementById('root')!.replaceChildren());
   await start(page, [SOURCE, OUTPUT]);
   for (const name of ['fetch', 'play']) {
@@ -80,10 +80,10 @@ test('a route drawn by the pointer from the Source to the Output turns both on, 
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.workflow().routes.length)).toBe(1);
   for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).not.toHaveAttribute('disabled', '');
-    expect(await tip(page, name)).not.toContain('No path');
+    expect(await tip(page, name)).not.toBe(NO_PATH);
   }
-  expect(await tip(page, 'fetch')).toMatch(/^Fetch the rows/);
-  expect(await tip(page, 'play')).toMatch(/^Play:/);
+  expect(await tip(page, 'fetch')).toBe('Fetch data');
+  expect(await tip(page, 'play')).toBe('Simulate');
   await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
   await settle(page);
   await expect(tool(page, 'fetch')).toHaveAttribute('disabled', '');

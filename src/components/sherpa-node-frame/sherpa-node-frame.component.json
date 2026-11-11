@@ -51,7 +51,7 @@
                     "data-size": "sm",
                     "data-look": "transparent",
                     "data-label": "Release",
-                    "data-tip": "Release: the frame goes, its nodes stay (Delete)"
+                    "data-tip": "Release frame (Delete)"
                   }
                 }
               ]
