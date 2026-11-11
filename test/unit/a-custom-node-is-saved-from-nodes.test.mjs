@@ -97,7 +97,10 @@ test('refused in words: nothing picked, no name, a Group node, a loop through ou
   assert.equal(mixed.fault, undefined);
   assert.deepEqual(mixed.library.nodes[mixed.id].inputs.map((i) => [i.label, i.type]), [['Source › Results', 'object']]);
   const inner = lib.innerOf(mixed.workflow.nodes.find((n) => n.id === mixed.use), mixed.library);
-  assert.deepEqual(workflowGraph(inner.workflow, {}, inner.kinds).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'b', words: 'Value B takes a value; it was given an object' }]);
+  // Inside, its header hears an object: data, which no comparison fits, so Equals warns too (TODO 940).
+  assert.deepEqual(workflowGraph(inner.workflow, {}, inner.kinds).nodes.find((n) => n.id === 'cond').warnings, [
+    { words: 'Equals takes text, a number, a date, or a boolean; it was given an object' }, { row: 'b', words: 'Value B takes a value; it was given an object' },
+  ]);
 });
 
 /** Has status, as the Demos' preset: Records and a Status in, the matching rows out. */

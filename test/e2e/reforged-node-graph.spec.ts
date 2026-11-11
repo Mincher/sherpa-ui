@@ -483,9 +483,10 @@ test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s 
     const ok = (window as unknown as { editor: { save(): boolean } }).editor.save();
     return { op, ok, saved: heard.map((d) => d.nodes.find((n) => n.id === 'filter')?.values), draft: sessionStorage.getItem('sherpa:session:/workflows/active-customers') };
   });
-  // Source › Field › Condition › Output (plan 783): the Operation lists Logic's types, And and Or first.
+  // Source › Field › Condition › Output (plan 783): the Operation lists Logic's types, And and Or first; those a text
+  // column fits (TODO 940).
   expect(drawn.nodes).toEqual(['Source', 'Field', 'Condition', 'Output']);
-  expect(drawn.ops.slice(0, 3)).toEqual(['And', 'Or', 'Greater than']);
+  expect(drawn.ops.slice(0, 3)).toEqual(['And', 'Or', 'Equals']);
   expect(r).toEqual({ op: 'ne', ok: true, saved: [{ type: 'ne' }], draft: null });
 });
 

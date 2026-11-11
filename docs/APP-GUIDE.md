@@ -508,6 +508,12 @@ of the true ones. Pass and Fail say how many inputs pass and how many fail. A te
 Results into an And or an Or say its condition, as its True does, so the Query reads
 the same tree.
 
+A Condition's Operation list follows what comes in on its header. A value or a column
+lists the operations its type takes (text, a number, a date, a boolean). Rows or an
+object list And, Or and Is empty: a comparison needs a Field. A mixture lists every
+operation one of them takes. An input the pick does not take is ignored: its line is
+dashed, and its tip says why. Where no input fits, the pick stays and the node warns.
+
 ### Outputs
 
 An Output is ONE node of many types, its Type row first: Notification, On a view,

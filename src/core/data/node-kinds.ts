@@ -20,6 +20,10 @@
  * - registerNodeTypes — An app adds its own types to a shipped family, from its own file: an Output's Ticket.
  * - nodeKinds — Every kind the library ships, with the types apps added: what a check and an editor read.
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
+ * - ConditionInput — One input into a Condition, for what fits it: a value or a column, by its type; or data.
+ * - CONDITION_INPUT_WORDS — Each input in words, as a warning says it.
+ * - fitsCondition — Whether a Logic type fits an input.
+ * - conditionFits — The Logic types that fit what comes in: each one an input fits.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - categorySlug — A category as the slug a node's, and its panel row's, `data-category` says.
  * - typeOf — The type of a family kind a node's `type` names: its own, else the kind's default.
@@ -64,7 +68,7 @@
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
  * - placed — A graph with each node at its kept place.
  */
-import { OP_LABELS, OP_TAKES, type Duration, type FilterOp } from './store.js';
+import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
 import type { Given, Need } from './node-input.js';
@@ -370,6 +374,33 @@ const LOGIC: Readonly<Record<string, NodeType>> = {
   empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [ROWS], graphs: ['workflow'] },
   ...compareTypes(SHERPA_OPS),
 };
+
+/** What one input into a Condition is, for the operations that fit it: a value or a column, by its type; or data. TODO 940 */
+export type ConditionInput = 'text' | 'number' | 'date' | 'boolean' | 'data';
+
+/** Each input in words, as a warning says it. */
+export const CONDITION_INPUT_WORDS: Readonly<Record<ConditionInput, string>> = { text: 'text', number: 'a number', date: 'a date', boolean: 'a boolean', data: 'rows' };
+
+/** The Logic types each input fits (TODO 940): a value's comparisons by its type, and a list's; And, Or and Is empty fit
+ *  every input, Not a number or a boolean. Data, rows or an object, fits those three alone: a comparison needs a Field. */
+const JOINS = ['and', 'or', 'empty'];
+const FITS: Readonly<Record<ConditionInput, readonly string[]>> = {
+  text: [...JOINS, ...OPS_FOR_TYPE['text']!, ...LIST_OPS],
+  number: [...JOINS, 'not', ...OPS_FOR_TYPE['number']!, ...LIST_OPS],
+  date: [...JOINS, ...OPS_FOR_TYPE['date']!.filter((op) => op in LOGIC), ...LIST_OPS],
+  boolean: [...JOINS, 'not', 'eq', 'ne'],
+  data: JOINS,
+};
+
+/** Whether a Logic type fits an input. TODO 940 */
+export function fitsCondition(type: string, input: ConditionInput): boolean {
+  return FITS[input].includes(type);
+}
+
+/** The Logic types that fit what comes in: each one an input fits. None comes in: undefined, every type fits. TODO 940 */
+export function conditionFits(inputs: readonly ConditionInput[]): ReadonlySet<string> | undefined {
+  return inputs.length ? new Set(inputs.flatMap((i) => FITS[i])) : undefined;
+}
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
  *  A kind a workflow runs forks (`branches`): its True and False are a boolean only, whether it gave anything,
@@ -939,6 +970,9 @@ export interface GraphNode {
   warnings?: readonly { row?: string; words: string }[];
   /** What it would do: an Output's, which Simulate says and never does. Plan 891 */
   would?: string;
+  /** What comes in on its header that its type does not fit, by where from, and why: it is IGNORED there, its connector
+   *  dashed; no warning, since another input fits (TODO 940 D2). */
+  ignored?: { from: readonly string[]; words: string };
 }
 
 /** Nodes and connections, ready to draw: a workflow's, or a page's Query. */

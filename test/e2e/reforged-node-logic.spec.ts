@@ -3,8 +3,8 @@ import { test, expect, type Page } from './harness';
 /**
  * LOGIC in the editor: a Condition's Operation select picks its type, one test each (plan 783 D4). And takes two
  * tests' True on its header and draws True and False; a comparison tests what comes in on its header and draws
- * Value B. A Field's column into a Condition switched to And stays joined: And reads null and warns, no fault
- * (TODO 770); back to Equals it reads it again; an operator its field's type does not take warns. Real selects.
+ * Value B. A Field's column into a Condition switched to And stays joined, and And takes it (TODO 939); no fault
+ * (TODO 770); back to Equals it reads it again; the select lists what its field's type takes (TODO 940). Real selects.
  * Plan 749 P5. TRAP T-a-logic-type-is-an-operator
  */
 type Canvas = HTMLElement & { rendered: Promise<void> };
@@ -69,10 +69,10 @@ test('the Operation select picks a Logic type: And takes many of anything and dr
   expect(await rows(page, 'Is active')).toEqual(['type', 'b', '', '']);
   expect(await page.locator(NODE('Is active')).evaluate((el) => [el.getAttribute('data-input-socket'), el.hasAttribute('data-branches')])).toEqual(['any', true]);
   expect(await page.locator(`${NODE('Is big')} sherpa-input-text[name="b"]`).getAttribute('data-label')).toBe('Value B');
-  // The select names each type by the one operator list, And and Or first.
+  // The select names each type by the one operator list, And and Or first: two tests' True in, the types that fit a
+  // boolean (TODO 940).
   const options = await page.locator(`${NODE('Both')} sherpa-input-text[name="type"] option`).allTextContents();
-  expect(options.slice(0, 8)).toEqual(['And', 'Or', 'Greater than', 'At least', 'Less than', 'At most', 'Equals', 'Does not equal']);
-  expect(options).toContain('Is empty');
+  expect(options).toEqual(['And', 'Or', 'Equals', 'Does not equal', 'Not', 'Is empty']);
   expect(await page.locator(`${NODE('Both')} sherpa-input-text[name="type"]`).getAttribute('data-description')).toBe('True when every input is true: above zero, true, or not empty');
   // Is one of: Value B becomes a tag list of Values.
   await pick(page, 'Is active', 'in');
@@ -80,7 +80,7 @@ test('the Operation select picks a Logic type: And takes many of anything and dr
   expect(await page.locator(`${NODE('Is active')} sherpa-input-text[name="b"]`).evaluate((el) => [el.getAttribute('data-type'), el.getAttribute('data-label'), (el as HTMLElement & { tags: string[] }).tags])).toEqual(['tags', 'Values', ['active']]);
 });
 
-test('a Field\'s column into a Condition switched to And stays joined, read as rows (939); back to Equals it reads it; Save keeps what is drawn (770)', async ({ page }) => {
+test('a Field\'s column into a Condition switched to And stays joined, read as rows (939); back to Equals it reads it; a text field lists no Greater than (940); Save keeps what is drawn (770)', async ({ page }) => {
   const reports: string[] = [];
   page.on('console', (m) => { if (/workflow|fault/i.test(m.text())) reports.push(m.text()); });
   const warning = () => page.locator(NODE('Check')).evaluate((el) => el.getAttribute('data-warning'));
@@ -97,10 +97,10 @@ test('a Field\'s column into a Condition switched to And stays joined, read as r
   expect(await warning()).toBeNull();
   expect(await rows(page, 'Check')).toEqual(['type', 'b', '', '']);
   expect(await page.locator(`${NODE('Check')} sherpa-input-text[name="b"]`).evaluate((el) => (el as HTMLElement & { value: string }).value)).toBe('active');
-  // Greater than on a text field: the line stays, and the node says why it reads nothing there.
-  await pick(page, 'Check', 'gt');
-  await expect(line(page, 'f/field', 'c')).toHaveCount(1);
-  expect(await warning()).toBe('Greater than takes a number or date field; it was given the Status column');
+  // A text field: its select lists no Greater than (TODO 940).
+  const options = await page.locator(`${NODE('Check')} sherpa-input-text[name="type"] option`).evaluateAll((els) => els.map((o) => (o as HTMLOptionElement).value));
+  expect(options).not.toContain('gt');
+  expect(options).toContain('contains');
   // And again, then Save: a warning is no block, and the final graph keeps the connection it draws, not Value B.
   await pick(page, 'Check', 'and');
   const out = await saved(page);

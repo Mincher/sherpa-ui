@@ -32,11 +32,11 @@ import { inNewWords } from './entity.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, FALSE_SOCKET, joinsTests, steers, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, FALSE_SOCKET, joinsTests, steers, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
-import { columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
+import { columnOf, fieldWords, givenAt, INPUT_WORDS, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 import { laneFaults, type NodeLane } from './node-lanes.js';
 import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
@@ -250,6 +250,14 @@ function fieldAt(node: WorkflowNode, connections: readonly NodeConnection[], sen
 
 /** A row a node's field types: a value picked or typed, tags, a Start or an End. TRAP T-a-value-is-typed-once */
 const typedRow = (row: Pick<RowKind, 'control'> | undefined): boolean => ['values', 'tags', 'text'].includes(row?.control ?? '');
+
+/** A value's or a column's type as a Condition's input: a number, a date, a boolean, or text (TODO 940). A list is data. */
+const FIELD_INPUTS: Readonly<Record<string, ConditionInput>> = { text: 'text', number: 'number', integer: 'number', decimal: 'number', date: 'date', boolean: 'boolean', list: 'data' };
+
+/** What a Logic type takes, in words, by the inputs it fits: "a number or a date". TODO 940 */
+function fitWords(type: string): string[] {
+  return (Object.keys(CONDITION_INPUT_WORDS) as ConditionInput[]).filter((i) => fitsCondition(type, i)).map((i) => CONDITION_INPUT_WORDS[i]);
+}
 
 /** A comparison's operator its field's type does not take, in words — "Contains takes a text field; it was given the
  *  Seats column"; none, it takes it. A warning, never a fault (plan 783 F2). */
@@ -620,6 +628,17 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     heardOf.set(id, heard);
     return heard;
   };
+  /** What one connection into a Condition's header is (TODO 940): a value or a column by its type, or data; what says
+   *  nothing it could test, none. */
+  const inputOf = (from: string): ConditionInput | undefined => {
+    const got = sent(from);
+    if (got?.kind === 'field') return FIELD_INPUTS[got.field?.type ?? 'text'] ?? 'text';
+    if (got?.kind === 'number' || got?.kind === 'boolean') return got.kind;
+    if (got?.kind === 'rows' || got?.kind === 'object' || got?.kind === 'list') return 'data';
+    if (got?.kind !== 'value') return undefined;
+    const at = held.get(socketOf(from).node);
+    return at?.kind === 'value' ? FIELD_INPUTS[String(at.values?.['type'] ?? 'text')] ?? 'text' : 'text';
+  };
   /** Does a joiner hear a COUNT — a number or a value — whose sum its Count says (TODO 939)? */
   const countsHeard = (id: string): boolean => flows.some((c) => c.to === id && ['number', 'value'].includes(givenAt(held.get(socketOf(c.from).node), socketOf(c.from).row, kinds)?.kind ?? ''));
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
@@ -627,11 +646,25 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const family = kinds[node.kind]!;
     const kind = kindOf(node)!;
     const at = typeOf(family, values['type']);
+    // What comes in on a Condition's header picks the types that fit (TODO 940). One its pick does not fit is IGNORED where
+    // another fits (D2); where none does, the pick stays and the node warns (D1).
+    const inputs = kind.model === 'Condition' ? flows.filter((c) => c.to === node.id && !(steerFrom(c.from) && !joinsTests(node))).flatMap((c) => {
+      const is = inputOf(c.from);
+      // Data in its own words: rows, an object, a list.
+      const said = is === 'data' ? INPUT_WORDS[sent(c.from)!.kind] : is && CONDITION_INPUT_WORDS[is];
+      return is ? [{ from: c.from, is, said: said! }] : [];
+    }) : [];
+    const fits = conditionFits(inputs.map((i) => i.is));
+    const fitting = at ? inputs.filter((i) => fitsCondition(at.id, i.is)) : inputs;
+    const ignored = fitting.length ? inputs.filter((i) => !fitting.includes(i)) : [];
+    const takes = at && fits ? `${at.type.label} takes ${new Intl.ListFormat('en', { type: 'disjunction' }).format(fitWords(at.id))}` : '';
     // What each connection into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
     const warnings: { row?: string; words: string }[] = [];
     const readsAt = (to: string, input: InputNeeds): Map<NodeConnection, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
       // A steer into the header gates the node: it is no data, so it is not read, and nothing warns (TODO 939).
       if (to === node.id && r.to === to && steerFrom(r.from) && !joinsTests(node)) return [];
+      // What its type ignores is not read, and warns nothing (TODO 940 D2).
+      if (to === node.id && r.to === to && ignored.some((i) => i.from === r.from)) return [];
       const got = r.to === to ? sent(r.from) : undefined;
       const read = got && readInput(input, got);
       if (read?.warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: read.warning });
@@ -644,10 +677,15 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // A portal says its own: an Out of no name, or one no In names.
     for (const w of flow.warnings) if (w.node === node.id) warnings.push({ words: w.words });
     // The field its rows read: the Field reaching its header. Its operator warns where the field's type does not take it.
-    const read = fieldAt(node, flows, sent);
+    const read = fieldAt(node, ignored.length ? flows.filter((c) => !(c.to === node.id && ignored.some((i) => i.from === c.from))) : flows, sent);
     const { type, known, of } = read ?? {};
-    const op = kind.model === 'Condition' ? opWarning(at?.id, read) : undefined;
+    const op = kind.model === 'Condition' && !ignored.length ? opWarning(at?.id, read) : undefined;
     if (op) warnings.push({ words: op });
+    else if (at && fits && !fits.has(at.id) && !warnings.some((w) => w.row === undefined)) {
+      const given = new Intl.ListFormat('en').format([...new Set(inputs.map((i) => i.said))]);
+      warnings.push({ words: `${takes}; it was given ${given}` });
+    }
+    const types = family.types ? typeChoices(family)!.filter((c) => !fits || fits.has(c.value) || c.value === at?.id) : undefined;
     let sources: MessageSource[] | undefined;
     // A message row's text as it reads: each value by its node's heading and its own label.
     const spoken = new Map<string, string>();
@@ -675,7 +713,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const provider = row.control === 'model' ? providerInto(workflow.nodes, flows, node.id) : undefined;
       const list = rowChoices({ ...plain, value: has }, {
         ...(provider ? { provider } : {}),
-        ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(family)! } : {}), ...(known ? { values: known } : {}), ...count,
+        ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(types ? { types } : {}), ...(known ? { values: known } : {}), ...count,
         ...(row.control === 'portal' ? { portals: names } : {}),
       });
       // A Type row says the type's own value, and the line the type gives.
@@ -756,7 +794,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const titled = node.heading && node.heading !== family.heading;
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(titled ? { kindHeading: family.heading } : {}), ...(node.description ? { description: node.description } : {}) };
     const drawnRows = spoken.size ? rows.map((r) => (spoken.has(r.name) ? { ...r, said: spoken.get(r.name)! } : r)) : rows;
-    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, drawnRows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
+    const ignores = ignored.length ? { ignored: { from: ignored.map((i) => i.from), words: `Ignored: ${takes}` } } : {};
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, drawnRows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, connections) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));

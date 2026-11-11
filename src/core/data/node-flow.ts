@@ -121,7 +121,8 @@ const TESTS = new Set(['condition', 'time', 'tag']);
 export function leafOf(drawn: DrawnGraph, node: GraphNode): { leaf: ConditionLeaf; field: GraphNode } | { fault: string } {
   const graph = flowing(drawn);
   const at = (name: string): unknown => node.rows.find((r) => r.name === name)?.value;
-  const via = graph.connections.filter((r) => r.to === node.id).flatMap((r) => {
+  // What its type ignores says nothing (TODO 940).
+  const via = graph.connections.filter((r) => r.to === node.id && !node.ignored?.from.includes(r.from)).flatMap((r) => {
     const { node: id, row } = socketOf(r.from);
     const from = graph.nodes.find((n) => n.id === id);
     const out = from?.rows.find((x) => x.name === row);
@@ -210,7 +211,9 @@ export function nodeFlow(graph: DrawnGraph, id: string, facts: ConditionFacts = 
     return words.length ? { warning: words.join('\n') } : {};
   };
   const incoming: Record<string, unknown>[] = [
-    ...(node.input ? [{ socket: 'In', type: node.input, from: into(node.id), ...('warning' in warned() ? { value: null } : {}), ...warned() }] : []),
+    // What its type ignores, by where from, and why (TODO 940).
+    ...(node.input ? [{ socket: 'In', type: node.input, from: into(node.id), ...('warning' in warned() ? { value: null } : {}), ...warned(),
+      ...(node.ignored ? { ignored: node.ignored.from.map((f) => said(graph, f, true)), why: node.ignored.words } : {}) }] : []),
     ...node.rows.filter((r) => r.input).map((r) => ({
       socket: r.label, type: r.input, from: into(`${node.id}/${r.name}`), ...(r.value !== undefined && r.value !== '' ? { value: r.value } : {}), ...warned(r.name),
     })),

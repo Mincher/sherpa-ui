@@ -6392,6 +6392,11 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
   and a Value B that is no number for a number field is the row's own fault. An operator the field's
   type does not take is a WARNING, never a fault: "Contains takes a text field; it was given the
   Seats column" (graphs stay open).
+- **The Operation lists what fits what comes in** (Will, TODO 940): a value's or a column's type
+  picks its comparisons (`conditionFits`, by `OPS_FOR_TYPE`); rows or an object, And, Or and Is
+  empty. A pick no input fits stays listed and warns (D1 A). In a mixture, an input the pick does not
+  fit is IGNORED (`GraphNode.ignored`, D2 A): not read, no warning, its line dashed with a `<title>`
+  tip; Simulate's `into` and `leafOf` skip it. An unknown field type is text, as `opWarning` reads it.
 - **Every type leads with Rows**: the rows it lets through, for a node that needs rows. It sends rows
   only where rows reached its header — rows, a column, an object, or a test's Results (`sender`); a
   True steers and carries none (TODO 939). A test of two values sends none.

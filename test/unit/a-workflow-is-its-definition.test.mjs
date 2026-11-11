@@ -153,7 +153,8 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', true, 'object', undefined]);
   // The Field's list is its Source's store's fields; its row says its field and type.
   assert.deepEqual([row('field', 'field').choices, row('field', 'field').hint], [[{ value: 'status', label: 'Status' }, { value: 'seats', label: 'Seats' }], 'Status: a text field']);
-  assert.deepEqual(row('filter', 'type').choices.slice(0, 3).map((c) => c.label), ['And', 'Or', 'Greater than']);
+  // A text column in: the types that fit text (TODO 940).
+  assert.deepEqual(row('filter', 'type').choices.map((c) => c.value), ['and', 'or', 'eq', 'ne', 'empty', 'contains', 'notcontains', 'startswith', 'endswith', 'in', 'notin']);
   assert.deepEqual(row('start', 'store').choices, [{ value: 'customers', label: 'customers' }]);
   // An operator the field's type does not take warns; the Field on Seats takes it.
   const greater = editWorkflow(good, { node: 'filter', row: 'type', value: 'gt' });

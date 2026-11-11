@@ -253,11 +253,12 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   const joins = (node: GraphNode | undefined): boolean =>
     node?.kind === 'condition' && ['and', 'or', 'not'].includes(String(node.rows.find((r) => r.name === 'type')?.value ?? ''));
   /** What flows into a socket, as each connection brings it. Into a header, a steer is no data: it gates the node; a joiner
-   *  takes it as an input. */
+   *  takes it as an input. What a Condition's type ignores there, it does not hear (TODO 940). */
   const into = (address: string): { from: string; sent: Sent }[] => {
     const { node: id, row } = socketOf(address);
     const gated = row === undefined && !joins(held.get(id));
-    return connections.filter((r) => r.to === address && !(gated && steer(r.from))).map((r) => ({ from: r.from, sent: sends(r.from) }));
+    const ignored = row === undefined ? held.get(id)?.ignored?.from : undefined;
+    return connections.filter((r) => r.to === address && !(gated && steer(r.from)) && !ignored?.includes(r.from)).map((r) => ({ from: r.from, sent: sends(r.from) }));
   };
   /** Whether a node runs: every steer into its header was taken, its True or its False (TODO 939). */
   const taken = (node: GraphNode): boolean =>

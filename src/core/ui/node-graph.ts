@@ -652,6 +652,10 @@ function drawConnections(drawn: Drawn): void {
     path.dataset['from'] = connection.from;
     path.dataset['to'] = connection.to;
     if (drawn.picked.some((r) => same(r, connection))) path.setAttribute('data-selected', '');
+    // An input its Condition's type ignores: dashed, and its tip says why (TODO 940 D2).
+    const ignored = drawn.graph.nodes.find((n) => n.id === connection.to)?.ignored;
+    const why = ignored?.from.includes(connection.from) ? ignored.words : undefined;
+    if (why) path.setAttribute('data-ignored', '');
     // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
     const hit = document.createElementNS(SVG, 'polyline');
     const dots = dotsThrough(points, soft);
@@ -661,6 +665,11 @@ function drawConnections(drawn: Drawn): void {
     hit.setAttribute('style', 'stroke: transparent; stroke-width: 14px; pointer-events: stroke; cursor: pointer');
     hit.dataset['from'] = connection.from;
     hit.dataset['to'] = connection.to;
+    if (why) {
+      const tip = document.createElementNS(SVG, 'title');
+      tip.textContent = why;
+      hit.append(tip);
+    }
     const group = document.createElementNS(SVG, 'g');
     group.setAttribute('class', 'graph-connector');
     group.dataset['from'] = connection.from;
