@@ -411,3 +411,24 @@ test('756: in forced colours a picked node of every category is edged in Highlig
     if (n !== shown) expect(near(edge, highlight!, 60), `${n} edged ${edge} in Highlight ${highlight}`).toBe(true);
   }
 });
+
+test('897: each category wears its own ink, a 2px line under its node\'s header and down its Nodes panel row\'s start', async ({ page }) => {
+  await bindCategories(page);
+  const r = await page.evaluate(async () => {
+    const ink = (shadow: string): string => (shadow.match(/rgba?\([^)]*\)/)?.[0] ?? 'none');
+    const nodes = Object.fromEntries([...document.querySelectorAll<HTMLElement>('#cv > sherpa-node')].map((n) => [n.dataset['category'], ink(getComputedStyle(n.shadowRoot!.querySelector('.header')!).boxShadow)]));
+    document.getElementById('root')!.insertAdjacentHTML('beforeend', '<sherpa-list-item id="row" data-type="node" data-category="logic" data-label="Condition"></sherpa-list-item>');
+    const row = document.getElementById('row') as HTMLElement & { rendered: Promise<void> };
+    await row.rendered;
+    const shadow = getComputedStyle(row.shadowRoot!.querySelector('.row')!).boxShadow;
+    return { nodes, row: ink(shadow), inset: shadow.includes('inset') && /\b2px 0px 0px\b/.test(shadow) };
+  });
+  expect(r.nodes).toEqual({
+    sources: 'rgb(54, 145, 187)', variables: 'rgb(0, 167, 144)', logic: 'rgb(201, 46, 97)', organise: 'rgb(167, 120, 176)',
+    output: 'rgb(0, 172, 67)', 'custom-nodes': 'rgb(97, 114, 200)', ai: 'rgb(158, 3, 219)',
+  });
+  // Every category a different ink.
+  expect(new Set(Object.values(r.nodes)).size).toBe(Object.keys(r.nodes).length);
+  expect(r.row).toBe('rgb(201, 46, 97)');
+  expect(r.inset).toBe(true);
+});

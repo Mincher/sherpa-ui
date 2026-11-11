@@ -164,6 +164,8 @@
   background: var(--_category-fill, var(--sherpa-theme-surface-default-base, #ffffff)); /* theme-direct */
   border: var(--sherpa-style-default-border-width, 0.5px) solid var(--sherpa-style-default-border-base, #b3b3c3);
   border-radius: var(--_node-radius, var(--sherpa-display-mode-border-rounding-base, 4px));
+  /* Its category's ink down its start edge, as its node wears it under the header. TODO 897 */
+  box-shadow: inset var(--sherpa-display-mode-border-width-lg, 2px) 0 0 var(--_category-ink, transparent);
 }
 :host([data-type="node"][data-interactive]) .row:hover { border-color: var(--sherpa-style-default-indicator-accent, #3b4ccd); }
 

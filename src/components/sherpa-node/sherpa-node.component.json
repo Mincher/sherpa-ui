@@ -742,6 +742,7 @@
     "root.border-width": "{sherpa.style-border-width}",
     "root.border-radius": "{sherpa.display-mode-border-rounding-base}",
     "root.color": "{sherpa.style-content-base}",
+    "header.box-shadow": "{sherpa.display-mode-border-width-lg}",
     "resize.inline-size": "{sherpa.display-mode-size-sm}",
     "resize.block-size": "{sherpa.display-mode-size-sm}",
     "resize.color": "{sherpa.style-content-secondary}",

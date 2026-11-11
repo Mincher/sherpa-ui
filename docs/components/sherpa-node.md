@@ -93,6 +93,7 @@ What each class's base rule reads:
 | `--sherpa-style-border-width` | `.root` | `border-width` |
 | `--sherpa-display-mode-border-rounding-base` | `.root` | `border-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
+| `--sherpa-display-mode-border-width-lg` | `.header` | `box-shadow` |
 | `--sherpa-display-mode-size-sm` | `.resize` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.resize` | `block-size` |
 | `--sherpa-style-content-secondary` | `.resize` | `color` |
