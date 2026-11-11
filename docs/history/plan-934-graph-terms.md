@@ -1,6 +1,6 @@
-# Plan 931: graph terms — Connection, Connector, Route, Branch
+# Plan 934: graph terms — Connection, Connector, Route, Branch
 
-Will, 2026-11-11. Row [931](../TODO.md). **Ruled, and building: Will, 2026-11-11, *"Go with your picks for now"* —
+Will, 2026-11-11. Row [934](../TODO.md). **Ruled, and building: Will, 2026-11-11, *"Go with your picks for now"* —
 D1–D5 are each A.**
 Will chose a FULL rename (option A): words, code names and the saved key change in one planned change, with no alias
 left behind (`T-a-rename-drops-the-old-name`).

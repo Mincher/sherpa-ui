@@ -150,7 +150,7 @@ Area. A View row picks THROUGH the chip, so the two never disagree. Add an Area
 only when one is asked for. "View" is kept for saved views — `SavedView` and a
 `PageState`'s `views`, `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events.
 
-**The graph's words** (Will, 2026-11-11, plan 931). One meaning each, so an agent says what a graph holds.
+**The graph's words** (Will, 2026-11-11, plan 934). One meaning each, so an agent says what a graph holds.
 
 | Term | Is | Where |
 |---|---|---|
