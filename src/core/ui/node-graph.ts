@@ -23,6 +23,7 @@
  * - unfurlment — Where every node goes when the graph is unfurled, from the boxes, frames and socket heights drawn.
  * - unfurlGraph — Unfurl the whole graph and hand the host the places: one step; the view fits it after.
  * - watchArrange — Tell a toolbar, in `data-can-arrange` and any flag given, when two or more nodes are picked.
+ * - zoomToPicked — Zoom to the picked nodes, centred; with none picked, or `all`, to the whole graph.
  * - watchView — A toolbar's view toggles, kept by the canvas: Collapse all (pressed while every node is) and Hide unconnected…
  * - markNodes — Mark several nodes as the ones picked.
  * - collapseNodes — Collapse these nodes, or expand them; `'all'`, every node drawn.
@@ -1710,6 +1711,13 @@ export function watchArrange(
   return Object.assign(() => { watch.disconnect(); for (const flag of flags) toolbar.removeAttribute(flag); }, { tell });
 }
 
+/** Zoom to the picked nodes, centred; with none picked, or `all`, to the whole graph. Eased, as a reader's step. TODO 905 */
+export function zoomToPicked(canvas: SherpaLayoutCanvas, all = false): void {
+  const els = drawnOn.get(canvas)?.nodes;
+  const picked = all ? [] : pickedNodes(canvas).flatMap((id) => els?.get(id) ?? []);
+  canvas.fit(picked, { ease: true });
+}
+
 /** A toolbar's view toggles, kept by the canvas: Collapse all (pressed while every node is) and Hide unconnected
  *  (on while a node is collapsed). The toolbar's presses are heard here. Returns the stop. */
 export function watchView(canvas: SherpaLayoutCanvas, toolbar: HTMLElement | null | undefined): () => void {
@@ -1721,22 +1729,25 @@ export function watchView(canvas: SherpaLayoutCanvas, toolbar: HTMLElement | nul
     toolbar.toggleAttribute('data-collapsed', nodes > 0 && shut === nodes);
     toolbar.toggleAttribute('data-can-hide', shut > 0);
     toolbar.toggleAttribute('data-hide-unconnected', !!drawnOn.get(canvas)?.hideUnconnected);
+    toolbar.toggleAttribute('data-can-zoom-fit', nodes > 0);
+    toolbar.toggleAttribute('data-can-zoom-picked', pickedNodes(canvas).length > 0);
   };
   const onTool = (event: Event): void => {
     const action = (event as CustomEvent<{ action?: string }>).detail?.action;
     if (action === 'collapse') collapseNodes(canvas, 'all', !toolbar.hasAttribute('data-collapsed'));
     else if (action === 'hide') hideUnconnected(canvas, !drawnOn.get(canvas)?.hideUnconnected);
+    else if (action === 'zoom-picked' || action === 'zoom-fit') zoomToPicked(canvas, action === 'zoom-fit');
     else return;
     tell();
   };
   const watch = new MutationObserver(tell);
-  watch.observe(canvas, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-collapsed'] });
+  watch.observe(canvas, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-collapsed', 'data-current'] });
   toolbar.addEventListener('toolbar-select', onTool);
   tell();
   return () => {
     watch.disconnect();
     toolbar.removeEventListener('toolbar-select', onTool);
-    for (const flag of ['data-can-collapse', 'data-collapsed', 'data-can-hide', 'data-hide-unconnected']) toolbar.removeAttribute(flag);
+    for (const flag of ['data-can-collapse', 'data-collapsed', 'data-can-hide', 'data-hide-unconnected', 'data-can-zoom-picked', 'data-can-zoom-fit']) toolbar.removeAttribute(flag);
   };
 }
 
@@ -3363,7 +3374,9 @@ export function bindWorkflow(
       if (pickedRoutes(canvas).length) tieRoutes(pickedRoutes(canvas));
       else tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
     } else if (mod && event.key.toLowerCase() === 'g') openSave();
-    else if (event.key.toLowerCase() === 'f' && !mod && !event.altKey && !event.shiftKey && pickedNodes(canvas).filter((id) => !id.startsWith('#')).length > 1) framePicked(true);
+    // F zooms to the picked nodes, or the whole graph; Shift+S frames the picked. Will, TODO 905
+    else if (event.key.toLowerCase() === 'f' && !mod && !event.altKey && !event.shiftKey) zoomToPicked(canvas);
+    else if (event.key.toLowerCase() === 's' && event.shiftKey && !mod && !event.altKey && pickedNodes(canvas).filter((id) => !id.startsWith('#')).length > 1) framePicked(true);
     else if (hit?.header && event.key === ' ') toggle(hit.id);
     else if (hit?.header && event.key === 'Enter' && use(hit.id)) open(hit.id);
     else return;

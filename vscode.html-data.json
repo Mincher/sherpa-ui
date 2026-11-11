@@ -3078,6 +3078,16 @@
           "valueSet": "v"
         },
         {
+          "name": "data-can-zoom-fit",
+          "description": "Zoom to fit can be pressed: the graph has a node; written by the editor",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-can-zoom-picked",
+          "description": "Zoom to selection can be pressed: a node is picked; written by the editor",
+          "valueSet": "v"
+        },
+        {
           "name": "data-collapsed",
           "description": "Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor",
           "valueSet": "v"

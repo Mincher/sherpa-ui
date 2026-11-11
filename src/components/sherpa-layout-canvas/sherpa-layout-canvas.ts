@@ -223,9 +223,14 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.zoomTo(this.#zoom * factor);
   }
 
-  /** Fit every piece of content in what the view shows, beside the card; no nearer than 100%. */
-  fit(): void {
-    const bounds = this.#contentBox();
+  /** Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer
+   *  than 100%. `ease` moves the view there as a reader's step does (TODO 905). */
+  fit(pieces?: readonly HTMLElement[], options: { ease?: boolean } = {}): void {
+    if (options.ease) this.#ease();
+    const boxes = pieces?.length ? pieces.map(boxOf) : null;
+    const bounds = boxes ? boxes.reduce((a, b) => ({
+      left: Math.min(a.left, b.left), top: Math.min(a.top, b.top), right: Math.max(a.right, b.right), bottom: Math.max(a.bottom, b.bottom),
+    })) : this.#contentBox();
     const seen = this.#seen();
     if (!bounds) return this.panTo(seen.left, seen.top);
     const w = Math.max(1, bounds.right - bounds.left);

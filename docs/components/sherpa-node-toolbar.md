@@ -36,6 +36,8 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 | `data-can-tie` | boolean |  | The Zip tie tool can be pressed; written by the editor |
 | `data-can-undo` | boolean |  | Undo can be pressed; written by the editor that owns the history |
 | `data-can-unfurl` | boolean |  | Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor |
+| `data-can-zoom-fit` | boolean |  | Zoom to fit can be pressed: the graph has a node; written by the editor |
+| `data-can-zoom-picked` | boolean |  | Zoom to selection can be pressed: a node is picked; written by the editor |
 | `data-collapsed` | boolean |  | Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor |
 | `data-fetching` | boolean |  | A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor |
 | `data-hide-unconnected` | boolean |  | Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor |
@@ -75,6 +77,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }`
+`{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }`
 
 Its declared props by name: `label` sets data-label.

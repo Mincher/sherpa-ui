@@ -204,7 +204,7 @@
                 "data-icon-start": "frame",
                 "data-action": "frame",
                 "aria-label": "Frame nodes",
-                "data-tip": "Frame nodes (F)",
+                "data-tip": "Frame nodes (Shift+S)",
                 "disabled": ""
               }
             }
@@ -260,6 +260,30 @@
                 "aria-label": "Swimlanes",
                 "data-tip": "Swimlanes",
                 "aria-pressed": "false",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "zoom-picked",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "magnifying-glass",
+                "data-action": "zoom-picked",
+                "aria-label": "Zoom to selection",
+                "data-tip": "Zoom to selection (F)",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "zoom-fit",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "fullscreen",
+                "data-action": "zoom-fit",
+                "aria-label": "Zoom to fit",
+                "data-tip": "Zoom to fit (F)",
                 "disabled": ""
               }
             }
@@ -397,6 +421,24 @@
     },
     {
       "$type": "prop",
+      "name": "data-can-zoom-fit",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Zoom to fit can be pressed: the graph has a node; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-can-zoom-picked",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Zoom to selection can be pressed: a node is picked; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-collapsed",
       "type": "boolean",
       "observed": true,
@@ -478,7 +520,7 @@
     }
   ],
   "populate": {
-    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
+    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

@@ -5032,8 +5032,23 @@
             {
               "kind": "method",
               "name": "fit",
-              "parameters": [],
-              "description": "Fit every piece of content in what the view shows, beside the card; no nearer than 100%."
+              "parameters": [
+                {
+                  "name": "pieces",
+                  "type": {
+                    "text": "readonly HTMLElement[]"
+                  },
+                  "optional": true
+                },
+                {
+                  "name": "options",
+                  "type": {
+                    "text": "{ ease?: boolean }"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer than 100%. `ease` moves the view there as a reader's step does (TODO 905)."
             }
           ],
           "events": [
@@ -8210,6 +8225,20 @@
             {
               "name": "data-can-unfurl",
               "description": "Unfurl graph can be pressed: the graph has two or more nodes and can be changed; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-can-zoom-fit",
+              "description": "Zoom to fit can be pressed: the graph has a node; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-can-zoom-picked",
+              "description": "Zoom to selection can be pressed: a node is picked; written by the editor",
               "type": {
                 "text": "boolean"
               }

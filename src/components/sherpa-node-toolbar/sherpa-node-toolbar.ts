@@ -38,6 +38,8 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-collapse': { type: 'boolean', kind: 'behaviour' },
     'data-collapsed': { type: 'boolean', kind: 'behaviour' },
     'data-can-hide': { type: 'boolean', kind: 'behaviour' },
+    'data-can-zoom-picked': { type: 'boolean', kind: 'behaviour' },
+    'data-can-zoom-fit': { type: 'boolean', kind: 'behaviour' },
     'data-hide-unconnected': { type: 'boolean', kind: 'behaviour' },
     'data-can-lanes': { type: 'boolean', kind: 'behaviour' },
     'data-lanes': { type: 'boolean', kind: 'behaviour' },
@@ -61,7 +63,7 @@ export class SherpaNodeToolbar extends SherpaElement {
 
   /** Each tool can be pressed when its flag is set. */
   #sync(): void {
-    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'fetch', 'play', 'frame', 'collapse', 'hide', 'lanes']) {
+    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange', 'unfurl', 'fetch', 'play', 'frame', 'collapse', 'hide', 'lanes', 'zoom-picked', 'zoom-fit']) {
       this.$(`.${action}`)?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${action}`));
     }
     const running = this.hasAttribute('data-simulating');

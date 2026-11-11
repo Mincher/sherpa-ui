@@ -168,14 +168,14 @@ test('Release: the frame goes and its nodes stay; one Undo brings it back', asyn
   await expect(frameEl(page)).toHaveCount(1);
 });
 
-test('keys: F frames the picked nodes; on the header the arrows move them, Enter opens its panel, Delete releases', async ({ page }) => {
+test('keys: Shift+S frames the picked nodes; on the header the arrows move them, Enter opens its panel, Delete releases', async ({ page }) => {
   await start(page);
   await pick(page, ['s1', 'p1']);
   await page.locator('#cv').evaluate((cv) => (cv.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
-  await page.keyboard.press('f');
+  await page.keyboard.press('Shift+S');
   await settle(page);
   expect((await flow(page)).frames).toEqual([{ id: 'frame-1', label: 'Frame 1', nodes: ['s1', 'p1'] }]);
-  // F put the keyboard on the new frame's header.
+  // Shift+S put the keyboard on the new frame's header.
   await expect.poll(() => frameHeader(page).evaluate((h) => h.matches(':focus'))).toBe(true);
   const before = await flow(page);
   await page.keyboard.press('ArrowRight');
@@ -252,4 +252,48 @@ test('read only, a preset: the frame is drawn, with no Release, and a drag on it
   expect(await Promise.all(['s1', 'p1'].map((id) => box(page, id)))).toEqual(was);
   expect((await flow(page)).nodes).toEqual(framed.nodes);
   await expect(page.locator('sherpa-node-toolbar sherpa-button.frame')).toHaveAttribute('disabled', '');
+});
+
+test('F zooms to the picked nodes, centred; with none picked, to the whole graph; the toolbar\'s two buttons do the same (TODO 905)', async ({ page }) => {
+  await start(page);
+  const view = () => page.locator('#cv').evaluate((cv) => {
+    const c = cv as HTMLElement & { view: { x: number; y: number; zoom: number } };
+    const r = cv.shadowRoot!.querySelector('.viewport')!.getBoundingClientRect();
+    return { ...c.view, w: r.width, h: r.height };
+  });
+  const centre = async (id: string) => {
+    const [b, c] = [await box(page, id), (await page.locator('#cv').boundingBox())!];
+    return [Math.round(b.x + b.width / 2 - c.x), Math.round(b.y + b.height / 2 - c.y)] as const;
+  };
+  const focus = () => page.locator('#cv').evaluate((cv) => (cv.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
+  // Nothing picked: Zoom to selection is off; F fits the whole graph.
+  await expect(page.locator('sherpa-node-toolbar sherpa-button.zoom-picked')).toHaveAttribute('disabled', '');
+  await expect(page.locator('sherpa-node-toolbar sherpa-button.zoom-fit')).not.toHaveAttribute('disabled');
+  await focus();
+  await page.keyboard.press('f');
+  await page.waitForTimeout(500);
+  const all = await view();
+  for (const id of ['s1', 'e1', 's2']) {
+    const b = await box(page, id);
+    const c = (await page.locator('#cv').boundingBox())!;
+    expect(b.x >= c.x && b.y >= c.y && b.x + b.width <= c.x + c.width && b.y + b.height <= c.y + c.height, `${id} in view`).toBe(true);
+  }
+  // One picked: it is centred, zoomed in as far as 100%.
+  await pick(page, ['p1']);
+  await expect(page.locator('sherpa-node-toolbar sherpa-button.zoom-picked')).not.toHaveAttribute('disabled');
+  await focus();
+  await page.keyboard.press('f');
+  await page.waitForTimeout(500);
+  const one = await view();
+  expect(one.zoom).toBeGreaterThan(all.zoom);
+  const [cx, cy] = await centre('p1');
+  expect(Math.abs(cx - one.w / 2)).toBeLessThan(40);
+  expect(Math.abs(cy - one.h / 2)).toBeLessThan(40);
+  // The buttons: Zoom to fit, then Zoom to selection.
+  await press(page, 'zoom-fit');
+  await page.waitForTimeout(500);
+  expect((await view()).zoom).toBeCloseTo(all.zoom, 3);
+  await press(page, 'zoom-picked');
+  await page.waitForTimeout(500);
+  expect((await view()).zoom).toBeCloseTo(one.zoom, 3);
 });

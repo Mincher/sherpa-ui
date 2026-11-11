@@ -569,8 +569,8 @@
         {
           "$type": "method",
           "name": "fit",
-          "args": "",
-          "description": "Fit every piece of content in what the view shows, beside the card; no nearer than 100%."
+          "args": "pieces?: readonly HTMLElement[], options: { ease?: boolean } = {}",
+          "description": "Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer than 100%. `ease` moves the view there as a reader's step does (TODO 905)."
         }
       ],
       "jsProps": [
