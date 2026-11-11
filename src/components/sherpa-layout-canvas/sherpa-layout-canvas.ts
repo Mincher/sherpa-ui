@@ -346,6 +346,26 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.#easing = setTimeout(() => this.#still(), EASE_MS);
   }
 
+  /** The timer that ends a re-layout's easing. */
+  #settling: ReturnType<typeof setTimeout> | undefined;
+  /** The places its pieces take next ease there from where they stand, as CSS moves them: an Unfurl, an Arrange. A plane
+   *  drawn into a real canvas paints them at once. Will, TODO 902 */
+  easePieces(): void {
+    const viewport = this.$('.viewport');
+    if (!viewport || this.$('.plane')?.shadowRoot?.querySelector('canvas')) return;
+    // On the viewport, not a :state(): WebKit kept a state it said it had dropped (2026-11-11). TRAP T-a-relayout-eases-by-its-viewport
+    viewport.toggleAttribute('data-settling', true);
+    const done = (): void => { clearTimeout(this.#settling); viewport.removeAttribute('data-settling'); };
+    clearTimeout(this.#settling);
+    // Ends as the pieces' moves end, a frame after they start; the timer is the floor, should none move.
+    this.#settling = setTimeout(done, EASE_MS * 2);
+    requestAnimationFrame(() => {
+      const moving = [...this.children].flatMap((el) => el.getAnimations());
+      if (!moving.length) return done();
+      void Promise.all(moving.map((a) => a.finished.catch(() => undefined))).then(done);
+    });
+  }
+
   /** Follow at once: a pan or a pinch never eases. */
   #still(): void {
     clearTimeout(this.#easing);

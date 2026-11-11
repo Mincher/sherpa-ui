@@ -6,7 +6,7 @@
  *
  * Map:
  * - PlaneBox — A box on the plane, in plane px.
- * - placeOf — An element's place on the plane: its resolved left and top.
+ * - placeOf — An element's place on the plane: its --x and --y, else its resolved left and top.
  * - boxOf — An element's box on the plane.
  * - pointIn — The plane point of a screen box's middle — a socket's — inside an element on the plane, drawn at a scale.
  */
@@ -19,10 +19,16 @@ export interface PlaneBox {
   bottom: number;
 }
 
-/** An element's place on the plane: its resolved left and top. Not its offset: drawn into a canvas, it lays out in flow. */
+/** An element's place on the plane: its `--x` and `--y`, where it stands or is going — a transition moving it changes its
+ *  `left` and `top` on the way (TODO 902) — else its resolved left and top. Not its offset: drawn into a canvas, it lays out
+ *  in flow. */
 export function placeOf(el: HTMLElement): { x: number; y: number } {
   const style = getComputedStyle(el);
-  return { x: parseFloat(style.left) || 0, y: parseFloat(style.top) || 0 };
+  const at = (prop: string, resolved: string): number => {
+    const set = parseFloat(style.getPropertyValue(prop));
+    return Number.isFinite(set) ? set : parseFloat(resolved) || 0;
+  };
+  return { x: at('--x', style.left), y: at('--y', style.top) };
 }
 
 /** An element's box on the plane. */

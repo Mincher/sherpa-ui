@@ -1832,3 +1832,14 @@ it; `getBoundingClientRect()` says where it is drawn.
 - Site: `playwright.config.ts`
 - Site: `test/e2e/reforged-canvas.spec.ts`
 
+
+### T-a-relayout-eases-by-its-viewport
+
+**A re-layout's easing (Unfurl, Arrange) is marked on the canvas's `.viewport`, `data-settling`, not a `:state()`** (TODO
+902). In WebKit (Playwright's, 2026-11-11) the canvas's `ElementInternals.states` read empty — `has('settling')` false, the
+set empty — while `:state(settling)` still matched, so the state could not be taken off: the lines stayed hidden and the
+nodes kept their transition. A tiny element alone drops a state as it should; the canvas does not. An attribute on a node
+of its own shadow is private to it and drops in every engine. It ends when the pieces' moves end (their `getAnimations()`
+finished), a timer the floor.
+
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`

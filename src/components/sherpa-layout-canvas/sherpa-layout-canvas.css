@@ -166,6 +166,20 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
   transition-timing-function: var(--sherpa-motion-ease, ease);
 }
 
+/* A RE-LAYOUT (Unfurl, Arrange) moves each piece and column from where it stood to where it goes, so a reader can follow
+   it; the lines, drawn at the new places at once, fade out while they move and back in after. Will, TODO 902 */
+.viewport[data-settling] .plane ::slotted(*),
+.viewport[data-settling] .columns ::slotted(*) {
+  transition-property: left, top, inline-size;
+  transition-duration: var(--sherpa-motion-slow, 300ms);
+  transition-timing-function: var(--sherpa-motion-ease, ease);
+}
+.plane ::slotted(svg) { transition: opacity var(--sherpa-motion-base, 120ms) var(--sherpa-motion-ease, ease); }
+.viewport[data-settling] .plane ::slotted(svg) {
+  opacity: 0;
+  transition: none;
+}
+
 /* With columns, what the view shows starts under their head: Fit, the banners and the stage keep clear of it. */
 :host { --_columns-head: var(--sherpa-display-mode-size-3xl, 40px); }
 :host(:state(has-columns)) .stage { margin-block-start: var(--_columns-head); }

@@ -1650,6 +1650,8 @@ function handOn(drawn: Drawn, placed: Arranged): Arranged {
 export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
   const placed = drawn?.options.onArrange ? arrangement(canvas, pickedNodes(canvas)) : undefined;
+  // Each moves there, not jumps. TODO 902
+  if (placed) canvas.easePieces();
   return drawn && placed ? handOn(drawn, placed) : undefined;
 }
 
@@ -1691,8 +1693,10 @@ export function unfurlGraph(canvas: SherpaLayoutCanvas): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
   const placed = drawn?.options.onArrange ? unfurlment(canvas) : undefined;
   if (!drawn || !placed) return undefined;
+  // Each node moves there, and the view eases round them all. TODO 902
+  canvas.easePieces();
   handOn(drawn, placed);
-  requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit()));
+  requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, { ease: true })));
   return placed;
 }
 

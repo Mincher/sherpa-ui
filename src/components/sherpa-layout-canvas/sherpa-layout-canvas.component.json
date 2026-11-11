@@ -472,7 +472,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (panTo, zoomTo, zoomBy, fit). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (panTo, zoomTo, zoomBy, fit, easePieces). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -571,6 +571,12 @@
           "name": "fit",
           "args": "pieces?: readonly HTMLElement[], options: { ease?: boolean } = {}",
           "description": "Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer than 100%. `ease` moves the view there as a reader's step does (TODO 905)."
+        },
+        {
+          "$type": "method",
+          "name": "easePieces",
+          "args": "",
+          "description": "The places its pieces take next ease there from where they stand, as CSS moves them: an Unfurl, an Arrange. A plane drawn into a real canvas paints them at once. Will, TODO 902"
         }
       ],
       "jsProps": [

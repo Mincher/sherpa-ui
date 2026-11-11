@@ -233,3 +233,23 @@ test('the Query editor arranges too: picked nodes in columns, their places kept 
   const kept = await page.evaluate(() => JSON.stringify(Object.values((window as never as { session: { get(k: string): { places?: object } | undefined } }).session.get('/node-layout/records')?.places ?? {})).length);
   expect(kept).toBeGreaterThan(10);
 });
+
+test('902: Arrange moves each node from where it stood, by a transition; the lines fade out on the way and back after', async ({ page }) => {
+  await start(page, [['s1', 'source', 500, 400], ['s2', 'source', 40, 20], ['e1', 'output', 100, 300], ['e2', 'output', 800, 60]],
+    [R(1), R(2)], []);
+  await pick(page, ['s1', 's2', 'e1', 'e2']);
+  await page.locator('sherpa-node-toolbar sherpa-button.arrange').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  const during = await page.evaluate(() => {
+    const cv = document.getElementById('cv')!;
+    const n = cv.querySelector<HTMLElement>('sherpa-node[data-heading="s1"]')!;
+    return { settling: cv.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling'), move: getComputedStyle(n).transitionDuration, lines: getComputedStyle(cv.querySelector('svg.graph-routes')!).opacity };
+  });
+  expect(during).toEqual({ settling: true, move: '0.3s', lines: '0' });
+  await page.evaluate(() => window.__settled());
+  await page.waitForTimeout(450);
+  const after = await page.evaluate(() => {
+    const cv = document.getElementById('cv')!;
+    return { settling: cv.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling'), lines: getComputedStyle(cv.querySelector('svg.graph-routes')!).opacity };
+  });
+  expect(after).toEqual({ settling: false, lines: '1' });
+});
