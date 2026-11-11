@@ -536,4 +536,5 @@
   background: var(--_section-fill);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
-:host(:not(:state(has-content-slot))) .heading { border-block-end: none; }
+/* No divider of its own: the header's category ink is the line under it (Will, TODO 897). */
+.heading { border-block-end: none; }

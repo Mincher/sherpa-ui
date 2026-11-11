@@ -60,13 +60,14 @@ test('each category has its own radius and its own painted fill; one with no cat
   })));
   expect(radii).toEqual({ sources: [16, 4, 4, 16], 'custom-nodes': [4, 4, 4, 4], logic: [4, 4, 4, 4], output: [4, 16, 16, 4], ai: [16, 16, 16, 4], big: [4, 4, 4, 4] });
   const fills: Record<string, string> = { sources: '--sherpa-theme-surface-info-base', 'custom-nodes': '--sherpa-theme-surface-info-base', output: '--sherpa-theme-surface-success-base', ai: '--sherpa-theme-surface-active-base' };
+  // Read above the header's category ink, the 2px line along its bottom (TODO 897).
   for (const [id, token] of Object.entries(fills)) {
     const b = await box(page, id);
-    const [pixel] = await paint(page, b, [[.5, .96]]);
+    const [pixel] = await paint(page, b, [[.5, .8]]);
     expect(near(pixel!, await inkOf(page, token)), `${id} paints ${token}`).toBe(true);
   }
-  const [logic] = await paint(page, await box(page, 'logic'), [[.5, .96]]);
-  const [info] = await paint(page, await box(page, 'sources'), [[.5, .96]]);
+  const [logic] = await paint(page, await box(page, 'logic'), [[.5, .8]]);
+  const [info] = await paint(page, await box(page, 'sources'), [[.5, .8]]);
   expect(near(logic!, info!, 2), 'a Logic node is not the info tint').toBe(false);
 });
 
