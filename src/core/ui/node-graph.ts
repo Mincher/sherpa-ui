@@ -3839,7 +3839,20 @@ export function bindWorkflow(
   window.addEventListener('pointermove', onPointerMove, { capture: true });
   window.addEventListener('pointerup', onLetGo);
   window.addEventListener('pointercancel', onLetGo);
+  // A graph, as it opens, frames all its nodes, centred: also one picked after another on the same canvas, whose view the
+  // last left (Will, TODO 932). Its nodes' first sizes fit it; a frame after the first draw fits what was drawn the same.
+  const shownBefore = drawnOn.get(canvas);
+  if (shownBefore) shownBefore.fitted = false;
+  const viewAtBind = JSON.stringify(canvas.view);
   draw();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const made = drawnOn.get(canvas);
+    // Not where its host has set the view since.
+    if (made && !made.fitted && made.nodes.size && JSON.stringify(canvas.view) === viewAtBind) {
+      made.fitted = true;
+      canvas.fit();
+    }
+  }));
   // A run lights its nodes: each step names its node, and the run its workflow. N4 reports.
   const unwatch = watchSteps(canvas, { claims: (span) => span.detail?.['graph'] === workflow.id });
   return {
