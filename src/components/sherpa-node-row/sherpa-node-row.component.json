@@ -233,6 +233,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-idle",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a property with nothing to say (no rows reach its node): hidden, unless a connection leaves it"
+    },
+    {
+      "$type": "prop",
       "name": "data-input-at",
       "type": "number",
       "observed": true,
@@ -376,7 +385,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, message?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }",
+    "shape": "{ collapsed?, idle?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, message?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

@@ -23,6 +23,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-collapsed` | boolean |  | its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-connected, data-output-at-connected the same, among the connected only; unset, the socket is not connected |
+| `data-idle` | boolean |  | a property with nothing to say (no rows reach its node): hidden, unless a connection leaves it |
 | `data-input-at` | number |  |  |
 | `data-input-at-connected` | number |  |  |
 | `data-input-connected` | boolean |  | a connection joins the input: its socket is filled, else hollow |
@@ -76,6 +77,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, message?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }`
+`{ collapsed?, idle?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, message?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }`
 
 Its declared props by name: `label` sets data-label.

@@ -2945,6 +2945,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-idle",
+          "description": "a property with nothing to say (no rows reach its node): hidden, unless a connection leaves it",
+          "valueSet": "v"
+        },
+        {
           "name": "data-input-at"
         },
         {

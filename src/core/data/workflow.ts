@@ -587,6 +587,33 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   };
   const reach = fieldsReach(held, flows, kinds, facts);
   const sent = sender(held, flows, kinds, reach);
+  /** Whether ROWS reach a node's header (TODO 924): true where rows, a column, an object, or a test that may be over rows
+   *  comes in; false where only values, or tests of one, do; undefined where nothing it can use is joined. */
+  const heardOf = new Map<string, boolean | undefined>();
+  const rowsHeard = (id: string, seen = new Set<string>()): boolean | undefined => {
+    if (heardOf.has(id)) return heardOf.get(id);
+    if (seen.has(id)) return true;
+    seen.add(id);
+    const at = held.get(id);
+    const need = at && needOf(kindOf(at) ?? {});
+    const answers = flows.filter((c) => c.to === id).flatMap((c) => {
+      const got = sent(c.from);
+      // What it cannot use, it reads as null, and says so: no answer here.
+      if (!got || (need && readInput({ label: '', needs: need }, got).warning)) return [];
+      // By what its source row gives: a Field's column is over rows where the Field's own header hears rows.
+      const { node: fromId, row } = socketOf(c.from);
+      const from = held.get(fromId);
+      const given = givenAt(from, row, kinds)?.kind ?? got.kind;
+      if (given === 'field') return [rowsHeard(fromId, seen) !== false];
+      if (given !== 'boolean') return [!['value', 'number', 'provider', 'model'].includes(given)];
+      // A test's True: over rows where its own header hears rows; one with no Results of its own may be, so it shows.
+      const tested = from && kindOf(from)?.rows.some((r) => r.name === ROWS.name);
+      return [!tested || rowsHeard(fromId, seen) !== false];
+    });
+    const heard = answers.length ? answers.some(Boolean) : undefined;
+    heardOf.set(id, heard);
+    return heard;
+  };
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const family = kinds[node.kind]!;
@@ -614,6 +641,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     let sources: MessageSource[] | undefined;
     // A message row's text as it reads: each value by its node's heading and its own label.
     const spoken = new Map<string, string>();
+    // Its Results and Count say ROWS: where only a value, or a test of one, reaches its header, they have nothing to say.
+    // Nothing usable joined: they show (TODO 924).
+    const rowless = !!kind.input && kind.rows.some((r) => r.name === ROWS.name) && rowsHeard(node.id) === false;
     const rows = kind.rows.map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no connection gives warns, by its row (plan 891).
@@ -639,7 +669,12 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       // A Type row says the type's own value, and the line the type gives.
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
       const closed = plain.control === 'tags' && list ? { closed: true as const } : {};
-      const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed };
+      // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A).
+      const idle = rowless && !!row.property && [ROWS.name, 'count'].includes(row.name);
+      if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {
+        warnings.push({ row: row.name, words: `${row.label} has no rows${row.name === 'count' ? ' to count' : ''}: a value comes in` });
+      }
+      const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed, ...(idle ? { idle: true as const } : {}) };
       // A fault of the value it shows, in words, as `workflowFaults` finds it: its own, or what a connection brings.
       const said = (shown: GraphRow, connected = false): GraphRow => {
         const value = shown.control === 'number' ? typedValue('number', shown.value) : shown.value;

@@ -8095,6 +8095,13 @@
               }
             },
             {
+              "name": "data-idle",
+              "description": "a property with nothing to say (no rows reach its node): hidden, unless a connection leaves it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-input-at",
               "type": {
                 "text": "number"

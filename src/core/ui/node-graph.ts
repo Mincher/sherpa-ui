@@ -474,6 +474,8 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     if (!worn.has(row.name) || row.beside) line.toggleAttribute('data-output-connected', sent.has(address));
     const field = line.firstElementChild as Field | null;
     if (row.beside) continue;
+    // A Results or Count with no rows to say hides, unless a connection still leaves it (TODO 924).
+    line.toggleAttribute('data-idle', !!row.idle);
     // Each socket's tip names its row and says its value: a collapsed node shows neither.
     put(line, 'data-socket-name', row.label);
     put(line, 'data-socket-value', connected.has(address) ? undefined : valueWords(row));
@@ -490,6 +492,9 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     const rows = [...box.children];
     box.toggleAttribute('data-bare', !rows.some((r) => r.hasAttribute('data-input-socket') || r.hasAttribute('data-output-socket')));
     box.toggleAttribute('data-unconnected', !rows.some((r) => r.hasAttribute('data-input-connected') || r.hasAttribute('data-output-connected')));
+    // Every row of it idle and unconnected: the box goes too (TODO 924).
+    const sockets = rows.filter((r) => r.hasAttribute('data-input-socket') || r.hasAttribute('data-output-socket'));
+    box.toggleAttribute('data-idle', sockets.length > 0 && sockets.every((r) => r.hasAttribute('data-idle') && !r.hasAttribute('data-output-connected')));
   }
 }
 
@@ -509,6 +514,11 @@ function stackPlaces(el: HTMLElement, collapsed: boolean): void {
   }
   for (const row of el.querySelectorAll<HTMLElement>('sherpa-node-row')) {
     row.toggleAttribute('data-collapsed', collapsed);
+    // An idle row, hidden, holds no place in a stack (TODO 924).
+    if (row.hasAttribute('data-idle') && !row.hasAttribute('data-output-connected')) {
+      for (const name of ['input', 'output']) for (const end of ['at', 'at-connected']) row.removeAttribute(`data-${name}-${end}`);
+      continue;
+    }
     const side = (socket: string, connected: string, all: 'in' | 'out', only: 'inConnected' | 'outConnected', name: string): void => {
       const has = row.hasAttribute(socket);
       put(row, `data-${name}-at`, has ? String(at[all]++) : undefined);

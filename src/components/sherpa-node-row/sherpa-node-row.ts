@@ -21,6 +21,7 @@ export class SherpaNodeRow extends SherpaElement {
     'data-output-connected': SHARED_PROPS['data-output-connected'],
     'data-input-many': SHARED_PROPS['data-input-many'],
     'data-property': { type: 'boolean', kind: 'style' },
+    'data-idle': { type: 'boolean', kind: 'style' },
     'data-message': { type: 'string', kind: 'behaviour' },
     'data-socket-name': { type: 'string', kind: 'content' },
     'data-socket-value': { type: 'string', kind: 'content' },

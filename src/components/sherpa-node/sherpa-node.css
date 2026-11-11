@@ -474,6 +474,8 @@
 }
 :host([data-collapsed]) .body ::slotted(.section) { display: contents; }
 :host([data-collapsed]) .body ::slotted(.section[data-bare]) { display: none; }
+/* A box whose rows are all idle (TODO 924) goes, collapsed or not. */
+.body ::slotted(.section[data-idle]) { display: none; }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) .body ::slotted(.section[data-unconnected]) { display: none; }
 /* A fork's footer has no room of its own: False stands last in the outputs' stack. */
 :host([data-collapsed]) .footer {

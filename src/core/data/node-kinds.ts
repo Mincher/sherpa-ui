@@ -887,6 +887,8 @@ export interface GraphRow extends RowKind {
   custom?: true;
   /** A message's text as it reads: each value by its node's heading and label, `{Customers › Name}`. Plan 891 */
   said?: string;
+  /** A property with nothing to say: Results or Count where no rows reach its node, only a value (TODO 924). */
+  idle?: true;
 }
 
 /** A node's size, in times its natural width and height; each from 1 (as it is) to 2 (double). */
