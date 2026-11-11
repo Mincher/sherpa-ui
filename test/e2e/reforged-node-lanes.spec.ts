@@ -45,9 +45,16 @@ const lanes = (page: Page) => page.locator('#cv > sherpa-node-lane').evaluateAll
 /** A node's top and bottom, in plane px, as drawn. */
 const span = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluate((n) => ({ top: Number(n.getAttribute('data-y')), bottom: Number(n.getAttribute('data-y')) + (n as HTMLElement).offsetHeight }));
 
-test('Swimlanes on: a band for each family that has a node, the logic node in a junction, no band over the next; off, they go', async ({ page }) => {
+test('Swimlanes on: a band for each family that has a node, the logic node in a junction, no band over the next; off, they go and each node goes back', async ({ page }) => {
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(0);
-  await press(page, 'lanes');
+  const before = await Promise.all(['Source', 'Value', 'Condition', 'Sort', 'Output'].map((h) => span(page, h)));
+  // Each node moves by a transition, as Unfurl's do: the plane says so while they go (TODO 929).
+  const easing = await page.locator('sherpa-node-toolbar sherpa-button.lanes').evaluate((el) => {
+    (el.shadowRoot!.querySelector('button') as HTMLElement).click();
+    return document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling');
+  });
+  expect(easing).toBe(true);
+  await settle(page);
   await expect(page.locator('sherpa-node-toolbar sherpa-button.lanes')).toHaveAttribute('aria-pressed', 'true');
   const bands = await lanes(page);
   expect(bands.map((b) => b.heading)).toEqual(['Data', 'Values', 'Junction', 'Organise', 'Output']);
@@ -67,11 +74,13 @@ test('Swimlanes on: a band for each family that has a node, the logic node in a 
   expect(inks[1]).toBe(await solid('Value'));
   expect(inks[4]).toBe(await solid('Output'));
   expect(await page.locator('#cv > sherpa-node-lane').nth(2).getAttribute('data-category')).toBeNull();
-  // Off: the rows go, the nodes stay where the lanes put them; Undo turns them back on.
+  // The lanes moved the nodes, each by a transition, as Unfurl's do (TODO 929).
   const placed = await span(page, 'Output');
+  expect(placed).not.toEqual(before[4]);
+  // Off: the rows go, and each node goes back where it stood before; Undo turns them back on.
   await press(page, 'lanes');
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(0);
-  expect(await span(page, 'Output')).toEqual(placed);
+  expect(await Promise.all(['Source', 'Value', 'Condition', 'Sort', 'Output'].map((h) => span(page, h)))).toEqual(before);
   await press(page, 'undo');
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(5);
 });

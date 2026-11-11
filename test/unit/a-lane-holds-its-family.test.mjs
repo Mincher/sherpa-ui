@@ -91,13 +91,21 @@ test('a band that grows pushes the ones under it, and their nodes, down; the fit
   assert.ok(y(back, 'out') >= above.bottom + LANE_GAP + LANE_PAD - 1);
 });
 
-test('lanes on and off is one edit; off, the nodes stay; the schema takes them; a family in two lanes is a fault', () => {
+test('lanes on keep each node\'s place, and off puts it back — one placed since stays; one edit each way; the schema takes them (929)', () => {
   const w = flow();
+  assert.deepEqual(w.beforeLanes.cond, { x: 300, y: 150 });
   assert.equal(checkWorkflow(w), true);
   assert.deepEqual(schemaCheck('workflow.v2.json')(w), []);
-  const off = editWorkflow(w, { lanes: null });
+  // Laid out, the lanes move the nodes down; a node placed while they are on has no place before.
+  const laid = fitLanes(w, H, NODE_KINDS);
+  assert.notDeepEqual(laid.nodes.map((n) => n.y), w.nodes.map((n) => n.y));
+  const added = { ...laid, nodes: [...laid.nodes, { id: 'new', kind: 'value', x: 5, y: 777 }] };
+  const off = editWorkflow(added, { lanes: null });
   assert.equal(off.lanes, undefined);
-  assert.deepEqual(off.nodes, w.nodes);
+  assert.equal(off.beforeLanes, undefined);
+  assert.deepEqual(off.nodes.map((n) => [n.id, n.x, n.y]), [...w.nodes.map((n) => [n.id, n.x, n.y]), ['new', 5, 777]]);
+  // On again: the places kept are the ones before, not re-taken.
+  assert.deepEqual(editWorkflow(laid, { lanes: LANES_BY_FAMILY }).beforeLanes, w.beforeLanes);
   const twice = { ...w, lanes: [...w.lanes, { id: 'more', label: 'More', families: ['ai'] }] };
   assert.equal(checkWorkflow(twice), false);
 });

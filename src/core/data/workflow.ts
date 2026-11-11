@@ -81,6 +81,8 @@ export interface WorkflowDefinition {
   stages?: readonly NodeStage[];
   /** Swimlanes: rows down the canvas, one for each family of nodes, top to bottom; a logic node stands in a junction. None, off. */
   lanes?: readonly NodeLane[];
+  /** Each node's place before Swimlanes were turned on: turning them off puts it back (TODO 929). */
+  beforeLanes?: Readonly<Record<string, { x: number; y: number }>>;
 }
 
 type Kinds = Readonly<Record<string, NodeKind>>;
@@ -991,10 +993,16 @@ export function editWorkflow(
   }
   // — Stages: a new one after the last; its name, line and colour; one taken away, its nodes in the one before; an order;
   // a node let go, in the stage it stands in, or the nearest; an edge dragged (900). A workflow keeps at least one.
-  // — Swimlanes: on, with the lanes given; null, off. The nodes stay where they are. Will, 2026-11-10
+  // — Swimlanes: on, with the lanes given, each node's place kept; null, off, each node back where it stood before they were
+  // on — one placed since stays where it is. Will, 2026-11-10, TODO 929
   if ('lanes' in edit) {
-    const { lanes: _was, ...bare } = workflow;
-    return edit.lanes?.length ? { ...bare, lanes: edit.lanes.map((l) => ({ ...l, families: [...l.families] })) } : bare;
+    const { lanes: _was, beforeLanes: before, ...bare } = workflow;
+    if (edit.lanes?.length) {
+      const kept = before ?? Object.fromEntries(workflow.nodes.filter((n) => !n.id.startsWith('#')).map((n) => [n.id, { x: n.x, y: n.y }]));
+      return { ...bare, lanes: edit.lanes.map((l) => ({ ...l, families: [...l.families] })), beforeLanes: kept };
+    }
+    if (!before) return bare;
+    return { ...bare, nodes: bare.nodes.map((n) => (before[n.id] ? { ...n, x: before[n.id]!.x, y: before[n.id]!.y } : n)) };
   }
   if ('addStage' in edit || 'setStage' in edit || 'removeStage' in edit || 'orderStages' in edit || 'resizeStage' in edit || 'restage' in edit) return staged(workflow, edit);
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };

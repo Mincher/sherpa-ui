@@ -593,7 +593,8 @@ stands in a junction, never a lane: under the lowest lane its inputs come from, 
 the junction nodes one lane feeds share one junction (an Out portal is fed through its
 In). One fed from no lane stands by the lanes it joins. A
 lane grows to hold its nodes and pushes the ones under it down; a lane with no node
-takes no room. Off, the rows go and the nodes stay.
+takes no room. On and off, the nodes move to their places; off, each goes back where
+it stood before (`beforeLanes`), and one placed since stays.
 
 ### Entities
 

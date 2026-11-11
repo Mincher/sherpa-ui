@@ -3457,7 +3457,12 @@ export function bindWorkflow(
     else if (action === 'stop') stop();
     else if (action === 'frame') framePicked();
     // Swimlanes on, a lane for each family; off, none. One step; the nodes stay where they are. Will, 2026-11-10
-    else if (action === 'lanes' && !path.length && !readOnly()) write(editWorkflow(shown(), { lanes: shown().lanes?.length ? null : LANES_BY_FAMILY }, K()));
+    else if (action === 'lanes' && !path.length && !readOnly()) {
+      // On or off, each node moves to its place, as Unfurl's do, and the view eases round them all (TODO 929).
+      canvas.easePieces();
+      write(editWorkflow(shown(), { lanes: shown().lanes?.length ? null : LANES_BY_FAMILY }, K()));
+      requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, { ease: true })));
+    }
   };
   toolbar?.addEventListener('toolbar-select', onTool);
   const unarrange = watchArrange(canvas, toolbar, () => !readOnly() && !lanesOn(), ['data-can-arrange']);
