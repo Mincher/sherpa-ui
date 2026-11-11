@@ -13,7 +13,7 @@ const ORG = {
   inputs: [{ name: 'users', label: 'Users', type: 'object' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-  routes: [{ from: '#in/users', to: 'role' }],
+  connections: [{ from: '#in/users', to: 'role' }],
 };
 
 test.beforeEach(async ({ page }) => {
@@ -38,12 +38,12 @@ test.beforeEach(async ({ page }) => {
     };
     const at = (id: string, kind: string, x: number, y: number) => useOf(library as never, kind, { id, x, y });
     const flow = {
-      v: 2, id: 'g',
+      v: 3, id: 'g',
       nodes: [
         { id: 'start', kind: 'source', x: 380, y: 40, values: { store: 'users' } },
         at('perm', 'org-permissions', 760, 40), at('perm2', 'org-permissions', 760, 320), at('own', 'owner-check', 380, 320),
       ],
-      routes: [{ from: 'start/rows', to: 'perm/users' }],
+      connections: [{ from: 'start/rows', to: 'perm/users' }],
     };
     const w = window as unknown as Record<string, unknown>;
     w['savedNodes'] = [];

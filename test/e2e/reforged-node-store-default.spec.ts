@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const canvas = document.getElementById('cv')!;
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, {
-      v: 2, id: 'g', nodes: [{ id: 'none', kind: 'source', x: 0, y: 0 }, { id: 'orders', kind: 'source', x: 380, y: 0, values: { store: 'orders' } }],
+      v: 3, id: 'g', nodes: [{ id: 'none', kind: 'source', x: 0, y: 0 }, { id: 'orders', kind: 'source', x: 380, y: 0, values: { store: 'orders' } }],
     } as never, { session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar') as never, stores: ['users', 'orders'] });
     await window.__settled();
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));

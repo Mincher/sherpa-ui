@@ -14,7 +14,7 @@ const { NODE_KINDS, paletteOf } = await import(new URL('node-kinds.js', core));
 const { offeredKinds, registerEntityType } = await import(new URL('entity-types.js', core));
 const { editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { entityFaults } = await import(new URL('entity-check.js', core));
-const { graphRequest, keptEdit, placeRequest, queryGraph, routeRequest } = await import(new URL('query-graph.js', core));
+const { graphRequest, keptEdit, placeRequest, queryGraph, connectionRequest } = await import(new URL('query-graph.js', core));
 const { pageWithQuery } = await import(new URL('page-definition.js', core));
 
 const inPanel = (palette) => palette.flatMap((g) => g.items.map((i) => `${g.category}:${i.id}`));
@@ -37,7 +37,7 @@ test('every graph type\'s panel offers a Source, under Sources: a workflow, a Pr
 });
 
 test('two Sources in one graph: customers and devices, each its own id and store, no fault', () => {
-  const empty = { v: 2, id: 'both', nodes: [], routes: [] };
+  const empty = { v: 3, id: 'both', nodes: [], connections: [] };
   const both = [['source-1', 'customers'], ['source-2', 'devices']].reduce(
     (w, [id, store], i) => editWorkflow(w, { add: { id, kind: 'source', x: 0, y: i * 200, values: { store } } }), empty,
   );
@@ -47,7 +47,7 @@ test('two Sources in one graph: customers and devices, each its own id and store
   assert.deepEqual(drawn.map((n) => [n.id, n.heading, n.rows.find((r) => r.name === 'store').value]), [['source-1', 'Source', 'customers'], ['source-2', 'Source', 'devices']]);
   assert.deepEqual(drawn[1].rows.find((r) => r.name === 'store').choices.map((c) => c.value), ['customers', 'devices']);
   // As an entity of a type, too; only a second node of the SAME id is a fault.
-  assert.deepEqual(entityFaults({ v: 1, type: 'node', id: 'both', label: 'Both', graph: { nodes: both.nodes, routes: [] }, settings: { inputs: [], outputs: [] } }), []);
+  assert.deepEqual(entityFaults({ v: 2, type: 'node', id: 'both', label: 'Both', graph: { nodes: both.nodes, connections: [] }, settings: { inputs: [], outputs: [] } }), []);
   assert.ok(workflowFaults({ ...both, nodes: [...both.nodes, both.nodes[0]] }).includes('two nodes are "source-1"'));
 });
 
@@ -65,7 +65,7 @@ test('a second Source in a Query is KEPT, never asked of it: the next free id, t
   assert.equal('request' in place(), false, 'it asks the Query nothing');
 });
 
-test('a kept Source is drawn under the page\'s and warns; its Store is the reader\'s; no route leaves it; Save writes the page\'s own', () => {
+test('a kept Source is drawn under the page\'s and warns; its Store is the reader\'s; no connection leaves it; Save writes the page\'s own', () => {
   const kept = [{ id: 'source-2', store: 'devices' }];
   const g = queryGraph(query, page, { stores: ['customers', 'devices'], kept });
   const [own, second] = ['source', 'source-2'].map((id) => g.nodes.find((n) => n.id === id));
@@ -81,9 +81,9 @@ test('a kept Source is drawn under the page\'s and warns; its Store is the reade
   assert.equal(graphRequest(edit), undefined);
   assert.equal(keptEdit(kept, { node: own, row: own.rows.find((r) => r.name === 'store'), value: 'devices' }), undefined);
   assert.equal(keptEdit(kept, { ...edit, row: second.rows[0] }), undefined, 'only its Store row');
-  assert.match(routeRequest(g, { from: 'source-2/rows', to: 'scope-view/status' }).refused, /is not the page's Source: the Query reads nothing from it/);
-  // Nothing routes into or out of it.
-  assert.deepEqual(g.routes.filter((r) => r.from.startsWith('source-2') || r.to.startsWith('source-2')), []);
+  assert.match(connectionRequest(g, { from: 'source-2/rows', to: 'scope-view/status' }).refused, /is not the page's Source: the Query reads nothing from it/);
+  // Nothing connections into or out of it.
+  assert.deepEqual(g.connections.filter((r) => r.from.startsWith('source-2') || r.to.startsWith('source-2')), []);
   // Save writes the page's definition: its store, and nothing of the kept Source.
   assert.deepEqual(pageWithQuery(page, query).source.store, 'customers');
   assert.ok(!JSON.stringify(pageWithQuery(page, query)).includes('devices'));

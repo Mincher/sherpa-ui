@@ -8,10 +8,10 @@ import { test, expect, type Page } from './harness';
 test.use({ deviceScaleFactor: 4 });
 
 const SOCKETS = [
-  { id: 'v', attrs: 'data-output-socket="value" data-output-routed', side: 'out', along: 'row' },
-  { id: 'b', attrs: 'data-output-socket="boolean" data-output-routed', side: 'out', along: 'row' },
-  { id: 'o', attrs: 'data-output-socket="object" data-output-routed', side: 'out', along: 'diagonal' },
-  { id: 'i', attrs: 'data-input-socket="value" data-input-routed', side: 'in', along: 'row' },
+  { id: 'v', attrs: 'data-output-socket="value" data-output-connected', side: 'out', along: 'row' },
+  { id: 'b', attrs: 'data-output-socket="boolean" data-output-connected', side: 'out', along: 'row' },
+  { id: 'o', attrs: 'data-output-socket="object" data-output-connected', side: 'out', along: 'diagonal' },
+  { id: 'i', attrs: 'data-input-socket="value" data-input-connected', side: 'in', along: 'row' },
 ];
 
 /** Luminance of the pixel at each (x, y) of the socket's 16px box, in device pixels. */

@@ -462,7 +462,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor"
+      "description": "Collapsed nodes hide the sockets no connection joins: shown as pressed; written by the editor"
     },
     {
       "$type": "prop",
@@ -493,7 +493,7 @@
     },
     {
       "$type": "prop",
-      "name": "data-picked-routes",
+      "name": "data-picked-connections",
       "type": "number",
       "observed": true,
       "declared": true,
@@ -520,7 +520,7 @@
     }
   ],
   "populate": {
-    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }",
+    "shape": "{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedConnections?, simulating?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

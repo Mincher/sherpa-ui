@@ -10,12 +10,12 @@ One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canv
 
 ## When to use it
 
-For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a route joins it; a fork (`data-branches`) sends True from the header and False from a footer; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`.
+For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a connection joins it; a fork (`data-branches`) sends True from the header and False from a footer; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`.
 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Pick" data-icon="price-tag" data-x="40" data-y="200" data-input-socket="any" data-input-routed data-warning="Pick takes an object; it was given a boolean"></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-routed data-branches data-current><sherpa-node-row data-input-socket="object" data-input-routed data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-connected></sherpa-node><sherpa-node data-heading="Pick" data-icon="price-tag" data-x="40" data-y="200" data-input-socket="any" data-input-connected data-warning="Pick takes an object; it was given a boolean"></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-connected data-branches data-current><sherpa-node-row data-input-socket="object" data-input-connected data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes
@@ -27,25 +27,25 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with its False socket, a rounded square |
 | `data-caption` | text |  | the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
-| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it data-inputs, data-outputs how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-routed, data-outputs-routed the same, of the routed ones only: hiding the unconnected, the stacks hold these. Its host writes them |
+| `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it data-inputs, data-outputs how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-connected, data-outputs-connected the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
-| `data-false-routed` | boolean |  | a route leaves False: its socket is filled, else hollow |
+| `data-false-connected` | boolean |  | a connection leaves False: its socket is filled, else hollow |
 | `data-heading` | text |  | the node's name, in its header |
-| `data-hide-unconnected` | boolean |  | collapsed, a socket no route joins hides; a hover shows them. Its host writes it |
+| `data-hide-unconnected` | boolean |  | collapsed, a socket no connection joins hides; a hover shows them. Its host writes it |
 | `data-icon` | text |  | a glyph before the name |
-| `data-input-many` | boolean |  | the header's input takes several routes: its socket is a double height D |
-| `data-input-routed` | boolean |  | a route joins the header's input: its socket is filled, else hollow |
+| `data-input-connected` | boolean |  | a connection joins the header's input: its socket is filled, else hollow |
+| `data-input-many` | boolean |  | the header's input takes several connections: its socket is a double height D |
 | `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value \| object \| boolean \| any: an input is a D, its type in its ink |
 | `data-inputs` | number |  |  |
-| `data-inputs-routed` | number |  |  |
-| `data-joined` | boolean |  | joined to what is picked: downstream of a picked node, at an end of a picked route, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it |
+| `data-inputs-connected` | number |  |  |
+| `data-joined` | boolean |  | joined to what is picked: downstream of a picked node, at an end of a picked connection, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it |
 | `data-linked` | boolean |  | a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
-| `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
+| `data-output-connected` | boolean |  | a connection leaves the header's output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a circle) |
 | `data-outputs` | number |  |  |
-| `data-outputs-routed` | number |  |  |
+| `data-outputs-connected` | number |  |  |
 | `data-resizable` | boolean |  | the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way |
 | `data-reveal` | boolean |  | the hidden sockets show, as on a hover: a line is being dragged. Its host writes it |
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
@@ -132,6 +132,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseRouted?, heading?, hideUnconnected?, icon?, inputMany?, inputRouted?, inputSocket?, inputs?, inputsRouted?, joined?, linked?, locked?, outputRouted?, outputSocket?, outputs?, outputsRouted?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
+`{ active?, badge?, branches?, caption?, category?, collapsed?, current?, description?, falseConnected?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

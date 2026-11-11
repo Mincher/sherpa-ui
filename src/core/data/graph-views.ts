@@ -17,7 +17,7 @@
  * - pagesOf — The pages a `query` graph View offers: every Context with a definition, in the app's order.
  * - pageRows — The graph chip's rows over the pages: one each, none a copy, and no New graph….
  * - newGraph — A new, empty entity of a type, saved through the shelf under a free id, name and tags.
- * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes, ties and frames.
+ * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its connections, ties and frames.
  * - saveGraph — Save the graph on a canvas as the open entity's, its own tags if given: a preset is refused.
  * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named and tagged, under a free id.
  */
@@ -118,17 +118,17 @@ export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' |
   const id = freeId(label, taken.map((e) => e.id), type.id);
   const description = named.description?.trim();
   const entity: Entity = {
-    v: 1, type: type.id, id, label, ...(description ? { description } : {}), ...(tidyTags(named.tags).length ? { tags: tidyTags(named.tags) } : {}),
-    graph: { nodes: [], routes: [] },
+    v: 2, type: type.id, id, label, ...(description ? { description } : {}), ...(tidyTags(named.tags).length ? { tags: tidyTags(named.tags) } : {}),
+    graph: { nodes: [], connections: [] },
     ...(type.defaults ? { settings: structuredClone(type.defaults) } : {}),
   };
   return await shelf.save(entity) ? id : undefined;
 }
 
-/** What a canvas's workflow keeps as an entity's graph: its own nodes (not `#in` and `#out`), its routes, ties and frames. */
-export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>): EntityGraph {
+/** What a canvas's workflow keeps as an entity's graph: its own nodes (not `#in` and `#out`), its connections, ties and frames. */
+export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'connections' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>): EntityGraph {
   return {
-    nodes: workflow.nodes.filter((n) => !n.id.startsWith('#')), routes: workflow.routes ?? [],
+    nodes: workflow.nodes.filter((n) => !n.id.startsWith('#')), connections: workflow.connections ?? [],
     ...(workflow.ties?.length ? { ties: workflow.ties } : {}),
     ...(workflow.frames?.length ? { frames: workflow.frames } : {}),
     // Its stages and swimlanes, as its frames: a Save that dropped them lost them on the next load (TODO 933).

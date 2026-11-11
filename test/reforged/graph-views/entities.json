@@ -1,16 +1,16 @@
 {
-  "$schema": "../../../schemas/entities.v1.json",
+  "$schema": "../../../schemas/entities.v2.json",
   "v": 1,
   "entities": {
     "shipped": {
-      "v": 1, "type": "preset-filter", "id": "shipped", "label": "Shipped",
+      "v": 2, "type": "preset-filter", "id": "shipped", "label": "Shipped",
       "graph": {
         "nodes": [
           { "id": "start", "kind": "source", "x": 0, "y": 0, "values": { "store": "customers" } },
           { "id": "field", "kind": "field", "x": 360, "y": 0, "values": { "field": "status" } },
           { "id": "status", "kind": "condition", "x": 720, "y": 0, "values": { "type": "eq", "b": "active" } }
         ],
-        "routes": [
+        "connections": [
           { "from": "start/rows", "to": "field" },
           { "from": "field/field", "to": "status" },
           { "from": "status", "to": "#out/where" }

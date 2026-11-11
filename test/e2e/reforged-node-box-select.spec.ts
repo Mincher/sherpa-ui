@@ -7,7 +7,7 @@ import { test, expect, type Page } from './harness';
  * Delete cuts them in one. Panning moves to Space + drag, the middle button, the wheel and the Pan
  * tool. The Query editor selects and highlights, and refuses a cut in words. Real pointer and keys.
  */
-const PATHS = '#cv > svg.graph-routes path[data-from]';
+const PATHS = '#cv > svg.graph-connectors path[data-from]';
 
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -20,11 +20,11 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const node = (id: string, kind: string, x: number, y: number) => ({ id, kind, x, y, heading: id });
-    const flow = { v: 2 as const, id: 'z', nodes: [
+    const flow = { v: 3 as const, id: 'z', nodes: [
       node('s1', 'source', 0, 0), node('e1', 'output', 700, 0),
       node('s2', 'source', 0, 220), node('e2', 'output', 700, 220),
       node('s3', 'source', 0, 440), node('e3', 'output', 700, 440),
-    ], routes: [1, 2, 3].map((n) => ({ from: `s${n}/rows`, to: `e${n}` })) };
+    ], connections: [1, 2, 3].map((n) => ({ from: `s${n}/rows`, to: `e${n}` })) };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'],
@@ -36,14 +36,14 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-type Ed = { workflow(): { ties?: { routes: unknown[] }[]; routes?: unknown[]; nodes: { id: string; x: number }[] }; undo(): boolean };
+type Ed = { workflow(): { ties?: { connections: unknown[] }[]; connections?: unknown[]; nodes: { id: string; x: number }[] }; undo(): boolean };
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const flow = (page: Page) => page.evaluate(() => (window as never as { ed: Ed }).ed.workflow());
 const box = (page: Page, selector: string) => page.evaluate((sel) => { const b = document.querySelector(sel)!.getBoundingClientRect(); return { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; }, selector);
 const picked = (page: Page) => page.evaluate((sel) => ({
-  routes: [...document.querySelectorAll(`${sel}[data-selected]`)].map((p) => p.getAttribute('data-from')),
+  connections: [...document.querySelectorAll(`${sel}[data-selected]`)].map((p) => p.getAttribute('data-from')),
   nodes: [...document.querySelectorAll('#cv sherpa-node[data-current]')].map((n) => n.getAttribute('data-heading')),
-  count: document.querySelector('sherpa-node-toolbar')!.getAttribute('data-picked-routes'),
+  count: document.querySelector('sherpa-node-toolbar')!.getAttribute('data-picked-connections'),
 }), PATHS);
 const view = (page: Page) => page.evaluate(() => (document.getElementById('cv') as HTMLElement & { view: { x: number; y: number; zoom: number } }).view);
 async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, number], hold?: () => Promise<void>): Promise<void> {
@@ -55,7 +55,7 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
   await page.mouse.up();
   await settle(page);
 }
-/** A box in the gap between the stores and the outputs, from above the first connector's middle to below the last's, and of the given routes. */
+/** A box in the gap between the stores and the outputs, from above the first connector's middle to below the last's, and of the given connections. */
 async function gap(page: Page, first = 1, last = 3): Promise<{ from: [number, number]; to: [number, number] }> {
   const a = await box(page, `${PATHS}[data-from="s${first}/rows"]`);
   const c = await box(page, `${PATHS}[data-from="s${last}/rows"]`);
@@ -77,7 +77,7 @@ test('a left drag on blank canvas draws the marquee, then picks the three connec
   expect(mid.boxing).toBe(true);
   expect(mid.rect!.w).toBeGreaterThan(40);
   expect(mid.rect!.h).toBeGreaterThan(200);
-  expect(await picked(page)).toEqual({ routes: ['s1/rows', 's2/rows', 's3/rows'], nodes: [], count: '3' });
+  expect(await picked(page)).toEqual({ connections: ['s1/rows', 's2/rows', 's3/rows'], nodes: [], count: '3' });
   expect(await page.evaluate(() => document.getElementById('cv')!.matches(':state(boxing)'))).toBe(false);
   // The Tie tool says how many are picked.
   expect(await page.evaluate(() => document.querySelector('sherpa-node-toolbar')!.shadowRoot!.querySelector('.tie')!.getAttribute('data-tip'))).toBe('Tie 3 connectors (T)');
@@ -95,7 +95,7 @@ test('a box picks a node only when the WHOLE node is inside it; a box that only 
   await drag(page, [n.left - 14, n.top - 14], [n.right + 14, n.bottom + 14]);
   const whole = await picked(page);
   expect(whole.nodes).toEqual(['s1']);
-  expect(whole.routes).toEqual([]);
+  expect(whole.connections).toEqual([]);
 });
 
 test('a box that encloses a node picks only nodes; one that encloses none picks only the connectors it crosses, any part of them', async ({ page }) => {
@@ -105,27 +105,27 @@ test('a box that encloses a node picks only nodes; one that encloses none picks 
   await drag(page, [n.left - 14, n.top - 14], [Math.max(three.to[0], n.right + 14), n.bottom + 14]);
   const mixed = await picked(page);
   expect(mixed.nodes).toEqual(['s1']);
-  expect(mixed.routes).toEqual([]);
+  expect(mixed.connections).toEqual([]);
   // A thin box over the middle of one connector, enclosing no node: that connector, and no node.
   const one = await gap(page, 2, 2);
   await drag(page, one.from, one.to);
-  expect(await picked(page)).toMatchObject({ routes: ['s2/rows'], nodes: [], count: '1' });
+  expect(await picked(page)).toMatchObject({ connections: ['s2/rows'], nodes: [], count: '1' });
 });
 
 test('Shift adds to the pick, a plain box replaces it, and a click on blank clears it', async ({ page }) => {
   const one = await gap(page, 1, 1);
   const three = await gap(page, 3, 3);
   await drag(page, one.from, one.to);
-  expect((await picked(page)).routes).toEqual(['s1/rows']);
+  expect((await picked(page)).connections).toEqual(['s1/rows']);
   await page.keyboard.down('Shift');
   await drag(page, three.from, three.to);
   await page.keyboard.up('Shift');
-  expect((await picked(page)).routes).toEqual(['s1/rows', 's3/rows']);
+  expect((await picked(page)).connections).toEqual(['s1/rows', 's3/rows']);
   await drag(page, three.from, three.to);
-  expect((await picked(page)).routes).toEqual(['s3/rows']);
+  expect((await picked(page)).connections).toEqual(['s3/rows']);
   await page.mouse.click(three.from[0], three.from[1] - 20);
   await settle(page);
-  expect(await picked(page)).toEqual({ routes: [], nodes: [], count: '0' });
+  expect(await picked(page)).toEqual({ connections: [], nodes: [], count: '0' });
 });
 
 const primary = (page: Page) => page.evaluate(() => /mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control');
@@ -138,18 +138,18 @@ async function around(page: Page, id: string): Promise<{ from: [number, number];
 test('Shift: a box that encloses a node and crosses connectors picks BOTH, added to the pick', async ({ page }) => {
   const two = await gap(page, 2, 2);
   await drag(page, two.from, two.to);
-  expect((await picked(page)).routes).toEqual(['s2/rows']);
+  expect((await picked(page)).connections).toEqual(['s2/rows']);
   const s1 = await around(page, 's1');
   await page.keyboard.down('Shift');
   await drag(page, s1.from, s1.to);
   await page.keyboard.up('Shift');
   const now = await picked(page);
   expect(now.nodes).toEqual(['s1']);
-  expect([...now.routes].sort()).toEqual(['s1/rows', 's2/rows']);
+  expect([...now.connections].sort()).toEqual(['s1/rows', 's2/rows']);
   expect(now.count).toBe('2');
   // A plain box over the same place: the node only, and the pick is replaced.
   await drag(page, s1.from, s1.to);
-  expect(await picked(page)).toMatchObject({ nodes: ['s1'], routes: [] });
+  expect(await picked(page)).toMatchObject({ nodes: ['s1'], connections: [] });
 });
 
 test('Ctrl (Cmd on a Mac): a box removes the picked connectors and nodes it covers, and leaves the rest', async ({ page }) => {
@@ -167,17 +167,17 @@ test('Ctrl (Cmd on a Mac): a box removes the picked connectors and nodes it cove
   await page.keyboard.up(key);
   const after = await picked(page);
   expect(after.nodes).toEqual(['s1']);
-  expect([...after.routes].sort()).toEqual(['s1/rows', 's3/rows']);
+  expect([...after.connections].sort()).toEqual(['s1/rows', 's3/rows']);
   // Over s1 and its connector: both go; s3's stays.
   await page.keyboard.down(key);
   await drag(page, s1.from, s1.to);
   await page.keyboard.up(key);
-  expect(await picked(page)).toMatchObject({ nodes: [], routes: ['s3/rows'], count: '1' });
+  expect(await picked(page)).toMatchObject({ nodes: [], connections: ['s3/rows'], count: '1' });
   // Over things that are not picked: nothing changes.
   await page.keyboard.down(key);
   await drag(page, two.from, two.to);
   await page.keyboard.up(key);
-  expect(await picked(page)).toMatchObject({ nodes: [], routes: ['s3/rows'], count: '1' });
+  expect(await picked(page)).toMatchObject({ nodes: [], connections: ['s3/rows'], count: '1' });
   // Shift and Ctrl together remove too.
   const three = await gap(page, 3, 3);
   await page.keyboard.down('Shift');
@@ -185,7 +185,7 @@ test('Ctrl (Cmd on a Mac): a box removes the picked connectors and nodes it cove
   await drag(page, three.from, three.to);
   await page.keyboard.up(key);
   await page.keyboard.up('Shift');
-  expect((await picked(page)).routes).toEqual([]);
+  expect((await picked(page)).connections).toEqual([]);
 });
 
 test('the marquee shows its mode while dragging, and a key pressed mid-drag changes it', async ({ page }) => {
@@ -221,9 +221,9 @@ test('Shift+C adds the connectors of the picked nodes to the pick; Alt+C takes t
   await drag(page, three.from, three.to);
   await page.locator('#cv > sherpa-node[data-heading="s2"] >> .header[role="button"]').focus();
   await key(page, 'Shift+C');
-  expect((await picked(page)).routes.sort()).toEqual(['s2/rows', 's3/rows']);
+  expect((await picked(page)).connections.sort()).toEqual(['s2/rows', 's3/rows']);
   await key(page, 'Alt+c');
-  expect((await picked(page)).routes).toEqual(['s3/rows']);
+  expect((await picked(page)).connections).toEqual(['s3/rows']);
 });
 
 test('a drag ON a node still moves it; and a drag that starts on blank does not', async ({ page }) => {
@@ -231,7 +231,7 @@ test('a drag ON a node still moves it; and a drag that starts on blank does not'
   const before = (await flow(page)).nodes.find((x) => x.id === 's1')!.x;
   await drag(page, [n.left + 40, n.top + 12], [n.left + 100, n.top + 12]);
   expect((await flow(page)).nodes.find((x) => x.id === 's1')!.x).toBeGreaterThan(before);
-  expect((await picked(page)).routes).toEqual([]);
+  expect((await picked(page)).connections).toEqual([]);
 });
 
 test('Space + drag, the middle button, the wheel and the Pan tool pan; a plain drag does not', async ({ page }) => {
@@ -279,7 +279,7 @@ test('a box over three connectors, then T: ONE tie across all three, and Undo ta
   await key(page, 't');
   const w = await flow(page);
   expect(w.ties).toHaveLength(1);
-  expect(w.ties![0]!.routes).toHaveLength(3);
+  expect(w.ties![0]!.connections).toHaveLength(3);
   await page.keyboard.press(`${await primary(page)}+z`);
   await settle(page);
   expect((await flow(page)).ties ?? []).toHaveLength(0);
@@ -289,30 +289,30 @@ test('a box over three connectors, then Delete: all three are cut as ONE step, a
   const g = await gap(page);
   await drag(page, g.from, g.to);
   await key(page, 'Delete');
-  expect((await flow(page)).routes ?? []).toHaveLength(0);
+  expect((await flow(page)).connections ?? []).toHaveLength(0);
   expect((await picked(page)).count).toBe('0');
   await page.keyboard.press(`${await primary(page)}+z`);
   await settle(page);
-  expect((await flow(page)).routes).toHaveLength(3);
+  expect((await flow(page)).connections).toHaveLength(3);
 });
 
 test('with no pointer: C picks the connectors of the picked nodes, and Escape lets them go', async ({ page }) => {
   await page.locator('#cv > sherpa-node[data-heading="s2"] >> .header[role="button"]').focus();
   await key(page, 'c');
-  expect((await picked(page)).routes).toEqual(['s2/rows']);
+  expect((await picked(page)).connections).toEqual(['s2/rows']);
   await key(page, 't');
   expect((await flow(page)).ties).toHaveLength(1);
   await key(page, 'Escape');
-  expect((await picked(page)).routes).toEqual([]);
+  expect((await picked(page)).connections).toEqual([]);
 });
 
 test('Shift-click on a connector adds it to the pick, and takes it off', async ({ page }) => {
-  const hit = (from: string) => page.locator(`#cv > svg.graph-routes polyline.graph-hit[data-from="${from}"]`).first();
+  const hit = (from: string) => page.locator(`#cv > svg.graph-connectors polyline.graph-hit[data-from="${from}"]`).first();
   await hit('s1/rows').dispatchEvent('click');
   await hit('s2/rows').dispatchEvent('click', { shiftKey: true });
-  expect((await picked(page)).routes).toEqual(['s1/rows', 's2/rows']);
+  expect((await picked(page)).connections).toEqual(['s1/rows', 's2/rows']);
   await hit('s1/rows').dispatchEvent('click', { shiftKey: true });
-  expect((await picked(page)).routes).toEqual(['s2/rows']);
+  expect((await picked(page)).connections).toEqual(['s2/rows']);
 });
 
 test('the Query editor selects and highlights what the box encloses or crosses; a cut is refused in words, once', async ({ page }) => {
@@ -337,19 +337,19 @@ test('the Query editor selects and highlights what the box encloses or crosses; 
     q.panTo(40, 40);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
-  const sel = '#q > svg.graph-routes path[data-from]';
+  const sel = '#q > svg.graph-connectors path[data-from]';
   const b = await page.evaluate((s) => [...document.querySelectorAll(s)].map((p) => { const r = p.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }; }), sel);
   expect(b.length).toBeGreaterThan(1);
   const [left, top] = [Math.min(...b.map((r) => r.left)), Math.min(...b.map((r) => r.top))];
   const [right, bottom] = [Math.max(...b.map((r) => r.right)), Math.max(...b.map((r) => r.bottom))];
-  // A box over the middle of the routes, from blank canvas below them.
+  // A box over the middle of the connections, from blank canvas below them.
   await drag(page, [(left + right) / 2 - 5, bottom + 60], [(left + right) / 2 + 5, top - 5]);
   const n = await page.evaluate((s) => document.querySelectorAll(`${s}[data-selected]`).length, sel);
   expect(n).toBeGreaterThan(0);
   expect(await page.evaluate(() => document.getElementById('q')!.getAttribute('data-select-box'))).toBe('');
   await key(page, 'Delete');
-  expect(await page.evaluate(() => (window as never as { heard: string[] }).heard.filter((c) => c === 'query-route'))).toEqual(['query-route']);
-  // The routes are still drawn.
+  expect(await page.evaluate(() => (window as never as { heard: string[] }).heard.filter((c) => c === 'query-connection'))).toEqual(['query-connection']);
+  // The connections are still drawn.
   expect(await page.evaluate((s) => document.querySelectorAll(s).length, sel)).toBe(b.length);
 });
 

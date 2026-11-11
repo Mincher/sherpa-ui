@@ -8089,7 +8089,7 @@
           "attributes": [
             {
               "name": "data-collapsed",
-              "description": "its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-routed, data-output-at-routed  the same, among the routed only; unset, the socket is not routed",
+              "description": "its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-connected, data-output-at-connected  the same, among the connected only; unset, the socket is not connected",
               "type": {
                 "text": "boolean"
               }
@@ -8101,21 +8101,21 @@
               }
             },
             {
-              "name": "data-input-at-routed",
+              "name": "data-input-at-connected",
               "type": {
                 "text": "number"
               }
             },
             {
-              "name": "data-input-many",
-              "description": "the input takes several routes: its socket is a double height D",
+              "name": "data-input-connected",
+              "description": "a connection joins the input: its socket is filled, else hollow",
               "type": {
                 "text": "boolean"
               }
             },
             {
-              "name": "data-input-routed",
-              "description": "a route joins the input: its socket is filled, else hollow",
+              "name": "data-input-many",
+              "description": "the input takes several connections: its socket is a double height D",
               "type": {
                 "text": "boolean"
               }
@@ -8148,14 +8148,14 @@
               }
             },
             {
-              "name": "data-output-at-routed",
+              "name": "data-output-at-connected",
               "type": {
                 "text": "number"
               }
             },
             {
-              "name": "data-output-routed",
-              "description": "a route leaves the output: its socket is filled, else hollow",
+              "name": "data-output-connected",
+              "description": "a connection leaves the output: its socket is filled, else hollow",
               "type": {
                 "text": "boolean"
               }
@@ -8580,7 +8580,7 @@
             },
             {
               "name": "data-hide-unconnected",
-              "description": "Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor",
+              "description": "Collapsed nodes hide the sockets no connection joins: shown as pressed; written by the editor",
               "type": {
                 "text": "boolean"
               }
@@ -8607,7 +8607,7 @@
               }
             },
             {
-              "name": "data-picked-routes",
+              "name": "data-picked-connections",
               "description": "How many connectors are picked; written by the editor, said in the Tie tool's tip",
               "type": {
                 "text": "number"
@@ -8717,7 +8717,7 @@
             },
             {
               "name": "data-collapsed",
-              "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-routed, data-outputs-routed  the same, of the routed ones only: hiding the unconnected, the stacks hold these. Its host writes them",
+              "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them",
               "type": {
                 "text": "boolean"
               }
@@ -8737,8 +8737,8 @@
               }
             },
             {
-              "name": "data-false-routed",
-              "description": "a route leaves False: its socket is filled, else hollow",
+              "name": "data-false-connected",
+              "description": "a connection leaves False: its socket is filled, else hollow",
               "type": {
                 "text": "boolean"
               }
@@ -8752,7 +8752,7 @@
             },
             {
               "name": "data-hide-unconnected",
-              "description": "collapsed, a socket no route joins hides; a hover shows them. Its host writes it",
+              "description": "collapsed, a socket no connection joins hides; a hover shows them. Its host writes it",
               "type": {
                 "text": "boolean"
               }
@@ -8765,15 +8765,15 @@
               }
             },
             {
-              "name": "data-input-many",
-              "description": "the header's input takes several routes: its socket is a double height D",
+              "name": "data-input-connected",
+              "description": "a connection joins the header's input: its socket is filled, else hollow",
               "type": {
                 "text": "boolean"
               }
             },
             {
-              "name": "data-input-routed",
-              "description": "a route joins the header's input: its socket is filled, else hollow",
+              "name": "data-input-many",
+              "description": "the header's input takes several connections: its socket is a double height D",
               "type": {
                 "text": "boolean"
               }
@@ -8792,14 +8792,14 @@
               }
             },
             {
-              "name": "data-inputs-routed",
+              "name": "data-inputs-connected",
               "type": {
                 "text": "number"
               }
             },
             {
               "name": "data-joined",
-              "description": "joined to what is picked: downstream of a picked node, at an end of a picked route, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it",
+              "description": "joined to what is picked: downstream of a picked node, at an end of a picked connection, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it",
               "type": {
                 "text": "boolean"
               }
@@ -8819,8 +8819,8 @@
               }
             },
             {
-              "name": "data-output-routed",
-              "description": "a route leaves the header's output: its socket is filled, else hollow",
+              "name": "data-output-connected",
+              "description": "a connection leaves the header's output: its socket is filled, else hollow",
               "type": {
                 "text": "boolean"
               }
@@ -8839,7 +8839,7 @@
               }
             },
             {
-              "name": "data-outputs-routed",
+              "name": "data-outputs-connected",
               "type": {
                 "text": "number"
               }

@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * A node's P4 rows (plan 749): Is one of takes TAGS, typed by real keys; where its Field's values are known
- * the tags are CLOSED, and a stranger is refused and said; a Value › List routed in OVERRIDES them, read
+ * the tags are CLOSED, and a stranger is refused and said; a Value › List connected in OVERRIDES them, read
  * only, and cut gives its own back (D7). A Start is a date and time that reads in words, picked from a
  * calendar or typed; a row's own fault is drawn in it, red, in words, and a focus and a blur leave it.
  * TRAP T-a-row-says-its-own-fault · TRAP T-a-host-error-is-the-hosts
@@ -24,10 +24,10 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-const BIND = `async (routes, plan = [], status = ['active'], start = '2024-01-12T09:30', places = 2) => {
+const BIND = `async (connections, plan = [], status = ['active'], start = '2024-01-12T09:30', places = 2) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 2, id: 'g', nodes: [
+  const flow = { v: 3, id: 'g', nodes: [
     { id: 'l', kind: 'value', x: 0, y: 0, heading: 'Plans', values: { type: 'list', value: ['Team', 'Free'] } },
     { id: 'p', kind: 'condition', x: 330, y: 0, heading: 'By plan', values: { type: 'in', ...(plan.length ? { b: plan } : {}) } },
     { id: 's', kind: 'condition', x: 660, y: 0, heading: 'By status', values: { type: 'in', b: status } },
@@ -36,7 +36,7 @@ const BIND = `async (routes, plan = [], status = ['active'], start = '2024-01-12
     { id: 'm', kind: 'math', x: 330, y: 440, heading: 'Round', values: { type: 'round', places } },
     { id: 'fp', kind: 'field', x: 660, y: 440, heading: 'Plan', values: { field: 'plan' } },
     { id: 'fs', kind: 'field', x: 880, y: 440, heading: 'Status', values: { field: 'status' } },
-  ], routes: [{ from: 'fp/field', to: 'p' }, { from: 'fs/field', to: 's' }, ...routes] };
+  ], connections: [{ from: 'fp/field', to: 'p' }, { from: 'fs/field', to: 's' }, ...connections] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] }, plan: { label: 'Plan' } } }, rowsFrom: 'customers',
@@ -46,8 +46,8 @@ const BIND = `async (routes, plan = [], status = ['active'], start = '2024-01-12
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }`;
-/** Routes, then Is one of's own values on Plan and on Status, the Start, and Places. */
-const bind = (page: Page, routes: unknown[] = [], ...rest: unknown[]) => page.evaluate(`(${BIND})(...${JSON.stringify([routes, ...rest])})`);
+/** Connections, then Is one of's own values on Plan and on Status, the Start, and Places. */
+const bind = (page: Page, connections: unknown[] = [], ...rest: unknown[]) => page.evaluate(`(${BIND})(...${JSON.stringify([connections, ...rest])})`);
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const values = (page: Page) => page.evaluate(`Object.fromEntries(window.editor.workflow().nodes.map((n) => [n.id, n.values ?? null]))`) as Promise<Record<string, Record<string, unknown>>>;
 const field = (heading: string, name: string) => `#root sherpa-node[data-heading="${heading}"] sherpa-input-text[name="${name}"]`;
@@ -110,7 +110,7 @@ test('a CLOSED list refuses a stranger and says so; a known value, typed in any 
   expect(await rows()).toEqual([['trial', true], ['active', false]]);
 });
 
-test('a Value › List routed into Is one of OVERRIDES its tags (D7): read only, its own kept; cut, they are back', async ({ page }) => {
+test('a Value › List connected to Is one of OVERRIDES its tags (D7): read only, its own kept; cut, they are back', async ({ page }) => {
   await bind(page, [{ from: 'l/value', to: 'p/b' }], ['Pro']);
   expect(await shown(page, 'By plan', 'b')).toMatchObject({ tags: ['Team', 'Free'], readonly: true });
   expect(await page.locator(field('By plan', 'b')).getAttribute('data-description')).toBe('Custom values, from Plans › Value');
@@ -119,7 +119,7 @@ test('a Value › List routed into Is one of OVERRIDES its tags (D7): read only,
   expect((await values(page))['p']!['b']).toEqual(['Pro']);
   // The connector picked and deleted: its own tags are back, and editable.
   const [mx, my] = await page.evaluate(() => {
-    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="p/b"]')!;
+    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-connectors polyline[data-to="p/b"]')!;
     const p = hit.points.getItem(Math.floor(hit.points.numberOfItems / 2));
     const m = hit.getScreenCTM()!;
     return [m.a * p.x + m.e, m.d * p.y + m.f];

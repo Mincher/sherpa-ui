@@ -19,7 +19,7 @@ const { nodeKindOf } = await import(new URL('node-library.js', core));
 const { nodeFlow } = await import(new URL('node-flow.js', core));
 
 const node = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
-const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
+const flow = (nodes, connections) => ({ v: 3, id: 'w', nodes, connections });
 
 test('Condition forks, in every type, and an AI node that expects True/false (plan 926 D2); every other shipped kind, type and Custom Node use does not', () => {
   const forks = Object.entries(NODE_KINDS).filter(([id, k]) => Object.keys(k.types ?? { one: 1 }).some((t) => resolveKind(k, t).branches)).map(([id]) => id);
@@ -39,17 +39,17 @@ test('a check sends a boolean from its header and no False; the rest send nothin
   for (const id of Object.keys(NODE_KINDS)) assert.equal(socketType(resolveKind(NODE_KINDS[id]), '#false', 'output'), id === 'condition' ? 'boolean' : undefined, `${id}: its False`);
 });
 
-test('a drawn node says it: only a Condition has `branches`; a True or a False route from another is refused in words', () => {
+test('a drawn node says it: only a Condition has `branches`; a True or a False connection from another is refused in words', () => {
   const g = workflowGraph(flow([node('s', 'source', { store: 'users' }), node('v', 'value'), node('m', 'math'), node('c', 'condition'), node('t', 'time')], []));
   assert.deepEqual(g.nodes.filter((n) => n.branches).map((n) => n.id), ['c']);
-  for (const [from, words] of [['s', 'a route leaves "s", which is no output socket'], ['v/#false', 'a route leaves "v/#false", which is no output socket'], ['m', 'a route leaves "m", which is no output socket']]) {
+  for (const [from, words] of [['s', 'a connection leaves "s", which is no output socket'], ['v/#false', 'a connection leaves "v/#false", which is no output socket'], ['m', 'a connection leaves "m", which is no output socket']]) {
     assert.deepEqual(workflowFaults(flow([node('s', 'source', { store: 'users' }), node('v', 'value'), node('m', 'math'), node('c', 'condition')], [{ from, to: 'c' }])), [words], from);
   }
   // A Condition's True and False, and a Time's Out, join And as booleans.
   assert.deepEqual(workflowFaults(flow([node('c', 'condition'), node('t', 'time'), node('j', 'condition', { type: 'and' })], [{ from: 'c', to: 'j' }, { from: 'c/#false', to: 'j' }, { from: 't', to: 'j' }])), []);
 });
 
-test('any kind can opt in again: `branches: true` draws True and False, routes both, and says them', () => {
+test('any kind can opt in again: `branches: true` draws True and False, connections both, and says them', () => {
   const kinds = { ...NODE_KINDS, gate: { heading: 'Gate', icon: 'flag', input: 'any', branches: true, rows: [], model: 'gate', graphs: ['workflow'] } };
   const w = flow([node('g', 'gate'), node('j', 'condition', { type: 'and' })], [{ from: 'g', to: 'j' }, { from: 'g/#false', to: 'j' }]);
   assert.deepEqual(workflowFaults(w, kinds), []);

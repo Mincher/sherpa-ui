@@ -2,14 +2,14 @@ import { test, expect, type Page } from './harness';
 
 /**
  * PORTALS — Will, TODOs 779 and 826. An In and an Out joined by a name, with no line between them. An In takes many
- * routes; every Out of its name draws a ROW per route into an In of the name, labelled from its source, and each row is
- * routed on alone. A portal is placed from the panel, named from the graph's names or New name…, and routed like any
- * node; a route in cut takes its row away, and Undo brings it and its route out back. Picking a portal lights every
+ * connections; every Out of its name draws a ROW per connection into an In of the name, labelled from its source, and each row is
+ * connected on alone. A portal is placed from the panel, named from the graph's names or New name…, and connected like any
+ * node; a connection in cut takes its row away, and Undo brings it and its connection out back. Picking a portal lights every
  * portal of its name, In and Out alike, in the picked look; its Name row says how many match. Rename renames the name
- * on every portal; a name or a route that makes a loop is refused. Real pointer and keys; the platform's own select.
+ * on every portal; a name or a connection that makes a loop is refused. Real pointer and keys; the platform's own select.
  * TRAP T-a-portal-hop-is-resolved-once
  */
-type Flow = { nodes: { id: string; kind: string; heading?: string; values?: Record<string, unknown> }[]; routes: { from: string; to: string }[] };
+type Flow = { nodes: { id: string; kind: string; heading?: string; values?: Record<string, unknown> }[]; connections: { from: string; to: string }[] };
 type Ed = { workflow(): Flow; undo(): boolean; save(): boolean };
 
 test.beforeEach(async ({ page }) => {
@@ -33,23 +33,23 @@ test.beforeEach(async ({ page }) => {
 const node = (id: string, kind: string, x: number, y: number, values?: object, heading?: string) => ({ id, kind, x, y, ...(values ? { values } : {}), ...(heading ? { heading } : {}) });
 /** A Source and a Value, a Field and a Condition, far apart: the portals go between. */
 const BARE = {
-  v: 2, id: 'g',
+  v: 3, id: 'g',
   nodes: [
     node('start', 'source', 360, 0, { store: 'customers' }), node('v', 'value', 360, 300, { type: 'text', value: 'active' }),
     node('pick', 'field', 1160, 0, { field: 'status' }), node('eq', 'condition', 1160, 300, { type: 'eq' }),
   ],
-  routes: [],
+  connections: [],
 };
 /** Source → In "rows"; two Outs "rows", their row into the Field and the Count; an In "other" alone. */
 const LINKED = {
-  v: 2, id: 'g',
+  v: 3, id: 'g',
   nodes: [
     node('start', 'source', 0, 0, { store: 'customers' }), node('in', 'portal', 360, 0, { type: 'in', name: 'rows' }, 'In rows'),
     node('o1', 'portal', 720, 0, { type: 'out', name: 'rows' }, 'Out one'), node('o2', 'portal', 720, 300, { type: 'out', name: 'rows' }, 'Out two'),
     node('lone', 'portal', 360, 300, { type: 'in', name: 'other' }, 'In other'),
     node('pick', 'field', 1080, 0, { field: 'status' }), node('count', 'group', 1080, 300),
   ],
-  routes: [{ from: 'start/rows', to: 'in' }, { from: 'o1/@start/rows', to: 'pick' }, { from: 'o2/@start/rows', to: 'count' }],
+  connections: [{ from: 'start/rows', to: 'in' }, { from: 'o1/@start/rows', to: 'pick' }, { from: 'o2/@start/rows', to: 'count' }],
 };
 
 async function bind(page: Page, flow: object): Promise<void> {
@@ -75,7 +75,7 @@ const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((wind
 const cards = '#root sherpa-layout-canvas > sherpa-node';
 const card = (page: Page, heading: string, n = 0) => page.locator(`${cards}[data-heading="${heading}"]`).nth(n);
 /** The drawn lines, by what they join. */
-const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll<SVGPathElement>('#root svg.graph-routes path[data-from]')].map((p) => `${p.dataset['from']} → ${p.dataset['to']}`));
+const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll<SVGPathElement>('#root svg.graph-connectors path[data-from]')].map((p) => `${p.dataset['from']} → ${p.dataset['to']}`));
 /** A socket's middle on the screen: a card's header's, or one of its rows', by its words or, `[name]`, its field's name. */
 async function socket(page: Page, heading: string, side: 'input' | 'output', row?: string, n = 0): Promise<[number, number]> {
   return card(page, heading, n).evaluate((el, [s, r]) => {
@@ -111,9 +111,9 @@ const name = (page: Page, heading: string, n = 0) => card(page, heading, n).loca
 /** An Out's rows as drawn: each row's label, by the rows with an output and no field. */
 const rows = (page: Page, heading: string, n = 0) => card(page, heading, n).locator('sherpa-node-row').evaluateAll((els) =>
   els.filter((e) => e.hasAttribute('data-output-socket') && !e.querySelector('[name]')).map((e) => e.getAttribute('data-label')));
-const routes = async (page: Page) => (await flow(page)).routes.map((r) => `${r.from} → ${r.to}`);
+const connections = async (page: Page) => (await flow(page)).connections.map((r) => `${r.from} → ${r.to}`);
 
-test('two routes into one In make two rows on its Out, each routed on alone by the real pointer; no line joins the portals', async ({ page }) => {
+test('two connections into one In make two rows on its Out, each connected on alone by the real pointer; no line joins the portals', async ({ page }) => {
   await bind(page, BARE);
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;
   await place(page, 'portal', [box.x + 560, box.y + 160]);
@@ -135,26 +135,26 @@ test('two routes into one In make two rows on its Out, each routed on alone by t
   await expect(card(page, 'Portal')).toHaveAttribute('data-input-many', '');
   expect(await rows(page, 'Portal', 1)).toEqual(['Source › Results', 'Value › Value']);
   await expect(name(page, 'Portal', 1)).toHaveAttribute('data-description', '2 rows, from 1 In portal');
-  // Each row routed on alone: the rows into the Field, the Value into the Condition's Value B.
+  // Each row connected on alone: the rows into the Field, the Value into the Condition's Value B.
   await drag(page, await socket(page, 'Portal', 'output', 'Source › Results', 1), await socket(page, 'Field', 'input'));
   await drag(page, await socket(page, 'Portal', 'output', 'Value › Value', 1), await socket(page, 'Condition', 'input', '[name="b"]'));
   const made = ['start/rows → portal-1', 'v/value → portal-1', 'portal-2/@start/rows → pick', 'portal-2/@v/value → eq/b'];
-  expect(await routes(page)).toEqual(made);
+  expect(await connections(page)).toEqual(made);
   expect(await lines(page)).toEqual(made);
   await expect(card(page, 'Field')).not.toHaveAttribute('data-warning');
   await expect(card(page, 'Condition').locator('sherpa-input-text[name="b"]')).toHaveJSProperty('value', 'active');
   // Save hands them over.
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
   const saved = await page.evaluate(() => JSON.parse(JSON.stringify((window as never as { saved: Flow[] }).saved.at(-1))) as Flow);
-  expect(saved.routes.map((r) => `${r.from} → ${r.to}`)).toEqual(made);
+  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(made);
 });
 
-test('a route in cut takes its row away, and its route out is kept unseen; Undo brings both back', async ({ page }) => {
-  await bind(page, { ...LINKED, routes: [...LINKED.routes, { from: 'pick/field', to: 'lone' }] });
+test('a connection in cut takes its row away, and its connection out is kept unseen; Undo brings both back', async ({ page }) => {
+  await bind(page, { ...LINKED, connections: [...LINKED.connections, { from: 'pick/field', to: 'lone' }] });
   await card(page, 'In other').evaluate((el) => (el.shadowRoot!.querySelector('.header') as HTMLElement).focus());
-  // Picked by its connector, then Delete: the route from the Source into the In is cut.
+  // Picked by its connector, then Delete: the connection from the Source into the In is cut.
   const [mx, my] = await page.evaluate(() => {
-    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-from="start/rows"][data-to="in"]')!;
+    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-connectors polyline[data-from="start/rows"][data-to="in"]')!;
     const p = hit.points.getItem(Math.floor(hit.points.numberOfItems / 2));
     const m = hit.getScreenCTM()!;
     return [m.a * p.x + m.e, m.d * p.y + m.f];
@@ -164,8 +164,8 @@ test('a route in cut takes its row away, and its route out is kept unseen; Undo 
   await settle(page);
   expect(await rows(page, 'Out one')).toEqual([]);
   expect(await lines(page)).toEqual(['pick/field → lone']);
-  // The draft keeps the routes out of the gone rows; Save leaves them out.
-  expect(await routes(page)).toEqual(['o1/@start/rows → pick', 'o2/@start/rows → count', 'pick/field → lone']);
+  // The draft keeps the connections out of the gone rows; Save leaves them out.
+  expect(await connections(page)).toEqual(['o1/@start/rows → pick', 'o2/@start/rows → count', 'pick/field → lone']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.undo())).toBe(true);
   await settle(page);
   expect(await rows(page, 'Out one')).toEqual(['Source › Results']);
@@ -202,7 +202,7 @@ test('picking a portal lights every portal of its name, In and Out alike, in the
   await expect(name(page, 'In other')).toHaveAttribute('data-description', 'No Out portal has this name');
 });
 
-test('Rename, typed in the inspector, renames every portal of the name, one step: the rows and their routes stay', async ({ page }) => {
+test('Rename, typed in the inspector, renames every portal of the name, one step: the rows and their connections stay', async ({ page }) => {
   await bind(page, LINKED);
   await press(page, 'Out one');
   await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
@@ -223,17 +223,17 @@ test('Rename, typed in the inspector, renames every portal of the name, one step
   expect(await names()).toEqual([['in', 'rows'], ['o1', 'rows'], ['o2', 'rows'], ['lone', 'other']]);
 });
 
-test('a name or a route that would make a loop through a row is refused: the draft keeps what it had, and the select draws it back', async ({ page }) => {
-  // The Condition's rows into the In "back". The Out named "other" holds a route kept from a row it had, into the Count,
+test('a name or a connection that would make a loop through a row is refused: the draft keeps what it had, and the select draws it back', async ({ page }) => {
+  // The Condition's rows into the In "back". The Out named "other" holds a connection kept from a row it had, into the Count,
   // whose count is the Condition's Value B: named "back" again, that row would close a loop.
   const LOOP = {
-    v: 2, id: 'g',
+    v: 3, id: 'g',
     nodes: [
       node('start', 'source', 0, 0, { store: 'customers' }), node('pick', 'field', 360, 0, { field: 'status' }), node('test', 'condition', 720, 0, { type: 'eq' }),
       node('in', 'portal', 1080, 0, { type: 'in', name: 'back' }, 'In back'), node('out', 'portal', 0, 360, { type: 'out', name: 'other' }, 'Out'),
       node('out2', 'portal', 0, 620, { type: 'out', name: 'back' }, 'Out back'), node('count', 'group', 360, 360),
     ],
-    routes: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'test' }, { from: 'test/rows', to: 'in' }, { from: 'out/@test/rows', to: 'count' }, { from: 'count/count', to: 'test/b' }],
+    connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'test' }, { from: 'test/rows', to: 'in' }, { from: 'out/@test/rows', to: 'count' }, { from: 'count/count', to: 'test/b' }],
   };
   await bind(page, LOOP);
   await name(page, 'Out').locator('select').selectOption('back');
@@ -241,10 +241,10 @@ test('a name or a route that would make a loop through a row is refused: the dra
   expect((await flow(page)).nodes.find((n) => n.id === 'out')!.values).toEqual({ type: 'out', name: 'other' });
   await expect(name(page, 'Out')).toHaveJSProperty('value', 'other');
   // The other Out's row into the Count: the same loop, refused.
-  const before = await routes(page);
+  const before = await connections(page);
   expect(await rows(page, 'Out back')).toEqual(['Condition › Results']);
   await drag(page, await socket(page, 'Out back', 'output', 'Condition › Results'), await socket(page, 'Group', 'input'));
-  expect(await routes(page)).toEqual(before);
+  expect(await connections(page)).toEqual(before);
   expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/rows → in', 'count/count → test/b']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
 });

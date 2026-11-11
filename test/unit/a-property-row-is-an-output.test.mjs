@@ -20,7 +20,7 @@ const { workflowFaults, workflowGraph, sentFrom } = await import(new URL('workfl
 const { nodeFlow } = await import(new URL('node-flow.js', core));
 const { groupNodes, ungroupUse } = await import(new URL('node-group.js', core));
 
-const flow = (nodes, routes = []) => ({ v: 2, id: 'w', nodes, routes });
+const flow = (nodes, connections = []) => ({ v: 3, id: 'w', nodes, connections });
 const source = { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'customers' } };
 const at = (g, id) => g.nodes.find((n) => n.id === id);
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
@@ -55,7 +55,7 @@ test('a property row is output only: no control, no input, no value; one definit
   assert.deepEqual([NODE_KINDS.sort.rows, resolveKind(NODE_KINDS.condition, 'and').rows].flat().filter((r) => r.property && r.name !== 'rows'), []);
 });
 
-test('a property row sends a number before a run, as a Result does: it routes like any output, into a number or a value', () => {
+test('a property row sends a number before a run, as a Result does: it connects like any output, into a number or a value', () => {
   assert.deepEqual(givenAt({ kind: 'source' }, 'count', NODE_KINDS), { kind: 'number' });
   assert.deepEqual(readInput({ label: 'Value A', needs: 'number' }, { kind: 'number' }), { value: undefined });
   const w = flow([source, { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'add' } }, { id: 'f', kind: 'field', x: 300, y: 300, values: { field: 'status' } }],
@@ -73,7 +73,7 @@ test('a property row sends a number before a run, as a Result does: it routes li
   assert.deepEqual(nodeFlow(g, 's').outgoing.map((o) => [o.socket, o.type]), [['Results', 'object'], ['Count', 'value']]);
 });
 
-test('a property row routes through a portal as a row, and a Custom Node takes it as an output: Save as and Ungroup keep its route', () => {
+test('a property row connects through a portal as a row, and a Custom Node takes it as an output: Save as and Ungroup keep its connection', () => {
   const nodes = [source, { id: 'in', kind: 'portal', x: 300, y: 0, values: { type: 'in', name: 'n' } }, { id: 'out', kind: 'portal', x: 600, y: 0, values: { type: 'out', name: 'n' } },
     { id: 'm', kind: 'math', x: 900, y: 0, values: { type: 'add' } }];
   const w = flow(nodes, [{ from: 's/count', to: 'in' }, { from: 'out/@s/count', to: 'm/a' }]);
@@ -82,13 +82,13 @@ test('a property row routes through a portal as a row, and a Custom Node takes i
   assert.deepEqual(at(g, 'out').rows.filter((r) => r.name.startsWith('@')).map((r) => [r.label, r.output]), [['Source › Count', 'value']]);
   assert.deepEqual(said(g), {});
   assert.deepEqual(sentFrom(w, 's/count'), { kind: 'number' });
-  // Save as Custom Node on the Source and the Math: the route over the edge is a socket; Ungroup puts it back.
+  // Save as Custom Node on the Source and the Math: the connection over the edge is a socket; Ungroup puts it back.
   const lone = flow([source, nodes[3]], [{ from: 's/count', to: 'm/a' }]);
   const made = groupNodes(lone, ['s'], { v: 1, nodes: {} }, { label: 'Counted' });
   assert.ok(!('fault' in made), made.fault);
   assert.deepEqual(made.library.nodes[made.id].outputs.filter((o) => o.label === 'Source › Count').map((o) => o.type), ['value']);
   const back = ungroupUse(made.workflow, made.use, made.library);
-  assert.deepEqual(back.workflow.routes.map((r) => `${r.from} → ${r.to}`), ['s/count → m/a']);
+  assert.deepEqual(back.workflow.connections.map((r) => `${r.from} → ${r.to}`), ['s/count → m/a']);
 });
 
 test('a property gives a value or an object: a number, text or boolean a circle; a row, rows or a record a diamond; Count is a number like any other (Will, 2026-11-06)', async () => {
@@ -96,7 +96,7 @@ test('a property gives a value or an object: a number, text or boolean a circle;
   const sockets = Object.fromEntries(['number', 'value', 'boolean', 'object', 'list', 'rows', 'field'].map((g) => [g, propertyRow('p', 'P', g).output]));
   assert.deepEqual(sockets, { number: 'value', value: 'value', boolean: 'boolean', object: 'object', list: 'object', rows: 'object', field: 'object' });
   assert.deepEqual(propertyRow('count', 'Count'), { name: 'count', label: 'Count', output: 'value', gives: 'number', property: true });
-  // An object property routes into an input that takes an object, and a boolean one into a boolean's.
+  // An object property connections into an input that takes an object, and a boolean one into a boolean's.
   const kinds = { ...NODE_KINDS, hold: { heading: 'Hold', icon: 'folder', input: 'any', rows: [propertyRow('first', 'First', 'rows'), propertyRow('empty', 'Empty', 'boolean')], model: 'hold', graphs: ['workflow'] } };
   const w = flow([source, { id: 'h', kind: 'hold', x: 0, y: 0 }, { id: 'f', kind: 'field', x: 300, y: 0, values: { field: 'status' } }, { id: 'a', kind: 'condition', x: 300, y: 300, values: { type: 'and' } }],
     [{ from: 's/rows', to: 'h' }, { from: 'h/first', to: 'f' }, { from: 'h/empty', to: 'a' }]);
@@ -104,13 +104,13 @@ test('a property gives a value or an object: a number, text or boolean a circle;
   assert.deepEqual(said(workflowGraph(w, {}, kinds)), {});
 });
 
-test('a graph with a fault does not save: checkWorkflow says no, in words, for a saved collection and for a route from a node that has no True', async () => {
+test('a graph with a fault does not save: checkWorkflow says no, in words, for a saved collection and for a connection from a node that has no True', async () => {
   const { checkWorkflow } = await import(new URL('workflow.js', core));
   const { setReportSink } = await import(new URL('report.js', core)).catch(() => ({}));
   const old = flow([{ id: 'old', kind: 'collection', x: 0, y: 0, values: { type: 'sort' } }]);
   const noTrue = flow([source, { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'add' } }, { id: 'k', kind: 'sort', x: 600, y: 0 }], [{ from: 's/rows', to: 'k' }, { from: 'm', to: 'k' }]);
   void setReportSink;
   assert.deepEqual(workflowFaults(old), ['the node "old" is of the kind "collection", which is not one']);
-  assert.match(workflowFaults(noTrue).join('; '), /a route leaves "m", which is no output socket/);
+  assert.match(workflowFaults(noTrue).join('; '), /a connection leaves "m", which is no output socket/);
   assert.deepEqual([checkWorkflow(old), checkWorkflow(noTrue), checkWorkflow(flow([source]))], [false, false, true]);
 });

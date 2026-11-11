@@ -2,7 +2,7 @@
  * EVERY SHIPPED DEFINITION IS FREE OF FAULTS — Will, 2026-11-06 (TODO 835): "A graph with issues must NOT save ... FIX every
  * legacy definition in the repo and in Demos so it has no errors: delete or correct them. No read-time conversion." This
  * walks every workflow and entity file sherpa-ui ships, as a fixture or a harness's: each passes its own check, so none holds
- * a kind that is gone (a `collection`, a `store`, a `pick`) or a route from a socket that is not one. Demos walks its own.
+ * a kind that is gone (a `collection`, a `store`, a `pick`) or a connection from a socket that is not one. Demos walks its own.
  *
  *   node --test test/unit/every-shipped-definition-is-free-of-faults.test.mjs
  */

@@ -15,24 +15,24 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 ## Example
 
 ```html
-<sherpa-node data-heading="Filter" data-icon="filter" data-input-socket="object"><sherpa-node-row><sherpa-input-text data-label="Key" name="key" data-type="select"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="value" data-input-routed><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="boolean"></sherpa-node-row></sherpa-node>
+<sherpa-node data-heading="Filter" data-icon="filter" data-input-socket="object"><sherpa-node-row><sherpa-input-text data-label="Key" name="key" data-type="select"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="value" data-input-connected><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="boolean"></sherpa-node-row></sherpa-node>
 ```
 
 ## Attributes
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
-| `data-collapsed` | boolean |  | its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-routed, data-output-at-routed the same, among the routed only; unset, the socket is not routed |
+| `data-collapsed` | boolean |  | its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-connected, data-output-at-connected the same, among the connected only; unset, the socket is not connected |
 | `data-input-at` | number |  |  |
-| `data-input-at-routed` | number |  |  |
-| `data-input-many` | boolean |  | the input takes several routes: its socket is a double height D |
-| `data-input-routed` | boolean |  | a route joins the input: its socket is filled, else hollow |
+| `data-input-at-connected` | number |  |  |
+| `data-input-connected` | boolean |  | a connection joins the input: its socket is filled, else hollow |
+| `data-input-many` | boolean |  | the input takes several connections: its socket is a double height D |
 | `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value \| object \| boolean \| any: an input is a D, its type in its ink |
 | `data-label` | text |  | the row's name, when it has no field: a field names itself |
 | `data-message` | text |  | a message's first lines, read only, under its name: each {value} in it drawn in purple, its braces off |
 | `data-output-at` | number |  |  |
-| `data-output-at-routed` | number |  |  |
-| `data-output-routed` | boolean |  | a route leaves the output: its socket is filled, else hollow |
+| `data-output-at-connected` | number |  |  |
+| `data-output-connected` | boolean |  | a connection leaves the output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | an output socket on the end edge: value (a circle) \| object (a diamond) \| boolean (a circle) |
 | `data-property` | boolean |  | a property: its label reads in the input value's own type |
 | `data-socket-name` | text |  | the row's name, the first line of each socket's tip: a collapsed node shows no label |
@@ -76,6 +76,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, inputAt?, inputAtRouted?, inputMany?, inputRouted?, inputSocket?, label?, message?, outputAt?, outputAtRouted?, outputRouted?, outputSocket?, property?, socketName?, socketValue? }`
+`{ collapsed?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, message?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }`
 
 Its declared props by name: `label` sets data-label.

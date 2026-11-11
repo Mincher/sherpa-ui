@@ -145,7 +145,7 @@ test('the version is one header, on every request and every answer; a query body
   }
   assert.equal((await ask('QUERY', 'people', encodeQuery(), { 'Sherpa-Data': '2' })).status, 400);
   // A body's own `v` is no marker: it is not read.
-  assert.equal((await ask('QUERY', 'people', { v: 2 })).status, 200);
+  assert.equal((await ask('QUERY', 'people', { v: 3 })).status, 200);
 });
 
 // Plan 695 H5: an answer is the store's, and may be one reader's alone — no cache keeps it.

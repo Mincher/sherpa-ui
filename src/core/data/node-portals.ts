@@ -1,7 +1,7 @@
 /**
- * node-portals.ts — a PORTAL: an In and an Out joined by a name, with no line between them. An In takes many routes;
- * every Out of its name draws ONE ROW per route into any In of the name, `@` and the route's source, and each row is
- * routed on alone, as a Custom Node's Group Input is (763). The ONE resolver of a portal hop, which every reader of what
+ * node-portals.ts — a PORTAL: an In and an Out joined by a name, with no line between them. An In takes many connections;
+ * every Out of its name draws ONE ROW per connection into any In of the name, `@` and the connection's source, and each row is
+ * connected on alone, as a Custom Node's Group Input is (763). The ONE resolver of a portal hop, which every reader of what
  * flows reads through; the names, the matches, Rename, and the rules a Custom Node keeps. DOM-free. Will, TODOs 779, 826
  * · docs/history/plan-779-portals.md · docs/history/plan-826-portal-rows.md · TRAP T-a-portal-hop-is-resolved-once
  *
@@ -9,11 +9,11 @@
  * - PORTAL — The portal family's kind id.
  * - Portal — A node as a portal: its side and its name.
  * - portalOf — A node as a portal, a definition's or a drawn one; none, it is no portal.
- * - connectionRow — An Out's row for one route into an In of its name: `@` and the route's source address.
- * - connectionOf — The source a connection row names; none, the row is no connection's.
- * - FlowRoute — A route as the data flows: the portal it passes through, where it does.
- * - PortalFlow — A graph's routes as the data flows, each Out's rows, the routes a gone row keeps, and the warnings.
- * - portalFlow — The routes as the data flows: a route from an Out's row is one route from that row's source.
+ * - addressRow — An Out's row for one connection into an In of its name: `@` and the connection's source address.
+ * - addressOf — The source an address row names; none, the row names no source.
+ * - FlowConnection — A connection as the data flows: the portal it passes through, where it does.
+ * - PortalFlow — A graph's connections as the data flows, each Out's rows, the connections a gone row keeps, and the warnings.
+ * - portalFlow — The connections as the data flows: a connection from an Out's row is one connection from that row's source.
  * - portalNames — Every name a graph's portals hold, in the order met.
  * - nextPortalName — The next free name, `Portal N`.
  * - portalLinks — The other portals of a portal's name, by id.
@@ -22,7 +22,7 @@
  * - cutNames — The names a pick holds some, and not all, of the portals of.
  * - ungroupNames — The names a Custom Node's body brings out, each one the graph holds already taking the next free number.
  */
-import type { NodeRoute } from './node-kinds.js';
+import type { NodeConnection } from './node-kinds.js';
 
 /** A socket address's node and row, `node` or `node/row`: here, not imported, so node-kinds may import this file. */
 const nodeOf = (address: string): string => address.split('/', 1)[0]!;
@@ -48,50 +48,50 @@ export function portalOf(node: AnyNode | undefined): Portal | undefined {
   return { side: at('type') === 'out' ? 'out' : 'in', name: typeof name === 'string' ? name.trim() : '' };
 }
 
-/** An Out's row for one route into an In of its name: `@` and that route's source, so the same route back is the same row,
- *  and a route from it holds while the route into the In does. */
-export function connectionRow(source: string): string {
+/** An Out's row for one connection into an In of its name: `@` and that connection's source, so the same connection back is the same row,
+ *  and a connection from it holds while the connection into the In does. */
+export function addressRow(source: string): string {
   return `@${source}`;
 }
 
-/** The source address a connection row names; none, the row is no connection's. */
-export function connectionOf(row: string | undefined): string | undefined {
+/** The source address an address row names; none, the row names no source. */
+export function addressOf(row: string | undefined): string | undefined {
   return row?.startsWith('@') ? row.slice(1) : undefined;
 }
 
-/** A route as the data flows: the name of the portal it passes through, where it does. */
-export interface FlowRoute extends NodeRoute {
+/** A connection as the data flows: the name of the portal it passes through, where it does. */
+export interface FlowConnection extends NodeConnection {
   portal?: string;
 }
 
-/** A graph's routes as the data flows, each Out's rows, the routes a gone row keeps, and the warnings. */
+/** A graph's connections as the data flows, each Out's rows, the connections a gone row keeps, and the warnings. */
 export interface PortalFlow {
-  /** The routes as the data flows: none enters an In; one from an Out's row comes from that row's source, its name on it. */
-  routes: readonly FlowRoute[];
-  /** Each Out's rows, by id: the source of each route into an In of its name, in order, each once. */
+  /** The connections as the data flows: none enters an In; one from an Out's row comes from that row's source, its name on it. */
+  connections: readonly FlowConnection[];
+  /** Each Out's rows, by id: the source of each connection into an In of its name, in order, each once. */
   rows: ReadonlyMap<string, readonly string[]>;
-  /** The routes from a row no route into an In feeds now: the draft keeps them, unseen; Save leaves them out. */
-  orphans: readonly NodeRoute[];
+  /** The connections from a row no connection into an In feeds now: the draft keeps them, unseen; Save leaves them out. */
+  orphans: readonly NodeConnection[];
   /** A portal's own warning, in words: an Out of no name, or one no In names. */
   warnings: readonly { node: string; words: string }[];
 }
 
 /**
- * The routes as the data flows. Each route into an In of a name is a ROW on every Out of the name (`connectionRow`), and a
- * route from that row is one route from its source, as if routed straight: so 1-to-many, many-to-1 and many-to-many are
- * routes as any other, each row routed alone. An Out's row routed into an In of another name chains. A route from a row
- * no route feeds now is an orphan, kept. The ONE place a hop is resolved: every reader of what flows reads these routes,
+ * The connections as the data flows. Each connection into an In of a name is a ROW on every Out of the name (`addressRow`), and a
+ * connection from that row is one connection from its source, as if connected straight: so 1-to-many, many-to-1 and many-to-many are
+ * connections as any other, each row connected alone. An Out's row connected to an In of another name chains. A connection from a row
+ * no connection feeds now is an orphan, kept. The ONE place a hop is resolved: every reader of what flows reads these connections,
  * never the drawn ones. TRAP T-a-portal-hop-is-resolved-once
  */
-export function portalFlow(nodes: readonly AnyNode[], routes: readonly NodeRoute[]): PortalFlow {
+export function portalFlow(nodes: readonly AnyNode[], connections: readonly NodeConnection[]): PortalFlow {
   const portals = new Map(nodes.flatMap((n) => { const p = portalOf(n); return p ? [[n.id, p] as const] : []; }));
-  if (!portals.size) return { routes, rows: new Map(), orphans: [], warnings: [] };
+  if (!portals.size) return { connections, rows: new Map(), orphans: [], warnings: [] };
   const at = (address: string): Portal | undefined => portals.get(nodeOf(address));
   const ins = (name: string): Set<string> => new Set(name ? [...portals].filter(([, p]) => p.side === 'in' && p.name === name).map(([id]) => id) : []);
-  const fromRow = (address: string): string | undefined => (at(address) ? connectionOf(rowPart(address)) : undefined);
+  const fromRow = (address: string): string | undefined => (at(address) ? addressOf(rowPart(address)) : undefined);
   // An orphan feeds no In, so its Out's row goes, and what that row fed: read again until none goes.
-  let live = [...routes];
-  const orphans: NodeRoute[] = [];
+  let live = [...connections];
+  const orphans: NodeConnection[] = [];
   let rows = new Map<string, readonly string[]>();
   for (;;) {
     rows = new Map([...portals].flatMap(([id, p]) => {
@@ -105,7 +105,7 @@ export function portalFlow(nodes: readonly AnyNode[], routes: readonly NodeRoute
   }
   // A row's source, followed through an Out's row into another In: each step is a shorter address, so it ends.
   const source = (address: string): string => { const c = fromRow(address); return c === undefined ? address : source(c); };
-  const flow: FlowRoute[] = [];
+  const flow: FlowConnection[] = [];
   const seen = new Set<string>();
   for (const r of live) {
     if (at(r.to)?.side === 'in') continue;
@@ -116,9 +116,9 @@ export function portalFlow(nodes: readonly AnyNode[], routes: readonly NodeRoute
     flow.push(from === r.from ? r : { from, to: r.to, portal: at(r.from)!.name });
   }
   const warnings = [...portals].flatMap(([id, p]) => (p.side !== 'out' ? []
-    : !p.name ? [{ node: id, words: 'It has no name: pick one, or New name…, for a row per route into its In' }]
+    : !p.name ? [{ node: id, words: 'It has no name: pick one, or New name…, for a row per connection into its In' }]
       : !ins(p.name).size ? [{ node: id, words: `No In portal is named "${p.name}": it has no rows` }] : []));
-  return { routes: flow, rows, orphans, warnings };
+  return { connections: flow, rows, orphans, warnings };
 }
 
 /** Every name a graph's portals hold, in the order met. */

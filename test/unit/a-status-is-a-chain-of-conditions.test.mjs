@@ -27,7 +27,7 @@ const page = { v: 1, id: 'customers', source: { store: 'customers', fields: { sc
 const store = statusFields(new ArrayStore(rows, { key: 'id' }), { health });
 const g = queryGraph({ v: 1, scopes: {} }, page, { domains: store.domains });
 const node = (id) => g.nodes.find((n) => n.id === id);
-const into = (to) => g.routes.filter((r) => r.to === to).map((r) => r.from);
+const into = (to) => g.connections.filter((r) => r.to === to).map((r) => r.from);
 
 test('Health is 3 value rows, and per `when` a Field per field, a test per rule and an Or, chained by False into the next value\'s Fields', () => {
   const status = node('status-health');
@@ -44,7 +44,7 @@ test('Health is 3 value rows, and per `when` a Field per field, a test per rule 
     ['field-status-health.Watch-score', 'score', 'any'], ['field-status-health.Watch-openTickets', 'openTickets', 'any'],
   ]);
   // Each root's True into its value; At risk's False into each of Watch's Fields; Watch's False into the value no `when` names.
-  assert.deepEqual(g.routes.filter((r) => /^status-health\.[^.]+(\/#false)?$/.test(r.from)), [
+  assert.deepEqual(g.connections.filter((r) => /^status-health\.[^.]+(\/#false)?$/.test(r.from)), [
     { from: 'status-health.At risk', to: 'status-health/At risk' },
     { from: 'status-health.At risk/#false', to: 'field-status-health.Watch-score' },
     { from: 'status-health.At risk/#false', to: 'field-status-health.Watch-openTickets' },
@@ -77,14 +77,14 @@ test('the load lights At risk with its 43 rows, Watch with its 20, from the stor
   assert.deepEqual(lit, [['status-health', 63], ['status-health.At risk', 43], ['status-health.Watch', 20]]);
 });
 
-test('a PRESET\'s and a SAVED FILTER\'s conditions are Condition nodes, read only, routed into their row', () => {
+test('a PRESET\'s and a SAVED FILTER\'s conditions are Condition nodes, read only, connected to their row', () => {
   const def = { ...page, source: { ...page.source, scopes: { data: { presets: [{ id: 'big', label: 'Big', where: { score: { gt: 90 } } }] } } }, savedFilters: { low: { label: 'Low', query: { v: 1, scopes: { view: { where: { score: { lt: 50 } } } } } } } };
   const d = queryGraph({ v: 1, scopes: { data: { holds: [], readings: {} } } }, def);
   const big = d.nodes.find((n) => n.id === 'when-preset-data-big-score');
   const low = d.nodes.find((n) => n.id === 'when-saved-low-view:score');
   for (const n of [big, low]) assert.ok(n.kind === 'condition' && n.rows.filter((r) => r.name !== ROWS.name).every((r) => !r.editable), n.id);
-  assert.ok(d.routes.some((r) => r.from === big.id && r.to === 'preset-data-big/score'));
-  assert.ok(d.routes.some((r) => r.from === low.id && r.to === 'saved-low/view:score'));
+  assert.ok(d.connections.some((r) => r.from === big.id && r.to === 'preset-data-big/score'));
+  assert.ok(d.connections.some((r) => r.from === low.id && r.to === 'saved-low/view:score'));
   assert.deepEqual(queryGraphFaults(d), []);
 });
 
@@ -93,10 +93,10 @@ test('planted faults: a `when` that is no condition, a False into nothing, a Fal
   const drawn = queryGraph({ v: 1, scopes: {} }, page, { domains: bad });
   assert.deepEqual(drawn.nodes.filter((n) => n.kind === 'condition').map((n) => n.id), ['status-health.Watch', 'status-health.Watch.1', 'status-health.Watch.2'], 'a bad `when` draws no node');
   assert.ok(queryGraphFaults(drawn, bad).some((f) => /"At risk" is not a condition/.test(f)));
-  const dangling = { nodes: g.nodes, routes: [...g.routes, { from: 'status-health.Watch/#false', to: 'status-health.Ghost' }] };
+  const dangling = { nodes: g.nodes, connections: [...g.connections, { from: 'status-health.Watch/#false', to: 'status-health.Ghost' }] };
   assert.ok(queryGraphFaults(dangling).some((f) => /status-health\.Ghost/.test(f)));
-  const wrong = { nodes: g.nodes, routes: [...g.routes, { from: 'source/#false', to: 'status-health.Watch' }] };
+  const wrong = { nodes: g.nodes, connections: [...g.connections, { from: 'source/#false', to: 'status-health.Watch' }] };
   assert.ok(queryGraphFaults(wrong).some((f) => /no False/.test(f)));
-  const row = { nodes: g.nodes, routes: [...g.routes, { from: 'status-health.Watch/#false', to: 'status-health/Nope' }] };
+  const row = { nodes: g.nodes, connections: [...g.connections, { from: 'status-health.Watch/#false', to: 'status-health/Nope' }] };
   assert.ok(queryGraphFaults(row).some((f) => /row/.test(f)));
 });

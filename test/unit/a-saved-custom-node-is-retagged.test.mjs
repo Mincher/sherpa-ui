@@ -17,12 +17,12 @@ const ORG = {
   v: 1, label: 'Org permissions', tags: ['permissions'],
   inputs: [{ name: 'rows', type: 'object' }], outputs: [{ name: 'active', type: 'object' }],
   nodes: [{ id: 'active', kind: 'condition', x: 200, y: 0, values: { type: 'eq', b: 'active' } }, { id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
-  routes: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
+  connections: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
 };
 const library = () => ({ v: 1, nodes: { org: structuredClone(ORG), shipped: { ...structuredClone(ORG), label: 'Shipped', tags: ['checks'], preset: true } } });
 /** Two uses of one definition, and a preset's. */
 const flowOf = (lib) => ({
-  v: 2, id: 'g', nodes: [useOf(lib, 'org', { id: 'perm', x: 0, y: 0 }), useOf(lib, 'org', { id: 'perm2', x: 0, y: 300 }), useOf(lib, 'shipped', { id: 'own', x: 400, y: 0 })],
+  v: 3, id: 'g', nodes: [useOf(lib, 'org', { id: 'perm', x: 0, y: 0 }), useOf(lib, 'org', { id: 'perm2', x: 0, y: 300 }), useOf(lib, 'shipped', { id: 'own', x: 400, y: 0 })],
 });
 
 test('an edit of one use\'s tags edits its definition: every use of it shows them, and the workflow is untouched', () => {

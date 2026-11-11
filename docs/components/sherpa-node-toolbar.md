@@ -40,11 +40,11 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 | `data-can-zoom-picked` | boolean |  | Zoom to selection can be pressed: a node is picked; written by the editor |
 | `data-collapsed` | boolean |  | Every node is collapsed: Collapse all shows as pressed, and expands them; written by the editor |
 | `data-fetching` | boolean |  | A fetch is queued or running: its button shows it is busy, a second press is blocked; written by the editor |
-| `data-hide-unconnected` | boolean |  | Collapsed nodes hide the sockets no route joins: shown as pressed; written by the editor |
+| `data-hide-unconnected` | boolean |  | Collapsed nodes hide the sockets no connection joins: shown as pressed; written by the editor |
 | `data-lanes` | boolean |  | The workflow has swimlanes: shown as pressed; written by the editor |
 | `data-path-why` | text |  | Why Fetch and Play cannot be pressed, in words: their tip says it; written by the editor |
 | `data-paused` | boolean |  | A simulation is paused at its node: Play goes on, Pause is off; written by the editor |
-| `data-picked-routes` | number |  | How many connectors are picked; written by the editor, said in the Tie tool's tip |
+| `data-picked-connections` | number |  | How many connectors are picked; written by the editor, said in the Tie tool's tip |
 | `data-simulating` | boolean |  | A simulation is queued or running: Play waits, Pause and Stop can be pressed; written by the editor |
 | `data-tie` | boolean |  | The Zip tie tool is on; written by the editor, shown as pressed |
 
@@ -77,6 +77,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedRoutes?, simulating?, tie? }`
+`{ cached?, canArrange?, canCollapse?, canFetch?, canFrame?, canGroup?, canHide?, canLanes?, canPlay?, canRedo?, canSave?, canTie?, canUndo?, canUnfurl?, canZoomFit?, canZoomPicked?, collapsed?, fetching?, hideUnconnected?, lanes?, pathWhy?, paused?, pickedConnections?, simulating?, tie? }`
 
 Its declared props by name: `label` sets data-label.

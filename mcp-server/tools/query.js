@@ -4,9 +4,9 @@
  * is the data layer's own report. TRAP T-one-command-one-door
  *
  *   query_source      a page definition over rows or a localhost data path, each command asked: rows, total, groups, field state
- *   query_graph       a page's Query as nodes and routes, as the Node Editor draws it
- *   edit_query_graph  a node's edit or a new route, as the command it asks: the new Query and its saved definition
- *   workflow_graph    a workflow as nodes and routes, its faults, and the kinds a workflow runs
+ *   query_graph       a page's Query as nodes and connections, as the Node Editor draws it
+ *   edit_query_graph  a node's edit or a new connection, as the command it asks: the new Query and its saved definition
+ *   workflow_graph    a workflow as nodes and connections, its faults, and the kinds a workflow runs
  *   edit_workflow     a workflow after each edit, checked
  *
  * Map:
@@ -239,21 +239,21 @@ export function register(server) {
 
   server.registerTool('query_graph', {
     title: 'Draw a page\'s Query as nodes',
-    description: `A page's Query as the Node Editor draws it (\`queryGraph\`): its store, status fields, source, each scope with its presets, saved filters and conditions, its arrangement, presentation and components — each node's id, kind, rows (a row's \`editable\`, \`choices\` and \`hint\`), sockets and place, and the routes between them, as JSON. Opened as query_source opens it, after each command, which it takes as query_source does. Edit it with edit_query_graph. Each kind is in \`sherpa://node-kinds\`.`,
+    description: `A page's Query as the Node Editor draws it (\`queryGraph\`): its store, status fields, source, each scope with its presets, saved filters and conditions, its arrangement, presentation and components — each node's id, kind, rows (a row's \`editable\`, \`choices\` and \`hint\`), sockets and place, and the connections between them, as JSON. Opened as query_source opens it, after each command, which it takes as query_source does. Edit it with edit_query_graph. Each kind is in \`sherpa://node-kinds\`.`,
     inputSchema: {
       ...PAGE,
       components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The components the page binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own'),
     },
   }, act((dl, args, heard) => overPage(dl, args, heard, async (page) => {
     const graph = dl.queryGraph(page.source.query.draft, page.definition, graphFacts(dl, page, args.components));
-    const lines = [`${graph.nodes.length} nodes, ${graph.routes.length} routes. A row a reader may change is \`editable\`; edit_query_graph asks its command.`];
+    const lines = [`${graph.nodes.length} nodes, ${graph.connections.length} connections. A row a reader may change is \`editable\`; edit_query_graph asks its command.`];
     if (heard.length) lines.push('', `The data layer said (${heard.length}):`, ...heard.map(said));
     return shown(lines, { ...graph, asked: page.asked, reports: heard });
   })));
 
   server.registerTool('edit_query_graph', {
     title: 'Edit a page\'s Query by its nodes',
-    description: 'Each edit as the Node Editor makes it: a row\'s new value, `{ "node": "when-view-region", "row": "b", "value": ["EMEA"] }`, asks its command (`graphRequest`); a new route, `{ "from": "when-data-status", "to": "scope-view/status" }`, asks its move (`routeRequest`). Each command goes through `ask()`, the graph drawn again before the next edit. It gives each command asked, the new Query, and the page definition Save would write (`pageWithQuery`), checked by `checkPage`. A node or row the graph has not got, a row no command takes and a route the Query refuses are refused, in the data layer\'s words. Node ids are query_graph\'s.',
+    description: 'Each edit as the Node Editor makes it: a row\'s new value, `{ "node": "when-view-region", "row": "b", "value": ["EMEA"] }`, asks its command (`graphRequest`); a new connection, `{ "from": "when-data-status", "to": "scope-view/status" }`, asks its move (`connectionRequest`). Each command goes through `ask()`, the graph drawn again before the next edit. It gives each command asked, the new Query, and the page definition Save would write (`pageWithQuery`), checked by `checkPage`. A node or row the graph has not got, a row no command takes and a connection the Query refuses are refused, in the data layer\'s words. Node ids are query_graph\'s.',
     inputSchema: {
       ...PAGE,
       components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The components the page binds, as query_graph takes them'),
@@ -268,13 +268,13 @@ export function register(server) {
       const graph = dl.queryGraph(source.query.draft, definition, facts);
       let request;
       if ('from' in edit || 'to' in edit) {
-        const route = dl.routeRequest(graph, { from: String(edit.from), to: String(edit.to) }, facts);
-        if (route && 'refused' in route) throw new Error(route.refused);
-        if (!route) {
+        const connection = dl.connectionRequest(graph, { from: String(edit.from), to: String(edit.to) }, facts);
+        if (connection && 'refused' in connection) throw new Error(connection.refused);
+        if (!connection) {
           edited.push({ edit, asked: null });
           continue;
         }
-        request = route.request;
+        request = connection.request;
       } else {
         const node = graph.nodes.find((n) => n.id === edit.node);
         if (!node) throw new Error(`The Query graph has no node "${edit.node}". Its nodes: ${graph.nodes.map((n) => n.id).join(', ')}.`);
@@ -305,7 +305,7 @@ export function register(server) {
     const workflow = given(value, 'workflow');
     if (!dl.readWorkflow(workflow).workflow) {
       dl.checkWorkflow(workflow);
-      throw new Error('The workflow is not a workflow definition: { "v": 2, "id", "nodes", "routes" }.');
+      throw new Error('The workflow is not a workflow definition: { "v": 3, "id", "nodes", "connections" }.');
     }
     return workflow;
   };
@@ -313,23 +313,23 @@ export function register(server) {
 
   server.registerTool('workflow_graph', {
     title: 'Draw a workflow as nodes',
-    description: 'A workflow definition (workflow.v2) as nodes and routes (`workflowGraph`) — each node its kind\'s header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a route that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.',
+    description: 'A workflow definition (workflow.v3) as nodes and connections (`workflowGraph`) — each node its kind\'s header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a connection that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.',
     inputSchema: {
-      workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON: `{ "v": 2, "id", "nodes", "routes" }`'),
+      workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON: `{ "v": 3, "id", "nodes", "connections" }`'),
       ...FACTS,
     },
   }, act(async (dl, args, heard) => {
     const workflow = workflowOf(dl, args.workflow);
     const sound = dl.checkWorkflow(workflow);
     const graph = dl.workflowGraph(workflow, factsOf(args));
-    const lines = [`${graph.nodes.length} nodes, ${graph.routes.length} routes; ${sound ? 'no fault' : `${heard.length} fault(s)`}.`];
+    const lines = [`${graph.nodes.length} nodes, ${graph.connections.length} connections; ${sound ? 'no fault' : `${heard.length} fault(s)`}.`];
     if (heard.length) lines.push('', 'The data layer said:', ...heard.map(said));
     return shown(lines, { ...graph, kinds: workflowKinds(dl), reports: heard });
   }));
 
   server.registerTool('edit_workflow', {
     title: 'Edit a workflow',
-    description: 'A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v2. An edit is a row\'s value, `{ "node": "status", "row": "value", "value": "trial" }`; a node\'s own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there (beside it, where the input takes `many`), `{ "route": { "from": "status/value", "to": "filter/value" } }`; or routes cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.',
+    description: 'A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v3. An edit is a row\'s value, `{ "node": "status", "row": "value", "value": "trial" }`; a node\'s own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a connection made into an input, in place of the one there (beside it, where the input takes `many`), `{ "connection": { "from": "status/value", "to": "filter/value" } }`; or connections cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.',
     inputSchema: {
       workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON'),
       edits: z.union([z.string(), z.array(z.record(z.unknown()))]).describe('Each a WorkflowEdit, in turn'),

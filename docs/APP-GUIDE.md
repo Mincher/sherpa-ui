@@ -519,7 +519,7 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
 
 - A `message` row takes text with values, `{node.name}`: a row or property of a node
   before it, or a field of the rows a Source sends. Its Insert value menu lists
-  them; one no route gives is a warning on its row. The node shows its first
+  them; one no connection gives is a warning on its row. The node shows its first
   lines, each value in purple. `singleLine: true` makes it one line, as a title:
   no toolbar, and no line break goes in.
 - A `pick` row picks from its own `choices`. A type's `group` is its section in
@@ -599,7 +599,7 @@ it stood before (`beforeLanes`), and one placed since stays.
 ### Entities
 
 An entity is a graph saved under a TYPE, an id and a name (`entity.v1`): `{ v, type,
-id, label, graph { nodes, routes }, settings, uses }`. Its type says what its
+id, label, graph { nodes, connections }, settings, uses }`. Its type says what its
 settings hold, which node families its graph may place, and which sockets (`#in`,
 `#out`) it must have. A Custom Node is the type `node`. `preset-filter` is the other
 type that ships: its graph sends a condition to `#out/where`. An app adds its own

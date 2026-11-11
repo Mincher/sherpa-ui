@@ -9,10 +9,10 @@ import { test, expect, type Page } from './harness';
  * real pointer and key. TRAP T-an-entity-is-used-as-a-node
  */
 const filter = (id: string, label: string, value: string) => ({
-  v: 1, type: 'preset-filter', id, label, settings: { source: 'customers' },
+  v: 2, type: 'preset-filter', id, label, settings: { source: 'customers' },
   graph: {
     nodes: [{ id: 'status', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }, { id: 'field', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
-    routes: [{ from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
+    connections: [{ from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
   },
 });
 
@@ -39,8 +39,8 @@ const bind = (page: Page) => page.evaluate(async () => {
   const w = window as unknown as Record<string, unknown> & { ENTITIES: Record<string, Record<string, unknown>> };
   const { trials, active } = w.ENTITIES;
   const use = useOf(libraryOf([trials as never]), 'preset-filter:trials', { id: 'trials-1', x: 0, y: 0 });
-  const outer = { v: 1, type: 'preset-filter', id: 'outer', label: 'Outer', origin: 'mine', graph: { nodes: [use], routes: [{ from: 'trials-1', to: '#out/where' }] } };
-  const top = { v: 1, type: 'preset-filter', id: 'top', label: 'Top', origin: 'mine', graph: { nodes: [{ id: 'o', kind: 'preset-filter:outer', x: 0, y: 0 }], routes: [{ from: 'o', to: '#out/where' }] } };
+  const outer = { v: 2, type: 'preset-filter', id: 'outer', label: 'Outer', origin: 'mine', graph: { nodes: [use], connections: [{ from: 'trials-1', to: '#out/where' }] } };
+  const top = { v: 2, type: 'preset-filter', id: 'top', label: 'Top', origin: 'mine', graph: { nodes: [{ id: 'o', kind: 'preset-filter:outer', x: 0, y: 0 }], connections: [{ from: 'o', to: '#out/where' }] } };
   w['all'] = (more: unknown[] = []) => libraryOf([trials, active, outer, top, ...more] as never);
   const library = (w['all'] as () => never)();
   const { workflow, kinds } = graphWorkflow(outer as never, { ...NODE_KINDS, ...kindsOf(library) });
@@ -131,7 +131,7 @@ test('saved again elsewhere: the use says "Update available" with its diff; Upda
 test('"Update all instances" updates every other graph that uses it, and never the entity open on the canvas', async ({ page }) => {
   await bind(page);
   // Top holds Outer only; a second graph, Other, uses Trials too.
-  const other = { v: 1, type: 'preset-filter', id: 'other', label: 'Other', origin: 'mine', graph: { nodes: [{ id: 't', kind: 'preset-filter:trials', x: 0, y: 0, version: 'old' }], routes: [{ from: 't', to: '#out/where' }] } };
+  const other = { v: 2, type: 'preset-filter', id: 'other', label: 'Other', origin: 'mine', graph: { nodes: [{ id: 't', kind: 'preset-filter:trials', x: 0, y: 0, version: 'old' }], connections: [{ from: 't', to: '#out/where' }] } };
   const lead = "{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { type: 'eq', b: 'lead' } }, window.ENTITIES.trials.graph.nodes[1]] } }";
   await ed(page, `ed.refresh(window.all([${JSON.stringify(other)}, ${lead}]))`);
   await settle(page);

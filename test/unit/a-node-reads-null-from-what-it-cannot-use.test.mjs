@@ -1,7 +1,7 @@
 /**
  * A NODE READS NULL FROM WHAT IT CANNOT USE — Will, 2026-11-05 (TODO 764): "Nodes will determine which data
  * they need from the input. If there's no valid input then it's null and we style the node as a warning with
- * tooltip message." Graphs stay open, and any route joins any input (TODO 770): a node reads what it needs of
+ * tooltip message." Graphs stay open, and any connection joins any input (TODO 770): a node reads what it needs of
  * what reaches it. What it cannot use reads null there, and the node says why, in words from its kind's own
  * description (`needs`, its socket's type, `INPUT_WORDS`). A warning is no fault: Save does not wait. A row's
  * own fault (P4) stays as it was.
@@ -26,8 +26,8 @@ const facts = { fieldsOf: { users: { status: { label: 'Status' }, seats: { label
 const value = (id, v, type) => ({ id, kind: 'value', x: 0, y: 0, values: { ...(type ? { type } : {}), ...(v === undefined ? {} : { value: v }) } });
 const store = { id: 's', kind: 'source', x: 0, y: 200, values: { store: 'users' } };
 /** A Field no Source's rows reach: it offers nothing, and says so (TODO 817). */
-const lone = ['field', 'No store\'s rows come in: route a Source in'];
-const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
+const lone = ['field', 'No store\'s rows come in: connect a Source in'];
+const flow = (nodes, connections) => ({ v: 3, id: 'w', nodes, connections });
 const drawn = (w, f = facts, kinds) => workflowGraph(w, f, kinds);
 const at = (g, id) => g.nodes.find((n) => n.id === id);
 const row = (g, id, name) => at(g, id).rows.find((r) => r.name === name);
@@ -47,7 +47,7 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
   ]);
   assert.deepEqual(said(drawn(wrong)), {
     fld: [lone],
-    c: [['', 'Equals takes a field or a value; it was given rows: route a Field in']],
+    c: [['', 'Equals takes a field or a value; it was given rows: connect a Field in']],
     col: [['', 'Group takes a field; it was given a boolean']],
     tag: [['', 'Tag takes a field; it was given a boolean']],
     p: [['', 'Field takes an object; it was given a boolean']],
@@ -58,11 +58,11 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
     { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 'fld/field', to: 'col' }, { from: 'fld/field', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 'c', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(right)), {});
-  assert.deepEqual(said(drawn(flow(nodes, [{ from: 's/rows', to: 'tag' }]))), { fld: [lone], tag: [['', 'Tag takes a field; it was given rows: route a Field in']], p: [lone] });
+  assert.deepEqual(said(drawn(flow(nodes, [{ from: 's/rows', to: 'tag' }]))), { fld: [lone], tag: [['', 'Tag takes a field; it was given rows: connect a Field in']], p: [lone] });
   assert.deepEqual(said(drawn(flow(nodes, [{ from: 'v/value', to: 'c' }]))), { fld: [lone], p: [lone] }, 'a value is tested too');
   // A node's own name is the one a warning names.
   const named = flow([store, { id: 'c', kind: 'condition', x: 300, y: 0, heading: 'Has role' }], [{ from: 's/rows', to: 'c' }]);
-  assert.deepEqual(said(drawn(named)), { c: [['', 'Has role takes a field or a value; it was given rows: route a Field in']] });
+  assert.deepEqual(said(drawn(named)), { c: [['', 'Has role takes a field or a value; it was given rows: connect a Field in']] });
 });
 
 test('a row reads null where what comes cannot be used: text in a number, rows in a list, a stranger in a fixed list', () => {
@@ -112,7 +112,7 @@ test('a comparison\'s Value B reads by the Field on its header: a number field t
   assert.deepEqual(said(drawn(flow(w.nodes, [{ from: 'abc/value', to: 'c1/b' }]))), { seats: [lone], joined: [lone], status: [lone] });
 });
 
-test('an unconnected row with no value is not invalid input: no warning; nor is a route from a source that holds nothing', () => {
+test('an unconnected row with no value is not invalid input: no warning; nor is a connection from a source that holds nothing', () => {
   const bare = flow([{ id: 'm', kind: 'math', x: 0, y: 0 }, { id: 't', kind: 'time', x: 0, y: 200 }, { id: 'c', kind: 'condition', x: 0, y: 400 }, { id: 'col', kind: 'sort', x: 0, y: 600 }], []);
   assert.deepEqual(said(drawn(bare)), {});
   assert.deepEqual(at(drawn(bare), 'm').rows.map((r) => r.value), ['add', undefined, undefined, undefined]);
@@ -125,12 +125,12 @@ test('an unconnected row with no value is not invalid input: no warning; nor is 
   assert.deepEqual(said(drawn(later)), {});
 });
 
-test('a warning is no fault and no Save block: the checks pass, Save writes the route, and nothing is red', () => {
+test('a warning is no fault and no Save block: the checks pass, Save writes the connection, and nothing is red', () => {
   const w = flow([value('v', 'abc'), store, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
     [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }]);
   assert.deepEqual(workflowFaults(w, NODE_KINDS, facts), []);
   assert.equal(checkWorkflow(w, NODE_KINDS, facts), true);
-  assert.deepEqual(finalGraph(w).routes, w.routes);
+  assert.deepEqual(finalGraph(w).connections, w.connections);
   const g = drawn(w);
   assert.equal(at(g, 'm').warnings.length + at(g, 't').warnings.length, 2);
   assert.ok(g.nodes.every((n) => n.rows.every((r) => r.fault === undefined)), 'no row draws a fault');
@@ -139,19 +139,19 @@ test('a warning is no fault and no Save block: the checks pass, Save writes the 
   assert.deepEqual([at(drawn(cut), 'm').warnings, row(drawn(cut), 'm', 'a').value], [undefined, undefined]);
 });
 
-test('a route of another type joins and warns (TODO 770); a row\'s own fault stays as it was: red, never a warning', () => {
+test('a connection of another type joins and warns (TODO 770); a row\'s own fault stays as it was: red, never a warning', () => {
   const rows = flow([store, { id: 'm', kind: 'math', x: 300, y: 0 }], [{ from: 's/rows', to: 'm/a' }]);
   assert.deepEqual([workflowFaults(rows), said(drawn(rows))], [[], { m: [['a', 'Value A takes a number; it was given rows']] }]);
-  // P4: a number off its step, routed in, is the row's fault; and not also a warning.
+  // P4: a number off its step, connected in, is the row's fault; and not also a warning.
   const half = flow([value('h', '1.5', 'decimal'), { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'round' } }], [{ from: 'h/value', to: 'm/places' }]);
-  assert.deepEqual(workflowFaults(half), ['the route "h/value" → "m/places": 1.5 is not a whole number']);
+  assert.deepEqual(workflowFaults(half), ['the connection "h/value" → "m/places": 1.5 is not a whole number']);
   assert.deepEqual([row(drawn(half), 'm', 'places').fault, at(drawn(half), 'm').warnings], ['1.5 is not a whole number', undefined]);
 });
 
 test('an entity\'s output and a Custom Node\'s: a Preset Filter\'s Where into a Collection is a boolean, and a Custom Node\'s header takes anything', () => {
   const entity = {
-    v: 1, type: 'preset-filter', id: 'active', label: 'Active',
-    graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], routes: [{ from: 'c', to: '#out/where' }] }, settings: { source: 'customers' },
+    v: 2, type: 'preset-filter', id: 'active', label: 'Active',
+    graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], connections: [{ from: 'c', to: '#out/where' }] }, settings: { source: 'customers' },
   };
   const library = libraryOf([entity]);
   const kinds = { ...NODE_KINDS, ...kindsOf(library) };

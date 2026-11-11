@@ -17,19 +17,19 @@
  * - reconcileQuery — What changed between two definitions, as row edits, requests, kept Sources, layout and refusals.
  * - rowRequest — What one row's new value asks, against the Query's graph as it is now.
  */
-import { placed, socketOf, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeRoute, type NodeTie } from './node-kinds.js';
+import { placed, socketOf, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeConnection, type NodeTie } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import type { NodeStage } from './node-stages.js';
 import type { NodeLane } from './node-lanes.js';
-import { bendFault, type Bend } from './route-bends.js';
+import { bendFault, type Bend } from './connector-bends.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowNode } from './workflow.js';
-import { graphRequest, keptEdit, placeRequest, routeRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
+import { graphRequest, keptEdit, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryRequest } from './query.js';
 
 /** What a reader gave a Query's graph that the Query does not hold: kept beside it, for the tab. */
 export interface GraphLayout {
   places?: NodePlaces;
-  /** A route's bend points, by `from>to`. */
+  /** A connection's bend points, by `from>to`. */
   bends?: Readonly<Record<string, readonly Bend[]>>;
   ties?: readonly NodeTie[];
   frames?: readonly NodeFrame[];
@@ -53,12 +53,12 @@ export function isGraphLayout(v: unknown): v is GraphLayout {
     && (v['staged'] === undefined || record(v['staged']));
 }
 
-const bendKey = (r: Pick<NodeRoute, 'from' | 'to'>): string => `${r.from}>${r.to}`;
+const bendKey = (r: Pick<NodeConnection, 'from' | 'to'>): string => `${r.from}>${r.to}`;
 
 /** A Query's derived graph, at the places, sizes and bends its layout gives. */
 export function laidOut(graph: DrawnGraph, layout: GraphLayout): DrawnGraph {
   const at = placed(graph, layout.places ?? {});
-  return { ...at, routes: at.routes.map((r) => (layout.bends?.[bendKey(r)] ? { ...r, via: layout.bends[bendKey(r)]! } : r)) };
+  return { ...at, connections: at.connections.map((r) => (layout.bends?.[bendKey(r)] ? { ...r, via: layout.bends[bendKey(r)]! } : r)) };
 }
 
 /** A Query's drawn graph (laid out), and its layout, as a definition: each node's rows as its values. */
@@ -69,19 +69,19 @@ export function queryDefinition(id: string, graph: DrawnGraph, layout: GraphLayo
     return { id: n.id, kind: n.kind, x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}), ...(Object.keys(values).length ? { values } : {}), ...(stage ? { stage } : {}) };
   });
   const ids = nodes.map((n) => n.id);
-  const ties = tiesAmong(layout.ties as NodeTie[] | undefined, graph.routes);
+  const ties = tiesAmong(layout.ties as NodeTie[] | undefined, graph.connections);
   const frames = framesAmong(layout.frames, ids);
   return {
-    v: 2, id, nodes, routes: graph.routes,
+    v: 3, id, nodes, connections: graph.connections,
     ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}),
     ...(layout.stages?.length ? { stages: layout.stages } : {}), ...(layout.lanes?.length ? { lanes: layout.lanes } : {}),
   };
 }
 
-/** The layout a definition holds: every node's place and size, each route's bends, its ties, frames, stages and lanes. */
+/** The layout a definition holds: every node's place and size, each connection's bends, its ties, frames, stages and lanes. */
 export function layoutOf(definition: WorkflowDefinition): GraphLayout {
   const places = Object.fromEntries(definition.nodes.map((n) => [n.id, { x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}) }]));
-  const bends = Object.fromEntries((definition.routes ?? []).flatMap((r) => (r.via?.length ? [[bendKey(r), r.via]] : [])));
+  const bends = Object.fromEntries((definition.connections ?? []).flatMap((r) => (r.via?.length ? [[bendKey(r), r.via]] : [])));
   const staged = Object.fromEntries(definition.nodes.flatMap((n) => (n.stage ? [[n.id, n.stage]] : [])));
   return {
     places,
@@ -109,7 +109,7 @@ export interface Reconciled {
   requests: QueryRequest[];
   kept?: KeptSource[];
   layout: GraphLayout;
-  /** What it cannot do: a code (query-route, query-remove, query-place) and the words. */
+  /** What it cannot do: a code (query-connection, query-remove, query-place) and the words. */
   refused: { code: string; message: string }[];
 }
 
@@ -121,14 +121,14 @@ export interface ReconcileFacts extends Pick<QueryGraphFacts, 'type' | 'values'>
   scopeOf?: (kind: string) => string | undefined;
 }
 
-/** The words a cut or a removal is refused in: the Query's routes and nodes are its readings. */
-const ROUTES_READ = 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.';
+/** The words a cut or a removal is refused in: the Query's connections and nodes are its readings. */
+const CONNECTIONS_READ = 'The Query\'s connections are its readings: turn a condition off, or clear it, to take it from its scope.';
 const NODES_READ = 'The Query\'s nodes are its readings: turn a condition off, or clear it, to take it from its scope.';
 
 /**
  * What changed between two definitions of a Query, as the Query's own requests: a row's new value (`graphRequest`, or a
- * kept Source's Store); a new route (`routeRequest`); a new node (`placeRequest`, in the scope of the node it joins, else
- * the View). A route cut, or a reading removed, is refused; a kept Source removed goes. The layout is the written one's.
+ * kept Source's Store); a new connection (`connectionRequest`); a new node (`placeRequest`, in the scope of the node it joins, else
+ * the View). A connection cut, or a reading removed, is refused; a kept Source removed goes. The layout is the written one's.
  * `graph` is the Query's graph as `before` was drawn from it. A kind that belongs in one scope (`scopeOf`) is placed there.
  */
 export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefinition, graph: DrawnGraph, facts: ReconcileFacts): Reconciled {
@@ -150,11 +150,11 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
       .sort((a, b) => Number(b === 'type') - Number(a === 'type'));
     for (const name of names) edits.push({ node: node.id, row: name, value: node.values?.[name] });
   }
-  // A new node: placed in the scope of the node it joins, else the View. Its own routes are the Query's to draw.
+  // A new node: placed in the scope of the node it joins, else the View. Its own connections are the Query's to draw.
   const added = after.nodes.filter((n) => !was.has(n.id) && !drawn.has(n.id));
   const fresh = new Set(added.map((n) => n.id));
   for (const node of added) {
-    const joined = (after.routes ?? []).flatMap((r) => {
+    const joined = (after.connections ?? []).flatMap((r) => {
       const [a, b] = [socketOf(r.from).node, socketOf(r.to).node];
       return a === node.id ? [b] : b === node.id ? [a] : [];
     });
@@ -164,18 +164,18 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
     else if ('keep' in answer) kept = [...(kept ?? facts.kept), answer.keep];
     else requests.push(answer.request);
   }
-  // A new route between nodes the Query draws: the command it asks, or why not. One cut is refused, as is a reading removed.
-  const key = (r: NodeRoute): string => `${r.from}>${r.to}`;
-  const had = new Set((before.routes ?? []).map(key));
-  const has = new Set((after.routes ?? []).map(key));
-  for (const route of after.routes ?? []) {
-    if (had.has(key(route)) || fresh.has(socketOf(route.from).node) || fresh.has(socketOf(route.to).node)) continue;
-    const answer = routeRequest(graph, route, facts);
-    if (answer && 'refused' in answer) refuse('query-route', answer.refused);
+  // A new connection between nodes the Query draws: the command it asks, or why not. One cut is refused, as is a reading removed.
+  const key = (r: NodeConnection): string => `${r.from}>${r.to}`;
+  const had = new Set((before.connections ?? []).map(key));
+  const has = new Set((after.connections ?? []).map(key));
+  for (const connection of after.connections ?? []) {
+    if (had.has(key(connection)) || fresh.has(socketOf(connection.from).node) || fresh.has(socketOf(connection.to).node)) continue;
+    const answer = connectionRequest(graph, connection, facts);
+    if (answer && 'refused' in answer) refuse('query-connection', answer.refused);
     else if (answer) requests.push(answer.request);
   }
-  for (const route of before.routes ?? []) {
-    if (!has.has(key(route)) && now.has(socketOf(route.from).node) && now.has(socketOf(route.to).node)) refuse('query-route', ROUTES_READ);
+  for (const connection of before.connections ?? []) {
+    if (!has.has(key(connection)) && now.has(socketOf(connection.from).node) && now.has(socketOf(connection.to).node)) refuse('query-connection', CONNECTIONS_READ);
   }
   for (const node of before.nodes) {
     if (now.has(node.id)) continue;

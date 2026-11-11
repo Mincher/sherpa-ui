@@ -19,7 +19,7 @@
  * - laneFaults — Every fault in a workflow's lanes, in words.
  */
 import { packBands } from './node-bands.js';
-import { categorySlug, kindOfNode, socketOf, type NodeKind, type NodeRoute } from './node-kinds.js';
+import { categorySlug, kindOfNode, socketOf, type NodeKind, type NodeConnection } from './node-kinds.js';
 
 /** One lane: its id, its name, the families (node categories, as `data-category` writes them) it holds, and its colour. */
 export interface NodeLane {
@@ -59,10 +59,10 @@ export const LANE_PAD = 40;
 /** The gap between two bands. */
 export const LANE_GAP = 16;
 
-/** What the lanes read of a workflow: its nodes, its routes and its lanes. */
+/** What the lanes read of a workflow: its nodes, its connections and its lanes. */
 interface Laned {
   nodes: readonly { id: string; kind: string; y: number; values?: Readonly<Record<string, unknown>> }[];
-  routes?: readonly NodeRoute[];
+  connections?: readonly NodeConnection[];
   lanes?: readonly NodeLane[];
 }
 type Kinds = Readonly<Record<string, NodeKind>>;
@@ -100,7 +100,7 @@ export function laneOf(workflow: Laned, id: string, kinds: Kinds): string | unde
   };
   const own = laneIndex(id);
   if (own >= 0) return lanes[own]!.id;
-  const routes = workflow.routes ?? [];
+  const connections = workflow.connections ?? [];
   // The lanes of the laned nodes it reaches through other junction nodes: going against the flow (`back`), or either way.
   const reached = (back: boolean): Set<number> => {
     const lanesMet = new Set<number>();
@@ -109,7 +109,7 @@ export function laneOf(workflow: Laned, id: string, kinds: Kinds): string | unde
     while (ring.length) {
       const next: string[] = [];
       for (const at of ring) {
-        const others = [...routes.map((r) => {
+        const others = [...connections.map((r) => {
           const [from, to] = [socketOf(r.from).node, socketOf(r.to).node];
           return to === at ? from : !back && from === at ? to : undefined;
         }), ...named(at, back)];

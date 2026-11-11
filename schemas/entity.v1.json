@@ -22,8 +22,8 @@
       "type": "object", "additionalProperties": false, "required": ["nodes"],
       "properties": {
         "nodes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/node" } },
-        "routes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/innerRoute" } },
-        "ties": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/innerTie" } },
+        "routes": { "type": "array", "items": { "$ref": "#/$defs/innerRoute" } },
+        "ties": { "type": "array", "items": { "$ref": "#/$defs/innerTie" } },
         "frames": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/frame" } },
         "stages": { "type": "array", "minItems": 1, "items": { "$ref": "defs.v1.json#/$defs/stage" } },
         "lanes": { "type": "array", "minItems": 1, "items": { "$ref": "defs.v1.json#/$defs/lane" } },
@@ -40,5 +40,10 @@
       }
     },
     "origin": { "description": "Set on read, never written: a preset is a file's and read only; the reader's own are mine.", "enum": ["preset", "mine"] }
+  },
+  "$comment": "FROZEN by plan 934: saved before a graph link was a Connection. Read once into entity.v2.json.",
+  "$defs": {
+    "innerRoute": {"description": "A route inside a Custom Node's body: it may start at the Group Input and end at the Group Output.", "type": "object", "additionalProperties": false, "required": ["from", "to"], "properties": {"from": {"$ref": "defs.v1.json#/$defs/innerSocket"}, "to": {"$ref": "defs.v1.json#/$defs/innerSocket"}, "via": {"$ref": "defs.v1.json#/$defs/bends"}}},
+    "innerTie": {"description": "A zip tie inside a Custom Node's body: its routes are the body's.", "type": "object", "additionalProperties": false, "required": ["id", "x", "y", "routes"], "properties": {"id": {"$ref": "defs.v1.json#/$defs/id"}, "x": {"type": "number"}, "y": {"type": "number"}, "routes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/innerRoute"}}}}
   }
 }

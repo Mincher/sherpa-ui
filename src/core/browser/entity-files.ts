@@ -9,7 +9,7 @@
  * - loadEntityLibrary — an app's preset entities from a JSON file, each checked
  */
 import { report } from '../data/report.js';
-import { isEntity, type Entity, type EntityLibrary } from '../data/entity.js';
+import { isEntity, readEntity, type Entity, type EntityLibrary } from '../data/entity.js';
 import { entityFaults, type EntityFacts } from '../data/entity-check.js';
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -18,10 +18,12 @@ const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
  *  `known` ones around it, so one bad one is reported and the rest still load; a use of one defined
  *  later is tried again once that one is in. The key of each must be its id. */
 export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibrary {
-  const given = isObject(read) && read['v'] === 1 && isObject(read['entities']) ? read['entities'] : undefined;
+  // An entities.v1, saved before plan 934, holds v1 entities: each reads once as a v2. TRAP T-a-saved-graph-is-read-in-the-new-words
+  const given = isObject(read) && (read['v'] === 1 || read['v'] === 2) && isObject(read['entities'])
+    ? Object.fromEntries(Object.entries(read['entities']).map(([key, entity]) => [key, readEntity(entity)])) : undefined;
   if (!given) {
-    report({ code: 'entity', message: 'loadEntityLibrary: it is not an entity library: a v1 with its entities by id.', at: {} });
-    return { v: 1, entities: {} };
+    report({ code: 'entity', message: 'loadEntityLibrary: it is not an entity library: a v2 with its entities by id.', at: {} });
+    return { v: 2, entities: {} };
   }
   const kept: Record<string, Entity> = {};
   let waiting = Object.entries(given);
@@ -31,7 +33,7 @@ export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibr
     faults = new Map();
     const next: typeof waiting = [];
     for (const [key, entity] of waiting) {
-      const found = !isEntity(entity) ? ['it is not an entity: a v1 with a type, an id, a name and a graph']
+      const found = !isEntity(entity) ? ['it is not an entity: a v2 with a type, an id, a name and a graph']
         : entity.id !== key ? [`its key is "${key}", but its id is "${entity.id}"`]
           : entityFaults(entity, { ...facts, entities: [...(facts.entities ?? []), ...Object.values(kept)] });
       if (found.length) {
@@ -48,7 +50,7 @@ export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibr
   for (const [key, found] of faults) {
     for (const fault of found) report({ code: 'entity', message: `loadEntityLibrary: ${fault}, so "${key}" is left out.`, at: { entity: key } });
   }
-  return { v: 1, entities: kept };
+  return { v: 2, entities: kept };
 }
 
 /** An app's preset entities from a JSON file. One that fails the checks is reported and left out; a
@@ -62,7 +64,7 @@ export async function loadEntityLibrary(url: string | URL, facts?: EntityFacts):
     read = await response.json();
   } catch (error) {
     report({ code: 'entity', message: `loadEntityLibrary: the file could not be read (${error instanceof Error ? error.message : String(error)}).`, at: { url: String(url) } });
-    return { v: 1, entities: {} };
+    return { v: 2, entities: {} };
   }
   return readEntities(read, facts);
 }

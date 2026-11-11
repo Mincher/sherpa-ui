@@ -16,9 +16,9 @@ const { stagesOf, stageBands, heldBands, fitStages, stageWidthRange, STAGE_MIN, 
 const { onReport } = await import(new URL('report.js', core));
 
 const flow = () => ({
-  v: 2, id: 'f',
+  v: 3, id: 'f',
   nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'sort', x: 400, y: 0 }],
-  routes: [{ from: 'a/rows', to: 'b' }],
+  connections: [{ from: 'a/rows', to: 'b' }],
 });
 const heard = () => { const said = []; const stop = onReport((r) => said.push(r.message)); return { said, stop }; };
 
@@ -162,8 +162,8 @@ test('an order packs the stages left to right from where the first stood, each n
 
 test('stages are saved and read back: the schema takes them, and a node in a stage not there is a fault', () => {
   const w = editWorkflow(editWorkflow(flow(), { addStage: { label: 'Out', colour: '#ff0000' } }), { setStage: { id: 'stage-1', description: 'In' } });
-  assert.deepEqual(schemaCheck('workflow.v2.json')(w), []);
-  assert.notDeepEqual(schemaCheck('workflow.v2.json')({ ...w, stages: [{ id: 'stage-1', label: '', x: 0 }] }), []);
+  assert.deepEqual(schemaCheck('workflow.v3.json')(w), []);
+  assert.notDeepEqual(schemaCheck('workflow.v3.json')({ ...w, stages: [{ id: 'stage-1', label: '', x: 0 }] }), []);
   const { said, stop } = heard();
   assert.equal(checkWorkflow({ ...w, nodes: [{ ...w.nodes[0], stage: 'stage-9' }, w.nodes[1]] }), false);
   stop();

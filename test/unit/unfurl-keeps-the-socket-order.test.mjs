@@ -1,6 +1,6 @@
 /**
  * UNFURL in the SOCKETS' ORDER: the nodes that hang from one node stand on their ring in the order of the sockets
- * they join there, its outputs on the right and its inputs on the left; where several routes join two nodes, the
+ * they join there, its outputs on the right and its inputs on the left; where several connections join two nodes, the
  * topmost socket decides; each line is pulled level; the lines are counted socket to socket. With no socket heights,
  * unfurl is as it was. Will, TODO 827 · TRAP T-unfurl-keeps-the-flow
  *
@@ -16,7 +16,7 @@ const { crossings } = await import(new URL('node-arrange.js', core));
 const GAP = 168;
 const R = (a, b) => ({ from: a, to: b });
 const node = (s) => s.split('/')[0];
-const graphOf = (nodes, routes, more = {}) => ({ nodes: nodes.map(([id, x, y]) => ({ id, x, y })), routes, ...more });
+const graphOf = (nodes, connections, more = {}) => ({ nodes: nodes.map(([id, x, y]) => ({ id, x, y })), connections, ...more });
 const unfurl = (g, more = {}) => unfurlNodes(g, g.nodes.map((n) => n.id), { gapX: GAP, gapY: GAP, grid: 4, boxes: g.boxes, ...more });
 const mid = (out, g, id) => out.nodes[id].y + g.boxes[id].h / 2;
 const box = (h) => ({ w: 240, h });
@@ -39,18 +39,18 @@ const forks = {
 test('the nodes that feed a node stand in the order of its input sockets, top to bottom', () => {
   const out = unfurl(fed, { sockets: fed.sockets });
   assert.ok(mid(out, fed, 'va') < mid(out, fed, 'vb') && mid(out, fed, 'vb') < mid(out, fed, 'vc'), JSON.stringify(out.nodes));
-  assert.equal(crossings(out.nodes, fed.boxes, fed.routes, fed.sockets), 0);
+  assert.equal(crossings(out.nodes, fed.boxes, fed.connections, fed.sockets), 0);
 });
 
 test('the nodes a node feeds stand in the order of its output sockets: the header, then the rows, then False', () => {
   const out = unfurl(forks, { sockets: forks.sockets });
   assert.ok(mid(out, forks, 'head') < mid(out, forks, 'yes') && mid(out, forks, 'yes') < mid(out, forks, 'no'), JSON.stringify(out.nodes));
-  assert.equal(crossings(out.nodes, forks.boxes, forks.routes, forks.sockets), 0);
+  assert.equal(crossings(out.nodes, forks.boxes, forks.connections, forks.sockets), 0);
 });
 
-test('where several routes join two nodes, the topmost socket decides', () => {
+test('where several connections join two nodes, the topmost socket decides', () => {
   // `vb` joins `m` on rows a and c: a, the topmost, puts it above `va`, which joins on b. By c it would stand below.
-  const g = { ...fed, nodes: fed.nodes.filter((n) => n.id !== 'vc'), routes: [R('va/value', 'm/b'), R('vb/value', 'm/c'), R('vb/value', 'm/a'), R('m/result', 'out')] };
+  const g = { ...fed, nodes: fed.nodes.filter((n) => n.id !== 'vc'), connections: [R('va/value', 'm/b'), R('vb/value', 'm/c'), R('vb/value', 'm/a'), R('m/result', 'out')] };
   const out = unfurl(g, { sockets: fed.sockets });
   assert.ok(mid(out, g, 'vb') < mid(out, g, 'va'), JSON.stringify(out.nodes));
 });
@@ -66,7 +66,7 @@ test('the sockets\' order wins over fewer crossings: Will\'s order is the intent
   };
   const out = unfurl(g, { sockets: g.sockets });
   assert.ok(mid(out, g, 'a') < mid(out, g, 'b'), JSON.stringify(out.nodes));
-  assert.equal(crossings(out.nodes, g.boxes, g.routes, g.sockets), 3);
+  assert.equal(crossings(out.nodes, g.boxes, g.connections, g.sockets), 3);
 });
 
 test('a line is pulled level: a lone neighbour\'s socket at the height of the one it joins', () => {
@@ -95,16 +95,16 @@ test('with no socket heights, or none for a socket, unfurl is as it was: each so
 });
 
 test('lines counted socket to socket: two out of one node\'s two sockets that swap cross; two at one socket only touch', () => {
-  const g = { nodes: [], boxes: { p: box(200), a: box(80), b: box(80) }, routes: [R('p/one', 'a'), R('p/two', 'b')] };
+  const g = { nodes: [], boxes: { p: box(200), a: box(80), b: box(80) }, connections: [R('p/one', 'a'), R('p/two', 'b')] };
   const sockets = { inputs: { a: 40, b: 40 }, outputs: { 'p/one': 40, 'p/two': 160 } };
   const swapped = { p: { x: 0, y: 0 }, a: { x: 500, y: 300 }, b: { x: 500, y: 0 } };
-  assert.equal(crossings(swapped, g.boxes, g.routes, sockets), 1);
-  assert.equal(crossings(swapped, g.boxes, g.routes), 0, 'at mid height, lines of one node never count');
-  const one = { ...g, routes: [R('p/one', 'a'), R('p/one', 'b')] };
-  assert.equal(crossings(swapped, one.boxes, one.routes, sockets), 0);
+  assert.equal(crossings(swapped, g.boxes, g.connections, sockets), 1);
+  assert.equal(crossings(swapped, g.boxes, g.connections), 0, 'at mid height, lines of one node never count');
+  const one = { ...g, connections: [R('p/one', 'a'), R('p/one', 'b')] };
+  assert.equal(crossings(swapped, one.boxes, one.connections, sockets), 0);
 });
 
-// A random DAG whose routes use a node's header and rows, each socket at its drawn height.
+// A random DAG whose connections use a node's header and rows, each socket at its drawn height.
 function socketed(n, seed) {
   const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
   const names = Array.from({ length: n }, (_, i) => `n${i}`);
@@ -113,17 +113,17 @@ function socketed(n, seed) {
   const sockets = { inputs: {}, outputs: {} };
   const at = (id, k) => (k === 0 ? id : `${id}/r${k}`);
   const yOf = (k) => (k === 0 ? 24 : 56 + 48 * (k - 1) + 24);
-  const routes = [];
+  const connections = [];
   for (let j = 1; j < n; j++) {
     for (const i of new Set(Array.from({ length: 1 + Math.floor(rnd() * 3) }, () => Math.floor(rnd() * j)))) {
       const [ko, ki] = [Math.floor(rnd() * (rows[names[i]] + 1)), Math.floor(rnd() * (rows[names[j]] + 1))];
       sockets.outputs[at(names[i], ko)] = yOf(ko);
       sockets.inputs[at(names[j], ki)] = yOf(ki);
-      routes.push(R(at(names[i], ko), at(names[j], ki)));
+      connections.push(R(at(names[i], ko), at(names[j], ki)));
     }
   }
   const side = Math.sqrt(n) * 420;
-  return { ...graphOf(names.map((id) => [id, Math.floor(rnd() * side), Math.floor(rnd() * side)]), routes), boxes, sockets };
+  return { ...graphOf(names.map((id) => [id, Math.floor(rnd() * side), Math.floor(rnd() * side)]), connections), boxes, sockets };
 }
 
 test('dense graphs with sockets: far fewer crossings socket to socket, and no more than measured; no overlap, every line forward, the grid', () => {
@@ -132,14 +132,14 @@ test('dense graphs with sockets: far fewer crossings socket to socket, and no mo
     const g = socketed(n, seed);
     const out = unfurl(g, { sockets: g.sockets });
     assert.deepEqual(unfurl(g, { sockets: g.sockets }), out, 'the same out for the same in');
-    before += crossings(Object.fromEntries(g.nodes.map((nd) => [nd.id, nd])), g.boxes, g.routes, g.sockets);
-    after += crossings(out.nodes, g.boxes, g.routes, g.sockets);
+    before += crossings(Object.fromEntries(g.nodes.map((nd) => [nd.id, nd])), g.boxes, g.connections, g.sockets);
+    after += crossings(out.nodes, g.boxes, g.connections, g.sockets);
     const ids = Object.keys(out.nodes);
     for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
       const [p, q, bp, bq] = [out.nodes[ids[i]], out.nodes[ids[j]], g.boxes[ids[i]], g.boxes[ids[j]]];
       assert.ok(Math.max(q.x - (p.x + bp.w), p.x - (q.x + bq.w)) >= GAP || Math.max(q.y - (p.y + bp.h), p.y - (q.y + bq.h)) >= GAP, `${ids[i]}~${ids[j]}`);
     }
-    for (const r of g.routes) assert.ok(out.nodes[node(r.to)].x >= out.nodes[node(r.from)].x + 240 + GAP, `${r.from}>${r.to}`);
+    for (const r of g.connections) assert.ok(out.nodes[node(r.to)].x >= out.nodes[node(r.from)].x + 240 + GAP, `${r.from}>${r.to}`);
     for (const p of Object.values(out.nodes)) assert.ok(p.x % 4 === 0 && p.y % 4 === 0);
   }
   assert.ok(after * 3 < before, `${before} → ${after}`);
@@ -153,6 +153,6 @@ test('it is as fast with sockets: 300 nodes', (t) => {
   const start = performance.now();
   for (let k = 0; k < 3; k++) unfurl(g, { sockets: g.sockets });
   const ms = (performance.now() - start) / 3;
-  t.diagnostic(`300 nodes, ${g.routes.length} routes, with sockets: ${ms.toFixed(1)} ms`);
+  t.diagnostic(`300 nodes, ${g.connections.length} connections, with sockets: ${ms.toFixed(1)} ms`);
   assert.ok(ms < 1000, `${ms} ms`);
 });

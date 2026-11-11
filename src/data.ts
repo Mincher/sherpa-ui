@@ -149,7 +149,7 @@ export {
   type NodeGraph,
   type NodeKind,
   type NodePlaces,
-  type NodeRoute,
+  type NodeConnection,
   type NodeTie,
   type NodeType,
   type PaletteGroup,
@@ -173,7 +173,7 @@ export {
   checkWorkflow,
   editWorkflow,
   finalGraph,
-  keptRoutes,
+  keptConnections,
   readWorkflow,
   sentFrom,
   tieLimit,
@@ -198,7 +198,7 @@ export { packBands, type Band, type BandGroup, type BandRules } from './core/dat
 export { TIE_CLEAR, clearOfNodes, placeBeside, roomAround, type Box } from './core/data/tie-place.js';
 export { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, type GraphLayout, type ReconcileFacts, type Reconciled } from './core/data/query-document.js';
 /* A PORTAL: an In and an Out joined by a name; one resolver of the hop. TRAP T-a-portal-hop-is-resolved-once */
-export { PORTAL, connectionOf, connectionRow, portalFlow, portalLinks, portalNames, portalOf, type FlowRoute, type Portal, type PortalFlow } from './core/data/node-portals.js';
+export { PORTAL, addressOf, addressRow, portalFlow, portalLinks, portalNames, portalOf, type FlowConnection, type Portal, type PortalFlow } from './core/data/node-portals.js';
 /* A CUSTOM NODE: a workflow body saved under one name, used as an instance. TRAP T-a-custom-node-is-an-instance */
 export {
   GROUP_INPUT,
@@ -291,8 +291,8 @@ export {
 } from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export {
-  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryStepNode, routeRequest, statusTallies, traceQuerySteps,
-  type GraphComponent, type LoadSteps, type QueryGraphFacts, type RouteAnswer, type ScopePreset,
+  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryStepNode, connectionRequest, statusTallies, traceQuerySteps,
+  type GraphComponent, type LoadSteps, type QueryGraphFacts, type ConnectionAnswer, type ScopePreset,
 } from './core/data/query-graph.js';
 /* A pure edit: the Query after a Sort, Group, Search, presentation, order or move. TRAP T-one-command-one-door */
 export { editQuery, type EditFacts, type PureEdit } from './core/data/query-edits.js';

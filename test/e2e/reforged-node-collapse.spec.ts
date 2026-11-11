@@ -3,7 +3,7 @@ import { test, expect, type Page } from './harness';
 /**
  * Collapsed nodes — Will, 2026-11-10. A double click on a header collapses the node, and again expands it: its rows keep
  * their sockets, and lose their labels and fields; a socket's tip names its row and says its value. The toolbar's Collapse all
- * does every node; Hide unconnected, on while a node is collapsed, hides the sockets no route joins, till a hover, or while
+ * does every node; Hide unconnected, on while a node is collapsed, hides the sockets no connection joins, till a hover, or while
  * a line is dragged.
  */
 test.beforeEach(async ({ page }) => {
@@ -17,11 +17,11 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 2, id: 'g', nodes: [
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'sort', kind: 'sort', x: 330, y: 0, values: { direction: 'asc' } },
       { id: 'end', kind: 'output', x: 660, y: 0 },
-    ], routes: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
+    ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'),
       toolbar: canvas.querySelector('sherpa-node-toolbar'), stores: ['users'],
       fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } },
@@ -66,7 +66,7 @@ test('a double click on a header collapses the node to its sockets, and again ex
   await expect(node(page, 'Sort')).not.toHaveAttribute('data-collapsed');
 });
 
-test('Collapse all, then Hide unconnected: an unrouted socket hides, and a hover or a dragged line shows it', async ({ page }) => {
+test('Collapse all, then Hide unconnected: an unconnected socket hides, and a hover or a dragged line shows it', async ({ page }) => {
   const tool = (name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
   await expect(tool('hide')).toHaveAttribute('disabled', '');
   await press(page, 'collapse');
@@ -75,7 +75,7 @@ test('Collapse all, then Hide unconnected: an unrouted socket hides, and a hover
   await expect(tool('hide')).not.toHaveAttribute('disabled');
   await press(page, 'hide');
   await page.mouse.move(5, 5);
-  // The Source's Results is routed and shows; the Sort's header output is not routed, and hides.
+  // The Source's Results is connected and shows; the Sort's header output is not connected, and hides.
   const headerOut = () => node(page, 'Sort').evaluate((el) => getComputedStyle(el.shadowRoot!.querySelector('.header .socket-out')!).visibility);
   expect(await headerOut()).toBe('hidden');
   await header(page, 'Sort').hover();

@@ -166,10 +166,10 @@ export const SHARED_PROPS = {
   /** A node's sockets, on its header or a row: a value is a circle, an object a diamond, a boolean a circle, any (an input only) a square. TODO 713 */
   'data-input-socket': { type: 'enum', kind: 'style', values: ['value', 'object', 'boolean', 'any'] },
   'data-output-socket': { type: 'enum', kind: 'style', values: ['value', 'object', 'boolean'] },
-  /** A route joins the socket: it is drawn filled, else hollow. The host writes them. */
-  'data-input-routed': { type: 'boolean', kind: 'style' },
-  'data-output-routed': { type: 'boolean', kind: 'style' },
-  /** The input takes several routes: its socket is double height. The host writes it. */
+  /** A connection joins the socket: it is drawn filled, else hollow. The host writes them. */
+  'data-input-connected': { type: 'boolean', kind: 'style' },
+  'data-output-connected': { type: 'boolean', kind: 'style' },
+  /** The input takes several connections: its socket is double height. The host writes it. */
   'data-input-many': { type: 'boolean', kind: 'style' },
 } as const satisfies PropMap;
 

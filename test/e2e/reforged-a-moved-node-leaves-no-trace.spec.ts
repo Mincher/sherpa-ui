@@ -10,7 +10,7 @@ import { test, expect, type Page } from './harness';
 type Box = { x: number; y: number; width: number; height: number };
 
 const NODES: [string, string, number, number][] = [['s1', 'source', 0, 0], ['p1', 'field', 420, 260], ['e1', 'output', 840, 40], ['s2', 'source', 840, 800]];
-const ROUTES = [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }];
+const CONNECTIONS = [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }];
 /** The zoom it showed at, and a pan that puts the Output's edges on whole screen px: where it showed most. */
 const ZOOM = 0.5;
 
@@ -24,7 +24,7 @@ async function start(page: Page): Promise<void> {
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2 as const, id: 'f', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), routes: rs };
+    const flow = { v: 3 as const, id: 'f', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: rs };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'],
@@ -32,7 +32,7 @@ async function start(page: Page): Promise<void> {
     await window.__settled();
     canvas.zoomTo(zoom);
     canvas.panTo(60, 80);
-  }, [NODES, ROUTES, ZOOM] as const);
+  }, [NODES, CONNECTIONS, ZOOM] as const);
   await settle(page);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));

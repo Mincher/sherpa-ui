@@ -29,11 +29,11 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 2, id: 'g', nodes: [
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'sort', kind: 'sort', x: 330, y: 0, values: { direction: 'asc' } },
       { id: 'end', kind: 'output', x: 660, y: 0 },
-    ], routes: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
+    ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'), stageDialog: document.getElementById('stage'),
       toolbar: canvas.querySelector('sherpa-node-toolbar'), stores: ['users'],
       fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } },

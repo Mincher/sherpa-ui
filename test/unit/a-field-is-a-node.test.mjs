@@ -22,7 +22,7 @@ const fields = { status: { label: 'Status' }, seats: { label: 'Seats', type: 'nu
 const facts = { fieldsOf: { customers: fields } };
 const store = { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'customers' } };
 const field = (id, name) => ({ id, kind: 'field', x: 300, y: 0, ...(name ? { values: { field: name } } : {}) });
-const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
+const flow = (nodes, connections) => ({ v: 3, id: 'w', nodes, connections });
 const at = (g, id) => g.nodes.find((n) => n.id === id);
 /** Each node's warnings in words, by its id: none, where it has none. */
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
@@ -52,7 +52,7 @@ test('Store → Field sends a column, { rows, field }: the field\'s name, words 
   // None typed is a text field; with no Source's rows in, it sends nothing (TODO 817).
   assert.equal(fieldWords({ name: 'status', label: 'Status' }), 'Status: a text field');
   assert.equal(sentFrom(flow([field('f', 'status')], []), 'f/field', facts), undefined);
-  // A Value routed into its Field row drives the pick, marked Custom (D7 of plan 713).
+  // A Value connected to its Field row drives the pick, marked Custom (D7 of plan 713).
   const driven = flow([store, field('f', 'status'), { id: 'v', kind: 'value', x: 0, y: 200, values: { value: 'joined' } }], [{ from: 's/rows', to: 'f' }, { from: 'v/value', to: 'f/field' }]);
   assert.equal(sentFrom(driven, 'f/field', facts).field.name, 'joined');
   assert.deepEqual([at(workflowGraph(driven, facts), 'f').rows[0].value, at(workflowGraph(driven, facts), 'f').rows[0].custom], ['joined', true]);
@@ -88,7 +88,7 @@ test('a column is no ONE value: Add\'s Value A warns, unless one record came in,
   assert.deepEqual(sentFrom(one, 'f/field', facts, kinds), { kind: 'number' });
   assert.deepEqual(said(workflowGraph(one, facts, kinds)), {});
   assert.deepEqual(columnOf({ name: 'status' }, { kind: 'object' }), { kind: 'value' });
-  assert.equal(readInput({ label: 'Sort', needs: 'field' }, { kind: 'rows' }).warning, 'Sort takes a field; it was given rows: route a Field in');
+  assert.equal(readInput({ label: 'Sort', needs: 'field' }, { kind: 'rows' }).warning, 'Sort takes a field; it was given rows: connect a Field in');
 });
 
 test('what it cannot use warns and sends nothing: a Value into its header, a field the rows do not have', () => {
@@ -113,13 +113,13 @@ test('Sort, Group and Tag › Includes take a Field on their header, and have no
   for (const n of nodes.slice(2)) assert.ok(!workflowGraph(flow([n], [])).nodes[0].rows.some((r) => r.name === 'field'), `${n.id} has no Field row`);
   const fed = flow(nodes, [{ from: 's/rows', to: 'f' }, ...['sort', 'group', 'tag'].map((to) => ({ from: 'f/field', to }))]);
   assert.deepEqual(said(workflowGraph(fed, facts)), {}, 'each takes the Field');
-  // Rows with no Field: Sort, Group and Tag warn, and say what to route. The Field, no Source in, says so.
+  // Rows with no Field: Sort, Group and Tag warn, and say what to connection. The Field, no Source in, says so.
   const bare = flow(nodes, ['sort', 'group', 'tag'].map((to) => ({ from: 's/rows', to })));
   assert.deepEqual(said(workflowGraph(bare, facts)), {
-    f: [['field', 'No store\'s rows come in: route a Source in']],
-    sort: [['', 'Sort takes a field; it was given rows: route a Field in']],
-    group: [['', 'Group takes a field; it was given rows: route a Field in']],
-    tag: [['', 'Tag takes a field; it was given rows: route a Field in']],
+    f: [['field', 'No store\'s rows come in: connect a Source in']],
+    sort: [['', 'Sort takes a field; it was given rows: connect a Field in']],
+    group: [['', 'Group takes a field; it was given rows: connect a Field in']],
+    tag: [['', 'Tag takes a field; it was given rows: connect a Field in']],
   });
   // Each passes the rows on from its Rows row, as the Field carries them.
   for (const id of ['sort', 'group', 'tag']) assert.deepEqual(sentFrom(fed, `${id}/rows`, facts), { kind: 'rows' }, id);

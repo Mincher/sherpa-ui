@@ -1,6 +1,6 @@
 /**
- * A MESSAGE NAMES VALUES FROM BEFORE IT: `{node.name}` in a message field is a value of a node its routes come from — a
- * row or property it sends, or a field of the rows a Source sends. One no route gives is a warning on its row; the Preview
+ * A MESSAGE NAMES VALUES FROM BEFORE IT: `{node.name}` in a message field is a value of a node its connections come from — a
+ * row or property it sends, or a field of the rows a Source sends. One no connection gives is a warning on its row; the Preview
  * puts each value in. Plan 891, step 2.
  *
  *   node --test test/unit/a-message-names-values-from-before-it.test.mjs
@@ -21,8 +21,8 @@ const nodes = [
   { id: 'o', kind: 'output', x: 900, y: 0, values: { type: 'notification', message: 'Hi {s.name}, {n.result} seats; see {f.link}' } },
   { id: 'lone', kind: 'value', x: 0, y: 400, values: { value: 'x' } },
 ];
-const routes = [{ from: 's/rows', to: 'n' }, { from: 'n/result', to: 'f/data' }, { from: 'f/file', to: 'o' }];
-const flow = (message, more = {}) => ({ v: 2, id: 'w', nodes: nodes.map((n) => (n.id === 'o' ? { ...n, values: { ...n.values, message } } : n)), routes, ...more });
+const connections = [{ from: 's/rows', to: 'n' }, { from: 'n/result', to: 'f/data' }, { from: 'f/file', to: 'o' }];
+const flow = (message, more = {}) => ({ v: 3, id: 'w', nodes: nodes.map((n) => (n.id === 'o' ? { ...n, values: { ...n.values, message } } : n)), connections, ...more });
 const warningsOf = (g) => g.nodes.find((n) => n.id === 'o').warnings ?? [];
 
 test('a text names its values in order, each a node and a name', () => {
@@ -32,8 +32,8 @@ test('a text names its values in order, each a node and a name', () => {
 });
 
 test('the values a node can name: each node before it, nearest first; its rows and properties, a Source\'s fields', () => {
-  const at = valuesAt(nodes, routes, 'o', NODE_KINDS, fieldsOf);
-  assert.deepEqual(at.map((s) => s.node), ['f', 'n', 's'], 'nearest first; the lone Value is no route\'s');
+  const at = valuesAt(nodes, connections, 'o', NODE_KINDS, fieldsOf);
+  assert.deepEqual(at.map((s) => s.node), ['f', 'n', 's'], 'nearest first; the lone Value is no connection\'s');
   assert.deepEqual(at.find((s) => s.node === 'f').values.map((v) => v.key), ['{f.file}', '{f.link}']);
   assert.deepEqual(at.find((s) => s.node === 'n').values.map((v) => [v.key, v.label]), [['{n.result}', 'Result']]);
   // A Source: its Count, then its store's fields; Results, a set of rows, is no value a message can say.
@@ -41,16 +41,16 @@ test('the values a node can name: each node before it, nearest first; its rows a
   assert.equal(at.find((s) => s.node === 's').heading, 'Customers');
 });
 
-test('a value no route gives warns on its row; one that is given does not', () => {
+test('a value no connection gives warns on its row; one that is given does not', () => {
   assert.deepEqual(warningsOf(workflowGraph(flow('Hi {s.name}, {n.result} seats; see {f.link}'), { fieldsOf })), []);
   const words = warningsOf(workflowGraph(flow('{lone.value} and {s.nope} and {gone.x}'), { fieldsOf })).map((w) => [w.row, w.words]);
   assert.deepEqual(words, [
-    ['message', '"{lone.value}" has no value here: no route brings Value to this node'],
+    ['message', '"{lone.value}" has no value here: no connection brings Value to this node'],
     ['message', '"{s.nope}" has no value here: Customers sends no "nope"'],
     ['message', '"{gone.x}" names no node'],
   ]);
   // With no fields known, a Source takes any field.
-  assert.deepEqual(unreachedValues('{s.nope}', valuesAt(nodes, routes, 'o', NODE_KINDS), nodes, NODE_KINDS, false), []);
+  assert.deepEqual(unreachedValues('{s.nope}', valuesAt(nodes, connections, 'o', NODE_KINDS), nodes, NODE_KINDS, false), []);
 });
 
 test('the Preview puts each value in; one it does not know stays as written', () => {

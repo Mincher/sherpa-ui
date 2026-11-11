@@ -3,7 +3,7 @@
  * One test per Condition, and And and Or join tests (plan 783 D4): 780's rule, which the Group row kept, is theirs
  * now. A test's True brings its whole tree; any other boolean — a True or False, a value that says true or false,
  * 1 or 0 — is a CONSTANT one the graph holds, folded into the group; one only a run gives is named by where it
- * comes from. Anything else reads null, and the node warns. No route into it is a fault.
+ * comes from. Anything else reads null, and the node warns. No connection into it is a fault.
  *
  *   node --test test/unit/and-or-take-any-boolean.test.mjs
  *
@@ -16,23 +16,23 @@ const core = new URL('../../dist/core/data/', import.meta.url);
 const { truthOf } = await import(new URL('node-input.js', core));
 const { workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { nodeFlow } = await import(new URL('node-flow.js', core));
-const { routeRequest } = await import(new URL('query-graph.js', core));
+const { connectionRequest } = await import(new URL('query-graph.js', core));
 
 const ACTIVE = { field: 'status', op: 'eq', value: 'active' };
 const PRO = { field: 'plan', op: 'eq', value: 'Pro' };
 const store = { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } };
 /** Status Equals active: Source › Field › Condition. */
 const status = [store, { id: 'fs', kind: 'field', x: 200, y: 0, values: { field: 'status' } }, { id: 'active', kind: 'condition', x: 400, y: 0, values: { type: 'eq', b: 'active' } }];
-const statusRoutes = [{ from: 's/rows', to: 'fs' }, { from: 'fs/field', to: 'active' }];
+const statusConnections = [{ from: 's/rows', to: 'fs' }, { from: 'fs/field', to: 'active' }];
 /** Plan Equals Pro, the same way. */
 const plan = [{ id: 'fp', kind: 'field', x: 200, y: 300, values: { field: 'plan' } }, { id: 'pro', kind: 'condition', x: 400, y: 300, values: { type: 'eq', b: 'Pro' } }];
-const planRoutes = [{ from: 's/rows', to: 'fp' }, { from: 'fp/field', to: 'pro' }];
+const planConnections = [{ from: 's/rows', to: 'fp' }, { from: 'fp/field', to: 'pro' }];
 const value = (v, type) => ({ id: 'v', kind: 'value', x: 0, y: 600, values: { value: v, ...(type ? { type } : {}) } });
 /** Status is active, joined by `join` with what `from` sends. */
-const flow = (nodes, from, join = 'and', routes = []) => ({
-  v: 2, id: 'w',
+const flow = (nodes, from, join = 'and', connections = []) => ({
+  v: 3, id: 'w',
   nodes: [...status, ...nodes, { id: 'j', kind: 'condition', x: 600, y: 0, values: { type: join } }],
-  routes: [...statusRoutes, ...routes, { from: 'active', to: 'j' }, { from, to: 'j' }],
+  connections: [...statusConnections, ...connections, { from: 'active', to: 'j' }, { from, to: 'j' }],
 });
 const read = (w) => {
   const g = workflowGraph(w);
@@ -49,31 +49,31 @@ test('a boolean says true or false: true and false, the words, a number — 0 Fa
 test('every boolean joins And and Or, no fault and no warning: a test\'s True, a True, a False, a value that says one, 1 or 0', () => {
   const math = { id: 'm', kind: 'math', x: 0, y: 400 };
   const cases = [
-    [plan, 'pro', planRoutes], [[], 'active/#false'], [plan, 'pro/#false', planRoutes],
+    [plan, 'pro', planConnections], [[], 'active/#false'], [plan, 'pro/#false', planConnections],
     [[value('true', 'boolean')], 'v/value'], [[value('false', 'boolean')], 'v/value'], [[value('1', 'integer')], 'v/value'], [[value('0', 'integer')], 'v/value'],
     [[value('True')], 'v/value'], [[math], 'm/result'], [[value('2', 'integer')], 'v/value'],
   ];
   for (const join of ['and', 'or']) {
-    for (const [nodes, from, routes] of cases) {
-      const r = read(flow(nodes, from, join, routes));
+    for (const [nodes, from, connections] of cases) {
+      const r = read(flow(nodes, from, join, connections));
       assert.deepEqual([r.faults, r.warnings], [[], undefined], `${join}: ${from}`);
     }
   }
 });
 
 test('a test brings its tree; a constant folds — true drops out of And and ends Or, false the other way', () => {
-  assert.deepEqual(read(flow(plan, 'pro', 'or', planRoutes)).where, { or: [ACTIVE, PRO] });
-  assert.deepEqual(read(flow(plan, 'pro', 'and', planRoutes)).where, { and: [ACTIVE, PRO] });
+  assert.deepEqual(read(flow(plan, 'pro', 'or', planConnections)).where, { or: [ACTIVE, PRO] });
+  assert.deepEqual(read(flow(plan, 'pro', 'and', planConnections)).where, { and: [ACTIVE, PRO] });
   assert.deepEqual(read(flow([value('true', 'boolean')], 'v/value')).where, ACTIVE, 'Status and true: Status');
   assert.deepEqual(read(flow([value('0', 'integer')], 'v/value')).where, false, 'Status and 0: never');
   assert.deepEqual(read(flow([value('1', 'integer')], 'v/value', 'or')).where, true, 'Status or 1: always');
   assert.deepEqual(read(flow([value('false', 'boolean')], 'v/value', 'or')).where, ACTIVE, 'Status or false: Status');
   // An Or whose own parts fold is a constant in its parent: Status and (Plan or 1) is Status.
   const always = { id: 'any', kind: 'condition', x: 500, y: 300, values: { type: 'or' } };
-  const w = flow([...plan, value('1', 'integer'), always], 'any', 'and', [...planRoutes, { from: 'pro', to: 'any' }, { from: 'v/value', to: 'any' }]);
+  const w = flow([...plan, value('1', 'integer'), always], 'any', 'and', [...planConnections, { from: 'pro', to: 'any' }, { from: 'v/value', to: 'any' }]);
   assert.deepEqual(read(w).where, ACTIVE);
   // Only constants: And of true is true; Or of false, false.
-  const lone = (v, join) => ({ v: 2, id: 'w', nodes: [value(v, 'integer'), { id: 'j', kind: 'condition', x: 400, y: 0, values: { type: join } }], routes: [{ from: 'v/value', to: 'j' }] });
+  const lone = (v, join) => ({ v: 3, id: 'w', nodes: [value(v, 'integer'), { id: 'j', kind: 'condition', x: 400, y: 0, values: { type: join } }], connections: [{ from: 'v/value', to: 'j' }] });
   assert.equal(read(lone('1', 'and')).where, true);
   assert.equal(read(lone('0', 'or')).where, false);
 });
@@ -96,13 +96,13 @@ test('anything else reads null and warns in words, and says nothing in the tree;
   }
 });
 
-test('the Query holds no constant: a route into one of its Condition\'s Group rows is no request it takes', () => {
+test('the Query holds no constant: a connection into one of its Condition\'s Group rows is no request it takes', () => {
   const graph = {
     nodes: [
       { id: 'a', kind: 'condition', heading: 'Plan', icon: 'function', rows: [], x: 0, y: 0, ref: { scope: 'data', field: 'plan' } },
       { id: 'b', kind: 'condition', heading: 'Status', icon: 'function', rows: [{ name: 'group-2', label: 'Group', input: 'boolean' }], x: 300, y: 0, ref: { scope: 'data', field: 'status' } },
     ],
-    routes: [],
+    connections: [],
   };
-  assert.match(routeRequest(graph, { from: 'a', to: 'b/group-2' }).refused, /a condition's True goes into a field of a scope/);
+  assert.match(connectionRequest(graph, { from: 'a', to: 'b/group-2' }).refused, /a condition's True goes into a field of a scope/);
 });

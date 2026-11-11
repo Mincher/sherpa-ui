@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/entity-preset-filter.v2.json",
+  "title": "Sherpa-UI preset filter settings",
+  "description": "The settings of a preset-filter entity. Its graph sends a condition to #out/where.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source": { "description": "The source the condition is for, by the name the page definition gives it.", "type": "string" }
+  }
+}

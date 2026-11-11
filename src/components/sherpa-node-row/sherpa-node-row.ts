@@ -17,8 +17,8 @@ export class SherpaNodeRow extends SherpaElement {
     'data-label': { type: 'string', kind: 'content' },
     'data-input-socket': SHARED_PROPS['data-input-socket'],
     'data-output-socket': SHARED_PROPS['data-output-socket'],
-    'data-input-routed': SHARED_PROPS['data-input-routed'],
-    'data-output-routed': SHARED_PROPS['data-output-routed'],
+    'data-input-connected': SHARED_PROPS['data-input-connected'],
+    'data-output-connected': SHARED_PROPS['data-output-connected'],
     'data-input-many': SHARED_PROPS['data-input-many'],
     'data-property': { type: 'boolean', kind: 'style' },
     'data-message': { type: 'string', kind: 'behaviour' },
@@ -27,10 +27,10 @@ export class SherpaNodeRow extends SherpaElement {
     'data-collapsed': { type: 'boolean', kind: 'style' },
     'data-input-at': { type: 'number', kind: 'behaviour' },
     'data-output-at': { type: 'number', kind: 'behaviour' },
-    'data-input-at-routed': { type: 'number', kind: 'behaviour' },
-    'data-output-at-routed': { type: 'number', kind: 'behaviour' },
+    'data-input-at-connected': { type: 'number', kind: 'behaviour' },
+    'data-output-at-connected': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-input-at', 'data-output-at', 'data-input-at-routed', 'data-output-at-routed', 'data-message'];
+  static override observed = ['data-input-at', 'data-output-at', 'data-input-at-connected', 'data-output-at-connected', 'data-message'];
 
   override onRender(): void {
     this.#places();
@@ -51,7 +51,7 @@ export class SherpaNodeRow extends SherpaElement {
 
   /** Its sockets' places in a collapsed node's stacks, where the CSS reads them. */
   #places(): void {
-    for (const [attr, prop] of [['data-input-at', '--_in-at'], ['data-output-at', '--_out-at'], ['data-input-at-routed', '--_in-at-routed'], ['data-output-at-routed', '--_out-at-routed']] as const) {
+    for (const [attr, prop] of [['data-input-at', '--_in-at'], ['data-output-at', '--_out-at'], ['data-input-at-connected', '--_in-at-connected'], ['data-output-at-connected', '--_out-at-connected']] as const) {
       if (this.hasAttribute(attr)) this.style.setProperty(prop, String(this.num(attr, 0)));
       else this.style.removeProperty(prop);
     }

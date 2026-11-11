@@ -1,6 +1,6 @@
 /**
  * node-paths.ts — is there a complete PATH from a Source to an Output? Fetch and Simulate need one. A path runs along the
- * kept routes, through the portals (an In and an Out of one name are joined) and through a use of a Custom Node whose
+ * kept connections, through the portals (an In and an Out of one name are joined) and through a use of a Custom Node whose
  * inside joins its Group Input to its Group Output. Frames change no data. Pure: no DOM. Will, TODO 836 ·
  * docs/history/plan-836-data-through-nodes.md · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
  *
@@ -36,10 +36,10 @@ export const isSource = (node: GraphNode): boolean => node.rows.some((r) => r.co
 /** Whether a node is an Output: the end of a path. */
 export const isOutput = (node: GraphNode): boolean => node.category === 'Output';
 
-/** The nodes a graph's routes reach from one node, as the data flows (a portal hop resolved). */
+/** The nodes a graph's connections reach from one node, as the data flows (a portal hop resolved). */
 function reach(graph: DrawnGraph, start: string, facts: PathFacts, depth: number): Set<string> {
   const onward = new Map<string, string[]>();
-  for (const r of portalFlow(graph.nodes, graph.routes).routes) {
+  for (const r of portalFlow(graph.nodes, graph.connections).connections) {
     const [from, to] = [socketOf(r.from).node, socketOf(r.to).node];
     onward.set(from, [...(onward.get(from) ?? []), to]);
   }

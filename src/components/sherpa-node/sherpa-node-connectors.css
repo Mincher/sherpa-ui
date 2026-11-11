@@ -1,0 +1,44 @@
+/**
+ * sherpa-node-connectors.css — a connection line takes the ink of its FROM socket's type,
+ * as the socket pins it. The lines are the canvas's light DOM, so this sheet is the
+ * page's. TRAP T-a-socket-is-drawn-by-its-type
+ */
+@layer components {
+  svg.graph-connectors path[data-type="value"] { stroke: var(--sherpa-style-info-indicator-accent, #3b4ccd); }
+  svg.graph-connectors path[data-type="object"] { stroke: var(--sherpa-style-active-indicator-accent, #3b4ccd); }
+  svg.graph-connectors path[data-type="boolean"] { stroke: var(--sherpa-style-success-indicator-accent, #3b4ccd); }
+  svg.graph-connectors path[data-type="false"] { stroke: var(--sherpa-style-critical-indicator-accent, #3b4ccd); }
+
+  /* A connection a click picked: Delete or Backspace breaks it. */
+  svg.graph-connectors path[data-selected] { stroke-width: 4px; stroke-dasharray: 8 4; }
+
+  /* A connection's handles: a dot at each bend point and at the middle of each piece. Shown on hover, on a picked connection, and on the one picked. */
+  svg.graph-connectors .graph-handle { visibility: hidden; }
+  svg.graph-connectors g.graph-connector:hover .graph-handle,
+  svg.graph-connectors g.graph-connector[data-active] .graph-handle,
+  svg.graph-connectors .graph-handle[data-selected] { visibility: visible; }
+  svg.graph-connectors .graph-handle-dot {
+    fill: var(--sherpa-style-surface-base, #fff);
+    stroke: var(--sherpa-style-border-base, #b3b3c3);
+    stroke-width: 2px;
+  }
+  svg.graph-connectors .graph-handle[data-bend] .graph-handle-dot { stroke: var(--sherpa-style-active-indicator-accent, #3b4ccd); }
+  svg.graph-connectors .graph-handle[data-selected] .graph-handle-dot {
+    fill: var(--sherpa-style-active-indicator-accent, #3b4ccd);
+    stroke: var(--sherpa-style-surface-base, #fff);
+    stroke-width: 3px;
+    paint-order: stroke;
+  }
+
+  /* A tie a connector is dragged over: it would join it. */
+  svg.graph-connectors rect.graph-tie[data-target] { stroke: var(--sherpa-style-active-indicator-accent, #3b4ccd); stroke-width: 4px; }
+
+  @media (forced-colors: active) {
+    svg.graph-connectors .graph-handle-dot { fill: Canvas; stroke: CanvasText; }
+    svg.graph-connectors .graph-handle[data-selected] .graph-handle-dot { fill: Highlight; stroke: Highlight; }
+    svg.graph-connectors rect.graph-tie[data-selected] { fill: Highlight !important; stroke: Highlight !important; filter: none !important; outline: 2px solid Highlight; }
+    svg.graph-connectors rect.graph-tie[data-target] { stroke: Highlight; }
+    svg.graph-connectors path { stroke: CanvasText; }
+    svg.graph-connectors path[data-selected] { stroke: Highlight; }
+  }
+}

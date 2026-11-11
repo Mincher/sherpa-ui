@@ -13,14 +13,14 @@ const { workflowGraph } = await import(new URL('workflow.js', core));
 
 const rows = { users: [{ id: 1 }, { id: 2 }, { id: 3 }] };
 const flow = {
-  v: 2, id: 'w',
+  v: 3, id: 'w',
   nodes: [
     { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'o', kind: 'output', x: 400, y: 0, values: { type: 'notification', message: 'Hi' } },
     { id: 'r', kind: 'output', x: 800, y: 0, values: { type: 'result', status: 'succeeded' } },
     { id: 'end', kind: 'output', x: 800, y: 300 },
   ],
-  routes: [{ from: 's/rows', to: 'o' }, { from: 'o/messageId', to: 'r/summary' }, { from: 's/rows', to: 'end' }],
+  connections: [{ from: 's/rows', to: 'o' }, { from: 'o/messageId', to: 'r/summary' }, { from: 's/rows', to: 'end' }],
 };
 
 test('an Output\'s light says what it would do and the rows that reach it; it fires nothing', () => {

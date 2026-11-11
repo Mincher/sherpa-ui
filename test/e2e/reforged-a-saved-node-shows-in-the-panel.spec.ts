@@ -24,7 +24,7 @@ const SETUP = `async () => {
   const definition = (label) => ({ v: 1, label, category: 'Custom Nodes',
     inputs: [{ name: 'users', label: 'Users', type: 'object' }], outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
     nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }],
-    routes: [{ from: '#in/users', to: 'c' }, { from: 'c/rows', to: '#out/allowed' }, { from: 'c', to: '#out' }] });
+    connections: [{ from: '#in/users', to: 'c' }, { from: 'c/rows', to: '#out/allowed' }, { from: 'c', to: '#out' }] });
   window.definition = definition;
   const keeper = new PageKeeper();
   keeper.entityPresets = [nodeEntityOf('has-role', definition('Has role'))];
@@ -38,7 +38,7 @@ const SETUP = `async () => {
   window.keeper = keeper;
   window.saved = [];
   document.addEventListener('definition-save', (e) => window.saved.push(e.detail.definition));
-  window.editor = bindWorkflow(canvas, { v: 2, id: 'g', nodes: [], routes: [] }, { session: new SessionStore(), inspector, panel, kinds });
+  window.editor = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [], connections: [] }, { session: new SessionStore(), inspector, panel, kinds });
   await customElements.whenDefined('sherpa-node-list');
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));

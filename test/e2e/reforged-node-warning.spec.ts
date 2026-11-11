@@ -4,7 +4,7 @@ import { test, expect, type Page } from './harness';
  * A node that cannot use what reaches it reads null there, and draws as a WARNING: the warning Style mode's
  * border, never red, and a tip on its header that says why, from its kind's own words. Hover or keyboard focus
  * shows the tip; a connection made by hand warns at once, Undo takes it back, and Save does not wait. Any
- * route joins any input: one of another type is drawn and warns; a loop is still refused (TODO 770).
+ * connection joins any input: one of another type is drawn and warns; a loop is still refused (TODO 770).
  * Will, 2026-11-05 (TODOs 764, 770). Real pointer and keys; the look read back by pixels.
  * TRAP T-a-node-reads-null-from-what-it-cannot-use
  */
@@ -25,7 +25,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = {
-      v: 2, id: 'warn',
+      v: 3, id: 'warn',
       nodes: [
         { id: 'v', kind: 'value', x: 20, y: 20, values: { value: 'abc' } },
         { id: 'm', kind: 'math', x: 380, y: 20 },
@@ -34,7 +34,7 @@ test.beforeEach(async ({ page }) => {
         { id: 't', kind: 'time', x: 380, y: 340 },
         { id: 'end', kind: 'output', x: 840, y: 440 },
       ],
-      routes: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c', to: 'end' }],
+      connections: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c', to: 'end' }],
     };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     const w = window as unknown as Record<string, unknown>;
@@ -146,7 +146,7 @@ test('a connection made by hand warns at once; Undo takes the warning away, Redo
   await page.mouse.move(...to, { steps: 8 });
   await page.mouse.up();
   await settle(page);
-  expect(await warning(page, 'Condition')).toBe('Equals takes a field or a value; it was given rows: route a Field in');
+  expect(await warning(page, 'Condition')).toBe('Equals takes a field or a value; it was given rows: connect a Field in');
   const mod = await page.evaluate(() => (/mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control'));
   await page.locator('#cv').evaluate((el) => (el.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
   await page.keyboard.press(`${mod}+z`);
@@ -154,11 +154,11 @@ test('a connection made by hand warns at once; Undo takes the warning away, Redo
   expect(await warning(page, 'Condition')).toBeNull();
   await page.keyboard.press(`Shift+${mod}+z`);
   await settle(page);
-  expect(await warning(page, 'Condition')).toBe('Equals takes a field or a value; it was given rows: route a Field in');
-  // No fault, no block: Save hands the graph over, its route in it.
+  expect(await warning(page, 'Condition')).toBe('Equals takes a field or a value; it was given rows: connect a Field in');
+  // No fault, no block: Save hands the graph over, its connection in it.
   const handed = await page.evaluate(() => {
-    const w = window as unknown as { ed: { save(): boolean }; saved: { routes: { from: string; to: string }[] }[] };
-    return [w.ed.save(), w.saved.at(-1)?.routes.some((r) => r.from === 's/rows' && r.to === 'c')];
+    const w = window as unknown as { ed: { save(): boolean }; saved: { connections: { from: string; to: string }[] }[] };
+    return [w.ed.save(), w.saved.at(-1)?.connections.some((r) => r.from === 's/rows' && r.to === 'c')];
   });
   expect(handed).toEqual([true, true]);
 });
@@ -177,7 +177,7 @@ const drag = async (page: Page, from: [number, number], to: [number, number]) =>
   await page.mouse.up();
   await settle(page);
 };
-const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-routes path[data-to]')].map((p) => `${(p as SVGElement).dataset['from']}>${(p as SVGElement).dataset['to']}`).sort());
+const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-connectors path[data-to]')].map((p) => `${(p as SVGElement).dataset['from']}>${(p as SVGElement).dataset['to']}`).sort());
 
 test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is still refused, in words (770)', async ({ page }) => {
   const heard: string[] = [];
@@ -202,7 +202,7 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   const before = await lines(page);
   await drag(page, await socketAt(page, 'Condition', 'Results', 'output'), await socketAt(page, 'Time', null, 'input'));
   expect(await lines(page)).toEqual(before);
-  await expect.poll(() => heard.some((m) => m.includes('its routes run in a loop'))).toBe(true);
+  await expect.poll(() => heard.some((m) => m.includes('its connections run in a loop'))).toBe(true);
 });
 
 test('a Value made True/false and "true" reads 1 in Math › Value A, and Math no longer warns (TODO 781)', async ({ page }) => {

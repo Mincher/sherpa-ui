@@ -16,7 +16,7 @@ const { filterRows } = await import(new URL('store.js', core));
 
 const R = (from, to) => ({ from, to });
 const N = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
-const graphOf = (nodes, routes) => workflowGraph({ v: 2, id: 'p', nodes, routes });
+const graphOf = (nodes, connections) => workflowGraph({ v: 3, id: 'p', nodes, connections });
 const out = (sim, id, socket) => sim.nodes[id].outgoing.find((s) => s.socket === socket);
 const into = (sim, id, socket) => sim.nodes[id].incoming.find((s) => s.socket === socket);
 
@@ -31,7 +31,7 @@ const chain = (field, type, b) => graphOf(
   [R('s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o')],
 );
 
-test('a Source sends the cached rows; a Field sends its name and the rows into it; the Output hears what is routed to it', () => {
+test('a Source sends the cached rows; a Field sends its name and the rows into it; the Output hears what is connected to it', () => {
   const rows = rowsOf(30);
   const sim = simulateGraph(chain('status', 'eq', 'active'), { customers: rows });
   assert.equal(out(sim, 's', 's/rows').rows, rows, 'the cache\'s own list, never a copy');
@@ -104,7 +104,7 @@ test('a kind not simulated yet says so and sends no rows', () => {
   assert.ok(sim.faults.includes('"Preset" is not simulated yet'), JSON.stringify(sim.faults));
 });
 
-test('rows flow through a portal as through a route', () => {
+test('rows flow through a portal as through a connection', () => {
   const rows = rowsOf(40);
   const g = graphOf(
     [N('s', 'source', { store: 'customers' }), N('in', 'portal', { type: 'in', name: 'rows' }), N('out', 'portal', { type: 'out', name: 'rows' }),
@@ -128,15 +128,15 @@ test('it is fast: 100,000 rows through a Source, a Field, five Conditions and an
   const rows = rowsOf(100_000);
   const tests = [['status', 'ne', 'churned'], ['seats', 'gt', 5], ['seats', 'lt', 95], ['region', 'eq', 'EMEA'], ['status', 'ne', 'suspended']];
   const nodes = [N('s', 'source', { store: 'customers' }), N('o', 'output')];
-  const routes = [];
+  const connections = [];
   let from = 's/rows';
   tests.forEach(([field, type, b], i) => {
     nodes.push(N(`f${i}`, 'field', { field }), N(`c${i}`, 'condition', { type, b }));
-    routes.push(R(from, `f${i}`), R(`f${i}/field`, `c${i}`));
+    connections.push(R(from, `f${i}`), R(`f${i}/field`, `c${i}`));
     from = `c${i}/rows`;
   });
-  routes.push(R(from, 'o'));
-  const g = graphOf(nodes, routes);
+  connections.push(R(from, 'o'));
+  const g = graphOf(nodes, connections);
   simulateGraph(g, { customers: rows });
   const start = performance.now();
   const sim = simulateGraph(g, { customers: rows });
@@ -183,7 +183,7 @@ test('a simulation in steps: it names its nodes, runs nothing until stepped, and
   assert.deepEqual(run.result(), simulateGraph(g, { customers: rows }));
   // The doors a Custom Node's inside draws (`#in`, `#out`) are not run.
   const node = (id) => ({ id, kind: 'x', heading: id, icon: '', rows: [], x: 0, y: 0 });
-  assert.deepEqual(simulation({ nodes: [node('#in'), node('a'), node('#out')], routes: [] }, {}).ids, ['a']);
+  assert.deepEqual(simulation({ nodes: [node('#in'), node('a'), node('#out')], connections: [] }, {}).ids, ['a']);
 });
 
 test('stepping lets the host in when a node has run long, and says each node before it runs: the page can draw the one it is on', async () => {

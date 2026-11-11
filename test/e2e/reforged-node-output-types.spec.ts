@@ -22,12 +22,12 @@ test.beforeEach(async ({ page }) => {
     await el.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = {
-      v: 2, id: 'g',
+      v: 3, id: 'g',
       nodes: [
         { id: 's', kind: 'source', heading: 'Customers', x: 340, y: 40, values: { store: 'customers' } },
         { id: 'o', kind: 'output', x: 700, y: 40, values: { type: 'notification', message: 'Hi {s.name}' } },
       ],
-      routes: [{ from: 's/rows', to: 'o' }],
+      connections: [{ from: 's/rows', to: 'o' }],
     };
     (window as never as { editor: unknown }).editor = bindWorkflow(el as never, flow as never, {
       session: new SessionStore(), inspector: inspector as never, panel: el.querySelector('sherpa-node-list') as never,
@@ -155,7 +155,7 @@ test('Send a test asks the host, with the node, its type and its values; Sherpa 
   expect(asked).toEqual({ node: 'o', type: 'notification', values: { type: 'notification', message: 'Hi {s.name}' } });
 });
 
-test('the Output tab: the Preview of each message as it reads, and where each property is routed', async ({ page }) => {
+test('the Output tab: the Preview of each message as it reads, and where each property is connected', async ({ page }) => {
   await pickOutput(page);
   const r = await page.evaluate(() => {
     const tab = document.querySelector('#inspector [data-tab="output"]')!;

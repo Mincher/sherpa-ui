@@ -19,8 +19,8 @@
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say, and the Sources a reader keeps.
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
  * - statusTallies — Each status field's rows per value, over the whole store: how many each Condition of its chain took.
- * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a status value whose `when` is no condition, and a route…
- * - queryGraph — A page's Query as nodes and routes, laid out in columns by depth.
+ * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a `when` that is no condition, a stray connection.
+ * - queryGraph — A page's Query as nodes and connections, laid out in columns by depth.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
  * - PlaceFacts — What placing a node needs of the Query: its holds, fields, presets and which are on.
  * - KeptSource — A Source a reader placed that the page does not read: kept in the editor's draft, saved nowhere.
@@ -28,8 +28,8 @@
  * - QUERY_DRAWN_ONLY — The kinds a Query draws and never places: its node panel offers neither.
  * - placeRequest — The command placing a node asks in a scope, a Source to keep, or why it cannot.
  * - keptEdit — The kept Sources after an edit of one's Store row; none, the edit is no kept Source's.
- * - RouteAnswer — What a new route asks: a command, or why it is refused; null, nothing to do.
- * - routeRequest — The command a new route asks: a condition into a field of a scope, moved or retargeted.
+ * - ConnectionAnswer — What a new connection asks: a command, or why it is refused; null, nothing to do.
+ * - connectionRequest — The command a new connection asks: a condition into a field of a scope, moved or retargeted.
  */
 import { SAVED_PRESET, type PageDefinition } from './page-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest } from './query.js';
@@ -42,7 +42,7 @@ import { PRESET_FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
   FALSE_SOCKET, LIST_OPS, NODE_KINDS, ROWS, kindNode, resolveKind, rowChoices, rowOf, socketOf,
-  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute, type RowChoice,
+  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeConnection, type RowChoice,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
@@ -124,7 +124,7 @@ export function traceQuerySteps(applied: Query, { walk, total, statuses }: LoadS
   if (arranged) traceStep(QUERY_NODE.arrange(arranged), { parent, state: 'done', ...(total !== undefined ? { rows: total } : {}) });
 }
 
-/** One column's width, in plane px: a node and the room for its routes. */
+/** One column's width, in plane px: a node and the room for its connections. */
 const COLUMN = 360;
 /** A node's height, estimated: its header, and each row. The reader moves what overlaps. */
 const HEADER = 72;
@@ -291,7 +291,7 @@ function presentationRows(
     }));
 }
 
-/** A row of the Query the definition owns: its list, read only, and no socket — no route reaches it. */
+/** A row of the Query the definition owns: its list, read only, and no socket — no connection reaches it. */
 function owned(row: GraphRow, list: readonly { value: string; label: string }[] | undefined): GraphRow {
   const { input: _in, output: _out, ...rest } = row;
   return { ...rest, hint: FROM_DEFINITION, ...(list ? { choices: list } : {}) };
@@ -325,7 +325,7 @@ export async function statusTallies(
 }
 
 /** What is wrong with a Query graph's chains, in words: a status value whose `when` is no condition, and a
- *  route that ends where no node, row or False is — a False needs a node that forks. */
+ *  connection that ends where no node, row or False is — a False needs a node that forks. */
 export function queryGraphFaults(graph: DrawnGraph, domains: Readonly<Record<string, FieldDomain>> = {}): string[] {
   const faults: string[] = [];
   for (const [field, domain] of Object.entries(domains)) {
@@ -334,17 +334,17 @@ export function queryGraphFaults(graph: DrawnGraph, domains: Readonly<Record<str
     }
   }
   const node = (id: string): GraphNode | undefined => graph.nodes.find((n) => n.id === id);
-  for (const { from, to } of graph.routes) {
+  for (const { from, to } of graph.connections) {
     const [a, b] = [socketOf(from), socketOf(to)];
     const [start, end] = [node(a.node), node(b.node)];
-    if (!start || !end) faults.push(`A route from "${from}" to "${to}" ends at a node that is not drawn.`);
-    else if (a.row === FALSE_SOCKET && !start.branches) faults.push(`"${start.heading}" has no False to route from "${from}".`);
-    else if (b.row !== undefined && !end.rows.some((r) => r.name === b.row)) faults.push(`A route into "${to}" ends at a row "${end.heading}" does not have.`);
+    if (!start || !end) faults.push(`A connection from "${from}" to "${to}" ends at a node that is not drawn.`);
+    else if (a.row === FALSE_SOCKET && !start.branches) faults.push(`"${start.heading}" has no False to connection from "${from}".`);
+    else if (b.row !== undefined && !end.rows.some((r) => r.name === b.row)) faults.push(`A connection into "${to}" ends at a row "${end.heading}" does not have.`);
   }
   return faults;
 }
 
-/** A page's Query as nodes and routes, laid out in columns by depth. */
+/** A page's Query as nodes and connections, laid out in columns by depth. */
 export function queryGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
   const label = (field: string): string => facts.label?.(field) ?? definition.source?.fields?.[field]?.label ?? field;
   const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
@@ -358,14 +358,14 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const components = facts.components ?? [];
   const scopeOf = (c: GraphComponent): string => c.scope ?? (c.id in query.scopes ? c.id : VIEW);
   const nodes: (Omit<GraphNode, 'x' | 'y'> & { column: number })[] = [];
-  const routes: NodeRoute[] = [];
+  const connections: NodeConnection[] = [];
   const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> = {}, type?: string): string => {
     const made = kindNode({ ...NODE_KINDS, [kind]: resolveKind(NODE_KINDS[kind]!, type) }, kind, id, rows, own);
     nodes.push({ ...made, column });
     return id;
   };
   // A field's whole tree (plan 783 D6): a Field node per field it reads, a test per leaf on its Field, an And or an Or per
-  // group, a part's True into its group's header. `into`: the routes into its Fields, where a status chain hands rows on.
+  // group, a part's True into its group's header. `into`: the connections into its Fields, where a status chain hands rows on.
   const treeNodes = (
     column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
     apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, into = [] }: { back?: number; into?: readonly string[] } = {},
@@ -382,7 +382,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const made = nodes.at(-1)!;
       delete made.branches;
       if (!into.length) delete made.input;
-      for (const from of into) routes.push({ from, to: id });
+      for (const from of into) connections.push({ from, to: id });
       return [f, id] as const;
     }));
     const walk = (part: Condition, path: readonly number[]): string => {
@@ -393,13 +393,13 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const parts = groupOf(part);
       if (parts) {
         add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS })], { ...at, ref: nodeRef }, parts[0]);
-        parts[1].forEach((p, i) => routes.push({ from: walk(p, [...path, i + 1]), to: id }));
+        parts[1].forEach((p, i) => connections.push({ from: walk(p, [...path, i + 1]), to: id }));
         return id;
       }
       const leaf = part as ConditionLeaf;
       const drawn = leafRows(leaf, ctx);
       add(column - path.length * back, id, drawn.kind, drawn.rows.map(off), { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
-      routes.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
+      connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
       return id;
     };
     return walk(tree, []);
@@ -438,21 +438,21 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       name: value, label: value, input: 'boolean', value: domain.statuses?.[value] ?? '',
       hint: whens[i] === undefined ? 'Every row the values before it left. ' + FROM_STORE : !isCondition(whens[i]) ? `Its \`when\` is not a condition. ${FROM_STORE}` : FROM_STORE,
     }));
-    routes.push({ from: sent(QUERY_NODE.source), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
+    connections.push({ from: sent(QUERY_NODE.source), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
     // Each value's `when` is a tree of tests on a Field per field it names; False hands the rows it left to the next value's Fields.
     let before: string | null = null;
     let at = 0;
     values.forEach((value, i) => {
       const when = whens[i];
       if (!isCondition(when)) {
-        if (before && when === undefined) routes.push({ from: `${before}/${FALSE_SOCKET}`, to: `${node}/${value}` });
+        if (before && when === undefined) connections.push({ from: `${before}/${FALSE_SOCKET}`, to: `${node}/${value}` });
         before = null;
         return;
       }
       const id = treeNodes(0.5 + at++ * 0.01, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
         heading: value, description: groupWords(when),
       }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/${FALSE_SOCKET}`] : [] });
-      routes.push({ from: id, to: `${node}/${value}` });
+      connections.push({ from: id, to: `${node}/${value}` });
       before = id;
     });
   }
@@ -496,7 +496,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
       ref: { scope: id },
     });
-    for (const from of top || !view ? fed : [sent(QUERY_NODE.scope(VIEW))]) routes.push({ from, to: node });
+    for (const from of top || !view ? fed : [sent(QUERY_NODE.scope(VIEW))]) connections.push({ from, to: node });
     // Each preset, and each saved filter on its bar: on or off, and what it writes.
     for (const p of presets) {
       const saved = p.id.startsWith(SAVED_PRESET);
@@ -512,11 +512,11 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
         ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })),
         ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'boolean' })),
       ], { heading: p.label, ref: { scope: id, preset: p.id }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
-      routes.push({ from, to: `${node}/@${p.id}` });
+      connections.push({ from, to: `${node}/@${p.id}` });
       // What it writes: each field a Condition, the definition's to change.
       for (const [f, tree] of wrote) {
         const hint = saved ? SAVED_WORDS : entity ? FROM_ENTITY : FROM_DEFINITION;
-        routes.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)), to: `${from}/${f}` });
+        connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)), to: `${from}/${f}` });
       }
     }
     const held = fields.map((f) => ({ value: f, label: label(f) }));
@@ -526,14 +526,14 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
         heading: label(field),
         description: off ? 'Off: kept, not applied.' : 'Applied.',
       }, { scope: id, field });
-      routes.push({ from: when, to: `${node}/${field}` });
+      connections.push({ from: when, to: `${node}/${field}` });
     }
     // Its own answers the View holds over it: kept, not in force.
     for (const [field, condition] of kept) {
       const from = treeNodes(into, `kept-${id}-${field}`, condition, factsOf(field), {
         heading: label(field), description: 'Superseded: kept, not in force.',
       }, { scope: id, field, superseded: 'true' }, (row) => ({ ...row, editable: false, hint: SUPERSEDED }));
-      routes.push({ from, to: `${node}/${field}` });
+      connections.push({ from, to: `${node}/${field}` });
     }
     // The scope's rows on their way out: arranged, presented, then shown.
     let out = node;
@@ -545,7 +545,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       }).map((row) => (row.name === ROWS.name ? row : row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? rowChoices(row)! : keys })), {
         ref: { scope: id },
       });
-      routes.push({ from: sent(node), to: out });
+      connections.push({ from: sent(node), to: out });
     }
     // Each component its own Presentation: its SLOT's — its card's scope, kept in the
     // Query — and changed as Show as, Group and Sort change it. On the View it has no slot.
@@ -555,16 +555,16 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       let to = out;
       if (presented || c.kind) {
         to = add(8, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, keys, slot), slot ? { ref: { scope: id } } : {});
-        routes.push({ from: sent(out), to });
+        connections.push({ from: sent(out), to });
       }
-      routes.push({ from: sent(to), to: add(9, QUERY_NODE.component(c.id), 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
+      connections.push({ from: sent(to), to: add(9, QUERY_NODE.component(c.id), 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
     }
     // A slot's presentation with no component named to show it is still drawn.
     if (scope.presentation && !shows.length) {
-      routes.push({ from: sent(out), to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
+      connections.push({ from: sent(out), to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
     }
   }
-  // The page's own saved filters on no bar: what each would add, and no route.
+  // The page's own saved filters on no bar: what each would add, and no connection.
   for (const [id, set] of Object.entries(definition.savedFilters ?? {})) {
     if (!isSavedFilter(set) || onBars.has(id)) continue;
     const wrote = Object.entries(set.query.scopes).flatMap(([scope, s]) => Object.entries(readingsOf(s.where ?? {}, typed)).flatMap(([f, reading]) => {
@@ -575,9 +575,9 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       ...rowsOf('saved', { on: false }).map((row) => ({ ...row, hint: NOT_ADDED })),
       ...wrote.map(({ name, field, scope }): GraphRow => ({ name, label: scope === VIEW ? label(field) : `${label(field)} (${scope})`, input: 'boolean' })),
     ], { heading: set.label, ref: { saved: id } });
-    // What it would add: each field a Condition the saved filter owns, and no route out.
+    // What it would add: each field a Condition the saved filter owns, and no connection out.
     for (const { name, field, tree } of wrote) {
-      routes.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)), to: `${from}/${name}` });
+      connections.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)), to: `${from}/${name}` });
     }
   }
 
@@ -590,7 +590,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     down.set(column, y + HEADER + node.rows.length * ROW + GAP);
     return { ...node, x, y };
   });
-  return { nodes: laid, routes };
+  return { nodes: laid, connections };
 }
 
 /** The whole tree a Condition node is a group of: its ref keeps it. */
@@ -728,7 +728,7 @@ export function placeRequest(kind: string, scope: string, facts: PlaceFacts): Pl
     return next ? { request: { scope, hold: [...held, next] } }
       : { refused: `Scope "${scope}" holds every field it may, so it takes no new ${name}: take one from another scope, or free a field first.` };
   }
-  if (kind === 'condition') return { refused: 'A Condition tests a Field: route one in. In a Query, a Field\'s tests are its chip\'s: place a Field, then add them there.' };
+  if (kind === 'condition') return { refused: 'A Condition tests a Field: connect one in. In a Query, a Field\'s tests are its chip\'s: place a Field, then add them there.' };
   if (kind === 'preset' || kind === 'saved') {
     // The app's own, or the saved; a Preset Filter is its own Custom Node.
     const next = facts.presets(scope).find((p) => p.id.startsWith(SAVED_PRESET) === (kind === 'saved') && entityRefOf(p.id).type !== PRESET_FILTER && !facts.on(scope, p.id));
@@ -751,15 +751,15 @@ export function keptEdit(kept: readonly KeptSource[], { node, row, value }: Grap
   return kept.map((k) => (k.id === id ? { ...k, store: String(value ?? '') } : k));
 }
 
-/** What a new route asks: a command, or why it is refused; null, nothing to do. */
-export type RouteAnswer = { request: QueryRequest } | { refused: string } | null;
+/** What a new connection asks: a command, or why it is refused; null, nothing to do. */
+export type ConnectionAnswer = { request: QueryRequest } | { refused: string } | null;
 
 /**
- * The command a new route asks. The Query takes a condition into a field of a scope:
+ * The command a new connection asks. The Query takes a condition into a field of a scope:
  * the same field in another scope MOVES it there; another field takes it, keeping the
  * values that field has. Anything else, or a move that would then say nothing, is refused.
  */
-export function routeRequest(graph: DrawnGraph, { from, to }: NodeRoute, facts: Pick<QueryGraphFacts, 'type' | 'values'> = {}): RouteAnswer {
+export function connectionRequest(graph: DrawnGraph, { from, to }: NodeConnection, facts: Pick<QueryGraphFacts, 'type' | 'values'> = {}): ConnectionAnswer {
   const was = graph.nodes.find((n) => n.id === socketOf(from).node);
   const { node: into, row: field = '' } = socketOf(to);
   const target = graph.nodes.find((n) => n.id === into);
@@ -768,13 +768,13 @@ export function routeRequest(graph: DrawnGraph, { from, to }: NodeRoute, facts: 
   const there = target?.ref?.['scope'];
   // A kept Source is no part of the Query: nothing it sends reaches one.
   if (was?.ref?.['kept']) return { refused: `"${was.heading}" is not the page's Source: the Query reads nothing from it.` };
-  // A switch takes no route here: nothing in a page's Query says "driven by a node".
+  // A switch takes no connection here: nothing in a page's Query says "driven by a node".
   if (rowOf(target?.rows ?? [], field)?.control === 'switch') {
-    return { refused: `The Query takes no route into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], field)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };
+    return { refused: `The Query takes no connection into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], field)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };
   }
   // A condition's True, at its tree's root: its header. Its False says nothing a scope's field takes.
   if (!['condition', 'time'].includes(was?.kind ?? '') || socketOf(from).row !== undefined || was!.ref?.['superseded'] || was!.ref?.['path'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
-    return { refused: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition's True goes into a field of a scope.` };
+    return { refused: `The Query has no connection from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition's True goes into a field of a scope.` };
   }
   if (scope === there && old === field) return null;
   const whole = treeOf(was!);

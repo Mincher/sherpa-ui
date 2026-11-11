@@ -24,19 +24,19 @@ const { onReport } = await import(new URL('data/report.js', core));
 
 /** Records whose status is one value — Source › Field › Condition — sent to the Preset Filter's Where. */
 const filter = (id, label, value = 'active', extra = {}) => ({
-  v: 1, type: 'preset-filter', id, label,
+  v: 2, type: 'preset-filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: value } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
   },
   settings: { source: 'customers' }, ...extra,
 });
 /** A Preset Filter whose graph places one node of a kind. */
-const placing = (id, kind) => ({ ...filter(id, id.toUpperCase()), graph: { nodes: [{ id: 'use', kind, x: 0, y: 0 }], routes: [{ from: 'use', to: '#out/where' }] } });
+const placing = (id, kind) => ({ ...filter(id, id.toUpperCase()), graph: { nodes: [{ id: 'use', kind, x: 0, y: 0 }], connections: [{ from: 'use', to: '#out/where' }] } });
 const keeper = () => new PageKeeper({ tab: memoryTier(), local: memoryTier() });
 const heard = async (run) => {
   const said = [];
@@ -45,9 +45,9 @@ const heard = async (run) => {
 };
 /** A workflow that places a use of a kind, as the editor places one: its version and `was` recorded. */
 const flowOf = (library, kind, ids = ['pick']) => ({
-  v: 2, id: 'flow',
+  v: 3, id: 'flow',
   nodes: [...ids.map((id, i) => lib.useOf(library, kind, { id, x: 0, y: i * 200 })), { id: 'end', kind: 'output', x: 360, y: 0 }],
-  routes: ids.map((id) => ({ from: id, to: 'end' })),
+  connections: ids.map((id) => ({ from: id, to: 'end' })),
 });
 
 test('every entity is a node the panel offers, by its use\'s kind; a preset is read only, and its own settings ride with it', async () => {
@@ -88,7 +88,7 @@ test('the panel offers what the graph\'s type takes, and no node that would hold
   assert.ok(offered('some-node').includes('output'));
   assert.deepEqual(offered(undefined), Object.keys(kinds));
   // The check says the same of a family: what the panel leaves out, a save refuses.
-  const sent = { ...filter('sent', 'Sent'), graph: { nodes: [...filter('x', 'x').graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }], routes: filter('x', 'x').graph.routes } };
+  const sent = { ...filter('sent', 'Sent'), graph: { nodes: [...filter('x', 'x').graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }], connections: filter('x', 'x').graph.connections } };
   assert.match(entityFaults(sent).join('\n'), /places "end", of the family "Output"/);
 });
 
@@ -102,7 +102,7 @@ test('a use flattens: placed, it records its version; inside, it is the entity\'
   assert.deepEqual(inner.workflow.nodes.map((n) => n.id), ['#in', 'start', 'status', 'field', '#out']);
   assert.deepEqual(inner.kinds['#group-output'].rows.map((r) => r.name), ['where']);
   // A fault inside is the same fault a use shows, named by the path to it.
-  const broken = { ...trials, graph: { ...trials.graph, routes: [...trials.graph.routes, { from: 'start/rows', to: 'status/nothing' }] } };
+  const broken = { ...trials, graph: { ...trials.graph, connections: [...trials.graph.connections, { from: 'start/rows', to: 'status/nothing' }] } };
   const own = entityFaults(broken).find((f) => /nothing/.test(f));
   const used = lib.workflowFaultsDeep(flow, { v: 1, nodes: { 'preset-filter:trials': asNode(broken) } }).find((f) => /nothing/.test(f));
   assert.ok(own && used, `${own} | ${used}`);
@@ -159,7 +159,7 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
   const taken = {
     v: 1, label: 'Taken', inputs: [{ name: 'rows', type: 'object' }], outputs: [],
     nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: 'x' } }],
-    routes: [{ from: '#in/rows', to: 'c' }, { from: 'c', to: '#out' }],
+    connections: [{ from: '#in/rows', to: 'c' }, { from: 'c', to: '#out' }],
   };
   assert.equal(await k.saveNode('active-copy', taken), true);
   const made = lib.copyToMine(k.nodeLibrary(), 'preset-filter:active');
@@ -175,7 +175,7 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
 test('an app\'s type is used as a node too; and the keeper\'s modules stay light: no node kind, no workflow', () => {
   const off = registerEntityType({ id: 'ui-card', label: 'UI Card', runs: false, icon: 'grid', families: ['Sources'], outputs: [{ name: 'present', type: 'object' }] });
   try {
-    const card = { v: 1, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'preset-filter:trials', x: 0, y: 0 }], routes: [] } };
+    const card = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'preset-filter:trials', x: 0, y: 0 }], connections: [] } };
     const node = asNode(card);
     assert.deepEqual([node.icon, node.outputs.map((o) => o.name)], ['grid', ['present']]);
     // A card takes a Source, not a Condition; any entity's node, as a Preset Filter's.

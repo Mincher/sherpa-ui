@@ -3,7 +3,7 @@ import { parkThePointer } from './fixture';
 
 /**
  * The Node Editor's drawing — Will, TODO 555 Q2. drawGraph puts each node of a
- * graph on a canvas by its id, its rows read only, and a line for each route; a
+ * graph on a canvas by its id, its rows read only, and a line for each connection; a
  * redraw keeps a node where the reader moved it. bindQueryEditor keeps a page's
  * Query drawn as it changes, and its stop lets it go; bindWorkflow keeps a
  * workflow's draft. A moved node keeps its place for the tab, and Save hands the
@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
 /** Two frames: the nodes render, then their lines are drawn. */
 const FRAMES = '() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))';
 
-test('each node by its id, its rows read only, a line for each route; a redraw keeps a moved node and drops a gone one', async ({ page }) => {
+test('each node by its id, its rows read only, a line for each connection; a redraw keeps a moved node and drops a gone one', async ({ page }) => {
   const r = await page.evaluate(async (frames) => {
     const { drawGraph } = await import('/dist/app.js');
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
@@ -39,7 +39,7 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
           { name: 'matches', label: 'Matches', output: 'value', value: 3 },
         ] } as Graph['nodes'][number]] : []),
       ],
-      routes: withB ? [{ from: 'a', to: 'b' }] : [],
+      connections: withB ? [{ from: 'a', to: 'b' }] : [],
     });
     const settle = async (): Promise<void> => { await window.__settled(); await eval(frames)(); };
     const read = () => {
@@ -49,7 +49,7 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
         nodes: nodes.map((n) => [n.dataset['heading'], n.dataset['x']]),
         field: field ? [field.value, field.hasAttribute('readonly')] : null,
         label: canvas.querySelector('sherpa-node-row[data-label^="Matches"]')?.getAttribute('data-label') ?? null,
-        lines: [...canvas.querySelectorAll('svg.graph-routes path')].map((p) => (p.getAttribute('d') ?? '').startsWith('M ')),
+        lines: [...canvas.querySelectorAll('svg.graph-connectors path')].map((p) => (p.getAttribute('d') ?? '').startsWith('M ')),
       };
     };
     drawGraph(canvas, graph('eq'));
@@ -131,7 +131,7 @@ test('drawGraph tells its host each edit — a select picked, a switch flipped �
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
     const heard: unknown[] = [];
     (window as unknown as { heard: unknown[] }).heard = heard;
-    drawGraph(canvas, { routes: [], nodes: [{
+    drawGraph(canvas, { connections: [], nodes: [{
       id: 'c', kind: 'condition', heading: 'Status', icon: 'function', x: 0, y: 0, ref: { scope: 'view', field: 'status' },
       rows: [
         { name: 'type', label: 'Operation', control: 'type', value: 'eq', editable: true,
@@ -217,12 +217,12 @@ test('in a SLOT, the editor\'s Sort and Group are its chart\'s, as a chip\'s are
   expect(r).toEqual({ presentation: { group: 'plan', sort: 'desc' }, sort: [{ field: 'region', direction: 'asc' }], group: null });
 });
 
-test('a row a route drives MIRRORS what comes in, read only; one with no route stays editable', async ({ page }) => {
+test('a row a connection drives MIRRORS what comes in, read only; one with no connection stays editable', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { drawGraph } = await import('/dist/app.js');
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
     const row = { label: 'Value', control: 'text' as const, input: 'value' as const, editable: true };
-    drawGraph(canvas, { routes: [{ from: 'a', to: 'b/fed' }], nodes: [
+    drawGraph(canvas, { connections: [{ from: 'a', to: 'b/fed' }], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
       { id: 'b', kind: 'condition', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ ...row, name: 'fed', value: '1' }, { ...row, name: 'free', value: '2' }] },
     ] });
@@ -233,7 +233,7 @@ test('a row a route drives MIRRORS what comes in, read only; one with no route s
   expect(r).toEqual({ fed: true, free: false });
 });
 
-test('a picked node opens its inspector: its rows again, their routes, and an edit there reaches the host', async ({ page }) => {
+test('a picked node opens its inspector: its rows again, their connections, and an edit there reaches the host', async ({ page }) => {
   await page.evaluate(async () => {
     const { drawGraph, inspectNode } = await import('/dist/app.js');
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
@@ -241,7 +241,7 @@ test('a picked node opens its inspector: its rows again, their routes, and an ed
     document.getElementById('root')!.append(panel);
     const heard: unknown[] = [];
     (window as unknown as { heard: unknown[] }).heard = heard;
-    const graph = { routes: [{ from: 'a', to: 'b/value' }], nodes: [
+    const graph = { connections: [{ from: 'a', to: 'b/value' }], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value' as const, x: 0, y: 0, rows: [] },
       { id: 'b', kind: 'condition', heading: 'Status', icon: 'function', x: 360, y: 0, rows: [
         { name: 'type', label: 'Operation', control: 'type' as const, value: 'eq', editable: true, choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
@@ -270,13 +270,13 @@ test('a picked node opens its inspector: its rows again, their routes, and an ed
 /** The middle of a drawn node's or row's socket, on the screen. */
 const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
 
-test('a drag from an OUTPUT socket draws a new route: let go on an input socket, the host is asked; on bare canvas, nothing', async ({ page }) => {
+test('a drag from an OUTPUT socket draws a new connection: let go on an input socket, the host is asked; on bare canvas, nothing', async ({ page }) => {
   await page.evaluate(async () => {
     const { drawGraph } = await import('/dist/app.js');
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
     const asked: unknown[] = [];
     (window as unknown as { asked: unknown[] }).asked = asked;
-    drawGraph(canvas, { routes: [], nodes: [
+    drawGraph(canvas, { connections: [], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
       { id: 'b', kind: 'condition', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
     ] }, { onConnect: (route) => asked.push(route) });
@@ -287,11 +287,11 @@ test('a drag from an OUTPUT socket draws a new route: let go on an input socket,
   const [bx, by] = await at('#root sherpa-node[data-heading="B"] sherpa-node-row[data-input-socket]', 'input');
   const before = await page.evaluate(() => [document.querySelector('#root sherpa-node[data-heading="A"]')!.getAttribute('data-x'),
     JSON.stringify((document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: unknown }).view)]);
-  // Onto B's input: a route is asked for.
+  // Onto B's input: a connection is asked for.
   await page.mouse.move(ax, ay);
   await page.mouse.down();
   await page.mouse.move((ax + bx) / 2, by + 40, { steps: 4 });
-  const drafting = await page.evaluate(() => document.querySelectorAll('#root svg.graph-routes path.graph-draft').length);
+  const drafting = await page.evaluate(() => document.querySelectorAll('#root svg.graph-connectors path.graph-draft').length);
   await page.mouse.move(bx, by, { steps: 4 });
   await page.mouse.up();
   // Onto the bare canvas: nothing.
@@ -301,7 +301,7 @@ test('a drag from an OUTPUT socket draws a new route: let go on an input socket,
   await page.mouse.up();
   const r = await page.evaluate(() => ({
     asked: (window as unknown as { asked: unknown[] }).asked,
-    drafts: document.querySelectorAll('#root svg.graph-routes path.graph-draft').length,
+    drafts: document.querySelectorAll('#root svg.graph-connectors path.graph-draft').length,
     after: [document.querySelector('#root sherpa-node[data-heading="A"]')!.getAttribute('data-x'),
       JSON.stringify((document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: unknown }).view)],
   }));
@@ -315,7 +315,7 @@ test('a drag from the footer\'s False socket starts at it and asks for `node/#fa
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
     const asked: unknown[] = [];
     (window as unknown as { asked: unknown[] }).asked = asked;
-    drawGraph(canvas, { routes: [], nodes: [
+    drawGraph(canvas, { connections: [], nodes: [
       { id: 'a', kind: 'condition', heading: 'A', icon: 'filter', output: 'object', branches: true, x: 0, y: 0, rows: [] },
       { id: 'b', kind: 'condition', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
     ] }, { onConnect: (route) => asked.push(route) });
@@ -383,7 +383,7 @@ test('a condition dragged onto a field none of its values fit is REFUSED, and sa
   await page.mouse.down();
   await page.mouse.move(bx, by, { steps: 6 });
   await page.mouse.up();
-  expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual(['query-route']);
+  expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual(['query-connection']);
 });
 
 /** A canvas on the harness again, after a reload. */
@@ -456,12 +456,12 @@ test('Save hands the app a checked page definition, as definition-save, with the
 const BIND_FLOW = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 2, id: 'active-customers', nodes: [
+  const flow = { v: 3, id: 'active-customers', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
     { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq' } },
     { id: 'end', kind: 'output', x: 900, y: 0 },
-  ], routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
+  ], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { session: new SessionStore(), fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'] });
   await window.__settled();
 }`;
@@ -497,13 +497,13 @@ test('a use of a Custom Node draws closed: one node with a row per input and out
       v: 1 as const, label: 'Org permissions',
       inputs: [{ name: 'users', label: 'Users', type: 'object' as const }, { name: 'role', label: 'Role', type: 'value' as const, control: 'text' as const }],
       outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' as const }],
-      nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0 }], routes: [{ from: '#in/users', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }],
+      nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in/users', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }],
     } } };
     const canvas = document.querySelector('#root sherpa-layout-canvas') as Parameters<typeof bindWorkflow>[0];
-    const flow = { v: 2 as const, id: 'flow', nodes: [
+    const flow = { v: 3 as const, id: 'flow', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'perm', kind: 'org-permissions', x: 360, y: 0, values: { role: 'owner' } },
-    ], routes: [{ from: 'start/rows', to: 'perm/users' }] };
+    ], connections: [{ from: 'start/rows', to: 'perm/users' }] };
     bindWorkflow(canvas, flow, { session: new SessionStore(), stores: ['customers'], kinds: { ...NODE_KINDS, ...kindsOf(library) } });
     await window.__settled();
     const node = document.querySelector('#root sherpa-node[data-heading="Org permissions"]')!;

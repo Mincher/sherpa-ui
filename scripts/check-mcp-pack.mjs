@@ -30,7 +30,7 @@ const PAGE = {
   key: 'id',
   commands: [{ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } }],
 };
-const WORKFLOW = { v: 2, id: 'pro', nodes: [{ id: 'in', kind: 'source', x: 0, y: 0, values: { store: 'people' } }, { id: 'out', kind: 'output', x: 360, y: 0 }], routes: [{ from: 'in/rows', to: 'out' }] };
+const WORKFLOW = { v: 3, id: 'pro', nodes: [{ id: 'in', kind: 'source', x: 0, y: 0, values: { store: 'people' } }, { id: 'out', kind: 'output', x: 360, y: 0 }], connections: [{ from: 'in/rows', to: 'out' }] };
 
 /** The arguments each tool or prompt is called with, where it is installed; one with none is a failure. */
 export const SAMPLES = {

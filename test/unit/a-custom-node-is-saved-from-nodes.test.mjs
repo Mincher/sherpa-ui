@@ -1,7 +1,7 @@
 /**
  * "SAVE AS CUSTOM NODE" AND "UNGROUP": several nodes of a workflow become one definition and one
- * use, each route over the edge a typed Group Input or Output row; Ungroup gives the same workflow
- * back (nodes, routes, places). A selection that cannot be saved is refused in words. A route
+ * use, each connection over the edge a typed Group Input or Output row; Ungroup gives the same workflow
+ * back (nodes, connections, places). A selection that cannot be saved is refused in words. A connection
  * let go on a use's header is a new input of its definition (763).
  * Will, TODO 719 · plan 713 M11, D9. TRAP T-a-custom-node-is-an-instance · TRAP T-a-custom-node-header-adds-an-input
  *
@@ -19,24 +19,24 @@ const { NODE_KINDS } = await import(new URL('node-kinds.js', core));
 const empty = () => ({ v: 1, nodes: {} });
 /** Store → Condition (Value 'x' into its value row) → Output: the Condition is the one to save. */
 const flow = () => ({
-  v: 2, id: 'flow',
+  v: 3, id: 'flow',
   nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
   ],
-  routes: [
+  connections: [
     { from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' },
   ],
 });
 const sorted = (w) => ({
   nodes: [...w.nodes].sort((a, b) => (a.id < b.id ? -1 : 1)),
-  routes: [...(w.routes ?? [])].sort((a, b) => `${a.from}${a.to}` < `${b.from}${b.to}` ? -1 : 1),
+  connections: [...(w.connections ?? [])].sort((a, b) => `${a.from}${a.to}` < `${b.from}${b.to}` ? -1 : 1),
 });
 const facts = { fields: { status: { label: 'Status' } } };
 
-test('save then ungroup gives the same workflow: nodes, routes and places', () => {
+test('save then ungroup gives the same workflow: nodes, connections and places', () => {
   const was = flow();
   assert.deepEqual(workflowFaults(was, undefined, facts), []);
   const made = groupNodes(was, ['cond'], empty(), { label: 'Status check', category: 'Logic' }, undefined, facts);
@@ -48,12 +48,12 @@ test('save then ungroup gives the same workflow: nodes, routes and places', () =
   assert.deepEqual(sorted(back.workflow), sorted(was));
 });
 
-test('each route over the edge is a typed socket; the use is joined as the nodes were', () => {
+test('each connection over the edge is a typed socket; the use is joined as the nodes were', () => {
   const made = groupNodes(flow(), ['cond'], empty(), { label: 'Status check' }, undefined, facts);
   const d = made.library.nodes[made.id];
   assert.deepEqual(d.inputs.map((i) => [i.name, i.type]), [['start-rows', 'object'], ['val-value', 'value']]);
   assert.deepEqual(d.outputs.map((o) => [o.name, o.type]), [['cond-rows', 'object']]);
-  assert.deepEqual(made.workflow.routes.map((r) => `${r.from} → ${r.to}`).sort(), [
+  assert.deepEqual(made.workflow.connections.map((r) => `${r.from} → ${r.to}`).sort(), [
     `${made.use}/cond-rows → end`, `start/rows → ${made.use}/start-rows`, `val/value → ${made.use}/val-value`,
   ].sort());
   assert.deepEqual(lib.workflowFaultsDeep(made.workflow, made.library, undefined, facts), []);
@@ -61,13 +61,13 @@ test('each route over the edge is a typed socket; the use is joined as the nodes
   assert.deepEqual(lib.staleUses(made.workflow, made.library), []);
 });
 
-test('two nodes saved together keep the route between them inside; one source feeding two rows is one socket', () => {
+test('two nodes saved together keep the connection between them inside; one source feeding two rows is one socket', () => {
   const w = flow();
   const made = groupNodes(w, ['val', 'cond'], empty(), { label: 'Pair' }, undefined, facts);
   assert.ok(!made.fault, made.fault);
   const d = made.library.nodes[made.id];
   assert.deepEqual(d.inputs.map((i) => i.name), ['start-rows']);
-  assert.ok(d.routes.some((r) => r.from === 'val/value' && r.to === 'cond/b'));
+  assert.ok(d.connections.some((r) => r.from === 'val/value' && r.to === 'cond/b'));
   assert.deepEqual(sorted(ungroupUse(made.workflow, made.use, made.library).workflow), sorted(w));
 });
 
@@ -86,12 +86,12 @@ test('refused in words: nothing picked, no name, a Group node, a loop through ou
   const loop = groupNodes(flow(), ['start', 'end'], empty(), { label: 'Ends' }, undefined, facts);
   assert.match(loop.fault, /would hold a loop through it/);
   assert.match(loop.fault, /Condition/);
-  // Two types: a Store's rows (an object) into the Value row, beside the header it feeds. Any route joins any
+  // Two types: a Store's rows (an object) into the Value row, beside the header it feeds. Any connection joins any
   // input (TODO 770): ONE socket, typed by what its source sends; inside, the Value reads null and warns, as outside.
   const bad = flow();
-  bad.routes = [{ from: 'start/rows', to: 'cond' }, { from: 'start/rows', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }];
+  bad.connections = [{ from: 'start/rows', to: 'cond' }, { from: 'start/rows', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }];
   assert.deepEqual(workflowGraph(bad).nodes.find((n) => n.id === 'cond').warnings, [
-    { words: 'Equals takes a field or a value; it was given rows: route a Field in' }, { row: 'b', words: 'Value B takes a value; it was given rows' },
+    { words: 'Equals takes a field or a value; it was given rows: connect a Field in' }, { row: 'b', words: 'Value B takes a value; it was given rows' },
   ]);
   const mixed = groupNodes(bad, ['cond'], empty(), { label: 'Mixed' });
   assert.equal(mixed.fault, undefined);
@@ -106,12 +106,12 @@ const HAS = {
   inputs: [{ name: 'records', label: 'Records', type: 'object' }, { name: 'status', label: 'Status', type: 'value' }],
   outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
   nodes: [{ id: 'has-status', kind: 'condition', x: 0, y: 0, values: { type: 'eq' } }],
-  routes: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/rows', to: '#out/matching' }, { from: 'has-status', to: '#out' }],
+  connections: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/rows', to: '#out/matching' }, { from: 'has-status', to: '#out' }],
 };
 const hasLib = (preset = false) => ({ v: 1, nodes: { 'has-status': { ...structuredClone(HAS), ...(preset ? { preset: true } : {}) } } });
 /** A Store, a Value and a Condition beside two uses of Has status, its Matching on to the Output. */
 const beside = (library = hasLib()) => ({
-  v: 2, id: 'flow',
+  v: 3, id: 'flow',
   nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
@@ -120,11 +120,11 @@ const beside = (library = hasLib()) => ({
     lib.useOf(library, 'has-status', { id: 'has2', x: 360, y: 400 }),
     { id: 'end', kind: 'output', x: 720, y: 0 },
   ],
-  routes: [{ from: 'start/rows', to: 'c' }, { from: 'has/matching', to: 'end' }],
+  connections: [{ from: 'start/rows', to: 'c' }, { from: 'has/matching', to: 'end' }],
 });
-/** The same, with routes left on the HEADER of a use, as a file saved before kept them. */
-const fedOnHeader = (library = hasLib()) => ({ ...beside(library), routes: [...beside(library).routes, { from: 'start/rows', to: 'has' }, { from: 'val/value', to: 'has' }] });
-const said = (w) => (w.routes ?? []).map((r) => `${r.from} → ${r.to}`).sort();
+/** The same, with connections left on the HEADER of a use, as a file saved before kept them. */
+const fedOnHeader = (library = hasLib()) => ({ ...beside(library), connections: [...beside(library).connections, { from: 'start/rows', to: 'has' }, { from: 'val/value', to: 'has' }] });
+const said = (w) => (w.connections ?? []).map((r) => `${r.from} → ${r.to}`).sort();
 const inputsOf = (l) => l.nodes['has-status'].inputs.map((i) => [i.name, i.label, i.type]);
 
 test('a Custom Node\'s header takes anything: each connection let go on it adds a new input, a row on the use and on its Group Input', () => {
@@ -145,7 +145,7 @@ test('a Custom Node\'s header takes anything: each connection let go on it adds 
   // Inside, a Group Input row each, an output socket of the source's type, feeding nothing yet.
   const inner = lib.innerOf(three.workflow.nodes.find((n) => n.id === 'has'), three.library);
   assert.deepEqual(inner.kinds[lib.GROUP_INPUT].rows.map((r) => [r.name, r.output]), [['records', 'object'], ['status', 'value'], ['start-rows', 'object'], ['val-value', 'value'], ['c', 'boolean']]);
-  assert.deepEqual(inner.workflow.routes.filter((r) => ['#in/start-rows', '#in/val-value', '#in/c'].includes(r.from)), []);
+  assert.deepEqual(inner.workflow.connections.filter((r) => ['#in/start-rows', '#in/val-value', '#in/c'].includes(r.from)), []);
   // Nothing about it is a fault: the draft, and the library Save would check.
   assert.deepEqual(lib.workflowFaultsDeep(three.workflow, three.library, undefined, facts), []);
   assert.equal(lib.checkNodeLibrary(three.library, undefined, facts), true);
@@ -154,13 +154,13 @@ test('a Custom Node\'s header takes anything: each connection let go on it adds 
   assert.deepEqual(lib.definitionDiff(three.workflow.nodes.find((n) => n.id === 'has2'), three.library).inputs.added, ['start-rows', 'val-value', 'c']);
 });
 
-test('inside, a new row routes on to any inner socket, and Ungroup joins its source through it; a row that feeds nothing inside is dropped', () => {
+test('inside, a new row connections on to any inner socket, and Ungroup joins its source through it; a row that feeds nothing inside is dropped', () => {
   const one = headerInput(beside(), { from: 'start/rows', to: 'has' }, hasLib());
   const two = headerInput(one.workflow, { from: 'val/value', to: 'has' }, one.library);
-  // The reader routes the Store's row on to the Condition's value inside; the Value's row stays unrouted.
+  // The reader connections the Store's row on to the Condition's value inside; the Value's row stays unconnected.
   const inner = lib.innerOf(two.workflow.nodes.find((n) => n.id === 'has'), two.library);
-  const routed = editWorkflow(inner.workflow, { route: { from: '#in/start-rows', to: 'has-status/b' } }, inner.kinds);
-  const library = lib.editDefinition(two.library, 'has-status', { routes: routed.routes });
+  const connected = editWorkflow(inner.workflow, { connection: { from: '#in/start-rows', to: 'has-status/b' } }, inner.kinds);
+  const library = lib.editDefinition(two.library, 'has-status', { connections: connected.connections });
   const back = ungroupUse(two.workflow, 'has', library);
   assert.ok(!back.fault, back.fault);
   assert.ok(said(back.workflow).includes('start/rows → has-status/b'));
@@ -175,14 +175,14 @@ test('a preset is read only: a connection on its header is refused in words, and
   assert.equal(library.nodes['has-status'].inputs.length, 2);
   // A refused drop (TODO 803): no workflow and no library to keep, so the line is not kept.
   assert.deepEqual(Object.keys(done), ['fault']);
-  // A moved end let go there is the same refusal: the editor writes nothing, and the route is back on its row.
-  const fed = editWorkflow(w, { route: { from: 'start/rows', to: 'has/records' } });
+  // A moved end let go there is the same refusal: the editor writes nothing, and the connection is back on its row.
+  const fed = editWorkflow(w, { connection: { from: 'start/rows', to: 'has/records' } });
   const moved = headerInput(editWorkflow(fed, { cut: { from: 'start/rows', to: 'has/records' } }), { from: 'start/rows', to: 'has' }, library);
   assert.deepEqual(Object.keys(moved), ['fault']);
   assert.ok(said(fed).includes('start/rows → has/records'));
 });
 
-test('a route held on a use\'s header from before reads once as its own new input row; a preset\'s stays; editWorkflow and readWorkflow alone never match one by type', () => {
+test('a connection held on a use\'s header from before reads once as its own new input row; a preset\'s stays; editWorkflow and readWorkflow alone never match one by type', () => {
   const kinds = { ...lib.kindsOf(hasLib()), ...NODE_KINDS };
   const read = heldInputs(fedOnHeader(), hasLib());
   assert.deepEqual(read.ids, ['has-status']);
@@ -196,15 +196,15 @@ test('a route held on a use\'s header from before reads once as its own new inpu
   const presets = heldInputs(fedOnHeader(hasLib(true)), hasLib(true));
   assert.deepEqual(presets.ids, []);
   assert.ok(said(presets.workflow).includes('start/rows → has'));
-  // The workflow functions know no definition: a header route stays on the header.
+  // The workflow functions know no definition: a header connection stays on the header.
   assert.ok(said(readWorkflow(fedOnHeader(), kinds).workflow).includes('start/rows → has'));
-  assert.ok(said(editWorkflow(beside(), { route: { from: 'start/rows', to: 'has' } }, kinds)).includes('start/rows → has'));
+  assert.ok(said(editWorkflow(beside(), { connection: { from: 'start/rows', to: 'has' } }, kinds)).includes('start/rows → has'));
 });
 
-test('the Group Input shows a row per connected input, each an output socket routed to the nodes it feeds', () => {
+test('the Group Input shows a row per connected input, each an output socket connected to the nodes it feeds', () => {
   // Store's rows into two Conditions, a Value into both their Value rows: two inputs, each joined to both.
   const w = {
-    v: 2, id: 'flow',
+    v: 3, id: 'flow',
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
@@ -212,7 +212,7 @@ test('the Group Input shows a row per connected input, each an output socket rou
       { id: 'b', kind: 'condition', x: 360, y: 300, values: { type: 'ne' } },
       { id: 'end', kind: 'output', x: 720, y: 0 },
     ],
-    routes: [
+    connections: [
       { from: 'start/rows', to: 'a' }, { from: 'start/rows', to: 'b' }, { from: 'val/value', to: 'a/b' }, { from: 'val/value', to: 'b/b' }, { from: 'a/rows', to: 'end' },
     ],
   };
@@ -221,18 +221,18 @@ test('the Group Input shows a row per connected input, each an output socket rou
   const inner = lib.innerOf(made.workflow.nodes.find((n) => n.id === made.use), made.library);
   const rows = inner.kinds[lib.GROUP_INPUT].rows;
   assert.deepEqual(rows.map((r) => [r.name, r.output]), [['start-rows', 'object'], ['val-value', 'value']]);
-  for (const r of rows) assert.deepEqual(inner.workflow.routes.filter((x) => x.from === `#in/${r.name}`).map((x) => x.to).sort(), r.name === 'start-rows' ? ['a', 'b'] : ['a/b', 'b/b']);
+  for (const r of rows) assert.deepEqual(inner.workflow.connections.filter((x) => x.from === `#in/${r.name}`).map((x) => x.to).sort(), r.name === 'start-rows' ? ['a', 'b'] : ['a/b', 'b/b']);
   assert.deepEqual(sorted(ungroupUse(made.workflow, made.use, made.library).workflow), sorted(w));
-  // Only its rows send: no header socket (Will, 765), so a route from `#in` itself is a fault.
+  // Only its rows send: no header socket (Will, 765), so a connection from `#in` itself is a fault.
   assert.equal(inner.kinds[lib.GROUP_INPUT].output, undefined);
-  const fromHeader = { ...inner.workflow, routes: [...inner.workflow.routes, { from: '#in', to: 'a' }] };
-  assert.ok(workflowFaults(fromHeader, inner.kinds, facts).some((f) => f.includes('"#in"')), 'a route from the Group Input header is a fault');
+  const fromHeader = { ...inner.workflow, connections: [...inner.workflow.connections, { from: '#in', to: 'a' }] };
+  assert.ok(workflowFaults(fromHeader, inner.kinds, facts).some((f) => f.includes('"#in"')), 'a connection from the Group Input header is a fault');
 });
 
 test('ungroup of what is no Custom Node is refused; a parameter nothing fed lands on its row', () => {
   assert.match(ungroupUse(flow(), 'cond', empty()).fault, /only a Custom Node/);
   const made = groupNodes(flow(), ['cond'], empty(), { label: 'Status check' }, undefined, facts);
-  const loose = { ...made.workflow, routes: made.workflow.routes.filter((r) => r.from !== 'val/value') };
+  const loose = { ...made.workflow, connections: made.workflow.connections.filter((r) => r.from !== 'val/value') };
   const lib2 = structuredClone(made.library);
   lib2.nodes[made.id].inputs.find((i) => i.name === 'val-value').default = 'trial';
   const back = ungroupUse(loose, made.use, lib2);

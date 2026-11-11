@@ -24,10 +24,10 @@ const { NODE_KINDS, paletteMatch, paletteOf } = await import(new URL('data/node-
 
 /** A Custom Node entity: rows in, the active ones out. */
 const node = (id, extra = {}) => ({
-  v: 1, type: 'node', id, label: 'Org permissions',
+  v: 2, type: 'node', id, label: 'Org permissions',
   graph: {
     nodes: [{ id: 'active', kind: 'condition', x: 200, y: 0, values: { type: 'eq', b: 'active' } }, { id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
-    routes: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
+    connections: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
   },
   settings: { inputs: [{ name: 'rows', type: 'object' }], outputs: [{ name: 'active', type: 'object' }] },
   ...extra,
@@ -42,13 +42,13 @@ test('tags are words: trimmed, an empty one or no text dropped, a repeat in any 
 
 test('the envelope and a definition say tags the same way: the schema, the check, and their faults in words', () => {
   const tagged = node('org', { tags: ['permissions', 'users'] });
-  assert.deepEqual(schemaCheck('entity.v1.json')(tagged), []);
+  assert.deepEqual(schemaCheck('entity.v2.json')(tagged), []);
   assert.deepEqual(entityFaults(tagged), []);
   const definition = definitionOf(tagged);
   assert.deepEqual(definition.tags, ['permissions', 'users']);
   assert.deepEqual(schemaCheck('defs.v1.json#/$defs/nodeDefinition')(definition), []);
   for (const tags of [['permissions', 'permissions'], ['', 'users'], 'permissions', [3]]) {
-    assert.notDeepEqual(schemaCheck('entity.v1.json')(node('org', { tags })), [], JSON.stringify(tags));
+    assert.notDeepEqual(schemaCheck('entity.v2.json')(node('org', { tags })), [], JSON.stringify(tags));
     assert.equal(entityFaults(node('org', { tags })).length, 1, JSON.stringify(tags));
   }
   assert.match(entityFaults(node('org', { tags: ['Users', 'users'] }))[0], /the Custom Node "org" has a tag twice/);
@@ -89,11 +89,11 @@ test('New graph and Save graph as take tags, tidied; a copy given none keeps the
 });
 
 test('Save as Custom Node tags the definition it makes', () => {
-  const flow = { v: 2, id: 'g', nodes: [
+  const flow = { v: 3, id: 'g', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'a', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: 'active' } },
     { id: 'b', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'pro' } },
-  ], routes: [{ from: 'start/rows', to: 'a' }, { from: 'a/rows', to: 'b' }] };
+  ], connections: [{ from: 'start/rows', to: 'a' }, { from: 'a/rows', to: 'b' }] };
   const made = groupNodes(flow, ['a', 'b'], { v: 1, nodes: {} }, { label: 'Active pro', tags: ['plans', ' plans', ''] });
   assert.ok(!('fault' in made), made.fault);
   assert.deepEqual(made.library.nodes[made.id].tags, ['plans']);

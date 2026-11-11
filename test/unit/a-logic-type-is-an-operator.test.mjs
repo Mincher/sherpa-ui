@@ -2,7 +2,7 @@
  * A LOGIC TYPE IS AN OPERATOR: the Condition is the Logic family, one test each (plan 783 D4). And and Or join the
  * tests that come in; then Figma's six comparisons, Not and Is empty, then Sherpa's operators, each named by the ONE
  * operator list. A comparison tests what comes in on its header (D3): a Field's column, or a value. Every type leads
- * with Rows. A route a type change orphans waits in the draft; a Query's Condition reads back the same tree.
+ * with Rows. A connection a type change orphans waits in the draft; a Query's Condition reads back the same tree.
  * Plan 749 P5. TRAP T-a-logic-type-is-an-operator
  *
  *   node --test test/unit/a-logic-type-is-an-operator.test.mjs
@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, LIST_OPS, ROWS, kindIn, paletteMatch, paletteOf, resolveKind, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
 const { OP_LABELS } = await import(new URL('store.js', core));
-const { editWorkflow, finalGraph, keptRoutes, sentFrom, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
+const { editWorkflow, finalGraph, keptConnections, sentFrom, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { nodeFlow } = await import(new URL('node-flow.js', core));
 const { queryGraph, graphRequest } = await import(new URL('query-graph.js', core));
 const { answerTree } = await import(new URL('filter-state.js', core));
@@ -55,7 +55,7 @@ test('Logic is the Condition: And and Or, Figma\'s six, Not and Is empty, then S
 
 test('And joins tests: two Conditions on two Fields, their True into its header, which takes many; its Rows the rows that hold', () => {
   const w = {
-    v: 2, id: 'logic',
+    v: 3, id: 'logic',
     nodes: [
       store, field('status', 'status'), field('seats', 'seats'),
       { id: 'active', kind: 'condition', x: 400, y: 0, values: { type: 'eq', b: 'active' } },
@@ -63,7 +63,7 @@ test('And joins tests: two Conditions on two Fields, their True into its header,
       { id: 'both', kind: 'condition', x: 600, y: 0, values: { type: 'and' } },
       { id: 'end', kind: 'output', x: 800, y: 0 },
     ],
-    routes: [
+    connections: [
       { from: 'start/rows', to: 'status' }, { from: 'start/rows', to: 'seats' }, { from: 'status/field', to: 'active' }, { from: 'seats/field', to: 'big' },
       { from: 'active', to: 'both' }, { from: 'big', to: 'both' }, { from: 'both/rows', to: 'end' },
     ],
@@ -76,26 +76,26 @@ test('And joins tests: two Conditions on two Fields, their True into its header,
   assert.deepEqual([socketType(both, undefined, 'output'), socketType(both, '#false', 'output')], ['boolean', 'boolean']);
   assert.equal(both.rows[0].hint, 'True when every value that comes in is true');
   // Its rows: what the tests' rows carry; with nothing in, none.
-  assert.deepEqual([sentFrom(w, 'both/rows', facts), sentFrom({ ...w, routes: [] }, 'both/rows', facts)], [{ kind: 'rows' }, undefined]);
+  assert.deepEqual([sentFrom(w, 'both/rows', facts), sentFrom({ ...w, connections: [] }, 'both/rows', facts)], [{ kind: 'rows' }, undefined]);
   const flow = nodeFlow(g, 'both');
   assert.deepEqual(flow.incoming.find((i) => i.socket === 'In'), { socket: 'In', type: 'boolean', from: ['Condition › True', 'Condition › True'] });
   assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.type]), [['True', 'boolean'], ['False', 'boolean'], ['Results', 'object']]);
   // Or the same; Not takes ONE boolean: a second is a fault, said in words.
   assert.deepEqual(workflowFaults({ ...w, nodes: w.nodes.map((n) => (n.id === 'both' ? { ...n, values: { type: 'or' } } : n)) }), []);
   const not = { ...w, nodes: w.nodes.map((n) => (n.id === 'both' ? { ...n, values: { type: 'not' } } : n)) };
-  assert.deepEqual(workflowFaults(not), ['two routes enter "both", which takes one']);
+  assert.deepEqual(workflowFaults(not), ['two connections enter "both", which takes one']);
 });
 
-test('a comparison tests what comes in on its header — a Field\'s column, or a value — against Value B; rows warn: route a Field in', () => {
+test('a comparison tests what comes in on its header — a Field\'s column, or a value — against Value B; rows warn: connect a Field in', () => {
   const w = {
-    v: 2, id: 'compare',
+    v: 3, id: 'compare',
     nodes: [
       { id: 'plan', kind: 'value', x: 0, y: 0, values: { value: 'Pro' } },
       { id: 'is', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'Pro' } },
       { id: 'sum', kind: 'math', x: 720, y: 0 },
       { id: 'end', kind: 'output', x: 720, y: 200 },
     ],
-    routes: [{ from: 'plan/value', to: 'is' }, { from: 'is', to: 'end' }],
+    connections: [{ from: 'plan/value', to: 'is' }, { from: 'is', to: 'end' }],
   };
   assert.deepEqual(workflowFaults(w), []);
   const is = node(workflowGraph(w), 'is');
@@ -104,12 +104,12 @@ test('a comparison tests what comes in on its header — a Field\'s column, or a
   // A value came in, no rows: its Rows row sends nothing.
   assert.equal(sentFrom(w, 'is/rows'), undefined);
   // Its True joins a number's row and reads as 1 or 0 (TODO 781); rows into its header join (770), and warn.
-  const toSum = { ...w, routes: [...w.routes, { from: 'is', to: 'sum/a' }] };
+  const toSum = { ...w, connections: [...w.connections, { from: 'is', to: 'sum/a' }] };
   assert.deepEqual([workflowFaults(toSum), node(workflowGraph(toSum), 'sum').warnings], [[], undefined]);
-  const rowsIn = { ...w, nodes: [...w.nodes, store], routes: [{ from: 'start/rows', to: 'is' }, { from: 'is', to: 'end' }] };
-  assert.deepEqual([workflowFaults(rowsIn), node(workflowGraph(rowsIn), 'is').warnings], [[], [{ words: 'Equals takes a field or a value; it was given rows: route a Field in' }]]);
+  const rowsIn = { ...w, nodes: [...w.nodes, store], connections: [{ from: 'start/rows', to: 'is' }, { from: 'is', to: 'end' }] };
+  assert.deepEqual([workflowFaults(rowsIn), node(workflowGraph(rowsIn), 'is').warnings], [[], [{ words: 'Equals takes a field or a value; it was given rows: connect a Field in' }]]);
   // Source › Field › Condition: the column fits, and its Rows row sends the rows that hold.
-  const chain = { ...rowsIn, nodes: [...rowsIn.nodes, field('f', 'status')], routes: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'is' }, { from: 'is/rows', to: 'end' }] };
+  const chain = { ...rowsIn, nodes: [...rowsIn.nodes, field('f', 'status')], connections: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'is' }, { from: 'is/rows', to: 'end' }] };
   assert.deepEqual([node(workflowGraph(chain, facts), 'is').warnings, sentFrom(chain, 'is/rows', facts)], [undefined, { kind: 'rows' }]);
   // An operator the field's type does not take warns, never a fault; a Value B of another type is the row's fault.
   const seats = editWorkflow(chain, { node: 'f', row: 'field', value: 'seats' });
@@ -121,31 +121,31 @@ test('a comparison tests what comes in on its header — a Field\'s column, or a
 
 test('a type change keeps in the draft only what loses its socket: a column into And stays and warns; Values closes to the Field\'s values', () => {
   let w = {
-    v: 2, id: 'draft',
+    v: 3, id: 'draft',
     nodes: [store, field('f', 'status'), { id: 'text', kind: 'value', x: 0, y: 200, values: { value: 'trial' } }, { id: 'c', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'active' } }],
-    routes: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }],
+    connections: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }],
   };
   assert.equal(node(workflowGraph(w, facts), 'c').input, 'any');
   // And: its header is still there, so the column stays joined (TODO 770): no fault, the node warns, and Save keeps it.
   w = editWorkflow(w, { node: 'c', row: 'type', value: 'and' });
-  assert.deepEqual([keptRoutes(w), workflowFaults(w, NODE_KINDS, facts), workflowGraph(w, facts).routes], [[], [], w.routes]);
+  assert.deepEqual([keptConnections(w), workflowFaults(w, NODE_KINDS, facts), workflowGraph(w, facts).connections], [[], [], w.connections]);
   assert.deepEqual(node(workflowGraph(w, facts), 'c').warnings, [{ words: 'And takes a boolean; it was given the Status column' }]);
-  assert.deepEqual(finalGraph(w).routes, w.routes);
+  assert.deepEqual(finalGraph(w).connections, w.connections);
   assert.deepEqual(finalGraph(w).nodes.find((n) => n.id === 'c').values, { type: 'and' }, 'Value B is the draft\'s');
   // Equals again reads it, its Value B back.
   let e = editWorkflow(w, { node: 'c', row: 'type', value: 'eq' });
-  assert.deepEqual([keptRoutes(e), node(workflowGraph(e, facts), 'c').warnings, node(workflowGraph(e, facts), 'c').rows.map((r) => r.value)], [[], undefined, ['eq', undefined, 'active', undefined]]);
-  // A Text routed into B, then Is one of: B's value becomes its list; the Text stays joined, and Values warns.
-  e = editWorkflow(e, { route: { from: 'text/value', to: 'c/b' } });
+  assert.deepEqual([keptConnections(e), node(workflowGraph(e, facts), 'c').warnings, node(workflowGraph(e, facts), 'c').rows.map((r) => r.value)], [[], undefined, ['eq', undefined, 'active', undefined]]);
+  // A Text connected to B, then Is one of: B's value becomes its list; the Text stays joined, and Values warns.
+  e = editWorkflow(e, { connection: { from: 'text/value', to: 'c/b' } });
   assert.deepEqual(workflowFaults(e, NODE_KINDS, facts), []);
   e = editWorkflow(e, { node: 'c', row: 'type', value: 'in' });
   assert.deepEqual(e.nodes.find((n) => n.id === 'c').values.b, ['active']);
-  assert.ok(!keptRoutes(e).some((r) => r.from === 'text/value'));
+  assert.ok(!keptConnections(e).some((r) => r.from === 'text/value'));
   assert.deepEqual(node(workflowGraph(e, facts), 'c').warnings, [{ row: 'b', words: 'Values takes a list; it was given "trial"' }]);
   // The Field on its header closes Values to Status's values: a stranger is the row's fault.
   const values = node(workflowGraph(e, facts), 'c').rows.find((r) => r.name === 'b');
   assert.deepEqual([values.control, values.closed], ['tags', true]);
-  assert.deepEqual(workflowFaults(editWorkflow({ ...e, routes: e.routes.slice(0, 2) }, { node: 'c', row: 'b', value: ['stranger'] }), NODE_KINDS, facts), ['the node "c"\'s Values: "stranger" is not a value of Status']);
+  assert.deepEqual(workflowFaults(editWorkflow({ ...e, connections: e.connections.slice(0, 2) }, { node: 'c', row: 'b', value: ['stranger'] }), NODE_KINDS, facts), ['the node "c"\'s Values: "stranger" is not a value of Status']);
 });
 
 test('the panel: one Condition item naming its types; a search finds a type whole first; the Query\'s takes its tests, not Not or Is empty', () => {
@@ -207,13 +207,13 @@ test('a Query\'s Conditions read back the same tree: each row asked as it stands
 });
 
 test('Tag › Includes says its condition as Logic\'s Is one of: the Field on its header, `in`, its tags', () => {
-  const w = { v: 2, id: 't', nodes: [{ id: 'g', kind: 'tag', x: 0, y: 0, values: { value: ['trial', 'active'] } }, field('f', 'status'), store], routes: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'g' }] };
+  const w = { v: 3, id: 't', nodes: [{ id: 'g', kind: 'tag', x: 0, y: 0, values: { value: ['trial', 'active'] } }, field('f', 'status'), store], connections: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'g' }] };
   const g = workflowGraph(w, facts);
   assert.deepEqual(nodeFlow(g, 'g').definition, { where: { field: 'status', op: 'in', value: ['trial', 'active'] } });
   assert.equal(logic.types.in.label, OP_LABELS.in);
   // None picked: a list of none, as Is one of with no tags.
   assert.deepEqual(nodeFlow(workflowGraph({ ...w, nodes: [{ ...w.nodes[0], values: {} }, ...w.nodes.slice(1)] }), 'g').definition, { where: { field: 'status', op: 'in', value: [] } });
   // A comparison with no Field says no tree: its rows' values.
-  const eq = workflowGraph({ v: 2, id: 'e', nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: '2' } }] });
+  const eq = workflowGraph({ v: 3, id: 'e', nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: '2' } }] });
   assert.deepEqual(nodeFlow(eq, 'c').definition, { rows: { type: 'eq', b: '2' } });
 });

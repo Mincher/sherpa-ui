@@ -17,27 +17,27 @@ const { workflowGraph } = await import(new URL('workflow.js', core));
 
 const R = (from, to) => ({ from, to });
 const N = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
-const graphOf = (nodes, routes) => workflowGraph({ v: 2, id: 'p', nodes, routes });
+const graphOf = (nodes, connections) => workflowGraph({ v: 3, id: 'p', nodes, connections });
 const out = (sim, id, socket) => sim.nodes[id].outgoing.find((s) => s.socket === socket);
 const ROWS = [
   { id: 1, plan: 'Pro', seats: 30, tags: 'a' }, { id: 2, plan: 'Free', seats: 5, tags: 'b' },
   { id: 3, plan: 'Pro', seats: 12, tags: 'a' }, { id: 4, plan: 'Team', seats: 12, tags: 'c' }, { id: 5, plan: 'Free', seats: 70, tags: 'b' },
 ];
 
-const calc = (kind, values, routes = [], more = []) => {
-  const sim = simulateGraph(graphOf([N('x', kind, values), ...more], routes), {});
+const calc = (kind, values, connections = [], more = []) => {
+  const sim = simulateGraph(graphOf([N('x', kind, values), ...more], connections), {});
   return out(sim, 'x', 'x/result');
 };
 
-test('Math: add, subtract, multiply, divide, ratio, round, increment and the list ones, from the row or a routed Value', () => {
+test('Math: add, subtract, multiply, divide, ratio, round, increment and the list ones, from the row or a connected Value', () => {
   assert.equal(calc('math', { type: 'add', a: 2, b: 3 }).value, 5);
   assert.equal(calc('math', { type: 'subtract', a: 2, b: 3 }).value, -1);
   assert.equal(calc('math', { type: 'multiply', a: 4, b: 3 }).value, 12);
   assert.equal(calc('math', { type: 'divide', a: 9, b: 4 }).value, 2.25);
   assert.equal(calc('math', { type: 'ratio', a: 1, b: 4 }).value, 0.25);
   assert.equal(calc('math', { type: 'round', a: 2.3456, places: 2 }).value, 2.35);
-  const routed = calc('math', { type: 'add', b: 1 }, [R('v/value', 'x/a')], [N('v', 'value', { type: 'integer', value: '41' })]);
-  assert.equal(routed.value, 42, 'a Value routed in is Value A');
+  const connected = calc('math', { type: 'add', b: 1 }, [R('v/value', 'x/a')], [N('v', 'value', { type: 'integer', value: '41' })]);
+  assert.equal(connected.value, 42, 'a Value connected in is Value A');
   const list = (type) => calc('math', { type }, [R('l/value', 'x/values')], [N('l', 'value', { type: 'list', value: ['3', '9', '6'] })]).value;
   assert.deepEqual([list('floor'), list('ceiling'), list('average')], [3, 9, 6]);
 });
@@ -90,10 +90,10 @@ test('Group gathers each value\'s rows, the groups in the order they first appea
   assert.equal(out(sim, 'x', 'x/count').value, 3);
 });
 
-test('Sort and Group with no Field routed in say so and send no rows', () => {
+test('Sort and Group with no Field connected in say so and send no rows', () => {
   const sim = simulateGraph(graphOf([N('s', 'source', { store: 'customers' }), N('x', 'sort', {})], [R('s/rows', 'x')]), { customers: ROWS });
   assert.equal(out(sim, 'x', 'x/rows').rows, undefined);
-  assert.match(out(sim, 'x', 'x/rows').note, /No Field is routed in/);
+  assert.match(out(sim, 'x', 'x/rows').note, /No Field is connected in/);
 });
 
 test('Time and Tag keep rows as a Condition does: a Tag the rows that include a value', () => {
@@ -110,14 +110,14 @@ test('a Custom Node runs its body: its Group Input is fed what the use hears, an
     [R('#in/n', 'm/a'), R('m/result', '#out/r')],
   );
   // Drawn by hand: the host (the editor) hands the body, kinds and all.
-  const graph = { nodes: [{ id: 'u', kind: 'mine:double', heading: 'Double', rows: [{ name: 'n', label: 'N', input: 'value', value: 21 }, { name: 'r', label: 'R', output: 'value' }] }, { id: 'v', kind: 'value', heading: 'Value', rows: [{ name: 'value', label: 'Value', output: 'value', value: '21' }] }], routes: [] };
+  const graph = { nodes: [{ id: 'u', kind: 'mine:double', heading: 'Double', rows: [{ name: 'n', label: 'N', input: 'value', value: 21 }, { name: 'r', label: 'R', output: 'value' }] }, { id: 'v', kind: 'value', heading: 'Value', rows: [{ name: 'value', label: 'Value', output: 'value', value: '21' }] }], connections: [] };
   const inner = {
     nodes: [
       { id: '#in', kind: '#group-input', heading: 'Group Input', rows: [{ name: 'n', label: 'N', output: 'value' }] },
       { id: 'm', kind: 'math', heading: 'Math', rows: [{ name: 'type', value: 'multiply' }, { name: 'a', label: 'A', input: 'value' }, { name: 'b', label: 'B', input: 'value', value: 2 }, { name: 'result', label: 'Result', output: 'value' }] },
       { id: '#out', kind: '#group-output', heading: 'Group Output', input: 'any', rows: [{ name: 'r', label: 'R', input: 'value' }] },
     ],
-    routes: [{ from: '#in/n', to: 'm/a' }, { from: 'm/result', to: '#out/r' }],
+    connections: [{ from: '#in/n', to: 'm/a' }, { from: 'm/result', to: '#out/r' }],
   };
   void use; void body;
   const sim = simulateGraph(graph, {}, { inner: (node) => (node.kind === 'mine:double' ? inner : undefined) });
@@ -135,14 +135,14 @@ test('a node that sends a value says it on its light: "= 42"; a long one is cut'
 });
 
 test('a Custom Node that holds itself stops: the body runs a few levels, never for ever', () => {
-  const graph = { nodes: [{ id: 'u', kind: 'mine:loop', heading: 'Loop', rows: [{ name: 'n', label: 'N', input: 'value', value: 1 }, { name: 'r', label: 'R', output: 'value' }] }], routes: [] };
+  const graph = { nodes: [{ id: 'u', kind: 'mine:loop', heading: 'Loop', rows: [{ name: 'n', label: 'N', input: 'value', value: 1 }, { name: 'r', label: 'R', output: 'value' }] }], connections: [] };
   const body = {
     nodes: [
       { id: '#in', kind: '#group-input', heading: 'Group Input', rows: [{ name: 'n', label: 'N', output: 'value' }] },
       { id: 'again', kind: 'mine:loop', heading: 'Loop', rows: [{ name: 'n', label: 'N', input: 'value' }, { name: 'r', label: 'R', output: 'value' }] },
       { id: '#out', kind: '#group-output', heading: 'Group Output', input: 'any', rows: [{ name: 'r', label: 'R', input: 'value' }] },
     ],
-    routes: [{ from: '#in/n', to: 'again/n' }, { from: 'again/r', to: '#out/r' }],
+    connections: [{ from: '#in/n', to: 'again/n' }, { from: 'again/r', to: '#out/r' }],
   };
   const sim = simulateGraph(graph, {}, { inner: () => body });
   assert.equal(out(sim, 'u', 'u/r').value, undefined);

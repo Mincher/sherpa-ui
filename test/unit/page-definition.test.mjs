@@ -58,7 +58,7 @@ test('checkPage says each broken name in a page, and nothing of a sound one', as
     try { return { ok: checkPage(page), said }; } finally { stop(); }
   };
   assert.deepEqual(heard(await json('test/unit/fixtures/records.page.json')), { ok: true, said: [] });
-  assert.deepEqual(heard({ v: 2, id: 'p' }), { ok: false, said: ['page-definition'] });
+  assert.deepEqual(heard({ v: 3, id: 'p' }), { ok: false, said: ['page-definition'] });
   const broken = {
     v: 1, id: 'p',
     source: {

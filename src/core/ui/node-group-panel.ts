@@ -49,8 +49,8 @@ export function diffRows(diff: DefinitionDiff): { key: string; value: string }[]
   if (diff.nodes.added.length) rows.push({ key: 'Nodes added', value: list(diff.nodes.added) });
   if (diff.nodes.removed.length) rows.push({ key: 'Nodes removed', value: list(diff.nodes.removed) });
   if (diff.nodes.changed.length) rows.push({ key: 'Nodes changed', value: list(diff.nodes.changed) });
-  const routes = diff.routes.added.length + diff.routes.removed.length;
-  if (routes) rows.push({ key: 'Routes', value: `${diff.routes.added.length} added, ${diff.routes.removed.length} removed` });
+  const connections = diff.connections.added.length + diff.connections.removed.length;
+  if (connections) rows.push({ key: 'Connections', value: `${diff.connections.added.length} added, ${diff.connections.removed.length} removed` });
   return rows.length ? rows : [{ key: 'Change', value: 'The definition was saved again.' }];
 }
 

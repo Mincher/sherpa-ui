@@ -15,7 +15,7 @@
  * - nodesView — The Custom Node shelf as a view of an entity shelf: every entity, as the node it offers, by its use's kind.
  */
 import { report } from './report.js';
-import { entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
+import { entityKind, entityRefOf, isEntity, readEntity, nodeEntityOf, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
 import { libraryOf } from './entity-types.js';
 import type { EntityFacts } from './entity-check.js';
 import type { NodeDefinition, NodeLibrary } from './node-library.js';
@@ -101,7 +101,7 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     get: (id) => all().find((e) => e.id === id),
 
     async save(entity) {
-      if (!isEntity(entity)) return refuse('entity', 'save: it is not an entity: a v1 with a type, an id, a name and a graph.', String((entity as { id?: unknown })?.id ?? ''));
+      if (!isEntity(entity)) return refuse('entity', 'save: it is not an entity: a v2 with a type, an id, a name and a graph.', String((entity as { id?: unknown })?.id ?? ''));
       const here = all();
       const held = here.find((e) => e.id === entity.id);
       if (held?.origin === 'preset') return refuse(entity.type, `save: "${entity.id}" is a preset, which is read only: use "Copy to my entities".`, entity.id);
@@ -161,8 +161,9 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
         refuse('entity', 'import: it is not JSON.', '');
         return undefined;
       }
+      read = readEntity(read);
       if (!isEntity(read)) {
-        refuse('entity', 'import: it is not an entity: a v1 with a type, an id, a name and a graph.', '');
+        refuse('entity', 'import: it is not an entity: a v2 with a type, an id, a name and a graph.', '');
         return undefined;
       }
       const taken = new Set(all().map((e) => e.id));

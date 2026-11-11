@@ -4,33 +4,33 @@
  * A frame or a tie is not copied. A Group Input or Output (`#…`) is not copied.
  *
  * Map:
- * - NodeClip — What a copy holds: the nodes, and every route that touches one of them.
+ * - NodeClip — What a copy holds: the nodes, and every connection that touches one of them.
  * - copyNodes — A copy of these nodes, from a workflow.
  * - pasteNodes — A workflow with a clip pasted in, its new ids, and where each copy stands.
  */
 import { editWorkflow, type WorkflowDefinition, type WorkflowNode } from './workflow.js';
-import { kindOfNode, socketOf, takesMany, type NodeKind, type NodeRoute } from './node-kinds.js';
+import { kindOfNode, socketOf, takesMany, type NodeKind, type NodeConnection } from './node-kinds.js';
 
-/** What a copy holds: the nodes, and every route that touches one of them. */
+/** What a copy holds: the nodes, and every connection that touches one of them. */
 export interface NodeClip {
   nodes: readonly WorkflowNode[];
-  routes: readonly NodeRoute[];
+  connections: readonly NodeConnection[];
 }
 
 /** A copy of these nodes, from a workflow. */
 export function copyNodes(workflow: WorkflowDefinition, ids: readonly string[]): NodeClip {
   const take = new Set(ids.filter((id) => !id.startsWith('#')));
   const nodes = workflow.nodes.filter((n) => take.has(n.id)).map((n) => structuredClone(n));
-  const routes = (workflow.routes ?? [])
+  const connections = (workflow.connections ?? [])
     .filter((r) => take.has(socketOf(r.from).node) || take.has(socketOf(r.to).node))
     .map(({ from, to }) => ({ from, to }));
-  return { nodes, routes };
+  return { nodes, connections };
 }
 
 /**
  * The workflow with a clip pasted in, `dx` and `dy` px from where it was copied. `connections` joins each copy as its
- * original is joined: routes between the copies, routes into them, and routes out of them — an output goes only to
- * an input that takes several routes, since another would take the original's place.
+ * original is joined: connections between the copies, connections into them, and connections out of them — an output goes only to
+ * an input that takes several connections, since another would take the original's place.
  */
 export function pasteNodes(
   workflow: WorkflowDefinition, clip: NodeClip, at: { dx: number; dy: number; connections?: boolean }, kinds: Readonly<Record<string, NodeKind>>,
@@ -51,8 +51,8 @@ export function pasteNodes(
       const { node } = socketOf(address);
       return node in moved ? `${moved[node]}${address.slice(node.length)}` : address;
     };
-    for (const route of clip.routes) {
-      const [from, to] = [socketOf(route.from), socketOf(route.to)];
+    for (const connection of clip.connections) {
+      const [from, to] = [socketOf(connection.from), socketOf(connection.to)];
       const [fromCopied, toCopied] = [from.node in moved, to.node in moved];
       if (!toCopied) {
         const target = next.nodes.find((n) => n.id === to.node);
@@ -60,7 +60,7 @@ export function pasteNodes(
         if (!kind || !takesMany(kind, to.row)) continue;
       }
       if (!fromCopied && !next.nodes.some((n) => n.id === from.node)) continue;
-      next = editWorkflow(next, { route: { from: rename(route.from), to: rename(route.to) } }, kinds);
+      next = editWorkflow(next, { connection: { from: rename(connection.from), to: rename(connection.to) } }, kinds);
     }
   }
   return { workflow: next, ids: Object.values(moved), moved };

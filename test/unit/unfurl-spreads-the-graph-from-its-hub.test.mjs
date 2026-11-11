@@ -17,13 +17,13 @@ const { tieLimit } = await import(new URL('workflow.js', core));
 const GAP = 168;
 const R = (a, b) => ({ from: a, to: b });
 const node = (s) => s.split('/')[0];
-const graphOf = (nodes, routes, more = {}) => ({ nodes: nodes.map(([id, x, y]) => ({ id, x, y })), routes, ...more });
+const graphOf = (nodes, connections, more = {}) => ({ nodes: nodes.map(([id, x, y]) => ({ id, x, y })), connections, ...more });
 const boxesOf = (g, h = () => 120) => Object.fromEntries(g.nodes.map((n) => [n.id, { w: 240, h: h(n.id) }]));
 const opts = (g, more = {}) => ({ gapX: GAP, gapY: GAP, grid: 4, boxes: g.boxes ?? boxesOf(g), ...more });
 const ids = (g) => g.nodes.map((n) => n.id);
 const unfurl = (g, more) => unfurlNodes(g, ids(g), opts(g, more));
 const placesOf = (g) => Object.fromEntries(g.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
-const crossed = (g, places) => crossings(places, g.boxes ?? boxesOf(g), g.routes);
+const crossed = (g, places) => crossings(places, g.boxes ?? boxesOf(g), g.connections);
 const moved = (g, out) => ({ ...g, nodes: g.nodes.map((n) => ({ ...n, ...out.nodes[n.id] })) });
 
 /** Every pair of boxes clear of each other by the gap, across or down. */
@@ -39,8 +39,8 @@ function clearance(g, places) {
   }
   return close;
 }
-/** Every route whose target's left edge is not a gap past its source's right edge. */
-const backwards = (g, places) => g.routes.filter((r) => places[node(r.to)].x < places[node(r.from)].x + (g.boxes ?? boxesOf(g))[node(r.from)].w + GAP);
+/** Every connection whose target's left edge is not a gap past its source's right edge. */
+const backwards = (g, places) => g.connections.filter((r) => places[node(r.to)].x < places[node(r.from)].x + (g.boxes ?? boxesOf(g))[node(r.from)].w + GAP);
 
 // Demos' shipped workflow, tidy: a Source, a Field, a Value and a Condition, an Output.
 const demos = graphOf([['start', 0, 0], ['field', 360, 0], ['status', 360, 240], ['filter', 720, 0], ['end', 1080, 0]],
@@ -48,27 +48,27 @@ const demos = graphOf([['start', 0, 0], ['field', 360, 0], ['status', 360, 240],
 // A store, four fields, four conditions each with a value, an And, an Output; laid out in columns, crossed.
 function tree() {
   const nodes = [['store', 0, 400]];
-  const routes = [];
+  const connections = [];
   for (let i = 0; i < 4; i++) {
     nodes.push([`f${i}`, 400, i * 240], [`v${i}`, 400, 1000 + i * 200], [`c${i}`, 800, i * 240]);
-    routes.push(R('store/rows', `f${i}`), R(`f${i}/field`, `c${i}`), R(`v${i}/value`, `c${i}/b`), R(`c${i}`, 'and'));
+    connections.push(R('store/rows', `f${i}`), R(`f${i}/field`, `c${i}`), R(`v${i}/value`, `c${i}/b`), R(`c${i}`, 'and'));
   }
   nodes.push(['and', 1200, 400], ['out', 1600, 400]);
-  routes.push(R('and', 'out'));
-  const g = graphOf(nodes, routes);
+  connections.push(R('and', 'out'));
+  const g = graphOf(nodes, connections);
   return { ...g, boxes: boxesOf(g, (id) => (id.startsWith('c') ? 200 : 120)) };
 }
 // A random DAG, each node fed by one to three earlier ones, at messy places.
 function dense(n, seed) {
   const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
   const names = Array.from({ length: n }, (_, i) => `n${i}`);
-  const routes = [];
+  const connections = [];
   for (let j = 1; j < n; j++) {
     const from = new Set(Array.from({ length: 1 + Math.floor(rnd() * 3) }, () => Math.floor(rnd() * j)));
-    for (const i of from) routes.push(R(`${names[i]}/out`, `${names[j]}/in${i % 3}`));
+    for (const i of from) connections.push(R(`${names[i]}/out`, `${names[j]}/in${i % 3}`));
   }
   const side = Math.sqrt(n) * 420;
-  const g = graphOf(names.map((id) => [id, Math.floor(rnd() * side), Math.floor(rnd() * side)]), routes);
+  const g = graphOf(names.map((id) => [id, Math.floor(rnd() * side), Math.floor(rnd() * side)]), connections);
   return { ...g, boxes: Object.fromEntries(names.map((id) => [id, { w: 240, h: 80 + 40 * Math.floor(rnd() * 5) }])) };
 }
 
@@ -78,7 +78,7 @@ test('the same graph in gives the same places out, whatever order its nodes come
   for (const g of [demos, tree(), dense(30, 11), loop]) {
     const out = unfurl(g);
     assert.deepEqual(unfurl(g), out);
-    assert.deepEqual(unfurl({ ...g, nodes: [...g.nodes].reverse(), routes: [...g.routes].reverse() }), out);
+    assert.deepEqual(unfurl({ ...g, nodes: [...g.nodes].reverse(), connections: [...g.connections].reverse() }), out);
     assert.deepEqual(unfurl(moved(g, out)), out, 'idempotent');
   }
 });
@@ -91,8 +91,8 @@ test('the anchor, the node with the most connections, keeps its place; its outpu
   for (const id of ['a', 'b', 'c']) assert.ok(out.nodes[id].x >= 500 + 240 + GAP, id);
 });
 
-test('each route on a socket counts: three routes out of one socket weigh three', () => {
-  // `h` sends three routes from ONE socket; `z` one from each of three. Each weighs three, so the lower id is the
+test('each connection on a socket counts: three connections out of one socket weigh three', () => {
+  // `h` sends three connections from ONE socket; `z` one from each of three. Each weighs three, so the lower id is the
   // anchor; counted by socket, `h` would weigh one and `z` would be.
   const g = graphOf([['z', 900, 901], ['h', 13, 17], ['p', 400, 0], ['q', 400, 300], ['r', 400, 600]],
     [R('h/rows', 'p'), R('h/rows', 'q'), R('h/rows', 'r'), R('z/a', 'p/b'), R('z/b', 'q/b'), R('z/c', 'r/b')]);
@@ -102,7 +102,7 @@ test('each route on a socket counts: three routes out of one socket weigh three'
 });
 
 test('a tie for the anchor: the most different neighbours first, then the lowest id', () => {
-  // `k` and `m` each have three route ends; `m`'s join three nodes, `k`'s two.
+  // `k` and `m` each have three connection ends; `m`'s join three nodes, `k`'s two.
   const g = graphOf([['k', 100, 100], ['m', 500, 500], ['x', 900, 0], ['p', 0, 800], ['q', 800, 800]],
     [R('k/a', 'x'), R('k/b', 'x/b'), R('k/c', 'm'), R('m', 'p'), R('m', 'q')]);
   assert.deepEqual(unfurl(g).nodes.m, { x: 500, y: 500 });
@@ -174,9 +174,9 @@ test('a frame moves whole: its nodes keep their column, and its box clears every
   }
 });
 
-test('a tie whose routes all join moved nodes stands between them, inside its limit; a loop ends', () => {
+test('a tie whose connections all join moved nodes stands between them, inside its limit; a loop ends', () => {
   const g = graphOf([['a', 0, 0], ['b', 0, 300], ['c', 900, 0], ['d', 900, 300]], [R('a', 'c'), R('b', 'd'), R('a', 'd/b')],
-    { ties: [{ id: 't', x: 5000, y: 5000, routes: [R('a', 'c'), R('b', 'd')] }] });
+    { ties: [{ id: 't', x: 5000, y: 5000, connections: [R('a', 'c'), R('b', 'd')] }] });
   const out = unfurl(g);
   const limit = tieLimit({ nodes: Object.entries(out.nodes).map(([id, p]) => ({ id, x: p.x })) }, g.ties[0]);
   assert.ok(out.ties.t.x >= limit.min && out.ties.t.x <= limit.max, JSON.stringify([out.ties.t, limit]));
@@ -186,13 +186,13 @@ test('a tie whose routes all join moved nodes stands between them, inside its li
   assert.equal(Object.keys(unfurl(loop).nodes).length, 3);
 });
 
-test('a tie is a point in the flow (TODO 888): what feeds it on its left, what it feeds on its right, in its slots\' order; a tie of many routes keeps its place', () => {
+test('a tie is a point in the flow (TODO 888): what feeds it on its left, what it feeds on its right, in its slots\' order; a tie of many connections keeps its place', () => {
   // Fed and feeding out of order, and far from the tie: an unfurl puts them round it.
   const g = graphOf([['a', 0, 900], ['b', 1400, 0], ['c', 200, 300], ['x', 0, 0], ['y', 600, 1200], ['z', 1800, 600]],
     [R('a/rows', 'x'), R('b/rows', 'y'), R('c/rows', 'z')],
-    { ties: [{ id: 't', x: 1000, y: 400, routes: [R('a/rows', 'x'), R('b/rows', 'y'), R('c/rows', 'z')] }] });
+    { ties: [{ id: 't', x: 1000, y: 400, connections: [R('a/rows', 'x'), R('b/rows', 'y'), R('c/rows', 'z')] }] });
   const out = unfurl(g);
-  // The tie is the anchor (six route ends against one each): it keeps its place.
+  // The tie is the anchor (six connection ends against one each): it keeps its place.
   assert.deepEqual(out.ties.t, { x: 1000, y: 400 });
   // Its feeders all stand left of it, what it feeds all right.
   for (const id of ['a', 'b', 'c']) assert.ok(out.nodes[id].x + 240 <= out.ties.t.x, `${id} feeds it from its left`);
@@ -219,7 +219,7 @@ test('it is fast: 20, 100 and 300 nodes', (t) => {
     const start = performance.now();
     for (let k = 0; k < 3; k++) unfurl(g);
     const ms = (performance.now() - start) / 3;
-    said.push(`${n} nodes, ${g.routes.length} routes: ${ms.toFixed(1)} ms`);
+    said.push(`${n} nodes, ${g.connections.length} connections: ${ms.toFixed(1)} ms`);
     assert.ok(ms < cap, said.at(-1));
   }
   t.diagnostic(said.join('; '));

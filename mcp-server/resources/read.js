@@ -48,7 +48,7 @@ export function register(server) {
     complete: { name: completes(() => schemas().map((s) => s.name)) },
   }), {
     title: 'A contract',
-    description: 'A JSON Schema in sherpa-ui\'s schemas/, by name, at its newest version: `page` is page.v1.json, `workflow` workflow.v2.json. The contracts of an app\'s files, the shapes they share (`defs`), a component\'s spec and example, and a pattern',
+    description: 'A JSON Schema in sherpa-ui\'s schemas/, by name, at its newest version: `page` is page.v1.json, `workflow` workflow.v3.json. The contracts of an app\'s files, the shapes they share (`defs`), a component\'s spec and example, and a pattern',
     mimeType: SCHEMA_TYPE,
   }, async (uri, { name }) => contents(uri, 'schema', { name, v: String(schemaVersion(String(name)) ?? '') }, SCHEMA_TYPE));
 

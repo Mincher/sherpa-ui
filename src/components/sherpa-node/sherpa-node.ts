@@ -32,7 +32,7 @@ export class SherpaNode extends SherpaElement {
     new URL('./sherpa-node.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-node.html', import.meta.url);
-  static override pageCss = new URL('./sherpa-node-routes.css', import.meta.url);
+  static override pageCss = new URL('./sherpa-node-connectors.css', import.meta.url);
 
   static override props = {
     'data-heading': { type: 'string', kind: 'content' },
@@ -40,10 +40,10 @@ export class SherpaNode extends SherpaElement {
     'data-description': { type: 'string', kind: 'content' },
     'data-input-socket': SHARED_PROPS['data-input-socket'],
     'data-output-socket': SHARED_PROPS['data-output-socket'],
-    'data-input-routed': SHARED_PROPS['data-input-routed'],
-    'data-output-routed': SHARED_PROPS['data-output-routed'],
+    'data-input-connected': SHARED_PROPS['data-input-connected'],
+    'data-output-connected': SHARED_PROPS['data-output-connected'],
     'data-branches': { type: 'boolean', kind: 'style' },
-    'data-false-routed': { type: 'boolean', kind: 'style' },
+    'data-false-connected': { type: 'boolean', kind: 'style' },
     'data-input-many': SHARED_PROPS['data-input-many'],
     'data-category': { type: 'string', kind: 'style' },
     'data-scale-w': { type: 'number', kind: 'behaviour' },
@@ -64,14 +64,14 @@ export class SherpaNode extends SherpaElement {
     'data-summary': { type: 'string', kind: 'content' },
     'data-inputs': { type: 'number', kind: 'behaviour' },
     'data-outputs': { type: 'number', kind: 'behaviour' },
-    'data-inputs-routed': { type: 'number', kind: 'behaviour' },
-    'data-outputs-routed': { type: 'number', kind: 'behaviour' },
+    'data-inputs-connected': { type: 'number', kind: 'behaviour' },
+    'data-outputs-connected': { type: 'number', kind: 'behaviour' },
     'data-hide-unconnected': { type: 'boolean', kind: 'style' },
     'data-reveal': { type: 'boolean', kind: 'style' },
   } as const;
   // The app's setting: the handle and Alt+Arrow exist only while it is on. A saved size still draws. Will, TODO 748
   static override settings = { 'data-resizable': 'resizeNodes' };
-  static override observed = ['data-x', 'data-y', 'data-scale-w', 'data-scale-h', 'data-inputs', 'data-outputs', 'data-inputs-routed', 'data-outputs-routed'];
+  static override observed = ['data-x', 'data-y', 'data-scale-w', 'data-scale-h', 'data-inputs', 'data-outputs', 'data-inputs-connected', 'data-outputs-connected'];
 
   /** The drag in progress: the pointer, where it took hold, the place then, and the canvas's zoom. */
   #drag: { id: number; x: number; y: number; from: [number, number]; zoom: number } | null = null;
@@ -116,7 +116,7 @@ export class SherpaNode extends SherpaElement {
 
   /** The stacks' counts, where the CSS reads them. */
   #stacks(): void {
-    for (const [attr, prop] of [['data-inputs', '--_ins'], ['data-outputs', '--_outs'], ['data-inputs-routed', '--_ins-routed'], ['data-outputs-routed', '--_outs-routed']] as const) {
+    for (const [attr, prop] of [['data-inputs', '--_ins'], ['data-outputs', '--_outs'], ['data-inputs-connected', '--_ins-connected'], ['data-outputs-connected', '--_outs-connected']] as const) {
       this.style.setProperty(prop, String(this.num(attr, 0)));
     }
   }

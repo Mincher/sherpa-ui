@@ -1958,7 +1958,7 @@ read both `define(` and `customElements.define(`.
 
 ### T-a-socket-is-drawn-by-its-type
 
-**A socket is its type's SHAPE, in its type's ink, hollow until a route joins
+**A socket is its type's SHAPE, in its type's ink, hollow until a connection joins
 it** (Will, TODO 713; plan-713 §2, M2). The shape is the socket's and its inner
 face's CORNERS (`border-radius`; an object a square turned 45deg) — never an image —
 so one box draws them all: a value a circle, an object a diamond, a boolean a circle
@@ -1971,9 +1971,9 @@ of a pixel, as it does in a socket tab (Will saw it, 2026-11-11).
   `success`, any `default`; False is `critical` (Will, D5, D6). A picked or
   running node changes none of them. Only the mode's `indicator-accent` is read:
   `info`, `success` and `critical` resolve their SURFACE to plain white.
-- **Hollow is the face inside the ring**; `data-input-routed` and
-  `data-output-routed` (the host writes them) hide it, so a joined socket is
-  filled. False has its own, `data-false-routed`.
+- **Hollow is the face inside the ring**; `data-input-connected` and
+  `data-output-connected` (the host writes them) hide it, so a joined socket is
+  filled. False has its own, `data-false-connected`.
 - **A fork** (`data-branches`) is the header's True, a circle pinned
   `success`, and a footer — the container footer, composed — with False. A node
   with no fork draws no footer.
@@ -1983,11 +1983,11 @@ of a pixel, as it does in a socket tab (Will saw it, 2026-11-11).
   (TODO 807).
 - **Never colour alone.** Each socket has a tip that says its type in words
   ("True: a boolean"), and in forced colours the ink goes to `CanvasText` while
-  the shape stays. A route line takes the ink of its FROM socket's type, from
-  `data-type` on its path, in the page sheet `sherpa-node-routes.css`.
+  the shape stays. A connection line takes the ink of its FROM socket's type, from
+  `data-type` on its path, in the page sheet `sherpa-node-connectors.css`.
 
 - Site: `src/core/sherpa-node-sockets.css`
-- Site: `src/components/sherpa-node/sherpa-node-routes.css`
+- Site: `src/components/sherpa-node/sherpa-node-connectors.css`
 - Site: `src/components/sherpa-node/sherpa-node.ts`
 - Site: `test/e2e/reforged-node.spec.ts`
 
@@ -2016,8 +2016,8 @@ the data layer's `Journal` (capped, 100): they share structure, so a step is che
 The editor's draft is not a store, so it keeps the Journal itself; a store opts in
 to the same class with `journal: N` (`T-a-store-keeps-its-history`).
 
-- **One edit, one step, however many writes.** A placement that is routed, a Custom
-  Node made (its definition and its use), a reroute: each is `edit()`, and the
+- **One edit, one step, however many writes.** A placement that is connected, a Custom
+  Node made (its definition and its use), a reconnect: each is `edit()`, and the
   step is recorded when the outermost one ends. The same tag within a second (a
   drag, a typed word) folds into one.
 - **Across a Custom Node**: one journal for the workflow and every definition the
@@ -2197,7 +2197,7 @@ clones them again (`onConnect`). The filter panel clones its search (`descriptio
 written again** (measured on the Records filter graph, 2026-11-10: a node drag cost ~220 ms a move, now ~6 ms). Four things
 each cost a frame on their own:
 
-- **Rebuilt lines.** `drawRoutes` made every connector new on each move, and `replaceChildren` took the old ones out. Each
+- **Rebuilt lines.** `drawConnections` made every connector new on each move, and `replaceChildren` took the old ones out. Each
   element in or out re-checks every `:has()` round it, up to `<html>` (the app shell's grid rules have `:has(> …)`), and the
   layout then starts at the page root. Now the lines drawn last time, keyed by what each is, are `morph`ed to the new ones,
   and `keepOrder` moves only one out of place.

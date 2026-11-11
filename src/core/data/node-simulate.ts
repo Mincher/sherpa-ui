@@ -42,7 +42,7 @@ export interface SimulateFacts {
 }
 
 /** What one socket hears or says: its rows (a row list), a field's name, or a value; and where it comes from, as
- *  the socket addresses of the routes that bring it. `note` says why it holds no rows: not fetched, not simulated. */
+ *  the socket addresses of the connections that bring it. `note` says why it holds no rows: not fetched, not simulated. */
 export interface Slot {
   socket: string;
   label: string;
@@ -91,7 +91,7 @@ function common(lists: readonly (readonly Row[])[]): Row[] {
  * The graph run on the cached rows. Each Source sends its store's rows (`rowsByStore`, by store id; a store not in it is
  * "not fetched yet"). A Field sends its name and the rows into it. A test (Condition, Time, Tag) keeps the rows into its
  * Field that its test holds, and its False the rest; And and Or keep what every part kept, or what any part kept. An
- * Output hears what is routed to it. Another kind says "not simulated yet". A route through a portal is read as the
+ * Output hears what is connected to it. Another kind says "not simulated yet". A connection through a portal is read as the
  * data flows (`portalFlow`). The same in gives the same out.
  */
 export function simulateGraph(graph: DrawnGraph, rowsByStore: Readonly<Record<string, readonly Row[] | undefined>>, facts: SimulateFacts = {}): Simulated {
@@ -107,7 +107,7 @@ export interface SimulationRun {
   ids: readonly string[];
   step(id: string): void;
   result(): Simulated;
-  /** What an input socket hears now, as the routes bring it (a Custom Node reads its body's Group Output so). */
+  /** What an input socket hears now, as the connections bring it (a Custom Node reads its body's Group Output so). */
   hears(address: string): Slot;
 }
 
@@ -221,7 +221,7 @@ export function trueOf(node: SimulatedNode): number | undefined {
 /** Begin a simulation: nothing runs until it is stepped. */
 export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<string, readonly Row[] | undefined>>, facts: SimulateFacts = {}, seeds: ReadonlyMap<string, Sent> = new Map(), depth = 0): SimulationRun {
   const now = facts.now ?? new Date();
-  const routes = portalFlow(graph.nodes, graph.routes).routes;
+  const connections = portalFlow(graph.nodes, graph.connections).connections;
   const held = new Map(graph.nodes.map((n) => [n.id, n]));
   const faults: string[] = [];
   const said = new Set<string>();
@@ -229,9 +229,9 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   const sent = new Map<string, Sent>();
   const busy = new Set<string>();
 
-  /** What flows into a node's header, as each route brings it. */
-  const into = (address: string): { from: string; sent: Sent }[] => routes.filter((r) => r.to === address).map((r) => ({ from: r.from, sent: sends(r.from) }));
-  /** The rows that reach a socket, each once; none at all when none of its routes brings rows (not fetched, not simulated). */
+  /** What flows into a node's header, as each connection brings it. */
+  const into = (address: string): { from: string; sent: Sent }[] => connections.filter((r) => r.to === address).map((r) => ({ from: r.from, sent: sends(r.from) }));
+  /** The rows that reach a socket, each once; none at all when none of its connections brings rows (not fetched, not simulated). */
   const rowsInto = (address: string): Row[] | undefined => {
     const lists = into(address).flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
     return lists.length ? union(lists) : undefined;
@@ -257,7 +257,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     const type = node.rows.find((r) => r.name === 'type')?.value;
     if (node.kind === 'condition' && (type === 'and' || type === 'or')) {
       const came = into(node.id);
-      if (!came.length) return `"${node.heading}" joins no tests: route their True in`;
+      if (!came.length) return `"${node.heading}" joins no tests: connection their True in`;
       const lacking = came.find((p) => !p.sent.rows);
       if (lacking) return { note: lacking.sent.note ?? 'No rows reach it' };
       const parts = came.flatMap((p) => (p.sent.rows ? [p.sent.rows] : []));
@@ -269,7 +269,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return test(node);
   };
 
-  /** What an input row hears: a routed value, else the row's own, as its control reads it. */
+  /** What an input row hears: a connected value, else the row's own, as its control reads it. */
   const heard = (node: GraphNode, name: string): Sent => {
     const came = into(`${node.id}/${name}`).map((p) => p.sent);
     const first = came[0];
@@ -340,10 +340,10 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return { kind: 'value', value: own };
   };
 
-  /** The rows a Sort or Group hears, and the field it reads: from the Field routed into its header. */
+  /** The rows a Sort or Group hears, and the field it reads: from the Field connected to its header. */
   const fielded = (node: GraphNode): { field: string; rows: readonly Row[] } | { note: string } => {
     const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
-    if (!fed) return { note: 'No Field is routed in' };
+    if (!fed) return { note: 'No Field is connected in' };
     if (!fed.rows) return { note: fed.note ?? 'No rows reach it' };
     return { field: String(fed.value ?? ''), rows: fed.rows };
   };
@@ -385,7 +385,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (known) return known;
     const { node: id, row } = socketOf(address);
     const node = held.get(id);
-    if (!node) return { kind: 'value', note: `a route comes from "${id}", which the graph does not hold` };
+    if (!node) return { kind: 'value', note: `a connection comes from "${id}", which the graph does not hold` };
     if (busy.has(address)) return { kind: 'value', note: `"${node.heading}" reads itself, in a loop` };
     busy.add(address);
     const made = make(node, row);
@@ -483,7 +483,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   };
   // In the order the data flows, so each node's step is mostly its own work and its time is its own; a loop keeps the graph's order.
   const order: string[] = [];
-  const left = new Map(held0.map((n) => [n.id, new Set(routes.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const).filter(([from, to]) => to === n.id && from !== n.id && held.has(from)).map(([from]) => from))]));
+  const left = new Map(held0.map((n) => [n.id, new Set(connections.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const).filter(([from, to]) => to === n.id && from !== n.id && held.has(from)).map(([from]) => from))]));
   while (left.size) {
     const next = [...left].find(([, waits]) => ![...waits].some((w) => left.has(w))) ?? [...left][0]!;
     order.push(next[0]);

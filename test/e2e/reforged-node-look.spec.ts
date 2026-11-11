@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
     el.style.cssText = 'inline-size: 900px; block-size: 520px';
     const cats = ['sources', 'custom-nodes', 'logic', 'output', 'ai'];
     el.innerHTML = cats.map((c, i) => `<sherpa-node id="${c}" data-resizable data-heading="${c}" data-category="${c}" data-x="${20 + i * 170}" data-y="40" style="inline-size: 10rem"></sherpa-node>`).join('')
-      + '<sherpa-node id="big" data-resizable data-heading="Resize" data-x="40" data-y="200" data-input-socket="value" data-input-many data-input-routed></sherpa-node>';
+      + '<sherpa-node id="big" data-resizable data-heading="Resize" data-x="40" data-y="200" data-input-socket="value" data-input-many data-input-connected></sherpa-node>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await Promise.all([...el.querySelectorAll<Node>('sherpa-node')].map((n) => n.rendered));
@@ -74,10 +74,10 @@ test('each category has its own radius and its own painted fill; one with no cat
   }
 });
 
-test('a many input is the height of a single: 16px, whatever the routes it takes (cb0b01a4c)', async ({ page }) => {
+test('a many input is the height of a single: 16px, whatever the connections it takes (cb0b01a4c)', async ({ page }) => {
   const sizes = await page.evaluate(async () => {
     const el = document.querySelector('#root sherpa-layout-canvas')!;
-    el.insertAdjacentHTML('beforeend', '<sherpa-node id="one" data-heading="One" data-x="400" data-y="200" data-input-socket="value" data-input-routed></sherpa-node>');
+    el.insertAdjacentHTML('beforeend', '<sherpa-node id="one" data-heading="One" data-x="400" data-y="200" data-input-socket="value" data-input-connected></sherpa-node>');
     const one = document.getElementById('one') as Node;
     await one.rendered;
     await window.__settled();
@@ -90,11 +90,11 @@ test('a many input is the height of a single: 16px, whatever the routes it takes
 test('807: no socket is double height, a many input included: the same row\'s output, and a fork\'s True and False, keep their own, in pixels', async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.querySelector('#root sherpa-layout-canvas')!;
-    const row = (id: string, many: boolean) => `<sherpa-node-row id="${id}" data-label="${id}" data-input-socket="value"${many ? ' data-input-many' : ''} data-input-routed data-output-socket="object" data-output-routed></sherpa-node-row>`;
+    const row = (id: string, many: boolean) => `<sherpa-node-row id="${id}" data-label="${id}" data-input-socket="value"${many ? ' data-input-many' : ''} data-input-connected data-output-socket="object" data-output-connected></sherpa-node-row>`;
     // A node each, so nothing else paints down the socket's column.
     el.insertAdjacentHTML('beforeend', `<sherpa-node id="a" data-heading="Plain" data-x="300" data-y="200">${row('plain', false)}</sherpa-node>`
       + `<sherpa-node id="b" data-heading="Many" data-x="300" data-y="340">${row('many', true)}</sherpa-node>`
-      + '<sherpa-node id="fork" data-heading="Fork" data-x="560" data-y="200" data-input-socket="boolean" data-input-many data-input-routed data-branches data-output-routed data-false-routed></sherpa-node>');
+      + '<sherpa-node id="fork" data-heading="Fork" data-x="560" data-y="200" data-input-socket="boolean" data-input-many data-input-connected data-branches data-output-connected data-false-connected></sherpa-node>');
     await Promise.all([...el.querySelectorAll<Node>('#a, #b, #fork, sherpa-node-row')].map((n) => n.rendered));
     await window.__settled();
   });
@@ -188,14 +188,14 @@ test('Alt and an arrow on the header grows it a tenth, held to the limits', asyn
   expect((await box(page, 'big')).w).toBeCloseTo(nat.w, 0);
 });
 
-/* ── In the editor: routes follow, the size is saved, Undo gives it back ── */
+/* ── In the editor: connections follow, the size is saved, Undo gives it back ── */
 const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-  const flow = { v: 2, id: 'g', nodes: [
+  const flow = { v: 3, id: 'g', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'sort', kind: 'sort', x: 360, y: 0, values: { field: 'status', direction: 'asc' } },
     { id: 'end', kind: 'output', x: 700, y: 0 },
-  ], routes: [{ from: 'start/rows', to: 'sort' }] };
+  ], connections: [{ from: 'start/rows', to: 'sort' }] };
   const canvas = document.getElementById('cv');
   window.ed = bindWorkflow(canvas, flow, { session: new SessionStore(), toolbar: canvas.querySelector('sherpa-node-toolbar'),
     fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } }, stores: ['users'] });
@@ -205,7 +205,7 @@ const BIND = `async () => {
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }`;
 
-test('in the editor a resize is one step, saved as size beside x and y, with the routes still on their sockets; Undo gives it back', async ({ page }) => {
+test('in the editor a resize is one step, saved as size beside x and y, with the connections still on their sockets; Undo gives it back', async ({ page }) => {
   await page.evaluate(() => { document.querySelector('#root sherpa-layout-canvas')!.remove(); });
   await page.evaluate(() => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="cv" style="inline-size: 1000px; block-size: 520px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>');
@@ -231,9 +231,9 @@ test('in the editor a resize is one step, saved as size beside x and y, with the
   expect(now[0].size.w).toBeGreaterThan(1);
   expect(now[0].size.h).toBeGreaterThan(1);
   expect(now[0].x).toBe(0);
-  // The route leaves from the socket: its start is on the socket's box, within 2px.
+  // The connection leaves from the socket: its start is on the socket's box, within 2px.
   const gap = await page.evaluate(() => {
-    const path = document.querySelector<SVGPathElement>('#cv svg.graph-routes path[data-from]')!;
+    const path = document.querySelector<SVGPathElement>('#cv svg.graph-connectors path[data-from]')!;
     const p = path.getPointAtLength(0).matrixTransform(path.getScreenCTM()!);
     const row = document.querySelector('#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-output-socket]') as Node;
     const s = row.socketRect('output')!;
@@ -300,14 +300,14 @@ async function bindCategories(page: Page): Promise<void> {
     await canvas.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');
-    const body = { v: 1, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'out', label: 'Out', type: 'object' }], nodes: [], routes: [{ from: '#in/rows', to: '#out/out' }] };
+    const body = { v: 1, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'out', label: 'Out', type: 'object' }], nodes: [], connections: [{ from: '#in/rows', to: '#out/out' }] };
     const library = { v: 1, nodes: { mine: { ...body, label: 'Mine' }, agent: { ...body, label: 'Agent', category: 'AI' } } };
     const nodes = Object.entries(cats).map(([heading, kind], i) => {
       // The second row below the first's tallest, a Condition with its Operation row.
       const at = { id: kind, x: (i % 4) * 290, y: i < 4 ? 0 : 460, heading };
       return kind in library.nodes ? { ...useOf(library as never, kind, at), heading } : { kind, ...at };
     });
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 2, id: 'cats', nodes } as never, {
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, id: 'cats', nodes } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, library: library as never, stores: ['users'],
     });
     await window.__settled();

@@ -16,7 +16,7 @@ const { workflowGraph } = await import(new URL('workflow.js', core));
 const { simulateGraph, lightOf } = await import(new URL('node-simulate.js', core));
 
 const N = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
-const graphOf = (nodes, routes = []) => workflowGraph({ v: 2, id: 'ai', nodes, routes });
+const graphOf = (nodes, connections = []) => workflowGraph({ v: 3, id: 'ai', nodes, connections });
 const node = (g, id) => g.nodes.find((n) => n.id === id);
 const row = (n, name) => n.rows.find((r) => r.name === name);
 const CATALOG = {
@@ -64,14 +64,14 @@ test('the lists are the app\'s: none shipped; a Model lists the joined Provider\
   assert.deepEqual(Object.keys(aiCatalog().providers), [], 'Sherpa ships none');
   const undo = registerAiCatalog(CATALOG);
   try {
-    const [nodes, routes] = asked('text');
-    const g = graphOf(nodes, routes);
+    const [nodes, connections] = asked('text');
+    const g = graphOf(nodes, connections);
     assert.deepEqual(row(node(g, 'p'), 'provider').choices.map((c) => c.label), ['Anthropic', 'Other']);
     assert.deepEqual(row(node(g, 'm'), 'model').choices.map((c) => c.label), ['Claude Opus 5.5', 'Claude Sonnet 5.5']);
     // Another provider joined: its models.
     nodes[0].values.provider = 'other';
     nodes[1].values.model = '';
-    assert.deepEqual(row(node(graphOf(nodes, routes), 'm'), 'model').choices.map((c) => c.label), ['Pick one', 'Model One']);
+    assert.deepEqual(row(node(graphOf(nodes, connections), 'm'), 'model').choices.map((c) => c.label), ['Pick one', 'Model One']);
     // A Runbook and a Skill list the app's, then New.
     const r = graphOf([N('r', 'runbook'), N('s', 'skill')]);
     assert.deepEqual(row(node(r, 'r'), 'runbook').choices.map((c) => c.label), ['Pick one', 'Patch review', 'New runbook']);
@@ -99,8 +99,8 @@ test('with no Model joined an AI node says so; no Provider, a Model says so; a w
   // Joined, no warning.
   const undo = registerAiCatalog(CATALOG);
   try {
-    const [nodes, routes] = asked('text');
-    const ok = graphOf(nodes, routes);
+    const [nodes, connections] = asked('text');
+    const ok = graphOf(nodes, connections);
     assert.deepEqual([...words(ok, 'q'), ...words(ok, 'm')], []);
   } finally {
     undo();
@@ -109,8 +109,8 @@ test('with no Model joined an AI node says so; no Provider, a Model says so; a w
 
 test('Simulate asks no model: it says what it would do, and each answer is a stand-in by its shape', () => {
   const run = (expects) => {
-    const [nodes, routes] = asked(expects);
-    return simulateGraph(graphOf(nodes, routes), {});
+    const [nodes, connections] = asked(expects);
+    return simulateGraph(graphOf(nodes, connections), {});
   };
   const out = (sim, socket) => sim.nodes.q.outgoing.find((s) => s.socket === socket);
   const text = run('text');

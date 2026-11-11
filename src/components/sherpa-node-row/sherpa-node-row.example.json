@@ -2,7 +2,7 @@
   "html": [
     "<sherpa-node data-heading=\"Filter\" data-icon=\"filter\" data-input-socket=\"object\">",
     "<sherpa-node-row><sherpa-input-text data-label=\"Key\" name=\"key\" data-type=\"select\"></sherpa-input-text></sherpa-node-row>",
-    "<sherpa-node-row data-input-socket=\"value\" data-input-routed><sherpa-input-text data-label=\"Value\" name=\"value\" value=\"active\"></sherpa-input-text></sherpa-node-row>",
+    "<sherpa-node-row data-input-socket=\"value\" data-input-connected><sherpa-input-text data-label=\"Value\" name=\"value\" value=\"active\"></sherpa-input-text></sherpa-node-row>",
     "<sherpa-node-row data-label=\"Matches\" data-output-socket=\"boolean\"></sherpa-node-row>",
     "</sherpa-node>"
   ],

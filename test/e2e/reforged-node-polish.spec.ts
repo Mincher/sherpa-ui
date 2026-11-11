@@ -3,14 +3,14 @@ import { test, expect, type Page } from './harness';
 /**
  * Node polish — Will, TODO 743. A fork's footer keeps its False SOCKET and loses the word; a socket's tip hangs
  * beside its socket, panned and zoomed; Backspace and Delete remove
- * the picked nodes and their routes as ONE step; the Pan tool's icon is four arrows. Real pointer and key; pixels.
+ * the picked nodes and their connections as ONE step; the Pan tool's icon is four arrows. Real pointer and key; pixels.
  */
 const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }],
-  routes: [
+  connections: [
     { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
     { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
   ],
@@ -47,13 +47,13 @@ const bind = (page: Page) => page.evaluate(async () => {
   };
   const at = (id: string, kind: string, x: number, y: number) => useOf(library as never, kind, { id, x, y });
   const flow = {
-    v: 2, id: 'g',
+    v: 3, id: 'g',
     nodes: [
       { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),
       { id: 'end', kind: 'output', x: 1200, y: 40 },
     ],
-    routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'start/rows', to: 'perm2/users' }, { from: 'perm', to: 'end' }],
+    connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'start/rows', to: 'perm2/users' }, { from: 'perm', to: 'end' }],
   };
   const w = window as unknown as Record<string, unknown>;
   w['saved'] = [];
@@ -82,7 +82,7 @@ const rectOf = (page: Page, sel: string, inner?: string) => page.evaluate(([s, i
 }, [sel, inner]);
 const gapBetween = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
   Math.max(0, a.x - (b.x + b.w), b.x - (a.x + a.w), a.y - (b.y + b.h), b.y - (a.y + a.h));
-const flow = (page: Page) => page.evaluate(() => (window as never as { ed: { workflow(): { nodes: { id: string }[]; routes?: unknown[] } } }).ed.workflow());
+const flow = (page: Page) => page.evaluate(() => (window as never as { ed: { workflow(): { nodes: { id: string }[]; connections?: unknown[] } } }).ed.workflow());
 
 test('a fork shows no False word, and keeps its False socket', async ({ page }) => {
   await bind(page);
@@ -123,7 +123,7 @@ test('a socket tip sits beside its socket on hover, after a pan and a zoom, neve
   }
 });
 
-test('Delete and Backspace remove the picked nodes and their routes as ONE step; Undo restores; not in a text field', async ({ page }) => {
+test('Delete and Backspace remove the picked nodes and their connections as ONE step; Undo restores; not in a text field', async ({ page }) => {
   await bind(page);
   await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { fit(): void }).fit());
   await settle(page);
@@ -137,7 +137,7 @@ test('Delete and Backspace remove the picked nodes and their routes as ONE step;
   const after = await flow(page);
   expect(after.nodes.map((n) => n.id)).not.toContain('start');
   expect(after.nodes.map((n) => n.id)).not.toContain('end');
-  expect(after.routes ?? []).toHaveLength(0);
+  expect(after.connections ?? []).toHaveLength(0);
   await page.keyboard.press(`${await primary(page)}+z`);
   await settle(page);
   expect(await flow(page)).toEqual(before);
@@ -248,17 +248,17 @@ test('a press just outside the drawn socket starts a connector; a drop 10px off 
     const r = n.socketRect('input');
     return [r.left + r.width / 2, r.top + r.height / 2];
   });
-  const before = (await flow(page)).routes!.length;
+  const before = (await flow(page)).connections!.length;
   await page.mouse.move(ox, oy);
   await page.mouse.down();
   await page.mouse.move(sortIn[0]! - 30, sortIn[1]!, { steps: 4 });
   await page.mouse.move(sortIn[0]! - 10, sortIn[1]!, { steps: 3 });
   await page.mouse.up();
   await settle(page);
-  expect((await flow(page)).routes!.length).toBe(before + 1);
+  expect((await flow(page)).connections!.length).toBe(before + 1);
 });
 
-test('a taller node spreads its rows evenly, and its routes still end on their sockets', async ({ page }) => {
+test('a taller node spreads its rows evenly, and its connections still end on their sockets', async ({ page }) => {
   await bind(page);
   await page.evaluate(() => (window as never as { ed: { open(id: string): void } }).ed.open('perm'));
   await settle(page);
@@ -275,9 +275,9 @@ test('a taller node spreads its rows evenly, and its routes still end on their s
   const step = moved[section.findIndex((n) => n === 1)]!;
   expect(step).toBeGreaterThan(2);
   moved.forEach((m, i) => expect(Math.abs(m - section[i]! * step), `row ${i}`).toBeLessThanOrEqual(1));
-  // A route's end is on its socket.
+  // A connection's end is on its socket.
   const gap = await page.evaluate(() => {
-    const path = [...document.querySelectorAll<SVGPathElement>('#cv svg.graph-routes path[data-from]')].find((p) => p.dataset['to']?.startsWith('has-role/b'))!;
+    const path = [...document.querySelectorAll<SVGPathElement>('#cv svg.graph-connectors path[data-from]')].find((p) => p.dataset['to']?.startsWith('has-role/b'))!;
     const end = path.getPointAtLength(path.getTotalLength()).matrixTransform(path.getScreenCTM()!);
     const row = document.querySelector('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row:has([name="b"])') as HTMLElement & { socketRect(s: string): DOMRect };
     const s = row.socketRect('input');
@@ -292,8 +292,8 @@ test('a row the graph feeds reads read only, not inactive: the same fill as an e
   await settle(page);
   const r = await page.evaluate(() => {
     const rows = [...document.querySelectorAll('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row')];
-    const fed = rows.find((x) => x.hasAttribute('data-input-routed') && x.querySelector('sherpa-input-text'))!.querySelector('sherpa-input-text') as HTMLElement;
-    const free = rows.find((x) => !x.hasAttribute('data-input-routed') && x.querySelector('sherpa-input-text'))!.querySelector('sherpa-input-text') as HTMLElement;
+    const fed = rows.find((x) => x.hasAttribute('data-input-connected') && x.querySelector('sherpa-input-text'))!.querySelector('sherpa-input-text') as HTMLElement;
+    const free = rows.find((x) => !x.hasAttribute('data-input-connected') && x.querySelector('sherpa-input-text'))!.querySelector('sherpa-input-text') as HTMLElement;
     const fill = (el: HTMLElement) => getComputedStyle(el.shadowRoot!.querySelector('.control-row, .control')!).backgroundColor;
     return { fedReadonly: fed.hasAttribute('readonly'), fedDisabled: fed.matches(':disabled') || fed.hasAttribute('disabled'), fedFill: fill(fed), freeFill: fill(free) };
   });

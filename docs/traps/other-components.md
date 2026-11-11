@@ -1332,10 +1332,10 @@ and repaints only the box when it moves. TODO 799, measured 2026-11-05.
 - **Measured** in the harness (a 0.5 zoom, a pixel-aligned pan): 128 to 183 stale
   pixels after a drag, Arrange or Frame, and 751 when a frame's header drags it
   and its nodes; 0 at zoom 1 and over; 0 in Firefox and WebKit. `border-radius: 0`
-  stops the bleed; hiding the sockets, the grid, the tips or the routes does not.
+  stops the bleed; hiding the sockets, the grid, the tips or the connections does not.
   With the ring: 0 round the moved piece, at zooms 0.25 to 1.25, the frame too.
   Up to six pixels, by up to 23 levels, can still differ at 0.75 where a redrawn
-  route meets a socket: the ring is on the pieces, not on a route's path.
+  connection meets a socket: the ring is on the pieces, not on a connection's path.
 - **The ring is clear**: the canvas reads the same with it and without it, at
   rest, picked and mid-drag, in all three engines. It is ONE device px at any
   zoom, which covers the most the bleed can reach (half a device px). Of the
@@ -1816,7 +1816,7 @@ it; `getBoundingClientRect()` says where it is drawn.
 - **The node canvas's plane is one** (`sherpa-layout-canvas`'s `.plane`; plan 852, step 3): pan and zoom write its
   `data-x`, `data-y`, `data-zoom`. A node's scale is the one it is DRAWN at, so a zoom shows in a drag only after the
   canvas's next paint: a test that zooms and drags waits a frame.
-- **The lines are one SVG, drawn too** (step 4): its box is the routes' bounds and a handle past them (`fitLines`), its
+- **The lines are one SVG, drawn too** (step 4): its box is the connections' bounds and a handle past them (`fitLines`), its
   `viewBox` at that box, so its coordinates stay the plane's. A 1×1 box drew no line. A line drawn by hand takes the
   whole view, as it may go anywhere.
 - **One that moves while not drawn fires no `paint`**: a MutationObserver on each element's `style` asks for one.

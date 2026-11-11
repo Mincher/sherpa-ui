@@ -9,15 +9,15 @@
     data-message        a message's first lines, read only, under its name: each {value} in it drawn in purple, its braces off
     data-input-socket   an input socket on the start edge: value | object | boolean | any: an input is a D, its type in its ink
     data-output-socket  an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a circle)
-    data-input-routed   a route joins the input: its socket is filled, else hollow
-    data-output-routed  a route leaves the output: its socket is filled, else hollow
-    data-input-many     the input takes several routes: its socket is a double height D
+    data-input-connected   a connection joins the input: its socket is filled, else hollow
+    data-output-connected  a connection leaves the output: its socket is filled, else hollow
+    data-input-many     the input takes several connections: its socket is a double height D
     data-property       a property: its label reads in the input value's own type
     data-socket-name    the row's name, the first line of each socket's tip: a collapsed node shows no label
     data-socket-value   the row's value in words, a line of each socket's tip; unset, the line hides
     data-collapsed      its node is collapsed: its sockets stand in the node's stacks. Its host writes it
     data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them
-    data-input-at-routed, data-output-at-routed  the same, among the routed only; unset, the socket is not routed
+    data-input-at-connected, data-output-at-connected  the same, among the connected only; unset, the socket is not connected
 
   Slots:
     (default)   the field: a sherpa-input-text — a text field, a select or a number

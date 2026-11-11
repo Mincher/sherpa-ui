@@ -1,7 +1,7 @@
 /**
  * A page's QUERY is a DOCUMENT the one node editor reads and writes (plan 885). Read: its derived graph as a v2 definition,
- * with the layout a reader gave it. Written: a RECONCILE — a row's new value, a new route and a new node are the Query's own
- * requests (a chip's door); the layout (places, ties, frames, stages, lanes) never reaches the Query; a cut route or a
+ * with the layout a reader gave it. Written: a RECONCILE — a row's new value, a new connection and a new node are the Query's own
+ * requests (a chip's door); the layout (places, ties, frames, stages, lanes) never reaches the Query; a cut connection or a
  * removed reading is refused, in words. Draw, edit, reconcile, ask, draw again: the edit is there. Will, 2026-11-10
  *
  *   node --test test/unit/a-query-is-a-document.test.mjs
@@ -52,12 +52,12 @@ const opened = async () => {
 };
 const values = (def, id) => def.nodes.find((n) => n.id === id)?.values;
 
-test('read: the Query\'s nodes and routes, each node\'s rows as its values', async () => {
+test('read: the Query\'s nodes and connections, each node\'s rows as its values', async () => {
   const { read } = await opened();
   const def = read();
-  assert.equal(def.v, 2);
+  assert.equal(def.v, 3);
   assert.deepEqual(values(def, 'when-view-seats.1'), { type: 'lt', b: 5 });
-  assert.ok(def.routes.some((r) => r.from === 'when-view-seats' && r.to === 'scope-view/seats'));
+  assert.ok(def.connections.some((r) => r.from === 'when-view-seats' && r.to === 'scope-view/seats'));
 });
 
 test('a row\'s new value is the Query\'s request, and reads back', async () => {
@@ -73,7 +73,7 @@ test('the layout never reaches the Query: a move, a tie, a frame, stages and lan
   const { read, write, q } = await opened();
   const was = JSON.stringify(q.draft);
   let def = editWorkflow(read(), { node: 'field-view-seats', set: { x: 999, y: 444 } }, NODE_KINDS);
-  def = editWorkflow(def, { tie: { routes: def.routes.slice(0, 2), x: 300, y: 100 } }, NODE_KINDS);
+  def = editWorkflow(def, { tie: { connections: def.connections.slice(0, 2), x: 300, y: 100 } }, NODE_KINDS);
   def = editWorkflow(def, { frame: { nodes: ['when-view-seats.1', 'when-view-seats.2'] } }, NODE_KINDS);
   def = editWorkflow(def, { addStage: { label: 'Decide' } }, NODE_KINDS);
   def = editWorkflow(def, { lanes: LANES_BY_FAMILY }, NODE_KINDS);
@@ -89,11 +89,11 @@ test('the layout never reaches the Query: a move, a tie, a frame, stages and lan
   assert.ok(isGraphLayout(JSON.parse(JSON.stringify(layoutOf(back)))), 'the layout is kept as JSON');
 });
 
-test('a cut route, or a removed reading, is refused in words, and the Query is as it was', async () => {
+test('a cut connection, or a removed reading, is refused in words, and the Query is as it was', async () => {
   const { read, write, q } = await opened();
   const was = JSON.stringify(q.draft);
   const cut = write(editWorkflow(read(), { cut: { from: 'when-view-seats.1', to: 'when-view-seats' } }, NODE_KINDS));
-  assert.deepEqual(cut.refused.map((r) => r.code), ['query-route']);
+  assert.deepEqual(cut.refused.map((r) => r.code), ['query-connection']);
   const gone = write(editWorkflow(read(), { remove: 'when-view-seats.2.1' }, NODE_KINDS));
   assert.deepEqual(gone.refused.map((r) => r.code), ['query-remove']);
   assert.equal(JSON.stringify(q.draft), was);

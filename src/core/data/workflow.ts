@@ -1,44 +1,45 @@
 /**
  * workflow.ts — a workflow, set up from ONE JSON document: its nodes, their values and the
- * routes between their sockets. Its check, the graph it draws, and its edits, each pure.
+ * connections between their sockets. Its check, the graph it draws, and its edits, each pure.
  * Its kinds are the one registry's. It is a v2. Will, TODOs 78, 713
  * · docs/history/plan-78-workflow-data.md · TRAP T-a-workflow-is-its-definition · TRAP T-a-socket-says-its-type · TRAP T-a-condition-is-a-tree-of-nodes
  *
  * Map:
  * - WorkflowNode — One node, as a definition holds it: only what the reader may change.
- * - WorkflowDefinition — One workflow, as JSON (v2) — its nodes and its routes.
+ * - WorkflowDefinition — One workflow, as JSON (v2) — its nodes and its connections.
  * - WorkflowRead — A workflow read as v2, and each fault the read met.
  * - readWorkflow — A workflow as v2, or the fault that it is none.
  * - GROW_MIN — The least a node's size may be: its natural size, as 1.
  * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
- * - keptRoutes — The routes a node keeps for another of its types: drawn nowhere, no fault, not saved.
+ * - keptConnections — The connections a node keeps for another of its types: drawn nowhere, no fault, not saved.
  * - finalGraph — A graph as Save writes it: what the draft keeps for a node's other types left out.
- * - workflowFaults — Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
- * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
+ * - workflowFaults — Every fault in a workflow, in words: a node, a kind, a value or a connection that cannot be.
+ * - checkWorkflow — Check every node, kind and connection; each fault reports. True when none is.
  * - WorkflowFacts — What drawing a workflow needs that it does not say: each store's fields, the stores.
- * - sentFrom — What one output socket sends, read through the routes: a Field's column by what reaches it.
- * - workflowGraph — A workflow as nodes and routes: each node its kind's, at its own place, with its values.
+ * - sentFrom — What one output socket sends, read through the connections: a Field's column by what reaches it.
+ * - workflowGraph — A workflow as nodes and connections: each node its kind's, at its own place, with its values.
  * - NODE_WIDTH — A node's width on the plane, in px: where its output socket is from its x.
- * - TIE_GAP — The gap between two routes in a zip tie, in px.
- * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied route joins.
- * - tiesAmong — The ties left when only some routes remain: a tie keeps its routes still there, and none, it goes.
- * - WorkflowEdit — One edit: a row, a node, a size, a route, a bend, a tie, nodes placed together, a node added or removed.
+ * - TIE_GAP — The gap between two connections in a zip tie, in px.
+ * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied connection joins.
+ * - tiesAmong — The ties left when only some connections remain: a tie keeps its connections still there, and none, it goes.
+ * - WorkflowEdit — One edit: a row, a node, a size, a connection, a bend, a tie, nodes placed together, a node added or removed.
  * - nodeWidth — A node's width on the canvas, in plane px: what a stage holds.
  * - editWorkflow — The workflow after one edit; the one given untouched.
- * - addCustomValue — A Value node made for a picklist row and routed into it: the row mirrors it, and keeps its own pick.
+ * - addCustomValue — A Value node made for a picklist row and connected to it: the row mirrors it, and keeps its own pick.
  */
+import { inNewWords } from './entity.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
-import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
+import { nodeKinds, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 import { columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 import { laneFaults, type NodeLane } from './node-lanes.js';
 import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
-import { connectionRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowRoute, type PortalFlow } from './node-portals.js';
+import { addressRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowConnection, type PortalFlow } from './node-portals.js';
 import { unreachedValues, valuesAt, valuesIn, type MessageSource } from './node-messages.js';
 import { NEW_CHOICE } from './ai-catalog.js';
 
@@ -63,17 +64,17 @@ export interface WorkflowNode {
   stage?: string;
 }
 
-/** One workflow, as JSON (v2) — its nodes and its routes. A node's data comes in on its
+/** One workflow, as JSON (v2) — its nodes and its connections. A node's data comes in on its
  *  header and leaves from its Rows row, `node/rows`; where it forks, its header sends True
  *  and `node/#false` False. */
 export interface WorkflowDefinition {
   $schema?: string;
-  v: 2;
+  v: 3;
   id: string;
   label?: string;
   nodes: readonly WorkflowNode[];
-  routes?: readonly NodeRoute[];
-  /** Zip ties: a place and the routes each funnels, in order. A tie changes no data; a runner ignores them. TODO 562 */
+  connections?: readonly NodeConnection[];
+  /** Zip ties: a place and the connections each funnels, in order. A tie changes no data; a runner ignores them. TODO 562 */
   ties?: readonly NodeTie[];
   /** Frames: nodes under one header. A frame changes no data; its box is drawn round its nodes. TODO 778 */
   frames?: readonly NodeFrame[];
@@ -107,7 +108,9 @@ const asOne = (value: unknown): unknown => (!Array.isArray(value) ? value : valu
  */
 export function readWorkflow(given: WorkflowDefinition): WorkflowRead {
   const v = (given as { v?: unknown } | null)?.v;
-  if (v !== 2 || !Array.isArray(given.nodes)) return { faults: ['it is not a workflow definition: a v2'] };
+  // A v2, saved before plan 934 (a tab's draft), reads once in the new words. TRAP T-a-saved-graph-is-read-in-the-new-words
+  if (v === 2 && Array.isArray(given.nodes)) return { workflow: { ...inNewWords(given), v: 3 }, faults: [] };
+  if (v !== 3 || !Array.isArray(given.nodes)) return { faults: ['it is not a workflow definition: a v3'] };
   return { workflow: given, faults: [] };
 }
 
@@ -123,12 +126,12 @@ function keptRow(node: Pick<WorkflowNode, 'kind' | 'values'> | undefined, row: s
   return !!rowOfOtherType(kind, node.values?.['type'], row);
 }
 
-/** Whether a route enters or leaves a family node's socket that is not there under its type now, and is under another:
+/** Whether a connection enters or leaves a family node's socket that is not there under its type now, and is under another:
  *  a Condition's header under a comparison, which takes nothing there; a portal's Out header, an In now. A socket that is
- *  there takes any route (TODO 770). TRAP T-a-logic-type-is-an-operator */
-function retyped(route: NodeRoute, byId: ReadonlyMap<string, WorkflowNode>, kinds: Kinds): boolean {
+ *  there takes any connection (TODO 770). TRAP T-a-logic-type-is-an-operator */
+function retyped(connection: NodeConnection, byId: ReadonlyMap<string, WorkflowNode>, kinds: Kinds): boolean {
   return ([['to', 'input'], ['from', 'output']] as const).some(([end, side]) => {
-    const at = socketOf(route[end]);
+    const at = socketOf(connection[end]);
     const node = byId.get(at.node);
     const family = node && kinds[node.kind];
     if (!node || !family?.types) return false;
@@ -141,36 +144,36 @@ function retyped(route: NodeRoute, byId: ReadonlyMap<string, WorkflowNode>, kind
   });
 }
 
-/** The routes a node keeps for another of its types: into or out of a row only that type has, or into a socket only
- *  another type has; and out of a portal's row whose route into an In is gone (TODO 826). The draft keeps them, so
- *  picking it back joins them again; none is drawn, none is a fault, and Save leaves them out (`finalGraph`). A route
+/** The connections a node keeps for another of its types: into or out of a row only that type has, or into a socket only
+ *  another type has; and out of a portal's row whose connection into an In is gone (TODO 826). The draft keeps them, so
+ *  picking it back joins them again; none is drawn, none is a fault, and Save leaves them out (`finalGraph`). A connection
  *  into a socket that is there is live, whatever it carries (TODO 770). Will, 2026-11-05 */
-export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = nodeKinds()): NodeRoute[] {
+export function keptConnections(workflow: Pick<WorkflowDefinition, 'nodes' | 'connections'>, kinds: Kinds = nodeKinds()): NodeConnection[] {
   return flowOf(workflow, kinds).kept;
 }
 
-/** What one read of a workflow gives: the routes kept, the rest, the rest as the data flows, and each node's kind. */
+/** What one read of a workflow gives: the connections kept, the rest, the rest as the data flows, and each node's kind. */
 interface Flow {
-  kept: NodeRoute[];
-  live: NodeRoute[];
+  kept: NodeConnection[];
+  live: NodeConnection[];
   flow: PortalFlow;
-  /** A node's kind as drawn: a portal's Out with a row per route into an In of its name. */
+  /** A node's kind as drawn: a portal's Out with a row per connection into an In of its name. */
   kindOf: (node: WorkflowNode | undefined) => NodeKind | undefined;
 }
 
-/** A workflow's routes: those kept for another type or a gone row, the rest, and the rest as the data flows through its
+/** A workflow's connections: those kept for another type or a gone row, the rest, and the rest as the data flows through its
  *  portals — the ONE read every reader of what flows takes; the drawing takes the rest. TRAP T-a-portal-hop-is-resolved-once */
-function flowOf(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds): Flow {
+function flowOf(workflow: Pick<WorkflowDefinition, 'nodes' | 'connections'>, kinds: Kinds): Flow {
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   const keep = (address: string): boolean => keptRow(held.get(socketOf(address).node), socketOf(address).row, kinds);
-  const all = workflow.routes ?? [];
+  const all = workflow.connections ?? [];
   const typed = all.filter((r) => keep(r.from) || keep(r.to) || retyped(r, held, kinds));
   const flow = portalFlow(workflow.nodes, all.filter((r) => !typed.includes(r)));
   const gone = new Set([...typed, ...flow.orphans]);
   return { kept: all.filter((r) => gone.has(r)), live: all.filter((r) => !gone.has(r)), flow, kindOf: rowsOf(held, flow, kinds) };
 }
 
-/** Each node's kind, a portal's Out with its rows: one per route into an In of its name, named and typed by that route's
+/** Each node's kind, a portal's Out with its rows: one per connection into an In of its name, named and typed by that connection's
  *  source, "Source › Rows", as a Group Input's is (763). TODO 826 */
 function rowsOf(held: ReadonlyMap<string, WorkflowNode>, flow: PortalFlow, kinds: Kinds): Flow['kindOf'] {
   const made = new Map<string, NodeKind | undefined>();
@@ -192,16 +195,16 @@ function rowsOf(held: ReadonlyMap<string, WorkflowNode>, flow: PortalFlow, kinds
     const kind = kindOf(from);
     const part = row === FALSE_SOCKET ? 'False' : row === undefined ? (kind?.branches ? 'True' : undefined) : rowOf(kind?.rows ?? [], row)?.label;
     const output = (kind && socketType(kind, row, 'output')) || 'object';
-    return { name: connectionRow(source), label: [from?.heading ?? kind?.heading ?? id, part].filter(Boolean).join(' › '), output: output === 'any' ? 'object' : output };
+    return { name: addressRow(source), label: [from?.heading ?? kind?.heading ?? id, part].filter(Boolean).join(' › '), output: output === 'any' ? 'object' : output };
   };
   return kindOf;
 }
 
-/** A graph as Save writes it: each node with the values of its type's rows, and only the routes they join.
- *  What the draft keeps for another type is left out; so are the bends of a tied route, which the draft keeps
- *  unseen for its untying. Its ties keep the routes still there. Will, 2026-11-05 */
-export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'routes' | 'ties' | 'frames'>>>(workflow: W, kinds: Kinds = nodeKinds()): W {
-  const gone = keptRoutes({ nodes: workflow.nodes, routes: workflow.routes ?? [] }, kinds);
+/** A graph as Save writes it: each node with the values of its type's rows, and only the connections they join.
+ *  What the draft keeps for another type is left out; so are the bends of a tied connection, which the draft keeps
+ *  unseen for its untying. Its ties keep the connections still there. Will, 2026-11-05 */
+export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'connections' | 'ties' | 'frames'>>>(workflow: W, kinds: Kinds = nodeKinds()): W {
+  const gone = keptConnections({ nodes: workflow.nodes, connections: workflow.connections ?? [] }, kinds);
   const nodes = workflow.nodes.map((node): WorkflowNode => {
     const lost = Object.keys(node.values ?? {}).filter((name) => keptRow(node, name, kinds));
     if (!lost.length) return node;
@@ -209,21 +212,21 @@ export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial
     const { values: _was, ...bare } = node;
     return Object.keys(values).length ? { ...bare, values } : bare;
   });
-  const live = (workflow.routes ?? []).filter((r) => !gone.includes(r));
+  const live = (workflow.connections ?? []).filter((r) => !gone.includes(r));
   const ties = tiesAmong(workflow.ties, live);
-  const tied = (r: NodeRoute): boolean => ties.some((t) => t.routes.some((x) => x.from === r.from && x.to === r.to));
+  const tied = (r: NodeConnection): boolean => ties.some((t) => t.connections.some((x) => x.from === r.from && x.to === r.to));
   const bent = live.some((r) => r.via && tied(r));
   // A frame keeps the nodes still there; with none, it goes.
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
   const reframed = frames.length !== (workflow.frames?.length ?? 0) || frames.some((f, i) => f !== workflow.frames![i]);
   if (!gone.length && !bent && !reframed && nodes.every((n, i) => n === workflow.nodes[i])) return workflow;
-  const routes = live.map((r) => {
+  const connections = live.map((r) => {
     if (!r.via || !tied(r)) return r;
     const { via: _via, ...bare } = r;
     return bare;
   });
   const { ties: _ties, frames: _frames, ...rest } = workflow;
-  return { ...rest, nodes, ...(workflow.routes ? { routes } : {}), ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) } as unknown as W;
+  return { ...rest, nodes, ...(workflow.connections ? { connections } : {}), ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) } as unknown as W;
 }
 
 /** The field a node's rows read, its type, the values it may take and its words: what a typed Value B and a closed
@@ -237,8 +240,8 @@ interface ReadField {
 
 /** The field a node's rows read: the Field whose column reaches its header — a Condition's, a Sort's, a Group by's, a
  *  Tag's (plan 783 D5) — with the values its store says it takes. None: no Field comes in. */
-function fieldAt(node: WorkflowNode, routes: readonly NodeRoute[], sends: (from: string) => Reached | undefined): ReadField | undefined {
-  const column = routes.filter((r) => r.to === node.id).map((r) => sends(r.from)).find((g) => g?.kind === 'field')?.field;
+function fieldAt(node: WorkflowNode, connections: readonly NodeConnection[], sends: (from: string) => Reached | undefined): ReadField | undefined {
+  const column = connections.filter((r) => r.to === node.id).map((r) => sends(r.from)).find((g) => g?.kind === 'field')?.field;
   if (!column) return undefined;
   const { values: known } = column;
   return { field: column.name, ...(column.type ? { type: column.type } : {}), ...(known ? { known } : {}), of: column.label ?? column.name };
@@ -282,18 +285,18 @@ function typedWants(type: unknown, value: unknown): string | undefined {
   return ok ? undefined : what;
 }
 
-/** Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
+/** Every fault in a workflow, in words: a node, a kind, a value or a connection that cannot be.
  *  One that is no v2 is that fault alone. A value its row cannot hold — a stranger
- *  in a closed list, no date, a number off its step — is a fault where it is held and where a route brings it. */
+ *  in a closed list, no date, a number off its step — is a fault where it is held and where a connection brings it. */
 export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
   const { workflow, faults } = readWorkflow(given);
   if (!workflow) return faults;
   const problems = [...faults];
   const byId = new Map<string, NodeKind>();
-  // A route to a row another type holds is kept for that type: no fault, and Save leaves it out. What flows is read through the portals.
+  // A connection to a row another type holds is kept for that type: no fault, and Save leaves it out. What flows is read through the portals.
   const { kept, flow, kindOf } = flowOf(workflow, kinds);
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-  const sends = sender(held, flow.routes, kinds, fieldsReach(held, flow.routes, kinds, facts));
+  const sends = sender(held, flow.connections, kinds, fieldsReach(held, flow.connections, kinds, facts));
   const reads = new Map<string, ReadField | undefined>();
   for (const node of workflow.nodes) {
     const shipped = kinds[node.kind];
@@ -303,7 +306,7 @@ export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = nodeKin
     else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
     else byId.set(node.id, kind);
     if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
-    const read = kind && fieldAt(node, flow.routes, sends);
+    const read = kind && fieldAt(node, flow.connections, sends);
     reads.set(node.id, read);
     for (const [name, value] of Object.entries(node.values ?? {})) {
       const row = kind && rowOf(kind.rows, name);
@@ -335,47 +338,47 @@ export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = nodeKin
     const type = kind && socketType(kind, row, side);
     return kind && type && { type, many: takesMany(kind, row) };
   };
-  // What a route brings from a node that holds it, its row must hold too; one of another type it reads as null.
+  // What a connection brings from a node that holds it, its row must hold too; one of another type it reads as null.
   const broughtFault = (from: string, to: string, out: { type: SocketType } | undefined, into: { type: SocketType } | undefined): string | undefined => {
     const [source, target] = [held.get(socketOf(from).node), held.get(socketOf(to).node)];
     const brought = socketOf(from).row === undefined ? undefined : source?.values?.[socketOf(from).row!];
     const row = target && into && rowOf(byId.get(target.id)!.rows, socketOf(to).row ?? '');
     return row && out && accepts(out.type, into!.type) && brought !== undefined ? faultOf(row, brought, reads.get(target!.id)) : undefined;
   };
-  // Each input's routes so far, by where they leave. Any type joins any input: what it cannot use reads null (TODO 770).
+  // Each input's connections so far, by where they leave. Any type joins any input: what it cannot use reads null (TODO 770).
   const fed = new Map<string, string[]>();
-  for (const route of workflow.routes ?? []) {
-    const { from, to } = route;
-    if (kept.includes(route)) continue;
-    const bad = route.via === undefined ? undefined : bendFault(route.via);
-    if (bad) problems.push(`the route "${from}" → "${to}": ${bad}`);
+  for (const connection of workflow.connections ?? []) {
+    const { from, to } = connection;
+    if (kept.includes(connection)) continue;
+    const bad = connection.via === undefined ? undefined : bendFault(connection.via);
+    if (bad) problems.push(`the connection "${from}" → "${to}": ${bad}`);
     const leaves = at(from, 'output');
     const out = leaves?.type === 'any' ? undefined : leaves;
     const into = at(to, 'input');
     const there = fed.get(to) ?? [];
-    if (!leaves) problems.push(`a route leaves "${from}", which is no output socket`);
-    else if (!out) problems.push(`a route leaves "${from}", which sends any type: an output says the one it sends`);
-    // A Rows row only sends: a route into it says so.
-    if (!into && socketOf(to).row === ROWS.name && byId.has(socketOf(to).node)) problems.push(`a route enters "${to}", a Rows row, which only sends: a node's rows come in on its header`);
-    else if (!into) problems.push(`a route enters "${to}", which is no input socket`);
-    if (there.includes(from)) problems.push(`the route "${from}" → "${to}" is there twice`);
-    else if (there.length && !into?.many) problems.push(`two routes enter "${to}", which takes one`);
+    if (!leaves) problems.push(`a connection leaves "${from}", which is no output socket`);
+    else if (!out) problems.push(`a connection leaves "${from}", which sends any type: an output says the one it sends`);
+    // A Rows row only sends: a connection into it says so.
+    if (!into && socketOf(to).row === ROWS.name && byId.has(socketOf(to).node)) problems.push(`a connection enters "${to}", a Rows row, which only sends: a node's rows come in on its header`);
+    else if (!into) problems.push(`a connection enters "${to}", which is no input socket`);
+    if (there.includes(from)) problems.push(`the connection "${from}" → "${to}" is there twice`);
+    else if (there.length && !into?.many) problems.push(`two connections enter "${to}", which takes one`);
     fed.set(to, [...there, from]);
     const fault = broughtFault(from, to, out, into);
-    if (fault) problems.push(`the route "${from}" → "${to}": ${fault}`);
+    if (fault) problems.push(`the connection "${from}" → "${to}": ${fault}`);
   }
-  // A hop through a portal brings a value as a route does.
-  for (const { from, to, portal } of flow.routes) {
+  // A hop through a portal brings a value as a connection does.
+  for (const { from, to, portal } of flow.connections) {
     const fault = portal ? broughtFault(from, to, at(from, 'output'), at(to, 'input')) : undefined;
-    if (fault) problems.push(`the route "${from}" → "${to}", through the portal "${portal}": ${fault}`);
+    if (fault) problems.push(`the connection "${from}" → "${to}", through the portal "${portal}": ${fault}`);
   }
   // A loop has no first node to run: read as the data flows, so one through a portal is one (TODO 779).
-  const next = new Map<string, FlowRoute[]>();
-  for (const r of flow.routes) next.set(socketOf(r.from).node, [...(next.get(socketOf(r.from).node) ?? []), r]);
+  const next = new Map<string, FlowConnection[]>();
+  for (const r of flow.connections) next.set(socketOf(r.from).node, [...(next.get(socketOf(r.from).node) ?? []), r]);
   const done = new Set<string>();
   const walking: string[] = [];
-  const path: FlowRoute[] = [];
-  let ring: FlowRoute[] = [];
+  const path: FlowConnection[] = [];
+  let ring: FlowConnection[] = [];
   const loops = (id: string): boolean => {
     if (walking.includes(id)) { ring = path.slice(walking.indexOf(id)); return true; }
     if (done.has(id)) return false;
@@ -392,15 +395,15 @@ export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = nodeKin
   };
   if ([...next.keys()].some(loops)) {
     const through = [...new Set(ring.flatMap((r) => (r.portal ? [`"${r.portal}"`] : [])))];
-    problems.push(`its routes run in a loop${through.length ? `, through the portal ${through.join(', ')}` : ''}`);
+    problems.push(`its connections run in a loop${through.length ? `, through the portal ${through.join(', ')}` : ''}`);
   }
   const tied = new Set<string>();
   for (const tie of workflow.ties ?? []) {
     if (tied.has(tie.id)) problems.push(`two ties are "${tie.id}"`);
     tied.add(tie.id);
-    if (!tie.routes?.length) problems.push(`the tie "${tie.id}" ties no route`);
-    for (const r of tie.routes ?? []) {
-      if (!(workflow.routes ?? []).some((x) => x.from === r.from && x.to === r.to)) problems.push(`the tie "${tie.id}" ties the route "${r.from}" → "${r.to}", which is not there`);
+    if (!tie.connections?.length) problems.push(`the tie "${tie.id}" ties no connection`);
+    for (const r of tie.connections ?? []) {
+      if (!(workflow.connections ?? []).some((x) => x.from === r.from && x.to === r.to)) problems.push(`the tie "${tie.id}" ties the connection "${r.from}" → "${r.to}", which is not there`);
     }
   }
   problems.push(...frameFaults(workflow.frames, workflow.nodes.map((n) => n.id)));
@@ -409,7 +412,7 @@ export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = nodeKin
   return problems;
 }
 
-/** Check every node, kind and route; each fault reports, and it never throws. True when none is. */
+/** Check every node, kind and connection; each fault reports, and it never throws. True when none is. */
 export function checkWorkflow(workflow: WorkflowDefinition, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
   const problems = workflowFaults(workflow, kinds, facts);
   for (const problem of problems) {
@@ -437,28 +440,28 @@ interface Reach {
   none?: true;
 }
 
-/** What a row shows: a Value routed in, else its own. */
-function shownAt(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], address: string): unknown {
+/** What a row shows: a Value connected in, else its own. */
+function shownAt(held: ReadonlyMap<string, WorkflowNode>, connections: readonly NodeConnection[], address: string): unknown {
   const { node: id, row = '' } = socketOf(address);
-  const into = routes.find((r) => r.to === address && socketOf(r.from).row !== undefined);
+  const into = connections.find((r) => r.to === address && socketOf(r.from).row !== undefined);
   const brought = into ? held.get(socketOf(into.from).node)?.values?.[socketOf(into.from).row!] : undefined;
   return brought ?? held.get(id)?.values?.[row];
 }
 
-/** The fields of the rows that reach each node: the store of the FIRST Source up its routes — its header's first, then its
+/** The fields of the rows that reach each node: the store of the FIRST Source up its connections — its header's first, then its
  *  rows', through the portals. A Group Input brings its use's rows, of any store: every store's fields. No Source: the
  *  facts' `rowsFrom`, else `none`. No facts, or a store they do not know: open. TODO 817 · TRAP T-a-field-reads-its-sources-fields */
-function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>): (id: string) => Reach {
+function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, connections: readonly NodeConnection[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>): (id: string) => Reach {
   const known = facts.fieldsOf;
   if (!known) return () => ({});
   const up = (id: string, seen: Set<string>): { store: unknown } | 'inside' | undefined => {
     seen.add(id);
-    const into = routes.filter((r) => socketOf(r.to).node === id);
+    const into = connections.filter((r) => socketOf(r.to).node === id);
     for (const r of [...into.filter((r) => socketOf(r.to).row === undefined), ...into.filter((r) => socketOf(r.to).row !== undefined)]) {
       const from = socketOf(r.from).node;
       const kind = kindOfNode(kinds, held.get(from));
       const row = kind?.rows.find((x) => x.control === 'store');
-      if (row) return { store: shownAt(held, routes, `${from}/${row.name}`) };
+      if (row) return { store: shownAt(held, connections, `${from}/${row.name}`) };
       if (kind?.model === 'groupInput') return 'inside';
       const found = seen.has(from) ? undefined : up(from, seen);
       if (found) return found;
@@ -481,27 +484,27 @@ function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, routes: readonly N
   };
 }
 
-/** The field a Field row picks, as it shows it — a Value routed in, else its own pick — with its words, type and values
+/** The field a Field row picks, as it shows it — a Value connected in, else its own pick — with its words, type and values
  *  from the fields that reach it; `stranger` where they are known and it is not one. None: it picks none. Plan 783 D8 */
-function pickedField(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], reach: Reach, address: string): { field: ColumnField; stranger?: true } | undefined {
-  const name = String(shownAt(held, routes, address) ?? '');
+function pickedField(held: ReadonlyMap<string, WorkflowNode>, connections: readonly NodeConnection[], reach: Reach, address: string): { field: ColumnField; stranger?: true } | undefined {
+  const name = String(shownAt(held, connections, address) ?? '');
   if (!name) return undefined;
   const known = reach.fields?.[name];
   const field: ColumnField = { name, ...(known?.label ? { label: known.label } : {}), ...(known?.type ? { type: known.type } : {}), ...(known?.values ? { values: known.values } : {}) };
   return { field, ...(reach.fields && !known ? { stranger: true as const } : {}) };
 }
 
-/** A Field that no Source's rows reach, in words: "route a Source in", by the kind that names a store. */
+/** A Field that no Source's rows reach, in words: "connect a Source in", by the kind that names a store. */
 function storelessWords(kinds: Kinds): string {
   const source = Object.values(kinds).find((k) => k.graphs.includes('workflow') && k.rows.some((r) => r.control === 'store'));
-  return `No store's rows come in: route a ${source?.heading ?? 'Source'} in`;
+  return `No store's rows come in: connect a ${source?.heading ?? 'Source'} in`;
 }
 
-/** What each output socket sends, read through the routes: what its row gives (`givenAt`); a Field row, the column of what
+/** What each output socket sends, read through the connections: what its row gives (`givenAt`); a Field row, the column of what
  *  reaches its header or one record's value (`columnOf`), none where its field is a stranger or its header read null; the
  *  Rows row of a node its rows come into, rows only where its header reads rows, a column, an object, or a test's True or
  *  False that carries them (plan 783 D4). A loop sends what its kind says. Plan 783 D2 */
-function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], kinds: Kinds, reach: (id: string) => Reach): (from: string) => Reached | undefined {
+function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly NodeConnection[], kinds: Kinds, reach: (id: string) => Reach): (from: string) => Reached | undefined {
   const busy = new Set<string>();
   const sends = (from: string): Reached | undefined => {
     const { node: id, row } = socketOf(from);
@@ -510,13 +513,13 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRo
     const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
     const passes = out?.gives === 'rows' && !!kind!.input;
     if (!kind || !out || (out.gives !== 'field' && !passes) || busy.has(id)) return givenAt(node, row, kinds);
-    const picked = passes ? undefined : pickedField(held, routes, reach(id), from);
+    const picked = passes ? undefined : pickedField(held, connections, reach(id), from);
     if (!passes && (!picked || picked.stranger)) return undefined;
     busy.add(id);
     try {
       const need = needOf(kind);
-      // What its header reads of each route: what it cannot use is null.
-      const heard = routes.filter((r) => r.to === id).map((r) => {
+      // What its header reads of each connection: what it cannot use is null.
+      const heard = connections.filter((r) => r.to === id).map((r) => {
         const got = sends(r.from);
         return { from: r.from, got: got && need && readInput({ label: kind.heading, needs: need }, got).warning ? null : got };
       });
@@ -533,26 +536,26 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRo
   return sends;
 }
 
-/** What one output socket of a workflow sends, read through its routes and its portals: a Field's column, `{ rows, field }`,
+/** What one output socket of a workflow sends, read through its connections and its portals: a Field's column, `{ rows, field }`,
  *  by what reaches its header and the fields of its Source. None: it sends nothing before a run. Plan 783 D2, TODO 779 */
 export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}, kinds: Kinds = nodeKinds()): Reached | undefined {
   const { workflow } = readWorkflow(given);
   if (!workflow) return undefined;
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-  const { routes } = flowOf(workflow, kinds).flow;
-  return sender(held, routes, kinds, fieldsReach(held, routes, kinds, facts))(from);
+  const { connections } = flowOf(workflow, kinds).flow;
+  return sender(held, connections, kinds, fieldsReach(held, connections, kinds, facts))(from);
 }
 
-/** The provider a Model node's Provider row is joined to: the pick of the Provider node its route comes from (plan 926). */
-function providerInto(nodes: readonly WorkflowNode[], routes: readonly { from: string; to: string }[], id: string): unknown {
-  const route = routes.find((r) => r.to === `${id}/provider`);
-  const from = route && socketOf(route.from);
+/** The provider a Model node's Provider row is joined to: the pick of the Provider node its connection comes from (plan 926). */
+function providerInto(nodes: readonly WorkflowNode[], connections: readonly { from: string; to: string }[], id: string): unknown {
+  const connection = connections.find((r) => r.to === `${id}/provider`);
+  const from = connection && socketOf(connection.from);
   const node = from && nodes.find((n) => n.id === from.node);
   return node?.kind === 'provider' ? node.values?.['provider'] : undefined;
 }
 
-/** A workflow as nodes and routes: each node its kind's, at its own place,
- *  with its values. A row a route drives is read only. Where the route comes from a node that
+/** A workflow as nodes and connections: each node its kind's, at its own place,
+ *  with its values. A row a connection drives is read only. Where the connection comes from a node that
  *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
  *  and its own pick stays in the draft; else it shows its own until N4 runs the flow, and one
  *  that holds none shows nothing, and says where its value comes from (TODO 774). What
@@ -560,21 +563,21 @@ function providerInto(nodes: readonly WorkflowNode[], routes: readonly { from: s
  *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = {}, kinds: Kinds = nodeKinds()): FramedGraph {
   const { workflow } = readWorkflow(given);
-  if (!workflow) return { nodes: [], routes: [] };
-  // A route kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
+  if (!workflow) return { nodes: [], connections: [] };
+  // A connection kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
   // What each input reads, it reads as the data flows: through the portals (TODO 779).
-  const { kept, live: routes, flow, kindOf } = flowOf(workflow, kinds);
-  const flows = flow.routes;
+  const { kept, live: connections, flow, kindOf } = flowOf(workflow, kinds);
+  const flows = flow.connections;
   const names = portalNames(workflow.nodes);
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-  // Where a route comes from, in words: "Group Input › Status".
+  // Where a connection comes from, in words: "Group Input › Status".
   const whence = (from: string): string => {
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
     const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
     return [at?.heading ?? kinds[at?.kind ?? '']?.heading ?? id, out?.label].filter(Boolean).join(' › ');
   };
-  // What a route brings: its output row's value, where its node holds one; and where from, in words.
+  // What a connection brings: its output row's value, where its node holds one; and where from, in words.
   const brings = (from: string): { value: unknown; said: string } | undefined => {
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
@@ -589,9 +592,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const family = kinds[node.kind]!;
     const kind = kindOf(node)!;
     const at = typeOf(family, values['type']);
-    // What each route into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
+    // What each connection into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
     const warnings: { row?: string; words: string }[] = [];
-    const readsAt = (to: string, input: InputNeeds): Map<NodeRoute, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
+    const readsAt = (to: string, input: InputNeeds): Map<NodeConnection, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
       const got = r.to === to ? sent(r.from) : undefined;
       const read = got && readInput(input, got);
       if (read?.warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: read.warning });
@@ -613,7 +616,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const spoken = new Map<string, string>();
     const rows = kind.rows.map((row): GraphRow => {
       const has = values[row.name];
-      // A message's values: each one no route gives warns, by its row (plan 891).
+      // A message's values: each one no connection gives warns, by its row (plan 891).
       if (row.control === 'message' && valuesIn(has).length) {
         sources ??= valuesAt(workflow.nodes, flows, node.id, kinds, facts.fieldsOf);
         for (const words of unreachedValues(has, sources, workflow.nodes, kinds, !!facts.fieldsOf)) warnings.push({ row: row.name, words });
@@ -637,21 +640,21 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
       const closed = plain.control === 'tags' && list ? { closed: true as const } : {};
       const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed };
-      // A fault of the value it shows, in words, as `workflowFaults` finds it: its own, or what a route brings.
-      const said = (shown: GraphRow, routed = false): GraphRow => {
+      // A fault of the value it shows, in words, as `workflowFaults` finds it: its own, or what a connection brings.
+      const said = (shown: GraphRow, connected = false): GraphRow => {
         const value = shown.control === 'number' ? typedValue('number', shown.value) : shown.value;
         const wants = kind.model === 'typedValue' && row.name === 'value' ? typedWants(at?.id, value) : undefined;
-        const text = !routed && shown.control === 'number' && typeof value === 'string' && value.trim() !== '';
+        const text = !connected && shown.control === 'number' && typeof value === 'string' && value.trim() !== '';
         const fault = wants ? `"${String(value)}" is not ${wants}` : text ? `"${String(value)}" is not a number` : rowFault(shown, value, of);
         return fault ? { ...shown, fault } : shown;
       };
       const address = `${node.id}/${row.name}`;
       const need = row.input ? needOf(row, typedRow(row) ? type : undefined) : undefined;
       const fixed = fixedChoices(row);
-      const reads = need ? readsAt(address, { label: row.label, needs: need, ...(fixed ? { choices: fixed } : {}) }) : new Map<NodeRoute, ReturnType<typeof readInput>>();
+      const reads = need ? readsAt(address, { label: row.label, needs: need, ...(fixed ? { choices: fixed } : {}) }) : new Map<NodeConnection, ReturnType<typeof readInput>>();
       const bad = [...reads].filter(([, read]) => read.warning).map(([r]) => r);
-      // What a route brings, as the row reads it: coerced, where COERCIONS reads it.
-      const reading = (r: NodeRoute): { value: unknown; said: string } | undefined => {
+      // What a connection brings, as the row reads it: coerced, where COERCIONS reads it.
+      const reading = (r: NodeConnection): { value: unknown; said: string } | undefined => {
         const brought = brings(r.from);
         const read = reads.get(r);
         return brought && read && read.value !== undefined ? { ...brought, value: read.value } : brought;
@@ -683,12 +686,12 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
           const value = reading(r)?.value;
           return out === undefined ? !!kinds[held.get(id)?.kind ?? '']?.branches : truthOf(value) ?? truthy(value);
         });
-        const at = (r: NodeRoute): string => { const n = held.get(socketOf(r.from).node); return n?.heading ?? kinds[n?.kind ?? '']?.heading ?? r.from; };
+        const at = (r: NodeConnection): string => { const n = held.get(socketOf(r.from).node); return n?.heading ?? kinds[n?.kind ?? '']?.heading ?? r.from; };
         return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };
       }
       // Only what it cannot use came in: it reads null, read only.
       if (bad.length && !ins.length) return { ...own, value: null };
-      // Routed, nothing sent yet, nothing held: it shows nothing — never a list's first choice — and says where from.
+      // Connected, nothing sent yet, nothing held: it shows nothing — never a list's first choice — and says where from.
       const none = has == null || has === '' || (Array.isArray(has) && !has.length);
       if (!coming.length && ins.length && row.control && none) {
         const blank = list || row.control === 'tags' ? mirrored(row, [], list) : { custom: true as const };
@@ -697,7 +700,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       if (!coming.length) return said({ ...own, ...told });
       const shown = mirrored(row, coming.map((c) => c.value), list);
       const from = [...new Set(coming.map((c) => c.said))].join(', ');
-      // A list routed into tags OVERRIDES them (D7): its values show, read only; cut, the row's own are back.
+      // A list connected to tags OVERRIDES them (D7): its values show, read only; cut, the row's own are back.
       return said(list || row.control === 'tags'
         ? { ...own, ...shown, hint: `Custom ${row.multiple ? 'values' : 'value'}, from ${from}${told.hint ? `. ${told.hint}` : ''}` }
         : { ...own, value: shown.value }, true);
@@ -706,24 +709,24 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const drawnRows = spoken.size ? rows.map((r) => (spoken.has(r.name) ? { ...r, said: spoken.get(r.name)! } : r)) : rows;
     return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, drawnRows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
   });
-  const ties = kept.length ? tiesAmong(workflow.ties, routes) : workflow.ties ?? [];
+  const ties = kept.length ? tiesAmong(workflow.ties, connections) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
-  return { nodes, routes, ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) };
+  return { nodes, connections, ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) };
 }
 
 /** A node's width on the plane, in px: its output socket is at its x plus this. */
 export const NODE_WIDTH = 240;
-/** The gap between two routes in a zip tie, in px. */
+/** The gap between two connections in a zip tie, in px. */
 export const TIE_GAP = 12;
 
 /**
- * The range a tie's x may take. Each tied route spans from its source's right edge
+ * The range a tie's x may take. Each tied connection spans from its source's right edge
  * (`x + NODE_WIDTH`) to its target's `x`; the SHORTEST one's span is the range. A span
- * with the target left of its source is the one point halfway. None, no tied route is there.
+ * with the target left of its source is the one point halfway. None, no tied connection is there.
  */
-export function tieLimit(workflow: { nodes: readonly { id: string; x: number }[] }, tie: Pick<NodeTie, 'routes'>): { min: number; max: number } | undefined {
+export function tieLimit(workflow: { nodes: readonly { id: string; x: number }[] }, tie: Pick<NodeTie, 'connections'>): { min: number; max: number } | undefined {
   const x = new Map(workflow.nodes.map((n) => [n.id, n.x]));
-  const spans = tie.routes.flatMap((r) => {
+  const spans = tie.connections.flatMap((r) => {
     const [a, b] = [x.get(socketOf(r.from).node), x.get(socketOf(r.to).node)];
     return a === undefined || b === undefined ? [] : [{ min: a + NODE_WIDTH, max: b }];
   });
@@ -734,32 +737,32 @@ export function tieLimit(workflow: { nodes: readonly { id: string; x: number }[]
   return { min: mid, max: mid };
 }
 
-/** The ties left when only these routes remain: a tie keeps its routes still there; with none, it goes. */
-export function tiesAmong(ties: readonly NodeTie[] | undefined, routes: readonly NodeRoute[]): NodeTie[] {
+/** The ties left when only these connections remain: a tie keeps its connections still there; with none, it goes. */
+export function tiesAmong(ties: readonly NodeTie[] | undefined, connections: readonly NodeConnection[]): NodeTie[] {
   return (ties ?? []).flatMap((t) => {
-    const kept = t.routes.filter((r) => routes.some((x) => x.from === r.from && x.to === r.to));
-    return kept.length ? [kept.length === t.routes.length ? t : { ...t, routes: kept }] : [];
+    const kept = t.connections.filter((r) => connections.some((x) => x.from === r.from && x.to === r.to));
+    return kept.length ? [kept.length === t.connections.length ? t : { ...t, connections: kept }] : [];
   });
 }
 
-/** One edit to a workflow: a row's value, a node's own name, line or place, a route made
+/** One edit to a workflow: a row's value, a node's own name, line or place, a connection made
  *  (into an input, in place of the one there, or beside it where the input takes many), or cut
- *  (each by the input it enters, or the one route), a node added (its id free), or removed
- *  with every route that touches it. */
+ *  (each by the input it enters, or the one connection), a node added (its id free), or removed
+ *  with every connection that touches it. */
 export type WorkflowEdit =
   | { node: string; row: string; value: unknown }
   | { node: string; set: Partial<Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y' | 'version' | 'was'>> }
-  | { route: NodeRoute }
-  | { cut: string | NodeRoute }
+  | { connection: NodeConnection }
+  | { cut: string | NodeConnection }
   | { add: WorkflowNode }
   | { remove: string }
   | { resize: { node: string; w: number; h: number } }
-  | { tie: { id?: string; x: number; y: number; routes: readonly NodeRoute[] } }
+  | { tie: { id?: string; x: number; y: number; connections: readonly NodeConnection[] } }
   | { untie: string }
   | { moveTie: { id: string; x?: number; y?: number } }
-  | { tieAdd: { id: string; route: NodeRoute } }
-  | { bend: { route: NodeRoute; at: number; x: number; y: number; insert?: boolean } }
-  | { unbend: { route: NodeRoute; index: number } }
+  | { tieAdd: { id: string; connection: NodeConnection } }
+  | { bend: { connection: NodeConnection; at: number; x: number; y: number; insert?: boolean } }
+  | { unbend: { connection: NodeConnection; index: number } }
   | { place: { nodes: Readonly<Record<string, { x: number; y: number }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | { dx: number; dy: number } } }
   | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
   | { unframe: string }
@@ -862,33 +865,33 @@ export function editWorkflow(
 ): WorkflowDefinition {
   const workflow = readWorkflow(given).workflow;
   if (!workflow) return given as WorkflowDefinition;
-  const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
-  // A route that is gone leaves its ties, and a tie with none goes.
+  const same = (a: NodeConnection, b: NodeConnection): boolean => a.from === b.from && a.to === b.to;
+  // A connection that is gone leaves its ties, and a tie with none goes.
   const untied = (w: WorkflowDefinition): WorkflowDefinition => {
     if (!w.ties) return w;
     const { ties: _was, ...bare } = w;
-    const ties = tiesAmong(w.ties, w.routes ?? []);
+    const ties = tiesAmong(w.ties, w.connections ?? []);
     return ties.length ? { ...bare, ties } : bare;
   };
-  if ('route' in edit) {
-    const routes = workflow.routes ?? [];
-    if (routes.some((r) => same(r, edit.route))) return workflow;
-    const { node, row } = socketOf(edit.route.to);
+  if ('connection' in edit) {
+    const connections = workflow.connections ?? [];
+    if (connections.some((r) => same(r, edit.connection))) return workflow;
+    const { node, row } = socketOf(edit.connection.to);
     const kind = kindOfNode(kinds, workflow.nodes.find((n) => n.id === node));
     const many = !!kind && takesMany(kind, row);
-    return untied({ ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] });
+    return untied({ ...workflow, connections: [...connections.filter((r) => many || r.to !== edit.connection.to), { ...edit.connection }] });
   }
-  // A route a tie takes drops its bends: a tie is its handle. TODO 754
-  const unbent = (tied: readonly NodeRoute[]): Pick<WorkflowDefinition, 'routes'> =>
-    (workflow.routes ? { routes: workflow.routes.map((r) => (r.via && tied.some((t) => same(t, r)) ? withoutBends(r) : r)) } : {});
+  // A connection a tie takes drops its bends: a tie is its handle. TODO 754
+  const unbent = (tied: readonly NodeConnection[]): Pick<WorkflowDefinition, 'connections'> =>
+    (workflow.connections ? { connections: workflow.connections.map((r) => (r.via && tied.some((t) => same(t, r)) ? withoutBends(r) : r)) } : {});
   if ('tie' in edit) {
     const free = (n: number): string => ((workflow.ties ?? []).some((t) => t.id === `tie-${n}`) ? free(n + 1) : `tie-${n}`);
     const id = edit.tie.id ?? free(1);
     if ((workflow.ties ?? []).some((t) => t.id === id)) return workflow;
-    const routes = edit.tie.routes.filter((r, i, all) => all.findIndex((q) => same(q, r)) === i).map(({ from, to }) => ({ from, to }));
-    const limit = tieLimit(workflow, { routes });
+    const connections = edit.tie.connections.filter((r, i, all) => all.findIndex((q) => same(q, r)) === i).map(({ from, to }) => ({ from, to }));
+    const limit = tieLimit(workflow, { connections });
     const x = limit ? Math.min(limit.max, Math.max(limit.min, edit.tie.x)) : edit.tie.x;
-    return { ...workflow, ...unbent(routes), ties: [...(workflow.ties ?? []), { id, x, y: edit.tie.y, routes }] };
+    return { ...workflow, ...unbent(connections), ties: [...(workflow.ties ?? []), { id, x, y: edit.tie.y, connections }] };
   }
   if ('untie' in edit) return untied({ ...workflow, ties: (workflow.ties ?? []).filter((t) => t.id !== edit.untie) });
   if ('moveTie' in edit) {
@@ -901,38 +904,38 @@ export function editWorkflow(
     }) };
   }
   if ('tieAdd' in edit) {
-    const { id, route } = edit.tieAdd;
+    const { id, connection } = edit.tieAdd;
     const tie = (workflow.ties ?? []).find((t) => t.id === id);
-    const name = `"${route.from}" → "${route.to}"`;
+    const name = `"${connection.from}" → "${connection.to}"`;
     if (!tie) return refuse(`the tie "${id}" is not there`), workflow;
-    if (!(workflow.routes ?? []).some((r) => same(r, route))) return refuse(`the route ${name} is not there`), workflow;
-    if (tie.routes.some((r) => same(r, route))) return refuse(`the route ${name} is in the tie "${id}" already`), workflow;
-    const routes = [...tie.routes, { from: route.from, to: route.to }];
+    if (!(workflow.connections ?? []).some((r) => same(r, connection))) return refuse(`the connection ${name} is not there`), workflow;
+    if (tie.connections.some((r) => same(r, connection))) return refuse(`the connection ${name} is in the tie "${id}" already`), workflow;
+    const connections = [...tie.connections, { from: connection.from, to: connection.to }];
     // Its nodes must leave the tie where it stands: the tie moves only by the reader's hand.
-    const limit = tieLimit(workflow, { routes });
+    const limit = tieLimit(workflow, { connections });
     if (limit && (tie.x < limit.min || tie.x > limit.max)) return refuse(`the tie "${id}" cannot take ${name}: its nodes leave no room for the tie where it stands`), workflow;
-    return { ...workflow, ...unbent([route]), ties: (workflow.ties ?? []).map((t) => (t.id === id ? { ...t, routes } : t)) };
+    return { ...workflow, ...unbent([connection]), ties: (workflow.ties ?? []).map((t) => (t.id === id ? { ...t, connections } : t)) };
   }
   if ('bend' in edit || 'unbend' in edit) {
-    const { route, at } = 'bend' in edit ? edit.bend : { ...edit.unbend, at: edit.unbend.index };
-    const held = (workflow.routes ?? []).find((r) => same(r, route));
-    const name = `"${route.from}" → "${route.to}"`;
-    if (!held) return refuse(`the route ${name} is not there`), workflow;
+    const { connection, at } = 'bend' in edit ? edit.bend : { ...edit.unbend, at: edit.unbend.index };
+    const held = (workflow.connections ?? []).find((r) => same(r, connection));
+    const name = `"${connection.from}" → "${connection.to}"`;
+    if (!held) return refuse(`the connection ${name} is not there`), workflow;
     let via: readonly Bend[] | undefined;
     if ('bend' in edit) {
       const { x, y, insert } = edit.bend;
       if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isInteger(at)) return refuse('a bend point needs a finite x and y, and a whole index'), workflow;
-      if ((workflow.ties ?? []).some((t) => t.routes.some((r) => same(r, route)))) return refuse(`the route ${name} is tied: its ties are its handles`), workflow;
-      if (at < 0 || at > (held.via?.length ?? 0) - (insert ? 0 : 1)) return refuse(`the route ${name} has no bend point at ${at}`), workflow;
+      if ((workflow.ties ?? []).some((t) => t.connections.some((r) => same(r, connection)))) return refuse(`the connection ${name} is tied: its ties are its handles`), workflow;
+      if (at < 0 || at > (held.via?.length ?? 0) - (insert ? 0 : 1)) return refuse(`the connection ${name} has no bend point at ${at}`), workflow;
       // Inside the end sockets, and clear of its neighbours: a bend never loops the line back.
-      const [a, b] = [socketOf(route.from).node, socketOf(route.to).node].map((id) => workflow.nodes.find((n) => n.id === id));
+      const [a, b] = [socketOf(connection.from).node, socketOf(connection.to).node].map((id) => workflow.nodes.find((n) => n.id === id));
       const placed = a && b ? clampBend({ from: a.x + NODE_WIDTH, to: b.x }, held.via, at, x, insert) : x;
       via = placeBend(held.via, at, placed, y, insert).via;
     } else {
-      if (!held.via?.[at]) return refuse(`the route ${name} has no bend point at ${at}`), workflow;
+      if (!held.via?.[at]) return refuse(`the connection ${name} has no bend point at ${at}`), workflow;
       via = dropBend(held.via, at);
     }
-    return { ...workflow, routes: (workflow.routes ?? []).map((r) => {
+    return { ...workflow, connections: (workflow.connections ?? []).map((r) => {
       if (r !== held) return r;
       const { via: _was, ...bare } = r;
       return via ? { ...bare, via } : bare;
@@ -948,13 +951,13 @@ export function editWorkflow(
           : Object.keys(ties ?? {}).find((id) => !(workflow.ties ?? []).some((t) => t.id === id)) !== undefined ? `the tie "${Object.keys(ties ?? {}).find((id) => !(workflow.ties ?? []).some((t) => t.id === id))}" is not there` : undefined;
     if (fault) return refuse(fault), workflow;
     const moved = { ...workflow, nodes: workflow.nodes.map((n) => (nodes[n.id] ? { ...n, x: nodes[n.id]!.x, y: nodes[n.id]!.y } : n)) };
-    const has = (r: NodeRoute, all: boolean): boolean => {
+    const has = (r: NodeConnection, all: boolean): boolean => {
       const ends = [socketOf(r.from).node, socketOf(r.to).node].map((id) => id in nodes);
       return all ? ends.every(Boolean) : ends.some(Boolean);
     };
     const result: WorkflowDefinition = { ...moved };
-    if (workflow.routes && bends) {
-      result.routes = workflow.routes.map((r) => {
+    if (workflow.connections && bends) {
+      result.connections = workflow.connections.map((r) => {
         if (!r.via || !has(r, bends === 'reset' ? false : true)) return r;
         const { via: _was, ...bare } = r;
         return bends === 'reset' ? bare : { ...bare, via: r.via.map((p) => ({ x: p.x + bends.dx, y: p.y + bends.dy })) };
@@ -965,7 +968,7 @@ export function editWorkflow(
       result.ties = workflow.ties.map((t) => {
         const to = ties?.[t.id];
         const limit = tieLimit(moved, t);
-        const touches = t.routes.some((r) => has(r, false));
+        const touches = t.connections.some((r) => has(r, false));
         const x = to ? to.x : t.x;
         const held = limit && (to || touches) ? Math.min(limit.max, Math.max(limit.min, x)) : x;
         return to || held !== t.x ? { ...t, x: held, y: to ? to.y : t.y } : t;
@@ -1008,16 +1011,16 @@ export function editWorkflow(
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
   if ('remove' in edit) {
     const gone = (address: string): boolean => socketOf(address).node === edit.remove;
-    const routes = (workflow.routes ?? []).filter((r) => !gone(r.from) && !gone(r.to));
+    const connections = (workflow.connections ?? []).filter((r) => !gone(r.from) && !gone(r.to));
     const nodes = workflow.nodes.filter((n) => n.id !== edit.remove);
     // It leaves its frame; a frame left with none goes.
     const { frames: _was, ...bare } = workflow;
     const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
-    return untied({ ...bare, nodes, ...(workflow.routes ? { routes } : {}), ...(frames.length ? { frames } : {}) });
+    return untied({ ...bare, nodes, ...(workflow.connections ? { connections } : {}), ...(frames.length ? { frames } : {}) });
   }
   if ('cut' in edit) {
     const { cut } = edit;
-    return untied({ ...workflow, routes: (workflow.routes ?? []).filter((r) => (typeof cut === 'string' ? r.to !== cut : !same(r, cut))) });
+    return untied({ ...workflow, connections: (workflow.connections ?? []).filter((r) => (typeof cut === 'string' ? r.to !== cut : !same(r, cut))) });
   }
   const nodes = workflow.nodes.map((node) => {
     if (node.id !== edit.node) return node;
@@ -1031,7 +1034,7 @@ export function editWorkflow(
     const kind = kindOfNode(kinds, node);
     const row = kind && rowOf(kind.rows, edit.row);
     // A comparison's value, or a field's tags, is typed by the field that reaches it. TRAP T-a-value-is-typed-once
-    const flows = flowOf(workflow, kinds).flow.routes;
+    const flows = flowOf(workflow, kinds).flow.connections;
     const held = new Map(workflow.nodes.map((n) => [n.id, n]));
     const field = kind && fieldAt(node, flows, sender(held, flows, kinds, fieldsReach(held, flows, kinds, facts)))?.type as FieldType | undefined;
     const type = typedRow(row) ? field : undefined;
@@ -1080,9 +1083,9 @@ function frameEdit(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { f
 }
 
 /**
- * A Value node made for a picklist row, and routed into it: it holds the row's own pick, at
+ * A Value node made for a picklist row, and connected to it: it holds the row's own pick, at
  * a place, and the row now mirrors it, read only. The pick stays on the row, so cutting the
- * route gives it back. The workflow given, untouched, where the row is no picklist, takes no
+ * connection gives it back. The workflow given, untouched, where the row is no picklist, takes no
  * single value, or is not there. Plan 713 §5
  */
 export function addCustomValue(
@@ -1096,5 +1099,5 @@ export function addCustomValue(
   const free = (n: number): string => (workflow.nodes.some((x) => x.id === `value-${n}`) ? free(n + 1) : `value-${n}`);
   const own = into.values?.[name!];
   const made: WorkflowNode = { id: free(1), kind: 'value', x: at.x, y: at.y, ...(own !== undefined && own !== '' ? { values: { value: String(own) } } : {}) };
-  return editWorkflow(editWorkflow(workflow, { add: made }, kinds), { route: { from: `${made.id}/value`, to } }, kinds);
+  return editWorkflow(editWorkflow(workflow, { add: made }, kinds), { connection: { from: `${made.id}/value`, to } }, kinds);
 }

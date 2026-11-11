@@ -7,10 +7,10 @@ import { test, expect, type Page } from './harness';
  * Unfurl keeps its places for the tab. A node's neighbours stand in the order of the sockets they join (Will,
  * TODO 827). Places are read from the nodes, lines from the drawn paths. TRAP T-unfurl-keeps-the-flow
  */
-type Flow = { nodes: { id: string; x: number; y: number }[]; routes: { from: string; to: string; via?: unknown[] }[]; ties?: unknown[] };
+type Flow = { nodes: { id: string; x: number; y: number }[]; connections: { from: string; to: string; via?: unknown[] }[]; ties?: unknown[] };
 type Ed = { workflow(): Flow; undo(): boolean };
 
-async function start(page: Page, nodes: [string, string, number, number, Record<string, unknown>?][], routes: Flow['routes'], readOnly = false): Promise<void> {
+async function start(page: Page, nodes: [string, string, number, number, Record<string, unknown>?][], connections: Flow['connections'], readOnly = false): Promise<void> {
   await page.evaluate(async ([ns, rs, ro]) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
@@ -20,7 +20,7 @@ async function start(page: Page, nodes: [string, string, number, number, Record<
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2 as const, id: 'u', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}) })), routes: rs };
+    const flow = { v: 3 as const, id: 'u', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}) })), connections: rs };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'], readOnly: ro,
@@ -29,15 +29,15 @@ async function start(page: Page, nodes: [string, string, number, number, Record<
     canvas.zoomTo(0.4);
     canvas.panTo(20, 20);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [nodes, routes, readOnly] as const);
+  }, [nodes, connections, readOnly] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((window as never as { ed: Ed }).ed.workflow())) as Flow);
 const rects = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#cv > sherpa-node')].map((n) => [n.getAttribute('data-heading')!,
   { x: Number(n.getAttribute('data-x')), y: Number(n.getAttribute('data-y')), w: (n as HTMLElement).offsetWidth, h: (n as HTMLElement).offsetHeight }])));
-/** Each drawn route's end points, on the plane; how many pairs cross; and how many run right to left. */
+/** Each drawn connection's end points, on the plane; how many pairs cross; and how many run right to left. */
 const lines = (page: Page) => page.evaluate(() => {
-  const segs = [...document.querySelectorAll('#cv > svg.graph-routes path[data-from]')].map((p) => {
+  const segs = [...document.querySelectorAll('#cv > svg.graph-connectors path[data-from]')].map((p) => {
     const n = (p.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?/g)!.map(Number);
     return { from: p.getAttribute('data-from')!.split('/')[0]!, to: p.getAttribute('data-to')!.split('/')[0]!, a: [n[0]!, n[1]!], b: [n.at(-2)!, n.at(-1)!] };
   });
@@ -63,7 +63,7 @@ const button = (page: Page) => page.locator('sherpa-node-toolbar sherpa-button.u
 /** The drawn lines socket to socket: pairs that cross, two of one node's counted too; and pairs of one node's lines,
  *  on one side, whose far ends stand out of the order of their sockets there. */
 const atSockets = (page: Page) => page.evaluate(() => {
-  const segs = [...document.querySelectorAll('#cv > svg.graph-routes path[data-from]')].map((p) => {
+  const segs = [...document.querySelectorAll('#cv > svg.graph-connectors path[data-from]')].map((p) => {
     const n = (p.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?/g)!.map(Number);
     return { from: p.getAttribute('data-from')!.split('/')[0]!, to: p.getAttribute('data-to')!.split('/')[0]!, a: [n[0]!, n[1]!], b: [n.at(-2)!, n.at(-1)!] };
   });
@@ -220,10 +220,10 @@ const PORTAL_PAIR: [string, string, number, number, Record<string, unknown>?][] 
   ['end', 'output', 0, 0], ['out', 'portal', 400, 0, { type: 'out', name: 'Hand on' }], ['rows', 'condition', 800, 0, { type: 'eq', b: 'x' }],
   ['in', 'portal', 1200, 0, { type: 'in', name: 'Hand on' }], ['pick', 'field', 1600, 0], ['src', 'source', 2000, 0, { store: 'users' }],
 ];
-const PORTAL_ROUTES = [{ from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'in' }, { from: 'out', to: 'rows' }, { from: 'rows/rows', to: 'end' }];
+const PORTAL_CONNECTIONS = [{ from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'in' }, { from: 'out', to: 'rows' }, { from: 'rows/rows', to: 'end' }];
 
 test('a graph reads left to right: Sources and a Portal In left, a Portal Out and Outputs right; a portal pair never flips it (Will, TODO 839)', async ({ page }) => {
-  await start(page, PORTAL_PAIR, PORTAL_ROUTES);
+  await start(page, PORTAL_PAIR, PORTAL_CONNECTIONS);
   await button(page).click();
   await settle(page);
   const now = await rects(page);

@@ -2,14 +2,14 @@ import { test, expect, type Page } from './harness';
 
 /**
  * FETCH and SIMULATE wait for a PATH from a Source to an Output — Will, TODO 836 (plan-836 P1). With none, both are
- * inactive and their tip says which part is missing; a route drawn with the pointer from the Source's Rows to the Output
+ * inactive and their tip says which part is missing; a connection drawn with the pointer from the Source's Rows to the Output
  * turns them on; Undo turns them off again. A press says `toolbar-select` and does nothing more yet. A preset graph reads
  * only, so it can fetch and simulate. Real pointer and keys; tips are read from the buttons. TRAP T-a-simulation-reads-the-cache-and-writes-nothing
  */
-type Ed = { workflow(): { routes: unknown[] }; undo(): boolean };
+type Ed = { workflow(): { connections: unknown[] }; undo(): boolean };
 type Node = [string, string, number, number, Record<string, unknown>?];
 
-async function start(page: Page, nodes: Node[], routes: { from: string; to: string }[] = [], readOnly = false): Promise<void> {
+async function start(page: Page, nodes: Node[], connections: { from: string; to: string }[] = [], readOnly = false): Promise<void> {
   await page.evaluate(async ([ns, rs, ro]) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
@@ -19,7 +19,7 @@ async function start(page: Page, nodes: Node[], routes: { from: string; to: stri
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2 as const, id: 'p', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}) })), routes: rs };
+    const flow = { v: 3 as const, id: 'p', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}) })), connections: rs };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'], readOnly: ro,
@@ -30,7 +30,7 @@ async function start(page: Page, nodes: Node[], routes: { from: string; to: stri
     canvas.zoomTo(0.6);
     canvas.panTo(40, 40);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [nodes, routes, readOnly] as const);
+  }, [nodes, connections, readOnly] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const tool = (page: Page, name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
@@ -69,7 +69,7 @@ test('with no path both tools are inactive and say which part is missing: no Sou
   expect(await heard(page)).toEqual([]);
 });
 
-test('a route drawn by the pointer from the Source to the Output turns both on, with their own tips; Undo turns them off', async ({ page }) => {
+test('a connection drawn by the pointer from the Source to the Output turns both on, with their own tips; Undo turns them off', async ({ page }) => {
   await start(page, [SOURCE, OUTPUT]);
   const { from, to } = await sockets(page);
   await page.mouse.move(...from);
@@ -77,7 +77,7 @@ test('a route drawn by the pointer from the Source to the Output turns both on, 
   await page.mouse.move(...to, { steps: 8 });
   await page.mouse.up();
   await settle(page);
-  expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.workflow().routes.length)).toBe(1);
+  expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.workflow().connections.length)).toBe(1);
   for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).not.toHaveAttribute('disabled', '');
     expect(await tip(page, name)).not.toBe(NO_PATH);

@@ -4,7 +4,7 @@ import { test, expect, type Page } from './harness';
  * The node editor's toolbar, Undo and Redo — Will, TODOs 560 and 561. A toolbar floats at the
  * canvas's bottom centre, 32px up, and the node panel keeps 32px from the top. Save is
  * a placeholder, off; Undo and Redo are on only when there is a step, and Ctrl/Cmd+Z and Shift+Ctrl/
- * Cmd+Z do the same. Each edit — a placement, a move, a pick, a route, a cut, a remove, a Custom
+ * Cmd+Z do the same. Each edit — a placement, a move, a pick, a connection, a cut, a remove, a Custom
  * Node's inside, make and ungroup — steps back to the SAME workflow and forward again. Real pointer and key.
  * TRAP T-an-edit-is-a-step
  */
@@ -14,7 +14,7 @@ const ORG = {
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   // The users' Role, a Field, Equals the Role given (plan 783).
   nodes: [{ id: 'has-role', kind: 'condition', x: 330, y: 0, values: { type: 'eq' } }, { id: 'role-field', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-  routes: [
+  connections: [
     { from: '#in/users', to: 'role-field' }, { from: 'role-field/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
     { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
   ],
@@ -50,13 +50,13 @@ const BIND = `async (org) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const { useOf } = await import('/dist/data.js');
   const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
-  const flow = { v: 2, id: 'g', nodes: [
+  const flow = { v: 3, id: 'g', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
     useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),
     { id: 'sort', kind: 'sort', x: 0, y: 260, values: { direction: 'asc' } },
     { id: 'end', kind: 'output', x: 700, y: 0 },
-  ], routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
+  ], connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
   const canvas = document.getElementById('cv');
   window.ed = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'),
@@ -193,7 +193,7 @@ test('Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z do the same, with the canvas focused; a te
   expect(await state(page)).toBe(after);
 });
 
-test('a route and a row pick: each is one step, back and forward, to the same workflow', async ({ page }) => {
+test('a connection and a row pick: each is one step, back and forward, to the same workflow', async ({ page }) => {
   await bind(page);
   const s0 = await state(page);
   // A row pick.
@@ -201,7 +201,7 @@ test('a route and a row pick: each is one step, back and forward, to the same wo
   await settle(page);
   const s1 = await state(page);
   expect(s1).not.toBe(s0);
-  // A route: the Source's rows to the Sort.
+  // A connection: the Source's rows to the Sort.
   await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
   const s2 = await state(page);
   expect(s2).not.toBe(s1);
@@ -223,12 +223,12 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
     await drag(page, [b.x + 40, b.y + 10], [b.x + 100, b.y + 60]);
   }],
   ['row pick', async (page) => { await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc'); }],
-  ['route', async (page) => {
+  ['connection', async (page) => {
     await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
   }],
-  ['cut a route', async (page) => {
+  ['cut a connection', async (page) => {
     const [mx, my] = await page.evaluate(() => {
-      const hit = document.querySelector<SVGPolylineElement>('#cv svg.graph-routes polyline[data-to="end"]')!;
+      const hit = document.querySelector<SVGPolylineElement>('#cv svg.graph-connectors polyline[data-to="end"]')!;
       const p = hit.points.getItem(8);
       const m = hit.getScreenCTM()!;
       return [m.a * p.x + m.e, m.d * p.y + m.f];

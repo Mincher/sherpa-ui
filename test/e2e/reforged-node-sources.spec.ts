@@ -37,7 +37,7 @@ test('two Sources dragged into a workflow: each its own id, customers and device
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const canvas = document.getElementById('cv')!;
-    (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 2, id: 'both', nodes: [], routes: [] }, {
+    (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, id: 'both', nodes: [], connections: [] }, {
       session: new SessionStore(), panel: canvas.querySelector('sherpa-node-list') as never, stores: ['customers', 'devices'],
     });
     await window.__settled();

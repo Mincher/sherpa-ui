@@ -1,5 +1,5 @@
 /**
- * A BOX dragged on a canvas picks every node whose box it TOUCHES and every route whose sampled path
+ * A BOX dragged on a canvas picks every node whose box it TOUCHES and every connection whose sampled path
  * it crosses — the rule of Figma's and Blender's node editors, not "fully enclosed". Pure geometry.
  * Will, TODO 735.
  *
@@ -20,7 +20,7 @@ test('a box touching a node picks it; one beside it misses; an edge counts', () 
   assert.equal(touches(box(150, 120, 200, 140), node), true);
 });
 
-test('a box crossing a route sampled as points picks it; passing beside it does not', () => {
+test('a box crossing a connection sampled as points picks it; passing beside it does not', () => {
   // A curve out of (0,0) over to (200,100), sampled coarsely.
   const dots = [[0, 0], [50, 0], [100, 50], [150, 100], [200, 100]];
   assert.equal(crosses(box(90, 40, 110, 60), dots), true);
@@ -30,7 +30,7 @@ test('a box crossing a route sampled as points picks it; passing beside it does 
   assert.equal(crosses(box(300, 0, 400, 100), dots), false);
 });
 
-test('a box crosses each piece of a tied route: in, through the slot, out', () => {
+test('a box crosses each piece of a tied connection: in, through the slot, out', () => {
   const tied = [[0, 0], [100, 0], [100, 40], [200, 40]];
   assert.equal(crosses(box(95, 10, 105, 30), tied), true);
   assert.equal(crosses(box(150, 0, 190, 20), tied), false);
@@ -44,26 +44,26 @@ test('a box encloses a node only when the whole node is inside it, an edge inclu
   assert.equal(encloses(box(150, 0, 300, 300), node), false);
 });
 
-test('boxPick answers the nodes it ENCLOSES whole, else the routes it crosses — never both — in the order given', () => {
+test('boxPick answers the nodes it ENCLOSES whole, else the connections it crosses — never both — in the order given', () => {
   const nodes = [['a', box(0, 0, 100, 50)], ['b', box(0, 200, 100, 250)], ['c', box(0, 400, 100, 450)]];
-  const lanes = [1, 2, 3].map((n) => ({ route: `r${n}`, dots: [[100, (n - 1) * 200 + 25], [400, (n - 1) * 200 + 25]] }));
-  // Beside the nodes, across all three routes: routes only.
-  assert.deepEqual(boxPick(box(200, 0, 260, 460), nodes, lanes), { nodes: [], routes: ['r1', 'r2', 'r3'] });
+  const lanes = [1, 2, 3].map((n) => ({ connection: `r${n}`, dots: [[100, (n - 1) * 200 + 25], [400, (n - 1) * 200 + 25]] }));
+  // Beside the nodes, across all three connections: connections only.
+  assert.deepEqual(boxPick(box(200, 0, 260, 460), nodes, lanes), { nodes: [], connections: ['r1', 'r2', 'r3'] });
   // Holds a and b whole, and crosses r1 and r2: only the nodes.
-  assert.deepEqual(boxPick(box(-10, -10, 150, 260), nodes, lanes), { nodes: ['a', 'b'], routes: [] });
-  // A corner of a and b, whole of neither: no node, so the routes it crosses.
-  assert.deepEqual(boxPick(box(50, 20, 150, 230), nodes, lanes), { nodes: [], routes: ['r1', 'r2'] });
-  // Part of a route is enough: a box over the middle of one.
-  assert.deepEqual(boxPick(box(250, 190, 260, 260), nodes, lanes), { nodes: [], routes: ['r2'] });
-  assert.deepEqual(boxPick(box(500, 0, 600, 100), nodes, lanes), { nodes: [], routes: [] });
+  assert.deepEqual(boxPick(box(-10, -10, 150, 260), nodes, lanes), { nodes: ['a', 'b'], connections: [] });
+  // A corner of a and b, whole of neither: no node, so the connections it crosses.
+  assert.deepEqual(boxPick(box(50, 20, 150, 230), nodes, lanes), { nodes: [], connections: ['r1', 'r2'] });
+  // Part of a connection is enough: a box over the middle of one.
+  assert.deepEqual(boxPick(box(250, 190, 260, 260), nodes, lanes), { nodes: [], connections: ['r2'] });
+  assert.deepEqual(boxPick(box(500, 0, 600, 100), nodes, lanes), { nodes: [], connections: [] });
 });
 
 test('boxCover answers BOTH kinds; boxMode: Shift adds, the primary key removes and wins over Shift', async () => {
   const { boxCover, boxMode } = await import(new URL('../../dist/core/ui/box-pick.js', import.meta.url));
   const nodes = [['a', box(0, 0, 100, 50)], ['b', box(0, 200, 100, 250)]];
-  const lanes = [1, 2].map((n) => ({ route: `r${n}`, dots: [[100, (n - 1) * 200 + 25], [400, (n - 1) * 200 + 25]] }));
-  assert.deepEqual(boxCover(box(-10, -10, 150, 100), nodes, lanes), { nodes: ['a'], routes: ['r1'] });
-  assert.deepEqual(boxCover(box(500, 0, 600, 100), nodes, lanes), { nodes: [], routes: [] });
+  const lanes = [1, 2].map((n) => ({ connection: `r${n}`, dots: [[100, (n - 1) * 200 + 25], [400, (n - 1) * 200 + 25]] }));
+  assert.deepEqual(boxCover(box(-10, -10, 150, 100), nodes, lanes), { nodes: ['a'], connections: ['r1'] });
+  assert.deepEqual(boxCover(box(500, 0, 600, 100), nodes, lanes), { nodes: [], connections: [] });
   const k = (shiftKey, ctrlKey, metaKey) => ({ shiftKey, ctrlKey, metaKey });
   // Ctrl is the primary key off a Mac, Cmd on one.
   assert.equal(boxMode(k(false, false, false), false), 'replace');

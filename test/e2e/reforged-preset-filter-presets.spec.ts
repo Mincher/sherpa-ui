@@ -21,16 +21,16 @@ const SETUP = `
     { id: 3, status: 'trial', plan: 'Pro' }, { id: 4, status: 'churned', plan: 'Pro' },
   ];
   const filter = (id, label, field, value, store = 'customers') => ({
-    v: 1, type: 'preset-filter', id, label, settings: { source: store },
+    v: 2, type: 'preset-filter', id, label, settings: { source: store },
     graph: {
       nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field } }, { id: 'c', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }],
-      routes: [{ from: 'f/field', to: 'c' }, { from: 'c', to: '#out/where' }],
+      connections: [{ from: 'f/field', to: 'c' }, { from: 'c', to: '#out/where' }],
     },
   });
   window.said = [];
   onReport((r) => window.said.push(r.message));
   provider.keeper.entityPresets = [filter('active', 'Active', 'status', 'active'), filter('orders', 'Big orders', 'total', 'big', 'orders'),
-    { ...filter('blank', 'Blank', 'status', 'x'), graph: { nodes: [], routes: [] } }];
+    { ...filter('blank', 'Blank', 'status', 'x'), graph: { nodes: [], connections: [] } }];
   const page = { v: 1, id: 'customers', source: { store: 'customers', fields: { status: { label: 'Status' }, plan: { label: 'Plan' } },
     scopes: { data: { label: 'Rows', holds: ['status', 'plan'], presets: [{ id: 'pro', label: 'Pro', where: { plan: { eq: 'Pro' } } }] } } } };
   const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };

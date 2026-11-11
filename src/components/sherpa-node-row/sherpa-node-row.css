@@ -163,12 +163,12 @@
 }
 
 /* A COLLAPSED node (its `--_row-*` values): only the sockets show, one row a socket high; a row with none hides. */
-/* Its unrouted sockets hide while the node hides them (`--_unrouted`); a row no route joins goes (`--_unrouted-row`).
-   The socketless rule comes after: a socketless row is unrouted too. */
-:host(:not([data-input-routed], [data-output-routed])) { display: var(--_unrouted-row, block); }
+/* Its unconnected sockets hide while the node hides them (`--_unconnected`); a row no connection joins goes (`--_unconnected-row`).
+   The socketless rule comes after: a socketless row is unconnected too. */
+:host(:not([data-input-connected], [data-output-connected])) { display: var(--_unconnected-row, block); }
 :host(:not([data-input-socket], [data-output-socket])) { display: var(--_row-bare, block); }
-:host(:not([data-input-routed])) .socket-in,
-:host(:not([data-output-routed])) .socket-out { visibility: var(--_unrouted, visible); }
+:host(:not([data-input-connected])) .socket-in,
+:host(:not([data-output-connected])) .socket-out { visibility: var(--_unconnected, visible); }
 
 /* A socket's tip names its row, and says its value. */
 .tip-socket { font-weight: var(--sherpa-font-weight-medium, 500); }
@@ -261,8 +261,8 @@
 /* ── COLLAPSED (its node's): no room of its own; its sockets stand in the node's stacks, at the places its host gave them,
    against the node's box — the row, its tabs and its sections place nothing. The node's stack is their tab. Will, 2026-11-10 ── */
 :host([data-collapsed]) {
-  --_in-i: calc(var(--_in-at, 0) * (1 - var(--_routed-only, 0)) + var(--_in-at-routed, 0) * var(--_routed-only, 0));
-  --_out-i: calc(var(--_out-at, 0) * (1 - var(--_routed-only, 0)) + var(--_out-at-routed, 0) * var(--_routed-only, 0));
+  --_in-i: calc(var(--_in-at, 0) * (1 - var(--_connected-only, 0)) + var(--_in-at-connected, 0) * var(--_connected-only, 0));
+  --_out-i: calc(var(--_out-at, 0) * (1 - var(--_connected-only, 0)) + var(--_out-at-connected, 0) * var(--_connected-only, 0));
 }
 :host([data-collapsed]) .row {
   display: block;

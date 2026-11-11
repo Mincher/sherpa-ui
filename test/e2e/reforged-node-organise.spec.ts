@@ -3,9 +3,9 @@ import { test, expect, type Page } from './harness';
 /**
  * ORGANISE AND PROPERTY ROWS — Will, TODO 835. Sort and Group are two kinds in an Organise category; Collection and its Count
  * type are gone. A property row is output only: a Source, a Field and a Group each draw a Count row with an output socket and
- * none in, and its route is any output's. Real pointer and keys; the platform's own select. Plan 835
+ * none in, and its connection is any output's. Real pointer and keys; the platform's own select. Plan 835
  */
-type Flow = { nodes: { id: string; kind: string; heading?: string; values?: Record<string, unknown> }[]; routes: { from: string; to: string }[] };
+type Flow = { nodes: { id: string; kind: string; heading?: string; values?: Record<string, unknown> }[]; connections: { from: string; to: string }[] };
 type Ed = { workflow(): Flow; undo(): boolean; save(): boolean };
 
 test.beforeEach(async ({ page }) => {
@@ -49,7 +49,7 @@ const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((wind
 const cards = '#root sherpa-layout-canvas > sherpa-node';
 const card = (page: Page, heading: string, n = 0) => page.locator(`${cards}[data-heading="${heading}"]`).nth(n);
 /** The drawn lines, by what they join. */
-const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll<SVGPathElement>('#root svg.graph-routes path[data-from]')].map((p) => `${p.dataset['from']} → ${p.dataset['to']}`));
+const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll<SVGPathElement>('#root svg.graph-connectors path[data-from]')].map((p) => `${p.dataset['from']} → ${p.dataset['to']}`));
 /** A socket's middle on the screen: a card's header's, or one of its rows', by its words or, `[name]`, its field's name. */
 async function socket(page: Page, heading: string, side: 'input' | 'output', row?: string, n = 0): Promise<[number, number]> {
   return card(page, heading, n).evaluate((el, [s, r]) => {
@@ -75,10 +75,10 @@ async function place(page: Page, kind: string, [x, y]: [number, number]): Promis
 }
 
 const node = (id: string, kind: string, x: number, y: number, values?: object) => ({ id, kind, x, y, ...(values ? { values } : {}) });
-const BARE = { v: 2, id: 'g', nodes: [node('start', 'source', 360, 0, { store: 'customers' }), node('add', 'math', 1160, 0, { type: 'add' }), node('pick', 'field', 760, 340, { field: 'status' })], routes: [] };
+const BARE = { v: 3, id: 'g', nodes: [node('start', 'source', 360, 0, { store: 'customers' }), node('add', 'math', 1160, 0, { type: 'add' }), node('pick', 'field', 760, 340, { field: 'status' })], connections: [] };
 /** A card's row by the words it says, its sockets as drawn. */
 const rowOf = (page: Page, heading: string, label: string) => card(page, heading).locator(`sherpa-node-row[data-label="${label}"]`);
-const routes = async (page: Page) => (await flow(page)).routes.map((r) => `${r.from} → ${r.to}`);
+const connections = async (page: Page) => (await flow(page)).connections.map((r) => `${r.from} → ${r.to}`);
 
 test('the panel lists Organise: Sort and Group; a Group dragged from it is placed, and no Collection is offered', async ({ page }) => {
   await bind(page, BARE);
@@ -97,7 +97,7 @@ test('the panel lists Organise: Sort and Group; a Group dragged from it is place
   await expect(rowOf(page, 'Group', 'Count')).not.toHaveAttribute('data-input-socket');
 });
 
-test('a property row routes like any output: the Source\'s Count into a Math\'s Value A by the real pointer, and a Field\'s into Value B', async ({ page }) => {
+test('a property row connects like any output: the Source\'s Count into a Math\'s Value A by the real pointer, and a Field\'s into Value B', async ({ page }) => {
   await bind(page, BARE);
   for (const heading of ['Source', 'Field']) {
     await expect(rowOf(page, heading, 'Count')).toHaveAttribute('data-output-socket', 'value');
@@ -105,7 +105,7 @@ test('a property row routes like any output: the Source\'s Count into a Math\'s 
   }
   await drag(page, await socket(page, 'Source', 'output', 'Count'), await socket(page, 'Math', 'input', '[name="a"]'));
   await drag(page, await socket(page, 'Field', 'output', 'Count'), await socket(page, 'Math', 'input', '[name="b"]'));
-  expect(await routes(page)).toEqual(['start/count → add/a', 'pick/count → add/b']);
+  expect(await connections(page)).toEqual(['start/count → add/a', 'pick/count → add/b']);
   expect(await lines(page)).toEqual(['start/count → add/a', 'pick/count → add/b']);
   // A number into a number: no warning; the rows say where their values come from.
   await expect(card(page, 'Math')).not.toHaveAttribute('data-warning');
@@ -116,10 +116,10 @@ test('a property row routes like any output: the Source\'s Count into a Math\'s 
   await place(page, 'sort', [box.x + 560, box.y + 460]);
   await drag(page, await socket(page, 'Source', 'output', 'Count'), await socket(page, 'Sort', 'input'));
   await expect(card(page, 'Sort')).toHaveAttribute('data-warning', 'Sort takes a field; it was given a number');
-  // Save hands the graph over, the Count routes among its rows.
+  // Save hands the graph over, the Count connections among its rows.
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
   const saved = await page.evaluate(() => JSON.parse(JSON.stringify((window as never as { saved: Flow[] }).saved.at(-1))) as Flow);
-  expect(saved.routes.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/count → add/a', 'pick/count → add/b', 'start/count → sort-1']);
+  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/count → add/a', 'pick/count → add/b', 'start/count → sort-1']);
 });
 
 test('a saved Collection draws nothing and says why: nothing converts it', async ({ page }) => {

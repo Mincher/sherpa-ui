@@ -10,7 +10,7 @@ const RUNBOOK = {
   v: 1, label: 'Patch review', category: 'Logic', preset: true,
   inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'late', label: 'Late', type: 'object' }],
   nodes: [{ id: 'state', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
-  routes: [{ from: '#in/rows', to: 'state' }, { from: 'state/field', to: '#out/late' }],
+  connections: [{ from: '#in/rows', to: 'state' }, { from: 'state/field', to: '#out/late' }],
 };
 
 test.beforeEach(async ({ page }) => {
@@ -31,14 +31,14 @@ test.beforeEach(async ({ page }) => {
     });
     const canvas = document.getElementById('cv')!;
     w['ed'] = bindWorkflow(canvas as never, {
-      v: 2, id: 'ai',
+      v: 3, id: 'ai',
       nodes: [
         { id: 'p', kind: 'provider', x: 420, y: 0, values: { provider: 'anthropic' } },
         { id: 'm', kind: 'model', x: 420, y: 220, values: { model: 'opus' } },
         { id: 'q', kind: 'prompt', x: 780, y: 0, values: { type: 'text', prompt: 'Is it late?' } },
         { id: 'r', kind: 'runbook', x: 780, y: 360, values: { type: 'boolean', runbook: 'patch-review' } },
       ],
-      routes: [{ from: 'p/provider', to: 'm/provider' }, { from: 'm/model', to: 'q/model' }, { from: 'm/model', to: 'r/model' }],
+      connections: [{ from: 'p/provider', to: 'm/provider' }, { from: 'm/model', to: 'q/model' }, { from: 'm/model', to: 'r/model' }],
     } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
       toolbar: canvas.querySelector('sherpa-node-toolbar') as never, header: document.getElementById('trail') as never,

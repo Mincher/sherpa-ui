@@ -12,12 +12,12 @@ const SETUP = `async () => {
   const { PageKeeper } = await import('/dist/index.js');
   const keeper = new PageKeeper();
   window.keeper = keeper;
-  window.filter = (id, label, kind) => ({ v: 1, type: 'preset-filter', id, label,
-    graph: kind ? { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], routes: [{ from: 'inner', to: '#out/where' }] } : { nodes: [
+  window.filter = (id, label, kind) => ({ v: 2, type: 'preset-filter', id, label,
+    graph: kind ? { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], connections: [{ from: 'inner', to: '#out/where' }] } : { nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } }, { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } } ],
-      routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }] },
+      connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }] },
     settings: { source: 'customers' } });
   keeper.entityPresets = [window.filter('shipped', 'Shipped')];
   window.heard = [];
@@ -62,7 +62,7 @@ test('a saved entity shows in a second tab, live and after a reload; a preset is
 
   // Out and back in as JSON; then forgotten, it goes from every tab.
   const json = await second.evaluate(() => (window as unknown as W).keeper.entities.export('outer'));
-  expect(JSON.parse(json).$schema).toContain('entity.v1.json');
+  expect(JSON.parse(json).$schema).toContain('entity.v2.json');
   await second.evaluate(() => (window as unknown as W).keeper.entities.remove('outer'));
   await expect.poll(() => listed(first)).toEqual(['shipped (preset)', 'recent']);
   expect(await second.evaluate((text) => (window as unknown as W).keeper.entities.import(text), json)).toBe('outer');

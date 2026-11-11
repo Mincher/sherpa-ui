@@ -27,9 +27,9 @@ const demos = existsSync(`${DEMOS}view-schemas/records.json`);
 const skip = demos ? false : `no ${DEMOS}: Demos' Records page is read where Demos sits beside this checkout`;
 const fromDemos = (path) => JSON.parse(readFileSync(`${DEMOS}${path}`, 'utf8'));
 const records = demos ? fromDemos('view-schemas/records.json') : null;
-// Since 760 a workflow is an ENTITY; the tools take its graph as a v2 definition.
+// Since 760 a workflow is an ENTITY; the tools take its graph as a v3 definition.
 const entity = demos ? fromDemos('workflows/active-customers.json') : null;
-const workflow = entity ? { v: 2, id: entity.id, ...entity.graph } : null;
+const workflow = entity ? { v: 3, id: entity.id, ...entity.graph } : null;
 
 /** Rows for every field Records declares, the same each run; dates counted back from today. */
 const STATUS = ['active', 'trial', 'suspended', 'churned'];
@@ -164,7 +164,7 @@ test('query_graph is queryGraph over the opened page, as the Node Editor draws i
     values: (f) => source.valuesFor(f).map((v) => valueKey(v)), presets: (s) => source.query.presets(s),
     domains: source.store.domains ?? {}, pageSize: source.state.pageSize, type: (f) => records.source.fields[f]?.type,
   });
-  assert.deepEqual({ nodes: json.nodes, routes: json.routes }, JSON.parse(JSON.stringify(graph)));
+  assert.deepEqual({ nodes: json.nodes, connections: json.connections }, JSON.parse(JSON.stringify(graph)));
   const ids = json.nodes.map((n) => n.id);
   for (const id of ['source', 'scope-view', 'scope-data', 'when-data-status', 'preset-data-high-risk', 'saved-at-risk']) assert.ok(ids.includes(id), id);
   source.close();
@@ -208,7 +208,7 @@ test('a condition\'s value is the command a chip asks, typed by its field', { sk
   source.close();
 });
 
-test('edit_query_graph refuses a dangling node, a row no command takes and a route the Query refuses, in the data layer\'s words', { skip }, async () => {
+test('edit_query_graph refuses a dangling node, a row no command takes and a connection the Query refuses, in the data layer\'s words', { skip }, async () => {
   const at = { definition: records, rows, key: 'id' };
   const dangling = await call('edit_query_graph', { ...at, edits: [{ node: 'when-view-nope', row: 'b', value: 'x' }] });
   assert.equal(dangling.bad, true);
@@ -216,24 +216,24 @@ test('edit_query_graph refuses a dangling node, a row no command takes and a rou
   const readOnly = await call('edit_query_graph', { ...at, edits: [{ node: 'source', row: 'search', value: 'name' }] });
   assert.equal(readOnly.bad, true);
   assert.match(readOnly.text, /No command takes "Search fields" on "Source": The page definition sets it/);
-  const route = await call('edit_query_graph', { ...at, edits: [{ from: 'source', to: 'scope-view/region' }] });
-  assert.equal(route.bad, true);
-  assert.match(route.text, /The Query has no route from "Source" to "View Context": a condition's True goes into a field of a scope\./);
+  const connection = await call('edit_query_graph', { ...at, edits: [{ from: 'source', to: 'scope-view/region' }] });
+  assert.equal(connection.bad, true);
+  assert.match(connection.text, /The Query has no connection from "Source" to "View Context": a condition's True goes into a field of a scope\./);
 });
 
 test('workflow_graph is workflowGraph with its faults and the kinds a workflow runs', { skip }, async () => {
   const facts = { fieldsOf: { customers: records.source.fields }, stores: ['customers'] };
   const { bad, json } = await call('workflow_graph', { workflow, ...facts });
   assert.equal(bad, false);
-  assert.deepEqual({ nodes: json.nodes, routes: json.routes }, JSON.parse(JSON.stringify(workflowGraph(workflow, facts))));
+  assert.deepEqual({ nodes: json.nodes, connections: json.connections }, JSON.parse(JSON.stringify(workflowGraph(workflow, facts))));
   assert.deepEqual(json.reports, []);
   assert.deepEqual(Object.keys(json.kinds), Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes('workflow')));
-  // A route into a node it has not got.
-  const ghost = { ...workflow, routes: [...workflow.routes, { from: 'status/value', to: 'ghost/value' }] };
+  // A connection into a node it has not got.
+  const ghost = { ...workflow, connections: [...workflow.connections, { from: 'status/value', to: 'ghost/value' }] };
   const faulty = await call('workflow_graph', { workflow: ghost });
   assert.equal(faulty.bad, false);
   assert.deepEqual(faulty.json.reports.map((r) => r.message), workflowFaults(ghost).map((f) => `checkWorkflow: ${f}.`));
-  assert.match(faulty.text, /a route enters "ghost\/value", which is no input socket/);
+  assert.match(faulty.text, /a connection enters "ghost\/value", which is no input socket/);
   assert.equal((await call('workflow_graph', { workflow: { id: 'nope' } })).bad, true);
 });
 
@@ -246,10 +246,10 @@ test('edit_workflow is editWorkflow, checked; an edit to a node it has not got i
   const dangling = await call('edit_workflow', { workflow, edits: [{ node: 'ghost', row: 'value', value: 1 }] });
   assert.equal(dangling.bad, true);
   assert.match(dangling.text, /The workflow has no node "ghost", so no edit was made\. Its nodes: start, field, status, filter, end\./);
-  // A route made into a node it has not got is made, and checkWorkflow says so.
-  const routed = await call('edit_workflow', { workflow, edits: [{ route: { from: 'status/value', to: 'ghost/value' } }] });
-  assert.equal(routed.bad, false);
-  assert.match(routed.text, /a route enters "ghost\/value", which is no input socket/);
+  // A connection made into a node it has not got is made, and checkWorkflow says so.
+  const connected = await call('edit_workflow', { workflow, edits: [{ connection: { from: 'status/value', to: 'ghost/value' } }] });
+  assert.equal(connected.bad, false);
+  assert.match(connected.text, /a connection enters "ghost\/value", which is no input socket/);
 });
 
 test('sherpa://node-kinds is NODE_KINDS as the registry says it', async () => {

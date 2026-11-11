@@ -1,6 +1,6 @@
 /**
  * A NODE SHOWS ITS FLOW AS JSON: what comes into a node and what leaves it, read from the graph's definition
- * (its routes and the values its rows hold), never from a run. A Condition says its `where` tree, a Store its
+ * (its connections and the values its rows hold), never from a run. A Condition says its `where` tree, a Store its
  * store. Will, TODO 745.
  *
  *   node --test test/unit/a-node-shows-its-flow-as-json.test.mjs
@@ -13,7 +13,7 @@ const { nodeFlow } = await import(new URL('node-flow.js', core));
 const { workflowGraph } = await import(new URL('workflow.js', core));
 
 const graph = () => workflowGraph({
-  v: 2, id: 'flow',
+  v: 3, id: 'flow',
   nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
@@ -22,7 +22,7 @@ const graph = () => workflowGraph({
     { id: 'end', kind: 'output', x: 720, y: 0 },
     { id: 'alone', kind: 'sort', x: 0, y: 400 },
   ],
-  routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }],
+  connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }],
 }, { fields: { status: { label: 'Status' } } });
 
 test('a Store gives its store and where its rows go', () => {
@@ -32,7 +32,7 @@ test('a Store gives its store and where its rows go', () => {
   assert.deepEqual(rows.to, ['Field']);
 });
 
-test('a Condition says its where tree — the Field on its header, its Operation, its Value B — and what is routed to it', () => {
+test('a Condition says its where tree — the Field on its header, its Operation, its Value B — and what is connected to it', () => {
   const flow = nodeFlow(graph(), 'cond');
   assert.deepEqual(flow.definition, { where: { field: 'status', op: 'eq', value: 'active' } });
   assert.deepEqual(flow.incoming.find((i) => i.socket === 'In').from, ['Field › Field']);
@@ -45,7 +45,7 @@ test('a Value carries its value', () => {
   assert.equal(flow.outgoing.find((o) => o.socket === 'Value').carries, 'active');
 });
 
-test('a node with no routes has sockets and no one on them', () => {
+test('a node with no connections has sockets and no one on them', () => {
   const flow = nodeFlow(graph(), 'alone');
   assert.deepEqual(flow.incoming.map((i) => i.from), [[], [], []].slice(0, flow.incoming.length));
   assert.ok(flow.outgoing.every((o) => o.to.length === 0));

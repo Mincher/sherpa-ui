@@ -1,6 +1,6 @@
 /**
  * node-output-panel.ts — the parts of an Output's inspector: a message field, its Insert value menu, Send a test, and the
- * Output tab — the Preview, with the last simulation's values, and where each property is routed. Each is composed of
+ * Output tab — the Preview, with the last simulation's values, and where each property is connected. Each is composed of
  * Sherpa's own components and only ASKS: the editor, or the host, acts. Will, plans 891 and 892
  *
  * Map:
@@ -8,7 +8,7 @@
  * - messageField — A message row's field: the Markdown editor, its values purple chips.
  * - valueMenu — A message field's Insert value: a menu of the values, a section per node, each with its sample.
  * - testButton — Send a test: it asks the host, which sends it; Sherpa sends nothing.
- * - outputPane — The Output tab: the Preview of each message as it reads, and where each property is routed.
+ * - outputPane — The Output tab: the Preview of each message as it reads, and where each property is connected.
  */
 import { filled, type MessageSource } from '../data/node-messages.js';
 import type { GraphNode } from '../data/node-kinds.js';
@@ -50,7 +50,7 @@ export function messageField(name: string, singleLine?: boolean): SherpaMarkdown
   return make('sherpa-markdown-editor', { name, ...(singleLine ? { 'data-single-line': '' } : {}) }) as SherpaMarkdownEditor;
 }
 
-/** A message field's Insert value: a button after it, opening a menu of the values its routes give, a section per node,
+/** A message field's Insert value: a button after it, opening a menu of the values its connections give, a section per node,
  *  each with its sample. A pick puts the value at the caret, as the field's change; each value in the field reads by its
  *  node and label. None to give: the button is off. */
 export function valueMenu(message: HTMLElement, label: string, facts: OutputFacts): HTMLElement {
@@ -61,7 +61,7 @@ export function valueMenu(message: HTMLElement, label: string, facts: OutputFact
   const button = make('sherpa-button', { 'data-size': 'sm', 'data-label': 'Insert value', 'aria-label': `Insert value in ${label}`, 'data-icon-start': 'plus', class: 'insert-value' });
   if (!items.length) {
     button.setAttribute('disabled', '');
-    button.setAttribute('data-description', 'No node before it sends a value: route one in');
+    button.setAttribute('data-description', 'No node before it sends a value: connect one in');
     return button;
   }
   const menu = make('sherpa-menu', { slot: 'menu', 'data-search': '' }) as HTMLElement & { populate(items: unknown): void };
@@ -84,8 +84,8 @@ export function testButton(facts: OutputFacts): HTMLElement | undefined {
 }
 
 /** The Output tab: the Preview — each message as it reads, the last simulation's values put in — and each property with
- *  where it is routed, by `routedTo`. */
-export function outputPane(node: GraphNode, facts: OutputFacts, routedTo: (row: string) => readonly string[]): HTMLElement {
+ *  where it is connected, by `connectedTo`. */
+export function outputPane(node: GraphNode, facts: OutputFacts, connectedTo: (row: string) => readonly string[]): HTMLElement {
   const pane = make('sherpa-stack', { 'data-gap': 'sm', class: 'output-pane' });
   const section = (heading: string, parts: readonly HTMLElement[], note?: string): HTMLElement => {
     const acc = make('sherpa-accordion', { 'data-heading': heading, open: '' });
@@ -110,7 +110,7 @@ export function outputPane(node: GraphNode, facts: OutputFacts, routedTo: (row: 
   });
   const list = make('sherpa-key-value-list', { 'data-orientation': 'vertical' }) as HTMLElement & { populate(items: unknown): void };
   list.populate(node.rows.filter((r) => r.property).map((r) => {
-    const to = routedTo(r.name);
+    const to = connectedTo(r.name);
     return { key: r.label, value: to.length ? `To ${to.join(', ')}` : 'Not used' };
   }));
   pane.append(section('Preview', messages, facts.simulated ? 'With the values of the last simulation.' : 'Press Simulate to see the values put in.'));

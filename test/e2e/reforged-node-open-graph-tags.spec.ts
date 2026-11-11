@@ -7,8 +7,8 @@ import { test, expect, type Page } from './harness';
  * still steps it (829). A preset's field is read only. Real pointer and keys.
  */
 const ORG = {
-  v: 1, type: 'node', id: 'org', label: 'Org permissions', tags: ['permissions'],
-  graph: { nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }], routes: [{ from: '#in/users', to: 'role' }, { from: 'role/rows', to: '#out/allowed' }] },
+  v: 2, type: 'node', id: 'org', label: 'Org permissions', tags: ['permissions'],
+  graph: { nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }], connections: [{ from: '#in/users', to: 'role' }, { from: 'role/rows', to: '#out/allowed' }] },
   settings: { inputs: [{ name: 'users', label: 'Users', type: 'object' }], outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }] },
 };
 

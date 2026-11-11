@@ -32,10 +32,10 @@
  * - tagDefinition — A definition's tags set, tidied: every use shares them, no use goes stale; a preset's refused.
  * - copyToMine — A custom, editable copy of a definition (a preset's, as "Copy to my nodes").
  */
-import { withoutBends } from './route-bends.js';
+import { withoutBends } from './connector-bends.js';
 import { tidyTags } from './tags.js';
 import { report } from './report.js';
-import { NODE_KINDS, nodeKinds, rowOf, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
+import { NODE_KINDS, nodeKinds, rowOf, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
 
@@ -46,7 +46,7 @@ export interface NodeSocket {
   name: string;
   label?: string;
   type: 'value' | 'object' | 'boolean';
-  /** It takes several routes (D4). */
+  /** It takes several connections (D4). */
   many?: true;
   /** Its list picks several: an object (D17). */
   multiple?: true;
@@ -70,10 +70,10 @@ export interface NodeSnapshot {
   inputs: readonly NodeSocket[];
   outputs: readonly NodeOutput[];
   nodes: readonly WorkflowNode[];
-  routes?: readonly NodeRoute[];
+  connections?: readonly NodeConnection[];
 }
 
-/** One Custom Node as JSON: its sockets, and the workflow body inside. Inner routes name its
+/** One Custom Node as JSON: its sockets, and the workflow body inside. Inner connections name its
  *  sockets `#in/<name>`, `#out` and `#out/<name>`. Its id is its key in the library. */
 export interface NodeDefinition extends NodeSnapshot {
   $schema?: string;
@@ -144,7 +144,7 @@ function hashOf(text: string): string {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');
 }
 
-/** A definition's version: a hash of what a use follows — its name, sockets, nodes and routes,
+/** A definition's version: a hash of what a use follows — its name, sockets, nodes and connections,
  *  never where its nodes sit, nor its category or icon. */
 export function versionOf(definition: NodeSnapshot): string {
   return hashOf(stable({ ...snapshotOf(definition), nodes: definition.nodes.map(unplaced) }));
@@ -152,7 +152,7 @@ export function versionOf(definition: NodeSnapshot): string {
 
 /** What a use records of a definition. */
 function snapshotOf(d: NodeSnapshot): NodeSnapshot {
-  return { v: 1, label: d.label, inputs: d.inputs, outputs: d.outputs, nodes: d.nodes, ...(d.routes ? { routes: d.routes.map(withoutBends) } : {}) };
+  return { v: 1, label: d.label, inputs: d.inputs, outputs: d.outputs, nodes: d.nodes, ...(d.connections ? { connections: d.connections.map(withoutBends) } : {}) };
 }
 
 /** A definition as a NodeKind: a row per input and output, `model: 'graph'`, its header taking
@@ -212,12 +212,12 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
     definition, params,
     kinds: { ...base, [GROUP_INPUT]: input, [GROUP_OUTPUT]: output },
     workflow: {
-      v: 2, id, label: definition.label,
+      v: 3, id, label: definition.label,
       nodes: [
         { id: '#in', kind: GROUP_INPUT, x: Math.min(0, ...xs) - 360, y: 0 }, ...definition.nodes,
         { id: '#out', kind: GROUP_OUTPUT, x: Math.max(0, ...xs) + 360, y: 0 },
       ],
-      routes: definition.routes ?? [],
+      connections: definition.connections ?? [],
       ...(definition.ties?.length ? { ties: definition.ties } : {}),
       ...(definition.frames?.length ? { frames: definition.frames } : {}),
     },
@@ -340,7 +340,7 @@ export interface DefinitionDiff {
   inputs: SocketDiff;
   outputs: SocketDiff;
   nodes: { added: string[]; removed: string[]; changed: string[] };
-  routes: { added: NodeRoute[]; removed: NodeRoute[] };
+  connections: { added: NodeConnection[]; removed: NodeConnection[] };
 }
 
 /** Sockets added, removed, retyped, or changed in what they say. */
@@ -373,14 +373,14 @@ export function definitionDiff(use: Pick<WorkflowNode, 'kind' | 'version' | 'was
   const none: SocketDiff = { added: [], removed: [], retyped: [], changed: [] };
   const diff: DefinitionDiff = {
     stale: use.version !== current, known: !!was, current, ...(use.version ? { recorded: use.version } : {}),
-    inputs: none, outputs: none, nodes: { added: [], removed: [], changed: [] }, routes: { added: [], removed: [] },
+    inputs: none, outputs: none, nodes: { added: [], removed: [], changed: [] }, connections: { added: [], removed: [] },
   };
   if (!was || !diff.stale) return diff;
   const before = new Map(was.nodes.map((n) => [n.id, stable(unplaced(n))]));
   const after = new Map(now.nodes.map((n) => [n.id, stable(unplaced(n))]));
-  const key = (r: NodeRoute): string => `${r.from}→${r.to}`;
-  const oldRoutes = new Map((was.routes ?? []).map((r) => [key(r), r]));
-  const newRoutes = new Map((now.routes ?? []).map((r) => [key(r), r]));
+  const key = (r: NodeConnection): string => `${r.from}→${r.to}`;
+  const oldConnections = new Map((was.connections ?? []).map((r) => [key(r), r]));
+  const newConnections = new Map((now.connections ?? []).map((r) => [key(r), r]));
   return {
     ...diff,
     ...(was.label !== now.label ? { label: { from: was.label, to: now.label } } : {}),
@@ -390,7 +390,7 @@ export function definitionDiff(use: Pick<WorkflowNode, 'kind' | 'version' | 'was
       removed: [...before.keys()].filter((id) => !after.has(id)),
       changed: [...after.keys()].filter((id) => before.has(id) && before.get(id) !== after.get(id)),
     },
-    routes: { added: [...newRoutes].filter(([k]) => !oldRoutes.has(k)).map(([, r]) => r), removed: [...oldRoutes].filter(([k]) => !newRoutes.has(k)).map(([, r]) => r) },
+    connections: { added: [...newConnections].filter(([k]) => !oldConnections.has(k)).map(([, r]) => r), removed: [...oldConnections].filter(([k]) => !newConnections.has(k)).map(([, r]) => r) },
   };
 }
 
@@ -402,7 +402,7 @@ export function staleUses(workflow: WorkflowDefinition, library: NodeLibrary): s
 /**
  * The workflow with one use brought to the library's definition: it records the new version, and
  * keeps its own values for each row the definition still has; a value for a row it lost goes. A
- * route to a socket the definition lost stays, and is a fault to see. Pure, through editWorkflow:
+ * connection to a socket the definition lost stays, and is a fault to see. Pure, through editWorkflow:
  * the EDITOR gives the draft and keeps the saved copy, so an updated instance holds its draft
  * changes until the reader saves or discards them (D11); the confirmation is its too.
  */
@@ -425,7 +425,7 @@ export function updateAll(workflow: WorkflowDefinition, kind: string, library: N
 /** The library after one change to a definition. A preset's is refused, and so is one that is not
  *  there: the library given, untouched. */
 export function editDefinition(
-  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'routes' | 'ties' | 'frames'>>,
+  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'connections' | 'ties' | 'frames'>>,
 ): NodeLibrary {
   const was = library.nodes[id];
   if (!was || was.preset) return library;

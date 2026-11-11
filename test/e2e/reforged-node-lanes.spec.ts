@@ -16,13 +16,13 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 2, id: 'g', nodes: [
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
       { id: 'src', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'val', kind: 'value', x: 0, y: 40 },
       { id: 'cond', kind: 'condition', x: 330, y: 20 },
       { id: 'sort', kind: 'sort', x: 660, y: 20 },
       { id: 'end', kind: 'output', x: 990, y: 0 },
-    ], routes: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
+    ], connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'),
       toolbar: canvas.querySelector('sherpa-node-toolbar'), stores: ['users'],
       fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } },
@@ -90,10 +90,10 @@ test('with Swimlanes on, Arrange, Unfurl and the zip tie are off and the ties ar
   // A tie first, through the editor's own door.
   await page.evaluate(() => (window as never as { ed: { workflow(): unknown } }).ed);
   const tied = await page.evaluate(async () => {
-    const ed = (window as never as { ed: { workflow(): { routes: { from: string; to: string }[] } } }).ed;
-    const routes = ed.workflow().routes.slice(0, 2);
+    const ed = (window as never as { ed: { workflow(): { connections: { from: string; to: string }[] } } }).ed;
+    const connections = ed.workflow().connections.slice(0, 2);
     document.querySelector('sherpa-node-toolbar')!.dispatchEvent(new CustomEvent('noop'));
-    return routes.length;
+    return connections.length;
   });
   expect(tied).toBe(2);
   await expect(tool('unfurl')).not.toHaveAttribute('disabled');
@@ -117,10 +117,10 @@ test('a tie made before Swimlanes is hidden while they are on, and drawn again a
   await page.keyboard.press('t');
   await settle(page);
   expect((await page.evaluate(() => (window as never as { ed: { workflow(): { ties?: unknown[] } } }).ed.workflow().ties ?? [])).length).toBe(1);
-  await expect(page.locator('#cv > svg.graph-routes rect.graph-tie')).toHaveCount(1);
+  await expect(page.locator('#cv > svg.graph-connectors rect.graph-tie')).toHaveCount(1);
   await press(page, 'lanes');
-  await expect(page.locator('#cv > svg.graph-routes rect.graph-tie')).toHaveCount(0);
+  await expect(page.locator('#cv > svg.graph-connectors rect.graph-tie')).toHaveCount(0);
   expect((await page.evaluate(() => (window as never as { ed: { workflow(): { ties?: unknown[] } } }).ed.workflow().ties ?? [])).length).toBe(1);
   await press(page, 'lanes');
-  await expect(page.locator('#cv > svg.graph-routes rect.graph-tie')).toHaveCount(1);
+  await expect(page.locator('#cv > svg.graph-connectors rect.graph-tie')).toHaveCount(1);
 });

@@ -7,12 +7,12 @@ import { test, expect, type Page } from './harness';
  * again. Real pointer and keys; places read from the drawn boxes, in pixels. TRAP T-a-frame-is-drawn-round-its-nodes
  */
 type Frame = { id: string; label?: string; description?: string; nodes: string[] };
-type Flow = { nodes: { id: string; x: number; y: number }[]; routes: { from: string; to: string }[]; frames?: Frame[] };
+type Flow = { nodes: { id: string; x: number; y: number }[]; connections: { from: string; to: string }[]; frames?: Frame[] };
 type Ed = { workflow(): Flow; undo(): boolean; redo(): boolean; save(): boolean };
 type Box = { x: number; y: number; width: number; height: number };
 
 const NODES: [string, string, number, number][] = [['s1', 'source', 0, 0], ['p1', 'field', 420, 260], ['e1', 'output', 840, 40], ['s2', 'source', 840, 560]];
-const ROUTES = [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }];
+const CONNECTIONS = [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }];
 
 async function start(page: Page, flow?: unknown, readOnly = false): Promise<void> {
   await page.evaluate(async ([given, ns, rs, ro]) => {
@@ -24,7 +24,7 @@ async function start(page: Page, flow?: unknown, readOnly = false): Promise<void
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = given ?? { v: 2 as const, id: 'f', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), routes: rs };
+    const flow = given ?? { v: 3 as const, id: 'f', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: rs };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     const saved: unknown[] = [];
     canvas.addEventListener('definition-save', (event) => saved.push((event as CustomEvent<{ definition: unknown }>).detail.definition));
@@ -36,7 +36,7 @@ async function start(page: Page, flow?: unknown, readOnly = false): Promise<void
     canvas.zoomTo(0.5);
     canvas.panTo(60, 80);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [flow ?? null, NODES, ROUTES, readOnly] as const);
+  }, [flow ?? null, NODES, CONNECTIONS, readOnly] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((window as never as { ed: Ed }).ed.workflow())) as Flow);
@@ -242,7 +242,7 @@ test('Save hands the frame over; bound again from what was saved, it is drawn ro
 });
 
 test('read only, a preset: the frame is drawn, with no Release, and a drag on its header moves nothing', async ({ page }) => {
-  const framed = { v: 2, id: 'f', nodes: NODES.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), routes: ROUTES, frames: [{ id: 'frame-1', label: 'Kept', nodes: ['s1', 'p1'] }] };
+  const framed = { v: 3, id: 'f', nodes: NODES.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: CONNECTIONS, frames: [{ id: 'frame-1', label: 'Kept', nodes: ['s1', 'p1'] }] };
   await start(page, framed, true);
   await expect(frameEl(page)).toHaveCount(1);
   await expect(frameEl(page)).toHaveAttribute('data-locked', '');

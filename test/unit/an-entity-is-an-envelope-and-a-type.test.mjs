@@ -23,7 +23,7 @@ const { onReport } = await import(new URL('report.js', core));
 
 /** Customers whose status is active: a condition out. */
 const ACTIVE = {
-  v: 1, type: 'preset-filter', id: 'active-customers', label: 'Active customers', description: 'Customers who are active.',
+  v: 2, type: 'preset-filter', id: 'active-customers', label: 'Active customers', description: 'Customers who are active.',
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -31,7 +31,7 @@ const ACTIVE = {
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }],
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }],
   },
   settings: { source: 'customers' },
 };
@@ -39,7 +39,7 @@ const make = (change = {}) => ({ ...structuredClone(ACTIVE), ...change });
 /** A preset filter that places another. */
 const placing = (id, kind, extra = {}) => make({
   id, label: id.toUpperCase(),
-  graph: { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], routes: [{ from: 'inner', to: '#out/where' }] },
+  graph: { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], connections: [{ from: 'inner', to: '#out/where' }] },
   ...extra,
 });
 const faults = (e, facts) => C.entityFaults(e, facts);
@@ -52,7 +52,7 @@ const heard = (run) => {
 test('a good entity passes, in the shape the schema says; and so do the types\' settings', () => {
   assert.deepEqual(faults(make()), []);
   assert.equal(C.checkEntity(make()), true);
-  assert.deepEqual(schemaCheck('entity.v1.json')(make()), []);
+  assert.deepEqual(schemaCheck('entity.v2.json')(make()), []);
   assert.deepEqual(schemaCheck('entity-preset-filter.v1.json')(make().settings), []);
   assert.ok(E.isEntity(make()));
   // The schema and the checks say the same of settings.
@@ -69,21 +69,21 @@ test('each fault is named, in words', () => {
   assert.match(said(make({ type: 'recipe' })), /type "recipe", which this app does not have/);
   assert.match(said(make({ settings: { source: 4 } })), /its source is not a name/);
   assert.match(said(make({ settings: { colour: 'red' } })), /the setting "colour", which this type does not keep/);
-  assert.match(said(make({ graph: { ...ACTIVE.graph, routes: ACTIVE.graph.routes.slice(0, 2) } })), /sends nothing to its output "where"/);
+  assert.match(said(make({ graph: { ...ACTIVE.graph, connections: ACTIVE.graph.connections.slice(0, 2) } })), /sends nothing to its output "where"/);
   assert.match(said(make({ uses: [{ type: 'preset-filter', id: 'gone' }] })), /uses the Preset Filter "gone", which is not there/);
-  assert.match(said(make({ graph: { nodes: [{ id: 'x', kind: 'preset-filter:gone', x: 0, y: 0 }], routes: [{ from: 'x', to: '#out/where' }] } })), /a use of "preset-filter:gone", which is not there/);
+  assert.match(said(make({ graph: { nodes: [{ id: 'x', kind: 'preset-filter:gone', x: 0, y: 0 }], connections: [{ from: 'x', to: '#out/where' }] } })), /a use of "preset-filter:gone", which is not there/);
   // The graph's own faults come through, each as a Custom Node's would say them.
-  assert.match(said(make({ graph: { nodes: [{ id: 'x', kind: 'nothing-like-it', x: 0, y: 0 }], routes: [{ from: 'x', to: '#out/where' }] } })), /"x"/);
-  assert.match(said(make({ graph: { nodes: [{ id: '#in', kind: 'condition', x: 0, y: 0 }], routes: [{ from: '#in', to: '#out/where' }] } })), /a # name is the Group Input/);
+  assert.match(said(make({ graph: { nodes: [{ id: 'x', kind: 'nothing-like-it', x: 0, y: 0 }], connections: [{ from: 'x', to: '#out/where' }] } })), /"x"/);
+  assert.match(said(make({ graph: { nodes: [{ id: '#in', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in', to: '#out/where' }] } })), /a # name is the Group Input/);
   assert.match(said({ ...make(), type: 'node', settings: { inputs: [{ name: 'a', type: 'text' }], outputs: [] } }), /the Custom Node "active-customers" has the input "a" of the type "text"/);
   assert.ok(faults(make({ type: 'node', id: 'value', settings: { inputs: [], outputs: [] } })).some((f) => /shipped/.test(f)), 'a node entity may not take a shipped kind\'s id');
 });
 
 test('a family outside the type is a fault; a use of an entity is not bounded by it', () => {
-  const sent = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }], routes: ACTIVE.graph.routes } });
+  const sent = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }], connections: ACTIVE.graph.connections } });
   assert.match(faults(sent).join('\n'), /places "end", of the family "Output", which a Preset Filter does not take: Sources, Variables, Math, Logic, Time, Organise, Utils/);
   // A Sort, of Organise: a family a Preset Filter takes.
-  const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'sort', x: 720, y: 200 }], routes: [...ACTIVE.graph.routes, { from: 'field/field', to: 'order' }] } });
+  const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'sort', x: 720, y: 200 }], connections: [...ACTIVE.graph.connections, { from: 'field/field', to: 'order' }] } });
   assert.deepEqual(faults(sorted), []);
   const sources = { id: 'sources-only', label: 'Sources only', runs: false, families: ['Sources'] };
   assert.match(faults({ ...sorted, type: 'sources-only' }, { types: { 'sources-only': sources } }).join('\n'), /places "order", of the family "Organise"/);
@@ -118,7 +118,7 @@ test('an app adds a type; a clash with a shipped one is refused; taking it back 
   assert.deepEqual(off.slice(0, 2), [undefined, undefined]);
   assert.equal(reports.filter((r) => r.code === 'entity-type').length, 2);
   assert.ok(T.entityTypes()['ui-card']);
-  const e = { v: 1, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'orders' } }], routes: [{ from: 'start/rows', to: '#out/present' }] } };
+  const e = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'orders' } }], connections: [{ from: 'start/rows', to: '#out/present' }] } };
   assert.deepEqual(faults(e), []);
   off[2]();
   assert.match(faults(e).join('\n'), /type "ui-card", which this app does not have/);
@@ -140,7 +140,7 @@ test('any entity is a node in any graph: its kind is `<type>:<id>`, a use follow
   assert.equal(kinds[kind].category, 'Custom Nodes');
   assert.equal(T.asNode(recent).icon, 'filter');
   // Placed in a workflow of another type, it passes the workflow's own checks, and runs nested.
-  const flow = { v: 2, id: 'flow', nodes: [{ id: 'pick', ...lib.useOf(library, kind, { id: 'pick', x: 0, y: 0 }) }, { id: 'end', kind: 'output', x: 360, y: 0 }], routes: [{ from: 'pick', to: 'end' }] };
+  const flow = { v: 3, id: 'flow', nodes: [{ id: 'pick', ...lib.useOf(library, kind, { id: 'pick', x: 0, y: 0 }) }, { id: 'end', kind: 'output', x: 360, y: 0 }], connections: [{ from: 'pick', to: 'end' }] };
   assert.deepEqual(lib.workflowFaultsDeep(flow, library), []);
   assert.ok(lib.innerOf(flow.nodes[0], library));
   assert.equal(flow.nodes[0].version, lib.versionOf(T.asNode(recent)));
@@ -163,12 +163,12 @@ test('a Custom Node is the type `node`: the envelope wraps today\'s definition, 
     v: 1, label: 'Org permissions', category: 'Logic', icon: 'lock', description: 'Who may.',
     inputs: [{ name: 'users', label: 'Users', type: 'object' }], outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
     nodes: [{ id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-    routes: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+    connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
   };
   const entity = E.nodeEntityOf('org-permissions', definition);
   assert.deepEqual(entity.settings.inputs, definition.inputs);
   assert.deepEqual(faults(entity), []);
-  assert.deepEqual(schemaCheck('entity.v1.json')(entity), []);
+  assert.deepEqual(schemaCheck('entity.v2.json')(entity), []);
   assert.deepEqual(schemaCheck('entity-node.v1.json')(entity.settings), []);
   assert.deepEqual(E.definitionOf(entity), definition);
   assert.deepEqual(E.definitionOf({ ...entity, origin: 'preset' }), { ...definition, preset: true });
@@ -180,21 +180,21 @@ test('a Custom Node is the type `node`: the envelope wraps today\'s definition, 
 });
 
 test('a workflow becomes an entity of a type, and is checked as one', () => {
-  const workflow = { v: 2, id: 'active-customers', label: 'Active customers', nodes: ACTIVE.graph.nodes, routes: ACTIVE.graph.routes };
+  const workflow = { v: 3, id: 'active-customers', label: 'Active customers', nodes: ACTIVE.graph.nodes, connections: ACTIVE.graph.connections };
   const e = T.entityOf(workflow, 'preset-filter', { source: 'customers' });
   assert.equal(e.id, 'active-customers');
   assert.deepEqual(faults(e), []);
   // The workflow's own checks still pass over the same nodes.
-  assert.deepEqual(workflowFaults({ ...workflow, routes: workflow.routes.slice(0, 2) }, NODE_KINDS).filter((f) => /#out/.test(f)), []);
+  assert.deepEqual(workflowFaults({ ...workflow, connections: workflow.connections.slice(0, 2) }, NODE_KINDS).filter((f) => /#out/.test(f)), []);
   assert.ok(editWorkflow);
 });
 
 test('a Save keeps the canvas\'s layout: stages, swimlanes and the places before them come back on the next load (933)', async () => {
   const { LANES_BY_FAMILY } = await import(new URL('node-lanes.js', core));
-  let w = editWorkflow({ v: 2, id: 'laid', label: 'Laid out', nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 400, y: 0 }], routes: [] }, { addStage: {} });
+  let w = editWorkflow({ v: 3, id: 'laid', label: 'Laid out', nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 400, y: 0 }], connections: [] }, { addStage: {} });
   w = editWorkflow(w, { lanes: LANES_BY_FAMILY });
   const entity = T.entityOf(w, 'workflow');
-  assert.deepEqual(schemaCheck('entity.v1.json')(entity), []);
+  assert.deepEqual(schemaCheck('entity.v2.json')(entity), []);
   assert.deepEqual([entity.graph.stages.length, entity.graph.lanes.length, Object.keys(entity.graph.beforeLanes)], [2, LANES_BY_FAMILY.length, ['s', 'v']]);
   // The editor's Save, the graph alone, keeps them too.
   const { graphOfWorkflow } = await import(new URL('graph-views.js', core));

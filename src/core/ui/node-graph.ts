@@ -3,7 +3,7 @@
  * drawn there: a page's Query, which each edit ASKS, and a workflow, whose draft each edit
  * writes. Places last the tab; Save hands the app a checked definition. Each node lights as
  * its step runs, from the one trace stream. A workflow's Custom Node opens, is edited as its
- * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562); a frame
+ * definition, updates its uses, and is made from picked nodes. A zip tie funnels connections through one place (plan 562); a frame
  * holds picked nodes in a column under one header (plan 778). A picked portal lights every portal of its name (plan 779).
  * Unfurl lays the whole graph out round its hub (plan 569). Will, TODOs 555, 551, 671, 719, 562, 735, 778, 779, 569.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node · TRAP T-a-frame-is-drawn-round-its-nodes
@@ -11,9 +11,9 @@
  * TRAP T-a-task-queue-knows-nothing-of-what-it-runs
  *
  * Map:
- * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
- * - tieSpot — Where routes would be tied with no pointer: the middle of the way each takes, on the plane.
- * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
+ * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new connection.
+ * - tieSpot — Where connections would be tied with no pointer: the middle of the way each takes, on the plane.
+ * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its connections.
  * - markNode — Mark one node as the one picked, or none.
  * - markFrame — Mark one frame as the one picked, or none: no node is picked with it.
  * - pickedFrame — The frame picked, by id, or none.
@@ -28,14 +28,14 @@
  * - markNodes — Mark several nodes as the ones picked.
  * - collapseNodes — Collapse these nodes, or expand them; `'all'`, every node drawn.
  * - collapsedNodes — The nodes drawn collapsed.
- * - hideUnconnected — Whether a collapsed node hides the sockets no route joins; a hover, or a line dragged, shows them.
+ * - hideUnconnected — Whether a collapsed node hides the sockets no connection joins; a hover, or a line dragged, shows them.
  * - markActive — Mark the one picked node whose panel is shown, in a stronger ring.
- * - markRoutes — Mark routes as the ones picked.
- * - pickedRoutes — The routes picked: by a click, a box, or the keys.
+ * - markConnections — Mark connections as the ones picked.
+ * - pickedConnections — The connections picked: by a click, a box, or the keys.
  * - WatchOptions — What a graph's watch is told: which traces are its, and which node each span lights.
  * - watchSteps — Light a canvas's nodes from the one trace stream as their steps run; its stop lets it go.
  * - InspectOptions — What an inspector shows beside a node's rows, and whom it tells of an edit.
- * - inspectNode — Fill an overlay panel with one node: its rows again, their routes, and a visual.
+ * - inspectNode — Fill an overlay panel with one node: its rows again, their connections, and a visual.
  * - inspectNone — The inspector with nothing picked: its empty state, in place of a node.
  * - Inspector — The overlay panel a picked node opens in.
  * - GraphEditor — What an editor's binding gives back: Save, and the undo.
@@ -68,8 +68,8 @@ import { primaryKey } from './modifier-key.js';
 import { keepOrder, morph } from './keep-order.js';
 import { boxOf, pointIn } from './plane.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
-import { dotsThrough, handlesOf, pathThrough, waypointsOf, type Pt } from './route-path.js';
-import { clampedVia } from '../data/route-bends.js';
+import { dotsThrough, handlesOf, pathThrough, waypointsOf, type Pt } from './connector-path.js';
+import { clampedVia } from '../data/connector-bends.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
@@ -91,7 +91,7 @@ import {
 import { aiCatalog, aiWords, runbookGraphs } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
-import { entityKind, type EntityRef } from '../data/entity.js';
+import { entityKind, type EntityRef, inNewWords } from '../data/entity.js';
 import { offeredKinds } from '../data/entity-types.js';
 import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
@@ -108,7 +108,7 @@ import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { FALSE_SOCKET, nodeKinds, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeRoute, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { FALSE_SOCKET, nodeKinds, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -117,7 +117,7 @@ const SVG = 'http://www.w3.org/2000/svg';
 type HasSockets = HTMLElement & { socketRect(side: SocketSide): DOMRect | null };
 
 /** What a drawing tells its host: each edit, each node a reader picks or moves, and each
- *  route a reader draws — the drawing writes nothing. */
+ *  connect a reader draws — the drawing writes nothing. */
 export interface DrawOptions {
   onEdit?: (edit: GraphEdit) => void;
   onSelect?: (node: GraphNode) => void;
@@ -130,38 +130,38 @@ export interface DrawOptions {
   /** A node the reader resized, and its new size in times its natural one (TODO 740). */
   onResize?: (node: GraphNode, size: NodeSize) => void;
   /** A line dragged from an output socket and let go on an input socket. */
-  onConnect?: (route: NodeRoute) => void;
-  /** A route's input end dragged off its socket and let go on another input socket (TODO 557). */
-  onReroute?: (was: NodeRoute, now: NodeRoute) => void;
-  /** A route let go over the bare canvas, or a clicked one deleted (TODO 558). */
-  onBreak?: (route: NodeRoute) => void;
+  onConnect?: (connection: NodeConnection) => void;
+  /** A connection's input end dragged off its socket and let go on another input socket (TODO 557). */
+  onReconnect?: (was: NodeConnection, now: NodeConnection) => void;
+  /** A connection let go over the bare canvas, or a clicked one deleted (TODO 558). */
+  onBreak?: (connection: NodeConnection) => void;
   /** The zip tie tool is on. */
   tying?: boolean;
-  /** A line dragged across routes: they are tied, at a place on the plane. */
-  onTie?: (routes: NodeRoute[], at: { x: number; y: number }) => void;
+  /** A line dragged across connections: they are tied, at a place on the plane. */
+  onTie?: (connections: NodeConnection[], at: { x: number; y: number }) => void;
   /** A tie dragged or moved by a key, to a place. */
   onTieMove?: (id: string, x: number, y: number) => void;
   /** A picked tie deleted. */
   onUntie?: (id: string) => void;
-  /** A bend point of a route moved, or (`insert`) put in at an index: where, on the plane (TODO 744). */
-  onBend?: (route: NodeRoute, at: number, x: number, y: number, insert: boolean, drag: number) => void;
+  /** A bend point of a connection moved, or (`insert`) put in at an index: where, on the plane (TODO 744). */
+  onBend?: (connection: NodeConnection, at: number, x: number, y: number, insert: boolean, drag: number) => void;
   /** A picked bend point removed. */
-  onUnbend?: (route: NodeRoute, index: number) => void;
+  onUnbend?: (connection: NodeConnection, index: number) => void;
   /** A connector line dragged onto a zip tie: it is added to the tie. */
-  onTieDrop?: (id: string, route: NodeRoute) => void;
+  onTieDrop?: (id: string, connection: NodeConnection) => void;
   /** The bend point picked, or none: the editor says so. */
-  onBendPicked?: (pick: { route: NodeRoute; index: number } | null) => void;
+  onBendPicked?: (pick: { connection: NodeConnection; index: number } | null) => void;
   /** A click on blank canvas: no node is picked, the panel shuts (TODO 559). */
   onDeselect?: () => void;
-  /** A box dragged on the blank canvas picked these nodes (TODO 735); the routes it crossed are picked and drawn. */
+  /** A box dragged on the blank canvas picked these nodes (TODO 735); the connections it crossed are picked and drawn. */
   onBox?: (nodes: string[]) => void;
-  /** The picked routes changed: a click, a box, or a key. */
-  onPicked?: (routes: NodeRoute[]) => void;
-  /** Picked routes cut with Delete or Backspace, as one edit; unset, each goes to `onBreak`. */
-  onBreakAll?: (routes: NodeRoute[]) => void;
-  /** Delete or Backspace with nodes picked: these nodes and these routes, as one edit. Unset, a node stays. */
-  onRemove?: (nodes: string[], routes: NodeRoute[]) => void;
-  /** A line dragged out of an unrouted picklist's input socket and let go on the bare canvas, at a place on the plane. */
+  /** The picked connections changed: a click, a box, or a key. */
+  onPicked?: (connections: NodeConnection[]) => void;
+  /** Picked connections cut with Delete or Backspace, as one edit; unset, each goes to `onBreak`. */
+  onBreakAll?: (connections: NodeConnection[]) => void;
+  /** Delete or Backspace with nodes picked: these nodes and these connections, as one edit. Unset, a node stays. */
+  onRemove?: (nodes: string[], connections: NodeConnection[]) => void;
+  /** A line dragged out of an unconnected picklist's input socket and let go on the bare canvas, at a place on the plane. */
   onCustom?: (to: string, at: { x: number; y: number }) => void;
   /** A line let go on the bare canvas from a socket of any type: "Add a node" opens there (D16). Where unset, the line goes nowhere. */
   onAdd?: (context: AddContext) => void;
@@ -188,7 +188,7 @@ type Field = HTMLElement & {
 /** The events a field says its change by: its own `change`, or a chip's pick. */
 const CHANGES = ['change', 'quick-filter-change'] as const;
 
-/** What a canvas has drawn: each node and row by its address, the lines, and the routes they draw. */
+/** What a canvas has drawn: each node and row by its address, the lines, and the connections they draw. */
 interface Drawn {
   /** The canvas it is drawn on. */
   canvas: SherpaLayoutCanvas;
@@ -206,23 +206,23 @@ interface Drawn {
   /** Where a node was when a drag last reported it, so a group moves by the delta. Cleared when the graph places it. */
   movedTo: Map<string, [number, number]>;
   lines: SVGSVGElement;
-  routes: readonly NodeRoute[];
+  connections: readonly NodeConnection[];
   /** The zip ties, and the one a click picked: Delete removes it, the arrow keys move it. */
   ties: readonly NodeTie[];
   selectedTie: string | null;
-  /** Each drawn route's points on the plane, for a tie's line to cross. */
-  lanes: { route: NodeRoute; dots: [number, number][] }[];
+  /** Each drawn connection's points on the plane, for a tie's line to cross. */
+  lanes: { connection: NodeConnection; dots: [number, number][] }[];
   /** The tie tool is on: a drag on the blank canvas ties what it crosses. */
   tying: boolean;
-  /** The line a reader is drawing, kept over each redraw of the routes. */
+  /** The line a reader is drawing, kept over each redraw of the connections. */
   draft: SVGPathElement | null;
-  /** The route whose end the reader holds: not drawn while it is. */
-  lifted: NodeRoute | null;
-  /** The routes picked, by a click or a box: Delete or Backspace breaks them, T ties them. */
-  picked: NodeRoute[];
+  /** The connection whose end the reader holds: not drawn while it is. */
+  lifted: NodeConnection | null;
+  /** The connections picked, by a click or a box: Delete or Backspace breaks them, T ties them. */
+  picked: NodeConnection[];
   /** The bend point picked (`index` in `via`): Delete removes it, the arrows move it. `proposed`: the mid-point dot
-   *  of an unbent route, in no `via` until an arrow moves it in at `index`. */
-  handle: { route: NodeRoute; index: number; proposed?: true } | null;
+   *  of an unbent connection, in no `via` until an arrow moves it in at `index`. */
+  handle: { connection: NodeConnection; index: number; proposed?: true } | null;
   /** The tie a dragged connector would join. */
   target: string | null;
   /** A drag just ended on a connector line: the click after it picks nothing. */
@@ -236,7 +236,7 @@ interface Drawn {
   /** Each frame drawn, by id, and the one picked. TODO 778 */
   frames: Map<string, HTMLElement>;
   selectedFrame: string | null;
-  /** The nodes drawn collapsed, and whether a collapsed node hides its unrouted sockets: the view's, never the graph's. */
+  /** The nodes drawn collapsed, and whether a collapsed node hides its unconnected sockets: the view's, never the graph's. */
   collapsed: Set<string>;
   hideUnconnected: boolean;
   /** The row whose field has focus, by its address: the nodes joined to it wear the active border. TODO 889 */
@@ -276,7 +276,7 @@ function put(el: Element, name: string, value: string | undefined): void {
 }
 
 /** A row's field: a switch, a menu of ticks, a select of its choices, or a text or number field.
- *  LOCKED — read only — where a route drives it, or nothing outside takes its change. */
+ *  LOCKED — read only — where a connection drives it, or nothing outside takes its change. */
 /** A row the graph feeds reads READ ONLY: the control's own look, not the inactive pin, and it takes no press or key. */
 function lock(field: Field, typed = false): void {
   field.setAttribute('readonly', '');
@@ -409,19 +409,19 @@ function read(field: Field, row: GraphRow): unknown {
   return row.control === 'switch' ? !!field.checked : row.multiple ? [...(field.values ?? [])] : field.value;
 }
 
-/** A graph's routed inputs and sending outputs, by address: worked out once a graph. */
-const routeSets = new WeakMap<DrawnGraph, { routed: Set<string>; sent: Set<string> }>();
-function routesOf(graph: DrawnGraph): { routed: Set<string>; sent: Set<string> } {
-  let sets = routeSets.get(graph);
-  if (!sets) routeSets.set(graph, (sets = { routed: new Set(graph.routes.map((r) => r.to)), sent: new Set(graph.routes.map((r) => r.from)) }));
+/** A graph's connected inputs and sending outputs, by address: worked out once a graph. */
+const connectionSets = new WeakMap<DrawnGraph, { connected: Set<string>; sent: Set<string> }>();
+function connectionsOf(graph: DrawnGraph): { connected: Set<string>; sent: Set<string> } {
+  let sets = connectionSets.get(graph);
+  if (!sets) connectionSets.set(graph, (sets = { connected: new Set(graph.connections.map((r) => r.to)), sent: new Set(graph.connections.map((r) => r.from)) }));
   return sets;
 }
 
 /** One node's rows, made again when their shape changed and given their values. */
 function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
   // Read once a draw, not once a node.
-  const { routed, sent } = routesOf(drawn.graph);
-  const locked = (row: GraphRow): boolean => !row.editable || routed.has(`${node.id}/${row.name}`);
+  const { connected, sent } = connectionsOf(drawn.graph);
+  const locked = (row: GraphRow): boolean => !row.editable || connected.has(`${node.id}/${row.name}`);
   const shape = JSON.stringify(node.rows.map((r) => [r.name, r.control, r.input, r.output, r.beside, locked(r), r.choices]));
   if (drawn.shapes.get(node.id) !== shape) {
     drawn.shapes.set(node.id, shape);
@@ -470,13 +470,13 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     if (!row.beside) put(line, 'data-input-socket', row.input);
     if (!worn.has(row.name) || row.beside) put(line, 'data-output-socket', row.output);
     if (!row.beside) line.toggleAttribute('data-input-many', !!row.many);
-    if (!row.beside) line.toggleAttribute('data-input-routed', routed.has(address));
-    if (!worn.has(row.name) || row.beside) line.toggleAttribute('data-output-routed', sent.has(address));
+    if (!row.beside) line.toggleAttribute('data-input-connected', connected.has(address));
+    if (!worn.has(row.name) || row.beside) line.toggleAttribute('data-output-connected', sent.has(address));
     const field = line.firstElementChild as Field | null;
     if (row.beside) continue;
     // Each socket's tip names its row and says its value: a collapsed node shows neither.
     put(line, 'data-socket-name', row.label);
-    put(line, 'data-socket-value', routed.has(address) ? undefined : valueWords(row));
+    put(line, 'data-socket-value', connected.has(address) ? undefined : valueWords(row));
     if (field) fill(field, row);
     // A row with no field says what it reads; one that reads null, only its name.
     else {
@@ -485,46 +485,46 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
       put(line, 'data-message', row.control === 'message' ? row.said ?? (typeof row.value === 'string' ? row.value : undefined) : undefined);
     }
   }
-  // A section with no socket: a collapsed node draws none of it; none a route joins: hiding the unconnected, none of it.
+  // A section with no socket: a collapsed node draws none of it; none a connection joins: hiding the unconnected, none of it.
   for (const box of el.querySelectorAll(':scope > .section')) {
     const rows = [...box.children];
     box.toggleAttribute('data-bare', !rows.some((r) => r.hasAttribute('data-input-socket') || r.hasAttribute('data-output-socket')));
-    box.toggleAttribute('data-unrouted', !rows.some((r) => r.hasAttribute('data-input-routed') || r.hasAttribute('data-output-routed')));
+    box.toggleAttribute('data-unconnected', !rows.some((r) => r.hasAttribute('data-input-connected') || r.hasAttribute('data-output-connected')));
   }
 }
 
 /**
  * A collapsed node's two stacks: each socket's place, in its order — the header's, then the rows', then a fork's False —
- * among all, and among the routed only; and each stack's counts. Written on the node and its rows.
+ * among all, and among the connected only; and each stack's counts. Written on the node and its rows.
  */
 function stackPlaces(el: HTMLElement, collapsed: boolean): void {
-  const at = { in: 0, out: 0, inRouted: 0, outRouted: 0 };
+  const at = { in: 0, out: 0, inConnected: 0, outConnected: 0 };
   if (el.hasAttribute('data-input-socket')) {
     at.in++;
-    if (el.hasAttribute('data-input-routed')) at.inRouted++;
+    if (el.hasAttribute('data-input-connected')) at.inConnected++;
   }
   if (el.hasAttribute('data-output-socket')) {
     at.out++;
-    if (el.hasAttribute('data-output-routed')) at.outRouted++;
+    if (el.hasAttribute('data-output-connected')) at.outConnected++;
   }
   for (const row of el.querySelectorAll<HTMLElement>('sherpa-node-row')) {
     row.toggleAttribute('data-collapsed', collapsed);
-    const side = (socket: string, routed: string, all: 'in' | 'out', only: 'inRouted' | 'outRouted', name: string): void => {
+    const side = (socket: string, connected: string, all: 'in' | 'out', only: 'inConnected' | 'outConnected', name: string): void => {
       const has = row.hasAttribute(socket);
       put(row, `data-${name}-at`, has ? String(at[all]++) : undefined);
-      put(row, `data-${name}-at-routed`, has && row.hasAttribute(routed) ? String(at[only]++) : undefined);
+      put(row, `data-${name}-at-connected`, has && row.hasAttribute(connected) ? String(at[only]++) : undefined);
     };
-    side('data-input-socket', 'data-input-routed', 'in', 'inRouted', 'input');
-    side('data-output-socket', 'data-output-routed', 'out', 'outRouted', 'output');
+    side('data-input-socket', 'data-input-connected', 'in', 'inConnected', 'input');
+    side('data-output-socket', 'data-output-connected', 'out', 'outConnected', 'output');
   }
   if (el.hasAttribute('data-branches')) {
     at.out++;
-    if (el.hasAttribute('data-false-routed')) at.outRouted++;
+    if (el.hasAttribute('data-false-connected')) at.outConnected++;
   }
   el.setAttribute('data-inputs', String(at.in));
   el.setAttribute('data-outputs', String(at.out));
-  el.setAttribute('data-inputs-routed', String(at.inRouted));
-  el.setAttribute('data-outputs-routed', String(at.outRouted));
+  el.setAttribute('data-inputs-connected', String(at.inConnected));
+  el.setAttribute('data-outputs-connected', String(at.outConnected));
 }
 
 /** A socket's middle, on the canvas's plane. */
@@ -532,18 +532,18 @@ function onPlane(canvas: SherpaLayoutCanvas, rect: DOMRect): [number, number] {
   return planeOf(canvas, { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 });
 }
 
-/** A tie's place as drawn: its x kept within the limit of its routes' nodes. Drawing never writes. */
+/** A tie's place as drawn: its x kept within the limit of its connections' nodes. Drawing never writes. */
 function tieX(drawn: Drawn, tie: NodeTie): number {
   const limit = tieLimit(drawn.graph, tie);
   return limit ? Math.min(limit.max, Math.max(limit.min, tie.x)) : tie.x;
 }
 
-/** The place a tie funnels its nth route through. */
+/** The place a tie funnels its nth connection through. */
 function slotOf(drawn: Drawn, tie: NodeTie, n: number): [number, number] {
-  return [tieX(drawn, tie), tie.y + (n - (tie.routes.length - 1) / 2) * TIE_GAP];
+  return [tieX(drawn, tie), tie.y + (n - (tie.connections.length - 1) / 2) * TIE_GAP];
 }
 
-/** The type a route carries, from its output socket: a row's, the header's (True, on a fork) or False. */
+/** The type a connection carries, from its output socket: a row's, the header's (True, on a fork) or False. */
 function outputType(graph: DrawnGraph, from: string): string {
   const { node: id, row } = socketOf(from);
   const node = graph.nodes.find((n) => n.id === id);
@@ -552,7 +552,7 @@ function outputType(graph: DrawnGraph, from: string): string {
   return node?.branches ? 'boolean' : node?.output ?? '';
 }
 
-/** The handles of one route: a dot at each bend point, and a proposed one at the middle of each piece, saved only once moved. They show on hover, and when the route or the handle is picked. */
+/** The handles of one connection: a dot at each bend point, and a proposed one at the middle of each piece, saved only once moved. They show on hover, and when the connection or the handle is picked. */
 function handleMarks(
   way: readonly { at: Pt; bend?: number }[], mids: readonly { at: Pt; insert: number }[], pick: Drawn['handle'],
 ): SVGElement[] {
@@ -610,59 +610,59 @@ function placeFrames(drawn: Drawn): void {
 }
 
 /** Draw the lines again, from where the sockets are drawn now: nodes moved by hand, not by a draw. With a graph, its
- *  routes and ties: a tie or a bend dragged, the nodes as they are. */
-function relayRoutes(canvas: SherpaLayoutCanvas, graph?: FramedGraph): void {
+ *  connections and ties: a tie or a bend dragged, the nodes as they are. */
+function relayConnections(canvas: SherpaLayoutCanvas, graph?: FramedGraph): void {
   const drawn = drawnOn.get(canvas);
   if (!drawn) return;
-  if (graph) [drawn.graph, drawn.routes, drawn.ties] = [graph, graph.routes, graph.ties ?? []];
-  drawRoutes(drawn);
+  if (graph) [drawn.graph, drawn.connections, drawn.ties] = [graph, graph.connections, graph.ties ?? []];
+  drawConnections(drawn);
 }
 
-/** A curve for each route, from its output socket to its input socket; the frames round their nodes first. */
-function drawRoutes(drawn: Drawn): void {
+/** A curve for each connection, from its output socket to its input socket; the frames round their nodes first. */
+function drawConnections(drawn: Drawn): void {
   placeFrames(drawn);
-  const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
+  const same = (a: NodeConnection | null, b: NodeConnection): boolean => !!a && a.from === b.from && a.to === b.to;
   const lanes: Drawn['lanes'] = [];
-  const paths = drawn.routes.flatMap((route) => {
-    const [from, to] = [socketPoint(drawn, route.from, 'output'), socketPoint(drawn, route.to, 'input')];
-    if (!from || !to || same(drawn.lifted, route)) return [];
+  const paths = drawn.connections.flatMap((connection) => {
+    const [from, to] = [socketPoint(drawn, connection.from, 'output'), socketPoint(drawn, connection.to, 'input')];
+    if (!from || !to || same(drawn.lifted, connection)) return [];
     // The ties it passes, or else the bend points it holds, left to right: a flat piece to each.
     const stops = drawn.ties.flatMap((tie) => {
-      const n = tie.routes.findIndex((r) => same(r, route));
+      const n = tie.connections.findIndex((r) => same(r, connection));
       return n < 0 ? [] : [slotOf(drawn, tie, n)];
     });
     // As drawn, the bends stay inside the end sockets: a node moved later never loops the line back. The saved list stays.
-    const way = waypointsOf(route.via && clampedVia(route.via, { from: from[0], to: to[0] }), stops);
+    const way = waypointsOf(connection.via && clampedVia(connection.via, { from: from[0], to: to[0] }), stops);
     const points = [from, ...way.map((w) => w.at), to];
     const soft = way.some((w) => w.bend !== undefined);
     const path = document.createElementNS(SVG, 'path');
     path.setAttribute('d', pathThrough(points, soft));
-    path.dataset['type'] = outputType(drawn.graph, route.from);
-    path.dataset['from'] = route.from;
-    path.dataset['to'] = route.to;
-    if (drawn.picked.some((r) => same(r, route))) path.setAttribute('data-selected', '');
+    path.dataset['type'] = outputType(drawn.graph, connection.from);
+    path.dataset['from'] = connection.from;
+    path.dataset['to'] = connection.to;
+    if (drawn.picked.some((r) => same(r, connection))) path.setAttribute('data-selected', '');
     // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
     const hit = document.createElementNS(SVG, 'polyline');
     const dots = dotsThrough(points, soft);
-    lanes.push({ route, dots });
+    lanes.push({ connection, dots });
     hit.setAttribute('points', dots.map(([x, y]) => `${x},${y}`).join(' '));
     hit.setAttribute('class', 'graph-hit');
     hit.setAttribute('style', 'stroke: transparent; stroke-width: 14px; pointer-events: stroke; cursor: pointer');
-    hit.dataset['from'] = route.from;
-    hit.dataset['to'] = route.to;
+    hit.dataset['from'] = connection.from;
+    hit.dataset['to'] = connection.to;
     const group = document.createElementNS(SVG, 'g');
-    group.setAttribute('class', 'graph-route');
-    group.dataset['from'] = route.from;
-    group.dataset['to'] = route.to;
-    const mine = drawn.handle && same(drawn.handle.route, route) ? drawn.handle : null;
-    if (mine || drawn.picked.some((r) => same(r, route))) group.setAttribute('data-active', '');
+    group.setAttribute('class', 'graph-connector');
+    group.dataset['from'] = connection.from;
+    group.dataset['to'] = connection.to;
+    const mine = drawn.handle && same(drawn.handle.connection, connection) ? drawn.handle : null;
+    if (mine || drawn.picked.some((r) => same(r, connection))) group.setAttribute('data-active', '');
     group.append(path, hit, ...handleMarks(way, handlesOf(from, to, way), mine));
     return [group];
   });
   drawn.lanes = lanes;
   const bars = drawn.ties.map((tie) => {
     const [x, y] = slotOf(drawn, tie, 0);
-    const high = (tie.routes.length - 1) * TIE_GAP + 16;
+    const high = (tie.connections.length - 1) * TIE_GAP + 16;
     const bar = document.createElementNS(SVG, 'rect');
     for (const [k, v] of Object.entries({ x: x - 2, y: y - 8, width: 4, height: high, rx: 2, class: 'graph-tie' })) bar.setAttribute(k, String(v));
     const base = 'fill: var(--sherpa-style-border-base, #b3b3c3); stroke: none';
@@ -685,12 +685,12 @@ function drawRoutes(drawn: Drawn): void {
   });
   keepOrder(drawn.lines, [...fresh, ...(drawn.draft ? [drawn.draft] : [])], true);
   fitLines(drawn);
-  // A route picked, or let go: what it joins wears the active border, or no longer.
+  // A connection picked, or let go: what it joins wears the active border, or no longer.
   markJoined(drawn);
 }
 
 /**
- * The lines' own box: round every route, tie and handle — and, while a line is drawn by hand, the whole view — so a canvas
+ * The lines' own box: round every connection, tie and handle — and, while a line is drawn by hand, the whole view — so a canvas
  * that draws the lines as one element draws them all (a 1px box drew none). Their coordinates stay the plane's: a viewBox
  * at the box. Plan 852 step 4.
  */
@@ -700,7 +700,7 @@ function fitLines(drawn: Drawn): void {
   for (const tie of drawn.ties) {
     const [x, y] = slotOf(drawn, tie, 0);
     xs.push(x);
-    ys.push(y - TIE_GAP, y + tie.routes.length * TIE_GAP);
+    ys.push(y - TIE_GAP, y + tie.connections.length * TIE_GAP);
   }
   if (drawn.draft) {
     const { x, y, zoom } = drawn.canvas.view;
@@ -757,7 +757,7 @@ function socketNear(drawn: Drawn, side: 'input' | 'output', x: number, y: number
   return best?.[0] ?? null;
 }
 
-/** Whether an input is a picklist a Value node may be routed into (D7): a row, one value in. */
+/** Whether an input is a picklist a Value node may be connected to (D7): a row, one value in. */
 function takesCustom(drawn: Drawn, address: string): boolean {
   const { node, row: name } = socketOf(address);
   const row = name === undefined ? undefined : drawn.graph.nodes.find((n) => n.id === node)?.rows.find((r) => r.name === name);
@@ -765,10 +765,10 @@ function takesCustom(drawn: Drawn, address: string): boolean {
 }
 
 /**
- * A press on a socket draws a line. From an OUTPUT, a new route: let go on an input socket and
- * the host is asked to join them. On a ROUTED input, its end comes up (TODO 557): let go on
- * another input socket, the route moves there; on the bare canvas it breaks (558); where it
- * began, nothing. On an UNROUTED picklist's input, the line runs the other way: let go on an
+ * A press on a socket draws a line. From an OUTPUT, a new connection: let go on an input socket and
+ * the host is asked to join them. On a CONNECTED input, its end comes up (TODO 557): let go on
+ * another input socket, the connection moves there; on the bare canvas it breaks (558); where it
+ * began, nothing. On an UNCONNECTED picklist's input, the line runs the other way: let go on an
  * output, they join; on the bare canvas, a Value node is made there. It never moves the
  * node or the view.
  */
@@ -784,7 +784,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   if (!owner || !own) return;
   const fork = hit.classList.contains('socket-false');
   // What the line is joined to at its start: the output it leaves, or the input it runs back to.
-  const lifting = out ? undefined : drawn.routes.findLast((r) => r.to === own);
+  const lifting = out ? undefined : drawn.connections.findLast((r) => r.to === own);
   if (!out && !lifting && !takesCustom(drawn, own) && !(drawn.options.onAdd && typeAt(drawn, own, 'input'))) return;
   const from = out ? (fork ? `${own}/${FALSE_SOCKET}` : wornAs(own)) : lifting?.from;
   const start = out ? (owner as HasSockets).socketRect?.(fork ? 'false' : 'output') : lifting ? socketAt(drawn, lifting.from, 'output') : (owner as HasSockets).socketRect?.('input');
@@ -801,7 +801,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   reveal(true);
   drawn.lines.append(draft);
   fitLines(drawn);
-  if (lifting) drawRoutes(drawn);
+  if (lifting) drawConnections(drawn);
   const begin = onPlane(canvas, start);
   const follow = (e: PointerEvent): void => {
     draft.setAttribute('d', out || lifting ? pathThrough([begin, planeOf(canvas, e)]) : pathThrough([planeOf(canvas, e), begin]));
@@ -822,7 +822,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
     reveal(false);
     drawn.draft = null;
     drawn.lifted = null;
-    drawRoutes(drawn);
+    drawConnections(drawn);
     if (e.type !== 'pointerup') return;
     const onNode = e.composedPath().some((n) => n instanceof HTMLElement && addressOf(drawn, n) !== null);
     const bare = !onNode && !socketNear(drawn, 'input', e.clientX, e.clientY) && !socketNear(drawn, 'output', e.clientX, e.clientY);
@@ -833,7 +833,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
       else if (bare && from) addFrom(from, 'out', e);
     } else if (lifting) {
       const to = socketNear(drawn, 'input', e.clientX, e.clientY);
-      if (to && to !== lifting.to && socketOf(to).node !== socketOf(lifting.from).node) drawn.options.onReroute?.(lifting, { from: lifting.from, to });
+      if (to && to !== lifting.to && socketOf(to).node !== socketOf(lifting.from).node) drawn.options.onReconnect?.(lifting, { from: lifting.from, to });
       else if (bare) drawn.options.onBreak?.(lifting);
     } else {
       const source = socketNear(drawn, 'output', e.clientX, e.clientY);
@@ -866,27 +866,27 @@ function crossing([ax, ay]: [number, number], [bx, by]: [number, number], [cx, c
   return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [ax + t * (bx - ax), ay + t * (by - ay)] : undefined;
 }
 
-/** A route picked by a click: alone, or with Shift added to the pick or taken off it. Delete or Backspace then breaks it. */
-function pickRoute(canvas: SherpaLayoutCanvas, drawn: Drawn, route: NodeRoute, shift: boolean): void {
-  const held = drawn.picked.some((r) => r.from === route.from && r.to === route.to);
+/** A connection picked by a click: alone, or with Shift added to the pick or taken off it. Delete or Backspace then breaks it. */
+function pickConnection(canvas: SherpaLayoutCanvas, drawn: Drawn, connection: NodeConnection, shift: boolean): void {
+  const held = drawn.picked.some((r) => r.from === connection.from && r.to === connection.to);
   if (drawn.handle) drawn.options.onBendPicked?.(null);
   drawn.handle = null;
-  drawn.picked = shift ? (held ? drawn.picked.filter((r) => r.from !== route.from || r.to !== route.to) : [...drawn.picked, route]) : [route];
+  drawn.picked = shift ? (held ? drawn.picked.filter((r) => r.from !== connection.from || r.to !== connection.to) : [...drawn.picked, connection]) : [connection];
   drawn.selectedTie = null;
   unpickFrame(drawn);
-  drawRoutes(drawn);
+  drawConnections(drawn);
   drawn.options.onPicked?.(drawn.picked);
   // The canvas's own keys hear the break.
   canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
 }
 
-/** The route a handle or a line belongs to, from its group. */
-function routeOf(el: Element): NodeRoute | undefined {
-  const group = el.closest<SVGElement>('g.graph-route');
+/** The connection a handle or a line belongs to, from its group. */
+function connectionOf(el: Element): NodeConnection | undefined {
+  const group = el.closest<SVGElement>('g.graph-connector');
   return group ? { from: group.dataset['from']!, to: group.dataset['to']! } : undefined;
 }
 
-/** Pick a handle, or none; the picked routes and tie let go. The editor is told. */
+/** Pick a handle, or none; the picked connections and tie let go. The editor is told. */
 function pickHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, handle: Drawn['handle']): void {
   drawn.handle = handle;
   if (handle) {
@@ -894,8 +894,8 @@ function pickHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, handle: Drawn['han
     drawn.picked = [];
     drawn.options.onPicked?.([]);
   }
-  drawRoutes(drawn);
-  drawn.options.onBendPicked?.(handle && !handle.proposed ? { route: handle.route, index: handle.index } : null);
+  drawConnections(drawn);
+  drawn.options.onBendPicked?.(handle && !handle.proposed ? { connection: handle.connection, index: handle.index } : null);
   if (handle) canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
 }
 
@@ -905,9 +905,9 @@ function pickHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, handle: Drawn['han
  */
 function dragHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, grab: SVGElement, down: PointerEvent): void {
   const handle = grab.closest<SVGElement>('.graph-handle');
-  const route = handle && routeOf(handle);
-  const held = route && drawn.routes.find((r) => r.from === route.from && r.to === route.to);
-  if (!handle || !route || !held) return;
+  const connection = handle && connectionOf(handle);
+  const held = connection && drawn.connections.find((r) => r.from === connection.from && r.to === connection.to);
+  if (!handle || !connection || !held) return;
   down.preventDefault();
   down.stopPropagation();
   const mid = handle.dataset['mid'] !== undefined;
@@ -920,8 +920,8 @@ function dragHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, grab: SVGElement, 
     if (!moved && Math.hypot(e.clientX - down.clientX, e.clientY - down.clientY) < 4) return;
     moved = true;
     const [x, y] = planeOf(canvas, e);
-    drawn.handle = { route, index: at };
-    drawn.options.onBend?.(route, at, x, y, insert, drag);
+    drawn.handle = { connection, index: at };
+    drawn.options.onBend?.(connection, at, x, y, insert, drag);
     insert = false;
   };
   const stop = (e: PointerEvent): void => {
@@ -931,8 +931,8 @@ function dragHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, grab: SVGElement, 
     if (e.type !== 'pointerup') return;
     if (moved) pickHandle(canvas, drawn, drawn.handle);
     // A click on a bend point picks it; on a middle nothing has moved from, it is a click on the line.
-    else if (mid) pickRoute(canvas, drawn, route, e.shiftKey);
-    else pickHandle(canvas, drawn, { route, index: at });
+    else if (mid) pickConnection(canvas, drawn, connection, e.shiftKey);
+    else pickHandle(canvas, drawn, { connection, index: at });
   };
   window.addEventListener('pointermove', follow);
   window.addEventListener('pointerup', stop);
@@ -941,11 +941,11 @@ function dragHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, grab: SVGElement, 
 
 /**
  * A press on a connector's line. A click picks it. Dragged past 4px, a ghost line follows and the
- * tie under the pointer lights; let go there, the route joins that tie; anywhere else, nothing
+ * tie under the pointer lights; let go there, the connection joins that tie; anywhere else, nothing
  * moves. TODO 744
  */
 function dragLine(canvas: SherpaLayoutCanvas, drawn: Drawn, line: Element, down: PointerEvent): void {
-  const route = { from: (line as SVGElement).dataset['from']!, to: (line as SVGElement).dataset['to']! };
+  const connection = { from: (line as SVGElement).dataset['from']!, to: (line as SVGElement).dataset['to']! };
   const begin = planeOf(canvas, down);
   let ghost: SVGPathElement | null = null;
   const tieAt = (e: PointerEvent): string | null => {
@@ -981,8 +981,8 @@ function dragLine(canvas: SherpaLayoutCanvas, drawn: Drawn, line: Element, down:
     setTimeout(() => { drawn.dragged = false; });
     const target = e.type === 'pointerup' ? tieAt(e) : null;
     drawn.target = null;
-    drawRoutes(drawn);
-    if (target) drawn.options.onTieDrop?.(target, route);
+    drawConnections(drawn);
+    if (target) drawn.options.onTieDrop?.(target, connection);
   };
   window.addEventListener('pointermove', follow);
   window.addEventListener('pointerup', stop);
@@ -998,7 +998,7 @@ function dragTie(canvas: SherpaLayoutCanvas, drawn: Drawn, id: string, down: Poi
   drawn.selectedTie = id;
   drawn.picked = [];
   unpickFrame(drawn);
-  drawRoutes(drawn);
+  drawConnections(drawn);
   canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   const [px, py] = planeOf(canvas, down);
   const [x0, y0] = [tieX(drawn, tie), tie.y];
@@ -1016,7 +1016,7 @@ function dragTie(canvas: SherpaLayoutCanvas, drawn: Drawn, id: string, down: Poi
   window.addEventListener('pointercancel', stop);
 }
 
-/** With the tie tool on, a line dragged on the blank canvas: each route it crosses is tied, top to bottom. */
+/** With the tie tool on, a line dragged on the blank canvas: each connection it crosses is tied, top to bottom. */
 function lineTie(canvas: SherpaLayoutCanvas, drawn: Drawn, down: PointerEvent): void {
   down.preventDefault();
   down.stopPropagation();
@@ -1039,16 +1039,16 @@ function lineTie(canvas: SherpaLayoutCanvas, drawn: Drawn, down: PointerEvent): 
     drawn.draft = null;
     if (e.type !== 'pointerup') return;
     const end = planeOf(canvas, e);
-    const hits = drawn.lanes.flatMap(({ route, dots }) => {
+    const hits = drawn.lanes.flatMap(({ connection, dots }) => {
       for (let i = 1; i < dots.length; i++) {
         const at = crossing(begin, end, dots[i - 1]!, dots[i]!);
-        if (at) return [{ route, at }];
+        if (at) return [{ connection, at }];
       }
       return [];
     }).sort((a, b) => a.at[1] - b.at[1]);
     if (!hits.length) return;
     const mean = (n: 0 | 1): number => Math.round(hits.reduce((sum, h) => sum + h.at[n], 0) / hits.length);
-    drawn.options.onTie?.(hits.map((h) => h.route), { x: mean(0), y: mean(1) });
+    drawn.options.onTie?.(hits.map((h) => h.connection), { x: mean(0), y: mean(1) });
   };
   window.addEventListener('pointermove', follow);
   window.addEventListener('pointerup', stop);
@@ -1090,29 +1090,29 @@ function ghostOf(canvas: SherpaLayoutCanvas, ids: readonly string[]): { move(dx:
   };
 }
 
-/** Where routes would be tied with no pointer: the middle of the way each takes, on the plane. */
-export function tieSpot(canvas: SherpaLayoutCanvas, routes: readonly NodeRoute[]): { x: number; y: number } {
-  const lanes = (drawnOn.get(canvas)?.lanes ?? []).filter((l) => routes.some((r) => r.from === l.route.from && r.to === l.route.to));
+/** Where connections would be tied with no pointer: the middle of the way each takes, on the plane. */
+export function tieSpot(canvas: SherpaLayoutCanvas, connections: readonly NodeConnection[]): { x: number; y: number } {
+  const lanes = (drawnOn.get(canvas)?.lanes ?? []).filter((l) => connections.some((r) => r.from === l.connection.from && r.to === l.connection.to));
   const ends = lanes.map((l) => [l.dots[0]!, l.dots.at(-1)!] as const);
   const mean = (n: 0 | 1): number => (ends.length ? Math.round(ends.reduce((sum, [a, b]) => sum + (a[n] + b[n]) / 2, 0) / ends.length) : 0);
   return { x: mean(0), y: mean(1) };
 }
 
-/** Clear what is picked: every node, and every route. */
+/** Clear what is picked: every node, and every connection. */
 function deselect(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   markNode(canvas, null);
-  unpickRoutes(drawn);
+  unpickConnections(drawn);
   drawn.options.onDeselect?.();
 }
 
-/** No route, tie or bend picked; the editor is told, where any was. */
-function unpickRoutes(drawn: Drawn): void {
+/** No connection, tie or bend picked; the editor is told, where any was. */
+function unpickConnections(drawn: Drawn): void {
   if (!drawn.picked.length && !drawn.selectedTie && !drawn.handle) return;
   drawn.picked = [];
   drawn.selectedTie = null;
   if (drawn.handle) drawn.options.onBendPicked?.(null);
   drawn.handle = null;
-  drawRoutes(drawn);
+  drawConnections(drawn);
   drawn.options.onPicked?.([]);
 }
 
@@ -1136,7 +1136,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   if (drawn) return drawn;
   // The lines, under the nodes: one SVG at the plane's origin that draws past its box.
   const lines = document.createElementNS(SVG, 'svg');
-  lines.setAttribute('class', 'graph-routes');
+  lines.setAttribute('class', 'graph-connectors');
   lines.setAttribute('width', '1');
   lines.setAttribute('height', '1');
   lines.setAttribute('aria-hidden', 'true');
@@ -1144,20 +1144,20 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     + ' stroke: var(--sherpa-style-border-base, #b3b3c3); stroke-width: 2px');
   canvas.prepend(lines);
   const made: Drawn = {
-    canvas, graph: { nodes: [], routes: [] }, options: {},
+    canvas, graph: { nodes: [], connections: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), beside: new Map(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
-    lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
+    lines, connections: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
     frames: new Map(), selectedFrame: null, collapsed: new Set(), hideUnconnected: false, focusRow: null,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
-      drawRoutes(made);
+      drawConnections(made);
       if (!made.fitted && made.nodes.size) { made.fitted = true; canvas.fit(); }
     }),
   };
   canvas.addEventListener('node-move', (event) => {
     const node = nodeOf(made, event.target);
     const { x, y } = (event as CustomEvent<{ x: number; y: number }>).detail;
-    if (!node) return drawRoutes(made);
+    if (!node) return drawConnections(made);
     const group = pickedNodes(canvas);
     // A drag on a node outside the pick picks only it, as a click would.
     if (group.length && !group.includes(node.id) && made.options.onSelect) {
@@ -1180,11 +1180,11 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
         el.setAttribute('data-y', String(to[1]));
         moves.push({ id, x: to[0], y: to[1] });
       }
-      drawRoutes(made);
+      drawConnections(made);
       made.options.onMoveMany(moves);
       return;
     }
-    drawRoutes(made);
+    drawConnections(made);
     made.options.onMove?.(node, x, y);
   });
   // A double click on a node's header collapses or expands it, unless it opens (a Custom Node's use).
@@ -1216,7 +1216,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       made.nodes.get(m.id)?.setAttribute('data-x', String(m.x));
       made.nodes.get(m.id)?.setAttribute('data-y', String(m.y));
     }
-    drawRoutes(made);
+    drawConnections(made);
     const only = moves.length === 1 ? made.graph.nodes.find((n) => n.id === moves[0]!.id) : undefined;
     if (only) made.options.onMove?.(only, moves[0]!.x, moves[0]!.y);
     else made.options.onMoveMany?.(moves);
@@ -1224,13 +1224,13 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     event.stopPropagation();
   }, { capture: true });
   canvas.addEventListener('node-resize', (event) => {
-    drawRoutes(made);
+    drawConnections(made);
     const node = nodeOf(made, event.target);
     if (node) made.options.onResize?.(node, (event as CustomEvent<NodeSize>).detail);
   });
-  // Before the node and the view hear it: a drag from an output socket is a new route.
+  // Before the node and the view hear it: a drag from an output socket is a new connection.
   canvas.addEventListener('pointerdown', (event) => connectFrom(canvas, made, event), { capture: true });
-  // A tie is dragged; with the tool on, a line on the blank canvas ties the routes it crosses. TODO 562
+  // A tie is dragged; with the tool on, a line on the blank canvas ties the connections it crosses. TODO 562
   canvas.addEventListener('pointerdown', (down) => {
     const first = down.composedPath()[0];
     if (down.button !== 0 || !(first instanceof Element)) return;
@@ -1252,44 +1252,44 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', up);
   }, { capture: true });
-  // A click on a route picks it; Delete or Backspace breaks it. TODO 558
+  // A click on a connection picks it; Delete or Backspace breaks it. TODO 558
   lines.addEventListener('click', (event) => {
     const hit = event.target instanceof SVGElement && event.target.classList.contains('graph-hit') ? event.target : null;
     if (!hit || made.dragged) return;
-    pickRoute(canvas, made, { from: hit.dataset['from']!, to: hit.dataset['to']! }, event.shiftKey);
+    pickConnection(canvas, made, { from: hit.dataset['from']!, to: hit.dataset['to']! }, event.shiftKey);
   });
   // A picked bend point: Delete removes it, the arrows move it (8px, 32 with Shift), Escape lets go. With a
   // connector picked, B picks its first bend point, or its proposed middle dot, which the first arrow moves in;
   // on a tied connector, its first tie. TODO 744, 754
   canvas.addEventListener('keydown', (event) => {
     if (event.target !== canvas || event.ctrlKey || event.metaKey || event.altKey) return;
-    const route = made.handle?.route ?? (event.code === 'KeyB' ? made.picked[0] : undefined);
-    const held = route && made.routes.find((r) => r.from === route.from && r.to === route.to);
-    if (!route || !held) return;
+    const connection = made.handle?.connection ?? (event.code === 'KeyB' ? made.picked[0] : undefined);
+    const held = connection && made.connections.find((r) => r.from === connection.from && r.to === connection.to);
+    if (!connection || !held) return;
     const step = event.shiftKey ? 32 : 8;
     const by: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
     const pick = made.handle;
     const bend = pick && !pick.proposed ? held.via?.[pick.index] : undefined;
-    const tie = made.ties.filter((t) => t.routes.some((r) => r.from === route.from && r.to === route.to)).sort((a, b) => tieX(made, a) - tieX(made, b))[0];
+    const tie = made.ties.filter((t) => t.connections.some((r) => r.from === connection.from && r.to === connection.to)).sort((a, b) => tieX(made, a) - tieX(made, b))[0];
     if (event.code === 'KeyB' && tie) {
       made.picked = [];
       made.selectedTie = tie.id;
       pickHandle(canvas, made, null);
       made.options.onPicked?.([]);
-    } else if (event.code === 'KeyB') pickHandle(canvas, made, held.via?.length ? { route, index: 0 } : { route, index: 0, proposed: true });
+    } else if (event.code === 'KeyB') pickHandle(canvas, made, held.via?.length ? { connection, index: 0 } : { connection, index: 0, proposed: true });
     else if (event.key === 'Escape' && pick) pickHandle(canvas, made, null);
     else if ((event.key === 'Delete' || event.key === 'Backspace') && pick) {
-      if (bend) made.options.onUnbend?.(route, pick.index);
+      if (bend) made.options.onUnbend?.(connection, pick.index);
       pickHandle(canvas, made, null);
     } else if (bend && by[event.key]) {
-      made.options.onBend?.(route, pick!.index, bend.x + by[event.key]![0], bend.y + by[event.key]![1], false, 0);
+      made.options.onBend?.(connection, pick!.index, bend.x + by[event.key]![0], bend.y + by[event.key]![1], false, 0);
     } else if (pick?.proposed && by[event.key]) {
       // Moved by the reader: the proposed dot is a bend point now, from where it was drawn.
-      const lane = made.lanes.find((l) => l.route.from === route.from && l.route.to === route.to);
+      const lane = made.lanes.find((l) => l.connection.from === connection.from && l.connection.to === connection.to);
       const [a, b] = [lane?.dots[0], lane?.dots.at(-1)];
       if (!a || !b) return;
-      made.options.onBend?.(route, pick.index, (a[0] + b[0]) / 2 + by[event.key]![0], (a[1] + b[1]) / 2 + by[event.key]![1], true, 0);
-      pickHandle(canvas, made, { route, index: pick.index });
+      made.options.onBend?.(connection, pick.index, (a[0] + b[0]) / 2 + by[event.key]![0], (a[1] + b[1]) / 2 + by[event.key]![1], true, 0);
+      pickHandle(canvas, made, { connection, index: pick.index });
     } else return;
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -1316,17 +1316,17 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     if (event.key === 'Escape') {
       deselect(canvas, made);
     } else if (remove) {
-      const routes = made.picked;
+      const connections = made.picked;
       made.picked = [];
-      if (ids.length) made.options.onRemove!(ids, routes);
-      else if (routes.length > 1 && made.options.onBreakAll) made.options.onBreakAll(routes);
-      else for (const route of routes) made.options.onBreak?.(route);
-      drawRoutes(made);
+      if (ids.length) made.options.onRemove!(ids, connections);
+      else if (connections.length > 1 && made.options.onBreakAll) made.options.onBreakAll(connections);
+      else for (const connection of connections) made.options.onBreak?.(connection);
+      drawConnections(made);
       made.options.onPicked?.([]);
     } else return;
     event.preventDefault();
   });
-  // With no pointer: C picks the routes of the picked nodes — or of the node the keys are on; Shift+C adds
+  // With no pointer: C picks the connections of the picked nodes — or of the node the keys are on; Shift+C adds
   // them to the pick, Alt+C takes them off it (TODO 735, 739).
   canvas.addEventListener('keydown', (event) => {
     const first = event.composedPath()[0];
@@ -1334,26 +1334,26 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
     const own = event.composedPath().find((n): n is HTMLElement => n instanceof HTMLElement && n.localName === 'sherpa-node');
     const held = [...made.nodes].filter(([, el]) => el.hasAttribute('data-current') || el === own).map(([id]) => id);
-    const routes = made.routes.filter((r) => held.includes(socketOf(r.from).node) || held.includes(socketOf(r.to).node));
-    if (!routes.length) return;
-    const has = (r: NodeRoute): boolean => routes.some((x) => x.from === r.from && x.to === r.to);
-    const mine = routes.map(({ from, to }) => ({ from, to }));
+    const connections = made.connections.filter((r) => held.includes(socketOf(r.from).node) || held.includes(socketOf(r.to).node));
+    if (!connections.length) return;
+    const has = (r: NodeConnection): boolean => connections.some((x) => x.from === r.from && x.to === r.to);
+    const mine = connections.map(({ from, to }) => ({ from, to }));
     made.picked = event.altKey ? made.picked.filter((r) => !has(r)) : event.shiftKey ? [...made.picked.filter((r) => !has(r)), ...mine] : mine;
     made.selectedTie = null;
-    drawRoutes(made);
+    drawConnections(made);
     made.options.onPicked?.(made.picked);
     event.preventDefault();
     event.stopPropagation();
   });
-  // A box dragged on the blank canvas: plain, the nodes it encloses or else the routes it crosses; Shift adds
+  // A box dragged on the blank canvas: plain, the nodes it encloses or else the connections it crosses; Shift adds
   // both kinds; Ctrl takes both kinds off the pick. TODO 735, 739
   canvas.setAttribute('data-select-box', '');
   canvas.addEventListener('canvas-box', (event) => {
     const { mode, ...box } = (event as CustomEvent<PickBox & { mode: BoxMode }>).detail;
     const boxes = [...made.nodes].map(([id, el]) => [id, boxOf(el)] as const);
-    const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
+    const same = (a: NodeConnection, b: NodeConnection): boolean => a.from === b.from && a.to === b.to;
     let ids: Set<string>;
-    let hit: { nodes: string[]; routes: NodeRoute[] };
+    let hit: { nodes: string[]; connections: NodeConnection[] };
     if (mode === 'replace') {
       hit = boxPick(box, boxes, made.lanes);
       ids = new Set(hit.nodes);
@@ -1362,16 +1362,16 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       const held = new Set(currentOf(made.nodes));
       if (mode === 'add') {
         ids = new Set([...held, ...cover.nodes]);
-        hit = { nodes: [...ids], routes: [...made.picked, ...cover.routes.filter((r) => !made.picked.some((p) => same(p, r)))] };
+        hit = { nodes: [...ids], connections: [...made.picked, ...cover.connections.filter((r) => !made.picked.some((p) => same(p, r)))] };
       } else {
         ids = new Set([...held].filter((id) => !cover.nodes.includes(id)));
-        hit = { nodes: [...ids], routes: made.picked.filter((p) => !cover.routes.some((r) => same(p, r))) };
+        hit = { nodes: [...ids], connections: made.picked.filter((p) => !cover.connections.some((r) => same(p, r))) };
       }
     }
-    made.picked = hit.routes.map(({ from, to }) => ({ from, to }));
+    made.picked = hit.connections.map(({ from, to }) => ({ from, to }));
     made.selectedTie = null;
     markNodes(canvas, ids);
-    drawRoutes(made);
+    drawConnections(made);
     if (ids.size || made.picked.length) made.options.onBox?.([...ids]);
     else deselect(canvas, made);
     made.options.onPicked?.(made.picked);
@@ -1413,7 +1413,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       m.el.setAttribute('data-x', String(m.x));
       m.el.setAttribute('data-y', String(m.y));
     }
-    drawRoutes(made);
+    drawConnections(made);
     if (moves.length === 1) made.options.onMove?.(moves[0]!.node, moves[0]!.x, moves[0]!.y);
     else if (moves.length) made.options.onMoveMany?.(moves.map(({ id, x, y }) => ({ id, x, y })));
   });
@@ -1445,7 +1445,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
 }
 
 /** Draw a graph on a canvas: each node by id, at its place when the graph's place for it
- *  moved — else where the reader left it; then its routes. */
+ *  moved — else where the reader left it; then its connections. */
 export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, options: DrawOptions = {}): void {
   const drawn = drawnFor(canvas);
   drawn.graph = graph;
@@ -1493,9 +1493,9 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     put(el, 'data-scale-w', node.size ? String(node.size.w) : undefined);
     put(el, 'data-scale-h', node.size ? String(node.size.h) : undefined);
     el.toggleAttribute('data-branches', !!node.branches);
-    el.toggleAttribute('data-input-routed', graph.routes.some((r) => r.to === node.id));
-    el.toggleAttribute('data-output-routed', graph.routes.some((r) => r.from === node.id));
-    el.toggleAttribute('data-false-routed', graph.routes.some((r) => r.from === `${node.id}/${FALSE_SOCKET}`));
+    el.toggleAttribute('data-input-connected', graph.connections.some((r) => r.to === node.id));
+    el.toggleAttribute('data-output-connected', graph.connections.some((r) => r.from === node.id));
+    el.toggleAttribute('data-false-connected', graph.connections.some((r) => r.from === `${node.id}/${FALSE_SOCKET}`));
     el.toggleAttribute('data-collapsed', drawn.collapsed.has(node.id));
     // What its first field holds, in words: a collapsed node's name ends with it.
     const first = node.rows.find((r) => r.control && !r.beside);
@@ -1526,20 +1526,20 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     el.toggleAttribute('data-locked', !options.onRelease);
   }
   placeFrames(drawn);
-  drawn.routes = graph.routes;
+  drawn.connections = graph.connections;
   drawn.ties = graph.ties ?? [];
   drawn.tying = !!options.tying;
   if (drawn.selectedTie && !drawn.ties.some((t) => t.id === drawn.selectedTie)) drawn.selectedTie = null;
-  const held = drawn.handle && graph.routes.find((r) => r.from === drawn.handle!.route.from && r.to === drawn.handle!.route.to);
-  const tied = !!held && drawn.ties.some((t) => t.routes.some((r) => r.from === held.from && r.to === held.to));
+  const held = drawn.handle && graph.connections.find((r) => r.from === drawn.handle!.connection.from && r.to === drawn.handle!.connection.to);
+  const tied = !!held && drawn.ties.some((t) => t.connections.some((r) => r.from === held.from && r.to === held.to));
   if (drawn.handle && (tied || !(drawn.handle.proposed ? held && !held.via?.length : held?.via?.[drawn.handle.index]))) drawn.handle = null;
-  const left = drawn.picked.filter((p) => graph.routes.some((r) => r.from === p.from && r.to === p.to));
+  const left = drawn.picked.filter((p) => graph.connections.some((r) => r.from === p.from && r.to === p.to));
   if (left.length !== drawn.picked.length) {
     drawn.picked = left;
     options.onPicked?.(left);
   }
   linkPortals(drawn);
-  requestAnimationFrame(() => drawRoutes(drawn));
+  requestAnimationFrame(() => drawConnections(drawn));
 }
 
 /** Each portal of a picked portal's name, lit as picked is (`data-linked`): In and Out alike. TODO 779 */
@@ -1553,20 +1553,20 @@ function linkPortals(drawn: Drawn | undefined): void {
 
 /**
  * The ACTIVE border on what is joined to the pick (`data-joined`): every node downstream of a picked node, each node a
- * picked route joins, and each node joined to the row whose field has focus (its output drawn on another row's, too). A
+ * picked connection joins, and each node joined to the row whose field has focus (its output drawn on another row's, too). A
  * picked node wears the picked look instead. Will, TODO 889
  */
 function markJoined(drawn: Drawn | undefined): void {
   if (!drawn) return;
   const picked = new Set(currentOf(drawn.nodes));
-  const joined = downstreamOf(drawn.routes, picked);
-  for (const route of drawn.picked) for (const end of [route.from, route.to]) joined.add(socketOf(end).node);
+  const joined = downstreamOf(drawn.connections, picked);
+  for (const connection of drawn.picked) for (const end of [connection.from, connection.to]) joined.add(socketOf(end).node);
   const focus = drawn.focusRow;
   if (focus) {
     const rows = new Set([focus, ...[...drawn.beside].flatMap(([row, wears]) => (wears === focus ? [row] : []))]);
-    for (const route of drawn.routes) {
-      if (rows.has(route.to)) joined.add(socketOf(route.from).node);
-      if (rows.has(route.from)) joined.add(socketOf(route.to).node);
+    for (const connection of drawn.connections) {
+      if (rows.has(connection.to)) joined.add(socketOf(connection.from).node);
+      if (rows.has(connection.from)) joined.add(socketOf(connection.to).node);
     }
   }
   for (const [id, el] of drawn.nodes) {
@@ -1592,13 +1592,13 @@ function unpickFrame(drawn: Drawn | undefined): void {
   for (const el of drawn.frames.values()) el.removeAttribute('data-current');
 }
 
-/** Mark one frame as the one picked, or none: no node, route or tie is picked with it. TODO 778 */
+/** Mark one frame as the one picked, or none: no node, connection or tie is picked with it. TODO 778 */
 export function markFrame(canvas: SherpaLayoutCanvas, id: string | null): void {
   const drawn = drawnOn.get(canvas);
   if (!drawn) return;
   if (id) {
     markNode(canvas, null);
-    unpickRoutes(drawn);
+    unpickConnections(drawn);
   }
   drawn.selectedFrame = id && drawn.frames.has(id) ? id : null;
   for (const [key, el] of drawn.frames) el.toggleAttribute('data-current', key === drawn.selectedFrame);
@@ -1639,7 +1639,7 @@ export function arrangement(canvas: SherpaLayoutCanvas, picked: readonly string[
   const ids = picked.filter((id) => !id.startsWith('#'));
   if (!drawn || ids.length < 2) return undefined;
   const { gap, nodes, boxes } = laidAs(canvas, drawn);
-  const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes });
+  const placed = arrangeNodes({ nodes, connections: drawn.connections, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
@@ -1676,16 +1676,16 @@ export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
   const frame = [...drawn.frames.values()].find((el) => !el.hasAttribute('hidden') && el.offsetWidth);
   const side = frame ? Math.max(0, (frame.offsetWidth - Number(frame.getAttribute('data-w'))) / 2) : 0;
   const top = frame ? Math.max(0, frame.offsetHeight - Number(frame.getAttribute('data-h')) - side) : 0;
-  // Each routed socket's height in its node, as drawn: a node's neighbours stand in its sockets' order. TODO 827
+  // Each connected socket's height in its node, as drawn: a node's neighbours stand in its sockets' order. TODO 827
   const sockets: { inputs: Record<string, number>; outputs: Record<string, number> } = { inputs: {}, outputs: {} };
-  for (const route of drawn.routes) {
-    for (const [address, side, into] of [[route.from, 'output', sockets.outputs], [route.to, 'input', sockets.inputs]] as const) {
+  for (const connection of drawn.connections) {
+    for (const [address, side, into] of [[connection.from, 'output', sockets.outputs], [connection.to, 'input', sockets.inputs]] as const) {
       const [at, el] = [socketPoint(drawn, address, side), drawn.nodes.get(socketOf(address).node)];
       if (at && el) into[address] = at[1] - (Number(el.getAttribute('data-y')) || 0);
     }
   }
   // A graph reads left to right: Sources and Portal Ins stand left, Outputs and Portal Outs right; an In hands on to each Out of
-  // its name with no line, and the hop holds the order a route would. TODO 839
+  // its name with no line, and the hop holds the order a connection would. TODO 839
   const bands: Record<string, 'left' | 'right'> = {};
   const hops: { from: string; to: string }[] = [];
   const portals = drawn.graph.nodes.flatMap((n) => { const p = portalOf(n); return p ? [{ id: n.id, ...p }] : []; });
@@ -1694,7 +1694,7 @@ export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
     bands[p.id] = p.side === 'in' ? 'left' : 'right';
     if (p.side === 'in' && p.name) for (const o of portals) if (o.side === 'out' && o.name === p.name) hops.push({ from: p.id, to: o.id });
   }
-  const placed = unfurlNodes({ nodes, routes: drawn.routes, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
+  const placed = unfurlNodes({ nodes, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
@@ -1781,7 +1781,7 @@ function toggleCollapsed(drawn: Drawn, ids: readonly string[], on: boolean): voi
     el?.toggleAttribute('data-collapsed', on);
     if (el) stackPlaces(el, on);
   }
-  drawRoutes(drawn);
+  drawConnections(drawn);
   drawn.options.onCollapse?.();
 }
 
@@ -1797,7 +1797,7 @@ export function collapsedNodes(canvas: SherpaLayoutCanvas): string[] {
   return drawn ? [...drawn.collapsed].filter((id) => drawn.nodes.has(id)) : [];
 }
 
-/** Whether a collapsed node hides the sockets no route joins; a hover, or a line dragged, shows them. */
+/** Whether a collapsed node hides the sockets no connection joins; a hover, or a line dragged, shows them. */
 export function hideUnconnected(canvas: SherpaLayoutCanvas, on: boolean): void {
   const drawn = drawnOn.get(canvas);
   if (!drawn) return;
@@ -1810,17 +1810,17 @@ export function markActive(canvas: SherpaLayoutCanvas, id: string | null): void 
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-active', key === id);
 }
 
-/** Mark routes as the ones picked. */
-export function markRoutes(canvas: SherpaLayoutCanvas, routes: readonly NodeRoute[]): void {
+/** Mark connections as the ones picked. */
+export function markConnections(canvas: SherpaLayoutCanvas, connections: readonly NodeConnection[]): void {
   const drawn = drawnOn.get(canvas);
   if (!drawn) return;
-  drawn.picked = routes.map(({ from, to }) => ({ from, to }));
-  drawRoutes(drawn);
+  drawn.picked = connections.map(({ from, to }) => ({ from, to }));
+  drawConnections(drawn);
   drawn.options.onPicked?.(drawn.picked);
 }
 
-/** The routes picked: by a click, a box, or the keys. */
-export function pickedRoutes(canvas: SherpaLayoutCanvas): NodeRoute[] {
+/** The connections picked: by a click, a box, or the keys. */
+export function pickedConnections(canvas: SherpaLayoutCanvas): NodeConnection[] {
   return [...(drawnOn.get(canvas)?.picked ?? [])];
 }
 
@@ -1940,10 +1940,10 @@ export interface InspectOptions {
   onEdit?: (edit: GraphEdit) => void;
   /** A live visual of what the node stands for — a component's — shown above its rows. */
   visual?: HTMLElement | null;
-  /** A reader asks a Value node for an unrouted picklist row: the button that is the drag, with no pointer. */
+  /** A reader asks a Value node for an unconnected picklist row: the button that is the drag, with no pointer. */
   onCustom?: (row: GraphRow) => void;
-  /** A reader cuts one route, by the button that is the drag's break. */
-  onCut?: (route: NodeRoute) => void;
+  /** A reader cuts one connection, by the button that is the drag's break. */
+  onCut?: (connection: NodeConnection) => void;
   /** A reader removes this node. */
   onRemove?: () => void;
   /** What a Custom Node adds above the rows: its update, its Open and Ungroup. */
@@ -2017,8 +2017,8 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     const part = row === FALSE_SOCKET ? 'False' : row ? from?.rows.find((r) => r.name === row)?.label : from?.branches && address === from.id ? 'True' : undefined;
     return [from?.heading ?? id, part].filter(Boolean).join(' › ');
   };
-  // The inputs a route drives: their fields mirror what comes in, read only.
-  const routed = routesOf(graph).routed;
+  // The inputs a connection drives: their fields mirror what comes in, read only.
+  const connected = connectionsOf(graph).connected;
   const fields = new WeakMap<Element, GraphRow>();
   const button = (label: string, act: () => void, tip?: string): HTMLElement => {
     const el = document.createElement('sherpa-button');
@@ -2030,26 +2030,26 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   };
   const items = node.rows.flatMap((row) => {
     const at = `${node.id}/${row.name}`;
-    const ins = graph.routes.filter((r) => r.to === at);
-    const outs = graph.routes.filter((r) => r.from === at).map((r) => `To ${name(r.to)}`);
-    const field = fieldFor(row.control ? row : { ...row, control: 'text' }, !row.editable || routed.has(at) || !row.control);
+    const ins = graph.connections.filter((r) => r.to === at);
+    const outs = graph.connections.filter((r) => r.from === at).map((r) => `To ${name(r.to)}`);
+    const field = fieldFor(row.control ? row : { ...row, control: 'text' }, !row.editable || connected.has(at) || !row.control);
     // A custom row says where it comes from once, in its own words.
     fill(field, row, [...(row.custom ? [] : ins.map((r) => `From ${name(r.from)}`)), ...outs, row.hint].filter(Boolean).join(' · ') || undefined);
     fields.set(field, row);
-    const cuts = options.onCut ? ins.map((r) => button(`Cut route from ${name(r.from)}`, () => options.onCut!(r))) : [];
+    const cuts = options.onCut ? ins.map((r) => button(`Cut connection from ${name(r.from)}`, () => options.onCut!(r))) : [];
     const custom = options.onCustom && row.editable && !ins.length && row.input === 'value' && !row.many && rowChoices(row) !== undefined
       ? [button('Custom value', () => options.onCustom!(row))] : [];
-    // A message takes the values its routes give, by Insert value (plan 891).
-    const insert = options.output && row.control === 'message' && row.editable && !routed.has(at) ? [valueMenu(field, row.label, options.output)] : [];
+    // A message takes the values its connections give, by Insert value (plan 891).
+    const insert = options.output && row.control === 'message' && row.editable && !connected.has(at) ? [valueMenu(field, row.label, options.output)] : [];
     return [field, ...insert, ...cuts, ...custom];
   });
-  // The whole node's routes: in, and out — its True and False where it forks.
+  // The whole node's connections: in, and out — its True and False where it forks.
   const header = document.createElement('sherpa-key-value-list');
   header.setAttribute('data-orientation', 'vertical');
   const whole = [
-    ...graph.routes.filter((r) => r.to === node.id).map((r) => ({ key: 'In', value: name(r.from) })),
-    ...graph.routes.filter((r) => r.from === node.id).map((r) => ({ key: node.branches ? 'True' : 'Out', value: name(r.to) })),
-    ...graph.routes.filter((r) => r.from === `${node.id}/${FALSE_SOCKET}`).map((r) => ({ key: 'False', value: name(r.to) })),
+    ...graph.connections.filter((r) => r.to === node.id).map((r) => ({ key: 'In', value: name(r.from) })),
+    ...graph.connections.filter((r) => r.from === node.id).map((r) => ({ key: node.branches ? 'True' : 'Out', value: name(r.to) })),
+    ...graph.connections.filter((r) => r.from === `${node.id}/${FALSE_SOCKET}`).map((r) => ({ key: 'False', value: name(r.to) })),
   ];
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
@@ -2059,8 +2059,8 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   const flow = nodeFlow(graph, node.id, options.flow);
   const test = options.output ? testButton(options.output) : undefined;
   stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...(test ? [test] : []), ...remove);
-  const routedTo = (row: string): string[] => graph.routes.filter((r) => r.from === `${node.id}/${row}`).map((r) => name(r.to));
-  const output = options.output ? outputPane(node, options.output, routedTo) : undefined;
+  const connectedTo = (row: string): string[] => graph.connections.filter((r) => r.from === `${node.id}/${row}`).map((r) => name(r.to));
+  const output = options.output ? outputPane(node, options.output, connectedTo) : undefined;
   const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined, output);
   const { tabs } = options;
   if (tabs) {
@@ -2442,7 +2442,7 @@ const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && type
 const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) => typeof t === 'string');
 
 /** Keep a workflow's draft drawn on a canvas, and write each edit to it as a pure edit:
- *  a value, a move, a route, a node's own name. A route that would break the workflow is
+ *  a value, a move, a connection, a node's own name. A connection that would break the workflow is
  *  refused, and says why. A v1 — given, or a tab's draft — is read once as v2, and Save
  *  hands over the v2. N4 runs the draft. A Custom Node OPENS: the canvas shows its inside
  *  under a trail, and an edit there is an edit to the DEFINITION, drafted beside the workflow
@@ -2458,13 +2458,15 @@ export function bindWorkflow(
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition => {
     const d = v as { v?: unknown; id?: unknown; nodes?: unknown } | null;
-    return !!d && typeof d === 'object' && d.v === 2 && d.id === workflow.id && Array.isArray(d.nodes);
+    // A v2, kept before plan 934, is the reader's draft too: readWorkflow reads it in the new words, never drops it.
+    return !!d && typeof d === 'object' && (d.v === 3 || d.v === 2) && d.id === workflow.id && Array.isArray(d.nodes);
   };
   session?.persist(pointer, { shared: false, guard: isDraft });
   // The definitions this tab edited: kept beside the draft, over the app's library.
   const editsAt = `/node-edits/${workflow.id}`;
   session?.persist(editsAt, { shared: false, guard: isEdits });
-  const edited = session?.get(editsAt) as Record<string, NodeDefinition> | undefined ?? {};
+  // Each kept before plan 934 reads in the new words. TRAP T-a-saved-graph-is-read-in-the-new-words
+  const edited = Object.fromEntries(Object.entries(session?.get(editsAt) as Record<string, NodeDefinition> | undefined ?? {}).map(([k, d]) => [k, inNewWords(d)]));
   // The entity this graph is, by the kind its use has: the library holds its SAVED copy; the draft is its own.
   const own = entity && entityKind(entity);
   let given = library ?? { v: 1, nodes: {} };
@@ -2481,7 +2483,7 @@ export function bindWorkflow(
   const kept = session?.get(pointer) as WorkflowDefinition | undefined;
   const read = readWorkflow(kept ?? structuredClone(workflow));
   for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
-  let draft: WorkflowDefinition = read.workflow ?? { v: 2, id: workflow.id, nodes: [] };
+  let draft: WorkflowDefinition = read.workflow ?? { v: 3, id: workflow.id, nodes: [] };
   let original: WorkflowDefinition = readWorkflow(structuredClone(workflow)).workflow ?? draft;
   /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
   const starting = original;
@@ -2490,7 +2492,7 @@ export function bindWorkflow(
   /** The view bar of the app header, where its ⋮ holds Reset node graph (TODO 837). */
   const resetBar = (): HTMLElement | null | undefined => header?.querySelector<HTMLElement>('sherpa-quick-filter-toolbar[data-type="view"]');
   const edits = (): Record<string, NodeDefinition> => Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : [])));
-  /** A route a use's header holds from before reads once as its own new input, drafted; Save writes it. TRAP T-a-custom-node-header-adds-an-input */
+  /** A connection a use's header holds from before reads once as its own new input, drafted; Save writes it. TRAP T-a-custom-node-header-adds-an-input */
   const readHeld = (): void => {
     const held = heldInputs(draft, lib, topKinds());
     if (!held.ids.length) return;
@@ -2501,7 +2503,7 @@ export function bindWorkflow(
     session?.set(editsAt, edits());
   };
   readHeld();
-  let graph: FramedGraph = { nodes: [], routes: [] };
+  let graph: FramedGraph = { nodes: [], connections: [] };
   // The Custom Nodes opened, outermost first. What is shown is the innermost one's body.
   let path: Opened[] = [];
   const innerNow = (): Inner | undefined => {
@@ -2739,15 +2741,15 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
     } else {
       const id = path.at(-1)!.kind;
-      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [], ties: next.ties ?? [], frames: next.frames ?? [] }), [id]);
+      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), connections: next.connections ?? [], ties: next.ties ?? [], frames: next.frames ?? [] }), [id]);
     }
     // Mid-drag, only what moves is drawn: a whole draw a pointer move cost 220ms on 45 nodes (2026-11-10). The drag's end draws all.
-    if (dragging && linesOnly) relayRoutes(canvas, lineGraph());
+    if (dragging && linesOnly) relayConnections(canvas, lineGraph());
     else if (dragging) drawMoves();
     else if (doc) drawSoon = true;
     else draw();
   }, tag);
-  /** Mid-drag of a tie or a bend: the routes and ties as the draft has them, the nodes as drawn. */
+  /** Mid-drag of a tie or a bend: the connections and ties as the draft has them, the nodes as drawn. */
   const lineGraph = (): FramedGraph => {
     const body = doc ? doc.graph(shown()) : workflowGraph(shown(), facts, K());
     return lanesOn() ? { ...body, ties: [] } : body;
@@ -2764,7 +2766,7 @@ export function bindWorkflow(
       if (el.getAttribute('data-x') !== x) { el.setAttribute('data-x', x); moved = true; }
       if (el.getAttribute('data-y') !== y) { el.setAttribute('data-y', y); moved = true; }
     }
-    if (moved) relayRoutes(canvas);
+    if (moved) relayConnections(canvas);
     stages.draw();
     drawLanes(canvas, shown(), heightOf, K());
   };
@@ -2783,7 +2785,7 @@ export function bindWorkflow(
       return;
     }
     const own = OWN[row.name];
-    // A portal's name, or a Rename, can join a loop: checked as a route is, and refused the same way; a refused pick draws back. TODO 779
+    // A portal's name, or a Rename, can join a loop: checked as a connection is, and refused the same way; a refused pick draws back. TODO 779
     const portal = portalOf(node);
     if (portal && (row.name === '#rename' || !own)) {
       take(editWorkflow(shown(), row.name === '#rename' ? { renamePortal: { from: portal.name, to: String(value ?? '') } } : { node: node.id, row: row.name, value }, K(), facts));
@@ -2799,15 +2801,15 @@ export function bindWorkflow(
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
     dragged([node.id], `move:${node.id}`);
   };
-  // Picked nodes moved by one drag: ONE step. A tie whose routes all join them goes with them, and so do the
-  // bends of a route with both ends among them; the rest stay. TODO 752
+  // Picked nodes moved by one drag: ONE step. A tie whose connections all join them goes with them, and so do the
+  // bends of a connection with both ends among them; the rest stay. TODO 752
   const onMoveMany = (moves: { id: string; x: number; y: number }[]): void => {
     const nodes = Object.fromEntries(moves.filter((m) => !m.id.startsWith('#')).map((m) => [m.id, { x: m.x, y: m.y }]));
     const head = shown().nodes.find((n) => n.id === moves[0]?.id);
     if (!head || !nodes[head.id] || Object.keys(nodes).length < 2) return;
     const [dx, dy] = [nodes[head.id]!.x - head.x, nodes[head.id]!.y - head.y];
-    const inside = (r: NodeRoute): boolean => socketOf(r.from).node in nodes && socketOf(r.to).node in nodes;
-    const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.routes.length && t.routes.every(inside)).map((t) => [t.id, { x: t.x + dx, y: t.y + dy }]));
+    const inside = (r: NodeConnection): boolean => socketOf(r.from).node in nodes && socketOf(r.to).node in nodes;
+    const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.connections.length && t.connections.every(inside)).map((t) => [t.id, { x: t.x + dx, y: t.y + dy }]));
     const tag = `move:${Object.keys(nodes).sort().join(',')}`;
     settling = pressing && shifted;
     dragging = pressing;
@@ -2824,7 +2826,7 @@ export function bindWorkflow(
     dragging = pressing;
     write(editWorkflow(shown(), { resize: { node: node.id, ...size } }, K()), `size:${node.id}`);
   };
-  // A route that would break the workflow is refused, and says why — a loop, one into a Rows row, a row's own fault; one
+  // A connection that would break the workflow is refused, and says why — a loop, one into a Rows row, a row's own fault; one
   // of another type joins, and the node it enters warns (TODO 770). Else the draft takes it, with the definition it changed.
   const take = (next: WorkflowDefinition, made?: { library: NodeLibrary; id: string }): void => {
     // A document checks what it is given itself, and says what it refuses.
@@ -2832,25 +2834,25 @@ export function bindWorkflow(
     const was = new Set(workflowFaultsDeep(shown(), lib, K(), facts));
     const now = made ? { ...K(), ...kindsOf(made.library) } : K();
     const added = workflowFaultsDeep(next, made?.library ?? lib, now, facts).filter((f) => !was.has(f));
-    if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: shown().id } });
+    if (added.length) report({ code: 'workflow-connection', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: shown().id } });
     else if (!made) write(next);
     else edit(() => { setLib(made.library, [made.id]); write(next); });
   };
-  // A route into a Custom Node's header takes anything, as a new input of its definition; a preset's refuses it as
+  // A connection into a Custom Node's header takes anything, as a new input of its definition; a preset's refuses it as
   // any refused drop does (TODO 803). TRAP T-a-custom-node-header-adds-an-input
-  const join = (on: WorkflowDefinition, route: NodeRoute): void => {
-    const { node, row } = socketOf(route.to);
-    if (row !== undefined || !use(node) || readOnly()) return take(editWorkflow(on, { route }, K()));
-    const made = headerInput(on, route, lib, K());
-    if ('fault' in made) report({ code: 'workflow-route', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
+  const join = (on: WorkflowDefinition, connection: NodeConnection): void => {
+    const { node, row } = socketOf(connection.to);
+    if (row !== undefined || !use(node) || readOnly()) return take(editWorkflow(on, { connection }, K()));
+    const made = headerInput(on, connection, lib, K());
+    if ('fault' in made) report({ code: 'workflow-connection', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
     else take(made.workflow, made);
   };
-  const onConnect = (route: NodeRoute): void => join(shown(), route);
-  // A moved end is one edit: the route cut, then made, checked as one.
-  const onReroute = (was: NodeRoute, now: NodeRoute): void => join(editWorkflow(shown(), { cut: was }, K()), now);
-  const onBreak = (route: NodeRoute): void => write(editWorkflow(shown(), { cut: route }, K()));
-  // Picked routes cut together are ONE step.
-  const onBreakAll = (routes: NodeRoute[]): void => edit(() => { for (const route of routes) onBreak(route); });
+  const onConnect = (connection: NodeConnection): void => join(shown(), connection);
+  // A moved end is one edit: the connection cut, then made, checked as one.
+  const onReconnect = (was: NodeConnection, now: NodeConnection): void => join(editWorkflow(shown(), { cut: was }, K()), now);
+  const onBreak = (connection: NodeConnection): void => write(editWorkflow(shown(), { cut: connection }, K()));
+  // Picked connections cut together are ONE step.
+  const onBreakAll = (connections: NodeConnection[]): void => edit(() => { for (const connection of connections) onBreak(connection); });
   // — Swimlanes on: the lanes place the nodes, so Arrange, Unfurl and the zip tie are off, and the ties are hidden till they
   //   go; a frame is still a bucket. Will, 2026-11-10
   const lanesOn = (): boolean => !path.length && !!shown().lanes?.length;
@@ -2868,9 +2870,9 @@ export function bindWorkflow(
     return { left: x, top: y, right: x + el.offsetWidth, bottom: y + el.offsetHeight };
   });
   // A new tie that would stand behind a node stands beside it, on the side with the most room. TODO 882
-  const onTie = (routes: NodeRoute[], at: { x: number; y: number }): void => {
-    const clear = clearOfNodes(at, (routes.length - 1) * TIE_GAP + 16, nodeBoxes(), tieLimit(shown(), { routes }));
-    take(editWorkflow(shown(), { tie: { routes, ...clear } }, K()));
+  const onTie = (connections: NodeConnection[], at: { x: number; y: number }): void => {
+    const clear = clearOfNodes(at, (connections.length - 1) * TIE_GAP + 16, nodeBoxes(), tieLimit(shown(), { connections }));
+    take(editWorkflow(shown(), { tie: { connections, ...clear } }, K()));
   };
   const onTieMove = (id: string, x: number, y: number): void => {
     dragging = linesOnly = pressing;
@@ -2878,30 +2880,30 @@ export function bindWorkflow(
   };
   const onUntie = (id: string): void => write(editWorkflow(shown(), { untie: id }, K()));
   // — Bend points (744): a drag is one step, as a tie's is; a refusal reports and writes nothing.
-  const onBend = (route: NodeRoute, at: number, x: number, y: number, insert: boolean, drag: number): void => {
-    const next = editWorkflow(shown(), { bend: { route, at, x, y, insert } }, K());
+  const onBend = (connection: NodeConnection, at: number, x: number, y: number, insert: boolean, drag: number): void => {
+    const next = editWorkflow(shown(), { bend: { connection, at, x, y, insert } }, K());
     dragging = linesOnly = pressing;
-    if (next !== shown()) write(next, `bend:${route.from}>${route.to}:${drag}`);
+    if (next !== shown()) write(next, `bend:${connection.from}>${connection.to}:${drag}`);
   };
-  const onUnbend = (route: NodeRoute, index: number): void => {
-    const next = editWorkflow(shown(), { unbend: { route, index } }, K());
+  const onUnbend = (connection: NodeConnection, index: number): void => {
+    const next = editWorkflow(shown(), { unbend: { connection, index } }, K());
     if (next !== shown()) write(next);
   };
-  const onTieDrop = (id: string, route: NodeRoute): void => {
-    const next = editWorkflow(shown(), { tieAdd: { id, route } }, K());
+  const onTieDrop = (id: string, connection: NodeConnection): void => {
+    const next = editWorkflow(shown(), { tieAdd: { id, connection } }, K());
     if (next !== shown()) write(next);
   };
-  /** With no pointer: tie the routes between picked nodes, or into one. */
+  /** With no pointer: tie the connections between picked nodes, or into one. */
   const tieNodes = (ids: readonly string[]): void => {
-    tieRoutes((shown().routes ?? []).filter((r) => (ids.length > 1 ? ids.includes(socketOf(r.from).node) && ids.includes(socketOf(r.to).node) : socketOf(r.to).node === ids[0])));
+    tieConnections((shown().connections ?? []).filter((r) => (ids.length > 1 ? ids.includes(socketOf(r.from).node) && ids.includes(socketOf(r.to).node) : socketOf(r.to).node === ids[0])));
   };
-  /** One tie across these routes; where they are all tied together already, untie them. */
-  const tieRoutes = (routes: readonly NodeRoute[]): void => {
-    if (readOnly() || !routes.length) return;
-    const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
-    const held = (shown().ties ?? []).find((t) => t.routes.length === routes.length && routes.every((r) => t.routes.some((q) => same(q, r))));
+  /** One tie across these connections; where they are all tied together already, untie them. */
+  const tieConnections = (connections: readonly NodeConnection[]): void => {
+    if (readOnly() || !connections.length) return;
+    const same = (a: NodeConnection, b: NodeConnection): boolean => a.from === b.from && a.to === b.to;
+    const held = (shown().ties ?? []).find((t) => t.connections.length === connections.length && connections.every((r) => t.connections.some((q) => same(q, r))));
     if (held) onUntie(held.id);
-    else onTie([...routes], tieSpot(canvas, routes));
+    else onTie([...connections], tieSpot(canvas, connections));
   };
   // — Frames (778): Frame, Release, a frame's name and line; each one edit, and one step. TRAP T-a-frame-is-drawn-round-its-nodes
   /** The frame the inspector shows, or none. */
@@ -3000,16 +3002,16 @@ export function bindWorkflow(
     picks.deselect();
     write(editWorkflow(shown(), { remove: id }, K()));
   };
-  // Delete or Backspace on picked nodes: they and the routes picked go as ONE step. A Group Input or Output stays, and says so.
-  const onRemoveNodes = (ids: string[], routes: NodeRoute[]): void => {
+  // Delete or Backspace on picked nodes: they and the connections picked go as ONE step. A Group Input or Output stays, and says so.
+  const onRemoveNodes = (ids: string[], connections: NodeConnection[]): void => {
     const gone = ids.filter((id) => !id.startsWith('#'));
     if (gone.length < ids.length) report({ code: 'node-remove', message: 'The Group Input and Group Output are a Custom Node\'s doors: they cannot be removed.', at: { workflow: shown().id } });
-    if (!gone.length && !routes.length) return;
+    if (!gone.length && !connections.length) return;
     multi.clear();
     picks.deselect();
     edit(() => {
       let next = shown();
-      for (const route of routes) next = editWorkflow(next, { cut: route }, K());
+      for (const connection of connections) next = editWorkflow(next, { cut: connection }, K());
       for (const id of gone) next = editWorkflow(next, { remove: id }, K());
       write(next);
     });
@@ -3123,7 +3125,7 @@ export function bindWorkflow(
   const updateOne = (id: string): void => write(updateInstance(shown(), id, lib, K()));
   const updateGraph = async (kind: string): Promise<void> => {
     const name = lib.nodes[kind]?.label ?? kind;
-    if (await ask('Update all instances on graph?', `Every “${name}” on this graph takes its current definition. Their own values stay; a route to a socket it lost stays, and is reported.`)) write(updateAll(shown(), kind, lib, K()));
+    if (await ask('Update all instances on graph?', `Every “${name}” on this graph takes its current definition. Their own values stay; a connection to a socket it lost stays, and is reported.`)) write(updateAll(shown(), kind, lib, K()));
   };
   const updateEverywhere = async (kind: string): Promise<void> => {
     const name = lib.nodes[kind]?.label ?? kind;
@@ -3132,8 +3134,8 @@ export function bindWorkflow(
     const ids: string[] = [];
     for (const [id, definition] of Object.entries(lib.nodes)) {
       if (id === own || definition.preset || !definition.nodes.some((n) => n.kind === kind)) continue;
-      const body = updateAll({ v: 2, id, nodes: definition.nodes, routes: definition.routes ?? [] }, kind, lib, topKinds());
-      next = editDefinition(next, id, { nodes: body.nodes, routes: body.routes ?? [] });
+      const body = updateAll({ v: 3, id, nodes: definition.nodes, connections: definition.connections ?? [] }, kind, lib, topKinds());
+      next = editDefinition(next, id, { nodes: body.nodes, connections: body.connections ?? [] });
       ids.push(id);
     }
     edit(() => {
@@ -3273,8 +3275,8 @@ export function bindWorkflow(
       if (inspector?.open) showMulti();
     } else picks.deselect();
   };
-  const tellPicked = (routes: NodeRoute[]): void => {
-    toolbar?.setAttribute('data-picked-routes', String(routes.length));
+  const tellPicked = (connections: NodeConnection[]): void => {
+    toolbar?.setAttribute('data-picked-connections', String(connections.length));
   };
   const idOf = (event: Event): { id: string; header: boolean; field: boolean } | undefined => {
     const hits = event.composedPath();
@@ -3286,11 +3288,11 @@ export function bindWorkflow(
       field: first instanceof Element && first.matches('input, select, textarea, [contenteditable], button, a'),
     } : undefined;
   };
-  // — Copy and paste: Cmd or Ctrl and C copies the picked nodes; V pastes them, and with Shift their routes too, in, between and out. Each paste is ONE step.
+  // — Copy and paste: Cmd or Ctrl and C copies the picked nodes; V pastes them, and with Shift their connections too, in, between and out. Each paste is ONE step.
   const paste = (connections: boolean, by: { dx: number; dy: number }): void => {
     const clip = clipboard;
     if (!clip || readOnly()) return;
-    const have: NodeClip = { nodes: clip.nodes.filter((n) => K()[n.kind]), routes: clip.routes };
+    const have: NodeClip = { nodes: clip.nodes.filter((n) => K()[n.kind]), connections: clip.connections };
     if (!have.nodes.length) return;
     let ids: string[] = [];
     edit(() => {
@@ -3329,7 +3331,7 @@ export function bindWorkflow(
     clipboard = copyNodes(shown(), held);
   };
   // Alt and a drag on a node drags a GHOST of it, the original staying where it is; let go, a copy stands where the ghost
-  // was. With Shift too, the copy keeps the routes. Escape lets go of it. Will, 2026-11-10
+  // was. With Shift too, the copy keeps the connections. Escape lets go of it. Will, 2026-11-10
   const onLift = (down: PointerEvent): void => {
     if (down.button !== 0 || !down.altKey || primaryKey(down) || readOnly()) return;
     const hit = idOf(down);
@@ -3391,8 +3393,8 @@ export function bindWorkflow(
       if (event.shiftKey) void fetchRows('keys');
       else play('keys');
     } else if (event.key === 'Escape') {
-      const routes = pickedRoutes(canvas).length > 0;
-      if (routes) markRoutes(canvas, []);
+      const connections = pickedConnections(canvas).length > 0;
+      if (connections) markConnections(canvas, []);
       if (tying) setTying(false);
       else if (multi.size) {
         multi.clear();
@@ -3401,11 +3403,11 @@ export function bindWorkflow(
       } else if (pickedFrame(canvas)) {
         markFrame(canvas, null);
         if (framePanel) picks.deselect();
-      } else if (path.length && !routes) back();
-      else if (!routes) return;
-    } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && !lanesOn() && (pickedRoutes(canvas).length || multi.size > 1 || (hit && !hit.field))) {
-      // Picked routes first; else the routes of the picked nodes.
-      if (pickedRoutes(canvas).length) tieRoutes(pickedRoutes(canvas));
+      } else if (path.length && !connections) back();
+      else if (!connections) return;
+    } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && !lanesOn() && (pickedConnections(canvas).length || multi.size > 1 || (hit && !hit.field))) {
+      // Picked connections first; else the connections of the picked nodes.
+      if (pickedConnections(canvas).length) tieConnections(pickedConnections(canvas));
       else tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
     } else if (mod && event.key.toLowerCase() === 'g') openSave();
     // F zooms to the picked nodes, or the whole graph; Shift+S frames the picked. Will, TODO 905
@@ -3446,7 +3448,7 @@ export function bindWorkflow(
     else if (action === 'redo') redo();
     // Zip tie with connectors picked: it ties them, at once; else the tool goes on or off. Will, 2026-11-10
     else if ((action === 'tie' || action === 'arrange' || action === 'unfurl') && lanesOn()) report({ code: 'node-lanes', message: `${SWIMLANES_OWN}: turn them off to ${action === 'tie' ? 'tie connectors' : action}.` });
-    else if (action === 'tie' && !tying && pickedRoutes(canvas).length > 1) tieRoutes(pickedRoutes(canvas));
+    else if (action === 'tie' && !tying && pickedConnections(canvas).length > 1) tieConnections(pickedConnections(canvas));
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
     else if (action === 'arrange') arrangePicked(canvas);
@@ -3528,7 +3530,7 @@ export function bindWorkflow(
     };
     const type = typeOf(K()[node.kind] ?? {}, held?.values?.['type'])?.id;
     return {
-      sources: valuesAt(flow.nodes, portalFlow(flow.nodes, flow.routes ?? []).routes, node.id, K(), facts.fieldsOf), sample, simulated: !!ran,
+      sources: valuesAt(flow.nodes, portalFlow(flow.nodes, flow.connections ?? []).connections, node.id, K(), facts.fieldsOf), sample, simulated: !!ran,
       onTest: () => canvas.dispatchEvent(new CustomEvent('output-test', { bubbles: true, composed: true, detail: { node: node.id, ...(type ? { type } : {}), values: { ...held?.values } } })),
     };
   };
@@ -3565,8 +3567,8 @@ export function bindWorkflow(
   // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
   //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.
   let simulation: { result: Simulated; stale: boolean; sig: string; times: Record<string, number> } | undefined;
-  /** What a simulation reads of the graph: its nodes' kinds and values and its routes, never a place. */
-  const dataSig = (): string => JSON.stringify([shown().nodes.map((n) => [n.id, n.kind, n.values]), shown().routes]);
+  /** What a simulation reads of the graph: its nodes' kinds and values and its connections, never a place. */
+  const dataSig = (): string => JSON.stringify([shown().nodes.map((n) => [n.id, n.kind, n.values]), shown().connections]);
   /** Each Source's store id, by node. */
   const storesOf = (): Map<string, string> => new Map(graph.nodes.flatMap((n) => {
     const store = isSource(n) ? n.rows.find((r) => r.control === 'store')?.value : undefined;
@@ -3793,7 +3795,7 @@ export function bindWorkflow(
     }
     toolbar?.toggleAttribute('data-can-tie', !laning);
     drawGraph(canvas, laning ? { ...graph, ties: [] } : graph, {
-      onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, opens: (node) => !!use(node.id),
+      onEdit, onMove, onResize, onConnect, onReconnect, onBreak, onCustom, onDeselect: picks.deselect, opens: (node) => !!use(node.id),
       ...(ro ? {} : { onMoveMany, onArrange }),
       onBox: pickBox, onPicked: tellPicked, onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
       ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop, onRemove: onRemoveNodes, onRelease: release }),

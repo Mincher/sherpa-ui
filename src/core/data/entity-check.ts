@@ -34,13 +34,13 @@ export interface EntityFacts {
  *  own — with a Group Input `#in` where it has inputs and a Group Output `#out` where it has outputs,
  *  as a Custom Node's inside is drawn; and the kinds those need. TRAP T-a-graph-is-a-view-of-a-type */
 export function graphWorkflow(entity: Entity, kinds: Kinds = nodeKinds(), types: Readonly<Record<string, EntityType>> = entityTypes()): { workflow: WorkflowDefinition; kinds: Kinds } {
-  const { nodes, routes = [], ties, frames, stages, lanes, beforeLanes } = entity.graph;
+  const { nodes, connections = [], ties, frames, stages, lanes, beforeLanes } = entity.graph;
   // Its canvas's layout, as it was saved (TODO 933).
   const laid = { ...(stages ? { stages } : {}), ...(lanes ? { lanes } : {}), ...(beforeLanes ? { beforeLanes } : {}) };
   const inner = innerOf({ id: entity.id, kind: entityKind(entity) }, libraryOf([entity], types), kinds);
-  if (!inner) return { workflow: { v: 2, id: entity.id, label: entity.label, nodes, routes, ...(ties ? { ties } : {}), ...(frames ? { frames } : {}), ...laid }, kinds };
+  if (!inner) return { workflow: { v: 3, id: entity.id, label: entity.label, nodes, connections, ...(ties ? { ties } : {}), ...(frames ? { frames } : {}), ...laid }, kinds };
   const { inputs, outputs } = socketsOf(entity, types[entity.type]);
-  const touched = (end: string): boolean => routes.some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
+  const touched = (end: string): boolean => connections.some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
   const kept = (id: string): boolean => (id === '#in' ? !!inputs.length || touched('#in') : id === '#out' ? !!outputs.length || touched('#out') : true);
   const drawn = inner.workflow.nodes.filter((n) => kept(n.id));
   // Its own kind is not offered on its own canvas (a graph that holds itself is a loop); a group kind only where its node is drawn.
@@ -73,7 +73,7 @@ function loopOf(start: Entity, all: readonly Entity[]): string[] | undefined {
  *  entities, and each fault of the graph itself, named by its path. Faults come in the data layer's
  *  words; it never throws. */
 export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] {
-  if (!isEntity(entity)) return ['it is not an entity: a v1 with a type, an id, a name and a graph'];
+  if (!isEntity(entity)) return ['it is not an entity: a v2 with a type, an id, a name and a graph'];
   const types = facts.types ?? entityTypes();
   const type = types[entity.type];
   const at = `the ${type?.label ?? entity.type} "${entity.id}"`;
@@ -85,7 +85,7 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
 
   const kinds: Kinds = { ...kindsOf(libraryOf(others, types)), ...(facts.kinds ?? nodeKinds()) };
   // A use of an entity is a node whose kind is its kind; it is the one place a family does not bound. An old kind reads as today's.
-  for (const node of readWorkflow({ v: 2, id: entity.id, nodes: entity.graph.nodes }).workflow?.nodes ?? []) {
+  for (const node of readWorkflow({ v: 3, id: entity.id, nodes: entity.graph.nodes }).workflow?.nodes ?? []) {
     const kind = kinds[node.kind];
     if (!kind || takes(type, kind)) continue;
     problems.push(`${at} places "${node.id}", of the family "${kind.category ?? 'Other'}", which a ${type.label} does not take: ${type.families!.join(', ')}`);
@@ -97,7 +97,7 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
   }
   // An EMPTY graph is a new one: its outputs are asked for once it places a node. TRAP T-a-graph-is-a-view-of-a-type
   for (const out of entity.graph.nodes.length ? type.outputs ?? [] : []) {
-    if (!(entity.graph.routes ?? []).some((r) => r.to === '#out' || r.to === `#out/${out.name}`)) problems.push(`${at} sends nothing to its output "${out.name}": route one to #out/${out.name}`);
+    if (!(entity.graph.connections ?? []).some((r) => r.to === '#out' || r.to === `#out/${out.name}`)) problems.push(`${at} sends nothing to its output "${out.name}": connect one to #out/${out.name}`);
   }
   for (const use of entity.uses ?? []) {
     if (!all.some((e) => e.type === use.type && e.id === use.id)) problems.push(`${at} uses the ${types[use.type]?.label ?? use.type} "${use.id}", which is not there`);

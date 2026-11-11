@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
   });
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2, id: 'logic', nodes: [
+    const flow = { v: 3, id: 'logic', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'f', kind: 'field', x: 280, y: 0, values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 560, y: 0, heading: 'Check', values: { type: 'eq', b: 'active' } },
@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
       { id: 'e2', kind: 'condition', x: 280, y: 520, heading: 'Is big', values: { type: 'gt', b: '100' } },
       { id: 'both', kind: 'condition', x: 600, y: 400, heading: 'Both', values: { type: 'and' } },
       { id: 'end', kind: 'output', x: 880, y: 400 },
-    ], routes: [
+    ], connections: [
       { from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'v1/value', to: 'e1' }, { from: 'v2/value', to: 'e2' },
       { from: 'e1', to: 'both' }, { from: 'e2', to: 'both' }, { from: 'both', to: 'end' },
     ] };
@@ -54,14 +54,14 @@ const pick = async (page: Page, heading: string, type: string) => {
   await page.locator(`${NODE(heading)} sherpa-input-text[name="type"] select`).selectOption(type);
   await settle(page);
 };
-type Flow = { nodes: { id: string; values?: Record<string, unknown> }[]; routes: { from: string; to: string }[] };
+type Flow = { nodes: { id: string; values?: Record<string, unknown> }[]; connections: { from: string; to: string }[] };
 const saved = (page: Page) => page.evaluate(`(() => { window.editor.save(); return window.saved.at(-1); })()`) as Promise<Flow>;
-const line = (page: Page, from: string, to: string) => page.locator(`#root svg.graph-routes path[data-from="${from}"][data-to="${to}"]`);
+const line = (page: Page, from: string, to: string) => page.locator(`#root svg.graph-connectors path[data-from="${from}"][data-to="${to}"]`);
 
 test('the Operation select picks a Logic type: And takes two booleans and draws True and False; a comparison tests its header against Value B', async ({ page }) => {
   const both = page.locator(NODE('Both'));
   expect(await rows(page, 'Both')).toEqual(['type', '']);
-  expect(await both.evaluate((el) => [el.getAttribute('data-input-socket'), el.hasAttribute('data-input-many'), el.hasAttribute('data-branches'), el.hasAttribute('data-output-routed')])).toEqual(['boolean', true, true, true]);
+  expect(await both.evaluate((el) => [el.getAttribute('data-input-socket'), el.hasAttribute('data-input-many'), el.hasAttribute('data-branches'), el.hasAttribute('data-output-connected')])).toEqual(['boolean', true, true, true]);
   await expect(line(page, 'e1', 'both')).toHaveCount(1);
   await expect(line(page, 'e2', 'both')).toHaveCount(1);
   // A comparison: what comes in on its header is tested against Value B; it sends True, and its Rows.
@@ -100,10 +100,10 @@ test('a Field\'s column into a Condition switched to And stays joined and warns;
   await pick(page, 'Check', 'gt');
   await expect(line(page, 'f/field', 'c')).toHaveCount(1);
   expect(await warning()).toBe('Greater than takes a number or date field; it was given the Status column');
-  // And again, then Save: a warning is no block, and the final graph keeps the route it draws, not Value B.
+  // And again, then Save: a warning is no block, and the final graph keeps the connection it draws, not Value B.
   await pick(page, 'Check', 'and');
   const out = await saved(page);
-  expect(out.routes).toContainEqual({ from: 'f/field', to: 'c' });
+  expect(out.connections).toContainEqual({ from: 'f/field', to: 'c' });
   expect(out.nodes.find((n) => n.id === 'c')!.values).toEqual({ type: 'and' });
   expect(reports).toEqual([]);
 });

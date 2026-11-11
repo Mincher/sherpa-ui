@@ -1,9 +1,9 @@
 /**
- * A PICKLIST ROW READS ONE LIST (`rowChoices`), and a Value node routed into it
+ * A PICKLIST ROW READS ONE LIST (`rowChoices`), and a Value node connected to it
  * OVERRIDES it: the row MIRRORS what comes in, read only, each pick marked
- * Custom; cut the route, and its own pick is back — the draft kept it. A
+ * Custom; cut the connection, and its own pick is back — the draft kept it. A
  * multi-select row (`multiple`) holds, takes and sends ONE object, a list.
- * A Value node is added for a row, and a node removed with its routes: pure
+ * A Value node is added for a row, and a node removed with its connections: pure
  * edits on the draft. Will, 2026-11-04 · plan 713 M6, D7, D17.
  *
  *   node --test test/unit/a-picklist-row-reads-one-list.test.mjs
@@ -24,7 +24,7 @@ const valued = { fieldsOf: { customers: { ...fields, status: { ...fields.status,
 const labels = (list) => list?.map((c) => c.label);
 
 const flow = (values = {}, extra = {}) => ({
-  v: 2, id: 'f',
+  v: 3, id: 'f',
   nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
@@ -32,10 +32,10 @@ const flow = (values = {}, extra = {}) => ({
     { id: 'end', kind: 'output', x: 720, y: 0 },
     { id: 'pick', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
   ],
-  routes: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }],
+  connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }],
   ...extra,
 });
-const routed = (values) => editWorkflow(flow(values), { route: { from: 'status/value', to: 'filter/b' } });
+const connected = (values) => editWorkflow(flow(values), { connection: { from: 'status/value', to: 'filter/b' } });
 const rowOf = (w, id, name, facts = valued) => workflowGraph(w, facts).nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
 
 test('rowChoices gives each picklist its one list; a row that is no picklist has none', () => {
@@ -66,7 +66,7 @@ test('every workflow picklist row takes a value in; the Value node has its Type'
   const value = resolveKind(NODE_KINDS.value);
   assert.deepEqual(value.rows.map((r) => [r.name, r.control]), [['type', 'type'], ['value', 'text']]);
   assert.equal(value.rows[0].input, undefined, 'the Type is picked, never fed');
-  // Where the Query has no route, its rows draw no socket.
+  // Where the Query has no connection, its rows draw no socket.
   const g = queryGraph({ v: 1, scopes: {} }, { v: 1, id: 'p', source: { store: 'customers', search: ['name'], fields: { name: {} } } });
   for (const [id, name] of [['source', 'store'], ['source', 'search'], ['source', 'applyOn']]) {
     const r = g.nodes.find((n) => n.id === id).rows.find((x) => x.name === name);
@@ -92,28 +92,28 @@ test('the Query\'s Source › Store, Search fields, Apply on and a shared Presen
   assert.equal(shown.rows.find((r) => r.name === 'kind').choices.length, 5);
 });
 
-test('a Value node routed into a picklist OVERRIDES it: the row mirrors it, read only, marked Custom; cut, and its own pick is back', () => {
+test('a Value node connected to a picklist OVERRIDES it: the row mirrors it, read only, marked Custom; cut, and its own pick is back', () => {
   const own = flow({ b: 'trial' });
   assert.deepEqual([rowOf(own, 'filter', 'b').value, rowOf(own, 'filter', 'b').custom], ['trial', undefined], 'its own pick, from the field\'s values');
   assert.deepEqual(labels(rowOf(own, 'filter', 'b').choices), ['active', 'trial']);
-  const over = routed({ b: 'trial' });
+  const over = connected({ b: 'trial' });
   const row = rowOf(over, 'filter', 'b');
   assert.deepEqual([row.value, row.custom, row.hint], ['active', true, 'Custom value, from Value › Value']);
   assert.deepEqual(row.choices, [{ value: 'active', label: 'active Custom' }]);
-  assert.equal(over.nodes[2].values.b, 'trial', 'the draft keeps its own pick under the route');
+  assert.equal(over.nodes[2].values.b, 'trial', 'the draft keeps its own pick under the connection');
   const cut = editWorkflow(over, { cut: 'filter/b' });
   const back = rowOf(cut, 'filter', 'b');
   assert.deepEqual([back.value, back.custom, back.hint], ['trial', undefined, undefined]);
   // A value that is not in the list is Custom the same way; one no node holds waits for N4.
-  assert.equal(rowOf(routed(), 'filter', 'b', facts).value, 'active', 'with no list it still mirrors');
+  assert.equal(rowOf(connected(), 'filter', 'b', facts).value, 'active', 'with no list it still mirrors');
   const sum = { ...over, nodes: [...over.nodes, { id: 'sum', kind: 'math', x: 0, y: 400 }] };
-  const waiting = editWorkflow(sum, { route: { from: 'sum/result', to: 'filter/b' } });
+  const waiting = editWorkflow(sum, { connection: { from: 'sum/result', to: 'filter/b' } });
   assert.equal(rowOf(waiting, 'filter', 'b').value, 'trial', 'a Result holds no value yet: its own shows');
-  // The Type, and the node it routes: the flow is checked as it was.
+  // The Type, and the node it connections: the flow is checked as it was.
   assert.deepEqual(workflowFaults(over), []);
 });
 
-test('a row a route drives that sends nothing yet, and that holds nothing, shows NOTHING and says where from: never its list\'s first choice (TODO 774)', () => {
+test('a row a connection drives that sends nothing yet, and that holds nothing, shows NOTHING and says where from: never its list\'s first choice (TODO 774)', () => {
   // Inside a Custom Node: the Group Input holds no value before a run.
   const definition = {
     v: 1, label: 'Has status',
@@ -125,7 +125,7 @@ test('a row a route drives that sends nothing yet, and that holds nothing, shows
       { id: 'match', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } },
       { id: 'order', kind: 'sort', x: 720, y: 0 },
     ],
-    routes: [
+    connections: [
       { from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: '#in/status', to: 'match/b' },
       { from: '#in/way', to: 'order/direction' }, { from: 'match/rows', to: '#out/matching' },
     ],
@@ -148,11 +148,11 @@ test('a row a route drives that sends nothing yet, and that holds nothing, shows
   assert.deepEqual([own.value, own.custom, own.hint, labels(own.choices)], ['trial', undefined, undefined, ['active', 'trial']]);
   // At the top too: a Result only a run fills.
   const sum = { ...flow(), nodes: [...flow().nodes, { id: 'sum', kind: 'math', x: 0, y: 400 }] };
-  const waiting = rowOf(editWorkflow(sum, { route: { from: 'sum/result', to: 'filter/b' } }), 'filter', 'b');
+  const waiting = rowOf(editWorkflow(sum, { connection: { from: 'sum/result', to: 'filter/b' } }), 'filter', 'b');
   assert.deepEqual([waiting.value, waiting.choices, waiting.hint], ['', [], 'From Math › Result']);
 });
 
-test('a multi-select row holds, takes and sends ONE object: each routed pick is ticked, and Custom where its list lacks it', () => {
+test('a multi-select row holds, takes and sends ONE object: each connected pick is ticked, and Custom where its list lacks it', () => {
   const kinds = {
     ...NODE_KINDS,
     tags: { heading: 'Tags', icon: 'flag', input: 'any', rows: [{ name: 'set', label: 'Set', control: 'field', multiple: true, output: 'object' }], model: 'x', graphs: ['workflow'] },
@@ -160,22 +160,22 @@ test('a multi-select row holds, takes and sends ONE object: each routed pick is 
   };
   // A field row lists the fields of the Source its rows come from.
   const w = {
-    v: 2, id: 'm', nodes: [
+    v: 3, id: 'm', nodes: [
       { id: 'a', kind: 'tags', x: 0, y: 0, values: { set: ['status', 'ghost'] } },
       { id: 'b', kind: 'notify', x: 360, y: 0, values: { to: ['seats'] } },
       { id: 's', kind: 'source', x: -360, y: 0, values: { store: 'customers' } },
-    ], routes: [{ from: 'a/set', to: 'b/to' }, { from: 's/rows', to: 'a' }, { from: 's/rows', to: 'b' }],
+    ], connections: [{ from: 'a/set', to: 'b/to' }, { from: 's/rows', to: 'a' }, { from: 's/rows', to: 'b' }],
   };
   assert.deepEqual(workflowFaults(w, kinds), []);
   const row = workflowGraph(w, facts, kinds).nodes[1].rows[0];
   assert.deepEqual([row.value, row.custom, row.hint], [['status', 'ghost'], true, 'Custom values, from Tags › Set']);
   assert.deepEqual(row.choices.map((c) => [c.value, c.label]), [['status', 'Status'], ['seats', 'Seats'], ['ghost', 'ghost Custom']]);
-  // Its own pick stays; cut the route and it is back, as ONE list.
+  // Its own pick stays; cut the connection and it is back, as ONE list.
   const cut = editWorkflow(w, { cut: 'b/to' }, kinds);
   assert.deepEqual(workflowGraph(cut, facts, kinds).nodes[1].rows[0].value, ['seats']);
   assert.deepEqual(editWorkflow(cut, { node: 'b', row: 'to', value: 'status' }, kinds).nodes[1].values.to, ['status'], 'an edit is one list');
-  // A value is no list: a Value node's route joins (TODO 770), and To reads null and warns; no fault.
-  const fed = editWorkflow(w, { route: { from: 'v/value', to: 'b/to' } }, kinds);
+  // A value is no list: a Value node's connection joins (TODO 770), and To reads null and warns; no fault.
+  const fed = editWorkflow(w, { connection: { from: 'v/value', to: 'b/to' } }, kinds);
   const withV = { ...fed, nodes: [...fed.nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'status' } }] };
   assert.deepEqual(workflowFaults(withV, kinds).filter((f) => f.includes('"v/value"')), []);
   assert.deepEqual(workflowGraph(withV, facts, kinds).nodes[1].warnings, [{ row: 'to', words: 'To takes a list; it was given "status"' }]);
@@ -184,20 +184,20 @@ test('a multi-select row holds, takes and sends ONE object: each routed pick is 
   assert.deepEqual(mirrored({ multiple: true }, [['a', 'b'], 'c'], [{ value: 'a', label: 'A' }]).value, ['a', 'b', 'c']);
 });
 
-test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its type; a route of another type into a picklist warns', () => {
+test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its type; a connection of another type into a picklist warns', () => {
   const sorted = (direction) => ({
-    v: 2, id: 's', nodes: [
+    v: 3, id: 's', nodes: [
       { id: 's', kind: 'sort', x: 0, y: 0, values: { direction } },
     ],
   });
   assert.deepEqual(workflowFaults(sorted('asc')), []);
   assert.deepEqual(workflowFaults(sorted('sideways')), ['the node "s" holds "sideways" as its Direction, which is none of its choices']);
-  // The rows an object carries cannot be a field's name: the route joins (TODO 770), Field reads null and warns.
-  const wrong = { ...flow(), routes: [...flow().routes, { from: 'start/rows', to: 'pick/field' }] };
+  // The rows an object carries cannot be a field's name: the connection joins (TODO 770), Field reads null and warns.
+  const wrong = { ...flow(), connections: [...flow().connections, { from: 'start/rows', to: 'pick/field' }] };
   assert.deepEqual(workflowFaults(wrong), []);
   assert.deepEqual(workflowGraph(wrong).nodes.find((n) => n.id === 'pick').warnings, [{ row: 'field', words: 'Field takes a value; it was given rows' }]);
   // A Value node is typed: its text must be what its Type says.
-  const typed = (type, value) => ({ v: 2, id: 't', nodes: [{ id: 'n', kind: 'value', x: 0, y: 0, values: { value, type } }] });
+  const typed = (type, value) => ({ v: 3, id: 't', nodes: [{ id: 'n', kind: 'value', x: 0, y: 0, values: { value, type } }] });
   assert.deepEqual(workflowFaults(typed('decimal', '12.5')), []);
   assert.deepEqual(workflowFaults(typed('decimal', 'twelve')), ['the node "n" holds "twelve" as its Value, which is not a number']);
   assert.deepEqual(workflowFaults(typed('integer', '12')), []);
@@ -214,31 +214,31 @@ test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its 
   assert.deepEqual(workflowFaults({ ...typed('decimal', '1'), nodes: [{ id: 'n', kind: 'value', x: 0, y: 0, values: { type: 'object' } }] }), ['the node "n" holds "object" as its Type, which is none of its choices']);
 });
 
-test('a Value node is ADDED for a picklist row, holding its own pick, and routed in; a node is REMOVED with its routes', () => {
+test('a Value node is ADDED for a picklist row, holding its own pick, and connected in; a node is REMOVED with its connections', () => {
   const base = flow({ b: 'trial' });
   const made = addCustomValue(base, 'filter/b', { x: 120, y: 80 });
   const node = made.nodes.find((n) => n.id === 'value-1');
   assert.deepEqual([node.kind, node.x, node.y, node.values], ['value', 120, 80, { value: 'trial' }]);
-  assert.deepEqual(made.routes.at(-1), { from: 'value-1/value', to: 'filter/b' });
+  assert.deepEqual(made.connections.at(-1), { from: 'value-1/value', to: 'filter/b' });
   assert.deepEqual(workflowFaults(made), []);
   assert.equal(rowOf(made, 'filter', 'b').value, 'trial', 'it mirrors what it holds: the pick, as a custom value');
   assert.equal(rowOf(made, 'filter', 'b').custom, true);
-  // A second one takes the next id; a row a route holds takes the new one in its place.
+  // A second one takes the next id; a row a connection holds takes the new one in its place.
   const again = addCustomValue(made, 'filter/b', { x: 0, y: 0 });
   assert.deepEqual(again.nodes.filter((n) => n.kind === 'value').map((n) => n.id), ['status', 'value-1', 'value-2']);
-  assert.deepEqual(again.routes.filter((r) => r.to === 'filter/b'), [{ from: 'value-2/value', to: 'filter/b' }]);
+  assert.deepEqual(again.connections.filter((r) => r.to === 'filter/b'), [{ from: 'value-2/value', to: 'filter/b' }]);
   // A row with no pick makes an empty node; a row that is no picklist, a header, or no row makes none.
   assert.deepEqual(addCustomValue(flow(), 'filter/rows', { x: 0, y: 0 }), flow());
   assert.deepEqual(addCustomValue(flow(), 'filter', { x: 0, y: 0 }), flow());
   assert.deepEqual(addCustomValue(flow(), 'nope/value', { x: 0, y: 0 }), flow());
   const bare = addCustomValue(flow(), 'pick/field', { x: 0, y: 0 });
   assert.equal(bare.nodes.find((n) => n.id === 'value-1').values?.value, 'status');
-  // Remove: the node, and every route that touches it — by its header or by a row.
+  // Remove: the node, and every connection that touches it — by its header or by a row.
   const gone = editWorkflow(made, { remove: 'filter' });
   assert.deepEqual(gone.nodes.map((n) => n.id), ['start', 'status', 'end', 'pick', 'value-1']);
-  assert.deepEqual(gone.routes, [{ from: 'start/rows', to: 'pick' }]);
+  assert.deepEqual(gone.connections, [{ from: 'start/rows', to: 'pick' }]);
   assert.deepEqual(workflowFaults(gone), []);
-  assert.deepEqual(editWorkflow(made, { remove: 'nope' }).routes, made.routes);
+  assert.deepEqual(editWorkflow(made, { remove: 'nope' }).connections, made.connections);
   // Add: an id that is free; one that is not leaves the workflow alone.
   assert.equal(editWorkflow(base, { add: { id: 'x', kind: 'group', x: 1, y: 2 } }).nodes.length, 6);
   assert.deepEqual(editWorkflow(base, { add: { id: 'end', kind: 'sort', x: 1, y: 2 } }), base);

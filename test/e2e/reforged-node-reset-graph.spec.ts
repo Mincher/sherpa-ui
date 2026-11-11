@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv') as HTMLElement & { rendered: Promise<void> };
     await canvas.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2, id: 'g', nodes: [{ id: 'a', kind: 'source', x: 40, y: 40, values: { store: 'customers' } }, { id: 'b', kind: 'output', x: 400, y: 40 }], routes: [{ from: 'a/rows', to: 'b' }] };
+    const flow = { v: 3, id: 'g', nodes: [{ id: 'a', kind: 'source', x: 40, y: 40, values: { store: 'customers' } }, { id: 'b', kind: 'output', x: 400, y: 40 }], connections: [{ from: 'a/rows', to: 'b' }] };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, { session: new SessionStore(), header: head as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['customers'] });
     await window.__settled();
   });

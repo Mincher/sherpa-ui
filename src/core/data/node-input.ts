@@ -1,7 +1,7 @@
 /**
  * node-input.ts — what a node READS from what reaches an input: what it needs, else `null`, and why in words.
  * Before a run, what reaches is what the graph says: its source's type, finer where its kind says (rows, a list,
- * a number, a Field's column), and the value its source holds. Any route joins any input; a socket's type is what it needs where
+ * a number, a Field's column), and the value its source holds. Any connection joins any input; a socket's type is what it needs where
  * nothing says more (TODO 770). A warning, never a fault: Save does not wait. DOM-free.
  * Will, TODOs 764, 770, 783 · TRAP T-a-node-reads-null-from-what-it-cannot-use
  *
@@ -194,15 +194,15 @@ function givenWords(need: Need, { kind, value, field }: Reached): string {
 
 /** What an input reads of what reaches it: the value where it can use it; else the value COERCIONS reads of it, with no
  *  warning (TODO 781); else `null`, and why, in words — "Value A takes a number; it was given "abc""; rows where a field
- *  is needed say what to route. An input that needs nothing takes all. TRAP T-a-node-reads-null-from-what-it-cannot-use */
+ *  is needed say what to connection. An input that needs nothing takes all. TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export function readInput(input: InputNeeds, reached: Reached): { value: unknown; warning?: string } {
   const { label, needs, choices } = input;
   if (!needs || fits(needs, reached, choices)) return { value: reached.value };
   const coerced = coerce(needs, reached);
   if (coerced) return coerced;
   const wants = needs === 'choice' ? or((choices ?? []).map((c) => c.label)) : INPUT_WORDS[needs];
-  const route = (needs === 'field' || needs === 'tested') && reached.kind === 'rows' ? ': route a Field in' : '';
-  return { value: null, warning: `${label} takes ${wants}; it was given ${givenWords(needs, reached)}${route}` };
+  const connection = (needs === 'field' || needs === 'tested') && reached.kind === 'rows' ? ': connect a Field in' : '';
+  return { value: null, warning: `${label} takes ${wants}; it was given ${givenWords(needs, reached)}${connection}` };
 }
 
 /** Whether a new node of a kind, under any of its types, has an input — its header or a row — that can use what an

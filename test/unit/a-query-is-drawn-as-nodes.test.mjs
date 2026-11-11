@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { queryGraph, editedCondition, graphRequest, routeRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph, editedCondition, graphRequest, connectionRequest } = await import(new URL('query-graph.js', core));
 const { readingsOf, treeReading, whereOf } = await import(new URL('where.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { checkPage, openSource, pageWithQuery } = await import(new URL('page-definition.js', core));
@@ -66,7 +66,7 @@ test('the Records page\'s Query: its Source, each scope, its conditions, Arrange
     'scope:scope-r-bar', 'presentation:show-r-bar', 'component:component-r-bar',
   ]);
   // The rows from each Rows row into the next header; each Field into its test, and the test's True into its row.
-  assert.deepEqual(graph.routes.map((r) => `${r.from} → ${r.to}`), [
+  assert.deepEqual(graph.connections.map((r) => `${r.from} → ${r.to}`), [
     'source/rows → scope-view', 'field-view-region/field → when-view-region', 'when-view-region → scope-view/region',
     'scope-view/rows → show-r-donut', 'show-r-donut/rows → component-r-donut', 'scope-view/rows → component-r-line',
     'scope-view/rows → scope-data', 'field-data-status/field → when-data-status', 'when-data-status → scope-data/status', 'scope-data/rows → arrange-data', 'arrange-data/rows → component-grid',
@@ -115,12 +115,12 @@ test('each node shows what the Query and the definition say', () => {
   assert.equal(node('component-grid').heading, 'Customer records');
 });
 
-test('every route joins an output to an input that is there, and that accepts its type', () => {
+test('every connection joins an output to an input that is there, and that accepts its type', () => {
   const type = (address, side) => {
     const { node: id, row: name } = socketOf(address);
     return node(id) && socketType(node(id), name, side);
   };
-  for (const { from, to } of graph.routes) {
+  for (const { from, to } of graph.connections) {
     assert.ok(type(from, 'output'), `${from} has no output`);
     assert.ok(type(to, 'input'), `${to} has no input`);
     assert.ok(accepts(type(from, 'output'), type(to, 'input')), `${from} → ${to}: ${type(from, 'output')} into ${type(to, 'input')}`);
@@ -241,10 +241,10 @@ test('a PRESET is a node into its scope\'s row: its on, from the Query, and what
   const wrote = nodeIn(off, 'when-preset-data-big-seats');
   assert.deepEqual([wrote.kind, wrote.rows.every((r) => !r.editable), wrote.ref.scope], ['condition', true, undefined], 'read only: the definition owns it');
   assert.ok(nodeIn(off, 'field-preset-data-big-seats').rows.every((r) => !r.editable), 'its Field too');
-  assert.ok(off.routes.some((r) => r.from === 'when-preset-data-big-seats' && r.to === 'preset-data-big/seats'));
+  assert.ok(off.connections.some((r) => r.from === 'when-preset-data-big-seats' && r.to === 'preset-data-big/seats'));
   assert.deepEqual(nodeIn(off, 'preset-data-big').ref, { scope: 'data', preset: 'big' });
   // Its True into its row: a boolean into a boolean.
-  assert.ok(off.routes.some((r) => r.from === 'preset-data-big' && r.to === 'scope-data/@big'));
+  assert.ok(off.connections.some((r) => r.from === 'preset-data-big' && r.to === 'scope-data/@big'));
   assert.deepEqual([nodeIn(off, 'preset-data-big').output, nodeIn(off, 'scope-data').rows.find((r) => r.name === '@big').input], ['boolean', 'boolean']);
   // Its on is the command a chip asks; drawn again, it is on, and its rows are its own, not a condition's.
   const preset = nodeIn(off, 'preset-data-big');
@@ -256,22 +256,22 @@ test('a PRESET is a node into its scope\'s row: its on, from the Query, and what
   assert.deepEqual(valuesIn(queryGraph(source.query.draft, page), 'preset-data-big'), valuesIn(on, 'preset-data-big'));
 });
 
-test('a SAVED FILTER is a node: on no bar it says what it would add, and no route; on a bar it is a preset', async () => {
+test('a SAVED FILTER is a node: on no bar it says what it would add, and no connection; on a bar it is a preset', async () => {
   const { draw } = await opened();
   const g = draw();
   const saved = nodeIn(g, 'saved-trials');
   assert.equal(saved.kind, 'saved');
   assert.deepEqual(saved.rows.map((r) => [r.name, r.value, !!r.editable]), [['on', false, false], ['view:status', undefined, false]]);
-  assert.ok(!g.routes.some((r) => r.from.startsWith('saved-trials') || r.to === 'saved-trials'), 'no route out, none into the node itself');
+  assert.ok(!g.connections.some((r) => r.from.startsWith('saved-trials') || r.to === 'saved-trials'), 'no connection out, none into the node itself');
   const wrote = nodeIn(g, 'when-saved-trials-view:status');
   assert.ok(wrote.kind === 'condition' && wrote.rows.every((r) => !r.editable), 'its condition is a Condition node, read only');
-  assert.ok(g.routes.some((r) => r.from === 'field-saved-trials-view:status/field' && r.to === wrote.id), 'on its Field');
-  assert.ok(g.routes.some((r) => r.from === wrote.id && r.to === 'saved-trials/view:status'));
-  // Added to a bar, it is a preset `saved:<id>`: drawn as the saved kind, routed into its scope.
+  assert.ok(g.connections.some((r) => r.from === 'field-saved-trials-view:status/field' && r.to === wrote.id), 'on its Field');
+  assert.ok(g.connections.some((r) => r.from === wrote.id && r.to === 'saved-trials/view:status'));
+  // Added to a bar, it is a preset `saved:<id>`: drawn as the saved kind, connected to its scope.
   const onBar = draw({ presets: (s) => (s === 'view' ? [{ id: 'saved:trials', label: 'Trials', readings: readingsOf({ status: { in: ['trial'] } }) }] : []) });
   assert.equal(nodeIn(onBar, 'saved-trials'), undefined);
   assert.equal(nodeIn(onBar, 'preset-view-saved:trials').kind, 'saved');
-  assert.ok(onBar.routes.some((r) => r.to === 'scope-view/@saved:trials'));
+  assert.ok(onBar.connections.some((r) => r.to === 'scope-view/@saved:trials'));
 });
 
 test('a STATUS FIELD is a node between the Source and the View: each value, and when a row has it', () => {
@@ -283,7 +283,7 @@ test('a STATUS FIELD is a node between the Source and the View: each value, and 
     ['Results', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
   // The Source's rows get their status, then reach the View: never the Source's straight.
-  assert.deepEqual(g.routes.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), ['source/rows → status-health', 'status-health/rows → scope-view']);
+  assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), ['source/rows → status-health', 'status-health/rows → scope-view']);
   assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'scope-view').x);
 });
 
@@ -295,11 +295,11 @@ test('a SUPERSEDED answer is drawn kept, not in force: read only, into its scope
   const kept = nodeIn(g, 'kept-data-status');
   assert.equal(kept.description, 'Superseded: kept, not in force.');
   assert.ok([kept, nodeIn(g, 'field-kept-data-status-status')].every((n) => n.rows.every((r) => !r.editable && /View holds/.test(r.hint))));
-  assert.ok(g.routes.some((r) => r.from === 'kept-data-status' && r.to === 'scope-data/status'));
-  // It moves nowhere: a route from it is refused.
-  assert.ok('refused' in routeRequest(g, { from: 'kept-data-status', to: 'scope-view/status' }));
+  assert.ok(g.connections.some((r) => r.from === 'kept-data-status' && r.to === 'scope-data/status'));
+  // It moves nowhere: a connection from it is refused.
+  assert.ok('refused' in connectionRequest(g, { from: 'kept-data-status', to: 'scope-view/status' }));
   // Nor does a condition's False: only its True goes into a field.
-  assert.ok('refused' in routeRequest(queryGraph({ v: 1, scopes: { view: { holds: ['status'], readings: readingsOf({ status: { in: ['active'] } }) }, data: { holds: ['status'], readings: {} } } }, page),
+  assert.ok('refused' in connectionRequest(queryGraph({ v: 1, scopes: { view: { holds: ['status'], readings: readingsOf({ status: { in: ['active'] } }) }, data: { holds: ['status'], readings: {} } } }, page),
     { from: 'when-view-status/#false', to: 'scope-data/status' }));
 });
 

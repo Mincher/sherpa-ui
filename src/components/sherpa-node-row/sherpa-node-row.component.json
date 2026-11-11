@@ -229,7 +229,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-routed, data-output-at-routed  the same, among the routed only; unset, the socket is not routed"
+      "description": "its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-connected, data-output-at-connected  the same, among the connected only; unset, the socket is not connected"
     },
     {
       "$type": "prop",
@@ -241,11 +241,20 @@
     },
     {
       "$type": "prop",
-      "name": "data-input-at-routed",
+      "name": "data-input-at-connected",
       "type": "number",
       "observed": true,
       "declared": true,
       "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
+      "name": "data-input-connected",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a connection joins the input: its socket is filled, else hollow"
     },
     {
       "$type": "prop",
@@ -254,16 +263,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the input takes several routes: its socket is a double height D"
-    },
-    {
-      "$type": "prop",
-      "name": "data-input-routed",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "a route joins the input: its socket is filled, else hollow"
+      "description": "the input takes several connections: its socket is a double height D"
     },
     {
       "$type": "prop",
@@ -308,7 +308,7 @@
     },
     {
       "$type": "prop",
-      "name": "data-output-at-routed",
+      "name": "data-output-at-connected",
       "type": "number",
       "observed": true,
       "declared": true,
@@ -316,12 +316,12 @@
     },
     {
       "$type": "prop",
-      "name": "data-output-routed",
+      "name": "data-output-connected",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a route leaves the output: its socket is filled, else hollow"
+      "description": "a connection leaves the output: its socket is filled, else hollow"
     },
     {
       "$type": "prop",
@@ -376,7 +376,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, inputAt?, inputAtRouted?, inputMany?, inputRouted?, inputSocket?, label?, message?, outputAt?, outputAtRouted?, outputRouted?, outputSocket?, property?, socketName?, socketValue? }",
+    "shape": "{ collapsed?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, message?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -407,13 +407,13 @@
     },
     {
       "$type": "state",
-      "name": "not-input-routed",
-      "selector": ":host(:not([data-input-routed]))"
+      "name": "not-input-connected",
+      "selector": ":host(:not([data-input-connected]))"
     },
     {
       "$type": "state",
-      "name": "not-output-routed",
-      "selector": ":host(:not([data-output-routed]))"
+      "name": "not-output-connected",
+      "selector": ":host(:not([data-output-connected]))"
     },
     {
       "$type": "state",

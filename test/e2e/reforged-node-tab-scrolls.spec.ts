@@ -7,7 +7,7 @@ import { test, expect, type Page } from './harness';
 type Canvas = HTMLElement & { rendered: Promise<void> };
 
 test.beforeEach(async ({ page }) => {
-  // Short enough that the Condition's rows, its Cut route and its Remove do not fit.
+  // Short enough that the Condition's rows, its Cut connection and its Remove do not fit.
   await page.setViewportSize({ width: 1200, height: 560 });
   await page.evaluate(async () => {
     const el = document.createElement('sherpa-layout-canvas') as Canvas;
@@ -19,12 +19,12 @@ test.beforeEach(async ({ page }) => {
     document.getElementById('root')!.appendChild(panel);
     await el.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2, id: 'tabs', nodes: [
+    const flow = { v: 3, id: 'tabs', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'value', kind: 'value', x: 0, y: 240, values: { value: 'active' } },
       { id: 'f', kind: 'field', x: 320, y: 0, values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 640, y: 0, heading: 'Check', values: { type: 'eq' } },
-    ], routes: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'value/value', to: 'c/b' }] };
+    ], connections: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'value/value', to: 'c/b' }] };
     bindWorkflow(el as never, flow as never, {
       session: new SessionStore(), inspector: panel as never, fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'],
     } as never);
@@ -75,11 +75,11 @@ test('two picked: the tall node\'s tab scrolls in the panel, and every button in
   expect(r.scrolls).toBe(true);
   expect(r.inside).toBe(true);
   expect(r.overlaps).toBe(0);
-  expect(r.buttons.map((b) => b.label)).toEqual(expect.arrayContaining(['Cut route from Value › Value', 'Remove node']));
+  expect(r.buttons.map((b) => b.label)).toEqual(expect.arrayContaining(['Cut connection from Value › Value', 'Remove node']));
   expect(r.buttons.filter((b) => !b.hit)).toEqual([]);
   expect(r.panelScrolled).toBe(0);
-  // A button reached by the scroll does its work: the cut route is gone.
-  await page.locator('#inspector sherpa-tabs:not(.content-tabs) [data-current] sherpa-button[data-label^="Cut route"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  // A button reached by the scroll does its work: the cut connection is gone.
+  await page.locator('#inspector sherpa-tabs:not(.content-tabs) [data-current] sherpa-button[data-label^="Cut connection"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  await expect(page.locator('#cv svg.graph-routes path[data-to="c/b"]')).toHaveCount(0);
+  await expect(page.locator('#cv svg.graph-connectors path[data-to="c/b"]')).toHaveCount(0);
 });

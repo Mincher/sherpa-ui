@@ -24,12 +24,12 @@ const { Journal } = await import(new URL('journal.js', core));
 const { onReport } = await import(new URL('report.js', core));
 
 const flow = () => ({
-  v: 2, id: 'f',
+  v: 3, id: 'f',
   nodes: [
     { id: 's1', kind: 'source', x: 0, y: 0 }, { id: 'p1', kind: 'field', x: 420, y: 260 },
     { id: 'e1', kind: 'output', x: 840, y: 40 }, { id: 's2', kind: 'source', x: 840, y: 560 },
   ],
-  routes: [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }],
+  connections: [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }],
 });
 const boxes = { s1: { w: 240, h: 190 }, p1: { w: 240, h: 130 }, e1: { w: 240, h: 61 }, s2: { w: 240, h: 190 } };
 const GAP = 3 * 56;
@@ -108,8 +108,8 @@ test('saved and read back: JSON, the v2 schema, Save\'s final graph, and the dra
   const back = JSON.parse(JSON.stringify(finalGraph(framed)));
   assert.deepEqual(back.frames, framed.frames);
   assert.equal(checkWorkflow(back), true);
-  assert.deepEqual(schemaCheck('workflow.v2.json')(back), []);
-  assert.notDeepEqual(schemaCheck('workflow.v2.json')({ ...back, frames: [{ id: 'Bad id', nodes: [] }] }), []);
+  assert.deepEqual(schemaCheck('workflow.v3.json')(back), []);
+  assert.notDeepEqual(schemaCheck('workflow.v3.json')({ ...back, frames: [{ id: 'Bad id', nodes: [] }] }), []);
   // Save drops a node a frame names that is not there, and a frame left with none.
   const stale = { ...framed, frames: [{ id: 'frame-1', nodes: ['s1', 'gone'] }, { id: 'frame-2', nodes: ['gone'] }] };
   assert.deepEqual(finalGraph(stale).frames, [{ id: 'frame-1', nodes: ['s1'] }]);
@@ -121,8 +121,8 @@ test('an entity keeps its frames: the graph saved, the definition it offers, and
   const framed = editWorkflow(flow(), { frame: { nodes: ['s1', 'p1'] } });
   const graph = graphOfWorkflow(framed);
   assert.deepEqual(graph.frames, framed.frames);
-  const entity = { v: 1, type: 'node', id: 'framed', label: 'Framed', graph, settings: { inputs: [], outputs: [] } };
-  assert.deepEqual(schemaCheck('entity.v1.json')(entity), []);
+  const entity = { v: 2, type: 'node', id: 'framed', label: 'Framed', graph, settings: { inputs: [], outputs: [] } };
+  assert.deepEqual(schemaCheck('entity.v2.json')(entity), []);
   const definition = definitionOf(entity);
   assert.deepEqual(definition.frames, framed.frames);
   assert.deepEqual(nodeEntityOf('framed', definition).graph.frames, framed.frames);

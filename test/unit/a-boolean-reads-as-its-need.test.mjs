@@ -21,7 +21,7 @@ const data = await import(new URL('../../data.js', core));
 
 const yes = { id: 'yes', kind: 'value', x: 0, y: 0, values: { type: 'boolean', value: 'true' } };
 const no = { id: 'no', kind: 'value', x: 0, y: 200, values: { type: 'boolean', value: 'false' } };
-const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
+const flow = (nodes, connections) => ({ v: 3, id: 'w', nodes, connections });
 const at = (g, id) => g.nodes.find((n) => n.id === id);
 const row = (g, id, name) => at(g, id).rows.find((r) => r.name === name);
 

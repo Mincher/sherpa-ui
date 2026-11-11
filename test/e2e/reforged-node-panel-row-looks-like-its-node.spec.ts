@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');
     const canvas = document.getElementById('cv')! as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    bindWorkflow(canvas as never, { v: 2, id: 'g', nodes: [
+    bindWorkflow(canvas as never, { v: 3, id: 'g', nodes: [
       { id: 's', kind: 'source', x: 500, y: 60, values: { store: 'users' } }, { id: 'o', kind: 'output', x: 900, y: 60 }, { id: 'c', kind: 'condition', x: 500, y: 400 },
       useOf(library as never, 'mine', { id: 'm', x: 900, y: 400 }),
     ] } as never, { session: new SessionStore(), panel: canvas.querySelector('sherpa-node-list') as never, stores: ['users'], library: library as never });

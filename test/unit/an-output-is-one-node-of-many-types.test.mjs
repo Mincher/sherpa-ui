@@ -13,9 +13,9 @@ const { NODE_KINDS, addTypes, fixedChoices, kindOfNode, paletteFor, paletteMatch
 const { workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 const flow = (values, extra = []) => ({
-  v: 2, id: 'w',
+  v: 3, id: 'w',
   nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'o', kind: 'output', x: 400, y: 0, ...(values ? { values } : {}) }, ...extra],
-  routes: [{ from: 's/rows', to: 'o' }],
+  connections: [{ from: 's/rows', to: 'o' }],
 });
 const node = (g, id) => g.nodes.find((n) => n.id === id);
 const row = (n, name) => n.rows.find((r) => r.name === name);
@@ -30,15 +30,15 @@ test('an Output kept with no type is a Run result: its Type row, Status and Summ
   assert.deepEqual(workflowFaults(flow()), []);
 });
 
-test('each type draws its own rows and icon; its properties are output rows, so it can route on', () => {
+test('each type draws its own rows and icon; its properties are output rows, so it can connection on', () => {
   const o = node(workflowGraph(flow({ type: 'notification', channels: ['email'], priority: 'high' })), 'o');
   assert.equal(o.icon, 'notifications');
   assert.deepEqual(o.rows.map((r) => r.name), ['type', 'channels', 'to', 'title', 'message', 'attachments', 'url', 'priority', 'sent', 'delivered', 'messageId']);
   assert.deepEqual([row(o, 'channels').multiple, row(o, 'channels').input], [true, 'object']);
   assert.deepEqual([row(o, 'sent').property, row(o, 'sent').output], [true, 'boolean']);
-  // A File routes on into the next Output's Data.
+  // A File connections on into the next Output's Data.
   const file = flow({ type: 'file' }, [{ id: 'n', kind: 'output', x: 800, y: 0, values: { type: 'file' } }]);
-  file.routes.push({ from: 'o/file', to: 'n/data' });
+  file.connections.push({ from: 'o/file', to: 'n/data' });
   assert.deepEqual(workflowFaults(file), []);
   assert.equal(node(workflowGraph(file), 'o').rows.find((r) => r.name === 'file').output, 'object');
 });

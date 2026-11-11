@@ -10,19 +10,19 @@
     data-description  a line under the name
     data-input-socket   the whole node's input socket, on its header: value | object | boolean | any: an input is a D, its type in its ink
     data-output-socket  the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a circle)
-    data-input-routed   a route joins the header's input: its socket is filled, else hollow
-    data-output-routed  a route leaves the header's output: its socket is filled, else hollow
+    data-input-connected   a connection joins the header's input: its socket is filled, else hollow
+    data-output-connected  a connection leaves the header's output: its socket is filled, else hollow
     data-branches       a fork: the header's output is True, and a footer shows with its False socket, a rounded square
-    data-false-routed   a route leaves False: its socket is filled, else hollow
+    data-false-connected   a connection leaves False: its socket is filled, else hollow
     data-category     its kind's category, in lower case: sources | custom-nodes | variables | math | logic | time | utils | collections | output | ai; each has its look
-    data-input-many   the header's input takes several routes: its socket is a double height D
+    data-input-many   the header's input takes several connections: its socket is a double height D
     data-scale-w      its width, in times its natural width: 1 to 2 (default 1)
     data-scale-h      its height, in times its natural height: 1 to 2 (default 1)
     data-x            where it sits across the canvas, in plane px (default 0)
     data-y            where it sits down the canvas, in plane px (default 0)
     data-current      the selected node; the HOST writes it, one node of many
     data-active       the one picked node whose panel is shown, in a stronger ring; the HOST writes it
-    data-joined       joined to what is picked: downstream of a picked node, at an end of a picked route, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it
+    data-joined       joined to what is picked: downstream of a picked node, at an end of a picked connection, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it
     data-linked       a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it
     data-step         how its step stands as a run lights it: running | done | failed | skipped. Its host writes it. Running, the node wears the active border
     data-caption      the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it
@@ -33,9 +33,9 @@
     data-collapsed    collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its
                       name reads "Heading: summary". Its host writes it
     data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's, the rows', a fork's False. Its host writes them
-    data-inputs-routed, data-outputs-routed  the same, of the routed ones only: hiding the unconnected, the stacks hold these. Its host writes them
+    data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them
     data-summary      what its first field holds, in words: a collapsed node's name ends with it ("Condition: Equals"). Its host writes it
-    data-hide-unconnected  collapsed, a socket no route joins hides; a hover shows them. Its host writes it
+    data-hide-unconnected  collapsed, a socket no connection joins hides; a hover shows them. Its host writes it
     data-reveal       the hidden sockets show, as on a hover: a line is being dragged. Its host writes it
 
   Slots:
@@ -51,7 +51,7 @@
     <!-- COLLAPSED, the two stacks every socket stands in: a D of the node's fill on each side. -->
     <span class="stack stack-in" part="stack-in" aria-hidden="true"></span>
     <span class="stack stack-out" part="stack-out" aria-hidden="true"></span>
-    <!-- The TAB on its top edge, right-aligned: what its step does or did. It moves no row, so no route moves. TODO 845 -->
+    <!-- The TAB on its top edge, right-aligned: what its step does or did. It moves no row, so no connection moves. TODO 845 -->
     <span class="caption" part="caption">
       <span class="caption-icon sherpa-icon-box" part="caption-icon" aria-hidden="true" data-icon="play"></span>
       <span class="caption-warn sherpa-icon-box" part="caption-warn" aria-hidden="true" data-icon="status-warning"></span>

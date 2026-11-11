@@ -294,7 +294,7 @@
 
 /* ── Its step's TAB, on the node's top edge, right-aligned: what the step does or did. It takes the node's own surface and
       border (the pin's: running is active), square below, its top corners small; a running one leads with the play icon.
-      It moves no row, so no route moves. TODO 845 · the Figma ".approval-badge" ── */
+      It moves no row, so no connection moves. TODO 845 · the Figma ".approval-badge" ── */
 .caption {
   display: none;
   position: absolute;
@@ -423,8 +423,8 @@
 :host([data-branches]) .socket-tab-out,
 :host([data-branches]) .socket-tab-false { display: block; }
 :host([data-branches]) .socket-false { display: block; --_shape: var(--_round-square); }
-:host([data-false-routed]) .socket-false .core { display: block; }
-:host([data-false-routed]) .socket-false { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
+:host([data-false-connected]) .socket-false .core { display: block; }
+:host([data-false-connected]) .socket-false { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
 .tip-false .word { display: inline; }
 .name-true { display: none; }
 :host([data-branches]) .header .name-out { display: none; }
@@ -454,15 +454,15 @@
   --_row-bare: none;
   --_stack-step: calc(var(--_socket, 16px) + 2 * var(--_hit, 6px));
   --_stack-top: calc(var(--_head-h, 56px) / 2 - var(--_stack-step) / 2);
-  /* Hiding the unconnected, only the routed sockets stand in the stacks. */
-  --_routed-only: 0;
-  --_ins-now: calc(var(--_ins, 0) * (1 - var(--_routed-only)) + var(--_ins-routed, 0) * var(--_routed-only));
-  --_outs-now: calc(var(--_outs, 0) * (1 - var(--_routed-only)) + var(--_outs-routed, 0) * var(--_routed-only));
+  /* Hiding the unconnected, only the connected sockets stand in the stacks. */
+  --_connected-only: 0;
+  --_ins-now: calc(var(--_ins, 0) * (1 - var(--_connected-only)) + var(--_ins-connected, 0) * var(--_connected-only));
+  --_outs-now: calc(var(--_outs, 0) * (1 - var(--_connected-only)) + var(--_outs-connected, 0) * var(--_connected-only));
 }
 :host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) {
-  --_routed-only: 1;
-  --_unrouted: hidden;
-  --_unrouted-row: none;
+  --_connected-only: 1;
+  --_unconnected: hidden;
+  --_unconnected-row: none;
 }
 /* The body holds no row's room: only what the stacks reach past the header. */
 :host([data-collapsed]) .body {
@@ -474,7 +474,7 @@
 }
 :host([data-collapsed]) .body ::slotted(.section) { display: contents; }
 :host([data-collapsed]) .body ::slotted(.section[data-bare]) { display: none; }
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) .body ::slotted(.section[data-unrouted]) { display: none; }
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal])) .body ::slotted(.section[data-unconnected]) { display: none; }
 /* A fork's footer has no room of its own: False stands last in the outputs' stack. */
 :host([data-collapsed]) .footer {
   position: static;
@@ -515,10 +515,10 @@
   border-start-end-radius: calc(var(--_stack-step) / 2);
   border-end-end-radius: calc(var(--_stack-step) / 2);
 }
-/* Hiding the unconnected: a header socket no route joins hides, and a fork's False no route leaves goes. */
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-routed])) .header .socket-tab-in,
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-routed])) .header .socket-tab-out { visibility: hidden; }
-:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-routed])) .footer { display: none; }
+/* Hiding the unconnected: a header socket no connection joins hides, and a fork's False no connection leaves goes. */
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-input-connected])) .header .socket-tab-in,
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-output-connected])) .header .socket-tab-out { visibility: hidden; }
+:host([data-collapsed][data-hide-unconnected]:not(:hover, [data-reveal], [data-false-connected])) .footer { display: none; }
 /* A SECTION: rows on a grey box, 8px in from the card. Its rows reach past the box and the card's edge (`--_reach`), so each socket's
    tab stands outside the card, where the header's do; a row takes its field's inset from the box. TODO 887 */
 .body {

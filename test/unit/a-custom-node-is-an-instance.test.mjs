@@ -1,6 +1,6 @@
 /**
  * A CUSTOM NODE IS AN INSTANCE: a workflow body saved under one name, its inputs and outputs said
- * once, as JSON (nodes.v1). A use is a plain node whose kind is its id, fed its own routes and
+ * once, as JSON (nodes.v1). A use is a plain node whose kind is its id, fed its own connections and
  * holding its own values. It runs NESTED: innerOf gives the graph inside, the checks run there
  * with the same words and name each fault by path, and a Custom Node that holds itself is a loop.
  * A use records the version it was made from, so a change shows as a diff, and an update keeps
@@ -25,20 +25,20 @@ const ORG = {
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'role-field', kind: 'field', x: 0, y: 0, values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }],
-  routes: [
+  connections: [
     { from: '#in/users', to: 'role-field' }, { from: 'role-field/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
     { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
   ],
 };
 const library = (nodes = {}) => ({ v: 1, nodes: { 'org-permissions': structuredClone(ORG), ...structuredClone(nodes) } });
 const flow = (use = {}) => ({
-  v: 2, id: 'flow',
+  v: 3, id: 'flow',
   nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'perm', kind: 'org-permissions', x: 360, y: 0, ...use },
     { id: 'end', kind: 'output', x: 720, y: 0 },
   ],
-  routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }],
+  connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }],
 });
 const faults = (w, l = library()) => lib.workflowFaultsDeep(w, l);
 const heard = (fn) => {
@@ -57,7 +57,7 @@ test('a library passes its schema and the check; a planted fault in each rule fa
     ['an input of the type any', (d) => { d.inputs[0].type = 'any'; }],
     ['an output that takes many', (d) => { d.outputs[0].many = true; }],
     ['an unknown property', (d) => { d.x = 1; }],
-    ['a route to a made-up address', (d) => { d.routes[0].from = '#inn/users'; }],
+    ['a connection to a made-up address', (d) => { d.connections[0].from = '#inn/users'; }],
     ['a socket that is no name', (d) => { d.inputs[0].name = 'Users'; }],
     ['no body', (d) => delete d.nodes],
   ]) assert.notDeepEqual(bad(change), [], what);
@@ -103,14 +103,14 @@ test('a use gives the same faults inside, named by path', () => {
   const body = lib.innerOf(flow().nodes[1], inside);
   assert.ok(workflowFaults(body.workflow, body.kinds).some((f) => said[0].endsWith(f)));
   // Two levels: the path goes through the use's own name.
-  const deep = library({ outer: { v: 1, label: 'Outer', inputs: [{ name: 'users', type: 'object' }], outputs: [], nodes: [{ id: 'in-it', kind: 'org-permissions', heading: 'Inner', x: 0, y: 0 }], routes: [{ from: '#in/users', to: 'in-it/users' }] } });
+  const deep = library({ outer: { v: 1, label: 'Outer', inputs: [{ name: 'users', type: 'object' }], outputs: [], nodes: [{ id: 'in-it', kind: 'org-permissions', heading: 'Inner', x: 0, y: 0 }], connections: [{ from: '#in/users', to: 'in-it/users' }] } });
   deep.nodes['org-permissions'] = inside.nodes['org-permissions'];
   assert.ok(lib.nodeLibraryFaults(deep).some((f) => f.startsWith('Outer › Inner › Condition: ')), lib.nodeLibraryFaults(deep).join('\n'));
   // And the library checker names the body's own path.
   assert.ok(lib.nodeLibraryFaults(inside).some((f) => f.startsWith('Org permissions › Condition: ')));
 });
 
-test('a route to a socket the definition lost, or never had, is a fault; so is one inside to a lost socket', () => {
+test('a connection to a socket the definition lost, or never had, is a fault; so is one inside to a lost socket', () => {
   assert.deepEqual(faults(flow()), []);
   const lost = library();
   lost.nodes['org-permissions'].inputs.shift();
@@ -133,11 +133,11 @@ test('a use of an unknown id, and an id a shipped kind owns, are faults', () => 
 
 test('a Custom Node that holds itself is a loop, at any depth, said once per cycle', () => {
   const use = (kind) => ({ id: 'again', kind, x: 0, y: 0 });
-  const self = library({ again: { ...ORG, label: 'Again', nodes: [use('again')], routes: [] } });
+  const self = library({ again: { ...ORG, label: 'Again', nodes: [use('again')], connections: [] } });
   assert.deepEqual(lib.nodeLibraryFaults(self).filter((f) => f.includes('holds itself')), ['a Custom Node holds itself, in a loop: Again › Again']);
-  const two = library({ a: { ...ORG, label: 'A', nodes: [use('b')], routes: [] }, b: { ...ORG, label: 'B', nodes: [use('a')], routes: [] } });
+  const two = library({ a: { ...ORG, label: 'A', nodes: [use('b')], connections: [] }, b: { ...ORG, label: 'B', nodes: [use('a')], connections: [] } });
   assert.deepEqual(lib.nodeLibraryFaults(two).filter((f) => f.includes('holds itself')), ['a Custom Node holds itself, in a loop: A › B › A']);
-  const three = library({ a: { ...ORG, label: 'A', nodes: [use('b')], routes: [] }, b: { ...ORG, label: 'B', nodes: [use('c')], routes: [] }, c: { ...ORG, label: 'C', nodes: [use('a')], routes: [] } });
+  const three = library({ a: { ...ORG, label: 'A', nodes: [use('b')], connections: [] }, b: { ...ORG, label: 'B', nodes: [use('c')], connections: [] }, c: { ...ORG, label: 'C', nodes: [use('a')], connections: [] } });
   assert.equal(lib.nodeLibraryFaults(three).filter((f) => f.includes('holds itself')).length, 1);
   // A workflow that uses a loop stops, and says so.
   assert.ok(faults({ ...flow(), nodes: [{ id: 'p', kind: 'a', x: 0, y: 0 }] }, two).some((f) => f.includes('holds itself')));
@@ -169,7 +169,7 @@ test('definitionDiff: each kind of change, plain data; a version ignores where a
   assert.deepEqual(change((d) => { d.nodes[1].values.type = 'ne'; }).nodes.changed, ['has-role']);
   assert.deepEqual(change((d) => d.nodes.push({ id: 'more', kind: 'group', x: 0, y: 0 })).nodes.added, ['more']);
   assert.deepEqual(change((d) => d.nodes.pop()).nodes.removed, ['has-role']);
-  assert.deepEqual(change((d) => d.routes.pop()).routes.removed, [{ from: 'has-role', to: '#out' }]);
+  assert.deepEqual(change((d) => d.connections.pop()).connections.removed, [{ from: 'has-role', to: '#out' }]);
   assert.deepEqual(change((d) => { d.label = 'Org rules'; }).label, { from: 'Org permissions', to: 'Org rules' });
   assert.equal(change((d) => { d.category = 'Other'; }).stale, false, 'a category is no change to a use');
   assert.equal(lib.definitionDiff({ kind: 'org-permissions' }, l).known, false, 'a use that recorded nothing is stale, with nothing listed');
@@ -199,12 +199,12 @@ test('an update keeps the instance\'s own values, drops those of a row lost, and
   const both = lib.updateAll(two, 'org-permissions', next);
   assert.deepEqual(lib.staleUses(both, next), []);
   assert.deepEqual(both.nodes.map((n) => n.values?.role), [undefined, 'owner', undefined, 'viewer']);
-  // An update leaves a route to a lost socket in place, a fault to see.
+  // An update leaves a connection to a lost socket in place, a fault to see.
   const lose = structuredClone(l);
   lose.nodes['org-permissions'].inputs.shift();
   assert.ok(workflowFaults(lib.updateInstance(w, 'perm', lose), { ...NODE_KINDS, ...lib.kindsOf(lose) }).some((f) => f.includes('"perm/users", which is no input socket')));
   // A use in a saved workflow passes the workflow schema, its record included.
-  assert.deepEqual(schemaCheck('workflow.v2.json')(updated), []);
+  assert.deepEqual(schemaCheck('workflow.v3.json')(updated), []);
   assert.deepEqual(editWorkflow(updated, { node: 'perm', row: 'role', value: 'viewer' }, kinds).nodes[1].values.role, 'viewer');
 });
 

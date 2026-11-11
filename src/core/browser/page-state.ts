@@ -35,7 +35,7 @@ import type { Query, QueryDefaults, SavedFilter } from '../data/query.js';
 import { isSavedFilter } from '../data/query.js';
 import type { SharedView } from '../data/query-edits.js';
 import type { NodeDefinition, NodeLibrary } from '../data/node-library.js';
-import { isEntity, type Entity } from '../data/entity.js';
+import { isEntity, readEntity, type Entity } from '../data/entity.js';
 import { makeShelf, nodesView, type EntityShelf } from '../data/entity-shelf.js';
 import type { NodeShelf } from '../data/node-shelf.js';
 import { applyView, type SavedView } from './persist-view.js';
@@ -121,7 +121,9 @@ function cleaned(part: Part, value: unknown): unknown {
   if (whole) return whole(value) ? value : undefined;
   if (!isPlainObject(value)) return undefined;
   const ok = ENTRY[part]!;
-  return Object.fromEntries(Object.entries(value).filter(([, entry]) => ok(entry)));
+  // An entity kept before plan 934 reads once as a v2.
+  const read = part === 'entities' ? readEntity : (v: unknown) => v;
+  return Object.fromEntries(Object.entries(value).map(([k, entry]) => [k, read(entry)]).filter(([, entry]) => ok(entry)));
 }
 
 /** Where a part is kept: read now, written now. `undefined` forgets the key. */
@@ -497,7 +499,8 @@ export class PageKeeper {
       await this.#written;
       const { hasDatabase, readAll } = await import('./database.js');
       if (!hasDatabase()) return {};
-      return Object.fromEntries((await readAll('entities')).map(({ id, entity }) => [id, entity]));
+      // One kept before plan 934 reads once as a v2. TRAP T-a-saved-graph-is-read-in-the-new-words
+      return Object.fromEntries((await readAll('entities')).map(({ id, entity }) => [id, readEntity(entity)]).filter(([, e]) => isEntity(e)));
     } catch (error) {
       this.#say(error, 'pull');
       return {};

@@ -1,13 +1,13 @@
 /**
- * ANY ROUTE JOINS ANY INPUT — Will, 2026-11-05 (TODO 770, B): "any route joins any input, and a type mismatch
+ * ANY CONNECTION JOINS ANY INPUT — Will, 2026-11-05 (TODO 770, B): "any connection joins any input, and a type mismatch
  * reads null with the warning; the socket shapes become hints." A socket's type is what its input needs where
- * its kind says no more; a route of another type is no fault and no refusal: the input reads null, and the
+ * its kind says no more; a connection of another type is no fault and no refusal: the input reads null, and the
  * node warns in words, through `readInput` and `INPUT_WORDS`. What stays refused is the graph's SHAPE: a loop,
- * the same route twice, two into an input that takes one, a socket that is not there, a Rows row (it only
+ * the same connection twice, two into an input that takes one, a socket that is not there, a Rows row (it only
  * sends), an output that says it sends any type, and a row's own fault (P4). And and Or take any boolean
  * (TODO 780, plan 783 D4).
  *
- *   node --test test/unit/any-route-joins-any-input.test.mjs
+ *   node --test test/unit/any-connection-joins-any-input.test.mjs
  *
  * TRAP T-a-node-reads-null-from-what-it-cannot-use · TRAP T-a-socket-says-its-type
  */
@@ -31,15 +31,15 @@ const kinds = {
 /** What sends each type: a Value's value, a Source's rows, a Condition's True. */
 const SENDS = { value: 'v/value', object: 's/rows', boolean: 'c' };
 const SAID = { value: '"abc"', object: INPUT_WORDS.rows, boolean: INPUT_WORDS.boolean };
-const flow = (routes) => ({
-  v: 2, id: 'w',
+const flow = (connections) => ({
+  v: 3, id: 'w',
   nodes: [
     { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'abc' } },
     { id: 's', kind: 'source', x: 0, y: 200, values: { store: 'users' } },
     { id: 'c', kind: 'condition', x: 0, y: 400 },
     { id: 'k', kind: 'sink', x: 360, y: 0 },
   ],
-  routes,
+  connections,
 });
 const warnings = (w) => workflowGraph(w, {}, kinds).nodes.find((n) => n.id === 'k').warnings?.map((x) => [x.row ?? '', x.words]);
 
@@ -60,20 +60,20 @@ test('every output type into every typed input joins, no fault: its own is read;
   for (const t of TYPES) assert.equal(INPUT_WORDS[t], SOCKET_WORDS[t]);
 });
 
-test('Will\'s own example: rows into Math › Value A join, Value A reads null, and Save writes the route', () => {
+test('Will\'s own example: rows into Math › Value A join, Value A reads null, and Save writes the connection', () => {
   const w = {
-    v: 2, id: 'w',
+    v: 3, id: 'w',
     nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'm', kind: 'math', x: 360, y: 0 }],
-    routes: [{ from: 's/rows', to: 'm/a' }],
+    connections: [{ from: 's/rows', to: 'm/a' }],
   };
   const m = workflowGraph(w).nodes.find((n) => n.id === 'm');
   assert.deepEqual([workflowFaults(w), m.warnings, m.rows.find((r) => r.name === 'a').value], [[], [{ row: 'a', words: 'Value A takes a number; it was given rows' }], null]);
-  assert.deepEqual(finalGraph(w).routes, w.routes);
+  assert.deepEqual(finalGraph(w).connections, w.connections);
 });
 
 test('the graph\'s shape stays refused, in words: a loop, twice, two into one, no socket, a Rows row, an any output, a row\'s own fault; And takes any boolean', () => {
   const base = {
-    v: 2, id: 'w',
+    v: 3, id: 'w',
     nodes: [
       { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'v', kind: 'value', x: 0, y: 200, values: { value: 'abc' } },
@@ -82,17 +82,17 @@ test('the graph\'s shape stays refused, in words: a loop, twice, two into one, n
       { id: 'm', kind: 'math', x: 360, y: 400, values: { type: 'round' } },
     ],
   };
-  const faults = (routes, more = []) => workflowFaults({ ...base, nodes: [...base.nodes, ...more], routes }, kinds);
-  assert.deepEqual(faults([{ from: 'c/rows', to: 'd' }, { from: 'd/rows', to: 'c' }]), ['its routes run in a loop']);
-  assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 's/rows', to: 'c' }]), ['the route "s/rows" → "c" is there twice']);
-  assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 'v/value', to: 'c' }]), ['two routes enter "c", which takes one']);
-  assert.deepEqual(faults([{ from: 's/rows', to: 'c/nowhere' }]), ['a route enters "c/nowhere", which is no input socket']);
-  assert.deepEqual(faults([{ from: 's/rows', to: 'c/rows' }]), ['a route enters "c/rows", a Rows row, which only sends: a node\'s rows come in on its header']);
+  const faults = (connections, more = []) => workflowFaults({ ...base, nodes: [...base.nodes, ...more], connections }, kinds);
+  assert.deepEqual(faults([{ from: 'c/rows', to: 'd' }, { from: 'd/rows', to: 'c' }]), ['its connections run in a loop']);
+  assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 's/rows', to: 'c' }]), ['the connection "s/rows" → "c" is there twice']);
+  assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 'v/value', to: 'c' }]), ['two connections enter "c", which takes one']);
+  assert.deepEqual(faults([{ from: 's/rows', to: 'c/nowhere' }]), ['a connection enters "c/nowhere", which is no input socket']);
+  assert.deepEqual(faults([{ from: 's/rows', to: 'c/rows' }]), ['a connection enters "c/rows", a Rows row, which only sends: a node\'s rows come in on its header']);
   // And takes any boolean (TODO 780, plan 783 D4): a Condition's True and another's.
   const and = { id: 'a', kind: 'condition', x: 900, y: 0, values: { type: 'and' } };
   assert.deepEqual(faults([{ from: 'd', to: 'a' }, { from: 'c', to: 'a' }], [and]), []);
   const odd = { id: 'o', kind: 'odd', x: 0, y: 600 };
   const withOdd = { ...kinds, odd: { heading: 'Odd', icon: 'flag', output: 'any', rows: [], model: 'x', graphs: ['workflow'] } };
-  assert.deepEqual(workflowFaults({ ...base, nodes: [...base.nodes, odd], routes: [{ from: 'o', to: 'k' }] }, withOdd).slice(0, 1), ['a route leaves "o", which sends any type: an output says the one it sends']);
-  assert.deepEqual(faults([{ from: 'h/value', to: 'm/places' }]), ['the route "h/value" → "m/places": 1.5 is not a whole number']);
+  assert.deepEqual(workflowFaults({ ...base, nodes: [...base.nodes, odd], connections: [{ from: 'o', to: 'k' }] }, withOdd).slice(0, 1), ['a connection leaves "o", which sends any type: an output says the one it sends']);
+  assert.deepEqual(faults([{ from: 'h/value', to: 'm/places' }]), ['the connection "h/value" → "m/places": 1.5 is not a whole number']);
 });

@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The ACTIVE border shows what is JOINED to the pick (Will, TODO 889): a picked node lights every node downstream of it; a
- * picked route lights the nodes it joins; a row's field in focus lights each node joined to that row — and a row whose
+ * picked connection lights the nodes it joins; a row's field in focus lights each node joined to that row — and a row whose
  * output another row wears (a Source's Rows, on its Store) counts as that row. A picked node wears the picked look, not
  * this. Real pointer and real focus.
  */
@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
     await el.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = {
-      v: 2, id: 'joined',
+      v: 3, id: 'joined',
       nodes: [
         { id: 'one', kind: 'value', x: 40, y: 380, heading: 'One', values: { type: 'integer', value: '1' } },
         { id: 's', kind: 'source', x: 40, y: 40, values: { store: 'users' } },
@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
         { id: 'c', kind: 'condition', x: 640, y: 40, heading: 'Active', values: { type: 'eq', b: 'active' } },
         { id: 'or', kind: 'condition', x: 940, y: 260, heading: 'Either', values: { type: 'or' } },
       ],
-      routes: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c', to: 'or' }, { from: 'one/value', to: 'or' }],
+      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c', to: 'or' }, { from: 'one/value', to: 'or' }],
     };
     bindWorkflow(el as never, flow as never, { session: new SessionStore(), stores: ['users'], fieldsOf: { users: { status: { label: 'Status' } } } });
     (el as unknown as { zoomTo(z: number): void; panTo(x: number, y: number): void }).zoomTo(1);
@@ -50,7 +50,7 @@ test('a picked node lights every node downstream of it, and not itself', async (
   await expect.poll(() => joined(page)).toEqual([]);
 });
 
-test('a picked route lights the two nodes it joins', async ({ page }) => {
+test('a picked connection lights the two nodes it joins', async ({ page }) => {
   const at = await page.evaluate(() => {
     const hit = document.querySelector<SVGPolylineElement>('#cv .graph-hit[data-from="f/field"][data-to="c"]')!;
     const pts = hit.points;

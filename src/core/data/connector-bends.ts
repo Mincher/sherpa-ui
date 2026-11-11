@@ -1,6 +1,6 @@
 /**
- * route-bends.ts — a route's BEND POINTS: the list `via` a reader's drag adds to a route, in plane px,
- * sorted by x. Only a point the reader moved is one; a tied route has none. Pure: no DOM.
+ * connector-bends.ts — a connection's BEND POINTS: the list `via` a reader's drag adds to a connection, in plane px,
+ * sorted by x. Only a point the reader moved is one; a tied connection has none. Pure: no DOM.
  * Will, TODOs 744, 754 · docs/history/plan-744-connector-handles.md
  *
  * Map:
@@ -12,9 +12,9 @@
  * - BEND_GAP — The least gap between two bend points, in px.
  * - clampBend — The x a bend point may take: between the end sockets, and between its neighbours.
  * - clampedVia — A bend list held inside its end sockets and apart, as drawn; the saved list is not rewritten.
- * - withoutBends — A route as it was before any bend: its two ends.
+ * - withoutBends — A connection as it was before any bend: its two ends.
  */
-import type { NodeRoute } from './node-kinds.js';
+import type { NodeConnection } from './node-kinds.js';
 
 /** One bend point: a place on the plane. */
 export interface Bend {
@@ -73,7 +73,7 @@ export function clampedVia(via: readonly Bend[], ends: { from: number; to: numbe
   return out.map((p, i) => (p.x === via[i]!.x ? via[i]! : p));
 }
 
-/** A route as it was before any bend: its two ends. */
-export function withoutBends({ from, to }: NodeRoute): NodeRoute {
+/** A connection as it was before any bend: its two ends. */
+export function withoutBends({ from, to }: NodeConnection): NodeConnection {
   return { from, to };
 }

@@ -228,7 +228,7 @@ const SHAPES: Record<string, number[]> = {
   input: [1, 0, 0, 0, 0, 1, 1],
 };
 
-/** A node of one input socket, big, routed or not, on the canvas at a place of its own. */
+/** A node of one input socket, big, connected or not, on the canvas at a place of its own. */
 async function socketNode(page: Page, id: string, attrs: string): Promise<{ x: number; y: number; w: number; h: number }> {
   return page.evaluate(async ([nodeId, a]) => {
     const el = document.querySelector('#root sherpa-layout-canvas')!;
@@ -257,10 +257,10 @@ const rectOf = (page: Page, id: string, side: string) => page.evaluate(([nodeId,
 }, [id, side] as const);
 
 for (const type of ['value', 'object', 'boolean', 'any']) {
-  test(`an input socket of type ${type} draws its shape, filled when routed and hollow when not`, async ({ page }) => {
+  test(`an input socket of type ${type} draws its shape, filled when connected and hollow when not`, async ({ page }) => {
     const ink = type === 'any' ? await inkOf(page, '--sherpa-style-default-content-secondary')
       : await inkOf(page, { value: '--sherpa-style-info-indicator-accent', object: '--sherpa-style-active-indicator-accent', boolean: '--sherpa-style-success-indicator-accent' }[type]!);
-    await socketNode(page, 'sock', `data-input-socket="${type}" data-input-routed`);
+    await socketNode(page, 'sock', `data-input-socket="${type}" data-input-connected`);
     const filled = boxOf((await rectOf(page, 'sock', 'input'))!);
     const mask = (await paint(page, filled, PROBES)).map((p) => (near(p, ink) ? 1 : 0));
     expect(mask, `${type} filled: a D`).toEqual(SHAPES['input']);
@@ -280,7 +280,7 @@ test('an output socket pins its own type: a value info, an object active, a bool
   for (const [type, token] of [['value', 'info'], ['object', 'active'], ['boolean', 'success']] as const) {
     const ink = await inkOf(page, `--sherpa-style-${token}-indicator-accent`);
     // A picked node does not change a socket's own type.
-    await socketNode(page, 'sock', `data-output-socket="${type}" data-output-routed data-current`);
+    await socketNode(page, 'sock', `data-output-socket="${type}" data-output-connected data-current`);
     const [centre] = await paint(page, boxOf((await rectOf(page, 'sock', 'output'))!), [[.5, .5]]);
     seen[type] = near(centre!, ink);
   }
@@ -294,7 +294,7 @@ test('a fork shows its footer with False in red, and True on the header in green
   expect(await rectOf(page, 'plain', 'false')).toBeNull();
   expect(await page.evaluate(() => getComputedStyle(document.querySelector('#plain')!.shadowRoot!.querySelector('.footer')!).display)).toBe('none');
 
-  await socketNode(page, 'fork', 'data-branches data-output-socket="boolean" data-output-routed data-false-routed');
+  await socketNode(page, 'fork', 'data-branches data-output-socket="boolean" data-output-connected data-false-connected');
   const [yes] = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), [[.5, .5]]);
   const [no] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
   expect(near(yes!, success), 'True is green').toBe(true);
@@ -305,7 +305,7 @@ test('a fork shows its footer with False in red, and True on the header in green
   expect(square.map((p) => (near(p, critical) ? 1 : 0)).filter((_, i) => i !== 1 && i !== 4)).toEqual([1, 0, 0, 1, 1]);
   const circle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
   expect(circle.map((p) => (near(p, success) ? 1 : 0))).toEqual(SHAPES['boolean']);
-  // Unrouted, False is hollow.
+  // Unconnected, False is hollow.
   await socketNode(page, 'fork', 'data-branches');
   const [open] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
   expect(near(open!, critical)).toBe(false);
@@ -334,14 +334,14 @@ test('a socket\'s tip says its type in words, on its socket\'s side: an input\'s
   expect(sides).toEqual(['left', 'right', 'right']);
 });
 
-test('a route takes the ink of its FROM socket\'s type', async ({ page }) => {
+test('a connection takes the ink of its FROM socket\'s type', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const canvas = document.querySelector('#root sherpa-layout-canvas')!;
     canvas.insertAdjacentHTML('beforeend', '<sherpa-node id="r" data-heading="R" data-x="0" data-y="0"></sherpa-node>'
-      + '<svg class="graph-routes" style="stroke: rgb(1, 2, 3)">'
+      + '<svg class="graph-connectors" style="stroke: rgb(1, 2, 3)">'
       + ['value', 'object', 'boolean', 'false', ''].map((t) => `<path data-type="${t}" d="M0 0L1 1"/>`).join('') + '</svg>');
     await (canvas.querySelector('#r') as Sock).rendered;
-    return [...canvas.querySelectorAll('svg.graph-routes path')].map((p) => getComputedStyle(p).stroke);
+    return [...canvas.querySelectorAll('svg.graph-connectors path')].map((p) => getComputedStyle(p).stroke);
   });
   const inks = await Promise.all(['info', 'active', 'success', 'critical'].map((m) => inkOf(page, `--sherpa-style-${m}-indicator-accent`)));
   expect(r.slice(0, 4).map((c) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number))).toEqual(inks);
@@ -351,7 +351,7 @@ test('a route takes the ink of its FROM socket\'s type', async ({ page }) => {
 test('in forced colours the shapes stay and the colours go', async ({ page, browserName }) => {
   test.skip(browserName === 'webkit', 'WebKit cannot emulate forced colours');
   await page.emulateMedia({ forcedColors: 'active' });
-  await socketNode(page, 'fc', 'data-output-socket="object" data-output-routed');
+  await socketNode(page, 'fc', 'data-output-socket="object" data-output-connected');
   const box = boxOf((await rectOf(page, 'fc', 'output'))!);
   const around = await paint(page, { x: box.x - 30, y: box.y, w: 20, h: 20 }, [[.5, .5]]);
   const mask = (await paint(page, box, PROBES)).map((p) => (near(p, around[0]!, 60) ? 0 : 1));

@@ -11,7 +11,7 @@ test('a second graph bound on the same canvas opens framed, not where the first 
     await canvas.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const frame = () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-    const first = bindWorkflow(canvas, { v: 2, id: 'a', nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }], routes: [] }, { session: new SessionStore(), stores: ['users'] });
+    const first = bindWorkflow(canvas, { v: 3, id: 'a', nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }], connections: [] }, { session: new SessionStore(), stores: ['users'] });
     await window.__settled();
     await frame();
     // The reader zooms in and pans away.
@@ -19,9 +19,9 @@ test('a second graph bound on the same canvas opens framed, not where the first 
     canvas.panTo(-900, -700);
     first.stop();
     // Another graph, wide, on the same canvas.
-    bindWorkflow(canvas, { v: 2, id: 'b', nodes: [
+    bindWorkflow(canvas, { v: 3, id: 'b', nodes: [
       { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 1600, y: 0 }, { id: 'o', kind: 'output', x: 3200, y: 400 },
-    ], routes: [] }, { session: new SessionStore(), stores: ['users'] });
+    ], connections: [] }, { session: new SessionStore(), stores: ['users'] });
     await window.__settled();
     await frame();
     await frame();

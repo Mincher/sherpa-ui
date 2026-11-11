@@ -11,7 +11,7 @@ const def = (label: string, tags: string[]) => ({
   inputs: [{ name: 'users', label: 'Users', type: 'object' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-  routes: [{ from: '#in/users', to: 'role' }],
+  connections: [{ from: '#in/users', to: 'role' }],
 });
 
 test.beforeEach(async ({ page }) => {
@@ -28,12 +28,12 @@ test.beforeEach(async ({ page }) => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');
     const flow = {
-      v: 2, id: 'g',
+      v: 3, id: 'g',
       nodes: [
         { id: 'start', kind: 'source', x: 380, y: 40, values: { store: 'users' } },
         useOf(library as never, 'org', { id: 'perm', x: 760, y: 40 }), useOf(library as never, 'admin', { id: 'adm', x: 760, y: 320 }),
       ],
-      routes: [{ from: 'start/rows', to: 'perm/users' }],
+      connections: [{ from: 'start/rows', to: 'perm/users' }],
     };
     const w = window as unknown as Record<string, unknown>;
     w['handed'] = [];

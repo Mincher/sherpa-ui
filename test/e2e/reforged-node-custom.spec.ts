@@ -16,7 +16,7 @@ const ORG = {
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   // The users' Role, a Field; Equals the Role given, as Value B (plan 783).
   nodes: [{ id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-  routes: [
+  connections: [
     { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
     { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
   ],
@@ -64,13 +64,13 @@ const bind = (page: Page) => page.evaluate(async () => {
   };
   const at = (id: string, kind: string, x: number, y: number) => useOf(library as never, kind, { id, x, y });
   const flow = {
-    v: 2, id: 'g',
+    v: 3, id: 'g',
     nodes: [
       { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),
       { id: 'end', kind: 'output', x: 1200, y: 40 },
     ],
-    routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'start/rows', to: 'perm2/users' }, { from: 'perm', to: 'end' }],
+    connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'start/rows', to: 'perm2/users' }, { from: 'perm', to: 'end' }],
   };
   const w = window as unknown as Record<string, unknown>;
   w['saved'] = [];
@@ -293,7 +293,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   expect((await headings(page)).sort()).toEqual(['Org permissions', 'Output', 'Owner check', 'Users with a role']);
   const made = await ed(page, "ed.library().nodes['users-with-a-role']");
   expect((made as { description: string }).description).toBe('Who holds the role');
-  expect(await page.locator('#cv svg.graph-routes path[data-to]').count()).toBe(2);
+  expect(await page.locator('#cv svg.graph-connectors path[data-to]').count()).toBe(2);
   // The panel lists it, and Save hands it over.
   await ed(page, 'ed.save()');
   expect(await page.evaluate(() => (window as unknown as { savedNodes: [string][] }).savedNodes.map(([id]) => id))).toEqual(['users-with-a-role']);
@@ -303,7 +303,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
   expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Output', 'Owner check', 'Source']);
-  expect(await page.locator('#cv svg.graph-routes path[data-to]').count()).toBe(3);
+  expect(await page.locator('#cv svg.graph-connectors path[data-to]').count()).toBe(3);
 });
 
 /** A drawn socket's middle on the screen: a node's header or one of its rows. */
@@ -320,42 +320,42 @@ const drawLine = async (page: Page, from: [number, number], to: [number, number]
   await page.mouse.up();
   await settle(page);
 };
-const routesOf = (page: Page, at = 'ed.workflow().routes') => ed<{ from: string; to: string }[]>(page, at).then((rs) => rs.map((r) => `${r.from} → ${r.to}`).sort());
+const connectionsOf = (page: Page, at = 'ed.workflow().connections') => ed<{ from: string; to: string }[]>(page, at).then((rs) => rs.map((r) => `${r.from} → ${r.to}`).sort());
 
-test('two sources let go on one Custom Node\'s header are two new inputs: a row each, inside too, routed on by the reader; Save writes them; Ungroup joins through them (763)', async ({ page }) => {
+test('two sources let go on one Custom Node\'s header are two new inputs: a row each, inside too, connected on by the reader; Save writes them; Ungroup joins through them (763)', async ({ page }) => {
   await bind(page);
   const perm2 = '#cv > sherpa-node[data-heading="Org permissions"] >> nth=1';
   // An object, then a boolean, onto the HEADER of the second use: never matched to Users, its free row of their type.
   await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Source"] sherpa-node-row:has(sherpa-input-text[name="store"])', 'output'), await socketAt(page, perm2, 'input'));
   await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Org permissions"] >> nth=0', 'output'), await socketAt(page, perm2, 'input'));
-  expect(await routesOf(page)).toEqual(['perm → end', 'perm → perm2/perm', 'start/rows → perm/users', 'start/rows → perm2/start-rows', 'start/rows → perm2/users']);
-  expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="perm2/start-rows"]').count()).toBe(1);
+  expect(await connectionsOf(page)).toEqual(['perm → end', 'perm → perm2/perm', 'start/rows → perm/users', 'start/rows → perm2/start-rows', 'start/rows → perm2/users']);
+  expect(await page.locator('#cv svg.graph-connectors path[data-from="start/rows"][data-to="perm2/start-rows"]').count()).toBe(1);
   // A row's words are its own, or its field's where it has a control (Role).
   expect(await page.locator(perm2).locator('sherpa-node-row:not([data-label="Parameters"])').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label'), e.getAttribute('data-input-socket')]))).toEqual([
     ['Users', 'object'], ['Role', 'value'], ['Source › Results', 'object'], ['Org permissions', 'boolean'], ['Allowed', null],
   ]);
   // The inside is shared: the other use says it can update; this one follows it.
   expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')))).toEqual(['Update available', null]);
-  // Inside, a Group Input row each, an output socket of the source's type, routed to nothing yet.
+  // Inside, a Group Input row each, an output socket of the source's type, connected to nothing yet.
   await ed(page, "ed.open('perm2')");
   await settle(page);
-  const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row:not([data-label="Parameters"])').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]));
+  const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row:not([data-label="Parameters"])').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-connected')]));
   expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Source › Results', 'object', false], ['Org permissions', 'boolean', false]]);
-  // The reader routes Source › Results on to the Field, by the pointer: it takes the place of Users there.
+  // The reader connections Source › Results on to the Field, by the pointer: it takes the place of Users there.
   await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Source › Results"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Field"]', 'input'));
-  expect(await routesOf(page, "ed.library().nodes['org-permissions'].routes")).toContain('#in/start-rows → role');
+  expect(await connectionsOf(page, "ed.library().nodes['org-permissions'].connections")).toContain('#in/start-rows → role');
   expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Source › Results', 'object', true], ['Org permissions', 'boolean', false]]);
   await ed(page, 'ed.back()');
   await settle(page);
   // Save hands the definition over with its two new inputs.
   expect(await ed(page, 'ed.save()')).toBe(true);
   expect(await ed(page, "window.savedNodes.find(([id]) => id === 'org-permissions')[1].inputs.map((i) => i.name)")).toEqual(['users', 'role', 'start-rows', 'perm']);
-  // Ungroup: the Source goes on to the Field through its row; the True and Users rows feed nothing inside, so their routes go.
+  // Ungroup: the Source goes on to the Field through its row; the True and Users rows feed nothing inside, so their connections go.
   await header(page, 'Org permissions').nth(1).click();
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  expect(await routesOf(page)).toEqual(['perm → end', 'role/field → has-role', 'start/rows → perm/users', 'start/rows → role']);
+  expect(await connectionsOf(page)).toEqual(['perm → end', 'role/field → has-role', 'start/rows → perm/users', 'start/rows → role']);
 });
 
 test('a preset\'s header refuses a new input as any refused drop does: in words, the line not kept, a moved end back on its row (763, 803)', async ({ page }) => {
@@ -366,31 +366,31 @@ test('a preset\'s header refuses a new input as any refused drop does: in words,
     w.said = [];
     onReport((r) => w.said.push(`${r.code}: ${r.message}`));
   });
-  const refused = 'workflow-route: bindWorkflow: a preset is read only: Copy to my nodes to add an input.';
+  const refused = 'workflow-connection: bindWorkflow: a preset is read only: Copy to my nodes to add an input.';
   const rows = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row:has(sherpa-input-text[name="store"])';
   const own = '#cv > sherpa-node[data-heading="Owner check"]';
-  const lines = () => page.locator('#cv svg.graph-routes path[data-from]').evaluateAll((els) => els.map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());
+  const lines = () => page.locator('#cv svg.graph-connectors path[data-from]').evaluateAll((els) => els.map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());
   await drawLine(page, await socketAt(page, rows, 'output'), await socketAt(page, own, 'input'));
   expect(await ed(page, 'window.said')).toEqual([refused]);
-  expect(await routesOf(page)).toEqual(['perm → end', 'start/rows → perm/users', 'start/rows → perm2/users']);
+  expect(await connectionsOf(page)).toEqual(['perm → end', 'start/rows → perm/users', 'start/rows → perm2/users']);
   expect(await lines()).toEqual(['perm → end', 'start/rows → perm/users', 'start/rows → perm2/users']);
-  expect(await page.locator('#cv svg.graph-routes path.graph-draft').count(), 'no line is left where it was let go').toBe(0);
+  expect(await page.locator('#cv svg.graph-connectors path.graph-draft').count(), 'no line is left where it was let go').toBe(0);
   expect(await ed(page, "ed.library().nodes['owner-check'].inputs.length")).toBe(2);
-  // A route into its Users row is the workflow's own; its end lifted and let go on the header is refused, and goes back.
+  // A connection into its Users row is the workflow's own; its end lifted and let go on the header is refused, and goes back.
   await drawLine(page, await socketAt(page, rows, 'output'), await socketAt(page, `${own} sherpa-node-row[data-label="Users"]`, 'input'));
-  expect(await routesOf(page)).toContain('start/rows → own/users');
+  expect(await connectionsOf(page)).toContain('start/rows → own/users');
   await drawLine(page, await socketAt(page, `${own} sherpa-node-row[data-label="Users"]`, 'input'), await socketAt(page, own, 'input'));
   expect(await ed(page, 'window.said')).toEqual([refused, refused]);
-  expect(await routesOf(page)).toEqual(['perm → end', 'start/rows → own/users', 'start/rows → perm/users', 'start/rows → perm2/users']);
+  expect(await connectionsOf(page)).toEqual(['perm → end', 'start/rows → own/users', 'start/rows → perm/users', 'start/rows → perm2/users']);
   expect(await lines()).toContain('start/rows → own/users');
-  expect(await page.locator('#cv svg.graph-routes path.graph-draft').count()).toBe(0);
+  expect(await page.locator('#cv svg.graph-connectors path.graph-draft').count()).toBe(0);
 });
 
-test('inside, a picklist row routed from the Group Input, which sends nothing yet, shows nothing and says where from: never its first choice (774)', async ({ page }) => {
+test('inside, a picklist row connected from the Group Input, which sends nothing yet, shows nothing and says where from: never its first choice (774)', async ({ page }) => {
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');
-    // The Source's Status, Equals Value B; Value B not yet routed.
+    // The Source's Status, Equals Value B; Value B not yet connected.
     const library = {
       v: 1, nodes: {
         'has-status': {
@@ -399,11 +399,11 @@ test('inside, a picklist row routed from the Group Input, which sends nothing ye
             { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'pick', kind: 'field', x: 360, y: 0, values: { field: 'status' } },
             { id: 'match', kind: 'condition', x: 720, y: 0, values: { type: 'eq' } },
           ],
-          routes: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: 'match/rows', to: '#out/matching' }],
+          connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: 'match/rows', to: '#out/matching' }],
         },
       },
     };
-    const flow = { v: 2, id: 'g774', nodes: [useOf(library as never, 'has-status', { id: 'has', x: 200, y: 100 })], routes: [] };
+    const flow = { v: 3, id: 'g774', nodes: [useOf(library as never, 'has-status', { id: 'has', x: 200, y: 100 })], connections: [] };
     (window as unknown as Record<string, unknown>)['ed'] = bindWorkflow(document.getElementById('cv') as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, header: document.getElementById('trail') as never, library: library as never,
       fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['users'],
@@ -422,7 +422,7 @@ test('inside, a picklist row routed from the Group Input, which sends nothing ye
   });
   // By the pointer: the Group Input's Status on to Value B.
   await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Status"]', 'output'), await socketAt(page, b, 'input'));
-  expect(await routesOf(page, "ed.library().nodes['has-status'].routes")).toContain('#in/status → match/b');
+  expect(await connectionsOf(page, "ed.library().nodes['has-status'].connections")).toContain('#in/status → match/b');
   expect(await shows()).toEqual({ value: '', shows: '', note: 'From Group Input › Status', readonly: true });
   expect(await ed(page, "ed.library().nodes['has-status'].nodes.find((n) => n.id === 'match').values.b ?? null")).toBe(null);
   // Its inspector says the same, once.
@@ -431,22 +431,22 @@ test('inside, a picklist row routed from the Group Input, which sends nothing ye
   expect(await page.locator('#inspector sherpa-input-text[data-label="Value B"]').evaluate((f: HTMLElement & { value: string }) => [f.value, f.getAttribute('data-description')])).toEqual(['', 'From Group Input › Status']);
 });
 
-test('a route a file kept on a use\'s header reads once as its own new input: drafted, kept for the tab, never added twice; Discard reads it again (763)', async ({ page }) => {
+test('a connection a file kept on a use\'s header reads once as its own new input: drafted, kept for the tab, never added twice; Discard reads it again (763)', async ({ page }) => {
   const read = await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const { useOf } = await import('/dist/data.js');
     const org = (window as unknown as { ORG: Record<string, unknown> }).ORG;
     const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
     const flow = {
-      v: 2, id: 'held',
+      v: 3, id: 'held',
       nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, useOf(library as never, 'org-permissions', { id: 'perm', x: 400, y: 0 })],
-      routes: [{ from: 'start/rows', to: 'perm' }],
+      connections: [{ from: 'start/rows', to: 'perm' }],
     };
     const session = new SessionStore();
     const canvas = document.getElementById('cv')!;
     const open = () => bindWorkflow(canvas as never, flow as never, { session, library: library as never, stores: ['users'] });
     const said = (ed: ReturnType<typeof open>) => ({
-      routes: (ed.workflow().routes ?? []).map((r: { from: string; to: string }) => `${r.from} → ${r.to}`),
+      connections: (ed.workflow().connections ?? []).map((r: { from: string; to: string }) => `${r.from} → ${r.to}`),
       inputs: ed.library().nodes['org-permissions']!.inputs.map((i: { name: string }) => i.name),
     });
     const first = open();
@@ -460,7 +460,7 @@ test('a route a file kept on a use\'s header reads once as its own new input: dr
     again.stop();
     return { was, kept, discarded };
   });
-  const form = { routes: ['start/rows → perm/start-rows'], inputs: ['users', 'role', 'start-rows'] };
+  const form = { connections: ['start/rows → perm/start-rows'], inputs: ['users', 'role', 'start-rows'] };
   expect(read).toEqual({ was: form, kept: form, discarded: form });
 });
 

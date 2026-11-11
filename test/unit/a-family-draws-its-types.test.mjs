@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, resolveKind, typeChoices } = await import(new URL('node-kinds.js', core));
-const { editWorkflow, finalGraph, keptRoutes, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
+const { editWorkflow, finalGraph, keptConnections, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 const facts = { fields: { status: { label: 'Status' }, region: { label: 'Region' }, seats: { label: 'Seats', type: 'number' } }, values: { status: ['active', 'trial'] }, stores: ['customers'] };
 
@@ -54,7 +54,7 @@ test('each family: its types in order, the Type row first, and the rows, sockets
 });
 
 test('Math placed, then Round picked: its rows are redrawn, and Add\'s B waits in the draft', () => {
-  let w = { v: 2, id: 'm', nodes: [{ id: 'math-1', kind: 'math', x: 0, y: 0, values: { a: 2.456, b: 1 } }] };
+  let w = { v: 3, id: 'm', nodes: [{ id: 'math-1', kind: 'math', x: 0, y: 0, values: { a: 2.456, b: 1 } }] };
   assert.deepEqual(node(workflowGraph(w), 'math-1').rows.map((r) => r.name), ['type', 'a', 'b', 'result']);
   w = editWorkflow(w, { node: 'math-1', row: 'type', value: 'round' });
   w = editWorkflow(w, { node: 'math-1', row: 'places', value: '2' });
@@ -65,39 +65,39 @@ test('Math placed, then Round picked: its rows are redrawn, and Add\'s B waits i
   assert.deepEqual(finalGraph(w).nodes[0].values, { a: 2.456, type: 'round', places: 2 }, 'Save leaves B behind');
 });
 
-test('PLANTED FAULTS: a route into a row no Math type has; a Duration of no span; a List into a single-value row warns', () => {
-  const flow = (math, routes, more = []) => ({
-    v: 2, id: 'p',
+test('PLANTED FAULTS: a connection into a row no Math type has; a Duration of no span; a List into a single-value row warns', () => {
+  const flow = (math, connections, more = []) => ({
+    v: 3, id: 'p',
     nodes: [
       { id: 'list', kind: 'value', x: 0, y: 0, values: { type: 'list', value: ['1', '2', '3'] } },
       { id: 'one', kind: 'value', x: 0, y: 200, values: { type: 'integer', value: '4' } },
       { id: 'm', kind: 'math', x: 300, y: 0, values: math }, ...more,
     ],
-    routes,
+    connections,
   });
-  // A route into a row no type has: no input socket. Into a row only another type has: kept, not a fault, and not saved.
-  assert.deepEqual(workflowFaults(flow({ type: 'add' }, [{ from: 'one/value', to: 'm/c' }])), ['a route enters "m/c", which is no input socket']);
+  // A connection into a row no type has: no input socket. Into a row only another type has: kept, not a fault, and not saved.
+  assert.deepEqual(workflowFaults(flow({ type: 'add' }, [{ from: 'one/value', to: 'm/c' }])), ['a connection enters "m/c", which is no input socket']);
   const other = flow({ type: 'floor' }, [{ from: 'one/value', to: 'm/a' }]);
-  assert.deepEqual([workflowFaults(other), keptRoutes(other).length, workflowGraph(other).routes, finalGraph(other).routes], [[], 1, [], []]);
+  assert.deepEqual([workflowFaults(other), keptConnections(other).length, workflowGraph(other).connections, finalGraph(other).connections], [[], 1, [], []]);
   // A List is an object: into Add's A it joins and warns (TODO 770); into Floor's Values it is read, several of them too (D4, D9).
   const warned = (w) => [workflowFaults(w), workflowGraph(w).nodes.find((n) => n.id !== 'list' && n.warnings)?.warnings.map((x) => x.words)];
   assert.deepEqual(warned(flow({ type: 'add' }, [{ from: 'list/value', to: 'm/a' }])), [[], ['Value A takes a number; it was given a list']]);
   const lists = flow({ type: 'average' }, [{ from: 'list/value', to: 'm/values' }, { from: 'list2/value', to: 'm/values' }], [{ id: 'list2', kind: 'value', x: 0, y: 400, values: { type: 'list' } }]);
   assert.deepEqual(workflowFaults(lists), []);
   assert.deepEqual(warned(flow({ type: 'floor' }, [{ from: 'one/value', to: 'm/values' }])), [[], ['Values takes a list of numbers; it was given "4"']]);
-  // Picking Text for the List: its row sends a value, so the route stays and warns, until it is cut or List picked again.
+  // Picking Text for the List: its row sends a value, so the connection stays and warns, until it is cut or List picked again.
   const retyped = editWorkflow(flow({ type: 'floor' }, [{ from: 'list/value', to: 'm/values' }]), { node: 'list', row: 'type', value: 'text' });
   assert.deepEqual(warned(retyped), [[], ['Values takes a list of numbers; it was given "1, 2, 3"']]);
   // A number row holds a number; a span or a unit is one of its list.
   assert.deepEqual(workflowFaults(flow({ type: 'round', places: 'two' }, [])), ['the node "m" holds "two" as its Places, which is no number']);
-  const time = (values) => ({ v: 2, id: 't', nodes: [{ id: 't', kind: 'time', x: 0, y: 0, values: { type: 'duration', ...values } }] });
+  const time = (values) => ({ v: 3, id: 't', nodes: [{ id: 't', kind: 'time', x: 0, y: 0, values: { type: 'duration', ...values } }] });
   assert.deepEqual(workflowFaults(time({ when: 'last', n: 7, unit: 'day' })), []);
   assert.deepEqual(workflowFaults(time({ when: 'ago', unit: 'fortnight' })), [
     'the node "t" holds "ago" as its When, which is none of its choices',
     'the node "t" holds "fortnight" as its Unit, which is none of its choices',
   ]);
   // Split by gives a list: a Text's Value A cannot use it, and warns.
-  const split = { v: 2, id: 's', nodes: [{ id: 'cut', kind: 'text', x: 0, y: 0, values: { type: 'split' } }, { id: 'add', kind: 'text', x: 300, y: 0 }], routes: [{ from: 'cut/result', to: 'add/a' }] };
+  const split = { v: 3, id: 's', nodes: [{ id: 'cut', kind: 'text', x: 0, y: 0, values: { type: 'split' } }, { id: 'add', kind: 'text', x: 300, y: 0 }], connections: [{ from: 'cut/result', to: 'add/a' }] };
   assert.deepEqual(warned(split), [[], ['Value A takes a value; it was given a list']]);
-  assert.deepEqual(workflowFaults({ ...split, nodes: [split.nodes[0], { ...split.nodes[1], values: { type: 'join' } }], routes: [{ from: 'cut/result', to: 'add/values' }] }), []);
+  assert.deepEqual(workflowFaults({ ...split, nodes: [split.nodes[0], { ...split.nodes[1], values: { type: 'join' } }], connections: [{ from: 'cut/result', to: 'add/values' }] }), []);
 });

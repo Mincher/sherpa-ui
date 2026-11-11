@@ -1,6 +1,6 @@
 {
-  "$schema": "../../../schemas/workflow.v2.json",
-  "v": 2,
+  "$schema": "../../../schemas/workflow.v3.json",
+  "v": 3,
   "id": "active-customers",
   "label": "Active customers",
   "nodes": [
@@ -10,7 +10,7 @@
     { "id": "filter", "kind": "condition", "x": 720, "y": 0, "values": { "type": "eq" } },
     { "id": "end", "kind": "output", "x": 1080, "y": 0 }
   ],
-  "routes": [
+  "connections": [
     { "from": "start/rows", "to": "field" },
     { "from": "field/field", "to": "filter" },
     { "from": "status/value", "to": "filter/b" },

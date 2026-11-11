@@ -15,14 +15,14 @@ test.beforeEach(async ({ page }) => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const canvas = document.getElementById('cv')! as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, {
-      v: 2, id: 'g',
+      v: 3, id: 'g',
       nodes: [
         { id: 's', kind: 'source', x: 20, y: 40, values: { store: 'users' } }, { id: 'f', kind: 'field', x: 420, y: 40 },
         { id: 'v', kind: 'value', x: 20, y: 420 }, { id: 'm', kind: 'math', x: 420, y: 420 },
         { id: 'c', kind: 'condition', x: 820, y: 40 }, { id: 't', kind: 'time', x: 820, y: 540 },
         { id: 'o', kind: 'output', x: 1160, y: 40 },
       ],
-      routes: [],
+      connections: [],
     } as never, { session: new SessionStore(), stores: ['users'], fieldsOf: { users: { role: { label: 'Role' } } } });
     await window.__settled();
     canvas.zoomTo(1);
@@ -43,7 +43,7 @@ const socket = (page: Page, heading: string, side: string, row?: string): Promis
   return b ? { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) } : null;
 }, [side, row] as const);
 const middle = (b: NonNullable<Box>): [number, number] => [b.x + b.w / 2, b.y + b.h / 2];
-const routes = (page: Page) => page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-routes path[data-from]')].map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());
+const connections = (page: Page) => page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-connectors path[data-from]')].map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());
 async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, number]): Promise<void> {
   await page.mouse.move(x1, y1);
   await page.mouse.down();
@@ -100,9 +100,9 @@ test('a Source\'s Rows leave from its Store row, beside its input socket: no Row
   expect(await inked(page, out), 'the Rows socket is drawn on the Store row').toBeGreaterThan(8);
   // The pointer: from that socket to the Field's header, then the Field's column on to the Condition.
   await drag(page, middle(out), middle((await socket(page, 'Field', 'input'))!));
-  expect(await routes(page)).toEqual(['s/rows → f']);
+  expect(await connections(page)).toEqual(['s/rows → f']);
   // The line starts on the Store row, where the socket is.
-  const start = await page.evaluate(() => { const d = document.querySelector('#cv svg.graph-routes path[data-from="s/rows"]')!.getAttribute('d')!; return d.match(/M\s*([-\d.]+)[ ,]+([-\d.]+)/)!.slice(1).map(Number); });
+  const start = await page.evaluate(() => { const d = document.querySelector('#cv svg.graph-connectors path[data-from="s/rows"]')!.getAttribute('d')!; return d.match(/M\s*([-\d.]+)[ ,]+([-\d.]+)/)!.slice(1).map(Number); });
   const box = (await page.locator('#cv').boundingBox())!;
   const panned = await page.locator('#cv').evaluate((c) => (c as unknown as { view: { y: number } }).view.y);
   expect(Math.abs(start[1]! + box.y + panned - middle(out)[1])).toBeLessThan(12);
@@ -110,7 +110,7 @@ test('a Source\'s Rows leave from its Store row, beside its input socket: no Row
 
 test('a Condition\'s True and False join an Output by the real pointer; no other node has either to drag', async ({ page }) => {
   await drag(page, middle((await socket(page, 'Condition', 'output'))!), middle((await socket(page, 'Output', 'input'))!));
-  expect(await routes(page)).toEqual(['c → o']);
+  expect(await connections(page)).toEqual(['c → o']);
   await drag(page, middle((await socket(page, 'Condition', 'false'))!), middle((await socket(page, 'Time', 'input'))!));
-  expect(await routes(page)).toEqual(['c → o', 'c/#false → t']);
+  expect(await connections(page)).toEqual(['c → o', 'c/#false → t']);
 });

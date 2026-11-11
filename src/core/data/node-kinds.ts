@@ -39,24 +39,24 @@
  * - paletteFor — The palette's kinds a socket of a type could join, a Value first.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
- * - downstreamOf — Every node the routes lead to from these, and on from each; these left out.
+ * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
  * - FALSE_SOCKET — The footer's False, as an address names it after its node.
  * - rowOf — The row of a kind a name says.
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
- * - takesMany — Whether an input of a kind takes several routes.
- * - NodeRoute — One route: an output socket to an input socket.
- * - NodeTie — One zip tie: a place, and the routes it funnels, in order. It changes no data.
+ * - takesMany — Whether an input of a kind takes several connections.
+ * - NodeConnection — One connection: an output socket to an input socket.
+ * - NodeTie — One zip tie: a place, and the connections it funnels, in order. It changes no data.
  * - RowChoice — One pick in a row's list: the value it keeps, and its words.
  * - RowFacts — What a row's list is read from that the registry does not say.
  * - rowChoices — The list a picklist row reads, a Type row's the family's types; none, it is no picklist.
  * - fixedChoices — A fixed list: a pick row's own, or one the same on every page; none, an open list or no picklist.
- * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
- * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
+ * - mirrored — What a picklist row shows while connections drive it: what comes in, read only, each pick marked Custom.
+ * - drivenSwitch — What a switch row shows while a boolean connection drives it: True if any came in True, marked Custom.
  * - rowFault — A value's fault a row cannot say, in words: a closed list's stranger, no date, a number off its step.
  * - GraphRow — One row as drawn: its kind's parts, the value it shows, and whether a reader may change it.
  * - NodeSize — A node's size, in times its natural width and height, each 1 to 2.
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
- * - DrawnGraph — Nodes and routes, ready to draw: a workflow's, or a page's Query.
+ * - DrawnGraph — Nodes and connections, ready to draw: a workflow's, or a page's Query.
  * - GraphEdit — One row a reader changed: its node, its row and the new value.
  * - NodePlaces — Each node's place by its id: where a reader moved it.
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
@@ -77,7 +77,7 @@ export type SocketType = 'value' | 'object' | 'boolean' | 'any';
 /** Each socket type in words, as a fault or a tip says it. */
 export const SOCKET_WORDS: Readonly<Record<SocketType, string>> = { value: 'a value', object: 'an object', boolean: 'a boolean', any: 'any type' };
 
-/** Whether an input reads what an output of a type sends: its own type, or `any`, which takes all. Any route
+/** Whether an input reads what an output of a type sends: its own type, or `any`, which takes all. Any connection
  *  joins any input; where this is false, the input reads null (TODO 770). An output never sends `any`. */
 export function accepts(from: SocketType, to: SocketType): boolean {
   return from !== 'any' && (to === 'any' || to === from);
@@ -105,7 +105,7 @@ export type RowControl =
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
-  /** A route names the row by it, and a node keeps the row's value under it. */
+  /** A connection names the row by it, and a node keeps the row's value under it. */
   name: string;
   label: string;
   /** None: the row only names a socket, or shows a value. */
@@ -113,7 +113,7 @@ export interface RowKind {
   /** Its list picks several, HTML's own name: its value is a list, and its sockets an object (D17). */
   multiple?: true;
   input?: SocketType;
-  /** Its input takes several routes, each joined as the row says (D4); else a new one replaces it. */
+  /** Its input takes several connections, each joined as the row says (D4); else a new one replaces it. */
   many?: true;
   output?: SocketType;
   /** A number's least, and its step, HTML's own names: a step of 1 takes only whole numbers. */
@@ -173,7 +173,7 @@ export interface NodeKind {
   input?: SocketType;
   /** What its header's input can use; what it cannot is null, and the node a warning (TODO 764). None: anything. */
   needs?: Need;
-  /** Its header input takes several routes (D4). */
+  /** Its header input takes several connections (D4). */
   many?: true;
   output?: SocketType;
   /** A fork: True on the header's output, False on the footer's (`node/#false`), both booleans. */
@@ -227,7 +227,7 @@ const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'),
 /** A portal's name: picked from the graph's names, or New name… (TODO 779). */
 const PORTAL_NAME: RowKind = { name: 'name', label: 'Name', control: 'portal' };
 
-/** An Output's rows (plan 891). A message field takes text with values; each parameter can be routed too. */
+/** An Output's rows (plan 891). A message field takes text with values; each parameter can be connected too. */
 const messageRow = (name: string, label: string, singleLine?: true): RowKind => ({ name, label, control: 'message', input: 'value', ...(singleLine ? { singleLine } : {}) });
 const pickRow = (name: string, label: string, choices: readonly (readonly [string, string])[], multiple?: true): RowKind => ({
   name, label, control: 'pick', choices: choices.map(([value, words]) => ({ value, label: words })),
@@ -367,7 +367,7 @@ const LOGIC: Readonly<Record<string, NodeType>> = {
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
  *  A kind a workflow runs forks (`branches`): its True and False are a boolean only, whether it gave anything,
- *  never rows (D2); rows that do not match are not sent: set the Check to its inverse. The Query's own steps do not: nothing routes a branch from them. */
+ *  never rows (D2); rows that do not match are not sent: set the Check to its inverse. The Query's own steps do not: nothing connects a branch from them. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
   source: {
@@ -495,14 +495,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     types: { includes: { label: 'Includes', rows: [ROWS, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
-  // An In and an Out joined by a name, no line between them. An In takes many routes; an Out draws a row for each route
+  // An In and an Out joined by a name, no line between them. An In takes many connections; an Out draws a row for each connection
   // into an In of its name, once drawn, and sends from those rows alone (TODOs 779, 826). TRAP T-a-portal-hop-is-resolved-once
   portal: {
     heading: 'Portal', icon: 'link-simple', description: 'Link two nodes without a line',
     typeLabel: 'Type', defaultType: 'in',
     types: {
-      in: { label: 'In', help: 'Each route in is a row on every Out portal of its name', input: 'any', many: true, rows: [PORTAL_NAME] },
-      out: { label: 'Out', help: 'A row for each route into an In portal of its name', rows: [PORTAL_NAME] },
+      in: { label: 'In', help: 'Each connection in is a row on every Out portal of its name', input: 'any', many: true, rows: [PORTAL_NAME] },
+      out: { label: 'Out', help: 'A row for each connection into an In portal of its name', rows: [PORTAL_NAME] },
     },
     rows: [], model: 'portal', graphs: ['workflow'], category: 'Utils',
   },
@@ -532,7 +532,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     rows: [], model: 'aiSkill', graphs: ['workflow'], category: 'AI',
   },
   // One Output, many types; Run result, the default, is what an Output with no type was (plan 891). It may sit mid-graph:
-  // its properties route on.
+  // its properties connection on.
   output: {
     heading: 'Output', icon: 'flag', description: 'Do something with what the flow found', input: 'any',
     typeLabel: 'Type', defaultType: 'result', types: OUTPUTS, rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
@@ -683,12 +683,12 @@ export function socketOf(address: string): Socket {
   return at < 0 ? { node: address } : { node: address.slice(0, at), row: address.slice(at + 1) };
 }
 
-/** Every node the routes lead to from these, and on from each; these left out. TODO 889 */
-export function downstreamOf(routes: readonly NodeRoute[], from: Iterable<string>): Set<string> {
+/** Every node the connections lead to from these, and on from each; these left out. TODO 889 */
+export function downstreamOf(connections: readonly NodeConnection[], from: Iterable<string>): Set<string> {
   const start = new Set(from);
   const next = new Map<string, string[]>();
-  for (const route of routes) {
-    const [a, b] = [socketOf(route.from).node, socketOf(route.to).node];
+  for (const connection of connections) {
+    const [a, b] = [socketOf(connection.from).node, socketOf(connection.to).node];
     next.set(a, [...(next.get(a) ?? []), b]);
   }
   const seen = new Set<string>();
@@ -722,25 +722,25 @@ export function socketType(kind: Sockets, row: string | undefined, side: 'input'
   return row === undefined ? fork ?? kind[side] : rowOf(kind.rows, row)?.[side];
 }
 
-/** Whether an input of a kind, or of a node drawn of it, takes several routes: its header's (no row), or a row's. */
+/** Whether an input of a kind, or of a node drawn of it, takes several connections: its header's (no row), or a row's. */
 export function takesMany(kind: Sockets, row?: string): boolean {
   return !!(row === undefined ? kind.many : rowOf(kind.rows, row)?.many);
 }
 
-/** One route: an output socket to an input socket, each `node`, `node/row` or `node/#false`. */
-export interface NodeRoute {
+/** One connection: an output socket to an input socket, each `node`, `node/row` or `node/#false`. */
+export interface NodeConnection {
   from: string;
   to: string;
   /** Bend points a reader gave it, in plane px, sorted by x. None, the default curve. TODO 744 */
   via?: readonly { x: number; y: number }[];
 }
 
-/** One zip tie: where it stands, and the routes it funnels, top to bottom. It changes no data. TODO 562 */
+/** One zip tie: where it stands, and the connections it funnels, top to bottom. It changes no data. TODO 562 */
 export interface NodeTie {
   id: string;
   x: number;
   y: number;
-  routes: readonly NodeRoute[];
+  connections: readonly NodeConnection[];
 }
 
 /** One pick in a row's list: the value it keeps, and its words; its section and its line, where a list has them. */
@@ -834,10 +834,10 @@ export function fixedChoices(row: Pick<RowKind, 'control' | 'choices'> | undefin
   return row?.control ? FIXED[row.control] : undefined;
 }
 
-/** What a picklist row shows while routes drive it (D7): what comes in, read only, each pick
+/** What a picklist row shows while connections drive it (D7): what comes in, read only, each pick
  *  marked Custom. A single pick shows the one that came in, and only it; a `multiple` row
  *  ticks each that came in, and marks Custom each its list lacks. The row's own pick is not
- *  here: the draft keeps it, and cutting the routes gives it back. Plan 713 §5, §9.5 */
+ *  here: the draft keeps it, and cutting the connections gives it back. Plan 713 §5, §9.5 */
 export function mirrored(row: Pick<RowKind, 'multiple' | 'control'>, given: readonly unknown[], list: readonly RowChoice[] = []): Pick<GraphRow, 'value' | 'choices' | 'custom'> {
   const custom = (v: string): RowChoice => ({ value: v, label: `${v} Custom` });
   const picks = [...new Set(given.flat().filter((v) => v != null && v !== '').map(String))];
@@ -847,9 +847,9 @@ export function mirrored(row: Pick<RowKind, 'multiple' | 'control'>, given: read
   return { value: picks, choices: [...list, ...picks.filter((v) => !list.some((c) => c.value === v)).map(custom)], custom: true };
 }
 
-/** What a switch row shows while a route drives it (D7): True if any boolean that came in is
+/** What a switch row shows while a connection drives it (D7): True if any boolean that came in is
  *  True, else False, marked Custom. The row's own state is not here: the draft keeps it, and
- *  cutting the route gives it back. Plan 731, 732 */
+ *  cutting the connection gives it back. Plan 731, 732 */
 export function drivenSwitch(given: readonly boolean[]): Pick<GraphRow, 'value' | 'custom'> {
   return { value: given.some(Boolean), custom: true };
 }
@@ -883,7 +883,7 @@ export interface GraphRow extends RowKind {
   closed?: true;
   /** What is wrong with the value it shows, in words, drawn in the row: never a vanished row's (the draft keeps those). */
   fault?: string;
-  /** Routes drive its picklist: it shows what comes in, each marked Custom, and its own pick waits. */
+  /** Connections drive its picklist: it shows what comes in, each marked Custom, and its own pick waits. */
   custom?: true;
   /** A message's text as it reads: each value by its node's heading and label, `{Customers › Name}`. Plan 891 */
   said?: string;
@@ -921,10 +921,10 @@ export interface GraphNode {
   would?: string;
 }
 
-/** Nodes and routes, ready to draw: a workflow's, or a page's Query. */
+/** Nodes and connections, ready to draw: a workflow's, or a page's Query. */
 export interface DrawnGraph {
   nodes: readonly GraphNode[];
-  routes: readonly NodeRoute[];
+  connections: readonly NodeConnection[];
   ties?: readonly NodeTie[];
 }
 

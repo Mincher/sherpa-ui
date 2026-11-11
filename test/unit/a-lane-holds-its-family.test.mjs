@@ -18,13 +18,13 @@ const { LANES_BY_FAMILY, LANE_PAD, LANE_GAP, laneOf, laneBands, fitLanes } = awa
 const H = () => 100;
 // A Source (Data) and a Value (Values) meet at a Condition (logic), which sends to a Sort (Organise) and an Output.
 const flow = () => editWorkflow({
-  v: 2, id: 'l',
+  v: 3, id: 'l',
   nodes: [
     { id: 'src', kind: 'source', x: 0, y: 0 }, { id: 'val', kind: 'value', x: 0, y: 300 },
     { id: 'cond', kind: 'condition', x: 300, y: 150 }, { id: 'sort', kind: 'sort', x: 600, y: 150 },
     { id: 'out', kind: 'output', x: 900, y: 150 }, { id: 'lone', kind: 'condition', x: 0, y: 900 },
   ],
-  routes: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'out' }],
+  connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'out' }],
 }, { lanes: LANES_BY_FAMILY });
 
 test('a node stands in its family\'s lane; a logic node in the junction between the lanes it joins; one joined to none, in none', () => {
@@ -41,7 +41,7 @@ test('a node stands in its family\'s lane; a logic node in the junction between 
 
 test('a condition fed from one lane stands in the junction under it, never in it; a portal stands with the conditions it links (915, 928)', () => {
   const w = editWorkflow({
-    v: 2, id: 'p',
+    v: 3, id: 'p',
     nodes: [
       { id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'b', kind: 'value', x: 0, y: 200 }, { id: 'is', kind: 'condition', x: 300, y: 100 },
       // The condition sends through a portal, In and Out of one name, to an Output.
@@ -51,7 +51,7 @@ test('a condition fed from one lane stands in the junction under it, never in it
       // A portal of another name, fed by values only.
       { id: 'alone', kind: 'portal', x: 600, y: 400, values: { type: 'in', name: 'other' } },
     ],
-    routes: [
+    connections: [
       { from: 'a/value', to: 'is' }, { from: 'b/value', to: 'is/b' }, { from: 'is', to: 'in' },
       { from: 'out-p', to: 'end' }, { from: 'b/value', to: 'alone' },
     ],
@@ -62,7 +62,7 @@ test('a condition fed from one lane stands in the junction under it, never in it
   assert.equal(at('in'), 'junction:values');
   assert.equal(at('out-p'), 'junction:values');
   assert.equal(at('alone'), 'junction:values');
-  const lone = editWorkflow({ v: 2, id: 'q', nodes: [{ id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'is', kind: 'condition', x: 300, y: 0 }], routes: [{ from: 'a/value', to: 'is' }] }, { lanes: LANES_BY_FAMILY });
+  const lone = editWorkflow({ v: 3, id: 'q', nodes: [{ id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'is', kind: 'condition', x: 300, y: 0 }], connections: [{ from: 'a/value', to: 'is' }] }, { lanes: LANES_BY_FAMILY });
   assert.equal(laneOf(lone, 'is', NODE_KINDS), 'junction:values');
 });
 
@@ -95,7 +95,7 @@ test('lanes on keep each node\'s place, and off puts it back — one placed sinc
   const w = flow();
   assert.deepEqual(w.beforeLanes.cond, { x: 300, y: 150 });
   assert.equal(checkWorkflow(w), true);
-  assert.deepEqual(schemaCheck('workflow.v2.json')(w), []);
+  assert.deepEqual(schemaCheck('workflow.v3.json')(w), []);
   // Laid out, the lanes move the nodes down; a node placed while they are on has no place before.
   const laid = fitLanes(w, H, NODE_KINDS);
   assert.notDeepEqual(laid.nodes.map((n) => n.y), w.nodes.map((n) => n.y));
@@ -112,13 +112,13 @@ test('lanes on keep each node\'s place, and off puts it back — one placed sinc
 
 test('lane A › junction › lane A › junction is ONE junction lane: each stands under the lane its inputs come from (928)', () => {
   const w = editWorkflow({
-    v: 2, id: 'j',
+    v: 3, id: 'j',
     nodes: [
       { id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'c1', kind: 'condition', x: 300, y: 0 },
       { id: 'm', kind: 'math', x: 600, y: 0 }, { id: 'c2', kind: 'condition', x: 900, y: 0 },
       { id: 'end', kind: 'output', x: 1200, y: 0 }, { id: 'c0', kind: 'condition', x: 900, y: 600 },
     ],
-    routes: [
+    connections: [
       { from: 'a/value', to: 'c1' }, { from: 'c1', to: 'm/a' }, { from: 'm/result', to: 'c2' }, { from: 'c2', to: 'end' },
       // Fed from no lane: by what it joins, the Output.
       { from: 'c0', to: 'end' },

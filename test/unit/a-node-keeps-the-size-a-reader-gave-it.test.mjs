@@ -14,9 +14,9 @@ const { editWorkflow, readWorkflow, workflowFaults, workflowGraph } = await impo
 const { groupNodes } = await import(new URL('node-group.js', core));
 
 const flow = () => ({
-  v: 2, id: 'f',
+  v: 3, id: 'f',
   nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'e', kind: 'output', x: 400, y: 0 }],
-  routes: [{ from: 's/rows', to: 'e' }],
+  connections: [{ from: 's/rows', to: 'e' }],
 });
 
 test('a resize sets the size, and the natural size keeps none', () => {
@@ -35,8 +35,8 @@ test('a size outside 1 to 2 is a fault in words; one inside is none', () => {
 
 test('the schema takes the size, in v2 and in a Custom Node body, and refuses 3', () => {
   const ok = editWorkflow(flow(), { resize: { node: 's', w: 1.4, h: 1.1 } });
-  assert.deepEqual(schemaCheck('workflow.v2.json')(JSON.parse(JSON.stringify(ok))), []);
-  assert.notDeepEqual(schemaCheck('workflow.v2.json')(editWorkflow(flow(), { resize: { node: 's', w: 3, h: 1 } })), []);
+  assert.deepEqual(schemaCheck('workflow.v3.json')(JSON.parse(JSON.stringify(ok))), []);
+  assert.notDeepEqual(schemaCheck('workflow.v3.json')(editWorkflow(flow(), { resize: { node: 's', w: 3, h: 1 } })), []);
 });
 
 test('a v1 is no workflow, and the read keeps a v2 size', () => {

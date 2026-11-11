@@ -3,7 +3,7 @@
  * Adopted before their own sheet by sherpa-node and sherpa-node-row. It draws
  * them on the host's start and end edges; each host places them down its box.
  * A socket is its type's SHAPE (its corners) in its type's pinned ink; hollow
- * until a route joins it. TRAP T-a-socket-is-drawn-by-its-type
+ * until a connection joins it. TRAP T-a-socket-is-drawn-by-its-type
  */
 
 :host {
@@ -44,7 +44,7 @@
   background: var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
   border-radius: var(--_shape, var(--_circle));
 }
-/* HOLLOW: the card's own face inside the ring. A routed socket is filled. */
+/* HOLLOW: the card's own face inside the ring. A connected socket is filled. */
 .socket::after {
   content: "";
   position: absolute;
@@ -62,12 +62,12 @@
   border-radius: var(--_shape, var(--_circle));
   pointer-events: none;
 }
-:host([data-input-routed]) .socket-in .core,
-:host([data-output-routed]) .socket-out:not(.socket-false) .core { display: block; }
-:host([data-input-routed]) .socket-in,
-:host([data-output-routed]) .socket-out:not(.socket-false) { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
+:host([data-input-connected]) .socket-in .core,
+:host([data-output-connected]) .socket-out:not(.socket-false) .core { display: block; }
+:host([data-input-connected]) .socket-in,
+:host([data-output-connected]) .socket-out:not(.socket-false) { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
 
-/* An INPUT takes the pointer too: its route's end drags to another input, or a picklist's
+/* An INPUT takes the pointer too: its connection's end drags to another input, or a picklist's
    input drags out a line. Will, TODOs 557, 558.
    An INPUT is fully round, whatever its type: the type reads in its ink and its tip.
    The outputs keep their own shapes. Will, TODOs 740, 807 */
@@ -76,7 +76,7 @@
   cursor: crosshair;
   --_shape: var(--_d);
 }
-/* An OUTPUT takes the pointer: a drag from it draws a new route. Will, TODO 555 */
+/* An OUTPUT takes the pointer: a drag from it draws a new connection. Will, TODO 555 */
 .socket-out {
   inset-inline-start: 100%;
   cursor: crosshair;

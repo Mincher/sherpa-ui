@@ -18,7 +18,7 @@ async function start(page: Page, url = '/test/reforged/graph-views.html', mine =
     const { SessionStore } = await import('/dist/index.js');
     const outlet = document.querySelector('sherpa-outlet');
     const { keeper } = document.querySelector('sherpa-provider');
-    if (${mine} && !keeper.entities.get('mine')) await keeper.entities.save({ v: 1, type: 'preset-filter', id: 'mine', label: 'Mine', graph: { nodes: [], routes: [] } });
+    if (${mine} && !keeper.entities.get('mine')) await keeper.entities.save({ v: 2, type: 'preset-filter', id: 'mine', label: 'Mine', graph: { nodes: [], connections: [] } });
     const base = new URL('/test/reforged/graph-views/app.json', location.href);
     await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
   })()`);
@@ -96,7 +96,7 @@ test('New graph… makes an empty one of the type and opens it; an app that take
   await expect.poll(async () => (await row(page)).graph).toMatchObject({ id: 'new-preset-filter', origin: 'mine' });
   expect((await row(page)).rows).toEqual(['Presets', 'Shipped (Read only)', 'My graphs', 'Mine', 'New Preset Filter', 'New graph…']);
   const kept = await page.evaluate(() => (document.querySelector('sherpa-provider') as unknown as { keeper: { entities: { get(id: string): unknown } } }).keeper.entities.get('new-preset-filter'));
-  expect(kept).toMatchObject({ type: 'preset-filter', label: 'New Preset Filter', graph: { nodes: [], routes: [] } });
+  expect(kept).toMatchObject({ type: 'preset-filter', label: 'New Preset Filter', graph: { nodes: [], connections: [] } });
   // Taken over: nothing is made, and the chip shows the open one still.
   await page.evaluate(() => document.querySelector('sherpa-outlet')!.addEventListener('graph-new', (e) => e.preventDefault()));
   await pick(page, 'graph', 'New graph…');

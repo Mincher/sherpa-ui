@@ -1,5 +1,5 @@
 /**
- * ARRANGE lays picked nodes out in columns along their routes, rows ordered to cross least, on the
+ * ARRANGE lays picked nodes out in columns along their connections, rows ordered to cross least, on the
  * 4px grid, the top-left kept, ties centred in the gaps; `place` is its ONE edit, with bends reset.
  * Will, TODO 752 · docs/history/plan-752-arrange.md
  *
@@ -16,7 +16,7 @@ const box = { w: 240, h: 100 };
 const boxesOf = (ids) => Object.fromEntries(ids.map((id) => [id, box]));
 const opts = (ids) => ({ gapX: 56, gapY: 56, grid: 4, boxes: boxesOf(ids) });
 const R = (a, b) => ({ from: a, to: b });
-const graphOf = (nodes, routes, ties) => ({ nodes: nodes.map(([id, x, y]) => ({ id, x, y })), routes, ...(ties ? { ties } : {}) });
+const graphOf = (nodes, connections, ties) => ({ nodes: nodes.map(([id, x, y]) => ({ id, x, y })), connections, ...(ties ? { ties } : {}) });
 const places = (g, out) => ({ ...Object.fromEntries(g.nodes.map((n) => [n.id, { x: n.x, y: n.y }])), ...out.nodes });
 
 // A messy diamond: a feeds b and c, both feed d. Drawn crossed.
@@ -50,8 +50,8 @@ test('the sweep orders rows so the lines cross less, never more than the input',
   const ids = ['a', 'b', 'c', 'd'];
   const g = graphOf([['a', 0, 0], ['b', 0, 200], ['c', 400, 0], ['d', 400, 200]], [R('a', 'd'), R('b', 'c')]);
   const out = arrangeNodes(g, ids, opts(ids));
-  assert.equal(crossings(places(g, out), boxesOf(ids), g.routes), 0);
-  assert.ok(crossings(places(g, out), boxesOf(ids), g.routes) <= crossings(places(g, { nodes: {} }), boxesOf(ids), g.routes));
+  assert.equal(crossings(places(g, out), boxesOf(ids), g.connections), 0);
+  assert.ok(crossings(places(g, out), boxesOf(ids), g.connections) <= crossings(places(g, { nodes: {} }), boxesOf(ids), g.connections));
 });
 
 test('random DAGs: far fewer crossings in all, worse than the input in only a few', () => {
@@ -62,13 +62,13 @@ test('random DAGs: far fewer crossings in all, worse than the input in only a fe
   for (let round = 0; round < rounds; round++) {
     const n = 4 + Math.floor(rnd() * 8);
     const ids = Array.from({ length: n }, (_, i) => `n${i}`);
-    const routes = [];
-    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (rnd() < 0.25) routes.push(R(ids[i], ids[j]));
-    const g = graphOf(ids.map((id) => [id, Math.floor(rnd() * 900), Math.floor(rnd() * 600)]), routes);
+    const connections = [];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (rnd() < 0.25) connections.push(R(ids[i], ids[j]));
+    const g = graphOf(ids.map((id) => [id, Math.floor(rnd() * 900), Math.floor(rnd() * 600)]), connections);
     const out = arrangeNodes(g, ids, opts(ids));
     assert.deepEqual(arrangeNodes(g, ids, opts(ids)), out, 'deterministic');
-    const was = crossings(places(g, { nodes: {} }), boxesOf(ids), routes);
-    const now = crossings(places(g, out), boxesOf(ids), routes);
+    const was = crossings(places(g, { nodes: {} }), boxesOf(ids), connections);
+    const now = crossings(places(g, out), boxesOf(ids), connections);
     before += was; after += now; if (now > was) worse++;
   }
   assert.ok(after * 2 < before, `${after} vs ${before}`);
@@ -88,37 +88,37 @@ test('a cycle ends, and every node is placed', () => {
   assert.equal(Object.keys(out.nodes).length, 3);
 });
 
-test('a tie stands in the gap, several equally spaced, at the mean height of its routes', () => {
+test('a tie stands in the gap, several equally spaced, at the mean height of its connections', () => {
   const ids = ['a', 'b', 'c', 'd'];
   const g = graphOf([['a', 0, 0], ['b', 0, 300], ['c', 600, 0], ['d', 600, 300]], [R('a', 'c'), R('b', 'd')],
-    [{ id: 't1', x: 300, y: 0, routes: [R('a', 'c')] }, { id: 't2', x: 310, y: 0, routes: [R('b', 'd')] }]);
+    [{ id: 't1', x: 300, y: 0, connections: [R('a', 'c')] }, { id: 't2', x: 310, y: 0, connections: [R('b', 'd')] }]);
   const out = arrangeNodes(g, ids, opts(ids));
   const [t1, t2] = [out.ties.t1, out.ties.t2];
   const gap = [240, 296];
   assert.ok(t1.x > gap[0] && t2.x < gap[1]);
   assert.ok(Math.abs((t1.x - gap[0]) - (gap[1] - t2.x)) <= 1, 'equal margins');
   // one tie sits at the gap's centre
-  const one = arrangeNodes(graphOf([['a', 0, 0], ['c', 600, 0]], [R('a', 'c')], [{ id: 't', x: 0, y: 0, routes: [R('a', 'c')] }]), ['a', 'c'], opts(['a', 'c']));
+  const one = arrangeNodes(graphOf([['a', 0, 0], ['c', 600, 0]], [R('a', 'c')], [{ id: 't', x: 0, y: 0, connections: [R('a', 'c')] }]), ['a', 'c'], opts(['a', 'c']));
   assert.equal(one.ties.t.x, 240 + 28);
 });
 
-test('place: nodes, ties and bends in one edit; bends reset on a touched route; the rest left', () => {
+test('place: nodes, ties and bends in one edit; bends reset on a touched connection; the rest left', () => {
   const w = {
-    v: 2, id: 'p',
+    v: 3, id: 'p',
     nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'output', x: 600, y: 0 }, { id: 'c', kind: 'source', x: 0, y: 200 }, { id: 'd', kind: 'output', x: 600, y: 200 }],
-    routes: [{ from: 'a/rows', to: 'b', via: [{ x: 300, y: 50 }] }, { from: 'c/rows', to: 'd', via: [{ x: 300, y: 250 }] }],
+    connections: [{ from: 'a/rows', to: 'b', via: [{ x: 300, y: 50 }] }, { from: 'c/rows', to: 'd', via: [{ x: 300, y: 250 }] }],
   };
   const next = editWorkflow(w, { place: { nodes: { a: { x: 4, y: 8 }, b: { x: 644, y: 8 } }, bends: 'reset' } });
   assert.equal(next.nodes[0].x, 4);
-  assert.equal(next.routes[0].via, undefined);
-  assert.deepEqual(next.routes[1].via, [{ x: 300, y: 250 }]);
+  assert.equal(next.connections[0].via, undefined);
+  assert.deepEqual(next.connections[1].via, [{ x: 300, y: 250 }]);
   const shifted = editWorkflow(w, { place: { nodes: { a: { x: 10, y: 20 }, b: { x: 610, y: 20 } }, bends: { dx: 10, dy: 20 } } });
-  assert.deepEqual(shifted.routes[0].via, [{ x: 310, y: 70 }]);
-  assert.deepEqual(shifted.routes[1].via, [{ x: 300, y: 250 }]);
+  assert.deepEqual(shifted.connections[0].via, [{ x: 310, y: 70 }]);
+  assert.deepEqual(shifted.connections[1].via, [{ x: 300, y: 250 }]);
 });
 
 test('place: faults in words, and the workflow comes back untouched', () => {
-  const w = { v: 2, id: 'p', nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'output', x: 6, y: 0 }], routes: [] };
+  const w = { v: 3, id: 'p', nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'output', x: 6, y: 0 }], connections: [] };
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: 1, y: 1 } } } }), w);
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: 1, y: 1 }, z: { x: 1, y: 1 } } } }), w);
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: NaN, y: 1 }, b: { x: 1, y: 1 } } } }), w);

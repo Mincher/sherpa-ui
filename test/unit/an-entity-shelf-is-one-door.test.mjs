@@ -15,11 +15,11 @@ const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier, NODES_PAGE } = await import(new URL('browser/page-state.js', core));
 const { readEntities } = await import(new URL('browser/entity-files.js', core));
 const { makeShelf, joinEntities } = await import(new URL('data/entity-shelf.js', core));
-const { definitionOf, nodeEntityOf } = await import(new URL('data/entity.js', core));
+const { definitionOf, nodeEntityOf, readEntity, isEntity } = await import(new URL('data/entity.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
 const filter = (id, label = id, extra = {}) => ({
-  v: 1, type: 'preset-filter', id, label,
+  v: 2, type: 'preset-filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -27,18 +27,18 @@ const filter = (id, label = id, extra = {}) => ({
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }],
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }],
   },
   settings: { source: 'customers' }, ...extra,
 });
 /** A filter whose graph places another entity. */
-const placing = (id, kind) => filter(id, id, { graph: { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], routes: [{ from: 'inner', to: '#out/where' }] } });
+const placing = (id, kind) => filter(id, id, { graph: { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], connections: [{ from: 'inner', to: '#out/where' }] } });
 const HAS_ROLE = {
   v: 1, label: 'Has role', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-  routes: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
 };
 const heard = async (run) => {
   const reports = [];
@@ -85,7 +85,7 @@ test('an id names ONE entity: another type may not take it; a fault in a save re
   const k = keeper();
   await k.entities.save(filter('one'));
   const { result, reports } = await heard(async () => [
-    await k.entities.save({ v: 1, type: 'node', id: 'one', label: 'Same id', graph: { nodes: [] }, settings: { inputs: [], outputs: [] } }),
+    await k.entities.save({ v: 2, type: 'node', id: 'one', label: 'Same id', graph: { nodes: [] }, settings: { inputs: [], outputs: [] } }),
     await k.entities.save({ ...filter('bad'), type: 'recipe' }),
     await k.entities.save(filter('also-bad', 'x', { settings: { colour: 'red' } })),
     await k.entities.save({ nope: true }),
@@ -131,9 +131,9 @@ test('duplicate takes a new id; export and import are JSON with a $schema and ro
 
   const text = k.entities.export('one');
   const json = JSON.parse(text);
-  assert.equal(json.$schema, 'https://sherpa-ui.dev/schemas/entity.v1.json');
+  assert.equal(json.$schema, 'https://sherpa-ui.dev/schemas/entity.v2.json');
   assert.equal('origin' in json, false);
-  assert.deepEqual(schemaCheck('entity.v1.json')(json), []);
+  assert.deepEqual(schemaCheck('entity.v2.json')(json), []);
   assert.equal(k.entities.export('ghost'), undefined);
   // Out, away, back in: the same entity.
   const before = k.entities.get('one');
@@ -177,9 +177,42 @@ test('a watcher is told at once, and stops on the signal', async () => {
 test('the persist guard drops a stored entity of the wrong shape, and a preset smuggled in as the reader\'s', () => {
   const local = memoryTier();
   local.write('sherpa:page:#app', { v: 3, entities: {
-    ok: filter('ok'), wrong: { label: 'No graph' }, old: { ...filter('old'), v: 2 }, sneaky: { ...filter('sneaky'), origin: 'preset' }, 'Bad Id': { ...filter('x'), id: 'Bad Id' },
+    ok: filter('ok'), wrong: { label: 'No graph' }, later: { ...filter('later'), v: 3 }, sneaky: { ...filter('sneaky'), origin: 'preset' }, 'Bad Id': { ...filter('x'), id: 'Bad Id' },
   } });
   assert.deepEqual(Object.keys(keeper(local).read(NODES_PAGE).entities), ['ok']);
+});
+
+/** An entity as it was kept before plan 934: a v1, its graph's links its `routes`. */
+const keptBefore = (e) => {
+  const { connections, ...graph } = e.graph;
+  return { ...e, v: 1, graph: { ...graph, routes: connections, ties: [{ id: 't', x: 0, y: 0, routes: connections.slice(0, 1) }] } };
+};
+
+test('an entity kept before plan 934 reads once in the new words: a file, the store, an import; none is lost. TRAP T-a-saved-graph-is-read-in-the-new-words', async () => {
+  const now = filter('before');
+  const was = keptBefore(now);
+  const read = readEntity(was);
+  assert.equal(read.v, 2);
+  assert.deepEqual(read.graph.connections, now.graph.connections);
+  assert.deepEqual(read.graph.ties[0].connections, now.graph.connections.slice(0, 1));
+  assert.equal('routes' in read.graph, false);
+  assert.ok(isEntity(read) && !isEntity(was));
+  assert.equal(readEntity(now), now, 'one saved since is as it was');
+  // A use of a Custom Node keeps the definition it was made from: that reads in the new words too.
+  const use = { ...was, graph: { ...was.graph, nodes: [...was.graph.nodes, { id: 'u', kind: 'has-role', x: 0, y: 0, was: { v: 1, label: 'Has role', inputs: [], outputs: [], nodes: [], routes: [{ from: 'a', to: 'b' }] } }] } };
+  assert.deepEqual(readEntity(use).graph.nodes.at(-1).was.connections, [{ from: 'a', to: 'b' }]);
+  // A file of entities, entities.v1.
+  const file = readEntities({ v: 1, entities: { before: was } });
+  assert.deepEqual(file.entities.before.graph.connections, now.graph.connections);
+  // The reader's own, as the store keeps them.
+  const local = memoryTier();
+  local.write('sherpa:page:#app', { v: 3, entities: { before: was } });
+  const kept = keeper(local).entities.get('before');
+  assert.deepEqual(kept.graph.connections, now.graph.connections);
+  // An import.
+  const k = keeper(memoryTier());
+  assert.equal(await k.entities.import(JSON.stringify({ ...was, id: 'imported' })), 'imported');
+  assert.deepEqual(k.entities.get('imported').graph.connections, now.graph.connections);
 });
 
 test('the old `nodes` is not read; a Custom Node is an entity of the type `node`', async () => {
@@ -223,14 +256,14 @@ test('the keeper pushes the reader\'s entities to the server and takes them back
 
 test('a file of presets: each is checked alone, the bad reported in checkEntity\'s words and the rest load; the key is the id', async () => {
   const { result, reports } = await heard(() => readEntities({
-    v: 1, entities: {
+    v: 2, entities: {
       // Before the one it places: tried again once that one is in.
       after: placing('after', 'preset-filter:before'),
       before: { ...filter('before'), $schema: 'x' },
       'no-name': { ...filter('no-name'), label: '' },
       'wrong-key': filter('other'),
       recipe: { ...filter('recipe'), type: 'recipe' },
-      unreached: { ...filter('unreached'), graph: { nodes: filter('x').graph.nodes, routes: [] } },
+      unreached: { ...filter('unreached'), graph: { nodes: filter('x').graph.nodes, connections: [] } },
     },
   }));
   assert.deepEqual(Object.keys(result.entities).sort(), ['after', 'before']);
@@ -241,9 +274,9 @@ test('a file of presets: each is checked alone, the bad reported in checkEntity\
   assert.match(said, /"recipe", which this app does not have/);
   assert.match(said, /sends nothing to its output "where"/);
   assert.ok(reports.every((r) => r.code === 'entity'));
-  assert.deepEqual(schemaCheck('entities.v1.json')({ v: 1, entities: { before: filter('before') } }), []);
+  assert.deepEqual(schemaCheck('entities.v2.json')({ v: 2, entities: { before: filter('before') } }), []);
   const none = await heard(() => readEntities([1]));
-  assert.deepEqual(none.result, { v: 1, entities: {} });
+  assert.deepEqual(none.result, { v: 2, entities: {} });
   assert.equal(none.reports.length, 1);
 });
 
@@ -271,11 +304,11 @@ test('a save keeps the FINAL graph: what a node holds for its other types stays 
   const base = filter('kept', 'Kept');
   const entity = { ...base, graph: {
     nodes: [...base.graph.nodes, { id: 'p', kind: 'pair', x: 0, y: 400, values: { type: 'two', a: 'held', b: 'live' } }],
-    routes: [...base.graph.routes, { from: 'status/value', to: 'p/a' }, { from: 'status/value', to: 'p/b' }],
+    connections: [...base.graph.connections, { from: 'status/value', to: 'p/a' }, { from: 'status/value', to: 'p/b' }],
   } };
   const { result, reports } = await heard(() => shelf.save(entity));
   assert.deepEqual([result, reports], [true, []]);
   const kept = mine['kept'].graph;
   assert.deepEqual(kept.nodes.find((n) => n.id === 'p').values, { type: 'two', b: 'live' });
-  assert.deepEqual(kept.routes.filter((r) => r.to.startsWith('p/')), [{ from: 'status/value', to: 'p/b' }]);
+  assert.deepEqual(kept.connections.filter((r) => r.to.startsWith('p/')), [{ from: 'status/value', to: 'p/b' }]);
 });

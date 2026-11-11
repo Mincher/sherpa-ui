@@ -97,7 +97,7 @@ views and its workflows. **Tooling** checks and generates around them.
 - **The views library has no schema**, and loads unchecked.
 
 **Proposal:** one `$defs` library — condition, query, field (status included), scope,
-view, component config (`$ref` to its spec's props), node, route. A page becomes source +
+view, component config (`$ref` to its spec's props), node, connection. A page becomes source +
 views + workflows, each by `$ref`. And a `checkPage` in the engine, run at `open()`.
 
 *Done, 695 D1 (2026-11-03):* `schemas/defs.v1.json` holds every shape a definition uses;

@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
     await el.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = {
-      v: 2, id: 'group',
+      v: 3, id: 'group',
       nodes: [
         { id: 'one', kind: 'value', x: 20, y: 360, heading: 'One', values: { type: 'integer', value: '1' } },
         { id: 's', kind: 'source', x: 20, y: 20, values: { store: 'users' } },
@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
         { id: 'c', kind: 'condition', x: 560, y: 20, heading: 'Active', values: { type: 'eq', b: 'active' } },
         { id: 'or', kind: 'condition', x: 820, y: 220, heading: 'Either', values: { type: 'or' } },
       ],
-      routes: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c', to: 'or' }, { from: 'one/value', to: 'or' }],
+      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c', to: 'or' }, { from: 'one/value', to: 'or' }],
     };
     const w = window as unknown as Record<string, unknown>;
     w['ed'] = bindWorkflow(el as never, flow as never, { session: new SessionStore(), inspector: panel as never, stores: ['users'], fieldsOf: { users: { status: { label: 'Status' } } } });
@@ -68,7 +68,7 @@ test('a Value\'s 1 into Or is a constant part: no warning, and Status or 1 alway
 test('the Source\'s rows dropped on Or\'s header join, no refusal, read null, and Or warns', async ({ page }) => {
   const heard: string[] = [];
   page.on('console', (m) => { if (/bindWorkflow/.test(m.text())) heard.push(m.text()); });
-  expect(await page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-routes path[data-to="or"]')].map((p) => (p as SVGElement).dataset['from']).sort())).toEqual(['c', 'one/value']);
+  expect(await page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-connectors path[data-to="or"]')].map((p) => (p as SVGElement).dataset['from']).sort())).toEqual(['c', 'one/value']);
   expect(await page.locator(OR).getAttribute('data-warning')).toBeNull();
   const rows = await page.evaluate(() => {
     const row = [...document.querySelectorAll('#cv > sherpa-node[data-heading="Source"] sherpa-node-row')].find((r) => r.querySelector('sherpa-input-text[name="store"]')) as HTMLElement & { socketRect(side: string): DOMRect };

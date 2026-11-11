@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { queryGraph, graphRequest, placeRequest, routeRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph, graphRequest, placeRequest, connectionRequest } = await import(new URL('query-graph.js', core));
 const { answerTree } = await import(new URL('filter-state.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));
@@ -57,7 +57,7 @@ test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the 
     ['when-view-seats.2.1', 'condition', [['type', 'gt'], ['b', 5]]],
     ['when-view-seats.2.2', 'condition', [['type', 'lt'], ['b', 100]]],
   ]);
-  assert.deepEqual(g.routes.filter((r) => /seats/.test(r.from)).map((r) => `${r.from} → ${r.to}`), [
+  assert.deepEqual(g.connections.filter((r) => /seats/.test(r.from)).map((r) => `${r.from} → ${r.to}`), [
     'field-view-seats/field → when-view-seats.1', 'when-view-seats.1 → when-view-seats',
     'field-view-seats/field → when-view-seats.2.1', 'when-view-seats.2.1 → when-view-seats.2',
     'field-view-seats/field → when-view-seats.2.2', 'when-view-seats.2.2 → when-view-seats.2',
@@ -65,7 +65,7 @@ test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the 
   ]);
   // An And or an Or takes many booleans; a leaf the Field's column; the Field takes nothing in a Query.
   assert.deepEqual([node(g, 'when-view-seats').input, node(g, 'when-view-seats').many, node(g, 'when-view-seats.1').input, node(g, 'field-view-seats').input], ['boolean', true, 'any', undefined]);
-  for (const { from, to } of g.routes) {
+  for (const { from, to } of g.connections) {
     const [a, b] = [socketOf(from), socketOf(to)];
     assert.ok(accepts(socketType(node(g, a.node), a.row, 'output'), socketType(node(g, b.node), b.row, 'input')), `${from} → ${to}`);
   }
@@ -128,21 +128,21 @@ test('the Field picks another field: the whole reading MOVES there, as one chang
   assert.equal(asked.length, 2);
   assert.deepEqual([asked[0].field, asked[0].reading, asked[1].field], ['seats', null, 'plan']);
   assert.deepEqual(edit(g, facts, 'field-view-seats', 'field', 'seats').field, 'seats', 'the same field: the reading as it is');
-  assert.equal(routeRequest(g, { from: 'when-view-seats.2', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a part\'s True goes into its group, drawn: the Query holds a whole tree');
-  assert.equal(routeRequest(g, { from: 'field-view-seats/field', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a Field is no condition');
+  assert.equal(connectionRequest(g, { from: 'when-view-seats.2', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a part\'s True goes into its group, drawn: the Query holds a whole tree');
+  assert.equal(connectionRequest(g, { from: 'field-view-seats/field', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a Field is no condition');
 });
 
 test('placing a Field in a Query holds the scope\'s next field; a Condition is refused in words: it tests a Field', async () => {
   const { source } = await opened();
   const facts = { holds: (s) => source.query.scope(s), fields: () => ['seats', 'plan'], presets: () => [], on: () => false };
   assert.deepEqual(placeRequest('field', 'view', facts), { request: { scope: 'view', hold: ['seats', 'plan'] } });
-  assert.match(placeRequest('condition', 'view', facts).refused, /^A Condition tests a Field: route one in\./);
+  assert.match(placeRequest('condition', 'view', facts).refused, /^A Condition tests a Field: connect one in\./);
   assert.match(placeRequest('field', 'view', { ...facts, fields: () => ['seats'] }).refused, /holds every field it may, so it takes no new Field/);
 });
 
 /** A or (B and C) on Seats, in a workflow: one Field into three Conditions, an And and an Or (plan 783 D4). */
 const seatsFlow = () => ({
-  v: 2, id: 'tree',
+  v: 3, id: 'tree',
   nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'seats', kind: 'field', x: 200, y: 0, values: { field: 'seats' } },
@@ -153,7 +153,7 @@ const seatsFlow = () => ({
     { id: 'or', kind: 'condition', x: 800, y: 0, values: { type: 'or' } },
     { id: 'end', kind: 'output', x: 1000, y: 0 },
   ],
-  routes: [
+  connections: [
     { from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'a' }, { from: 'seats/field', to: 'b' }, { from: 'seats/field', to: 'c' },
     { from: 'b', to: 'and' }, { from: 'c', to: 'and' }, { from: 'a', to: 'or' }, { from: 'and', to: 'or' }, { from: 'or/rows', to: 'end' },
   ],
@@ -168,7 +168,7 @@ test('in a workflow, A or (B and C) is one Field into three Conditions, an And a
   const g = workflowGraph(w, { fieldsOf });
   for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'b', 'count'], id);
   for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows'], id);
-  assert.ok(g.nodes.every((n) => !n.warnings), 'every route reads what it needs');
+  assert.ok(g.nodes.every((n) => !n.warnings), 'every connection reads what it needs');
   // Each Condition's operators are the Field's type's; an edit types Value B by it.
   assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, 70);
   assert.equal(editWorkflow(editWorkflow(w, { node: 'seats', row: 'field', value: 'plan' }), { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, '70');
@@ -190,7 +190,7 @@ test('a planted fault in each check: an operator the Field\'s type does not take
 
 test('the Filter kind is gone, and no file reads as one (TODO 777): a node of it is a fault', () => {
   assert.equal(NODE_KINDS.filter, undefined);
-  const saved = (v) => ({ v, id: 'old', nodes: [{ id: 'f', kind: 'filter', x: 0, y: 0, values: { field: 'status', op: 'eq' } }], routes: [] });
+  const saved = (v) => ({ v, id: 'old', nodes: [{ id: 'f', kind: 'filter', x: 0, y: 0, values: { field: 'status', op: 'eq' } }], connections: [] });
   assert.equal(readWorkflow(saved(2)).workflow.nodes[0].kind, 'filter');
   assert.deepEqual(workflowFaults(saved(2)), ['the node "f" is of the kind "filter", which is not one']);
 });

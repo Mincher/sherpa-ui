@@ -2,20 +2,20 @@
  * node-arrange.ts — lay picked nodes out on a grid: columns by flow, rows by fewest crossings. Pure: no DOM. Will, TODOs 752, 756, 778 · docs/history/plan-752-arrange.md
  *
  * Map:
- * - ArrangeGraph — What a layout reads: the nodes' places, the routes, the ties.
+ * - ArrangeGraph — What a layout reads: the nodes' places, the connections, the ties.
  * - ArrangeOptions — The gaps, the grid, and each node's drawn box.
  * - Arranged — Where each picked node and each tie goes.
- * - SocketHeights — Each socket's height in its node's box, as drawn: inputs by a route's `to`, outputs by its `from`.
+ * - SocketHeights — Each socket's height in its node's box, as drawn: inputs by a connection's `to`, outputs by its `from`.
  * - crossings — How many pairs of straight lines, edge to edge at mid height or socket to socket, cross in a layout.
- * - arrangeNodes — The picked nodes on a grid, by their routes, rows crossing least, ties in the gaps.
+ * - arrangeNodes — The picked nodes on a grid, by their connections, rows crossing least, ties in the gaps.
  */
-import { socketOf, type NodeRoute, type NodeTie } from './node-kinds.js';
+import { socketOf, type NodeConnection, type NodeTie } from './node-kinds.js';
 import { tieLimit } from './workflow.js';
 
-/** What a layout reads: the nodes' places, the routes, the ties. */
+/** What a layout reads: the nodes' places, the connections, the ties. */
 export interface ArrangeGraph {
   nodes: readonly { id: string; x: number; y: number }[];
-  routes: readonly NodeRoute[];
+  connections: readonly NodeConnection[];
   ties?: readonly NodeTie[];
 }
 
@@ -37,7 +37,7 @@ export interface Arranged {
 type Spot = { x: number; y: number };
 type Box = { w: number; h: number };
 
-/** Each socket's height in its node's box, in plane px, as drawn: inputs by a route's `to`, outputs by its `from`. TODO 827 */
+/** Each socket's height in its node's box, in plane px, as drawn: inputs by a connection's `to`, outputs by its `from`. TODO 827 */
 export interface SocketHeights {
   inputs: Readonly<Record<string, number>>;
   outputs: Readonly<Record<string, number>>;
@@ -45,8 +45,8 @@ export interface SocketHeights {
 
 /** How many pairs of straight lines, from a node's right edge to the next's left edge, cross: at mid height, two lines
  *  of one node never counted; or, given the sockets, socket to socket, and two lines out of one node's two sockets count. */
-export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonly<Record<string, Box>>, routes: readonly NodeRoute[], sockets?: SocketHeights): number {
-  const lines = routes.flatMap((r) => {
+export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonly<Record<string, Box>>, connections: readonly NodeConnection[], sockets?: SocketHeights): number {
+  const lines = connections.flatMap((r) => {
     const [a, b] = [socketOf(r.from).node, socketOf(r.to).node];
     const [pa, pb, ba, bb] = [places[a], places[b], boxes[a], boxes[b]];
     if (!pa || !pb || !ba || !bb || a === b) return [];
@@ -64,14 +64,14 @@ export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonl
 }
 
 /**
- * Lay the picked nodes out: a node's column is its depth along the routes among them, so sources
+ * Lay the picked nodes out: a node's column is its depth along the connections among them, so sources
  * stand left; rows in a column are ordered by a barycentre sweep and the order that crosses least
  * (by the lines drawn) wins, the current order a candidate. They stand on a grid: each column as wide as
  * its widest node and each row as tall as its tallest, `gapX` and `gapY` between, every node at its cell's
- * top left (756), every place on the 4px grid, the block's top-left where the picked nodes' was. A tie whose routes all
- * join picked nodes stands in the gap before its shortest route's target, equally spaced with its
- * neighbours there, at the mean height of its routes, held inside `tieLimit`. A cycle: its closing
- * route is left out of the depth, so the walk ends. Fewer than two picked: nothing.
+ * top left (756), every place on the 4px grid, the block's top-left where the picked nodes' was. A tie whose connections all
+ * join picked nodes stands in the gap before its shortest connection's target, equally spaced with its
+ * neighbours there, at the mean height of its connections, held inside `tieLimit`. A cycle: its closing
+ * connection is left out of the depth, so the walk ends. Fewer than two picked: nothing.
  */
 export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], options: ArrangeOptions): Arranged {
   const grid = options.grid ?? 4;
@@ -85,8 +85,8 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
   const mid = (id: string): number => at.get(id)!.y + box(id).h / 2;
   const first = [...ids].sort((a, b) => mid(a) - mid(b) || (a < b ? -1 : 1));
   const set = new Set(ids);
-  // The routes among them, once each, with a cycle's closing route left out.
-  const all = graph.routes.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const).filter(([a, b]) => a !== b && set.has(a) && set.has(b));
+  // The connections among them, once each, with a cycle's closing connection left out.
+  const all = graph.connections.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const).filter(([a, b]) => a !== b && set.has(a) && set.has(b));
   const next = new Map<string, string[]>(first.map((id) => [id, []]));
   for (const [a, b] of all) if (!next.get(a)!.includes(b)) next.get(a)!.push(b);
   const state = new Map<string, 1 | 2>();
@@ -107,7 +107,7 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
   for (const id of order.reverse()) for (const [a, b] of edges) if (a === id) depth.set(b, Math.max(depth.get(b)!, depth.get(id)! + 1));
   const anchor = { x: near(Math.min(...ids.map((id) => at.get(id)!.x))), y: near(Math.min(...ids.map((id) => at.get(id)!.y))) };
   const columns = Math.max(...depth.values()) + 1;
-  // One item per node, and one per column a long route crosses, so a sweep sees every line.
+  // One item per node, and one per column a long connection crosses, so a sweep sees every line.
   const layers: string[][] = Array.from({ length: columns }, () => []);
   for (const id of first) layers[depth.get(id)!]!.push(id);
   const links: [string, string][] = [];
@@ -164,10 +164,10 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
   const pickIt = scored.indexOf(Math.min(...scored));
   const chosen = layouts[pickIt]!;
   out.nodes = chosen.nodes;
-  // Ties: each in the gap before its shortest route's target, equally spaced.
+  // Ties: each in the gap before its shortest connection's target, equally spaced.
   const sits = new Map<number, NodeTie[]>();
   for (const tie of graph.ties ?? []) {
-    const pair = tie.routes.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const);
+    const pair = tie.connections.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const);
     if (!pair.length || !pair.every(([a, b]) => set.has(a) && set.has(b))) continue;
     const col = Math.min(...pair.map(([, b]) => depth.get(b)!));
     if (col < 1) continue;
@@ -175,7 +175,7 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
   }
   const final = { ...Object.fromEntries(graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }])), ...chosen.nodes };
   const mean = (tie: NodeTie, x?: number): number => {
-    const ys = tie.routes.map((r) => {
+    const ys = tie.connections.map((r) => {
       const [a, b] = [socketOf(r.from).node, socketOf(r.to).node];
       const [x1, y1, x2, y2] = [final[a]!.x + box(a).w, final[a]!.y + box(a).h / 2, final[b]!.x, final[b]!.y + box(b).h / 2];
       const t = x === undefined || x2 === x1 ? 0.5 : Math.min(1, Math.max(0, (x - x1) / (x2 - x1)));

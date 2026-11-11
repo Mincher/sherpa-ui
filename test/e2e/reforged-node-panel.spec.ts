@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
 const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], routes: [] };
+  const flow = { v: 3, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], connections: [] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['customers'],
@@ -45,12 +45,12 @@ const BIND = `async () => {
 const bind = (page: Page) => page.evaluate(`(${BIND})()`);
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 
-/** What the draft holds now: each node's id and kind, and its routes. */
+/** What the draft holds now: each node's id and kind, and its connections. */
 const draft = (page: Page) => page.evaluate(() => {
-  const w = window as unknown as { editor: { save(): boolean }; saved: { nodes: { id: string; kind: string; x: number; y: number }[]; routes?: { from: string; to: string }[] }[] };
+  const w = window as unknown as { editor: { save(): boolean }; saved: { nodes: { id: string; kind: string; x: number; y: number }[]; connections?: { from: string; to: string }[] }[] };
   w.editor.save();
   const d = w.saved.at(-1)!;
-  return { nodes: d.nodes.map((n) => ({ id: n.id, kind: n.kind, x: n.x, y: n.y })), routes: (d.routes ?? []).map((r) => `${r.from} → ${r.to}`) };
+  return { nodes: d.nodes.map((n) => ({ id: n.id, kind: n.kind, x: n.x, y: n.y })), connections: (d.connections ?? []).map((r) => `${r.from} → ${r.to}`) };
 });
 /** Press the search field with the real pointer: WebKit's own hit check calls the card's host the thing in the way. */
 async function pressSearch(page: Page): Promise<void> {
@@ -159,7 +159,7 @@ test('a drag goes into the stage under the cursor, though the node\'s middle sta
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const canvas = document.querySelector('#root sherpa-layout-canvas') as HTMLElement;
-    const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, stage: 'stage-1', values: { store: 'customers' } }], routes: [],
+    const flow = { v: 3, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, stage: 'stage-1', values: { store: 'customers' } }], connections: [],
       stages: [{ id: 'stage-1', label: 'Stage 1', x: 380 }, { id: 'stage-2', label: 'Stage 2', x: 1100 }] };
     (window as never as { editor: unknown }).editor = bindWorkflow(canvas, flow, {
       session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'), stores: ['customers'],
@@ -222,7 +222,7 @@ test('a drag let go on the card, or off the canvas, places nothing', async ({ pa
   expect((await draft(page)).nodes.map((n) => n.id)).toEqual(['start']);
 });
 
-test('a route let go on the bare canvas opens "Add a node": the kinds that take its type, a Value first when the socket takes one', async ({ page }) => {
+test('a connection let go on the bare canvas opens "Add a node": the kinds that take its type, a Value first when the socket takes one', async ({ page }) => {
   await bind(page);
   // Start's output (rows, an object) dropped on the bare canvas.
   const [x1, y1] = await page.evaluate(() => {
@@ -250,7 +250,7 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   await settle(page);
   const r = await draft(page);
   expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'condition']);
-  expect(r.routes).toEqual(['start/rows → condition-1']);
+  expect(r.connections).toEqual(['start/rows → condition-1']);
   expect(await pick(page)).toEqual({ current: ['Condition'], open: true, tab: true });
 });
 

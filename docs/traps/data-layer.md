@@ -3061,7 +3061,7 @@ rather than "grouped pagination is broken".
 
 A page asked (`ask({ page })`) now publishes directly when a group is set, and schedules a load only
 when one is not. The guard is right; what was wrong is that a VIEW-level change
-was being routed through a DATA-level mechanism.
+was being connected through a DATA-level mechanism.
 
 **The same shape can bite any state that is the view's and not the store's.**
 If a future value changes what is DRAWN without changing what is FETCHED, it
@@ -3613,7 +3613,7 @@ a field nothing offered got an empty screen and no explanation.
 | | |
 |---|---|
 | `report({ code, message, at })` | say that an assumption broke. Never throws |
-| `onReport(fn)` | route it — a toast, a log, a test's array. Returns its undo |
+| `onReport(fn)` | connect it — a toast, a log, a test's array. Returns its undo |
 | default | `console.warn('sherpa [code] message key=value')` |
 
 **`console.warn` is the default, not the mechanism.** An app that cannot
@@ -4625,7 +4625,7 @@ push in the worker (`serveData`), and Demos' own worker.
 
 **A page on another origin asks by the app's own CORS policy** (plan 695 H5):
 `createDataHandler({ stores, cors: { origins, headers, credentials, maxAge } })`. An
-allowed origin's preflight says the route's methods (`QUERY` among them), Sherpa's own
+allowed origin's preflight says the connection's methods (`QUERY` among them), Sherpa's own
 headers and the app's (`headers`: its sign-in, its own say), and its answers let the page
 read `Sherpa-Data`, `Sherpa-Stale` and `traceparent`. A refused origin is refused, 403,
 preflight and request alike, and no store is asked. A request from the handler's own
@@ -5683,7 +5683,7 @@ answers, its presets by name, what it may add, how its rows are arranged. It
 hears the panel's answers, Add, Remove, Apply and Discard itself.** Provider
 P3c, 2026-09-27. Before it, Records built the panel from the BARS —
 `fillPanel` read `bar.held` and `bar.offering`, mapped each def with
-`asPanelField`, and routed every panel event back through `barFor(scope)`,
+`asPanelField`, and connected every panel event back through `barFor(scope)`,
 refilling two frames later because a rebuilt bar reads empty.
 
 A field a scope ABOVE holds keeps its place in the scope below — its heading,
@@ -6330,11 +6330,11 @@ sees the shape; nothing else learns of operators.
   row's value between its shapes: one value becomes the list of its comma parts; a list
   becomes its one item, or several joined by commas. Going back gives it again. A Value's
   Text and List do the same.
-- **A route stays joined through a change of shape** (Will, TODO 770: any route joins any
-  input). A Text routed into Equals' Value B, then Is one of picked: the route is drawn,
+- **A connection stays joined through a change of shape** (Will, TODO 770: any connection joins any
+  input). A Text connected to Equals' Value B, then Is one of picked: the connection is drawn,
   Values reads null and the node warns ("Values takes a list; it was given "Pro""); Save writes
   it, and Equals again reads it. A List into Is one of, then Equals, the same. Only a socket
-  that is GONE keeps its route in the draft (`keptRoutes`).
+  that is GONE keeps its connection in the draft (`keptConnections`).
 - **A file from before tags** is no longer read (Will, TODO 777): a tags row holding one value
   is a fault ("which is no list"), as any list row's is.
 
@@ -6348,13 +6348,13 @@ sees the shape; nothing else learns of operators.
 P4. `rowFault` is the one statement of what a control cannot say: a stranger in a CLOSED tags
 list (a field whose values are known), a Start or End that is no date, a number off its
 `step` (Places, a span's Value: whole) or under its `min`. `workflowFaults` names it (`the
-node "c"'s Value: …`) where a value is held and where a route BRINGS it from a node that
-holds it (`the route "l/value" → "c/value": …`), and `workflowGraph` puts the same words on
+node "c"'s Value: …`) where a value is held and where a connection BRINGS it from a node that
+holds it (`the connection "l/value" → "c/value": …`), and `workflowGraph` puts the same words on
 the row as `fault`, for its own value or the one mirrored in. So the drawing and the check
 never disagree, a connection that would bring a stranger is refused (`take()`), and Save
 refuses while one stands.
 
-- **It is never an orphan.** A row a type change hid, or a route the other operator takes,
+- **It is never an orphan.** A row a type change hid, or a connection the other operator takes,
   is the draft's (`T-an-operator-shapes-its-value`): no fault, no warning.
 - **Drawn in the field's own message**, `data-error`, which `sherpa-input-text` leaves to its
   host (`T-a-host-error-is-the-hosts`): a click in and out does not wipe it.
@@ -6386,7 +6386,7 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
 - **A comparison tests what comes in on its HEADER** (plan 783 D3): a Field's column, or one value
   (`needs: 'tested'`). Value A is gone. Its rows are Rows, then what `OP_TAKES` says the operator
   takes: Value B, a tag list of Values (`LIST_OPS`), or Start and End. Rows with no Field warn:
-  "Equals takes a field or a value; it was given rows: route a Field in".
+  "Equals takes a field or a value; it was given rows: connect a Field in".
 - **The Field on its header shapes it** (`fieldAt` in workflow.ts): Value B picks from the field's
   values where known and is typed by its type (a number field's "70" is 70), Values close to them,
   and a Value B that is no number for a number field is the row's own fault. An operator the field's
@@ -6402,7 +6402,7 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
 - **A header's warning names the type** where the family has several: "Sort takes a field", "And
   takes a boolean", not "Collection" or "Condition".
 - **What a type change orphans is the draft's** (Will, 2026-11-05), and only a socket that is GONE
-  orphans a route (TODO 770). A column into a Condition switched to And stays joined: And's header is
+  orphans a connection (TODO 770). A column into a Condition switched to And stays joined: And's header is
   there, reads null, and the node warns ("And takes a boolean; it was given the Status column"). A
   Value B switched away from is kept for its type, and Save leaves it out (`finalGraph`).
 - **The Query draws its trees with it** (plan 783 D6): And, Or and the comparisons; Not and Is empty
@@ -6420,7 +6420,7 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
 **A node reads what it NEEDS of what reaches an input; what it cannot use is `null` there, and the
 node draws as a WARNING with a tip that says why.** Will, 2026-11-05 (TODO 764): "Nodes will
 determine which data they need from the input. If there's no valid input then it's null and we
-style the node as a warning with tooltip message." Graphs stay open (E5): a route its socket
+style the node as a warning with tooltip message." Graphs stay open (E5): a connection its socket
 types allow is drawn; no family fences what a graph places.
 
 - **What it needs is the kind's own description** (`needs`): a header that takes any type says
@@ -6438,13 +6438,13 @@ types allow is drawn; no family fences what a graph places.
   only when it runs: no warning until N4. An unconnected row is no such case.
 - **A Field sends a COLUMN** (Will, TODO 783, D2): rows in, `{ rows, field }` out, an object whose
   finer given is `field`, carrying the field's name, words and type (`sentFrom` reads it through
-  the routes, `columnOf` says it). One record in (an object that is not rows), the row sends that
+  the connections, `columnOf` says it). One record in (an object that is not rows), the row sends that
   field's value. A column fits a need for a field, rows, an object or a list; a list of numbers
   where its field is a number; a date where it is a date. It never fits ONE value: "Value A takes
   a number; it was given the Seats column". Its row says "Seats: a number field". Its list is
   OPEN (D8): a field its Source's store lacks warns on the row ("is not a field of the rows that
   come in") and sends nothing, as a Value into its header does (`T-a-field-reads-its-sources-fields`). Rows where a field is needed say
-  ": route a Field in".
+  ": connect a Field in".
 - **One door, `readInput`**: the value, or `null` and the words — `<input> takes <need>; it was
   given <what>` — all from `INPUT_WORDS` (a socket type in the words its tip says). The runner
   (N4) reads through the same door. Text that reads as a number is a number, as the row reads it
@@ -6455,14 +6455,14 @@ types allow is drawn; no family fences what a graph places.
   (`state-pins.yaml`: after `data-current`, so a picked one stays a warning; a run's step wins)
   and drops a category's tint, as a pick does. Its header is the tip's anchor and is described by
   it (`aria-describedby`), so a hover or keyboard focus shows the words, one line each.
-- **A routed row that holds nothing shows nothing** (TODO 774). Where its routes send nothing yet
+- **A connected row that holds nothing shows nothing** (TODO 774). Where its connections send nothing yet
   (a Group Input row, a node only a run fills) and it holds no value of its own, `workflowGraph`
   draws it empty, marked `custom`, with "From Group Input › Status". A list's choices go with it:
   a select with no pick shows its FIRST choice, as if held. One that holds a value shows it until
   N4 runs.
-- **Any route joins any input** (Will, TODO 770, B): a type mismatch is no fault and no refusal,
+- **Any connection joins any input** (Will, TODO 770, B): a type mismatch is no fault and no refusal,
   only this warning — "Value A takes a number; it was given rows". Grouping makes one socket of
-  what its source sends. What stays refused is the graph's shape: a loop, the same route twice,
+  what its source sends. What stays refused is the graph's shape: a loop, the same connection twice,
   two into an input that takes one, a socket that is not there, a Rows row (it only sends), an
   output that says it sends any type, and a preset's header (read only). And and Or take any
   boolean (TODO 780, `T-a-condition-is-a-tree-of-nodes`): a boolean input reads true or false, 1 or
@@ -6477,7 +6477,7 @@ types allow is drawn; no family fences what a graph places.
   True/false gives a boolean (`gives`), a Text "true" is text. A coerced value is used, and no warning;
   one only a run gives reads then. No node coerces by itself.
 - **No fault, no Save block, never red.** A row's own fault (`T-a-row-says-its-own-fault`) is
-  still red and holds Save; a route the input cannot read brings no such fault.
+  still red and holds Save; a connection the input cannot read brings no such fault.
 
 - Site: `src/core/data/node-input.ts`
 - Site: `src/core/data/workflow.ts`
@@ -6486,7 +6486,7 @@ types allow is drawn; no family fences what a graph places.
 - Site: `src/components/sherpa-node/sherpa-node.html`
 - Site: `src/data.ts`
 - Site: `test/unit/a-node-reads-null-from-what-it-cannot-use.test.mjs`
-- Site: `test/unit/any-route-joins-any-input.test.mjs`
+- Site: `test/unit/any-connection-joins-any-input.test.mjs`
 - Site: `test/unit/and-or-take-any-boolean.test.mjs`
 - Site: `test/unit/a-boolean-reads-as-its-need.test.mjs`
 - Site: `test/unit/a-field-is-a-node.test.mjs`
@@ -6589,7 +6589,7 @@ allowed it.
 ### T-a-workflow-is-its-definition
 
 **A workflow is ONE JSON document** — its nodes, each node's values, and the
-routes between their sockets — checked by `schemas/workflow.v2.json` and by
+connections between their sockets — checked by `schemas/workflow.v2.json` and by
 `checkWorkflow`. Will, TODO 78; plan-78-workflow-data.md.
 
 - **A node holds only what the reader may change**: its place, its own name and
@@ -6609,19 +6609,19 @@ routes between their sockets — checked by `schemas/workflow.v2.json` and by
   the one fault "it is not a workflow definition: a v2". An entity's graph is made a v2
   by `entity-check`.
 - **A socket is `node`, `node/row` or `node/#false`**: the header's, for the whole
-  node, a row's, or a fork's False. A route joins an output to any input (TODO 770;
-  one of another type reads null, `T-a-socket-says-its-type`); an input takes one route
-  unless it takes `many`, and no route may close a loop, or nothing would run first.
+  node, a row's, or a fork's False. A connection joins an output to any input (TODO 770;
+  one of another type reads null, `T-a-socket-says-its-type`); an input takes one connection
+  unless it takes `many`, and no connection may close a loop, or nothing would run first.
 - **`checkWorkflow` reports each fault and never throws**, as `checkApp` does: a
   definition from a store or an agent may be wrong, and the page still opens.
-  `workflowFaults` says them without reporting: `bindWorkflow` refuses a new route
+  `workflowFaults` says them without reporting: `bindWorkflow` refuses a new connection
   that adds one.
 - **Each edit is pure** (`editWorkflow`): a value, a node's own name, line or place,
-  a route made — in place of the one into that input — or cut. `bindWorkflow`
+  a connection made — in place of the one into that input — or cut. `bindWorkflow`
   keeps the DRAFT in the tab (`SessionStore`, `shared: false`, TODO 551): a reload
   keeps every edit and move; the session's end forgets them. Save checks it, hands
   it to the app as `definition-save`, and drops the draft: the app keeps it where it
-  keeps things. A routed row shows its own value, read only, until a run (N4) gives
+  keeps things. A connected row shows its own value, read only, until a run (N4) gives
   it the incoming one.
 
 - Site: `src/core/data/workflow.ts`
@@ -6653,7 +6653,7 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 - **A preset is a node into its scope's row** (`@<id>`): its On, read from the
   Query (`presetHeld`), and what it writes, read only. A saved filter on a bar is a
   preset `saved:<id>` (`SAVED_PRESET`), drawn as the saved kind; one on no bar says
-  what it would add, with no route. A status field sits between the Source and the
+  what it would add, with no connection. A status field sits between the Source and the
   View, a row per value and when a row has it, from the store's `domains`. A
   component scope's own answer the View holds over it (`superseded`) is a read-only
   condition into its row: it moves nowhere.
@@ -6673,7 +6673,7 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
   Switch, a Sort, a Group (a slot's are its chart's) — so whether it applies
   at once or waits for Apply is the Query's, as for any chip (Q3). What a row
   may change is the graph's to say (`editable`, its `choices`).
-- **Read only is the exception** (Will, 2026-10-29): a row a route drives
+- **Read only is the exception** (Will, 2026-10-29): a row a connection drives
   MIRRORS what comes in; a row nothing outside takes yet (the Source's search
   fields, its Apply on; a presentation on the View, which has no slot) says why
   in its hint. Everything else edits, through its door: page size, Field, a
@@ -6688,14 +6688,14 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
   provider for that; off its page, the copy is made from the page's markup
   (`markup`), and the provider holds the page (TODO 822,
   `T-a-graph-is-a-view-of-a-type`).
-- **A drag from an OUTPUT socket draws a new route** (Will, 2026-10-29). The
+- **A drag from an OUTPUT socket draws a new connection** (Will, 2026-10-29). The
   drawing hears the press first, at the canvas, so it neither moves the node nor
   pans the view; let go within reach of an input socket, and the HOST is asked
   (`onConnect`). The Query takes a condition into a field of a scope
-  (`routeRequest`): the same field in another scope MOVES it there; another field
-  takes it, keeping only the values that field has. A route the Query has no
+  (`connectionRequest`): the same field in another scope MOVES it there; another field
+  takes it, keeping only the values that field has. A connection the Query has no
   meaning for — or one that would then say nothing — is REFUSED and reported
-  (`query-route`): nothing moves.
+  (`query-connection`): nothing moves.
 - **Save writes the definition** (`pageWithQuery`): each scope's holds, its own
   answers as its `where`, its slot's presentation over the definition's, and the
   page size. `checkPage` checks it; the editor hands it to the app as
@@ -6759,7 +6759,7 @@ app registered that the page does not read.
 
 - **It is placed and warns**: "The page reads customers. This Source is not the
   page's: the Query reads nothing from it." Its Store row is the reader's to pick
-  (`keptEdit`); a route from it is refused in those words (`routeRequest`).
+  (`keptEdit`); a connection from it is refused in those words (`connectionRequest`).
 - **Kept as a place is**, for the tab (`/node-sources/<page>`, `shared: false`),
   and drawn from `facts.kept` under the page's Source. Undo and Redo step it with
   the Query's draft, one journal; Delete takes it, where any other Query node is
@@ -6781,14 +6781,14 @@ graph** (Will, TODO 817; 802 pick 1, found by 785: a Condition after Source › 
 Records fields). The facts are keyed by store, `WorkflowFacts.fieldsOf`, each field with its words,
 its type and the values it takes; `fields` and the graph-wide `values` are gone.
 
-- **Its store is the FIRST Source up its routes**: the routes into its header first, then into its
+- **Its store is the FIRST Source up its connections**: the connections into its header first, then into its
   rows, depth first, past what passes rows on (a test's Rows, a Sort, a use) and through the
-  portals (`flowOf`'s routes, `T-a-portal-hop-is-resolved-once`). The Source's Store row says the
-  store: a Value routed in, else its own. Rows of two stores into one And: the first route's.
+  portals (`flowOf`'s connections, `T-a-portal-hop-is-resolved-once`). The Source's Store row says the
+  store: a Value connected in, else its own. Rows of two stores into one And: the first connection's.
 - **What reads it**: the Field row's list and its tip words, the stranger warning, what the column
   carries (`ColumnField.values`), so a Condition's Value B list, a Tag's closed tags, the type that
   types Value B and warns an operator (`fieldAt`), in the drawing, the faults and an edit alike.
-- **No Source's rows**: the list is only its own pick, it warns "No store's rows come in: route a
+- **No Source's rows**: the list is only its own pick, it warns "No store's rows come in: connect a
   Source in" (the kind's heading), unless its header warns already, and it sends nothing, so what
   tests it reads null. A warning, never a fault (D8). Placed alone, it says so too.
 - **Two doors in**: a Custom Node's Group Input brings its use's rows, of any store, so a Field
@@ -6808,16 +6808,16 @@ boolean, or `any` (Will, TODO 713; plan-713 §2, M1). A workflow's JSON names
 sockets only, never types.
 
 - **`accepts(from, to)` says what an input reads as its own**: each type its own,
-  and an `any` input all three. Any route JOINS any input (Will, TODO 770, B): one
+  and an `any` input all three. Any connection JOINS any input (Will, TODO 770, B): one
   of another type is no fault and no refusal; the input reads null and its node
   warns (`T-a-node-reads-null-from-what-it-cannot-use`). The shapes are hints. An
   output never sends `any`: it says what it sends, so a kind whose output is `any`
-  is a fault on each route that leaves it.
+  is a fault on each connection that leaves it.
 - **An ARRAY is an object** (Will, D17): a `multiple` row — a picklist of several,
   HTML's own name — holds a list, and its sockets are objects; one set comes in.
-- **`many` is per socket** (D4): only an input that says it takes several routes.
-  `editWorkflow` puts a new route beside the ones there; anywhere else it replaces
-  the one there. The same route twice is a fault. Two TYPES into an `any` that takes
+- **`many` is per socket** (D4): only an input that says it takes several connections.
+  `editWorkflow` puts a new connection beside the ones there; anywhere else it replaces
+  the one there. The same connection twice is a fault. Two TYPES into an `any` that takes
   many are not (770): each is read by what the input needs.
 - **A fork is `branches`**: True is the header's output, False the footer's,
   `node/#false` — a `#` part is no row, as the Query's `#filters` is not. With
@@ -6828,7 +6828,7 @@ sockets only, never types.
 - **Only a Condition forks, for now** (Will, TODO 831: "not all nodes need a true/false
   socket… Don't completely remove the ability… Just hide them for now"). `branches` stays
   a kind option; no other shipped kind, type or Custom Node use sets it, so none draws True
-  or a False footer, and a route from one of their headers is a fault, in words. A check that
+  or a False footer, and a connection from one of their headers is a fault, in words. A check that
   is no Condition (Time, Tag, a Preset, a Saved filter, a Custom Node's use) says `output:
   'boolean'` instead: one boolean from its header, `Out`, and no False. A kind opts back in by
   setting `branches: true`; nothing else changes.
@@ -6844,7 +6844,7 @@ sockets only, never types.
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-socket-says-its-type.test.mjs`
-- Site: `test/unit/any-route-joins-any-input.test.mjs`
+- Site: `test/unit/any-connection-joins-any-input.test.mjs`
 - Site: `test/e2e/reforged-node-true-false.spec.ts`
 
 ### T-a-condition-is-a-tree-of-nodes
@@ -6869,18 +6869,18 @@ its choices".
   are known, Equals reads back as Is one of with one tick. A span from today draws as Time ›
   Duration. A half-built range is dropped, as a chip's is.
 - **Placing in a Query**: a Field holds the scope's next field (its chip appears); a Condition is
-  refused in words, "A Condition tests a Field: route one in" — a Field's tests are its chip's. A
-  part's True, a Field and a False make no route a reader may: the Query holds one tree per field.
+  refused in words, "A Condition tests a Field: connect one in" — a Field's tests are its chip's. A
+  part's True, a Field and a False make no connection a reader may: the Query holds one tree per field.
 - **And and Or take ANY boolean** (Will, TODO 780: "0/1 or True or False is data"). A test's True
   brings its whole tree. Any other boolean — a True or False, a value that says true or false, 1
   or 0 (`truthOf`) — is a CONSTANT part: true always holds, false never. One the graph holds folds
   into its group in `nodeFlow`'s `where`: true drops out of And and ends Or, false the other way, so
   `where` may be `true` or `false`; one only a run gives is named by where it comes from,
   `{ boolean: "Source › True" }`. Anything else reads null and warns
-  (`T-a-node-reads-null-from-what-it-cannot-use`). No route into it is a fault. A Preset Filter's
+  (`T-a-node-reads-null-from-what-it-cannot-use`). No connection into it is a fault. A Preset Filter's
   use brings its tree too, read inside (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
 - **The Query holds no constant.** A page's `where` cannot say one, and the Query editor takes no
-  route into an And or an Or (`routeRequest`), so it draws none. Folded, a constant compiles as no
+  connection into an And or an Or (`connectionRequest`), so it draws none. Folded, a constant compiles as no
   constant: always holds is no condition (it narrows nothing); never holds is an empty Any of,
   `['or']`, which holds no row (`T-an-empty-any-of-is-never`, TODO 816).
 - **A test is shaped by its Field's type** where the facts give it (`T-a-logic-type-is-an-operator`):
@@ -6892,8 +6892,8 @@ its choices".
   value's root False goes into the next value's Fields, in the order the status takes the first
   match; the last value, with no `when`, takes the last False. A load lights each root with the rows
   that took it (`statusTallies`, `traceQuerySteps`). `queryGraphFaults` names a `when` that is no
-  condition and a route that ends in nothing.
-- **Left for later**: a new leaf made in the Query editor (a route from a Field to a new
+  condition and a connection that ends in nothing.
+- **Left for later**: a new leaf made in the Query editor (a connection from a Field to a new
   Condition); an Or across two fields (plan 783 D7: said in words, left off the bar).
 
 - Site: `src/core/data/query-graph.ts`
@@ -7315,7 +7315,7 @@ is made and it returns null.
   scheme, `QUERY_NODE`, which `queryGraph` draws by.
 - **A lit node is CSS.** `data-step` (`running`, `done`, `failed`, `skipped`) is a
   Style pin (`state-pins.yaml`); `data-caption` is a line over the card, so no row
-  or route moves. A step of 0 ms shows no time.
+  or connection moves. A step of 0 ms shows no time.
 
 - Site: `src/core/data/trace.ts`
 - Site: `src/core/data/query-graph.ts`
@@ -7534,7 +7534,7 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 
 - **The definition is JSON** (`defs.v1#/$defs/nodeDefinition`), an app's shipped as entities of
   the type `node` (`entities.v1.json`; app.v1 `nodes` is gone, TODO 777): a
-  label, `inputs`, `outputs` and a body of `nodes` and `routes`. Inside, `#in`, `#in/<name>`,
+  label, `inputs`, `outputs` and a body of `nodes` and `connections`. Inside, `#in`, `#in/<name>`,
   `#out` and `#out/<name>` are the Group Input and Group Output; `innerOf` lays them out as
   two nodes of the kinds `#group-input` and `#group-output`, so the body is checked and drawn
   by the workflow's own functions. Its header takes any type (D1) and forks True and False.
@@ -7545,10 +7545,10 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   too (`workflowFaultsDeep`), naming each fault by path. A Custom Node that holds itself, at
   any depth, is one loop fault, said once per cycle.
 - **A use records the VERSION and the definition it was made from** (`version`, `was`): a
-  hash of the label, sockets, nodes and routes, never where a node sits. `definitionDiff`
+  hash of the label, sockets, nodes and connections, never where a node sits. `definitionDiff`
   compares it with the library's now. `updateInstance` and `updateAll` are pure edits that keep
   the instance's own values; the editor gives the DRAFT, so an updated instance keeps its
-  draft changes until the reader saves or discards them. A route to a lost socket is kept, and
+  draft changes until the reader saves or discards them. A connection to a lost socket is kept, and
   is a fault.
 - **A preset is read only** (`preset: true`): `editDefinition` returns the library given;
   `copyToMine` makes a custom copy.
@@ -7558,10 +7558,10 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   put back by `discard()`). A use whose recorded version is old says "Update available", shows
   `definitionDiff` and a split button: "Update instance", and in its menu the two bulk updates,
   each behind a critical `sherpa-dialog`. A preset's inside is locked, with "Copy to my nodes".
-- **"Save as Custom Node" is `groupNodes`, "Ungroup" is `ungroupUse`** (M11): each route over
+- **"Save as Custom Node" is `groupNodes`, "Ungroup" is `ungroupUse`** (M11): each connection over
   the edge is one socket per outside OUTPUT that feeds in (a Group Input row) and per inside
   output that feeds out, typed by what its source sends. The definition keeps the nodes WHERE THEY
-  SIT, so Ungroup gives the same nodes, routes and places. A loop out and back and a result with
+  SIT, so Ungroup gives the same nodes, connections and places. A loop out and back and a result with
   a new fault are refused in words; one source into inputs of two types is one socket, and an
   input inside that cannot use it warns, as it did outside (TODO 770).
   The toolbar's button (on from two picked) opens a dialog for the name and description; a
@@ -7588,29 +7588,29 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 
 **A Custom Node's header takes ANYTHING, and each connection let go on it is a NEW input of its
 definition.** Will, 2026-11-05 (TODO 763): "A group input can take anything. What is connected to
-it becomes a row on the group input node within the group. These rows are then rerouted to any of
+it becomes a row on the group input node within the group. These rows are then reconnected to any of
 the group's internal node sockets. I never said that a group input was of a certain type."
 
-- **What it replaced.** 759 matched a header route to the first input row of its type, and kept
+- **What it replaced.** 759 matched a header connection to the first input row of its type, and kept
   one no row fitted on the header. Nothing about an input is a type until something is connected.
-- **The rule.** `headerInput` (node-group.ts): a route let go on a use's header adds an input to
+- **The rule.** `headerInput` (node-group.ts): a connection let go on a use's header adds an input to
   the definition, named and labelled by its source as `groupNodes` names one ("Source › Rows"),
   typed by what the source sends. It is a Group Input row inside, with an output socket, and a row
-  on every use; the route enters this use's new row. It feeds nothing inside until the reader
-  routes it on. The editor's drop, "Add a node" from a line, and a moved end all take this one
+  on every use; the connection enters this use's new row. It feeds nothing inside until the reader
+  connects it on. The editor's drop, "Add a node" from a line, and a moved end all take this one
   door (`join` in `bindWorkflow`); `editWorkflow` and `readWorkflow` know no definition, so they
-  leave a header route where it is.
+  leave a header connection where it is.
 - **The definition is shared (D11).** The add is a definition edit, in the editor's draft until
   Save (nothing about it is a fault). The use that took it follows the new version; every other use
   says Update available. A preset is read only: the drop is refused as any refused drop is, in
-  words through `report` (`workflow-route`), and nothing is kept; a moved end goes back (TODO 803).
-- **Read once.** A route a use's header holds from a file saved before reads as its own new input
+  words through `report` (`workflow-connection`), and nothing is kept; a moved end goes back (TODO 803).
+- **Read once.** A connection a use's header holds from a file saved before reads as its own new input
   (`heldInputs`), as the editor opens and after Discard; the draft and the edit are kept for the
   tab together, so a reload does not add it twice. A preset's stays on the header.
-- **Ungroup** joins each route into a row to every inner socket that row feeds. A row that feeds
-  nothing inside, and a header route, have nowhere to go, and are dropped.
+- **Ungroup** joins each connection into a row to every inner socket that row feeds. A row that feeds
+  nothing inside, and a header connection, have nowhere to go, and are dropped.
 - **The Group Input has no header socket** (Will, 765): nothing stays on a use's header, so it
-  would send nothing. Only its rows send. A definition route from `#in` itself is a fault.
+  would send nothing. Only its rows send. A definition connection from `#in` itself is a fault.
 
 - Site: `src/core/data/node-group.ts`
 - Site: `src/core/ui/node-graph.ts`
@@ -7622,7 +7622,7 @@ the group's internal node sockets. I never said that a group input was of a cert
 Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build the core".
 
 - **The envelope** (`schemas/entity.v1.json`, `entity.ts`): `{ v, type, id, label, description?,
-  graph { nodes, routes, ties }, settings, uses, origin }`. The graph is a workflow's, with `#in`
+  graph { nodes, connections, ties }, settings, uses, origin }`. The graph is a workflow's, with `#in`
   and `#out` as a Custom Node has. `origin` (`preset` or `mine`) is set on READ, never written.
   A Custom Node is the type `node`, its sockets in `settings`; `nodeEntityOf` and `definitionOf`
   are the two ways round. An app ships its Custom Nodes as entities (app.v1 `nodes` and its
@@ -7852,7 +7852,7 @@ and the editor writes the box round their drawn cards on every draw, drag and re
 
 - **A node dragged out stays in.** The frame grows round it. It leaves by Release or Delete.
 - **A node is in ONE frame.** Framing takes it from the frame it was in; a frame left with no
-  node goes, in the edit and in `finalGraph`, as a tie with no route does.
+  node goes, in the edit and in `finalGraph`, as a tie with no connection does.
 - **The frame owns no place, so it reports a STEP.** A drag on its header, or an arrow there,
   fires `frame-move { dx, dy }` in plane px; the editor moves every node in it as one `{place}`
   edit, one step. A frame never moves itself, and never writes a node.
@@ -7874,29 +7874,29 @@ and the editor writes the box round their drawn cards on every draw, drag and re
 
 ### T-a-portal-hop-is-resolved-once
 
-**A portal hop is joined in ONE place, `portalFlow`; every reader of what flows reads its routes.**
+**A portal hop is joined in ONE place, `portalFlow`; every reader of what flows reads its connections.**
 Will, TODOs 779, 826 · `docs/history/plan-779-portals.md`, `docs/history/plan-826-portal-rows.md`. An In and an
-Out of one name have no route between them, so a reader that walks `routes` meets an In that sends nothing and an
-Out row that nothing reaches. Each reader that followed routes itself would have to learn the hop, and one would not.
+Out of one name have no connection between them, so a reader that walks `connections` meets an In that sends nothing and an
+Out row that nothing reaches. Each reader that followed connections itself would have to learn the hop, and one would not.
 
-- **An In takes many routes; every Out of its name draws ONE ROW per route into an In of the name**, as a Group
-  Input does (763). The row is named `@` and the route's SOURCE (`connectionRow`, `o/@source-1/rows`), labelled
+- **An In takes many connections; every Out of its name draws ONE ROW per connection into an In of the name**, as a Group
+  Input does (763). The row is named `@` and the connection's SOURCE (`addressRow`, `o/@source-1/rows`), labelled
   from it ("Source › Rows") and typed by it. The Out's header sends nothing: it has no socket.
-- **What flows is `flowOf` in workflow.ts, `flowing` in node-flow.ts**: both the one resolver's routes. A route
-  from an Out's row is ONE route from that row's source, carrying the name (`portal`); an Out's row into an In of
+- **What flows is `flowOf` in workflow.ts, `flowing` in node-flow.ts**: both the one resolver's connections. A connection
+  from an Out's row is ONE connection from that row's source, carrying the name (`portal`); an Out's row into an In of
   another name chains. `sentFrom`, a row's read, the field a node reads, the warnings, the faults, `conditionAt`,
-  the Outgoing JSON and a Preset Filter's compile all read it. The drawing reads the routes as given, so no line
-  joins two portals. An Out's rows come from `flowOf`'s `kindOf`, never `kindOfNode`, which knows no routes.
-- **A row's id is its source**, so it is stable: a route in cut, its row goes, and the routes out of it are
-  `orphans`, kept as another type's are (`keptRoutes`): unseen, no fault, and Save leaves them out. The same
-  route back, the same row, and they draw again. An Out turned In, or renamed away, keeps them the same way.
-- **Each row is routed alone**, so many-to-1 is several rows, and an input that takes one takes one row.
-- **A loop through a row is a loop**: the check reads the routes as the data flows, and the editor refuses a
-  route, a name or a Rename that makes one, a name that revives a kept row too.
+  the Outgoing JSON and a Preset Filter's compile all read it. The drawing reads the connections as given, so no line
+  joins two portals. An Out's rows come from `flowOf`'s `kindOf`, never `kindOfNode`, which knows no connections.
+- **A row's id is its source**, so it is stable: a connection in cut, its row goes, and the connections out of it are
+  `orphans`, kept as another type's are (`keptConnections`): unseen, no fault, and Save leaves them out. The same
+  connection back, the same row, and they draw again. An Out turned In, or renamed away, keeps them the same way.
+- **Each row is connected alone**, so many-to-1 is several rows, and an input that takes one takes one row.
+- **A loop through a row is a loop**: the check reads the connections as the data flows, and the editor refuses a
+  connection, a name or a Rename that makes one, a name that revives a kept row too.
 - **An Out no In names warns, and has no rows.**
 - **A name is local to its graph.** A Custom Node's body resolves alone; Save as Custom Node refuses a pick
   that holds some, not all, of a name's portals; a row whose source is outside becomes `@#in/<input>`, and
-  Ungroup gives each route the use's input took its own row again. Ungroup renumbers a name the graph holds.
+  Ungroup gives each connection the use's input took its own row again. Ungroup renumbers a name the graph holds.
 - **A picked portal lights its name** with `data-linked`, the active pin, as a picked node is.
 
 - Site: `src/core/data/node-portals.ts`
@@ -7912,7 +7912,7 @@ Out row that nothing reaches. Each reader that followed routes itself would have
 
 ### T-a-property-row-is-an-output
 
-**A property row is output only, one definition, and routes like any output.** Will, TODO 835 ·
+**A property row is output only, one definition, and connects like any output.** Will, TODO 835 ·
 `docs/history/plan-835-organise-and-properties.md`. It is a row a node provides from its own data or logic: no control,
 no input socket, no value to edit. `propertyRow` in node-kinds.ts is the ONE builder; Count is its first use, on a
 Source, a Field, a Group and a Condition's comparisons, the very same row object. Sort and Group are kinds of their own in
@@ -7975,8 +7975,8 @@ connector leaves a node's RIGHT edge and enters the next one's LEFT edge, so a t
 is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fan right, its inputs fan left.
 
 - **The rings are made valid, not just signed.** A walk from the anchor gives each node its side, but two walks
-  can disagree, and a ring that a route goes BACK into draws a backwards line. The rings start as a longest-path
-  layering (every route to a higher ring, always), and each node then moves to the valid ring nearest its own.
+  can disagree, and a ring that a connection goes BACK into draws a backwards line. The rings start as a longest-path
+  layering (every connection to a higher ring, always), and each node then moves to the valid ring nearest its own.
   Repairing the walk's rings in place stopped before it settled, and left 43 back lines in 300 nodes.
 - **The order is kept, so the pull cannot tangle it.** A free spring-and-push relaxation crossed lines that the
   ring order had untangled. The centroid pull moves heights only, and an isotonic projection puts each ring back
@@ -7986,16 +7986,16 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   out in x only, ring by ring, past its sources and past any node placed before it in its height band, keeps both.
 - **A frame is one cell.** Its nodes keep their column; the frame's pad and header are read off a drawn frame, so
   the gap is between the frames' boxes, not their nodes'.
-- **A portal pair has no route, so it pulls nothing.** An In and an Out of one name sit by their own routes' nodes,
+- **A portal pair has no connection, so it pulls nothing.** An In and an Out of one name sit by their own connections' nodes,
   so a graph cut by portals is several parts. The parts keep the order they stood in, left to right: biggest first
   put Demos' Source and its In portal to the right of the Outs it feeds.
-- **Within a part, the places a node had do not change where it goes.** Only the boxes and the routes do; the old
+- **Within a part, the places a node had do not change where it goes.** Only the boxes and the connections do; the old
   places give only the parts' order and the first part's anchor, which keeps its place. So a second Unfurl gives
   the same layout.
 
-- **A node's neighbours stand in its sockets' order** (Will, TODO 827). The editor hands each routed socket's drawn
+- **A node's neighbours stand in its sockets' order** (Will, TODO 827). The editor hands each connected socket's drawn
   height. The cells one cell reached first, on one side of it, take their own slots on their ring in the order of its
-  sockets, in every candidate; where several routes join two cells, the topmost socket decides. Each line is pulled
+  sockets, in every candidate; where several connections join two cells, the topmost socket decides. Each line is pulled
   level, socket to socket, and the lines are counted socket to socket, so two lines out of one node's two sockets
   that swap are a crossing. With no socket heights, every socket is at mid height and unfurl is as it was.
 - **Will's order wins, but only on the ring.** Ranking the candidates by the sockets' order first, every pair of a
@@ -8004,16 +8004,16 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   Siblings on different rings, and a node's other neighbours, follow the fewest crossings.
 
 - **A graph reads left to right** (Will, TODO 839). Sources and a Portal In stand left, Outputs and a Portal Out right
-  (`bands`); an In hands on to each Out of its name with no line, and that hop (`hops`) holds the order a route would, so
+  (`bands`); an In hands on to each Out of its name with no line, and that hop (`hops`) holds the order a connection would, so
   a portal pair makes one part, never two stood in the order they were: it cannot flip. The MAIN part (the most nodes)
   keeps its place; every other part and every lone node but a Source or In stands in ONE stack on its left, top to bottom
   as they stood, wholly clear of the main part's lines (Will, 2026-11-10); a lone Source or In has its column left of that.
 
-- **A tie is a point in the flow** (Will, TODO 888: "use zip ties as anchor points"). A tie whose every route joins two
-  moved cells is a cell of no width (`#tie:<id>`), and each route through it is a piece to it and one on, its slot the
+- **A tie is a point in the flow** (Will, TODO 888: "use zip ties as anchor points"). A tie whose every connection joins two
+  moved cells is a cell of no width (`#tie:<id>`), and each connection through it is a piece to it and one on, its slot the
   socket on both: so what feeds it stands on its left and what it feeds on its right, in its slots' order, and its lines
-  never cross at it. Its weight is two a route, so a tie of many is the anchor and keeps its place, as the central node
-  would. A tie it cannot hold so still goes to its routes' middle. Before, every tie went to the middle after the
+  never cross at it. Its weight is two a connection, so a tie of many is the anchor and keeps its place, as the central node
+  would. A tie it cannot hold so still goes to its connections' middle. Before, every tie went to the middle after the
   nodes moved: a tie a reader had placed was thrown away.
 
 - Site: `src/core/data/node-unfurl.ts`
@@ -8035,8 +8035,8 @@ each node's incoming and outgoing slots, a row list on each socket. It is not N4
 - **A Condition keeps the rows of its Field's rows** that its leaf holds, by the same `filterTest` a page runs; its False
   is the rest. And keeps what every part kept, Or what any part kept. A row is the cache's own object, never a copy, so
   "kept" is identity.
-- **A route through a portal is read as the data flows** (`portalFlow`): no portal code lives here.
-- **A path is a chain of kept routes from a Source to an Output**, through portals and through a use whose inside joins its
+- **A connection through a portal is read as the data flows** (`portalFlow`): no portal code lives here.
+- **A path is a chain of kept connections from a Source to an Output**, through portals and through a use whose inside joins its
   Group Input to its Group Output. Fetch and Simulate are inactive without one, and the tip says which part is missing.
   Inside a Custom Node's definition they are inactive: they run on a whole graph.
 
@@ -8077,3 +8077,25 @@ N4); Fetch and Simulate are its first two users.
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-task-queue-knows-nothing-of-what-it-runs.test.mjs`
 - Site: `test/e2e/reforged-node-fetch-caches-the-rows.spec.ts`
+
+### T-a-saved-graph-is-read-in-the-new-words
+
+**A graph saved before plan 934 reads ONCE in the new words: its `routes` are its `connections`.** Will,
+2026-11-11: a graph's one link is a Connection, and the saved key follows. A reader's graphs are kept in
+the store, in files, in an import and in a tab's draft, so each door reads the old shape before it judges
+it: `readEntity` reads an entity v1 as a v2 (`inNewWords`: the graph's `routes`, each zip tie's, and the
+`was` of each use of a Custom Node), `readWorkflow` reads a v2 as a v3, and a tab's Custom Node edits read
+the same way. Nothing writes the old key, and no API takes it.
+
+Without it the reader loses work in silence: `isEntity` asks for a v2, and the session's guard DROPS a
+value it refuses, so a draft kept as a v2 went, and an entity kept as a v1 was left out of the shelf.
+Measured: the keeper read a stored v1 back with every Connection; `readWorkflow` read a v2 draft with
+its zip tie's.
+
+- Site: `src/core/data/entity.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/browser/entity-files.ts`
+- Site: `src/core/browser/page-state.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-workflow-is-its-definition.test.mjs`
+- Site: `test/unit/an-entity-shelf-is-one-door.test.mjs`

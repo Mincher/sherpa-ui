@@ -2,15 +2,15 @@ import { test, expect, type Page } from './harness';
 
 /**
  * Picked nodes move TOGETHER and ARRANGE on a grid — Will, TODO 752. Dragging one of several picked
- * nodes moves them all by the same delta (a tie whose routes all join them goes too, and the bends of
- * a route with both ends among them); an unpicked node picks only itself. Ctrl or Cmd and an arrow moves
- * the picked nodes. Arrange puts them in columns along the routes, three spacing tokens apart (756), on the 4px grid.
+ * nodes moves them all by the same delta (a tie whose connections all join them goes too, and the bends of
+ * a connection with both ends among them); an unpicked node picks only itself. Ctrl or Cmd and an arrow moves
+ * the picked nodes. Arrange puts them in columns along the connections, three spacing tokens apart (756), on the 4px grid.
  * Real pointer and keys; places are read from the nodes, lines from the drawn paths.
  */
-type Flow = { nodes: { id: string; x: number; y: number }[]; ties?: { id: string; x: number; y: number }[]; routes: { from: string; to: string; via?: { x: number; y: number }[] }[] };
+type Flow = { nodes: { id: string; x: number; y: number }[]; ties?: { id: string; x: number; y: number }[]; connections: { from: string; to: string; via?: { x: number; y: number }[] }[] };
 type Ed = { workflow(): Flow; undo(): boolean };
 
-async function start(page: Page, nodes: [string, string, number, number][], routes: { from: string; to: string; via?: { x: number; y: number }[] }[], ties: unknown[] = []): Promise<void> {
+async function start(page: Page, nodes: [string, string, number, number][], connections: { from: string; to: string; via?: { x: number; y: number }[] }[], ties: unknown[] = []): Promise<void> {
   await page.evaluate(async ([ns, rs, ts]) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
@@ -20,7 +20,7 @@ async function start(page: Page, nodes: [string, string, number, number][], rout
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 2 as const, id: 'z', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), routes: rs, ...(ts.length ? { ties: ts } : {}) };
+    const flow = { v: 3 as const, id: 'z', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: rs, ...(ts.length ? { ties: ts } : {}) };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'],
@@ -29,7 +29,7 @@ async function start(page: Page, nodes: [string, string, number, number][], rout
     canvas.zoomTo(0.5);
     canvas.panTo(40, 40);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [nodes, routes, ties] as const);
+  }, [nodes, connections, ties] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((window as never as { ed: Ed }).ed.workflow())) as Flow);
@@ -79,10 +79,10 @@ test('dragging one of several picked nodes moves them all, relative places kept;
   expect(await flow(page)).toEqual(before);
 });
 
-test('a tie whose routes all join picked nodes goes along, bends of a route between picked ends too; others stay', async ({ page }) => {
+test('a tie whose connections all join picked nodes goes along, bends of a connection between picked ends too; others stay', async ({ page }) => {
   await start(page, [['s1', 'source', 0, 0], ['e1', 'output', 700, 0], ['s2', 'source', 0, 240], ['e2', 'output', 700, 240], ['s3', 'source', 0, 480], ['e3', 'output', 700, 480]],
     [{ ...R(1), via: [{ x: 400, y: 40 }] }, R(2), { ...R(3), via: [{ x: 400, y: 520 }] }],
-    [{ id: 't', x: 480, y: 130, routes: [R(1), R(2)] }, { id: 'u', x: 480, y: 330, routes: [R(2), R(3)] }]);
+    [{ id: 't', x: 480, y: 130, connections: [R(1), R(2)] }, { id: 'u', x: 480, y: 330, connections: [R(2), R(3)] }]);
   const before = await flow(page);
   await pick(page, ['s1', 'e1', 's2', 'e2']);
   await dragNode(page, 'e2', [80, 60]);
@@ -93,8 +93,8 @@ test('a tie whose routes all join picked nodes goes along, bends of a route betw
   const t = (f: Flow, id: string) => f.ties!.find((x) => x.id === id)!;
   expect([t(after, 't').x - t(before, 't').x, t(after, 't').y - t(before, 't').y]).toEqual([dx, dy]);
   expect(t(after, 'u')).toEqual(t(before, 'u'));
-  expect(after.routes[0]!.via).toEqual([{ x: 400 + dx, y: 40 + dy }]);
-  expect(after.routes[2]!.via).toEqual(before.routes[2]!.via);
+  expect(after.connections[0]!.via).toEqual([{ x: 400 + dx, y: 40 + dy }]);
+  expect(after.connections[2]!.via).toEqual(before.connections[2]!.via);
   await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
   await settle(page);
   expect(await flow(page)).toEqual(before);
@@ -126,9 +126,9 @@ test('Ctrl and an arrow, on the canvas, moves the picked nodes 8px, 32 with Shif
   expect(spot(after, 's3')).toEqual(spot(before, 's3'));
 });
 
-/** Each drawn route's end points on the plane, and how many pairs of them cross. */
+/** Each drawn connection's end points on the plane, and how many pairs of them cross. */
 const crossings = (page: Page) => page.evaluate(() => {
-  const segs = [...document.querySelectorAll('#cv > svg.graph-routes path[data-from]')].map((p) => {
+  const segs = [...document.querySelectorAll('#cv > svg.graph-connectors path[data-from]')].map((p) => {
     const n = (p.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?/g)!.map(Number);
     return { from: p.getAttribute('data-from')!.split('/')[0]!, to: p.getAttribute('data-to')!, a: [n[0]!, n[1]!], b: [n.at(-2)!, n.at(-1)!] };
   });
@@ -146,7 +146,7 @@ const rects = (page: Page) => page.evaluate(() => Object.fromEntries([...documen
 test('Arrange: columns by flow, three tokens apart, on the grid, anchor kept, fewer crossings, ties centred, bends cleared, one Undo', async ({ page }) => {
   await start(page, [['s1', 'source', 500, 400], ['s2', 'source', 40, 20], ['e1', 'output', 100, 300], ['e2', 'output', 800, 60], ['s3', 'source', 300, 600]],
     [{ ...R(1), via: [{ x: 300, y: 300 }] }, R(2), { from: 's3/rows', to: 'e1' }],
-    [{ id: 't', x: 360, y: 200, routes: [R(1), R(2)] }]);
+    [{ id: 't', x: 360, y: 200, connections: [R(1), R(2)] }]);
   const button = page.locator('sherpa-node-toolbar sherpa-button.arrange');
   await expect(button).toHaveAttribute('disabled', '');
   await pick(page, ['s1']);
@@ -179,11 +179,11 @@ test('Arrange: columns by flow, three tokens apart, on the grid, anchor kept, fe
   // the top-left of the picked nodes stays
   expect(Math.abs(Math.min(...four.map((id) => spot(after, id).x)) - Math.min(...four.map((id) => was[id]!.x)))).toBeLessThanOrEqual(2);
   expect(Math.abs(Math.min(...four.map((id) => spot(after, id).y)) - Math.min(...four.map((id) => was[id]!.y)))).toBeLessThanOrEqual(2);
-  // the unpicked node and the unpicked-end route stay
+  // the unpicked node and the unpicked-end connection stay
   expect(spot(after, 's3')).toEqual(spot(before, 's3'));
   expect(await crossings(page)).toBeLessThanOrEqual(crossBefore);
   // bends cleared; the tie sits in the gap between the columns, at its centre
-  expect(after.routes.every((r) => !r.via)).toBe(true);
+  expect(after.connections.every((r) => !r.via)).toBe(true);
   const tie = after.ties![0]!;
   const left = spot(after, 's1').x + now['s1']!.w;
   expect(Math.abs(tie.x - (left + gap / 2))).toBeLessThanOrEqual(2);
@@ -242,14 +242,14 @@ test('902: Arrange moves each node from where it stood, by a transition; the lin
   const during = await page.evaluate(() => {
     const cv = document.getElementById('cv')!;
     const n = cv.querySelector<HTMLElement>('sherpa-node[data-heading="s1"]')!;
-    return { settling: cv.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling'), move: getComputedStyle(n).transitionDuration, lines: getComputedStyle(cv.querySelector('svg.graph-routes')!).opacity };
+    return { settling: cv.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling'), move: getComputedStyle(n).transitionDuration, lines: getComputedStyle(cv.querySelector('svg.graph-connectors')!).opacity };
   });
   expect(during).toEqual({ settling: true, move: '0.3s', lines: '0' });
   await page.evaluate(() => window.__settled());
   await page.waitForTimeout(450);
   const after = await page.evaluate(() => {
     const cv = document.getElementById('cv')!;
-    return { settling: cv.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling'), lines: getComputedStyle(cv.querySelector('svg.graph-routes')!).opacity };
+    return { settling: cv.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling'), lines: getComputedStyle(cv.querySelector('svg.graph-connectors')!).opacity };
   });
   expect(after).toEqual({ settling: false, lines: '1' });
 });

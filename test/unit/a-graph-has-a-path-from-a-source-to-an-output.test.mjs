@@ -1,5 +1,5 @@
 /**
- * Fetch and Simulate need a PATH: a chain of kept routes from a Source to an Output, through portals and through a use of
+ * Fetch and Simulate need a PATH: a chain of kept connections from a Source to an Output, through portals and through a use of
  * a Custom Node whose inside joins its Group Input to its Group Output; frames change nothing. Without one, the words say
  * which part is missing. Will, TODO 836 · docs/history/plan-836-data-through-nodes.md · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
  *
@@ -14,7 +14,7 @@ const { workflowGraph } = await import(new URL('workflow.js', core));
 
 const R = (from, to) => ({ from, to });
 const N = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
-const graphOf = (nodes, routes, more = {}) => workflowGraph({ v: 2, id: 'p', nodes, routes, ...more });
+const graphOf = (nodes, connections, more = {}) => workflowGraph({ v: 3, id: 'p', nodes, connections, ...more });
 
 const SRC = N('s', 'source', { store: 'users' });
 const FIELD = N('f', 'field', { field: 'status' });
@@ -35,10 +35,10 @@ test('no Source, no Output, or no path: Fetch and Simulate say which', () => {
   assert.deepEqual(cut.unjoined, ['s']);
 });
 
-test('a route cut in the middle breaks the path; a route that only warns keeps it', () => {
+test('a connection cut in the middle breaks the path; a connection that only warns keeps it', () => {
   const nodes = [SRC, FIELD, COND, OUT];
   assert.equal(pathRead(graphOf(nodes, [R('s/rows', 'f'), R('c/rows', 'o')])).ok, false);
-  // A Value into the Field's header reads null and warns, but the route is kept.
+  // A Value into the Field's header reads null and warns, but the connection is kept.
   const warned = graphOf([SRC, N('v', 'value', { type: 'text', value: 'x' }), FIELD, OUT], [R('s/rows', 'f'), R('v/value', 'f'), R('f/field', 'o')]);
   assert.equal(pathRead(warned).ok, true);
 });
@@ -65,8 +65,8 @@ test('a path goes through a frame as through any node', () => {
 
 test('a use of a Custom Node is a hop only if its inside joins its Group Input to its Group Output', () => {
   const g = graphOf([SRC, OUT], []);
-  const withUse = { ...g, nodes: [...g.nodes, { ...g.nodes[0], id: 'u', kind: 'custom', rows: [], category: undefined }], routes: [R('s/rows', 'u'), R('u', 'o')] };
-  const inside = (joined) => ({ nodes: [{ id: '#in', rows: [] }, { id: '#out', rows: [] }], routes: joined ? [R('#in/x', '#out/y')] : [] });
+  const withUse = { ...g, nodes: [...g.nodes, { ...g.nodes[0], id: 'u', kind: 'custom', rows: [], category: undefined }], connections: [R('s/rows', 'u'), R('u', 'o')] };
+  const inside = (joined) => ({ nodes: [{ id: '#in', rows: [] }, { id: '#out', rows: [] }], connections: joined ? [R('#in/x', '#out/y')] : [] });
   assert.equal(pathRead(withUse, { inner: (n) => (n.id === 'u' ? inside(true) : undefined) }).ok, true);
   assert.equal(pathRead(withUse, { inner: (n) => (n.id === 'u' ? inside(false) : undefined) }).ok, false);
   // With no word of its inside, a use is no hop.

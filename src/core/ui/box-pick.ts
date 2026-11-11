@@ -1,6 +1,6 @@
 /**
  * box-pick.ts — what a dragged box picks on a canvas's plane: every node it ENCLOSES whole; or,
- * when it encloses no node, every route whose sampled path it CROSSES (a part of a route is
+ * when it encloses no node, every connection whose sampled path it CROSSES (a part of a connection is
  * enough). Never both on a plain drag; Shift picks both and adds, Ctrl removes both (Will, 2026-11-05).
  * Pure geometry: no DOM. Will, TODO 735.
  *
@@ -9,8 +9,8 @@
  * - touches — Whether two boxes overlap, an edge's touch included.
  * - encloses — Whether a box holds another whole.
  * - crosses — Whether a path, sampled as points, passes through a box.
- * - boxCover — Every node a box encloses and every route it crosses.
- * - boxPick — The nodes a box encloses; else the routes it crosses.
+ * - boxCover — Every node a box encloses and every connection it crosses.
+ * - boxPick — The nodes a box encloses; else the connections it crosses.
  * - BoxMode — How a box meets the pick: replace, add (Shift) or remove (Ctrl; Cmd on a Mac).
  * - boxMode — The mode a held key says.
  */
@@ -53,22 +53,22 @@ export function crosses(box: PickBox, dots: readonly [number, number][]): boolea
   return dots.some((dot, i) => i > 0 && segmentIn(box, dots[i - 1]!, dot));
 }
 
-/** Every node a box encloses whole and every route it crosses. Each in the order given. */
+/** Every node a box encloses whole and every connection it crosses. Each in the order given. */
 export function boxCover<R>(
-  box: PickBox, nodes: Iterable<readonly [string, PickBox]>, lanes: Iterable<{ route: R; dots: readonly [number, number][] }>,
-): { nodes: string[]; routes: R[] } {
+  box: PickBox, nodes: Iterable<readonly [string, PickBox]>, lanes: Iterable<{ connection: R; dots: readonly [number, number][] }>,
+): { nodes: string[]; connections: R[] } {
   return {
     nodes: [...nodes].filter(([, b]) => encloses(box, b)).map(([id]) => id),
-    routes: [...lanes].filter((l) => crosses(box, l.dots)).map((l) => l.route),
+    connections: [...lanes].filter((l) => crosses(box, l.dots)).map((l) => l.connection),
   };
 }
 
-/** The nodes a box encloses whole; with none, the routes it crosses. Each in the order given. */
+/** The nodes a box encloses whole; with none, the connections it crosses. Each in the order given. */
 export function boxPick<R>(
-  box: PickBox, nodes: Iterable<readonly [string, PickBox]>, lanes: Iterable<{ route: R; dots: readonly [number, number][] }>,
-): { nodes: string[]; routes: R[] } {
+  box: PickBox, nodes: Iterable<readonly [string, PickBox]>, lanes: Iterable<{ connection: R; dots: readonly [number, number][] }>,
+): { nodes: string[]; connections: R[] } {
   const cover = boxCover(box, nodes, lanes);
-  return cover.nodes.length ? { nodes: cover.nodes, routes: [] } : { nodes: [], routes: cover.routes };
+  return cover.nodes.length ? { nodes: cover.nodes, connections: [] } : { nodes: [], connections: cover.connections };
 }
 
 /** How a box meets the current pick: replaces it, adds both kinds (Shift), or removes both (Ctrl or Cmd; it wins over Shift). */

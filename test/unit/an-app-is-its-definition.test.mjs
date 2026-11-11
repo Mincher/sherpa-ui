@@ -53,5 +53,5 @@ test('every broken name reports, and none is followed', () => {
     'checkApp: the section "Customers" lists "chat", which is not a context.',
     'checkApp: "records" is a context and a settings page.',
   ]);
-  assert.deepEqual(heard(() => checkApp({ v: 2 })), { ok: false, seen: ['checkApp: it is not a v1 app definition.'] });
+  assert.deepEqual(heard(() => checkApp({ v: 3 })), { ok: false, seen: ['checkApp: it is not a v1 app definition.'] });
 });

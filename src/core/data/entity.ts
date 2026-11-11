@@ -7,9 +7,11 @@
  * Map:
  * - ENTITY_SCHEMA — The id of the envelope's schema, for the `$schema` of a file.
  * - EntityRef — One entity a graph places: its type and id.
- * - EntityGraph — An entity's graph: a workflow's nodes and routes, with `#in` and `#out` as a Custom Node has.
+ * - EntityGraph — An entity's graph: a workflow's nodes and connections, with `#in` and `#out` as a Custom Node has.
  * - Entity — One entity, as JSON.
- * - EntityLibrary — The preset entities of an app, by id (entities.v1).
+ * - EntityLibrary — The preset entities of an app, by id (entities.v2).
+ * - inNewWords — A graph or Custom Node body saved before plan 934 as it reads now: its routes are connections.
+ * - readEntity — An entity as this version reads it: a v1, saved before plan 934, read once as a v2.
  * - isEntity — Whether a value has the SHAPE of an entity; the persist guard.
  * - entityKind — The kind a use of an entity has in a graph: `<type>:<id>`, and a Custom Node's plain id.
  * - entityRefOf — The entity a use's kind names: the inverse of `entityKind`.
@@ -17,13 +19,13 @@
  * - nodeEntityOf — The entity a Custom Node definition is, by its use's kind: the inverse of `asNode`.
  * - definitionOf — A `node` entity as the Custom Node definition the node panel and the editor read.
  */
-import type { NodeRoute, NodeTie } from './node-kinds.js';
+import type { NodeConnection, NodeTie } from './node-kinds.js';
 import type { NodeDefinition, NodeOutput, NodeSocket } from './node-library.js';
 import type { WorkflowDefinition, WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
 
 /** The id of the envelope's schema, for the `$schema` of a file. */
-export const ENTITY_SCHEMA = 'https://sherpa-ui.dev/schemas/entity.v1.json';
+export const ENTITY_SCHEMA = 'https://sherpa-ui.dev/schemas/entity.v2.json';
 
 const ID = /^[a-z][a-z0-9-]*$/;
 
@@ -33,10 +35,10 @@ export interface EntityRef {
   id: string;
 }
 
-/** An entity's graph: a workflow's nodes and routes, with `#in` and `#out` as a Custom Node has. */
+/** An entity's graph: a workflow's nodes and connections, with `#in` and `#out` as a Custom Node has. */
 export interface EntityGraph {
   nodes: readonly WorkflowNode[];
-  routes?: readonly NodeRoute[];
+  connections?: readonly NodeConnection[];
   ties?: readonly NodeTie[];
   frames?: readonly NodeFrame[];
   /** How its canvas lays it out, kept by a Save as the frames are (TODO 933). */
@@ -48,7 +50,7 @@ export interface EntityGraph {
 /** One entity, as JSON. `origin` is set when it is read and never written. */
 export interface Entity {
   $schema?: string;
-  v: 1;
+  v: 2;
   type: string;
   id: string;
   label: string;
@@ -61,18 +63,40 @@ export interface Entity {
   origin?: 'preset' | 'mine';
 }
 
-/** The preset entities of an app, by id (entities.v1). */
+/** The preset entities of an app, by id (entities.v2). */
 export interface EntityLibrary {
   $schema?: string;
-  v: 1;
+  v: 2;
   entities: Readonly<Record<string, Entity>>;
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
+/** A graph or Custom Node body saved before plan 934 as it reads now: its `routes`, each zip tie's, and the
+ *  `was` of each use of a Custom Node are `connections`. One saved since is as it was. Pure.
+ *  TRAP T-a-saved-graph-is-read-in-the-new-words */
+export function inNewWords<T>(body: T): T {
+  if (!isObject(body)) return body;
+  const { routes, ties, nodes, ...rest } = body;
+  return {
+    ...rest,
+    ...(nodes !== undefined ? { nodes: Array.isArray(nodes) ? nodes.map((n) => (isObject(n) && isObject(n['was']) ? { ...n, was: inNewWords(n['was']) } : n)) : nodes } : {}),
+    ...(routes !== undefined && rest['connections'] === undefined ? { connections: routes } : {}),
+    ...(ties !== undefined ? { ties: Array.isArray(ties) ? ties.map((t) => inNewWords(t)) : ties } : {}),
+  } as T;
+}
+
+/** An entity as this version reads it: a v1, saved before plan 934, read once as a v2, its graph in the new
+ *  words. Anything else is as it was, for `isEntity` to judge. */
+export function readEntity(value: unknown): unknown {
+  if (!isObject(value) || value['v'] !== 1 || !isObject(value['graph'])) return value;
+  const { $schema, ...rest } = value;
+  return { ...(typeof $schema === 'string' ? { $schema: $schema.replace('entity.v1.json', 'entity.v2.json') } : {}), ...rest, v: 2, graph: inNewWords(value['graph']) };
+}
+
 /** Whether a value has the SHAPE of an entity: a v1 with a type, an id, a name and a graph. */
 export function isEntity(value: unknown): value is Entity {
-  if (!isObject(value) || value['v'] !== 1) return false;
+  if (!isObject(value) || value['v'] !== 2) return false;
   const { type, id, label, graph } = value;
   return typeof type === 'string' && ID.test(type) && typeof id === 'string' && ID.test(id)
     && typeof label === 'string' && !!label.trim() && isObject(graph) && Array.isArray(graph['nodes'])
@@ -106,10 +130,10 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
     ? { inputs: definition.inputs, outputs: definition.outputs, ...(definition.category ? { category: definition.category } : {}), ...(definition.icon ? { icon: definition.icon } : {}) }
     : definition.settings;
   return {
-    v: 1, type, id, label: definition.label,
+    v: 2, type, id, label: definition.label,
     ...(definition.description ? { description: definition.description } : {}),
     ...(definition.tags?.length ? { tags: definition.tags } : {}),
-    graph: { nodes: definition.nodes, ...(definition.routes ? { routes: definition.routes } : {}), ...(definition.ties ? { ties: definition.ties } : {}), ...(definition.frames ? { frames: definition.frames } : {}) },
+    graph: { nodes: definition.nodes, ...(definition.connections ? { connections: definition.connections } : {}), ...(definition.ties ? { ties: definition.ties } : {}), ...(definition.frames ? { frames: definition.frames } : {}) },
     ...(settings ? { settings } : {}),
     ...(definition.preset ? { origin: 'preset' as const } : {}),
   };
@@ -121,7 +145,7 @@ export function definitionOf(entity: Entity): NodeDefinition {
   return {
     v: 1, label: entity.label,
     inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [],
-    nodes: entity.graph.nodes, ...(entity.graph.routes ? { routes: entity.graph.routes } : {}), ...(entity.graph.ties ? { ties: entity.graph.ties } : {}),
+    nodes: entity.graph.nodes, ...(entity.graph.connections ? { connections: entity.graph.connections } : {}), ...(entity.graph.ties ? { ties: entity.graph.ties } : {}),
     ...(entity.graph.frames ? { frames: entity.graph.frames } : {}),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),

@@ -39,14 +39,14 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
       { id: 's', kind: 'source', x: 0, y: 0, heading: 's', values: { store: 'users' } }, { id: 'f', kind: 'field', x: 360, y: 0, heading: 'f', values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 720, y: 0, heading: 'c', values: { type: 'eq', b: 'active' } }, { id: 'o', kind: 'output', x: 1080, y: 0, heading: 'o' },
     ];
-    const routes = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'o' }];
+    const connections = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'o' }];
     // A Value into a Math, off the path: a node that sends a number, not rows (P6).
     if (calc) {
       nodes.push({ id: 'v', kind: 'value', x: 0, y: 300, heading: 'v', values: { type: 'integer', value: '21' } }, { id: 'm', kind: 'math', x: 360, y: 300, heading: 'm', values: { type: 'multiply', b: 2 } });
-      routes.push({ from: 'v/value', to: 'm/a' });
+      connections.push({ from: 'v/value', to: 'm/a' });
     }
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 2, id: 'w', nodes, routes } as never, {
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, id: 'w', nodes, connections } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!,
       stores: ['users'], storeOf: (id: string) => (known && id === 'users' ? store : undefined), tasks: new TaskQueue({ wait: 40 }), ...(limit ? { fetchLimit: limit } : {}),
       ...(collect ? { notify: (words: string, status: string) => notices.push({ words, status }) } : {}),

@@ -2,9 +2,9 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The Node Editor's picklists and gestures — Will, plan 713 M6, TODOs 557–559.
- * A picklist row edits through the draft's one door; a Value node routed into it
- * OVERRIDES it (read only, marked Custom), and cutting the route gives the row's own
- * pick back. A route's input end dragged to another input REROUTES it (557); let go
+ * A picklist row edits through the draft's one door; a Value node connected to it
+ * OVERRIDES it (read only, marked Custom), and cutting the connection gives the row's own
+ * pick back. A connection's input end dragged to another input RECONNECTS it (557); let go
  * on the bare canvas, or picked by a click and Delete, it BREAKS (558); a click on the
  * blank canvas deselects every node and shuts the panel (559). Each by real pointer
  */
@@ -23,16 +23,16 @@ test.beforeEach(async ({ page }) => {
 });
 
 /** A workflow bound on the harness canvas: Source › Field (Status) › Condition, a Value into its Value B; a Sort waits. */
-const BIND = `async (routes) => {
+const BIND = `async (connections) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 2, id: 'g', nodes: [
+  const flow = { v: 3, id: 'g', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 260, values: { value: 'active' } },
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } },
     { id: 'sort', kind: 'sort', x: 720, y: 0, values: { direction: 'asc' } },
     { id: 'pick', kind: 'field', x: 0, y: 460, values: { field: 'status' } },
-  ], routes: routes ?? [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }] };
+  ], connections: connections ?? [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'churned'] }, plan: { label: 'Plan' } } }, stores: ['customers'],
@@ -42,13 +42,13 @@ const BIND = `async (routes) => {
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }`;
-const bind = (page: Page, routes?: { from: string; to: string }[]) => page.evaluate(`(${BIND})(${JSON.stringify(routes ?? null)})`);
+const bind = (page: Page, connections?: { from: string; to: string }[]) => page.evaluate(`(${BIND})(${JSON.stringify(connections ?? null)})`);
 
-/** The saved workflow's routes, and each node's values: what the draft holds now. */
-const DRAFT = `(() => { window.editor.save(); const d = window.saved.at(-1); return { routes: d.routes.map((r) => r.from + ' → ' + r.to), nodes: Object.fromEntries(d.nodes.map((n) => [n.id, n.values ?? null])) }; })()`;
-const draft = (page: Page) => page.evaluate(DRAFT) as Promise<{ routes: string[]; nodes: Record<string, Record<string, unknown> | null> }>;
-/** A route's drawn lines, by what they join. */
-const LINES = `[...document.querySelectorAll('#root svg.graph-routes path[data-from]')].map((p) => p.dataset.from + ' → ' + p.dataset.to)`;
+/** The saved workflow's connections, and each node's values: what the draft holds now. */
+const DRAFT = `(() => { window.editor.save(); const d = window.saved.at(-1); return { connections: d.connections.map((r) => r.from + ' → ' + r.to), nodes: Object.fromEntries(d.nodes.map((n) => [n.id, n.values ?? null])) }; })()`;
+const draft = (page: Page) => page.evaluate(DRAFT) as Promise<{ connections: string[]; nodes: Record<string, Record<string, unknown> | null> }>;
+/** A connection's drawn lines, by what they join. */
+const LINES = `[...document.querySelectorAll('#root svg.graph-connectors path[data-from]')].map((p) => p.dataset.from + ' → ' + p.dataset.to)`;
 /** A socket's middle on the screen: a node's or a row's, by its selector. */
 const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
 const at = (page: Page, selector: string, side: string) =>
@@ -99,7 +99,7 @@ test('a picklist row edits through the draft\'s one door: the Condition\'s Value
   expect(r.nodes).toMatchObject({ filter: { type: 'eq', b: 'churned' }, status: { value: 'active', type: 'text' }, sort: { direction: 'desc' } });
 });
 
-test('a Value node routed into a picklist OVERRIDES it: "active Custom", read only; cut the route and its own pick is back', async ({ page }) => {
+test('a Value node connected to a picklist OVERRIDES it: "active Custom", read only; cut the connection and its own pick is back', async ({ page }) => {
   await bind(page);
   const shown = () => page.evaluate((sel) => {
     const f = document.querySelector<HTMLElement & { value: string }>(sel)!;
@@ -108,9 +108,9 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
   }, filterValue);
   const over = await shown();
   expect(over).toEqual({ value: 'active', text: 'active Custom', readOnly: true, description: 'Custom value, from Value › Value' });
-  // Pick the connector, then Delete: the route is cut.
+  // Pick the connector, then Delete: the connection is cut.
   const [mx, my] = await page.evaluate(() => {
-    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="filter/b"]')!;
+    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-connectors polyline[data-to="filter/b"]')!;
     const p = hit.points.getItem(8);
     const m = hit.getScreenCTM()!;
     return [m.a * p.x + m.e, m.d * p.y + m.f];
@@ -122,7 +122,7 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
   expect(await shown()).toEqual({ value: 'trial', text: 'trial', readOnly: false, description: null });
 });
 
-test('557 a route\'s input end dragged to another input REROUTES it: the first row has its own pick back', async ({ page }) => {
+test('557 a connection\'s input end dragged to another input RECONNECTS it: the first row has its own pick back', async ({ page }) => {
   await bind(page);
   // A Sort has no Field row now (plan 783 D5): the other picklist is the Field node's own.
   const from = await at(page, row('Condition', 'b'), 'input');
@@ -142,33 +142,33 @@ test('557 a route\'s input end dragged to another input REROUTES it: the first r
   expect(await page.evaluate(LINES)).toEqual(['start/rows → pick', 'pick/field → filter', 'status/value → pick/field']);
 });
 
-test('558 a route\'s end let go over the bare canvas BREAKS it; a click on a connector, then Backspace, does too', async ({ page }) => {
+test('558 a connection\'s end let go over the bare canvas BREAKS it; a click on a connector, then Backspace, does too', async ({ page }) => {
   await bind(page);
   await drag(page, await at(page, row('Condition', 'b'), 'input'), await blank(page));
   const first = await page.evaluate(LINES);
   const kept = await draft(page);
   expect(first).toEqual(['start/rows → pick', 'pick/field → filter']);
   expect(kept.nodes['filter']).toEqual({ type: 'eq', b: 'trial' });
-  // The route into the header, by a click and Backspace.
+  // The connection into the header, by a click and Backspace.
   const [mx, my] = await page.evaluate(() => {
-    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="filter"]')!;
+    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-connectors polyline[data-to="filter"]')!;
     const p = hit.points.getItem(8);
     const m = hit.getScreenCTM()!;
     return [m.a * p.x + m.e, m.d * p.y + m.f];
   });
   await page.mouse.click(mx, my);
-  expect(await page.evaluate(() => document.querySelectorAll('#root svg.graph-routes path[data-selected]').length)).toBe(1);
+  expect(await page.evaluate(() => document.querySelectorAll('#root svg.graph-connectors path[data-selected]').length)).toBe(1);
   await page.keyboard.press('Backspace');
   await settle(page);
   expect(await page.evaluate(LINES)).toEqual(['start/rows → pick']);
 });
 
-test('a line dragged out of an unrouted picklist\'s input onto the bare canvas makes a Value node there, holding the row\'s pick, routed in', async ({ page }) => {
+test('a line dragged out of an unconnected picklist\'s input onto the bare canvas makes a Value node there, holding the row\'s pick, connected in', async ({ page }) => {
   await bind(page, FED);
   const spot = await blank(page);
   await drag(page, await at(page, row('Sort', 'direction'), 'input'), spot);
   const r = await draft(page);
-  expect(r.routes).toEqual(['start/rows → pick', 'pick/field → filter', 'value-1/value → sort/direction']);
+  expect(r.connections).toEqual(['start/rows → pick', 'pick/field → filter', 'value-1/value → sort/direction']);
   expect(r.nodes['value-1']).toEqual({ value: 'asc' });
   // The row mirrors it, and marks it Custom; its own pick is kept.
   const text = await page.evaluate(() => document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"]')!.shadowRoot!.querySelector('select')!.selectedOptions[0]!.textContent);
@@ -176,23 +176,23 @@ test('a line dragged out of an unrouted picklist\'s input onto the bare canvas m
   expect(r.nodes['sort']).toEqual({ direction: 'asc' });
 });
 
-test('with no pointer: the inspector\'s "Custom value" makes the Value node; its "Cut route" cuts it; "Remove node" removes the node and its routes', async ({ page }) => {
+test('with no pointer: the inspector\'s "Custom value" makes the Value node; its "Cut connection" cuts it; "Remove node" removes the node and its connections', async ({ page }) => {
   await bind(page, FED);
   await page.locator('#root sherpa-node[data-heading="Condition"]').click({ position: { x: 40, y: 12 } });
   await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
   const panel = page.locator('#inspector');
   await panel.getByRole('button', { name: 'Custom value' }).first().click();
   await settle(page);
-  expect((await draft(page)).routes.length).toBe(3);
+  expect((await draft(page)).connections.length).toBe(3);
   // The node is still the one picked: its row says where the custom value comes from.
-  await panel.getByRole('button', { name: /Cut route from Value/ }).click();
+  await panel.getByRole('button', { name: /Cut connection from Value/ }).click();
   await settle(page);
-  expect((await draft(page)).routes).toEqual(['start/rows → pick', 'pick/field → filter']);
+  expect((await draft(page)).connections).toEqual(['start/rows → pick', 'pick/field → filter']);
   await panel.getByRole('button', { name: 'Remove node' }).click();
   await settle(page);
   const r = await draft(page);
   expect(Object.keys(r.nodes)).toEqual(['start', 'status', 'sort', 'pick', 'value-1']);
-  expect(r.routes).toEqual(['start/rows → pick']);
+  expect(r.connections).toEqual(['start/rows → pick']);
   expect(await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { open: boolean }).open)).toBe(true);
   await expect(page.locator('#inspector sherpa-empty-state')).toHaveCount(1);
 });
