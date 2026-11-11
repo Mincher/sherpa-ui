@@ -155,6 +155,31 @@ test('Enter on an item places it', async ({ page }) => {
   expect(await pick(page)).toEqual({ current: ['Sort'], open: true, tab: true });
 });
 
+test('a drag goes into the stage under the cursor, though the node\'s middle stands past it (923)', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
+    const canvas = document.querySelector('#root sherpa-layout-canvas') as HTMLElement;
+    const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, stage: 'stage-1', values: { store: 'customers' } }], routes: [],
+      stages: [{ id: 'stage-1', label: 'Stage 1', x: 380 }, { id: 'stage-2', label: 'Stage 2', x: 1100 }] };
+    (window as never as { editor: unknown }).editor = bindWorkflow(canvas, flow, {
+      session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'), stores: ['customers'],
+    });
+    await window.__settled();
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+  });
+  const one = (await page.locator('#root sherpa-layout-canvas > sherpa-node-stage').first().boundingBox())!;
+  const from = (await item(page, 'value').boundingBox())!;
+  const drop = [one.x + one.width - 24, one.y + one.height / 2] as const;
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + 80, from.y + 40, { steps: 4 });
+  await page.mouse.move(drop[0], drop[1], { steps: 6 });
+  await page.mouse.up();
+  await settle(page);
+  const added = await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { kind: string; stage?: string }[] } } }).editor.workflow().nodes.find((n) => n.kind === 'value'));
+  expect(added?.stage).toBe('stage-1');
+});
+
 test('a drag places the node where it is let go', async ({ page }) => {
   await bind(page);
   const from = await item(page, 'value').boundingBox();

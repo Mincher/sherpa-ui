@@ -2962,8 +2962,8 @@ export function bindWorkflow(
         const own = fit.row ? `${id}/${fit.row}` : id;
         join(shown(), context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket });
       }
-      // In the stage it is let go in.
-      if (!path.length) write(editWorkflow(shown(), { restage: [id] }, K()));
+      // In the stage under the point it is let go at: its left edge is there, so its middle may be in the next (923).
+      if (!path.length) write(editWorkflow(shown(), { restage: [id], by: at.x }, K()));
     });
     const node = graph.nodes.find((n) => n.id === id);
     if (!node) return;

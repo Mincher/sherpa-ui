@@ -61,6 +61,16 @@ test('a node let go between or past the stages is in none', () => {
   assert.equal(far.nodes.find((n) => n.id === 'b').stage, undefined);
 });
 
+test('a new node goes in the stage under the point it was let go at, though its middle stands in the next (923)', () => {
+  let w = editWorkflow(flow(), { addStage: {} });
+  const [one] = stageBands(w, nodeWidth).bands;
+  // Let go just inside stage 1's right edge: its left edge there, its middle past it.
+  const at = one.right - 20;
+  w = editWorkflow(w, { add: { id: 'c', kind: 'sort', x: at, y: 200 } });
+  assert.notEqual(editWorkflow(w, { restage: ['c'] }).nodes.find((n) => n.id === 'c').stage, 'stage-1', 'by its middle: not stage 1');
+  assert.equal(editWorkflow(w, { restage: ['c'], by: at }).nodes.find((n) => n.id === 'c').stage, 'stage-1', 'by the point: stage 1');
+});
+
 test('Edit names, lines and colours a stage; an empty line or colour takes it away', () => {
   let w = editWorkflow(flow(), { setStage: { id: 'stage-1', label: 'Intake', description: 'Where rows come in', colour: '#3b4ccd' } });
   assert.deepEqual(w.stages[0], { id: 'stage-1', label: 'Intake', description: 'Where rows come in', colour: '#3b4ccd', x: w.stages[0].x });

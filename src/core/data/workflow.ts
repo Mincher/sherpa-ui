@@ -747,7 +747,7 @@ export type WorkflowEdit =
   | { setStage: { id: string; label?: string; description?: string; colour?: string } }
   | { removeStage: string }
   | { orderStages: readonly string[] }
-  | { restage: readonly string[]; together?: boolean }
+  | { restage: readonly string[]; together?: boolean; by?: number }
   | { lanes: readonly NodeLane[] | null };
 
 /** No value, empty text or an empty list: a row holding it holds none. */
@@ -788,7 +788,7 @@ function numbered(workflow: WorkflowDefinition): WorkflowDefinition {
 
 /** A stage edit: written out first where the workflow had only its one Stage 1. */
 function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addStage: unknown } | { setStage: unknown } | { removeStage: unknown } | { orderStages: unknown } | { restage: unknown }>): WorkflowDefinition {
-  if ('restage' in edit) return restage(workflow, edit.restage, nodeWidth, !!edit.together);
+  if ('restage' in edit) return restage(workflow, edit.restage, nodeWidth, !!edit.together, edit.by);
   if ('orderStages' in edit) return numbered(orderStages(workflow, edit.orderStages, nodeWidth));
   const held = stagesHeld(workflow);
   const stages = held.stages!;

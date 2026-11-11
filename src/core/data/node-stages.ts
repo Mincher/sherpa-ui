@@ -17,7 +17,7 @@
  * - fitStages — The workflow with each stage's left edge, and every node a push moved, as its bands say.
  * - stageAt — The stage whose band holds a place across the canvas, or none.
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
- * - restage — The workflow with these nodes in the stage their middle stands in, or in none.
+ * - restage — The workflow with these nodes in the stage their middle stands in, or the point given does; else in none.
  * - orderStages — The workflow with its stages in a new order, each packed after the one before, its nodes with it.
  * - stageFaults — Every fault in a workflow's stages, in words.
  */
@@ -135,20 +135,20 @@ export function stagesHeld<W extends Staged>(workflow: W): W {
 /**
  * The workflow with these nodes in the stage their middle stands in, by the bands as they stand without them
  * (`heldBands`), or in none. A node let go between stages, or past them, is in none. `together` (a frame's nodes): all
- * in the stage under the middle of them all.
+ * in the stage under the middle of them all. `by`: the stage under that x, for them all — where a new node was let go.
  */
-export function restage<W extends Staged>(workflow: W, ids: readonly string[], widthOf: WidthOf, together = false): W {
+export function restage<W extends Staged>(workflow: W, ids: readonly string[], widthOf: WidthOf, together = false, by?: number): W {
   if (!workflow.stages?.length || !ids.length) return workflow;
   const moving = new Set(ids);
   const bands = heldBands(workflow, widthOf, moving);
   // As ONE (a frame's nodes): the stage under the middle of them all.
   const all = workflow.nodes.filter((n) => moving.has(n.id));
   const middle = all.length ? (Math.min(...all.map((n) => n.x)) + Math.max(...all.map((n) => n.x + widthOf(n)))) / 2 : 0;
-  const one = together ? stageAt(bands, middle) : undefined;
+  const one = by !== undefined ? stageAt(bands, by) : together ? stageAt(bands, middle) : undefined;
   let changed = false;
   const nodes = workflow.nodes.map((n) => {
     if (!moving.has(n.id) || n.id.startsWith('#')) return n;
-    const at = together ? one : stageAt(bands, n.x + widthOf(n) / 2);
+    const at = by !== undefined || together ? one : stageAt(bands, n.x + widthOf(n) / 2);
     if (at === n.stage) return n;
     changed = true;
     const { stage: _was, ...bare } = n;
