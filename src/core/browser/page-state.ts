@@ -21,11 +21,6 @@
  * - .write — Change parts of one page's state; each goes to its tier, `undefined` forgets it.
  * - .entityPresets — The entities the app ships, read only: set after loadEntityLibrary().
  * - .entities — The ONE entity shelf: the presets and the reader's own, of every type, kept app-wide.
- * - .shelf — The Custom Node shelf: a view of every entity, as the node it offers.
- * - .nodeLibrary — Every entity now, as the Custom Node it offers, in one library.
- * - .saveNode — Keep one of the reader's Custom Nodes, by its use's kind; a clash or a fault is refused and reported.
- * - .removeNode — Forget one of the reader's Custom Nodes, by its use's kind.
- * - .watchNodes — Hear the Custom Nodes change: here at once, in another tab by its `storage` event.
  * - .appContext — The App Context's one answer, for this tab.
  * - .restore — The named parts from the database and the server, merged under this browser's.
  * - .flush — Push every page's named parts now.
@@ -34,10 +29,8 @@
 import type { Query, QueryDefaults, SavedFilter } from '../data/query.js';
 import { isSavedFilter } from '../data/query.js';
 import type { SharedView } from '../data/query-edits.js';
-import type { NodeDefinition, NodeLibrary } from '../data/node-library.js';
 import { isEntity, readEntity, type Entity } from '../data/entity.js';
-import { makeShelf, nodesView, type EntityShelf } from '../data/entity-shelf.js';
-import type { NodeShelf } from '../data/node-shelf.js';
+import { makeShelf, type EntityShelf } from '../data/entity-shelf.js';
 import { applyView, type SavedView } from './persist-view.js';
 import type { EntityRecord, ViewRecord } from './database.js';
 import { isPlainObject, readJson, removeKey, writeJson, type StorageKind } from './web-storage.js';
@@ -291,33 +284,6 @@ export class PageKeeper {
       },
       heard: (handler, signal) => this.#hear(handler, signal),
     });
-  }
-
-  /** The Custom Node shelf, as what an editor is handed: a VIEW of every entity, as the node it offers (D1). */
-  get shelf(): NodeShelf {
-    return nodesView(this.entities);
-  }
-
-  /** Every entity now, as the Custom Node it offers, keyed by its use's kind; read through. A clash with a preset is left out. */
-  nodeLibrary(): NodeLibrary {
-    return this.shelf.library();
-  }
-
-  /** Keep one of the reader's Custom Nodes, by its use's kind, as the entity it is. Refused and reported where it holds a
-   *  preset's id, a shipped kind's, or a fault. Answers whether it was kept; the checks load when first asked. */
-  saveNode(kind: string, definition: NodeDefinition): Promise<boolean> {
-    return this.shelf.save(kind, definition);
-  }
-
-  /** Forget one of the reader's Custom Nodes, by its use's kind. A preset is not the reader's to remove. */
-  removeNode(kind: string): boolean {
-    return this.shelf.remove(kind);
-  }
-
-  /** Hear the Custom Nodes change: a save or a removal here at once, one in another tab by its
-   *  `storage` event (the tab's own writes raise none). Stops on the signal. */
-  watchNodes(handler: (library: NodeLibrary) => void, signal?: AbortSignal): void {
-    this.shelf.watch(handler, signal);
   }
 
   /** Hear the entities change: here at once, in another tab by its `storage` event. */

@@ -177,7 +177,7 @@ test('a Custom Node is the type `node`: the envelope wraps today\'s definition, 
   // The same box the library gives for the definition itself.
   assert.deepEqual(T.asNode(entity), { ...definition, icon: 'lock' });
   assert.equal(lib.versionOf(T.asNode(entity)), lib.versionOf(definition));
-  // The library of one reads as nodes.v1 does.
+  // The library of one passes the library's own check.
   assert.deepEqual(lib.nodeLibraryFaults(T.libraryOf([entity])), []);
 });
 

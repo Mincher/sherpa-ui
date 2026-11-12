@@ -1,6 +1,6 @@
 /**
  * A CUSTOM NODE IS AN INSTANCE: a workflow body saved under one name, its inputs and outputs said
- * once, as JSON (nodes.v1). A use is a plain node whose kind is its id, fed its own connections and
+ * once, as JSON (defs.v1 nodeDefinition). A use is a plain node whose kind is its id, fed its own connections and
  * holding its own values. It runs NESTED: innerOf gives the graph inside, the checks run there
  * with the same words and name each fault by path, and a Custom Node that holds itself is a loop.
  * A use records the version it was made from, so a change shows as a diff, and an update keeps
@@ -49,7 +49,8 @@ const heard = (fn) => {
 };
 
 test('a library passes its schema and the check; a planted fault in each rule fails the schema', () => {
-  const check = schemaCheck('nodes.v1.json');
+  // Each definition by its schema (defs.v1 nodeDefinition): a library is built in memory, and no file holds one (plan 942).
+  const check = (l) => Object.values(l.nodes).flatMap(schemaCheck('defs.v1.json#/$defs/nodeDefinition'));
   assert.deepEqual(check(library()), []);
   assert.equal(lib.checkNodeLibrary(library()), true);
   const bad = (change) => { const l = library(); change(l.nodes['org-permissions']); return check(l); };
@@ -62,8 +63,9 @@ test('a library passes its schema and the check; a planted fault in each rule fa
     ['a socket that is no name', (d) => { d.inputs[0].name = 'Users'; }],
     ['no body', (d) => delete d.nodes],
   ]) assert.notDeepEqual(bad(change), [], what);
-  assert.notDeepEqual(check({ v: 1, nodes: { 'Bad Id': ORG } }), [], 'a key that is no id');
-  assert.notDeepEqual(check({ v: 2, nodes: {} }), [], 'only a v1');
+  // The library's own check says what its keys and version may be.
+  assert.notDeepEqual(lib.nodeLibraryFaults({ v: 1, nodes: { 'Bad Id': ORG } }), [], 'a key that is no id');
+  assert.notDeepEqual(lib.nodeLibraryFaults({ v: 2, nodes: {} }), [], 'only a v1');
 });
 
 test('a use is a node of the definition\'s kind: nodeKindOf gives a row per input and output, and kindsOf merges', () => {
@@ -222,6 +224,6 @@ test('a preset is read only; Copy to my nodes makes one to edit', () => {
   assert.equal(lib.editDefinition(copied, id, { label: 'Edited' }).nodes[id].label, 'Edited');
   assert.equal(lib.copyToMine(copied, 'shipped').id, 'shipped-copy-2');
   assert.equal(copied.nodes.shipped.preset, true, 'the preset itself is as it was');
-  assert.deepEqual(schemaCheck('nodes.v1.json')(copied), []);
+  assert.deepEqual(Object.values(copied.nodes).flatMap(schemaCheck('defs.v1.json#/$defs/nodeDefinition')), []);
   assert.equal(lib.copyToMine(l, 'nope').id, undefined);
 });

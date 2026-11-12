@@ -26,7 +26,7 @@ const laned = () => editDefinition(library(), 'org', { lanes: LANES_BY_FAMILY, b
 test('a definition keeps its lanes, and the places they would put back; the schemas take both', () => {
   const org = laned().nodes.org;
   assert.deepEqual([org.lanes.length, org.beforeLanes], [LANES_BY_FAMILY.length, BEFORE]);
-  assert.deepEqual(schemaCheck('nodes.v1.json')(laned()), []);
+  assert.deepEqual(schemaCheck('defs.v1.json#/$defs/nodeDefinition')(laned().nodes.org), []);
   assert.deepEqual(schemaCheck('entity.v2.json')(nodeEntityOf('org', org)), []);
 });
 
@@ -48,7 +48,7 @@ test('the graph a use opens has its lanes; with none, it has none', () => {
 test('Swimlanes off is none: no empty list is kept, nor the places', () => {
   const off = editDefinition(laned(), 'org', { lanes: [] }).nodes.org;
   assert.deepEqual(['lanes', 'beforeLanes'].filter((k) => k in off), []);
-  assert.deepEqual(schemaCheck('nodes.v1.json')({ v: 1, nodes: { org: off } }), []);
+  assert.deepEqual(schemaCheck('defs.v1.json#/$defs/nodeDefinition')(off), []);
   // A change that names no lanes keeps them.
   assert.equal(editDefinition(laned(), 'org', { label: 'Org check' }).nodes.org.lanes.length, LANES_BY_FAMILY.length);
 });

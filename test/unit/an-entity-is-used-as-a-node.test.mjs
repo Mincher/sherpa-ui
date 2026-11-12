@@ -21,6 +21,7 @@ const { entityKind, entityRefOf, nodeEntityOf } = await import(new URL('data/ent
 const lib = await import(new URL('data/node-library.js', core));
 const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
+const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', core));
 
 /** Records whose status is one value — Source › Field › Condition — sent to the Preset Filter's Where. */
 const filter = (id, label, value = 'active', extra = {}) => ({
@@ -55,7 +56,7 @@ test('every entity is a node the panel offers, by its use\'s kind; a preset is r
   const k = keeper();
   k.entityPresets = [filter('active', 'Active')];
   await k.entities.save(filter('trials', 'Trials', 'trial'));
-  const library = k.nodeLibrary();
+  const library = k.entities.library();
   assert.deepEqual(Object.keys(library.nodes), ['preset-filter:active', 'preset-filter:trials']);
   assert.equal(library.nodes['preset-filter:active'].preset, true);
   assert.equal(library.nodes['preset-filter:trials'].preset, undefined);
@@ -115,35 +116,33 @@ test('an edit inside goes back to its entity, of its own type, its settings kept
   const k = keeper();
   k.entityPresets = [filter('active', 'Active')];
   await k.entities.save(filter('trials', 'Trials', 'trial'));
-  const edited = lib.editDefinition(k.nodeLibrary(), 'preset-filter:trials', {
+  const edited = lib.editDefinition(k.entities.library(), 'preset-filter:trials', {
     nodes: filter('t', 't', 'lead').graph.nodes,
   });
-  assert.equal(await k.saveNode('preset-filter:trials', edited.nodes['preset-filter:trials']), true);
+  assert.deepEqual(await keepNode(k.entities, 'preset-filter:trials', edited.nodes['preset-filter:trials']), { id: 'trials' });
   const kept = k.entities.get('trials');
   assert.deepEqual([kept.type, kept.settings, kept.graph.nodes[1].values.b], ['preset-filter', { source: 'customers' }, 'lead']);
   // An Output inside a Preset Filter: refused, and said.
-  const withOutput = lib.editDefinition(k.nodeLibrary(), 'preset-filter:trials', {
+  const withOutput = lib.editDefinition(k.entities.library(), 'preset-filter:trials', {
     nodes: [...kept.graph.nodes, { id: 'end', kind: 'result', x: 720, y: 0 }],
   });
-  const { result, said } = await heard(() => k.saveNode('preset-filter:trials', withOutput.nodes['preset-filter:trials']));
-  assert.equal(result, false);
-  assert.match(said.join('\n'), /of the family "Output", which a Preset Filter does not take/);
+  const refused = await keepNode(k.entities, 'preset-filter:trials', withOutput.nodes['preset-filter:trials']);
+  assert.match(refused.faults.join('\n'), /of the family "Output", which a Preset Filter does not take/);
   assert.equal(k.entities.get('trials').graph.nodes.length, 3);
-  const preset = await heard(() => k.saveNode('preset-filter:active', k.nodeLibrary().nodes['preset-filter:active']));
-  assert.equal(preset.result, false);
-  assert.match(preset.said.join('\n'), /preset, which is read only/);
+  const preset = await keepNode(k.entities, 'preset-filter:active', k.entities.library().nodes['preset-filter:active']);
+  assert.match(preset.faults.join('\n'), /preset, which is read only/);
 });
 
 test('D11: the entity saved again — each use says so, its diff names the change, and an update keeps its own values; Update all on the graph', async () => {
   const k = keeper();
   await k.entities.save(filter('trials', 'Trials', 'trial'));
-  const before = k.nodeLibrary();
+  const before = k.entities.library();
   let flow = flowOf(before, 'preset-filter:trials', ['one', 'two']);
   flow = { ...flow, nodes: flow.nodes.map((n) => (n.id === 'one' ? { ...n, heading: 'Trials, mine' } : n)) };
   assert.deepEqual(lib.staleUses(flow, before), []);
   // Saved again, from its own canvas, as Save writes it.
   await k.entities.save(filter('trials', 'Trials', 'lead'));
-  const after = k.nodeLibrary();
+  const after = k.entities.library();
   assert.deepEqual(lib.staleUses(flow, after), ['one', 'two']);
   const diff = lib.definitionDiff(flow.nodes[0], after);
   assert.deepEqual([diff.stale, diff.known, diff.nodes.changed], [true, true, ['status']]);
@@ -164,15 +163,15 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
     // An output made from the test's True property (plan 944).
     connections: [{ from: '#in/rows', to: 'c' }, { from: 'c/true', to: '#out' }],
   };
-  assert.equal(await k.saveNode('active-copy', taken), true);
-  const made = lib.copyToMine(k.nodeLibrary(), 'preset-filter:active');
+  assert.deepEqual(await keepNode(k.entities, 'active-copy', taken), { id: 'active-copy' });
+  const made = lib.copyToMine(k.entities.library(), 'preset-filter:active');
   // An id names one entity of any type: a Custom Node holds active-copy.
   assert.equal(made.id, 'preset-filter:active-copy-2');
-  assert.equal(await k.saveNode(made.id, made.library.nodes[made.id]), true);
+  assert.deepEqual(await keepNode(k.entities, made.id, made.library.nodes[made.id]), { id: 'active-copy-2' });
   const copy = k.entities.get('active-copy-2');
   assert.deepEqual([copy.type, copy.label, copy.settings, copy.origin], ['preset-filter', 'Active copy', { source: 'customers' }, 'mine']);
-  assert.equal(k.removeNode('active-copy-2'), false, 'a plain id names a Custom Node');
-  assert.equal(k.removeNode('preset-filter:active-copy-2'), true);
+  // One id names one entity, of any type: the door forgets it by its id.
+  assert.deepEqual(deleteNode(k.entities, 'active-copy-2'), { id: 'active-copy-2' });
 });
 
 test('an app\'s type is used as a node too; and the keeper\'s modules stay light: no node kind, no workflow', () => {

@@ -17,7 +17,6 @@ import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
 import type { Entity } from '../../core/data/entity.js';
 import type { EntityShelf } from '../../core/data/entity-shelf.js';
-import type { NodeShelf } from '../../core/data/node-shelf.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { GRAPH_CHIP, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { NEW_GRAPH, PAGE_QUERY, graphRows, newGraph, openOf, pageRows, pagesOf, type OpenGraph } from '../../core/data/graph-views.js';
@@ -251,13 +250,13 @@ export class SherpaOutlet extends SherpaElement {
     this.#nav?.told(settings);
   }
 
-  /** The app's entities, and its Custom Nodes as their view, handed to every Context: the provider's keeper holds them. */
-  get #nodes(): { nodes: NodeShelf; entities: EntityShelf } | Record<string, never> {
+  /** The app's entities, handed to every Context: the provider's keeper holds them. Its `library()` is every one as a Custom Node. */
+  get #nodes(): { entities: EntityShelf } | Record<string, never> {
     const keeper = this.#provider?.keeper;
     if (!keeper) return {};
     // Told at each hand-over: the app may give its provider another keeper after this one loads.
     keeper.entityPresets = this.#entityPresets;
-    return { nodes: keeper.shelf, entities: keeper.entities };
+    return { entities: keeper.entities };
   }
 
   /** The document's router: the URL has one owner. */

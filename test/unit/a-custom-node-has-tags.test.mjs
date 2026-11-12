@@ -1,6 +1,6 @@
 /**
  * A CUSTOM NODE HAS TAGS: an entity's `tags`, a list of words, in the envelope (entity.v1) and in a
- * Custom Node's definition (nodes.v1). Set by Save as Custom Node, New graph and Save graph as; tidied
+ * Custom Node's definition. Set by Save as Custom Node, New graph and Save graph as; tidied
  * (trimmed, one of each); kept through the shelf and its Custom Node view both ways; checked in words;
  * and read by the node panel, whose search finds a node by one. Will, TODO 784.
  * TRAP T-a-node-panel-lists-under-sticky-headings
@@ -16,7 +16,7 @@ const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js',
 const { definitionOf, nodeEntityOf } = await import(new URL('data/entity.js', core));
 const { tidyTags } = await import(new URL('data/tags.js', core));
 const { entityFaults } = await import(new URL('data/entity-check.js', core));
-const { nodesView } = await import(new URL('data/entity-shelf.js', core));
+const { keepNode } = await import(new URL('data/custom-nodes.js', core));
 const { newGraph, saveGraphAs } = await import(new URL('data/graph-views.js', core));
 const { kindsOf, nodeLibraryFaults, versionOf } = await import(new URL('data/node-library.js', core));
 const { groupNodes } = await import(new URL('data/node-group.js', core));
@@ -61,15 +61,14 @@ test('tags are no part of a definition\'s version: a use does not go stale for a
   assert.equal(versionOf({ ...plain, tags: ['permissions'] }), versionOf(plain));
 });
 
-test('the shelf keeps tags, and its Custom Node view hands them back both ways; an empty list is not kept', async () => {
+test('the shelf keeps tags, and its library and the door hand them back both ways; an empty list is not kept', async () => {
   const k = keeper();
   assert.equal(await k.entities.save(node('org', { tags: ['permissions'] })), true);
   assert.deepEqual(k.entities.get('org').tags, ['permissions']);
-  const view = nodesView(k.entities);
-  assert.deepEqual(view.library().nodes.org.tags, ['permissions']);
-  assert.equal(await view.save('org', { ...view.library().nodes.org, tags: ['permissions', 'users'] }), true);
+  assert.deepEqual(k.entities.library().nodes.org.tags, ['permissions']);
+  assert.deepEqual(await keepNode(k.entities, 'org', { ...k.entities.library().nodes.org, tags: ['permissions', 'users'] }), { id: 'org' });
   assert.deepEqual(k.entities.get('org').tags, ['permissions', 'users']);
-  assert.deepEqual(nodeEntityOf('org', view.library().nodes.org).tags, ['permissions', 'users']);
+  assert.deepEqual(nodeEntityOf('org', k.entities.library().nodes.org).tags, ['permissions', 'users']);
   assert.equal(await k.entities.save({ ...k.entities.get('org'), tags: [] }), true);
   assert.equal('tags' in k.entities.get('org'), false);
 });

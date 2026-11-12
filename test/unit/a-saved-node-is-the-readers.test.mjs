@@ -2,8 +2,8 @@
  * A SAVED NODE IS THE READER'S, APP-WIDE (D13): a preset is a file's, read only; the reader's own
  * Custom Nodes live in the page keeper's `entities`, a NAMED part, so every tab sees them, and are
  * pushed to the app's server like a saved filter. A custom id never clashes with a preset or a
- * shipped kind, and a stored value of the wrong shape is dropped. The panel lists both.
- * Will, plan 713 §9.4, M12. TRAP T-only-a-named-part-crosses-tabs
+ * shipped kind, and a stored value of the wrong shape is dropped. The panel lists both. Each is kept through the doors
+ * (`keepNode`, `deleteNode`; plan 942 step 2: A). Will, plan 713 §9.4, M12. TRAP T-only-a-named-part-crosses-tabs
  *
  *   node --test test/unit/a-saved-node-is-the-readers.test.mjs
  */
@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier, NODES_PAGE } = await import(new URL('browser/page-state.js', core));
-const { joinLibrary } = await import(new URL('data/node-shelf.js', core));
+const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', core));
 const { nodeEntityOf } = await import(new URL('data/entity.js', core));
 const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', core));
 const { kindsOf } = await import(new URL('data/node-library.js', core));
@@ -38,10 +38,10 @@ const heard = async (run) => {
 test('the keeper keeps a saved node; a second tab sees it, and so does a reload', async () => {
   const local = memoryTier();
   const first = new PageKeeper({ tab: memoryTier(), local });
-  assert.equal(await first.saveNode('mine', mine('Mine')), true);
-  assert.ok(first.nodeLibrary().nodes['mine']);
+  assert.deepEqual(await keepNode(first.entities, 'mine', mine('Mine')), { id: 'mine' });
+  assert.ok(first.entities.library().nodes['mine']);
   const second = new PageKeeper({ tab: memoryTier(), local });
-  assert.equal(second.nodeLibrary().nodes['mine'].label, 'Mine', 'another tab: the same local tier');
+  assert.equal(second.entities.library().nodes['mine'].label, 'Mine', 'another tab: the same local tier');
   const reloaded = new PageKeeper({ tab: memoryTier(), local });
   assert.equal(reloaded.read(NODES_PAGE).entities['mine'].label, 'Mine', 'a reload');
   // Named, so it is the local tier\'s, never the tab\'s.
@@ -51,22 +51,17 @@ test('the keeper keeps a saved node; a second tab sees it, and so does a reload'
 test('a custom id may not clash with a preset or a shipped kind; a preset is never the reader\'s to remove', async () => {
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
   keeper.entityPresets = [nodeEntityOf('has-role', HAS_ROLE)];
-  const { result, reports } = await heard(async () => [await keeper.saveNode('has-role', mine('Over it')), await keeper.saveNode('value', mine('Over Value')), keeper.removeNode('has-role')]);
-  assert.deepEqual(result, [false, false, false]);
-  assert.equal(reports.length >= 3, true);
+  const { result } = await heard(async () => [await keepNode(keeper.entities, 'has-role', mine('Over it')), await keepNode(keeper.entities, 'value', mine('Over Value')), deleteNode(keeper.entities, 'has-role')]);
+  assert.ok(result.every((r) => 'faults' in r), JSON.stringify(result));
+  assert.match(result[0].faults[0], /preset, which is read only/);
   assert.deepEqual(Object.keys(keeper.read(NODES_PAGE).entities ?? {}), []);
-  // And the join leaves a stored clash out, so a custom node overrides nothing.
-  const joined = joinLibrary({ v: 1, nodes: { 'has-role': { ...HAS_ROLE, preset: true } } }, { 'has-role': mine('Over it'), ok: mine('Ok') });
-  assert.equal(joined.nodes['has-role'].label, 'Has role');
-  assert.equal(joined.nodes['has-role'].preset, true);
-  assert.equal(joined.nodes['ok'].label, 'Ok');
+  assert.equal(keeper.entities.library().nodes['has-role'].label, 'Has role', 'the preset, as it was');
 });
 
 test('a fault in a saved node refuses it, and says why', async () => {
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
-  const { result, reports } = await heard(() => keeper.saveNode('bad', { ...mine('Bad'), nodes: [{ id: 'x', kind: 'nothing-like-it', x: 0, y: 0 }] }));
-  assert.equal(result, false);
-  assert.ok(reports.some((r) => r.code === 'node-library'));
+  const { result } = await heard(() => keepNode(keeper.entities, 'bad', { ...mine('Bad'), nodes: [{ id: 'x', kind: 'nothing-like-it', x: 0, y: 0 }] }));
+  assert.ok(result.faults.some((f) => /nothing-like-it/.test(f)), JSON.stringify(result));
   assert.equal(keeper.read(NODES_PAGE).entities, undefined);
 });
 
@@ -75,18 +70,18 @@ test('a stored `nodes`, the old part, is no longer read: the reader\'s nodes are
   local.write('sherpa:page:#app', { v: 3, nodes: { ok: mine('Ok') }, entities: { kept: nodeEntityOf('kept', mine('Kept')) } });
   const keeper = new PageKeeper({ tab: memoryTier(), local });
   assert.deepEqual(Object.keys(keeper.read(NODES_PAGE).entities), ['kept']);
-  assert.deepEqual(Object.keys(keeper.nodeLibrary().nodes), ['kept']);
+  assert.deepEqual(Object.keys(keeper.entities.library().nodes), ['kept']);
 });
 
-test('removeNode forgets one, in every tab', async () => {
+test('deleteNode forgets one, in every tab', async () => {
   const local = memoryTier();
   const a = new PageKeeper({ tab: memoryTier(), local });
   const b = new PageKeeper({ tab: memoryTier(), local });
-  await a.saveNode('one', mine('One'));
-  await a.saveNode('two', mine('Two'));
-  assert.equal(a.removeNode('one'), true);
-  assert.deepEqual(Object.keys(b.nodeLibrary().nodes), ['two']);
-  assert.equal(a.removeNode('nope'), false);
+  await keepNode(a.entities, 'one', mine('One'));
+  await keepNode(a.entities, 'two', mine('Two'));
+  assert.deepEqual(deleteNode(a.entities, 'one'), { id: 'one' });
+  assert.deepEqual(Object.keys(b.entities.library().nodes), ['two']);
+  assert.deepEqual(deleteNode(a.entities, 'nope'), { faults: ['there is no "nope"'] });
 });
 
 test('the keeper pushes the reader\'s nodes to the server and takes them back, under the local ones', async () => {
@@ -96,7 +91,7 @@ test('the keeper pushes the reader\'s nodes to the server and takes them back, u
     push: async (page, named) => void pushes.push({ page, named }),
   };
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier(), remote, interval: 10 });
-  await keeper.saveNode('mine', mine('Mine'));
+  await keepNode(keeper.entities, 'mine', mine('Mine'));
   await keeper.flush();
   assert.equal(pushes.length, 1);
   assert.equal(pushes[0].page, NODES_PAGE);
@@ -105,28 +100,28 @@ test('the keeper pushes the reader\'s nodes to the server and takes them back, u
   assert.deepEqual(Object.keys(restored.entities).sort(), ['far', 'mine']);
   assert.equal('nodes' in restored, false, 'a server\'s `nodes` is not read');
   assert.equal(restored.entities.mine.label, 'Mine', 'an unpushed local edit wins');
-  assert.equal(keeper.nodeLibrary().nodes['far'].label, 'Far');
+  assert.equal(keeper.entities.library().nodes['far'].label, 'Far');
 });
 
 test('the shelf tells its watchers at once', async () => {
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
   const seen = [];
   const stop = new AbortController();
-  keeper.shelf.watch((library) => seen.push(Object.keys(library.nodes)), stop.signal);
-  await keeper.shelf.save('one', mine('One'));
+  keeper.entities.watch(() => seen.push(Object.keys(keeper.entities.library().nodes)), stop.signal);
+  await keepNode(keeper.entities, 'one', mine('One'));
   stop.abort();
-  await keeper.shelf.save('two', mine('Two'));
+  await keepNode(keeper.entities, 'two', mine('Two'));
   assert.deepEqual(seen, [['one']]);
 });
 
 test('the panel lists presets read only, and the reader\'s own, in "Custom Nodes"; placing is by the id', async () => {
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
   keeper.entityPresets = [nodeEntityOf('has-role', HAS_ROLE)];
-  await keeper.saveNode('mine', mine('Mine'));
-  const group = paletteOf({ ...NODE_KINDS, ...kindsOf(keeper.nodeLibrary()) }).find((g) => g.items.some((i) => i.id === 'mine'));
+  await keepNode(keeper.entities, 'mine', mine('Mine'));
+  const group = paletteOf({ ...NODE_KINDS, ...kindsOf(keeper.entities.library()) }).find((g) => g.items.some((i) => i.id === 'mine'));
   // Each node picks its category: both here say "Logic" (an app's own would say its own).
   assert.ok(group.items.find((i) => i.id === 'has-role').kind.preset);
   assert.ok(!group.items.find((i) => i.id === 'mine').kind.preset);
-  const custom = paletteOf({ ...NODE_KINDS, ...kindsOf(joinLibrary(undefined, { bare: { ...mine('Bare'), category: undefined } })) }).find((g) => g.category === 'Custom Nodes');
+  const custom = paletteOf({ ...NODE_KINDS, ...kindsOf({ v: 1, nodes: { bare: { ...mine('Bare'), category: undefined } } }) }).find((g) => g.category === 'Custom Nodes');
   assert.deepEqual(custom.items.map((i) => i.id), ['bare']);
 });

@@ -117,6 +117,19 @@
     // The library's own: one implementation for an app and its tests.
     window.__settled = (passes = 3) => settled(document, passes);
 
+    // An app's Save, as the editor asks (plan 942 step 2: A): its Custom Node edits kept once each, by `keep`, then the
+    // graph saved. The editor keeps none itself. Usage: window.__keepEdits(editor, (id, definition) => …).
+    window.__keepEdits = (editor, keep) => {
+      const save = editor.save.bind(editor);
+      editor.save = () => {
+        const edits = editor.edits();
+        const ok = save();
+        if (ok) for (const [id, definition] of Object.entries(edits)) keep(id, definition);
+        return ok;
+      };
+      return editor;
+    };
+
     /**
      * MOUNT ONE COMPONENT, the way every spec was doing it by hand.
      *

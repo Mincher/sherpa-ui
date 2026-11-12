@@ -10,9 +10,10 @@
  * - createNode — Keep a new Custom Node from its JSON: an entity, its id free or given.
  * - readNode — One Custom Node: the entity, and the node it offers.
  * - updateNode — Change one of the reader's Custom Nodes: a preset is read only.
+ * - keepNode — Keep a Custom Node the editor made or changed, by its use's kind: the entity it is, checked.
  * - deleteNode — Forget one of the reader's Custom Nodes, unless a graph uses it.
  */
-import { isEntity, readEntity, type Entity } from './entity.js';
+import { isEntity, nodeEntityOf, readEntity, type Entity } from './entity.js';
 import { asNode, entityTypes } from './entity-types.js';
 import { entityFaults, type EntityFacts } from './entity-check.js';
 import { freeId } from './graph-views.js';
@@ -84,6 +85,16 @@ export async function updateNode(shelf: EntityShelf, id: string, change: NodeCha
   const { origin: _origin, ...own } = was;
   const next: Entity = { ...own, ...plain, ...(settings ? { settings } : {}) };
   return keep(shelf, next, facts);
+}
+
+/** Keep a Custom Node the editor made or changed (its `edits()`), by its use's kind: the entity it is, new or changed,
+ *  checked as Save checks; a preset is read only. An app's Save calls it once for each, before it keeps the graph that
+ *  places them (Will, plan 942 step 2: A). */
+export async function keepNode(shelf: EntityShelf, kind: string, definition: NodeDefinition, facts: EntityFacts = {}): Promise<NodeAnswer> {
+  const { preset: _preset, ...node } = definition;
+  const entity = nodeEntityOf(kind, node);
+  if (shelf.get(entity.id)?.origin === 'preset') return { faults: [`"${entity.id}" is a preset, which is read only: copy it to change it`] };
+  return keep(shelf, entity, facts);
 }
 
 /** Forget one of the reader's Custom Nodes; a preset, or one a graph uses, stays, and says why. */

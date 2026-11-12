@@ -16,6 +16,7 @@ const { PageKeeper, memoryTier, NODES_PAGE } = await import(new URL('browser/pag
 const { readEntities } = await import(new URL('browser/entity-files.js', core));
 const { makeShelf, joinEntities } = await import(new URL('data/entity-shelf.js', core));
 const { definitionOf, nodeEntityOf, readEntity, isEntity } = await import(new URL('data/entity.js', core));
+const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
 const filter = (id, label = id, extra = {}) => ({
@@ -223,17 +224,16 @@ test('the old `nodes` is not read; a Custom Node is an entity of the type `node`
   const k = keeper(local);
   assert.deepEqual(ids(k.entities, 'node'), ['has-role'], 'the old `nodes` adds none');
   assert.deepEqual(definitionOf(k.entities.get('has-role')), HAS_ROLE);
-  // The Custom Node shelf is a VIEW of the same: it lists, saves and removes the one set.
-  assert.deepEqual(Object.keys(k.shelf.library().nodes), ['has-role']);
-  assert.equal(await k.shelf.save('another', { ...HAS_ROLE, label: 'Another' }), true);
+  // Its library is the same set, as Custom Nodes; the doors keep and forget one (plan 942).
+  assert.deepEqual(Object.keys(k.entities.library().nodes), ['has-role']);
+  assert.deepEqual(await keepNode(k.entities, 'another', { ...HAS_ROLE, label: 'Another' }), { id: 'another' });
   assert.deepEqual(ids(k.entities, 'node'), ['has-role', 'another']);
-  // Every entity is a node it offers, by its use's kind (plan 746 E5); a remove takes the kind it names only.
+  // Every entity is a node it offers, by its use's kind (plan 746 E5); one id names one entity, of any type.
   await k.entities.save(filter('f'));
-  assert.deepEqual(Object.keys(k.nodeLibrary().nodes), ['has-role', 'another', 'preset-filter:f']);
-  assert.equal(k.shelf.remove('f'), false, 'a plain id names a Custom Node, which "f" is not');
-  assert.equal(k.shelf.remove('another'), true);
-  assert.equal(k.shelf.remove('preset-filter:f'), true);
-  assert.deepEqual(Object.keys(k.nodeLibrary().nodes), ['has-role']);
+  assert.deepEqual(Object.keys(k.entities.library().nodes), ['has-role', 'another', 'preset-filter:f']);
+  assert.deepEqual(deleteNode(k.entities, 'another'), { id: 'another' });
+  assert.deepEqual(deleteNode(k.entities, 'f'), { id: 'f' });
+  assert.deepEqual(Object.keys(k.entities.library().nodes), ['has-role']);
 });
 
 test('the keeper pushes the reader\'s entities to the server and takes them back, under the local ones; a server\'s `nodes` is not read', async () => {

@@ -461,25 +461,32 @@ outputs said once: an entity of the type `node`. They are app-wide, in two halve
   edit it (`copyToMine`). `loadEntityLibrary(url)` reads the file: each entity
   goes through `checkEntity`, one that fails is reported in its words and left
   out, and the rest still load. The outlet does this for you.
-- **The reader's own**, in the page keeper: `await keeper.saveNode(id, definition)` (it answers whether it was kept; its checks load only when it is first asked),
-  `keeper.removeNode(id)`. They are NAMED, so they are every tab's, in the
-  database with `database: true`, and on the server with `remote` (the page name
-  `NODES_PAGE`; `restore(NODES_PAGE)` takes them back). A stored node of the
-  wrong shape is dropped. `T-only-a-named-part-crosses-tabs`
+- **The reader's own**, in the page keeper's `entities`, the one entity shelf. They
+  are NAMED, so they are every tab's, in the database with `database: true`, and on
+  the server with `remote` (the page name `NODES_PAGE`; `restore(NODES_PAGE)` takes
+  them back). A stored entity of the wrong shape is dropped. `T-only-a-named-part-crosses-tabs`
 
-`keeper.nodeLibrary()` is the two joined. An id a preset or a shipped kind holds
-is refused: a custom node overrides nothing. Every Context's `init` is handed
-`nodes` (the outlet's provider's), the same three calls and a `watch(handler, signal)` that hears a save
-here or in another tab:
+One door for each act, for the editor, an MCP tool and an assistant alike (plan 942):
+`createNode(shelf, json)`, `readNode(shelf, id)`, `updateNode(shelf, id, change)`,
+`deleteNode(shelf, id)`, and `keepNode(shelf, kind, definition)` for one the editor made or
+changed. Each checks as Save checks, and answers `{ id }` or `{ faults }` in words. An id a
+preset or a shipped kind holds is refused: a custom node overrides nothing.
+
+Every Context's `init` is handed `entities` (the outlet's provider's). Its `library()` is
+every entity of a reusable type as the Custom Node it offers, and `watch(handler, signal)`
+hears a change here or in another tab:
 
 ```js
-const kinds = { ...NODE_KINDS, ...kindsOf(nodes.library()) };
-nodes.watch((library) => {
+const kinds = { ...NODE_KINDS, ...kindsOf(entities.library()) };
+entities.watch(() => {
   for (const id of Object.keys(kinds)) if (kinds[id].model === 'graph') delete kinds[id];
-  Object.assign(kinds, kindsOf(library));
+  Object.assign(kinds, kindsOf(entities.library()));
   panel.populate(paletteOf(kinds));
 }, signal);
-bindWorkflow(canvas, workflow, { kinds, panel, session });
+const editor = bindWorkflow(canvas, workflow, { kinds, panel, session, library: entities.library() });
+// Save: keep each Custom Node the draft made or changed, once, through the door; then the graph.
+for (const [kind, definition] of Object.entries(editor.edits())) await keepNode(entities, kind, definition);
+editor.save();
 ```
 
 The panel lists them under "Custom Nodes", a preset marked read only, in one list

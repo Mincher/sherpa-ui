@@ -16,7 +16,6 @@ import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from './data-source.js';
 import type { QueryContext } from './query-context.js';
 import type { EntityShelf } from './entity-shelf.js';
-import type { NodeShelf } from './node-shelf.js';
 import type { OpenGraph } from './graph-views.js';
 import type { PageDefinition } from './page-definition.js';
 import type { GraphComponent } from './query-graph.js';
@@ -88,9 +87,8 @@ export interface OpenPage {
 export interface ContextInit {
   /** What outlives a Context: the reader's choices. */
   session: SessionStore;
-  /** The app's Custom Nodes: its presets and the reader's, to list, save and remove. Present where the outlet has a provider. */
-  nodes?: NodeShelf;
-  /** The app's entities of every type: its presets and the reader's, to list, save, remove, copy, export and import. `nodes` is its view of the type `node`. */
+  /** The app's entities of every type: its presets and the reader's, to list, save, remove, copy, export and import; its
+   *  `library()` every one as the Custom Node it offers. A Custom Node is kept through the doors (`keepNode`, plan 942). */
   entities?: EntityShelf;
   /** The View the URL names; null for the first. */
   view: string | null;

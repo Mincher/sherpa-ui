@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
-const { nodesView } = await import(new URL('data/entity-shelf.js', core));
+const { keepNode } = await import(new URL('data/custom-nodes.js', core));
 const { definitionDiff, kindsOf, staleUses, tagDefinition, useOf, versionOf } = await import(new URL('data/node-library.js', core));
 
 const ORG = {
@@ -60,10 +60,10 @@ test('the last tag taken off leaves no list, and Save through the shelf keeps th
   const cleared = tagDefinition(library(), 'org', []);
   assert.equal('tags' in cleared.nodes.org, false);
   const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
-  const shelf = nodesView(keeper.entities);
-  assert.equal(await shelf.save('org', structuredClone(ORG)), true);
+  const shelf = keeper.entities;
+  assert.deepEqual(await keepNode(shelf, 'org', structuredClone(ORG)), { id: 'org' });
   const retagged = tagDefinition(shelf.library(), 'org', ['permissions', 'billing']);
-  assert.equal(await shelf.save('org', retagged.nodes.org), true);
+  assert.deepEqual(await keepNode(shelf, 'org', retagged.nodes.org), { id: 'org' });
   assert.deepEqual(keeper.entities.get('org').tags, ['permissions', 'billing']);
   assert.deepEqual(shelf.library().nodes.org.tags, ['permissions', 'billing']);
 });

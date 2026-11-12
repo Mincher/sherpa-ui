@@ -233,15 +233,13 @@ export {
   type NodeSnapshot,
   type NodeSocket,
 } from './core/data/node-library.js';
-/* Where an app's Custom Nodes come together: its presets and the reader's. Plan 713 M12 */
-export { joinLibrary, type NodeShelf } from './core/data/node-shelf.js';
 /* An ENTITY: a graph saved under a type, an id and a name; a Custom Node is the type `node`. Plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type */
 export {
   ENTITY_SCHEMA, categoryOf, definitionOf, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf,
   type Entity, type EntityGraph, type EntityLibrary, type EntityRef,
 } from './core/data/entity.js';
 /* Custom Nodes, one way: a door for each act, for the editor, an MCP tool and an app's assistant alike. Plan 942 */
-export { createNode, deleteNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
+export { createNode, deleteNode, keepNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
 /* Any entity is a node in any graph: the panel offers it, a use is an instance of it. Plan 746 E5 · TRAP T-an-entity-is-used-as-a-node */
 export {
   ENTITY_TYPES, PRESET_FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, savedCategories, socketsOf, takes, type EntityType,
@@ -250,7 +248,7 @@ export {
 export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type PresetFilterFacts } from './core/data/preset-filter.js';
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
-export { joinEntities, makeShelf, nodesView, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
+export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
 /* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip — or a page's Query. Plan 746 E3, TODO 822 · TRAP T-a-graph-is-a-view-of-a-type */
 export {
   NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs,

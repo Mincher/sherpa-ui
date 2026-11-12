@@ -2268,6 +2268,9 @@ export interface WorkflowEditor extends GraphEditor, Undoable {
   refresh(library: NodeLibrary): void;
   /** The library as the draft holds it: its edited definitions too. */
   library(): NodeLibrary;
+  /** The Custom Nodes this draft made or changed, by their use's kind: what the app keeps, once each, through the doors
+   *  (`keepNode`) before its Save (Will, plan 942 step 2: A). Save clears them. */
+  edits(): Record<string, NodeDefinition>;
   /** The Custom Nodes opened now, outermost first: their use ids. */
   path(): readonly string[];
   /** The workflow as the draft holds it now, unsaved. */
@@ -2447,8 +2450,6 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   kinds?: Readonly<Record<string, NodeKind>>;
   /** The app's Custom Nodes (D13). The editor keeps its edits to them as a draft beside the workflow's. */
   library?: NodeLibrary;
-  /** Save hands each edited or new definition to the app, to keep: its id and the definition. */
-  onSaveNode?: (id: string, definition: NodeDefinition) => void;
   /** The page's `sherpa-app-header`: its trail shows the Custom Nodes opened, and is empty at the workflow. */
   header?: HTMLElement & { populate(data: { breadcrumb: { label: string }[] }): unknown };
   /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`; a tags input `[name=tags]` if it is to be tagged, and a select `[name=category]` if it may be a Runbook or another category (plan 936). Without it Save as Custom Node is not offered. */
@@ -2516,12 +2517,12 @@ const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) =>
  *  refused, and says why. A v1 — given, or a tab's draft — is read once as v2, and Save
  *  hands over the v2. N4 runs the draft. A Custom Node OPENS: the canvas shows its inside
  *  under a trail, and an edit there is an edit to the DEFINITION, drafted beside the workflow
- *  and handed over by the same Save (`onSaveNode`); a use whose definition moved on says so, and
+ *  which the app keeps by `edits()` and the doors before its Save (plan 942: A); a use whose definition moved on says so, and
  *  an update keeps the draft's changes until Save or `discard`. TRAP T-a-workflow-is-its-definition
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
-  { inspector, panel, session: kept$, kinds = nodeKinds(), library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;
@@ -3959,7 +3960,6 @@ export function bindWorkflow(
       draft = final;
       lib = finished;
       handOver(canvas, draft);
-      for (const id of dirty) if (lib.nodes[id]) onSaveNode?.(id, structuredClone(lib.nodes[id]!));
       // The definitions hold them now: the drafts go.
       dirty.clear();
       handed = lib;
@@ -3998,6 +3998,7 @@ export function bindWorkflow(
       draw();
     },
     library: () => lib,
+    edits: () => structuredClone(edits()),
     path: () => path.map((s) => s.use),
     workflow: () => draft,
     fetch: () => fetchRows(),

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/defs.v1.json",
   "title": "Sherpa-UI definition shapes",
-  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1, nodes.v1 and workflow.v2 (and the v1 it reads) $ref these, and define none of their own.",
+  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1, entity.v2 and workflow.v3 $ref these, and define none of their own.",
   "$defs": {
     "id": {
       "description": "A name a URL or a store files things under.",
@@ -467,7 +467,7 @@
       "properties": { "name": { "$ref": "#/$defs/id" }, "label": { "type": "string" }, "type": { "enum": ["value", "object", "boolean"] } }
     },
     "nodeDefinition": {
-      "description": "One Custom Node: a workflow body under one name, its inputs and outputs said once. Its id is its key in nodes.v1.json. checkNodeLibrary() reads it; a use is a workflow node whose kind is its id. docs/history/plan-713-node-model.md section 9",
+      "description": "One Custom Node: a workflow body under one name, its inputs and outputs said once. Its id is its use's kind: a library of them is built in memory from the entities (plan 942). checkNodeLibrary() reads it; a use is a workflow node whose kind is its id. docs/history/plan-713-node-model.md section 9",
       "type": "object", "additionalProperties": false, "required": ["v", "label", "inputs", "outputs", "nodes"],
       "properties": {
         "$schema": { "type": "string" },

@@ -1688,8 +1688,8 @@ surface is opaque: what scrolls under it never shows through.
   the ones with none; a tag is one in any case, said as first met. A tag's heading
   does not stick. The search
   finds a node by a tag (`paletteMatch`), and a node found shows under every tag it
-  has. Tags are the entity's `tags` (entity.v1), a Custom Node definition's too
-  (nodes.v1), tidied on the way in (`tidyTags`, in its own module so the outlet
+  has. Tags are the entity's `tags` (entity.v2), a Custom Node definition's too
+  (defs.v1 nodeDefinition), tidied on the way in (`tidyTags`, in its own module so the outlet
   carries only it), never part of its version. A
   preset's are read only, as the rest of it is.
 - **A search hides a heading with nothing under it**, a tag's too: `data-filtered`

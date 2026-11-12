@@ -51,9 +51,10 @@ const bind = (page: Page) => page.evaluate(async () => {
   w['ed'] = bindWorkflow(canvas as never, workflow, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
     header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, kinds, library, entity: outer,
-    onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'lead'] } } }, stores: ['customers'],
   });
+  // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
+  (window as never as { __keepEdits(e: unknown, k: (id: string, d: never) => unknown): void }).__keepEdits(w['ed'], (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]));
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 });

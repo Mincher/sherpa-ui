@@ -52,9 +52,10 @@ test.beforeEach(async ({ page }) => {
     const ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
       toolbar: toolbar as never, library: library as never,
-      onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
       fieldsOf: { users: { role: { label: 'Role' } } }, stores: ['users'],
     });
+    // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
+    (window as never as { __keepEdits(e: unknown, k: (id: string, d: never) => unknown): void }).__keepEdits(ed, (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]));
     // The toolbar's Save is the app's to answer, as an app does.
     toolbar.addEventListener('toolbar-select', (e) => { if ((e as CustomEvent<{ action: string }>).detail.action === 'save') ed.save(); });
     w['ed'] = ed;

@@ -1,6 +1,6 @@
 /**
  * node-library.ts — a Custom Node: a workflow body saved under one id and name, its inputs and
- * outputs said once. A library of them is JSON (schemas/nodes.v1.json); a USE is a plain
+ * outputs said once (defs.v1 nodeDefinition). A library of them is built in memory from the entities (`libraryOf`); a USE is a plain
  * workflow node whose kind is a definition's id, with its own values (D11 B, an instance). A use
  * runs NESTED (D12 B): `innerOf` gives the graph inside it, for the checks, the drawing and a
  * runner. DOM-free. Will, TODO 719 · plan 713 §9, M9 · TRAP T-a-custom-node-is-an-instance

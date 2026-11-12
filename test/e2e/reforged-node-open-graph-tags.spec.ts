@@ -34,9 +34,10 @@ const bind = (page: Page, preset = false) => page.evaluate(async ({ entity, pres
   const ed = bindWorkflow(canvas as never, workflow, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
     toolbar: toolbar as never, kinds, library, entity: { type: 'node', id: 'org' }, readOnly: preset,
-    onSaveNode: (id: string) => { (w['handed'] as unknown[]).push(id); },
     fieldsOf: { users: { role: { label: 'Role' } } }, stores: ['users'],
   });
+  // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
+  (window as never as { __keepEdits(e: unknown, k: (id: string, d: never) => unknown): void }).__keepEdits(ed, (id: string) => { (w['handed'] as unknown[]).push(id); });
   // The app's Save: the graph and its own tags (saveGraph's `tags`), then the editor's.
   toolbar.addEventListener('toolbar-select', (e) => {
     if ((e as CustomEvent<{ action: string }>).detail.action !== 'save') return;
