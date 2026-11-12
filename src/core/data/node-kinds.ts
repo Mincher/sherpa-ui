@@ -260,21 +260,21 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     rows: [
       pickRow('channels', 'Channels', [['app', 'In app'], ['email', 'Email'], ['push', 'Mobile push']], true),
       textRow('to', 'To'), TITLE, MESSAGE, objectIn('attachments', 'Attachments'), textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
-      SENT, propertyRow('delivered', 'Delivered', 'value'), propertyRow('messageId', 'Message ID', 'value'),
+      SENT, propertyRow('delivered', 'Delivered', 'value'), propertyRow('message-id', 'Message ID', 'value'),
     ],
   },
   view: {
     label: 'On a view', would: 'Would show it on a view', group: 'Content', icon: 'dashboard', help: 'Show content on a view',
     rows: [
       textRow('view', 'View'), pickRow('place', 'Place', [['widget', 'Widget'], ['card', 'Card'], ['row', 'List row']]), objectIn('content', 'Content'), dateRow('until', 'Keep until'),
-      propertyRow('contentId', 'Content ID', 'value'), propertyRow('link', 'Link', 'value'),
+      propertyRow('content-id', 'Content ID', 'value'), propertyRow('link', 'Link', 'value'),
     ],
   },
   file: {
     label: 'Generated file', would: 'Would make a file', group: 'Content', icon: 'file-lines', help: 'Make a file from the data',
     rows: [
       pickRow('format', 'Format', [['pdf', 'PDF'], ['csv', 'CSV'], ['xlsx', 'XLSX'], ['docx', 'DOCX'], ['md', 'Markdown']]), textRow('template', 'Template'),
-      messageRow('fileName', 'File name', true), objectIn('data', 'Data'), textRow('saveTo', 'Save to'),
+      messageRow('file-name', 'File name', true), objectIn('data', 'Data'), textRow('save-to', 'Save to'),
       propertyRow('file', 'File', 'object'), propertyRow('link', 'Link', 'value'),
     ],
   },
@@ -286,7 +286,7 @@ const OUTPUTS: Readonly<Record<string, NodeType>> = {
     label: 'Alert', would: 'Would raise an alert', group: 'Response', icon: 'status-warning', help: 'Raise an alert on a device or customer',
     rows: [
       pickRow('severity', 'Severity', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High'], ['critical', 'Critical']]), pickRow('on', 'On', [['device', 'Device'], ['customer', 'Customer']]),
-      TITLE, MESSAGE, propertyRow('alertId', 'Alert ID', 'value'),
+      TITLE, MESSAGE, propertyRow('alert-id', 'Alert ID', 'value'),
     ],
   },
   api: {

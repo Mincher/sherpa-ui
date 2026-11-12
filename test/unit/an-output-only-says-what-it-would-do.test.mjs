@@ -20,7 +20,7 @@ const flow = {
     { id: 'r', kind: 'output', x: 800, y: 0, values: { type: 'result', status: 'succeeded' } },
     { id: 'end', kind: 'output', x: 800, y: 300 },
   ],
-  connections: [{ from: 's/rows', to: 'o' }, { from: 'o/messageId', to: 'r/summary' }, { from: 's/rows', to: 'end' }],
+  connections: [{ from: 's/rows', to: 'o' }, { from: 'o/message-id', to: 'r/summary' }, { from: 's/rows', to: 'end' }],
 };
 
 test('an Output\'s light says what it would do and the rows that reach it; it fires nothing', () => {
@@ -36,6 +36,6 @@ test('each property sends a stand-in, so what it feeds runs too', () => {
   const ran = simulateGraph(workflowGraph(flow), rows);
   const out = (id, socket) => ran.nodes[id].outgoing.find((s) => s.socket === socket);
   assert.equal(out('o', 'o/sent').value, true);
-  assert.equal(out('o', 'o/messageId').value, 'Message ID, simulated');
+  assert.equal(out('o', 'o/message-id').value, 'Message ID, simulated');
   assert.equal(ran.nodes.r.incoming.find((s) => s.socket === 'r/summary').value, 'Message ID, simulated');
 });

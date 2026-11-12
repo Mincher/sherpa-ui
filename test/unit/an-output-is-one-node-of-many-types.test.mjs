@@ -33,7 +33,7 @@ test('an Output kept with no type is a Run result: its Type row, Status and Summ
 test('each type draws its own rows and icon; its properties are output rows, so it can connection on', () => {
   const o = node(workflowGraph(flow({ type: 'notification', channels: ['email'], priority: 'high' })), 'o');
   assert.equal(o.icon, 'notifications');
-  assert.deepEqual(o.rows.map((r) => r.name), ['type', 'channels', 'to', 'title', 'message', 'attachments', 'url', 'priority', 'sent', 'delivered', 'messageId']);
+  assert.deepEqual(o.rows.map((r) => r.name), ['type', 'channels', 'to', 'title', 'message', 'attachments', 'url', 'priority', 'sent', 'delivered', 'message-id']);
   assert.deepEqual([row(o, 'channels').multiple, row(o, 'channels').input], [true, 'object']);
   assert.deepEqual([row(o, 'sent').property, row(o, 'sent').output], [true, 'boolean']);
   // A File connections on into the next Output's Data.
