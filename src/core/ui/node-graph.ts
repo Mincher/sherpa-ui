@@ -2759,7 +2759,13 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
     } else {
       const id = path.at(-1)!.kind;
-      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), connections: next.connections ?? [], ties: next.ties ?? [], frames: next.frames ?? [] }), [id]);
+      const laid = settling ? next : fitLanes(next, heightOf, K());
+      // `#in` and `#out` are placed from the body each time, so a definition keeps neither, nor their places before lanes.
+      const before = laid.beforeLanes && Object.fromEntries(Object.entries(laid.beforeLanes).filter(([at]) => !at.startsWith('#')));
+      setLib(editDefinition(lib, id, {
+        nodes: laid.nodes.filter((n) => !n.id.startsWith('#')), connections: laid.connections ?? [], ties: laid.ties ?? [], frames: laid.frames ?? [],
+        lanes: laid.lanes ?? [], ...(before ? { beforeLanes: before } : {}),
+      }), [id]);
     }
     // Mid-drag, only what moves is drawn: a whole draw a pointer move cost 220ms on 45 nodes (2026-11-10). The drag's end draws all.
     if (dragging && linesOnly) relayConnections(canvas, lineGraph());
@@ -2873,7 +2879,7 @@ export function bindWorkflow(
   const onBreakAll = (connections: NodeConnection[]): void => edit(() => { for (const connection of connections) onBreak(connection); });
   // — Swimlanes on: the lanes place the nodes, so Arrange, Unfurl and the zip tie are off, and the ties are hidden till they
   //   go; a frame is still a bucket. Will, 2026-11-10
-  const lanesOn = (): boolean => !path.length && !!shown().lanes?.length;
+  const lanesOn = (): boolean => !!shown().lanes?.length;
   const SWIMLANES_OWN = 'Swimlanes are on: they place the nodes';
   // — Zip ties (562): a tie is a part of the draft, so each is one edit, and one step.
   let tying = false;
@@ -3477,7 +3483,7 @@ export function bindWorkflow(
     else if (action === 'stop') stop();
     else if (action === 'frame') framePicked();
     // Swimlanes on, a lane for each family; off, none. One step; the nodes stay where they are. Will, 2026-11-10
-    else if (action === 'lanes' && !path.length && !readOnly()) {
+    else if (action === 'lanes' && !readOnly()) {
       // On or off, each node moves to its place, as Unfurl's do, and the view eases round them all (TODO 929).
       canvas.easePieces();
       write(editWorkflow(shown(), { lanes: shown().lanes?.length ? null : LANES_BY_FAMILY }, K()));
@@ -3820,15 +3826,14 @@ export function bindWorkflow(
       locked: (node) => ro || node.id.startsWith('#'),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
       // A collapsed or expanded node changes height: its lane fits again.
-      onCollapse: () => { if (!path.length && shown().lanes?.length) write(shown()); },
+      onCollapse: () => { if (shown().lanes?.length) write(shown()); },
     });
     stages.draw();
-    const laned = path.length ? null : shown();
-    drawLanes(canvas, laned, heightOf, K());
+    drawLanes(canvas, shown(), heightOf, K());
     // A node's height lands when its parts render: the lanes draw again then.
-    requestAnimationFrame(() => drawLanes(canvas, path.length ? null : shown(), heightOf, K()));
-    toolbar?.toggleAttribute('data-can-lanes', !path.length && !ro);
-    toolbar?.toggleAttribute('data-lanes', !!laned?.lanes?.length);
+    requestAnimationFrame(() => drawLanes(canvas, shown(), heightOf, K()));
+    toolbar?.toggleAttribute('data-can-lanes', !ro);
+    toolbar?.toggleAttribute('data-lanes', laning);
     toolbar?.toggleAttribute('data-can-unfurl', !ro && !laning && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
     unarrange.tell();
     tellPath();

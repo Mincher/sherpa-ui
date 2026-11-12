@@ -616,7 +616,9 @@ the junction nodes one lane feeds share one junction (an Out portal is fed throu
 In). One fed from no lane stands by the lanes it joins. A
 lane grows to hold its nodes and pushes the ones under it down; a lane with no node
 takes no room. On and off, the nodes move to their places; off, each goes back where
-it stood before (`beforeLanes`), and one placed since stays.
+it stood before (`beforeLanes`), and one placed since stays. Inside a Custom Node they
+are its definition's, kept as its frames are, and no part of its version: no use goes
+stale. Group Input and Group Output stand in no lane.
 
 ### Entities
 

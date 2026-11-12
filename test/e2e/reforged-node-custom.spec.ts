@@ -166,6 +166,42 @@ test('an edit inside is an edit to the definition: each use says an update is av
   expect(diff).toContain('has-role');
 });
 
+test('Swimlanes inside a Custom Node: offered, drawn, kept by its definition, no use stale; off, gone; a preset offers none (938)', async ({ page }) => {
+  await bind(page);
+  const toolbar = page.locator('#cv sherpa-node-toolbar');
+  const bands = () => page.locator('#cv > sherpa-node-lane').count();
+  await ed(page, "ed.open('perm')");
+  await settle(page);
+  await expect(toolbar).toHaveAttribute('data-can-lanes', '');
+  await press(page, 'lanes');
+  await settle(page);
+  await expect(toolbar).toHaveAttribute('data-lanes', '');
+  expect(await bands()).toBeGreaterThan(0);
+  // The definition keeps them; Group Input and Output are placed from the body, so keep no place of their own.
+  const kept = await ed<{ lanes: number; before: string[] }>(page, "(({ lanes, beforeLanes }) => ({ lanes: lanes?.length ?? 0, before: Object.keys(beforeLanes ?? {}).sort() }))(ed.library().nodes['org-permissions'])");
+  expect(kept).toEqual({ lanes: expect.any(Number), before: ['has-role', 'role'] });
+  expect(kept.lanes).toBeGreaterThan(0);
+  // Lanes place the nodes: Arrange and Unfurl wait, inside as on the top graph.
+  await expect(toolbar).not.toHaveAttribute('data-can-unfurl', '');
+  // Swimlanes are how the body is drawn, not what it does: no use goes stale.
+  await ed(page, 'ed.back()');
+  await settle(page);
+  expect(await bands()).toBe(0);
+  expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"][data-caption]').count()).toBe(0);
+  await ed(page, "ed.open('perm')");
+  await settle(page);
+  await expect(toolbar).toHaveAttribute('data-lanes', '');
+  expect(await bands()).toBeGreaterThan(0);
+  await press(page, 'lanes');
+  await settle(page);
+  expect(await bands()).toBe(0);
+  expect(await ed(page, "['lanes', 'beforeLanes'].filter((k) => k in ed.library().nodes['org-permissions'])")).toEqual([]);
+  await ed(page, 'ed.back()');
+  await ed(page, "ed.open('own')");
+  await settle(page);
+  await expect(toolbar).not.toHaveAttribute('data-can-lanes', '');
+});
+
 /** An edit inside, so both uses are stale; the first use picked. */
 async function stale(page: Page): Promise<void> {
   await bind(page);

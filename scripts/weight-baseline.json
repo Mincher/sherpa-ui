@@ -2,7 +2,7 @@
   "app.js": {
     "files": 206,
     "brotli": {
-      "js": 358583,
+      "js": 358683,
       "fetched": 0
     }
   },
@@ -415,7 +415,7 @@
   "components/sherpa-provider/sherpa-provider.js": {
     "files": 73,
     "brotli": {
-      "js": 107134,
+      "js": 107170,
       "fetched": 0
     }
   },
@@ -562,14 +562,14 @@
   "data.js": {
     "files": 97,
     "brotli": {
-      "js": 145818,
+      "js": 145900,
       "fetched": 0
     }
   },
   "index.js": {
     "files": 279,
     "brotli": {
-      "js": 501227,
+      "js": 501327,
       "fetched": 8607
     }
   }

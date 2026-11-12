@@ -133,7 +133,10 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
     v: 2, type, id, label: definition.label,
     ...(definition.description ? { description: definition.description } : {}),
     ...(definition.tags?.length ? { tags: definition.tags } : {}),
-    graph: { nodes: definition.nodes, ...(definition.connections ? { connections: definition.connections } : {}), ...(definition.ties ? { ties: definition.ties } : {}), ...(definition.frames ? { frames: definition.frames } : {}) },
+    graph: {
+      nodes: definition.nodes, ...(definition.connections ? { connections: definition.connections } : {}), ...(definition.ties ? { ties: definition.ties } : {}), ...(definition.frames ? { frames: definition.frames } : {}),
+      ...(definition.lanes?.length ? { lanes: definition.lanes } : {}), ...(definition.beforeLanes ? { beforeLanes: definition.beforeLanes } : {}),
+    },
     ...(settings ? { settings } : {}),
     ...(definition.preset ? { origin: 'preset' as const } : {}),
   };
@@ -147,6 +150,7 @@ export function definitionOf(entity: Entity): NodeDefinition {
     inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [],
     nodes: entity.graph.nodes, ...(entity.graph.connections ? { connections: entity.graph.connections } : {}), ...(entity.graph.ties ? { ties: entity.graph.ties } : {}),
     ...(entity.graph.frames ? { frames: entity.graph.frames } : {}),
+    ...(entity.graph.lanes?.length ? { lanes: entity.graph.lanes } : {}), ...(entity.graph.beforeLanes ? { beforeLanes: entity.graph.beforeLanes } : {}),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),
     ...(typeof s['category'] === 'string' ? { category: s['category'] } : {}), ...(typeof s['icon'] === 'string' ? { icon: s['icon'] } : {}),

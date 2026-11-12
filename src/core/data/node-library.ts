@@ -88,6 +88,9 @@ export interface NodeDefinition extends NodeSnapshot {
   ties?: readonly NodeTie[];
   /** Frames in the body: no part of its version or its diff, as a tie is. TODO 778 */
   frames?: readonly NodeFrame[];
+  /** Swimlanes in the body, and each node's place before they were on: no part of its version, as a frame is. TODO 938 */
+  lanes?: WorkflowDefinition['lanes'];
+  beforeLanes?: WorkflowDefinition['beforeLanes'];
   /** An entity's own settings, where it is not a `node` (plan 746 E5): no part of its version; a copy keeps them. */
   settings?: Readonly<Record<string, unknown>>;
 }
@@ -220,6 +223,7 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
       connections: definition.connections ?? [],
       ...(definition.ties?.length ? { ties: definition.ties } : {}),
       ...(definition.frames?.length ? { frames: definition.frames } : {}),
+      ...(definition.lanes?.length ? { lanes: definition.lanes, ...(definition.beforeLanes ? { beforeLanes: definition.beforeLanes } : {}) } : {}),
     },
   };
 }
@@ -425,11 +429,14 @@ export function updateAll(workflow: WorkflowDefinition, kind: string, library: N
 /** The library after one change to a definition. A preset's is refused, and so is one that is not
  *  there: the library given, untouched. */
 export function editDefinition(
-  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'connections' | 'ties' | 'frames'>>,
+  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'connections' | 'ties' | 'frames' | 'lanes' | 'beforeLanes'>>,
 ): NodeLibrary {
   const was = library.nodes[id];
   if (!was || was.preset) return library;
-  return { ...library, nodes: { ...library.nodes, [id]: { ...was, ...change } } };
+  // No lanes is Swimlanes off: no empty list is kept, nor the places they would put back.
+  const { lanes, beforeLanes, ...rest } = { ...was, ...change };
+  const laid = lanes?.length ? { lanes, ...(beforeLanes ? { beforeLanes } : {}) } : {};
+  return { ...library, nodes: { ...library.nodes, [id]: { ...rest, ...laid } } };
 }
 
 /** The library with a definition's tags set, tidied: every use shares them, and no use goes stale. A preset's
