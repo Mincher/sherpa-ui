@@ -72,8 +72,9 @@ test('a type that is not reusable makes no node: the panel has none, and a graph
     assert.deepEqual(schemaCheck('node-type.v1.json')({ label: 'Teammate', reusable: false }), []);
     const mate = { v: 2, type: 'teammate', id: 'ana', label: 'Ana', graph: { nodes: [trigger('when', 0, 0)], connections: [{ from: 'when', to: START }] } };
     assert.deepEqual(Object.keys(libraryOf([mate]).nodes), []);
-    // Its own graph has no Group Input or Output, so it has a Start: the Trigger joined to it is no fault.
+    // Its own graph has no Group Input or Output, so it has a Start: the Trigger joined to it is no fault, and the schema takes it.
     assert.deepEqual(entityFaults(mate), []);
+    assert.deepEqual(schemaCheck('entity.v2.json')(mate), []);
     assert.deepEqual(graphWorkflow(mate).workflow.nodes.map((n) => n.id), ['when']);
     const other = { v: 2, type: 'teammate', id: 'bo', label: 'Bo', graph: { nodes: [{ id: 'x', kind: 'teammate:ana', x: 0, y: 0 }] } };
     assert.ok(entityFaults(other, { entities: [mate] }).includes('the Teammate "bo" places "x", a Teammate, which is not reusable'));
