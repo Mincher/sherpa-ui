@@ -76,6 +76,7 @@ import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
+import { withStart, withStartKind, withoutStart } from '../data/node-start.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { dragTo, startDrag, type ChainDrag, type ChainLink, type ChainNode } from '../data/node-chain.js';
 import { drawLanes } from './node-lanes-ui.js';
@@ -2529,7 +2530,8 @@ export function bindWorkflow(
   let handedTags: readonly string[] = own ? tidyTags(lib.nodes[own]?.tags) : [];
   let ownTags: readonly string[] = (session?.get(tagsAt) as string[] | undefined) ?? handedTags;
   const dirty = new Set(Object.keys(edited));
-  const topKinds = (): Readonly<Record<string, NodeKind>> => ({ ...(doc?.kinds ?? kinds), ...kindsOf(lib) });
+  // With the Start's, which every top graph has (plan 949); its `#` keeps it out of the panel.
+  const topKinds = (): Readonly<Record<string, NodeKind>> => withStartKind({ ...(doc?.kinds ?? kinds), ...kindsOf(lib) });
   // This tab's draft wins: a reload loses nothing. What a v1's read cannot map is said once.
   const kept = session?.get(pointer) as WorkflowDefinition | undefined;
   const read = readWorkflow(kept ?? structuredClone(workflow));
@@ -2568,7 +2570,15 @@ export function bindWorkflow(
     }
     return inner;
   };
-  const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : draft);
+  // The top graph with its Start, placed each time and never kept (plan 949): one per draft, so an edit that changes nothing
+  // is the graph shown.
+  let started: { from: WorkflowDefinition; to: WorkflowDefinition } | undefined;
+  const top = (): WorkflowDefinition => {
+    if (doc) return draft;
+    if (started?.from !== draft) started = { from: draft, to: withStart(draft, nodeWidth, (n) => drawnOn.get(canvas)?.nodes.get(n.id)?.offsetHeight || 120) };
+    return started.to;
+  };
+  const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : top());
   const K = (): Readonly<Record<string, NodeKind>> => (path.length ? innerNow()?.kinds ?? topKinds() : topKinds());
   /** A preset's inside is read only (D15), at any depth, and one the app says the reader may not change (plan 936 D2); a
    *  preset workflow, everywhere. */
@@ -2785,7 +2795,7 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this workflow is a preset, read only: change a copy of it.', at: { workflow: workflow.id } });
     } else if (!path.length) {
       // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
-      draft = settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K());
+      draft = withoutStart(settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K()));
       // Kept for the tab as the drag ends, not each pointer move: each is the whole workflow as JSON.
       if (!dragging) session?.set(pointer, draft);
     } else if (readOnly()) {

@@ -199,9 +199,11 @@ export interface Inner {
   params: Readonly<Record<string, unknown>>;
 }
 
-/** A definition's body as a workflow, its Group Input and Output laid out either side. */
+/** A definition's body as a workflow, its Group Input and Output laid out either side: each where it has sockets, or a
+ *  connection uses it. A body with neither is a top graph's, entered by its Start (plan 949). */
 function inside(id: string, definition: NodeDefinition, base: Kinds, values: Readonly<Record<string, unknown>> = {}): Inner {
   const xs = definition.nodes.map((n) => n.x);
+  const touched = (end: string): boolean => (definition.connections ?? []).some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
   const input: NodeKind = {
     heading: 'Group Input', icon: 'login', description: 'Where inputs enter the Custom Node', model: 'groupInput', graphs: ['workflow'],
     rows: definition.inputs.map((i) => ({ name: i.name, label: i.label ?? i.name, output: i.type, ...(i.multiple ? { multiple: true as const } : {}) })),
@@ -220,8 +222,8 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
     workflow: {
       v: 3, id, label: definition.label,
       nodes: [
-        { id: '#in', kind: GROUP_INPUT, x: Math.min(0, ...xs) - 360, y: 0 }, ...definition.nodes,
-        { id: '#out', kind: GROUP_OUTPUT, x: Math.max(0, ...xs) + 360, y: 0 },
+        ...(definition.inputs.length || touched('#in') ? [{ id: '#in', kind: GROUP_INPUT, x: Math.min(0, ...xs) - 360, y: 0 }] : []), ...definition.nodes,
+        ...(definition.outputs.length || touched('#out') ? [{ id: '#out', kind: GROUP_OUTPUT, x: Math.max(0, ...xs) + 360, y: 0 }] : []),
       ],
       connections: definition.connections ?? [], ...layoutParts(definition),
     },

@@ -131,10 +131,10 @@ test('a click places the node at the middle of the view, picked, its inspector a
   expect(r.nodes.map((n) => n.id)).toEqual(['start', 'value-1']);
   // 756: added, it is picked, and its panel does not expand.
   expect(await pick(page)).toEqual({ current: ['Value'], open: true, tab: true });
-  // Its corner is the middle of the 900 x 600 view, less half a node, on the plane.
-  const view = await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: { x: number; y: number } }).view);
-  expect(Math.abs(r.nodes[1]!.x - (330 - view.x))).toBeLessThanOrEqual(2);
-  expect(Math.abs(r.nodes[1]!.y - (260 - view.y))).toBeLessThanOrEqual(2);
+  // Its corner is the middle of the 900 x 600 view, less half a node, on the plane, at the zoom the first fit chose.
+  const view = await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: { x: number; y: number; zoom: number } }).view);
+  expect(Math.abs(r.nodes[1]!.x - (330 - view.x) / view.zoom)).toBeLessThanOrEqual(2);
+  expect(Math.abs(r.nodes[1]!.y - (260 - view.y) / view.zoom)).toBeLessThanOrEqual(2);
 });
 
 test('Enter on an item places it', async ({ page }) => {
@@ -195,10 +195,10 @@ test('a drag places the node where it is let go', async ({ page }) => {
   await settle(page);
   const r = await draft(page);
   expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'value']);
-  // The node's corner is the drop, on the plane and on the screen.
-  const view = await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: { x: number; y: number } }).view);
-  expect(Math.abs(r.nodes[1]!.x - (drop[0] - canvas!.x - view.x))).toBeLessThanOrEqual(2);
-  expect(Math.abs(r.nodes[1]!.y - (drop[1] - canvas!.y - view.y))).toBeLessThanOrEqual(2);
+  // The node's corner is the drop, on the plane and on the screen, at the zoom the first fit chose.
+  const view = await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: { x: number; y: number; zoom: number } }).view);
+  expect(Math.abs(r.nodes[1]!.x - (drop[0] - canvas!.x - view.x) / view.zoom)).toBeLessThanOrEqual(2);
+  expect(Math.abs(r.nodes[1]!.y - (drop[1] - canvas!.y - view.y) / view.zoom)).toBeLessThanOrEqual(2);
   const corner = await page.evaluate(() => {
     const el = [...document.querySelectorAll<HTMLElement>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Value')!;
     const b = el.getBoundingClientRect();

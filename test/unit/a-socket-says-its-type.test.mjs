@@ -104,10 +104,11 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
     ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'tag › includes',
   ]);
   // No kind forks (plan 944): only a Check branches, by Yes and No rows that pass on its Data. A check that sends
-  // a boolean on its header says `output`: a Preset and a Saved filter (a scope's row), a Time and a Tag.
+  // a boolean on its header says `output`: a Trigger (its True, to the Start: plan 949), a Preset and a Saved filter (a
+  // scope's row), a Time and a Tag.
   assert.deepEqual(named((k) => k.branches), []);
   assert.deepEqual(named((k) => k.rows.some((r) => r.passes)), ['check']);
-  assert.deepEqual(named((k) => k.output === 'boolean'), ['preset', 'saved', 'time', 'tag']);
+  assert.deepEqual(named((k) => k.output === 'boolean'), ['trigger', 'preset', 'saved', 'time', 'tag']);
   // No type forks, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
   // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
   for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], `${name} › ${id}`);

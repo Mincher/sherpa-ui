@@ -32,9 +32,9 @@ test('six types, each a runtime kind; the panel lists Triggers first; a Query ha
   assert.equal(paletteOf(nodeKinds(), 'query').some((g) => g.category === 'Triggers' && g.items.length), false);
 });
 
-test('a Start node: no input, and its header sends nothing; each type its own rows and properties', () => {
+test('a Start node: no input, and its header sends True, to the Start (plan 949); each type its own rows and properties', () => {
   const t = node(workflowGraph(flow([trigger('t', { type: 'status' })], [])), 't');
-  assert.deepEqual([t.input, t.output, t.category, t.would], [undefined, undefined, 'Triggers', 'Would start when the task changes']);
+  assert.deepEqual([t.input, t.output, t.category, t.would], [undefined, 'boolean', 'Triggers', 'Would start when the task changes']);
   assert.deepEqual(t.rows.map((r) => [r.name, !!r.input, !!r.output]), [['type', false, false], ['task', false, true], ['status', false, true]]);
   assert.ok(isStart(t) && !isSource(t));
   const api = node(workflowGraph(flow([trigger('t', { type: 'api' })], [])), 't');
@@ -72,7 +72,8 @@ test('Simulate: a Trigger says what it would hear; a row it holds sends that, th
   assert.deepEqual(ran.faults, []);
   assert.equal(ran.nodes.t.would, 'Would start on the response');
   assert.deepEqual(Object.fromEntries(ran.nodes.t.outgoing.map((s) => [s.socket, s.value])), {
-    't/endpoint': '/patch', 't/code': 0, 't/response': 'Response, simulated',
+    // Its header's True, as it fires (plan 949).
+    t: 1, 't/endpoint': '/patch', 't/code': 0, 't/response': 'Response, simulated',
   });
   assert.match(lightOf(ran.nodes.t), /^Would start on the response/);
   assert.equal(ran.nodes.o.notTaken, undefined);

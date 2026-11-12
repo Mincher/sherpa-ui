@@ -43,6 +43,7 @@ import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands,
 import { addressRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowConnection, type PortalFlow } from './node-portals.js';
 import { unreachedValues, valuesAt, valuesIn, type MessageSource } from './node-messages.js';
 import { NEW_CHOICE } from './ai-catalog.js';
+import { startFaults, unstarted, withStart, withStartKind } from './node-start.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -302,10 +303,13 @@ function typedWants(type: unknown, value: unknown): string | undefined {
 /** Every fault in a workflow, in words: a node, a kind, a value or a connection that cannot be.
  *  One that is no v2 is that fault alone. A value its row cannot hold — a stranger
  *  in a closed list, no date, a number off its step — is a fault where it is held and where a connection brings it. */
-export function workflowFaults(given: WorkflowDefinition, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
-  const { workflow, faults } = readWorkflow(given);
-  if (!workflow) return faults;
-  const problems = [...faults];
+export function workflowFaults(given: WorkflowDefinition, shipped: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
+  const kinds = withStartKind(shipped);
+  const { workflow: read, faults } = readWorkflow(given);
+  if (!read) return faults;
+  // A top graph's Start is placed each time, and its Triggers join it (plan 949).
+  const workflow = withStart(read, nodeWidth);
+  const problems = [...faults, ...startFaults(workflow)];
   const byId = new Map<string, NodeKind>();
   // A connection to a row another type holds is kept for that type: no fault, and Save leaves it out. What flows is read through the portals.
   const { kept, flow, kindOf } = flowOf(workflow, kinds);
@@ -585,9 +589,11 @@ function providerInto(nodes: readonly WorkflowNode[], connections: readonly { fr
  *  that holds none shows nothing, and says where its value comes from (TODO 774). What
  *  reaches an input that it cannot use reads null, and the node says why in `warnings`.
  *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
-export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = {}, kinds: Kinds = nodeKinds()): FramedGraph {
-  const { workflow } = readWorkflow(given);
-  if (!workflow) return { nodes: [], connections: [] };
+export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = {}, shipped: Kinds = nodeKinds()): FramedGraph {
+  const kinds = withStartKind(shipped);
+  const { workflow: read } = readWorkflow(given);
+  if (!read) return { nodes: [], connections: [] };
+  const workflow = withStart(read, nodeWidth);
   // A connection kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
   // What each input reads, it reads as the data flows: through the portals (TODO 779).
   const { kept, live: connections, flow, kindOf } = flowOf(workflow, kinds);
@@ -666,7 +672,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const ignored = fitting.length ? inputs.filter((i) => !fitting.includes(i)) : [];
     const takes = at && fits ? `${at.type.label} takes ${new Intl.ListFormat('en', { type: 'disjunction' }).format(fitWords(at.id))}` : '';
     // What each connection into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
-    const warnings: { row?: string; words: string }[] = [];
+    const warnings: { row?: string; words: string }[] = unstarted(workflow, node) ? [{ words: 'Connect it to the Start' }] : [];
     const readsAt = (to: string, input: InputNeeds): Map<NodeConnection, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
       // A steer into the header gates the node: it is no data, so it is not read, and nothing warns (TODO 939).
       // What its type ignores is not read, and warns nothing (TODO 940 D2).

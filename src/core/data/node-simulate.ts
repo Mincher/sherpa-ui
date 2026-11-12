@@ -32,6 +32,7 @@ import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
 import { isOutput } from './node-routes.js';
 import { socketOf, truthy, type DrawnGraph, type GraphNode } from './node-kinds.js';
+import { START } from './node-start.js';
 
 /** What a simulation reads beyond its graph and rows: the clock a relative date means (left out, the machine's), and
  *  where a fetch stopped at its cap, by store, in words: a Source says it beside its rows. */
@@ -550,7 +551,8 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     // An Output, an AI node or a Trigger acts outside the graph, so it fires nothing: each output sends a stand-in, by what it gives,
     // so what it feeds runs too (plans 891, 926). A True/false AI node's True is 1.
     if (isOutput(node) || node.would) {
-      if (row === 'true') return { kind: 'value', value: 1 };
+      // A True, and a Trigger's header, which sends True when it fires (plan 949).
+      if (row === 'true' || row === undefined) return { kind: 'value', value: 1 };
       const out = node.rows.find((r) => r.name === row);
       // A row the reader set sends what it holds: a Trigger's Endpoint, its own (plan 941).
       if (out?.control && out.value != null && out.value !== '') return { kind: 'value', value: out.value };
@@ -584,6 +586,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
 
   const nodes: Record<string, SimulatedNode> = {};
   const held0 = graph.nodes.filter((n) => !n.id.startsWith('#'));
+  // The Start runs no step: it says what would start it (plan 949).
+  const startWords = (): string => {
+    const triggers = connections.filter((r) => r.to === START).flatMap((r) => held.get(socketOf(r.from).node) ?? []);
+    return triggers.length === 1 ? triggers[0]!.would ?? 'Would start when its Trigger fires' : `Would start when one of its ${triggers.length} Triggers fires`;
+  };
   const step = (id: string): void => {
     const node = held.get(id);
     if (!node || id in nodes) return;
@@ -607,5 +614,6 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     order.push(next[0]);
     left.delete(next[0]);
   }
-  return { ids: order, step, result: () => ({ nodes, faults }), hears: (address) => slot(address, address, 'in') };
+  const started = (): Record<string, SimulatedNode> => (connections.some((r) => r.to === START) ? { ...nodes, [START]: { incoming: [slot(START, 'In', 'in')], outgoing: [], would: startWords() } } : nodes);
+  return { ids: order, step, result: () => ({ nodes: started(), faults }), hears: (address) => slot(address, address, 'in') };
 }

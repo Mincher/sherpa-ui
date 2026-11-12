@@ -453,9 +453,10 @@ export function conditionFits(inputs: readonly ConditionInput[]): ReadonlySet<st
  *  Only the Check node branches (plan 944): a test has a True property, 1 or 0, and no True or False socket. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
-  // A Start node: nothing comes in; what it heard leaves by its rows. Any one of a graph's Triggers starts it (Will, D2 B).
+  // A Start node: nothing comes in; what it heard leaves by its rows. Any one of a graph's Triggers starts it (Will, D2 B). Its
+  // header sends True when it fires, to the Start (plan 949 D1 A).
   trigger: {
-    heading: 'Trigger', icon: 'bolt', description: 'Start the graph when its event comes',
+    heading: 'Trigger', icon: 'bolt', description: 'Start the graph when its event comes', output: 'boolean',
     typeLabel: 'Listens for', defaultType: 'action', types: TRIGGERS, rows: [], model: 'trigger', graphs: ['workflow'], category: 'Triggers',
   },
   source: {

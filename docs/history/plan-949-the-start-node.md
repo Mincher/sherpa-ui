@@ -31,6 +31,13 @@ library ships event types too), D5 A (a loop warns and blocks its nodes; the gra
 
 ## The build
 
+**Part 1 built 2026-11-12** (steps 1–5 below): as planned, with three things measured on the way. The Start is placed
+right of its Triggers and down past any node in its way (it sat on a Result node first). Its kind is not in
+`NODE_KINDS`, as Group Input's is not: what draws and checks a top graph adds it (`withStartKind`). A body's Group Input
+and Output are drawn where it has sockets or a line uses them, the rule an entity's graph had, so a Coworker's graph,
+which has neither, has its Start.
+
+
 **The way in: the Start (D1 A, D2 A, D3 B).**
 
 1. **Every top graph has a Start**, always there and not removable, as a Custom Node's body has its Group Input. It is

@@ -70,7 +70,8 @@ test('Collapse all, then Hide unconnected: an unconnected socket hides, and a ho
   const tool = (name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
   await expect(tool('hide')).toHaveAttribute('disabled', '');
   await press(page, 'collapse');
-  await expect(page.locator('#cv > sherpa-node[data-collapsed]')).toHaveCount(3);
+  // Its three, and the Start (plan 949).
+  await expect(page.locator('#cv > sherpa-node[data-collapsed]')).toHaveCount(4);
   await expect(tool('collapse')).toHaveAttribute('aria-pressed', 'true');
   await expect(tool('hide')).not.toHaveAttribute('disabled');
   await press(page, 'hide');
@@ -88,7 +89,8 @@ test('Collapse all, then Hide unconnected: an unconnected socket hides, and a ho
   await page.mouse.move(out.x, out.y);
   await page.mouse.down();
   await page.mouse.move(out.x + 40, out.y + 200, { steps: 4 });
-  await expect(page.locator('#cv > sherpa-node[data-reveal]')).toHaveCount(3);
+  // Each node with an input shows it, the Start's too.
+  await expect(page.locator('#cv > sherpa-node[data-reveal]')).toHaveCount(4);
   expect(await headerOut()).toBe('visible');
   await page.mouse.up();
   await expect(page.locator('#cv > sherpa-node[data-reveal]')).toHaveCount(0);

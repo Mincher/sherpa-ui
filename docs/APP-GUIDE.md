@@ -617,6 +617,15 @@ registerTriggerCatalog({
 
 A list you register is a pick; one you do not is typed text.
 
+Every top graph has a **Start**: the graph's entry point, always there, never kept as a
+node. Each Trigger joins it by a line from its header, which sends True when it fires;
+the line is kept as `{ "from": "<trigger>", "to": "#start" }`. The Start sends nothing.
+A Trigger not joined to it warns. A Custom Node's body, or any graph with a Group Input
+or Output, has none: those enter it.
+
+An entity type your app registers may say `reusable: false` (a Coworker): the Nodes
+panel then lists none of its entities, and a graph that places one is refused.
+
 ### Moving nodes
 
 A node moves by a drag on its header, or by the arrow keys there; ⌘ or Ctrl and an

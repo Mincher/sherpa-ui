@@ -127,7 +127,8 @@ test('a property row connects like any output: the Source\'s Results into a Math
 
 test('a saved Collection draws nothing and says why: nothing converts it', async ({ page }) => {
   await bind(page, { ...BARE, nodes: [...BARE.nodes, node('old', 'collection', 0, 400, { type: 'count' })] });
-  expect(await page.locator(cards).count()).toBe(3);
+  // Its own, and the Start (plan 949).
+  expect(await page.locator(cards).count()).toBe(4);
   expect(await page.evaluate(async () => {
     const { workflowFaults } = await import('/dist/data.js');
     return workflowFaults((window as never as { ed: { workflow(): never } }).ed.workflow());

@@ -12,9 +12,9 @@
 import { report } from './report.js';
 import { nodeKinds, type NodeKind } from './node-kinds.js';
 import { innerOf, kindsOf, nodeLibraryFaults } from './node-library.js';
-import { entityKind, isEntity, usesOf, type Entity } from './entity.js';
+import { entityKind, entityRefOf, isEntity, usesOf, type Entity } from './entity.js';
 import { layoutParts } from './graph-layout.js';
-import { asNode, entityTypes, libraryOf, socketsOf, takes, type EntityType } from './entity-types.js';
+import { asNode, entityTypes, libraryOf, takes, type EntityType } from './entity-types.js';
 import { readWorkflow, type WorkflowDefinition, type WorkflowFacts } from './workflow.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
@@ -36,15 +36,13 @@ export interface EntityFacts {
  *  as a Custom Node's inside is drawn; and the kinds those need. TRAP T-a-graph-is-a-view-of-a-type */
 export function graphWorkflow(entity: Entity, kinds: Kinds = nodeKinds(), types: Readonly<Record<string, EntityType>> = entityTypes()): { workflow: WorkflowDefinition; kinds: Kinds } {
   const { nodes, connections = [] } = entity.graph;
-  const inner = innerOf({ id: entity.id, kind: entityKind(entity) }, libraryOf([entity], types), kinds);
+  // From the entity itself, so one of a type that is not reusable is drawn as well (plan 949).
+  const inner = innerOf({ id: entity.id, kind: entityKind(entity) }, { v: 1, nodes: { [entityKind(entity)]: asNode(entity, types) } }, kinds);
   if (!inner) return { workflow: { v: 3, id: entity.id, label: entity.label, nodes, connections, ...layoutParts(entity.graph) }, kinds };
-  const { inputs, outputs } = socketsOf(entity, types[entity.type]);
-  const touched = (end: string): boolean => connections.some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
-  const kept = (id: string): boolean => (id === '#in' ? !!inputs.length || touched('#in') : id === '#out' ? !!outputs.length || touched('#out') : true);
-  const drawn = inner.workflow.nodes.filter((n) => kept(n.id));
+  const drawn = inner.workflow.nodes;
   // Its own kind is not offered on its own canvas (a graph that holds itself is a loop); a group kind only where its node is drawn.
   const offered = Object.entries(inner.kinds).filter(([id]) => id !== entityKind(entity) && (!id.startsWith('#') || drawn.some((n) => n.kind === id)));
-  return { workflow: { ...inner.workflow, label: entity.label, nodes: drawn }, kinds: Object.fromEntries(offered) };
+  return { workflow: { ...inner.workflow, label: entity.label }, kinds: Object.fromEntries(offered) };
 }
 
 /** The way round a loop of entities that starts at one, as labels; none when it does not come back. */
@@ -90,9 +88,9 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
     problems.push(`${at} places "${node.id}", of the family "${kind.category ?? 'Other'}", which a ${type.label} does not take: ${type.families!.join(', ')}`);
   }
   for (const node of entity.graph.nodes) {
-    if (node.kind.includes(':') && !(node.kind in kinds)) {
-      problems.push(`${at} places "${node.id}", a use of "${node.kind}", which is not there`);
-    }
+    const used = node.kind.includes(':') ? types[entityRefOf(node.kind).type] : undefined;
+    if (used?.reusable === false) problems.push(`${at} places "${node.id}", a ${used.label}, which is not reusable`);
+    else if (node.kind.includes(':') && !(node.kind in kinds)) problems.push(`${at} places "${node.id}", a use of "${node.kind}", which is not there`);
   }
   // An EMPTY graph is a new one: its outputs are asked for once it places a node. TRAP T-a-graph-is-a-view-of-a-type
   for (const out of entity.graph.nodes.length ? type.outputs ?? [] : []) {

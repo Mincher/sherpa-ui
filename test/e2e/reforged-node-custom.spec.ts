@@ -122,7 +122,7 @@ test('Enter on the header opens a Custom Node: Group Input and Output drawn, a t
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await ed(page, 'ed.path()')).toEqual([]);
-  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result', 'Start']);
   expect(await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => el.shadowRoot!.querySelectorAll('.crumb').length)).toBe(0);
   // The keyboard is back on the use it opened.
   const on = await page.evaluate(() => {
@@ -384,7 +384,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
   await saveAs(page, 'Users with a role', 'Who holds the role');
   await settle(page);
-  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Owner check', 'Run result', 'Users with a role']);
+  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Owner check', 'Run result', 'Start', 'Users with a role']);
   const made = await ed(page, "ed.library().nodes['users-with-a-role']");
   expect((made as { description: string }).description).toBe('Who holds the role');
   expect(await page.locator('#cv svg.graph-connectors path[data-to]').count()).toBe(2);
@@ -396,7 +396,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Owner check', 'Run result', 'Source']);
+  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Owner check', 'Run result', 'Source', 'Start']);
   expect(await page.locator('#cv svg.graph-connectors path[data-to]').count()).toBe(3);
 });
 
@@ -607,13 +607,13 @@ test('the toolbar\'s Save as Custom Node is off with none or one picked, on with
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await page.locator('#custom').evaluate((el: HTMLElement & { open: boolean }) => el.open)).toBe(false);
-  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result', 'Start']);
   // A name a shipped kind holds is refused too.
   await press(page, 'group');
   await field(page, 'label').locator('input').fill('Source');
   await page.keyboard.press('Enter');
   await settle(page);
-  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result', 'Start']);
   await page.locator('#custom sherpa-button[data-action="cancel"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await header(page, 'Source').click();
   await settle(page);

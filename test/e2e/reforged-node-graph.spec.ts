@@ -465,7 +465,7 @@ test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s 
   });
   // Source › Field › Condition › Output (plan 783): the Operation lists Logic's types, And and Or first; those a text
   // column fits (TODO 940).
-  expect(drawn.nodes).toEqual(['Source', 'Field', 'Condition', 'Run result']);
+  expect(drawn.nodes).toEqual(['Source', 'Field', 'Condition', 'Run result', 'Start']);
   expect(drawn.ops.slice(0, 3)).toEqual(['And', 'Or', 'Equals']);
   expect(r).toEqual({ op: 'ne', ok: true, saved: [{ type: 'ne' }], draft: null });
 });
@@ -494,7 +494,7 @@ test('a use of a Custom Node draws closed: one node with a row per input and out
       role: node.querySelector<HTMLElement & { value: string }>('sherpa-input-text[name="role"]')?.value,
     };
   });
-  expect(r.nodes).toEqual(['Source', 'Org permissions']);
+  expect(r.nodes).toEqual(['Source', 'Org permissions', 'Start']);
   expect(r.role).toBe('owner');
   expect(r.rows.length).toBe(4); // Parameters, Users, Role + Allowed (the "Properties" label row only where a property exists)
 });

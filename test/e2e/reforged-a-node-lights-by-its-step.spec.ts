@@ -157,11 +157,11 @@ test('a workflow graph lights from the steps a run says: each node by its id, it
     (window as unknown as { editor: { stop(): void } }).editor.stop();
     return { during, after, again, looks: new Set([idle, running, failed]).size };
   }, LIT);
-  expect(r.during).toEqual({ Source: ['running', 'Running · 3 rows'], Field: [null, null], Condition: ['running', 'Running'], 'Run result': [null, null] });
+  expect(r.during).toEqual({ Source: ['running', 'Running · 3 rows'], Field: [null, null], Condition: ['running', 'Running'], 'Run result': [null, null], Start: [null, null] });
   expect(r.after['Source']![0]).toBe('done');
   expect(r.after['Condition']![0]).toBe('done');
   expect(r.after['Condition']![1]).toMatch(/2 rows$/);
   expect(r.after['Run result']).toEqual(['skipped', 'Skipped']);
-  expect(r.again).toEqual({ Source: [null, null], Field: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], 'Run result': [null, null] });
+  expect(r.again).toEqual({ Source: [null, null], Field: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], 'Run result': [null, null], Start: [null, null] });
   expect(r.looks, 'idle, running and failed each look their own').toBe(3);
 });

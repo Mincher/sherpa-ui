@@ -44,7 +44,8 @@ test('two Sources in one graph: customers and devices, each its own id and store
   );
   const facts = { stores: ['customers', 'devices'] };
   assert.deepEqual(workflowFaults(both), []);
-  const drawn = workflowGraph(both, facts).nodes;
+  // The Start is drawn too, last, in every top graph (plan 949).
+  const drawn = workflowGraph(both, facts).nodes.filter((n) => n.id !== '#start');
   assert.deepEqual(drawn.map((n) => [n.id, n.heading, n.rows.find((r) => r.name === 'store').value]), [['source-1', 'Source', 'customers'], ['source-2', 'Source', 'devices']]);
   assert.deepEqual(drawn[1].rows.find((r) => r.name === 'store').choices.map((c) => c.value), ['customers', 'devices']);
   // As an entity of a type, too; only a second node of the SAME id is a fault.

@@ -432,6 +432,8 @@ test('897: each category wears its own ink, a 2px line under its node\'s header 
   expect(r.nodes).toEqual({
     sources: 'rgb(0, 139, 186)', variables: 'rgb(255, 196, 76)', logic: 'rgb(201, 46, 97)', organise: 'rgb(59, 76, 205)',
     output: 'rgb(0, 172, 67)', 'custom-nodes': 'rgb(0, 167, 144)', ai: 'rgb(192, 70, 255)',
+    // The Start wears its Triggers' ink (plan 949).
+    triggers: 'rgb(167, 120, 176)',
   });
   // Every category a different ink.
   expect(new Set(Object.values(r.nodes)).size).toBe(Object.keys(r.nodes).length);

@@ -436,8 +436,8 @@
       }
     },
     "socket": {
-      "description": "A node's header socket, \"node\" (its input is its data); a row's, \"node/row\" (\"node/rows\" sends its data rows, \"node/true\" a test's 1 or 0); or a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826).",
-      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?$"
+      "description": "A node's header socket, \"node\" (its input is its data); a row's, \"node/row\" (\"node/rows\" sends its data rows, \"node/true\" a test's 1 or 0); a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826); or the Start, \"#start\", which each Trigger's header joins in a top graph (plan 949).",
+      "type": "string", "pattern": "^(#start|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?)$"
     },
     "innerSocket": {
       "description": "An address inside a Custom Node's body: a node's socket, or the Group Input's (\"#in\", \"#in/<name>\") or Group Output's (\"#out\", \"#out/<name>\"); a portal Out's row names its source, \"node/@#in/<name>\" for one that comes in by the Group Input.",

@@ -74,3 +74,34 @@ test('Simulate: the Trigger says what it would hear; what it feeds runs', async 
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-category="output"]').getAttribute('data-step')).toBe('done');
 });
+
+/** A card's header socket's middle on the screen. */
+const headerSocket = (page: Page, heading: string, side: 'input' | 'output', n = 0) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).nth(n).evaluate((el, s) => {
+  const b = (el as HTMLElement & { socketRect(side: string): DOMRect }).socketRect(s);
+  return [b.left + b.width / 2, b.top + b.height / 2] as [number, number];
+}, side);
+
+test('the Start (949): always there, held still, its Triggers joined by a drag from their header; Save keeps the line, not the node', async ({ page }) => {
+  const start = page.locator('#cv > sherpa-node[data-heading="Start"]');
+  await expect(start).toHaveCount(1);
+  expect(await start.evaluate((n) => [n.getAttribute('data-category'), n.hasAttribute('data-input-socket'), n.hasAttribute('data-output-socket'), n.hasAttribute('data-locked')])).toEqual(['triggers', true, false, true]);
+  // Not joined, each Trigger warns.
+  await expect(page.locator('#cv > sherpa-node[data-heading="Trigger"][data-warning="Connect it to the Start"]')).toHaveCount(2);
+  for (const n of [0, 1]) {
+    const [from, to] = [await headerSocket(page, 'Trigger', 'output', n), await headerSocket(page, 'Start', 'input')];
+    await page.mouse.move(from[0], from[1]);
+    await page.mouse.down();
+    await page.mouse.move((from[0] + to[0]) / 2, (from[1] + to[1]) / 2, { steps: 4 });
+    await page.mouse.move(to[0], to[1], { steps: 4 });
+    await page.mouse.up();
+    await settle(page);
+  }
+  await expect(page.locator('#cv > sherpa-node[data-heading="Trigger"][data-warning]')).toHaveCount(0);
+  const kept = await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { id: string }[]; connections: { from: string; to: string }[] } } }).editor.workflow());
+  expect([kept.nodes.map((n) => n.id), kept.connections.filter((c) => c.to === '#start').map((c) => c.from)]).toEqual([['t', 'u', 'o'], ['t', 'u']]);
+  // Simulate: the Start says what would start it.
+  await page.evaluate(() => (window as never as { editor: { simulate(): Promise<void> } }).editor.simulate());
+  await settle(page);
+  const said = await page.evaluate(() => (window as never as { editor: { simulation(): { result: { nodes: Record<string, { would?: string }> } } } }).editor.simulation().result.nodes['#start']?.would);
+  expect(said).toBe('Would start when one of its 2 Triggers fires');
+});

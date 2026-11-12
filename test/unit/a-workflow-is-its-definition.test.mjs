@@ -148,6 +148,8 @@ const row = (id, name, g = graph) => g.nodes.find((n) => n.id === id).rows.find(
 test('a workflow DRAWS as its kinds say: each node at its place, its rows with its values, and its connections', () => {
   assert.deepEqual(graph.nodes.map((n) => [n.id, n.kind, n.heading, n.x, n.y]), [
     ['start', 'source', 'Source', 0, 0], ['field', 'field', 'Field', 360, 0], ['status', 'value', 'Value', 360, 160], ['filter', 'condition', 'Condition', 720, 0], ['end', 'result', 'Run result', 1080, 0],
+    // A top graph's Start, always there, left of its nodes: no Trigger joins it (plan 949).
+    ['#start', '#start', 'Start', -360, 0],
   ]);
   assert.deepEqual(graph.connections, good.connections);
   // Source › Field › Condition › Output (plan 783): the Condition tests the Field on its header, Value B the Value connected in.

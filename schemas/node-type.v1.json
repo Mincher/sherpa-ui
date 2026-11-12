@@ -13,6 +13,7 @@
     "inputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeInput" } },
     "outputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeOutput" } },
     "families": { "description": "The families (a kind's category) its sub-graph may place; none, any.", "type": "array", "items": { "type": "string" } },
-    "runs": { "description": "It needs the runner to be of use; none, false: only defined.", "type": "boolean" }
+    "runs": { "description": "It needs the runner to be of use; none, false: only defined.", "type": "boolean" },
+    "reusable": { "description": "Its nodes are Custom Nodes a graph may place; none, true. False (a Coworker): the Nodes panel leaves them out, and an Output Trigger starts one (plan 949).", "type": "boolean" }
   }
 }

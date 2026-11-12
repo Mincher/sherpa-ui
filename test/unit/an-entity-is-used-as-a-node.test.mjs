@@ -100,7 +100,8 @@ test('a use flattens: placed, it records its version; inside, it is the entity\'
   assert.equal(flow.nodes[0].version, lib.versionOf(asNode(trials)));
   assert.deepEqual(lib.workflowFaultsDeep(flow, library), []);
   const inner = lib.innerOf(flow.nodes[0], library);
-  assert.deepEqual(inner.workflow.nodes.map((n) => n.id), ['#in', 'start', 'status', 'field', '#out']);
+  // It has outputs and no inputs: a Group Output, and no Group Input (plan 949).
+  assert.deepEqual(inner.workflow.nodes.map((n) => n.id), ['start', 'status', 'field', '#out']);
   assert.deepEqual(inner.kinds['#group-output'].rows.map((r) => r.name), ['where']);
   // A fault inside is the same fault a use shows, named by the path to it.
   const broken = { ...trials, graph: { ...trials.graph, connections: [...trials.graph.connections, { from: 'start/rows', to: 'status/nothing' }] } };

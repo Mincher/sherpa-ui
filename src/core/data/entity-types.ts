@@ -53,6 +53,9 @@ export interface EntityType {
   outputs?: readonly NodeOutput[];
   /** It needs the runner to be of use (true), or is only DEFINED (false, as a type from JSON is by default). */
   runs?: boolean;
+  /** Its entities are Custom Nodes a graph may place (true, the default), or not (false, a Coworker): the Nodes panel leaves
+   *  them out, and a graph that places one is refused. An Output Trigger starts one (plan 949). */
+  reusable?: boolean;
   /** The settings a new entity of this type starts with. */
   defaults?: Readonly<Record<string, unknown>>;
 }
@@ -102,8 +105,9 @@ export function entityTypes(): Readonly<Record<string, EntityType>> {
 /** An app adds a type, from its own file or as JSON (`node-type.v1`, an entities file's `types`; plan 942 D2 A). A clash
  *  with a shipped type, or a type that is no name, is refused and reported. It answers how to take it back, or none. */
 export function registerEntityType(type: EntityType): (() => void) | undefined {
-  if (!ID.test(String(type?.id)) || typeof type.label !== 'string' || (type.runs !== undefined && typeof type.runs !== 'boolean')) {
-    report({ code: 'entity-type', message: 'registerEntityType: a type needs an id that is a name (lowercase letters, digits, hyphens) and a label; `runs`, if given, is true or false.', at: {} });
+  const flag = (v: unknown): boolean => v === undefined || typeof v === 'boolean';
+  if (!ID.test(String(type?.id)) || typeof type.label !== 'string' || !flag(type.runs) || !flag(type.reusable)) {
+    report({ code: 'entity-type', message: 'registerEntityType: a type needs an id that is a name (lowercase letters, digits, hyphens) and a label; `runs` and `reusable`, if given, are true or false.', at: {} });
     return undefined;
   }
   if (type.id in ENTITY_TYPES) {
@@ -149,7 +153,8 @@ export function asNode(entity: Entity, types: Readonly<Record<string, EntityType
  *  functions, `innerOf`, `useOf`, `definitionDiff` and `updateInstance` then take an entity as they take a
  *  Custom Node, and a use follows its definition with the version and snapshot recorded. */
 export function libraryOf(entities: readonly Entity[], types: Readonly<Record<string, EntityType>> = entityTypes()): NodeLibrary {
-  return { v: 1, nodes: Object.fromEntries(entities.map((e) => [entityKind(e), asNode(e, types)])) };
+  // One of a type that is not reusable is no node (plan 949).
+  return { v: 1, nodes: Object.fromEntries(entities.filter((e) => types[e.type]?.reusable !== false).map((e) => [entityKind(e), asNode(e, types)])) };
 }
 
 /** The kinds a graph's node panel offers, of those given: a kind its type `takes`; and a Custom Node —
