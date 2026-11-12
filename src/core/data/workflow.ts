@@ -852,7 +852,7 @@ export type WorkflowEdit =
   | { tieAdd: { id: string; connection: NodeConnection } }
   | { bend: { connection: NodeConnection; at: number; x: number; y: number; insert?: boolean } }
   | { unbend: { connection: NodeConnection; index: number } }
-  | { place: { nodes: Readonly<Record<string, { x: number; y: number }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | { dx: number; dy: number } } }
+  | { place: { nodes: Readonly<Record<string, { x: number; y: number }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow' } }
   | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
   | { unframe: string }
   | { setFrame: { id: string; label?: string; description?: string } }
@@ -1045,11 +1045,18 @@ export function editWorkflow(
       return all ? ends.every(Boolean) : ends.some(Boolean);
     };
     const result: WorkflowDefinition = { ...moved };
+    // A bend between two placed nodes follows them: by the mean of its ends' moves, one move for a group.
+    const shift = (id: string): [number, number] => {
+      const [was, to] = [workflow.nodes.find((n) => n.id === id), nodes[id]];
+      return was && to ? [to.x - was.x, to.y - was.y] : [0, 0];
+    };
     if (workflow.connections && bends) {
       result.connections = workflow.connections.map((r) => {
         if (!r.via || !has(r, bends === 'reset' ? false : true)) return r;
         const { via: _was, ...bare } = r;
-        return bends === 'reset' ? bare : { ...bare, via: r.via.map((p) => ({ x: p.x + bends.dx, y: p.y + bends.dy })) };
+        if (bends === 'reset') return bare;
+        const [[ax, ay], [bx, by]] = [shift(socketOf(r.from).node), shift(socketOf(r.to).node)];
+        return { ...bare, via: r.via.map((p) => ({ x: p.x + (ax + bx) / 2, y: p.y + (ay + by) / 2 })) };
       });
     }
     if (workflow.ties) {

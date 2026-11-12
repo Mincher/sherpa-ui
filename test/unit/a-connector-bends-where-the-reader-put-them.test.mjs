@@ -214,7 +214,7 @@ test('754: a bend edit writes the one point the reader moved; every other point 
 
 test('754: a group move shifts only the points the reader made, and Arrange clears them; neither adds one', () => {
   const w = { ...two(), connections: [{ ...connection, via: [{ x: 300, y: 90 }] }, { ...R2 }] };
-  const moved = editWorkflow(w, { place: { nodes: { s: { x: 40, y: 10 }, e: { x: 740, y: 10 }, s2: { x: 40, y: 210 }, e2: { x: 740, y: 210 } }, bends: { dx: 40, dy: 10 } } });
+  const moved = editWorkflow(w, { place: { nodes: { s: { x: 40, y: 10 }, e: { x: 740, y: 10 }, s2: { x: 40, y: 210 }, e2: { x: 740, y: 210 } }, bends: 'follow' } });
   assert.deepEqual(moved.connections[0].via, [{ x: 340, y: 100 }]);
   assert.equal('via' in moved.connections[1], false);
   const arranged = editWorkflow(w, { place: { nodes: { s: { x: 0, y: 0 }, e: { x: 400, y: 0 } }, bends: 'reset' } });

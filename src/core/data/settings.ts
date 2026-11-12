@@ -102,6 +102,8 @@ export const SETTINGS = {
   resizeNodes: off('/nodes/resize', 'app'),
   // A drag on the gap between two stages moves the edge between them. Will, TODO 900
   resizeStages: on('/nodes/resizeStages', 'app'),
+  // ⌘ or Ctrl held on a node's drag pulls the nodes it joins along behind it. Will, plan 918
+  chainDrag: on('/nodes/chainDrag', 'app'),
   // Every Sherpa motion token is instant: transitions and travels land at once. Will, TODO 896
   reduceMotion: { ...off('/a11y/reduceMotion', 'app'), look: { props: { true: { '--sherpa-motion-scale': '0' } } } },
   // A toggle shows its state by a shape too. Will, TODO 497

@@ -66,7 +66,8 @@ test('dragging one of several picked nodes moves them all, relative places kept;
   const before = await flow(page);
   await pick(page, ['s1', 'e1', 's2']);
   expect(await picked(page)).toEqual(['e1', 's1', 's2']);
-  await dragNode(page, 's1', [100, 60]);
+  // Across, clear of e2: a move onto an unpicked node pushes it away (plan 918), and that is not this test.
+  await dragNode(page, 's1', [100, 0]);
   const after = await flow(page);
   const d = { x: spot(after, 's1').x - spot(before, 's1').x, y: spot(after, 's1').y - spot(before, 's1').y };
   expect(d.x).toBeGreaterThan(150);
@@ -85,7 +86,8 @@ test('a tie whose connections all join picked nodes goes along, bends of a conne
     [{ id: 't', x: 480, y: 130, connections: [R(1), R(2)] }, { id: 'u', x: 480, y: 330, connections: [R(2), R(3)] }]);
   const before = await flow(page);
   await pick(page, ['s1', 'e1', 's2', 'e2']);
-  await dragNode(page, 'e2', [80, 60]);
+  // Across, clear of e3: a move onto it would push it (plan 918).
+  await dragNode(page, 'e2', [80, 0]);
   const after = await flow(page);
   const dx = spot(after, 'e2').x - spot(before, 'e2').x;
   const dy = spot(after, 'e2').y - spot(before, 'e2').y;

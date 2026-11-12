@@ -3234,6 +3234,11 @@
           "description": "its kind's category, in lower case: sources | custom-nodes | variables | math | logic | time | utils | collections | output | ai; each has its look"
         },
         {
+          "name": "data-chain-drag",
+          "description": "⌘ or Ctrl held on a drag or an arrow asks to pull the nodes it joins: the app's Enable node chain dragging setting writes it. It follows the app's `chainDrag` setting.",
+          "valueSet": "v"
+        },
+        {
           "name": "data-collapsed",
           "description": "collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads \"Heading: summary\". Its host writes it data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's and the rows'. Its host writes them data-inputs-connected, data-outputs-connected  the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them",
           "valueSet": "v"

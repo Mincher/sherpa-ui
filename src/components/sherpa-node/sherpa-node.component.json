@@ -256,6 +256,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-chain-drag",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "⌘ or Ctrl held on a drag or an arrow asks to pull the nodes it joins: the app's Enable node chain dragging setting writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-collapsed",
       "type": "boolean",
       "observed": true,
@@ -535,11 +544,12 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, caption?, category?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
+    "shape": "{ active?, caption?, category?, chainDrag?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
-    "data-resizable": "resizeNodes"
+    "data-resizable": "resizeNodes",
+    "data-chain-drag": "chainDrag"
   },
   "states": [
     {

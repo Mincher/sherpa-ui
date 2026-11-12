@@ -194,6 +194,7 @@ export {
 export { copyNodes, pasteNodes, type NodeClip } from './core/data/node-clipboard.js';
 export { JUNCTION_FAMILIES, JUNCTION_KINDS, LANES_BY_FAMILY, LANE_GAP, LANE_PAD, fitLanes, laneBands, laneFaults, laneOf, type LaneBand, type NodeLane } from './core/data/node-lanes.js';
 export { packBands, type Band, type BandGroup, type BandRules } from './core/data/node-bands.js';
+export { dragTo, radiusOf, startDrag, type ChainDrag, type ChainLink, type ChainNode } from './core/data/node-chain.js';
 export { TIE_CLEAR, clearOfNodes, placeBeside, roomAround, type Box } from './core/data/tie-place.js';
 export { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, type GraphLayout, type ReconcileFacts, type Reconciled } from './core/data/query-document.js';
 /* A PORTAL: an In and an Out joined by a name; one resolver of the hop. TRAP T-a-portal-hop-is-resolved-once */

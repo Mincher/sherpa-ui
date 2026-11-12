@@ -112,7 +112,7 @@ test('place: nodes, ties and bends in one edit; bends reset on a touched connect
   assert.equal(next.nodes[0].x, 4);
   assert.equal(next.connections[0].via, undefined);
   assert.deepEqual(next.connections[1].via, [{ x: 300, y: 250 }]);
-  const shifted = editWorkflow(w, { place: { nodes: { a: { x: 10, y: 20 }, b: { x: 610, y: 20 } }, bends: { dx: 10, dy: 20 } } });
+  const shifted = editWorkflow(w, { place: { nodes: { a: { x: 10, y: 20 }, b: { x: 610, y: 20 } }, bends: 'follow' } });
   assert.deepEqual(shifted.connections[0].via, [{ x: 310, y: 70 }]);
   assert.deepEqual(shifted.connections[1].via, [{ x: 300, y: 250 }]);
 });

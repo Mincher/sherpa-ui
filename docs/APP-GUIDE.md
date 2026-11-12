@@ -578,6 +578,17 @@ registerAiCatalog({
 - Simulate asks no model. A node says what it would do, and each answer is a
   stand-in by its shape: True 1, words, 0, no rows, an empty list.
 
+### Moving nodes
+
+A node moves by a drag on its header, or by the arrow keys there; ⌘ or Ctrl and an
+arrow moves the picked nodes. Every move holds nodes apart by their RADII, half each
+one's largest side: a node moved too near another pushes it away, and that one pushes
+on. Two that began nearer stay as near. With the setting `chainDrag` (on), ⌘ (Ctrl
+off a Mac) held on a drag, or with an arrow on a header, pulls the nodes it joins
+along behind it, and theirs behind them: each connector is a rope as long as it was,
+slack when pushed. The whole move is one Undo. The math is the data layer's, with no
+DOM: `startDrag` and `dragTo` (plan 918).
+
 ### Stages
 
 A workflow's canvas has STAGES: columns across the top, left to right. A graph has

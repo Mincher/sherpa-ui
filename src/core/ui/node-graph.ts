@@ -77,6 +77,7 @@ import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
+import { dragTo, startDrag, type ChainDrag, type ChainLink, type ChainNode } from '../data/node-chain.js';
 import { drawLanes } from './node-lanes-ui.js';
 import { clearOfNodes, placeBeside, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
@@ -124,8 +125,9 @@ export interface DrawOptions {
   onSelect?: (node: GraphNode) => void;
   /** A node the reader moved, and where to. */
   onMove?: (node: GraphNode, x: number, y: number) => void;
-  /** Picked nodes moved together by one drag or key, each to its new place: the host writes ONE step (TODO 752). */
-  onMoveMany?: (moves: { id: string; x: number; y: number }[]) => void;
+  /** Nodes moved by one drag or key, each to its new place: the picked ones the reader `held`, and those they pulled and
+   *  pushed (plan 918). The host writes ONE step (TODO 752). */
+  onMoveMany?: (moves: readonly { id: string; x: number; y: number }[], held?: readonly string[]) => void;
   /** The picked nodes arranged on a grid: where each goes, and each tie. One step (TODO 752). */
   onArrange?: (placed: Arranged) => void;
   /** A node the reader resized, and its new size in times its natural one (TODO 740). */
@@ -206,6 +208,9 @@ interface Drawn {
   placedAt: Map<string, string>;
   /** Where a node was when a drag last reported it, so a group moves by the delta. Cleared when the graph places it. */
   movedTo: Map<string, [number, number]>;
+  /** A pointer is down on the canvas, and the drag it makes: what it pulls and pushes (plan 918). None between drags. */
+  pressing: boolean;
+  chain: ChainDrag | null;
   lines: SVGSVGElement;
   connections: readonly NodeConnection[];
   /** The zip ties, and the one a click picked: Delete removes it, the arrow keys move it. */
@@ -1149,6 +1154,50 @@ function nowAt(drawn: Drawn, id: string): [number, number] | undefined {
   return Number.isFinite(x) && Number.isFinite(y) ? [x!, y!] : undefined;
 }
 
+/** Each node a drag may pull or push: its place now and its size. Not a Group Input or Output, nor a locked one. */
+function chainNodes(made: Drawn): ChainNode[] {
+  return [...made.nodes].flatMap(([id, el]) => {
+    const node = made.graph.nodes.find((n) => n.id === id);
+    const at = nowAt(made, id);
+    return node && at && !id.startsWith('#') && !made.options.locked?.(node) ? [{ id, x: at[0], y: at[1], w: el.offsetWidth, h: el.offsetHeight }] : [];
+  });
+}
+
+/** Each connector as a drag reads it: where its socket is on each node, from the node's top left as drawn. */
+function chainLinks(made: Drawn): ChainLink[] {
+  const offset = (address: string, side: SocketSide): [number, number] => {
+    const el = made.nodes.get(socketOf(address).node)!;
+    const point = socketPoint(made, address, side);
+    const { left, top } = boxOf(el);
+    return point ? [point[0] - left, point[1] - top] : [side === 'output' ? el.offsetWidth : 0, el.offsetHeight / 2];
+  };
+  return made.graph.connections.flatMap((r) => {
+    const [from, to] = [socketOf(r.from).node, socketOf(r.to).node];
+    return made.nodes.has(from) && made.nodes.has(to) ? [{ from, to, fromAt: offset(r.from, 'output'), toAt: offset(r.to, 'input') }] : [];
+  });
+}
+
+/** Nodes the reader moved (`held`, each where it is now), and the nodes that move pulls (`chain`) and pushes, drawn and
+ *  told as ONE move. A drag lasts while the pointer is down; a key's move is a drag of its own. Read only, none is
+ *  pulled or pushed. Plan 918 */
+function moveNodes(made: Drawn, held: readonly { id: string; x: number; y: number }[], chain: boolean): void {
+  if (!held.length) return;
+  const free = made.options.onMoveMany && held.every((m) => !m.id.startsWith('#'));
+  if (free) made.chain ??= startDrag(chainNodes(made), chainLinks(made), held.map((m) => m.id));
+  const placed = free && made.chain ? dragTo(made.chain, Object.fromEntries(held.map((m) => [m.id, m])), chain) : {};
+  const moves = free && made.chain ? Object.entries(placed).map(([id, p]) => ({ id, ...p })) : held;
+  if (!made.pressing) made.chain = null;
+  for (const m of moves) {
+    made.movedTo.set(m.id, [m.x, m.y]);
+    made.nodes.get(m.id)?.setAttribute('data-x', String(m.x));
+    made.nodes.get(m.id)?.setAttribute('data-y', String(m.y));
+  }
+  drawConnections(made);
+  const only = moves.length === 1 ? made.graph.nodes.find((n) => n.id === moves[0]!.id) : undefined;
+  if (only) made.options.onMove?.(only, moves[0]!.x, moves[0]!.y);
+  else if (moves.length) made.options.onMoveMany?.(moves, held.map((m) => m.id));
+}
+
 /** What a canvas has drawn, made the first time. */
 function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   let drawn = drawnOn.get(canvas);
@@ -1164,7 +1213,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   canvas.prepend(lines);
   const made: Drawn = {
     canvas, graph: { nodes: [], connections: [] }, options: {},
-    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), beside: new Map(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
+    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), beside: new Map(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(), pressing: false, chain: null,
     lines, connections: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
     frames: new Map(), selectedFrame: null, collapsed: new Set(), hideUnconnected: false, focusRow: null,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
@@ -1173,9 +1222,17 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       if (!made.fitted && made.nodes.size) { made.fitted = true; canvas.fit(); }
     }),
   };
+  // A drag pulls and pushes while the pointer is down. A node's header holds the pointer, and its letting go bubbles here.
+  canvas.addEventListener('pointerdown', () => { made.pressing = true; }, { capture: true });
+  for (const type of ['pointerup', 'pointercancel']) {
+    canvas.addEventListener(type, () => {
+      made.pressing = false;
+      made.chain = null;
+    }, { capture: true });
+  }
   canvas.addEventListener('node-move', (event) => {
     const node = nodeOf(made, event.target);
-    const { x, y } = (event as CustomEvent<{ x: number; y: number }>).detail;
+    const { x, y, chain } = (event as CustomEvent<{ x: number; y: number; chain?: true }>).detail;
     if (!node) return drawConnections(made);
     const group = pickedNodes(canvas);
     // A drag on a node outside the pick picks only it, as a click would.
@@ -1184,27 +1241,17 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       made.options.onSelect(node);
     }
     const before = nowAt(made, node.id) ?? [x, y];
-    made.movedTo.set(node.id, [x, y]);
+    const held = [{ id: node.id, x, y }];
     if (made.options.onMoveMany && group.length > 1 && group.includes(node.id) && !made.options.locked?.(node)) {
       const [dx, dy] = [x - before[0], y - before[1]];
-      const moves = [{ id: node.id, x, y }];
       for (const id of group) {
-        const el = made.nodes.get(id);
         const at = nowAt(made, id);
         const other = made.graph.nodes.find((n) => n.id === id);
-        if (id === node.id || !el || !at || !other || made.options.locked?.(other)) continue;
-        const to: [number, number] = [at[0] + dx, at[1] + dy];
-        made.movedTo.set(id, to);
-        el.setAttribute('data-x', String(to[0]));
-        el.setAttribute('data-y', String(to[1]));
-        moves.push({ id, x: to[0], y: to[1] });
+        if (id === node.id || !made.nodes.has(id) || !at || !other || made.options.locked?.(other)) continue;
+        held.push({ id, x: at[0] + dx, y: at[1] + dy });
       }
-      drawConnections(made);
-      made.options.onMoveMany(moves);
-      return;
     }
-    drawConnections(made);
-    made.options.onMove?.(node, x, y);
+    moveNodes(made, held, !!chain);
   });
   // A double click on a node's header collapses or expands it, unless it opens (a Custom Node's use).
   canvas.addEventListener('dblclick', (event) => {
@@ -1230,15 +1277,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       const at = nowAt(made, id);
       return at ? [{ id, x: at[0] + by[0] * step, y: at[1] + by[1] * step }] : [];
     });
-    for (const m of moves) {
-      made.movedTo.set(m.id, [m.x, m.y]);
-      made.nodes.get(m.id)?.setAttribute('data-x', String(m.x));
-      made.nodes.get(m.id)?.setAttribute('data-y', String(m.y));
-    }
-    drawConnections(made);
-    const only = moves.length === 1 ? made.graph.nodes.find((n) => n.id === moves[0]!.id) : undefined;
-    if (only) made.options.onMove?.(only, moves[0]!.x, moves[0]!.y);
-    else made.options.onMoveMany?.(moves);
+    moveNodes(made, moves, false);
     event.preventDefault();
     event.stopPropagation();
   }, { capture: true });
@@ -1425,16 +1464,9 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       const el = made.nodes.get(id);
       const node = made.graph.nodes.find((n) => n.id === id);
       const at = nowAt(made, id);
-      return el && node && at && !made.options.locked?.(node) ? [{ id, x: at[0] + dx, y: at[1] + dy, el, node }] : [];
+      return el && node && at && !made.options.locked?.(node) ? [{ id, x: at[0] + dx, y: at[1] + dy }] : [];
     });
-    for (const m of moves) {
-      made.movedTo.set(m.id, [m.x, m.y]);
-      m.el.setAttribute('data-x', String(m.x));
-      m.el.setAttribute('data-y', String(m.y));
-    }
-    drawConnections(made);
-    if (moves.length === 1) made.options.onMove?.(moves[0]!.node, moves[0]!.x, moves[0]!.y);
-    else if (moves.length) made.options.onMoveMany?.(moves.map(({ id, x, y }) => ({ id, x, y })));
+    moveNodes(made, moves, false);
   });
   canvas.addEventListener('frame-release', (event) => {
     const frame = frameOf(event.target);
@@ -2825,19 +2857,26 @@ export function bindWorkflow(
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
     dragged([node.id], `move:${node.id}`);
   };
-  // Picked nodes moved by one drag: ONE step. A tie whose connections all join them goes with them, and so do the
-  // bends of a connection with both ends among them; the rest stay. TODO 752
-  const onMoveMany = (moves: { id: string; x: number; y: number }[]): void => {
+  // Nodes moved by one drag: ONE step, named by the nodes the reader holds, as the nodes it pulls and pushes change. A tie
+  // whose connections all join them goes with them, by the mean of their moves, and so do the bends between them. TODO 752
+  const onMoveMany = (moves: readonly { id: string; x: number; y: number }[], held?: readonly string[]): void => {
     const nodes = Object.fromEntries(moves.filter((m) => !m.id.startsWith('#')).map((m) => [m.id, { x: m.x, y: m.y }]));
-    const head = shown().nodes.find((n) => n.id === moves[0]?.id);
-    if (!head || !nodes[head.id] || Object.keys(nodes).length < 2) return;
-    const [dx, dy] = [nodes[head.id]!.x - head.x, nodes[head.id]!.y - head.y];
+    if (Object.keys(nodes).length < 2) return;
+    const was = new Map(shown().nodes.map((n) => [n.id, n]));
+    const shift = (id: string): [number, number] => {
+      const [from, to] = [was.get(id), nodes[id]];
+      return from && to ? [to.x - from.x, to.y - from.y] : [0, 0];
+    };
     const inside = (r: NodeConnection): boolean => socketOf(r.from).node in nodes && socketOf(r.to).node in nodes;
-    const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.connections.length && t.connections.every(inside)).map((t) => [t.id, { x: t.x + dx, y: t.y + dy }]));
-    const tag = `move:${Object.keys(nodes).sort().join(',')}`;
+    const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.connections.length && t.connections.every(inside)).map((t) => {
+      const ends = t.connections.flatMap((r) => [shift(socketOf(r.from).node), shift(socketOf(r.to).node)]);
+      const mean = (i: 0 | 1): number => ends.reduce((sum, e) => sum + e[i], 0) / ends.length;
+      return [t.id, { x: Math.round(t.x + mean(0)), y: Math.round(t.y + mean(1)) }];
+    }));
+    const tag = `move:${[...(held ?? Object.keys(nodes))].sort().join(',')}`;
     settling = pressing && shifted;
     dragging = pressing;
-    write(editWorkflow(shown(), { place: { nodes, ties, bends: { dx, dy } } }, K()), tag);
+    write(editWorkflow(shown(), { place: { nodes, ties, bends: 'follow' } }, K()), tag);
     dragged(Object.keys(nodes), tag);
   };
   // Arrange: every place, tie and bend in ONE edit. TODO 752

@@ -144,7 +144,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "key": "'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'resizeStages' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'",
+        "key": "'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'chainDrag' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'resizeStages' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'",
         "value": "SettingValue"
       }
     },
