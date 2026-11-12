@@ -39,6 +39,18 @@ Picked by sherpa-demos-67, to change if Will says: dummy data from a fixed seed,
 load, as the workflows are (D3); an Expert node takes a Question and gives an Answer (D4); a Runbook gains a Failed
 output beside Found, for its error Routes (D5); N-zo's reply may carry action buttons, through a tool (D6).
 
+- **D7. References in a prompt** (Will, 2026-11-12: "Perhaps we could use something like Handlebar syntax to refer to
+  them inline in text"). Picked: `{{kind:id}}`, for runbook, expert, coworker, workflow, store, field, customer,
+  action, model, and a Runbook's own input, output and step. Each one is read against what the app has, and one
+  that names nothing is said, never refused.
+
+**Built 2026-11-12** (Demos 062e0fa, 8d2f962, 8318d96, and 946 after them). Two changes from the plan:
+- D5 changed: a Runbook keeps one output, Found. A second output must be connected in every Runbook, and a Custom
+  Node's output takes one connection. So a Runbook's error Routes join in an Or and end in its own ticket (an Output
+  inside it), and its successes join in an Or into Found.
+- Stages inside a Custom Node needed sherpa-ui 947 (definitionOf dropped them). The grid that first loaded no rows
+  missed the reload after, now and then, in WebKit: TODO 948.
+
 ## The build: 945, Coworkers
 
 1. **Types** (Demos, `registerEntityType`):
