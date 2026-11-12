@@ -31,6 +31,10 @@ library ships event types too), D5 A (a loop warns and blocks its nodes; the gra
 
 ## The build
 
+**Part 2 built 2026-11-12** (steps 6–8 below), and three more from Will that day: the Start's line to each Source,
+drawn and never kept (he chose it over a kept connection); the Start in the first stage; and (950's) Unfurl leaves the
+Start and its lines out of the layout. The editor takes the shelf as `entities: () => […]`.
+
 **Part 1 built 2026-11-12** (steps 1–5 below): as planned, with three things measured on the way. The Start is placed
 right of its Triggers and down past any node in its way (it sat on a Result node first). Its kind is not in
 `NODE_KINDS`, as Group Input's is not: what draws and checks a top graph adds it (`withStartKind`). A body's Group Input

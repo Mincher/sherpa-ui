@@ -68,16 +68,19 @@ type WidthOf = (node: Staged['nodes'][number]) => number;
 /** Each node's height as drawn, by id: what a pushed node meets beside it (TODO 901). */
 type Heights = Readonly<Record<string, number>>;
 
+/** A Group Input or Output stands in no stage; the Start stands in the one it names, the first (plan 949). */
+const apart = (node: { id: string; stage?: string }): boolean => node.id.startsWith('#') && !node.stage;
+
 /** A workflow's stages: its own, or, with none, Stage 1 at the left of its nodes. */
 export function stagesOf(workflow: Staged): readonly NodeStage[] {
   if (workflow.stages?.length) return workflow.stages;
-  const xs = workflow.nodes.filter((n) => !n.id.startsWith('#')).map((n) => n.x);
+  const xs = workflow.nodes.filter((n) => !apart(n)).map((n) => n.x);
   return [{ ...DEFAULT_STAGE, x: xs.length ? Math.min(...xs) - STAGE_PAD : 0 }];
 }
 
 /** The stage a node is in, or none. With no stages written, every node is in Stage 1. */
 export function stageOf(workflow: Staged, node: Staged['nodes'][number]): string | undefined {
-  if (node.id.startsWith('#')) return undefined;
+  if (apart(node)) return undefined;
   if (!workflow.stages?.length) return DEFAULT_STAGE.id;
   return node.stage && workflow.stages.some((s) => s.id === node.stage) ? node.stage : undefined;
 }
@@ -279,8 +282,9 @@ export function stageFaults(workflow: Staged): string[] {
     seen.add(s.id);
     if (!s.label?.trim()) faults.push(`the stage "${s.id}" has no name`);
   }
+  // The Start is placed each time, never kept: its stage is no fault (plan 949).
   for (const n of workflow.nodes) {
-    if (n.stage && !seen.has(n.stage)) faults.push(`the node "${n.id}" is in the stage "${n.stage}", which is not there`);
+    if (n.stage && !n.id.startsWith('#') && !seen.has(n.stage)) faults.push(`the node "${n.id}" is in the stage "${n.stage}", which is not there`);
   }
   return faults;
 }

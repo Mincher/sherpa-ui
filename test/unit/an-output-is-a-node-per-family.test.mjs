@@ -20,11 +20,13 @@ const flow = (kind, values, extra = []) => ({
 });
 const node = (g, id) => g.nodes.find((n) => n.id === id);
 const row = (n, name) => n.rows.find((r) => r.name === name);
-const FAMILIES = ['notify', 'content', 'response', 'result', 'request'];
+const FAMILIES = ['notify', 'content', 'response', 'result', 'request', 'output-trigger'];
 
-test('five families, each a kind of its types, in the Output category', () => {
+test('six families, each a kind of its types, in the Output category', () => {
   assert.deepEqual(FAMILIES.map((k) => [NODE_KINDS[k].heading, Object.keys(NODE_KINDS[k].types)]), [
     ['Notification', ['notification']], ['Content', ['view', 'file']], ['Response', ['toast', 'alert', 'api']], ['Run result', ['result']], ['Request', []],
+    // What starts something when the run gets here (plan 949 D4 B): an event a Trigger hears.
+    ['Output Trigger', ['ui', 'status', 'message']],
   ]);
   for (const k of FAMILIES) assert.deepEqual([NODE_KINDS[k].category, NODE_KINDS[k].input], ['Output', 'any'], k);
   assert.equal(NODE_KINDS.output, undefined, 'one Output of many types is gone');
@@ -76,9 +78,9 @@ test('a type change in a family keeps the rows the types share, and the values o
 
 test('the panel lists the families that have a type, no Notify; a search finds a family by a type', () => {
   const output = paletteOf(NODE_KINDS).find((g) => g.category === 'Output').items;
-  assert.deepEqual(output.map((i) => i.id), ['notify', 'content', 'response', 'result']);
+  assert.deepEqual(output.map((i) => i.id), ['notify', 'content', 'response', 'result', 'output-trigger']);
   // A line let go from an output: each family takes it, once. One into an input: a Run result sends nothing, so not it.
-  assert.deepEqual(paletteFor(paletteOf(NODE_KINDS), 'value', 'out').filter((i) => FAMILIES.includes(i.id)).map((i) => i.id), ['notify', 'content', 'response', 'result']);
+  assert.deepEqual(paletteFor(paletteOf(NODE_KINDS), 'value', 'out').filter((i) => FAMILIES.includes(i.id)).map((i) => i.id), ['notify', 'content', 'response', 'result', 'output-trigger']);
   assert.deepEqual(paletteFor(paletteOf(NODE_KINDS), 'value', 'in').filter((i) => FAMILIES.includes(i.id)).map((i) => i.id), ['notify', 'content', 'response']);
   assert.deepEqual(paletteMatch(NODE_KINDS.content, 'file'), { type: 'file' });
   assert.deepEqual(paletteMatch(NODE_KINDS.result, 'Run result'), {});
@@ -100,7 +102,7 @@ test('an app adds types to a family: every check and editor reads them; Request 
   assert.deepEqual([Object.keys(nodeKinds().request.types), Object.keys(nodeKinds().content.types)], [['ticket'], ['view', 'file', 'artefact']]);
   assert.deepEqual(Object.keys(NODE_KINDS.request.types), [], 'the shipped registry is left as it is');
   assert.deepEqual(workflowFaults(kept), [], 'a check with no kinds given reads the registered');
-  assert.deepEqual(paletteOf(nodeKinds()).find((g) => g.category === 'Output').items.map((i) => i.id), ['notify', 'content', 'response', 'result', 'request']);
+  assert.deepEqual(paletteOf(nodeKinds()).find((g) => g.category === 'Output').items.map((i) => i.id), ['notify', 'content', 'response', 'result', 'request', 'output-trigger']);
   assert.equal(registerNodeTypes('content', { file: ticket }), undefined, 'a shipped type is not replaced');
   assert.equal(registerNodeTypes('source', { ticket }), undefined, 'no family');
   for (const back of backs) back();

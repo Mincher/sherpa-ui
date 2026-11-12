@@ -194,6 +194,9 @@ export {
 } from './core/data/node-stages.js';
 // The Start: a top graph's entry point, its Triggers joined to it (plan 949).
 export { START, START_KIND, hasStart, startFaults, unstarted, withStart, withStartKind, withoutStart } from './core/data/node-start.js';
+// The way out: what a graph's Output Triggers start, and the loops among them across the shelf (plan 949).
+export { OUTPUT_TRIGGER } from './core/data/node-kinds.js';
+export { startLoops, startsOf, type Graphed } from './core/data/output-triggers.js';
 export { copyNodes, pasteNodes, type NodeClip } from './core/data/node-clipboard.js';
 export { JUNCTION_FAMILIES, JUNCTION_KINDS, LANES_BY_FAMILY, LANE_GAP, LANE_PAD, fitLanes, laneBands, laneFaults, laneOf, type LaneBand, type NodeLane } from './core/data/node-lanes.js';
 export { packBands, type Band, type BandGroup, type BandRules } from './core/data/node-bands.js';

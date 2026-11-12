@@ -84,7 +84,7 @@ const headerSocket = (page: Page, heading: string, side: 'input' | 'output', n =
 test('the Start (949): always there, held still, its Triggers joined by a drag from their header; Save keeps the line, not the node', async ({ page }) => {
   const start = page.locator('#cv > sherpa-node[data-heading="Start"]');
   await expect(start).toHaveCount(1);
-  expect(await start.evaluate((n) => [n.getAttribute('data-category'), n.hasAttribute('data-input-socket'), n.hasAttribute('data-output-socket'), n.hasAttribute('data-locked')])).toEqual(['triggers', true, false, true]);
+  expect(await start.evaluate((n) => [n.getAttribute('data-category'), n.hasAttribute('data-input-socket'), n.hasAttribute('data-output-socket'), n.hasAttribute('data-locked')])).toEqual(['triggers', true, true, true]);
   // Not joined, each Trigger warns.
   await expect(page.locator('#cv > sherpa-node[data-heading="Trigger"][data-warning="Connect it to the Start"]')).toHaveCount(2);
   for (const n of [0, 1]) {

@@ -76,7 +76,7 @@ import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
-import { withStart, withStartKind, withoutStart } from '../data/node-start.js';
+import { START, withStart, withStartKind, withoutStart } from '../data/node-start.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { dragTo, startDrag, type ChainDrag, type ChainLink, type ChainNode } from '../data/node-chain.js';
 import { drawLanes } from './node-lanes-ui.js';
@@ -687,6 +687,16 @@ function drawConnections(drawn: Drawn): void {
     return [group];
   });
   drawn.lanes = lanes;
+  // The Start's line to each Source (Will, plan 949): drawn, never kept; with no hit line, no click lands on it.
+  const started = drawn.nodes.has(START) ? drawn.graph.nodes.filter((n) => n.started).flatMap((n) => {
+    const [from, to] = [socketPoint(drawn, START, 'output'), socketPoint(drawn, n.id, 'input')];
+    if (!from || !to) return [];
+    const path = document.createElementNS(SVG, 'path');
+    path.setAttribute('d', pathThrough([from, to], false));
+    path.dataset['type'] = 'boolean';
+    path.dataset['start'] = n.id;
+    return [path];
+  }) : [];
   const bars = drawn.ties.map((tie) => {
     const [x, y] = slotOf(drawn, tie, 0);
     const high = (tie.connections.length - 1) * TIE_GAP + 16;
@@ -704,9 +714,9 @@ function drawConnections(drawn: Drawn): void {
   });
   // The lines drawn last time, by what each is, take what changed: a node dragged moves its lines and leaves the rest.
   // TRAP T-a-redraw-keeps-what-it-can
-  const keyOf = (el: Element): string => `${el.localName}:${el.getAttribute('data-from')}>${el.getAttribute('data-to')}:${el.getAttribute('data-tie')}`;
+  const keyOf = (el: Element): string => `${el.localName}:${el.getAttribute('data-from')}>${el.getAttribute('data-to')}:${el.getAttribute('data-tie')}:${el.getAttribute('data-start')}`;
   const was = new Map([...drawn.lines.children].map((el) => [keyOf(el), el]));
-  const fresh = [...paths, ...bars, ...(drawn.selectedTie ? [shadowFilter(drawn.shadow)] : [])].map((el) => {
+  const fresh = [...started, ...paths, ...bars, ...(drawn.selectedTie ? [shadowFilter(drawn.shadow)] : [])].map((el) => {
     const old = was.get(keyOf(el));
     return old ? morph(old, el) : el;
   });
@@ -1538,7 +1548,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     // What reached it that it cannot use: the warning look, and its words in the header's tip. TRAP T-a-node-reads-null-from-what-it-cannot-use
     put(el, 'data-warning', node.warnings?.map((w) => w.words).join('\n'));
     // Its data in, of any type; out, its True where it forks.
-    put(el, 'data-input-socket', socketType(node, undefined, 'input'));
+    // A Source shows an input for the Start's drawn line, which takes no connection (plan 949).
+    put(el, 'data-input-socket', socketType(node, undefined, 'input') ?? (node.started ? 'boolean' : undefined));
     put(el, 'data-output-socket', socketType(node, undefined, 'output'));
     el.toggleAttribute('data-input-many', !!node.many);
     // A portal's look is its side's: In blue, Out orange (Will, TODO 907).
@@ -1749,7 +1760,10 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
   // Each node in its stage (TODO 950): with no stages written, the unfurl reads none.
   const named = new Map(staged?.nodes.map((n) => [n.id, n.stage]) ?? []);
   const inStages = nodes.map((n) => { const at = named.get(n.id); return at ? { ...n, stage: at } : n; });
-  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
+  // The Start is placed from its Triggers each time (plan 949): it takes no part in the layout, nor do its lines.
+  const laid = inStages.filter((n) => n.id !== START);
+  const lines = drawn.connections.filter((r) => r.to !== START && socketOf(r.from).node !== START);
+  const placed = unfurlNodes({ nodes: laid, connections: lines, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 

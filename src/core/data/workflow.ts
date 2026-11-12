@@ -28,7 +28,8 @@
  * - addCustomValue — A Value node made for a picklist row and connected to it: the row mirrors it, and keeps its own pick.
  */
 import { nodeTitle } from './node-title.js';
-import { inNewWords } from './entity.js';
+import { inNewWords, type Entity } from './entity.js';
+import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
@@ -43,7 +44,7 @@ import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands,
 import { addressRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowConnection, type PortalFlow } from './node-portals.js';
 import { unreachedValues, valuesAt, valuesIn, type MessageSource } from './node-messages.js';
 import { NEW_CHOICE } from './ai-catalog.js';
-import { startFaults, unstarted, withStart, withStartKind } from './node-start.js';
+import { hasStart, startFaults, unstarted, withStart, withStartKind } from './node-start.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -448,6 +449,9 @@ export interface WorkflowFacts {
   rowsFrom?: string;
   /** The stores a Source's Store row picks, by the names the app registered them under. */
   stores?: readonly string[];
+  /** The shelf's entities, read at each draw: what an entity row picks, and where an Output Trigger's loop is looked for
+   *  (plan 949). */
+  entities?: () => readonly Pick<Entity, 'type' | 'id' | 'label' | 'graph'>[];
 }
 
 type StoreFields = NonNullable<WorkflowFacts['fieldsOf']>[string];
@@ -599,6 +603,10 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   const { kept, live: connections, flow, kindOf } = flowOf(workflow, kinds);
   const flows = flow.connections;
   const names = portalNames(workflow.nodes);
+  // The shelf, once a draw; and each Output Trigger that would start a loop, blocked (plan 949 D5 A).
+  const shelf = facts.entities?.() ?? [];
+  const top = hasStart(workflow);
+  const loops = shelf.length ? startLoops({ id: workflow.id, ...(workflow.label ? { label: workflow.label } : {}), graph: workflow }, shelf, kinds) : new Map<string, string>();
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   // Where a connection comes from, in words: "Group Input › Status".
   const whence = (from: string): string => {
@@ -672,7 +680,10 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const ignored = fitting.length ? inputs.filter((i) => !fitting.includes(i)) : [];
     const takes = at && fits ? `${at.type.label} takes ${new Intl.ListFormat('en', { type: 'disjunction' }).format(fitWords(at.id))}` : '';
     // What each connection into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
-    const warnings: { row?: string; words: string }[] = unstarted(workflow, node) ? [{ words: 'Connect it to the Start' }] : [];
+    const ring = loops.get(node.id);
+    const warnings: { row?: string; words: string }[] = [
+      ...(unstarted(workflow, node) ? [{ words: 'Connect it to the Start' }] : []), ...(ring ? [{ words: `Blocked: it would start a loop, ${ring}` }] : []),
+    ];
     const readsAt = (to: string, input: InputNeeds): Map<NodeConnection, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
       // A steer into the header gates the node: it is no data, so it is not read, and nothing warns (TODO 939).
       // What its type ignores is not read, and warns nothing (TODO 940 D2).
@@ -723,6 +734,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         ...(provider ? { provider } : {}),
         ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(types ? { types } : {}), ...(known ? { values: known } : {}), ...count,
         ...(row.control === 'portal' ? { portals: names } : {}),
+        ...(row.control === 'entity' ? { entities: shelf.filter((e) => e.type === row.of).map((e) => ({ value: e.id, label: e.label })) } : {}),
       });
       // A Type row says the type's own value, and the line the type gives.
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
@@ -802,7 +814,10 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const titled = node.heading && node.heading !== family.heading;
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(titled ? { kindHeading: family.heading } : {}), ...(node.description ? { description: node.description } : {}) };
     const ignores = ignored.length ? { ignored: { from: ignored.map((i) => i.from), words: `Ignored: ${takes}` } } : {};
-    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores };
+    const blocked = ring ? { would: 'Blocked: it would start a loop' } : {};
+    // A Source the Start's drawn line reaches (plan 949).
+    const started = top && kind.rows.some((r) => r.control === 'store') ? { started: true as const } : {};
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores, ...blocked, ...started };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, connections) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));

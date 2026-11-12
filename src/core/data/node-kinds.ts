@@ -17,6 +17,7 @@
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
  * - TRIGGER_RUNS — The runtime's kind of each Trigger type, as a server reads it: on demand, scheduled or an event.
+ * - OUTPUT_TRIGGER — The Output Trigger family's kind id: an app adds its types to it, as a Run Coworker (plan 949).
  * - addTypes — A family with more types: an app's own beside the shipped ones, as a Ticket Output.
  * - registerNodeTypes — An app adds its own types to a shipped family, from its own file: an Output's Ticket.
  * - nodeKinds — Every kind the library ships, with the types apps added: what a check and an editor read.
@@ -101,11 +102,12 @@ export function truthy(value: unknown): boolean {
 /** The control a row draws: text, a message (text with values, `{node.name}`; plan 891), a number, a switch, tags (a
  *  list, D17) or a date and time; else the list a picklist reads — the row's own (`pick`), the fields, the field's values,
  *  units, a span's way (last or next), directions, presentations, Apply on, stores, scopes, a family's types, a graph's
- *  portal names, or the app's AI providers, a provider's models or its skills (`rowChoices`; plan 926). */
+ *  portal names, or the app's AI providers, a provider's models or its skills (`rowChoices`; plan 926), or the shelf's
+ *  entities of one type (`entity`; plan 949). */
 export type RowControl =
   | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
   | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal'
-  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint';
+  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -136,6 +138,8 @@ export interface RowKind {
   passes?: string;
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
+  /** An `entity` row's type: it picks one of the shelf's entities of it, as a Run Coworker's Coworker (plan 949). */
+  of?: string;
   /** A `message` row of one line, as a title or a file name: its editor has no toolbar and takes no line break. TODO 913 */
   singleLine?: true;
 }
@@ -255,6 +259,9 @@ const heard = (name: string, label: string, control: RowControl, gives: Given = 
   name, label, control, output: propertySocket(gives), gives, ...(choices ? { choices: choices.map(([value, words]) => ({ value, label: words })) } : {}),
 });
 
+/** A Task's statuses, as a Trigger hears them and an Output Trigger sets them. */
+const TASK_STATUSES = [['queued', 'Queued'], ['running', 'Running'], ['succeeded', 'Succeeded'], ['failed', 'Failed'], ['cancelled', 'Cancelled']] as const;
+
 /** What a Trigger listens for, each a type (Will, plan 941). The app's SERVER listens and starts the graph: the node holds
  *  only what it listens for, and Simulate says what it would hear. The app's catalog lists what can be heard. */
 const TRIGGERS: Readonly<Record<string, NodeType>> = {
@@ -272,7 +279,7 @@ const TRIGGERS: Readonly<Record<string, NodeType>> = {
   },
   status: {
     label: 'Task status', icon: 'clipboard-w-tick', help: 'A task changes status', would: 'Would start when the task changes',
-    rows: [heard('task', 'Task', 'task'), heard('status', 'Status', 'pick', 'value', [['queued', 'Queued'], ['running', 'Running'], ['succeeded', 'Succeeded'], ['failed', 'Failed'], ['cancelled', 'Cancelled']])],
+    rows: [heard('task', 'Task', 'task'), heard('status', 'Status', 'pick', 'value', TASK_STATUSES)],
   },
   message: {
     label: 'AI message', icon: 'chat', help: 'An agent says something', would: 'Would start when the agent says it',
@@ -339,6 +346,24 @@ const RESULT_TYPES: Readonly<Record<string, NodeType>> = {
   result: {
     label: 'Run result', would: 'Would end the run', icon: 'flag', help: 'End the run with a status and summary',
     rows: [pickRow('status', 'Status', [['succeeded', 'Succeeded'], ['skipped', 'Skipped'], ['failed', 'Failed'], ['deferred', 'Deferred']]), messageRow('summary', 'Summary')],
+  },
+};
+
+/** The Output Trigger family's kind id: an app adds its types to it, as a Run Coworker (plan 949). */
+export const OUTPUT_TRIGGER = 'output-trigger';
+
+/** What an Output Trigger starts (Will, plan 949 D4 B): an event a Trigger hears — each row named as the Trigger's row it
+ *  makes — and an app's own, by a row that picks an entity. A User action, a schedule and an API response come from
+ *  outside, so no Output makes them. */
+const OUTPUT_TRIGGER_TYPES: Readonly<Record<string, NodeType>> = {
+  ui: { label: 'UI event', icon: 'bolt', help: 'Fire an event in the app', would: 'Would fire the event', rows: [{ name: 'event', label: 'Event', control: 'event', input: 'value' }] },
+  status: {
+    label: 'Task status', icon: 'clipboard-w-tick', help: 'Set a task\'s status', would: 'Would set the task\'s status',
+    rows: [{ name: 'task', label: 'Task', control: 'task', input: 'value' }, pickRow('status', 'Status', TASK_STATUSES)],
+  },
+  message: {
+    label: 'AI message', icon: 'chat', help: 'Say something, as an agent', would: 'Would send the message',
+    rows: [{ name: 'from', label: 'From', control: 'agent', input: 'value' }, messageRow('says', 'Says')],
   },
 };
 
@@ -640,6 +665,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   response: outputFamily('Response', 'megaphone', 'Answer on the screen, or the call', RESPONSE_TYPES),
   result: outputFamily('Run result', 'flag', 'End the run with a status and summary', RESULT_TYPES),
   request: outputFamily('Request', 'export', 'Ask another system or agent', {}),
+  [OUTPUT_TRIGGER]: outputFamily('Output Trigger', 'bolt-in-circle', 'Start something when the run gets here', OUTPUT_TRIGGER_TYPES),
 };
 
 /** A category as the slug a node's, and its panel row's, `data-category` says: lower case, words joined by hyphens. TODO 840 */
@@ -872,6 +898,8 @@ export interface RowFacts {
   portals?: readonly string[];
   /** The provider joined into a Model node: what its Model row picks from (plan 926). */
   provider?: unknown;
+  /** The shelf's entities of an `entity` row's type: what it picks (plan 949). */
+  entities?: readonly RowChoice[];
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
@@ -903,8 +931,8 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (fixed) return [...fixed];
   if (row.control === 'type') return facts.types && [...facts.types];
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
-  // The app's catalog (plans 926, 941): one with none picked says so, as a pick does.
-  const listed = catalogChoices(row.control, facts.provider);
+  // The app's catalog (plans 926, 941), or the shelf's entities of a type (949): one with none picked says so, as a pick does.
+  const listed = row.control === 'entity' ? facts.entities : catalogChoices(row.control, facts.provider);
   if (listed) return [...(row.value != null && row.value !== '' ? [] : [{ value: '', label: 'Pick one' }]), ...listed];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;
@@ -1021,6 +1049,9 @@ export interface GraphNode {
   warnings?: readonly { row?: string; words: string }[];
   /** What it would do: an Output's, which Simulate says and never does. Plan 891 */
   would?: string;
+  /** A Source the Start's line reaches (Will, plan 949): its header shows an input for it, which takes no connection. The
+   *  line is drawn, never kept. */
+  started?: true;
   /** What comes in on its header that its type does not fit, by where from, and why: it is IGNORED there, its connector
    *  dashed; no warning, since another input fits (TODO 940 D2). */
   ignored?: { from: readonly string[]; words: string };

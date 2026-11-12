@@ -158,7 +158,8 @@ only when one is asked for. "View" is kept for saved views — `SavedView` and a
 | **Connector** | the line drawn for one Connection; its bends and zip ties are the line's | the canvas, `connector-*` |
 | **Route** | a full path along Connections, from a Start node to an End node | `routesOf`, `routeRead` |
 | **Start node** | where a Route starts: a Source or a Trigger; inside a Custom Node, its Group Input | `isStart` |
-| **Start** | a top graph's entry point, always there: each Trigger joins it by its header's True; it sends nothing, so it is no Start node (Will, 2026-11-12, plan 949) | `#start`, `withStart` |
+| **Start** | a top graph's entry point, always there, in its first stage: each Trigger joins it by its header's True; its line to each Source is drawn, never kept; it sends nothing, so it is no Start node (Will, 2026-11-12, plan 949) | `#start`, `withStart` |
+| **Output Trigger** | an Output that starts something when the run gets there: an event a Trigger hears, or an entity an app's type picks (Run Coworker). One in a loop across the shelf is blocked, and warns (plan 949) | `OUTPUT_TRIGGER`, `startLoops` |
 | **End node** | where a Route ends: an Output; inside a Custom Node, its Group Output | `isOutput` |
 | **Branch** | one of the Routes that leave a node with more than one outgoing Connection; a Check node starts two, Yes and No | `branchesAt` |
 

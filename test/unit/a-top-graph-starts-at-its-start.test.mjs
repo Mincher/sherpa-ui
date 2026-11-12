@@ -27,7 +27,8 @@ test('every top graph draws its Start, last, left of its nodes; it is never kept
   const g = flow([{ id: 's', kind: 'source', x: 0, y: 40, values: { store: 'users' } }]);
   const drawn = workflowGraph(g);
   assert.deepEqual([drawn.nodes.at(-1).id, drawn.nodes.at(-1).heading, start(drawn).x, start(drawn).y], [START, 'Start', -360, 0]);
-  assert.deepEqual([start(drawn).input, start(drawn).many, start(drawn).output, start(drawn).rows], ['boolean', true, undefined, []]);
+  // An output too, for its drawn lines to the Sources, which are never kept (Will).
+  assert.deepEqual([start(drawn).input, start(drawn).many, start(drawn).output, start(drawn).rows], ['boolean', true, 'boolean', []]);
   assert.equal(start(g), undefined, 'the workflow keeps no Start');
   assert.deepEqual(withoutStart(withStart(g, nodeWidth)), g);
   assert.equal(withStart(withStart(g, nodeWidth), nodeWidth).nodes.filter((n) => n.id === START).length, 1);

@@ -623,8 +623,31 @@ the line is kept as `{ "from": "<trigger>", "to": "#start" }`. The Start sends n
 A Trigger not joined to it warns. A Custom Node's body, or any graph with a Group Input
 or Output, has none: those enter it.
 
+The Start stands in the graph's first stage, and a line is drawn from it to each Source:
+the line is never kept, and nothing flows on it.
+
 An entity type your app registers may say `reusable: false` (a Coworker): the Nodes
 panel then lists none of its entities, and a graph that places one is refused.
+
+### Output Triggers
+
+An **Output Trigger** starts something when the run gets there. Its types: a UI event, a
+Task status or an AI message, which another graph's Trigger may hear. Add your own type to
+start one of your entities, with a row that picks it from the shelf:
+
+```js
+import { OUTPUT_TRIGGER, registerNodeTypes } from 'sherpa-ui/data';
+registerNodeTypes(OUTPUT_TRIGGER, {
+  coworker: { label: 'Run Coworker', icon: 'person', help: 'Run a Coworker', would: 'Would run the Coworker',
+    rows: [{ name: 'coworker', label: 'Coworker', control: 'entity', of: 'coworker' }] },
+});
+// The editor reads the shelf at each draw: what an entity row lists, and where a loop is looked for.
+bindWorkflow(canvas, workflow, { entities: () => shelf.list().map((e) => shelf.get(e.id)), ... });
+```
+
+A ring of them across the shelf (A starts B, B starts A; or A starts itself) is a loop:
+each Output Trigger in it is blocked, and warns "Blocked: it would start a loop, A › B ›
+A". The graph still saves. `startLoops` gives the same answer to a server or an agent.
 
 ### Moving nodes
 
