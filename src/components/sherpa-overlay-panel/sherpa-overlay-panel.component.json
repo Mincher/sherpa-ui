@@ -284,7 +284,7 @@
                     "attrs": {
                       "data-type": "icon",
                       "data-size": "sm",
-                      "data-icon-start": "ellipsis",
+                      "data-icon-start": "ellipsis-horizontal",
                       "aria-label": "More actions"
                     }
                   },

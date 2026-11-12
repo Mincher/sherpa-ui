@@ -135,7 +135,10 @@ test('a tag chip\'s Backspace takes the tag off, never the node', async ({ page 
   await header(page, 'Org permissions').first().click();
   await settle(page);
   await typeTag(page, 'billing');
-  // From the empty text, ArrowLeft goes to the last tag; Backspace there removes it.
+  // From the empty text, ArrowLeft goes to the last tag; Backspace there removes it. typeTag minimised the panel, and a
+  // hidden field keeps no focus in Firefox: open, and in the text.
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
+  await tagsField(page).locator('input.control:visible').focus();
   await page.keyboard.press('ArrowLeft');
   await page.keyboard.press('Backspace');
   await settle(page);

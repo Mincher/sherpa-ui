@@ -29,6 +29,8 @@
   inset: 0;
   --sherpa-panel-area-min-width: 16rem;
   --sherpa-panel-area-max-width: 33%;
+  /* The canvas keeps 8px all round: the app shell's 16px meets a Context's cards, and a canvas has none. */
+  --sherpa-panel-area-padding-block: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 /* ── The banners ──────────────────────────────────────────────────────── */

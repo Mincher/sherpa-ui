@@ -1545,8 +1545,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     put(el, 'data-category', portal ? `portal-${portal.side}` : categorySlug(node.category));
     put(el, 'data-scale-w', node.size ? String(node.size.w) : undefined);
     put(el, 'data-scale-h', node.size ? String(node.size.h) : undefined);
-    el.toggleAttribute('data-input-connected', graph.connections.some((r) => r.to === node.id));
-    el.toggleAttribute('data-output-connected', graph.connections.some((r) => r.from === node.id));
+    el.toggleAttribute('data-input-connected', connectionsOf(graph).connected.has(node.id));
+    el.toggleAttribute('data-output-connected', connectionsOf(graph).sent.has(node.id));
     el.toggleAttribute('data-collapsed', drawn.collapsed.has(node.id));
     // What its first field holds, in words: a collapsed node's name ends with it.
     const first = node.rows.find((r) => r.control && !r.beside);

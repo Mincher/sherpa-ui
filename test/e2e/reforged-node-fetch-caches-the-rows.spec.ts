@@ -165,7 +165,8 @@ test('Fetch is a task: both tools wait while it runs and its button says busy; a
 });
 
 test('a Source being fetched wears the tab on its top edge, right-aligned, with the play icon and "Fetching… 1s", and the active border; it is gone when the fetch ends', async ({ page }) => {
-  await start(page, { delay: 2700 });
+  // 3.4s: each second's words show a whole second, the last 1.4s, so a busy machine still reads them.
+  await start(page, { delay: 3400 });
   const source = page.locator('#cv > sherpa-node[data-heading="s"]');
   const idle = page.locator('#cv > sherpa-node[data-heading="f"]');
   const look = (n: ReturnType<Page['locator']>) => n.evaluate((el) => {
@@ -177,14 +178,15 @@ test('a Source being fetched wears the tab on its top edge, right-aligned, with 
       tabShown: getComputedStyle(tab).display !== 'none', icon: getComputedStyle(icon).display !== 'none', above: Math.round(t.bottom - a.top) + 0, right: Math.round(t.right - a.right) + 0, left: t.left > a.left };
   });
   await press(page, 'fetch');
-  await expect.poll(async () => (await look(source)).words).toBe('Fetching… 1s');
+  // Polled every 100ms, never by the default's growing steps, which can step over a second's words.
+  await expect.poll(async () => (await look(source)).words, { intervals: [100] }).toBe('Fetching… 1s');
   const on = await look(source);
   expect(on).toMatchObject({ step: 'running', tabShown: true, icon: true, above: 0, right: 0, left: true });
   // The tab wears the node's own border, and the border is the active one: not what an idle node has.
   expect(on.tabBorder).toBe(on.border);
   expect(on.border).not.toBe((await look(idle)).border);
   expect(await look(idle)).toMatchObject({ step: null, tabShown: false });
-  await expect.poll(async () => (await look(source)).words).toBe('Fetching… 2s');
+  await expect.poll(async () => (await look(source)).words, { intervals: [100] }).toBe('Fetching… 2s');
   // Ended: the running look is gone, and the light says what the simulation made of it, no play icon.
   await expect.poll(async () => (await look(source)).step, { timeout: 15_000 }).toBe('done');
   expect(await look(source)).toMatchObject({ icon: false, tabShown: true });

@@ -131,3 +131,23 @@ test('lane A › junction › lane A › junction is ONE junction lane: each sta
   assert.deepEqual(bands, ['values', 'junction:values', 'output', 'junction:output']);
 });
 
+
+test('2,000 nodes: the graph is read once, not once a node — the bands grow with the graph, not its square (890)', () => {
+  const kinds = ['source', 'field', 'value', 'condition', 'sort', 'group', 'math', 'output', 'text'];
+  const many = (n) => {
+    const nodes = Array.from({ length: n }, (_, i) => ({ id: `n${i}`, kind: kinds[i % kinds.length], x: (i % 40) * 360, y: Math.floor(i / 40) * 200 }));
+    const connections = nodes.slice(1).map((m, i) => ({ from: nodes[i].kind === 'source' ? `${nodes[i].id}/rows` : nodes[i].id, to: m.id }));
+    return { v: 3, id: 'big', nodes, connections, lanes: LANES_BY_FAMILY };
+  };
+  const time = (n) => {
+    const w = many(n);
+    const t = performance.now();
+    laneBands(w, H, NODE_KINDS);
+    return performance.now() - t;
+  };
+  time(500);
+  const [small, big] = [time(500), time(2000)];
+  // Four times the nodes; the square would cost sixteen times. Measured 2026-11-12: 147ms at 2,000 before.
+  assert.ok(big < 60, `${big.toFixed(1)}ms at 2,000 nodes`);
+  assert.ok(big < small * 10, `${small.toFixed(1)}ms at 500, ${big.toFixed(1)}ms at 2,000`);
+});

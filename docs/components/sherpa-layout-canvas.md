@@ -86,6 +86,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-display-mode-space-xs` | `.panels` | `--sherpa-panel-area-padding-block` |
 | `--sherpa-display-mode-size-2xl` | `.banner` | `margin-inline` |
 | `--sherpa-layer-content` | `.banner` | `z-index` |
 | `--sherpa-display-mode-space-xs` | `.banner` | `gap` |

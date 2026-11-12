@@ -83,56 +83,70 @@ function familyOf(node: Laned['nodes'][number], kinds: Kinds): string | undefine
  * lane: the junction under the one lane it joins, or just above the lowest of several (915). Else none.
  */
 export function laneOf(workflow: Laned, id: string, kinds: Kinds): string | undefined {
+  return bandsOf(workflow, kinds)(id);
+}
+
+/** `laneOf` for every node of one workflow: what it reads of the graph is read once, so a band costs its own walk. */
+function bandsOf(workflow: Laned, kinds: Kinds): (id: string) => string | undefined {
   const lanes = workflow.lanes ?? [];
-  if (!lanes.length || id.startsWith('#')) return undefined;
   const byId = new Map(workflow.nodes.map((n) => [n.id, n]));
+  const index = new Map<string, number>();
   const laneIndex = (nodeId: string): number => {
+    if (index.has(nodeId)) return index.get(nodeId)!;
     const node = byId.get(nodeId);
     const family = node && !JUNCTION_KINDS.includes(node.kind) && familyOf(node, kinds);
-    return family ? lanes.findIndex((l) => l.families.includes(family)) : -1;
+    const at = family ? lanes.findIndex((l) => l.families.includes(family)) : -1;
+    index.set(nodeId, at);
+    return at;
   };
+  // Who feeds each node, and whom it feeds; and the portals of each name.
+  const [into, outOf] = [new Map<string, string[]>(), new Map<string, string[]>()];
+  for (const r of workflow.connections ?? []) {
+    const [from, to] = [socketOf(r.from).node, socketOf(r.to).node];
+    into.set(to, [...(into.get(to) ?? []), from]);
+    outOf.set(from, [...(outOf.get(from) ?? []), to]);
+  }
+  const portals = Object.groupBy(workflow.nodes.filter((n) => n.kind === 'portal' && n.values?.['name']), (n) => String(n.values!['name']));
   // A portal's other end: every portal of its name; going against the flow, an Out's In only.
   const named = (nodeId: string, back: boolean): string[] => {
     const node = byId.get(nodeId);
     const name = node?.kind === 'portal' ? node.values?.['name'] : undefined;
     if (!name || (back && node!.values?.['type'] !== 'out')) return [];
-    return workflow.nodes.filter((n) => n.kind === 'portal' && n.id !== nodeId && n.values?.['name'] === name && (!back || n.values?.['type'] !== 'out')).map((n) => n.id);
+    return (portals[String(name)] ?? []).filter((n) => n.id !== nodeId && (!back || n.values?.['type'] !== 'out')).map((n) => n.id);
   };
-  const own = laneIndex(id);
-  if (own >= 0) return lanes[own]!.id;
-  const connections = workflow.connections ?? [];
-  // The lanes of the laned nodes it reaches through other junction nodes: going against the flow (`back`), or either way.
-  const reached = (back: boolean): Set<number> => {
-    const lanesMet = new Set<number>();
-    const seen = new Set([id]);
-    let ring = [id];
-    while (ring.length) {
-      const next: string[] = [];
-      for (const at of ring) {
-        const others = [...connections.map((r) => {
-          const [from, to] = [socketOf(r.from).node, socketOf(r.to).node];
-          return to === at ? from : !back && from === at ? to : undefined;
-        }), ...named(at, back)];
-        for (const other of others) {
-          if (!other || seen.has(other) || other.startsWith('#')) continue;
-          seen.add(other);
-          const lane = laneIndex(other);
-          if (lane >= 0) lanesMet.add(lane);
-          else next.push(other);
+  return (id) => {
+    if (!lanes.length || id.startsWith('#')) return undefined;
+    const own = laneIndex(id);
+    if (own >= 0) return lanes[own]!.id;
+    // The lanes of the laned nodes it reaches through other junction nodes: going against the flow (`back`), or either way.
+    const reached = (back: boolean): Set<number> => {
+      const lanesMet = new Set<number>();
+      const seen = new Set([id]);
+      let ring = [id];
+      while (ring.length) {
+        const next: string[] = [];
+        for (const at of ring) {
+          for (const other of [...(into.get(at) ?? []), ...(back ? [] : outOf.get(at) ?? []), ...named(at, back)]) {
+            if (seen.has(other) || other.startsWith('#')) continue;
+            seen.add(other);
+            const lane = laneIndex(other);
+            if (lane >= 0) lanesMet.add(lane);
+            else next.push(other);
+          }
         }
+        ring = next;
       }
-      ring = next;
-    }
-    return lanesMet;
+      return lanesMet;
+    };
+    // Under the lane its inputs come from, the lowest of them: junction nodes fed from one lane share its junction (TODO 928).
+    const fed = reached(true);
+    if (fed.size) return junctionOf(lanes[Math.max(...fed)]!);
+    // Fed from no lane: by every lane it joins — under the one, or just above the lowest of several (915).
+    const joined = reached(false);
+    if (!joined.size) return undefined;
+    const [top, bottom] = [Math.min(...joined), Math.max(...joined)];
+    return junctionOf(lanes[top === bottom ? top : bottom - 1]!);
   };
-  // Under the lane its inputs come from, the lowest of them: junction nodes fed from one lane share its junction (TODO 928).
-  const fed = reached(true);
-  if (fed.size) return junctionOf(lanes[Math.max(...fed)]!);
-  // Fed from no lane: by every lane it joins — under the one, or just above the lowest of several (915).
-  const joined = reached(false);
-  if (!joined.size) return undefined;
-  const [top, bottom] = [Math.min(...joined), Math.max(...joined)];
-  return junctionOf(lanes[top === bottom ? top : bottom - 1]!);
 }
 
 /**
@@ -142,12 +156,13 @@ export function laneOf(workflow: Laned, id: string, kinds: Kinds): string | unde
 export function laneBands(workflow: Laned, heightOf: HeightOf, kinds: Kinds): { bands: LaneBand[]; moves: Record<string, number> } {
   const lanes = workflow.lanes ?? [];
   if (!lanes.length) return { bands: [], moves: {} };
-  const where = new Map(workflow.nodes.map((n) => [n.id, laneOf(workflow, n.id, kinds)]));
+  const bandOf = bandsOf(workflow, kinds);
+  const where = Object.groupBy(workflow.nodes, (n) => bandOf(n.id) ?? '');
   const groups = lanes.flatMap((lane) => [lane.id, junctionOf(lane)]).map((id) => ({
     id,
     at: 0,
     skipEmpty: true,
-    members: workflow.nodes.filter((n) => where.get(n.id) === id).map((n) => ({ id: n.id, start: n.y, size: heightOf(n) })),
+    members: (where[id] ?? []).map((n) => ({ id: n.id, start: n.y, size: heightOf(n) })),
   }));
   const { bands, moves } = packBands(groups, { min: 0, pad: LANE_PAD, gap: LANE_GAP });
   const label = (id: string): string => lanes.find((l) => l.id === id)?.label ?? 'Junction';

@@ -526,6 +526,7 @@
     }
   ],
   "tokens": {
+    "panels.--sherpa-panel-area-padding-block": "{sherpa.display-mode-space-xs}",
     "banner.margin-inline": "{sherpa.display-mode-size-2xl}",
     "banner.z-index": "{sherpa.layer-content}",
     "banner.gap": "{sherpa.display-mode-space-xs}",
