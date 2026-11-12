@@ -25,6 +25,7 @@ import { report } from './report.js';
 import type { NodeKind } from './node-kinds.js';
 import type { NodeDefinition, NodeLibrary, NodeOutput, NodeSocket } from './node-library.js';
 import { categoryOf, entityKind, entityRefOf, ENTITY_SCHEMA, definitionOf, type Entity } from './entity.js';
+import { layoutParts } from './graph-layout.js';
 import type { WorkflowDefinition } from './workflow.js';
 
 /** The categories a reader may save a Custom Node or a graph in (plan 936 D3 A): Custom Nodes, Runbooks, and each one an
@@ -174,13 +175,9 @@ export function offeredKinds<K extends Pick<NodeKind, 'model' | 'category'>>(
 /** A workflow's graph as an entity of a type, ready to check and save. */
 export function entityOf(workflow: Pick<WorkflowDefinition, 'id' | 'label' | 'nodes' | 'connections' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>, type: string, settings?: Readonly<Record<string, unknown>>): Entity {
   // Its stages and swimlanes are kept as its frames are: a Save that dropped them lost them on the next load (TODO 933).
-  const { stages, lanes, beforeLanes } = workflow;
   return {
     $schema: ENTITY_SCHEMA, v: 2, type, id: workflow.id, label: workflow.label ?? workflow.id,
-    graph: {
-      nodes: workflow.nodes, ...(workflow.connections ? { connections: workflow.connections } : {}), ...(workflow.ties ? { ties: workflow.ties } : {}), ...(workflow.frames ? { frames: workflow.frames } : {}),
-      ...(stages ? { stages } : {}), ...(lanes ? { lanes } : {}), ...(beforeLanes ? { beforeLanes } : {}),
-    },
+    graph: { nodes: workflow.nodes, ...(workflow.connections ? { connections: workflow.connections } : {}), ...layoutParts(workflow) },
     ...(settings ? { settings } : {}),
   };
 }

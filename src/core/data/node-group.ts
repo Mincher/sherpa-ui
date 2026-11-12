@@ -17,7 +17,8 @@
 import { NODE_KINDS, nodeKinds, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeConnection, type SocketType } from './node-kinds.js';
 import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tidyTags } from './tags.js';
-import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { nodeWidth, tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { restage } from './node-stages.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import { PORTAL, addressOf, addressRow, cutNames, ungroupNames } from './node-portals.js';
 
@@ -167,12 +168,15 @@ export function groupNodes(
   const tied = (workflow.ties ?? []).filter((t) => t.connections.every((r) => inner.some((x) => x.from === r.from && x.to === r.to)));
   // A frame of picked nodes only goes inside; one partly picked keeps the rest. TODO 778
   const framed = (workflow.frames ?? []).filter((f) => f.nodes.every((n) => ids.has(n)));
+  // A stage a picked node is in goes inside with it, so the nodes that name it find it. TODO 947
+  const staged = (workflow.stages ?? []).filter((s) => nodes.some((n) => n.stage === s.id));
   const definition: NodeDefinition = {
     v: 1, label, ...(ask.description?.trim() ? { description: ask.description.trim() } : {}), ...(ask.category?.trim() ? { category: ask.category.trim() } : {}),
     ...(tidyTags(ask.tags).length ? { tags: tidyTags(ask.tags) } : {}),
     inputs, outputs, nodes: structuredClone(nodes), connections: inner,
     ...(tied.length ? { ties: structuredClone(tied) } : {}),
     ...(framed.length ? { frames: structuredClone(framed) } : {}),
+    ...(staged.length ? { stages: structuredClone(staged) } : {}),
   };
   const made: NodeLibrary = { ...library, nodes: { ...library.nodes, [id]: definition } };
   const x = Math.round(nodes.reduce((s, n) => s + n.x, 0) / nodes.length);
@@ -183,7 +187,8 @@ export function groupNodes(
   const { ties: _ties, frames: _frames, ...flat } = workflow;
   const stay = tiesAmong(workflow.ties, outer);
   const frames = framesAmong((workflow.frames ?? []).filter((f) => !framed.includes(f)), placed.map((n) => n.id));
-  const next: WorkflowDefinition = { ...flat, nodes: after, connections: outer, ...(stay.length ? { ties: stay } : {}), ...(frames.length ? { frames } : {}) };
+  // The use stands in the stage it is placed in, as a new node does.
+  const next: WorkflowDefinition = restage({ ...flat, nodes: after, connections: outer, ...(stay.length ? { ties: stay } : {}), ...(frames.length ? { frames } : {}) }, [use], nodeWidth);
   const was = new Set(workflowFaultsDeep(workflow, library, kinds, facts));
   const added = workflowFaultsDeep(next, made, kinds, facts).filter((f) => !was.has(f));
   if (added.length) return { fault: `the Custom Node would not pass the checks: ${added.join('; ')}` };

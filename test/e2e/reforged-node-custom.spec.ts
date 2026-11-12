@@ -205,6 +205,29 @@ test('Swimlanes inside a Custom Node: offered, drawn, kept by its definition, no
   await expect(toolbar).not.toHaveAttribute('data-can-lanes', '');
 });
 
+test('stages inside a Custom Node: drawn, added, kept by its definition, its nodes in them, no use stale (947)', async ({ page }) => {
+  await bind(page);
+  const stages = page.locator('#cv > sherpa-node-stage');
+  await ed(page, "ed.open('perm')");
+  await settle(page);
+  await expect(stages).toHaveCount(1);
+  await stages.nth(0).locator('.bar').hover();
+  await stages.nth(0).locator('.more').click();
+  await stages.nth(0).locator('.more sherpa-menu button[value="add-after"]').click();
+  await settle(page);
+  await expect(stages).toHaveCount(2);
+  // The definition keeps them, and its nodes name one it has: no fault.
+  expect(await ed(page, "ed.library().nodes['org-permissions'].stages.map((s) => s.label)")).toEqual(['Stage 1', 'Stage 2']);
+  expect(await ed(page, "ed.library().nodes['org-permissions'].nodes.map((n) => n.stage)")).toEqual(['stage-1', 'stage-1']);
+  // A stage is how the body is laid out, not what it does: no use goes stale.
+  await ed(page, 'ed.back()');
+  await settle(page);
+  expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"][data-caption]').count()).toBe(0);
+  await ed(page, "ed.open('perm')");
+  await settle(page);
+  await expect(stages).toHaveCount(2);
+});
+
 /** An edit inside, so both uses are stale; the first use picked. */
 async function stale(page: Page): Promise<void> {
   await bind(page);

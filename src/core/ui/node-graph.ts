@@ -2718,12 +2718,12 @@ export function bindWorkflow(
       refreshPanel();
     });
   };
-  // — Stages (the top workflow's): a dragged node stays in its stage, which grows with it as it goes, the rest a flex row
+  // — Stages (of the graph shown, a Custom Node's too: TODO 947): a dragged node stays in its stage, which grows with it as it goes, the rest a flex row
   // after it. With SHIFT held it leaves its stage: the stages hold still as they stood, and let go, it joins the stage it
   // stands in, or none. Will, 2026-11-10
   // Its callbacks are read when a stage is pressed, or the canvas drawn: by then each is set.
   const stages: Stages = bindStages(canvas, {
-    workflow: () => (path.length ? null : shown()),
+    workflow: () => shown(),
     write: (next) => write(next),
     readOnly: () => readOnly(),
     dialog: stageDialog ?? null,
@@ -2750,7 +2750,7 @@ export function bindWorkflow(
     dragging = false;
     const ids = [...moved];
     moved.clear();
-    if (path.length || readOnly()) return;
+    if (readOnly()) return;
     // Shift held: it joins the stage it was let go in — a frame's nodes as ONE. Else it is where its stage still is.
     const framed = (shown().frames ?? []).some((f) => f.nodes.length === ids.length && f.nodes.every((id) => ids.includes(id)));
     write(ids.length && shiftDrag ? editWorkflow(shown(), { restage: ids, together: framed }, K()) : shown(), movedTag);
@@ -2792,12 +2792,12 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
     } else {
       const id = path.at(-1)!.kind;
-      const laid = settling ? next : fitLanes(next, heightOf, K());
+      const laid = settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K());
       // `#in` and `#out` are placed from the body each time, so a definition keeps neither, nor their places before lanes.
       const before = laid.beforeLanes && Object.fromEntries(Object.entries(laid.beforeLanes).filter(([at]) => !at.startsWith('#')));
       setLib(editDefinition(lib, id, {
         nodes: laid.nodes.filter((n) => !n.id.startsWith('#')), connections: laid.connections ?? [], ties: laid.ties ?? [], frames: laid.frames ?? [],
-        lanes: laid.lanes ?? [], ...(before ? { beforeLanes: before } : {}),
+        stages: laid.stages ?? [], lanes: laid.lanes ?? [], ...(before ? { beforeLanes: before } : {}),
       }), [id]);
     }
     // Mid-drag, only what moves is drawn: a whole draw a pointer move cost 220ms on 45 nodes (2026-11-10). The drag's end draws all.
@@ -3041,7 +3041,7 @@ export function bindWorkflow(
         join(shown(), context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket });
       }
       // In the stage under the point it is let go at: its left edge is there, so its middle may be in the next (923).
-      if (!path.length) write(editWorkflow(shown(), { restage: [id], by: at.x }, K()));
+      write(editWorkflow(shown(), { restage: [id], by: at.x }, K()));
     });
     const node = graph.nodes.find((n) => n.id === id);
     if (!node) return;
@@ -3358,7 +3358,7 @@ export function bindWorkflow(
     edit(() => {
       const made = pasteNodes(shown(), have, { ...by, connections }, K());
       ids = made.ids;
-      take(path.length ? made.workflow : editWorkflow(made.workflow, { restage: made.ids }, K()));
+      take(editWorkflow(made.workflow, { restage: made.ids }, K()));
     });
     ids = ids.filter((id) => shown().nodes.some((n) => n.id === id));
     if (!ids.length) return;

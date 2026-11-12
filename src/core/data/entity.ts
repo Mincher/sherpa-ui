@@ -24,6 +24,7 @@ import type { NodeConnection, NodeTie } from './node-kinds.js';
 import type { NodeDefinition, NodeOutput, NodeSocket } from './node-library.js';
 import type { WorkflowDefinition, WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
+import { layoutParts } from './graph-layout.js';
 
 /** The id of the envelope's schema, for the `$schema` of a file. */
 export const ENTITY_SCHEMA = 'https://sherpa-ui.dev/schemas/entity.v2.json';
@@ -140,10 +141,7 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
     ...(definition.description ? { description: definition.description } : {}),
     ...(definition.tags?.length ? { tags: definition.tags } : {}),
     ...(type !== 'node' && definition.category ? { category: definition.category } : {}),
-    graph: {
-      nodes: definition.nodes, ...(definition.connections ? { connections: definition.connections } : {}), ...(definition.ties ? { ties: definition.ties } : {}), ...(definition.frames ? { frames: definition.frames } : {}),
-      ...(definition.lanes?.length ? { lanes: definition.lanes } : {}), ...(definition.beforeLanes ? { beforeLanes: definition.beforeLanes } : {}),
-    },
+    graph: { nodes: definition.nodes, ...(definition.connections ? { connections: definition.connections } : {}), ...layoutParts(definition) },
     ...(settings ? { settings } : {}),
     ...(definition.preset ? { origin: 'preset' as const } : {}),
   };
@@ -161,9 +159,7 @@ export function definitionOf(entity: Entity): NodeDefinition {
   return {
     v: 1, label: entity.label,
     inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [],
-    nodes: entity.graph.nodes, ...(entity.graph.connections ? { connections: entity.graph.connections } : {}), ...(entity.graph.ties ? { ties: entity.graph.ties } : {}),
-    ...(entity.graph.frames ? { frames: entity.graph.frames } : {}),
-    ...(entity.graph.lanes?.length ? { lanes: entity.graph.lanes } : {}), ...(entity.graph.beforeLanes ? { beforeLanes: entity.graph.beforeLanes } : {}),
+    nodes: entity.graph.nodes, ...(entity.graph.connections ? { connections: entity.graph.connections } : {}), ...layoutParts(entity.graph),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),
     ...(categoryOf(entity) ? { category: categoryOf(entity)! } : {}),

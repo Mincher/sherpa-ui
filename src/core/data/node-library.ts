@@ -38,6 +38,7 @@ import { report } from './report.js';
 import { NODE_KINDS, nodeKinds, rowOf, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
+import { layoutParts } from './graph-layout.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -88,6 +89,8 @@ export interface NodeDefinition extends NodeSnapshot {
   ties?: readonly NodeTie[];
   /** Frames in the body: no part of its version or its diff, as a tie is. TODO 778 */
   frames?: readonly NodeFrame[];
+  /** Stages in the body: its nodes name them (TODO 947). No part of its version, as a frame is. */
+  stages?: WorkflowDefinition['stages'];
   /** Swimlanes in the body, and each node's place before they were on: no part of its version, as a frame is. TODO 938 */
   lanes?: WorkflowDefinition['lanes'];
   beforeLanes?: WorkflowDefinition['beforeLanes'];
@@ -130,8 +133,8 @@ function stable(value: unknown): string {
 /** Whether an id is a kind that is not a Custom Node: a use could not tell it apart. */
 const shipped = (kinds: Kinds, id: string): boolean => !!kinds[id] && kinds[id]!.model !== 'graph';
 
-/** A node as a version reads it: where it sits is no change. */
-const unplaced = ({ x: _x, y: _y, ...rest }: WorkflowNode): Omit<WorkflowNode, 'x' | 'y'> => rest;
+/** A node as a version reads it: where it sits, and the stage it stands in, are no change. */
+const unplaced = ({ x: _x, y: _y, stage: _stage, ...rest }: WorkflowNode): Omit<WorkflowNode, 'x' | 'y' | 'stage'> => rest;
 
 /** A 53-bit text hash (cyrb53): a version, not a secret. */
 function hashOf(text: string): string {
@@ -220,10 +223,7 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
         { id: '#in', kind: GROUP_INPUT, x: Math.min(0, ...xs) - 360, y: 0 }, ...definition.nodes,
         { id: '#out', kind: GROUP_OUTPUT, x: Math.max(0, ...xs) + 360, y: 0 },
       ],
-      connections: definition.connections ?? [],
-      ...(definition.ties?.length ? { ties: definition.ties } : {}),
-      ...(definition.frames?.length ? { frames: definition.frames } : {}),
-      ...(definition.lanes?.length ? { lanes: definition.lanes, ...(definition.beforeLanes ? { beforeLanes: definition.beforeLanes } : {}) } : {}),
+      connections: definition.connections ?? [], ...layoutParts(definition),
     },
   };
 }
@@ -429,14 +429,13 @@ export function updateAll(workflow: WorkflowDefinition, kind: string, library: N
 /** The library after one change to a definition. A preset's is refused, and so is one that is not
  *  there: the library given, untouched. */
 export function editDefinition(
-  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'connections' | 'ties' | 'frames' | 'lanes' | 'beforeLanes'>>,
+  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'connections' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>>,
 ): NodeLibrary {
   const was = library.nodes[id];
   if (!was || was.preset) return library;
-  // No lanes is Swimlanes off: no empty list is kept, nor the places they would put back.
-  const { lanes, beforeLanes, ...rest } = { ...was, ...change };
-  const laid = lanes?.length ? { lanes, ...(beforeLanes ? { beforeLanes } : {}) } : {};
-  return { ...library, nodes: { ...library.nodes, [id]: { ...rest, ...laid } } };
+  // No lanes is Swimlanes off, no stages the one Stage 1: no empty list is kept, nor the places lanes would put back.
+  const { ties, frames, stages, lanes, beforeLanes, ...rest } = { ...was, ...change };
+  return { ...library, nodes: { ...library.nodes, [id]: { ...rest, ...layoutParts({ ties, frames, stages, lanes, beforeLanes }) } } };
 }
 
 /** The library with a definition's tags set, tidied: every use shares them, and no use goes stale. A preset's
