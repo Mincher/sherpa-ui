@@ -15,11 +15,11 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
-  assert.deepEqual(palette.map((g) => g.category), ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['source'], [], ['value', 'field'], ['math'], ['condition', 'check'], ['provider', 'model', 'prompt', 'runbook', 'skill'], ['time'], ['sort', 'group'], ['text', 'tag', 'portal'], ['output', 'output']]);
-  // Nineteen items, in the plan's order: the Portal is a Utils (TODO 779); Notify, an Output of type Notification (plan 891);
-  // the AI nodes after Logic (plan 926); the Check after Condition (plan 944).
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Provider', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output', 'Notify']);
+  assert.deepEqual(palette.map((g) => g.category), ['Triggers', 'Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['trigger'], ['source'], [], ['value', 'field'], ['math'], ['condition', 'check'], ['provider', 'model', 'prompt', 'runbook', 'skill'], ['time'], ['sort', 'group'], ['text', 'tag', 'portal'], ['output', 'output']]);
+  // Twenty items, in the plan's order: the Trigger first, in Triggers (plan 941 D1 B); the Portal is a Utils (TODO 779); Notify, an
+  // Output of type Notification (plan 891); the AI nodes after Logic (plan 926); the Check after Condition (plan 944).
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Provider', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Output', 'Notify']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -51,7 +51,7 @@ test('a search finds a family by its name, or by a type\'s: "round" finds Math, 
   // Math's Count counts rows (plan 944).
   assert.deepEqual(found('count'), [['math', 'count']]);
   assert.deepEqual(found('zzz'), []);
-  assert.equal(found('').length, 18, 'nothing typed finds all');
+  assert.equal(found('').length, 19, 'nothing typed finds all');
 });
 
 test("an app's own kind goes after the known categories; one with none is Other", () => {

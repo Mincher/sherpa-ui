@@ -45,6 +45,10 @@ it to illustrate that they can be used to trigger a Coworker's graph execution."
 
 **Will, 2026-11-11: D1 B (a new Triggers category), D2 B (many Triggers; any one starts the graph).**
 
+**Built 2026-11-12.** One change from step 2: since plan 944 a header sends a boolean or nothing, so a Trigger's header
+sends nothing; what it heard leaves by its rows, and a Route starts there by them. The AI catalog holds the Trigger
+lists too, read by one `catalogChoices`.
+
 - **D1. Where the Trigger sits in the Nodes panel.**
   - **A (recommended):** in **Sources**, beside the Source, as Figma's "Event" does. Both start a Route.
   - **B:** a new **Triggers** category, first in the list.

@@ -157,7 +157,7 @@ only when one is asked for. "View" is kept for saved views — `SavedView` and a
 | **Connection** | one link from a node's socket to a node, or to one of its sockets | a graph's `connections`, `NodeConnection` |
 | **Connector** | the line drawn for one Connection; its bends and zip ties are the line's | the canvas, `connector-*` |
 | **Route** | a full path along Connections, from a Start node to an End node | `routesOf`, `routeRead` |
-| **Start node** | where a Route starts: a Source; inside a Custom Node, its Group Input | `isSource` |
+| **Start node** | where a Route starts: a Source or a Trigger; inside a Custom Node, its Group Input | `isStart` |
 | **End node** | where a Route ends: an Output; inside a Custom Node, its Group Output | `isOutput` |
 | **Branch** | one of the Routes that leave a node with more than one outgoing Connection; a Check node starts two, Yes and No | `branchesAt` |
 

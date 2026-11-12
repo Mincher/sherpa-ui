@@ -8,9 +8,10 @@
  * Map:
  * - RouteFacts — What reading a Route needs beyond its graph: the graph inside a use of a Custom Node, drawn.
  * - RouteRead — Whether a graph has a Route, the Sources that reach an Output, and why not, in words.
- * - isSource — Whether a node is a Source: it names a store. A Start node.
+ * - isSource — Whether a node is a Source: it names a store.
+ * - isStart — Whether a node is a Start node, where a Route starts: a Source, or a Trigger.
  * - isOutput — Whether a node is an Output: an End node.
- * - routeRead — The Sources that reach an Output, or the words that say what is missing.
+ * - routeRead — The Start nodes that reach an Output, or the words that say what is missing.
  * - routesOf — Each Route of a graph, Start node to End node, as the ids of its nodes.
  * - branchesAt — The Branches at a node: the Routes through it, by the node each goes to next.
  */
@@ -33,8 +34,11 @@ export interface RouteRead {
   why?: string;
 }
 
-/** Whether a node is a Source: it names a store. A Start node. */
+/** Whether a node is a Source: it names a store. */
 export const isSource = (node: GraphNode): boolean => node.rows.some((r) => r.control === 'store');
+
+/** Whether a node is a Start node, where a Route starts: a Source, or a Trigger (plan 941). */
+export const isStart = (node: GraphNode): boolean => isSource(node) || node.kind === 'trigger';
 
 /** Whether a node is an Output: an End node. */
 export const isOutput = (node: GraphNode): boolean => node.category === 'Output';
@@ -60,14 +64,17 @@ function reach(graph: DrawnGraph, start: string, facts: RouteFacts, depth: numbe
   return seen;
 }
 
-/** The Sources that reach an Output, or the words that say what is missing: no Source, no Output, or no Route. */
+/** The Start nodes that reach an Output, or the words that say what is missing: no Start node, no Output, or no Route.
+ *  Its `sources` and `unjoined` are Sources alone: what Fetch reads. */
 export function routeRead(graph: DrawnGraph, facts: RouteFacts = {}): RouteRead {
-  const sources = graph.nodes.filter(isSource).map((n) => n.id);
+  const starts = graph.nodes.filter(isStart);
+  const sources = starts.filter(isSource).map((n) => n.id);
   const outputs = new Set(graph.nodes.filter(isOutput).map((n) => n.id));
-  if (!sources.length) return { ok: false, sources: [], unjoined: [], why: 'Add a Source first' };
+  if (!starts.length) return { ok: false, sources: [], unjoined: [], why: 'Add a Source or a Trigger first' };
   if (!outputs.size) return { ok: false, sources: [], unjoined: sources, why: 'Add an Output first' };
-  const joined = sources.filter((id) => [...reach(graph, id, facts, 0)].some((n) => outputs.has(n)));
-  if (!joined.length) return { ok: false, sources: [], unjoined: sources, why: 'Join a Source to an Output' };
+  const joins = (id: string): boolean => [...reach(graph, id, facts, 0)].some((n) => outputs.has(n));
+  if (!starts.some((n) => joins(n.id))) return { ok: false, sources: [], unjoined: sources, why: 'Join a Source or a Trigger to an Output' };
+  const joined = sources.filter(joins);
   return { ok: true, sources: joined, unjoined: sources.filter((id) => !joined.includes(id)) };
 }
 
@@ -83,13 +90,13 @@ function onwardOf(graph: DrawnGraph): Map<string, string[]> {
   return onward;
 }
 
-/** Each Route of a graph, Start node to End node, as the ids of its nodes: from each Source (and a Custom Node's
+/** Each Route of a graph, Start node to End node, as the ids of its nodes: from each Source and Trigger (and a Custom Node's
  *  Group Input, `#in`) to each Output (and its Group Output, `#out`) it reaches. A Value or a Field that nothing
  *  comes into feeds a Route; it starts none. A loop is walked once. At most `cap` Routes, the first found. */
 export function routesOf(graph: DrawnGraph, cap = 200): string[][] {
   const onward = onwardOf(graph);
   const ids = new Set(graph.nodes.map((n) => n.id));
-  const starts = [...graph.nodes.filter(isSource).map((n) => n.id), ...(ids.has('#in') ? ['#in'] : [])];
+  const starts = [...graph.nodes.filter(isStart).map((n) => n.id), ...(ids.has('#in') ? ['#in'] : [])];
   const ends = new Set([...graph.nodes.filter(isOutput).map((n) => n.id), '#out']);
   const routes: string[][] = [];
   const walk = (route: string[]): void => {

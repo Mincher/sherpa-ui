@@ -27,11 +27,11 @@ test('a Source joined to an Output is a Route; its Source is named', () => {
 });
 
 test('no Source, no Output, or no Route: Fetch and Simulate say which', () => {
-  assert.equal(routeRead(graphOf([OUT], [])).why, 'Add a Source first');
+  assert.equal(routeRead(graphOf([OUT], [])).why, 'Add a Source or a Trigger first');
   assert.equal(routeRead(graphOf([SRC], [])).why, 'Add an Output first');
   const cut = routeRead(graphOf([SRC, FIELD, OUT], [R('s/rows', 'f')]));
   assert.equal(cut.ok, false);
-  assert.equal(cut.why, 'Join a Source to an Output');
+  assert.equal(cut.why, 'Join a Source or a Trigger to an Output');
   assert.deepEqual(cut.unjoined, ['s']);
 });
 

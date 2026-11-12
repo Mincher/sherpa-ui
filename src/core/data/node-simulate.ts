@@ -546,11 +546,13 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (node.kind === 'sort' || node.kind === 'group') return arranged(node);
     // A Provider or a Model sends its pick (plan 926).
     if (node.kind === 'provider' || node.kind === 'model') return { kind: 'value', value: node.rows.find((r) => r.name === row)?.value };
-    // An Output, or an AI node, acts outside the graph, so it fires nothing: each output sends a stand-in, by what it gives,
+    // An Output, an AI node or a Trigger acts outside the graph, so it fires nothing: each output sends a stand-in, by what it gives,
     // so what it feeds runs too (plans 891, 926). A True/false AI node's True is 1.
     if (node.kind === 'output' || node.would) {
       if (row === 'true') return { kind: 'value', value: 1 };
       const out = node.rows.find((r) => r.name === row);
+      // A row the reader set sends what it holds: a Trigger's Endpoint, its own (plan 941).
+      if (out?.control && out.value != null && out.value !== '') return { kind: 'value', value: out.value };
       if (out?.gives === 'rows') return { kind: 'rows', rows: [] };
       if (out?.gives === 'number') return { kind: 'value', value: 0 };
       if (out?.gives === 'list') return { kind: 'value', value: [] };

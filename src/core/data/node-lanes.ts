@@ -41,7 +41,7 @@ export interface LaneBand {
 
 /** The lanes a workflow is given when they are turned on: one for each family of nodes, top to bottom. */
 export const LANES_BY_FAMILY: readonly NodeLane[] = [
-  { id: 'data', label: 'Data', families: ['sources', 'status', 'presets', 'saved-filters', 'collections'] },
+  { id: 'data', label: 'Data', families: ['sources', 'triggers', 'status', 'presets', 'saved-filters', 'collections'] },
   { id: 'values', label: 'Values', families: ['variables', 'math', 'time', 'utils'] },
   { id: 'organise', label: 'Organise', families: ['organise'] },
   { id: 'agentic', label: 'Agentic', families: ['ai'] },

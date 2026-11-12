@@ -578,6 +578,31 @@ registerAiCatalog({
 - Simulate asks no model. A node says what it would do, and each answer is a
   stand-in by its shape: True 1, words, 0, no rows, an empty list.
 
+### Triggers
+
+A **Trigger** is a Start node, first in the Nodes panel, in its own Triggers category.
+Nothing comes into it. Its Type, **Listens for**, says what starts the graph: a User
+action, a UI event, a Task schedule, a Task status, an AI message or an API response.
+What it heard leaves by its rows (the Task, the Status, the Response…). A graph may hold
+several: any one of them starts it. Your SERVER listens, not Sherpa: the definition
+holds the Trigger's type and rows, and `TRIGGER_RUNS` maps each type to the runtime's
+kind (`on_demand`, `scheduled` or `event`). Simulate says what it would hear ("Would
+start when the task changes"); a row you set sends what it holds, the rest a stand-in.
+
+Tell the Triggers what can be heard, once, at load, as for the AI nodes:
+
+```js
+import { registerTriggerCatalog } from 'sherpa-ui/data';
+registerTriggerCatalog({
+  events: { saved: { label: 'Record saved' } },
+  tasks: { patch: { label: 'Patch run', help: 'The nightly patch' } },
+  agents: { triage: { label: 'Triage agent' } },
+  endpoints: { tickets: { label: '/tickets' } },
+});
+```
+
+A list you register is a pick; one you do not is typed text.
+
 ### Moving nodes
 
 A node moves by a drag on its header, or by the arrow keys there; ⌘ or Ctrl and an

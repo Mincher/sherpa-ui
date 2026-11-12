@@ -16,6 +16,7 @@
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
+ * - TRIGGER_RUNS — The runtime's kind of each Trigger type, as a server reads it: on demand, scheduled or an event.
  * - addTypes — A family with more types: an app's own beside the shipped ones, as a Ticket Output.
  * - registerNodeTypes — An app adds its own types to a shipped family, from its own file: an Output's Ticket.
  * - nodeKinds — Every kind the library ships, with the types apps added: what a check and an editor read.
@@ -70,7 +71,7 @@ import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
 import type { Given, Need } from './node-input.js';
 import { nextPortalName } from './node-portals.js';
-import { modelChoices, providerChoices, runbookChoices, skillChoices } from './ai-catalog.js';
+import { catalogChoices } from './ai-catalog.js';
 import { report } from './report.js';
 
 /** What a socket carries: one value; an object — a record, rows, or a list, for an array is
@@ -104,7 +105,7 @@ export function truthy(value: unknown): boolean {
 export type RowControl =
   | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
   | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal'
-  | 'provider' | 'model' | 'runbook' | 'skill';
+  | 'provider' | 'model' | 'runbook' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -252,6 +253,45 @@ const expects = (rows: readonly RowKind[], would: string): Readonly<Record<strin
   data: { label: 'Data', help: 'Rows of data', rows: [...rows, propertyRow('answer', 'Answer', 'rows')], would },
   list: { label: 'List', help: 'A list of values', rows: [...rows, propertyRow('answer', 'Answer', 'list')], would },
 });
+
+/** A row a Trigger listens by, which sends on what it heard: its pick, or its words (plan 941). It takes nothing in. */
+const heard = (name: string, label: string, control: RowControl, gives: Given = 'value', choices?: readonly (readonly [string, string])[]): RowKind => ({
+  name, label, control, output: propertySocket(gives), gives, ...(choices ? { choices: choices.map(([value, words]) => ({ value, label: words })) } : {}),
+});
+
+/** What a Trigger listens for, each a type (Will, plan 941). The app's SERVER listens and starts the graph: the node holds
+ *  only what it listens for, and Simulate says what it would hear. The app's catalog lists what can be heard. */
+const TRIGGERS: Readonly<Record<string, NodeType>> = {
+  action: {
+    label: 'User action', icon: 'person', help: 'A person starts it', would: 'Would start when a person asks',
+    rows: [{ name: 'label', label: 'Label', control: 'text' }, propertyRow('by', 'Asked by', 'value')],
+  },
+  ui: {
+    label: 'UI event', icon: 'bolt', help: 'Something happens in the app', would: 'Would start on the event',
+    rows: [heard('event', 'Event', 'event'), propertyRow('at', 'At', 'value')],
+  },
+  schedule: {
+    label: 'Task schedule', icon: 'calendar-clock', help: 'At a time, or again and again', would: 'Would start on its schedule',
+    rows: [pickRow('every', 'Every', [['once', 'Once'], ['hour', 'Hour'], ['day', 'Day'], ['week', 'Week'], ['month', 'Month']]), heard('at', 'At', 'text')],
+  },
+  status: {
+    label: 'Task status', icon: 'clipboard-w-tick', help: 'A task changes status', would: 'Would start when the task changes',
+    rows: [heard('task', 'Task', 'task'), heard('status', 'Status', 'pick', 'value', [['queued', 'Queued'], ['running', 'Running'], ['succeeded', 'Succeeded'], ['failed', 'Failed'], ['cancelled', 'Cancelled']])],
+  },
+  message: {
+    label: 'AI message', icon: 'chat', help: 'An agent says something', would: 'Would start when the agent says it',
+    rows: [heard('from', 'From', 'agent'), { name: 'says', label: 'Says', control: 'text' }, propertyRow('message', 'Message', 'value')],
+  },
+  api: {
+    label: 'API response', icon: 'transmitter-w-signal', help: 'An API answers', would: 'Would start on the response',
+    rows: [heard('endpoint', 'Endpoint', 'endpoint'), heard('code', 'Status code', 'number', 'number'), propertyRow('response', 'Response', 'object')],
+  },
+};
+
+/** The runtime's kind of each Trigger type, as a server reads it (plan 941): a person asks, a time comes, or an event. */
+export const TRIGGER_RUNS: Readonly<Record<string, 'on_demand' | 'scheduled' | 'event'>> = {
+  action: 'on_demand', ui: 'event', schedule: 'scheduled', status: 'event', message: 'event', api: 'event',
+};
 
 /** What an Output does, each a type in a family (plan 891). The host app adds its own: `addTypes`. */
 const OUTPUTS: Readonly<Record<string, NodeType>> = {
@@ -404,6 +444,11 @@ export function conditionFits(inputs: readonly ConditionInput[]): ReadonlySet<st
  *  Only the Check node branches (plan 944): a test has a True property, 1 or 0, and no True or False socket. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
+  // A Start node: nothing comes in; what it heard leaves by its rows. Any one of a graph's Triggers starts it (Will, D2 B).
+  trigger: {
+    heading: 'Trigger', icon: 'bolt', description: 'Start the graph when its event comes',
+    typeLabel: 'Listens for', defaultType: 'action', types: TRIGGERS, rows: [], model: 'trigger', graphs: ['workflow'], category: 'Triggers',
+  },
   source: {
     heading: 'Source', icon: 'storage', description: 'Connect a data source',
     rows: [{ ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
@@ -644,7 +689,7 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
+export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
  *  its Custom Nodes, its page's Preset Filters (TODO 776). */
@@ -851,10 +896,9 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (fixed) return [...fixed];
   if (row.control === 'type') return facts.types && [...facts.types];
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
-  // The app's AI catalog (plan 926): one with none picked says so, as a pick does.
-  const ai = row.control === 'provider' ? providerChoices() : row.control === 'model' ? modelChoices(facts.provider)
-    : row.control === 'runbook' ? runbookChoices() : row.control === 'skill' ? skillChoices() : undefined;
-  if (ai) return [...(row.value != null && row.value !== '' ? [] : [{ value: '', label: 'Pick one' }]), ...ai];
+  // The app's catalog (plans 926, 941): one with none picked says so, as a pick does.
+  const listed = catalogChoices(row.control, facts.provider);
+  if (listed) return [...(row.value != null && row.value !== '' ? [] : [{ value: '', label: 'Pick one' }]), ...listed];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;
   const open = row.control === 'field' ? Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }))

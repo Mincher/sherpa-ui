@@ -39,7 +39,7 @@ const heard = (page: Page) => page.evaluate(() => (window as never as { heard: s
 
 const SOURCE: Node = ['Source', 'source', 0, 0, { store: 'users' }];
 const OUTPUT: Node = ['Output', 'output', 600, 0];
-const NO_ROUTE = 'Join a Source to an Output';
+const NO_ROUTE = 'Join a Source or a Trigger to an Output';
 
 /** The Source's Rows socket (it is drawn on its Results row), then the Output's input, in screen px. */
 const sockets = (page: Page) => page.evaluate(() => {
@@ -53,7 +53,7 @@ test('with no Route both tools are inactive and say which part is missing: no So
   await start(page, [OUTPUT]);
   for (const name of ['fetch', 'play']) {
     await expect(tool(page, name)).toHaveAttribute('disabled', '');
-    expect(await tip(page, name)).toBe('Add a Source first');
+    expect(await tip(page, name)).toBe('Add a Source or a Trigger first');
   }
   await page.evaluate(() => document.getElementById('root')!.replaceChildren());
   await start(page, [SOURCE]);

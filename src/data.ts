@@ -119,6 +119,7 @@ export {
 /* The ONE registry of node kinds, for a page's Query and a workflow alike. TRAP T-one-node-registry */
 export {
   NODE_CATEGORIES,
+  TRIGGER_RUNS,
   NODE_KINDS,
   ROWS,
   SOCKET_WORDS,
@@ -161,7 +162,7 @@ export {
   type SocketType,
 } from './core/data/node-kinds.js';
 /* The AI nodes' lists: the app's providers and models, runbooks and skills (plan 926). */
-export { NEW_CHOICE, aiCatalog, registerAiCatalog, runbookGraphs, type AiCatalog } from './core/data/ai-catalog.js';
+export { NEW_CHOICE, aiCatalog, catalogChoices, registerAiCatalog, registerTriggerCatalog, runbookGraphs, type AiCatalog, type TriggerCatalog } from './core/data/ai-catalog.js';
 /* A message field's values, `{node.name}` (plan 891). */
 export { filled, unreachedValues, valuesAt, valuesIn, type MessagePart, type MessageSource, type MessageValue } from './core/data/node-messages.js';
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
@@ -250,7 +251,7 @@ export {
 } from './core/data/graph-views.js';
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
 export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
-export { branchesAt, isOutput, isSource, routeRead, routesOf, type RouteFacts, type RouteRead } from './core/data/node-routes.js';
+export { branchesAt, isOutput, isSource, isStart, routeRead, routesOf, type RouteFacts, type RouteRead } from './core/data/node-routes.js';
 export { lightOf, SimulationControl, simulateGraph, simulation, stepSimulation, type SteppingOptions, type SimulateFacts, type Simulated, type SimulatedNode, type SimulationRun, type Slot } from './core/data/node-simulate.js';
 /* What a node reads of what reaches it: null where it cannot use it, and why. TODO 764 · TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export { COERCIONS, INPUT_WORDS, coerce, columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type Coercion, type ColumnField, type Given, type InputNeeds, type Need, type Reached } from './core/data/node-input.js';
