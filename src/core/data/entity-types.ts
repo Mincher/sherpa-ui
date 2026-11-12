@@ -8,6 +8,7 @@
  * Will, plan 746 E1, E5 · TRAP T-an-entity-is-an-envelope-and-a-type · TRAP T-an-entity-is-used-as-a-node
  *
  * Map:
+ * - savedCategories — The categories a reader may save a Custom Node or a graph in: Custom Nodes, Runbooks, and the app's.
  * - EntityType — One type: its words, the families its graph may place, its sockets, its settings check.
  * - PRESET_FILTER — The Preset Filter type's id: a preset of its store's pages, and the first half of its preset's id.
  * - ENTITY_TYPES — The types the library ships: `preset-filter` and `node`.
@@ -26,6 +27,12 @@ import type { NodeDefinition, NodeLibrary, NodeOutput, NodeSocket } from './node
 import { entityKind, entityRefOf, ENTITY_SCHEMA, definitionOf, type Entity } from './entity.js';
 import type { WorkflowDefinition } from './workflow.js';
 
+/** The categories a reader may save a Custom Node or a graph in (plan 936 D3 A): Custom Nodes, Runbooks, and each one an
+ *  app's entity types name. */
+export function savedCategories(types: Readonly<Record<string, Pick<EntityType, 'category'>>> = entityTypes()): string[] {
+  return [...new Set(['Custom Nodes', 'Runbooks', ...Object.values(types).flatMap((t) => (t.category ? [t.category] : []))])];
+}
+
 /** One type: its words, the families its graph may place, its sockets, its settings check. */
 export interface EntityType {
   /** A kebab-case noun: the `type` of an entity, and the first half of a use's kind. */
@@ -38,6 +45,8 @@ export interface EntityType {
   settingsFaults?(settings: Readonly<Record<string, unknown>>): string[];
   /** The families (a kind's category) its graph may place; none given, any. A use of an entity is always allowed. */
   families?: readonly string[];
+  /** The category its entities stand in, in the Nodes panel, as a Runbook type's Runbooks (plan 936). None: Custom Nodes. */
+  category?: string;
   /** The sockets it demands: `#in` and `#out`. A `node` has none here: its settings say them. */
   inputs?: readonly NodeSocket[];
   outputs?: readonly NodeOutput[];
@@ -125,8 +134,10 @@ export function asNode(entity: Entity, types: Readonly<Record<string, EntityType
   const type = types[entity.type];
   const { inputs, outputs } = socketsOf(entity, type);
   const s = entity.settings ?? {};
+  // Its category: its own, else its type's (plan 936).
+  const own = entity.category ?? (typeof s['category'] === 'string' ? s['category'] : undefined);
   return {
-    ...definitionOf({ ...entity, settings: { ...s, inputs, outputs } }),
+    ...definitionOf({ ...entity, settings: { ...s, inputs, outputs }, ...(!own && type?.category ? { category: type.category } : {}) }),
     icon: typeof s['icon'] === 'string' ? s['icon'] : type?.icon ?? 'folder',
     // Its own settings ride with it, so a copy made in the editor is saved as its type again.
     ...(entity.type !== 'node' && entity.settings ? { settings: entity.settings } : {}),

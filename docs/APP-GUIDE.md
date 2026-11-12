@@ -560,24 +560,37 @@ The AI category has five nodes. A **Provider** and a **Model** say which model; 
 Text, Number, Data and List give an Answer, a property. With no Model joined, a node
 warns "Join a Model"; with no Provider, a Model warns "Join a Provider".
 
-Sherpa ships no providers, models, runbooks or skills. Register yours once, at
-load, before a graph opens:
+Sherpa ships no providers, models or skills. Register yours once, at load, before a
+graph opens:
 
 ```js
 registerAiCatalog({
   providers: { anthropic: { label: 'Anthropic', models: { opus: 'Claude Opus 5.5' } } },
-  runbooks: { 'patch-review': { label: 'Patch review', help: 'Check patches first', graph: 'runbook:patch-review' } },
   skills: { 'summarise-tickets': { label: 'Summarise tickets' } },
 });
 ```
 
 - A Model lists the models of the Provider joined to it.
-- A Runbook and a Skill list yours, then New; a new one is its Instructions.
-- A runbook's `graph` names a definition in your node library. A double click on
-  the Runbook node opens it read only, with the trail back, and the Nodes panel
-  never lists it as a Custom Node.
+- A Skill lists yours, then New; a new one is its Instructions. A Runbook is its
+  own Instructions, for the model to run.
+- Your runbooks are nodes of the **Runbooks** category, not a list (plan 936): see
+  Runbooks, below.
 - Simulate asks no model. A node says what it would do, and each answer is a
   stand-in by its shape: True 1, words, 0, no rows, an empty list.
+
+### Runbooks, and who made a node
+
+The Nodes panel's two tabs split by WHO made a node: **Preset Nodes** holds the kinds
+Sherpa and your app ship and every preset Custom Node; **Custom Nodes** holds the
+reader's own. In each tab the nodes stand under their category, so **Runbooks** can
+stand in both. A runbook is a Custom Node of the Runbooks category: its steps are its
+sub-graph, and a double click opens them, read only for a preset. Give an entity type
+a `category` (`registerEntityType({ …, category: 'Runbooks' })`) and its entities stand
+there; an entity's own `category` wins. Save as Custom Node asks a Category when its
+dialog has a `[name=category]` select (`data-type="select"`): Custom Nodes, Runbooks,
+and each category your entity types name (`savedCategories()`). Who may change a
+node of their own is your rule: give `bindWorkflow` a `canEdit(definition)`, and a no
+opens its inside read only, as a preset's does.
 
 ### Triggers
 

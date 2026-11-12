@@ -78,7 +78,8 @@ test('it docks on the canvas as a card, 8px in from its top, bottom and left, wi
 test('it lists each category with its families, twenty-two, never a Query-only one; "sor" shows only Sort', async ({ page }) => {
   await bind(page);
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
-  expect(heads).toEqual(['Triggers', 'Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
+  // The Preset tab's categories, then the Custom tab's: Custom Nodes, the reader's own (plan 936).
+  expect(heads).toEqual(['Triggers', 'Sources', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Custom Nodes']);
   const names = () => page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   // An Output per family, Request none till an app adds a type (plan 917); the AI nodes after Logic (plan 926); Check in
   // Logic, after Condition (plan 944); the Trigger first, in Triggers (plan 941).

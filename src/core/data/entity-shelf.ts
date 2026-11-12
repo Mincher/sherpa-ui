@@ -42,7 +42,7 @@ export interface EntityShelf {
   /** Why `remove` would keep an entity, in words: a preset, or another entity uses it; none when it would go. */
   whyKept(id: string): string | undefined;
   /** A copy under a new id, "<label> copy" unless `change` names it; `change` may carry the graph on a canvas, its tags, and none for its description. */
-  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; tags?: readonly string[]; graph?: Entity['graph'] }): Promise<boolean>;
+  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; tags?: readonly string[]; category?: string; graph?: Entity['graph'] }): Promise<boolean>;
   /** Called with the list whenever it changes here, and when another tab changes it. Stops on the signal. */
   watch(handler: (list: EntitySummary[]) => void, signal?: AbortSignal): void;
   /** The entity as JSON text, with its `$schema` and without its `origin`. */

@@ -101,11 +101,11 @@ export function truthy(value: unknown): boolean {
 /** The control a row draws: text, a message (text with values, `{node.name}`; plan 891), a number, a switch, tags (a
  *  list, D17) or a date and time; else the list a picklist reads — the row's own (`pick`), the fields, the field's values,
  *  units, a span's way (last or next), directions, presentations, Apply on, stores, scopes, a family's types, a graph's
- *  portal names, or the app's AI providers, a provider's models, its runbooks or its skills (`rowChoices`; plan 926). */
+ *  portal names, or the app's AI providers, a provider's models or its skills (`rowChoices`; plan 926). */
 export type RowControl =
   | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
   | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal'
-  | 'provider' | 'model' | 'runbook' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint';
+  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -623,8 +623,9 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     types: expects([MODEL_IN, messageRow('prompt', 'Prompt')], 'Would ask the model'), rows: [], model: 'aiPrompt', graphs: ['workflow'], category: 'AI',
   },
   runbook: {
-    heading: 'Runbook', icon: 'book-open-lines', description: 'Run a runbook, or write a new one', input: 'any', typeLabel: 'Expects', defaultType: 'text',
-    types: expects([MODEL_IN, { name: 'runbook', label: 'Runbook', control: 'runbook', input: 'value' }, INSTRUCTIONS], 'Would run the runbook'),
+    // A runbook of its own words: the app's runbooks are nodes of the Runbooks category (Will, plan 936 D1 B).
+    heading: 'Runbook', icon: 'book-open-lines', description: 'Write a runbook for the model to run', input: 'any', typeLabel: 'Expects', defaultType: 'text',
+    types: expects([MODEL_IN, INSTRUCTIONS], 'Would run the runbook'),
     rows: [], model: 'aiRunbook', graphs: ['workflow'], category: 'AI',
   },
   skill: {
@@ -698,7 +699,7 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
+export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
  *  its Custom Nodes, its page's Preset Filters (TODO 776). */

@@ -754,8 +754,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       if (!ins.length && !bad.length && (row.needs === 'model' || row.needs === 'provider')) {
         warnings.push({ row: row.name, words: row.needs === 'model' ? 'Join a Model' : 'Join a Provider' });
       }
-      // A new runbook or skill is its instructions: with none, it has nothing to do.
-      if (row.name === 'instructions' && [values['runbook'], values['skill']].includes(NEW_CHOICE) && !String(has ?? '').trim() && !ins.length) {
+      // A Runbook, or a new skill, is its instructions: with none, it has nothing to do.
+      if (row.name === 'instructions' && (node.kind === 'runbook' || values['skill'] === NEW_CHOICE) && !String(has ?? '').trim() && !ins.length) {
         warnings.push({ row: row.name, words: 'Write its instructions' });
       }
       // A Field row says its field and its type; one the rows do not have warns, and sends nothing (D8). No Source, it says

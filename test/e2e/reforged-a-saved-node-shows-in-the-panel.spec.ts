@@ -47,8 +47,9 @@ const setup = (page: Page) => page.evaluate(`(${SETUP})()`);
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 /** The Custom Nodes category: each item's kind id, and whether it is a preset. */
 const listed = (page: Page) => page.evaluate(() => {
-  const category = [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll('.categories > .category')].find((a) => a.querySelector('.category-heading')?.getAttribute('data-heading') === 'Custom Nodes');
-  return [...(category?.querySelectorAll('sherpa-list-item') ?? [])].map((i) => `${(i as HTMLElement).dataset['kind']}${i.hasAttribute('data-preset') ? ' (preset)' : ''}`);
+  // Custom Nodes in each tab: a preset's in Preset Nodes, the reader's own in Custom Nodes (plan 936).
+  const categories = [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll('.categories > .category')].filter((a) => a.querySelector('.category-heading')?.getAttribute('data-heading') === 'Custom Nodes');
+  return categories.flatMap((category) => [...category.querySelectorAll('sherpa-list-item')].map((i) => `${(i as HTMLElement).dataset['kind']}${i.hasAttribute('data-preset') ? ' (preset)' : ''}`));
 });
 const save = (page: Page, id: string, label: string) => page.evaluate(([i, l]) => {
   const w = window as unknown as { keeper: { saveNode(id: string, d: unknown): Promise<boolean> }; definition(l: string): unknown };

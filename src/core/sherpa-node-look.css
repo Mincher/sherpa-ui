@@ -46,6 +46,7 @@
 :host([data-category="time"]) { --_category-ink: var(--sherpa-data-viz-series-border-6, #a88d59); /* theme-direct */ }
 :host([data-category="utils"]) { --_category-ink: var(--sherpa-data-viz-series-border-10, #8a8a9a); /* theme-direct */ }
 :host([data-category="triggers"]) { --_category-ink: var(--sherpa-data-viz-series-border-7, #a778b0); /* theme-direct */ }
+:host([data-category="runbooks"]) { --_category-ink: var(--sherpa-data-viz-series-border-1, #8364c8); /* theme-direct */ }
 
 /* A PORTAL: an In blue, an Out orange — its header and its border, a nod to the game. Will, TODO 907 */
 :host([data-category="portal-in"]) { --_category-ink: var(--sherpa-theme-border-info-2, #008bba); /* theme-direct */ }

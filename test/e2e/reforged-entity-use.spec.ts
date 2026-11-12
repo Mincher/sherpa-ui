@@ -60,10 +60,15 @@ const bind = (page: Page) => page.evaluate(async () => {
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const ed = <T>(page: Page, fn: string) => page.evaluate(`(() => { const ed = window.ed; return ${fn}; })()`) as Promise<T>;
 /** What the panel lists: each item's kind, by its category. */
-/** The Nodes panel's Custom Nodes tab, pressed as a reader does: what is saved, and its tags, sit there. TODO 837 */
-const openCustom = (page: Page) => page.locator('sherpa-node-list sherpa-tabs .tab[data-id="custom"]').click();
-const offered = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelector('#cv sherpa-node-list')!.shadowRoot!.querySelectorAll('.categories > .category')]
-  .map((a) => [a.querySelector('.category-heading')?.getAttribute('data-heading'), [...a.querySelectorAll<HTMLElement>('sherpa-list-item[data-kind]')].map((i) => i.dataset['kind'])])));
+/** Each category's kinds, by its heading: one in both tabs, as Custom Nodes, the Preset tab's first (plan 936). */
+const offered = (page: Page) => page.evaluate(() => {
+  const lists: Record<string, string[]> = {};
+  for (const a of document.querySelector('#cv sherpa-node-list')!.shadowRoot!.querySelectorAll('.categories > .category')) {
+    const heading = a.querySelector('.category-heading')?.getAttribute('data-heading') ?? '';
+    lists[heading] = [...(lists[heading] ?? []), ...[...a.querySelectorAll<HTMLElement>('sherpa-list-item[data-kind]')].map((i) => i.dataset['kind']!)];
+  }
+  return lists;
+});
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
 const caption = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).first().getAttribute('data-caption');
 const press = (loc: import('@playwright/test').Locator) => loc.evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
@@ -74,8 +79,8 @@ test('the panel offers what a Preset Filter takes, and every entity\'s node but 
   const all = Object.values(lists).flat();
   expect(all).toContain('condition');
   expect(all).not.toContain('output');
-  expect(lists['Custom Nodes']).toEqual(['preset-filter:trials', 'preset-filter:active']);
-  await openCustom(page);
+  expect(lists['Custom Nodes']).toEqual(['preset-filter:active', 'preset-filter:trials']);
+  // A preset, on the Preset Nodes tab, open already.
   await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="preset-filter:active"]').click();
   await settle(page);
   const placed = await ed<{ kind: string; version?: string }>(page, "ed.workflow().nodes.find((n) => n.kind === 'preset-filter:active')");
@@ -94,9 +99,8 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:active']);
   await page.keyboard.press('Escape');
   await settle(page);
-  expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:trials', 'preset-filter:active']);
+  expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:active', 'preset-filter:trials']);
   // A preset placed and opened: locked, with "Copy to my nodes".
-  await openCustom(page);
   await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="preset-filter:active"]').click();
   await settle(page);
   await header(page, 'Active').dblclick();

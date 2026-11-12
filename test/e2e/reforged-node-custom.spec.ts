@@ -33,6 +33,7 @@ test.beforeEach(async ({ page }) => {
         <sherpa-stack data-gap="md">
           <sherpa-input-text name="label" data-label="Name" autocomplete="off" required></sherpa-input-text>
           <sherpa-input-text name="description" data-label="Description" data-multiline autocomplete="off"></sherpa-input-text>
+          <sherpa-input-text name="category" data-label="Category" data-type="select"></sherpa-input-text>
         </sherpa-stack>
         <sherpa-container-footer slot="footer">
           <sherpa-button data-action="cancel">Cancel</sherpa-button>
@@ -81,6 +82,8 @@ const bind = (page: Page) => page.evaluate(async () => {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
     toolbar: canvas.querySelector('sherpa-node-toolbar') as never, customDialog: document.getElementById('custom') as never, header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
     onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
+    // The app's rule for who may change a node of their own (plan 936 D2): a test sets it, else any may.
+    ...(w['canEdit'] ? { canEdit: w['canEdit'] as (d: unknown) => boolean } : {}),
     fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],
   });
   await window.__settled();
@@ -288,6 +291,38 @@ test('a preset opens read only; "Copy to my nodes" makes an editable copy that t
   await ed(page, 'ed.back()');
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-heading="Owner check copy"]').count()).toBe(1);
+});
+
+test('Save as Custom Node asks a Category: Custom Nodes, or Runbooks; a Runbook stands under Runbooks on the Custom tab (936)', async ({ page }) => {
+  await bind(page);
+  await header(page, 'Source').focus();
+  await page.keyboard.press('Space');
+  await header(page, 'Org permissions').first().focus();
+  await page.keyboard.press('Space');
+  await press(page, 'group');
+  const category = field(page, 'category');
+  expect(await category.evaluate((f) => [[...f.shadowRoot!.querySelectorAll('option')].map((o) => o.value), (f as HTMLElement & { value: string }).value]))
+    .toEqual([['Custom Nodes', 'Runbooks'], 'Custom Nodes']);
+  await category.locator('select').selectOption('Runbooks');
+  await field(page, 'label').locator('input').fill('Check users');
+  await page.locator('#custom sherpa-button[data-action="save"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect(await ed(page, "ed.library().nodes['check-users'].category")).toBe('Runbooks');
+  // The reader's own: the Custom tab, under Runbooks. The picked use's panel stands over the list, so the tab is pressed in code.
+  await page.locator('sherpa-node-list sherpa-tabs .tab[data-id="custom"]').evaluate((el) => (el as HTMLElement).click());
+  await settle(page);
+  const runbooks = page.locator('sherpa-node-list .category[data-group="custom"]:has(> .category-heading[data-heading="Runbooks"]) sherpa-list-item');
+  expect(await runbooks.evaluateAll((els) => els.map((e) => e.getAttribute('data-kind')))).toEqual(['check-users']);
+});
+
+test('the app may say a reader cannot change a node of their own: it opens read only, as a preset does (936 D2)', async ({ page }) => {
+  await page.evaluate(() => { (window as unknown as { canEdit: (d: { label: string }) => boolean }).canEdit = (d) => d.label !== 'Org permissions'; });
+  await bind(page);
+  await header(page, 'Org permissions').first().focus();
+  await page.keyboard.press('Enter');
+  await settle(page);
+  expect(await ed(page, 'ed.path()')).toEqual(['perm']);
+  await expect(page.locator('#cv > sherpa-node[data-heading="Condition"]')).toHaveAttribute('data-locked', '');
 });
 
 test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" makes one use; Ungroup puts the nodes back', async ({ page }) => {

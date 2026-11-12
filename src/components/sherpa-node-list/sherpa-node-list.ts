@@ -39,10 +39,20 @@ export interface AddContext {
   at: { x: number; y: number };
 }
 
-/** The two lists: the kinds a file gives, and the Custom Nodes a reader saved. */
+/** The two lists, by who made a node: the kinds a file gives and every preset, and the reader's own (plan 936). */
 const TABS = [{ id: 'preset', label: 'Preset Nodes' }, { id: 'custom', label: 'Custom Nodes' }] as const;
 const CUSTOM = 'Custom Nodes';
-const tabOf = (category: string): string => (category === CUSTOM ? 'custom' : 'preset');
+/** A reader's own: a Custom Node, not a preset. Its category says where in the tab, as Runbooks. */
+const own = (kind: NodeKind): boolean => kind.model === 'graph' && !('preset' in kind && kind.preset);
+
+/** The palette's categories split by tab: the presets' in order, then the reader's own, Custom Nodes there always. */
+function byWho(palette: readonly PaletteGroup[]): (PaletteGroup & { tab: string })[] {
+  const of = (tab: string, mine: boolean): (PaletteGroup & { tab: string })[] =>
+    palette.map((g) => ({ category: g.category, tab, items: g.items.filter((i) => own(i.kind) === mine) }))
+      .filter((g) => g.items.length || (mine && g.category === CUSTOM));
+  const custom = of('custom', true);
+  return [...of('preset', false), ...(custom.some((g) => g.category === CUSTOM) ? custom : [{ category: CUSTOM, tab: 'custom', items: [] }, ...custom])];
+}
 
 /** How far a pointer travels before a press on an item becomes a drag. */
 const THRESHOLD = 4;
@@ -53,9 +63,10 @@ function lineOf(kind: NodeKind): string | undefined {
   return kind.description;
 }
 
-/** One category as drawn: its items with no tag, then a group per tag, each with an id. */
+/** One category as drawn, in its tab: its items with no tag, then a group per tag, each with an id. */
 interface Drawn {
   category: string;
+  tab: string;
   anchor: string;
   items: PaletteItem[];
   tags: { tag: string; anchor: string; items: PaletteItem[] }[];
@@ -63,12 +74,12 @@ interface Drawn {
 
 /** A category's items split by tag: those with none, then each tag in order of its words, an item under each of its own.
  *  A tag is one in any case, said as it is first met. */
-function byTag(group: PaletteGroup, index: number): Drawn {
+function byTag(group: PaletteGroup & { tab: string }, index: number): Drawn {
   const said = new Map<string, string>();
   for (const tag of group.items.flatMap((i) => i.kind.tags ?? [])) if (!said.has(tag.toLowerCase())) said.set(tag.toLowerCase(), tag);
   const has = (item: PaletteItem, key: string): boolean => !!item.kind.tags?.some((t) => t.toLowerCase() === key);
   return {
-    category: group.category, anchor: `category-${index}`,
+    category: group.category, tab: group.tab, anchor: `category-${index}`,
     items: group.items.filter((i) => !i.kind.tags?.length),
     tags: [...said].sort(([a], [b]) => a.localeCompare(b)).map(([key, tag], t) => ({ tag, anchor: `category-${index}-tag-${t}`, items: group.items.filter((i) => has(i, key)) })),
   };
@@ -117,11 +128,11 @@ export class SherpaNodeList extends SherpaElement {
         list.append(item);
       }
     };
-    this.renderItems('.categories', 'template.category-tpl', this.#palette.map(byTag), {
+    this.renderItems('.categories', 'template.category-tpl', byWho(this.#palette).map(byTag), {
       after: (node, group) => {
         // An id is no field a template writes.
         node.id = group.anchor;
-        node.dataset['group'] = tabOf(group.category);
+        node.dataset['group'] = group.tab;
         node.toggleAttribute('data-empty', !group.items.length && !group.tags.length);
         const list = node.querySelector('.items')!;
         fill(list, group.items);

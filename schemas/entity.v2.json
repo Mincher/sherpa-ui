@@ -17,6 +17,10 @@
       "description": "Words a reader gives it, to organise and find it: the node panel lists its node under each tag, inside its category, and its search finds it by one. A preset's are read only, as the rest of it is.",
       "type": "array", "items": { "type": "string", "minLength": 1, "pattern": "\\S" }, "uniqueItems": true
     },
+    "category": {
+      "description": "The category its node stands in, in the Nodes panel, as Runbooks. None: a node's settings', its type's, else Custom Nodes.",
+      "type": "string", "minLength": 1
+    },
     "graph": {
       "description": "A workflow's nodes and connections, and how its canvas lays them out: frames, stages and swimlanes. Inside, #in and #out are the entity's own sockets, as a Custom Node's.",
       "type": "object", "additionalProperties": false, "required": ["nodes"],

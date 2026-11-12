@@ -147,7 +147,7 @@ export async function saveGraph(shelf: EntityShelf, id: string, graph: EntityGra
 
 /** Save the graph on a canvas as a COPY of an entity, a preset's too: the reader's own, under the name
  *  and description given and a free id, through the shelf's `duplicate`. The copy's id, or none. */
-export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityGraph, named: { label: string; description?: string; tags?: readonly string[] }): Promise<string | undefined> {
+export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityGraph, named: { label: string; description?: string; tags?: readonly string[]; category?: string }): Promise<string | undefined> {
   const was = shelf.get(id);
   const label = named.label.trim();
   if (!was || !label) return undefined;
@@ -155,5 +155,7 @@ export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityG
   const description = named.description?.trim();
   // Tags given are the copy's; none given, it keeps the ones it was copied from.
   const tags = named.tags && tidyTags(named.tags);
-  return await shelf.duplicate(id, copy, { label, description: description || undefined, ...(tags ? { tags } : {}), graph }) ? copy : undefined;
+  // A category given is the copy's: Custom Nodes is none (plan 936).
+  const category = named.category && named.category !== 'Custom Nodes' ? { category: named.category } : {};
+  return await shelf.duplicate(id, copy, { label, description: description || undefined, ...(tags ? { tags } : {}), ...category, graph }) ? copy : undefined;
 }

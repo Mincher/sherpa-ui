@@ -32,6 +32,9 @@ category when creating a custom node so that we know if a custom node is a Runbo
 
 **Will, 2026-11-11: D1 B (the category replaces the AI node's predefined runbooks; it keeps New runbook), D2 A, D3 A.**
 
+**Built 2026-11-12.** A Save graph as Category is the app's dialog's: `saveGraphAs` takes `category`. Demos' Runbook type
+names Runbooks, so its runbooks stand there.
+
 
 - **D1. 926's Runbook AI node beside the Runbooks category.**
   - **A (recommended):** keep both, from ONE list. The AI node runs a runbook with a model and an expected answer. A

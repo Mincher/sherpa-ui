@@ -57,6 +57,9 @@ export interface Entity {
   description?: string;
   /** Words a reader gives it, to organise and find it: the node panel lists it under each. */
   tags?: readonly string[];
+  /** The category its node stands in, in the Nodes panel, as Runbooks (plan 936). None: a `node`'s settings', its type's,
+   *  else Custom Nodes. */
+  category?: string;
   graph: EntityGraph;
   settings?: Readonly<Record<string, unknown>>;
   uses?: readonly EntityRef[];
@@ -133,6 +136,7 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
     v: 2, type, id, label: definition.label,
     ...(definition.description ? { description: definition.description } : {}),
     ...(definition.tags?.length ? { tags: definition.tags } : {}),
+    ...(type !== 'node' && definition.category ? { category: definition.category } : {}),
     graph: {
       nodes: definition.nodes, ...(definition.connections ? { connections: definition.connections } : {}), ...(definition.ties ? { ties: definition.ties } : {}), ...(definition.frames ? { frames: definition.frames } : {}),
       ...(definition.lanes?.length ? { lanes: definition.lanes } : {}), ...(definition.beforeLanes ? { beforeLanes: definition.beforeLanes } : {}),
@@ -153,7 +157,8 @@ export function definitionOf(entity: Entity): NodeDefinition {
     ...(entity.graph.lanes?.length ? { lanes: entity.graph.lanes } : {}), ...(entity.graph.beforeLanes ? { beforeLanes: entity.graph.beforeLanes } : {}),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),
-    ...(typeof s['category'] === 'string' ? { category: s['category'] } : {}), ...(typeof s['icon'] === 'string' ? { icon: s['icon'] } : {}),
+    ...(typeof s['category'] === 'string' ? { category: s['category'] } : entity.category ? { category: entity.category } : {}),
+    ...(typeof s['icon'] === 'string' ? { icon: s['icon'] } : {}),
     ...(entity.origin === 'preset' ? { preset: true as const } : {}),
   };
 }

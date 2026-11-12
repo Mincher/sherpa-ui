@@ -161,8 +161,8 @@ export {
   type Socket,
   type SocketType,
 } from './core/data/node-kinds.js';
-/* The AI nodes' lists: the app's providers and models, runbooks and skills (plan 926). */
-export { NEW_CHOICE, aiCatalog, catalogChoices, registerAiCatalog, registerTriggerCatalog, runbookGraphs, type AiCatalog, type TriggerCatalog } from './core/data/ai-catalog.js';
+/* The AI nodes' lists: the app's providers and models, and skills (plan 926); the Triggers' (plan 941). */
+export { NEW_CHOICE, aiCatalog, catalogChoices, registerAiCatalog, registerTriggerCatalog, type AiCatalog, type TriggerCatalog } from './core/data/ai-catalog.js';
 /* A message field's values, `{node.name}` (plan 891). */
 export { filled, unreachedValues, valuesAt, valuesIn, type MessagePart, type MessageSource, type MessageValue } from './core/data/node-messages.js';
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
@@ -237,7 +237,7 @@ export {
 } from './core/data/entity.js';
 /* Any entity is a node in any graph: the panel offers it, a use is an instance of it. Plan 746 E5 · TRAP T-an-entity-is-used-as-a-node */
 export {
-  ENTITY_TYPES, PRESET_FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, socketsOf, takes, type EntityType,
+  ENTITY_TYPES, PRESET_FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, savedCategories, socketsOf, takes, type EntityType,
 } from './core/data/entity-types.js';
 /* A Preset Filter is a preset of its store's pages: its graph read as ONE condition, each field's own. TODO 776 · TRAP T-a-preset-filter-is-a-preset-of-its-store */
 export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type PresetFilterFacts } from './core/data/preset-filter.js';

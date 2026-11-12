@@ -45,7 +45,7 @@ export const LANES_BY_FAMILY: readonly NodeLane[] = [
   { id: 'values', label: 'Values', families: ['variables', 'math', 'time', 'utils'] },
   { id: 'organise', label: 'Organise', families: ['organise'] },
   { id: 'agentic', label: 'Agentic', families: ['ai'] },
-  { id: 'custom', label: 'Custom', families: ['custom-nodes'] },
+  { id: 'custom', label: 'Custom', families: ['custom-nodes', 'runbooks'] },
   { id: 'output', label: 'Output', families: ['output'] },
 ];
 

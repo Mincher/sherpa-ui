@@ -89,11 +89,11 @@ import {
   checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
-import { aiCatalog, aiWords, runbookGraphs } from '../data/ai-catalog.js';
+import { aiWords } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
 import { entityKind, type EntityRef, inNewWords } from '../data/entity.js';
-import { offeredKinds } from '../data/entity-types.js';
+import { offeredKinds, savedCategories } from '../data/entity-types.js';
 import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
 import { valuesAt, valuesIn } from '../data/node-messages.js';
@@ -2432,7 +2432,7 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   onSaveNode?: (id: string, definition: NodeDefinition) => void;
   /** The page's `sherpa-app-header`: its trail shows the Custom Nodes opened, and is empty at the workflow. */
   header?: HTMLElement & { populate(data: { breadcrumb: { label: string }[] }): unknown };
-  /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`; a tags input `[name=tags]` if it is to be tagged. Without it Save as Custom Node is not offered. */
+  /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`; a tags input `[name=tags]` if it is to be tagged, and a select `[name=category]` if it may be a Runbook or another category (plan 936). Without it Save as Custom Node is not offered. */
   customDialog?: HTMLElement & { show(): void; hide(): void };
   /** A `sherpa-dialog` that asks a stage's name, line and colour: fields `[name=label]`, `[name=description]` and
    *  `[name=colour]`, buttons `[data-action=save]` and `[data-action=cancel]`. Without it, a stage's Edit does nothing. */
@@ -2445,6 +2445,9 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   toolbar?: HTMLElement;
   /** The workflow is a preset: drawn, opened, never edited, as a preset Custom Node's inside is. TRAP T-a-graph-is-a-view-of-a-type */
   readOnly?: boolean;
+  /** Whether the reader may change a Custom Node of their own: the app's rule, its owner, creator or roles (plan 936 D2).
+   *  No, its inside opens read only, as a preset's does. None given: yes. */
+  canEdit?: (definition: NodeDefinition) => boolean;
   /** The entity this graph is: the panel offers what `offeredKinds` says of it, and inside each node opened, of
    *  that one; "Update all instances" never writes its saved copy over the draft. TRAP T-an-entity-is-used-as-a-node */
   entity?: EntityRef;
@@ -2482,8 +2485,6 @@ interface Opened {
   kind: string;
   use: string;
   label: string;
-  /** A Runbook node's sub-graph, opened read only: `kind` is the definition its runbook names (plan 926 D3). */
-  runbook?: true;
 }
 
 /** Whether a value is a library's edits: definitions by id. */
@@ -2501,7 +2502,7 @@ const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) =>
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
-  { inspector, panel, session: kept$, kinds = nodeKinds(), library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = nodeKinds(), library, onSaveNode, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;
@@ -2561,8 +2562,7 @@ export function bindWorkflow(
     let inner: Inner | undefined;
     for (const step of path) {
       const use = at.nodes.find((n) => n.id === step.use);
-      // A runbook's sub-graph is the definition it names, not its node's kind.
-      inner = use && innerOf(step.runbook ? { id: use.id, kind: step.kind } : use, lib, topKinds());
+      inner = use && innerOf(use, lib, topKinds());
       if (!inner) return undefined;
       at = inner.workflow;
     }
@@ -2570,15 +2570,14 @@ export function bindWorkflow(
   };
   const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : draft);
   const K = (): Readonly<Record<string, NodeKind>> => (path.length ? innerNow()?.kinds ?? topKinds() : topKinds());
-  /** A preset's inside is read only (D15), at any depth; a preset workflow, everywhere. */
-  const insidePreset = (): boolean => path.some((s) => s.runbook || lib.nodes[s.kind]?.preset);
+  /** A preset's inside is read only (D15), at any depth, and one the app says the reader may not change (plan 936 D2); a
+   *  preset workflow, everywhere. */
+  const insidePreset = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset || (canEdit && !canEdit(lib.nodes[s.kind]!)));
   const readOnly = (): boolean => preset || insidePreset();
   // A graph's own Group Input and Output are drawn, never placed; the rest are what the graph shown may place.
   const refreshPanel = (): void => {
     if (doc) return void panel?.populate(doc.palette());
-    // A runbook's steps are reached through its Runbook node, never placed (plan 926 D3).
-    const steps = runbookGraphs();
-    const placeable = Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#') && !steps.has(id)));
+    const placeable = Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#')));
     // A loop is read through the draft: what it places now, not what was saved.
     void panel?.populate(paletteOf(offeredKinds(placeable, path.at(-1)?.kind ?? own, own ? { ...lib.nodes, [own]: { nodes: draft.nodes } } : lib.nodes)));
   };
@@ -3115,15 +3114,6 @@ export function bindWorkflow(
     if (focus) focusNode(canvas, focus);
     else canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   };
-  /** A Runbook node's predefined runbook: its sub-graph opens read only, with the trail back (plan 926 D3 A). */
-  const openRunbook = (id: string): void => {
-    const at = shown().nodes.find((n) => n.id === id);
-    const picked = at?.kind === 'runbook' ? aiCatalog().runbooks[String(at.values?.['runbook'] ?? '')] : undefined;
-    if (!picked?.graph || !lib.nodes[picked.graph]) return;
-    path = [...path, { kind: picked.graph, use: id, label: picked.label, runbook: true }];
-    enter(null);
-    if (inspector) showScope();
-  };
   const open = (id: string): void => {
     const at = use(id);
     if (!at) return;
@@ -3145,7 +3135,7 @@ export function bindWorkflow(
   /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
   const copy = (): void => edit(() => {
     const step = path.at(-1);
-    if (!step || step.runbook) return;
+    if (!step) return;
     const made = copyToMine(lib, step.kind);
     if (!made.id) return;
     setLib(made.library, [made.id]);
@@ -3166,12 +3156,6 @@ export function bindWorkflow(
     note.setAttribute('data-gap', 'md');
     const words = document.createElement('p');
     words.style.margin = '0';
-    // A runbook's steps are the app's: read only, with nothing to copy.
-    if (path.at(-1)?.runbook) {
-      words.textContent = 'These are the runbook\'s steps: read only.';
-      note.append(words);
-      return [note];
-    }
     words.textContent = 'This Custom Node is a preset: its inside is read only. Copy it to your nodes to change it.';
     const button = document.createElement('sherpa-button');
     button.setAttribute('data-label', 'Copy to my nodes');
@@ -3236,9 +3220,10 @@ export function bindWorkflow(
     write(done.workflow);
   };
   /** "Save as Custom Node": the picked nodes, one definition and one use; a fault in words, or none. */
-  const group = (label: string, description: string, tags: readonly string[]): string | undefined => {
+  const group = (label: string, description: string, tags: readonly string[], category?: string): string | undefined => {
     if (readOnly()) return 'this Custom Node is a preset, read only';
-    const made = groupNodes(shown(), [...multi], lib, { label, description, tags }, K(), facts);
+    // Custom Nodes is the category a definition has with none.
+    const made = groupNodes(shown(), [...multi], lib, { label, description, tags, ...(category && category !== 'Custom Nodes' ? { category } : {}) }, K(), facts);
     if ('fault' in made) {
       report({ code: 'node-group', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
       return made.fault;
@@ -3274,11 +3259,11 @@ export function bindWorkflow(
     inspector.show();
   };
   // — the dialog Save as Custom Node asks in —
-  type Field = HTMLElement & { value: string; tags?: string[]; suggestions?: { value: string }[] };
+  type Field = HTMLElement & { value: string; tags?: string[]; suggestions?: { value: string }[]; populate?(choices: unknown): unknown };
   const dialogField = (name: string): Field | null => customDialog?.querySelector(`[name="${name}"]`) ?? null;
   const saveAs = (): void => {
     const name = dialogField('label');
-    const fault = group(String(name?.value ?? ''), String(dialogField('description')?.value ?? ''), dialogField('tags')?.tags ?? []);
+    const fault = group(String(name?.value ?? ''), String(dialogField('description')?.value ?? ''), dialogField('tags')?.tags ?? [], dialogField('category')?.value);
     if (fault) name?.setAttribute('data-description', fault.charAt(0).toUpperCase() + fault.slice(1));
     else customDialog?.hide();
   };
@@ -3290,6 +3275,12 @@ export function bindWorkflow(
     if (tags) {
       tags.tags = [];
       tags.suggestions = knownTags().map((value) => ({ value }));
+    }
+    // An optional Category (`[name=category]`, a select): Custom Nodes, Runbooks, and the app's own (plan 936 D3 A).
+    const category = dialogField('category');
+    if (category) {
+      void category.populate?.(savedCategories().map((value) => ({ value, label: value })));
+      category.value = 'Custom Nodes';
     }
     dialogField('label')?.removeAttribute('data-description');
     customDialog.show();
@@ -3499,7 +3490,6 @@ export function bindWorkflow(
     const hit = idOf(event);
     if (!hit?.header || hit.field) return;
     if (use(hit.id)) open(hit.id);
-    else openRunbook(hit.id);
   };
   const undo = (): boolean => {
     const step = journal.back();
