@@ -11,6 +11,7 @@
 import { report } from '../data/report.js';
 import { isEntity, readEntity, type Entity, type EntityLibrary } from '../data/entity.js';
 import { entityFaults, type EntityFacts } from '../data/entity-check.js';
+import { registerEntityType } from '../data/entity-types.js';
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
@@ -24,6 +25,10 @@ export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibr
   if (!given) {
     report({ code: 'entity', message: 'loadEntityLibrary: it is not an entity library: a v2 with its entities by id.', at: {} });
     return { v: 2, entities: {} };
+  }
+  // Its types first, as JSON (plan 942 D2 A): its entities may be of them.
+  if (isObject(read) && isObject(read['types'])) {
+    for (const [id, type] of Object.entries(read['types'])) if (isObject(type)) registerEntityType({ ...(type as { label: string }), id });
   }
   const kept: Record<string, Entity> = {};
   let waiting = Object.entries(given);

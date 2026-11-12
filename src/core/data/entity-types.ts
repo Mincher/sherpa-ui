@@ -24,7 +24,7 @@
 import { report } from './report.js';
 import type { NodeKind } from './node-kinds.js';
 import type { NodeDefinition, NodeLibrary, NodeOutput, NodeSocket } from './node-library.js';
-import { entityKind, entityRefOf, ENTITY_SCHEMA, definitionOf, type Entity } from './entity.js';
+import { categoryOf, entityKind, entityRefOf, ENTITY_SCHEMA, definitionOf, type Entity } from './entity.js';
 import type { WorkflowDefinition } from './workflow.js';
 
 /** The categories a reader may save a Custom Node or a graph in (plan 936 D3 A): Custom Nodes, Runbooks, and each one an
@@ -50,8 +50,8 @@ export interface EntityType {
   /** The sockets it demands: `#in` and `#out`. A `node` has none here: its settings say them. */
   inputs?: readonly NodeSocket[];
   outputs?: readonly NodeOutput[];
-  /** Only DEFINED (false), or it needs the runner to be of use. */
-  runs: boolean;
+  /** It needs the runner to be of use (true), or is only DEFINED (false, as a type from JSON is by default). */
+  runs?: boolean;
   /** The settings a new entity of this type starts with. */
   defaults?: Readonly<Record<string, unknown>>;
 }
@@ -98,11 +98,11 @@ export function entityTypes(): Readonly<Record<string, EntityType>> {
   return { ...Object.fromEntries(added), ...ENTITY_TYPES };
 }
 
-/** An app adds a type, from its own file. A clash with a shipped type, or a type that is no name, is
- *  refused and reported. It answers how to take it back, or none when refused. */
+/** An app adds a type, from its own file or as JSON (`node-type.v1`, an entities file's `types`; plan 942 D2 A). A clash
+ *  with a shipped type, or a type that is no name, is refused and reported. It answers how to take it back, or none. */
 export function registerEntityType(type: EntityType): (() => void) | undefined {
-  if (!ID.test(String(type?.id)) || typeof type.label !== 'string' || typeof type.runs !== 'boolean') {
-    report({ code: 'entity-type', message: 'registerEntityType: a type needs an id that is a name (lowercase letters, digits, hyphens), a label and `runs`.', at: {} });
+  if (!ID.test(String(type?.id)) || typeof type.label !== 'string' || (type.runs !== undefined && typeof type.runs !== 'boolean')) {
+    report({ code: 'entity-type', message: 'registerEntityType: a type needs an id that is a name (lowercase letters, digits, hyphens) and a label; `runs`, if given, is true or false.', at: {} });
     return undefined;
   }
   if (type.id in ENTITY_TYPES) {
@@ -134,8 +134,8 @@ export function asNode(entity: Entity, types: Readonly<Record<string, EntityType
   const type = types[entity.type];
   const { inputs, outputs } = socketsOf(entity, type);
   const s = entity.settings ?? {};
-  // Its category: its own, else its type's (plan 936).
-  const own = entity.category ?? (typeof s['category'] === 'string' ? s['category'] : undefined);
+  // Its category: its own, else its type's (plans 936, 942).
+  const own = categoryOf(entity);
   return {
     ...definitionOf({ ...entity, settings: { ...s, inputs, outputs }, ...(!own && type?.category ? { category: type.category } : {}) }),
     icon: typeof s['icon'] === 'string' ? s['icon'] : type?.icon ?? 'folder',

@@ -16,6 +16,7 @@
  * - GraphPage — One page whose Query a `query` graph View draws: its Context's name and its nav label.
  * - pagesOf — The pages a `query` graph View offers: every Context with a definition, in the app's order.
  * - pageRows — The graph chip's rows over the pages: one each, none a copy, and no New graph….
+ * - freeId — An id from a name: kebab-case, free among those taken.
  * - newGraph — A new, empty entity of a type, saved through the shelf under a free id, name and tags.
  * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its connections, ties and frames.
  * - saveGraph — Save the graph on a canvas as the open entity's, its own tags if given: a preset is refused.
@@ -99,7 +100,7 @@ export function pageRows(pages: readonly GraphPage[], current: string | null): G
 }
 
 /** An id from a name: kebab-case, free among those taken. */
-function freeId(label: string, taken: readonly string[], type: string): string {
+export function freeId(label: string, taken: readonly string[], type: string): string {
   const slug = label.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const base = /^[a-z]/.test(slug) ? slug : `${type}${slug ? `-${slug}` : ''}`;
   const used = new Set(taken);

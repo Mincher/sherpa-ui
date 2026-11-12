@@ -17,6 +17,7 @@
  * - entityRefOf — The entity a use's kind names: the inverse of `entityKind`.
  * - usesOf — The entities a graph places, from its nodes' kinds, among the entities given.
  * - nodeEntityOf — The entity a Custom Node definition is, by its use's kind: the inverse of `asNode`.
+ * - categoryOf — An entity's own category: its own, else a `node`'s settings'.
  * - definitionOf — A `node` entity as the Custom Node definition the node panel and the editor read.
  */
 import type { NodeConnection, NodeTie } from './node-kinds.js';
@@ -66,10 +67,12 @@ export interface Entity {
   origin?: 'preset' | 'mine';
 }
 
-/** The preset entities of an app, by id (entities.v2). */
+/** The preset entities of an app, by id (entities.v2), and the types of Custom Node they are of, as JSON (plan 942). */
 export interface EntityLibrary {
   $schema?: string;
   v: 2;
+  /** Each type by id: a category, an icon and fixed sockets (`node-type.v1`); each node of it a sub-graph. */
+  types?: Readonly<Record<string, Omit<import('./entity-types.js').EntityType, 'id' | 'settingsFaults'>>>;
   entities: Readonly<Record<string, Entity>>;
 }
 
@@ -146,6 +149,12 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
   };
 }
 
+/** An entity's own category: its own, else a `node`'s settings' (plan 942: read one way). None: its type's, else Custom Nodes. */
+export function categoryOf(entity: Pick<Entity, 'category' | 'settings'>): string | undefined {
+  const s = entity.settings?.['category'];
+  return entity.category ?? (typeof s === 'string' ? s : undefined);
+}
+
 /** A `node` entity as the Custom Node definition the node panel and the editor read; a preset's is read only. */
 export function definitionOf(entity: Entity): NodeDefinition {
   const s = entity.settings ?? {};
@@ -157,7 +166,7 @@ export function definitionOf(entity: Entity): NodeDefinition {
     ...(entity.graph.lanes?.length ? { lanes: entity.graph.lanes } : {}), ...(entity.graph.beforeLanes ? { beforeLanes: entity.graph.beforeLanes } : {}),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),
-    ...(typeof s['category'] === 'string' ? { category: s['category'] } : entity.category ? { category: entity.category } : {}),
+    ...(categoryOf(entity) ? { category: categoryOf(entity)! } : {}),
     ...(typeof s['icon'] === 'string' ? { icon: s['icon'] } : {}),
     ...(entity.origin === 'preset' ? { preset: true as const } : {}),
   };

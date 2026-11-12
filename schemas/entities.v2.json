@@ -9,6 +9,12 @@
   "properties": {
     "$schema": { "type": "string" },
     "v": { "const": 2 },
+    "types": {
+      "description": "The types of Custom Node its entities are of, by id: each a category, an icon and fixed sockets; each node of one a sub-graph (plan 942 D2 A). Registered before the entities are read.",
+      "type": "object",
+      "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },
+      "additionalProperties": { "$ref": "node-type.v1.json" }
+    },
     "entities": {
       "type": "object",
       "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },

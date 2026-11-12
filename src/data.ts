@@ -232,9 +232,11 @@ export {
 export { joinLibrary, type NodeShelf } from './core/data/node-shelf.js';
 /* An ENTITY: a graph saved under a type, an id and a name; a Custom Node is the type `node`. Plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type */
 export {
-  ENTITY_SCHEMA, definitionOf, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf,
+  ENTITY_SCHEMA, categoryOf, definitionOf, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf,
   type Entity, type EntityGraph, type EntityLibrary, type EntityRef,
 } from './core/data/entity.js';
+/* Custom Nodes, one way: a door for each act, for the editor, an MCP tool and an app's assistant alike. Plan 942 */
+export { createNode, deleteNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
 /* Any entity is a node in any graph: the panel offers it, a use is an instance of it. Plan 746 E5 · TRAP T-an-entity-is-used-as-a-node */
 export {
   ENTITY_TYPES, PRESET_FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, savedCategories, socketsOf, takes, type EntityType,
