@@ -5,18 +5,19 @@
  * docs/history/plan-569-unfurl.md · TRAP T-unfurl-keeps-the-flow
  *
  * Map:
- * - UnfurlGraph — What an unfurl reads: the nodes' places, the connections, the ties and the frames.
+ * - UnfurlGraph — What an unfurl reads: the nodes' places and stages, the connections, the ties, the frames and the stages.
  * - UnfurlOptions — The gaps, the grid, each node's drawn box and socket heights, and a frame's box past its nodes'.
- * - unfurlNodes — Every node round its part's anchor, by rings, weights and sockets, crossing least; ties held.
+ * - unfurlNodes — Every node round its part's anchor, by rings, weights and sockets, crossing least; each in its stage.
  */
 import { crossings, type Arranged, type SocketHeights } from './node-arrange.js';
 import { socketOf, type NodeConnection, type NodeTie } from './node-kinds.js';
 import type { NodeFrame } from './node-frames.js';
+import { STAGE_PAD, restage, stageBands, stageOf, type NodeStage } from './node-stages.js';
 import { TIE_GAP, tieLimit } from './workflow.js';
 
-/** What an unfurl reads: the nodes' places, the connections, the ties and the frames. */
+/** What an unfurl reads: the nodes' places and stages, the connections, the ties, the frames and the stages. */
 export interface UnfurlGraph {
-  nodes: readonly { id: string; x: number; y: number }[];
+  nodes: readonly { id: string; x: number; y: number; stage?: string }[];
   connections: readonly NodeConnection[];
   ties?: readonly NodeTie[];
   frames?: readonly NodeFrame[];
@@ -25,6 +26,8 @@ export interface UnfurlGraph {
   hops?: readonly { from: string; to: string }[];
   /** A node that stands by its end of the graph: `left` (a Source, a Portal In), `right` (an Output, a Portal Out). */
   bands?: Readonly<Record<string, 'left' | 'right'>>;
+  /** The stages, left to right: each node is laid out inside its own stage's band (TODO 950). None, as one graph. */
+  stages?: readonly NodeStage[];
 }
 
 /** The gaps, the grid, each node's drawn box, and a frame's box past its nodes', all in plane px. */
@@ -91,7 +94,9 @@ function project(want: readonly number[], weight: readonly number[], gap: readon
  * they stood, lone Sources left of them; every place on the grid. A TIE is a cell of no width that its connections pass through,
  * at their slots: it stands in the flow, what feeds it on its left and what it feeds on its right, in its slots' order, and a
  * tie of many connections is the anchor, keeping its place (Will, TODO 888). A tie it cannot hold so (a connection ends outside the
- * moved nodes, or in one cell) goes to its connections' middle if they all moved. Each held by `tieLimit`. Fewer than two: nothing.
+ * moved nodes, or in one cell) goes to its connections' middle if they all moved. Each held by `tieLimit`. In STAGES (TODO 950),
+ * each stage's nodes stand in its own band, the main part's as laid and a stack of its own, the stages left to right as
+ * `stageBands` packs them, the first stage where it stood: each stage's left edge comes back in `stages`. Fewer than two: nothing.
  */
 export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options: UnfurlOptions): Arranged {
   const grid = options.grid ?? 4;
@@ -365,6 +370,7 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
   // The MAIN part — the most nodes — keeps its place. Every other part (a chain) and every lone node but a Source stand in
   // ONE stack on its left, top to bottom, in the order they stood: clear of every line the main part draws, which runs left
   // to right inside it; top to bottom as they stood. Lone Sources and Portal Ins stand left of the stack. Will, 2026-11-10
+  // In stages, each stage is laid so: the main part's nodes in it, and a stack of its own. TODO 950
   const stood = (list: readonly number[]): [number, number] => {
     const ns = list.flatMap((c) => cells[c]!.members.map((m) => at.get(m.id)!));
     return [Math.min(...ns.map((nd) => nd.x)), Math.min(...ns.map((nd) => nd.y))];
@@ -376,46 +382,66 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
   const laid = parts.filter((l) => l.length > 1).map(unfurlPart).sort((a, b) => before(a.list, b.list, byKey(a.anchor, b.anchor)));
   const lone = parts.filter((l) => l.length === 1).map((l) => l[0]!).sort((a, b) => before([a], [b], byKey(a, b)));
   const corner = new Map<number, { x: number; y: number }>();
-  const extent = (p: (typeof laid)[number]): { minX: number; minY: number; maxX: number; maxY: number } => ({
-    minX: Math.min(...p.list.map((c) => p.x.get(c)! - cells[c]!.w / 2)), minY: Math.min(...p.list.map((c) => p.y.get(c)! - cells[c]!.h / 2)),
-    maxX: Math.max(...p.list.map((c) => p.x.get(c)! + cells[c]!.w / 2)), maxY: Math.max(...p.list.map((c) => p.y.get(c)! + cells[c]!.h / 2)),
+  const extent = (p: (typeof laid)[number], list: readonly number[] = p.list): { minX: number; minY: number; maxX: number; maxY: number } => ({
+    minX: Math.min(...list.map((c) => p.x.get(c)! - cells[c]!.w / 2)), minY: Math.min(...list.map((c) => p.y.get(c)! - cells[c]!.h / 2)),
+    maxX: Math.max(...list.map((c) => p.x.get(c)! + cells[c]!.w / 2)), maxY: Math.max(...list.map((c) => p.y.get(c)! + cells[c]!.h / 2)),
   });
   const mainPart = laid.reduce<(typeof laid)[number] | undefined>((m, p) => (!m || p.list.length > m.list.length ? p : m), undefined);
-  let [left, top] = [0, 0];
-  if (mainPart) {
-    const e = extent(mainPart);
-    [left, top] = [e.minX, e.minY];
-    for (const c of mainPart.list) corner.set(c, { x: mainPart.x.get(c)! - cells[c]!.w / 2, y: mainPart.y.get(c)! - cells[c]!.h / 2 });
-  }
   const bandOf = (c: number): 'left' | 'right' | undefined => graph.bands?.[cells[c]!.key];
-  // The stack: each other part whole, each lone node but a Source, in the order they stood.
   type Item = { cells: readonly number[]; w: number; h: number; place: (x: number, y: number) => void };
-  const items: Item[] = [
-    ...laid.filter((p) => p !== mainPart).map((p): Item => {
-      const e = extent(p);
-      return { cells: p.list, w: e.maxX - e.minX, h: e.maxY - e.minY, place: (x, y) => { for (const c of p.list) corner.set(c, { x: x + p.x.get(c)! - cells[c]!.w / 2 - e.minX, y: y + p.y.get(c)! - cells[c]!.h / 2 - e.minY }); } };
-    }),
-    ...lone.filter((c) => bandOf(c) !== 'left').map((c): Item => ({ cells: [c], w: cells[c]!.w, h: cells[c]!.h, place: (x, y) => corner.set(c, { x, y }) })),
-  ].sort((a, b) => {
-    // Top to bottom as they stood.
-    const [[ax, ay], [bx, by]] = [stood(a.cells), stood(b.cells)];
-    return ay - by || ax - bx || byKey(a.cells[0]!, b.cells[0]!);
-  });
-  const stackW = items.length ? Math.max(...items.map((i) => i.w)) : 0;
-  const stackX = mainPart ? left - (items.length ? stackW + gapX + grid : 0) : 0;
-  let y0 = top;
-  for (const item of items) {
-    item.place(stackX, y0);
-    y0 += item.h + gapY + grid;
-  }
-  // Lone Sources and Portal Ins: one column, left of the stack.
-  const sources = lone.filter((c) => bandOf(c) === 'left');
-  if (sources.length) {
-    const wide = Math.max(...sources.map((c) => cells[c]!.w));
-    const start = items.length || mainPart ? stackX : 0;
-    let ys = top;
-    for (const c of sources) { corner.set(c, { x: start - wide - gapX - grid + (wide - cells[c]!.w) / 2, y: ys }); ys += cells[c]!.h + gapY + grid; }
-  }
+  if (mainPart) for (const c of mainPart.list) corner.set(c, { x: mainPart.x.get(c)! - cells[c]!.w / 2, y: mainPart.y.get(c)! - cells[c]!.h / 2 });
+  /** The cells of one scope placed — the whole graph, or one stage: the main part's as it laid them, the stack on their
+   *  left, lone Sources left of that; a scope with none of the main part's at the main part's top. */
+  const stack = (inScope: (c: number) => boolean): void => {
+    const mains = mainPart ? mainPart.list.filter(inScope) : [];
+    const around = mainPart && extent(mainPart, mains.length ? mains : mainPart.list);
+    const [left, top] = around ? [around.minX, around.minY] : [0, 0];
+    // The stack: each other part whole, each lone node but a Source, in the order they stood.
+    const items: Item[] = [
+      ...laid.filter((p) => p !== mainPart).flatMap((p): Item[] => {
+        const list = p.list.filter(inScope);
+        if (!list.length) return [];
+        const e = extent(p, list);
+        return [{ cells: list, w: e.maxX - e.minX, h: e.maxY - e.minY, place: (x, y) => { for (const c of list) corner.set(c, { x: x + p.x.get(c)! - cells[c]!.w / 2 - e.minX, y: y + p.y.get(c)! - cells[c]!.h / 2 - e.minY }); } }];
+      }),
+      ...lone.filter((c) => inScope(c) && bandOf(c) !== 'left').map((c): Item => ({ cells: [c], w: cells[c]!.w, h: cells[c]!.h, place: (x, y) => corner.set(c, { x, y }) })),
+    ].sort((a, b) => {
+      // Top to bottom as they stood.
+      const [[ax, ay], [bx, by]] = [stood(a.cells), stood(b.cells)];
+      return ay - by || ax - bx || byKey(a.cells[0]!, b.cells[0]!);
+    });
+    const stackW = items.length ? Math.max(...items.map((i) => i.w)) : 0;
+    const stackX = mains.length ? left - (items.length ? stackW + gapX + grid : 0) : 0;
+    let y0 = top;
+    for (const item of items) {
+      item.place(stackX, y0);
+      y0 += item.h + gapY + grid;
+    }
+    // Lone Sources and Portal Ins: one column, left of the stack.
+    const sources = lone.filter((c) => inScope(c) && bandOf(c) === 'left');
+    if (sources.length) {
+      const wide = Math.max(...sources.map((c) => cells[c]!.w));
+      const start = items.length || mains.length ? stackX : 0;
+      let ys = top;
+      for (const c of sources) { corner.set(c, { x: start - wide - gapX - grid + (wide - cells[c]!.w) / 2, y: ys }); ys += cells[c]!.h + gapY + grid; }
+    }
+  };
+  // In stages, each cell's stage: its first node's, one in none joining the nearest, as `fitStages` would; a tie's, where
+  // its connections' nodes are all in one. A tie across stages is in none: it goes to its connections' middle.
+  const staged = graph.stages?.length ? graph.stages : undefined;
+  const stageIn = new Map<string, string>();
+  const scopeOf = new Map<number, string>();
+  if (staged) {
+    const sorted = restage(graph, picked.filter((id) => !stageOf(graph, at.get(id)!)), (nd) => box(nd.id).w);
+    for (const nd of sorted.nodes) stageIn.set(nd.id, stageOf(sorted, nd) ?? staged[0]!.id);
+    cells.forEach((cell, c) => { if (cell.members.length) scopeOf.set(c, stageIn.get(cell.members[0]!.id)!); });
+    for (const tie of graph.ties ?? []) {
+      const c = tieCell.get(tie.id);
+      const ins = new Set(tie.connections.flatMap((r) => [socketOf(r.from).node, socketOf(r.to).node].map((id) => stageIn.get(id))));
+      if (c !== undefined && ins.size === 1) scopeOf.set(c, [...ins][0]!);
+    }
+    for (const s of staged) stack((c) => scopeOf.get(c) === s.id);
+  } else stack(() => true);
   // The main part's anchor keeps its place — a tie's, its middle where it was; with none, the first lone node's.
   const main = mainPart?.anchor ?? lone[0]!;
   const home = (cell: Cell): { x: number; y: number } => {
@@ -428,6 +454,25 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
   cells.forEach((cell, c) => {
     for (const m of cell.members) out.nodes[m.id] = { x: near(corner.get(c)!.x + shift.x + m.dx), y: near(corner.get(c)!.y + shift.y + m.dy) };
   });
+  // In stages, each stage's nodes move across into its band, as `stageBands` lays them out: the first stage's left edge
+  // where it stood, each after it the gap on. So fitting the stages after moves none. TODO 950
+  const moveX = new Map<string, number>();
+  if (staged) {
+    const ids = staged.map((s) => picked.filter((id) => stageIn.get(id) === s.id));
+    const leftOf = (list: readonly string[]): number => Math.min(...list.map((id) => out.nodes[id]!.x));
+    const lift = ids[0]!.length ? Math.ceil((staged[0]!.x + STAGE_PAD) / grid) * grid - leftOf(ids[0]!) : 0;
+    const from = staged.map((s, i) => (i && ids[i]!.length ? leftOf(ids[i]!) - STAGE_PAD : s.x));
+    const nodes = ids.flatMap((list, i) => list.map((id) => ({ id, x: out.nodes[id]!.x + (i ? 0 : lift), y: out.nodes[id]!.y, stage: staged[i]!.id })));
+    const { bands } = stageBands({ stages: staged.map((s, i) => ({ ...s, x: from[i]! })), nodes }, (nd) => box(nd.id).w);
+    staged.forEach((s, i) => moveX.set(s.id, i ? bands[i]!.left - from[i]! : lift));
+    for (const id of picked) {
+      out.nodes[id]!.x += moveX.get(stageIn.get(id)!)!;
+      // One in none says the stage it joined, so fitting the stages after keeps it there.
+      if (!id.startsWith('#') && !stageOf(graph, at.get(id)!)) out.nodes[id]!.stage = stageIn.get(id)!;
+    }
+    out.stages = Object.fromEntries(bands.map((b) => [b.id, b.left]));
+  }
+  const across = (c: number): number => moveX.get(scopeOf.get(c) ?? '') ?? 0;
   // Ties: one held as a cell where its cell stands; else, its connections all joining moved nodes, at their middle. Each held
   // inside its limit.
   const final = { ...Object.fromEntries(graph.nodes.map((nd) => [nd.id, { x: nd.x, y: nd.y }])), ...out.nodes };
@@ -437,8 +482,8 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     const ends = tie.connections.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const);
     if (c === undefined && (!ends.length || !ends.every(([a, b]) => a in out.nodes && b in out.nodes))) continue;
     const mids = ends.map(([a, b]) => ({ x: (final[a]!.x + box(a).w + final[b]!.x) / 2, y: (final[a]!.y + box(a).h / 2 + final[b]!.y + box(b).h / 2) / 2 }));
-    const spot = c !== undefined
-      ? { x: corner.get(c)!.x + shift.x + cells[c]!.w / 2, y: corner.get(c)!.y + shift.y + cells[c]!.h / 2 }
+    const spot = c !== undefined && (!staged || scopeOf.has(c))
+      ? { x: corner.get(c)!.x + shift.x + cells[c]!.w / 2 + across(c), y: corner.get(c)!.y + shift.y + cells[c]!.h / 2 }
       : { x: mids.reduce((s, p) => s + p.x, 0) / mids.length, y: mids.reduce((s, p) => s + p.y, 0) / mids.length };
     const limit = tieLimit(moved, tie);
     out.ties[tie.id] = { x: Math.round(limit ? Math.min(limit.max, Math.max(limit.min, spot.x)) : spot.x), y: near(spot.y) };

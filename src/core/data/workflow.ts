@@ -858,7 +858,7 @@ export type WorkflowEdit =
   | { tieAdd: { id: string; connection: NodeConnection } }
   | { bend: { connection: NodeConnection; at: number; x: number; y: number; insert?: boolean } }
   | { unbend: { connection: NodeConnection; index: number } }
-  | { place: { nodes: Readonly<Record<string, { x: number; y: number }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow' } }
+  | { place: { nodes: Readonly<Record<string, { x: number; y: number; stage?: string }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow'; stages?: Readonly<Record<string, number>> } }
   | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
   | { unframe: string }
   | { setFrame: { id: string; label?: string; description?: string } }
@@ -1037,15 +1037,19 @@ export function editWorkflow(
     }) };
   }
   if ('place' in edit) {
-    // Several nodes, and the ties and bends that go with them, in one edit: a group drag, or an arrange.
-    const { nodes, ties, bends } = edit.place;
+    // Several nodes, and the ties, bends and stages that go with them, in one edit: a group drag, an arrange, or an unfurl.
+    const { nodes, ties, bends, stages } = edit.place;
     const names = Object.keys(nodes);
+    const absent = (ids: readonly string[], have: readonly { id: string }[] = []): string | undefined => ids.find((id) => !have.some((h) => h.id === id));
+    const [node, tie, stage] = [absent(names, workflow.nodes), absent(Object.keys(ties ?? {}), workflow.ties), absent([...Object.keys(stages ?? {}), ...Object.values(nodes).flatMap((p) => p.stage ?? [])], workflow.stages)];
     const fault = names.length < 2 ? 'placing nodes needs two or more'
-      : names.find((id) => !workflow.nodes.some((n) => n.id === id)) !== undefined ? `the node "${names.find((id) => !workflow.nodes.some((n) => n.id === id))}" is not there`
-        : Object.values({ ...nodes, ...ties }).some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y)) ? 'a place needs a finite x and y'
-          : Object.keys(ties ?? {}).find((id) => !(workflow.ties ?? []).some((t) => t.id === id)) !== undefined ? `the tie "${Object.keys(ties ?? {}).find((id) => !(workflow.ties ?? []).some((t) => t.id === id))}" is not there` : undefined;
+      : node !== undefined ? `the node "${node}" is not there`
+        : [...Object.values({ ...nodes, ...ties }).flatMap((p) => [p.x, p.y]), ...Object.values(stages ?? {})].some((v) => !Number.isFinite(v)) ? 'a place needs a finite x and y'
+          : tie !== undefined ? `the tie "${tie}" is not there`
+            : stage !== undefined ? `the stage "${stage}" is not there` : undefined;
     if (fault) return refuse(fault), workflow;
-    const moved = { ...workflow, nodes: workflow.nodes.map((n) => (nodes[n.id] ? { ...n, x: nodes[n.id]!.x, y: nodes[n.id]!.y } : n)) };
+    const moved = { ...workflow, nodes: workflow.nodes.map((n) => { const to = nodes[n.id]; return to ? { ...n, x: to.x, y: to.y, ...(to.stage ? { stage: to.stage } : {}) } : n; }),
+      ...(stages && workflow.stages ? { stages: workflow.stages.map((s) => (s.id in stages ? { ...s, x: stages[s.id]! } : s)) } : {}) };
     const has = (r: NodeConnection, all: boolean): boolean => {
       const ends = [socketOf(r.from).node, socketOf(r.to).node].map((id) => id in nodes);
       return all ? ends.every(Boolean) : ends.some(Boolean);

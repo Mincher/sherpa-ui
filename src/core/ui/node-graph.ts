@@ -20,8 +20,8 @@
  * - pickedNodes — The nodes picked, by id: a click, a box, or the keys.
  * - arrangement — Where these nodes go, from the boxes they are drawn in: a grid.
  * - arrangePicked — Lay the picked nodes out on a grid and hand the host the places: one move, ties and bends with it.
- * - unfurlment — Where every node goes when the graph is unfurled, from the boxes, frames and socket heights drawn.
- * - unfurlGraph — Unfurl the whole graph and hand the host the places: one step; the view fits it after.
+ * - unfurlment — Where every node goes when the graph is unfurled, from the boxes, frames and sockets drawn; each in its stage.
+ * - unfurlGraph — Unfurl the whole graph and hand the host the places, and the stages': one step; the view fits it after.
  * - watchArrange — Tell a toolbar, in `data-can-arrange` and any flag given, when two or more nodes are picked.
  * - zoomToPicked — Zoom to the picked nodes, centred; with none picked, or `all`, to the whole graph.
  * - watchView — A toolbar's view toggles, kept by the canvas: Collapse all (pressed while every node is) and Hide unconnected…
@@ -1717,9 +1717,9 @@ export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined 
   return drawn && placed ? handOn(drawn, placed) : undefined;
 }
 
-/** Where every node goes when the graph is unfurled, from the boxes and frames drawn: none locked moves. None, fewer than two.
- *  TODO 569 · TRAP T-unfurl-keeps-the-flow */
-export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
+/** Where every node goes when the graph is unfurled, from the boxes and frames drawn: none locked moves; in the stages of
+ *  `staged`, each node in its own (TODO 950). None, fewer than two. TODO 569 · TRAP T-unfurl-keeps-the-flow */
+export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDefinition, 'nodes' | 'stages'>): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
   const ids = [...(drawn?.nodes ?? [])].filter(([id, el]) => !id.startsWith('#') && !el.hasAttribute('data-locked')).map(([id]) => id);
   if (!drawn || ids.length < 2) return undefined;
@@ -1746,14 +1746,18 @@ export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
     bands[p.id] = p.side === 'in' ? 'left' : 'right';
     if (p.side === 'in' && p.name) for (const o of portals) if (o.side === 'out' && o.name === p.name) hops.push({ from: p.id, to: o.id });
   }
-  const placed = unfurlNodes({ nodes, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
+  // Each node in its stage (TODO 950): with no stages written, the unfurl reads none.
+  const named = new Map(staged?.nodes.map((n) => [n.id, n.stage]) ?? []);
+  const inStages = nodes.map((n) => { const at = named.get(n.id); return at ? { ...n, stage: at } : n; });
+  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
-/** Unfurl the whole graph and hand the host the places, ties and bends with them: one step. The view fits it after. TODO 569 */
-export function unfurlGraph(canvas: SherpaLayoutCanvas): Arranged | undefined {
+/** Unfurl the whole graph and hand the host the places, ties and bends with them, and the stages' (TODO 950): one step. The
+ *  view fits it after. TODO 569 */
+export function unfurlGraph(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDefinition, 'nodes' | 'stages'>): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
-  const placed = drawn?.options.onArrange ? unfurlment(canvas) : undefined;
+  const placed = drawn?.options.onArrange ? unfurlment(canvas, staged) : undefined;
   if (!drawn || !placed) return undefined;
   // Each node moves there, and the view eases round them all. TODO 902
   canvas.easePieces();
@@ -2897,7 +2901,7 @@ export function bindWorkflow(
   // Arrange: every place, tie and bend in ONE edit. TODO 752
   const onArrange = (placed: Arranged): void => {
     if (readOnly()) return;
-    write(editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: 'reset' } }, K()));
+    write(editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: 'reset', ...(placed.stages ? { stages: placed.stages } : {}) } }, K()));
   };
   const onResize = (node: GraphNode, size: NodeSize): void => {
     if (node.id.startsWith('#')) return;
@@ -3521,7 +3525,7 @@ export function bindWorkflow(
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
     else if (action === 'arrange') arrangePicked(canvas);
-    else if (action === 'unfurl') unfurlGraph(canvas);
+    else if (action === 'unfurl') unfurlGraph(canvas, shown());
     else if (action === 'fetch') void fetchRows('toolbar');
     else if (action === 'play') play('toolbar');
     else if (action === 'pause') pause();

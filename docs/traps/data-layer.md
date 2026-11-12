@@ -8025,6 +8025,15 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   would. A tie it cannot hold so still goes to its connections' middle. Before, every tie went to the middle after the
   nodes moved: a tie a reader had placed was thrown away.
 
+- **In stages, the stages move with the nodes** (TODO 950). Unfurled by the flow alone, then fitted, each stage's nodes
+  moved by how far the stage packed from where it stood (`packBands` moves a flex band's members by `start - stage.x`),
+  and some were held at its left edge: a made Coworker's Report nodes landed in one column, on each other and level with
+  what fed them. Now the whole graph is laid out by the flow, as before; then each stage's nodes, the main part's as laid
+  and a stack of its own, move across into their band, packed by `stageBands`, the first stage where it stood. The place
+  edit writes each stage's left edge with the places, so the fit after moves none, and a tie in a stage moves with it. A
+  node in no stage joins the nearest first and says so in its place, or the fit would put it in another. Every line runs
+  left to right but one from a later stage into an earlier: the stages say so. With no stages, nothing changes.
+
 - Site: `src/core/data/node-unfurl.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/unfurl-spreads-the-graph-from-its-hub.test.mjs`

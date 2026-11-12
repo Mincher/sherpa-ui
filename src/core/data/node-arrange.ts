@@ -4,7 +4,7 @@
  * Map:
  * - ArrangeGraph — What a layout reads: the nodes' places, the connections, the ties.
  * - ArrangeOptions — The gaps, the grid, and each node's drawn box.
- * - Arranged — Where each picked node and each tie goes.
+ * - Arranged — Where each picked node and each tie goes; in stages, each stage's edge, and a node's new stage.
  * - SocketHeights — Each socket's height in its node's box, as drawn: inputs by a connection's `to`, outputs by its `from`.
  * - crossings — How many pairs of straight lines, edge to edge at mid height or socket to socket, cross in a layout.
  * - arrangeNodes — The picked nodes on a grid, by their connections, rows crossing least, ties in the gaps.
@@ -28,10 +28,12 @@ export interface ArrangeOptions {
   boxes: Readonly<Record<string, { w: number; h: number }>>;
 }
 
-/** Where each picked node and each tie goes. */
+/** Where each picked node and each tie goes. A layout in stages (TODO 950) gives each stage's left edge too, and the stage a
+ *  node in none joins. */
 export interface Arranged {
-  nodes: Record<string, { x: number; y: number }>;
+  nodes: Record<string, { x: number; y: number; stage?: string }>;
   ties: Record<string, { x: number; y: number }>;
+  stages?: Record<string, number>;
 }
 
 type Spot = { x: number; y: number };

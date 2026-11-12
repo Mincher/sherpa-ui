@@ -5,13 +5,15 @@ import { test, expect, type Page } from './harness';
  * toolbar's button: every node moves, none overlaps, every line runs left to right, the drawn lines cross less,
  * the view fits them, and ONE Undo puts every place back. Off read only, and with one node. The Query editor's
  * Unfurl keeps its places for the tab. A node's neighbours stand in the order of the sockets they join (Will,
- * TODO 827). Places are read from the nodes, lines from the drawn paths. TRAP T-unfurl-keeps-the-flow
+ * TODO 827). In stages, each node stays in its own (TODO 950). Places are read from the nodes, lines from the drawn paths.
+ * TRAP T-unfurl-keeps-the-flow
  */
-type Flow = { nodes: { id: string; x: number; y: number }[]; connections: { from: string; to: string; via?: unknown[] }[]; ties?: unknown[] };
+type Flow = { nodes: { id: string; x: number; y: number; stage?: string }[]; connections: { from: string; to: string; via?: unknown[] }[]; ties?: unknown[] };
+type Staged = { stages: { id: string; label: string; x: number }[]; of: Record<string, string> };
 type Ed = { workflow(): Flow; undo(): boolean };
 
-async function start(page: Page, nodes: [string, string, number, number, Record<string, unknown>?][], connections: Flow['connections'], readOnly = false): Promise<void> {
-  await page.evaluate(async ([ns, rs, ro]) => {
+async function start(page: Page, nodes: [string, string, number, number, Record<string, unknown>?][], connections: Flow['connections'], readOnly = false, staged?: Staged): Promise<void> {
+  await page.evaluate(async ([ns, rs, ro, st]) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
@@ -20,7 +22,8 @@ async function start(page: Page, nodes: [string, string, number, number, Record<
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 3 as const, id: 'u', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}) })), connections: rs };
+    const flow = { v: 3 as const, id: 'u', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}), ...(st?.of[id] ? { stage: st.of[id] } : {}) })),
+      connections: rs, ...(st ? { stages: st.stages } : {}) };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'], readOnly: ro,
@@ -29,7 +32,7 @@ async function start(page: Page, nodes: [string, string, number, number, Record<
     canvas.zoomTo(0.4);
     canvas.panTo(20, 20);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-  }, [nodes, connections, readOnly] as const);
+  }, [nodes, connections, readOnly, staged] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((window as never as { ed: Ed }).ed.workflow())) as Flow);
@@ -257,4 +260,46 @@ test('a lone Source stands leftmost; a lone Output, isolated, stands in the stac
   const graphLeft = Math.min(now['a']!.x, now['f']!.x, now['c']!.x);
   expect(now['lone-src']!.x + now['lone-src']!.w).toBeLessThanOrEqual(now['lone-out']!.x);
   expect(now['lone-out']!.x + now['lone-out']!.w).toBeLessThanOrEqual(graphLeft);
+});
+
+// A made graph in three stages, each node naming its own; a lone node in the last (TODO 950). Unfurled by the flow alone,
+// the stages pushed the Report nodes onto each other.
+const STAGED: [string, string, number, number, Record<string, unknown>?][] = [
+  ['src', 'source', 0, 0, { store: 'users' }], ['pick', 'field', 360, 0], ['keep', 'condition', 720, 0, { type: 'eq', b: 'x' }],
+  ['sort1', 'sort', 1140, 0], ['sort2', 'sort', 1140, 300],
+  ['end1', 'result', 1740, 0], ['end2', 'result', 1740, 300], ['note', 'value', 1740, 600, { type: 'text', value: 'n' }],
+];
+const STAGED_CONNECTIONS = [
+  { from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'keep' }, { from: 'keep/rows', to: 'sort1' }, { from: 'keep/rows', to: 'sort2' },
+  { from: 'sort1/rows', to: 'end1' }, { from: 'sort2/rows', to: 'end2' },
+];
+const STAGES: Staged = {
+  stages: [{ id: 'plan', label: 'Plan', x: -40 }, { id: 'run', label: 'Run', x: 1100 }, { id: 'report', label: 'Report', x: 1700 }],
+  of: { src: 'plan', pick: 'plan', keep: 'plan', sort1: 'run', sort2: 'run', end1: 'report', end2: 'report', note: 'report' },
+};
+
+test('a graph in stages: each node stays in its own stage, inside its band, none overlapping; the stages left to right; one Undo (TODO 950)', async ({ page }) => {
+  await start(page, STAGED, STAGED_CONNECTIONS, false, STAGES);
+  const before = await flow(page);
+  await button(page).click();
+  await settle(page);
+  const after = await flow(page);
+  const now = await rects(page);
+  for (const n of before.nodes) expect(after.nodes.find((m) => m.id === n.id)!.stage, n.id).toBe(n.stage);
+  expect(overlaps(now)).toEqual([]);
+  expect((await lines(page)).backwards).toBe(0);
+  // Each drawn node inside its drawn stage, a pad from each edge; the stages a gap apart, the first where it stood.
+  const bands = await page.evaluate(() => [...document.querySelectorAll('#cv > sherpa-node-stage')].map((el) => ({
+    id: el.getAttribute('data-stage')!, left: Number(el.getAttribute('data-x')), right: Number(el.getAttribute('data-x')) + Number(el.getAttribute('data-w')) })));
+  expect(bands.map((b) => b.id)).toEqual(['plan', 'run', 'report']);
+  expect(bands[0]!.left).toBe(-40);
+  for (let i = 1; i < bands.length; i++) expect(bands[i]!.left - bands[i - 1]!.right).toBe(16);
+  for (const n of after.nodes) {
+    const band = bands.find((b) => b.id === n.stage)!;
+    expect(now[n.id]!.x, n.id).toBeGreaterThanOrEqual(band.left + 48);
+    expect(now[n.id]!.x + now[n.id]!.w, n.id).toBeLessThanOrEqual(band.right - 48);
+  }
+  await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await settle(page);
+  expect(await flow(page)).toEqual(before);
 });
