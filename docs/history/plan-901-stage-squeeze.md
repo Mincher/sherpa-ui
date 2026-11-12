@@ -23,7 +23,8 @@ graph as a gradual unfurl."
 
 ## Decisions for Will
 
-**Will, 2026-11-11: D1 A (push), D2 B (on by default).**
+**Will, 2026-11-11: D1 A (push), D2 B (on by default).** **Built 2026-11-12**: not a second function but `resizeStage` given the
+nodes' heights; the editor's node placing is one helper for a drag's step and a push.
 
 
 - **D1. How the nodes move.**

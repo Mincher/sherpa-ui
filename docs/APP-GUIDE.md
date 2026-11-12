@@ -624,7 +624,10 @@ it, one let go between or past them joins the nearest, and a stage grows to hold
 nodes. Remove puts a stage's nodes in the stage before it. The gap between two
 stages is a separator: drag it, or use the arrow keys, Home and End, and the stage
 before grows as the one after shrinks, no node moving (a stage keeps `w`, its width).
-The setting `resizeStages` (on) turns it off. Each stage bar has Move left and Move right, and More: Edit, Add
+The setting `resizeStages` (on) turns it off. With `resizeStagesMoveNodes` (on) too,
+the edge goes past the nodes: the stage it narrows pushes them in, across only, in
+order, a node pushing the one it meets with their gap kept, down to its widest node;
+there they may overlap. The push is drawn as it goes and is one Undo. Each stage bar has Move left and Move right, and More: Edit, Add
 stage before, Add stage after and Remove. A default name is its place (Stage 1,
 Stage 2): one added or moved before Stage 1 is Stage 1. Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:

@@ -3073,6 +3073,11 @@
           "description": "the least width its edge asks, in plane px: the separator's range. The HOST writes it"
         },
         {
+          "name": "data-pushes",
+          "description": "its edge goes past the nodes and pushes them in: the setting Allow stage resizes to move nodes is on. It follows the app's `resizeStagesMoveNodes` setting.",
+          "valueSet": "v"
+        },
+        {
           "name": "data-removable",
           "description": "More offers Remove: it is not the only stage. The HOST writes it",
           "valueSet": "v"

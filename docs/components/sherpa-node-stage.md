@@ -31,6 +31,7 @@ For the stages of a workflow on a `sherpa-layout-canvas`: one column each, in it
 | `data-locked` | boolean |  | the host is read only: no Move, no More and no edge |
 | `data-max-w` | number |  | the most width its edge asks, in plane px. The HOST writes it |
 | `data-min-w` | number |  | the least width its edge asks, in plane px: the separator's range. The HOST writes it |
+| `data-pushes` | boolean |  | its edge goes past the nodes and pushes them in: the setting Allow stage resizes to move nodes is on |
 | `data-removable` | boolean |  | More offers Remove: it is not the only stage. The HOST writes it |
 | `data-w` | number | `320` | its width, in plane px |
 | `data-x` | number | `0` | its left edge, in plane px |
@@ -81,9 +82,10 @@ Each of the app's settings, onto one of its attributes:
 | Setting | Attribute |
 |---|---|
 | `resizeStages` | `data-fixed`, on while it is off |
+| `resizeStagesMoveNodes` | `data-pushes` |
 
 ## populate()
 
-`{ colour?, description?, first?, fixed?, heading?, last?, locked?, maxW?, minW?, removable?, w?, x? }`
+`{ colour?, description?, first?, fixed?, heading?, last?, locked?, maxW?, minW?, pushes?, removable?, w?, x? }`
 
 Its declared props by name: `label` sets data-label.

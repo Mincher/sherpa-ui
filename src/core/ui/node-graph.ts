@@ -2729,6 +2729,8 @@ export function bindWorkflow(
     readOnly: () => readOnly(),
     dialog: stageDialog ?? null,
     moving: () => (settling ? moved : new Set()),
+    heightOf: (node) => heightOf(node),
+    place: (next) => placeNodes(next),
   });
   /** A pointer is down on the canvas; Shift is held; the nodes a drag has moved: written when it lets go. */
   let pressing = false;
@@ -2811,18 +2813,22 @@ export function bindWorkflow(
     return lanesOn() ? { ...body, ties: [] } : body;
   };
   /** Mid-drag: each node where the draft says (a stage that grew pushes others), the lines, the stages and lanes. */
-  const drawMoves = (): void => {
+  /** Each drawn node where a workflow says, and its lines with it: a drag's step, or a stage's push drawn as it goes. */
+  function placeNodes(next: WorkflowDefinition): void {
     const els = drawnOn.get(canvas)?.nodes;
-    if (!els || path.length) return draw();
     let moved = false;
-    for (const n of shown().nodes) {
-      const el = els.get(n.id);
+    for (const n of next.nodes) {
+      const el = els?.get(n.id);
       if (!el) continue;
       const [x, y] = [String(n.x), String(n.y)];
       if (el.getAttribute('data-x') !== x) { el.setAttribute('data-x', x); moved = true; }
       if (el.getAttribute('data-y') !== y) { el.setAttribute('data-y', y); moved = true; }
     }
     if (moved) relayConnections(canvas);
+  }
+  const drawMoves = (): void => {
+    if (!drawnOn.get(canvas)?.nodes || path.length) return draw();
+    placeNodes(shown());
     stages.draw();
     drawLanes(canvas, shown(), heightOf, K());
   };

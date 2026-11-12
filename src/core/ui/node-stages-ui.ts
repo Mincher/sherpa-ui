@@ -23,6 +23,10 @@ export interface StageHost {
   readOnly(): boolean;
   /** The nodes a Shift-drag has taken out of their stages: the stages hold still as they stood, without them. */
   moving?(): ReadonlySet<string>;
+  /** A node's height as drawn: what a stage pushing its nodes in reads (TODO 901). */
+  heightOf?(node: { id: string }): number;
+  /** Draw the nodes where a workflow puts them, as a push goes, before it is written. */
+  place?(next: WorkflowDefinition): void;
   /** A `sherpa-dialog` that asks a stage's name, line and colour: fields `[name=label]`, `[name=description]` and
    *  `[name=colour]` (a `sherpa-swatch-picker`), buttons `[data-action=save]` and `[data-action=cancel]`. Without it, Edit is
    *  not offered. */
@@ -76,7 +80,8 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
       put(el, 'data-colour', stage.colour);
       el.setAttribute('data-x', String(band.left));
       el.setAttribute('data-w', String(band.right - band.left));
-      const range = stageWidthRange(w, stage.id, nodeWidth);
+      // The app's setting, on the stage: its edge pushes the nodes in (TODO 901).
+      const range = stageWidthRange(w, stage.id, nodeWidth, el.hasAttribute('data-pushes'));
       put(el, 'data-min-w', range ? String(range.least) : undefined);
       put(el, 'data-max-w', range ? String(range.most) : undefined);
       el.toggleAttribute('data-removable', stages.length > 1 && !ro);
@@ -158,16 +163,22 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     });
   };
 
-  /** An edge dragged or keyed: the stage this wide, the next as much narrower. Drawn as it goes; written on the release. */
+  /** An edge dragged or keyed: the stage this wide, the next as much narrower; pushing, the nodes it meets moved in.
+   *  Drawn as it goes; written on the release, ONE step. */
   const onResize = (event: Event): void => {
     const id = stageOfEvent(event);
     const { width, done } = (event as CustomEvent<{ width: number; done: boolean }>).detail;
     const from = resizing?.from ?? host.workflow();
     if (!id || !from || host.readOnly()) return;
-    const now = editWorkflow(from, { resizeStage: { id, w: width } });
+    const pushes = (event.target as HTMLElement).hasAttribute('data-pushes') && host.heightOf;
+    const heights = pushes ? Object.fromEntries(from.nodes.map((n) => [n.id, host.heightOf!(n)])) : undefined;
+    const now = editWorkflow(from, { resizeStage: { id, w: width, ...(heights ? { heights } : {}) } });
     resizing = done ? null : { from, now };
     if (done && now !== from) host.write(now);
-    else draw();
+    else {
+      host.place?.(now);
+      draw();
+    }
   };
 
   const save$ = host.dialog?.querySelector('[data-action="save"]');

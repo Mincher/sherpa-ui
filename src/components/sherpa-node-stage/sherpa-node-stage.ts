@@ -25,14 +25,15 @@ export class SherpaNodeStage extends SherpaElement {
     'data-min-w': { type: 'number', kind: 'behaviour' },
     'data-max-w': { type: 'number', kind: 'behaviour' },
     'data-fixed': { type: 'boolean', kind: 'style' },
+    'data-pushes': { type: 'boolean', kind: 'behaviour' },
     'data-removable': { type: 'boolean', kind: 'style' },
     'data-first': { type: 'boolean', kind: 'behaviour' },
     'data-last': { type: 'boolean', kind: 'behaviour' },
     'data-locked': DATA_PROPS['data-locked'],
   } as const;
   static override observed = ['data-x', 'data-w', 'data-colour'];
-  /** Off, its edge takes no drag. Will, TODO 900 */
-  static override settings = { 'data-fixed': '!resizeStages' };
+  /** Off, its edge takes no drag (TODO 900); on, the other pushes its nodes in (TODO 901). Will */
+  static override settings = { 'data-fixed': '!resizeStages', 'data-pushes': 'resizeStagesMoveNodes' };
 
   override onRender(): void {
     this.$('.more')?.addEventListener('menu-select', this.#onMenu);

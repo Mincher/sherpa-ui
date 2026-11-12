@@ -266,3 +266,39 @@ test('the edge between two stages, dragged, widens the one before as the one aft
   await stage(page, 0).evaluate((el) => el.setAttribute('data-fixed', ''));
   await expect(edge).toBeHidden();
 });
+
+test('with Allow stage resizes to move nodes, the edge goes past the nodes: they are pushed in, in order, drawn as it goes; one Undo (901)', async ({ page }) => {
+  await addStage(page);
+  // The app's setting, on: a provider writes it; here, by hand, and the stages drawn again by a step and its Undo.
+  await page.locator('#cv > sherpa-node-stage').evaluateAll((els) => { for (const el of els) el.setAttribute('data-pushes', ''); });
+  const undo = () => page.locator('sherpa-node-toolbar sherpa-button.undo').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await page.locator('#cv > sherpa-node[data-heading="Sort"] >> .header[role="button"]').focus();
+  await page.keyboard.press('ArrowDown');
+  await undo();
+  await settle(page);
+  const before = await flow(page);
+  const at = (f: Flow, id: string) => f.nodes.find((n) => n.id === id)!.x;
+  const w1 = Number(await stage(page, 0).getAttribute('data-w'));
+  expect(Number(await stage(page, 0).getAttribute('data-min-w'))).toBeLessThan(w1 - 200);
+  const box = (await stage(page, 0).locator('.edge').boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  // 70 screen px back, at a zoom of 0.7: 100 plane px; the Run result, nearest the edge, comes in as the edge goes.
+  await page.mouse.move(box.x + box.width / 2 - 70, box.y + box.height / 2, { steps: 4 });
+  const end = page.locator('#cv > sherpa-node[data-heading="Run result"]');
+  expect(Number(await end.getAttribute('data-x'))).toBeLessThan(at(before, 'end'));
+  await page.mouse.move(box.x + box.width / 2 - 140, box.y + box.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await settle(page);
+  const after = await flow(page);
+  expect(Math.abs(Number(await stage(page, 0).getAttribute('data-w')) - (w1 - 200))).toBeLessThanOrEqual(1);
+  // In order: each still left of the next, and the Run result in by about the 200.
+  expect(at(after, 'start')).toBeLessThan(at(after, 'sort'));
+  expect(at(after, 'sort')).toBeLessThan(at(after, 'end'));
+  expect(Math.abs(at(before, 'end') - at(after, 'end') - 200)).toBeLessThanOrEqual(2);
+  // One step: Undo puts the stage and every node back.
+  await undo();
+  await settle(page);
+  expect((await flow(page)).nodes.map((n) => n.x)).toEqual(before.nodes.map((n) => n.x));
+  expect(Number(await stage(page, 0).getAttribute('data-w'))).toBe(w1);
+});

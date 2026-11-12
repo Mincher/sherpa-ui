@@ -121,6 +121,36 @@ test('an edge dragged makes a stage wider and the next as much narrower, no node
   assert.equal(checkWorkflow(wide), true);
 });
 
+test('given the nodes\' heights, the edge goes past them: the stage it narrows pushes its nodes in, in order, the gap kept, to its widest node (901)', () => {
+  // Stage 1 holds a Source at 48 and two Sorts at 400, side by side down; stage 2 a Sort at its start.
+  let w = editWorkflow({ ...flow(), nodes: [...flow().nodes, { id: 'c', kind: 'sort', x: 400, y: 300 }] }, { addStage: {} });
+  w = fitStages(editWorkflow(w, { node: 'b', set: { x: 400 } }), nodeWidth);
+  const at = (wf, id) => wf.nodes.find((n) => n.id === id).x;
+  const [one] = stageBands(w, nodeWidth).bands;
+  const heights = { a: 100, b: 100, c: 100 };
+  // Pushing, the range is each stage's widest node and its pads; not pushing, as its nodes stand.
+  const width = nodeWidth(w.nodes[1]);
+  assert.equal(stageWidthRange(w, 'stage-1', nodeWidth, true).least, width + 2 * STAGE_PAD);
+  assert.ok(stageWidthRange(w, 'stage-1', nodeWidth).least > stageWidthRange(w, 'stage-1', nodeWidth, true).least);
+  // Narrower by 200: b and c, nearest the edge, come in by as much; a, a row of its own with room, stays.
+  const right = at(w, 'b') + width;
+  const in200 = editWorkflow(w, { resizeStage: { id: 'stage-1', w: right + STAGE_PAD - one.left - 200, heights } });
+  assert.deepEqual(['a', 'b', 'c'].map((id) => at(in200, id)), [at(w, 'a'), at(w, 'b') - 200, at(w, 'c') - 200]);
+  assert.equal(in200.stages[0].w, right + STAGE_PAD - one.left - 200);
+  // Further: b meets a in its row and pushes it on, the gap between them kept. a stands 100 in, so it has room to go.
+  const roomy = editWorkflow(w, { node: 'a', set: { x: one.left + STAGE_PAD + 100 } });
+  const gap = Math.min(STAGE_PAD, at(roomy, 'b') - (at(roomy, 'a') + nodeWidth(w.nodes[0])));
+  const meet = at(roomy, 'a') + nodeWidth(w.nodes[0]) + gap + width + STAGE_PAD - one.left;
+  const near = editWorkflow(roomy, { resizeStage: { id: 'stage-1', w: meet - 40, heights } });
+  assert.equal(at(near, 'a'), at(roomy, 'a') - 40, 'a pushed on by as much');
+  assert.equal(at(near, 'b') - (at(near, 'a') + nodeWidth(w.nodes[0])), gap, 'the gap kept');
+  const floor = editWorkflow(w, { resizeStage: { id: 'stage-1', w: 10, heights } });
+  assert.deepEqual(['a', 'b', 'c'].map((id) => at(floor, id)), [one.left + STAGE_PAD, one.left + STAGE_PAD, one.left + STAGE_PAD]);
+  // Without the heights, it is 900's: no node moves.
+  assert.deepEqual(editWorkflow(w, { resizeStage: { id: 'stage-1', w: 10 } }).nodes.map((n) => n.x), w.nodes.map((n) => n.x));
+  assert.equal(checkWorkflow(in200), true);
+});
+
 test('Edit names, lines and colours a stage; an empty line or colour takes it away', () => {
   let w = editWorkflow(flow(), { setStage: { id: 'stage-1', label: 'Intake', description: 'Where rows come in', colour: '#3b4ccd' } });
   assert.deepEqual(w.stages[0], { id: 'stage-1', label: 'Intake', description: 'Where rows come in', colour: '#3b4ccd', x: w.stages[0].x });

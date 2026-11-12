@@ -277,6 +277,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-pushes",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "its edge goes past the nodes and pushes them in: the setting Allow stage resizes to move nodes is on"
+    },
+    {
+      "$type": "prop",
       "name": "data-removable",
       "type": "boolean",
       "observed": true,
@@ -306,11 +315,12 @@
     }
   ],
   "populate": {
-    "shape": "{ colour?, description?, first?, fixed?, heading?, last?, locked?, maxW?, minW?, removable?, w?, x? }",
+    "shape": "{ colour?, description?, first?, fixed?, heading?, last?, locked?, maxW?, minW?, pushes?, removable?, w?, x? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
-    "data-fixed": "!resizeStages"
+    "data-fixed": "!resizeStages",
+    "data-pushes": "resizeStagesMoveNodes"
   },
   "states": [
     {

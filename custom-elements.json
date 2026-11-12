@@ -8333,6 +8333,13 @@
               }
             },
             {
+              "name": "data-pushes",
+              "description": "its edge goes past the nodes and pushes them in: the setting Allow stage resizes to move nodes is on. It follows the app's `resizeStagesMoveNodes` setting.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-removable",
               "description": "More offers Remove: it is not the only stage. The HOST writes it",
               "type": {
@@ -10663,7 +10670,7 @@
               "name": "setting-change",
               "description": "A reader changed a setting here: a bar's ⋮, the panel's mode.",
               "type": {
-                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'chainDrag' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'resizeStages' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
+                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'chainDrag' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'resizeStages' | 'resizeStagesMoveNodes' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
               }
             },
             {

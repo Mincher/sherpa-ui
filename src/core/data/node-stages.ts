@@ -21,8 +21,8 @@
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
  * - restage — The workflow with these nodes in the stage their middle stands in, or the point given does; else the nearest.
  * - orderStages — The workflow with its stages in a new order, each packed after the one before, its nodes with it.
- * - stageWidthRange — The widths a stage's end edge can give it: room for its nodes, and for the next one's.
- * - resizeStage — The workflow with a stage this wide and the next as much narrower, by the edge between them; no node moves.
+ * - stageWidthRange — The widths a stage's end edge can give it: room for its nodes, and the next one's; or, pushing, their widest.
+ * - resizeStage — The workflow with a stage this wide and the next as much narrower, by the edge between them; given the
  * - stageFaults — Every fault in a workflow's stages, in words.
  */
 import { packBands, type BandGroup } from './node-bands.js';
@@ -65,6 +65,8 @@ interface Staged {
 
 /** A node's width, in plane px: its kind's natural width, times how far a reader grew it. */
 type WidthOf = (node: Staged['nodes'][number]) => number;
+/** Each node's height as drawn, by id: what a pushed node meets beside it (TODO 901). */
+type Heights = Readonly<Record<string, number>>;
 
 /** A workflow's stages: its own, or, with none, Stage 1 at the left of its nodes. */
 export function stagesOf(workflow: Staged): readonly NodeStage[] {
@@ -203,25 +205,52 @@ export function orderStages<W extends Staged>(workflow: W, ids: readonly string[
 
 /** The widths the stage `id`'s END edge can give it, in plane px: room for its own nodes and STAGE_LEAST, and the same for
  *  the next stage's. None for the last, or one not there. */
-export function stageWidthRange(workflow: Staged, id: string, widthOf: WidthOf): { least: number; most: number } | null {
+export function stageWidthRange(workflow: Staged, id: string, widthOf: WidthOf, push = false): { least: number; most: number } | null {
   const stages = workflow.stages ?? [];
   const at = stages.findIndex((s) => s.id === id);
   if (at < 0 || at === stages.length - 1) return null;
   const { bands } = stageBands(workflow, widthOf);
   const [a, b] = [bands[at]!, bands[at + 1]!];
   const of = (stage: string): Staged['nodes'] => workflow.nodes.filter((n) => stageOf(workflow, n) === stage);
-  const least = Math.max(STAGE_LEAST, ...of(a.id).map((n) => n.x + widthOf(n) + STAGE_PAD - a.left));
-  const most = Math.min(b.right - STAGE_LEAST, ...of(b.id).map((n) => n.x - STAGE_PAD)) - STAGE_GAP - a.left;
+  // Pushing, a stage is as narrow as its widest node and its pads; else as its nodes stand.
+  const widest = (stage: string): number => Math.max(STAGE_LEAST, ...of(stage).map((n) => widthOf(n) + 2 * STAGE_PAD));
+  const least = push ? widest(a.id) : Math.max(STAGE_LEAST, ...of(a.id).map((n) => n.x + widthOf(n) + STAGE_PAD - a.left));
+  const most = (push ? b.right - widest(b.id) : Math.min(b.right - STAGE_LEAST, ...of(b.id).map((n) => n.x - STAGE_PAD))) - STAGE_GAP - a.left;
   return { least: Math.round(least), most: Math.round(Math.max(most, least)) };
+}
+
+/** A stage's nodes pushed in from one side (`dir` -1, its end, leftward; 1, its start, rightward) to `limit`, in order: a
+ *  node that meets one beside it, moved, pushes it on with their gap kept, up to STAGE_PAD; none past `stop`, where they
+ *  may overlap. Each new x, by id. TODO 901 */
+function pushIn(nodes: Staged['nodes'], widthOf: WidthOf, heights: Heights, limit: number, dir: -1 | 1, stop: number): Record<string, number> {
+  const boxes = nodes.map((n) => ({ id: n.id, x: n.x, w: widthOf(n), top: n.y, bottom: n.y + (heights[n.id] ?? 0) }));
+  const order = boxes.sort((p, q) => (dir < 0 ? q.x + q.w - (p.x + p.w) : p.x - q.x));
+  const moved: { top: number; bottom: number; x: number; w: number; was: number }[] = [];
+  const moves: Record<string, number> = {};
+  for (const b of order) {
+    // The edge first: nothing past `limit`. Then each node moved before it that it meets.
+    let to = dir < 0 ? Math.min(b.x, limit - b.w) : Math.max(b.x, limit);
+    for (const p of moved) {
+      if (p.top >= b.bottom || b.top >= p.bottom) continue;
+      if (dir < 0) to = Math.min(to, p.x - Math.max(0, Math.min(STAGE_PAD, p.was - (b.x + b.w))) - b.w);
+      else to = Math.max(to, p.x + p.w + Math.max(0, Math.min(STAGE_PAD, b.x - (p.was + p.w))));
+    }
+    to = Math.round(dir < 0 ? Math.max(to, stop) : Math.min(to, stop - b.w));
+    if (to === b.x) continue;
+    moves[b.id] = to;
+    moved.push({ top: b.top, bottom: b.bottom, x: to, w: b.w, was: b.x });
+  }
+  return moves;
 }
 
 /**
  * The workflow with the stage `id` `w` wide, by its END edge, and the stage after it starting as far on, as much
- * narrower: its right edge stays, and no node moves (TODO 900). Each keeps room for its nodes and STAGE_LEAST; the edge
- * stops there. The last stage has no edge to drag: the same one.
+ * narrower: its right edge stays (TODO 900). Each keeps room for its nodes and STAGE_LEAST; the edge stops there, and no
+ * node moves. Given the nodes' `heights` (TODO 901), the edge goes past them: the stage it narrows pushes its nodes in, as
+ * `pushIn` says, and stops at its widest node. The last stage has no edge to drag: the same one.
  */
-export function resizeStage<W extends Staged>(workflow: W, id: string, w: number, widthOf: WidthOf): W {
-  const range = stageWidthRange(workflow, id, widthOf);
+export function resizeStage<W extends Staged>(workflow: W, id: string, w: number, widthOf: WidthOf, heights?: Heights): W {
+  const range = stageWidthRange(workflow, id, widthOf, !!heights);
   if (!range) return workflow;
   const stages = workflow.stages!;
   const at = stages.findIndex((s) => s.id === id);
@@ -230,9 +259,14 @@ export function resizeStage<W extends Staged>(workflow: W, id: string, w: number
   const edge = a.left + Math.round(Math.min(Math.max(w, range.least), range.most));
   if (edge === a.right) return workflow;
   const start = edge + STAGE_GAP;
+  const of = (stage: string): Staged['nodes'] => workflow.nodes.filter((n) => stageOf(workflow, n) === stage);
+  const moves = !heights ? {}
+    : edge < a.right ? pushIn(of(a.id), widthOf, heights, edge - STAGE_PAD, -1, a.left + STAGE_PAD)
+      : pushIn(of(b.id), widthOf, heights, start + STAGE_PAD, 1, b.right - STAGE_PAD);
   return {
     ...workflow,
     stages: stages.map((s, i) => (i === at ? { ...s, x: a.left, w: edge - a.left } : i === at + 1 ? { ...s, x: start, w: b.right - start } : s)),
+    ...(Object.keys(moves).length ? { nodes: workflow.nodes.map((n) => (n.id in moves ? { ...n, x: moves[n.id]! } : n)) } : {}),
   };
 }
 
