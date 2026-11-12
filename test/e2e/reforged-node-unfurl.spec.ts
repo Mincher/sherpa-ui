@@ -251,14 +251,15 @@ test('a graph reads left to right: Sources and a Portal In left, a Portal Out an
   expect((await flow(page)).nodes.find((n) => n.id === 'src')!.x).toBe(2000);
 });
 
-test('a lone Source stands leftmost; a lone Output, isolated, stands in the stack after it, left of the graph (Will, 2026-11-10)', async ({ page }) => {
+test('no Source is lone: the Start joins each, so each stands right of it; a lone Output stands in the stack, left of the graph (Will, TODO 955)', async ({ page }) => {
   await start(page, [['a', 'source', 400, 0, { store: 'users' }], ['f', 'field', 800, 0], ['c', 'condition', 1200, 0, { type: 'eq', b: 'x' }], ['lone-out', 'result', 0, 0], ['lone-src', 'source', 1600, 300, { store: 'users' }]],
     [{ from: 'a/rows', to: 'f' }, { from: 'f/field', to: 'c' }]);
   await button(page).click();
   await settle(page);
   const now = await rects(page);
-  const graphLeft = Math.min(now['a']!.x, now['f']!.x, now['c']!.x);
-  expect(now['lone-src']!.x + now['lone-src']!.w).toBeLessThanOrEqual(now['lone-out']!.x);
+  // The Start's drawn line to each Source holds the flow (a hop): Start › Source, as Trigger › Start.
+  for (const src of ['a', 'lone-src']) expect(now['Start']!.x + now['Start']!.w, src).toBeLessThanOrEqual(now[src]!.x);
+  const graphLeft = Math.min(now['Start']!.x, now['a']!.x, now['f']!.x, now['c']!.x, now['lone-src']!.x);
   expect(now['lone-out']!.x + now['lone-out']!.w).toBeLessThanOrEqual(graphLeft);
 });
 
@@ -294,10 +295,12 @@ test('a graph in stages: each node stays in its own stage, inside its band, none
   expect(bands.map((b) => b.id)).toEqual(['plan', 'run', 'report']);
   expect(bands[0]!.left).toBe(-40);
   for (let i = 1; i < bands.length; i++) expect(bands[i]!.left - bands[i - 1]!.right).toBe(16);
+  // The Start is drawn as "Start": it is in the first stage, as each node is in its own (TODO 955).
+  const box = (id: string) => now[id === '#start' ? 'Start' : id]!;
   for (const n of after.nodes) {
     const band = bands.find((b) => b.id === n.stage)!;
-    expect(now[n.id]!.x, n.id).toBeGreaterThanOrEqual(band.left + 48);
-    expect(now[n.id]!.x + now[n.id]!.w, n.id).toBeLessThanOrEqual(band.right - 48);
+    expect(box(n.id).x, n.id).toBeGreaterThanOrEqual(band.left + 48);
+    expect(box(n.id).x + box(n.id).w, n.id).toBeLessThanOrEqual(band.right - 48);
   }
   await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
   await settle(page);

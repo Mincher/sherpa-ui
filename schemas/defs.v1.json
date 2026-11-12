@@ -342,7 +342,7 @@
       "additionalProperties": false,
       "required": ["id", "kind", "x", "y"],
       "properties": {
-        "id": { "$ref": "#/$defs/id" },
+        "id": { "description": "Its name; the Start, a top graph's entry point, is \"#start\", kept as any node (plan 949, TODO 955).", "anyOf": [{ "$ref": "#/$defs/id" }, { "const": "#start" }] },
         "kind": { "description": "A kind a workflow runs: one the library ships (store, value, field, math, condition, time, sort, group, text, tag, portal, output), or one the app adds.", "type": "string" },
         "x": { "description": "Its place across the canvas, in plane px.", "type": "number" },
         "y": { "description": "Its place down the canvas, in plane px.", "type": "number" },

@@ -50,7 +50,8 @@ test('two Sources dragged into a workflow: each its own id, customers and device
     await settle(page);
   }
   const kept = () => page.evaluate(() => (window as unknown as { ed: { workflow(): { nodes: { id: string; kind: string; values?: { store?: string } }[] } } }).ed.workflow().nodes
-    .map((n) => [n.id, n.kind, n.values?.store ?? null]));
+    // The Start is kept as any node (TODO 955), and is not this spec's: left out.
+    .filter((n) => n.id !== '#start').map((n) => [n.id, n.kind, n.values?.store ?? null]));
   expect(await kept()).toEqual([['source-1', 'source', 'customers'], ['source-2', 'source', 'devices']]);
   await expect(page.locator(sources)).toHaveCount(2);
   // 809, 833: every line is a short job in Will's words, on one line; a family's never lists its types.

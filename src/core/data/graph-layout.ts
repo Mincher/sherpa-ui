@@ -6,6 +6,7 @@
  * Map:
  * - LayoutParts — How a graph is drawn: its ties, frames, stages and lanes, and each node's place before the lanes.
  * - layoutParts — A graph's layout, each part only where it holds something.
+ * - isGroupEnd — Whether a node is a body's Group Input or Output: placed from its body, never kept or moved.
  */
 import type { NodeTie } from './node-kinds.js';
 import type { NodeFrame } from './node-frames.js';
@@ -27,3 +28,7 @@ export function layoutParts(g: { readonly [K in keyof LayoutParts]?: LayoutParts
     ...(g.lanes?.length ? { lanes: g.lanes, ...(g.beforeLanes ? { beforeLanes: g.beforeLanes } : {}) } : {}),
   };
 }
+
+/** Whether a node is a body's Group Input or Output: placed from its body each time, never kept, moved or framed. The
+ *  Start, the other `#` node, is kept and moved as any node (TODO 955). */
+export const isGroupEnd = (id: string): boolean => id === '#in' || id === '#out';

@@ -23,7 +23,7 @@
  * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named and tagged, under a free id.
  */
 import type { Entity, EntityGraph } from './entity.js';
-import { layoutParts } from './graph-layout.js';
+import { isGroupEnd, layoutParts } from './graph-layout.js';
 import { tidyTags } from './tags.js';
 import type { EntityType } from './entity-types.js';
 import type { EntityShelf, EntitySummary } from './entity-shelf.js';
@@ -127,11 +127,12 @@ export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' |
   return await shelf.save(entity) ? id : undefined;
 }
 
-/** What a canvas's workflow keeps as an entity's graph: its own nodes (not `#in` and `#out`), its connections, ties and frames. */
+/** What a canvas's workflow keeps as an entity's graph: its own nodes and its Start (not `#in` and `#out`), its connections, ties and frames. */
 export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'connections' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>): EntityGraph {
   return {
     // Its stages and swimlanes, as its frames: a Save that dropped them lost them on the next load (TODO 933).
-    nodes: workflow.nodes.filter((n) => !n.id.startsWith('#')), connections: workflow.connections ?? [], ...layoutParts(workflow),
+    // The Start is kept as any node; a Group Input and Output are placed from the graph (TODO 955).
+    nodes: workflow.nodes.filter((n) => !isGroupEnd(n.id)), connections: workflow.connections ?? [], ...layoutParts(workflow),
   };
 }
 

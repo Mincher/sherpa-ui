@@ -1,6 +1,6 @@
 /**
- * A TOP GRAPH STARTS AT ITS START (Will, plan 949: D1 A, D2 A, D3 B). Every top graph has a Start, always there, placed
- * each time and never kept: each Trigger joins it by its header's True; it sends nothing. A Trigger not joined warns; only
+ * A TOP GRAPH STARTS AT ITS START (Will, plan 949: D1 A, D2 A, D3 B). Every top graph has a Start, always there: added
+ * where it has none, then kept as any node (TODO 955). Each Trigger joins it by its header's True; it sends nothing. A Trigger not joined warns; only
  * a Trigger's header may join it. A graph with a Group Input or Output has none. A type may say its entities are not
  * reusable (a Coworker): no node is made of one, and a graph that places one is refused.
  *
@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { START, hasStart, withStart, withoutStart } = await import(new URL('node-start.js', core));
+const { START, hasStart, withStart } = await import(new URL('node-start.js', core));
 const { nodeWidth, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { simulateGraph } = await import(new URL('node-simulate.js', core));
 const { innerOf } = await import(new URL('node-library.js', core));
@@ -23,15 +23,21 @@ const trigger = (id, x, y, type = 'schedule') => ({ id, kind: 'trigger', x, y, v
 const flow = (nodes, connections = []) => ({ v: 3, id: 'w', nodes: [...nodes, { id: 'o', kind: 'result', x: 900, y: 0 }], connections });
 const start = (g) => g.nodes.find((n) => n.id === START);
 
-test('every top graph draws its Start, last, left of its nodes; it is never kept', () => {
+test('every top graph has its Start, last, left of its nodes where it had none; then it is kept, and stays where it is kept (955)', () => {
   const g = flow([{ id: 's', kind: 'source', x: 0, y: 40, values: { store: 'users' } }]);
   const drawn = workflowGraph(g);
   assert.deepEqual([drawn.nodes.at(-1).id, drawn.nodes.at(-1).heading, start(drawn).x, start(drawn).y], [START, 'Start', -360, 0]);
   // An output too, for its drawn lines to the Sources, which are never kept (Will).
   assert.deepEqual([start(drawn).input, start(drawn).many, start(drawn).output, start(drawn).rows], ['boolean', true, 'boolean', []]);
-  assert.equal(start(g), undefined, 'the workflow keeps no Start');
-  assert.deepEqual(withoutStart(withStart(g, nodeWidth)), g);
-  assert.equal(withStart(withStart(g, nodeWidth), nodeWidth).nodes.filter((n) => n.id === START).length, 1);
+  // Added once; kept as any node after, where it was put: a second pass moves it not, nor adds one.
+  const kept = withStart(g, nodeWidth);
+  assert.deepEqual([start(kept).x, start(kept).y], [-360, 0]);
+  const moved = { ...kept, nodes: kept.nodes.map((n) => (n.id === START ? { ...n, x: 900, y: 500 } : n)) };
+  assert.equal(withStart(moved, nodeWidth), moved);
+  assert.deepEqual(workflowGraph(moved).nodes.filter((n) => n.id === START).map((n) => [n.x, n.y]), [[900, 500]]);
+  // Kept, the schemas take it, as a workflow's node and an entity's.
+  assert.deepEqual(schemaCheck('workflow.v3.json')(moved), []);
+  assert.deepEqual(schemaCheck('entity.v2.json')({ v: 2, type: 'node', id: 'g', label: 'G', graph: { nodes: moved.nodes, connections: moved.connections }, settings: { inputs: [], outputs: [] } }), []);
 });
 
 test('each Trigger joins it by its header; the Start stands right of them, at their middle; no fault, and the schema takes it', () => {
@@ -83,4 +89,17 @@ test('a type that is not reusable makes no node: the panel has none, and a graph
     undo?.();
     stop();
   }
+});
+
+test('Unfurl lays out Trigger › Start › Source by the flow: the Start a node, its drawn lines a hop each (Will, TODO 955)', async () => {
+  const { unfurlNodes } = await import(new URL('node-unfurl.js', core));
+  // As the editor hands it: the Start kept, out of line; the Trigger joined to it; its line to the Source a hop.
+  const nodes = [
+    { id: 's', kind: 'source', x: 420, y: -416 }, { id: 'o', kind: 'result', x: 900, y: 0 },
+    { id: 't', kind: 'trigger', x: 8, y: -416 }, { id: START, kind: START, x: 368, y: -198 },
+  ];
+  const boxes = Object.fromEntries(nodes.map((n) => [n.id, { w: 240, h: 120 }]));
+  const placed = unfurlNodes({ nodes, connections: [{ from: 't', to: START }, { from: 's/rows', to: 'o' }], hops: [{ from: START, to: 's' }], bands: { s: 'left', o: 'right' } }, nodes.map((n) => n.id), { gapX: 120, gapY: 40, grid: 4, boxes });
+  const x = (id) => placed.nodes[id].x;
+  assert.ok(x('t') + 240 <= x(START) && x(START) + 240 <= x('s') && x('s') + 240 <= x('o'), JSON.stringify(placed.nodes));
 });

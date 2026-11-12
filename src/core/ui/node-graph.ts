@@ -76,7 +76,8 @@ import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
-import { START, withStart, withStartKind, withoutStart } from '../data/node-start.js';
+import { START, withStart, withStartKind } from '../data/node-start.js';
+import { isGroupEnd } from '../data/graph-layout.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { dragTo, startDrag, type ChainDrag, type ChainLink, type ChainNode } from '../data/node-chain.js';
 import { drawLanes } from './node-lanes-ui.js';
@@ -1170,7 +1171,7 @@ function chainNodes(made: Drawn): ChainNode[] {
   return [...made.nodes].flatMap(([id, el]) => {
     const node = made.graph.nodes.find((n) => n.id === id);
     const at = nowAt(made, id);
-    return node && at && !id.startsWith('#') && !made.options.locked?.(node) ? [{ id, x: at[0], y: at[1], w: el.offsetWidth, h: el.offsetHeight }] : [];
+    return node && at && !isGroupEnd(id) && !made.options.locked?.(node) ? [{ id, x: at[0], y: at[1], w: el.offsetWidth, h: el.offsetHeight }] : [];
   });
 }
 
@@ -1193,7 +1194,7 @@ function chainLinks(made: Drawn): ChainLink[] {
  *  pulled or pushed. Plan 918 */
 function moveNodes(made: Drawn, held: readonly { id: string; x: number; y: number }[], chain: boolean): void {
   if (!held.length) return;
-  const free = made.options.onMoveMany && held.every((m) => !m.id.startsWith('#'));
+  const free = made.options.onMoveMany && held.every((m) => !isGroupEnd(m.id));
   if (free) made.chain ??= startDrag(chainNodes(made), chainLinks(made), held.map((m) => m.id));
   const placed = free && made.chain ? dragTo(made.chain, Object.fromEntries(held.map((m) => [m.id, m])), chain) : {};
   const moves = free && made.chain ? Object.entries(placed).map(([id, p]) => ({ id, ...p })) : held;
@@ -1699,7 +1700,7 @@ function laidAs(canvas: SherpaLayoutCanvas, drawn: Drawn): { gap: number; nodes:
 /** Where these nodes go, from the boxes they are drawn in: on a grid. None, fewer than two. */
 export function arrangement(canvas: SherpaLayoutCanvas, picked: readonly string[]): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
-  const ids = picked.filter((id) => !id.startsWith('#'));
+  const ids = picked.filter((id) => !isGroupEnd(id));
   if (!drawn || ids.length < 2) return undefined;
   const { gap, nodes, boxes } = laidAs(canvas, drawn);
   const placed = arrangeNodes({ nodes, connections: drawn.connections, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes });
@@ -1732,7 +1733,7 @@ export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined 
  *  `staged`, each node in its own (TODO 950). None, fewer than two. TODO 569 · TRAP T-unfurl-keeps-the-flow */
 export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDefinition, 'nodes' | 'stages'>): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
-  const ids = [...(drawn?.nodes ?? [])].filter(([id, el]) => !id.startsWith('#') && !el.hasAttribute('data-locked')).map(([id]) => id);
+  const ids = [...(drawn?.nodes ?? [])].filter(([id, el]) => !isGroupEnd(id) && !el.hasAttribute('data-locked')).map(([id]) => id);
   if (!drawn || ids.length < 2) return undefined;
   const { gap, nodes, boxes } = laidAs(canvas, drawn);
   // A frame's box past its nodes', read off one drawn: its pad each side, and its header and pad above.
@@ -1760,10 +1761,9 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
   // Each node in its stage (TODO 950): with no stages written, the unfurl reads none.
   const named = new Map(staged?.nodes.map((n) => [n.id, n.stage]) ?? []);
   const inStages = nodes.map((n) => { const at = named.get(n.id); return at ? { ...n, stage: at } : n; });
-  // The Start is placed from its Triggers each time (plan 949): it takes no part in the layout, nor do its lines.
-  const laid = inStages.filter((n) => n.id !== START);
-  const lines = drawn.connections.filter((r) => r.to !== START && socketOf(r.from).node !== START);
-  const placed = unfurlNodes({ nodes: laid, connections: lines, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
+  // The Start's drawn lines to the Sources hold the flow, as a portal's hop does: Trigger › Start › Source (TODO 955).
+  if (drawn.nodes.has(START)) for (const n of drawn.graph.nodes) if (n.started) hops.push({ from: START, to: n.id });
+  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
@@ -1786,7 +1786,7 @@ export function watchArrange(
 ): (() => void) & { tell(): void } {
   if (!toolbar) return Object.assign(() => undefined, { tell: () => undefined });
   const tell = (): void => {
-    const can = pickedNodes(canvas).filter((id) => !id.startsWith('#')).length > 1 && allowed();
+    const can = pickedNodes(canvas).filter((id) => !isGroupEnd(id)).length > 1 && allowed();
     for (const flag of flags) toolbar.toggleAttribute(flag, can);
   };
   const watch = new MutationObserver(tell);
@@ -2554,8 +2554,10 @@ export function bindWorkflow(
   const kept = session?.get(pointer) as WorkflowDefinition | undefined;
   const read = readWorkflow(kept ?? structuredClone(workflow));
   for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
-  let draft: WorkflowDefinition = read.workflow ?? { v: 3, id: workflow.id, nodes: [] };
-  let original: WorkflowDefinition = readWorkflow(structuredClone(workflow)).workflow ?? draft;
+  // A top graph is opened with its Start, kept from then on as any node (TODO 955); a page's Query has none.
+  const opened = (w: WorkflowDefinition): WorkflowDefinition => (doc ? w : withStart(w, nodeWidth));
+  let draft: WorkflowDefinition = opened(read.workflow ?? { v: 3, id: workflow.id, nodes: [] });
+  let original: WorkflowDefinition = opened(readWorkflow(structuredClone(workflow)).workflow ?? draft);
   /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
   const starting = original;
   /** It never changes: its JSON, once. */
@@ -2588,15 +2590,7 @@ export function bindWorkflow(
     }
     return inner;
   };
-  // The top graph with its Start, placed each time and never kept (plan 949): one per draft, so an edit that changes nothing
-  // is the graph shown.
-  let started: { from: WorkflowDefinition; to: WorkflowDefinition } | undefined;
-  const top = (): WorkflowDefinition => {
-    if (doc) return draft;
-    if (started?.from !== draft) started = { from: draft, to: withStart(draft, nodeWidth, (n) => drawnOn.get(canvas)?.nodes.get(n.id)?.offsetHeight || 120) };
-    return started.to;
-  };
-  const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : top());
+  const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : draft);
   const K = (): Readonly<Record<string, NodeKind>> => (path.length ? innerNow()?.kinds ?? topKinds() : topKinds());
   /** A preset's inside is read only (D15), at any depth, and one the app says the reader may not change (plan 936 D2); a
    *  preset workflow, everywhere. */
@@ -2813,7 +2807,8 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this workflow is a preset, read only: change a copy of it.', at: { workflow: workflow.id } });
     } else if (!path.length) {
       // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
-      draft = withoutStart(settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K()));
+      // The Start stays in the first stage, if the stages change (Will).
+      draft = settling ? next : fitLanes(fitStages(opened(next), nodeWidth), heightOf, K());
       // Kept for the tab as the drag ends, not each pointer move: each is the whole workflow as JSON.
       if (!dragging) session?.set(pointer, draft);
     } else if (readOnly()) {
@@ -2884,7 +2879,7 @@ export function bindWorkflow(
     write(editWorkflow(shown(), { node: node.id, set: { [own]: String(value ?? '') } }, K()), `own:${node.id}/${own}`);
   };
   const onMove = (node: GraphNode, x: number, y: number): void => {
-    if (node.id.startsWith('#')) return;
+    if (isGroupEnd(node.id)) return;
     settling = pressing && shifted;
     dragging = pressing;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
@@ -2893,7 +2888,7 @@ export function bindWorkflow(
   // Nodes moved by one drag: ONE step, named by the nodes the reader holds, as the nodes it pulls and pushes change. A tie
   // whose connections all join them goes with them, by the mean of their moves, and so do the bends between them. TODO 752
   const onMoveMany = (moves: readonly { id: string; x: number; y: number }[], held?: readonly string[]): void => {
-    const nodes = Object.fromEntries(moves.filter((m) => !m.id.startsWith('#')).map((m) => [m.id, { x: m.x, y: m.y }]));
+    const nodes = Object.fromEntries(moves.filter((m) => !isGroupEnd(m.id)).map((m) => [m.id, { x: m.x, y: m.y }]));
     if (Object.keys(nodes).length < 2) return;
     const was = new Map(shown().nodes.map((n) => [n.id, n]));
     const shift = (id: string): [number, number] => {
@@ -2918,7 +2913,7 @@ export function bindWorkflow(
     write(editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: 'reset', ...(placed.stages ? { stages: placed.stages } : {}) } }, K()));
   };
   const onResize = (node: GraphNode, size: NodeSize): void => {
-    if (node.id.startsWith('#')) return;
+    if (isGroupEnd(node.id)) return;
     dragging = pressing;
     write(editWorkflow(shown(), { resize: { node: node.id, ...size } }, K()), `size:${node.id}`);
   };
@@ -3571,9 +3566,9 @@ export function bindWorkflow(
   /** Every tag the app's Custom Nodes have: what a Tags field offers. */
   const knownTags = (): string[] => [...new Set(Object.values(lib.nodes).flatMap((d) => tidyTags(d.tags)))].sort();
   /** The definition a Tags field edits: a use's; inside an opened one, its Group Input's and Output's. */
-  const taggedBy = (node: Pick<GraphNode, 'id'>): string | undefined => (node.id.startsWith('#') ? path.at(-1)?.kind : use(node.id)?.kind);
+  const taggedBy = (node: Pick<GraphNode, 'id'>): string | undefined => (isGroupEnd(node.id) ? path.at(-1)?.kind : use(node.id)?.kind);
   /** A Group Input or Output of the open entity itself: its Tags field is the entity's own. TODO 828 */
-  const ownTagged = (node: Pick<GraphNode, 'id'>): boolean => !!own && !path.length && node.id.startsWith('#');
+  const ownTagged = (node: Pick<GraphNode, 'id'>): boolean => !!own && !path.length && isGroupEnd(node.id);
   /** The Tags row: the DEFINITION's tags, which every use shares; read only for a preset. TRAP T-a-custom-node-is-an-instance */
   const tagsRow = (node: GraphNode): GraphRow[] => {
     const id = taggedBy(node);
@@ -3886,7 +3881,7 @@ export function bindWorkflow(
         picks.select(node, graph);
       },
       notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
-      locked: (node) => ro || node.id.startsWith('#'),
+      locked: (node) => ro || isGroupEnd(node.id),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
       // A collapsed or expanded node changes height: its lane fits again.
       onCollapse: () => { if (shown().lanes?.length) write(shown()); },
@@ -3897,6 +3892,7 @@ export function bindWorkflow(
     requestAnimationFrame(() => drawLanes(canvas, shown(), heightOf, K()));
     toolbar?.toggleAttribute('data-can-lanes', !ro);
     toolbar?.toggleAttribute('data-lanes', laning);
+    // Two nodes of the reader's: the Start alone with one is nothing to unfurl.
     toolbar?.toggleAttribute('data-can-unfurl', !ro && !laning && graph.nodes.filter((n) => !n.id.startsWith('#')).length > 1);
     unarrange.tell();
     tellPath();

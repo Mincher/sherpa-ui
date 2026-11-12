@@ -104,8 +104,9 @@ test('Add stage before Stage 1 is Stage 1, and the old one Stage 2: a default na
   expect(w.stages![0]!.colour).toMatch(/^var\(--sherpa-data-viz-series-border-(10|[1-9])\)$/);
   await expect(stage(page, 0)).toHaveAttribute('data-heading', 'Stage 1');
   await expect(stage(page, 1)).toHaveAttribute('data-heading', 'Stage 2');
-  // Its nodes moved on with the old Stage 1, and the new one is empty.
-  expect(w.nodes.every((n) => n.stage === 'stage-1')).toBe(true);
+  // Its nodes moved on with the old Stage 1; the Start stands in the new first one (Will, TODO 955).
+  expect(w.nodes.filter((n) => n.id !== '#start').every((n) => n.stage === 'stage-1')).toBe(true);
+  expect(w.nodes.find((n) => n.id === '#start')?.stage).toBe('stage-2');
 });
 
 test('Shift-dragged, a node leaves its stage and joins the one it is let go in; its old stage shrinks; Undo puts it back as one step', async ({ page }) => {

@@ -617,9 +617,11 @@ registerTriggerCatalog({
 
 A list you register is a pick; one you do not is typed text.
 
-Every top graph has a **Start**: the graph's entry point, always there, never kept as a
-node. Each Trigger joins it by a line from its header, which sends True when it fires;
-the line is kept as `{ "from": "<trigger>", "to": "#start" }`. The Start sends nothing.
+Every top graph has a **Start**: the graph's entry point, always there. It is a node,
+`{ "id": "#start", "kind": "#start", "x": …, "y": … }`, kept and moved as any node; one is
+added where a graph has none, and it cannot be removed. Each Trigger joins it by a line from
+its header, which sends True when it fires: `{ "from": "<trigger>", "to": "#start" }`. The
+Start sends nothing.
 A Trigger not joined to it warns. A Custom Node's body, or any graph with a Group Input
 or Output, has none: those enter it.
 

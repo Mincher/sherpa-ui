@@ -46,11 +46,12 @@ const bind = (page: Page) => page.evaluate(`(${BIND})()`);
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 
 /** What the draft holds now: each node's id and kind, and its connections. */
+// The Start is kept as any node (TODO 955), and is not this spec's: left out.
 const draft = (page: Page) => page.evaluate(() => {
   const w = window as unknown as { editor: { save(): boolean }; saved: { nodes: { id: string; kind: string; x: number; y: number }[]; connections?: { from: string; to: string }[] }[] };
   w.editor.save();
   const d = w.saved.at(-1)!;
-  return { nodes: d.nodes.map((n) => ({ id: n.id, kind: n.kind, x: n.x, y: n.y })), connections: (d.connections ?? []).map((r) => `${r.from} → ${r.to}`) };
+  return { nodes: d.nodes.filter((n) => n.id !== '#start').map((n) => ({ id: n.id, kind: n.kind, x: n.x, y: n.y })), connections: (d.connections ?? []).map((r) => `${r.from} → ${r.to}`) };
 });
 /** Press the search field with the real pointer: WebKit's own hit check calls the card's host the thing in the way. */
 async function pressSearch(page: Page): Promise<void> {

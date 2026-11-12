@@ -81,10 +81,10 @@ const headerSocket = (page: Page, heading: string, side: 'input' | 'output', n =
   return [b.left + b.width / 2, b.top + b.height / 2] as [number, number];
 }, side);
 
-test('the Start (949): always there, held still, its Triggers joined by a drag from their header; Save keeps the line, not the node', async ({ page }) => {
+test('the Start (949): always there, kept and moved as any node (955), its Triggers joined by a drag from their header', async ({ page }) => {
   const start = page.locator('#cv > sherpa-node[data-heading="Start"]');
   await expect(start).toHaveCount(1);
-  expect(await start.evaluate((n) => [n.getAttribute('data-category'), n.hasAttribute('data-input-socket'), n.hasAttribute('data-output-socket'), n.hasAttribute('data-locked')])).toEqual(['triggers', true, true, true]);
+  expect(await start.evaluate((n) => [n.getAttribute('data-category'), n.hasAttribute('data-input-socket'), n.hasAttribute('data-output-socket'), n.hasAttribute('data-locked')])).toEqual(['triggers', true, true, false]);
   // Not joined, each Trigger warns.
   await expect(page.locator('#cv > sherpa-node[data-heading="Trigger"][data-warning="Connect it to the Start"]')).toHaveCount(2);
   for (const n of [0, 1]) {
@@ -98,7 +98,7 @@ test('the Start (949): always there, held still, its Triggers joined by a drag f
   }
   await expect(page.locator('#cv > sherpa-node[data-heading="Trigger"][data-warning]')).toHaveCount(0);
   const kept = await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { id: string }[]; connections: { from: string; to: string }[] } } }).editor.workflow());
-  expect([kept.nodes.map((n) => n.id), kept.connections.filter((c) => c.to === '#start').map((c) => c.from)]).toEqual([['t', 'u', 'o'], ['t', 'u']]);
+  expect([kept.nodes.map((n) => n.id), kept.connections.filter((c) => c.to === '#start').map((c) => c.from)]).toEqual([['t', 'u', 'o', '#start'], ['t', 'u']]);
   // Simulate: the Start says what would start it.
   await page.evaluate(() => (window as never as { editor: { simulate(): Promise<void> } }).editor.simulate());
   await settle(page);

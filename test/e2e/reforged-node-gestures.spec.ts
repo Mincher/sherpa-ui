@@ -45,7 +45,8 @@ const BIND = `async (connections) => {
 const bind = (page: Page, connections?: { from: string; to: string }[]) => page.evaluate(`(${BIND})(${JSON.stringify(connections ?? null)})`);
 
 /** The saved workflow's connections, and each node's values: what the draft holds now. */
-const DRAFT = `(() => { window.editor.save(); const d = window.saved.at(-1); return { connections: d.connections.map((r) => r.from + ' → ' + r.to), nodes: Object.fromEntries(d.nodes.map((n) => [n.id, n.values ?? null])) }; })()`;
+// The Start is kept as any node (TODO 955), and is not this spec's: left out.
+const DRAFT = `(() => { window.editor.save(); const d = window.saved.at(-1); return { connections: d.connections.map((r) => r.from + ' → ' + r.to), nodes: Object.fromEntries(d.nodes.filter((n) => n.id !== '#start').map((n) => [n.id, n.values ?? null])) }; })()`;
 const draft = (page: Page) => page.evaluate(DRAFT) as Promise<{ connections: string[]; nodes: Record<string, Record<string, unknown> | null> }>;
 /** A connection's drawn lines, by what they join. */
 const LINES = `[...document.querySelectorAll('#root svg.graph-connectors path[data-from]')].map((p) => p.dataset.from + ' → ' + p.dataset.to)`;

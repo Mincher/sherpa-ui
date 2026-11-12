@@ -39,7 +39,8 @@ async function start(page: Page, flow?: unknown, readOnly = false): Promise<void
   }, [flow ?? null, NODES, CONNECTIONS, readOnly] as const);
 }
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
-const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((window as never as { ed: Ed }).ed.workflow())) as Flow);
+// The Start is kept as any node (TODO 955), and is not this spec's: left out.
+const flow = (page: Page) => page.evaluate(() => { const w = JSON.parse(JSON.stringify((window as never as { ed: Ed }).ed.workflow())); return { ...w, nodes: w.nodes.filter((n: { id: string }) => n.id !== '#start') } as Flow; });
 const ed = (page: Page, call: 'undo' | 'redo') => page.evaluate((c) => (window as never as { ed: Ed }).ed[c](), call).then(() => settle(page));
 const node = (page: Page, id: string) => page.locator(`#cv > sherpa-node[data-heading="${id}"]`);
 const box = async (page: Page, id: string): Promise<Box> => (await node(page, id).boundingBox())!;

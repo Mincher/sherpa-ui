@@ -39,6 +39,7 @@ import { NODE_KINDS, nodeKinds, rowOf, type NodeKind, type NodeConnection, type 
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
 import { layoutParts } from './graph-layout.js';
+import { START } from './node-start.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -310,8 +311,11 @@ export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = nodeKinds
         else if (side === 'input' && (s as NodeSocket).multiple && s.type !== 'object') problems.push(`${at} has the input "${s.name}", a list of picks, which is an object, not ${s.type}`);
       }
     }
+    // A body with no sockets is a top graph's, a Coworker's: its Start is kept as any node (plan 949, TODO 955).
+    const topGraph = !definition.inputs.length && !definition.outputs.length;
     for (const n of definition.nodes) {
-      if (String(n?.id).startsWith('#') || String(n?.kind).startsWith('#')) problems.push(`${at} holds a node "${String(n.id)}" of the kind "${String(n.kind)}": a # name is the Group Input's and Output's`);
+      const start = topGraph && n?.id === START && n.kind === START;
+      if (!start && (String(n?.id).startsWith('#') || String(n?.kind).startsWith('#'))) problems.push(`${at} holds a node "${String(n.id)}" of the kind "${String(n.kind)}": a # name is the Group Input's and Output's`);
     }
     const body = inside(id, definition, base);
     problems.push(...nested(body.workflow, body.kinds, base, library, facts, [definition.label ?? id], [id]).filter((f) => f));
