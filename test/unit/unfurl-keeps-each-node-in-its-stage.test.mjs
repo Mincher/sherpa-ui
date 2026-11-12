@@ -91,6 +91,19 @@ test('the unfurl places the stages too: fitting them after moves no node, each o
   for (const n of fit.nodes) assert.deepEqual([n.x % 4, n.y % 4].map(Math.abs), [0, 0], n.id);
 });
 
+test('each stage\'s width fits its unfurled nodes: a width kept from a drag goes, wide or narrow (Will, 2026-11-12)', () => {
+  const w = coworker();
+  // Run dragged far wider than its one node needs; Report narrower than its nodes.
+  const dragged = { ...w, stages: w.stages.map((s) => (s.id === 'run' ? { ...s, w: 3000 } : s.id === 'report' ? { ...s, w: 200 } : s)) };
+  const { laid, fit } = unfurled(dragged);
+  assert.deepEqual(laid.stages.map((s) => 'w' in s), [false, false, false]);
+  const right = (id) => Math.max(...fit.nodes.filter((n) => n.stage === id).map((n) => n.x + nodeWidth(n)));
+  const band = (id) => stageBands(fit, nodeWidth).bands.find((b) => b.id === id);
+  for (const id of ['run', 'report']) assert.equal(band(id).right, Math.max(right(id) + STAGE_PAD, band(id).left + STAGE_MIN), id);
+  // As if never dragged.
+  assert.deepEqual(fit.nodes.map((n) => [n.id, n.x, n.y]), unfurled(w).fit.nodes.map((n) => [n.id, n.x, n.y]));
+});
+
 test('each node stands right of every node that feeds it, across the stage edges too (Will, 2026-11-12)', () => {
   const w = coworker();
   const { fit } = unfurled(w);

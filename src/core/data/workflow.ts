@@ -1049,7 +1049,12 @@ export function editWorkflow(
             : stage !== undefined ? `the stage "${stage}" is not there` : undefined;
     if (fault) return refuse(fault), workflow;
     const moved = { ...workflow, nodes: workflow.nodes.map((n) => { const to = nodes[n.id]; return to ? { ...n, x: to.x, y: to.y, ...(to.stage ? { stage: to.stage } : {}) } : n; }),
-      ...(stages && workflow.stages ? { stages: workflow.stages.map((s) => (s.id in stages ? { ...s, x: stages[s.id]! } : s)) } : {}) };
+      ...(stages && workflow.stages ? { stages: workflow.stages.map((s) => {
+        if (!(s.id in stages)) return s;
+        // A stage placed fits its nodes: a width kept from a drag goes (Will, 2026-11-12, TODO 950).
+        const { w: _w, ...fit } = s;
+        return { ...fit, x: stages[s.id]! };
+      }) } : {}) };
     const has = (r: NodeConnection, all: boolean): boolean => {
       const ends = [socketOf(r.from).node, socketOf(r.to).node].map((id) => id in nodes);
       return all ? ends.every(Boolean) : ends.some(Boolean);

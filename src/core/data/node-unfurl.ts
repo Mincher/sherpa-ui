@@ -463,7 +463,8 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     const lift = ids[0]!.length ? Math.ceil((staged[0]!.x + STAGE_PAD) / grid) * grid - leftOf(ids[0]!) : 0;
     const from = staged.map((s, i) => (i && ids[i]!.length ? leftOf(ids[i]!) - STAGE_PAD : s.x));
     const nodes = ids.flatMap((list, i) => list.map((id) => ({ id, x: out.nodes[id]!.x + (i ? 0 : lift), y: out.nodes[id]!.y, stage: staged[i]!.id })));
-    const { bands } = stageBands({ stages: staged.map((s, i) => ({ ...s, x: from[i]! })), nodes }, (nd) => box(nd.id).w);
+    // A width kept from a drag holds no band: each fits its unfurled nodes (Will, 2026-11-12), and the place edit clears it.
+    const { bands } = stageBands({ stages: staged.map(({ w: _w, ...s }, i) => ({ ...s, x: from[i]! })), nodes }, (nd) => box(nd.id).w);
     staged.forEach((s, i) => moveX.set(s.id, i ? bands[i]!.left - from[i]! : lift));
     for (const id of picked) {
       out.nodes[id]!.x += moveX.get(stageIn.get(id)!)!;
