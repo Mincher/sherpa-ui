@@ -9,7 +9,7 @@ import { test, expect, type Page } from './harness';
  */
 type Box = { x: number; y: number; width: number; height: number };
 
-const NODES: [string, string, number, number][] = [['s1', 'source', 0, 0], ['p1', 'field', 420, 260], ['e1', 'output', 840, 40], ['s2', 'source', 840, 800]];
+const NODES: [string, string, number, number][] = [['s1', 'source', 0, 0], ['p1', 'field', 420, 260], ['e1', 'result', 840, 40], ['s2', 'source', 840, 800]];
 const CONNECTIONS = [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }];
 /** The zoom it showed at, and a pan that puts the Output's edges on whole screen px: where it showed most. */
 const ZOOM = 0.5;

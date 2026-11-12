@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv') as HTMLElement & { rendered: Promise<void> };
     await canvas.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 3, id: 'g', nodes: [{ id: 'a', kind: 'source', x: 40, y: 40, values: { store: 'customers' } }, { id: 'b', kind: 'output', x: 400, y: 40 }], connections: [{ from: 'a/rows', to: 'b' }] };
+    const flow = { v: 3, id: 'g', nodes: [{ id: 'a', kind: 'source', x: 40, y: 40, values: { store: 'customers' } }, { id: 'b', kind: 'result', x: 400, y: 40 }], connections: [{ from: 'a/rows', to: 'b' }] };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, { session: new SessionStore(), header: head as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['customers'] });
     await window.__settled();
   });
@@ -41,7 +41,7 @@ test('the bar\'s ⋮ is the one control and holds Reset node graph alone, inacti
 
 test('a node moved makes it active; pressed, the graph is back as loaded in ONE step, and Undo puts the move back; nothing is saved', async ({ page }) => {
   await page.evaluate(() => { (window as never as { saved: unknown[] }).saved = []; document.addEventListener('definition-save', (e) => (window as never as { saved: unknown[] }).saved.push((e as CustomEvent).detail)); });
-  const head = (await page.locator('#cv > sherpa-node[data-heading="Output"] sherpa-container-header').boundingBox())!;
+  const head = (await page.locator('#cv > sherpa-node[data-heading="Run result"] sherpa-container-header').boundingBox())!;
   await page.mouse.move(head.x + head.width * 0.4, head.y + head.height / 2);
   await page.mouse.down();
   await page.mouse.move(head.x + head.width * 0.4 + 50, head.y + 60, { steps: 5 });

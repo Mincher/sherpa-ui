@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'sort', kind: 'sort', x: 330, y: 0, values: { direction: 'asc' } },
-      { id: 'end', kind: 'output', x: 660, y: 0 },
+      { id: 'end', kind: 'result', x: 660, y: 0 },
     ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'), stageDialog: document.getElementById('stage'),
       toolbar: canvas.querySelector('sherpa-node-toolbar'), stores: ['users'],
@@ -112,7 +112,7 @@ test('Shift-dragged, a node leaves its stage and joins the one it is let go in; 
   await addStage(page);
   const two = (await stage(page, 1).boundingBox())!;
   const before = (await stage(page, 0).boundingBox())!.width;
-  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 }, true);
+  await dragNode(page, 'Run result', { x: two.x + 60, y: two.y + 120 }, true);
   expect(await stageOf(page, 'end')).toBe('stage-2');
   expect((await stage(page, 0).boundingBox())!.width).toBeLessThan(before);
   await page.locator('sherpa-node-toolbar sherpa-button.undo').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
@@ -149,7 +149,7 @@ test('Move left and Move right move a stage one place, its nodes with it, one st
   const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
   await addStage(page);
   const two = (await stage(page, 1).boundingBox())!;
-  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 }, true);
+  await dragNode(page, 'Run result', { x: two.x + 60, y: two.y + 120 }, true);
   await expect(stage(page, 0).locator('.move-left')).toHaveAttribute('disabled', '');
   await expect(stage(page, 1).locator('.move-right')).toHaveAttribute('disabled', '');
   const end = (await flow(page)).nodes.find((n) => n.id === 'end')!.x;
@@ -182,13 +182,13 @@ test('dragged without Shift, a node stays in its stage, which grows with it; the
   const before = { gap: await gap(), width: (await stage(page, 0).boundingBox())!.width };
   const two = (await stage(page, 1).boundingBox())!;
   // Into stage 2's band, no Shift: it stays in stage 1, which grows to hold it; stage 2 moves on, the gap the same.
-  await dragNode(page, 'Output', { x: two.x + 60, y: two.y + 120 });
+  await dragNode(page, 'Run result', { x: two.x + 60, y: two.y + 120 });
   expect(await stageOf(page, 'end')).toBe('stage-1');
   expect((await stage(page, 0).boundingBox())!.width).toBeGreaterThan(before.width);
   expect(Math.abs((await gap()) - before.gap)).toBeLessThanOrEqual(1);
   // Back left: stage 1 shrinks, and stage 2 is drawn back after it, the gap the same.
   const one = (await stage(page, 0).boundingBox())!;
-  await dragNode(page, 'Output', { x: one.x + 200, y: one.y + 300 });
+  await dragNode(page, 'Run result', { x: one.x + 200, y: one.y + 300 });
   expect(Math.abs((await gap()) - before.gap)).toBeLessThanOrEqual(1);
 });
 

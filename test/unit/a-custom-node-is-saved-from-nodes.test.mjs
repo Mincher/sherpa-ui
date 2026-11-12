@@ -24,7 +24,7 @@ const flow = () => ({
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },
-    { id: 'end', kind: 'output', x: 720, y: 0 },
+    { id: 'end', kind: 'result', x: 720, y: 0 },
   ],
   connections: [
     { from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' },
@@ -122,7 +122,7 @@ const beside = (library = hasLib()) => ({
     { id: 'c', kind: 'condition', x: 0, y: 400, values: { type: 'eq' } },
     lib.useOf(library, 'has-status', { id: 'has', x: 360, y: 0 }),
     lib.useOf(library, 'has-status', { id: 'has2', x: 360, y: 400 }),
-    { id: 'end', kind: 'output', x: 720, y: 0 },
+    { id: 'end', kind: 'result', x: 720, y: 0 },
   ],
   connections: [{ from: 'start/rows', to: 'c' }, { from: 'has/matching', to: 'end' }],
 });
@@ -214,7 +214,7 @@ test('the Group Input shows a row per connected input, each an output socket con
       { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
       { id: 'a', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } },
       { id: 'b', kind: 'condition', x: 360, y: 300, values: { type: 'ne' } },
-      { id: 'end', kind: 'output', x: 720, y: 0 },
+      { id: 'end', kind: 'result', x: 720, y: 0 },
     ],
     connections: [
       { from: 'start/rows', to: 'a' }, { from: 'start/rows', to: 'b' }, { from: 'val/value', to: 'a/b' }, { from: 'val/value', to: 'b/b' }, { from: 'a/rows', to: 'end' },

@@ -63,7 +63,7 @@ test('a column fits what takes a field, rows, an object or a list; numbers where
     store, field('seats', 'seats'), field('status', 'status'), field('joined', 'joined'),
     { id: 'c', kind: 'condition', x: 600, y: 0 }, { id: 'count', kind: 'group', x: 600, y: 200 },
     { id: 'avg', kind: 'math', x: 600, y: 400, values: { type: 'average' } }, { id: 'time', kind: 'time', x: 600, y: 600 },
-    { id: 'end', kind: 'output', x: 900, y: 0 },
+    { id: 'end', kind: 'result', x: 900, y: 0 },
   ];
   const into = (seats, joined) => flow(nodes, [
     ...['seats', 'status', 'joined'].map((f) => ({ from: 's/rows', to: f })),

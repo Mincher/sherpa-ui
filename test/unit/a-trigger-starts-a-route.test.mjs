@@ -19,7 +19,7 @@ const { lightOf, simulateGraph } = await import(new URL('node-simulate.js', core
 const { registerTriggerCatalog } = await import(new URL('ai-catalog.js', core));
 
 const trigger = (id, values, x = 0) => ({ id, kind: 'trigger', x, y: 0, values });
-const flow = (nodes, connections) => ({ v: 3, id: 'w', nodes: [...nodes, { id: 'o', kind: 'output', x: 600, y: 0 }], connections });
+const flow = (nodes, connections) => ({ v: 3, id: 'w', nodes: [...nodes, { id: 'o', kind: 'result', x: 600, y: 0 }], connections });
 const node = (g, id) => g.nodes.find((n) => n.id === id);
 
 test('six types, each a runtime kind; the panel lists Triggers first; a Query has none', () => {
@@ -42,7 +42,7 @@ test('a Start node: no input, and its header sends nothing; each type its own ro
 });
 
 test('a route starts at a Trigger: no Source needed; many Triggers start one graph, with no fault', () => {
-  const second = { id: 'o2', kind: 'output', x: 600, y: 300 };
+  const second = { id: 'o2', kind: 'result', x: 600, y: 300 };
   const g = flow([trigger('a', { type: 'ui', event: 'saved' }), trigger('b', { type: 'action', label: 'Run' }), second], [{ from: 'a/at', to: 'o' }, { from: 'b/by', to: 'o2' }]);
   assert.deepEqual(workflowFaults(g), []);
   assert.deepEqual(schemaCheck('workflow.v3.json')(g), []);
@@ -51,7 +51,7 @@ test('a route starts at a Trigger: no Source needed; many Triggers start one gra
   assert.deepEqual(routesOf(drawn), [['a', 'o'], ['b', 'o2']]);
   const lone = workflowGraph(flow([trigger('a', { type: 'ui' })], []));
   assert.equal(routeRead(lone).why, 'Join a Source or a Trigger to an Output');
-  assert.equal(routeRead(workflowGraph({ v: 3, id: 'w', nodes: [{ id: 'o', kind: 'output', x: 0, y: 0 }], connections: [] })).why, 'Add a Source or a Trigger first');
+  assert.equal(routeRead(workflowGraph({ v: 3, id: 'w', nodes: [{ id: 'o', kind: 'result', x: 0, y: 0 }], connections: [] })).why, 'Add a Source or a Trigger first');
 });
 
 test('the catalog lists what can be heard; none registered, the row is typed text', () => {

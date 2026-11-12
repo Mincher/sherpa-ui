@@ -55,7 +55,7 @@ const BIND = `async (org) => {
     useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
     useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),
     { id: 'sort', kind: 'sort', x: 0, y: 260, values: { direction: 'asc' } },
-    { id: 'end', kind: 'output', x: 700, y: 0 },
+    { id: 'end', kind: 'result', x: 700, y: 0 },
   ], connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
   const canvas = document.getElementById('cv');
   window.ed = bindWorkflow(canvas, flow, {

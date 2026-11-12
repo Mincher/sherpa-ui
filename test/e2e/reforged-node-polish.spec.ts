@@ -52,7 +52,7 @@ const bind = (page: Page) => page.evaluate(async () => {
     nodes: [
       { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),
-      { id: 'end', kind: 'output', x: 1200, y: 40 },
+      { id: 'end', kind: 'result', x: 1200, y: 40 },
     ],
     connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'start/rows', to: 'perm2/users' }, { from: 'perm', to: 'end' }],
   };
@@ -115,7 +115,7 @@ test('a socket tip sits beside its socket on hover, after a pan and a zoom, neve
     await settle(page);
     let tested = 0;
     for (const side of ['out', 'in']) {
-      const node = side === 'out' ? '#cv > sherpa-node[data-heading="Source"]' : '#cv > sherpa-node[data-heading="Output"]';
+      const node = side === 'out' ? '#cv > sherpa-node[data-heading="Source"]' : '#cv > sherpa-node[data-heading="Run result"]';
       const sock = await rectOf(page, node, `.header .socket-${side}`);
       if (sock.x < 0 || sock.y < 90 || sock.x > 880 || sock.y > 680) continue;
       tested++;
@@ -136,7 +136,7 @@ test('Delete and Backspace remove the picked nodes and their connections as ONE 
   await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { fit(): void }).fit());
   await settle(page);
   const before = await flow(page);
-  await header(page, 'Output').click();
+  await header(page, 'Run result').click();
   await page.keyboard.down('Shift');
   await header(page, 'Source').click();
   await page.keyboard.up('Shift');
@@ -150,7 +150,7 @@ test('Delete and Backspace remove the picked nodes and their connections as ONE 
   await settle(page);
   expect(await flow(page)).toEqual(before);
   // With no pointer: Enter picks the node the keys are on, and Backspace removes it.
-  await header(page, 'Output').focus();
+  await header(page, 'Run result').focus();
   await page.keyboard.press('Enter');
   await page.keyboard.press('Backspace');
   await settle(page);

@@ -81,7 +81,7 @@ test('each fault is named, in words', () => {
 });
 
 test('a family outside the type is a fault; a use of an entity is not bounded by it', () => {
-  const sent = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }], connections: ACTIVE.graph.connections } });
+  const sent = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'end', kind: 'result', x: 720, y: 0 }], connections: ACTIVE.graph.connections } });
   assert.match(faults(sent).join('\n'), /places "end", of the family "Output", which a Preset Filter does not take: Sources, Variables, Math, Logic, Time, Organise, Utils/);
   // A Sort, of Organise: a family a Preset Filter takes.
   const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'sort', x: 720, y: 200 }], connections: [...ACTIVE.graph.connections, { from: 'field/field', to: 'order' }] } });
@@ -141,7 +141,7 @@ test('any entity is a node in any graph: its kind is `<type>:<id>`, a use follow
   assert.equal(kinds[kind].category, 'Custom Nodes');
   assert.equal(T.asNode(recent).icon, 'filter');
   // Placed in a workflow of another type, it passes the workflow's own checks, and runs nested.
-  const flow = { v: 3, id: 'flow', nodes: [{ id: 'pick', ...lib.useOf(library, kind, { id: 'pick', x: 0, y: 0 }) }, { id: 'end', kind: 'output', x: 360, y: 0 }], connections: [{ from: 'pick', to: 'end' }] };
+  const flow = { v: 3, id: 'flow', nodes: [{ id: 'pick', ...lib.useOf(library, kind, { id: 'pick', x: 0, y: 0 }) }, { id: 'end', kind: 'result', x: 360, y: 0 }], connections: [{ from: 'pick', to: 'end' }] };
   assert.deepEqual(lib.workflowFaultsDeep(flow, library), []);
   assert.ok(lib.innerOf(flow.nodes[0], library));
   assert.equal(flow.nodes[0].version, lib.versionOf(T.asNode(recent)));

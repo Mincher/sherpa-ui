@@ -19,7 +19,7 @@ const graphOf = (nodes, connections, more = {}) => workflowGraph({ v: 3, id: 'p'
 const SRC = N('s', 'source', { store: 'users' });
 const FIELD = N('f', 'field', { field: 'status' });
 const COND = N('c', 'condition', { type: 'eq', b: 'active' });
-const OUT = N('o', 'output');
+const OUT = N('o', 'result');
 
 test('a Source joined to an Output is a Route; its Source is named', () => {
   const g = graphOf([SRC, FIELD, COND, OUT], [R('s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o')]);
@@ -81,7 +81,7 @@ test('routesOf lists each Route, Start node to End node; a Value or a Field fed 
 });
 
 test('branchesAt names where Routes part: the Routes through a node, by the node each goes to next (plan 934)', () => {
-  const OUT2 = N('o2', 'output');
+  const OUT2 = N('o2', 'result');
   const g = graphOf([SRC, FIELD, COND, OUT, OUT2], [R('s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o'), R('c/rows', 'o2')]);
   assert.deepEqual(routesOf(g), [['s', 'f', 'c', 'o'], ['s', 'f', 'c', 'o2']]);
   assert.deepEqual(branchesAt(g, 'c'), [{ to: 'o', routes: [['s', 'f', 'c', 'o']] }, { to: 'o2', routes: [['s', 'f', 'c', 'o2']] }]);

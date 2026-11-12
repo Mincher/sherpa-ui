@@ -17,8 +17,8 @@ const fieldsOf = { users: { name: { label: 'Name', type: 'string' }, seats: { la
 const nodes = [
   { id: 's', kind: 'source', x: 0, y: 0, heading: 'Customers', values: { store: 'users' } },
   { id: 'n', kind: 'math', x: 300, y: 0, values: { type: 'add', a: 1, b: 2 } },
-  { id: 'f', kind: 'output', x: 600, y: 0, values: { type: 'file' } },
-  { id: 'o', kind: 'output', x: 900, y: 0, values: { type: 'notification', message: 'Hi {s.name}, {n.result} seats; see {f.link}' } },
+  { id: 'f', kind: 'content', x: 600, y: 0, values: { type: 'file' } },
+  { id: 'o', kind: 'notify', x: 900, y: 0, values: { type: 'notification', message: 'Hi {s.name}, {n.result} seats; see {f.link}' } },
   { id: 'lone', kind: 'value', x: 0, y: 400, values: { value: 'x' } },
 ];
 const connections = [{ from: 's/rows', to: 'n' }, { from: 'n/result', to: 'f/data' }, { from: 'f/file', to: 'o' }];

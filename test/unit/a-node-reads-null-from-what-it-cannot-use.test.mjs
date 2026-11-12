@@ -39,7 +39,7 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
     value('v', 'active'), store, { id: 'fld', kind: 'field', x: 150, y: 0, values: { field: 'status' } },
     { id: 'c', kind: 'condition', x: 300, y: 0 }, { id: 'col', kind: 'group', x: 300, y: 200 },
     { id: 'tag', kind: 'tag', x: 300, y: 400 }, { id: 'p', kind: 'field', x: 300, y: 600 }, { id: 't', kind: 'time', x: 300, y: 800 },
-    { id: 'end', kind: 'output', x: 600, y: 0 }, value('yes', true, 'boolean'),
+    { id: 'end', kind: 'result', x: 600, y: 0 }, value('yes', true, 'boolean'),
   ];
   // A header's words name a family's type: Equals, Between. A plain boolean is what each is given here; a test's True, 1 or
   // 0, is a row (plan 944).
@@ -176,7 +176,7 @@ test('the words come from one place: the kind says what it needs, INPUT_WORDS sa
   for (const word of ['value', 'number', 'boolean', 'object', 'list', 'rows', 'date', 'numbers', 'field', 'tested']) assert.equal(typeof INPUT_WORDS[word], 'string', word);
   assert.equal(INPUT_WORDS.object, data.SOCKET_WORDS.object, 'a socket type says the words a socket\'s tip says');
   // The kinds say it: what each header needs, and each row by its control, list or field.
-  assert.deepEqual(['condition', 'group', 'tag', 'field', 'time', 'output'].map((k) => resolveKind(NODE_KINDS[k]).needs), ['tested', 'field', 'field', 'object', 'date', undefined]);
+  assert.deepEqual(['condition', 'group', 'tag', 'field', 'time', 'result'].map((k) => resolveKind(NODE_KINDS[k]).needs), ['tested', 'field', 'field', 'object', 'date', undefined]);
   // A family's type says its own: a comparison tests a field or a value; Is empty anything; And takes booleans by its socket.
   assert.deepEqual(['eq', 'empty', 'and'].map((t) => resolveKind(NODE_KINDS.condition, t).needs), ['tested', undefined, undefined]);
   assert.deepEqual([needOf({ control: 'number' }), needOf({ control: 'datetime' }), needOf({ control: 'direction' }), needOf({ control: 'text' })], ['number', 'date', 'choice', undefined]);

@@ -100,7 +100,7 @@ import { valuesAt, valuesIn } from '../data/node-messages.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { unfurlNodes } from '../data/node-unfurl.js';
 import { nodeTitle } from '../data/node-title.js';
-import { isSource, routeRead } from '../data/node-routes.js';
+import { isOutput, isSource, routeRead } from '../data/node-routes.js';
 import { lightOf, simulation as beginSimulation, stepSimulation, SimulationControl, type Simulated, type SimulatedNode } from '../data/node-simulate.js';
 import { cachedSource, fetchSource, sourceWords, type SourceCache, type SourceLimit } from '../browser/source-cache.js';
 import type { Row, Store } from '../data/store.js';
@@ -1740,7 +1740,7 @@ export function unfurlment(canvas: SherpaLayoutCanvas): Arranged | undefined {
   const bands: Record<string, 'left' | 'right'> = {};
   const hops: { from: string; to: string }[] = [];
   const portals = drawn.graph.nodes.flatMap((n) => { const p = portalOf(n); return p ? [{ id: n.id, ...p }] : []; });
-  for (const n of drawn.graph.nodes) if (n.kind === 'source') bands[n.id] = 'left'; else if (n.kind === 'output') bands[n.id] = 'right';
+  for (const n of drawn.graph.nodes) if (n.kind === 'source') bands[n.id] = 'left'; else if (isOutput(n)) bands[n.id] = 'right';
   for (const p of portals) {
     bands[p.id] = p.side === 'in' ? 'left' : 'right';
     if (p.side === 'in' && p.name) for (const o of portals) if (o.side === 'out' && o.name === p.name) hops.push({ from: p.id, to: o.id });
@@ -3594,14 +3594,14 @@ export function bindWorkflow(
     const type = typeOf(K()[node.kind] ?? {}, held?.values?.['type'])?.id;
     return {
       sources: valuesAt(flow.nodes, portalFlow(flow.nodes, flow.connections ?? []).connections, node.id, K(), facts.fieldsOf), sample, simulated: !!ran,
-      onTest: () => canvas.dispatchEvent(new CustomEvent('output-test', { bubbles: true, composed: true, detail: { node: node.id, ...(type ? { type } : {}), values: { ...held?.values } } })),
+      onTest: () => canvas.dispatchEvent(new CustomEvent('output-test', { bubbles: true, composed: true, detail: { node: node.id, kind: node.kind, ...(type ? { type } : {}), values: { ...held?.values } } })),
     };
   };
   const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
       onEdit, extra: extraFor(node), ...(doc?.visual ? { visual: doc.visual(node) } : {}), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}), flow: { inner: innerGraph },
       ...(simulation?.result.nodes[node.id] ? { data: { node: simulation.result.nodes[node.id]!, stale: simulation.stale } } : {}),
-      ...(node.kind === 'output' && !doc ? { output: outputFacts(node) } : {}),
+      ...(isOutput(node) && !doc ? { output: outputFacts(node) } : {}),
       // With no pointer: beside the node it feeds, one column left, on the row's own line.
       onCustom: (row) => {
         const at = shown().nodes.find((n) => n.id === node.id);

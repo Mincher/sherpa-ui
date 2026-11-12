@@ -27,7 +27,7 @@ const rowsOf = (n) => Array.from({ length: n }, (_, i) => ({ id: i, status: STAT
 
 // Source › Field › Condition › Output.
 const chain = (field, type, b) => graphOf(
-  [N('s', 'source', { store: 'customers' }), N('f', 'field', { field }), N('c', 'condition', { type, b }), N('o', 'output')],
+  [N('s', 'source', { store: 'customers' }), N('f', 'field', { field }), N('c', 'condition', { type, b }), N('o', 'result')],
   [R('s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o')],
 );
 
@@ -59,7 +59,7 @@ test('two tests in a row are And: the second keeps what the first kept', () => {
   const rows = rowsOf(60);
   const g = graphOf(
     [N('s', 'source', { store: 'customers' }), N('f1', 'field', { field: 'status' }), N('a', 'condition', { type: 'eq', b: 'active' }),
-      N('f2', 'field', { field: 'region' }), N('b', 'condition', { type: 'eq', b: 'EMEA' }), N('o', 'output')],
+      N('f2', 'field', { field: 'region' }), N('b', 'condition', { type: 'eq', b: 'EMEA' }), N('o', 'result')],
     [R('s/rows', 'f1'), R('f1/field', 'a'), R('a/rows', 'f2'), R('f2/field', 'b'), R('b/rows', 'o')],
   );
   const sim = simulateGraph(g, { customers: rows });
@@ -72,7 +72,7 @@ test('And keeps what every part kept, Or what any part kept, their Results in; t
     N('f2', 'field', { field: 'region' }), N('b', 'condition', { type: 'eq', b: 'EMEA' })];
   const wired = [R('s/rows', 'f1'), R('s/rows', 'f2'), R('f1/field', 'a'), R('f2/field', 'b'), R('a/rows', 'j'), R('b/rows', 'j'), R('j/rows', 'o')];
   for (const [type, keep] of [['and', (r) => r.status === 'active' && r.region === 'EMEA'], ['or', (r) => r.status === 'active' || r.region === 'EMEA']]) {
-    const sim = simulateGraph(graphOf([...parts, N('j', 'condition', { type }), N('o', 'output')], wired), { customers: rows });
+    const sim = simulateGraph(graphOf([...parts, N('j', 'condition', { type }), N('o', 'result')], wired), { customers: rows });
     const got = into(sim, 'o', 'o').rows;
     assert.deepEqual(new Set(got), new Set(rows.filter(keep)), type);
     assert.ok(got.every((r) => rows.includes(r)));
@@ -86,20 +86,20 @@ test('a Source with no cached rows is "not fetched yet": a note and a fault, nev
   assert.ok(sim.faults.includes('"Source" is not fetched yet'), JSON.stringify(sim.faults));
   assert.equal(into(sim, 'o', 'o').rows, undefined);
   // One store fetched, another not: the first answers.
-  const two = graphOf([N('s', 'source', { store: 'customers' }), N('t', 'source', { store: 'devices' }), N('o', 'output')], [R('s/rows', 'o'), R('t/rows', 'o')]);
+  const two = graphOf([N('s', 'source', { store: 'customers' }), N('t', 'source', { store: 'devices' }), N('o', 'result')], [R('s/rows', 'o'), R('t/rows', 'o')]);
   const rows = rowsOf(5);
   assert.equal(into(simulateGraph(two, { customers: rows }), 'o', 'o').rows.length, 5);
 });
 
 test('a test with no Field says why, and its rows are none, not all', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('c', 'condition', { type: 'eq', b: 'active' }), N('o', 'output')], [R('s/rows', 'c'), R('c/rows', 'o')]);
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('c', 'condition', { type: 'eq', b: 'active' }), N('o', 'result')], [R('s/rows', 'c'), R('c/rows', 'o')]);
   const sim = simulateGraph(g, { customers: rowsOf(5) });
   assert.ok(sim.faults.some((f) => f.includes('tests no Field')), JSON.stringify(sim.faults));
   assert.equal(out(sim, 'c', 'c/rows').rows, undefined);
 });
 
 test('a kind not simulated yet says so and sends no rows', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'seats' }), N('m', 'preset', {}), N('o', 'output')],
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'seats' }), N('m', 'preset', {}), N('o', 'result')],
     [R('s/rows', 'f'), R('f/field', 'm')]);
   const sim = simulateGraph(g, { customers: rowsOf(5) });
   assert.ok(sim.faults.includes('"Preset" is not simulated yet'), JSON.stringify(sim.faults));
@@ -109,7 +109,7 @@ test('rows flow through a portal as through a connection', () => {
   const rows = rowsOf(40);
   const g = graphOf(
     [N('s', 'source', { store: 'customers' }), N('in', 'portal', { type: 'in', name: 'rows' }), N('out', 'portal', { type: 'out', name: 'rows' }),
-      N('f', 'field', { field: 'status' }), N('c', 'condition', { type: 'eq', b: 'trial' }), N('o', 'output')],
+      N('f', 'field', { field: 'status' }), N('c', 'condition', { type: 'eq', b: 'trial' }), N('o', 'result')],
     [R('s/rows', 'in'), R('out/@s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o')],
   );
   const sim = simulateGraph(g, { customers: rows });
@@ -128,7 +128,7 @@ test('the same in gives the same out, and the rows are not changed', () => {
 test('it is fast: 100,000 rows through a Source, a Field, five Conditions and an Output', (t) => {
   const rows = rowsOf(100_000);
   const tests = [['status', 'ne', 'churned'], ['seats', 'gt', 5], ['seats', 'lt', 95], ['region', 'eq', 'EMEA'], ['status', 'ne', 'suspended']];
-  const nodes = [N('s', 'source', { store: 'customers' }), N('o', 'output')];
+  const nodes = [N('s', 'source', { store: 'customers' }), N('o', 'result')];
   const connections = [];
   let from = 's/rows';
   tests.forEach(([field, type, b], i) => {

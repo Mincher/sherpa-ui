@@ -22,7 +22,7 @@ const flow = () => editWorkflow({
   nodes: [
     { id: 'src', kind: 'source', x: 0, y: 0 }, { id: 'val', kind: 'value', x: 0, y: 300 },
     { id: 'cond', kind: 'condition', x: 300, y: 150 }, { id: 'sort', kind: 'sort', x: 600, y: 150 },
-    { id: 'out', kind: 'output', x: 900, y: 150 }, { id: 'lone', kind: 'condition', x: 0, y: 900 },
+    { id: 'out', kind: 'result', x: 900, y: 150 }, { id: 'lone', kind: 'condition', x: 0, y: 900 },
   ],
   connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'out' }],
 }, { lanes: LANES_BY_FAMILY });
@@ -47,7 +47,7 @@ test('a condition fed from one lane stands in the junction under it, never in it
       // The condition sends through a portal, In and Out of one name, to an Output.
       { id: 'in', kind: 'portal', x: 600, y: 100, values: { type: 'in', name: 'ok' } },
       { id: 'out-p', kind: 'portal', x: 900, y: 100, values: { type: 'out', name: 'ok' } },
-      { id: 'end', kind: 'output', x: 1200, y: 100 },
+      { id: 'end', kind: 'result', x: 1200, y: 100 },
       // A portal of another name, fed by values only.
       { id: 'alone', kind: 'portal', x: 600, y: 400, values: { type: 'in', name: 'other' } },
     ],
@@ -116,7 +116,7 @@ test('lane A › junction › lane A › junction is ONE junction lane: each sta
     nodes: [
       { id: 'a', kind: 'value', x: 0, y: 0 }, { id: 'c1', kind: 'condition', x: 300, y: 0 },
       { id: 'm', kind: 'math', x: 600, y: 0 }, { id: 'c2', kind: 'condition', x: 900, y: 0 },
-      { id: 'end', kind: 'output', x: 1200, y: 0 }, { id: 'c0', kind: 'condition', x: 900, y: 600 },
+      { id: 'end', kind: 'result', x: 1200, y: 0 }, { id: 'c0', kind: 'condition', x: 900, y: 600 },
     ],
     connections: [
       { from: 'a/value', to: 'c1' }, { from: 'c1', to: 'm/a' }, { from: 'm/result', to: 'c2' }, { from: 'c2', to: 'end' },

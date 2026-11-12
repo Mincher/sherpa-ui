@@ -124,7 +124,7 @@ const FLOW = `async () => {
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
     { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'active' } },
-    { id: 'end', kind: 'output', x: 900, y: 0 },
+    { id: 'end', kind: 'result', x: 900, y: 0 },
   ], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'] });
   await window.__settled();
@@ -157,11 +157,11 @@ test('a workflow graph lights from the steps a run says: each node by its id, it
     (window as unknown as { editor: { stop(): void } }).editor.stop();
     return { during, after, again, looks: new Set([idle, running, failed]).size };
   }, LIT);
-  expect(r.during).toEqual({ Source: ['running', 'Running · 3 rows'], Field: [null, null], Condition: ['running', 'Running'], Output: [null, null] });
+  expect(r.during).toEqual({ Source: ['running', 'Running · 3 rows'], Field: [null, null], Condition: ['running', 'Running'], 'Run result': [null, null] });
   expect(r.after['Source']![0]).toBe('done');
   expect(r.after['Condition']![0]).toBe('done');
   expect(r.after['Condition']![1]).toMatch(/2 rows$/);
-  expect(r.after['Output']).toEqual(['skipped', 'Skipped']);
-  expect(r.again).toEqual({ Source: [null, null], Field: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], Output: [null, null] });
+  expect(r.after['Run result']).toEqual(['skipped', 'Skipped']);
+  expect(r.again).toEqual({ Source: [null, null], Field: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], 'Run result': [null, null] });
   expect(r.looks, 'idle, running and failed each look their own').toBe(3);
 });

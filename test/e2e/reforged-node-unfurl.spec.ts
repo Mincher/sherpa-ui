@@ -84,7 +84,7 @@ const atSockets = (page: Page) => page.evaluate(() => {
 
 // A store feeding four conditions, each with a value, two outputs: placed crossed on purpose, outputs on the left.
 const TANGLE: [string, string, number, number, Record<string, unknown>?][] = [
-  ['store', 'source', 1400, 500], ['e1', 'output', 0, 600], ['e2', 'output', 100, 0],
+  ['store', 'source', 1400, 500], ['e1', 'result', 0, 600], ['e2', 'result', 100, 0],
   ['c1', 'condition', 700, 900, { type: 'eq' }], ['c2', 'condition', 300, 300, { type: 'eq' }], ['c3', 'condition', 1000, 0, { type: 'eq' }], ['c4', 'condition', 500, 1200, { type: 'eq' }],
   ['v1', 'value', 1500, 1300, { type: 'text', value: 'a' }], ['v2', 'value', 0, 1300, { type: 'text', value: 'b' }], ['v3', 'value', 1300, 0, { type: 'text', value: 'c' }],
 ];
@@ -191,7 +191,7 @@ test('the Query editor unfurls too: every node moves, none overlaps, the places 
 const ROWS: [string, string, number, number, Record<string, unknown>?][] = [
   ['two', 'value', 0, 0, { type: 'integer', value: '2' }], ['one', 'value', 0, 700, { type: 'integer', value: '1' }],
   ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }], ['check', 'check', 1500, 300],
-  ['no', 'output', 2000, 0], ['yes', 'output', 2000, 600],
+  ['no', 'result', 2000, 0], ['yes', 'result', 2000, 600],
 ];
 const FED = [
   { from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' }, { from: 'test/true', to: 'check' },
@@ -222,7 +222,7 @@ test('the sockets\' order: what feeds rows a and b stands in that order, and wha
 
 // A portal pair, stood flipped: the Output and the Portal Out on the left, the Source and the Portal In on the right (TODO 839).
 const PORTAL_PAIR: [string, string, number, number, Record<string, unknown>?][] = [
-  ['end', 'output', 0, 0], ['out', 'portal', 400, 0, { type: 'out', name: 'Hand on' }], ['rows', 'condition', 800, 0, { type: 'eq', b: 'x' }],
+  ['end', 'result', 0, 0], ['out', 'portal', 400, 0, { type: 'out', name: 'Hand on' }], ['rows', 'condition', 800, 0, { type: 'eq', b: 'x' }],
   ['in', 'portal', 1200, 0, { type: 'in', name: 'Hand on' }], ['pick', 'field', 1600, 0], ['src', 'source', 2000, 0, { store: 'users' }],
 ];
 const PORTAL_CONNECTIONS = [{ from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'in' }, { from: 'out', to: 'rows' }, { from: 'rows/rows', to: 'end' }];
@@ -249,7 +249,7 @@ test('a graph reads left to right: Sources and a Portal In left, a Portal Out an
 });
 
 test('a lone Source stands leftmost; a lone Output, isolated, stands in the stack after it, left of the graph (Will, 2026-11-10)', async ({ page }) => {
-  await start(page, [['a', 'source', 400, 0, { store: 'users' }], ['f', 'field', 800, 0], ['c', 'condition', 1200, 0, { type: 'eq', b: 'x' }], ['lone-out', 'output', 0, 0], ['lone-src', 'source', 1600, 300, { store: 'users' }]],
+  await start(page, [['a', 'source', 400, 0, { store: 'users' }], ['f', 'field', 800, 0], ['c', 'condition', 1200, 0, { type: 'eq', b: 'x' }], ['lone-out', 'result', 0, 0], ['lone-src', 'source', 1600, 300, { store: 'users' }]],
     [{ from: 'a/rows', to: 'f' }, { from: 'f/field', to: 'c' }]);
   await button(page).click();
   await settle(page);

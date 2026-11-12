@@ -29,7 +29,7 @@ const flow = (values = {}, extra = {}) => ({
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', ...values } },
-    { id: 'end', kind: 'output', x: 720, y: 0 },
+    { id: 'end', kind: 'result', x: 720, y: 0 },
     { id: 'pick', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
   ],
   connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }],

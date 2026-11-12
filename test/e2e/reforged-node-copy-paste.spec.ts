@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'sort', kind: 'sort', x: 330, y: 0, values: { direction: 'asc' } },
-      { id: 'end', kind: 'output', x: 660, y: 0 },
+      { id: 'end', kind: 'result', x: 660, y: 0 },
     ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'),
       toolbar: canvas.querySelector('sherpa-node-toolbar'), stores: ['users'],

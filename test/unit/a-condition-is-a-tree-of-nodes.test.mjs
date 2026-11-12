@@ -153,7 +153,7 @@ const seatsFlow = () => ({
     { id: 'c', kind: 'condition', x: 400, y: 400, values: { type: 'lt', b: 100 } },
     { id: 'and', kind: 'condition', x: 600, y: 300, values: { type: 'and' } },
     { id: 'or', kind: 'condition', x: 800, y: 0, values: { type: 'or' } },
-    { id: 'end', kind: 'output', x: 1000, y: 0 },
+    { id: 'end', kind: 'result', x: 1000, y: 0 },
   ],
   connections: [
     { from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'a' }, { from: 'seats/field', to: 'b' }, { from: 'seats/field', to: 'c' },

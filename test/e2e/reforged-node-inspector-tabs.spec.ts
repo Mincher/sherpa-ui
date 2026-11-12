@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
     const nodes = [
       { id: 's', kind: 'source', x: 0, y: 0, heading: 's', values: { store: 'users' } },
       { id: 'f', kind: 'field', x: 360, y: 0, heading: 'f', values: { field: 'status' } },
-      { id: 'o', kind: 'output', x: 720, y: 0, heading: 'o' },
+      { id: 'o', kind: 'result', x: 720, y: 0, heading: 'o' },
     ];
     const connections = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'o' }];
     const ed = bindWorkflow(canvas as never, { v: 3, id: 'w', nodes, connections } as never, {

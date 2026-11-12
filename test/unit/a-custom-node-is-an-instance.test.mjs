@@ -37,7 +37,7 @@ const flow = (use = {}) => ({
   nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'perm', kind: 'org-permissions', x: 360, y: 0, ...use },
-    { id: 'end', kind: 'output', x: 720, y: 0 },
+    { id: 'end', kind: 'result', x: 720, y: 0 },
   ],
   connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }],
 });

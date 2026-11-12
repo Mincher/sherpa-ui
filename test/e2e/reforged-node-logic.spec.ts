@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
       { id: 'e1', kind: 'condition', x: 280, y: 320, heading: 'Is active', values: { type: 'eq', b: 'active' } },
       { id: 'e2', kind: 'condition', x: 280, y: 520, heading: 'Is big', values: { type: 'gt', b: '100' } },
       { id: 'both', kind: 'condition', x: 600, y: 400, heading: 'Both', values: { type: 'and' } },
-      { id: 'end', kind: 'output', x: 880, y: 400 },
+      { id: 'end', kind: 'result', x: 880, y: 400 },
     ], connections: [
       { from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'v1/value', to: 'e1' }, { from: 'v2/value', to: 'e2' },
       // Each test joins by its True property (plan 944).

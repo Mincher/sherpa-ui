@@ -33,7 +33,7 @@ test('no kind forks: a test\'s True is a property, 1 or 0; the Check\'s Yes and 
   for (const id of ['source', 'field', 'group']) assert.ok(!NODE_KINDS[id].rows.some((r) => r.name === 'count'), id);
   assert.deepEqual(resolveKind(NODE_KINDS.math, 'count').rows.map((r) => r.name), ['type', 'rows', 'result']);
   // A line from a Condition's header is a fault: it has no such socket.
-  const old = { v: 3, id: 'old', nodes: [...users, N('c', 'condition', { type: 'eq', b: 'active' }), N('o', 'output')], connections: [...toStatus, C('c', 'o')] };
+  const old = { v: 3, id: 'old', nodes: [...users, N('c', 'condition', { type: 'eq', b: 'active' }), N('o', 'result')], connections: [...toStatus, C('c', 'o')] };
   assert.match(workflowFaults(old).join('; '), /a connection leaves "c", which is no output socket/);
 });
 
@@ -46,7 +46,7 @@ test('a test\'s True is 1 where any row passes, 0 where none does; Results are t
 
 test('a Check sends its Data on Yes where its test holds; No is not taken, and what it feeds does not run; and the other way', () => {
   const run = (b) => simulateGraph(graphOf(
-    [...users, N('c', 'condition', { type: 'eq', b }), N('k', 'check'), N('yes', 'output', { type: 'toast' }), N('no', 'output', { type: 'toast' })],
+    [...users, N('c', 'condition', { type: 'eq', b }), N('k', 'check'), N('yes', 'response', { type: 'toast' }), N('no', 'response', { type: 'toast' })],
     [...toStatus, C('c/true', 'k'), C('s/rows', 'k/data'), C('k/yes', 'yes'), C('k/no', 'no')],
   ), { users: rows });
   const sim = run('active');

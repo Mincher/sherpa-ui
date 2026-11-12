@@ -19,7 +19,7 @@ const { pathThrough, dotsThrough, waypointsOf, handlesOf, middleOf } = await imp
 const connection = { from: 's/rows', to: 'e' };
 const flow = () => ({
   v: 3, id: 'f',
-  nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'e', kind: 'output', x: 700, y: 0 }],
+  nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'e', kind: 'result', x: 700, y: 0 }],
   connections: [{ ...connection }],
 });
 const bend = (w, at, x, y, insert = false) => editWorkflow(w, { bend: { connection, at, x, y, insert } });
@@ -117,8 +117,8 @@ test('a tie takes a connection by an edit, and refuses in words', () => {
   const w = {
     v: 3, id: 'f',
     nodes: [
-      { id: 's', kind: 'source', x: 0, y: 0 }, { id: 'e', kind: 'output', x: 700, y: 0 },
-      { id: 's2', kind: 'source', x: 0, y: 200 }, { id: 'e2', kind: 'output', x: 700, y: 200 },
+      { id: 's', kind: 'source', x: 0, y: 0 }, { id: 'e', kind: 'result', x: 700, y: 0 },
+      { id: 's2', kind: 'source', x: 0, y: 200 }, { id: 'e2', kind: 'result', x: 700, y: 200 },
     ],
     connections: [connection, { from: 's2/rows', to: 'e2' }],
     ties: [{ id: 'tie-1', x: 400, y: 100, connections: [{ ...connection }] }],
@@ -157,8 +157,8 @@ test('TODO 750: a bend stays inside the end sockets and clear of its neighbours;
 const two = () => ({
   v: 3, id: 'f',
   nodes: [
-    { id: 's', kind: 'source', x: 0, y: 0 }, { id: 'e', kind: 'output', x: 700, y: 0 },
-    { id: 's2', kind: 'source', x: 0, y: 200 }, { id: 'e2', kind: 'output', x: 700, y: 200 },
+    { id: 's', kind: 'source', x: 0, y: 0 }, { id: 'e', kind: 'result', x: 700, y: 0 },
+    { id: 's2', kind: 'source', x: 0, y: 200 }, { id: 'e2', kind: 'result', x: 700, y: 200 },
   ],
   connections: [{ ...connection, via: [{ x: 300, y: 90 }] }, { from: 's2/rows', to: 'e2', via: [{ x: 420, y: 260 }] }],
 });

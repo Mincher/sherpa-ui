@@ -47,7 +47,7 @@ const heard = async (run) => {
 /** A workflow that places a use of a kind, as the editor places one: its version and `was` recorded. */
 const flowOf = (library, kind, ids = ['pick']) => ({
   v: 3, id: 'flow',
-  nodes: [...ids.map((id, i) => lib.useOf(library, kind, { id, x: 0, y: i * 200 })), { id: 'end', kind: 'output', x: 360, y: 0 }],
+  nodes: [...ids.map((id, i) => lib.useOf(library, kind, { id, x: 0, y: i * 200 })), { id: 'end', kind: 'result', x: 360, y: 0 }],
   connections: ids.map((id) => ({ from: id, to: 'end' })),
 });
 
@@ -82,14 +82,14 @@ test('the panel offers what the graph\'s type takes, and no node that would hold
   const inOuter = offered('preset-filter:outer');
   // A Preset Filter takes a Source and a Condition, never an Output: its families.
   assert.ok(inOuter.includes('source') && inOuter.includes('condition'));
-  assert.ok(!inOuter.includes('output'));
+  assert.ok(!inOuter.includes('result'));
   // Any entity's node is offered (D1), but its own and the two that hold it, one through the other.
   assert.deepEqual(inOuter.filter((id) => id.includes(':')).sort(), ['preset-filter:apart', 'preset-filter:inner']);
   // A Custom Node's type takes every family; a plain workflow is offered all.
-  assert.ok(offered('some-node').includes('output'));
+  assert.ok(offered('some-node').includes('result'));
   assert.deepEqual(offered(undefined), Object.keys(kinds));
   // The check says the same of a family: what the panel leaves out, a save refuses.
-  const sent = { ...filter('sent', 'Sent'), graph: { nodes: [...filter('x', 'x').graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }], connections: filter('x', 'x').graph.connections } };
+  const sent = { ...filter('sent', 'Sent'), graph: { nodes: [...filter('x', 'x').graph.nodes, { id: 'end', kind: 'result', x: 720, y: 0 }], connections: filter('x', 'x').graph.connections } };
   assert.match(entityFaults(sent).join('\n'), /places "end", of the family "Output"/);
 });
 
@@ -122,7 +122,7 @@ test('an edit inside goes back to its entity, of its own type, its settings kept
   assert.deepEqual([kept.type, kept.settings, kept.graph.nodes[1].values.b], ['preset-filter', { source: 'customers' }, 'lead']);
   // An Output inside a Preset Filter: refused, and said.
   const withOutput = lib.editDefinition(k.nodeLibrary(), 'preset-filter:trials', {
-    nodes: [...kept.graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }],
+    nodes: [...kept.graph.nodes, { id: 'end', kind: 'result', x: 720, y: 0 }],
   });
   const { result, said } = await heard(() => k.saveNode('preset-filter:trials', withOutput.nodes['preset-filter:trials']));
   assert.equal(result, false);

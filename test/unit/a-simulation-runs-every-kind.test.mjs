@@ -69,7 +69,7 @@ test('a Value reads as its type says: an integer drops its decimals, a boolean i
 });
 
 const arrange = (kind, values) => graphOf(
-  [N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'seats' }), N('x', kind, values), N('o', 'output')],
+  [N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'seats' }), N('x', kind, values), N('o', 'result')],
   [R('s/rows', 'f'), R('f/field', 'x'), R('x/rows', 'o')],
 );
 
@@ -83,7 +83,7 @@ test('Sort puts the rows in their field\'s order, each way; the same rows, none 
 });
 
 test('Group gathers each value\'s rows, the groups in the order they first appear; it has no Count row (plan 944)', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'plan' }), N('x', 'group'), N('o', 'output'), N('m', 'math', { type: 'count' })],
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'plan' }), N('x', 'group'), N('o', 'result'), N('m', 'math', { type: 'count' })],
     [R('s/rows', 'f'), R('f/field', 'x'), R('x/rows', 'o'), R('x/rows', 'm/rows')]);
   const sim = simulateGraph(g, { customers: ROWS });
   assert.deepEqual(out(sim, 'x', 'x/rows').rows.map((r) => r.id), [1, 3, 2, 5, 4]);
@@ -98,7 +98,7 @@ test('Sort and Group with no Field connected in say so and send no rows', () => 
 });
 
 test('Time and Tag keep rows as a Condition does: a Tag the rows that include a value', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'tags' }), N('x', 'tag', { type: 'includes', value: ['a'] }), N('o', 'output')],
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'tags' }), N('x', 'tag', { type: 'includes', value: ['a'] }), N('o', 'result')],
     [R('s/rows', 'f'), R('f/field', 'x'), R('x', 'o')]);
   const sim = simulateGraph(g, { customers: ROWS });
   assert.equal(sim.faults.some((f) => /not simulated/.test(f)), false, JSON.stringify(sim.faults));

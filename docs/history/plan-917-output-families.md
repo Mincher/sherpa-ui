@@ -36,7 +36,7 @@ Five kinds in the Output category, one per family. Each family's types stay as t
 
 ## Decisions for Will
 
-**Will, 2026-11-11: D1 A.**
+**Will, 2026-11-11: D1 A.** **Built 2026-11-12**, as planned. `alias` (Notify) and a type's `group` went with the one node.
 
 
 - **D1. Graphs saved with the old `output` kind** (Demos' shipped workflows, and the copies a reader saved).

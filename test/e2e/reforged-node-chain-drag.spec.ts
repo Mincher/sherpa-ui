@@ -24,7 +24,7 @@ test.beforeEach(async ({ page }) => {
       nodes: [
         { id: 's', kind: 'source', x: 0, y: 0, heading: 'S', values: { store: 'users' } },
         { id: 't', kind: 'sort', x: 500, y: 0, heading: 'T' },
-        { id: 'o', kind: 'output', x: 1000, y: 0, heading: 'O' },
+        { id: 'o', kind: 'result', x: 1000, y: 0, heading: 'O' },
       ],
       connections: [{ from: 's/rows', to: 't' }, { from: 't/rows', to: 'o' }],
     };

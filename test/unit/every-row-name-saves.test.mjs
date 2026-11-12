@@ -39,8 +39,8 @@ test('a connection out of Message ID into File name saves: no fault, and the sch
     v: 3, id: 'w',
     nodes: [
       { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
-      { id: 'n', kind: 'output', x: 400, y: 0, values: { type: 'notification' } },
-      { id: 'f', kind: 'output', x: 800, y: 0, values: { type: 'file', format: 'pdf', 'save-to': 'Reports' } },
+      { id: 'n', kind: 'notify', x: 400, y: 0, values: { type: 'notification' } },
+      { id: 'f', kind: 'content', x: 800, y: 0, values: { type: 'file', format: 'pdf', 'save-to': 'Reports' } },
     ],
     connections: [{ from: 's/rows', to: 'n' }, { from: 'n/message-id', to: 'f/file-name' }],
   };

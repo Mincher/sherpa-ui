@@ -1,10 +1,10 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * An Output of many types, as the node draws it (plan 891, step 4): its Type list has a section per family, each type its
+ * An Output, a node per family (plan 917): a family of one type has no Type row; one of several lists its types, each its
  * line on hover; its header wears its type's icon. A message row is a text area in the node, a title one line (Will,
- * 2026-11-11), and the Details panel edits it in the Markdown editor (plan 892), its values purple chips. The Nodes panel's
- * Notify places an Output of type Notification.
+ * 2026-11-11), and the Details panel edits it in the Markdown editor (plan 892), its values purple chips. The Nodes panel
+ * lists a node per family, no Notify.
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -25,7 +25,7 @@ test.beforeEach(async ({ page }) => {
       v: 3, id: 'g',
       nodes: [
         { id: 's', kind: 'source', heading: 'Customers', x: 340, y: 40, values: { store: 'customers' } },
-        { id: 'o', kind: 'output', x: 700, y: 40, values: { type: 'notification', message: 'Hi {s.name}' } },
+        { id: 'o', kind: 'notify', x: 700, y: 40, values: { type: 'notification', message: 'Hi {s.name}' } },
       ],
       connections: [{ from: 's/rows', to: 'o' }],
     };
@@ -45,26 +45,12 @@ test.beforeEach(async ({ page }) => {
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const output = 'sherpa-layout-canvas > sherpa-node[data-category="output"]';
 
-test('its Type list has a section per family, each type its line on hover; its header wears the type\'s icon', async ({ page }) => {
+test('a family of one type has no Type row; its header wears its icon', async ({ page }) => {
   const r = await page.evaluate((sel) => {
     const node = document.querySelector(sel)!;
-    const select = node.querySelector('sherpa-node-row sherpa-input-text')!.shadowRoot!.querySelector('select')!;
-    return {
-      icon: node.getAttribute('data-icon'),
-      groups: [...select.querySelectorAll('optgroup')].map((g) => [g.label, [...g.querySelectorAll('option')].map((o) => o.textContent)]),
-      picked: select.value,
-      title: select.querySelector<HTMLOptionElement>('option[value="toast"]')!.title,
-    };
+    return { icon: node.getAttribute('data-icon'), heading: node.getAttribute('data-heading'), type: !!node.querySelector('sherpa-input-text[name="type"]') };
   }, output);
-  expect(r.icon).toBe('notifications');
-  expect(r.groups).toEqual([
-    ['Notification', ['Notification']],
-    ['Content', ['On a view', 'Generated file']],
-    ['Response', ['Toast', 'Alert', 'API response']],
-    ['Run result', ['Run result']],
-  ]);
-  expect(r.picked).toBe('notification');
-  expect(r.title).toBe('Show a short message on the screen');
+  expect(r).toEqual({ icon: 'notifications', heading: 'Notification', type: false });
 });
 
 test('a message row is a text area in the node, a title one line; typed there, it changes; the Details panel edits it as Markdown', async ({ page }) => {
@@ -77,7 +63,7 @@ test('a message row is a text area in the node, a title one line; typed there, i
   await node('message').locator('textarea').fill('Hi {s.name}, thanks');
   await node('message').locator('textarea').blur();
   await settle(page);
-  expect(await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { kind: string; values?: Record<string, unknown> }[] } } }).editor.workflow().nodes.find((n) => n.kind === 'output')?.values?.['message'])).toBe('Hi {s.name}, thanks');
+  expect(await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { kind: string; values?: Record<string, unknown> }[] } } }).editor.workflow().nodes.find((n) => n.kind === 'notify')?.values?.['message'])).toBe('Hi {s.name}, thanks');
   // Picked, its Details panel edits the message in the Markdown editor: its value a chip of its node and label.
   const head = (await page.locator(output).boundingBox())!;
   await page.mouse.click(head.x + head.width / 2, head.y + 10);
@@ -91,19 +77,18 @@ test('a message row is a text area in the node, a title one line; typed there, i
   await expect(field).not.toHaveAttribute('data-single-line');
 });
 
-test('the Nodes panel\'s Notify places an Output of type Notification', async ({ page }) => {
-  const items = page.locator('sherpa-node-list sherpa-list-item[data-kind="output"]');
-  await expect(items).toHaveCount(2);
-  const notify = page.locator('sherpa-node-list sherpa-list-item[data-kind="output"][data-label="Notify"]');
-  await expect(notify).toHaveAttribute('data-icon', 'notifications');
-  await notify.click();
+test('the Nodes panel lists a node per family, no Notify; Response places one, its Type list its three, each its line on hover', async ({ page }) => {
+  const items = page.locator('sherpa-node-list sherpa-list-item[data-kind]');
+  const output = await items.evaluateAll((els) => els.filter((e) => ['notify', 'content', 'response', 'result', 'request'].includes(e.getAttribute('data-kind')!)).map((e) => [e.getAttribute('data-kind'), e.getAttribute('data-label')]));
+  expect(output).toEqual([['notify', 'Notification'], ['content', 'Content'], ['response', 'Response'], ['result', 'Run result']]);
+  await page.locator('sherpa-node-list sherpa-list-item[data-kind="response"]').click();
   await settle(page);
-  const added = await page.evaluate(() => {
-    const w = window as never as { editor: { save(): boolean }; saved: { nodes: { id: string; kind: string; values?: Record<string, unknown> }[] }[] };
-    w.editor.save();
-    return w.saved.at(-1)!.nodes.filter((n) => n.kind === 'output' && n.id !== 'o').map((n) => n.values?.['type']);
+  const select = page.locator('sherpa-layout-canvas > sherpa-node[data-heading="Response"] sherpa-input-text[name="type"]');
+  const r = await select.evaluate((f) => {
+    const el = f.shadowRoot!.querySelector('select')!;
+    return { options: [...el.querySelectorAll('option')].map((o) => o.textContent), groups: el.querySelectorAll('optgroup').length, title: el.querySelector<HTMLOptionElement>('option[value="toast"]')!.title };
   });
-  expect(added).toEqual(['notification']);
+  expect(r).toEqual({ options: ['Toast', 'Alert', 'API response'], groups: 0, title: 'Show a short message on the screen' });
 });
 
 /** Pick the Output, so the inspector shows it, open. */
@@ -149,7 +134,7 @@ test('Send a test asks the host, with the node, its type and its values; Sherpa 
   await page.evaluate(() => document.addEventListener('output-test', (e) => { (window as never as { asked: unknown }).asked = (e as CustomEvent).detail; }));
   await page.locator('#inspector sherpa-button.send-test').click();
   const asked = await page.evaluate(() => (window as never as { asked: unknown }).asked);
-  expect(asked).toEqual({ node: 'o', type: 'notification', values: { type: 'notification', message: 'Hi {s.name}' } });
+  expect(asked).toEqual({ node: 'o', kind: 'notify', type: 'notification', values: { type: 'notification', message: 'Hi {s.name}' } });
 });
 
 test('the Output tab: the Preview of each message as it reads, and where each property is connected', async ({ page }) => {

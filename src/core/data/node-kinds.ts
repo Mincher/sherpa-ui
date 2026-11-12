@@ -147,14 +147,10 @@ export type NodeGraph = 'query' | 'workflow';
 export interface NodeType {
   label: string;
   help?: string;
-  /** Its section in the Type picker: an Output's family, as Notification or Request. Plan 891 */
-  group?: string;
   /** Its header's icon, over the kind's. */
   icon?: string;
   /** What it would do, where it acts outside the graph: Simulate says it and does nothing (an Output's). */
   would?: string;
-  /** The node panel lists it as an item of its own too, by this name: Notify, an Output of type Notification. */
-  alias?: string;
   /** Its rows, after the kind's own. */
   rows?: readonly RowKind[];
   /** Its sockets, where they differ from the kind's. */
@@ -293,53 +289,66 @@ export const TRIGGER_RUNS: Readonly<Record<string, 'on_demand' | 'scheduled' | '
   action: 'on_demand', ui: 'event', schedule: 'scheduled', status: 'event', message: 'event', api: 'event',
 };
 
-/** What an Output does, each a type in a family (plan 891). The host app adds its own: `addTypes`. */
-const OUTPUTS: Readonly<Record<string, NodeType>> = {
+/** What an Output does: one kind per family, each its types (Will, plan 917). A host app adds its own to a family:
+ *  `registerNodeTypes('content', { … })`. */
+const NOTIFY_TYPES: Readonly<Record<string, NodeType>> = {
   notification: {
-    label: 'Notification', alias: 'Notify', would: 'Would send a notification', group: 'Notification', icon: 'notifications', help: 'Send a message by app, email or phone',
+    label: 'Notification', would: 'Would send a notification', icon: 'notifications', help: 'Send a message by app, email or phone',
     rows: [
       pickRow('channels', 'Channels', [['app', 'In app'], ['email', 'Email'], ['push', 'Mobile push']], true),
       textRow('to', 'To'), TITLE, MESSAGE, objectIn('attachments', 'Attachments'), textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
       SENT, propertyRow('delivered', 'Delivered', 'value'), propertyRow('message-id', 'Message ID', 'value'),
     ],
   },
+};
+const CONTENT_TYPES: Readonly<Record<string, NodeType>> = {
   view: {
-    label: 'On a view', would: 'Would show it on a view', group: 'Content', icon: 'dashboard', help: 'Show content on a view',
+    label: 'On a view', would: 'Would show it on a view', icon: 'dashboard', help: 'Show content on a view',
     rows: [
       textRow('view', 'View'), pickRow('place', 'Place', [['widget', 'Widget'], ['card', 'Card'], ['row', 'List row']]), objectIn('content', 'Content'), dateRow('until', 'Keep until'),
       propertyRow('content-id', 'Content ID', 'value'), propertyRow('link', 'Link', 'value'),
     ],
   },
   file: {
-    label: 'Generated file', would: 'Would make a file', group: 'Content', icon: 'file-lines', help: 'Make a file from the data',
+    label: 'Generated file', would: 'Would make a file', icon: 'file-lines', help: 'Make a file from the data',
     rows: [
       pickRow('format', 'Format', [['pdf', 'PDF'], ['csv', 'CSV'], ['xlsx', 'XLSX'], ['docx', 'DOCX'], ['md', 'Markdown']]), textRow('template', 'Template'),
       messageRow('file-name', 'File name', true), objectIn('data', 'Data'), textRow('save-to', 'Save to'),
       propertyRow('file', 'File', 'object'), propertyRow('link', 'Link', 'value'),
     ],
   },
+};
+const RESPONSE_TYPES: Readonly<Record<string, NodeType>> = {
   toast: {
-    label: 'Toast', would: 'Would show a toast', group: 'Response', icon: 'megaphone', help: 'Show a short message on the screen',
+    label: 'Toast', would: 'Would show a toast', icon: 'megaphone', help: 'Show a short message on the screen',
     rows: [pickRow('tone', 'Tone', [['info', 'Info'], ['success', 'Success'], ['warning', 'Warning'], ['critical', 'Critical']]), MESSAGE, textRow('action', 'Action'), propertyRow('shown', 'Shown', 'boolean')],
   },
   alert: {
-    label: 'Alert', would: 'Would raise an alert', group: 'Response', icon: 'status-warning', help: 'Raise an alert on a device or customer',
+    label: 'Alert', would: 'Would raise an alert', icon: 'status-warning', help: 'Raise an alert on a device or customer',
     rows: [
       pickRow('severity', 'Severity', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High'], ['critical', 'Critical']]), pickRow('on', 'On', [['device', 'Device'], ['customer', 'Customer']]),
       TITLE, MESSAGE, propertyRow('alert-id', 'Alert ID', 'value'),
     ],
   },
   api: {
-    label: 'API response', would: 'Would answer the call', group: 'Response', icon: 'cloud', help: 'Answer the call that started the run',
+    label: 'API response', would: 'Would answer the call', icon: 'cloud', help: 'Answer the call that started the run',
     rows: [countRow('code', 'Status', 100), objectIn('body', 'Body'), pickRow('encoding', 'Format', [['json', 'JSON'], ['csv', 'CSV'], ['text', 'Text']]), SENT],
   },
+};
+const RESULT_TYPES: Readonly<Record<string, NodeType>> = {
   result: {
-    label: 'Run result', would: 'Would end the run', group: 'Run result', icon: 'flag', help: 'End the run with a status and summary',
+    label: 'Run result', would: 'Would end the run', icon: 'flag', help: 'End the run with a status and summary',
     rows: [pickRow('status', 'Status', [['succeeded', 'Succeeded'], ['skipped', 'Skipped'], ['failed', 'Failed'], ['deferred', 'Deferred']]), messageRow('summary', 'Summary')],
   },
 };
 
-/** A family with more types: the host app's own beside the shipped ones, as `addTypes(NODE_KINDS.output, { ticket })`. */
+/** One Output family as a kind: its types, the Output's look, lane and place (plan 917). It may sit mid-graph: its properties
+ *  connection on. */
+const outputFamily = (heading: string, icon: string, description: string, types: Readonly<Record<string, NodeType>>): NodeKind => ({
+  heading, icon, description, input: 'any', typeLabel: 'Type', types, rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
+});
+
+/** A family with more types: the host app's own beside the shipped ones, as `addTypes(NODE_KINDS.request, { ticket })`. */
 export function addTypes(kind: NodeKind, types: Readonly<Record<string, NodeType>>): NodeKind {
   return { ...kind, types: { ...kind.types, ...types } };
 }
@@ -623,12 +632,12 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     types: expects([MODEL_IN, { name: 'skill', label: 'Skill', control: 'skill', input: 'value' }, INSTRUCTIONS], 'Would use the skill'),
     rows: [], model: 'aiSkill', graphs: ['workflow'], category: 'AI',
   },
-  // One Output, many types; Run result, the default, is what an Output with no type was (plan 891). It may sit mid-graph:
-  // its properties connection on.
-  output: {
-    heading: 'Output', icon: 'flag', description: 'Do something with what the flow found', input: 'any',
-    typeLabel: 'Type', defaultType: 'result', types: OUTPUTS, rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
-  },
+  // The Output families, each a kind (Will, plan 917). Request ships no type: a host adds its own, and it is listed then.
+  notify: outputFamily('Notification', 'notifications', 'Send a message by app, email or phone', NOTIFY_TYPES),
+  content: outputFamily('Content', 'dashboard', 'Show content, or make a file', CONTENT_TYPES),
+  response: outputFamily('Response', 'megaphone', 'Answer on the screen, or the call', RESPONSE_TYPES),
+  result: outputFamily('Run result', 'flag', 'End the run with a status and summary', RESULT_TYPES),
+  request: outputFamily('Request', 'export', 'Ask another system or agent', {}),
 };
 
 /** A category as the slug a node's, and its panel row's, `data-category` says: lower case, words joined by hyphens. TODO 840 */
@@ -643,7 +652,7 @@ export function typeOf(kind: Pick<NodeKind, 'types' | 'defaultType'>, type?: unk
 
 /** The types of a family kind as a picklist reads them; none, it is no family. */
 export function typeChoices(kind: Pick<NodeKind, 'types'>): RowChoice[] | undefined {
-  return kind.types && Object.entries(kind.types).map(([value, t]) => ({ value, label: t.label, ...(t.group ? { group: t.group } : {}), ...(t.help ? { title: t.help } : {}) }));
+  return kind.types && Object.entries(kind.types).map(([value, t]) => ({ value, label: t.label, ...(t.help ? { title: t.help } : {}) }));
 }
 
 /** A family kind as an ordinary kind for one type, so a reader learns nothing of types: the type
@@ -699,9 +708,6 @@ const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variabl
 export interface PaletteItem {
   id: string;
   kind: NodeKind;
-  /** An alias's: the type it places, and its own name (`NodeType.alias`). */
-  type?: string;
-  heading?: string;
 }
 
 /** One category of the panel, and its kinds in the registry's order. */
@@ -718,12 +724,12 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
   for (const [id, family] of Object.entries(kinds)) {
     // A family lists only the types its graph takes: the Query's Condition is its Rows that hold alone.
     const kind = kindIn(family, graph);
-    if (!kind) continue;
+    // A family with no type of its own, as Request before a host adds one, places nothing (plan 917).
+    if (!kind || (kind.types && !Object.keys(kind.types).length)) continue;
     const category = kind.category ?? 'Other';
     if (graph === 'query' && !QUERY_CATEGORIES.includes(category)) continue;
     const items = groups.get(category) ?? [];
     items.push({ id, kind });
-    for (const [type, t] of Object.entries(kind.types ?? {})) if (t.alias) items.push({ id, kind, type, heading: t.alias });
     groups.set(category, items);
   }
   const known = new Set(NODE_CATEGORIES);
@@ -766,8 +772,7 @@ export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in', gi
 
 /** The palette's kinds a socket of a type could join, a Value first (D16), then the palette's order. */
 export function paletteFor(palette: readonly PaletteGroup[], type: SocketType, side: 'out' | 'in'): PaletteItem[] {
-  // An alias is its family's item again: offered once.
-  const fit = palette.flatMap((g) => g.items).filter((i) => !i.type && fitOf(i.kind, type, side));
+  const fit = palette.flatMap((g) => g.items).filter((i) => fitOf(i.kind, type, side));
   return [...fit.filter((i) => i.id === 'value'), ...fit.filter((i) => i.id !== 'value')];
 }
 

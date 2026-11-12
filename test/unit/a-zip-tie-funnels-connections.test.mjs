@@ -18,9 +18,9 @@ const R = (n) => ({ from: `s${n}/rows`, to: `e${n}` });
 const flow = {
   v: 3, id: 'f',
   nodes: [
-    { id: 's1', kind: 'source', x: 0, y: 0 }, { id: 'e1', kind: 'output', x: 400, y: 0 },
-    { id: 's2', kind: 'source', x: 100, y: 100 }, { id: 'e2', kind: 'output', x: 700, y: 100 },
-    { id: 's3', kind: 'source', x: 0, y: 200 }, { id: 'e3', kind: 'output', x: 900, y: 200 },
+    { id: 's1', kind: 'source', x: 0, y: 0 }, { id: 'e1', kind: 'result', x: 400, y: 0 },
+    { id: 's2', kind: 'source', x: 100, y: 100 }, { id: 'e2', kind: 'result', x: 700, y: 100 },
+    { id: 's3', kind: 'source', x: 0, y: 200 }, { id: 'e3', kind: 'result', x: 900, y: 200 },
   ],
   connections: [R(1), R(2), R(3)],
 };

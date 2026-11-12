@@ -8,7 +8,7 @@
     { "id": "field", "kind": "field", "x": 360, "y": 0, "values": { "field": "status" } },
     { "id": "status", "kind": "value", "x": 360, "y": 160, "values": { "value": "active" } },
     { "id": "filter", "kind": "condition", "x": 720, "y": 0, "values": { "type": "eq" } },
-    { "id": "end", "kind": "output", "x": 1080, "y": 0 }
+    { "id": "end", "kind": "result", "x": 1080, "y": 0 }
   ],
   "connections": [
     { "from": "start/rows", "to": "field" },

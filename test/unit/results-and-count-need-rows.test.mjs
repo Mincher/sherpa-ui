@@ -66,7 +66,7 @@ test('one a connection still leaves stays, and its node says why it sends nothin
 
 test('every other property always shows: a Source\'s, a Math Result, an AI Answer, an Output\'s', () => {
   const g = graphOf([
-    N('s', 'source', { store: 'users' }), N('m', 'math', { type: 'add' }), N('q', 'prompt', { type: 'data' }), N('o', 'output', { type: 'toast' }),
+    N('s', 'source', { store: 'users' }), N('m', 'math', { type: 'add' }), N('q', 'prompt', { type: 'data' }), N('o', 'response', { type: 'toast' }),
     N('n', 'value', { type: 'integer', value: 1 }),
   ], [{ from: 'n/value', to: 'q' }, { from: 'n/value', to: 'o' }, { from: 'n/value', to: 'm/a' }]);
   for (const id of ['s', 'm', 'q', 'o']) assert.deepEqual(idle(g, id), [], id);

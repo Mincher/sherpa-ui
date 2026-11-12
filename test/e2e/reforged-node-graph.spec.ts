@@ -440,7 +440,7 @@ const BIND_FLOW = `async () => {
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
     { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq' } },
-    { id: 'end', kind: 'output', x: 900, y: 0 },
+    { id: 'end', kind: 'result', x: 900, y: 0 },
   ], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { session: new SessionStore(), fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'] });
   await window.__settled();
@@ -465,7 +465,7 @@ test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s 
   });
   // Source › Field › Condition › Output (plan 783): the Operation lists Logic's types, And and Or first; those a text
   // column fits (TODO 940).
-  expect(drawn.nodes).toEqual(['Source', 'Field', 'Condition', 'Output']);
+  expect(drawn.nodes).toEqual(['Source', 'Field', 'Condition', 'Run result']);
   expect(drawn.ops.slice(0, 3)).toEqual(['And', 'Or', 'Equals']);
   expect(r).toEqual({ op: 'ne', ok: true, saved: [{ type: 'ne' }], draft: null });
 });

@@ -68,7 +68,7 @@ const bind = (page: Page) => page.evaluate(async () => {
     nodes: [
       { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),
-      { id: 'end', kind: 'output', x: 1200, y: 40 },
+      { id: 'end', kind: 'result', x: 1200, y: 40 },
     ],
     connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'start/rows', to: 'perm2/users' }, { from: 'perm', to: 'end' }],
   };
@@ -119,7 +119,7 @@ test('Enter on the header opens a Custom Node: Group Input and Output drawn, a t
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await ed(page, 'ed.path()')).toEqual([]);
-  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result']);
   expect(await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => el.shadowRoot!.querySelectorAll('.crumb').length)).toBe(0);
   // The keyboard is back on the use it opened.
   const on = await page.evaluate(() => {
@@ -304,7 +304,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   // By keyboard: focus a header, Space adds it.
   await header(page, 'Source').focus();
   await page.keyboard.press('Space');
-  await header(page, 'Output').focus();
+  await header(page, 'Run result').focus();
   await page.keyboard.press('Space');
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
@@ -326,7 +326,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
   await saveAs(page, 'Users with a role', 'Who holds the role');
   await settle(page);
-  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Output', 'Owner check', 'Users with a role']);
+  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Owner check', 'Run result', 'Users with a role']);
   const made = await ed(page, "ed.library().nodes['users-with-a-role']");
   expect((made as { description: string }).description).toBe('Who holds the role');
   expect(await page.locator('#cv svg.graph-connectors path[data-to]').count()).toBe(2);
@@ -338,7 +338,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Output', 'Owner check', 'Source']);
+  expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Owner check', 'Run result', 'Source']);
   expect(await page.locator('#cv svg.graph-connectors path[data-to]').count()).toBe(3);
 });
 
@@ -539,7 +539,7 @@ test('the toolbar\'s Save as Custom Node is off with none or one picked, on with
   await header(page, 'Source').click();
   await settle(page);
   expect(await off()).toBe(true);
-  await header(page, 'Output').focus();
+  await header(page, 'Run result').focus();
   await page.keyboard.press('Space');
   await settle(page);
   expect(await off()).toBe(false);
@@ -549,13 +549,13 @@ test('the toolbar\'s Save as Custom Node is off with none or one picked, on with
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await page.locator('#custom').evaluate((el: HTMLElement & { open: boolean }) => el.open)).toBe(false);
-  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result']);
   // A name a shipped kind holds is refused too.
   await press(page, 'group');
   await field(page, 'label').locator('input').fill('Source');
   await page.keyboard.press('Enter');
   await settle(page);
-  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  expect(await headings(page)).toEqual(['Source', 'Org permissions', 'Org permissions', 'Owner check', 'Run result']);
   await page.locator('#custom sherpa-button[data-action="cancel"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await header(page, 'Source').click();
   await settle(page);
@@ -571,15 +571,15 @@ test('one picked node shows no tabs; two show a tab each, the active ringed; a t
   const json = (title: string) => page.locator(`#inspector sherpa-accordion[data-heading="${title}"] sherpa-code-block`).evaluate((el) => el.getAttribute('data-code'));
   expect(JSON.parse((await json('Outgoing JSON'))!).definition).toEqual({ store: 'users' });
   expect(JSON.parse((await json('Incoming JSON'))!)[0].socket).toBe('Store');
-  await header(page, 'Output').focus();
+  await header(page, 'Run result').focus();
   await page.keyboard.press('Space');
   await settle(page);
   const labels = () => page.locator('#inspector sherpa-tabs:not(.content-tabs)').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.tab .label')].map((t) => t.textContent));
-  expect(await labels()).toEqual(['Source', 'Output']);
+  expect(await labels()).toEqual(['Source', 'Run result']);
   expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Source');
   await page.locator('#inspector sherpa-tabs:not(.content-tabs)').evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
   await settle(page);
-  expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Output');
+  expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Run result');
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
   expect(JSON.parse((await json('Incoming JSON'))!)[0].from).toEqual(['Org permissions']);
 });

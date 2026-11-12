@@ -63,7 +63,7 @@ test('And joins tests: two Conditions on two Fields, their Results into its head
       { id: 'active', kind: 'condition', x: 400, y: 0, values: { type: 'eq', b: 'active' } },
       { id: 'big', kind: 'condition', x: 400, y: 200, values: { type: 'gt', b: 100 } },
       { id: 'both', kind: 'condition', x: 600, y: 0, values: { type: 'and' } },
-      { id: 'end', kind: 'output', x: 800, y: 0 },
+      { id: 'end', kind: 'result', x: 800, y: 0 },
     ],
     connections: [
       { from: 'start/rows', to: 'status' }, { from: 'start/rows', to: 'seats' }, { from: 'status/field', to: 'active' }, { from: 'seats/field', to: 'big' },
@@ -98,7 +98,7 @@ test('a comparison tests what comes in on its header — a Field\'s column, or a
       { id: 'plan', kind: 'value', x: 0, y: 0, values: { value: 'Pro' } },
       { id: 'is', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'Pro' } },
       { id: 'sum', kind: 'math', x: 720, y: 0 },
-      { id: 'end', kind: 'output', x: 720, y: 200 },
+      { id: 'end', kind: 'result', x: 720, y: 200 },
     ],
     connections: [{ from: 'plan/value', to: 'is' }, { from: 'is/true', to: 'end' }],
   };
@@ -157,11 +157,10 @@ test('a type change keeps in the draft only what loses its socket: a column into
 test('the panel: one Condition item naming its types; a search finds a type whole first; the Query\'s takes its tests, not Not or Is empty', () => {
   const items = paletteOf(NODE_KINDS).flatMap((g) => g.items);
   assert.equal(items.filter((i) => i.id === 'condition').length, 1);
-  // An alias (Notify) answers by its own name, not its family's types.
-  const found = (q) => items.filter((i) => !i.type).flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
+  const found = (q) => items.flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
   assert.deepEqual(found('equals'), [['condition', 'eq']]);
-  // Not, not Does not equal; and an Output's Notification, as a reader types it (plan 891).
-  assert.deepEqual(found('not'), [['condition', 'not'], ['output', 'notification']]);
+  // Not, not Does not equal; and the Notification family, by its name (plan 917).
+  assert.deepEqual(found('not'), [['condition', 'not'], ['notify', undefined]]);
   assert.deepEqual(found('is empty'), [['condition', 'empty']]);
   assert.deepEqual(found('at least'), [['condition', 'gte']]);
   assert.deepEqual(found('and'), [['condition', 'and']]);

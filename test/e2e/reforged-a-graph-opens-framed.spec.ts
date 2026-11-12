@@ -20,7 +20,7 @@ test('a second graph bound on the same canvas opens framed, not where the first 
     first.stop();
     // Another graph, wide, on the same canvas.
     bindWorkflow(canvas, { v: 3, id: 'b', nodes: [
-      { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 1600, y: 0 }, { id: 'o', kind: 'output', x: 3200, y: 400 },
+      { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 1600, y: 0 }, { id: 'o', kind: 'result', x: 3200, y: 400 },
     ], connections: [] }, { session: new SessionStore(), stores: ['users'] });
     await window.__settled();
     await frame();

@@ -82,7 +82,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
   // A Check is drawn in both, beside the Condition (plan 944); a Trigger in a workflow alone (plan 941).
-  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'check', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'provider', 'model', 'prompt', 'runbook', 'skill', 'output']);
+  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'check', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'provider', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request']);
   // Sort and Group are kinds of their own, in Organise; Collection and its Count are gone, a Count a type of Math (plan 944).
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort.category, NODE_KINDS.group.category], [undefined, undefined, 'Organise', 'Organise']);
   assert.equal(NODE_KINDS.math.types.count.label, 'Count');
@@ -99,7 +99,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
 test('each fault is reported by name, and the check says no', () => {
   const nodes = good.nodes;
   const cases = [
-    [{ nodes: [...nodes, { id: 'end', kind: 'output', x: 0, y: 0 }] }, 'two nodes are "end"'],
+    [{ nodes: [...nodes, { id: 'end', kind: 'result', x: 0, y: 0 }] }, 'two nodes are "end"'],
     [{ nodes: [...nodes, { id: 'odd', kind: 'teleport', x: 0, y: 0 }] }, 'the node "odd" is of the kind "teleport", which is not one'],
     [{ nodes: [...nodes, { id: 'odd', kind: 'scope', x: 0, y: 0 }] }, 'the node "odd" is of the kind "scope", which a workflow does not run'],
     [{ nodes: [...nodes, { id: 'more', kind: 'value', x: 0, y: 0, values: { colour: 'red' } }] }, 'the node "more" holds a value for "colour", a row its kind has not'],
@@ -147,7 +147,7 @@ const row = (id, name, g = graph) => g.nodes.find((n) => n.id === id).rows.find(
 
 test('a workflow DRAWS as its kinds say: each node at its place, its rows with its values, and its connections', () => {
   assert.deepEqual(graph.nodes.map((n) => [n.id, n.kind, n.heading, n.x, n.y]), [
-    ['start', 'source', 'Source', 0, 0], ['field', 'field', 'Field', 360, 0], ['status', 'value', 'Value', 360, 160], ['filter', 'condition', 'Condition', 720, 0], ['end', 'output', 'Output', 1080, 0],
+    ['start', 'source', 'Source', 0, 0], ['field', 'field', 'Field', 360, 0], ['status', 'value', 'Value', 360, 160], ['filter', 'condition', 'Condition', 720, 0], ['end', 'result', 'Run result', 1080, 0],
   ]);
   assert.deepEqual(graph.connections, good.connections);
   // Source › Field › Condition › Output (plan 783): the Condition tests the Field on its header, Value B the Value connected in.

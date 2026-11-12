@@ -516,26 +516,28 @@ dashed, and its tip says why. Where no input fits, the pick stays and the node w
 
 ### Outputs
 
-An Output is ONE node of many types, its Type row first: Notification, On a view,
-Generated file, Toast, Alert, API response and Run result (the default, so an Output
-kept with no type is one). Each type has its parameters, its icon, and its
-properties: output rows, so an Output may feed the nodes after it. The Nodes panel
-lists Notify too: an Output of type Notification. Add your own types beside them,
-from your own file, before a graph opens: then every editor, check and save reads them.
+An Output is a node per FAMILY, each a kind of its types (plan 917): `notify`
+(Notification), `content` (On a view, Generated file), `response` (Toast, Alert, API
+response), `result` (Run result) and `request` (none shipped). A family of several
+types has its Type row first; one of one type has none. Each type has its
+parameters, its icon, and its properties: output rows, so an Output may feed the
+nodes after it. Request is not listed in the Nodes panel until you add a type to it.
+Add your own types to a family, from your own file, before a graph opens: then every
+editor, check and save reads them.
 
 ```js
 const ticket = {
-  label: 'Ticket', group: 'Request', icon: 'ticket', help: 'Open a ticket on a board', would: 'Would open a ticket',
+  label: 'Ticket', icon: 'ticket', help: 'Open a ticket on a board', would: 'Would open a ticket',
   rows: [
     { name: 'summary', label: 'Summary', control: 'message', input: 'value' },
     { name: 'priority', label: 'Priority', control: 'pick', input: 'value', choices: [{ value: 'p1', label: 'P1' }, { value: 'p2', label: 'P2' }] },
     propertyRow('ticket-id', 'Ticket ID', 'value'),
   ],
 };
-registerNodeTypes('output', { ticket });
+registerNodeTypes('request', { ticket });
 ```
 
-`addTypes(NODE_KINDS.output, { ticket })` gives the family with them, for one
+`addTypes(NODE_KINDS.request, { ticket })` gives the family with them, for one
 editor's `kinds` alone; its graphs then save only where you check them yourself.
 
 - A `message` row takes text with values, `{node.name}`: a row or property of a node
@@ -544,11 +546,10 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
   area; the Details panel edits it as Markdown, each value a purple chip.
   `singleLine: true` makes it one line, as a title: a text box in the node, no
   toolbar in the Details panel, and no line break goes in.
-- A `pick` row picks from its own `choices`. A type's `group` is its section in
-  the Type list.
+- A `pick` row picks from its own `choices`.
 - Simulate never fires an Output: its light says its `would`, and each property
   sends a stand-in. Send a test, in its Details, fires `output-test`
-  `{ node, type, values }` on the canvas: send the test to the reader there.
+  `{ node, kind, type, values }` on the canvas: send the test to the reader there.
   Sherpa sends nothing.
 
 ### AI nodes

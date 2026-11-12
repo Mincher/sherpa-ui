@@ -19,7 +19,7 @@ const graph = () => workflowGraph({
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'field', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
     { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },
-    { id: 'end', kind: 'output', x: 720, y: 0 },
+    { id: 'end', kind: 'result', x: 720, y: 0 },
     { id: 'alone', kind: 'sort', x: 0, y: 400 },
   ],
   connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }],
@@ -37,7 +37,7 @@ test('a Condition says its where tree — the Field on its header, its Operation
   assert.deepEqual(flow.definition, { where: { field: 'status', op: 'eq', value: 'active' } });
   assert.deepEqual(flow.incoming.find((i) => i.socket === 'In').from, ['Field › Field']);
   assert.deepEqual(flow.incoming.find((i) => i.socket === 'Value B').from, ['Value › Value']);
-  assert.deepEqual(flow.outgoing.find((o) => o.socket === 'Results').to, ['Output']);
+  assert.deepEqual(flow.outgoing.find((o) => o.socket === 'Results').to, ['Run result']);
 });
 
 test('a Value carries its value', () => {

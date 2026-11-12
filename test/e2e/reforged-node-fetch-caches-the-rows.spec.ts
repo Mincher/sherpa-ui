@@ -37,7 +37,7 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
     Object.assign(window, { loads: () => loads, store });
     const nodes: { id: string; kind: string; x: number; y: number; heading: string; values?: Record<string, unknown> }[] = [
       { id: 's', kind: 'source', x: 0, y: 0, heading: 's', values: { store: 'users' } }, { id: 'f', kind: 'field', x: 360, y: 0, heading: 'f', values: { field: 'status' } },
-      { id: 'c', kind: 'condition', x: 720, y: 0, heading: 'c', values: { type: 'eq', b: 'active' } }, { id: 'o', kind: 'output', x: 1080, y: 0, heading: 'o' },
+      { id: 'c', kind: 'condition', x: 720, y: 0, heading: 'c', values: { type: 'eq', b: 'active' } }, { id: 'o', kind: 'result', x: 1080, y: 0, heading: 'o' },
     ];
     const connections = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'o' }];
     // A Value into a Math, off the path: a node that sends a number, not rows (P6).
@@ -177,8 +177,16 @@ test('a Source being fetched wears the tab on its top edge, right-aligned, with 
     return { step: el.getAttribute('data-step'), words: tab.textContent?.trim(), border: getComputedStyle(root).borderTopColor, tabBorder: getComputedStyle(tab).borderTopColor,
       tabShown: getComputedStyle(tab).display !== 'none', icon: getComputedStyle(icon).display !== 'none', above: Math.round(t.bottom - a.top) + 0, right: Math.round(t.right - a.right) + 0, left: t.left > a.left };
   });
+  // Each caption the node says, as it says it: read after, so a busy machine still sees each second's words.
+  await source.evaluate((el) => {
+    const w = window as never as { said: string[] };
+    w.said = [];
+    new MutationObserver(() => {
+      const words = el.getAttribute('data-caption');
+      if (words && w.said.at(-1) !== words) w.said.push(words);
+    }).observe(el, { attributes: true, attributeFilter: ['data-caption'] });
+  });
   await press(page, 'fetch');
-  // Polled every 100ms, never by the default's growing steps, which can step over a second's words.
   await expect.poll(async () => (await look(source)).words, { intervals: [100] }).toBe('Fetching… 1s');
   const on = await look(source);
   expect(on).toMatchObject({ step: 'running', tabShown: true, icon: true, above: 0, right: 0, left: true });
@@ -186,11 +194,14 @@ test('a Source being fetched wears the tab on its top edge, right-aligned, with 
   expect(on.tabBorder).toBe(on.border);
   expect(on.border).not.toBe((await look(idle)).border);
   expect(await look(idle)).toMatchObject({ step: null, tabShown: false });
-  await expect.poll(async () => (await look(source)).words, { intervals: [100] }).toBe('Fetching… 2s');
   // Ended: the running look is gone, and the light says what the simulation made of it, no play icon.
   await expect.poll(async () => (await look(source)).step, { timeout: 15_000 }).toBe('done');
   expect(await look(source)).toMatchObject({ icon: false, tabShown: true });
   expect((await look(source)).words).toMatch(/^120 rows · (<1|\d+) ms$/);
+  // The seconds count up: 1s, then a later one (a busy timer may skip one).
+  const said = await page.evaluate(() => (window as never as { said: string[] }).said);
+  expect(said[0]).toBe('Fetching… 1s');
+  expect(said.some((w) => /^Fetching… [2-9]s$/.test(w)), said.join(' | ')).toBe(true);
 });
 
 test('a simulation shows the node it is on, node by node, "Simulating… 1s", then takes the look off every node', async ({ page }) => {

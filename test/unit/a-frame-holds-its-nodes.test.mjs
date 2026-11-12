@@ -27,7 +27,7 @@ const flow = () => ({
   v: 3, id: 'f',
   nodes: [
     { id: 's1', kind: 'source', x: 0, y: 0 }, { id: 'p1', kind: 'field', x: 420, y: 260 },
-    { id: 'e1', kind: 'output', x: 840, y: 40 }, { id: 's2', kind: 'source', x: 840, y: 560 },
+    { id: 'e1', kind: 'result', x: 840, y: 40 }, { id: 's2', kind: 'source', x: 840, y: 560 },
   ],
   connections: [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }],
 });

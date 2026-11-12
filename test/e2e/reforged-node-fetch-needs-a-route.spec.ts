@@ -38,7 +38,7 @@ const tip = (page: Page, name: string) => tool(page, name).getAttribute('data-ti
 const heard = (page: Page) => page.evaluate(() => (window as never as { heard: string[] }).heard);
 
 const SOURCE: Node = ['Source', 'source', 0, 0, { store: 'users' }];
-const OUTPUT: Node = ['Output', 'output', 600, 0];
+const OUTPUT: Node = ['Output', 'result', 600, 0];
 const NO_ROUTE = 'Join a Source or a Trigger to an Output';
 
 /** The Source's Rows socket (it is drawn on its Results row), then the Output's input, in screen px. */

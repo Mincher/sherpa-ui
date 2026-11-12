@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
       nodes: [
         { id: 't', kind: 'trigger', x: 340, y: 40, values: { type: 'status', task: 'patch', status: 'failed' } },
         { id: 'u', kind: 'trigger', x: 340, y: 360, values: { type: 'ui' } },
-        { id: 'o', kind: 'output', x: 700, y: 40 },
+        { id: 'o', kind: 'result', x: 700, y: 40 },
       ],
       connections: [{ from: 't/status', to: 'o' }],
     };

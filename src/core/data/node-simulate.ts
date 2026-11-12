@@ -30,6 +30,7 @@ import { filterTest, OP_LABELS, OP_TAKES, type Filter, type FilterOp, type Row }
 import { needOf, readInput, truthOf, type Given } from './node-input.js';
 import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
+import { isOutput } from './node-routes.js';
 import { socketOf, truthy, type DrawnGraph, type GraphNode } from './node-kinds.js';
 
 /** What a simulation reads beyond its graph and rows: the clock a relative date means (left out, the machine's), and
@@ -548,7 +549,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (node.kind === 'provider' || node.kind === 'model') return { kind: 'value', value: node.rows.find((r) => r.name === row)?.value };
     // An Output, an AI node or a Trigger acts outside the graph, so it fires nothing: each output sends a stand-in, by what it gives,
     // so what it feeds runs too (plans 891, 926). A True/false AI node's True is 1.
-    if (node.kind === 'output' || node.would) {
+    if (isOutput(node) || node.would) {
       if (row === 'true') return { kind: 'value', value: 1 };
       const out = node.rows.find((r) => r.name === row);
       // A row the reader set sends what it holds: a Trigger's Endpoint, its own (plan 941).

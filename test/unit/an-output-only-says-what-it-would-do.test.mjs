@@ -16,9 +16,9 @@ const flow = {
   v: 3, id: 'w',
   nodes: [
     { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
-    { id: 'o', kind: 'output', x: 400, y: 0, values: { type: 'notification', message: 'Hi' } },
-    { id: 'r', kind: 'output', x: 800, y: 0, values: { type: 'result', status: 'succeeded' } },
-    { id: 'end', kind: 'output', x: 800, y: 300 },
+    { id: 'o', kind: 'notify', x: 400, y: 0, values: { type: 'notification', message: 'Hi' } },
+    { id: 'r', kind: 'result', x: 800, y: 0, values: { type: 'result', status: 'succeeded' } },
+    { id: 'end', kind: 'result', x: 800, y: 300 },
   ],
   connections: [{ from: 's/rows', to: 'o' }, { from: 'o/message-id', to: 'r/summary' }, { from: 's/rows', to: 'end' }],
 };

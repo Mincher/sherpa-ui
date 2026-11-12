@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
     const { useOf } = await import('/dist/data.js');
     const canvas = document.getElementById('cv')! as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     bindWorkflow(canvas as never, { v: 3, id: 'g', nodes: [
-      { id: 's', kind: 'source', x: 500, y: 60, values: { store: 'users' } }, { id: 'o', kind: 'output', x: 900, y: 60 }, { id: 'c', kind: 'condition', x: 500, y: 400 },
+      { id: 's', kind: 'source', x: 500, y: 60, values: { store: 'users' } }, { id: 'o', kind: 'result', x: 900, y: 60 }, { id: 'c', kind: 'condition', x: 500, y: 400 },
       useOf(library as never, 'mine', { id: 'm', x: 900, y: 400 }),
     ] } as never, { session: new SessionStore(), panel: canvas.querySelector('sherpa-node-list') as never, stores: ['users'], library: library as never });
     await window.__settled();
@@ -58,14 +58,14 @@ const rowLook = async (page: Page, kind: string): Promise<Look> => {
 const near = (a: number[], b: number[], within = 8): boolean => a.every((v, i) => Math.abs(v - b[i]!) <= within);
 
 test('a Source\'s row is its node\'s: the same tint, the same two round corners, a border; an Output\'s the other two', async ({ page }) => {
-  for (const [kind, heading] of [['source', 'Source'], ['output', 'Output']] as const) {
+  for (const [kind, heading] of [['source', 'Source'], ['result', 'Run result']] as const) {
     const [row, node] = [await rowLook(page, kind), await nodeLook(page, heading)];
     expect(row.radii, `${kind}: its corners`).toEqual(node.radii);
     expect(row.border, `${kind}: it has a border`).toBeGreaterThan(0);
     expect(near(row.fill, node.fill), `${kind}: its fill ${row.fill} is its node's ${node.fill}`).toBe(true);
   }
   // The Source rounds its top-left and bottom-right; the Output the other two: a node's own, not one shape for all.
-  const [s, o] = [await rowLook(page, 'source'), await rowLook(page, 'output')];
+  const [s, o] = [await rowLook(page, 'source'), await rowLook(page, 'result')];
   expect(s.radii[0]).not.toBe(s.radii[1]);
   expect(s.radii[0]).toBe(o.radii[1]);
 });

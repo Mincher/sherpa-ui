@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
         { id: 'c', kind: 'condition', x: 740, y: 20 },
         { id: 's', kind: 'source', x: 20, y: 340, values: { store: 'users' } },
         { id: 't', kind: 'time', x: 380, y: 340 },
-        { id: 'end', kind: 'output', x: 840, y: 440 },
+        { id: 'end', kind: 'result', x: 840, y: 440 },
       ],
       // A Condition sends by its True property, not its header (plan 944).
       connections: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c/true', to: 'end' }],
@@ -90,7 +90,7 @@ async function edge(page: Page, heading: string): Promise<Rgb[]> {
 test('a node given what it cannot use draws the warning border, never red; a node that can use it keeps its own', async ({ page }) => {
   expect(await warning(page, 'Math')).toBe('Value A takes a number; it was given "abc"');
   expect(await warning(page, 'Time')).toBe('Between takes a date; it was given rows');
-  expect(await warning(page, 'Output')).toBeNull();
+  expect(await warning(page, 'Run result')).toBeNull();
   expect(await warning(page, 'Condition')).toBeNull();
   // Value A reads null: its field is empty, read only.
   const a = await page.locator('#cv > sherpa-node[data-heading="Math"] sherpa-input-text[name="a"]').evaluate((f) => [(f as HTMLElement & { value: unknown }).value, f.hasAttribute('readonly')]);
@@ -101,7 +101,7 @@ test('a node given what it cannot use draws the warning border, never red; a nod
     expect(px.some((p) => near(p, warn)), `${heading}'s border is the warning ink: ${JSON.stringify(px)}`).toBe(true);
     expect(px.some((p) => near(p, critical)), `${heading} is not red`).toBe(false);
   }
-  const clean = await edge(page, 'Output');
+  const clean = await edge(page, 'Run result');
   expect(clean.some((p) => near(p, warn)), 'a node with nothing wrong is no warning').toBe(false);
   expect(clean.some((p) => near(p, plain, 24)), `its own border: ${JSON.stringify(clean)}`).toBe(true);
 });
@@ -116,10 +116,10 @@ test('a hover on the header shows the words in a tip beside it; off the header i
   await page.mouse.move(2, 2);
   await expect.poll(async () => (await tip(page, 'Math')).open).toBe(false);
   // A node with nothing wrong: its header opens no tip.
-  const o = await rectOf(page, 'Output', '.header');
+  const o = await rectOf(page, 'Run result', '.header');
   await page.mouse.move(o.x + o.w / 2, o.y + o.h / 2);
   await settle(page);
-  expect((await tip(page, 'Output')).open).toBe(false);
+  expect((await tip(page, 'Run result')).open).toBe(false);
   // A socket's own tip is still its own.
   const sock = await rectOf(page, 'Time', '.header .socket-in');
   await page.mouse.move(sock.x + sock.w / 2, sock.y + sock.h / 2);

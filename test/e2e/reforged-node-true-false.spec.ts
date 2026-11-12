@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
         { id: 'f', kind: 'field', x: 300, y: 40 }, { id: 'm', kind: 'math', x: 300, y: 260 },
         { id: 'c', kind: 'condition', x: 580, y: 40 },
         { id: 'k', kind: 'check', x: 860, y: 40 }, { id: 't', kind: 'time', x: 860, y: 320 },
-        { id: 'o', kind: 'output', x: 1140, y: 40 }, { id: 'o2', kind: 'output', x: 1140, y: 460 },
+        { id: 'o', kind: 'result', x: 1140, y: 40 }, { id: 'o2', kind: 'result', x: 1140, y: 460 },
       ],
       connections: [],
     } as never, { session: new SessionStore(), stores: ['users'], fieldsOf: { users: { role: { label: 'Role' } } } });
@@ -95,7 +95,7 @@ test('no node has a True or a False socket: a Condition\'s True is a property ro
     ['Properties', null, null, false, 'Properties'], ['Yes', null, 'object', true, 'Properties'], ['No', null, 'object', true, 'Properties'],
   ]);
   // The others: a Field, a Math and a Value send from a row; none has a header output.
-  for (const heading of ['Source', 'Field', 'Value', 'Math', 'Output']) {
+  for (const heading of ['Source', 'Field', 'Value', 'Math', 'Run result']) {
     expect(await socket(page, heading, 'output'), `${heading}: no header output`).toBeNull();
   }
   // A Time still sends one boolean from its header.
@@ -132,8 +132,8 @@ test('a Source\'s Rows leave from its Store row, beside its input socket: no Row
 test('only a Check branches: a Condition\'s True joins its test, and its Yes and No an Output each, by the real pointer (plan 944)', async ({ page }) => {
   await drag(page, middle((await socket(page, 'Condition', 'output', named('True')))!), middle((await socket(page, 'Check', 'input'))!));
   expect(await connections(page)).toEqual(['c/true → k']);
-  await drag(page, middle((await socket(page, 'Check', 'output', named('Yes')))!), middle((await socket(page, 'Output', 'input'))!));
-  await drag(page, middle((await socket(page, 'Check', 'output', named('No')))!), middle((await socket(page, 'Output', 'input', undefined, 1))!));
+  await drag(page, middle((await socket(page, 'Check', 'output', named('Yes')))!), middle((await socket(page, 'Run result', 'input'))!));
+  await drag(page, middle((await socket(page, 'Check', 'output', named('No')))!), middle((await socket(page, 'Run result', 'input', undefined, 1))!));
   expect(await connections(page)).toEqual(['c/true → k', 'k/no → o2', 'k/yes → o']);
   // A value into its Data: Yes and No are drawn as what they send, a value each. An empty Value sends nothing (D2).
   await drag(page, middle((await socket(page, 'Value', 'output', named('Value')))!), middle((await socket(page, 'Check', 'input', named('Data')))!));

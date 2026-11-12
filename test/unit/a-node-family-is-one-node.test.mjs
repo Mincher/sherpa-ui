@@ -33,7 +33,7 @@ const flow = (type, extra = {}) => ({
   nodes: [
     { id: 'v', kind: 'value', x: 0, y: 0, values: { value: '2', type: 'decimal' } },
     { id: 'm', kind: 'math', x: 300, y: 0, values: { ...(type ? { type } : {}), ...extra } },
-    { id: 'o', kind: 'output', x: 600, y: 0 },
+    { id: 'o', kind: 'result', x: 600, y: 0 },
   ],
   connections: [{ from: 'v/value', to: 'm/places' }],
 });

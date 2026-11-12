@@ -67,8 +67,8 @@ test('the registry says each socket: a row\'s and the header\'s; no node has a T
   assert.equal(socketType(kinds.fork, 'rows', 'input'), 'object');
   // A kind that still says `branches` forks no more (plan 944).
   assert.deepEqual(['#false', undefined].map((row) => socketType({ ...kinds.fork, branches: true }, row, 'output')), [undefined, undefined]);
-  assert.equal(socketType(NODE_KINDS.output, '#false', 'output'), undefined, 'no False');
-  assert.equal(socketType(NODE_KINDS.output, undefined, 'output'), undefined, 'the end sends nothing');
+  assert.equal(socketType(NODE_KINDS.result, '#false', 'output'), undefined, 'no False');
+  assert.equal(socketType(NODE_KINDS.result, undefined, 'output'), undefined, 'the end sends nothing');
   // A Condition's header sends nothing: its True is a row, 1 or 0 (plan 944).
   assert.equal(socketType(NODE_KINDS.condition, undefined, 'output'), undefined, 'a Condition\'s header sends nothing');
   assert.equal(socketType(resolveKind(NODE_KINDS.condition), 'true', 'output'), 'value', 'a Condition\'s True');
@@ -76,7 +76,7 @@ test('the registry says each socket: a row\'s and the header\'s; no node has a T
   assert.deepEqual([[undefined, 'input'], ['data', 'input'], ['yes', 'output'], ['no', 'output'], [undefined, 'output']].map(([row, side]) => socketType(NODE_KINDS.check, row, side)), ['any', 'any', 'object', 'object', undefined]);
   assert.equal(takesMany(kinds.gate), true);
   assert.equal(takesMany(kinds.gate, 'tags'), false);
-  assert.equal(takesMany(NODE_KINDS.output), false);
+  assert.equal(takesMany(NODE_KINDS.result), false);
   // A drawn node carries its many, for the tip to read; no fork (plan 944).
   const drawn = kindNode(kinds, 'gate', 'g', []);
   assert.deepEqual([drawn.many, kindNode({ ...kinds, old: { ...kinds.fork, branches: true } }, 'old', 'f', []).branches], [true, undefined]);
@@ -121,7 +121,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   // Every kind a workflow runs, the Trigger (plan 941), the Check, the end and a portal, which passes on what reaches it (TODO 779), among them.
-  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'check', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'provider', 'model', 'prompt', 'runbook', 'skill', 'output']);
+  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'check', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'provider', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request']);
 });
 
 test('every shipped kind says its types once: no output sends any; none forks; a multi-select row is an object, one connection in', () => {
@@ -142,7 +142,7 @@ test('every shipped kind says its types once: no output sends any; none forks; a
 const node = (id, kind, values) => ({ id, kind, x: 0, y: 0, ...(values ? { values } : {}) });
 const sound = {
   v: 3, id: 'typed',
-  nodes: [node('start', 'source'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'math', { type: 'count' }), node('end', 'output')],
+  nodes: [node('start', 'source'), node('v', 'value'), node('f', 'fork'), node('g', 'gate'), node('l', 'log'), node('c', 'math', { type: 'count' }), node('end', 'result')],
   connections: [
     { from: 'start/rows', to: 'f/rows' }, { from: 'f/yes', to: 'g' }, { from: 'f/no', to: 'g' },
     { from: 'f/rows', to: 'end' }, { from: 'v/value', to: 'l' }, { from: 'c/result', to: 'l' }, { from: 'start/rows', to: 'c/rows' },

@@ -21,9 +21,9 @@ test.beforeEach(async ({ page }) => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const node = (id: string, kind: string, x: number, y: number) => ({ id, kind, x, y, heading: id });
     const flow = { v: 3 as const, id: 'z', nodes: [
-      node('s1', 'source', 0, 0), node('e1', 'output', 700, 0),
-      node('s2', 'source', 0, 220), node('e2', 'output', 700, 220),
-      node('s3', 'source', 0, 440), node('e3', 'output', 700, 440),
+      node('s1', 'source', 0, 0), node('e1', 'result', 700, 0),
+      node('s2', 'source', 0, 220), node('e2', 'result', 700, 220),
+      node('s3', 'source', 0, 440), node('e3', 'result', 700, 440),
     ], connections: [1, 2, 3].map((n) => ({ from: `s${n}/rows`, to: `e${n}` })) };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow, {
@@ -394,7 +394,7 @@ test('756: a box picks one node or several with the panel a tab, and the toolbar
   await page.mouse.click(hx, hy);
   await settle(page);
   // A title of its own follows its kind.
-  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'Output: e1' });
+  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'Run result: e1' });
   // Open, a box over one node shows that node; over two, a tab each.
   await drag(page, [b.left - 14, b.top - 14], [b.right + 14, b.bottom + 14]);
   expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'Source: s2' });

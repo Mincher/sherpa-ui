@@ -15,7 +15,7 @@ const { groupNodes } = await import(new URL('node-group.js', core));
 
 const flow = () => ({
   v: 3, id: 'f',
-  nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'e', kind: 'output', x: 400, y: 0 }],
+  nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'e', kind: 'result', x: 400, y: 0 }],
   connections: [{ from: 's/rows', to: 'e' }],
 });
 
