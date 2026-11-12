@@ -16,7 +16,7 @@ const ORG = {
   nodes: [{ id: 'has-role', kind: 'condition', x: 330, y: 0, values: { type: 'eq' } }, { id: 'role-field', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
   connections: [
     { from: '#in/users', to: 'role-field' }, { from: 'role-field/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
-    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
   ],
 };
 

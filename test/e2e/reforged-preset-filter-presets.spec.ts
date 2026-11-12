@@ -24,7 +24,7 @@ const SETUP = `
     v: 2, type: 'preset-filter', id, label, settings: { source: store },
     graph: {
       nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field } }, { id: 'c', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }],
-      connections: [{ from: 'f/field', to: 'c' }, { from: 'c', to: '#out/where' }],
+      connections: [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }],
     },
   });
   window.said = [];
