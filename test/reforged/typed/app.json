@@ -10,7 +10,8 @@
     "devices": {
       "label": "Devices",
       "template": "templates/devices.html",
-      "definition": "pages/devices.json"
+      "definition": "pages/devices.json",
+      "module": "contexts/devices.js"
     },
     "teammates": {
       "label": "Teammates",

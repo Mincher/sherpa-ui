@@ -142,7 +142,7 @@
   "src/core/data/aggregate.ts": 688,
   "src/core/data/ai-catalog.ts": 93,
   "src/core/data/allow.ts": 125,
-  "src/core/data/app-definition.ts": 154,
+  "src/core/data/app-definition.ts": 158,
   "src/core/data/base-store.ts": 290,
   "src/core/data/bind-selection.ts": 204,
   "src/core/data/chart-datum.ts": 80,

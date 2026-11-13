@@ -290,7 +290,9 @@ export async function init(root, { source, query, session, view, signal, header,
   page's, when it has a definition, and `query` its Context's ONE Query: a
   second source joins it with `new DataSource({ store, query })`. `signal`
   aborts when it goes; or return a teardown. `id` is its key in `app.json`, so
-  one module can serve many.
+  one module can serve many. `stores` is every store a page may name, by name
+  (each app.json type's, then the app's own, which wins): a module reads another
+  type's rows there, the same store its page reads, never a second one.
 - Reach the header and the panels through `ctx`, never `document`. A part a
   component does not offer is a door to ask for, not a shadow root to reach
   into. `T-a-shadow-reach-is-a-missing-door`

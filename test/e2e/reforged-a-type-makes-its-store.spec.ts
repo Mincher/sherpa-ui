@@ -73,3 +73,18 @@ test('a Context that names a type and no template is the type\'s own page: its t
     expect(r, context).toEqual({ rows, heads: [...heads], toolbar: true, pager: true });
   }
 });
+
+test('a page\'s module reads another type\'s rows through ctx.stores, the stores its page reads', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=devices');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const r = await page.evaluate(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({ alerts: { load: () => null } }) });
+    const seen = () => (window as unknown as { __typed?: { stores: string[]; teammates?: number } }).__typed;
+    for (let i = 0; i < 100 && !seen(); i++) await new Promise((done) => setTimeout(done, 50));
+    return seen();
+  });
+  expect(r).toEqual({ stores: ['alerts', 'device', 'teammate'], teammates: 2 });
+});

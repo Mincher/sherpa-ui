@@ -13,6 +13,7 @@
  * - checkApp — Check every name an app definition uses; each broken one reports.
  */
 import type { SessionStore } from '../browser/session.js';
+import type { Store } from './store.js';
 import type { DataSource } from './data-source.js';
 import type { QueryContext } from './query-context.js';
 import type { EntityShelf } from './entity-shelf.js';
@@ -103,6 +104,9 @@ export interface ContextInit {
   page?: OpenPage;
   /** Its page's source, when it has a definition. */
   source?: DataSource;
+  /** The stores a page may name, by name: each app.json type's, then the app's own, which wins by name. A module reads
+   *  another type's rows here (a User's Accounts), the same store its page reads. Plan 960 U3 */
+  stores: Readonly<Record<string, Store>>;
   /** The Context's ONE Query, which its source and controls share. 366 step 24 */
   query?: QueryContext;
   /** Aborts when the Context goes. */
