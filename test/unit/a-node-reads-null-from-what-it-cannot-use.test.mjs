@@ -149,14 +149,14 @@ test('a connection of another type joins and warns (TODO 770); a row\'s own faul
   assert.deepEqual([row(drawn(half), 'm', 'places').fault, at(drawn(half), 'm').warnings], ['1.5 is not a whole number', undefined]);
 });
 
-test('an entity\'s output and a Custom Node\'s: a Preset Filter\'s Where into a Tag is a boolean, and a Custom Node\'s header takes anything', () => {
+test('an entity\'s output and a Custom Node\'s: a Filter\'s Where into a Tag is a boolean, and a Custom Node\'s header takes anything', () => {
   const entity = {
-    v: 2, type: 'preset-filter', id: 'active', label: 'Active',
+    v: 2, type: 'filter', id: 'active', label: 'Active',
     graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], connections: [{ from: 'c', to: '#out/where' }] }, settings: { source: 'customers' },
   };
   const library = libraryOf([entity]);
   const kinds = { ...NODE_KINDS, ...kindsOf(library) };
-  const w = flow([useOf(library, 'preset-filter:active', { id: 'use', x: 0, y: 0 }), { id: 'col', kind: 'tag', x: 300, y: 0 }, value('v', 'x')],
+  const w = flow([useOf(library, 'filter:active', { id: 'use', x: 0, y: 0 }), { id: 'col', kind: 'tag', x: 300, y: 0 }, value('v', 'x')],
     [{ from: 'use/where', to: 'col' }, { from: 'v/value', to: 'use' }]);
   assert.deepEqual(said(drawn(w, facts, kinds)), { col: [['', 'Tag takes a field; it was given a boolean']] });
 });

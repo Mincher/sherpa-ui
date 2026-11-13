@@ -1,14 +1,14 @@
 /**
- * A PRESET FILTER IS A PRESET OF ITS STORE — Will, TODO 776 (plan 776). A Preset Filter entity's graph
+ * A PRESET FILTER IS A PRESET OF ITS STORE — Will, TODO 776 (plan 776). A Filter entity's graph
  * is read as ONE condition by the reader the Outgoing JSON shows (`conditionAt`), each comparison as the
  * Query editor reads an edited one, then each field's own in the plain form: the shape a page's preset
  * has, declared through the same door. So the readings it writes are the ones the Query editor reads
  * back; one placed inside another flattens; "Any" of two fields is said in words; a page lists only its
  * store's; and a press is `query.ask({ preset })`, giving the rows the Status chip's Active gives.
  *
- *   node --test test/unit/a-preset-filter-is-a-preset-of-its-store.test.mjs
+ *   node --test test/unit/a-filter-is-a-preset-of-its-store.test.mjs
  *
- * TRAP T-a-preset-filter-is-a-preset-of-its-store
+ * TRAP T-a-filter-is-a-preset-of-its-store
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { ArrayStore, bindSource, openSource } from '../../dist/data.js';
 
 const data = new URL('../../dist/core/data/', import.meta.url);
-const { presetOfEntity, presetsOver, sourceOf } = await import(new URL('preset-filter.js', data));
+const { presetOfEntity, presetsOver, sourceOf } = await import(new URL('filter.js', data));
 const { presetReadings } = await import(new URL('page-definition.js', data));
 const { queryGraph, graphRequest, placeRequest } = await import(new URL('query-graph.js', data));
 const { sameAnswer } = await import(new URL('query.js', data));
@@ -42,17 +42,17 @@ const fieldNode = (id, field, x = 200, y = 0) => ({ id, kind: 'field', x, y, val
 const test_ = (id, type, b, x = 400, y = 0) => ({ id, kind: 'condition', x, y, values: { type, ...(b === undefined ? {} : { b }) } });
 /** Demos' own, rebuilt (plan 783 D9): Source › Field (Status) › Condition (Equals active) › its True › Where (plan 944). */
 const active = {
-  v: 2, type: 'preset-filter', id: 'active-customers', label: 'Active customers', settings: { source: 'customers' },
+  v: 2, type: 'filter', id: 'active-customers', label: 'Active customers', settings: { source: 'customers' },
   graph: {
     nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('field', 'status'), test_('status', 'eq', 'active')],
     connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
   },
 };
-/** A Preset Filter whose nodes and connections are given, over customers. */
-const filter = (id, nodes, connections, extra = {}) => ({ v: 2, type: 'preset-filter', id, label: id, settings: { source: 'customers' }, graph: { nodes, connections }, ...extra });
+/** A Filter whose nodes and connections are given, over customers. */
+const filter = (id, nodes, connections, extra = {}) => ({ v: 2, type: 'filter', id, label: id, settings: { source: 'customers' }, graph: { nodes, connections }, ...extra });
 /** Pro, And Active customers placed beside it. */
 const proActive = filter('pro-active', [
-  { id: 'use', kind: 'preset-filter:active-customers', x: 0, y: 240 }, fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), test_('and', 'and', undefined, 600),
+  { id: 'use', kind: 'filter:active-customers', x: 0, y: 240 }, fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), test_('and', 'and', undefined, 600),
 ], [{ from: 'plan/field', to: 'pro' }, { from: 'pro/true', to: 'and' }, { from: 'use', to: 'and' }, { from: 'and/true', to: '#out/where' }]);
 
 async function page() {
@@ -64,7 +64,7 @@ async function page() {
 const total = (source) => source.debugState().total;
 
 test('its graph is read as the condition its Where says, the shape a page\'s own preset has, its id its use\'s kind', () => {
-  assert.deepEqual(presetOfEntity(active), { preset: { id: 'preset-filter:active-customers', label: 'Active customers', where: { status: { eq: 'active' } } } });
+  assert.deepEqual(presetOfEntity(active), { preset: { id: 'filter:active-customers', label: 'Active customers', where: { status: { eq: 'active' } } } });
   // A Value connected to Value B is read as the canvas draws it: mirrored. So is one connected to the Field's row.
   const connected = filter('connected', [
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'trial' } }, fieldNode('f', 'status'), test_('c', 'eq'),
@@ -123,7 +123,7 @@ test('its readings are the ones the Query editor reads back for the same conditi
 test('one placed inside another flattens: its use\'s True into And; the Outgoing JSON says the two joined', () => {
   assert.deepEqual(presetOfEntity(proActive, { entities: [active] }).preset.where, { plan: { eq: 'Pro' }, status: { eq: 'active' } });
   const both = filter('both', [
-    { id: 'use', kind: 'preset-filter:pro-active', x: 0, y: 240 }, fieldNode('f', 'seats'), test_('big', 'gte', 5), test_('and', 'and', undefined, 600),
+    { id: 'use', kind: 'filter:pro-active', x: 0, y: 240 }, fieldNode('f', 'seats'), test_('big', 'gte', 5), test_('and', 'and', undefined, 600),
   ], [{ from: 'f/field', to: 'big' }, { from: 'use', to: 'and' }, { from: 'big/true', to: 'and' }, { from: 'and/true', to: '#out/where' }]);
   // Two deep: pro-active holds active-customers, and each is read inside.
   assert.deepEqual(presetOfEntity(both, { entities: [active, proActive] }).preset.where, { plan: { eq: 'Pro' }, status: { eq: 'active' }, seats: { gte: 5 } });
@@ -152,15 +152,15 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
 test('what has no preset form is said in words: Or across two fields, an empty value, no condition, a test with no Field', () => {
   const any = filter('any', [fieldNode('fp', 'plan'), fieldNode('fs', 'status'), test_('pro', 'eq', 'Pro'), test_('trial', 'eq', 'trial'), test_('or', 'or', undefined, 600)],
     [{ from: 'fp/field', to: 'pro' }, { from: 'fs/field', to: 'trial' }, { from: 'pro/true', to: 'or' }, { from: 'trial/true', to: 'or' }, { from: 'or/true', to: '#out/where' }]);
-  assert.deepEqual(presetOfEntity(any), { fault: 'the Preset Filter "any": it says Any of "plan" and "status", and each field holds its own condition' });
+  assert.deepEqual(presetOfEntity(any), { fault: 'the Filter "any": it says Any of "plan" and "status", and each field holds its own condition' });
   // Any of ONE field is that field's own.
   assert.deepEqual(whereOfTree({ or: [{ field: 'plan', op: 'eq', value: 'Pro' }, { field: 'plan', op: 'eq', value: 'Free' }] }), { where: { plan: { or: [{ eq: 'Pro' }, { eq: 'Free' }] } } });
   const empty = filter('empty', [fieldNode('f', 'plan'), test_('c', 'eq')], [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }]);
-  assert.deepEqual(presetOfEntity(empty), { fault: 'the Preset Filter "empty": its comparison of "plan" has no value' });
-  assert.deepEqual(presetOfEntity(filter('none', [], [])), { fault: 'the Preset Filter "none" sends no condition to its Where' });
+  assert.deepEqual(presetOfEntity(empty), { fault: 'the Filter "empty": its comparison of "plan" has no value' });
+  assert.deepEqual(presetOfEntity(filter('none', [], [])), { fault: 'the Filter "none" sends no condition to its Where' });
   // A comparison of values, with no Field on its header, says no condition (776 D11).
   const values = filter('values', [{ id: 'v', kind: 'value', x: 0, y: 0, values: { value: '1' } }, test_('m', 'gt', '2')], [{ from: 'v/value', to: 'm' }, { from: 'm/true', to: '#out/where' }]);
-  assert.deepEqual(presetOfEntity(values), { fault: 'the Preset Filter "values": "Condition" tests no Field: connect one in' });
+  assert.deepEqual(presetOfEntity(values), { fault: 'the Filter "values": "Condition" tests no Field: connect one in' });
   // A Field that sends nothing says why: a field its store lacks. With no Source, its rows are its settings' store's.
   const stranger = filter('stranger', [fieldNode('f', 'nope'), test_('c', 'eq', 'x')], [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }]);
   assert.match(presetOfEntity(stranger, { fieldsOf: { customers: FIELDS } }).fault, /"Condition" tests "Field", which sends nothing: "nope" is not a field of the rows that come in/);
@@ -179,7 +179,7 @@ test('a page lists only its store\'s: settings name the source, else its Store n
   const node = { v: 2, type: 'node', id: 'a-node', label: 'A node', graph: { nodes: [], connections: [] }, settings: { inputs: [], outputs: [] } };
   assert.equal(sourceOf(bare), 'customers', 'its Store names it');
   const { presets, faults } = presetsOver('customers', [active, orders, bare, node, proActive]);
-  assert.deepEqual(presets.map((p) => p.id), ['preset-filter:active-customers', 'preset-filter:bare', 'preset-filter:pro-active']);
+  assert.deepEqual(presets.map((p) => p.id), ['filter:active-customers', 'filter:bare', 'filter:pro-active']);
   assert.deepEqual(faults, []);
 });
 
@@ -188,7 +188,7 @@ test('a press is the Query\'s one door: on, the Status chip\'s Active rows; off,
   const all = total(source);
   const preset = presetOfEntity(active).preset;
   source.declarePresets('data', [{ id: preset.id, label: preset.label, readings: presetReadings(source, preset.where) }]);
-  assert.deepEqual(source.describe('data').filters[0], { id: 'preset:preset-filter:active-customers', label: 'Active customers', preset: true, active: false });
+  assert.deepEqual(source.describe('data').filters[0], { id: 'preset:filter:active-customers', label: 'Active customers', preset: true, active: false });
   source.query.ask({ scope: 'data', preset: preset.id, on: true, commit: true });
   await source.load();
   const on = total(source);
@@ -227,7 +227,7 @@ test('never is `[\'or\']`: on the bar, and on it holds no row, in the store, a k
   assert.deepEqual(filterWithout(['and', ['plan', 'eq', 'Pro'], ['or']], new Set(['plan'])), ['or']);
   const source = await page();
   source.declarePresets('data', [{ id: made.id, label: made.label, readings: presetReadings(source, made.where) }]);
-  assert.deepEqual(source.describe('data').filters[0], { id: 'preset:preset-filter:never', label: 'never', preset: true, active: false });
+  assert.deepEqual(source.describe('data').filters[0], { id: 'preset:filter:never', label: 'never', preset: true, active: false });
   source.query.ask({ scope: 'data', preset: made.id, on: true, commit: true });
   await source.load();
   assert.equal(source.query.presetOn('data', made.id), true);

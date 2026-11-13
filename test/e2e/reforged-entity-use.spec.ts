@@ -1,15 +1,15 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * An entity USED as a node — Will, plan 746 E5 (D1, D8, D11). The canvas edits one Preset Filter; its
- * node panel offers what a Preset Filter takes (no Output) and every other entity's node, but not its
+ * An entity USED as a node — Will, plan 746 E5 (D1, D8, D11). The canvas edits one Filter; its
+ * node panel offers what a Filter takes (no Output) and every other entity's node, but not its
  * own nor one that holds it; inside a use opened, what THAT one may place. A saved entity that changed
  * shows "Update available" on its uses, its diff, and the split button; an update stays in the draft
  * until Save or discard; "Update all instances" never writes the entity open on the canvas. Each by
  * real pointer and key. TRAP T-an-entity-is-used-as-a-node
  */
 const filter = (id: string, label: string, value: string) => ({
-  v: 2, type: 'preset-filter', id, label, settings: { source: 'customers' },
+  v: 2, type: 'filter', id, label, settings: { source: 'customers' },
   graph: {
     nodes: [{ id: 'status', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }, { id: 'field', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
     connections: [{ from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
@@ -31,15 +31,15 @@ test.beforeEach(async ({ page }) => {
   }, { trials: filter('trials', 'Trials', 'trial'), active: { ...filter('active', 'Active', 'active'), origin: 'preset' } });
 });
 
-/** Bind the Preset Filter "Outer" — a use of Trials on it — with every entity as the library, "Top" holding Outer. */
+/** Bind the Filter "Outer" — a use of Trials on it — with every entity as the library, "Top" holding Outer. */
 const bind = (page: Page) => page.evaluate(async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const { NODE_KINDS, graphWorkflow, kindsOf, libraryOf, useOf } = await import('/dist/data.js');
   const w = window as unknown as Record<string, unknown> & { ENTITIES: Record<string, Record<string, unknown>> };
   const { trials, active } = w.ENTITIES;
-  const use = useOf(libraryOf([trials as never]), 'preset-filter:trials', { id: 'trials-1', x: 0, y: 0 });
-  const outer = { v: 2, type: 'preset-filter', id: 'outer', label: 'Outer', origin: 'mine', graph: { nodes: [use], connections: [{ from: 'trials-1', to: '#out/where' }] } };
-  const top = { v: 2, type: 'preset-filter', id: 'top', label: 'Top', origin: 'mine', graph: { nodes: [{ id: 'o', kind: 'preset-filter:outer', x: 0, y: 0 }], connections: [{ from: 'o', to: '#out/where' }] } };
+  const use = useOf(libraryOf([trials as never]), 'filter:trials', { id: 'trials-1', x: 0, y: 0 });
+  const outer = { v: 2, type: 'filter', id: 'outer', label: 'Outer', origin: 'mine', graph: { nodes: [use], connections: [{ from: 'trials-1', to: '#out/where' }] } };
+  const top = { v: 2, type: 'filter', id: 'top', label: 'Top', origin: 'mine', graph: { nodes: [{ id: 'o', kind: 'filter:outer', x: 0, y: 0 }], connections: [{ from: 'o', to: '#out/where' }] } };
   w['all'] = (more: unknown[] = []) => libraryOf([trials, active, outer, top, ...more] as never);
   const library = (w['all'] as () => never)();
   const { workflow, kinds } = graphWorkflow(outer as never, { ...NODE_KINDS, ...kindsOf(library) });
@@ -73,17 +73,17 @@ const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[
 const caption = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).first().getAttribute('data-caption');
 const press = (loc: import('@playwright/test').Locator) => loc.evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
 
-test('the panel offers what a Preset Filter takes, and every entity\'s node but its own and one that holds it; a click places an instance', async ({ page }) => {
+test('the panel offers what a Filter takes, and every entity\'s node but its own and one that holds it; a click places an instance', async ({ page }) => {
   await bind(page);
   const lists = await offered(page);
   const all = Object.values(lists).flat();
   expect(all).toContain('condition');
   expect(all).not.toContain('output');
-  expect(lists['Custom Nodes']).toEqual(['preset-filter:active', 'preset-filter:trials']);
+  expect(lists['Custom Nodes']).toEqual(['filter:active', 'filter:trials']);
   // A preset, on the Preset Nodes tab, open already.
-  await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="preset-filter:active"]').click();
+  await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="filter:active"]').click();
   await settle(page);
-  const placed = await ed<{ kind: string; version?: string }>(page, "ed.workflow().nodes.find((n) => n.kind === 'preset-filter:active')");
+  const placed = await ed<{ kind: string; version?: string }>(page, "ed.workflow().nodes.find((n) => n.kind === 'filter:active')");
   expect(placed.version).toBeTruthy();
   expect(await page.locator('#cv > sherpa-node[data-heading="Active"]').count()).toBe(1);
 });
@@ -96,12 +96,12 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   expect(await ed(page, 'ed.path()')).toEqual(['trials-1']);
   expect(await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#cv > sherpa-node')].map((n) => n.dataset['heading']).sort())).toEqual(['Condition', 'Field', 'Group Output']);
   // Outer holds Trials, and Top holds Outer: neither is offered inside it, nor Trials itself.
-  expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:active']);
+  expect((await offered(page))['Custom Nodes']).toEqual(['filter:active']);
   await page.keyboard.press('Escape');
   await settle(page);
-  expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:active', 'preset-filter:trials']);
+  expect((await offered(page))['Custom Nodes']).toEqual(['filter:active', 'filter:trials']);
   // A preset placed and opened: locked, with "Copy to my nodes".
-  await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="preset-filter:active"]').click();
+  await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="filter:active"]').click();
   await settle(page);
   await header(page, 'Active').dblclick();
   await settle(page);
@@ -109,8 +109,8 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   await press(page.locator('#inspector sherpa-button[data-label="Copy to my nodes"]'));
   await settle(page);
   expect(await ed(page, 'ed.path().length')).toBe(1);
-  expect(await ed(page, "ed.workflow().nodes.find((n) => n.kind.startsWith('preset-filter:active')).kind")).toBe('preset-filter:active-copy');
-  expect(await ed(page, "ed.library().nodes['preset-filter:active-copy'].settings")).toEqual({ source: 'customers' });
+  expect(await ed(page, "ed.workflow().nodes.find((n) => n.kind.startsWith('filter:active')).kind")).toBe('filter:active-copy');
+  expect(await ed(page, "ed.library().nodes['filter:active-copy'].settings")).toEqual({ source: 'customers' });
 });
 
 test('saved again elsewhere: the use says "Update available" with its diff; Update instance stays in the draft until Save, and discard gives it back', async ({ page }) => {
@@ -135,7 +135,7 @@ test('saved again elsewhere: the use says "Update available" with its diff; Upda
 test('"Update all instances" updates every other graph that uses it, and never the entity open on the canvas', async ({ page }) => {
   await bind(page);
   // Top holds Outer only; a second graph, Other, uses Trials too.
-  const other = { v: 2, type: 'preset-filter', id: 'other', label: 'Other', origin: 'mine', graph: { nodes: [{ id: 't', kind: 'preset-filter:trials', x: 0, y: 0, version: 'old' }], connections: [{ from: 't', to: '#out/where' }] } };
+  const other = { v: 2, type: 'filter', id: 'other', label: 'Other', origin: 'mine', graph: { nodes: [{ id: 't', kind: 'filter:trials', x: 0, y: 0, version: 'old' }], connections: [{ from: 't', to: '#out/where' }] } };
   const lead = "{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { type: 'eq', b: 'lead' } }, window.ENTITIES.trials.graph.nodes[1]] } }";
   await ed(page, `ed.refresh(window.all([${JSON.stringify(other)}, ${lead}]))`);
   await settle(page);
@@ -153,6 +153,6 @@ test('"Update all instances" updates every other graph that uses it, and never t
   expect(await ed(page, 'ed.save()')).toBe(true);
   // Other is handed over, updated; Outer is the draft Save writes, never a stale copy of it.
   const handed = await page.evaluate(() => (window as unknown as { savedNodes: [string, { nodes: { version?: string }[] }][] }).savedNodes.map(([id]) => id));
-  expect(handed).toEqual(['preset-filter:other']);
+  expect(handed).toEqual(['filter:other']);
   expect(await page.evaluate(() => (window as unknown as { saved: { id: string }[] }).saved.map((d) => d.id))).toEqual(['outer']);
 });

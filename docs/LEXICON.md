@@ -198,10 +198,11 @@ saved filters.
 **lens** is one way to show and edit a definition, written back through one door; a **Filter** is a filter
 definition, saved as a Custom Node and used inside a View definition.
 
-**Moves.** None yet: each lands with the code that gives it a meaning. Entity widens with `type.v1` and the one store
-door (U2, U3). Lens arrives with `registerLens` (U4). Preset Filter → **Filter** in U4: the type `preset-filter` →
-`filter`, `PRESET_FILTER` → `FILTER`, `preset-filter.ts` and its schema, the use kind `preset-filter:<id>` →
-`filter:<id>`, and Demos' presets, in one change. The other rows of plan 960 section 3 wait on Will.
+**Moves.** Each lands with the code that gives it a meaning. Entity widens with `type.v1` and the one store door (U2,
+U3). Lens arrives with `registerLens` (U4.1). Preset Filter → **Filter**, DONE in U4.4a: the type `preset-filter` →
+`filter`, `PRESET_FILTER` → `FILTER`, `preset-filter.ts` → `filter.ts`, `entity-preset-filter.v1.json` →
+`entity-filter.v1.json`, the use kind `preset-filter:<id>` → `filter:<id>`, the provider's `presetFilters` →
+`filterPresets`, and Demos' presets, in one change. The other rows of plan 960 section 3 wait on Will.
 
 ---
 

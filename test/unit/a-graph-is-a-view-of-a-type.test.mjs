@@ -23,7 +23,7 @@ const { checkApp } = await import(new URL('data/app-definition.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
 const filter = (id, label = id) => ({
-  v: 2, type: 'preset-filter', id, label,
+  v: 2, type: 'filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -43,8 +43,8 @@ const keeper = () => new PageKeeper({ tab: memoryTier(), local: memoryTier() });
 
 test('a View\'s graph names a type: it validates, and a graph View holds no template or content', () => {
   const views = schemaCheck('views.v1.json');
-  assert.deepEqual(views({ filters: { label: 'Preset Filters', graph: { type: 'preset-filter' } }, all: { label: 'All' } }), []);
-  assert.notDeepEqual(views({ bad: { label: 'Bad', graph: { type: 'Preset Filter' } } }), []);
+  assert.deepEqual(views({ filters: { label: 'Filters', graph: { type: 'filter' } }, all: { label: 'All' } }), []);
+  assert.notDeepEqual(views({ bad: { label: 'Bad', graph: { type: 'Filter' } } }), []);
   assert.notDeepEqual(views({ bad: { label: 'Bad', graph: {} } }), []);
   assert.notDeepEqual(views({ bad: { label: 'Bad', graph: { type: 'node' }, template: 'a.html#a' } }), []);
   assert.notDeepEqual(views({ bad: { label: 'Bad', graph: { type: 'node' }, content: '<p></p>' } }), []);
@@ -64,7 +64,7 @@ test('the graph chip\'s rows come from the shelf: the type\'s presets, read only
   const k = keeper();
   k.entityPresets = [filter('shipped', 'Shipped')];
   assert.equal(await k.entities.save(filter('mine', 'Mine')), true);
-  const list = k.entities.list('preset-filter');
+  const list = k.entities.list('filter');
   assert.deepEqual(graphRows(list, 'mine'), [
     { value: 'shipped', label: 'Shipped', section: 'Presets', note: 'Read only' },
     { value: 'mine', label: 'Mine', section: 'My graphs', selected: true },
@@ -95,32 +95,32 @@ test('a `query` graph View\'s graphs are the app\'s pages — every Context with
 
 test('New graph makes an empty entity of the type, checked and kept: its name or a numbered default, a free id, the type\'s own settings', async () => {
   const k = keeper();
-  k.entityPresets = [filter('new-preset-filter', 'Taken')];
+  k.entityPresets = [filter('new-filter', 'Taken')];
   const types = entityTypes();
-  const { result: first, said } = await heard(() => newGraph(k.entities, types['preset-filter']));
+  const { result: first, said } = await heard(() => newGraph(k.entities, types['filter']));
   assert.deepEqual(said, []);
   // The id a preset holds is not taken over.
-  assert.equal(first, 'new-preset-filter-2');
+  assert.equal(first, 'new-filter-2');
   const made = k.entities.get(first);
-  assert.deepEqual({ ...made }, { v: 2, type: 'preset-filter', id: first, label: 'New Preset Filter', graph: { nodes: [], connections: [] }, origin: 'mine' });
+  assert.deepEqual({ ...made }, { v: 2, type: 'filter', id: first, label: 'New Filter', graph: { nodes: [], connections: [] }, origin: 'mine' });
   assert.equal(checkEntity(made), true);
   // A second default reads apart; a name of the reader's is theirs, with its description.
-  const second = await newGraph(k.entities, types['preset-filter']);
-  assert.equal(k.entities.get(second).label, 'New Preset Filter 2');
-  const named = await newGraph(k.entities, types['preset-filter'], { label: ' 2026 renewals ', description: ' Due this year ' });
-  assert.equal(named, 'preset-filter-2026-renewals');
+  const second = await newGraph(k.entities, types['filter']);
+  assert.equal(k.entities.get(second).label, 'New Filter 2');
+  const named = await newGraph(k.entities, types['filter'], { label: ' 2026 renewals ', description: ' Due this year ' });
+  assert.equal(named, 'filter-2026-renewals');
   assert.deepEqual([k.entities.get(named).label, k.entities.get(named).description], ['2026 renewals', 'Due this year']);
   // A Custom Node starts with its type's sockets: none.
   const node = await newGraph(k.entities, types.node);
   assert.deepEqual(k.entities.get(node).settings, { inputs: [], outputs: [] });
-  assert.deepEqual(k.entities.list('preset-filter').map((e) => e.origin), ['preset', 'mine', 'mine', 'mine']);
+  assert.deepEqual(k.entities.list('filter').map((e) => e.origin), ['preset', 'mine', 'mine', 'mine']);
 });
 
 test('an EMPTY graph is a new one: its outputs are asked for once it places a node', () => {
-  const empty = { v: 2, type: 'preset-filter', id: 'empty', label: 'Empty', graph: { nodes: [], connections: [] } };
+  const empty = { v: 2, type: 'filter', id: 'empty', label: 'Empty', graph: { nodes: [], connections: [] } };
   assert.deepEqual(entityFaults(empty), []);
   const placed = { ...empty, graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0 }], connections: [] } };
-  assert.deepEqual(entityFaults(placed), ['the Preset Filter "empty" sends nothing to its output "where": connect one to #out/where']);
+  assert.deepEqual(entityFaults(placed), ['the Filter "empty" sends nothing to its output "where": connect one to #out/where']);
 });
 
 test('the canvas edits an entity\'s graph as a workflow — its Group Input and Output where its type has sockets — and keeps its own nodes back', () => {
@@ -138,7 +138,7 @@ test('the canvas edits an entity\'s graph as a workflow — its Group Input and 
     assert.deepEqual(kinds(flow), ['start']);
     const { workflow, kinds: offered } = graphWorkflow(filter('pf', 'PF'));
     // Its id the entity's, so its tab draft is its own; its own kind not offered on its canvas.
-    assert.deepEqual([workflow.id, workflow.label, 'preset-filter:pf' in offered, '#group-output' in offered], ['pf', 'PF', false, true]);
+    assert.deepEqual([workflow.id, workflow.label, 'filter:pf' in offered, '#group-output' in offered], ['pf', 'PF', false, true]);
     assert.deepEqual(graphOfWorkflow(workflow), filter('pf').graph);
     assert.deepEqual(graphOfWorkflow({ nodes: [], connections: undefined, ties: [] }), { nodes: [], connections: [] });
   } finally {
@@ -172,7 +172,7 @@ test('Save graph as makes a COPY — of a preset too: the reader\'s own, named, 
   // The same name again: a free id, the reader's name kept.
   assert.equal(await saveGraphAs(k.entities, id, edited, { label: 'My shipped' }), 'my-shipped-2');
   assert.equal(k.entities.get('my-shipped-2').description, undefined);
-  assert.deepEqual(graphRows(k.entities.list('preset-filter'), id).map((r) => [r.value, r.section, !!r.selected]), [
+  assert.deepEqual(graphRows(k.entities.list('filter'), id).map((r) => [r.value, r.section, !!r.selected]), [
     ['shipped', 'Presets', false], ['my-shipped', 'My graphs', true], ['my-shipped-2', 'My graphs', false], [NEW_GRAPH, undefined, false],
   ]);
   assert.equal(await saveGraphAs(k.entities, 'shipped', edited, { label: '  ' }), undefined);
@@ -186,7 +186,7 @@ test('Delete is refused in words while another entity uses it, and on a preset; 
   const k = keeper();
   k.entityPresets = [filter('shipped', 'Shipped')];
   await k.entities.save(filter('inner', 'Inner'));
-  await k.entities.save({ ...filter('outer', 'Outer'), graph: { nodes: [{ id: 'use', kind: 'preset-filter:inner', x: 0, y: 0 }], connections: [{ from: 'use', to: '#out/where' }] } });
+  await k.entities.save({ ...filter('outer', 'Outer'), graph: { nodes: [{ id: 'use', kind: 'filter:inner', x: 0, y: 0 }], connections: [{ from: 'use', to: '#out/where' }] } });
   assert.equal(k.entities.whyKept('inner'), '"Inner" is used by "Outer", so it stays: take it out of them first.');
   assert.equal(k.entities.whyKept('shipped'), '"shipped" is a preset, which is read only.');
   assert.equal(k.entities.whyKept('outer'), undefined);
@@ -195,5 +195,5 @@ test('Delete is refused in words while another entity uses it, and on a preset; 
   assert.equal(k.entities.remove('outer'), true);
   assert.equal(k.entities.whyKept('inner'), undefined);
   assert.equal(k.entities.remove('inner'), true);
-  assert.deepEqual(k.entities.list('preset-filter').map((e) => e.id), ['shipped']);
+  assert.deepEqual(k.entities.list('filter').map((e) => e.id), ['shipped']);
 });

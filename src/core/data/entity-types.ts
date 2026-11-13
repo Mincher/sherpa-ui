@@ -10,8 +10,8 @@
  * Map:
  * - savedCategories — The categories a reader may save a Custom Node or a graph in: Custom Nodes, Runbooks, and the app's.
  * - EntityType — One type: a type.v1 with its graph part, and the code JSON cannot say: its settings check and defaults.
- * - PRESET_FILTER — The Preset Filter type's id: a preset of its store's pages, and the first half of its preset's id.
- * - ENTITY_TYPES — The types the library ships: `preset-filter` and `node`.
+ * - FILTER — The Filter type's id: a preset of its store's pages, and the first half of its preset's id.
+ * - ENTITY_TYPES — The types the library ships: `filter` and `node`.
  * - entityTypes — Every type now: the shipped, and those an app registered.
  * - registerEntityType — An app adds a type; a clash with a shipped one is refused. It answers how to take it back.
  * - takes — Whether a type's graph may place a kind: a family it takes, or any entity's node.
@@ -58,14 +58,14 @@ function keysFault(settings: Readonly<Record<string, unknown>>, allowed: readonl
   ];
 }
 
-/** The Preset Filter type's id: a preset of its store's pages, its preset's id `preset-filter:<id>`, its
- *  use's kind. TRAP T-a-preset-filter-is-a-preset-of-its-store */
-export const PRESET_FILTER = 'preset-filter';
+/** The Filter type's id: a preset of its store's pages, its preset's id `filter:<id>`, its
+ *  use's kind. TRAP T-a-filter-is-a-preset-of-its-store */
+export const FILTER = 'filter';
 
-/** The types the library ships: `preset-filter` and `node`. */
+/** The types the library ships: `filter` and `node`. */
 export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
-  [PRESET_FILTER]: {
-    id: PRESET_FILTER, label: 'Preset Filter', icon: 'filter', schema: 'entity-preset-filter.v1.json',
+  [FILTER]: {
+    id: FILTER, label: 'Filter', icon: 'filter', schema: 'entity-filter.v1.json',
     // A graph that decides a condition: where its rows come from, its values and sums, the logic, dates, sort and group, text and
     // tags; no Output (its `#out` is the end). A Sort, Group or Count saved before is a Collection's type (plan 749 P3).
     graph: {

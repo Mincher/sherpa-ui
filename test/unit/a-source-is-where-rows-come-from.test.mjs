@@ -19,14 +19,14 @@ const { pageWithQuery } = await import(new URL('page-definition.js', core));
 
 const inPanel = (palette) => palette.flatMap((g) => g.items.map((i) => `${g.category}:${i.id}`));
 
-test('every graph type\'s panel offers a Source, under Sources: a workflow, a Preset Filter, a Custom Node, an app\'s type, the Query', () => {
+test('every graph type\'s panel offers a Source, under Sources: a workflow, a Filter, a Custom Node, an app\'s type, the Query', () => {
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone');
   assert.deepEqual([NODE_KINDS.source.heading, NODE_KINDS.source.category, NODE_KINDS.source.graphs], ['Source', 'Sources', ['query', 'workflow']]);
   // No Count row: Math › Count counts rows (plan 944).
   assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store']]);
   const off = registerEntityType({ id: 'workflow', label: 'Workflow', graph: { runs: true } });
   try {
-    for (const host of [undefined, 'preset-filter:trials', 'mine', 'workflow:flow']) {
+    for (const host of [undefined, 'filter:trials', 'mine', 'workflow:flow']) {
       assert.ok(inPanel(paletteOf(offeredKinds(NODE_KINDS, host, {}))).includes('Sources:source'), `${host ?? 'a workflow of no entity'} offers Source`);
     }
   } finally {

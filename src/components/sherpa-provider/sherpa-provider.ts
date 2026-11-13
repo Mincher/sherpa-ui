@@ -28,8 +28,8 @@ import { Updates } from '../../core/data/updates.js';
 import { checkPage, openSource, savedFiltersOf, storeOf, type PageDefinition, type SourceDefinition } from '../../core/data/page-definition.js';
 import { QueryContext } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
-import { PRESET_FILTER } from '../../core/data/entity-types.js';
-import type { PagePreset } from '../../core/data/preset-filter.js';
+import { FILTER } from '../../core/data/entity-types.js';
+import type { PagePreset } from '../../core/data/filter.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
@@ -485,14 +485,14 @@ export class SherpaProvider extends SherpaElement {
       const key = options.key ?? definition.id;
       // The page's own Views, then the reader's. TRAP T-view-library-is-one-vocabulary
       const library = shipped ? (): ViewLibrary => ({ ...shipped, ...this.#keeper.read(key).views }) : null;
-      // Its store's Preset Filters, each a preset of its bar: read now, and again when the shelf moves. TODO 776
-      const presetFilters = (): Promise<readonly PagePreset[]> => this.#presetFilters(named, def.fields);
-      const filters = await presetFilters();
+      // Its store's Filters, each a preset of its bar: read now, and again when the shelf moves. TODO 776
+      const filterPresets = (): Promise<readonly PagePreset[]> => this.#filterPresets(named, def.fields);
+      const filters = await filterPresets();
       if (page.signal.aborted) return undefined;
       // The page as DEFINED, before a kept Query: what Reset to view defaults starts from.
       this.#pages.begin({
         id: key, store: named, source, query: source.query, library, initial: source.query.applied,
-        savedFilters: savedFiltersOf(definition), presetFilters: filters, readPresetFilters: presetFilters,
+        savedFilters: savedFiltersOf(definition), filterPresets: filters, readFilterPresets: filterPresets,
       });
       this.#pages.sharing = this.#on('appContext');
       // A View this page does not have is the first.
@@ -515,16 +515,16 @@ export class SherpaProvider extends SherpaElement {
     }
   }
 
-  /** The Preset Filters over a store, from the keeper's shelf, as its page's presets: the app's, then the reader's.
+  /** The Filters over a store, from the keeper's shelf, as its page's presets: the app's, then the reader's.
    *  The reader is loaded only where the shelf has one; each that says no condition is reported and left out.
-   *  Plan 776 D4, D11 · TRAP T-a-preset-filter-is-a-preset-of-its-store */
-  async #presetFilters(store: string, fields: SourceDefinition['fields']): Promise<readonly PagePreset[]> {
+   *  Plan 776 D4, D11 · TRAP T-a-filter-is-a-preset-of-its-store */
+  async #filterPresets(store: string, fields: SourceDefinition['fields']): Promise<readonly PagePreset[]> {
     const shelf = this.#keeper.entities;
-    if (!shelf.list(PRESET_FILTER).length) return [];
-    const { presetsOver } = await import('../../core/data/preset-filter.js');
+    if (!shelf.list(FILTER).length) return [];
+    const { presetsOver } = await import('../../core/data/filter.js');
     const entities = shelf.list().flatMap(({ id }) => shelf.get(id) ?? []);
     const { presets, faults } = presetsOver(store, entities, fields ? { fieldsOf: { [store]: fields } } : {});
-    for (const fault of faults) report({ code: 'preset-filter', message: `sherpa-provider: ${fault}, so it is no preset of this page.`, at: { store } });
+    for (const fault of faults) report({ code: 'filter', message: `sherpa-provider: ${fault}, so it is no preset of this page.`, at: { store } });
     return presets;
   }
 

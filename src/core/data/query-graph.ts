@@ -39,7 +39,7 @@ import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } 
 import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import { entityRefOf } from './entity.js';
-import { PRESET_FILTER } from './entity-types.js';
+import { FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
   LIST_OPS, NODE_KINDS, ROWS, kindNode, propertyRow, resolveKind, rowChoices, rowOf, socketOf,
@@ -198,7 +198,7 @@ const notThePage = (store: string | undefined): string => `The page reads ${stor
 const FROM_DEFINITION = 'The page definition sets it: Save writes the definition.';
 const FROM_STORE = 'The app\'s store works it out: statusFields().';
 const SAVED_WORDS = 'A saved filter: Manage Saved Filters changes it.';
-const FROM_ENTITY = 'A Preset Filter: its own graph changes it, in the Node Editor.';
+const FROM_ENTITY = 'A Filter: its own graph changes it, in the Node Editor.';
 const NOT_ADDED = 'Not on a bar: add it from the Saved menu, and it joins as a preset.';
 const SUPERSEDED = 'The View holds this field: kept, not in force. It comes back when the View lets it go.';
 
@@ -265,7 +265,7 @@ function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }
 }
 
 /** A condition node's rows, edited, as the condition they say: the other half of drawing one —
- *  the Query editor's row and a Preset Filter's graph alike (TODO 776). A value is typed text, or the
+ *  the Query editor's row and a Filter's graph alike (TODO 776). A value is typed text, or the
  *  values picked — each whole, a comma and all; only a TYPED list is split at its commas. Each is
  *  typed by its field. TRAP T-a-value-is-typed-once */
 export function editedCondition(op: string, given: string | readonly string[], type?: string): ConditionLeaf {
@@ -532,8 +532,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
         return tree ? [[f, tree] as const] : [];
       });
       const on = presetHeld(query, id, p.id, p.readings);
-      // A Preset Filter is a preset too: its own graph says what it writes. TODO 776
-      const entity = entityRefOf(p.id).type === PRESET_FILTER;
+      // A Filter is a preset too: its own graph says what it writes. TODO 776
+      const entity = entityRefOf(p.id).type === FILTER;
       const from = add(into, QUERY_NODE.preset(id, p.id), saved ? 'saved' : 'preset', [
         ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })),
         ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'any' })),
@@ -739,7 +739,7 @@ export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'chec
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the
  * scope's next field (its chip appears); a Condition tests a Field, so it is refused in words;
  * a Preset or a Saved filter switches on the next one the scope's bar has; a preset named by
- * its own id — a Preset Filter, a Custom Node of the Query's panel (TODO 776) — switches that
+ * its own id — a Filter, a Custom Node of the Query's panel (TODO 776) — switches that
  * one on. A Status field is the app's own, so it is refused. A Source is KEPT: the page reads
  * one store, so it asks the Query nothing, and names the first store the page does not read
  * (TODO 808). Plan 783 D6 · TRAP T-one-command-one-door · TRAP T-a-second-source-is-kept
@@ -756,8 +756,8 @@ export function placeRequest(kind: string, scope: string, facts: PlaceFacts): Pl
   }
   if (kind === 'condition') return { refused: 'A Condition tests a Field: connect one in. In a Query, a Field\'s tests are its chip\'s: place a Field, then add them there.' };
   if (kind === 'preset' || kind === 'saved') {
-    // The app's own, or the saved; a Preset Filter is its own Custom Node.
-    const next = facts.presets(scope).find((p) => p.id.startsWith(SAVED_PRESET) === (kind === 'saved') && entityRefOf(p.id).type !== PRESET_FILTER && !facts.on(scope, p.id));
+    // The app's own, or the saved; a Filter is its own Custom Node.
+    const next = facts.presets(scope).find((p) => p.id.startsWith(SAVED_PRESET) === (kind === 'saved') && entityRefOf(p.id).type !== FILTER && !facts.on(scope, p.id));
     return next ? { request: { scope, preset: next.id, on: true } }
       : { refused: `Scope "${scope}" has no ${name.toLowerCase()} left to switch on${kind === 'saved' ? ': a saved filter joins from the bar\'s Saved menu' : ''}.` };
   }

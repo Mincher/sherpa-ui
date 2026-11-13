@@ -297,7 +297,7 @@
         "graph": {
           "description": "A GRAPH View: its body is a canvas bound to one entity of this type (entity.v2), picked in the graph chip beside the View chip. It has no template or content.",
           "type": "object", "additionalProperties": false, "required": ["type"],
-          "properties": { "type": { "description": "The entity type, as the type registry names it: preset-filter, node, or one the app registers.", "$ref": "#/$defs/id" } }
+          "properties": { "type": { "description": "The entity type, as the type registry names it: filter, node, or one the app registers.", "$ref": "#/$defs/id" } }
         }
       },
       "if": { "required": ["graph"] },

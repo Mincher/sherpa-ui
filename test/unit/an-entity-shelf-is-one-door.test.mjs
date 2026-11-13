@@ -20,7 +20,7 @@ const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', co
 const { onReport } = await import(new URL('data/report.js', core));
 
 const filter = (id, label = id, extra = {}) => ({
-  v: 2, type: 'preset-filter', id, label,
+  v: 2, type: 'filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -56,8 +56,8 @@ test('save, list, get: presets first and read only, the reader\'s own marked min
   k.entityPresets = [filter('shipped', 'Shipped')];
   assert.equal(await k.entities.save(filter('mine', 'Mine')), true);
   assert.deepEqual(k.entities.list(), [
-    { id: 'shipped', type: 'preset-filter', label: 'Shipped', origin: 'preset' },
-    { id: 'mine', type: 'preset-filter', label: 'Mine', origin: 'mine' },
+    { id: 'shipped', type: 'filter', label: 'Shipped', origin: 'preset' },
+    { id: 'mine', type: 'filter', label: 'Mine', origin: 'mine' },
   ]);
   assert.deepEqual(ids(k.entities, 'node'), []);
   assert.equal(k.entities.get('mine').origin, 'mine');
@@ -95,7 +95,7 @@ test('an id names ONE entity: another type may not take it; a fault in a save re
   ]);
   assert.deepEqual(result, [false, false, false, false]);
   const said = reports.map((r) => r.message).join('\n');
-  assert.match(said, /"one" is already a preset-filter/);
+  assert.match(said, /"one" is already a filter/);
   assert.match(said, /type "recipe", which this app does not have/);
   assert.match(said, /the setting "colour"/);
   assert.match(said, /not an entity/);
@@ -105,9 +105,9 @@ test('an id names ONE entity: another type may not take it; a fault in a save re
 test('remove is refused while another entity uses it, naming who; then it goes, and the user\'s own only', async () => {
   const k = keeper();
   await k.entities.save(filter('recent', 'Recent'));
-  assert.equal(await k.entities.save(placing('outer-a', 'preset-filter:recent')), true);
-  assert.deepEqual(k.entities.get('outer-a').uses, [{ type: 'preset-filter', id: 'recent' }], 'uses is kept from the graph');
-  await k.entities.save(placing('outer-b', 'preset-filter:recent'));
+  assert.equal(await k.entities.save(placing('outer-a', 'filter:recent')), true);
+  assert.deepEqual(k.entities.get('outer-a').uses, [{ type: 'filter', id: 'recent' }], 'uses is kept from the graph');
+  await k.entities.save(placing('outer-b', 'filter:recent'));
   const { result, reports } = await heard(async () => k.entities.remove('recent'));
   assert.equal(result, false);
   assert.match(reports[0].message, /"Recent" is used by "outer-a" and "outer-b", so it stays/);
@@ -118,10 +118,10 @@ test('remove is refused while another entity uses it, naming who; then it goes, 
   assert.equal(k.entities.remove('recent'), false, 'gone is gone');
   assert.deepEqual(ids(k.entities), []);
   // A save that places what is not there is refused; one that holds itself in a loop too.
-  assert.equal((await heard(() => k.entities.save(placing('lost', 'preset-filter:ghost')))).result, false);
+  assert.equal((await heard(() => k.entities.save(placing('lost', 'filter:ghost')))).result, false);
   await k.entities.save(filter('b', 'B'));
-  await k.entities.save(placing('a', 'preset-filter:b'));
-  assert.equal((await heard(() => k.entities.save(placing('b', 'preset-filter:a')))).result, false);
+  await k.entities.save(placing('a', 'filter:b'));
+  assert.equal((await heard(() => k.entities.save(placing('b', 'filter:a')))).result, false);
 });
 
 test('duplicate takes a new id; export and import are JSON with a $schema and round-trip; a taken id gets a free one', async () => {
@@ -225,7 +225,7 @@ test('the old `nodes` is not read; a Custom Node is an entity of the type `node`
   assert.deepEqual(ids(k.entities, 'node'), ['has-role', 'another']);
   // Every entity is a node it offers, by its use's kind (plan 746 E5); one id names one entity, of any type.
   await k.entities.save(filter('f'));
-  assert.deepEqual(Object.keys(k.entities.library().nodes), ['has-role', 'another', 'preset-filter:f']);
+  assert.deepEqual(Object.keys(k.entities.library().nodes), ['has-role', 'another', 'filter:f']);
   assert.deepEqual(deleteNode(k.entities, 'another'), { id: 'another' });
   assert.deepEqual(deleteNode(k.entities, 'f'), { id: 'f' });
   assert.deepEqual(Object.keys(k.entities.library().nodes), ['has-role']);
@@ -255,7 +255,7 @@ test('a file of presets: each is checked alone, the bad reported in checkEntity\
   const { result, reports } = await heard(() => readEntities({
     v: 3, entities: {
       // Before the one it places: tried again once that one is in.
-      after: placing('after', 'preset-filter:before'),
+      after: placing('after', 'filter:before'),
       before: { ...filter('before'), $schema: 'x' },
       'no-name': { ...filter('no-name'), label: '' },
       'wrong-key': filter('other'),

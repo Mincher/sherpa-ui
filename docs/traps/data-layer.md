@@ -6821,7 +6821,7 @@ its type and the values it takes; `fields` and the graph-wide `values` are gone.
   Source in" (the kind's heading), unless its header warns already, and it sends nothing, so what
   tests it reads null. A warning, never a fault (D8). Placed alone, it says so too.
 - **Two doors in**: a Custom Node's Group Input brings its use's rows, of any store, so a Field
-  inside offers every store's fields, the first store's words for a shared name. A Preset Filter
+  inside offers every store's fields, the first store's words for a shared name. A Filter
   with no Source reads its own store (`rowsFrom`, its `settings.source`): `presetOfEntity` passes
   it, so the provider's check of a page's presets still compiles one.
 - **No facts, or a store they do not know** (`orders`): the list is open and nothing warns, as
@@ -6904,8 +6904,8 @@ its choices".
   `where` may be `true` or `false`; one only a run gives is named by where it comes from,
   `{ boolean: "Source › True" }`. Since TODO 939 anything else joins too, with no warning — rows, a
   count, a value, each true where it is above zero, true, or not empty — and says nothing in the tree;
-  a test's Results bring its tree, as its True does. No connection into it is a fault. A Preset Filter's
-  use brings its tree too, read inside (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
+  a test's Results bring its tree, as its True does. No connection into it is a fault. A Filter's
+  use brings its tree too, read inside (plan 776 D5, `T-a-filter-is-a-preset-of-its-store`).
 - **The Query holds no constant.** A page's `where` cannot say one, and the Query editor takes no
   connection into an And or an Or (`connectionRequest`), so it draws none. Folded, a constant compiles as no
   constant: always holds is no condition (it narrows nothing); never holds is an empty Any of,
@@ -7658,7 +7658,7 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
 - **The type registry** (`entity-types.ts`, the data layer, light): each type is a `type.v1`
   (plan 960 U2) whose `graph` part says the families its graph may place (a kind's category), the
   `#in` and `#out` it demands, `runs` and `reusable`; beside it, in code, its settings check (and
-  its schema in `schemas/entity-<type>.v1.json`) and `defaults`. Two ship: `preset-filter` and
+  its schema in `schemas/entity-<type>.v1.json`) and `defaults`. Two ship: `filter` and
   `node`. An app adds its own with `registerEntityType`, or in its entities file's `types`
   (entities.v3); `typeFaults` refuses a bad one, in words, and a clash with a shipped type is
   refused. The data layer has no schema validator, so the checks are hand-written (as
@@ -7777,7 +7777,7 @@ plan-713 D11 with its update flow).
 - **Back to its entity.** `nodeEntityOf(kind, definition)` is the inverse of `asNode`: an edit made
   inside a use, or a copy, is saved as an entity of the kind's type. A type's own settings ride in
   the definition's `settings` (never part of its version), so "Copy to my nodes" of a preset
-  Preset Filter is saved as the reader's own Preset Filter, its source kept. One id names one
+  Filter is saved as the reader's own Filter, its source kept. One id names one
   entity of ANY type: `copyToMine` frees an id among every type's.
 - **What the panel offers** is `offeredKinds`, for the graph shown (the canvas's entity, given to
   `bindWorkflow` as `entity`; inside a use opened, that one): a kind its type `takes` (its
@@ -7799,9 +7799,9 @@ plan-713 D11 with its update flow).
 - Site: `test/unit/an-entity-is-used-as-a-node.test.mjs`
 - Site: `test/e2e/reforged-entity-use.spec.ts`
 
-### T-a-preset-filter-is-a-preset-of-its-store
+### T-a-filter-is-a-preset-of-its-store
 
-**A Preset Filter entity is a PRESET of every page over its store, read from its graph by ONE
+**A Filter entity is a PRESET of every page over its store, read from its graph by ONE
 reader, and declared through the door every preset takes.** Will, 2026-11-05 (TODO 776, plan 776):
 "Preset filters will be custom nodes when we are specifically creating or working with filter type
 graphs. Let's keep them but also make sure they work in the new architecture for nodes & data."
@@ -7819,18 +7819,18 @@ graphs. Let's keep them but also make sure they work in the new architecture for
 - **The plain form, each field's own** (`whereOfTree`): every All, at any depth, is one list of parts;
   each part must read ONE field. "Any" of two fields has no preset form, since a preset writes each
   field's own condition (`byPreset`); it is said in words and left off the bar (plan 776 D6).
-- **One door.** The preset is `{ id: preset-filter:<id>, label, where }`, the shape a page's own preset
+- **One door.** The preset is `{ id: filter:<id>, label, where }`, the shape a page's own preset
   has. `ProviderPage.#layPresets` declares each scope's presets in one list: the page's own, then its
-  Preset Filters, then the saved sets on its bar, all through `presetReadings` and `declarePresets`.
-  The chip is `preset:preset-filter:<id>`; a press is `query.ask({ scope, preset, on })`.
+  Filters, then the saved sets on its bar, all through `presetReadings` and `declarePresets`.
+  The chip is `preset:filter:<id>`; a press is `query.ask({ scope, preset, on })`.
 - **Which pages.** Those whose store is its source: `settings.source`, else the store its graph's Source
   names (a new graph has no settings). The app's first, read only, then the reader's, in the shelf's
   order. Its bar is the one scope that holds every field it names, else the View.
-- **Loaded only where needed.** The provider reads the shelf as the page opens: no Preset Filter, no
-  import. The compile (preset-filter.ts) loads on first use. The provider hears the shelf, so one
+- **Loaded only where needed.** The provider reads the shelf as the page opens: no Filter, no
+  import. The compile (filter.ts) loads on first use. The provider hears the shelf, so one
   saved in another tab joins the bar. The outlet hands the keeper its entities BEFORE `open`: a first
   page read none when they came after.
-- **Composing.** A Preset Filter's use, its True into And or Or, brings its tree, read inside: its
+- **Composing.** A Filter's use, its True into And or Or, brings its tree, read inside: its
   condition joins the outer one. A constant into And or Or folds (TODO 780); a condition a constant
   decides, always or never, has no preset form, nor has a boolean only a run gives: each is said in
   words. A graph that folds to never is Any of nothing, `{ or: [] }`, on each field its tests name:
@@ -7839,19 +7839,19 @@ graphs. Let's keep them but also make sure they work in the new architecture for
   across them is two readings.
 - **One leaf.** `leafOf` reads one test: the field its Field picks, the operator its Operation, the
   value its Value B, Values, or Start and End. The one place a leaf is read.
-- **The Query editor** offers a page's Preset Filters under Custom Nodes; a click asks
+- **The Query editor** offers a page's Filters under Custom Nodes; a click asks
   `{ scope, preset: <its id>, on: true }` of the scope that declares it (`placeRequest`). It draws one
   as a Preset node with its own name; its conditions are read only: its own graph changes it.
 
-- Site: `src/core/data/preset-filter.ts`
+- Site: `src/core/data/filter.ts`
 - Site: `src/core/data/node-flow.ts`
 - Site: `src/core/data/where.ts`
 - Site: `src/core/data/entity-types.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/data.ts`
-- Site: `test/unit/a-preset-filter-is-a-preset-of-its-store.test.mjs`
-- Site: `test/e2e/reforged-preset-filter-presets.spec.ts`
+- Site: `test/unit/a-filter-is-a-preset-of-its-store.test.mjs`
+- Site: `test/e2e/reforged-filter-presets.spec.ts`
 - Site: `test/e2e/reforged-query-panel.spec.ts`
 
 ### T-an-empty-any-of-is-never
@@ -7866,11 +7866,11 @@ graphs. Let's keep them but also make sure they work in the new architecture for
   `or` takes no range: it reads all and tests each), a REST request (the filter as JSON) and the
   data handler's `isFilter`. `filterWithout` keeps it: it names no field, so no field's chart drops it.
 - **Under Any of it adds nothing** (`never or A` is A, the join flattens); under All of it ends it.
-- **A Preset Filter that folds to never** puts `{ or: [] }` on each field its tests name, so its chip
+- **A Filter that folds to never** puts `{ or: [] }` on each field its tests name, so its chip
   is on the bar and, on, gives zero rows. One that tests no Field has nowhere to say it: said in words.
 
 - Site: `src/core/data/filter-state.ts`
-- Site: `test/unit/a-preset-filter-is-a-preset-of-its-store.test.mjs`
+- Site: `test/unit/a-filter-is-a-preset-of-its-store.test.mjs`
 
 ### T-a-frame-is-drawn-round-its-nodes
 
@@ -7915,7 +7915,7 @@ Out row that nothing reaches. Each reader that followed connections itself would
 - **What flows is `flowOf` in workflow.ts, `flowing` in node-flow.ts**: both the one resolver's connections. A connection
   from an Out's row is ONE connection from that row's source, carrying the name (`portal`); an Out's row into an In of
   another name chains. `sentFrom`, a row's read, the field a node reads, the warnings, the faults, `conditionAt`,
-  the Outgoing JSON and a Preset Filter's compile all read it. The drawing reads the connections as given, so no line
+  the Outgoing JSON and a Filter's compile all read it. The drawing reads the connections as given, so no line
   joins two portals. An Out's rows come from `flowOf`'s `kindOf`, never `kindOfNode`, which knows no connections.
 - **A row's id is its source**, so it is stable: a connection in cut, its row goes, and the connections out of it are
   `orphans`, kept as another type's are (`keptConnections`): unseen, no fault, and Save leaves them out. The same

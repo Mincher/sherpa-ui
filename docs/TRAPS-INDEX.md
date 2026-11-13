@@ -47,6 +47,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-field-reads-its-sources-fields](traps/data-layer.md#t-a-field-reads-its-sources-fields) — workflow
 - [T-a-field-reads-its-values-when-needed](traps/data-layer.md#t-a-field-reads-its-values-when-needed) — data-source, page-definition
 - [T-a-filter-applies-down-its-scope](traps/data-layer.md#t-a-filter-applies-down-its-scope) — bind-selection, query-edits
+- [T-a-filter-is-a-preset-of-its-store](traps/data-layer.md#t-a-filter-is-a-preset-of-its-store) — data, entity-types, filter, node-flow, where
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition, query-context, query-declarations, source-walk
 - [T-a-find-asks-its-host-to-step](traps/data-layer.md#t-a-find-asks-its-host-to-step) — source-view
 - [T-a-fixed-field-stays-held](traps/data-layer.md#t-a-fixed-field-stays-held) — page-definition, query-context, query-declarations, query-edits
@@ -79,7 +80,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — data-source-types
 - [T-a-portal-hop-is-resolved-once](traps/data-layer.md#t-a-portal-hop-is-resolved-once) — data, node-flow, node-group, node-kinds, node-portals, workflow
 - [T-a-preflight-is-the-apps-to-answer](traps/data-layer.md#t-a-preflight-is-the-apps-to-answer) — data-handler, request-store
-- [T-a-preset-filter-is-a-preset-of-its-store](traps/data-layer.md#t-a-preset-filter-is-a-preset-of-its-store) — data, entity-types, node-flow, preset-filter, where
 - [T-a-preset-is-its-own-part](traps/data-layer.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-edits, source-counts
 - [T-a-projected-row-is-checked-on-what-it-was-sent](traps/data-layer.md#t-a-projected-row-is-checked-on-what-it-was-sent) — base-store, store
 - [T-a-property-row-is-an-output](traps/data-layer.md#t-a-property-row-is-an-output) — node-kinds
@@ -332,6 +332,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-context-holds-the-only-query](traps/data-layer.md#t-a-context-holds-the-only-query) — provider
 - [T-a-control-sends-one-request](traps/join-and-app.md#t-a-control-sends-one-request) — bind-source
 - [T-a-field-reads-its-values-when-needed](traps/data-layer.md#t-a-field-reads-its-values-when-needed) — provider
+- [T-a-filter-is-a-preset-of-its-store](traps/data-layer.md#t-a-filter-is-a-preset-of-its-store) — provider
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — provider
 - [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — outlet, provider
 - [T-a-grid-from-a-chart-keeps-to-its-card](traps/join-and-app.md#t-a-grid-from-a-chart-keeps-to-its-card) — provider
@@ -350,7 +351,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-asks-for-its-scopes](traps/data-layer.md#t-a-panel-asks-for-its-scopes) — bind-source
 - [T-a-persistent-chip-reports-on-every-change](traps/storage.md#t-a-persistent-chip-reports-on-every-change) — provider
 - [T-a-pin-before-start-is-the-readers](traps/join-and-app.md#t-a-pin-before-start-is-the-readers) — outlet
-- [T-a-preset-filter-is-a-preset-of-its-store](traps/data-layer.md#t-a-preset-filter-is-a-preset-of-its-store) — provider
 - [T-a-provider-keeps-the-views](traps/join-and-app.md#t-a-provider-keeps-the-views) — provider
 - [T-a-rail-may-stay-shut](traps/join-and-app.md#t-a-rail-may-stay-shut) — outlet
 - [T-a-reach-banner-takes-no-room](traps/join-and-app.md#t-a-reach-banner-takes-no-room) — outlet

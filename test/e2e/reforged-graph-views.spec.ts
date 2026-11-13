@@ -10,7 +10,7 @@ import { test, expect, type Page } from './fixture';
  */
 const BAR = 'sherpa-app-header sherpa-quick-filter-toolbar[data-type="view"]';
 
-/** The harness, its outlet started; the reader's own preset filter kept first, when asked. */
+/** The harness, its outlet started; the reader's own Filter kept first, when asked. */
 async function start(page: Page, url = '/test/reforged/graph-views.html', mine = true): Promise<void> {
   await page.goto(url);
   await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
@@ -18,7 +18,7 @@ async function start(page: Page, url = '/test/reforged/graph-views.html', mine =
     const { SessionStore } = await import('/dist/index.js');
     const outlet = document.querySelector('sherpa-outlet');
     const { keeper } = document.querySelector('sherpa-provider');
-    if (${mine} && !keeper.entities.get('mine')) await keeper.entities.save({ v: 2, type: 'preset-filter', id: 'mine', label: 'Mine', graph: { nodes: [], connections: [] } });
+    if (${mine} && !keeper.entities.get('mine')) await keeper.entities.save({ v: 2, type: 'filter', id: 'mine', label: 'Mine', graph: { nodes: [], connections: [] } });
     const base = new URL('/test/reforged/graph-views/app.json', location.href);
     await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
   })()`);
@@ -58,7 +58,7 @@ test('a "views" Context\'s row is the View chip and, on a graph View, the graph 
   expect(r.chips[1]!.top).toBe(r.chips[0]!.top);
   expect(r.noActions).toBe(true);
   expect(r.rows).toEqual(['Presets', 'Shipped (Read only)', 'My graphs', 'Mine', 'New graph…']);
-  expect(r.graph).toEqual({ view: 'filters', type: 'preset-filter', id: 'shipped', origin: 'preset' });
+  expect(r.graph).toEqual({ view: 'filters', type: 'filter', id: 'shipped', origin: 'preset' });
   expect(await page.evaluate(() => (window as unknown as { __graphs: { start: unknown } }).__graphs.start)).toEqual(r.graph);
   // A View with no graph has no graph chip.
   await pick(page, 'view', 'Notes');
@@ -71,38 +71,38 @@ test('a graph picked by pointer opens: the URL carries it, the Context is told, 
   await pick(page, 'graph', 'Mine');
   await expect.poll(async () => (await row(page)).told).toEqual(['mine']);
   const picked = await row(page);
-  expect([picked.graph, picked.url]).toEqual([{ view: 'filters', type: 'preset-filter', id: 'mine', origin: 'mine' }, 'context=graphs&graph=mine&view=filters']);
+  expect([picked.graph, picked.url]).toEqual([{ view: 'filters', type: 'filter', id: 'mine', origin: 'mine' }, 'context=graphs&graph=mine&view=filters']);
   // A pick REPLACES, as a View pick does: Back from another Context, as a nav row opens it, comes back to it.
   await page.evaluate(() => (document.querySelector('sherpa-router') as unknown as { go(r: object): Promise<void> }).go({ context: 'plain', view: null, graph: null }));
   await expect.poll(async () => (await row(page)).url).toBe('context=plain');
   await page.goBack();
-  await expect.poll(async () => (await row(page)).graph).toEqual({ view: 'filters', type: 'preset-filter', id: 'mine', origin: 'mine' });
+  await expect.poll(async () => (await row(page)).graph).toEqual({ view: 'filters', type: 'filter', id: 'mine', origin: 'mine' });
   expect((await row(page)).url).toBe('context=graphs&graph=mine&view=filters');
   // Another View opens on its type's first — here, none yet — and the URL drops the graph.
   await pick(page, 'view', 'Custom Nodes');
   await expect.poll(async () => (await row(page)).graph).toEqual({ view: 'nodes', type: 'node', id: null });
   expect((await row(page)).url).toBe('context=graphs&view=nodes');
-  await pick(page, 'view', 'Preset Filters');
+  await pick(page, 'view', 'Filters');
   await pick(page, 'graph', 'Mine');
   // A reload opens the same View and graph.
   await page.reload();
   await start(page, page.url(), false);
-  expect((await row(page)).graph).toEqual({ view: 'filters', type: 'preset-filter', id: 'mine', origin: 'mine' });
+  expect((await row(page)).graph).toEqual({ view: 'filters', type: 'filter', id: 'mine', origin: 'mine' });
 });
 
 test('New graph… makes an empty one of the type and opens it; an app that takes the ask over makes it itself', async ({ page }) => {
   await start(page, '/test/reforged/graph-views.html?view=filters');
   await pick(page, 'graph', 'New graph…');
-  await expect.poll(async () => (await row(page)).graph).toMatchObject({ id: 'new-preset-filter', origin: 'mine' });
-  expect((await row(page)).rows).toEqual(['Presets', 'Shipped (Read only)', 'My graphs', 'Mine', 'New Preset Filter', 'New graph…']);
-  const kept = await page.evaluate(() => (document.querySelector('sherpa-provider') as unknown as { keeper: { entities: { get(id: string): unknown } } }).keeper.entities.get('new-preset-filter'));
-  expect(kept).toMatchObject({ type: 'preset-filter', label: 'New Preset Filter', graph: { nodes: [], connections: [] } });
+  await expect.poll(async () => (await row(page)).graph).toMatchObject({ id: 'new-filter', origin: 'mine' });
+  expect((await row(page)).rows).toEqual(['Presets', 'Shipped (Read only)', 'My graphs', 'Mine', 'New Filter', 'New graph…']);
+  const kept = await page.evaluate(() => (document.querySelector('sherpa-provider') as unknown as { keeper: { entities: { get(id: string): unknown } } }).keeper.entities.get('new-filter'));
+  expect(kept).toMatchObject({ type: 'filter', label: 'New Filter', graph: { nodes: [], connections: [] } });
   // Taken over: nothing is made, and the chip shows the open one still.
   await page.evaluate(() => document.querySelector('sherpa-outlet')!.addEventListener('graph-new', (e) => e.preventDefault()));
   await pick(page, 'graph', 'New graph…');
-  await expect.poll(() => page.evaluate((bar) => (document.querySelector(bar) as unknown as { values: Record<string, string[]> }).values['graph'], BAR)).toEqual(['new-preset-filter']);
+  await expect.poll(() => page.evaluate((bar) => (document.querySelector(bar) as unknown as { values: Record<string, string[]> }).values['graph'], BAR)).toEqual(['new-filter']);
   const after = await row(page);
-  expect([after.graph, after.rows.length]).toEqual([{ view: 'filters', type: 'preset-filter', id: 'new-preset-filter', origin: 'mine' }, 6]);
+  expect([after.graph, after.rows.length]).toEqual([{ view: 'filters', type: 'filter', id: 'new-filter', origin: 'mine' }, 6]);
 });
 
 test('another Context gives the bar its actions back, and an outlet opening one says there is no graph', async ({ page }) => {
@@ -223,8 +223,8 @@ test('the graph chip moves a `query` View between pages, each opened in turn; an
   await pick(page, 'graph', 'More');
   await page.waitForFunction(() => (window as unknown as PageWin).__graphs.page?.id === 'more');
   expect((await row(page)).url).toBe('context=graphs&graph=more&view=pages');
-  await pick(page, 'view', 'Preset Filters');
-  await expect.poll(async () => (await row(page)).graph).toMatchObject({ view: 'filters', type: 'preset-filter' });
+  await pick(page, 'view', 'Filters');
+  await expect.poll(async () => (await row(page)).graph).toMatchObject({ view: 'filters', type: 'filter' });
   expect(await page.evaluate(() => {
     const header = document.querySelector('sherpa-app-header')!;
     return [(window as unknown as PageWin).__graphs.pages, header.hasAttribute('data-query')];

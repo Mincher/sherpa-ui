@@ -1,5 +1,5 @@
 /**
- * AN ENTITY IS USED AS A NODE: a saved Preset Filter — any entity — is a node the panel offers, by the
+ * AN ENTITY IS USED AS A NODE: a saved Filter — any entity — is a node the panel offers, by the
  * kind `<type>:<id>`, and a use of it is an INSTANCE: it records its version, runs nested, and when
  * the entity is saved again it shows the change and updates, keeping its own values (D11). An edit
  * inside goes back to its entity, of its own type; a copy keeps its settings. The panel offers what
@@ -23,9 +23,9 @@ const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', cor
 const { onReport } = await import(new URL('data/report.js', core));
 const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', core));
 
-/** Records whose status is one value — Source › Field › Condition — sent to the Preset Filter's Where. */
+/** Records whose status is one value — Source › Field › Condition — sent to the Filter's Where. */
 const filter = (id, label, value = 'active', extra = {}) => ({
-  v: 2, type: 'preset-filter', id, label,
+  v: 2, type: 'filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -37,7 +37,7 @@ const filter = (id, label, value = 'active', extra = {}) => ({
   },
   settings: { source: 'customers' }, ...extra,
 });
-/** A Preset Filter whose graph places one node of a kind. */
+/** A Filter whose graph places one node of a kind. */
 const placing = (id, kind) => ({ ...filter(id, id.toUpperCase()), graph: { nodes: [{ id: 'use', kind, x: 0, y: 0 }], connections: [{ from: 'use', to: '#out/where' }] } });
 const keeper = () => new PageKeeper({ tab: memoryTier(), local: memoryTier() });
 const heard = async (run) => {
@@ -57,35 +57,35 @@ test('every entity is a node the panel offers, by its use\'s kind; a preset is r
   k.entityPresets = [filter('active', 'Active')];
   await k.entities.save(filter('trials', 'Trials', 'trial'));
   const library = k.entities.library();
-  assert.deepEqual(Object.keys(library.nodes), ['preset-filter:active', 'preset-filter:trials']);
-  assert.equal(library.nodes['preset-filter:active'].preset, true);
-  assert.equal(library.nodes['preset-filter:trials'].preset, undefined);
-  assert.deepEqual(library.nodes['preset-filter:trials'].settings, { source: 'customers' });
+  assert.deepEqual(Object.keys(library.nodes), ['filter:active', 'filter:trials']);
+  assert.equal(library.nodes['filter:active'].preset, true);
+  assert.equal(library.nodes['filter:trials'].preset, undefined);
+  assert.deepEqual(library.nodes['filter:trials'].settings, { source: 'customers' });
   // Its box: a Where out, a filter's icon, under Custom Nodes in the panel.
   const kinds = { ...NODE_KINDS, ...lib.kindsOf(library) };
-  assert.deepEqual(kinds['preset-filter:trials'].rows.map((r) => [r.name, r.output]), [['where', 'boolean']]);
+  assert.deepEqual(kinds['filter:trials'].rows.map((r) => [r.name, r.output]), [['where', 'boolean']]);
   const custom = paletteOf(kinds).find((g) => g.category === 'Custom Nodes');
-  assert.deepEqual(custom.items.map((i) => [i.id, i.kind.icon]), [['preset-filter:active', 'filter'], ['preset-filter:trials', 'filter']]);
+  assert.deepEqual(custom.items.map((i) => [i.id, i.kind.icon]), [['filter:active', 'filter'], ['filter:trials', 'filter']]);
   // The kind and the entity, both ways round.
-  assert.deepEqual(entityRefOf('preset-filter:trials'), { type: 'preset-filter', id: 'trials' });
+  assert.deepEqual(entityRefOf('filter:trials'), { type: 'filter', id: 'trials' });
   assert.deepEqual(entityRefOf('has-role'), { type: 'node', id: 'has-role' });
-  assert.equal(entityKind(entityRefOf('preset-filter:trials')), 'preset-filter:trials');
-  const back = nodeEntityOf('preset-filter:trials', asNode(k.entities.get('trials')));
+  assert.equal(entityKind(entityRefOf('filter:trials')), 'filter:trials');
+  const back = nodeEntityOf('filter:trials', asNode(k.entities.get('trials')));
   const { origin: _o, ...kept } = k.entities.get('trials');
   assert.deepEqual(back, kept);
 });
 
 test('the panel offers what the graph\'s type takes, and no node that would hold it in a loop, at any depth', () => {
-  const entities = [placing('outer', 'preset-filter:inner'), filter('inner', 'Inner'), placing('top', 'preset-filter:outer'), placing('topmost', 'preset-filter:top'), filter('apart', 'Apart')];
+  const entities = [placing('outer', 'filter:inner'), filter('inner', 'Inner'), placing('top', 'filter:outer'), placing('topmost', 'filter:top'), filter('apart', 'Apart')];
   const library = { v: 1, nodes: Object.fromEntries(entities.map((e) => [entityKind(e), asNode(e)])) };
   const kinds = { ...NODE_KINDS, ...lib.kindsOf(library) };
   const offered = (host) => Object.keys(offeredKinds(kinds, host, library.nodes));
-  const inOuter = offered('preset-filter:outer');
-  // A Preset Filter takes a Source and a Condition, never an Output: its families.
+  const inOuter = offered('filter:outer');
+  // A Filter takes a Source and a Condition, never an Output: its families.
   assert.ok(inOuter.includes('source') && inOuter.includes('condition'));
   assert.ok(!inOuter.includes('result'));
   // Any entity's node is offered (D1), but its own and the two that hold it, one through the other.
-  assert.deepEqual(inOuter.filter((id) => id.includes(':')).sort(), ['preset-filter:apart', 'preset-filter:inner']);
+  assert.deepEqual(inOuter.filter((id) => id.includes(':')).sort(), ['filter:apart', 'filter:inner']);
   // A Custom Node's type takes every family; a plain workflow is offered all.
   assert.ok(offered('some-node').includes('result'));
   assert.deepEqual(offered(undefined), Object.keys(kinds));
@@ -96,8 +96,8 @@ test('the panel offers what the graph\'s type takes, and no node that would hold
 
 test('a use flattens: placed, it records its version; inside, it is the entity\'s graph with its Group Output; its faults come through by path', () => {
   const trials = filter('trials', 'Trials', 'trial');
-  const library = { v: 1, nodes: { 'preset-filter:trials': asNode(trials) } };
-  const flow = flowOf(library, 'preset-filter:trials');
+  const library = { v: 1, nodes: { 'filter:trials': asNode(trials) } };
+  const flow = flowOf(library, 'filter:trials');
   assert.equal(flow.nodes[0].version, lib.versionOf(asNode(trials)));
   assert.deepEqual(lib.workflowFaultsDeep(flow, library), []);
   const inner = lib.innerOf(flow.nodes[0], library);
@@ -107,7 +107,7 @@ test('a use flattens: placed, it records its version; inside, it is the entity\'
   // A fault inside is the same fault a use shows, named by the path to it.
   const broken = { ...trials, graph: { ...trials.graph, connections: [...trials.graph.connections, { from: 'start/rows', to: 'status/nothing' }] } };
   const own = entityFaults(broken).find((f) => /nothing/.test(f));
-  const used = lib.workflowFaultsDeep(flow, { v: 1, nodes: { 'preset-filter:trials': asNode(broken) } }).find((f) => /nothing/.test(f));
+  const used = lib.workflowFaultsDeep(flow, { v: 1, nodes: { 'filter:trials': asNode(broken) } }).find((f) => /nothing/.test(f));
   assert.ok(own && used, `${own} | ${used}`);
   assert.match(used, /^Trials: /);
 });
@@ -116,20 +116,20 @@ test('an edit inside goes back to its entity, of its own type, its settings kept
   const k = keeper();
   k.entityPresets = [filter('active', 'Active')];
   await k.entities.save(filter('trials', 'Trials', 'trial'));
-  const edited = lib.editDefinition(k.entities.library(), 'preset-filter:trials', {
+  const edited = lib.editDefinition(k.entities.library(), 'filter:trials', {
     nodes: filter('t', 't', 'lead').graph.nodes,
   });
-  assert.deepEqual(await keepNode(k.entities, 'preset-filter:trials', edited.nodes['preset-filter:trials']), { id: 'trials' });
+  assert.deepEqual(await keepNode(k.entities, 'filter:trials', edited.nodes['filter:trials']), { id: 'trials' });
   const kept = k.entities.get('trials');
-  assert.deepEqual([kept.type, kept.settings, kept.graph.nodes[1].values.b], ['preset-filter', { source: 'customers' }, 'lead']);
-  // An Output inside a Preset Filter: refused, and said.
-  const withOutput = lib.editDefinition(k.entities.library(), 'preset-filter:trials', {
+  assert.deepEqual([kept.type, kept.settings, kept.graph.nodes[1].values.b], ['filter', { source: 'customers' }, 'lead']);
+  // An Output inside a Filter: refused, and said.
+  const withOutput = lib.editDefinition(k.entities.library(), 'filter:trials', {
     nodes: [...kept.graph.nodes, { id: 'end', kind: 'result', x: 720, y: 0 }],
   });
-  const refused = await keepNode(k.entities, 'preset-filter:trials', withOutput.nodes['preset-filter:trials']);
-  assert.match(refused.faults.join('\n'), /of the family "Output", which a Preset Filter does not take/);
+  const refused = await keepNode(k.entities, 'filter:trials', withOutput.nodes['filter:trials']);
+  assert.match(refused.faults.join('\n'), /of the family "Output", which a Filter does not take/);
   assert.equal(k.entities.get('trials').graph.nodes.length, 3);
-  const preset = await keepNode(k.entities, 'preset-filter:active', k.entities.library().nodes['preset-filter:active']);
+  const preset = await keepNode(k.entities, 'filter:active', k.entities.library().nodes['filter:active']);
   assert.match(preset.faults.join('\n'), /preset, which is read only/);
 });
 
@@ -137,7 +137,7 @@ test('D11: the entity saved again — each use says so, its diff names the chang
   const k = keeper();
   await k.entities.save(filter('trials', 'Trials', 'trial'));
   const before = k.entities.library();
-  let flow = flowOf(before, 'preset-filter:trials', ['one', 'two']);
+  let flow = flowOf(before, 'filter:trials', ['one', 'two']);
   flow = { ...flow, nodes: flow.nodes.map((n) => (n.id === 'one' ? { ...n, heading: 'Trials, mine' } : n)) };
   assert.deepEqual(lib.staleUses(flow, before), []);
   // Saved again, from its own canvas, as Save writes it.
@@ -149,9 +149,9 @@ test('D11: the entity saved again — each use says so, its diff names the chang
   const one = lib.updateInstance(flow, 'one', after);
   assert.deepEqual(lib.staleUses(one, after), ['two']);
   assert.equal(one.nodes.find((n) => n.id === 'one').heading, 'Trials, mine', 'its own values stay');
-  assert.deepEqual(lib.staleUses(lib.updateAll(flow, 'preset-filter:trials', after), after), []);
+  assert.deepEqual(lib.staleUses(lib.updateAll(flow, 'filter:trials', after), after), []);
   // A use made from now on follows the new one.
-  assert.deepEqual(lib.staleUses(flowOf(after, 'preset-filter:trials'), after), []);
+  assert.deepEqual(lib.staleUses(flowOf(after, 'filter:trials'), after), []);
 });
 
 test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, under a free id, its settings kept', async () => {
@@ -164,12 +164,12 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
     connections: [{ from: '#in/rows', to: 'c' }, { from: 'c/true', to: '#out' }],
   };
   assert.deepEqual(await keepNode(k.entities, 'active-copy', taken), { id: 'active-copy' });
-  const made = lib.copyToMine(k.entities.library(), 'preset-filter:active');
+  const made = lib.copyToMine(k.entities.library(), 'filter:active');
   // An id names one entity of any type: a Custom Node holds active-copy.
-  assert.equal(made.id, 'preset-filter:active-copy-2');
+  assert.equal(made.id, 'filter:active-copy-2');
   assert.deepEqual(await keepNode(k.entities, made.id, made.library.nodes[made.id]), { id: 'active-copy-2' });
   const copy = k.entities.get('active-copy-2');
-  assert.deepEqual([copy.type, copy.label, copy.settings, copy.origin], ['preset-filter', 'Active copy', { source: 'customers' }, 'mine']);
+  assert.deepEqual([copy.type, copy.label, copy.settings, copy.origin], ['filter', 'Active copy', { source: 'customers' }, 'mine']);
   // One id names one entity, of any type: the door forgets it by its id.
   assert.deepEqual(deleteNode(k.entities, 'active-copy-2'), { id: 'active-copy-2' });
 });
@@ -177,14 +177,14 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
 test('an app\'s type is used as a node too; and the keeper\'s modules stay light: no node kind, no workflow', () => {
   const off = registerEntityType({ id: 'ui-card', label: 'UI Card', icon: 'grid', graph: { runs: false, families: ['Sources'], outputs: [{ name: 'present', type: 'object' }] } });
   try {
-    const card = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'preset-filter:trials', x: 0, y: 0 }], connections: [] } };
+    const card = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'filter:trials', x: 0, y: 0 }], connections: [] } };
     const node = asNode(card);
     assert.deepEqual([node.icon, node.outputs.map((o) => o.name)], ['grid', ['present']]);
-    // A card takes a Source, not a Condition; any entity's node, as a Preset Filter's.
-    const library = { v: 1, nodes: { 'ui-card:orders': node, 'preset-filter:trials': asNode(filter('trials', 'Trials')) } };
+    // A card takes a Source, not a Condition; any entity's node, as a Filter's.
+    const library = { v: 1, nodes: { 'ui-card:orders': node, 'filter:trials': asNode(filter('trials', 'Trials')) } };
     const offered = Object.keys(offeredKinds({ ...NODE_KINDS, ...lib.kindsOf(library) }, 'ui-card:orders', library.nodes));
     assert.ok(offered.includes('source') && !offered.includes('condition'));
-    assert.deepEqual(offered.filter((id) => id.includes(':')), ['preset-filter:trials']);
+    assert.deepEqual(offered.filter((id) => id.includes(':')), ['filter:trials']);
   } finally {
     off();
   }

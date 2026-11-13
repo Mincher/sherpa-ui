@@ -12,7 +12,7 @@ const SETUP = `async () => {
   const { PageKeeper } = await import('/dist/index.js');
   const keeper = new PageKeeper();
   window.keeper = keeper;
-  window.filter = (id, label, kind) => ({ v: 2, type: 'preset-filter', id, label,
+  window.filter = (id, label, kind) => ({ v: 2, type: 'filter', id, label,
     graph: kind ? { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], connections: [{ from: 'inner', to: '#out/where' }] } : { nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
@@ -44,7 +44,7 @@ test('a saved entity shows in a second tab, live and after a reload; a preset is
   await setup(second);
   expect(await listed(second)).toEqual(['shipped (preset)', 'recent']);
   // …and what it saves reaches the first, whose watcher heard the storage event.
-  expect(await save(second, 'outer', 'Outer', 'preset-filter:recent')).toBe(true);
+  expect(await save(second, 'outer', 'Outer', 'filter:recent')).toBe(true);
   await expect.poll(() => listed(first)).toEqual(['shipped (preset)', 'recent', 'outer']);
   expect((await first.evaluate(() => (window as unknown as W).heard)).at(-1)).toEqual(['shipped', 'recent', 'outer']);
 

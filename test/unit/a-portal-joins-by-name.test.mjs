@@ -4,7 +4,7 @@
  * connections. Associated portal outs should show each input node row as input rows in the output portal node." An In
  * takes many connections; every Out of its name draws ONE ROW per connection into any In of the name, `@` and its source, labelled
  * from it, and each row is connected on alone, as a Group Input's is (763). ONE resolver reads a row as its source
- * (`portalFlow`): what an output sends, the warnings, the Outgoing JSON and a Preset Filter's compile. A connection from a row
+ * (`portalFlow`): what an output sends, the warnings, the Outgoing JSON and a Filter's compile. A connection from a row
  * whose connection in is gone is kept, unseen. A loop through a row is a loop. A name is local to its graph.
  *
  *   node --test test/unit/a-portal-joins-by-name.test.mjs
@@ -19,7 +19,7 @@ const { NODE_KINDS, kindIn, paletteOf, paletteMatch, rowChoices, fitOf } = await
 const { portalFlow, portalLinks, cutNames, ungroupNames, addressRow, addressOf } = await import(new URL('node-portals.js', core));
 const { sentFrom, workflowFaults, workflowGraph, editWorkflow, finalGraph, checkWorkflow, readWorkflow, keptConnections } = await import(new URL('workflow.js', core));
 const { conditionAt, nodeFlow } = await import(new URL('node-flow.js', core));
-const { presetOfEntity } = await import(new URL('preset-filter.js', core));
+const { presetOfEntity } = await import(new URL('filter.js', core));
 const { groupNodes, ungroupUse } = await import(new URL('node-group.js', core));
 
 const facts = { fieldsOf: { customers: { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } } } };
@@ -151,9 +151,9 @@ test('a loop through a row is a loop', () => {
   assert.deepEqual(workflowFaults(flow(round.nodes, round.connections.filter((r) => r.from !== 'o/@c/rows')), undefined, facts), []);
 });
 
-/** Demos' Active customers Preset Filter, its Field sent through a portal row to its Condition. */
+/** Demos' Active customers Filter, its Field sent through a portal row to its Condition. */
 const throughPortal = {
-  v: 2, type: 'preset-filter', id: 'portal-active', label: 'Active, through a portal', settings: { source: 'customers' },
+  v: 2, type: 'filter', id: 'portal-active', label: 'Active, through a portal', settings: { source: 'customers' },
   graph: {
     nodes: [source('start'), field('field', 'status', 300), portal('in', 'in', 'status', 600), portal('out', 'out', 'status', 900), cond('status', 'eq', 'active', 1200)],
     // The test's True into the Group Output (plan 944).
@@ -165,7 +165,7 @@ const straightFilter = {
   graph: { nodes: [source('start'), field('field', 'status', 300), cond('status', 'eq', 'active', 1200)], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }] },
 };
 
-test('a Preset Filter through a portal row compiles to the same preset as the one connected straight', () => {
+test('a Filter through a portal row compiles to the same preset as the one connected straight', () => {
   const [a, b] = [presetOfEntity(throughPortal, facts), presetOfEntity(straightFilter, facts)];
   assert.ok('preset' in a, JSON.stringify(a));
   assert.deepEqual(a.preset.where, b.preset.where);

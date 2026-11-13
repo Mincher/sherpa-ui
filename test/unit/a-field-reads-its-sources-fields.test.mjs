@@ -3,7 +3,7 @@
  * STORE (`WorkflowFacts.fieldsOf`): a Field's list, its tip words, its stranger check, a Condition's Value B values,
  * its operator warning and a Tag's closed tags read the fields of the store of the first Source up its connections,
  * through the portals. No Source: it offers nothing and warns. A Custom Node's Group Input brings any store's rows;
- * a Preset Filter with no Source reads its own store's (`rowsFrom`).
+ * a Filter with no Source reads its own store's (`rowsFrom`).
  *
  *   node --test test/unit/a-field-reads-its-sources-fields.test.mjs
  *
@@ -16,7 +16,7 @@ const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, sentFrom, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { innerOf } = await import(new URL('node-library.js', core));
-const { presetOfEntity } = await import(new URL('preset-filter.js', core));
+const { presetOfEntity } = await import(new URL('filter.js', core));
 
 // Two stores: Health is in both, with other words and values; Seats a number in one, text in the other.
 const FIELDS = {
@@ -135,9 +135,9 @@ test('inside a Custom Node the Group Input brings any store\'s rows: every store
   assert.deepEqual(said(drawn(ghost)).f, [['field', '"ghost" is not a field of the rows that come in']]);
 });
 
-test('a Preset Filter with no Source reads its own store\'s rows: its settings\' source (`rowsFrom`)', () => {
+test('a Filter with no Source reads its own store\'s rows: its settings\' source (`rowsFrom`)', () => {
   const preset = (store) => ({
-    v: 2, type: 'preset-filter', id: `laptops-${store}`, label: 'Laptops', settings: { source: store },
+    v: 2, type: 'filter', id: `laptops-${store}`, label: 'Laptops', settings: { source: store },
     graph: { nodes: [field('f', 'type'), cond('c', 'eq', 0, 'Laptop')], connections: connection('f/field → c', 'c → #out/where') },
   });
   assert.deepEqual(presetOfEntity(preset('devices'), { fieldsOf: FIELDS }).preset.where, { type: { eq: 'Laptop' } });

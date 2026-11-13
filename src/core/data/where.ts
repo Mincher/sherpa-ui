@@ -177,7 +177,7 @@ const fieldsOf = (tree: Condition): string[] => {
  * A tree whose leaves name their fields, in the plain form: each field's own part, its
  * parts ANDed. A leaf with no field, or a part that reads two fields under Any, has no
  * plain form, since each field holds its own condition: why, in words. Plan 776 D1, D6
- * TRAP T-a-preset-filter-is-a-preset-of-its-store
+ * TRAP T-a-filter-is-a-preset-of-its-store
  */
 export function whereOfTree(tree: Condition): { where: Where } | { fault: string } {
   // Every All, at any depth, is one list of parts: a nested group's own All joins its parent's.

@@ -2,11 +2,11 @@ import { test, expect } from './harness';
 
 /**
  * A PRESET FILTER IS A PRESET OF ITS STORE — Will, TODO 776 (plan 776). The provider opens a page and
- * reads the keeper's Preset Filters over the page's store: each is a boolean chip on the bar of the
+ * reads the keeper's Filters over the page's store: each is a boolean chip on the bar of the
  * scope that holds its fields, after the page's own presets — the app's, then the reader's; one of
  * another store is not. A press asks the Query ONCE, and gives the rows its condition says. A Preset
  * Filter the reader saves while the page is open joins the bar; one that says no condition is said
- * in words and left off. Real pointer. TRAP T-a-preset-filter-is-a-preset-of-its-store
+ * in words and left off. Real pointer. TRAP T-a-filter-is-a-preset-of-its-store
  */
 const SETUP = `
   const { ArrayStore } = await import('/dist/index.js');
@@ -21,7 +21,7 @@ const SETUP = `
     { id: 3, status: 'trial', plan: 'Pro' }, { id: 4, status: 'churned', plan: 'Pro' },
   ];
   const filter = (id, label, field, value, store = 'customers') => ({
-    v: 2, type: 'preset-filter', id, label, settings: { source: store },
+    v: 2, type: 'filter', id, label, settings: { source: store },
     graph: {
       nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field } }, { id: 'c', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }],
       connections: [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }],
@@ -55,10 +55,10 @@ const chips = (page: import('@playwright/test').Page) => page.evaluate(() => [..
   .querySelectorAll<HTMLElement>('.chips > .chip[data-preset]')].map((c) => `${c.dataset['id']} ${c.getAttribute('data-label')}`));
 const total = (page: import('@playwright/test').Page) => page.evaluate(() => (window as unknown as W).source.debugState().total);
 
-test('the bar lists the page store\'s Preset Filters after its own presets; one of another store, and one that says no condition, are not', async ({ page }) => {
-  expect(await chips(page)).toEqual(['preset:pro Pro', 'preset:preset-filter:active Active']);
+test('the bar lists the page store\'s Filters after its own presets; one of another store, and one that says no condition, are not', async ({ page }) => {
+  expect(await chips(page)).toEqual(['preset:pro Pro', 'preset:filter:active Active']);
   const said = await page.evaluate(() => (window as unknown as W).said);
-  expect(said).toEqual(['sherpa-provider: the Preset Filter "Blank" sends no condition to its Where, so it is no preset of this page.']);
+  expect(said).toEqual(['sherpa-provider: the Filter "Blank" sends no condition to its Where, so it is no preset of this page.']);
 });
 
 test('a press asks the Query once, and gives the rows its condition says; again, every row', async ({ page }) => {
@@ -70,22 +70,22 @@ test('a press asks the Query once, and gives the rows its condition says; again,
     w.asked = [];
     query.ask = (r: unknown) => { w.asked.push(r); return ask(r); };
   });
-  const chip = page.locator('sherpa-quick-filter-toolbar').locator('.chips > .chip[data-id="preset:preset-filter:active"]');
+  const chip = page.locator('sherpa-quick-filter-toolbar').locator('.chips > .chip[data-id="preset:filter:active"]');
   await chip.locator('.body').click();
   await expect.poll(() => total(page)).toBe(2);
   await expect(chip).toHaveAttribute('data-current', '');
-  expect(await page.evaluate(() => (window as unknown as W).asked)).toEqual([{ scope: 'data', preset: 'preset-filter:active', on: true, commit: true }]);
+  expect(await page.evaluate(() => (window as unknown as W).asked)).toEqual([{ scope: 'data', preset: 'filter:active', on: true, commit: true }]);
   await chip.locator('.body').click();
   await expect.poll(() => total(page)).toBe(4);
   await expect(chip).not.toHaveAttribute('data-current', '');
 });
 
-test('a Preset Filter the reader saves while the page is open joins the bar, after the app\'s', async ({ page }) => {
+test('a Filter the reader saves while the page is open joins the bar, after the app\'s', async ({ page }) => {
   await page.evaluate(async () => {
     const w = window as unknown as W;
     await w.provider.keeper.entities.save(w.filter('trials', 'Trials', 'status', 'trial'));
   });
-  await expect.poll(() => chips(page)).toEqual(['preset:pro Pro', 'preset:preset-filter:active Active', 'preset:preset-filter:trials Trials']);
-  await page.locator('sherpa-quick-filter-toolbar').locator('.chips > .chip[data-id="preset:preset-filter:trials"] .body').click();
+  await expect.poll(() => chips(page)).toEqual(['preset:pro Pro', 'preset:filter:active Active', 'preset:filter:trials Trials']);
+  await page.locator('sherpa-quick-filter-toolbar').locator('.chips > .chip[data-id="preset:filter:trials"] .body').click();
   await expect.poll(() => total(page)).toBe(1);
 });

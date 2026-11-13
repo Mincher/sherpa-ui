@@ -23,7 +23,7 @@ const { onReport } = await import(new URL('report.js', core));
 
 /** Customers whose status is active: a condition out. */
 const ACTIVE = {
-  v: 2, type: 'preset-filter', id: 'active-customers', label: 'Active customers', description: 'Customers who are active.',
+  v: 2, type: 'filter', id: 'active-customers', label: 'Active customers', description: 'Customers who are active.',
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -37,7 +37,7 @@ const ACTIVE = {
   settings: { source: 'customers' },
 };
 const make = (change = {}) => ({ ...structuredClone(ACTIVE), ...change });
-/** A preset filter that places another. */
+/** A Filter that places another. */
 const placing = (id, kind, extra = {}) => make({
   id, label: id.toUpperCase(),
   graph: { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], connections: [{ from: 'inner', to: '#out/where' }] },
@@ -54,10 +54,10 @@ test('a good entity passes, in the shape the schema says; and so do the types\' 
   assert.deepEqual(faults(make()), []);
   assert.equal(C.checkEntity(make()), true);
   assert.deepEqual(schemaCheck('entity.v2.json')(make()), []);
-  assert.deepEqual(schemaCheck('entity-preset-filter.v1.json')(make().settings), []);
+  assert.deepEqual(schemaCheck('entity-filter.v1.json')(make().settings), []);
   assert.ok(E.isEntity(make()));
   // The schema and the checks say the same of settings.
-  for (const [type, settings] of [['preset-filter', { source: 3 }], ['preset-filter', { extra: 1 }], ['node', { inputs: [] }], ['node', { inputs: [], outputs: {} }]]) {
+  for (const [type, settings] of [['filter', { source: 3 }], ['filter', { extra: 1 }], ['node', { inputs: [] }], ['node', { inputs: [], outputs: {} }]]) {
     assert.notDeepEqual(schemaCheck(`entity-${type}.v1.json`)(settings), [], `${type} ${JSON.stringify(settings)}`);
     assert.notDeepEqual(T.ENTITY_TYPES[type].settingsFaults(settings), []);
   }
@@ -71,8 +71,8 @@ test('each fault is named, in words', () => {
   assert.match(said(make({ settings: { source: 4 } })), /its source is not a name/);
   assert.match(said(make({ settings: { colour: 'red' } })), /the setting "colour", which this type does not keep/);
   assert.match(said(make({ graph: { ...ACTIVE.graph, connections: ACTIVE.graph.connections.slice(0, 2) } })), /sends nothing to its output "where"/);
-  assert.match(said(make({ uses: [{ type: 'preset-filter', id: 'gone' }] })), /uses the Preset Filter "gone", which is not there/);
-  assert.match(said(make({ graph: { nodes: [{ id: 'x', kind: 'preset-filter:gone', x: 0, y: 0 }], connections: [{ from: 'x', to: '#out/where' }] } })), /a use of "preset-filter:gone", which is not there/);
+  assert.match(said(make({ uses: [{ type: 'filter', id: 'gone' }] })), /uses the Filter "gone", which is not there/);
+  assert.match(said(make({ graph: { nodes: [{ id: 'x', kind: 'filter:gone', x: 0, y: 0 }], connections: [{ from: 'x', to: '#out/where' }] } })), /a use of "filter:gone", which is not there/);
   // The graph's own faults come through, each as a Custom Node's would say them.
   assert.match(said(make({ graph: { nodes: [{ id: 'x', kind: 'nothing-like-it', x: 0, y: 0 }], connections: [{ from: 'x', to: '#out/where' }] } })), /"x"/);
   assert.match(said(make({ graph: { nodes: [{ id: '#in', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in', to: '#out/where' }] } })), /a # name is the Group Input/);
@@ -82,8 +82,8 @@ test('each fault is named, in words', () => {
 
 test('a family outside the type is a fault; a use of an entity is not bounded by it', () => {
   const sent = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'end', kind: 'result', x: 720, y: 0 }], connections: ACTIVE.graph.connections } });
-  assert.match(faults(sent).join('\n'), /places "end", of the family "Output", which a Preset Filter does not take: Sources, Variables, Math, Logic, Time, Organise, Utils/);
-  // An Organise, of the Organise family: one a Preset Filter takes.
+  assert.match(faults(sent).join('\n'), /places "end", of the family "Output", which a Filter does not take: Sources, Variables, Math, Logic, Time, Organise, Utils/);
+  // An Organise, of the Organise family: one a Filter takes.
   const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'organise', x: 720, y: 200 }], connections: [...ACTIVE.graph.connections, { from: 'field/field', to: 'order' }] } });
   assert.deepEqual(faults(sorted), []);
   const sources = { id: 'sources-only', label: 'Sources only', graph: { runs: false, families: ['Sources'] } };
@@ -91,38 +91,38 @@ test('a family outside the type is a fault; a use of an entity is not bounded by
   // A type with no families takes any; a `node` is one.
   assert.deepEqual(faults({ ...sent, type: 'node', settings: { inputs: [], outputs: [{ name: 'where', type: 'boolean' }] } }), []);
   const recent = make({ id: 'recent', label: 'Recent' });
-  const uses = placing('outer', 'preset-filter:recent');
+  const uses = placing('outer', 'filter:recent');
   assert.deepEqual(faults(uses, { entities: [recent] }), []);
 });
 
 test('a cycle of entities is refused, said once, from either end; and one that holds itself', () => {
-  const a = placing('a', 'preset-filter:b', { label: 'A' });
-  const b = placing('b', 'preset-filter:a', { label: 'B' });
+  const a = placing('a', 'filter:b', { label: 'A' });
+  const b = placing('b', 'filter:a', { label: 'B' });
   for (const [one, other] of [[a, b], [b, a]]) {
     const found = faults(one, { entities: [other] }).filter((f) => /loop/.test(f));
     assert.equal(found.length, 1, found.join('|'));
     assert.match(found[0], /holds itself, in a loop: .* › .* › /);
   }
-  assert.match(faults(placing('self', 'preset-filter:self'), { entities: [] }).join('\n'), /loop/);
+  assert.match(faults(placing('self', 'filter:self'), { entities: [] }).join('\n'), /loop/);
   // Three, through a declared `uses` alone.
-  const x = make({ id: 'x', label: 'X', uses: [{ type: 'preset-filter', id: 'y' }] });
-  const y = make({ id: 'y', label: 'Y', uses: [{ type: 'preset-filter', id: 'z' }] });
-  const z = make({ id: 'z', label: 'Z', uses: [{ type: 'preset-filter', id: 'x' }] });
+  const x = make({ id: 'x', label: 'X', uses: [{ type: 'filter', id: 'y' }] });
+  const y = make({ id: 'y', label: 'Y', uses: [{ type: 'filter', id: 'z' }] });
+  const z = make({ id: 'z', label: 'Z', uses: [{ type: 'filter', id: 'x' }] });
   assert.match(faults(x, { entities: [y, z] }).join('\n'), /X › Y › Z › X/);
   // No loop where a chain only runs on.
-  assert.deepEqual(faults(make({ id: 'top', uses: [{ type: 'preset-filter', id: 'x' }] }), { entities: [make({ id: 'x', uses: [] })] }), []);
+  assert.deepEqual(faults(make({ id: 'top', uses: [{ type: 'filter', id: 'x' }] }), { entities: [make({ id: 'x', uses: [] })] }), []);
 });
 
 test('an app adds a type; a clash with a shipped one, or a type typeFaults refuses, is refused in words; taking it back takes it away', () => {
   const card = { id: 'ui-card', label: 'UI Card', graph: { runs: false, outputs: [{ name: 'present', type: 'object' }], families: ['Sources'] } };
   const { result: off, reports } = heard(() => [
-    T.registerEntityType({ ...card, id: 'preset-filter' }), T.registerEntityType({ ...card, id: 'Bad Name' }),
+    T.registerEntityType({ ...card, id: 'filter' }), T.registerEntityType({ ...card, id: 'Bad Name' }),
     T.registerEntityType({ ...card, graph: { ...card.graph, reusable: 'no' } }), T.registerEntityType({ id: 'bare', label: 'Bare' }), T.registerEntityType(card),
   ]);
   assert.deepEqual(off.slice(0, 4), [undefined, undefined, undefined, undefined]);
   const said = reports.filter((r) => r.code === 'entity-type').map((r) => r.message);
   assert.equal(said.length, 4);
-  assert.match(said.join('\n'), /"preset-filter" is a type the library ships/);
+  assert.match(said.join('\n'), /"filter" is a type the library ships/);
   assert.match(said.join('\n'), /graph: its reusable is not true or false/);
   assert.match(said.join('\n'), /"bare" is refused: it has no fields, and no graph/);
   assert.ok(T.entityTypes()['ui-card']);
@@ -137,7 +137,7 @@ test('an app adds a type; a clash with a shipped one, or a type typeFaults refus
 test('any entity is a node in any graph: its kind is `<type>:<id>`, a use follows it, and the update flow is a Custom Node\'s', () => {
   const recent = make({ id: 'recent', label: 'Recent' });
   const kind = E.entityKind(recent);
-  assert.equal(kind, 'preset-filter:recent');
+  assert.equal(kind, 'filter:recent');
   assert.equal(E.entityKind({ type: 'node', id: 'org' }), 'org', 'a Custom Node keeps its plain id');
   const library = T.libraryOf([recent]);
   assert.deepEqual(Object.keys(library.nodes), [kind]);
@@ -161,9 +161,9 @@ test('any entity is a node in any graph: its kind is `<type>:<id>`, a use follow
   assert.deepEqual(lib.staleUses(lib.updateInstance(flow, 'pick', next), next), []);
   // The entity that places it keeps the dependency, and the check reads it.
   const outer = placing('outer', kind, { uses: E.usesOf({ nodes: [{ id: 'inner', kind, x: 0, y: 0 }] }, [recent]) });
-  assert.deepEqual(outer.uses, [{ type: 'preset-filter', id: 'recent' }]);
+  assert.deepEqual(outer.uses, [{ type: 'filter', id: 'recent' }]);
   assert.deepEqual(faults(outer, { entities: [recent] }), []);
-  assert.match(faults(outer, { entities: [] }).join('\n'), /uses the Preset Filter "recent", which is not there/);
+  assert.match(faults(outer, { entities: [] }).join('\n'), /uses the Filter "recent", which is not there/);
 });
 
 test('a Custom Node is the type `node`: the envelope wraps today\'s definition, and the two read back the same', () => {
@@ -190,7 +190,7 @@ test('a Custom Node is the type `node`: the envelope wraps today\'s definition, 
 
 test('a workflow becomes an entity of a type, and is checked as one', () => {
   const workflow = { v: 3, id: 'active-customers', label: 'Active customers', nodes: ACTIVE.graph.nodes, connections: ACTIVE.graph.connections };
-  const e = T.entityOf(workflow, 'preset-filter', { source: 'customers' });
+  const e = T.entityOf(workflow, 'filter', { source: 'customers' });
   assert.equal(e.id, 'active-customers');
   assert.deepEqual(faults(e), []);
   // The workflow's own checks still pass over the same nodes.

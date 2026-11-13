@@ -3,7 +3,7 @@
   "v": 3,
   "entities": {
     "shipped": {
-      "v": 2, "type": "preset-filter", "id": "shipped", "label": "Shipped",
+      "v": 2, "type": "filter", "id": "shipped", "label": "Shipped",
       "graph": {
         "nodes": [
           { "id": "start", "kind": "source", "x": 0, "y": 0, "values": { "store": "customers" } },

@@ -15,7 +15,7 @@ import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/s
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
 import { entityRefOf } from '../data/entity.js';
-import { PRESET_FILTER } from '../data/entity-types.js';
+import { FILTER } from '../data/entity-types.js';
 import type { FieldType } from '../data/filter-state.js';
 import { NODE_KINDS, paletteOf, type DrawnGraph, type GraphNode, type NodeKind } from '../data/node-kinds.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
@@ -80,16 +80,16 @@ export function queryDocument(source: QuerySource, { definition, session, markup
   // that definition is that graph. The Query has not moved since: each change is read again first.
   let drawn: DrawnGraph | null = null;
   let lastRead: ReturnType<typeof queryDefinition> | null = null;
-  // The page's Preset Filters, as its Query declares them: placed as Custom Nodes. TODO 776
+  // The page's Filters, as its Query declares them: placed as Custom Nodes. TODO 776
   const customs = (): Record<string, NodeKind> => Object.fromEntries(queryScopes(definition, query).flatMap((scope) => query.presets(scope)
-    .filter((p) => entityRefOf(p.id).type === PRESET_FILTER)
-    .map((p) => [p.id, { heading: p.label, icon: 'filter', description: 'This page\'s Preset Filter.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes' } as NodeKind])));
+    .filter((p) => entityRefOf(p.id).type === FILTER)
+    .map((p) => [p.id, { heading: p.label, icon: 'filter', description: 'This page\'s Filter.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes' } as NodeKind])));
   // A component's live copy, kept while the same component is shown: it asks the provider as the page's does.
   let visual: { id: string; el: HTMLElement } | null = null;
   // Its own writes and restores are no change from outside.
   let quiet = 0;
   return {
-    // Its kinds now: the registry's, and the page's Preset Filters.
+    // Its kinds now: the registry's, and the page's Filters.
     get kinds() {
       return { ...NODE_KINDS, ...customs() };
     },

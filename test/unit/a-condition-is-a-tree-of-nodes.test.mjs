@@ -71,7 +71,7 @@ test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the 
     const [a, b] = [socketOf(from), socketOf(to)];
     assert.ok(accepts(socketType(node(g, a.node), a.row, 'output'), socketType(node(g, b.node), b.row, 'input')), `${from} → ${to}`);
   }
-  // It reads the tree it was drawn from, as a Preset Filter's graph reads (one reader).
+  // It reads the tree it was drawn from, as a Filter's graph reads (one reader).
   assert.deepEqual(nodeFlow(g, 'when-view-seats').definition.where, { or: [{ field: 'seats', op: 'lt', value: 5 }, { and: [{ field: 'seats', op: 'gt', value: 5 }, { field: 'seats', op: 'lt', value: 100 }] }] });
   // The tree filters as it draws: asked again unchanged, it keeps the rows 4 and 8.
   await source.query.ask(edit(g, { type: (f) => page.source.fields[f]?.type }, 'when-view-seats.1', 'type', 'lt'));

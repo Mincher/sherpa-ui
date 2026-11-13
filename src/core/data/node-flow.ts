@@ -1,9 +1,9 @@
 /**
  * node-flow.ts — what flows into a node and out of it, as JSON, read from the graph's DEFINITION:
  * the connections and the values the rows hold; and the ONE reader of a graph as a condition, which the
- * Outgoing JSON shows and a Preset Filter compiles by. Nothing RUNS here: a run's values come with the
+ * Outgoing JSON shows and a Filter compiles by. Nothing RUNS here: a run's values come with the
  * runner (N4). Each reads the graph as the data flows, through its portals. DOM-free. Will, TODOs 745, 776, 780, 783, 779
- * · TRAP T-a-preset-filter-is-a-preset-of-its-store · TRAP T-a-condition-is-a-tree-of-nodes · TRAP T-a-portal-hop-is-resolved-once
+ * · TRAP T-a-filter-is-a-preset-of-its-store · TRAP T-a-condition-is-a-tree-of-nodes · TRAP T-a-portal-hop-is-resolved-once
  *
  * Map:
  * - NodeFlow — A node's incoming and outgoing JSON.
@@ -93,7 +93,7 @@ function flowing(graph: DrawnGraph): Flowing {
 /** The condition the connections into an input say, as ONE tree: each connection's source read, several ANDed. And and Or
  *  join what comes into them; a test — a Condition's comparison, Time, a Tag — is a leaf on the Field on its header,
  *  ANDed with what the rows into that Field carry; a use is read inside, at its Group Output, as `facts.inner` draws
- *  it. A node that says no condition is a fault. The Outgoing JSON shows what it reads, and a Preset Filter compiles
+ *  it. A node that says no condition is a fault. The Outgoing JSON shows what it reads, and a Filter compiles
  *  by it. Plan 783 D7 · TRAP T-a-condition-is-a-tree-of-nodes */
 export function conditionAt(graph: DrawnGraph, address: string, facts: ConditionFacts = {}): ConditionRead {
   return readAt(flowing(graph), address, facts, { seen: new Set(), path: [] });

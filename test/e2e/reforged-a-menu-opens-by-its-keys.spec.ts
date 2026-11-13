@@ -204,8 +204,8 @@ test('the View chip: ArrowDown on its caret opens it on its first View, Escape i
   await view.evaluate((c) => (c.shadowRoot!.querySelector('.caret') as HTMLElement).focus());
   await page.keyboard.press('ArrowDown');
   await expect(menu).toHaveAttribute('open', '');
-  expect((await rows.allTextContents()).map((t) => t.trim())).toEqual(['Preset Filters', 'Custom Nodes', 'Page filters', 'Notes']);
-  expect(await row()).toBe('Preset Filters');
+  expect((await rows.allTextContents()).map((t) => t.trim())).toEqual(['Filters', 'Custom Nodes', 'Page filters', 'Notes']);
+  expect(await row()).toBe('Filters');
   await page.keyboard.press('Escape');
   await expect(menu).not.toHaveAttribute('open', '');
   expect(await caret()).toBe(true);

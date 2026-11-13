@@ -445,7 +445,7 @@ export interface WorkflowFacts {
   /** Each store's fields, by the store's name — a page definition's `source.fields`, each with the values it may take:
    *  a Field picks from the fields of the Source its rows come from. TRAP T-a-field-reads-its-sources-fields */
   fieldsOf?: Readonly<Record<string, Readonly<Record<string, { label?: string; type?: string; values?: readonly string[] }>>>>;
-  /** The store whose rows a Field reads where no Source's reach it: a Preset Filter's own, its `settings.source`. */
+  /** The store whose rows a Field reads where no Source's reach it: a Filter's own, its `settings.source`. */
   rowsFrom?: string;
   /** The stores a Source's Store row picks, by the names the app registered them under. */
   stores?: readonly string[];

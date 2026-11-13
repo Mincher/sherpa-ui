@@ -730,7 +730,7 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
- *  its Custom Nodes, its page's Preset Filters (TODO 776). */
+ *  its Custom Nodes, its page's Filters (TODO 776). */
 const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status'];
 
 /** One node of the panel: the kind's id and the kind. */

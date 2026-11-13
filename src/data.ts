@@ -249,10 +249,10 @@ export {
 export { createNode, deleteNode, keepNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
 /* Any entity is a node in any graph: the panel offers it, a use is an instance of it. Plan 746 E5 · TRAP T-an-entity-is-used-as-a-node */
 export {
-  ENTITY_TYPES, PRESET_FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, savedCategories, socketsOf, takes, type EntityType,
+  ENTITY_TYPES, FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, savedCategories, socketsOf, takes, type EntityType,
 } from './core/data/entity-types.js';
-/* A Preset Filter is a preset of its store's pages: its graph read as ONE condition, each field's own. TODO 776 · TRAP T-a-preset-filter-is-a-preset-of-its-store */
-export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type PresetFilterFacts } from './core/data/preset-filter.js';
+/* A Filter is a preset of its store's pages: its graph read as ONE condition, each field's own. TODO 776 · TRAP T-a-filter-is-a-preset-of-its-store */
+export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type FilterFacts } from './core/data/filter.js';
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';

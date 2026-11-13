@@ -26,7 +26,7 @@ const RETIRED = [
   [/\b(graph|workflow|definition|def|drawn|draft|body|entity\.graph)\.routes\b|"routes"\s*:/, 'a graph\'s connections'],
 ];
 /** Kept on purpose: a frozen schema, the record, and the words that say what moved. */
-const KEPT = [/^schemas\/(entity|entities|entity-node|entity-preset-filter)\.v1\.json$/, /^schemas\/workflow\.v2\.json$/, /^docs\/history\//,
+const KEPT = [/^schemas\/(entity|entities|entity-node|entity-filter)\.v1\.json$/, /^schemas\/workflow\.v2\.json$/, /^docs\/history\//,
   /^docs\/(LEXICON|TODO)\.md$/, /^test\/unit\/the-graph-words-hold\.test\.mjs$/];
 const ROOTS = ['src', 'schemas', 'mcp-server', 'scripts', 'test', 'docs', 'custom-elements.json', 'vscode.html-data.json'];
 const TEXT = /\.(ts|js|mjs|json|html|css|md|yaml)$/;

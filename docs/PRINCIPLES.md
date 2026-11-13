@@ -171,7 +171,7 @@ The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and
 |---|---|---|
 | **Entity** | any one thing of a type: a row, as a Device, or a graph thing, as a Coworker | the shelf's `Entity`; a type's rows (plan 960 U2, U3) |
 | **Lens** | one way to show and edit a definition (its graph, a form, a text), read from it and written back to it through one door; never a second truth | `registerLens` (plan 960 U4) |
-| **Filter** | a filter definition, saved as a Custom Node, and used inside a View definition, as in its filter toolbar. There is no Preset Filter type | the `preset-filter` type, until U4 renames it |
+| **Filter** | a filter definition, saved as a Custom Node, and used inside a View definition, as in its filter toolbar. There is no Preset Filter type | the `filter` type, `FILTER`; a use's kind `filter:<id>` |
 
 **A Check branches** (Will, 2026-11-11, plan 944): no node has a True or a False socket. A test has a True property, 1
 or 0, beside its Results, the rows that pass. The Check node sends its Data on Yes where its test holds, on No where it

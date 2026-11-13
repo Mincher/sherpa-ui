@@ -1,20 +1,20 @@
 /**
- * preset-filter.ts — a Preset Filter entity as a PRESET of its store's pages. Its graph is drawn as its
+ * filter.ts — a Filter entity as a PRESET of its store's pages. Its graph is drawn as its
  * canvas draws it, then read as ONE condition by the Outgoing JSON's reader (`conditionAt`), a use of
  * another read inside and so flattened; each comparison as the Query editor reads one (`editedCondition`);
  * then each field's own, in the plain form a page's preset has. After that it takes the one door every
  * preset takes: `presetReadings`, then `declarePresets`. DOM-free. Will, TODO 776
- * · docs/history/plan-776-preset-filters-in-data.md · TRAP T-a-preset-filter-is-a-preset-of-its-store
+ * · docs/history/plan-776-preset-filters-in-data.md · TRAP T-a-filter-is-a-preset-of-its-store
  *
  * Map:
  * - PagePreset — A preset as a page declares it: its id, its name and each field's condition, in the plain form.
- * - PresetFilterFacts — What reading one needs beside it: the other entities (a use's), the types, the kinds, each store's fields.
- * - sourceOf — The store a Preset Filter reads: its settings', else the one its graph's Source names.
- * - presetOfEntity — A Preset Filter as a page's preset, or why it is none, in words.
- * - presetsOver — The Preset Filters over one store as its pages' presets, the app's then the reader's, and each fault.
+ * - FilterFacts — What reading one needs beside it: the other entities (a use's), the types, the kinds, each store's fields.
+ * - sourceOf — The store a Filter reads: its settings', else the one its graph's Source names.
+ * - presetOfEntity — A Filter as a page's preset, or why it is none, in words.
+ * - presetsOver — The Filters over one store as its pages' presets, the app's then the reader's, and each fault.
  */
 import { entityKind, type Entity } from './entity.js';
-import { PRESET_FILTER, entityTypes, libraryOf, type EntityType } from './entity-types.js';
+import { FILTER, entityTypes, libraryOf, type EntityType } from './entity-types.js';
 import { graphWorkflow } from './entity-check.js';
 import { innerOf, kindsOf } from './node-library.js';
 import { conditionAt, leafOf, type Said } from './node-flow.js';
@@ -31,16 +31,16 @@ export interface PagePreset {
   where: Where;
 }
 
-/** What reading a Preset Filter needs beside it: the other entities, so a use of one is read inside; the
+/** What reading a Filter needs beside it: the other entities, so a use of one is read inside; the
  *  types and kinds; and each store's fields, which a Field picks from by its Source. */
-export interface PresetFilterFacts {
+export interface FilterFacts {
   entities?: readonly Entity[];
   types?: Readonly<Record<string, EntityType>>;
   kinds?: Readonly<Record<string, NodeKind>>;
   fieldsOf?: WorkflowFacts['fieldsOf'];
 }
 
-/** The store a Preset Filter reads: its settings' `source`, else the one its graph's Source names. Plan 776 D4 */
+/** The store a Filter reads: its settings' `source`, else the one its graph's Source names. Plan 776 D4 */
 export function sourceOf(entity: Pick<Entity, 'settings' | 'graph'>): string | undefined {
   const named = entity.settings?.['source'];
   if (typeof named === 'string' && named) return named;
@@ -69,12 +69,12 @@ function leavesRead(tree: Said): { tree: Condition } | { fault: string } {
 }
 
 /**
- * A Preset Filter as a page's PRESET: its id its use's kind, its name, and what its Where says,
+ * A Filter as a page's PRESET: its id its use's kind, its name, and what its Where says,
  * each field's own condition in the plain form. A use of another inside it is read inside, so it
  * flattens. Why it is none, in words: it sends no condition, a node says none, it says Any of two
- * fields, or a constant decides it. Plan 776 D1, D5, D6 · TRAP T-a-preset-filter-is-a-preset-of-its-store
+ * fields, or a constant decides it. Plan 776 D1, D5, D6 · TRAP T-a-filter-is-a-preset-of-its-store
  */
-export function presetOfEntity(entity: Entity, facts: PresetFilterFacts = {}): { preset: PagePreset } | { fault: string } {
+export function presetOfEntity(entity: Entity, facts: FilterFacts = {}): { preset: PagePreset } | { fault: string } {
   const types = facts.types ?? entityTypes();
   const library = libraryOf([entity, ...(facts.entities ?? []).filter((e) => e.id !== entity.id)], types);
   const kinds = { ...kindsOf(library), ...(facts.kinds ?? nodeKinds()) };
@@ -88,7 +88,7 @@ export function presetOfEntity(entity: Entity, facts: PresetFilterFacts = {}): {
     const use = innerOf(node, library, kinds);
     return use && workflowGraph(use.workflow, drawn, use.kinds);
   };
-  const at = `the Preset Filter "${entity.label}"`;
+  const at = `the Filter "${entity.label}"`;
   const { tree, faults } = conditionAt(graph, '#out/where', { inner });
   if (faults.length) return { fault: `${at}: ${faults[0]}` };
   if (tree === undefined) return { fault: `${at} sends no condition to its Where` };
@@ -106,13 +106,13 @@ export function presetOfEntity(entity: Entity, facts: PresetFilterFacts = {}): {
   return 'fault' in split ? { fault: `${at}: ${split.fault}` } : { preset: { id: entityKind(entity), label: entity.label, where: split.where } };
 }
 
-/** The Preset Filters over one store, as its pages' presets: the app's, read only, then the reader's, in
+/** The Filters over one store, as its pages' presets: the app's, read only, then the reader's, in
  *  the shelf's order. One that says no condition is left out, and its fault said. Plan 776 D4, D11 */
-export function presetsOver(store: string, entities: readonly Entity[], facts: Omit<PresetFilterFacts, 'entities'> = {}): { presets: PagePreset[]; faults: string[] } {
+export function presetsOver(store: string, entities: readonly Entity[], facts: Omit<FilterFacts, 'entities'> = {}): { presets: PagePreset[]; faults: string[] } {
   const presets: PagePreset[] = [];
   const faults: string[] = [];
   for (const entity of entities) {
-    if (entity.type !== PRESET_FILTER || sourceOf(entity) !== store) continue;
+    if (entity.type !== FILTER || sourceOf(entity) !== store) continue;
     const made = presetOfEntity(entity, { ...facts, entities });
     if ('fault' in made) faults.push(made.fault);
     else presets.push(made.preset);

@@ -117,7 +117,7 @@ export interface Reconciled {
 export interface ReconcileFacts extends Pick<QueryGraphFacts, 'type' | 'values'> {
   place: PlaceFacts;
   kept: readonly KeptSource[];
-  /** The scope a kind of node belongs in wherever it is placed: a Preset Filter's declaring scope. */
+  /** The scope a kind of node belongs in wherever it is placed: a Filter's declaring scope. */
   scopeOf?: (kind: string) => string | undefined;
 }
 

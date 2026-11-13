@@ -333,7 +333,7 @@ A graph View is a View whose body is a canvas, showing one entity of a type
 `"views"`:
 
 ```json
-{ "filters": { "label": "Preset Filters", "graph": { "type": "preset-filter" } },
+{ "filters": { "label": "Filters", "graph": { "type": "filter" } },
   "nodes": { "label": "Custom Nodes", "graph": { "type": "node" } } }
 ```
 
@@ -776,7 +776,7 @@ stale. Group Input and Group Output stand in no lane.
 An entity is a graph saved under a TYPE, an id and a name (`entity.v2`): `{ v, type,
 id, label, graph { nodes, connections }, settings, uses }`. Its type says what its
 settings hold, which node families its graph may place, and which sockets (`#in`,
-`#out`) it must have. A Custom Node is the type `node`. `preset-filter` is the other
+`#out`) it must have. A Custom Node is the type `node`. `filter` is the other
 type that ships: its graph sends a condition to `#out/where`. An app adds its own
 with `registerEntityType(type)` (a clash with a shipped type is refused).
 
@@ -804,14 +804,14 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   update stays in the draft until Save. Save each Custom Node the draft changed,
   `nodes.save(kind, definition)`, BEFORE the graph that places it, and stop on a refusal: the
   draft keeps it. `T-an-entity-is-used-as-a-node`
-- **A Preset Filter is a preset** of every page over its store (TODO 776): the provider
+- **A Filter is a preset** of every page over its store (TODO 776): the provider
   reads the shelf as the page opens, and each one's chip follows the page's own presets,
-  the app's then the reader's. A press is `query.ask({ scope, preset: 'preset-filter:<id>', on })`.
+  the app's then the reader's. A press is `query.ask({ scope, preset: 'filter:<id>', on })`.
   Its graph is read by the one reader the Outgoing JSON shows (`conditionAt`), each field's
   own (`presetOfEntity`): Store › Field › Condition, a test per Condition on the Field on its
   header, And and Or joining tests (plan 783); a use's True into And or Or joins the outer
   condition. An Or across two fields is said in words and left off. The Query
-  editor's panel lists them under Custom Nodes. `T-a-preset-filter-is-a-preset-of-its-store`
+  editor's panel lists them under Custom Nodes. `T-a-filter-is-a-preset-of-its-store`
 
 ## 10. Questions and saved filters
 

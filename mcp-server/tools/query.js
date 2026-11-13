@@ -290,7 +290,7 @@ export function register(server) {
   };
   const DEFINITION = {
     ...PAGE,
-    definition: z.union([z.string(), z.record(z.unknown())]).describe('The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Preset Filter, an app\'s own type'),
+    definition: z.union([z.string(), z.record(z.unknown())]).describe('The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Filter, an app\'s own type'),
     of: z.string().optional().describe('What the definition is: `query`, a page\'s Query; else an entity\'s type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`'),
     components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own'),
     ...FACTS,

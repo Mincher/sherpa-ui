@@ -46,7 +46,7 @@ export const queryScopes = (page: PageDefinition, query: Pick<QueryContext, 'dra
   [...new Set([VIEW, ...Object.keys(page.source?.scopes ?? {}), ...Object.keys(query.draft.scopes)])];
 
 /** What a reconcile needs, read from the live Query: its holds, fields and presets, which are on, the page's store and the
- *  Sources kept. A Preset Filter is placed in the scope that declares it (TODO 776). */
+ *  Sources kept. A Filter is placed in the scope that declares it (TODO 776). */
 export function reconcileFacts(page: PageDefinition, facts: QueryLensFacts): ReconcileFacts {
   const { query } = facts;
   const kept = facts.kept ?? [];

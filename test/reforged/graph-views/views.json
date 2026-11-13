@@ -1,6 +1,6 @@
 {
   "$schema": "../../../schemas/views.v1.json",
-  "filters": { "label": "Preset Filters", "graph": { "type": "preset-filter" } },
+  "filters": { "label": "Filters", "graph": { "type": "filter" } },
   "nodes": { "label": "Custom Nodes", "graph": { "type": "node" } },
   "pages": { "label": "Page filters", "graph": { "type": "query" } },
   "notes": { "label": "Notes" }
