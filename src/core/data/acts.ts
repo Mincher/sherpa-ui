@@ -13,6 +13,7 @@
  * - actsOf — The acts that apply on a page (a Context, a View, its type); asked with nothing, every act.
  * - inputFaults — Why a call's input is refused, in words: each field by its rules, each reference a row.
  * - runAct — The ONE door: the act found, its call checked by its type's rules, run; done or refused, in words.
+ * - checkAct — Why an act would be refused, before the reader is asked: the door's checks, then its own; nothing written.
  * - Choice — One value a field offers, by its words.
  * - refChoices — A reference's choices: its type's rows by key and title, through the store door; none past 200.
  * - actSchema — An act's call as a JSON Schema, a reference's choices read from its type's store: a tool is made from it.
@@ -66,6 +67,9 @@ export interface Act {
   /** Where a press offers it, by Context and View id. None: wherever its type's rows are. The chat runs any act. */
   where?: { contexts?: readonly string[]; views?: readonly string[] };
   run(call: ActCall, ctx: ActContext): Promise<ActAnswer>;
+  /** Why it would be refused, known before it runs — a use that keeps it, a read-only preset, a body its check refuses —
+   *  so a caller asks the reader only for what can run (`checkAct`). It writes nothing. None: the call's own checks. */
+  check?(call: ActCall, ctx: ActContext): Promise<string | undefined>;
 }
 
 const ID = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)?$/;
@@ -144,12 +148,9 @@ export async function inputFaults(input: Readonly<Record<string, StoredField>>, 
   return out;
 }
 
-/**
- * The ONE door: the act found by its id, its call checked — its keys are rows of its type, as many as it takes; its
- * input by its type's rules, each reference a row of its type — and run. It answers done or refused, in words, and
- * never throws. It never asks the reader: a caller does, when the act `changes`.
- */
-export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): Promise<ActAnswer> {
+/** The act found by its id, and its call checked as the door checks it before any run — may it, its keys are rows of its
+ *  type, as many as it takes, its input by its type's rules — or why not, in words. runAct and checkAct both open so. */
+async function called(id: string, call: ActCall, ctx: ActContext): Promise<{ act: Act } | { refused: string }> {
   const act = acts.get(id) ?? entityActs().find((a) => a.id === id);
   if (!act) return { refused: `There is no act "${id}".` };
   const denied = ctx.may?.(act, call);
@@ -168,8 +169,32 @@ export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): P
   }
   const wrong = await inputFaults(act.input ?? {}, call.input ?? {}, ctx);
   if (wrong.length) return { refused: `${act.label}: ${wrong.join('; ')}.` };
+  return { act };
+}
+
+/**
+ * The ONE door: the act found by its id, its call checked — its keys are rows of its type, as many as it takes; its
+ * input by its type's rules, each reference a row of its type — and run. It answers done or refused, in words, and
+ * never throws. It never asks the reader: a caller does, when the act `changes`, after `checkAct`.
+ */
+export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): Promise<ActAnswer> {
+  const found = await called(id, call, ctx);
+  if ('refused' in found) return found;
   try {
-    return await act.run(call, ctx);
+    return await found.act.run(call, ctx);
+  } catch (error) {
+    return { refused: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/** Why an act would be refused, before the reader is asked: the door's own checks, then the act's `check`. Nothing is
+ *  written. None, `{}`: it can run. Plan 964 N3c */
+export async function checkAct(id: string, call: ActCall = {}, ctx: ActContext): Promise<{ refused?: string }> {
+  const found = await called(id, call, ctx);
+  if ('refused' in found) return found;
+  try {
+    const why = await found.act.check?.(call, ctx);
+    return why ? { refused: why } : {};
   } catch (error) {
     return { refused: error instanceof Error ? error.message : String(error) };
   }

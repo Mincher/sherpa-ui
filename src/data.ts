@@ -266,7 +266,7 @@ export {
 } from './core/data/entity-versions.js';
 // Every act an app can do, said once, through one door; and each type's own acts. Plan 964 N1, N2
 export { graphActs } from './core/data/entity-acts.js';
-export { actSchema, actsOf, refChoices, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext, type Choice } from './core/data/acts.js';
+export { actSchema, actsOf, checkAct, refChoices, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext, type Choice } from './core/data/acts.js';
 /* A UX flow: one act's input asked step by step, then a confirm; a dialog and the chat draw it. Plan 964 N4 */
 export {
   answerStep, flowFaults, flowOf, flowsOf, nextStep, registerFlow, stepsOf,

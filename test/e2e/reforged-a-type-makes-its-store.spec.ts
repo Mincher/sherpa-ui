@@ -175,6 +175,10 @@ test('a pressed act that needs input opens its flow: a field per step that holds
         await store.update(key, { status: call.input?.['status'] });
         return { done: `Tagged ${String(was['name'])} ${String(call.input?.['status'])}.`, undo: async () => { await store.update(key, { status: was['status'] }); } };
       },
+      // Known before it runs: a Locked reason is refused, so the dialog says so before Run.
+      async check(call) {
+        return call.input?.['reason'] === 'Locked' ? 'Tag: a locked device keeps its tag.' : undefined;
+      },
     });
     registerFlow({ v: 1, act: 'device.tag', steps: [{ field: 'status' }, { field: 'reason', when: { status: { eq: 'offline' } } }, { field: 'urgent' }] });
     const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
@@ -217,7 +221,12 @@ test('a pressed act that needs input opens its flow: a field per step that holds
   await field('reason').locator('input').press('Tab');
   await expect(field('reason')).toHaveAttribute('data-error', /at least 3/);
   await expect(run).toHaveAttribute('disabled', '');
+  // An answer the act would refuse: said in the dialog before Run, and Run waits.
+  await field('reason').locator('input').fill('Locked');
+  await expect(page.locator('sherpa-outlet .flow-refused-words')).toHaveText('Tag: a locked device keeps its tag.');
+  await expect(run).toHaveAttribute('disabled', '');
   await field('reason').locator('input').fill('Broken');
+  await expect(page.locator('sherpa-outlet .flow-refused-words')).toHaveText('');
   await expect(field('reason')).not.toHaveAttribute('data-error');
   await expect(page.locator('sherpa-outlet .flow-said')).toHaveText('Tag: Device "Alpha", Status Offline, Reason Broken, Urgent No.');
   await expect(run).not.toHaveAttribute('disabled');

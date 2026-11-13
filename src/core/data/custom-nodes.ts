@@ -8,6 +8,7 @@
  * Map:
  * - NodeAnswer — What a door answers: the id it kept, or the faults that refused it, in words.
  * - NodeChange — What an update may change: its name, line, tags and category; a `node`'s sockets; its settings; its body.
+ * - NodeAsk — How a door is asked: to keep, or only to check.
  * - createNode — Keep a new Custom Node from its JSON: an entity, its id free or given.
  * - readNode — One Custom Node: the entity, and the node it offers.
  * - updateNode — Change one of the reader's Custom Nodes: a preset is read only.
@@ -37,16 +38,23 @@ export interface NodeChange {
   query?: Entity['query'];
 }
 
-/** Check with Save's own check, then keep: the faults, or the id kept. A shelf that refuses for another reason says so. */
-async function keep(shelf: EntityShelf, entity: Entity): Promise<NodeAnswer> {
+/** How a door is asked: to keep, or only to `check` — the faults, or the id it would keep, nothing written. */
+export interface NodeAsk {
+  check?: boolean;
+}
+
+/** Check with Save's own check, then keep: the faults, or the id kept. Asked only to check, nothing is kept. A shelf that
+ *  refuses for another reason says so. */
+async function keep(shelf: EntityShelf, entity: Entity, ask: NodeAsk = {}): Promise<NodeAnswer> {
   const faults = await shelf.faults(entity);
   if (faults.length) return { faults };
+  if (ask.check) return { id: entity.id };
   return (await shelf.save(entity)) ? { id: entity.id } : { faults: [`"${entity.id}" was not kept: the shelf refused it`] };
 }
 
 /** Keep a new Custom Node from its JSON — an entity; a `node` when it names no type — as the reader's own. With no id, or
  *  none free, its name gives one. */
-export async function createNode(shelf: EntityShelf, json: unknown): Promise<NodeAnswer> {
+export async function createNode(shelf: EntityShelf, json: unknown, ask: NodeAsk = {}): Promise<NodeAnswer> {
   let value: unknown = json;
   if (typeof json === 'string') {
     try {
@@ -64,7 +72,7 @@ export async function createNode(shelf: EntityShelf, json: unknown): Promise<Nod
   const { origin: _origin, $schema: _schema, ...rest } = read;
   const entity = { ...rest, v: 3, type, id, label, graph: read.graph ?? { nodes: [] }, ...(type === 'node' && !read.settings ? { settings: { inputs: [], outputs: [] } } : {}) };
   if (!isEntity(entity)) return { faults: ['it is not an entity: a v3 with a type, an id, a name and a graph'] };
-  return keep(shelf, entity);
+  return keep(shelf, entity, ask);
 }
 
 /** One Custom Node: the entity, and the node it offers (its sockets, category and icon, by its type). */
@@ -74,7 +82,7 @@ export function readNode(shelf: EntityShelf, id: string): { entity: Entity; node
 }
 
 /** Change one of the reader's Custom Nodes: a preset is read only, and a type that fixes its sockets keeps them. */
-export async function updateNode(shelf: EntityShelf, id: string, change: NodeChange): Promise<NodeAnswer> {
+export async function updateNode(shelf: EntityShelf, id: string, change: NodeChange, ask: NodeAsk = {}): Promise<NodeAnswer> {
   const was = shelf.get(id);
   if (!was) return { faults: [`there is no "${id}"`] };
   if (was.origin === 'preset') return { faults: [`"${id}" is a preset, which is read only: copy it to change it`] };
@@ -86,7 +94,7 @@ export async function updateNode(shelf: EntityShelf, id: string, change: NodeCha
   const { origin: _origin, ...own } = was;
   const next = { ...own, ...plain, ...(settings ? { settings } : {}) } as Entity;
   // One body, never both: a query given replaces a graph, and a graph a query.
-  return keep(shelf, query ? withBody(next, { query }) : graph ? withBody(next, { graph }) : next);
+  return keep(shelf, query ? withBody(next, { query }) : graph ? withBody(next, { graph }) : next, ask);
 }
 
 /** Keep a Custom Node the editor made or changed (its `edits()`), by its use's kind: the entity it is, new or changed,

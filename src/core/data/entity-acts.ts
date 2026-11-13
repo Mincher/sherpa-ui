@@ -52,7 +52,7 @@ function graphGiven(graph: EntityGraph, held: EntityGraph | undefined, shelf: En
 }
 
 /** What a door answered, as an act says it: refused in its faults' words. */
-const refusal = (verb: string, answer: NodeAnswer): ActAnswer | undefined =>
+const refusal = (verb: string, answer: NodeAnswer): { refused: string } | undefined =>
   ('faults' in answer ? { refused: `${verb}: ${answer.faults.join('; ')}.` } : undefined);
 
 /**
@@ -64,7 +64,7 @@ const refusal = (verb: string, answer: NodeAnswer): ActAnswer | undefined =>
 export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>): Act[] {
   const { id, label } = type;
   const shelfOf = (ctx: ActContext): EntityShelf | undefined => ctx.entities;
-  const none: ActAnswer = { refused: `The app has no ${label} entities here.` };
+  const none = { refused: `The app has no ${label} entities here.` };
   const named = (e: Pick<Entity, 'label'>): string => `${label} "${e.label}"`;
   const keysOf = (call: ActCall): string[] => (call.keys ?? []).map(String);
   const given: Record<string, StoredField> = { ...ENVELOPE, ...(type.graph?.query ? { query: QUERY } : {}) };
@@ -76,6 +76,17 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
       ...(tags !== undefined ? { tags: tagsOf(tags) } : {}),
       ...(graph ? { graph: graphGiven(graph as EntityGraph, held, shelf) } : {}),
     };
+  };
+  /** The new entity a call asks for, as the door takes it. */
+  const addOf = (call: ActCall, shelf: EntityShelf): NodeChange & Row => {
+    const input = call.input ?? {};
+    return { ...changeOf(input, undefined, shelf), ...(input['id'] ? { id: input['id'] } : {}), type: id };
+  };
+  const saysWhat = (call: ActCall): boolean => Object.values(call.input ?? {}).some((v) => v !== undefined);
+  /** Why a remove keeps these, in the shelf's words; none when each would go. */
+  const keptOf = (shelf: EntityShelf, keys: readonly string[]): string | undefined => {
+    const kept = keys.map((k) => shelf.whyKept(k)).filter(Boolean);
+    return kept.length ? `Remove: ${kept.join(' ')}` : undefined;
   };
   return [
     {
@@ -106,11 +117,14 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
       id: `${id}.add`, label: 'Add', type: id, changes: true,
       description: `A new ${label}, saved as a draft at version 1: its name, and its graph${type.graph?.query ? ' or its query' : ''}.`,
       input: { id: { label: 'Id', pattern: ID.source }, ...given, label: { label: 'Name', required: true } },
+      async check(call, ctx) {
+        const shelf = shelfOf(ctx);
+        return shelf ? refusal('Add', await createNode(shelf, addOf(call, shelf), { check: true }))?.refused : none.refused;
+      },
       async run(call, ctx) {
         const shelf = shelfOf(ctx);
         if (!shelf) return none;
-        const input = call.input ?? {};
-        const answer = await createNode(shelf, { ...changeOf(input, undefined, shelf), ...(input['id'] ? { id: input['id'] } : {}), type: id });
+        const answer = await createNode(shelf, addOf(call, shelf));
         const refused = refusal('Add', answer);
         if (refused || !('id' in answer)) return refused ?? none;
         const made = answer.id;
@@ -121,11 +135,18 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
       id: `${id}.change`, label: 'Change', type: id, changes: true,
       description: `Change one ${label}: a field given replaces its own; its body, a graph${type.graph?.query ? ' or a query' : ''}, whole. Saved as a draft.`,
       input: given,
+      async check(call, ctx) {
+        const shelf = shelfOf(ctx);
+        const was = shelf?.get(keysOf(call)[0] ?? '');
+        if (!shelf || !was) return none.refused;
+        if (!saysWhat(call)) return 'Change: say what to change.';
+        return refusal('Change', await updateNode(shelf, was.id, changeOf(call.input ?? {}, was.graph, shelf), { check: true }))?.refused;
+      },
       async run(call, ctx) {
         const shelf = shelfOf(ctx);
         const was = shelf?.get(keysOf(call)[0] ?? '');
         if (!shelf || !was) return none;
-        if (!Object.values(call.input ?? {}).some((v) => v !== undefined)) return { refused: 'Change: say what to change.' };
+        if (!saysWhat(call)) return { refused: 'Change: say what to change.' };
         const refused = refusal('Change', await updateNode(shelf, was.id, changeOf(call.input ?? {}, was.graph, shelf)));
         if (refused) return refused;
         // Its versions are the shelf's to keep: the undo writes the draft back alone.
@@ -136,12 +157,16 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
     {
       id: `${id}.remove`, label: 'Remove', type: id, many: true, changes: true,
       description: `Remove ${label} entities: refused while another uses one.`,
+      async check(call, ctx) {
+        const shelf = shelfOf(ctx);
+        return shelf ? keptOf(shelf, keysOf(call)) : none.refused;
+      },
       async run(call, ctx) {
         const shelf = shelfOf(ctx);
         if (!shelf) return none;
         const keys = keysOf(call);
-        const kept = keys.map((k) => shelf.whyKept(k)).filter(Boolean);
-        if (kept.length) return { refused: `Remove: ${kept.join(' ')}` };
+        const kept = keptOf(shelf, keys);
+        if (kept) return { refused: kept };
         const gone = keys.flatMap((k) => shelf.get(k) ?? []);
         for (const e of gone) deleteNode(shelf, e.id);
         return {

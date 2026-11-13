@@ -9305,6 +9305,26 @@
             },
             {
               "kind": "method",
+              "name": "checkAct",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "call",
+                  "type": {
+                    "text": "ActCall"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Why an act would be refused here, before the reader is asked: the door's checks, then the act's own (a use that keeps it, a read-only preset, a body its check refuses). Nothing is written. `{}`: it can run. Plan 964 N3c"
+            },
+            {
+              "kind": "method",
               "name": "actContext",
               "parameters": [],
               "description": "What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through `act`, so the page hears it. None before `start`. Plan 964 N4"

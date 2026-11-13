@@ -371,7 +371,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, act, actContext, start, savePageView, deletePageView). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, act, checkAct, actContext, start, savePageView, deletePageView). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -517,6 +517,12 @@
           "name": "act",
           "args": "id: string, call: ActCall = {}",
           "description": "Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does; its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3"
+        },
+        {
+          "$type": "method",
+          "name": "checkAct",
+          "args": "id: string, call: ActCall = {}",
+          "description": "Why an act would be refused here, before the reader is asked: the door's checks, then the act's own (a use that keeps it, a read-only preset, a body its check refuses). Nothing is written. `{}`: it can run. Plan 964 N3c"
         },
         {
           "$type": "method",

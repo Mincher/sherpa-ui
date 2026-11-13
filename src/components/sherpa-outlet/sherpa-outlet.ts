@@ -182,6 +182,15 @@ export class SherpaOutlet extends SherpaElement {
     return undo ? { ...answer, undo: async () => { await undo(); this.emit('act-run', { id, keys, undone: true }); } } : answer;
   }
 
+  /** Why an act would be refused here, before the reader is asked: the door's checks, then the act's own (a use that
+   *  keeps it, a read-only preset, a body its check refuses). Nothing is written. `{}`: it can run. Plan 964 N3c */
+  async checkAct(id: string, call: ActCall = {}): Promise<{ refused?: string }> {
+    const ctx = this.actContext();
+    if (!ctx) return { refused: this.word('not-started') };
+    const { checkAct } = await import('../../core/data/acts.js');
+    return checkAct(id, call, ctx);
+  }
+
   /** What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the
    *  shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through
    *  `act`, so the page hears it. None before `start`. Plan 964 N4 */
@@ -702,7 +711,8 @@ export class SherpaOutlet extends SherpaElement {
         const { OutletFlow } = await import('./outlet-flow.js');
         this.#flow ??= new OutletFlow({
           $: (sel) => this.$(sel), cloneItem: (from, item) => this.cloneItem(from, item), on: (t, type, h) => this.on(t, type, h),
-          actContext: () => this.actContext(), act: (actId, call) => this.act(actId, call), said: (answer) => this.#said(answer),
+          actContext: () => this.actContext(), act: (actId, call) => this.act(actId, call), check: (actId, call) => this.checkAct(actId, call),
+          said: (answer) => this.#said(answer),
         });
         await this.#flow.open(flow, act, keys);
         return;

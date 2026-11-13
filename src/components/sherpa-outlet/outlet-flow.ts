@@ -23,6 +23,7 @@ export interface FlowHost {
   on(target: EventTarget, type: string, handler: (event: Event) => void): void;
   actContext(): ActContext | null;
   act(id: string, call: ActCall): Promise<ActAnswer>;
+  check(id: string, call: ActCall): Promise<{ refused?: string }>;
   said(answer: ActAnswer): Promise<void>;
 }
 
@@ -122,9 +123,13 @@ export class OutletFlow {
     const holding = new Set(asks.map((a) => a.field));
     for (const [field, { el }] of open.fields) el.toggleAttribute('data-off', !holding.has(field));
     const next = await this.#next(open, asks);
+    // Every step answered: why the act would be refused is said now, before Run, and Run waits.
+    const input = 'confirm' in next ? next.input : 'run' in next ? next.run : undefined;
+    const why = input ? (await this.#host.check(open.act.id, { keys: open.keys, input })).refused : undefined;
     if (open !== this.#open) return;
     this.#text('.flow-said', 'confirm' in next ? next.confirm : '');
-    this.#host.$('.flow-run')?.toggleAttribute('disabled', !('confirm' in next || 'run' in next));
+    this.#text('.flow-refused-words', why ?? '');
+    this.#host.$('.flow-run')?.toggleAttribute('disabled', !input || !!why);
   }
 
   /** Where the dialog stands. Every field is in view at once, so an optional step left as it is counts as skipped —

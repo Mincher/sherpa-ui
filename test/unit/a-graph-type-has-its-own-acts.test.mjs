@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { actSchema, actsOf, makeShelf, onReport, publish, registerEntityType, runAct, typeActs } from '../../dist/data.js';
+import { actSchema, actsOf, checkAct, makeShelf, onReport, publish, registerEntityType, runAct, typeActs } from '../../dist/data.js';
 
 const sockets = { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'found', label: 'Found', type: 'object' }] };
 const PLAYBOOK = { v: 1, id: 'playbook', label: 'Playbook', category: 'Runbooks', graph: sockets };
@@ -109,5 +109,32 @@ test('find by search and tag; remove refused while another uses it, then removed
     await removed.undo();
     assert.deepEqual(shelf.list('playbook').map((s) => s.id), ['uses', 'other']);
     assert.deepEqual(shelf.get('uses').versions.map((v) => v.number), [1]);
+  });
+});
+
+test('checkAct: why an act would be refused, before the reader is asked, in the same words; nothing is written', async () => {
+  await withPlaybook(async () => {
+    const shelf = shelfOf([{ ...SORTER, id: 'shipped', label: 'Shipped', origin: 'preset' }]);
+    const ctx = { stores: {}, entities: shelf };
+    await shelf.save(SORTER);
+    const uses = { ...body, nodes: [{ id: 'use', kind: 'sorter', x: 0, y: 0 }], connections: [{ from: '#in/rows', to: 'use/rows' }, { from: 'use/found', to: '#out/found' }] };
+    await runAct('playbook.add', { input: { id: 'uses', label: 'Uses it', graph: uses } }, ctx);
+    // A use keeps it: refused before, in the words its run would say.
+    const kept = await checkAct('node.remove', { keys: ['sorter'] }, ctx);
+    assert.match(kept.refused, /^Remove: "Sorter" is used by "Uses it"/);
+    assert.equal((await runAct('node.remove', { keys: ['sorter'] }, ctx)).refused, kept.refused);
+    assert.ok(shelf.get('sorter'), 'nothing removed');
+    assert.match((await checkAct('node.change', { keys: ['shipped'], input: { label: 'Mine' } }, ctx)).refused, /preset, which is read only/);
+    assert.match((await checkAct('playbook.change', { keys: ['uses'], input: {} }, ctx)).refused, /say what to change/);
+    // A body its check refuses, and one it takes: nothing is written either way.
+    const loose = await checkAct('playbook.add', { input: { label: 'Loose', graph: { nodes: [{ id: 'x', kind: 'nothing-like-it', x: 0, y: 0 }], connections: [] } } }, ctx);
+    assert.match(loose.refused, /^Add: .*nothing-like-it/);
+    assert.deepEqual(await checkAct('playbook.add', { input: { label: 'Fine', graph: body } }, ctx), {});
+    assert.deepEqual([shelf.get('loose'), shelf.get('fine')], [undefined, undefined]);
+    // The door's own checks come first: no act, may it, the input.
+    assert.deepEqual(await checkAct('playbook.nope', {}, ctx), { refused: 'There is no act "playbook.nope".' });
+    assert.deepEqual(await checkAct('playbook.remove', { keys: ['uses'] }, { ...ctx, may: () => 'Not yours to remove.' }), { refused: 'Not yours to remove.' });
+    assert.match((await checkAct('playbook.find', { input: { take: 0 } }, ctx)).refused, /How many/);
+    assert.deepEqual(await checkAct('playbook.remove', { keys: ['uses'] }, ctx), {});
   });
 });
