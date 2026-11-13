@@ -122,7 +122,7 @@
   "src/core/browser/ask-worker.ts": 30,
   "src/core/browser/cache-keep.ts": 168,
   "src/core/browser/database.ts": 249,
-  "src/core/browser/entity-files.ts": 102,
+  "src/core/browser/entity-files.ts": 106,
   "src/core/browser/follow-updates.ts": 92,
   "src/core/browser/idb-store.ts": 341,
   "src/core/browser/notice-keep.ts": 42,

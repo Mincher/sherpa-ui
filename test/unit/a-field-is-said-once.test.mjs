@@ -228,6 +228,27 @@ test('an app\'s types load from their files and register by id; an entity of a r
   assert.match((await entityFaults(entity)).join('\n'), /is of the type "Device", which keeps no graph/);
 });
 
+test('an app\'s types register in the order app.json lists them, whatever order their files arrive in', async () => {
+  const { entityTypes, registerEntityType } = await import('../../dist/data.js');
+  const { loadTypes } = await import('../../dist/core/browser/entity-files.js');
+  const ids = ['order-a', 'order-b', 'order-c'];
+  const was = { fetch: globalThis.fetch, document: globalThis.document };
+  globalThis.document = { baseURI: 'http://app.test/' };
+  globalThis.fetch = async (url) => {
+    const id = new URL(url).pathname.slice(1, -5);
+    await new Promise((done) => setTimeout(done, 30 - 10 * ids.indexOf(id)));
+    return { ok: true, json: async () => ({ ...DEVICE, id }) };
+  };
+  try {
+    const kept = await loadTypes(Object.fromEntries(ids.map((id) => [id, `${id}.json`])));
+    assert.deepEqual(Object.keys(kept), ids);
+    assert.deepEqual(Object.keys(entityTypes()).filter((id) => ids.includes(id)), ids, 'the last to arrive is first, as listed');
+  } finally {
+    Object.assign(globalThis, was);
+    for (const id of ids) registerEntityType({ ...DEVICE, id })?.();
+  }
+});
+
 test('a type may say its rows can receive a message (recipient), true or false', () => {
   const people = { v: 1, id: 'person', label: 'Person', recipient: true, fields: { id: {}, name: { label: 'Name' } } };
   assert.deepEqual([ofSchema(people), typeFaults(people)], [[], []]);

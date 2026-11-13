@@ -83,19 +83,23 @@ export async function loadEntityLibrary(url: string | URL, facts?: EntityFacts):
 }
 
 /** An app's types from their JSON files (app.json `types`: id → its type.v1), each registered by its id, so a page that
- *  names one has its fields' words and an entity may be of one. One that cannot be read is reported and left out. Those
- *  it registered, by id: the outlet makes their stores. Plan 960 U2, U3 */
+ *  names one has its fields' words and an entity may be of one, in the order `files` lists them. One that cannot be read
+ *  is reported and left out. Those it registered, by id: the outlet makes their stores. Plan 960 U2, U3 */
 export async function loadTypes(files: Readonly<Record<string, string | URL>>): Promise<Record<string, TypeDefinition>> {
   const read = await Promise.all(Object.entries(files).map(async ([key, url]) => {
     try {
       const response = await fetch(new URL(url, document.baseURI));
       if (!response.ok) throw new Error(`${response.status}`);
-      const type: unknown = await response.json();
-      return registerByKey(key, type, 'loadTypes') ? [[key, type as TypeDefinition] as const] : [];
+      return [key, await response.json() as unknown] as const;
     } catch (error) {
       report({ code: 'entity-type', message: `loadTypes: the type "${key}" could not be read (${error instanceof Error ? error.message : String(error)}).`, at: { type: key } });
-      return [];
+      return undefined;
     }
   }));
-  return Object.fromEntries(read.flat());
+  // Registered in app.json's order, not as each file arrives: every list made from entityTypes() is stable.
+  const kept: Record<string, TypeDefinition> = {};
+  for (const [key, type] of read.filter((entry) => entry !== undefined)) {
+    if (registerByKey(key, type, 'loadTypes')) kept[key] = type as TypeDefinition;
+  }
+  return kept;
 }
