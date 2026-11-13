@@ -5,7 +5,18 @@ recreating." Before Demos' View filters are rebuilt (TODO 960, Will's A), each n
 mapped to the new model: a field said once by its type (U2), a named filter as a Filter entity (U4.4), one Organise
 node (U4.2), a View written back through its lens (U4.6a). Owner sherpa-demos-67, reviewed by sherpa-ui-e8.
 
-**Status: DRAFT, 2026-11-13; reviewed by sherpa-ui-e8 (its points are in).** Nothing changes until Will answers section
+**Will, 2026-11-13, on section 4:** "D1: Field nodes can have multiple, conditional, rows that can expose more options like
+values. D2. One node, with a sub-graph. D3. B. D4. Hmm, not sure. I need to think about views more. Let's leave them off of
+the list of things build with nodes & definitions for now but prepare them to fit the model as best we can."
+
+So: **D1** a status field is ONE Field node, and a Field node's rows are conditional on its field: a field that has
+values (a status, a list) exposes them, and more options as the field has them — a change to the Field kind, in every
+graph; the status rule is not drawn inline. **D2** A: a preset or saved filter is one node, with a sub-graph. **D3** B:
+a Field and a Condition, as today. **D4**: Views are OFF the list of things built with nodes and definitions for now:
+U4.6b (a page's Views in the graph chip) is held; Views are prepared to fit the model (U4.6a's lens, already merged, and
+definition-level clean-ups), and their graph waits on Will.
+
+**Status: DECIDED in part, 2026-11-13; reviewed by sherpa-ui-e8.** Nothing changes until Will answers section
 4. U4.6b (a page's Views in the graph chip) and U4.4b (D6) wait on it.
 
 ## 1. What a filter graph draws today (measured on Demos main, sherpa-ui 03698d639)
