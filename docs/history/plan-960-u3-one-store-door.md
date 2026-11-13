@@ -7,6 +7,8 @@ sherpa-demos-67 (Demos). Written 2026-11-13, after U2 (`type.v1`, `source.type`,
 
 **Will's picks stand for now ("Go with your picks for now", 2026-11-13): D1 A, D2 A, D3 A below.** Say B to change one.
 
+**Status, 2026-11-13: DONE.** U3.1 79a9deebd (with b00e444e2), U3.2 bbf04b41e, U3.3 509326d0e (sherpa-ui-a9); U3.4 Demos 5429491 (sherpa-demos-67).
+
 ## 1. What exists (each read on a72f77ffa)
 
 - A page gets its stores from the app: `outlet.start({ stores: () => ({ name: store }) })` (sherpa-outlet.ts:44); the
