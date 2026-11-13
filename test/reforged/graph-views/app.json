@@ -13,6 +13,6 @@
     },
     "plain": { "label": "Plain", "template": "templates/plain.html" },
     "list": { "label": "List", "template": "templates/list.html", "definition": "pages/list.json", "module": "contexts/list.js" },
-    "more": { "label": "More", "template": "templates/list.html", "definition": "pages/more.json", "module": "contexts/list.js" }
+    "more": { "label": "More", "template": "templates/list.html", "definition": "pages/more.json", "views": "more-views.json", "module": "contexts/list.js" }
   }
 }

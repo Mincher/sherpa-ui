@@ -86,6 +86,8 @@ export interface OpenPage {
   markup: DocumentFragment;
   /** The app's stores, by name: what a Source row offers. */
   stores: readonly string[];
+  /** The View it is open on, its Query with that View on it; none, a page with no Views (plan 960 U4.8b). */
+  view?: string;
 }
 
 /** What every Context's init is handed: the session, the View, its source and

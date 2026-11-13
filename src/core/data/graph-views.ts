@@ -13,9 +13,10 @@
  * - graphRows — The graph chip's rows: the type's presets, then the reader's own, then New graph….
  * - openOf — The entity a graph View opens: the one named, when the list holds it; else the first.
  * - PAGE_QUERY — The graph type of a page's Query: its graphs are the app's pages, read live, never entities.
- * - GraphPage — One page whose Query a `query` graph View draws: its Context's name and its nav label.
+ * - GraphPage — One page whose Query a `query` graph View draws: its Context's name, its nav label and its Views.
  * - pagesOf — The pages a `query` graph View offers: every Context with a definition, in the app's order.
- * - pageRows — The graph chip's rows over the pages: one each, none a copy, and no New graph….
+ * - pageViewOf — The page and View a Page chip's row names: `<page>/<view>`, or a bare page.
+ * - pageRows — The graph chip's rows over the pages: a section each, a row per View, none a copy, and no New graph….
  * - freeId — An id from a name: kebab-case, free among those taken.
  * - newGraph — A new, empty entity of a type, saved through the shelf under a free id, name and tags.
  * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its connections, ties and frames.
@@ -84,10 +85,12 @@ export function openOf(list: readonly EntitySummary[], id: string | null | undef
 /** The graph type of a page's Query: its graphs are the app's pages, read live, never entities. TRAP T-a-graph-is-a-view-of-a-type */
 export const PAGE_QUERY = 'query';
 
-/** One page whose Query a `query` graph View draws: its Context's name and its nav label. */
+/** One page whose Query a `query` graph View draws: its Context's name, its nav label and its Views. */
 export interface GraphPage {
   id: string;
   label: string;
+  /** Its Views, its presets first, then the reader's own: a row each in the Page chip (plan 960 U4.8b). */
+  views?: readonly { id: string; label: string; origin: 'preset' | 'mine' }[];
 }
 
 /** The pages a `query` graph View offers: every Context with a definition, in the app's order. */
@@ -95,9 +98,19 @@ export function pagesOf(contexts: Readonly<Record<string, { label: string; defin
   return Object.entries(contexts).flatMap(([id, c]) => (c.definition ? [{ id, label: c.label }] : []));
 }
 
-/** The graph chip's rows over the pages: one each, none a copy, and no New graph…. */
-export function pageRows(pages: readonly GraphPage[], current: string | null): GraphChoice[] {
-  return pages.map((p) => ({ value: p.id, label: p.label, ...(p.id === current ? { selected: true } : {}) }));
+/** The page and View a Page chip's row names: `<page>/<view>`, or a bare page, which names none. */
+export function pageViewOf(value: string): { page: string; view?: string } {
+  const at = value.indexOf('/');
+  return at < 0 ? { page: value } : { page: value.slice(0, at), view: value.slice(at + 1) };
+}
+
+/** The graph chip's rows over the pages: a section each, and under it a row per View, its presets read only; a page with
+ *  no Views is one row. None is a copy, and there is no New graph…. */
+export function pageRows(pages: readonly GraphPage[], current: string | null, words: Pick<GraphWords, 'readOnly'> = WORDS): GraphChoice[] {
+  const row = (value: string, label: string, more: Partial<GraphChoice> = {}): GraphChoice => ({ value, label, ...more, ...(value === current ? { selected: true } : {}) });
+  return pages.flatMap((p) => (p.views?.length
+    ? p.views.map((v) => row(`${p.id}/${v.id}`, v.label, { section: p.label, ...(v.origin === 'preset' ? { note: words.readOnly } : {}) }))
+    : [row(p.id, p.label)]));
 }
 
 /** An id from a name: kebab-case, free among those taken. */

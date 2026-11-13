@@ -285,15 +285,8 @@
               }
             },
             {
-              "name": "data-query",
-              "description": "the graph on screen is a page's Query: each edit is the page's, so the View's actions — ★, Save and its menu — are not shown",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-readonly",
-              "description": "the View on screen is read only, a preset graph: Save is off",
+              "description": "the View on screen is read only, a preset graph or View: Save is off",
               "type": {
                 "text": "boolean"
               }
@@ -9328,6 +9321,26 @@
                 }
               ],
               "description": "Read app.json, load each Context's Views, then open the route's Context. The router's `context` defaults to the app's own."
+            },
+            {
+              "kind": "method",
+              "name": "savePageView",
+              "parameters": [
+                {
+                  "name": "label",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Save the View a `query` graph View has open: over the reader's own, or as a new one named, which the Page chip then opens. Its id; none for a preset saved over, or nothing open (plan 960 U4.8b)."
+            },
+            {
+              "kind": "method",
+              "name": "deletePageView",
+              "parameters": [],
+              "description": "Delete the reader's own View a `query` graph View has open, and open the page on its first (plan 960 U4.8b)."
             }
           ],
           "events": [

@@ -32,9 +32,7 @@
                         TRAP T-a-saved-view-is-the-readers-own
     data-graph          the View on screen is a graph: Save graph as, Delete graph.
                         TRAP T-a-graph-is-a-view-of-a-type
-    data-readonly       the View on screen is read only, a preset graph: Save is off
-    data-query          the graph on screen is a page's Query: each edit is the page's,
-                        so the View's actions — ★, Save and its menu — are not shown
+    data-readonly       the View on screen is read only, a preset graph or View: Save is off
 
   Slots:
     breadcrumbs  the breadcrumb trail (row 1, left)
@@ -102,7 +100,7 @@
                            data-when-aria-label="data-favourite: Remove from Favorites" data-when-aria-pressed="data-favourite: true"
                            data-when-data-status="data-favourite: active"></sherpa-button>
             <sherpa-button class="save" data-size="sm" data-group="mid" data-icon-start="upload"
-                           data-when-data-description="data-readonly: A preset is read only: Save graph as makes a copy of your own.">Save</sherpa-button>
+                           data-when-data-description="data-readonly: A preset is read only: Save as makes a copy of your own.">Save</sherpa-button>
             <sherpa-button class="view-more" data-size="sm" data-type="icon" data-group="end"
                            data-icon-start="triangle-down" aria-label="Save view options" aria-haspopup="dialog"
                            data-when-aria-label="data-graph: Save graph options"

@@ -386,13 +386,15 @@ A graph View is a View whose body is a canvas, showing one entity of a type
   `openGraph` the copy; Delete says `entities.whyKept(id)` when it is refused.
 - **A page's filters are a graph View too**: ship
   `{ "page-filters": { "label": "Page filters", "graph": { "type": "query" } } }`. Its graph chip
-  lists your pages (each Context with a definition), and a filter toolbar with
+  lists your pages (each Context with a definition), each page's Views under it, and a filter toolbar with
   `data-node-editor` offers Open in Node Editor in its ⋮: the outlet goes there, on that page,
-  and Back comes back. The outlet opens the page for its Query alone, under its own name, so an
+  and Back comes back. The outlet opens the page on the View picked, for its Query alone, under its own name, so an
   edit there is the page's. `init` is handed `page` (`{ id, label, href, definition, source,
-  components, markup, stores }`; `graph-change` carries the next): bind
+  components, markup, stores, view }`; `graph-change` carries the next): bind
   `bindQueryEditor(canvas, page.source, { definition, components, markup, stores, inspector,
-  panel, toolbar, session, stageDialog })`, then `page.source.load()`. `T-a-graph-is-a-view-of-a-type`
+  panel, toolbar, session, stageDialog })`, then `page.source.load()`. The header's Save view, Save view as and Delete
+  view are its View's: answer them with the outlet's `savePageView()`, `savePageView(name)` and `deletePageView()`; a
+  preset View is read only. `T-a-graph-is-a-view-of-a-type`
   It is the ONE node editor, on the page's Query as its document: every tool works there, and each
   edit is asked of the Query as a chip asks; the layout (places, ties, frames, stages, lanes) is kept
   for the tab beside it. `T-one-node-editor`

@@ -16,7 +16,7 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
-const { NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs } = await import(new URL('data/graph-views.js', core));
+const { NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pageViewOf, pagesOf, saveGraph, saveGraphAs } = await import(new URL('data/graph-views.js', core));
 const { entityTypes, registerEntityType } = await import(new URL('data/entity-types.js', core));
 const { checkEntity, entityFaults, graphWorkflow } = await import(new URL('data/entity-check.js', core));
 const { checkApp } = await import(new URL('data/app-definition.js', core));
@@ -91,6 +91,20 @@ test('a `query` graph View\'s graphs are the app\'s pages — every Context with
   assert.deepEqual(pageRows(pages, 'records'), [{ value: 'home', label: 'Home' }, { value: 'records', label: 'Records', selected: true }]);
   assert.equal(pageRows(pages, null).some((r) => r.value === NEW_GRAPH || r.selected), false);
   assert.deepEqual(pagesOf({}), []);
+});
+
+test("a page with Views is a section in the Page chip, a row per View under it, its presets read only (plan 960 U4.8b)", () => {
+  const pages = [
+    { id: 'home', label: 'Home' },
+    { id: 'records', label: 'Records', views: [{ id: 'all', label: 'All', origin: 'preset' }, { id: 'mine', label: 'Mine', origin: 'mine' }] },
+  ];
+  assert.deepEqual(pageRows(pages, 'records/mine'), [
+    { value: 'home', label: 'Home' },
+    { value: 'records/all', label: 'All', section: 'Records', note: 'Read only' },
+    { value: 'records/mine', label: 'Mine', section: 'Records', selected: true },
+  ]);
+  assert.deepEqual(pageViewOf('records/mine'), { page: 'records', view: 'mine' });
+  assert.deepEqual(pageViewOf('records'), { page: 'records' });
 });
 
 test('New graph makes an empty entity of the type, checked and kept: its name or a numbered default, a free id, the type\'s own settings', async () => {

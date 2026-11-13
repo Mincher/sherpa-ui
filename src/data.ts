@@ -274,7 +274,7 @@ export {
 export { entityStore, seedEntities, type EntityRowOf, type SeedMarks } from './core/data/entity-store.js';
 /* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip — or a page's Query. Plan 746 E3, TODO 822 · TRAP T-a-graph-is-a-view-of-a-type */
 export {
-  NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs,
+  NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pageViewOf, pagesOf, saveGraph, saveGraphAs,
   type GraphChoice, type GraphOf, type GraphPage, type GraphWords, type OpenGraph,
 } from './core/data/graph-views.js';
 // The lens door: a definition drawn as a graph and written back, by its type (plan 960 U4).

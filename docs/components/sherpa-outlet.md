@@ -39,6 +39,8 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 | `act(id: string, call: ActCall = {})` | Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does; its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3 |
 | `actContext()` | What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through `act`, so the page hears it. None before `start`. Plan 964 N4 |
 | `start(options: OutletOptions)` | Read app.json, load each Context's Views, then open the route's Context. The router's `context` defaults to the app's own. |
+| `savePageView(label?: string)` | Save the View a `query` graph View has open: over the reader's own, or as a new one named, which the Page chip then opens. Its id; none for a preset saved over, or nothing open (plan 960 U4.8b). |
+| `deletePageView()` | Delete the reader's own View a `query` graph View has open, and open the page on its first (plan 960 U4.8b). |
 
 ## Events
 

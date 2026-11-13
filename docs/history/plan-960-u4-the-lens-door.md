@@ -30,7 +30,7 @@ always made from it. Where the definition is not a graph (a Query, a View), the 
 | U4.7b A status field is one Field node (D1) | In the Query graph a status field is ONE Field node, its values its rows (U4.7a); the Status field kind, its Check chain and its tests go. Waits: how a reader reaches the rule (the type's), so it is not lost from sight | — | U4.7a; Will |
 | **U4.8** A View's graph (Will, 2026-11-13, D4: "a View Filters input and a Content input"; the Content node IS the Presentation node, A; build after U4.7, A); Q1 to Q3 answered) | Three nodes in place of today's chain (Source › View Context › a data-scope node with a row per preset and field › Organise › Presentation › grid). **View Filters** (the View scope's bar): its chips in order, each a field held with or without a pick, its filters Switch; a field's tree joins its chip, a Filter use (D2) joins as a preset. **Presentation** (the Content; one per card): its rows come from a Source through the nodes on the way, its local filters among them (Will, Q1); its bar (held chips, their order, its Switch) as rows; how its rows are shown. **View**: two inputs only, View Filters (one) and Content (many); no rows. Each edit is still the Query's own request, by the node's `ref`: a field moved between scopes is its tree's True moved from View Filters to a Presentation, or back (`connectionRequest`, send to View or return); chip order is the rows' order (`{ scope, order }`); the Switch is `{ scope, suspended }`; a held field with no pick is a chip with nothing joined; a preset is `{ scope, preset, on }`; sort, group, search and axes are the Organise's (U4.2) | unit: a page's Query drawn in the three nodes, each request read back the same; e2e: Coworkers' graph has the shape | U4.7 |
 | U4.8a The three nodes (BUILT 2026-11-13, lane 960-u48: "U4.8a, as built" below) | `view-filters` and `view` kinds; `presentation` gains its chips, its Switch and its Content output; queryGraph draws them; the scope node and the View Context chain go; reconcile reads the new refs | as U4.8 | U4.8 |
-| U4.8b A page's Views in the graph chip (was U4.6b) | The `query` graph View's chip offers each page's Views under it; one opened is drawn with that View put on its Query (VIEW_LENS, U4.6a). Save writes a reader's own View to the keeper; a preset View is read only, and Save as makes a reader's own | e2e: a reader's View edited in the graph and saved comes back on its page | U4.8a |
+| U4.8b A page's Views in the graph chip (was U4.6b; BUILT 2026-11-13: "U4.8b, as built" below) | The `query` graph View's chip offers each page's Views under it; one opened is drawn with that View put on its Query (VIEW_LENS, U4.6a). Save writes a reader's own View to the keeper; a preset View is read only, and Save as makes a reader's own | e2e: a reader's View edited in the graph and saved comes back on its page | U4.8a |
 | U4.9 A Notification's To takes recipients (BUILT 2026-11-13, on sherpa-ui-a9's `recipient` flag; a To once typed warns unused; Will, 2026-11-13: "The 'To' input in a Notification node should take in rows containing data on the recipients. Recipients can be Users, Groups, Roles, AI Agents, or Coworkers"; "Right now To expects a value which doesn't make any sense") | To becomes an input of ROWS (`input: 'object'`, `needs: 'rows'`), not text. The library names no recipient type: an app's type says it is one, `recipient: true` (type.v1, sherpa-ui-a9's), one door, `recipientTypes()`. Rows into To from a store whose type is no recipient warn, naming the app's recipient types ("To takes rows of Users, Groups, Roles or Coworkers"); its `would` counts them ("Would send a notification to 3 recipients"). Demos marks user, group, role and coworker (Will, after: "Nevermind about AI Agents as recipients.") | unit: To takes rows; a non-recipient store warns in words; Simulate counts; e2e: a Users Source into To | a9's flag |
 | U4.9b A Source picks rows (Will, 2026-11-13: "Source picks rows", for ONE fixed recipient such as "Service desk"; BUILT 2026-11-13) | The Source kind's optional many pick, Rows (`control: 'rows'`, `picked`): its store's rows shown by the type's `title`, kept by its `key`; none picked, every row. Its choices come from the app through one fact, `storeRows(store)`; `rowPicks(type, rows)` makes them. Simulate sends only the picked rows. A page's Query graph offers no Rows pick: a page reads all its rows, and its Query filters them | unit: the pick's choices; Simulate sends the picked; none, every row; the Query's Source has none | U4.9 |
 
@@ -118,6 +118,24 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
   Presentation: the component named as the scope, else its first.
 - ❓ A filter switched off stays on its card's path, as off filters stayed joined to their scope.
 - ❓ A load's trace lights a scope's step on the node that carries its bar (`bar(scope)`).
+
+### U4.8b, as built (2026-11-13, lane 960-u48b, sherpa-ui-e8; Demos' side sherpa-demos-67's)
+
+- **The chip.** The `query` graph View's Page chip lists a section per page and, under it, a row per View: its presets,
+  read only, then the reader's own (`pageRows`, from `GraphPage.views`). A row's value is `<page>/<view>`
+  (`pageViewOf` reads it). A bare `<page>`, as Open in Node Editor sends, opens the View the page was left on; its row
+  is the one picked.
+- **Opened.** The outlet opens the page on that View (`provider.open(…, { view })`), so its live Query has the View on
+  it: the VIEW_LENS's graph. `OpenGraph.id` is the row's value, and its `origin` the View's, so the Context is told
+  again when the View changes. `OpenPage.view` names it.
+- **Save.** The header's View actions show on a page's Query too, in a View's words: Save view, Save view as, Delete
+  view. `data-query` goes (it only hid them), and `data-graph` is an entity's graph alone. A preset is read only (Save
+  off); Delete only on a reader's own. Two outlet doors, answered by the app's Context: `savePageView(label?)`, over the
+  reader's own View, or a new one named (`provider.saveView`, its `query` by `statedQuery`), which the chip opens; and
+  `deletePageView()`, which opens the page's first View after.
+- ❓ No confirm on Save: a graph's Save writes as an entity's does. Other: "Save over X?", as the page's own Save asks.
+- ❓ A View opened from the graph is kept as the View the page was left on, as the provider keeps any opened View.
+  Other: the graph opens it and the page's own stays.
 
 ## Will's decisions
 

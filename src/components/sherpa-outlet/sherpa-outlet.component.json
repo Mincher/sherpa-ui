@@ -371,7 +371,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, act, actContext, start). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, act, actContext, start, savePageView, deletePageView). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -529,6 +529,18 @@
           "name": "start",
           "args": "options: OutletOptions",
           "description": "Read app.json, load each Context's Views, then open the route's Context. The router's `context` defaults to the app's own."
+        },
+        {
+          "$type": "method",
+          "name": "savePageView",
+          "args": "label?: string",
+          "description": "Save the View a `query` graph View has open: over the reader's own, or as a new one named, which the Page chip then opens. Its id; none for a preset saved over, or nothing open (plan 960 U4.8b)."
+        },
+        {
+          "$type": "method",
+          "name": "deletePageView",
+          "args": "",
+          "description": "Delete the reader's own View a `query` graph View has open, and open the page on its first (plan 960 U4.8b)."
         }
       ],
       "jsProps": [

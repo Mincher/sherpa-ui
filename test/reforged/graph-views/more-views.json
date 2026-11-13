@@ -1,0 +1,5 @@
+{
+  "$schema": "../../../schemas/views.v1.json",
+  "all": { "label": "All items", "query": { "v": 1, "scopes": {} } },
+  "open": { "label": "Open items", "query": { "v": 1, "scopes": { "data": { "where": { "status": { "in": ["open"] } } } } } }
+}

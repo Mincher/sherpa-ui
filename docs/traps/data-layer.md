@@ -7760,12 +7760,14 @@ of that type the canvas shows.
   id; Delete asks `whyKept` first, so a refusal is said in words before anything goes.
 - **A page's Query is a graph too** (Will, TODO 822: "2 different views… The former has no app
   header"; plan-822). The type `query` (`PAGE_QUERY`) is no entity: its graphs are the app's
-  pages, every Context with a definition (`pagesOf`), one chip row each, with no New graph…
-  (`pageRows`). `?view=<the query View>&graph=<page>`, the first page left out. A filter toolbar's
+  pages, every Context with a definition (`pagesOf`): a page with Views is a chip section, a row per View under it,
+  its presets read only, and a page with none is one row, with no New graph… (`pageRows`; plan 960 U4.8b). A row's
+  value is `<page>/<view>` (`pageViewOf`); a bare `<page>` opens the View the page was left on, else its first.
+  `?view=<the query View>&graph=<row>`, the first page left out. A filter toolbar's
   ⋮ › Open in Node Editor (`node-editor-open`) is answered by the OUTLET: a PUSH to the app's
   `query` View on the asking page, so Back returns to it; an app with none is not answered.
 - **The outlet opens the page for its Query alone**: its definition (the app's `definition()` hook
-  too), under the page's own KEY, on the View the keeper says it was left on, with `bars: false`.
+  too), under the page's own KEY, on the View its row names, with `bars: false`.
   So the page's ONE document is what is drawn and what each edit writes: there is no second path
   to the data. `bars: false` answers no filter bar or panel (the header row stays the outlet's; the
   panel stays shut), hears no View chip, configures no element by id, and still answers a
@@ -7773,15 +7775,19 @@ of that type the canvas shows.
   it as it was left — its View, its Query, what waited for its frame — so a page opened on a View
   by URL, never edited, opens on that View here too.
 - **The Context is handed `page`** (`OpenPage`: `id`, `label`, `href` back on its View,
-  `definition`, `source`, `components`, `markup`, `stores`), and `source` and `query` are the
+  `definition`, `source`, `components`, `markup`, `stores`, `view`), and `source` and `query` are the
   page's; `graph-change` carries the next `page`. Bind `bindQueryEditor(canvas, page.source, {
   definition, components, markup, stores, … })`, and load the source, as the page does, so each
   node lights. `markup` is the page's template off screen (`pageMarkup`, its View's own cards in
   `[data-view-content]`, parsed through the allow-list), where `pageComponents` reads the grids and
   charts and a Presentation's live copy is copied from. `presentsOf` reads a tag not upgraded by
   its class, so an inert template answers.
-- **The header** shows `data-query`: the View's actions (★, Save, its menu) are not shown, since
-  each edit is the page's as it is made, and a page is no entity to copy.
+- **The header** shows the View's actions in a View's words (Save view, Save view as, Delete view): `data-graph`
+  is an entity's graph alone. Each edit is the page's as it is made; Save writes its View. `OpenGraph.origin` is the
+  View's, so a preset is read only and Delete shows on the reader's own. The Context answers the requests through the
+  outlet's two doors: `savePageView(label?)`, over the reader's own View or as a new one named (the provider's
+  `saveView`, its `query` by `statedQuery`), which the chip then opens; and `deletePageView()`, which opens the page's
+  first View after.
 
 - Site: `src/core/data/graph-views.ts`
 - Site: `src/core/data/entity-check.ts`
@@ -7796,7 +7802,6 @@ of that type the canvas shows.
 - Site: `src/core/ui/page-components.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
-- Site: `src/components/sherpa-app-header/sherpa-app-header.css`
 - Site: `test/unit/a-graph-is-a-view-of-a-type.test.mjs`
 - Site: `test/e2e/reforged-graph-views.spec.ts`
 

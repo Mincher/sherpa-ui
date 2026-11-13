@@ -76,7 +76,6 @@ export class SherpaAppHeader extends SherpaElement {
     // …and a preset, read only: Save is off.
     'data-readonly': { type: 'boolean', kind: 'behaviour' },
     // …or a page's Query, whose edits are the page's own: no View actions.
-    'data-query': { type: 'boolean', kind: 'visibility' },
   } as const;
   static override observed = ['data-theme-mode'];
 

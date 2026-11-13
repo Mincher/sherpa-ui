@@ -21,7 +21,7 @@ import type { EntityShelf } from '../../core/data/entity-shelf.js';
 import type { SeedMarks } from '../../core/data/entity-store.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { GRAPH_CHIP, VIEW_CHIP } from '../../core/ui/shared-constants.js';
-import { NEW_GRAPH, PAGE_QUERY, graphRows, newGraph, openOf, pageRows, pagesOf, type OpenGraph } from '../../core/data/graph-views.js';
+import { NEW_GRAPH, PAGE_QUERY, graphRows, newGraph, openOf, pageRows, pageViewOf, pagesOf, type GraphPage, type OpenGraph } from '../../core/data/graph-views.js';
 import type { SessionStore } from '../../core/browser/session.js';
 import { SETTINGS, Settings } from '../../core/data/settings.js';
 import type { PageDefinition } from '../../core/data/page-definition.js';
@@ -127,7 +127,8 @@ export class SherpaOutlet extends SherpaElement {
     const open = this.#graph;
     const shelf = this.#provider?.keeper.entities;
     if (!open || !shelf) return;
-    const first = (open.type === PAGE_QUERY ? this.#pages()[0] : shelf.list(open.type)[0])?.id ?? null;
+    // A page's row names its View, so the URL keeps it: a bare page opens the View it was left on.
+    const first = open.type === PAGE_QUERY ? null : shelf.list(open.type)[0]?.id ?? null;
     await this.#router?.go({ [GRAPH_CHIP]: id === first ? null : id }, { replace: true });
     // The URL stays where the first is opened again: drawn either way.
     await this.#syncGraph();
@@ -543,8 +544,8 @@ export class SherpaOutlet extends SherpaElement {
     const pages = type === PAGE_QUERY ? this.#pages() : null;
     const list = type && !pages ? this.#provider?.keeper.entities.list(type) ?? [] : [];
     const entity = pages ? undefined : openOf(list, route[GRAPH_CHIP]);
-    const picked = pages ? pages.find((p) => p.id === route[GRAPH_CHIP]) ?? pages[0] : entity;
-    const open: OpenGraph | null = view && type ? { view, type, id: picked?.id ?? null, ...(entity ? { origin: entity.origin } : {}) } : null;
+    const picked = pages ? this.#pageRow(pages, route[GRAPH_CHIP]) : entity;
+    const open: OpenGraph | null = view && type ? { view, type, id: picked?.id ?? null, ...(picked?.origin ? { origin: picked.origin } : {}) } : null;
     const { entityTypes } = await import('../../core/data/entity-types.js');
     if (token !== this.#graphToken) return;
     const kind = type && !pages ? entityTypes()[type] : undefined;
@@ -554,7 +555,7 @@ export class SherpaOutlet extends SherpaElement {
       options: Object.entries(library).map(([value, v]) => ({ value, label: v.label, ...(value === view ? { selected: true } : {}) })),
     }];
     if (open && pages) {
-      chips.push({ id: GRAPH_CHIP, label: this.word('page'), icon: 'filter', persistent: true, active: true, select: 'single', options: pageRows(pages, open.id) });
+      chips.push({ id: GRAPH_CHIP, label: this.word('page'), icon: 'filter', persistent: true, active: true, select: 'single', options: pageRows(pages, open.id, { readOnly: this.word('read-only') }) });
     } else if (open) {
       const words = { presets: this.word('presets'), mine: this.word('mine'), readOnly: this.word('read-only'), new: this.word('new-graph') };
       chips.push({
@@ -577,9 +578,47 @@ export class SherpaOutlet extends SherpaElement {
     if (token === this.#graphToken) this.#setGraph(open, tell, was);
   }
 
-  /** The app's pages a `query` graph View offers. */
-  #pages(): ReturnType<typeof pagesOf> {
-    return pagesOf(this.#options?.app.contexts ?? {});
+  /** The app's pages a `query` graph View offers, each with its Views: its own, then the reader's (plan 960 U4.8b). */
+  #pages(): GraphPage[] {
+    return pagesOf(this.#options?.app.contexts ?? {}).map((page) => {
+      const mine = this.#provider?.keeper.read(page.id).views ?? {};
+      const views = Object.entries(this.viewsOf(page.id)).map(([id, v]) => ({ id, label: v.label, origin: Object.hasOwn(mine, id) ? 'mine' as const : 'preset' as const }));
+      return { ...page, views };
+    });
+  }
+
+  /** The Page chip's row a value names: its page, else the first; its View, else the one the page was left on, else its
+   *  first. A page with no Views is its own row. */
+  #pageRow(pages: readonly GraphPage[], value: string | null | undefined): { id: string; origin?: 'preset' | 'mine' } | undefined {
+    const { page: named, view } = pageViewOf(value ?? '');
+    const page = pages.find((p) => p.id === named) ?? pages[0];
+    if (!page) return undefined;
+    const left = this.#provider?.keeper.read(page.id).view;
+    const views = page.views ?? [];
+    const row = (page.id === named ? views.find((v) => v.id === view) : undefined) ?? views.find((v) => v.id === left) ?? views[0];
+    return row ? { id: `${page.id}/${row.id}`, origin: row.origin } : { id: page.id };
+  }
+
+  /** Save the View a `query` graph View has open: over the reader's own, or as a new one named, which the Page chip then
+   *  opens. Its id; none for a preset saved over, or nothing open (plan 960 U4.8b). */
+  async savePageView(label?: string): Promise<string | undefined> {
+    const open = this.#graph;
+    const page = this.#page;
+    if (open?.type !== PAGE_QUERY || !page || !this.#provider || (label == null && open.origin !== 'mine')) return undefined;
+    const id = await this.#provider.saveView(label, { stay: true });
+    if (id) await this.openGraph(`${page.id}/${id}`);
+    return id;
+  }
+
+  /** Delete the reader's own View a `query` graph View has open, and open the page on its first (plan 960 U4.8b). */
+  async deletePageView(): Promise<boolean> {
+    const open = this.#graph;
+    const page = this.#page;
+    if (open?.type !== PAGE_QUERY || open.origin !== 'mine' || !page?.view || !this.#provider) return false;
+    if (!await this.#provider.deleteView(page.view)) return false;
+    const first = this.firstView(page.id);
+    await this.openGraph(first ? `${page.id}/${first}` : page.id);
+    return true;
   }
 
   /** The page a `query` graph View has open, for its Query alone. */
@@ -590,13 +629,14 @@ export class SherpaOutlet extends SherpaElement {
   #pageToken = 0;
 
   /** Open a page for its Query alone, as its own Context opens it — its definition, under its own key, on
-   *  the View it was left on — or close the one open. TRAP T-a-graph-is-a-view-of-a-type */
-  async #openPage(id: string | null): Promise<void> {
-    if (id === this.#pageWanted) return;
+   *  the View its row names — or close the one open. TRAP T-a-graph-is-a-view-of-a-type */
+  async #openPage(row: string | null): Promise<void> {
+    if (row === this.#pageWanted) return;
     const was = this.#pageWanted;
-    this.#pageWanted = id;
+    this.#pageWanted = row;
     const token = ++this.#pageToken;
     const options = this.#options;
+    const { page: id, view: asked } = row ? pageViewOf(row) : { page: null };
     const context = id ? options?.app.contexts[id] : undefined;
     const provider = this.#provider;
     this.#page = null;
@@ -606,8 +646,7 @@ export class SherpaOutlet extends SherpaElement {
     if (token !== this.#pageToken || !read) return;
     const definition = options.definition ? options.definition(id, structuredClone(read)) : read;
     const views = this.#views[id] ?? {};
-    const kept = provider.keeper.read(id).view;
-    const view = kept && this.viewsOf(id)[kept] ? kept : undefined;
+    const view = asked && this.viewsOf(id)[asked] ? asked : undefined;
     await options.ready;
     const stores = this.#stores(options);
     const source = await provider.open(definition, { key: id, stores, views, ...(view ? { view } : {}), bars: false });
@@ -618,7 +657,7 @@ export class SherpaOutlet extends SherpaElement {
     const markup = files.pageMarkup(String(template ?? ''), typeof content === 'string' ? content : undefined);
     const shown = view && view !== this.firstView(id) ? view : null;
     this.#page = {
-      id, label: context.label, definition, source, markup, stores: Object.keys(stores),
+      id, label: context.label, definition, source, markup, stores: Object.keys(stores), ...(view ? { view } : {}),
       components: files.pageComponents(markup, definition),
       href: this.#router?.href({ ...this.#router.route, context: id, view: shown, [GRAPH_CHIP]: null, settings: null }) ?? `?context=${id}`,
     };
@@ -707,10 +746,9 @@ export class SherpaOutlet extends SherpaElement {
     this.#graph = open;
     const header = this.#header;
     const query = open?.type === PAGE_QUERY;
-    header?.toggleAttribute('data-graph', !!open);
+    // A page's Query is one of its Views: the View's words, not a graph's (plan 960 U4.8b).
+    header?.toggleAttribute('data-graph', !!open && !query);
     header?.toggleAttribute('data-readonly', open?.origin === 'preset');
-    // A page's Query: its edits are the page's own, so the View's actions go.
-    header?.toggleAttribute('data-query', query);
     if (open || was) this.#onViewChange();
     const key = (g: OpenGraph | null): string => (g ? `${g.view}/${g.type}/${g.id ?? ''}` : '');
     if (tell && key(was) !== key(open)) this.emit('graph-change', { graph: open, ...(query && this.#page ? { page: this.#page } : {}) });

@@ -127,7 +127,7 @@ const actions = (page: Page) => page.evaluate(() => {
 test('on a graph View the header says Save graph as and Delete graph; Save is off on a preset; each is a request a Context may take over', async ({ page }) => {
   await start(page, '/test/reforged/graph-views.html?view=filters');
   const preset = await actions(page);
-  expect(preset).toEqual({ save: true, tip: 'A preset is read only: Save graph as makes a copy of your own.', more: 'Save graph options', rows: ['Save graph as'] });
+  expect(preset).toEqual({ save: true, tip: 'A preset is read only: Save as makes a copy of your own.', more: 'Save graph options', rows: ['Save graph as'] });
   await pick(page, 'graph', 'Mine');
   await expect.poll(async () => (await actions(page)).save).toBe(false);
   expect(await actions(page)).toEqual({ save: false, tip: null, more: 'Save graph options', rows: ['Save graph as', 'Delete graph'] });
@@ -179,8 +179,10 @@ test('a `query` graph View shows a page\'s Query: the page\'s Open in Node Edito
   await page.evaluate(() => document.getElementById('bar')!.dispatchEvent(new CustomEvent('node-editor-open', { bubbles: true, composed: true, detail: {} })));
   await page.waitForFunction(() => (window as unknown as PageWin).__graphs?.page?.id === 'more');
   const r = await row(page);
+  // A page with Views is a section, a row per View under it, opened on the View it was left on (plan 960 U4.8b).
   expect([r.url, r.graph, r.chips.map((c) => c.id), r.rows, r.noActions]).toEqual([
-    'context=graphs&graph=more&view=pages', { view: 'pages', type: 'query', id: 'more' }, ['view', 'graph'], ['List', 'More'], true,
+    'context=graphs&graph=more&view=pages', { view: 'pages', type: 'query', id: 'more/all', origin: 'preset' }, ['view', 'graph'],
+    ['List', 'More', 'All items (Read only)', 'Open items (Read only)'], true,
   ]);
   // What the Context is handed: the page's definition, its source and kept Query, its components read from its markup off screen.
   const handed = await page.evaluate(async () => {
@@ -191,12 +193,13 @@ test('a `query` graph View shows a page\'s Query: the page\'s Open in Node Edito
       id: p.id, label: p.label, def: p.definition.id, stores: p.stores, components: p.components, href: new URL(p.href).search,
       reading: p.source.query.draft.scopes['data']?.readings['status']?.picked, total: p.source.debugState().total,
       offScreen: !!p.markup.getElementById('grid') && !document.getElementById('grid') && !document.getElementById('bar'),
-      header: [header.hasAttribute('data-graph'), header.hasAttribute('data-query'), header.hasAttribute('data-readonly')],
+      view: (p as unknown as { view?: string }).view,
+      header: [header.hasAttribute('data-graph'), header.hasAttribute('data-readonly')],
     };
   });
   expect(handed).toEqual({
     id: 'more', label: 'More', def: 'more', stores: ['items'], components: [{ id: 'grid', label: 'The items', kind: 'grid', scope: 'data' }],
-    href: '?context=more', reading: ['open'], total: 8, offScreen: true, header: [true, true, false],
+    href: '?context=more', reading: ['open'], total: 8, offScreen: true, view: 'all', header: [false, true],
   });
   // No bar or element is the page's here: nothing configured, so nothing missing is said.
   expect(said.filter((t) => /no #grid|provider-unknown/.test(t))).toEqual([]);
@@ -215,18 +218,64 @@ test('a `query` graph View shows a page\'s Query: the page\'s Open in Node Edito
   expect(home).toEqual([['shut'], 4]);
 });
 
-test('the graph chip moves a `query` View between pages, each opened in turn; another View closes it; the type\'s first page is left out of the URL (TODO 822)', async ({ page }) => {
+test('the graph chip moves a `query` View between pages, each opened in turn; another View closes it; the first page is left out of the URL (TODO 822)', async ({ page }) => {
   await startOnPage(page, 'list');
   await page.evaluate(() => document.getElementById('bar')!.dispatchEvent(new CustomEvent('node-editor-open', { bubbles: true, composed: true, detail: {} })));
   await page.waitForFunction(() => (window as unknown as PageWin).__graphs?.page?.id === 'list');
   expect((await row(page)).url).toBe('context=graphs&view=pages');
-  await pick(page, 'graph', 'More');
+  await pick(page, 'graph', 'All items');
   await page.waitForFunction(() => (window as unknown as PageWin).__graphs.page?.id === 'more');
-  expect((await row(page)).url).toBe('context=graphs&graph=more&view=pages');
+  expect((await row(page)).url).toBe('context=graphs&graph=more/all&view=pages');
   await pick(page, 'view', 'Filters');
   await expect.poll(async () => (await row(page)).graph).toMatchObject({ view: 'filters', type: 'filter' });
-  expect(await page.evaluate(() => {
+  expect(await page.evaluate(() => (window as unknown as PageWin).__graphs.pages)).toEqual(['more', null]);
+});
+
+type Outlet = { savePageView(label?: string): Promise<string | undefined>; deletePageView(): Promise<boolean>; graph: { id: string; origin?: string } | null };
+
+test('a page\'s View picked in the graph chip opens on it; Save view as makes the reader\'s own, Save writes over it, and it comes back on its page; Delete view opens its first (plan 960 U4.8b)', async ({ page }) => {
+  await startOnPage(page, 'list');
+  await page.evaluate(() => document.getElementById('bar')!.dispatchEvent(new CustomEvent('node-editor-open', { bubbles: true, composed: true, detail: {} })));
+  await page.waitForFunction(() => (window as unknown as PageWin).__graphs?.page?.id === 'list');
+  await pick(page, 'graph', 'Open items');
+  await page.waitForFunction(() => (window as unknown as PageWin).__graphs.page?.id === 'more');
+  const shown = () => page.evaluate(async () => {
+    const p = (window as unknown as PageWin).__graphs.page!;
+    await p.source.load();
     const header = document.querySelector('sherpa-app-header')!;
-    return [(window as unknown as PageWin).__graphs.pages, header.hasAttribute('data-query')];
-  })).toEqual([['more', null], false]);
+    return {
+      view: (p as unknown as { view?: string }).view, reading: p.source.query.draft.scopes['data']?.readings['status']?.picked ?? null,
+      graph: (document.querySelector('sherpa-outlet') as unknown as Outlet).graph,
+      header: ['data-graph', 'data-readonly', 'data-custom-view'].filter((a) => header.hasAttribute(a)),
+    };
+  });
+  // A preset View: its Query has the View on it, and it is read only.
+  expect(await shown()).toEqual({ view: 'open', reading: ['open'], graph: { view: 'pages', type: 'query', id: 'more/open', origin: 'preset' }, header: ['data-readonly'] });
+  const outlet = (fn: string, ...args: string[]) => page.evaluate(([f, a]) => (document.querySelector('sherpa-outlet') as unknown as Record<string, (...x: string[]) => Promise<unknown>>)[f as string]!(...(a as string[])), [fn, args] as const);
+  // Saved over, a preset is refused.
+  expect(await outlet('savePageView')).toBe(undefined);
+  // Edited in the graph, as the graph asks the Query, then saved as the reader's own: the chip opens it.
+  await page.evaluate(() => (window as unknown as PageWin).__graphs.page!.source.query.ask({ scope: 'data', field: 'status', reading: { picked: ['shut'] }, commit: true }));
+  expect(await outlet('savePageView', 'Shut items')).toBe('shut-items');
+  await expect.poll(async () => (await shown()).graph).toEqual({ view: 'pages', type: 'query', id: 'more/shut-items', origin: 'mine' });
+  expect(await shown()).toMatchObject({ view: 'shut-items', reading: ['shut'], header: ['data-custom-view'] });
+  expect((await row(page)).rows).toEqual(['List', 'More', 'All items (Read only)', 'Open items (Read only)', 'Shut items']);
+  // Edited again and saved over: the same View.
+  await page.evaluate(() => (window as unknown as PageWin).__graphs.page!.source.query.ask({ scope: 'data', field: 'status', reading: { picked: ['open', 'shut'] }, commit: true }));
+  expect(await outlet('savePageView')).toBe('shut-items');
+  // On its page, it comes back as saved.
+  await page.evaluate(() => { (window as unknown as PageWin).__page = null; });
+  await page.evaluate(() => (document.querySelector('sherpa-router') as unknown as { go(r: object): Promise<void> }).go({ context: 'more', view: 'shut-items', graph: null }));
+  await page.waitForFunction(() => (window as unknown as PageWin).__page?.id === 'more');
+  expect(await page.evaluate(async () => {
+    const { source } = (window as unknown as PageWin).__page!;
+    await source.load();
+    return [source.query.draft.scopes['data']?.readings['status']?.picked, source.debugState().total];
+  })).toEqual([['open', 'shut'], 12]);
+  // Back in the graph, Delete view: the page opens on its first.
+  await page.goBack();
+  await expect.poll(async () => (await shown()).graph?.id).toBe('more/shut-items');
+  expect(await outlet('deletePageView')).toBe(true);
+  await expect.poll(async () => (await shown()).graph).toEqual({ view: 'pages', type: 'query', id: 'more/all', origin: 'preset' });
+  expect((await row(page)).rows).toEqual(['List', 'More', 'All items (Read only)', 'Open items (Read only)']);
 });

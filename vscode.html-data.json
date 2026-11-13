@@ -119,13 +119,8 @@
           "valueSet": "v"
         },
         {
-          "name": "data-query",
-          "description": "the graph on screen is a page's Query: each edit is the page's, so the View's actions — ★, Save and its menu — are not shown",
-          "valueSet": "v"
-        },
-        {
           "name": "data-readonly",
-          "description": "the View on screen is read only, a preset graph: Save is off",
+          "description": "the View on screen is read only, a preset graph or View: Save is off",
           "valueSet": "v"
         },
         {

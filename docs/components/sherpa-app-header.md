@@ -58,8 +58,7 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-no-filters` | boolean |  | no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425 |
 | `data-notifications` | number |  | unread count — shows the bell + its badge |
 | `data-notifications-open` | boolean |  | the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened |
-| `data-query` | boolean |  | the graph on screen is a page's Query: each edit is the page's, so the View's actions — ★, Save and its menu — are not shown |
-| `data-readonly` | boolean |  | the View on screen is read only, a preset graph: Save is off |
+| `data-readonly` | boolean |  | the View on screen is read only, a preset graph or View: Save is off |
 | `data-theme-mode` | `light` `dark` |  | light \| dark — the mode on screen; the button offers the other |
 | `data-theme-toggle` | boolean |  | show the light/dark (moon) button |
 | `data-view-actions` | boolean |  | show the View's own actions on the top row, left of Ask N-zo: ★, and Save with Save view as and Delete view. They never move, so they are the header's, not a toolbar's. Will, TODOs 425 G9 and 428 |
