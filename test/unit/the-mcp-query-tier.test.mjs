@@ -17,8 +17,10 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import {
   ArrayStore, NODE_KINDS, checkPage, connectionRequest, defineStores, editWorkflow, entityFaults, graphOfWorkflow, graphRequest,
   graphWorkflow, kindsOf, lensOf, libraryOf, nodeKinds, onReport, openSource, pageWithQuery, queryGraph, queryGraphFaults,
-  registerEntityType, valueKey, workflowGraph,
+  pageFields, registerEntityType, valueKey, workflowGraph,
 } from '../../dist/data.js';
+import * as data from '../../dist/data.js';
+import { typedStore } from '../../mcp-server/lib/describe.js';
 import { createDataHandler, nodeHandler } from '../../dist/server.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -28,6 +30,10 @@ const demos = existsSync(`${DEMOS}view-schemas/records.json`);
 const skip = demos ? false : `no ${DEMOS}: Demos' Records page is read where Demos sits beside this checkout`;
 const fromDemos = (path) => JSON.parse(readFileSync(`${DEMOS}${path}`, 'utf8'));
 const records = demos ? fromDemos('view-schemas/records.json') : null;
+// The page names its type (plan 960 U3): the rows are given with it, as the app makes its store, and it is registered
+// here too, so what is read directly reads the type's words and kinds as the MCP's call does.
+const RECORD = demos ? fromDemos('types/record.json') : null;
+const typed = () => ({ rows, type: RECORD });
 // Since 760 a workflow is an ENTITY, drawn through its type's lens. Demos registers its Workflow type in
 // app/entity-types.js, not in entities.json, so the entities file is given with that type in it.
 const WORKFLOW = { v: 1, id: 'workflow', label: 'Workflow', icon: 'circle-nodes', graph: { runs: true } };
@@ -65,6 +71,8 @@ const FILTER_AND_SORT = [
 ];
 
 const client = new Client({ name: 'the-mcp-query-tier', version: '1' });
+const unregister = RECORD ? registerEntityType(RECORD) : undefined;
+after(() => unregister?.());
 before(() => client.connect(new StdioClientTransport({
   command: process.execPath, args: [`${ROOT}mcp-server/index.js`], cwd: ROOT, stderr: 'pipe',
 })));
@@ -79,7 +87,7 @@ async function call(name, args) {
 }
 
 /** The page opened on the data layer directly, each command asked as a chip asks it. */
-async function direct(definition, commands, store = new ArrayStore(rows, { key: 'id' })) {
+async function direct(definition, commands, store = typedStore(data, rows, { type: RECORD })) {
   const source = await openSource(definition.source, store);
   await source.load();
   for (const request of commands) {
@@ -99,7 +107,7 @@ async function serve(t) {
 }
 
 test('query_source runs Records with a filter and a sort: the total and the order are ask()\'s own', { skip }, async () => {
-  const { bad, text, json } = await call('query_source', { definition: records, rows, key: 'id', commands: FILTER_AND_SORT, limit: 5 });
+  const { bad, text, json } = await call('query_source', { definition: records, ...typed(), commands: FILTER_AND_SORT, limit: 5 });
   assert.equal(bad, false, text);
   const source = await direct(records, FILTER_AND_SORT);
   assert.ok(source.total > 0 && source.total < rows.length, `the filter narrows: ${source.total}`);
@@ -122,7 +130,7 @@ test('query_source runs Records with a filter and a sort: the total and the orde
 
 test('query_source groups the rows as the source groups them', { skip }, async () => {
   const commands = [{ scope: 'data', group: 'plan' }];
-  const { json } = await call('query_source', { definition: records, rows, key: 'id', commands });
+  const { json } = await call('query_source', { definition: records, ...typed(), commands });
   const source = await direct(records, commands);
   assert.deepEqual(json.groups, source.groups());
   assert.ok(json.groups.length > 1);
@@ -131,14 +139,14 @@ test('query_source groups the rows as the source groups them', { skip }, async (
 
 test('a bad command is the data layer\'s report, under the command that raised it; one it takes for nothing moves nothing', { skip }, async () => {
   // Records holds its Customer fixed in the View: no door lets it go.
-  const { bad, text, json } = await call('query_source', { definition: records, rows, key: 'id', commands: [{ scope: 'view', release: 'customer' }] });
+  const { bad, text, json } = await call('query_source', { definition: records, ...typed(), commands: [{ scope: 'view', release: 'customer' }] });
   assert.equal(bad, false);
   assert.equal(json.asked[0].changed, false);
   assert.deepEqual(json.asked[0].reports.map((r) => r.code), ['field-fixed']);
   assert.match(text, /- `field-fixed` .*"customer" stays held/);
   assert.ok(json.query.scopes.view.holds.includes('customer'));
   // A command the Query has no word for moves nothing, and the data layer says so. TODO 718
-  const none = await call('query_source', { definition: records, rows, key: 'id', commands: [{ scope: 'data', filter: 'status' }] });
+  const none = await call('query_source', { definition: records, ...typed(), commands: [{ scope: 'data', filter: 'status' }] });
   assert.equal(none.json.asked[0].changed, false);
   assert.deepEqual(none.json.asked[0].reports.map((r) => r.code), ['unknown-request']);
   assert.match(none.text, /did not move at #1/);
@@ -151,7 +159,7 @@ test('query_source reads the app\'s data path on this machine, and refuses any o
   const at = await serve(t);
   const served = await call('query_source', { definition: page, data: at, commands });
   assert.equal(served.bad, false, served.text);
-  const local = await call('query_source', { definition: page, rows, key: 'id', commands });
+  const local = await call('query_source', { definition: page, ...typed(), commands });
   assert.equal(served.json.total, local.json.total);
   assert.equal(served.json.total, rows.filter((r) => r.plan === 'Pro').length);
   for (const data of ['https://example.com/', 'http://localhost.example.com:4200/', 'http://10.0.0.1/', 'file:///etc/passwd']) {
@@ -175,12 +183,12 @@ test('a definition that is not a page is refused in checkPage\'s words', async (
 /** The facts the Node Editor draws a page's Query with, read from the page opened here. */
 const drawnFacts = (source, definition) => ({
   values: (f) => source.valuesFor(f).map((v) => valueKey(v)), presets: (s) => source.query.presets(s),
-  domains: source.store.domains ?? {}, pageSize: source.state.pageSize, type: (f) => definition.source.fields[f]?.type,
+  domains: source.store.domains ?? {}, pageSize: source.state.pageSize, type: (f) => pageFields(definition.source)[f]?.type,
 });
 
 test('definition_graph draws a page\'s Query as queryGraph draws it over the opened page, and the lens\'s graph of it', { skip }, async () => {
   const commands = [FILTER_AND_SORT[0]];
-  const { bad, text, json } = await call('definition_graph', { definition: records, rows, key: 'id', commands });
+  const { bad, text, json } = await call('definition_graph', { definition: records, ...typed(), commands });
   assert.equal(bad, false, text);
   const source = await direct(records, commands);
   const facts = drawnFacts(source, records);
@@ -198,14 +206,14 @@ test('definition_graph draws a page\'s Query as queryGraph draws it over the ope
 });
 
 test('a bad command under definition_graph is reported too', { skip }, async () => {
-  const { bad, json } = await call('definition_graph', { definition: records, rows, key: 'id', commands: [{ scope: 'view', field: 'region', suspended: true }] });
+  const { bad, json } = await call('definition_graph', { definition: records, ...typed(), commands: [{ scope: 'view', field: 'region', suspended: true }] });
   assert.equal(bad, false);
   assert.deepEqual(json.reports.map((r) => r.code), ['field-always-on']);
 });
 
 test('edit_definition_graph asks a node\'s command through ask(), and gives the Query and the definition Save writes', { skip }, async () => {
   const edits = [{ node: 'preset-data-high-risk', row: 'on', value: true }];
-  const { bad, text, json } = await call('edit_definition_graph', { definition: records, rows, key: 'id', edits });
+  const { bad, text, json } = await call('edit_definition_graph', { definition: records, ...typed(), edits });
   assert.equal(bad, false, text);
   assert.deepEqual(json.edited, [{ edit: edits[0] }]);
   assert.deepEqual(json.faults, []);
@@ -216,7 +224,7 @@ test('edit_definition_graph asks a node\'s command through ask(), and gives the 
   const source = await direct(records, [{ scope: 'data', preset: 'high-risk', on: true }]);
   assert.equal(json.total, source.total);
   assert.deepEqual(json.query, source.query.draft);
-  const saved = pageWithQuery(records, source.query.draft, { pageSize: source.state.pageSize, type: (f) => records.source.fields[f]?.type });
+  const saved = pageWithQuery(records, source.query.draft, { pageSize: source.state.pageSize, type: (f) => pageFields(records.source)[f]?.type });
   assert.deepEqual(json.definition, saved);
   const heard = [];
   const undo = onReport((r) => heard.push(r));
@@ -228,13 +236,13 @@ test('edit_definition_graph asks a node\'s command through ask(), and gives the 
 });
 
 test('a condition\'s value is the command a chip asks, typed by its field', { skip }, async () => {
-  const at = { definition: records, rows, key: 'id', commands: [FILTER_AND_SORT[1]] };
+  const at = { definition: records, ...typed(), commands: [FILTER_AND_SORT[1]] };
   const { bad, text, json } = await call('edit_definition_graph', { ...at, edits: [{ node: 'when-data-seats', row: 'b', value: '100' }] });
   assert.equal(bad, false, text);
   const source = await direct(records, [FILTER_AND_SORT[1]]);
   const graph = queryGraph(source.query.draft, records);
   const node = graph.nodes.find((n) => n.id === 'when-data-seats');
-  const request = graphRequest({ node, row: node.rows.find((r) => r.name === 'b'), value: '100' }, { type: (f) => records.source.fields[f]?.type });
+  const request = graphRequest({ node, row: node.rows.find((r) => r.name === 'b'), value: '100' }, { type: (f) => pageFields(records.source)[f]?.type });
   source.query.ask(request);
   await source.load();
   assert.deepEqual(json.query, source.query.draft);
@@ -244,10 +252,10 @@ test('a condition\'s value is the command a chip asks, typed by its field', { sk
 });
 
 test('edit_definition_graph refuses a dangling node and a connection the Query refuses, in the data layer\'s words', { skip }, async () => {
-  const at = { definition: records, rows, key: 'id' };
+  const at = { definition: records, ...typed() };
   const dangling = await call('edit_definition_graph', { ...at, edits: [{ node: 'when-view-nope', row: 'b', value: 'x' }] });
   assert.equal(dangling.bad, true);
-  assert.match(dangling.text, /^The graph has no node "when-view-nope", so no edit was made\. Its nodes: source, scope-view, /);
+  assert.match(dangling.text, /^The graph has no node "when-view-nope", so no edit was made\. Its nodes: source, .*\bscope-view\b/);
   // A connection the Query has no command for refuses the whole graph: nothing is asked, and no definition is written.
   const connection = await call('edit_definition_graph', { ...at, edits: [{ connection: { from: 'source', to: 'scope-view/region' } }] });
   assert.equal(connection.bad, false);
@@ -261,7 +269,7 @@ test('edit_definition_graph refuses a dangling node and a connection the Query r
 });
 
 test('edit_definition_graph refuses a read-only row, in the data layer\'s words, and asks nothing', { skip }, async () => {
-  const readOnly = await call('edit_definition_graph', { definition: records, rows, key: 'id', edits: [{ node: 'source', row: 'search', value: 'name' }] });
+  const readOnly = await call('edit_definition_graph', { definition: records, ...typed(), edits: [{ node: 'source', row: 'search', value: 'name' }] });
   assert.equal(readOnly.bad, false, readOnly.text);
   assert.ok(readOnly.json.faults.some((f) => /No command takes "Search fields" on "Source": The page definition sets it/.test(f)), readOnly.text);
   assert.equal(readOnly.json.definition, undefined);

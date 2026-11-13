@@ -153,13 +153,20 @@ async function opened(dl, args, heard) {
   }
 }
 
-/** Run an act over an opened page, and close it after. */
+/** Run an act over an opened page, and close it after. A sound `type` given is registered for this call alone, so a page
+ *  that names it reads its words and kinds as the app's does (plan 960 U3). */
 async function overPage(dl, args, heard, run) {
-  const page = await opened(dl, args, heard);
+  const type = args.type == null ? undefined : given(args.type, 'type');
+  const back = type && !typeProblems(dl, type).length ? dl.registerEntityType(type) : undefined;
   try {
-    return await run(page);
+    const page = await opened(dl, { ...args, ...(type ? { type } : {}) }, heard);
+    try {
+      return await run(page);
+    } finally {
+      page.close();
+    }
   } finally {
-    page.close();
+    back?.();
   }
 }
 
