@@ -779,7 +779,11 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const through = row.passes ? { output: socketOfGiven(sent(`${node.id}/${row.name}`)?.kind) } : {};
       // A Field's Values with none picked sends nothing, and says so.
       const silent = row.valuesOf && (has == null || (Array.isArray(has) && !has.length)) ? { hint: 'None picked: it sends nothing' } : {};
-      const own: GraphRow = { ...plain, value: has, ...silent, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed, ...(idle ? { idle: true as const } : {}), ...through };
+      // A Source's Fields with no fields to pick says why: no store yet, or one the app knows no fields of, which warns (TODO 969).
+      const store = row.every && row.control === 'field' && !list?.length ? reach(node.id).store ?? '' : undefined;
+      const unknown = store === undefined ? {} : !store ? { hint: 'Pick a store first' } : { hint: `No fields are known for "${store}"` };
+      if (store && facts.fieldsOf) warnings.push({ row: row.name, words: `No fields are known for "${store}"` });
+      const own: GraphRow = { ...plain, value: has, ...silent, ...unknown, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed, ...(idle ? { idle: true as const } : {}), ...through };
       // A fault of the value it shows, in words, as `workflowFaults` finds it: its own, or what a connection brings.
       const said = (shown: GraphRow, connected = false): GraphRow => {
         const value = shown.control === 'number' ? typedValue('number', shown.value) : shown.value;

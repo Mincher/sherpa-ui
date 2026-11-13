@@ -139,6 +139,13 @@ test('a Source\'s Fields picks its store\'s fields, none kept every one: its row
   const said = (fields) => valuesAt(flowOf(fields).nodes, flowOf(fields).connections, 'f', NODE_KINDS, fieldsOf).find((m) => m.node === 's').values.map((v) => v.name).filter((n) => n !== 'rows');
   assert.deepEqual([said(undefined), said(['region'])], [['name', 'status', 'region'], ['region']]);
   assert.deepEqual([fieldsSent(NODE_KINDS.source.rows, { fields: [] }), fieldsSent(NODE_KINDS.source.rows, { fields: ['name'] })], [undefined, ['name']]);
+  // With nothing to pick it says why, never an empty list alone: no store yet; or one the app knows no fields of, which
+  // warns (Will: "Fields dropdown doesn't populate").
+  const lone = (values) => workflowGraph({ v: 3, id: 'w', nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values }] }, { fieldsOf }).nodes[0];
+  const told = (values) => { const n = lone(values); return [n.rows.find((r) => r.name === 'fields').hint ?? null, (n.warnings ?? []).filter((w) => w.row === 'fields').map((w) => w.words)]; };
+  assert.deepEqual(told({}), ['Pick a store first', []]);
+  assert.deepEqual(told({ store: 'alerts' }), ['No fields are known for "alerts"', ['No fields are known for "alerts"']]);
+  assert.deepEqual(told({ store: 'customers' }), [null, []]);
   // A page's Query reads every field: its Source draws no Fields.
   const page = { v: 1, id: 'p', source: { store: 'customers', fields: fieldsOf.customers } };
   assert.ok(!queryGraph({ v: 1, scopes: {} }, page).nodes.find((n) => n.id === 'source').rows.some((r) => r.name === 'fields'));

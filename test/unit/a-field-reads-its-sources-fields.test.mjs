@@ -97,9 +97,10 @@ test('no Source upstream: a Field offers nothing, warns "connect a Source in", a
   assert.deepEqual(said(workflowGraph(valued, facts)), { f: [['', 'Field takes an object; it was given "active"']] });
   // With no fields known, the list is open and nothing warns: no facts, no check.
   assert.deepEqual(said(workflowGraph(lone, {})), {});
-  // A Source of a store the facts do not know: open too.
+  // A Source of a store the facts do not know: the Field after it is open too; the Source's own Fields says it knows none,
+  // and warns (TODO 969, Will: "Fields dropdown doesn't populate").
   const unknown = flow([source('s', 'orders'), field('f', 'total')], connection('s/rows → f'));
-  assert.deepEqual(said(workflowGraph(unknown, facts)), {});
+  assert.deepEqual(said(workflowGraph(unknown, facts)), { s: [['fields', 'No fields are known for "orders"']] });
 });
 
 test('a Condition\'s Value B values, its operator warning and a Tag\'s tags are its Field\'s store\'s', () => {

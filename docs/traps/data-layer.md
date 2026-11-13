@@ -6848,8 +6848,11 @@ its type and the values it takes; `fields` and the graph-wide `values` are gone.
   inside offers every store's fields, the first store's words for a shared name. A Filter
   with no Source reads its own store (`rowsFrom`, its `settings.source`): `presetOfEntity` passes
   it, so the provider's check of a page's presets still compiles one.
-- **No facts, or a store they do not know** (`orders`): the list is open and nothing warns, as
-  before. The Query editor draws its own Field rows from its page's fields: one store, untouched.
+- **No facts, or a store they do not know** (`orders`): a Field's list is open and it warns nothing, as
+  before. The Source's own Fields (TODO 969) says what it cannot offer: "Pick a store first" with no store, and
+  `No fields are known for "orders"` where the facts know no fields of its store, which warns (Will: "Fields dropdown
+  doesn't populate"). It picks from its OWN store's fields, every one; a Field after it, from the ones it keeps.
+  The Query editor draws its own Field rows from its page's fields: one store, untouched.
 
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-field-reads-its-sources-fields.test.mjs`
