@@ -196,6 +196,7 @@ export {
 // The Start: a top graph's entry point, its Triggers joined to it (plan 949).
 export { START, START_KIND, hasStart, modelInto, primaryOf, startFaults, unstarted, withStart, withStartKind, type ModelPick } from './core/data/node-start.js';
 export { graphModels, type GraphModel } from './core/data/graph-models.js';
+export { graphSteps, type GraphStep, type StepGoes, type StepStage } from './core/data/graph-steps.js';
 // The way out: what a graph's Output Triggers start, and the loops among them across the shelf (plan 949).
 export { OUTPUT_TRIGGER } from './core/data/node-kinds.js';
 export { startLoops, startsOf, type Graphed } from './core/data/output-triggers.js';
@@ -258,7 +259,7 @@ export {
 } from './core/data/graph-views.js';
 export { groupNodes, socketEdit, ungroupUse, type GroupAsk, type Grouped, type SocketChange } from './core/data/node-group.js';
 export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
-export { branchesAt, isOutput, isSource, isStart, routeRead, routesOf, type RouteFacts, type RouteRead } from './core/data/node-routes.js';
+export { branchesAt, flowDepths, isOutput, isSource, isStart, routeRead, routesOf, type RouteFacts, type RouteRead } from './core/data/node-routes.js';
 export { lightOf, SimulationControl, simulateGraph, simulation, stepSimulation, type SteppingOptions, type SimulateFacts, type Simulated, type SimulatedNode, type SimulationRun, type Slot } from './core/data/node-simulate.js';
 /* What a node reads of what reaches it: null where it cannot use it, and why. TODO 764 · TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export { COERCIONS, INPUT_WORDS, coerce, columnOf, fieldWords, givenAt, needOf, readInput, truthOf, type Coercion, type ColumnField, type Given, type InputNeeds, type Need, type Reached } from './core/data/node-input.js';

@@ -11,6 +11,7 @@
  */
 import { socketOf, type NodeConnection, type NodeTie } from './node-kinds.js';
 import { tieLimit } from './workflow.js';
+import { flowDepths } from './node-routes.js';
 
 /** What a layout reads: the nodes' places, the connections, the ties. */
 export interface ArrangeGraph {
@@ -88,25 +89,8 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
   const first = [...ids].sort((a, b) => mid(a) - mid(b) || (a < b ? -1 : 1));
   const set = new Set(ids);
   // The connections among them, once each, with a cycle's closing connection left out.
-  const all = graph.connections.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const).filter(([a, b]) => a !== b && set.has(a) && set.has(b));
-  const next = new Map<string, string[]>(first.map((id) => [id, []]));
-  for (const [a, b] of all) if (!next.get(a)!.includes(b)) next.get(a)!.push(b);
-  const state = new Map<string, 1 | 2>();
-  const edges: [string, string][] = [];
-  const order: string[] = [];
-  const walk = (id: string): void => {
-    state.set(id, 1);
-    for (const to of next.get(id)!) {
-      if (state.get(to) === 1) continue;
-      edges.push([id, to]);
-      if (!state.has(to)) walk(to);
-    }
-    state.set(id, 2);
-    order.push(id);
-  };
-  for (const id of first) if (!state.has(id)) walk(id);
-  const depth = new Map<string, number>(first.map((id) => [id, 0]));
-  for (const id of order.reverse()) for (const [a, b] of edges) if (a === id) depth.set(b, Math.max(depth.get(b)!, depth.get(id)! + 1));
+  const all = graph.connections.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const).filter(([a, b]) => set.has(a) && set.has(b));
+  const { depth, edges } = flowDepths(first, all);
   const anchor = { x: near(Math.min(...ids.map((id) => at.get(id)!.x))), y: near(Math.min(...ids.map((id) => at.get(id)!.y))) };
   const columns = Math.max(...depth.values()) + 1;
   // One item per node, and one per column a long connection crosses, so a sweep sees every line.

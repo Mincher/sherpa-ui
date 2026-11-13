@@ -14,6 +14,7 @@
  * - routeRead — The Start nodes that reach an Output, or the words that say what is missing.
  * - routesOf — Each Route of a graph, Start node to End node, as the ids of its nodes.
  * - branchesAt — The Branches at a node: the Routes through it, by the node each goes to next.
+ * - flowDepths — Each node's depth along the flow, a cycle's closing link left out, and the links kept.
  */
 import { portalFlow } from './node-portals.js';
 import { socketOf, type DrawnGraph, type GraphNode } from './node-kinds.js';
@@ -120,4 +121,28 @@ export function branchesAt(graph: DrawnGraph, node: string, cap = 200): { to: st
     by.set(to, [...(by.get(to) ?? []), route]);
   }
   return by.size < 2 ? [] : [...by].map(([to, routes]) => ({ to, routes }));
+}
+
+/** Each node's depth along the flow: the most links that lead to it, among `ids`, a cycle's closing link left out (walked
+ *  in the order of `ids`). The links kept are the `edges`, each once. Arrange's columns and a graph's steps read it. */
+export function flowDepths(ids: readonly string[], links: readonly (readonly [string, string])[]): { depth: Map<string, number>; edges: [string, string][] } {
+  const next = new Map<string, string[]>(ids.map((id) => [id, []]));
+  for (const [a, b] of links) if (a !== b && next.has(a) && next.has(b) && !next.get(a)!.includes(b)) next.get(a)!.push(b);
+  const state = new Map<string, 1 | 2>();
+  const edges: [string, string][] = [];
+  const order: string[] = [];
+  const walk = (id: string): void => {
+    state.set(id, 1);
+    for (const to of next.get(id)!) {
+      if (state.get(to) === 1) continue;
+      edges.push([id, to]);
+      if (!state.has(to)) walk(to);
+    }
+    state.set(id, 2);
+    order.push(id);
+  };
+  for (const id of ids) if (!state.has(id)) walk(id);
+  const depth = new Map<string, number>(ids.map((id) => [id, 0]));
+  for (const id of order.reverse()) for (const [a, b] of edges) if (a === id) depth.set(b, Math.max(depth.get(b)!, depth.get(id)! + 1));
+  return { depth, edges };
 }

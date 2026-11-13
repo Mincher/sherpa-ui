@@ -611,6 +611,12 @@ and each category your entity types name (`savedCategories()`). Who may change a
 node of their own is your rule: give `bindWorkflow` a `canEdit(definition)`, and a no
 opens its inside read only, as a preset's does.
 
+To write a runbook's steps as text, as its prompt, read its graph as steps:
+`graphSteps(graph)` gives each stage's steps in the flow's order, numbered "stage.place"
+("2.1"). Each step says where its flow `goes`: a step by its number, an output, or a stop.
+A Check's Yes and No are its `branches`. A Model that only gives a model is no step. The
+words for each step are your app's.
+
 ### Triggers
 
 A **Trigger** is a Start node, first in the Nodes panel, in its own Triggers category.
