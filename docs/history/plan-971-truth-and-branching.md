@@ -4,7 +4,7 @@ Will, 2026-11-13: "We need to rethink truthiness and branching with passing on t
 Check node to be named Branch, "as it's purpose is to create 2 routes and direct the graph flow based on the truthiness
 of incoming data", then: "Actually ignore that last prompt.") He asked for this write-up with sherpa-ui-e8 ("A").
 
-**Status: PLAN, 2026-11-13, for Will to pick.** Owner: sherpa-ui-e8 (the node kinds), sherpa-demos-67 (Demos' graphs).
+**Status: Will picked A, 2026-11-13** ("A: tests split, Branch decides"), with sherpa-ui-e8's two changes (section 7): a test's Pass and Fail are rows, And/Or's input counts go; Branch's test takes a test, and When reads its Pass and Fail. Owner: sherpa-ui-e8 (the node kinds), sherpa-demos-67 (Demos' graphs).
 
 ## 1. What there is now
 
