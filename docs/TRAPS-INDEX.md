@@ -43,7 +43,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-failure-has-a-kind](traps/data-layer.md#t-a-failure-has-a-kind) — failure, fake-remote, source-reads
 - [T-a-fetching-list-opens-on-its-first-value](traps/data-layer.md#t-a-fetching-list-opens-on-its-first-value) — data-source, data-source-types, query-context, query-declarations
 - [T-a-field-can-carry-over-views](traps/data-layer.md#t-a-field-can-carry-over-views) — data-source-types, query-edits, query-members
-- [T-a-field-is-declared-once](traps/data-layer.md#t-a-field-is-declared-once) — data-source, data-source-types, source-view
+- [T-a-field-is-declared-once](traps/data-layer.md#t-a-field-is-declared-once) — data, data-source, data-source-types, source-view, type-definition
 - [T-a-field-reads-its-sources-fields](traps/data-layer.md#t-a-field-reads-its-sources-fields) — workflow
 - [T-a-field-reads-its-values-when-needed](traps/data-layer.md#t-a-field-reads-its-values-when-needed) — data-source, page-definition
 - [T-a-filter-applies-down-its-scope](traps/data-layer.md#t-a-filter-applies-down-its-scope) — bind-selection, query-edits

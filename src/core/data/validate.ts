@@ -14,7 +14,7 @@
  * - isSchema — Is this a Standard Schema?
  * - validate — Run a schema, always as a promise — so nothing branches on sync vs async.
  * - Rule — One check on one value: a message when WRONG, nothing when fine.
- * - FieldDomain — What a field MAY hold, as its rules say it — JSON: a set in order, or a number's ends.
+ * - FieldDomain — What a field MAY hold, as its rules say it, and from a type its name and kind — JSON.
  * - required — There has to be something here — the only rule that objects to emptiness.
  * - number — A number, and a real one — NaN and Infinity are not values a field can hold.
  * - min — At least this much.
@@ -98,9 +98,16 @@ export async function validate<T>(
 export type Rule = (value: unknown) => string | undefined | Promise<string | undefined>;
 
 /** What a field MAY hold, as its rules say it — JSON: a set in order, or a
- *  number's ends. TRAP T-the-data-says-what-a-field-may-hold */
+ *  number's ends — and, from a type (type.v1), what it is called and its kind.
+ *  TRAP T-the-data-says-what-a-field-may-hold */
 export interface FieldDomain {
-  type?: 'number';
+  type?: 'number' | 'date';
+  label?: string;
+  description?: string;
+  /** A value's name as a reader reads it, where it is not the value. */
+  labels?: Record<string, string>;
+  /** A DATE that holds a time of day. */
+  time?: boolean;
   values?: unknown[];
   min?: number;
   max?: number;

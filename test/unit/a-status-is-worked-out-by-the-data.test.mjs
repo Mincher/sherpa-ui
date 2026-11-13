@@ -69,6 +69,8 @@ test('its values, in its own order, as the rows hold them; and as a domain with 
   assert.deepEqual((await store.distinct(['health'], { filter: ['score', 'gte', 90] })).health, ['At risk', 'Watch', 'Healthy']);
   assert.deepEqual((await store.distinct(['health'], { filter: ['openTickets', 'eq', 0] })).health, ['At risk', 'Watch', 'Healthy']);
   assert.deepEqual(store.domains.health, {
+    // Its name, said once with it: a page need not say it again (plan 960 U2).
+    label: 'Health',
     values: ['At risk', 'Watch', 'Healthy'],
     statuses: { 'At risk': 'critical', Watch: 'warning', Healthy: 'success' },
     // Each value's `when`, parsed once into its tree. TRAP T-one-condition-tree

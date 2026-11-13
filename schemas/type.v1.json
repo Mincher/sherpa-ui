@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/type.v1.json",
+  "title": "Sherpa-UI type",
+  "description": "A kind of thing, said once (plan 960 U2): a row type, as a Device, or a graph thing, as a Coworker. Its fields say only what the data is. The store's rules (typeSchema), what a page knows of each field and a grid's columns (typeColumns) are made from them, so a page's source.fields says only what its controls do. typeFaults() reads it.",
+  "type": "object",
+  "allOf": [{ "$ref": "defs.v1.json#/$defs/envelope" }],
+  "unevaluatedProperties": false,
+  "required": ["v", "id", "label", "fields"],
+  "properties": {
+    "v": { "const": 1 },
+    "type": false,
+    "icon": { "type": "string", "minLength": 1 },
+    "category": { "description": "The group it stands in, where an app lists its types: Records, Runbooks.", "type": "string", "minLength": 1 },
+    "key": { "description": "The field each row is known by. None: id. It is one of its fields, and required.", "type": "string", "minLength": 1 },
+    "time": { "description": "The date field each row's time is: a page's Date filter reads it.", "type": "string", "minLength": 1 },
+    "fields": {
+      "description": "Each field, by name, in the order a page lists them. A dotted name reads a part of an object: location.floor.",
+      "type": "object", "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/field" }
+    },
+    "data": { "description": "Its seed rows: a JSON file or a URL, from the app's folder.", "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "field": {
+      "if": { "required": ["type"], "properties": { "type": { "const": "status" } } },
+      "then": { "$ref": "defs.v1.json#/$defs/statusField" },
+      "else": { "$ref": "#/$defs/storedField" }
+    },
+    "storedField": {
+      "description": "A field a row holds, or reads from its graph (from): what its data is, never how a control asks for it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": { "description": "What its values are. None: text.", "enum": ["text", "number", "date", "boolean"] },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "required": { "type": "boolean" },
+        "values": {
+          "description": "The values it may hold, in the order a page lists them. None: any.",
+          "type": "array", "minItems": 1, "items": { "type": ["string", "number", "boolean"] }
+        },
+        "labels": { "description": "A value's name as a reader reads it, where it is not the value.", "type": "object", "additionalProperties": { "type": "string" } },
+        "statuses": { "description": "Each value's look, a Style mode: success, warning, urgent, critical, info.", "type": "object", "additionalProperties": { "type": "string" } },
+        "min": { "description": "A number's least, or a text's fewest characters.", "type": "number" },
+        "max": { "description": "A number's most, or a text's most characters.", "type": "number" },
+        "format": { "description": "A text's form.", "enum": ["email", "url"] },
+        "pattern": { "description": "A regular expression each text matches.", "type": "string", "minLength": 1 },
+        "time": { "description": "A date that holds a time of day.", "type": "boolean" },
+        "from": {
+          "description": "Read from its entity's graph, never kept beside it: a node's id, then a path in its values, as when/every.",
+          "type": "string", "pattern": "^[^/]+(/[^/]+)*$"
+        }
+      }
+    }
+  }
+}

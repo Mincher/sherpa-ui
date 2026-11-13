@@ -5774,10 +5774,22 @@ where it lives now, because adding it MOVES it.
 Removable is NOT here: whether a chip may be taken off is the bar's policy,
 not a fact about the field.
 
+**A type says it first** (plan 960 U2, 2026-11-13). A type file (`type.v1`)
+says what each field's DATA is: its kind, name, line, values, their names and
+looks, and its bounds. `typeSchema(type)` makes the store's rules and its
+`domains` from them, and a source declares its store's domains before a page's
+own fields, so a page says only what its controls do (`select`, `op`,
+`advanced`, `section`, `range`), and its own word wins. A status field's name
+and line ride its `statusFields` domain the same way. `typeColumns` makes a
+grid's columns. A field the graph holds says `from`, and `readFrom` reads it;
+nothing writes it, so it has no rule.
+
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/source-view.ts`
+- Site: `src/core/data/type-definition.ts`
+- Site: `src/data.ts`
 
 ### T-configuration-is-not-data
 

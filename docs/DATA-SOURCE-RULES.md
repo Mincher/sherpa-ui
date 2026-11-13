@@ -272,6 +272,42 @@ the question. Two rules: a schema that RENAMES or COERCES must not be sampled
 (the unchecked tail would keep the old shape), and writes are always checked in
 full regardless.
 
+### A type says each field once
+
+A type file (`schemas/type.v1.json`) says what each field's DATA is: its kind,
+its name, its values with their names and looks, and its bounds. The store's
+rules, what a page knows of each field and a grid's columns are made from it.
+
+```json
+{ "$schema": "https://sherpa-ui.dev/schemas/type.v1.json", "v": 1,
+  "id": "device", "label": "Device", "key": "id", "time": "enrolled",
+  "fields": {
+    "id":       { "label": "Asset" },
+    "name":     { "label": "Name", "required": true },
+    "status":   { "label": "Status", "values": ["online", "offline"],
+                  "statuses": { "online": "success", "offline": "critical" } },
+    "risk":     { "type": "number", "label": "Risk", "min": 0, "max": 100 },
+    "enrolled": { "type": "date", "label": "Enrolled" },
+    "health":   { "type": "status", "label": "Health", "values": [
+                  { "value": "At risk", "status": "critical", "when": [{ "risk": { "gte": 70 } }] },
+                  { "value": "Healthy", "status": "success" } ] } } }
+```
+
+```js
+import { ArrayStore, statusFields, typeFaults, typeStatusFields, typeStoreOptions } from 'sherpa-ui/data';
+
+typeFaults(device);   // [] — or each fault, in words
+const store = statusFields(new ArrayStore(rows, typeStoreOptions(device)), typeStatusFields(device));
+```
+
+`typeStoreOptions` gives the store its key, its time and `typeSchema(type)`: the
+rules, and each field's words as its `domains`. A source declares those before
+a page's own `source.fields`, so a page says only what its controls do
+(`select`, `op`, `advanced`, `section`, `range`), and its own word wins.
+`typeColumns(type)` makes a grid's columns. A field a graph holds says
+`"from": "<node id>/<path>"` and is read by `readFrom(graph, from)`; nothing
+writes it, so it has no rule.
+
 ---
 
 ## 6. What the source adds
@@ -634,3 +670,5 @@ nothing else. Saved Views, saved filters and the session are the app layer:
     its own made, and Sherpa never reads your headers.
 15. A server hosts the same handler (`sherpa-ui/server`): a refusal crosses with its
     kind, an act is a `POST`, and another origin asks by your CORS policy.
+16. A type file says each field once: the store's rules, a page's fields and a
+    grid's columns are made from it.

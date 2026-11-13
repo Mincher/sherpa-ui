@@ -213,6 +213,7 @@
       "properties": {
         "type": { "const": "status" },
         "label": { "type": "string" },
+        "description": { "type": "string" },
         "values": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/statusValue" } }
       }
     },

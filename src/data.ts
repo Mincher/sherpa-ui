@@ -290,6 +290,12 @@ export { RequestStore, openRequestStore, type RequestStoreOptions } from './core
 export { HeldStore, heldOf, type HeldStoreOptions, type LostWrite } from './core/data/held-store.js';
 // A status field: each value named by conditions on a row's other fields. Plan 683
 export { statusFields, type StatusField, type StatusValue } from './core/data/status-field.js';
+/* A TYPE, said once (type.v1): the store's rules, a page's fields and a grid's columns are made from its fields.
+   Plan 960 U2 · TRAP T-a-field-is-declared-once */
+export {
+  readFrom, typeColumns, typeFaults, typeSchema, typeStatusFields, typeStoreOptions,
+  type StoredField, type TypeColumn, type TypeDefinition, type TypeField,
+} from './core/data/type-definition.js';
 // A write made offline waits, and is sent once. Plan 652 S7a
 export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './core/data/outbox.js';
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6

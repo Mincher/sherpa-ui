@@ -34,6 +34,7 @@ export interface StatusValue {
 export interface StatusField {
   type: 'status';
   label?: string;
+  description?: string;
   values: readonly StatusValue[];
 }
 
@@ -152,6 +153,8 @@ export function statusFields(store: Store, fields: Readonly<Record<string, Statu
   const domains: Record<string, FieldDomain> = { ...store.domains };
   for (const [field, def] of Object.entries(fields)) {
     domains[field] = {
+      // Its name and line, said once with it: a page that reads the store need not say them again (plan 960 U2).
+      ...(def.label ? { label: def.label } : {}), ...(def.description ? { description: def.description } : {}),
       values: def.values.map((v) => v.value),
       statuses: Object.fromEntries(def.values.flatMap((v) => (v.status ? [[v.value, v.status]] : []))),
       when: Object.fromEntries(def.values.flatMap((v, i) => (trees.get(field)![i] ? [[v.value, trees.get(field)![i]!]] : []))),
