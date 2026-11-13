@@ -154,6 +154,9 @@ export interface RowKind {
   /** It UNFOLDS rows from what it picks: a Field's field row, a row per value its field declares, each giving that value
    *  (Will, 2026-11-13, D1 and E1 A). Only the field picked on THIS node; a field that declares none unfolds none. */
   unfolds?: 'values';
+  /** Its rows are people or agents a message goes to: an app's type that says `recipient: true` (Users, Groups, Roles,
+   *  Coworkers); rows of another type warn (Will, 2026-11-13, plan 960 U4.9). */
+  recipients?: true;
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -317,7 +320,7 @@ const NOTIFY_TYPES: Readonly<Record<string, NodeType>> = {
     label: 'Notification', would: 'Would send a notification', icon: 'notifications', help: 'Send a message by app, email or phone',
     rows: [
       pickRow('channels', 'Channels', [['app', 'In app'], ['email', 'Email'], ['push', 'Mobile push']], true),
-      textRow('to', 'To'), TITLE, MESSAGE, objectIn('attachments', 'Attachments'), textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
+      { name: 'to', label: 'To', input: 'object', needs: 'rows', recipients: true }, TITLE, MESSAGE, objectIn('attachments', 'Attachments'), textRow('url', 'Link'), pickRow('priority', 'Priority', [['low', 'Low'], ['normal', 'Normal'], ['high', 'High']]),
       SENT, propertyRow('delivered', 'Delivered', 'value'), propertyRow('message-id', 'Message ID', 'value'),
     ],
   },

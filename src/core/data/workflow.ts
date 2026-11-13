@@ -29,6 +29,7 @@
  */
 import { nodeTitle } from './node-title.js';
 import { entityGraph, type Entity } from './entity.js';
+import { recipientTypes } from './entity-types.js';
 import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
@@ -465,6 +466,8 @@ type StoreFields = NonNullable<WorkflowFacts['fieldsOf']>[string];
 /** The fields of the rows that reach a node, and `none` where no Source's do. */
 interface Reach {
   fields?: StoreFields;
+  /** The store they come from, where a Source names one. */
+  store?: string;
   none?: true;
 }
 
@@ -501,7 +504,7 @@ function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, connections: reado
     for (const fields of Object.values(known)) for (const [name, field] of Object.entries(fields)) all[name] ??= field;
     return all;
   };
-  const of = (store: unknown): Reach => (typeof store === 'string' && Object.hasOwn(known, store) ? { fields: known[store]! } : {});
+  const of = (store: unknown): Reach => (typeof store !== 'string' ? {} : Object.hasOwn(known, store) ? { fields: known[store]!, store } : { store });
   const memo = new Map<string, Reach>();
   return (id) => {
     if (memo.has(id)) return memo.get(id)!;
@@ -609,6 +612,13 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   const alone = !top && facts.primary === undefined;
   const loops = shelf.length ? startLoops({ id: workflow.id, ...(workflow.label ? { label: workflow.label } : {}), graph: workflow }, shelf.map((e) => ({ ...e, graph: entityGraph(e) })), kinds) : new Map<string, string>();
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
+  // The store the rows a connection brings come from: a Source's own, else the one reaching its node.
+  const storeOfRows = (from: string): string | undefined => {
+    const { node: id } = socketOf(from);
+    const row = kindOfNode(kinds, held.get(id))?.rows.find((r) => r.control === 'store');
+    const own = row && shownAt(held, flows, `${id}/${row.name}`);
+    return typeof own === 'string' && own ? own : reach(id).store;
+  };
   // A row a node's pick unfolds, as drawn: its value and words (a Field's value row, Will E1 A).
   const unfoldedAt = (id: string, row: string): GraphRow | undefined => {
     const kind = kindOfNode(kinds, held.get(id));
@@ -837,6 +847,20 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const { node: from, row } = socketOf(c.from);
       if (from !== node.id || !row?.startsWith(UNFOLDED) || !reach(node.id).fields || shownRows.some((r) => r.name === row)) continue;
       warnings.push({ words: `"${row.slice(UNFOLDED.length)}" is no value of its field: it sends nothing` });
+    }
+    // A value kept on a row that takes none, an input of rows (a To once typed): unused, and said so, never kept quietly.
+    for (const row of kind.rows) {
+      const kept = values[row.name];
+      if (!row.control && !row.property && row.input && kept != null && kept !== '') warnings.push({ row: row.name, words: `${row.label} takes a connection: "${String(kept)}" is not used` });
+    }
+    // Rows into a recipients row are a recipient type's: another type's warn, naming the app's (plan 960 U4.9).
+    const recipients = recipientTypes();
+    for (const row of recipients.length ? kind.rows.filter((r) => r.recipients) : []) {
+      const list = new Intl.ListFormat('en', { type: 'disjunction' }).format(recipients.map((t) => t.label));
+      for (const c of flows.filter((f) => f.to === `${node.id}/${row.name}`)) {
+        const store = storeOfRows(c.from);
+        if (store && !recipients.some((t) => t.id === store)) warnings.push({ row: row.name, words: `${row.label} takes rows of a ${list}: these come from "${store}"` });
+      }
     }
     // A title of its own stays the node's; its kind rides beside it, drawn before it. TRAP T-a-custom-title-follows-its-kind
     const titled = node.heading && node.heading !== family.heading;

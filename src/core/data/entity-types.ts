@@ -13,6 +13,7 @@
  * - FILTER — The Filter type's id: a preset of its store's pages, and the first half of its preset's id.
  * - ENTITY_TYPES — The types the library ships: `filter` and `node`.
  * - entityTypes — Every type now: the shipped, and those an app registered.
+ * - recipientTypes — The app's types whose rows a message may go to (`recipient: true`): the library names none.
  * - registerEntityType — An app adds a type; a clash with a shipped one is refused. It answers how to take it back.
  * - takes — Whether a type's graph may place a kind: a family it takes, or any entity's node.
  * - socketsOf — The inputs and outputs an entity has: its type's, or for a `node` its own settings'.
@@ -93,6 +94,9 @@ const added = new Map<string, EntityType>();
 export function entityTypes(): Readonly<Record<string, EntityType>> {
   return { ...Object.fromEntries(added), ...ENTITY_TYPES };
 }
+
+/** The app's types whose rows a message may go to (`recipient: true`): the library names none. Plan 960 U4.9 */
+export const recipientTypes = (): EntityType[] => Object.values(entityTypes()).filter((type) => type.recipient);
 
 /** An app adds a type, from its own file or as JSON (a type.v1 with its graph part, an entities file's `types`; plans 942
  *  D2 A, 960 U2). A type typeFaults refuses, or a clash with a shipped one, is refused and reported. It answers how to
