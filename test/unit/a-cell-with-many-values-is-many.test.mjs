@@ -39,6 +39,9 @@ test('a filter holds when any of its values holds it, and its opposite when none
   assert.deepEqual(ids(filterRows(ROWS, ['customers', 'notin', ['Contoso']])), ['triage', 'none', 'one']);
   assert.deepEqual(ids(filterRows(ROWS, ['customers', 'ne', 'Northwind'])), ['backups', 'triage', 'none']);
   assert.deepEqual(ids(filterRows(ROWS, ['customers', 'contains', 'wind'])), ['patch-all', 'one']);
+  // An empty list is no value, as an empty cell is: "has a value" (Select all) drops it.
+  assert.deepEqual(ids(filterRows(ROWS, ['customers', 'notin', [null, undefined, '']])), ['patch-all', 'backups', 'triage', 'one']);
+  assert.deepEqual(ids(filterRows([{ id: 'blank', customers: '' }, ...ROWS], ['customers', 'notin', [null, undefined, '']])), ['patch-all', 'backups', 'triage', 'one']);
 });
 
 test('a row is grouped under each of its values', () => {

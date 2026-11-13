@@ -231,7 +231,7 @@
   "src/core/data/status-field.ts": 233,
   "src/core/data/store-cache.ts": 494,
   "src/core/data/store-history.ts": 85,
-  "src/core/data/store.ts": 888,
+  "src/core/data/store.ts": 889,
   "src/core/data/stores.ts": 606,
   "src/core/data/tags.ts": 21,
   "src/core/data/task-queue.ts": 225,

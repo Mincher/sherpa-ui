@@ -577,10 +577,11 @@ export function filterTest(filter: Filter | undefined, now: Date = new Date()): 
   }
   const [field, op, value] = filter as FilterClause;
   /* A list cell is many values: a test holds when ANY of them holds it, and its opposite (ne, notin, notcontains,
-     notbetween) when NONE does. One value is a list of one. Will, 2026-11-13 */
+     notbetween) when NONE does. One value is a list of one; an EMPTY list is no value, as an empty cell is, so
+     "has a value" (Select all, notin [null, undefined, '']) drops it. Will, 2026-11-13 */
   const any = (test: (a: unknown) => boolean) => (row: Row): boolean => {
     const v = readField(row, field);
-    return Array.isArray(v) ? v.some(test) : test(v);
+    return Array.isArray(v) ? (v.length ? v.some(test) : test(undefined)) : test(v);
   };
   const typed = (): string => text(value);
   switch (op) {
