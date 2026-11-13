@@ -85,6 +85,8 @@ import { clearOfNodes, placeBeside, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
 import { storeOf, type PageDefinition } from '../data/page-definition.js';
 import { queryStepNode, statusTallies, traceQuerySteps } from '../data/query-graph.js';
+// A Filter may keep a Where: the Filter's lens, registered there, draws its graph (plan 960 U4.4b).
+import '../data/filter.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { report } from '../data/report.js';
 import {

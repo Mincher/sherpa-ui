@@ -243,8 +243,8 @@ export {
 } from './core/data/node-library.js';
 /* An ENTITY: a graph saved under a type, an id and a name; a Custom Node is the type `node`. Plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type */
 export {
-  ENTITY_SCHEMA, categoryOf, definitionOf, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf,
-  type Entity, type EntityGraph, type EntityLibrary, type EntityRef,
+  ENTITY_SCHEMA, categoryOf, definitionOf, entityGraph, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf,
+  type Entity, type EntityGraph, type EntityLibrary, type EntityQuery, type EntityRef,
 } from './core/data/entity.js';
 /* Custom Nodes, one way: a door for each act, for the editor, an MCP tool and an app's assistant alike. Plan 942 */
 export { createNode, deleteNode, keepNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
@@ -253,7 +253,7 @@ export {
   ENTITY_TYPES, FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, savedCategories, socketsOf, takes, type EntityType,
 } from './core/data/entity-types.js';
 /* A Filter is a preset of its store's pages: its graph read as ONE condition, each field's own. TODO 776 · TRAP T-a-filter-is-a-preset-of-its-store */
-export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type FilterFacts } from './core/data/filter.js';
+export { FILTER_LENS, filterOf, presetOfEntity, presetsOver, sourceOf, type PagePreset, type FilterFacts } from './core/data/filter.js';
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
@@ -265,7 +265,8 @@ export {
   type GraphChoice, type GraphOf, type GraphPage, type GraphWords, type OpenGraph,
 } from './core/data/graph-views.js';
 // The lens door: a definition drawn as a graph and written back, by its type (plan 960 U4).
-export { lensOf, registerLens, type GraphLens, type LensAnswer } from './core/data/lens.js';
+export { lensOf } from './core/data/lens.js';
+export { registerLens, type GraphLens, type LensAnswer } from './core/data/lens-registry.js';
 // The Query's lens: a page's graph from its live Query, written back as its requests (plan 960 U4.5). Importing it registers it.
 export { QUERY_LENS, VIEW_LENS, applyReconciled, queryDrawn, reconcileFacts, type QueryLensFacts } from './core/data/query-lens.js';
 export { groupNodes, socketEdit, ungroupUse, type GroupAsk, type Grouped, type SocketChange } from './core/data/node-group.js';
@@ -318,7 +319,7 @@ export {
 } from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export {
-  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryStepNode, connectionRequest, statusTallies, traceQuerySteps,
+  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryStepNode, connectionRequest, statusTallies, traceQuerySteps, whereGraph,
   type GraphComponent, type LoadSteps, type QueryGraphFacts, type ConnectionAnswer, type ScopePreset,
 } from './core/data/query-graph.js';
 /* A pure edit: the Query after a Sort, Group, Search, presentation, order or move. TRAP T-one-command-one-door */

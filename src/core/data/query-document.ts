@@ -17,7 +17,7 @@
  * - reconcileQuery — What changed between two definitions, as row edits, requests, kept Sources, layout and refusals.
  * - rowRequest — What one row's new value asks, against the Query's graph as it is now.
  */
-import { placed, socketOf, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeConnection, type NodeTie } from './node-kinds.js';
+import { placed, socketOf, storedValues, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeConnection, type NodeTie } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import type { NodeStage } from './node-stages.js';
 import type { NodeLane } from './node-lanes.js';
@@ -64,7 +64,7 @@ export function laidOut(graph: DrawnGraph, layout: GraphLayout): DrawnGraph {
 /** A Query's drawn graph (laid out), and its layout, as a definition: each node's rows as its values. */
 export function queryDefinition(id: string, graph: DrawnGraph, layout: GraphLayout): WorkflowDefinition {
   const nodes = graph.nodes.map((n): WorkflowNode => {
-    const values = Object.fromEntries(n.rows.filter((r) => r.value !== undefined && r.value !== null && r.value !== '').map((r) => [r.name, r.value]));
+    const values = storedValues(n.rows);
     const stage = layout.staged?.[n.id];
     return { id: n.id, kind: n.kind, x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}), ...(Object.keys(values).length ? { values } : {}), ...(stage ? { stage } : {}) };
   });

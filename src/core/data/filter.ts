@@ -12,8 +12,10 @@
  * - sourceOf — The store a Filter reads: its settings', else the one its graph's Source names.
  * - presetOfEntity — A Filter as a page's preset, or why it is none, in words.
  * - presetsOver — The Filters over one store as its pages' presets, the app's then the reader's, and each fault.
+ * - filterOf — A page's preset or a saved filter as the Filter it is, keeping its Where; or why not, in words.
+ * - FILTER_LENS — A Filter's lens: drawn from its Where, else its graph; written back as a Where where one says it all.
  */
-import { entityKind, type Entity } from './entity.js';
+import { entityGraph, entityKind, type Entity } from './entity.js';
 import { FILTER, entityTypes, libraryOf, type EntityType } from './entity-types.js';
 import { graphWorkflow } from './entity-check.js';
 import { innerOf, kindsOf } from './node-library.js';
@@ -21,8 +23,12 @@ import { conditionAt, leafOf, type Said } from './node-flow.js';
 import { nodeKinds, type DrawnGraph, type GraphNode, type NodeKind } from './node-kinds.js';
 import { groupOf, type Condition, type ConditionLeaf } from './store.js';
 import { whereOfTree, type Where } from './where.js';
-import { editedCondition } from './query-graph.js';
+import { editedCondition, whereGraph } from './query-graph.js';
 import { workflowGraph, type WorkflowFacts } from './workflow.js';
+import { ENTITY_LENS } from './lens.js';
+import { registerLens, type GraphLens } from './lens-registry.js';
+import type { EntityFacts } from './entity-check.js';
+import type { SavedFilter } from './query.js';
 
 /** A preset as a page declares it: its id, its name and each field's condition, in the plain form. */
 export interface PagePreset {
@@ -41,10 +47,10 @@ export interface FilterFacts {
 }
 
 /** The store a Filter reads: its settings' `source`, else the one its graph's Source names. Plan 776 D4 */
-export function sourceOf(entity: Pick<Entity, 'settings' | 'graph'>): string | undefined {
+export function sourceOf(entity: Pick<Entity, 'type' | 'settings' | 'graph' | 'query'>): string | undefined {
   const named = entity.settings?.['source'];
   if (typeof named === 'string' && named) return named;
-  const store = entity.graph.nodes.find((n) => n.kind === 'source')?.values?.['store'];
+  const store = entityGraph(entity).nodes.find((n) => n.kind === 'source')?.values?.['store'];
   return typeof store === 'string' && store ? store : undefined;
 }
 
@@ -75,6 +81,8 @@ function leavesRead(tree: Said): { tree: Condition } | { fault: string } {
  * fields, or a constant decides it. Plan 776 D1, D5, D6 · TRAP T-a-filter-is-a-preset-of-its-store
  */
 export function presetOfEntity(entity: Entity, facts: FilterFacts = {}): { preset: PagePreset } | { fault: string } {
+  // One that keeps its Where says it: nothing to read (plan 960 U4.4b).
+  if (entity.query) return { preset: { id: entityKind(entity), label: entity.label, where: entity.query.where } };
   const types = facts.types ?? entityTypes();
   const library = libraryOf([entity, ...(facts.entities ?? []).filter((e) => e.id !== entity.id)], types);
   const kinds = { ...kindsOf(library), ...(facts.kinds ?? nodeKinds()) };
@@ -119,3 +127,42 @@ export function presetsOver(store: string, entities: readonly Entity[], facts: O
   }
   return { presets, faults };
 }
+
+/** A page's preset, or a saved filter by its id, as the Filter it is (plan 960 U4.4b): one type, keeping its Where. A saved
+ *  filter in more than one scope is no one Filter, and says why. */
+export function filterOf(given: PagePreset | (SavedFilter & { id: string }), source: string): { filter: Entity } | { fault: string } {
+  let where: Where | undefined = 'where' in given ? given.where : undefined;
+  if (!where && 'query' in given) {
+    const said = Object.entries(given.query.scopes).filter(([, s]) => s.where && Object.keys(s.where).length);
+    if (said.length !== 1) return { fault: `the saved filter "${given.label}" says ${said.length ? 'its filters in more than one scope' : 'no filter'}, so it is no one Filter` };
+    where = said[0]![1].where!;
+  }
+  return { filter: { v: 2, type: FILTER, id: given.id, label: given.label, query: { where: where! }, settings: { source } } };
+}
+
+/** The kinds a Where can say: a graph of only these is kept as its Where. */
+const SAID_BY_A_WHERE = new Set(['source', 'field', 'condition', 'time']);
+
+/** An entity with no body, ready for another. */
+const bare = ({ graph: _graph, query: _query, ...rest }: Entity): Omit<Entity, 'graph' | 'query'> => rest;
+
+/** A Filter's lens (plan 960 U4.4b, D6): drawn from its Where, or as its own graph; written back as a Where when the graph
+ *  holds only what a Where says (a Source, Fields, tests, And and Or) and reads as one, else as its graph. A Where's places
+ *  are not kept: it unfurls when shown. */
+export const FILTER_LENS: GraphLens<Entity, EntityFacts> = {
+  graphOf: (entity) => whereGraph(entity.query?.where ?? {}, { ...(sourceOf(entity) ? { source: sourceOf(entity)! } : {}) }),
+  toGraph: (entity, facts) => ENTITY_LENS.toGraph(entity.query ? { ...bare(entity), graph: FILTER_LENS.graphOf!(entity) } : entity, facts),
+  fromGraph: (before, graph, facts) => {
+    const answer = ENTITY_LENS.fromGraph(bare(before) as Entity, graph, facts);
+    if ('faults' in answer) return answer;
+    const drawn = answer.definition;
+    const keeps = (facts?.types ?? entityTypes())[drawn.type]?.graph?.query;
+    if (!keeps || !entityGraph(drawn).nodes.every((n) => SAID_BY_A_WHERE.has(n.kind))) return answer;
+    const read = presetOfEntity(drawn, facts);
+    if ('fault' in read) return answer;
+    const source = sourceOf(drawn);
+    return { definition: { ...bare(drawn), query: { where: read.preset.where }, ...(source ? { settings: { ...drawn.settings, source } } : {}) } as Entity };
+  },
+};
+
+registerLens(FILTER, FILTER_LENS);

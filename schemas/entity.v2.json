@@ -2,11 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/entity.v2.json",
   "title": "Sherpa-UI entity",
-  "description": "One entity: a graph saved under a type, an id and a name. The envelope is the same for every type; the type's own schema (entity-<type>.v1.json) says what its settings hold. Its use inside another graph is a node whose kind is \"<type>:<id>\". checkEntity() reads it. docs/history/plan-746-entities-and-graph-views.md",
+  "description": "One entity: a body saved under a type, an id and a name: its graph, or, for a type that keeps one, its query (a Filter's Where). The envelope is the same for every type; the type's own schema (entity-<type>.v1.json) says what its settings hold. Its use inside another graph is a node whose kind is \"<type>:<id>\". checkEntity() reads it. docs/history/plan-746-entities-and-graph-views.md",
   "type": "object",
   "allOf": [{ "$ref": "defs.v1.json#/$defs/envelope" }],
   "unevaluatedProperties": false,
-  "required": ["v", "type", "id", "label", "graph"],
+  "required": ["v", "type", "id", "label"],
+  "oneOf": [{ "required": ["graph"] }, { "required": ["query"] }],
   "properties": {
     "v": { "const": 2 },
     "category": {
@@ -16,6 +17,11 @@
     "graph": {
       "description": "Its graph, the one body every definition's is (defs.v1 graph). Inside, #in and #out are the entity's own sockets, as a Custom Node's.",
       "type": "object", "$ref": "defs.v1.json#/$defs/graph", "unevaluatedProperties": false, "required": ["nodes"]
+    },
+    "query": {
+      "description": "In place of a graph, for a type whose graph part says `query: true` (a Filter): its Where, the one truth. Its lens draws its graph from it. One body, never both. Plan 960 U4.4b",
+      "type": "object", "additionalProperties": false, "required": ["where"],
+      "properties": { "where": { "$ref": "defs.v1.json#/$defs/where" } }
     },
     "settings": { "description": "What the type keeps beside its graph; the type's own schema checks it.", "type": "object" },
     "uses": {

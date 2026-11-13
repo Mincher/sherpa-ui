@@ -83,7 +83,7 @@ export async function updateNode(shelf: EntityShelf, id: string, change: NodeCha
   const { inputs, outputs, ...plain } = change;
   const settings = sockets ? { ...was.settings, ...(inputs ? { inputs } : {}), ...(outputs ? { outputs } : {}) } : was.settings;
   const { origin: _origin, ...own } = was;
-  const next: Entity = { ...own, ...plain, ...(settings ? { settings } : {}) };
+  const next = { ...own, ...plain, ...(settings ? { settings } : {}) } as Entity;
   return keep(shelf, next, facts);
 }
 

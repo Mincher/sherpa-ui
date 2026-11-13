@@ -17,6 +17,7 @@
  * - GraphComponent — One component a scope's rows reach: its id, its label and how it shows them.
  * - ScopePreset — One preset of a scope, as declared: its id, its name and the readings it writes.
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say, and the Sources a reader keeps.
+ * - whereGraph — A Where as the graph a Filter keeps it as: a Source, a Field and a test per field, each group joined.
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
  * - statusTallies — Each status field's rows per value, over the whole store: how many each Condition of its chain took.
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a `when` that is no condition, a stray connection.
@@ -36,13 +37,13 @@ import { pageFields } from './type-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
-import { readingsOf, treeReading } from './where.js';
+import { parseWhere, readingsOf, treeReading, type Where } from './where.js';
 import { presetHeld } from './query-edits.js';
-import { entityRefOf } from './entity.js';
+import { entityRefOf, type EntityGraph } from './entity.js';
 import { FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
-  LIST_OPS, NODE_KINDS, ROWS, kindNode, propertyRow, resolveKind, rowChoices, rowOf, socketOf,
+  LIST_OPS, NODE_KINDS, ROWS, kindNode, propertyRow, resolveKind, rowChoices, rowOf, socketOf, storedValues,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeConnection, type RowChoice,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
@@ -262,6 +263,51 @@ function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }
   if (LIST_OPS.includes(op)) return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Values', control: 'tags', multiple: true, value: list, editable: true }] };
   const value = raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
   return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Value B', control: 'text', value: value ?? '', editable: true }] };
+}
+
+/**
+ * A Where as the graph a Filter keeps it as (plan 960 U4.4b, D6): a Source over its store; a Field per field it tests;
+ * a test per leaf, drawn as the Query graph draws one (`leafRows`); an And or an Or per group, each part's True into its
+ * header; the root's True into `#out/where`. Its places are a first layout: it unfurls the first time it is shown.
+ */
+export function whereGraph(where: Readonly<Where>, { source, type = () => undefined }: { source?: string; type?: (field: string) => string | undefined } = {}): EntityGraph {
+  const nodes: EntityGraph['nodes'][number][] = [{ id: 'source', kind: 'source', x: 0, y: 0, ...(source ? { values: { store: source } } : {}) }];
+  const connections: NodeConnection[] = [];
+  const fields = new Map<string, string>();
+  const fieldOf = (field: string): string => {
+    if (!fields.has(field)) {
+      const id = `field-${field}`;
+      nodes.push({ id, kind: 'field', x: 360, y: fields.size * 200, values: { field } });
+      connections.push({ from: `source/${ROWS.name}`, to: id });
+      fields.set(field, id);
+    }
+    return fields.get(field)!;
+  };
+  let tests = 0;
+  const walk = (part: Condition, path: readonly number[]): string => {
+    const id = treeNodeId('when', path);
+    const parts = groupOf(part);
+    if (parts) {
+      const ends = parts[1].map((p, i) => walk(p, [...path, i + 1]));
+      nodes.push({ id, kind: 'condition', x: 1080 + path.length * 120, y: 0, values: { type: parts[0] } });
+      for (const from of ends) connections.push({ from, to: id });
+      return `${id}/true`;
+    }
+    const leaf = part as ConditionLeaf;
+    const field = leaf.field ?? '';
+    const drawn = leafRows(leaf, { field, type, fields: [], values: () => undefined, label: (f) => f });
+    // A list's values as the Where gives them, typed: the rows show them as text.
+    const values = storedValues(drawn.rows);
+    const list = Array.isArray(leaf.value) ? [...leaf.value as unknown[]] : undefined;
+    if (list && 'start' in values) Object.assign(values, { start: list[0], end: list[1] });
+    else if (list && Array.isArray(values['b'])) values['b'] = list;
+    nodes.push({ id, kind: drawn.kind, x: 720, y: tests++ * 200, values });
+    connections.push({ from: `${fieldOf(field)}/field`, to: id });
+    return drawn.kind === 'condition' ? `${id}/true` : id;
+  };
+  const tree = parseWhere(where);
+  if (tree) connections.push({ from: walk(tree, []), to: '#out/where' });
+  return { nodes, connections, unfurl: true };
 }
 
 /** A condition node's rows, edited, as the condition they say: the other half of drawing one —

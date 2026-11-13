@@ -19,7 +19,7 @@ import type { QueryContext } from './query-context.js';
 import { laidOut, queryDefinition, reconcileQuery, rowRequest, type GraphLayout, type ReconcileFacts, type Reconciled } from './query-document.js';
 import { queryGraph, type KeptSource, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryDefaults } from './query.js';
-import { registerLens, type GraphLens } from './lens.js';
+import { registerLens, type GraphLens } from './lens-registry.js';
 import type { DrawnGraph } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
 import { pageFields } from './type-definition.js';

@@ -14,7 +14,7 @@
  * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
  */
 import { report } from './report.js';
-import { isEntity, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
+import { entityGraph, isEntity, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
 import { libraryOf } from './entity-types.js';
 import type { EntityFacts } from './entity-check.js';
 import type { NodeLibrary } from './node-library.js';
@@ -76,7 +76,7 @@ const codeOf = (type: string): string => (type === 'node' ? 'node-library' : 'en
 /** The entity as it is kept: no `origin`, no empty tags, its `uses` read from its graph among those that exist. */
 function kept(entity: Entity, all: readonly Entity[]): Entity {
   const { origin: _origin, $schema: _schema, ...rest } = entity;
-  const uses = usesOf(entity.graph, all.filter((e) => e.id !== entity.id));
+  const uses = usesOf(entityGraph(entity), all.filter((e) => e.id !== entity.id));
   const { uses: _uses, tags, ...plain } = rest;
   return { ...plain, ...(tags === undefined || (Array.isArray(tags) && !tags.length) ? {} : { tags }), ...(uses.length ? { uses } : {}) };
 }
@@ -107,8 +107,8 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
       if (held?.origin === 'preset') return refuse(entity.type, `save: "${entity.id}" is a preset, which is read only: use "Copy to my entities".`, entity.id);
       if (held && held.type !== entity.type) return refuse(entity.type, `save: "${entity.id}" is already a ${held.type}: an id names one entity.`, entity.id);
       const [{ checkEntity }, { finalGraph }] = await Promise.all([import('./entity-check.js'), import('./workflow.js')]);
-      // Its graph as Save writes it: what a node keeps for its other types stays behind.
-      const next = kept({ ...entity, graph: finalGraph(entity.graph, facts().kinds) }, here);
+      // Its graph as Save writes it: what a node keeps for its other types stays behind. A query body is kept as it is.
+      const next = kept(entity.graph ? { ...entity, graph: finalGraph(entity.graph, facts().kinds) } : entity, here);
       if (!checkEntity(next, { ...facts(), entities: here.filter((e) => e.id !== next.id) })) return false;
       port.keep({ ...port.mine(), [next.id]: next });
       return true;
@@ -129,7 +129,7 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
       const entity = here.find((e) => e.id === id);
       if (!entity) return undefined;
       if (entity.origin === 'preset') return `"${id}" is a preset, which is read only.`;
-      const by = here.filter((e) => e.id !== id && [...(e.uses ?? []), ...usesOf(e.graph, [entity])].some((u) => u.id === id));
+      const by = here.filter((e) => e.id !== id && [...(e.uses ?? []), ...usesOf(entityGraph(e), [entity])].some((u) => u.id === id));
       return by.length ? `"${entity.label}" is used by ${named(by.map((e) => e.label))}, so it stays: take it out of them first.` : undefined;
     },
 
@@ -139,7 +139,7 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
       const { description, ...rest } = structuredClone(change);
       const { description: had, ...copy } = { ...structuredClone(was), label: `${was.label} copy`, ...rest, id: newId };
       const said = 'description' in change ? description : had;
-      return shelf.save({ ...copy, ...(said ? { description: said } : {}) });
+      return shelf.save({ ...copy, ...(said ? { description: said } : {}) } as Entity);
     },
 
     watch(handler, signal) {

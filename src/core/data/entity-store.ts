@@ -10,7 +10,7 @@
  * - SeedMarks — Where the seed's marks are kept between runs: what was put, per entity.
  * - seedEntities — A type's seed entities on the shelf as the reader's own, once per seed version, a reader's change left.
  */
-import type { Entity } from './entity.js';
+import { entityGraph, type Entity } from './entity.js';
 import type { EntityShelf } from './entity-shelf.js';
 import { seedVersionOf } from './seed-version.js';
 import { statusFields } from './status-field.js';
@@ -45,7 +45,7 @@ export function entityStore(shelf: EntityShelf, type: TypeDefinition, { row, sig
     const own: Row = { id: entity.id, label: entity.label, description: entity.description ?? '', tags: [...(entity.tags ?? [])] };
     for (const [name, field] of fields) {
       if (name in own) continue;
-      own[name] = field.from ? readFrom(entity.graph, field.from) : entity.settings?.[name];
+      own[name] = field.from ? readFrom(entityGraph(entity), field.from) : entity.settings?.[name];
     }
     return row ? row(entity, own) : own;
   };

@@ -820,6 +820,12 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   header, And and Or joining tests (plan 783); a use's True into And or Or joins the outer
   condition. An Or across two fields is said in words and left off. The Query
   editor's panel lists them under Custom Nodes. `T-a-filter-is-a-preset-of-its-store`
+- **A Filter keeps its Where** where a Where says it all: `{ "v": 2, "type": "filter", "id",
+  "label", "query": { "where": { "status": { "eq": "active" } } }, "settings": { "source" } }`,
+  in place of a graph. Its lens draws the graph from it, and Save writes a graph back as a Where
+  while it holds only a Source, Fields, tests, And and Or. `filterOf(preset, source)` makes a
+  Filter of a page's preset, or of a saved filter in one scope. Read an entity's graph with
+  `entityGraph(entity)`; keep what a lens writes back WHOLE (`answer.definition`), as it may have no graph.
 
 ## 10. Questions and saved filters
 

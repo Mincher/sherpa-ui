@@ -10,7 +10,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { lensOf, registerLens } = await import(new URL('lens.js', core));
+const { lensOf } = await import(new URL('lens.js', core));
+const { registerLens } = await import(new URL('lens-registry.js', core));
 const { onReport } = await import(new URL('report.js', core));
 const { GROUP_INPUT, GROUP_OUTPUT } = await import(new URL('node-library.js', core));
 

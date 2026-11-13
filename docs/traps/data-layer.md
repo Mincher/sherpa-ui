@@ -7842,6 +7842,13 @@ graphs. Let's keep them but also make sure they work in the new architecture for
 - **The Query editor** offers a page's Filters under Custom Nodes; a click asks
   `{ scope, preset: <its id>, on: true }` of the scope that declares it (`placeRequest`). It draws one
   as a Preset node with its own name; its conditions are read only: its own graph changes it.
+- **It keeps a Where where a Where says it all** (plan 960 U4.4b, D6). Its body is ONE: a `graph`, or a
+  `query: { where }`, never both (entity.v2), and only a type whose graph part says `query: true` keeps a
+  query. Its lens (`FILTER_LENS`) draws the graph from the Where (`whereGraph`: a Source, a Field and a
+  test per field, as the Query graph draws a test) and writes a graph back as a Where while it holds only
+  Source, Field, Condition and Time; a Value node, a Math node or a use keeps the graph. Every read of an
+  entity's graph is `entityGraph`. The lens registers when filter.ts loads: sherpa-ui/data, the node editor
+  and the provider load it. A Where's places are not kept: it unfurls when shown.
 
 - Site: `src/core/data/filter.ts`
 - Site: `src/core/data/node-flow.ts`

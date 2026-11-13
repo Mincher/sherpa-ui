@@ -9,8 +9,10 @@
  * - EntityRef — One entity a graph places: its type and id.
  * - EntityGraph — An entity's graph: a workflow's nodes and connections, with `#in` and `#out` as a Custom Node has.
  * - Entity — One entity, as JSON.
+ * - EntityQuery — A body in place of a graph: a Filter's Where, the one truth; its lens draws its graph from it.
  * - EntityLibrary — The preset entities of an app, by id, and the types they are of (entities.v3).
- * - isEntity — Whether a value has the SHAPE of an entity; the persist guard.
+ * - isEntity — Whether a value has the SHAPE of an entity, with one body; the persist guard.
+ * - entityGraph — An entity's graph: its own, else the one its lens draws from its query; every read is this door.
  * - entityKind — The kind a use of an entity has in a graph: `<type>:<id>`, and a Custom Node's plain id.
  * - entityRefOf — The entity a use's kind names: the inverse of `entityKind`.
  * - usesOf — The entities a graph places, from its nodes' kinds, among the entities given.
@@ -23,6 +25,8 @@ import type { NodeDefinition, NodeOutput, NodeSocket } from './node-library.js';
 import type { WorkflowDefinition, WorkflowNode } from './workflow.js';
 import type { NodeFrame } from './node-frames.js';
 import { layoutParts } from './graph-layout.js';
+import { registeredLens } from './lens-registry.js';
+import type { Where } from './where.js';
 
 /** The id of the envelope's schema, for the `$schema` of a file. */
 export const ENTITY_SCHEMA = 'https://sherpa-ui.dev/schemas/entity.v2.json';
@@ -62,10 +66,17 @@ export interface Entity {
   /** The category its node stands in, in the Nodes panel, as Runbooks (plan 936). None: a `node`'s settings', its type's,
    *  else Custom Nodes. */
   category?: string;
-  graph: EntityGraph;
+  /** Its body: a graph; or, for a type whose graph part says `query: true` (a Filter), its query. One, never both. */
+  graph?: EntityGraph;
+  query?: EntityQuery;
   settings?: Readonly<Record<string, unknown>>;
   uses?: readonly EntityRef[];
   origin?: 'preset' | 'mine';
+}
+
+/** A body in place of a graph (plan 960 U4.4b): a Filter's Where, the one truth; its lens draws its graph from it. */
+export interface EntityQuery {
+  where: Where;
 }
 
 /** The preset entities of an app, by id, and the types they are of, each a type.v1 by its id (entities.v3; plan 960 U2). */
@@ -78,13 +89,24 @@ export interface EntityLibrary {
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** Whether a value has the SHAPE of an entity: a v2 with a type, an id, a name and a graph. */
+/** Whether a value has the SHAPE of an entity: a v2 with a type, an id, a name and ONE body: a graph, or a query. */
 export function isEntity(value: unknown): value is Entity {
   if (!isObject(value) || value['v'] !== 2) return false;
-  const { type, id, label, graph } = value;
+  const { type, id, label, graph, query } = value;
+  const drawn = isObject(graph) && Array.isArray(graph['nodes']);
+  const said = isObject(query) && isObject(query['where']);
   return typeof type === 'string' && ID.test(type) && typeof id === 'string' && ID.test(id)
-    && typeof label === 'string' && !!label.trim() && isObject(graph) && Array.isArray(graph['nodes'])
+    && typeof label === 'string' && !!label.trim() && drawn !== said && (graph === undefined || drawn) && (query === undefined || said)
     && (value['settings'] === undefined || isObject(value['settings']));
+}
+
+const NO_GRAPH: EntityGraph = { nodes: [] };
+
+/** An entity's graph: its own; else, for a query body, the one its type's lens draws from it (a Filter's Where); else
+ *  none, an empty graph. Every read of an entity's graph is this one door. Plan 960 U4.4b */
+export function entityGraph(entity: Pick<Entity, 'type' | 'graph'> & Partial<Entity>): EntityGraph {
+  if (entity.graph) return entity.graph;
+  return (entity.query && registeredLens(entity.type)?.graphOf?.(entity)) || NO_GRAPH;
 }
 
 /** The kind a use of an entity has in a graph: `<type>:<id>`. A Custom Node's is its plain id. */
@@ -130,13 +152,17 @@ export function categoryOf(entity: Pick<Entity, 'category' | 'settings'>): strin
   return entity.category ?? (typeof s === 'string' ? s : undefined);
 }
 
+/** A graph's parts a Custom Node definition carries: its nodes, its connections and its layout. */
+const bodyOf = (graph: EntityGraph): Pick<NodeDefinition, 'nodes' | 'connections'> & ReturnType<typeof layoutParts> =>
+  ({ nodes: graph.nodes, ...(graph.connections ? { connections: graph.connections } : {}), ...layoutParts(graph) });
+
 /** A `node` entity as the Custom Node definition the node panel and the editor read; a preset's is read only. */
 export function definitionOf(entity: Entity): NodeDefinition {
   const s = entity.settings ?? {};
   return {
     v: 1, label: entity.label,
     inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [],
-    nodes: entity.graph.nodes, ...(entity.graph.connections ? { connections: entity.graph.connections } : {}), ...layoutParts(entity.graph),
+    ...bodyOf(entityGraph(entity)),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),
     ...(categoryOf(entity) ? { category: categoryOf(entity)! } : {}),

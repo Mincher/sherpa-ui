@@ -28,7 +28,7 @@
  * - addCustomValue — A Value node made for a picklist row and connected to it: the row mirrors it, and keeps its own pick.
  */
 import { nodeTitle } from './node-title.js';
-import type { Entity } from './entity.js';
+import { entityGraph, type Entity } from './entity.js';
 import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
@@ -604,7 +604,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   // The model an AI node uses with none joined to its own: its graph's Start's, or the top graph's it is inside (plan 951).
   const primary = top ? primaryOf(workflow) : facts.primary;
   const alone = !top && facts.primary === undefined;
-  const loops = shelf.length ? startLoops({ id: workflow.id, ...(workflow.label ? { label: workflow.label } : {}), graph: workflow }, shelf, kinds) : new Map<string, string>();
+  const loops = shelf.length ? startLoops({ id: workflow.id, ...(workflow.label ? { label: workflow.label } : {}), graph: workflow }, shelf.map((e) => ({ ...e, graph: entityGraph(e) })), kinds) : new Map<string, string>();
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   // Where a connection comes from, in words: "Group Input › Status".
   const whence = (from: string): string => {

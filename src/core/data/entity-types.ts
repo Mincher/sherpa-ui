@@ -71,6 +71,8 @@ export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
     graph: {
       families: ['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils'],
       outputs: [{ name: 'where', label: 'Where', type: 'boolean' }],
+      // It keeps its Where where a Where says it all, else its graph (plan 960 U4.4b, D6).
+      query: true,
       runs: false,
     },
     settingsFaults: (s) => [...keysFault(s, ['source']), ...('source' in s && typeof s['source'] !== 'string' ? ['its source is not a name'] : [])],
