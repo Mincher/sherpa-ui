@@ -37,6 +37,7 @@ import { pageFields } from './type-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
+import { ALL } from './filter-face.js';
 import { parseWhere, readingsOf, treeReading, type Where } from './where.js';
 import { presetHeld } from './query-edits.js';
 import { entityRefOf, type EntityGraph } from './entity.js';
@@ -51,6 +52,8 @@ import type { Walk } from './walk.js';
 
 /** A Condition's True in the Query, as a workflow's: 1 or 0, the line its tree leaves by (plan 944). */
 const TRUE_ROW: GraphRow = propertyRow('true', 'True');
+/** A reading with every value ticked, as the Query graph's test names it. */
+const EVERY = 'all';
 
 /** Each Query node's id, as a step names it: the one scheme the graph is drawn by.
  *  TRAP T-a-step-names-its-node */
@@ -249,6 +252,8 @@ function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }
     const rows = time.map(({ input: _in, ...r }): GraphRow => ({ ...r, value: r.name === 'when' ? op : r.name === 'n' ? span?.n : span?.unit, editable: true, ...(rowChoices(r) ? { choices: rowChoices(r, { count: span?.n })! } : {}) }));
     return { kind: 'time', type: 'duration', rows: [{ ...operation('duration', []), editable: false, hint: 'A span from today.' }, ...rows] };
   }
+  // Every value ticked (TODO 965): "has a value", said as its chip says it. Its chip changes it.
+  if ((op as string) === EVERY) return { kind: 'condition', type: EVERY, rows: [{ ...operation(EVERY, [{ value: EVERY, label: ALL }]), editable: false, hint: 'Has a value: every row with a value of this field. Its chip changes it.' }] };
   if (!(op in OP_LABELS)) return { kind: 'condition', type: op, rows: [{ ...operation(op, []), editable: false }] };
   // A field whose values are known is PICKED, as its chip picks: ticks, Is one of or Is not one of.
   const ticks = !!picks?.length && (ONE.has(op) || MANY.has(op));
@@ -545,7 +550,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     const into = top ? 3 : 5;
     // The reader's own answer: a preset's rows are its own node's.
     const where = Object.entries(scope.readings).flatMap(([f, reading]) => {
-      const tree = answerTree({ ...reading, suspended: false });
+      // Every value ticked is in force, "has a value" (TODO 965): drawn as its own test, as its chip shows it.
+      const tree = reading.all ? ({ op: EVERY } as unknown as Condition) : answerTree({ ...reading, suspended: false });
       return tree ? [[f, tree, !!reading.suspended] as const] : [];
     });
     const kept = Object.entries(scope.superseded ?? {}).flatMap(([f, reading]) => {

@@ -392,3 +392,21 @@ test('a scope\'s arrangement is the page\'s too: it opens sorted, grouped and se
   assert.equal(checkPage(saved), true);
   assert.deepEqual(schemaCheck('page.v1.json')(saved), []);
 });
+
+test('every value ticked is in force, and drawn as its own test, said as its chip says it (TODO 965)', async () => {
+  const { openSource, pageWithQuery } = await import(new URL('page-definition.js', core));
+  const { ALL } = await import(new URL('filter-face.js', core));
+  const page = { v: 1, id: 'p', source: { store: 's', fields: { status: { values: ['a', 'b'] } }, scopes: { data: { label: 'Data', holds: ['status'] } } } };
+  const source = await openSource(page.source, new ArrayStore([{ id: 1, status: 'a' }, { id: 2, status: null }], { key: 'id' }));
+  await source.load();
+  source.query.ask({ scope: 'data', field: 'status', reading: { all: true } });
+  await source.load();
+  assert.equal(source.total, 1, 'a row with no value drops');
+  const graph = queryGraph(source.query.draft, page);
+  const test_ = graph.nodes.find((n) => n.id === 'when-data-status');
+  const op = test_.rows.find((r) => r.name === 'type');
+  assert.deepEqual([op.value, op.choices.map((c) => c.label), op.editable], ['all', [ALL], false]);
+  assert.ok(graph.connections.some((c) => c.from === 'when-data-status/true' && c.to === 'scope-data/status'), 'its True joins its chip');
+  assert.deepEqual(pageWithQuery(page, source.query.draft).source.scopes.data.where, { status: { all: true } });
+  source.close();
+});

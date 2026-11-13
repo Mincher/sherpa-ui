@@ -11,6 +11,7 @@
  *
  * Map:
  * - FilterFace — What a control SHOWS for a field — the same six facts whatever draws them.
+ * - ALL — What a list with every value ticked says: the chip's face, and the Query graph's test for it.
  * - filterFace — How one field's state READS, for any control that draws it.
  * - CONDITION_BADGE — The ONE mark a control wears when conditions are applied.
  * - countSaid — A count as a badge shows it and its name says it: `1,204`, and `1,204 results`.
@@ -49,8 +50,8 @@ export interface FilterFace {
   tip: string;
 }
 
-/** What a list with every value ticked says. */
-const ALL = 'All';
+/** What a list with every value ticked says: the chip's face, and the Query graph's test for it. */
+export const ALL = 'All';
 
 /**
  * How one field's state READS, for any control that draws it. `eq` shows no
