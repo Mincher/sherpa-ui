@@ -1,20 +1,20 @@
 /**
  * entity-shelf.ts — where an app's entities come together: the presets a file ships, read only,
  * and the reader's own, app-wide, of every type. ONE door: list, get, save, remove (refused while
- * another entity uses it), duplicate, export, import, watch. It holds no storage: the keeper gives
+ * another entity uses it), export, import, watch. It holds no storage: the keeper gives
  * it a port, so a test, a server and a browser share the one set of rules. Its `library` is every entity as the
  * Custom Node it offers; a Custom Node is kept through the doors (custom-nodes.ts, plan 942). DOM-free. Will, plan 746 E2, E5
  * TRAP T-an-entity-is-an-envelope-and-a-type · TRAP T-an-entity-is-used-as-a-node
  *
  * Map:
  * - EntitySummary — One entity as a list shows it: cheap, no graph.
- * - EntityShelf — What an editor is handed: list, get, save, remove (and why not), duplicate, export, import, watch, library.
+ * - EntityShelf — What an editor is handed: list, get, save (and why not), remove (and why not), export, import, watch, library.
  * - EntityPort — What a shelf needs of its keeper: the presets, the reader's own, keeping them, and hearing a change.
  * - joinEntities — The presets and the reader's entities as one list; a clash with a preset or an earlier id is left out.
  * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
  */
 import { report } from './report.js';
-import { definitionPart, entityGraph, isEntity, usesOf, withBody, ENTITY_SCHEMA, type Entity, type EntityBody, type EntityVersion } from './entity.js';
+import { definitionPart, entityGraph, isEntity, usesOf, ENTITY_SCHEMA, type Entity, type EntityVersion } from './entity.js';
 import { nextVersion, versionsOf } from './entity-versions.js';
 import { libraryOf } from './entity-types.js';
 import type { EntityFacts } from './entity-check.js';
@@ -28,22 +28,20 @@ export interface EntitySummary {
   origin: 'preset' | 'mine';
 }
 
-/** What an editor is handed. Save, remove, duplicate and import answer whether it was done; the
- *  reason is reported. A preset is read only: `duplicate` makes a copy of the reader's own. */
+/** What an editor is handed. Save, remove and import answer whether it was done; the reason is reported. A preset is read
+ *  only: a Clone (entity-versions.ts, plan 972c) makes the reader's own copy. */
 export interface EntityShelf {
   /** Every entity, presets first, as a summary; of one type when given. */
   list(type?: string): EntitySummary[];
   /** The whole entity, with its `origin`. */
   get(id: string): Entity | undefined;
   save(entity: Entity): Promise<boolean>;
-  /** Why `save` would refuse an entity, each fault in words; none when it would keep it. The same check, said to no one. */
+  /** Why `save` would refuse it, in words, by the same check; it reports nothing. None when it would be kept. */
   faults(entity: Entity): Promise<string[]>;
   /** The reader's own only, and refused while another entity uses it. */
   remove(id: string): boolean;
   /** Why `remove` would keep an entity, in words: a preset, or another entity uses it; none when it would go. */
   whyKept(id: string): string | undefined;
-  /** A copy under a new id, "<label> copy" unless `change` names it; `change` may carry the graph on a canvas, its tags, and none for its description. */
-  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; tags?: readonly string[]; category?: string } & Partial<EntityBody>): Promise<boolean>;
   /** Called with the list whenever it changes here, and when another tab changes it. Stops on the signal. */
   watch(handler: (list: EntitySummary[]) => void, signal?: AbortSignal): void;
   /** The entity as JSON text, with its `$schema` and without its `origin`. */
@@ -106,14 +104,14 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     return false;
   };
 
-  /** An entity as Save would keep it, and the facts its check reads; or why Save refuses it before the check. */
-  const prepared = async (entity: Entity): Promise<{ next: Entity; facts: EntityFacts } | { fault: string }> => {
-    if (!isEntity(entity)) return { fault: 'it is not an entity: a v3 with a type, an id, a name and a graph' };
+  /** The ONE check, for `save` and `faults`: why a save would refuse it, in words, or the entity as it would be kept. */
+  const check = async (entity: Entity): Promise<{ faults: string[]; next?: Entity }> => {
+    if (!isEntity(entity)) return { faults: ['it is not an entity: a v3 with a type, an id, a name and one body, a graph or a query'] };
     const here = all();
     const held = here.find((e) => e.id === entity.id);
-    if (held?.origin === 'preset') return { fault: `"${entity.id}" is a preset, which is read only: use "Copy to my entities"` };
-    if (held && held.type !== entity.type) return { fault: `"${entity.id}" is already a ${held.type}: an id names one entity` };
-    const { finalGraph } = await import('./workflow.js');
+    if (held?.origin === 'preset') return { faults: [`"${entity.id}" is a preset, which is read only: clone it to make your own`] };
+    if (held && held.type !== entity.type) return { faults: [`"${entity.id}" is already a ${held.type}: an id names one entity`] };
+    const [{ entityFaults }, { finalGraph }] = await Promise.all([import('./entity-check.js'), import('./workflow.js')]);
     // Its graph as Save writes it: what a node keeps for its other types stays behind. A query body is kept as it is.
     const draft = kept(entity.graph ? { ...entity, graph: finalGraph(entity.graph, facts().kinds) } : entity, here);
     /* Its versions (plan 972): none given keeps the stored ones; given, they may only ADD newer ones at the front, so a
@@ -121,10 +119,12 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     const stored = held ? versionsOf(held) : [];
     const given = entity.versions;
     if (given && !extendsVersions(given, stored)) {
-      return { fault: `"${entity.id}"'s versions must keep the ones it has (${stored.map((v) => v.number).join(', ')}) and only add newer ones in front` };
+      return { faults: [`"${entity.id}"'s versions must keep the ones it has (${stored.map((v) => v.number).join(', ')}) and only add newer ones in front`] };
     }
     const versions = given?.length ? given : stored.length ? stored : [nextVersion({}, definitionPart(draft))];
-    return { next: { ...draft, versions }, facts: { ...facts(), entities: here.filter((e) => e.id !== entity.id) } };
+    const next = { ...draft, versions };
+    const faults = entityFaults(next, { ...facts(), entities: here.filter((e) => e.id !== next.id) });
+    return faults.length ? { faults } : { faults, next };
   };
 
   const shelf: EntityShelf = {
@@ -132,20 +132,15 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     get: (id) => all().find((e) => e.id === id),
 
     async save(entity) {
-      const ready = await prepared(entity);
-      if ('fault' in ready) return refuse(isEntity(entity) ? entity.type : 'entity', `save: ${ready.fault}.`, String((entity as { id?: unknown })?.id ?? ''));
-      const { checkEntity } = await import('./entity-check.js');
-      if (!checkEntity(ready.next, ready.facts)) return false;
-      port.keep({ ...port.mine(), [ready.next.id]: ready.next });
+      const { faults, next } = await check(entity);
+      const said = entity as { id?: unknown; type?: unknown };
+      for (const fault of faults) report({ code: codeOf(String(said?.type ?? '')), message: `save: ${fault}.`, at: { entity: String(said?.id ?? '') } });
+      if (!next) return false;
+      port.keep({ ...port.mine(), [next.id]: next });
       return true;
     },
 
-    async faults(entity) {
-      const ready = await prepared(entity);
-      if ('fault' in ready) return [ready.fault];
-      const { entityFaults } = await import('./entity-check.js');
-      return entityFaults(ready.next, ready.facts);
-    },
+    faults: async (entity) => (await check(entity)).faults,
 
     remove(id) {
       const entity = all().find((e) => e.id === id);
@@ -164,18 +159,6 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
       if (entity.origin === 'preset') return `"${id}" is a preset, which is read only.`;
       const by = here.filter((e) => e.id !== id && [...(e.uses ?? []), ...usesOf(entityGraph(e), [entity])].some((u) => u.id === id));
       return by.length ? `"${entity.label}" is used by ${named(by.map((e) => e.label))}, so it stays: take it out of them first.` : undefined;
-    },
-
-    async duplicate(id, newId, change = {}) {
-      const was = shelf.get(id);
-      if (!was) return refuse('entity', `duplicate: "${id}" is not there.`, id);
-      const { description, graph, query, ...rest } = structuredClone(change);
-      // A body given is the copy's, in place of the one it had: one body, never both.
-      const from = graph ? withBody(was, { graph }) : query ? withBody(was, { query }) : was;
-      // A copy is new: it starts at version 1, not its source's (plan 972).
-      const { description: had, versions: _versions, ...copy } = { ...structuredClone(from), label: `${was.label} copy`, ...rest, id: newId };
-      const said = 'description' in change ? description : had;
-      return shelf.save({ ...copy, ...(said ? { description: said } : {}) } as Entity);
     },
 
     watch(handler, signal) {

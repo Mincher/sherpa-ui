@@ -34,7 +34,7 @@ test.beforeEach(async ({ page }) => {
 /** Bind the Filter "Outer" — a use of Trials on it — with every entity as the library, "Top" holding Outer. */
 const bind = (page: Page) => page.evaluate(async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-  const { NODE_KINDS, graphWorkflow, kindsOf, libraryOf, useOf } = await import('/dist/data.js');
+  const { NODE_KINDS, graphWorkflow, kindsOf, libraryOf, makeShelf, runAct, useOf } = await import('/dist/data.js');
   const w = window as unknown as Record<string, unknown> & { ENTITIES: Record<string, Record<string, unknown>> };
   const { trials, active } = w.ENTITIES;
   const use = useOf(libraryOf([trials as never]), 'filter:trials', { id: 'trials-1', x: 0, y: 0 });
@@ -48,6 +48,14 @@ const bind = (page: Page) => page.evaluate(async () => {
     return l;
   };
   const library = (w['all'] as () => never)();
+  // The app's shelf and its acts (plan 972c): a Clone saves the copy, and the outlet hands the library back.
+  let mine: Record<string, unknown> = { trials, outer, top };
+  const shelf = makeShelf({ presets: () => [active], mine: () => mine, keep: (next: Record<string, unknown>) => { mine = next; }, heard: () => undefined } as never);
+  const act = async (id: string, call: unknown) => {
+    const answer = await runAct(id, call as never, { stores: {}, entities: shelf } as never);
+    (w['ed'] as { refresh(l: unknown): void }).refresh(shelf.library());
+    return answer;
+  };
   const { workflow, kinds } = graphWorkflow(outer as never, { ...NODE_KINDS, ...kindsOf(library) });
   w['saved'] = [];
   w['savedNodes'] = [];
@@ -55,7 +63,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, workflow, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
-    confirm: document.getElementById('confirm') as never, kinds, library, entity: outer,
+    confirm: document.getElementById('confirm') as never, kinds, library, entity: outer, act,
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'lead'] } } }, stores: ['customers'],
   });
   // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
@@ -106,13 +114,13 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   await page.keyboard.press('Escape');
   await settle(page);
   expect((await offered(page))['Custom Nodes']).toEqual(['filter:active', 'filter:trials']);
-  // A preset placed and opened: locked, with "Copy to my nodes".
+  // A preset placed and opened: locked, with Clone.
   await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="filter:active"]').click();
   await settle(page);
   await header(page, 'Active').dblclick();
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-heading="Condition"]').evaluate((el) => el.hasAttribute('data-locked'))).toBe(true);
-  await press(page.locator('#inspector sherpa-button[data-label="Copy to my nodes"]'));
+  await press(page.locator('#inspector sherpa-button[data-label="Clone"]'));
   await settle(page);
   expect(await ed(page, 'ed.path().length')).toBe(1);
   expect(await ed(page, "ed.workflow().nodes.find((n) => n.kind.startsWith('filter:active')).kind")).toBe('filter:active-copy');

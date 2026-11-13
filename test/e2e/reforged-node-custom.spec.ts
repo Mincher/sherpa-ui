@@ -75,6 +75,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const w = window as unknown as Record<string, unknown>;
   w['saved'] = [];
   w['savedNodes'] = [];
+  w['acts'] = [];
   document.addEventListener('definition-save', (e) => (w['saved'] as unknown[]).push((e as CustomEvent).detail.definition));
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, flow as never, {
@@ -83,6 +84,16 @@ const bind = (page: Page) => page.evaluate(async () => {
     // The app's rule for who may change a node of their own (plan 936 D2): a test sets it, else any may.
     ...(w['canEdit'] ? { canEdit: w['canEdit'] as (d: unknown) => boolean } : {}),
     fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],
+    // The app's acts, as its outlet runs them (plan 972c): a Clone copies the kind, hands the library back, and answers its id.
+    act: async (id: string, call: { keys?: readonly unknown[] | undefined }) => {
+      (w['acts'] as unknown[]).push([id, call.keys]);
+      const ed = w['ed'] as { library(): { v: 1; nodes: Record<string, Record<string, unknown>> }; refresh(l: unknown): void };
+      const from = String(call.keys?.[0] ?? '');
+      const had = ed.library();
+      const { preset: _p, ...own } = had.nodes[from]!;
+      ed.refresh({ ...had, nodes: { ...had.nodes, [`${from}-copy`]: { ...own, label: `${String(own['label'])} copy` } } });
+      return { done: 'Made it', result: { id: `${from}-copy` } };
+    },
   });
   // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
   (window as never as { __keepEdits(e: unknown, k: (id: string, d: never) => unknown): void }).__keepEdits(w['ed'], (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]));
@@ -299,7 +310,7 @@ test('the split button\'s menu: both bulk items ask in a critical dialog; cancel
   expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.type")).toBe('ne');
 });
 
-test('a preset opens read only; "Copy to my nodes" makes an editable copy that takes its place', async ({ page }) => {
+test('a preset opens read only; Clone, the app\'s act, makes an editable copy that takes its place', async ({ page }) => {
   await bind(page);
   await header(page, 'Owner check').dblclick();
   await settle(page);
@@ -310,9 +321,10 @@ test('a preset opens read only; "Copy to my nodes" makes an editable copy that t
   }));
   expect(locked).toEqual({ place: true, op: true });
   expect(await page.locator('#inspector').getAttribute('data-heading')).toBe('Owner check');
-  expect(await page.locator('#inspector sherpa-button[data-label="Copy to my nodes"]').count()).toBe(1);
-  await page.locator('#inspector sherpa-button[data-label="Copy to my nodes"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  expect(await page.locator('#inspector sherpa-button[data-label="Clone"]').count()).toBe(1);
+  await page.locator('#inspector sherpa-button[data-label="Clone"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
+  expect(await ed(page, '(window.acts)')).toEqual([['node.clone', ['owner-check']]]);
   expect(await ed(page, "Object.keys(ed.library().nodes).sort()")).toEqual(['org-permissions', 'owner-check', 'owner-check-copy']);
   expect(await ed(page, "ed.library().nodes['owner-check-copy'].preset")).toBeUndefined();
   const op = page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"]');
@@ -470,7 +482,7 @@ test('a preset\'s header refuses a new input as any refused drop does: in words,
     w.said = [];
     onReport((r) => w.said.push(`${r.code}: ${r.message}`));
   });
-  const refused = 'workflow-connection: bindWorkflow: a preset is read only: Copy to my nodes to add an input.';
+  const refused = 'workflow-connection: bindWorkflow: a preset is read only: clone it to add an input.';
   const rows = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row:has(sherpa-input-text[name="store"])';
   const own = '#cv > sherpa-node[data-heading="Owner check"]';
   const lines = () => page.locator('#cv svg.graph-connectors path[data-from]').evaluateAll((els) => els.map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());

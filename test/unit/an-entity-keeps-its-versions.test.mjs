@@ -115,8 +115,39 @@ test('a save may only ADD versions at the front: one that edits or drops a versi
   assert.deepEqual(k.entities.get('trials').versions.map((v) => v.number), [1]);
   await k.entities.save(filter('trials', 'Leads', 'lead'));
   await V.publish(k.entities, 'trials');
-  assert.equal(await k.entities.duplicate('trials', 'trials-copy'), true);
+  assert.deepEqual(await V.clone(k.entities, 'trials'), { id: 'trials-copy' });
   assert.deepEqual(k.entities.get('trials-copy').versions.map((v) => [v.number, v.definition.label]), [[1, 'Leads copy']]);
+});
+
+test('Clone (plan 972c): the reader\'s own copy at version 1, remembering its source; its source moving says so; the canvas\'s body too', async () => {
+  const k = keeper();
+  k.entityPresets = [{ ...filter('shipped', 'Shipped', 'active'), versions: [{ number: 3, at: NOW.toISOString(), hash: 'h', definition: { label: 'Shipped', graph: filter('shipped', 'Shipped', 'active').graph } }] }];
+  assert.deepEqual(await V.clone(k.entities, 'shipped'), { id: 'shipped-copy' });
+  assert.deepEqual(await V.clone(k.entities, 'shipped'), { id: 'shipped-copy-2' }, 'a free id each time');
+  const copy = k.entities.get('shipped-copy');
+  assert.deepEqual([copy.origin, copy.label, copy.from, copy.versions.map((v) => v.number)], ['mine', 'Shipped copy', { id: 'shipped', version: 3 }, [1]]);
+  assert.equal(V.sourceNewer(k.entities, copy), undefined);
+  // The source publishes again: the copy can say so.
+  k.entityPresets = [{ ...k.entityPresets[0], versions: [{ ...k.entityPresets[0].versions[0], number: 4 }] }];
+  assert.equal(V.sourceNewer(k.entities, k.entities.get('shipped-copy')), 4);
+  // Save graph as: the body given, not the source's.
+  const canvas = filter('x', 'X', 'lead').graph;
+  assert.deepEqual(await V.clone(k.entities, 'shipped', { id: 'mine', label: 'Mine', body: { graph: canvas } }), { id: 'mine' });
+  assert.equal(valueIn(k.entities.get('mine')), 'lead');
+});
+
+test('a Clone is an act with an undo; any act may be refused first, in words, by the app\'s may (plan 972c, 972d hook)', async () => {
+  const { runAct } = await import(new URL('data/acts.js', core));
+  const k = keeper();
+  await k.entities.save(filter('trials', 'Trials', 'trial'));
+  const ctx = { stores: {}, entities: k.entities };
+  const made = await runAct('filter.clone', { keys: ['trials'], input: { label: 'My trials' } }, ctx);
+  assert.deepEqual([made.done, made.result], ['Made "My trials", your own copy.', { id: 'trials-copy' }]);
+  await made.undo();
+  assert.equal(k.entities.get('trials-copy'), undefined);
+  const may = (act) => (act.id.endsWith('.publish') ? 'You may not publish here: "Filters · Publish" is not yours.' : undefined);
+  assert.deepEqual(await runAct('filter.publish', { keys: ['trials'] }, { ...ctx, may }), { refused: 'You may not publish here: "Filters · Publish" is not yours.' });
+  assert.ok('done' in await runAct('filter.clone', { keys: ['trials'] }, { ...ctx, may }));
 });
 
 test('every entity type has Publish and Roll back as acts, the library\'s and one an app registers, run through runAct', async () => {

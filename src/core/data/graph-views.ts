@@ -158,7 +158,7 @@ export async function saveGraph(shelf: EntityShelf, id: string, body: EntityBody
 }
 
 /** Save a canvas's body as a COPY of an entity, a preset's too: the reader's own, under the name and description given
- *  and a free id, through the shelf's `duplicate`. The copy's id, or none. */
+ *  and a free id, through the one Clone (plan 972c). The copy's id, or none. */
 export async function saveGraphAs(shelf: EntityShelf, id: string, body: EntityBody, named: { label: string; description?: string; tags?: readonly string[]; category?: string }): Promise<string | undefined> {
   const was = shelf.get(id);
   const label = named.label.trim();
@@ -169,5 +169,8 @@ export async function saveGraphAs(shelf: EntityShelf, id: string, body: EntityBo
   const tags = named.tags && tidyTags(named.tags);
   // A category given is the copy's: Custom Nodes is none (plan 936).
   const category = named.category && named.category !== 'Custom Nodes' ? { category: named.category } : {};
-  return await shelf.duplicate(id, copy, { label, description: description || undefined, ...(tags ? { tags } : {}), ...category, ...body }) ? copy : undefined;
+  // Loaded when asked: the outlet carries this module, and a Save as is rare.
+  const { clone } = await import('./entity-versions.js');
+  const made = await clone(shelf, id, { id: copy, label, description: description || undefined, ...(tags ? { tags } : {}), ...category, body });
+  return 'id' in made ? made.id : undefined;
 }

@@ -98,7 +98,7 @@ test('a use that does not follow its definition is left as it was: it says Updat
 });
 
 test('refused, in words: a preset, a socket it has not, a name that is none, a type that is none, a node that is no Custom Node', () => {
-  assert.equal(socketEdit(flow(hasLib(true)), 'has', 'inputs', 'status', { label: 'State' }, hasLib(true)).fault, 'a preset is read only: Copy to my nodes to change its sockets');
+  assert.equal(socketEdit(flow(hasLib(true)), 'has', 'inputs', 'status', { label: 'State' }, hasLib(true)).fault, 'a preset is read only: clone it to change its sockets');
   assert.equal(socketEdit(flow(), 'has', 'outputs', 'status', null, hasLib()).fault, 'it has no output "status"');
   assert.equal(socketEdit(flow(), 'has', 'inputs', 'status', { label: '  ' }, hasLib()).fault, 'an input needs a name');
   assert.equal(socketEdit(flow(), 'has', 'inputs', 'status', { type: 'number' }, hasLib()).fault, '"number" is no socket type: value, object or boolean');

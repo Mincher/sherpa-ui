@@ -38,6 +38,9 @@ export interface ActContext {
   stores: Readonly<Record<string, Store>>;
   entities?: EntityShelf;
   signal?: AbortSignal;
+  /** May the reader run this act on these? A reason they may not, in words; none, they may. Checked before any act runs:
+   *  the app's Permissions fill it (plan 972d). */
+  may?: (act: Act, call: ActCall) => string | undefined;
 }
 
 /** What an act answers, in words: done — with its result, and an undo where it changed data — or refused. */
@@ -149,6 +152,8 @@ export async function inputFaults(input: Readonly<Record<string, StoredField>>, 
 export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): Promise<ActAnswer> {
   const act = acts.get(id) ?? entityActs().find((a) => a.id === id);
   if (!act) return { refused: `There is no act "${id}".` };
+  const denied = ctx.may?.(act, call);
+  if (denied) return { refused: denied };
   const keys = call.keys ?? [];
   if (act.type) {
     const store = storeOfType(ctx.stores, act.type);

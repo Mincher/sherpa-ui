@@ -18,6 +18,7 @@ const { makeShelf, joinEntities } = await import(new URL('data/entity-shelf.js',
 const { definitionOf, nodeEntityOf, isEntity } = await import(new URL('data/entity.js', core));
 const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
+const { clone } = await import(new URL('data/entity-versions.js', core));
 
 const filter = (id, label = id, extra = {}) => ({
   v: 3, type: 'filter', id, label,
@@ -75,13 +76,14 @@ test('a preset is read only: it is not saved over, not removed, and a reader\'s 
     await k.entities.save({ ...filter('shipped'), type: 'node', settings: { inputs: [], outputs: [] } }),
   ]);
   assert.deepEqual(result, [false, false, false]);
-  assert.match(reports.map((r) => r.message).join('\n'), /"shipped" is a preset, which is read only: use "Copy to my entities"/);
+  assert.match(reports.map((r) => r.message).join('\n'), /"shipped" is a preset, which is read only: clone it to make your own/);
   assert.equal(k.entities.get('shipped').label, 'Shipped');
   assert.equal(joinEntities([filter('a', 'Preset')], { a: filter('a', 'Smuggled'), b: filter('b') }).map((e) => `${e.id}:${e.origin}`).join(), 'a:preset,b:mine');
-  // A preset's copy is the reader's: duplicate.
-  assert.equal(await k.entities.duplicate('shipped', 'shipped-mine'), true);
+  // A preset's copy is the reader's: the one Clone (plan 972c), remembering where it came from.
+  assert.deepEqual(await clone(k.entities, 'shipped', { id: 'shipped-mine' }), { id: 'shipped-mine' });
   assert.deepEqual(k.entities.list().map((e) => [e.id, e.origin]), [['shipped', 'preset'], ['shipped-mine', 'mine']]);
   assert.equal(k.entities.get('shipped-mine').label, 'Shipped copy');
+  assert.deepEqual(k.entities.get('shipped-mine').from, { id: 'shipped', version: 1 });
 });
 
 test('an id names ONE entity: another type may not take it; a fault in a save refuses it, in words', async () => {
@@ -96,6 +98,16 @@ test('an id names ONE entity: another type may not take it; a fault in a save re
   assert.deepEqual(result, [false, false, false, false]);
   const said = reports.map((r) => r.message).join('\n');
   assert.match(said, /"one" is already a filter/);
+  // faults: the same words, by the same check, and nothing reported (an act refuses in them, plan 972c).
+  const asked = await heard(async () => [
+    await k.entities.faults({ v: 3, type: 'node', id: 'one', label: 'Same id', graph: { nodes: [] }, settings: { inputs: [], outputs: [] } }),
+    await k.entities.faults({ nope: true }),
+    await k.entities.faults(filter('fine')),
+  ]);
+  assert.deepEqual(asked.reports, []);
+  assert.deepEqual([asked.result[0], asked.result[2]], [['"one" is already a filter: an id names one entity'], []]);
+  assert.match(asked.result[1][0], /^it is not an entity/);
+  assert.equal(k.entities.get('fine'), undefined, 'asking keeps nothing');
   assert.match(said, /type "recipe", which this app does not have/);
   assert.match(said, /the setting "colour"/);
   assert.match(said, /not an entity/);
@@ -124,13 +136,13 @@ test('remove is refused while another entity uses it, naming who; then it goes, 
   assert.equal((await heard(() => k.entities.save(placing('b', 'filter:a')))).result, false);
 });
 
-test('duplicate takes a new id; export and import are JSON with a $schema and round-trip; a taken id gets a free one', async () => {
+test('a clone takes a new id; export and import are JSON with a $schema and round-trip; a taken id gets a free one', async () => {
   const k = keeper();
   await k.entities.save(filter('one', 'One'));
-  assert.equal(await k.entities.duplicate('one', 'two'), true);
+  assert.deepEqual(await clone(k.entities, 'one', { id: 'two' }), { id: 'two' });
   assert.equal(k.entities.get('two').label, 'One copy');
-  assert.equal((await heard(() => k.entities.duplicate('one', 'two'))).result, true, 'a copy over an own one is a save');
-  assert.equal((await heard(() => k.entities.duplicate('ghost', 'x'))).result, false);
+  assert.deepEqual(await clone(k.entities, 'one', { id: 'two' }), { refused: '"two" is taken: an id names one entity.' });
+  assert.deepEqual(await clone(k.entities, 'ghost'), { refused: '"ghost" is not there.' });
 
   const text = k.entities.export('one');
   const json = JSON.parse(text);

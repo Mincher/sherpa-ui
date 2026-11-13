@@ -9,6 +9,7 @@
  * - EntityRef — One entity a graph places: its type and id.
  * - EntityGraph — An entity's graph: a workflow's nodes and connections, with `#in` and `#out` as a Custom Node has.
  * - Entity — One entity, as JSON: its draft, and the versions it has published.
+ * - EntityFrom — A clone's source: its id, and the newest version it had when the clone was made.
  * - EntityDefinition — What a version keeps of an entity: its name, words, body and settings; never its tags or category.
  * - EntityVersion — One published version: its number, when and by whom, a note, a content hash, its definition.
  * - definitionPart — An entity's definition, as a version keeps it.
@@ -81,7 +82,15 @@ export interface Entity {
   /** Its published versions, newest first. A save never edits or drops one; the shelf publishes the first on a new id's
    *  first save. Plan 972 */
   versions?: readonly EntityVersion[];
+  /** What it was cloned from: that entity's id, and the version it had then. Its own, never a version's (plan 972c). */
+  from?: EntityFrom;
   origin?: 'preset' | 'mine';
+}
+
+/** A clone's source: its id, and the newest version it had when the clone was made. */
+export interface EntityFrom {
+  id: string;
+  version: number;
 }
 
 /** What a version keeps of an entity: its name, words, body and settings. Its tags and category only file it in the Nodes
@@ -128,6 +137,8 @@ const isVersion = (v: unknown): boolean => isObject(v) && Number.isInteger(v['nu
 export function isEntity(value: unknown): value is Entity {
   if (!isObject(value) || value['v'] !== 3) return false;
   if (value['versions'] !== undefined && !(Array.isArray(value['versions']) && value['versions'].every(isVersion))) return false;
+  const from = value['from'];
+  if (from !== undefined && !(isObject(from) && typeof from['id'] === 'string' && Number.isInteger(from['version']))) return false;
   const { type, id, label, graph, query } = value;
   const drawn = isObject(graph) && Array.isArray(graph['nodes']);
   const said = isObject(query) && isObject(query['where']);

@@ -6,7 +6,7 @@ import { test, expect, type Page } from './harness';
  * Model of its own uses it, and says so; the Graph details tab lists the models, the primary first. Expects, a Prompt's Type picker, sets its sockets: True/false
  * gives a True property, 1 or 0, and no fork (plan 944); the rest give an Answer. A Runbook node is its own instructions;
  * the app's runbooks are Runbooks nodes (plan 936 D1 B): a preset one opens on a double click, its steps read only, with
- * Copy to my nodes; Escape goes back. Real pointer and keys.
+ * no Clone with no app acts; Escape goes back. Real pointer and keys.
  */
 const RUNBOOK = {
   v: 1, label: 'Patch review', category: 'Runbooks', preset: true,
@@ -86,13 +86,14 @@ test('a Model lists its own Provider\'s models; Expects sets the sockets: True/f
   await expect(node(page, 'Prompt').locator('sherpa-node-row[data-socket-name="Model"]')).toHaveAttribute('data-label', 'Model: Claude Opus 5.5');
 });
 
-test('a preset Runbooks node opens on a double click: its steps, read only, with Copy to my nodes; a crumb goes back', async ({ page }) => {
+test('a preset Runbooks node opens on a double click: its steps, read only, and no Clone with no app acts; a crumb goes back', async ({ page }) => {
   await node(page, 'Patch review').locator('.header[role="button"]').dblclick({ position: { x: 40, y: 12 } });
   await settle(page);
   expect(await page.evaluate(() => (window as unknown as { ed: { path(): string[] } }).ed.path())).toEqual(['pr']);
   await expect(page.locator('#cv > sherpa-node[data-heading="Field"]')).toHaveAttribute('data-locked', '');
   await expect(page.locator('#inspector')).toContainText('read only');
-  expect(await page.locator('#inspector sherpa-button[data-label="Copy to my nodes"]').count()).toBe(1);
+  // A Clone is the app's act (plan 972c): none given here, so none is offered.
+  expect(await page.locator('#inspector sherpa-button[data-label="Clone"]').count()).toBe(0);
   // Back, by Escape.
   await page.keyboard.press('Escape');
   await settle(page);

@@ -17,7 +17,7 @@ const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
 const { offeredKinds, asNode, registerEntityType } = await import(new URL('data/entity-types.js', core));
 const { entityFaults } = await import(new URL('data/entity-check.js', core));
-const { publish } = await import(new URL('data/entity-versions.js', core));
+const { clone, publish } = await import(new URL('data/entity-versions.js', core));
 const { entityKind, entityRefOf, nodeEntityOf } = await import(new URL('data/entity.js', core));
 const lib = await import(new URL('data/node-library.js', core));
 const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', core));
@@ -161,7 +161,7 @@ test('D11: the entity saved again is a draft no use sees; PUBLISHED, each use sa
   assert.deepEqual(lib.staleUses(flowOf(after, 'filter:trials'), after), []);
 });
 
-test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, under a free id, its settings kept', async () => {
+test('a Clone of a preset makes the reader\'s own of the same type, under a free id, its settings kept (plan 972c)', async () => {
   const k = keeper();
   k.entityPresets = [filter('active', 'Active')];
   const taken = {
@@ -171,10 +171,9 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
     connections: [{ from: '#in/rows', to: 'c' }, { from: 'c/true', to: '#out' }],
   };
   assert.deepEqual(await keepNode(k.entities, 'active-copy', taken), { id: 'active-copy' });
-  const made = lib.copyToMine(k.entities.library(), 'filter:active');
   // An id names one entity of any type: a Custom Node holds active-copy.
-  assert.equal(made.id, 'filter:active-copy-2');
-  assert.deepEqual(await keepNode(k.entities, made.id, made.library.nodes[made.id]), { id: 'active-copy-2' });
+  assert.deepEqual(await clone(k.entities, 'active'), { id: 'active-copy-2' });
+  assert.equal(k.entities.library().nodes['filter:active-copy-2'].preset, undefined, 'the reader\'s, so not read only');
   const copy = k.entities.get('active-copy-2');
   assert.deepEqual([copy.type, copy.label, copy.settings, copy.origin], ['filter', 'Active copy', { source: 'customers' }, 'mine']);
   // One id names one entity, of any type: the door forgets it by its id.

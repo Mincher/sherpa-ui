@@ -1,18 +1,18 @@
 /**
  * entity-acts.ts — a graph type's own acts, through the shelf: find, read, add, change and remove its entities, and
- * publish or roll back their versions (plan 964 N3c; plan 972). A definition's body is no row, so these go through the
+ * publish, roll back or clone them (plan 964 N3c; plan 972). A definition's body is no row, so these go through the
  * shelf, never a Store: each write is a Save — checked as Save checks it, refused in its words, kept as a DRAFT. A use in a
  * graph it is given follows a version, each node stands in a stage, and a graph that gains nodes is laid out by the editor
  * the first time it shows it. DOM-free.
  *
  * Map:
- * - graphActs — A graph type's own acts: find, read, add, change and remove through the shelf; publish and roll back.
+ * - graphActs — A graph type's own acts: find, read, add, change and remove through the shelf; publish, roll back, clone.
  */
 import type { Act, ActAnswer, ActCall, ActContext } from './acts.js';
 import { createNode, deleteNode, updateNode, type NodeAnswer, type NodeChange } from './custom-nodes.js';
 import { categoryOf, type Entity, type EntityGraph } from './entity.js';
 import type { EntityShelf } from './entity-shelf.js';
-import { draftChanged, newestOf, publish, rollBack, type VersionAnswer } from './entity-versions.js';
+import { clone, draftChanged, newestOf, publish, rollBack, type VersionAnswer } from './entity-versions.js';
 import { followUses } from './node-library.js';
 import { stageNodes } from './node-stages.js';
 import type { Row } from './store.js';
@@ -156,8 +156,9 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
   ];
 }
 
-/** An entity type's version acts: Publish its draft as the next number; Roll back to an earlier one. Neither has an undo: a
- *  version is never taken away, so a Roll back is how one goes back. Plan 972 */
+/** An entity type's version acts: Publish its draft as the next number; Roll back to an earlier one; Clone it as the
+ *  reader's own. Publish and Roll back have no undo: a version is never taken away, so a Roll back is how one goes back.
+ *  A Clone's undo removes the copy. Plans 972, 972c */
 function versionActs(type: { id: string; label: string }): Act[] {
   const keysOf = (call: ActCall): unknown[] => [...(call.keys ?? [])];
   const shelfOf = (ctx: ActContext): EntityShelf | undefined => ctx.entities;
@@ -183,6 +184,19 @@ function versionActs(type: { id: string; label: string }): Act[] {
         if (!shelf) return { refused: 'Roll back: the app has no entities here.' };
         const number = Number(call.input?.['version']);
         return answered(await rollBack(shelf, String(keysOf(call)[0]), number), (n) => `Rolled back to version ${number}, published as version ${n}.`);
+      },
+    },
+    {
+      id: `${type.id}.clone`, label: 'Clone', type: type.id, changes: true,
+      description: `Make your own editable copy of a ${type.label}: a new one at version 1 that remembers where it came from.`,
+      input: { label: { label: 'Name' } },
+      async run(call, ctx) {
+        const shelf = shelfOf(ctx);
+        if (!shelf) return { refused: 'Clone: the app has no entities here.' };
+        const label = call.input?.['label'];
+        const made = await clone(shelf, String(keysOf(call)[0]), { ...(label ? { label: String(label) } : {}) });
+        if ('refused' in made) return { refused: made.refused };
+        return { done: `Made "${shelf.get(made.id)?.label ?? made.id}", your own copy.`, result: made, undo: async () => { shelf.remove(made.id); } };
       },
     },
   ];

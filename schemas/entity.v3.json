@@ -56,6 +56,11 @@
         }
       }
     },
+    "from": {
+      "description": "What it was cloned from: that entity's id, and the newest version it had then (plan 972c). Its own, never a version's.",
+      "type": "object", "additionalProperties": false, "required": ["id", "version"],
+      "properties": { "id": { "$ref": "defs.v1.json#/$defs/id" }, "version": { "type": "integer", "minimum": 1 } }
+    },
     "origin": { "description": "Set on read, never written: a preset is a file's and read only; the reader's own are mine.", "enum": ["preset", "mine"] }
   }
 }

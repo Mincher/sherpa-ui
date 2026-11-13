@@ -193,9 +193,10 @@ test('Save graph as makes a COPY — of a preset too: the reader\'s own, named, 
     ['shipped', 'Presets', false], ['my-shipped', 'My graphs', true], ['my-shipped-2', 'My graphs', false], [NEW_GRAPH, undefined, false],
   ]);
   assert.equal(await saveGraphAs(k.entities, 'shipped', { graph: edited }, { label: '  ' }), undefined);
-  // duplicate keeps a description it is not told of, and the label it is.
+  // A Clone keeps a description it is not told of, and the label it is (plan 972c).
+  const { clone } = await import(new URL('../../dist/core/data/entity-versions.js', import.meta.url));
   await k.entities.save({ ...filter('described', 'Described'), description: 'Kept' });
-  assert.equal(await k.entities.duplicate('described', 'described-copy'), true);
+  assert.deepEqual(await clone(k.entities, 'described', { id: 'described-copy' }), { id: 'described-copy' });
   assert.deepEqual([k.entities.get('described-copy').label, k.entities.get('described-copy').description], ['Described copy', 'Kept']);
 });
 

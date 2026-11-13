@@ -178,7 +178,7 @@ test('a preset is read only: a connection on its header is refused in words, and
   const library = hasLib(true);
   const w = beside(library);
   const done = headerInput(w, { from: 'start/rows', to: 'has' }, library);
-  assert.match(done.fault, /a preset is read only: Copy to my nodes to add an input/);
+  assert.match(done.fault, /a preset is read only: clone it to add an input/);
   assert.equal(library.nodes['has-status'].inputs.length, 2);
   // A refused drop (TODO 803): no workflow and no library to keep, so the line is not kept.
   assert.deepEqual(Object.keys(done), ['fault']);

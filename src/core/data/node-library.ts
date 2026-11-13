@@ -32,7 +32,6 @@
  * - updateAll — The workflow with every use of one definition brought to the library's.
  * - editDefinition — The library after one change to a definition; a preset's is refused.
  * - tagDefinition — A definition's tags set, tidied: every use shares them, no use goes stale; a preset's refused.
- * - copyToMine — A custom, editable copy of a definition (a preset's, as "Copy to my nodes").
  */
 import { hashOf, stable } from './content-hash.js';
 import { withoutBends } from './connector-bends.js';
@@ -88,7 +87,7 @@ export interface NodeDefinition extends NodeSnapshot {
   description?: string;
   /** Words to organise and find it by: the node panel lists it under each, and its search finds it by one. */
   tags?: readonly string[];
-  /** From a file, read only: "Copy to my nodes" makes a custom one (D15). */
+  /** From a file, read only: a Clone makes the reader's own (D15, plan 972c). */
   preset?: true;
   /** Zip ties in the body: they change no data, so are no part of its version or its diff. */
   ties?: readonly NodeTie[];
@@ -463,18 +462,4 @@ export function tagDefinition(library: NodeLibrary, id: string, tags: unknown): 
   if (!was || was.preset || JSON.stringify(next) === JSON.stringify(tidyTags(was.tags))) return library;
   const { tags: _tags, ...rest } = was;
   return { ...library, nodes: { ...library.nodes, [id]: { ...rest, ...(next.length ? { tags: next } : {}) } } };
-}
-
-/** A custom, editable copy of a definition — a preset's, as "Copy to my nodes" — under a free id.
- *  `id` is none when the definition is not there. */
-export function copyToMine(library: NodeLibrary, id: string): { library: NodeLibrary; id?: string } {
-  const was = library.nodes[id];
-  if (!was) return { library };
-  // An entity's key is `<type>:<id>`, and one id names one entity of any type (plan 746).
-  const bare = (key: string): string => key.slice(key.indexOf(':') + 1);
-  const taken = new Set(Object.keys(library.nodes).map(bare));
-  const free = (n: number): string => { const next = n === 1 ? `${id}-copy` : `${id}-copy-${n}`; return taken.has(bare(next)) ? free(n + 1) : next; };
-  const copy = free(1);
-  const { preset: _preset, ...mine } = structuredClone(was);
-  return { library: { ...library, nodes: { ...library.nodes, [copy]: { ...mine, label: `${was.label} copy` } } }, id: copy };
 }

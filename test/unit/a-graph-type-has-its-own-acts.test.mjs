@@ -39,8 +39,8 @@ async function withPlaybook(run) {
 test('every graph type has its own acts, made from the registry: the library\'s and the app\'s', async () => {
   await withPlaybook(async () => {
     const verbs = (type) => actsOf({ type }).map((a) => a.id.slice(type.length + 1));
-    assert.deepEqual(verbs('playbook'), ['find', 'read', 'add', 'change', 'remove', 'publish', 'roll-back']);
-    assert.deepEqual(verbs('node'), ['find', 'read', 'add', 'change', 'remove', 'publish', 'roll-back'], 'a Custom Node too');
+    assert.deepEqual(verbs('playbook'), ['find', 'read', 'add', 'change', 'remove', 'publish', 'roll-back', 'clone']);
+    assert.deepEqual(verbs('node'), ['find', 'read', 'add', 'change', 'remove', 'publish', 'roll-back', 'clone'], 'a Custom Node too');
     assert.deepEqual(typeActs(PLAYBOOK).map((a) => a.id), actsOf({ type: 'playbook' }).map((a) => a.id), 'typeActs gives a graph type the same');
     const add = actsOf({ type: 'playbook' }).find((a) => a.id === 'playbook.add');
     const input = (await actSchema(add)).properties.input;

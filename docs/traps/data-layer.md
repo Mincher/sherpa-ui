@@ -7617,13 +7617,13 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   draft changes until the reader saves or discards them. A connection to a lost socket is kept, and
   is a fault.
 - **A preset is read only** (`preset: true`): `editDefinition` returns the library given;
-  `copyToMine` makes a custom copy.
+  a Clone (`clone`, the act `<type>.clone`, plan 972c) makes the reader's own copy.
 - **The editor OPENS it** (M10): `bindWorkflow`'s `open(use)` shows `innerOf(use).workflow` under
   a `sherpa-breadcrumbs` trail, and an edit there is an `editDefinition` of the library DRAFT
   (kept for the tab beside the workflow's; at Save the app keeps each one `edits()` names, through
   `keepNode`, and `discard()` puts it back). A use whose recorded version is old says "Update available", shows
   `definitionDiff` and a split button: "Update instance", and in its menu the two bulk updates,
-  each behind a critical `sherpa-dialog`. A preset's inside is locked, with "Copy to my nodes".
+  each behind a critical `sherpa-dialog`. A preset's inside is locked, with Clone when the app gives its `act`.
 - **"Save as Custom Node" is `groupNodes`, "Ungroup" is `ungroupUse`** (M11): each connection over
   the edge is one socket per outside OUTPUT that feeds in (a Group Input row) and per inside
   output that feeds out, typed by what its source sends. The definition keeps the nodes WHERE THEY
@@ -7815,13 +7815,13 @@ plan-713 D11 with its update flow).
   node `asNode` makes of it, keyed by its use's kind (`<type>:<id>`; a `node`'s plain id). So the
   one Custom Node path serves them all: the panel lists them under Custom Nodes, a place is
   `useOf` (the version and `was` recorded), Enter opens the inside (a preset read only, with
-  "Copy to my nodes"), and a save, a `refresh` from the watch, `staleUses`, the diff and the split
+  Clone), and a save, a `refresh` from the watch, `staleUses`, the diff and the split
   button are the Custom Node's own. No second path exists for an entity.
 - **Back to its entity.** `nodeEntityOf(kind, definition)` is the inverse of `asNode`: an edit made
   inside a use, or a copy, is saved as an entity of the kind's type. A type's own settings ride in
-  the definition's `settings` (never part of its version), so "Copy to my nodes" of a preset
+  the definition's `settings` (never part of its version), so a Clone of a preset
   Filter is saved as the reader's own Filter, its source kept. One id names one
-  entity of ANY type: `copyToMine` frees an id among every type's.
+  entity of ANY type: `clone` frees an id among every type's.
 - **What the panel offers** is `offeredKinds`, for the graph shown (the canvas's entity, given to
   `bindWorkflow` as `entity`; inside a use opened, that one): a kind its type `takes` (its
   families, the rule the check holds too), and any entity's node (no family bounds one, D1) but

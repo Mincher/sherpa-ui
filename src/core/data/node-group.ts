@@ -296,7 +296,7 @@ export function headerInput(
   const use = workflow.nodes.find((n) => n.id === useId);
   const definition = use && library?.nodes?.[use.kind];
   if (!use || !definition || row !== undefined || all[use.kind]?.model !== 'graph') return { fault: 'only a Custom Node\'s header takes a new input' };
-  if (definition.preset) return { fault: 'a preset is read only: Copy to my nodes to add an input' };
+  if (definition.preset) return { fault: 'a preset is read only: clone it to add an input' };
   const taken = new Set([...definition.inputs, ...definition.outputs].map((s) => s.name));
   const name = freeName(slug(connection.from.replace('/', '-').replace('#', ''), 'in'), taken);
   const input: NodeSocket = { name, label: wordsOf(connection.from, workflow, all), type: asSocket(sentBy(connection.from, workflow, all)) };
@@ -331,7 +331,7 @@ export function socketEdit(
   const use = workflow.nodes.find((n) => n.id === useId);
   const definition = use && library?.nodes?.[use.kind];
   if (!use || !definition || ({ ...kindsOf(library), ...kinds })[use.kind]?.model !== 'graph') return { fault: 'only a Custom Node has sockets to change' };
-  if (definition.preset) return { fault: 'a preset is read only: Copy to my nodes to change its sockets' };
+  if (definition.preset) return { fault: 'a preset is read only: clone it to change its sockets' };
   const word = side === 'inputs' ? 'input' : 'output';
   const sockets: readonly (NodeSocket | NodeOutput)[] = definition[side];
   const was = sockets.find((s) => s.name === name);

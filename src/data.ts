@@ -220,7 +220,6 @@ export {
   GROUP_INPUT,
   GROUP_OUTPUT,
   checkNodeLibrary,
-  copyToMine,
   definitionDiff,
   editDefinition,
   followUses,
@@ -247,7 +246,7 @@ export {
 /* An ENTITY: a graph saved under a type, an id and a name; a Custom Node is the type `node`. Plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type */
 export {
   ENTITY_SCHEMA, bodyOf, categoryOf, definitionOf, definitionPart, entityGraph, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf, withBody,
-  type Entity, type EntityBody, type EntityDefinition, type EntityGraph, type EntityLibrary, type EntityQuery, type EntityRef, type EntityVersion,
+  type Entity, type EntityBody, type EntityDefinition, type EntityFrom, type EntityGraph, type EntityLibrary, type EntityQuery, type EntityRef, type EntityVersion,
 } from './core/data/entity.js';
 /* Custom Nodes, one way: a door for each act, for the editor, an MCP tool and an app's assistant alike. Plan 942 */
 export { createNode, deleteNode, keepNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
@@ -262,7 +261,8 @@ export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './co
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
 // Numbered versions on every entity: Save writes a draft, Publish makes the next number (plan 972).
 export {
-  draftChanged, hashOfDefinition, newestOf, nextVersion, publish, publishedOf, rollBack, versionsOf, type VersionAnswer, type VersionFacts,
+  clone, draftChanged, hashOfDefinition, newestOf, nextVersion, publish, publishedOf, rollBack, sourceNewer, versionsOf,
+  type CloneChange, type VersionAnswer, type VersionFacts,
 } from './core/data/entity-versions.js';
 // Every act an app can do, said once, through one door; and each type's own acts. Plan 964 N1, N2
 export { graphActs } from './core/data/entity-acts.js';

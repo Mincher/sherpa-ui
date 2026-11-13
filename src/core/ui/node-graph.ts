@@ -89,13 +89,14 @@ import '../data/filter.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { report } from '../data/report.js';
 import {
-  checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, numberOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
+  checkNodeLibrary, definitionDiff, editDefinition, innerOf, kindsOf, numberOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
 import { aiWords } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, socketEdit, ungroupUse } from '../data/node-group.js';
-import { entityKind, type EntityRef } from '../data/entity.js';
+import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
+import type { ActAnswer, ActCall } from '../data/acts.js';
 import { offeredKinds, savedCategories } from '../data/entity-types.js';
 import { dataPane, definitionPane, flowPane, instancePane, modelsPane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
 import { graphModels } from '../data/graph-models.js';
@@ -2497,6 +2498,9 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   /** The entity this graph is: the panel offers what `offeredKinds` says of it, and inside each node opened, of
    *  that one; "Update all instances" never writes its saved copy over the draft. TRAP T-an-entity-is-used-as-a-node */
   entity?: EntityRef;
+  /** The app's acts, run as a press runs them (`outlet.act`), so its permissions are checked in one place: "Copy to my
+   *  nodes" runs `<type>.clone` through it, and its copy comes back in the library (plan 972c). None: no copy is offered. */
+  act?: (id: string, call: ActCall) => Promise<ActAnswer>;
   /** The store a Source names, by its id: what Fetch reads. None, or it says none, the Source is "not fetched yet". TODO 836 */
   storeOf?: (id: string) => Store | undefined | Promise<Store | undefined>;
   /** The cap of a fetch: rows and bytes. Left out, 100,000 rows and 50 MB. */
@@ -2553,7 +2557,7 @@ const isUses = (v: unknown): v is RecentUse[] => Array.isArray(v) && v.every((u:
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
-  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, act, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;
@@ -2845,7 +2849,7 @@ export function bindWorkflow(
       // Kept for the tab as the drag ends, not each pointer move: each is the whole workflow as JSON.
       if (!dragging) session?.set(pointer, draft);
     } else if (readOnly()) {
-      report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
+      report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Clone it, and change the clone.', at: { workflow: workflow.id } });
     } else {
       const id = path.at(-1)!.kind;
       const laid = settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K());
@@ -3225,37 +3229,63 @@ export function bindWorkflow(
   trailAt?.addEventListener('button-click', onTrail);
   header?.addEventListener('graph-reset', reset);
   resetBar()?.setAttribute('data-reset-graph', '');
-  /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
-  const copy = (): void => edit(() => {
+  /** Each kind a Clone made, waited for until the app hands it back in the library. */
+  const awaited = new Map<string, () => void>();
+  /** The kind is in the library, now or once the app hands it back; false if it does not come within 2s. */
+  const arrival = (kind: string): Promise<boolean> => (lib.nodes[kind] ? Promise.resolve(true) : new Promise((done) => {
+    const late = setTimeout(() => { awaited.delete(kind); done(false); }, 2000);
+    awaited.set(kind, () => { clearTimeout(late); done(true); });
+  }));
+  /** Clone: the one Clone, through the app's acts (plan 972c), then the copy takes the use that opened it, as
+   *  one step, so Undo takes it back whole. */
+  const copy = async (): Promise<void> => {
     const step = path.at(-1);
-    if (!step) return;
-    const made = copyToMine(lib, step.kind);
-    if (!made.id) return;
-    setLib(made.library, [made.id]);
+    if (!step || !act) return;
+    const { type, id } = entityRefOf(step.kind);
+    const answer = await act(`${type}.clone`, { keys: [id] });
+    if ('refused' in answer) {
+      report({ code: 'node-clone', message: `bindWorkflow: ${answer.refused}`, at: { workflow: workflow.id } });
+      return;
+    }
+    const made = entityKind({ type, id: String((answer.result as { id?: unknown } | undefined)?.id ?? '') });
+    if (!(await arrival(made))) {
+      report({ code: 'node-clone', message: `bindWorkflow: the copy "${made}" was made, but the app did not hand it back in the library.`, at: { workflow: workflow.id } });
+      return;
+    }
+    // The reader moved on while it was made: the copy stays theirs, and nothing is re-pointed.
+    if (path.at(-1) !== step) return;
+    edit(() => repoint(step, made));
+  };
+  /** The use a preset was opened through takes its copy, and the way in follows it. */
+  const repoint = (step: Opened, made: string): void => {
     const parent = path.slice(0, -1);
     path = parent;
     const at = shown().nodes.find((n) => n.id === step.use);
     if (at && !readOnly()) {
       const { version: _v, was: _w, ...own } = at;
-      write({ ...shown(), nodes: shown().nodes.map((n) => (n.id === at.id ? { ...own, ...useOf(lib, made.id!, { id: at.id, x: at.x, y: at.y }) } : n)) });
+      write({ ...shown(), nodes: shown().nodes.map((n) => (n.id === at.id ? { ...own, ...useOf(lib, made, { id: at.id, x: at.x, y: at.y }) } : n)) });
     }
-    path = [...parent, { kind: made.id, use: step.use, label: lib.nodes[made.id]!.label }];
+    path = [...parent, { kind: made, use: step.use, label: lib.nodes[made]!.label }];
     enter(null);
     if (inspector) inspectNone(inspector);
-  });
+  };
   const scopeNote = (): HTMLElement[] => {
     if (!insidePreset()) return [];
     const note = document.createElement('sherpa-stack');
     note.setAttribute('data-gap', 'md');
     const words = document.createElement('p');
     words.style.margin = '0';
-    words.textContent = 'This Custom Node is a preset: its inside is read only. Copy it to your nodes to change it.';
-    const button = document.createElement('sherpa-button');
-    button.setAttribute('data-label', 'Copy to my nodes');
-    button.setAttribute('data-size', 'sm');
-    button.setAttribute('data-look', 'saturated');
-    button.addEventListener('button-click', copy);
-    note.append(words, button);
+    words.textContent = act ? 'This Custom Node is a preset: its inside is read only. Clone it to change your own copy.' : 'This Custom Node is a preset: its inside is read only.';
+    note.append(words);
+    // A copy is the app's Clone: with no acts given, none is offered.
+    if (act) {
+      const button = document.createElement('sherpa-button');
+      button.setAttribute('data-label', 'Clone');
+      button.setAttribute('data-size', 'sm');
+      button.setAttribute('data-look', 'saturated');
+      button.addEventListener('button-click', () => void copy());
+      note.append(button);
+    }
     return [note];
   };
   const showScope = (): void => {
@@ -4086,6 +4116,8 @@ export function bindWorkflow(
       if (own && JSON.stringify(ownTags) === JSON.stringify(handedTags)) ownTags = handedTags = tidyTags(next.nodes[own]?.tags);
       handed = next;
       lib = { ...next, nodes: { ...next.nodes, ...edits() } };
+      // A Clone's copy has come back.
+      for (const [kind, done] of awaited) if (lib.nodes[kind]) { awaited.delete(kind); done(); }
       refreshPanel();
       draw();
     },

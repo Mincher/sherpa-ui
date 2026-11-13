@@ -4,7 +4,7 @@
  * holding its own values. It runs NESTED: innerOf gives the graph inside, the checks run there
  * with the same words and name each fault by path, and a Custom Node that holds itself is a loop.
  * A use records the version it was made from, so a change shows as a diff, and an update keeps
- * its own values. A preset is read only; "Copy to my nodes" makes one to edit.
+ * its own values. A preset is read only; a Clone makes one to edit (an-entity-keeps-its-versions).
  * Will, TODO 719 · plan 713 M9, D9-D13, D15. TRAP T-a-custom-node-is-an-instance
  *
  *   node --test test/unit/a-custom-node-is-an-instance.test.mjs
@@ -214,19 +214,11 @@ test('an update keeps the instance\'s own values, drops those of a row lost, and
   assert.deepEqual(editWorkflow(updated, { node: 'perm', row: 'role', value: 'viewer' }, kinds).nodes[1].values.role, 'viewer');
 });
 
-test('a preset is read only; Copy to my nodes makes one to edit', () => {
+test('a preset is read only: an edit to it is refused, and its kind says so', () => {
   const l = library({ shipped: { ...ORG, label: 'Shipped', preset: true } });
   assert.equal(lib.editDefinition(l, 'shipped', { label: 'Mine' }), l, 'refused: the one given');
   assert.equal(lib.editDefinition(l, 'nope', { label: 'Mine' }), l);
   assert.equal(lib.editDefinition(l, 'org-permissions', { label: 'Mine' }).nodes['org-permissions'].label, 'Mine');
   assert.equal(lib.nodeKindOf(l.nodes.shipped).preset, true);
-  const { library: copied, id } = lib.copyToMine(l, 'shipped');
-  assert.equal(id, 'shipped-copy');
-  assert.equal(copied.nodes[id].preset, undefined);
-  assert.equal(copied.nodes[id].label, 'Shipped copy');
-  assert.equal(lib.editDefinition(copied, id, { label: 'Edited' }).nodes[id].label, 'Edited');
-  assert.equal(lib.copyToMine(copied, 'shipped').id, 'shipped-copy-2');
-  assert.equal(copied.nodes.shipped.preset, true, 'the preset itself is as it was');
-  assert.deepEqual(Object.values(copied.nodes).flatMap(schemaCheck('defs.v1.json#/$defs/nodeDefinition')), []);
-  assert.equal(lib.copyToMine(l, 'nope').id, undefined);
+  assert.deepEqual(Object.values(l.nodes).flatMap(schemaCheck('defs.v1.json#/$defs/nodeDefinition')), []);
 });

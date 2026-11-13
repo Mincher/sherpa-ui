@@ -15,8 +15,11 @@
  * - VersionAnswer — What Publish and Roll back answer: the number made, or why not, in words.
  * - publish — Publish an entity's draft as its next version, through the shelf.
  * - rollBack — Publish an earlier version as the next one, and put it in the draft.
+ * - CloneChange — What a Clone may set: the copy's id and words, and a body in place of its source's.
+ * - clone — The ONE Clone: the reader's own editable copy of an entity, at version 1, remembering its source.
+ * - sourceNewer — The newer version a clone's source has published since, or none.
  */
-import { definitionPart, withBody, type Entity, type EntityDefinition, type EntityVersion } from './entity.js';
+import { definitionPart, withBody, type Entity, type EntityBody, type EntityDefinition, type EntityVersion } from './entity.js';
 import type { EntityShelf } from './entity-shelf.js';
 import { contentHash } from './content-hash.js';
 
@@ -90,4 +93,45 @@ export async function rollBack(shelf: EntityShelf, id: string, number: number, f
   const version = nextVersion(entity, was.definition, { ...facts, note: facts.note ?? `Roll back to version ${number}` });
   const draft = publishedOf({ ...entity, versions: [version] });
   return await shelf.save({ ...draft, versions: [version, ...versionsOf(entity)] }) ? { number: version.number } : { refused: `"${entity.label}" was not saved: its checks say why.` };
+}
+
+/** What a Clone may set: the copy's id, name, words, tags and category, and a body in place of its source's (Save graph as:
+ *  the canvas). `description` given as undefined drops it. */
+export interface CloneChange {
+  id?: string;
+  label?: string;
+  description?: string | undefined;
+  tags?: readonly string[];
+  category?: string;
+  body?: EntityBody;
+}
+
+/** The ONE Clone (plan 972c): the reader's own editable copy of an entity, a preset's or theirs, as the reader has it (or
+ *  with the body given), under a free id (`<id>-copy`, `-copy-2`…) and "<label> copy" unless told; a new id, so it starts
+ *  at version 1, and it remembers its source and the version it had (`from`). Refused, in words, for one not there or an
+ *  id taken. */
+export async function clone(shelf: EntityShelf, id: string, change: CloneChange = {}): Promise<{ id: string } | { refused: string }> {
+  const was = shelf.get(id);
+  if (!was) return { refused: `"${id}" is not there.` };
+  const taken = new Set(shelf.list().map((e) => e.id));
+  const free = (n: number): string => { const next = n === 1 ? `${id}-copy` : `${id}-copy-${n}`; return taken.has(next) ? free(n + 1) : next; };
+  const copyId = change.id ?? free(1);
+  if (taken.has(copyId)) return { refused: `"${copyId}" is taken: an id names one entity.` };
+  const { origin: _origin, versions: _versions, from: _from, uses: _uses, description: had, ...own } = structuredClone(was);
+  const body = change.body ? withBody(own, change.body) : own;
+  const description = 'description' in change ? change.description : had;
+  const copy: Entity = {
+    ...body, id: copyId, label: change.label ?? `${was.label} copy`, ...(description ? { description } : {}),
+    ...(change.tags ? { tags: [...change.tags] } : {}), ...(change.category ? { category: change.category } : {}),
+    from: { id: was.id, version: newestOf(was)?.number ?? 1 },
+  };
+  return await shelf.save(copy) ? { id: copyId } : { refused: `The copy of "${was.label}" was not saved: its checks say why.` };
+}
+
+/** The newer version a clone's source has published since it was made, or none: what "its source has a newer version"
+ *  reads. */
+export function sourceNewer(shelf: Pick<EntityShelf, 'get'>, entity: Pick<Entity, 'from'>): number | undefined {
+  const from = entity.from;
+  const now = from ? newestOf(shelf.get(from.id) ?? {})?.number : undefined;
+  return from && now !== undefined && now > from.version ? now : undefined;
 }
