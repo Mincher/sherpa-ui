@@ -904,7 +904,8 @@
   "asks": {
     "shape": "rows",
     "filters": true,
-    "fields": true
+    "fields": true,
+    "detail": true
   },
   "takes": [
     "highlight"
@@ -971,7 +972,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (columns, key, actions, rowKey, groups, currentKey, current, selectedRecords, selectedKeys, selected). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (columns, key, actions, detail, rowKey, groups, currentKey, current, selectedRecords, selectedKeys, selected). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1351,6 +1352,11 @@
         {
           "name": "actions",
           "type": "GridAction[]",
+          "access": "read-write"
+        },
+        {
+          "name": "detail",
+          "type": "GridDetail | null",
           "access": "read-write"
         },
         {

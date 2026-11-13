@@ -71,6 +71,8 @@ export interface DataAsk {
   /** It STACKS each segment by a Secondary — a bar chart: `data-stack-field`, or
    *  its slot's secondary. Will, TODO 548 */
   stacks?: boolean;
+  /** Its rows OPEN on rows of another type: that type, and its field that holds a row's key. Its provider reads them. TODO 963 */
+  detail?: (el: Element) => { type: string; by: string } | undefined;
 }
 
 /** What a component takes from its provider beside its data, as its `static

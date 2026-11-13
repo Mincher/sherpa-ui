@@ -25,8 +25,11 @@ import type { GridHost } from './grid-host.js';
 export interface GridDetail {
   columns: GridColumn[];
   key?: string;
-  rows: Record<string, Row[]>;
+  rows?: Record<string, Row[]>;
   groups?: Record<string, GroupSummary[]>;
+  /** Where its rows come from, for its provider to read: this type's rows whose `by` field holds a row's key. TODO 963 */
+  type?: string;
+  by?: string;
 }
 
 /** What a row's sub-grid is told of its grid: its filters' look and limits, its
@@ -95,7 +98,7 @@ export class GridDetails {
     if (!sub) return;
     this.#tell(sub);
     const offer = this.#host.groupOffer();
-    void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [],
+    void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows?.[key] ?? [],
       groups: detail.groups?.[key] ?? null, filters: this.#host.filters(), ...(offer ? { groupOffer: offer } : {}) })
       .then(() => {
         this.#tell(sub);

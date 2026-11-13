@@ -45,6 +45,7 @@ import { RootLook } from './provider-look.js';
 import { ProviderHighlight } from './provider-highlight.js';
 import { ProviderLegends, type Picker } from './provider-legends.js';
 import { ProviderShowAs } from './provider-show-as.js';
+import { ProviderDetails } from './provider-details.js';
 import { presentsOf } from '../../core/ui/show-as.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
@@ -124,6 +125,10 @@ export class SherpaProvider extends SherpaElement {
   #sources: Record<string, DataSource> = {};
   /** Every component that asked, by the element that asked. */
   #asked = new Map<Element, Asked>();
+  /** The app's stores, as the page opening was given them: a grid's detail reads its type's. TODO 963 */
+  #stores: Readonly<Record<string, Store>> = {};
+  /** The grids whose rows open on another type's rows. TODO 963 */
+  readonly #details = new ProviderDetails({ stores: () => this.#stores });
 
   /** Can the page's data be reached: the worst of its sources'. */
   readonly #reach = new ProviderReach({
@@ -443,6 +448,7 @@ export class SherpaProvider extends SherpaElement {
    */
   async open(definition: PageDefinition, options: OpenOptions): Promise<DataSource | undefined> {
     checkPage(definition);
+    this.#stores = options.stores;
     this.#page?.abort();
     this.#headless = options.bars === false;
     const page = (this.#page = new AbortController());
@@ -946,6 +952,9 @@ export class SherpaProvider extends SherpaElement {
         : {}),
       deliver: (payload) => {
         callback(payload, leave);
+        // Its rows open on another type's: read for the rows given. TODO 963
+        const detail = asks.detail?.(el);
+        if (detail) this.#details.fill(el, detail, payload);
         if (highlights) highlights.drawHighlight(this.#highlight.test(el, scope, source));
         // A legend drawn in its card's bar: its numbers are its value chips' counts. TODO 670
         this.#legends.counted(el, payload);
@@ -969,6 +978,7 @@ export class SherpaProvider extends SherpaElement {
     const untable = table?.bound?.();
     asked.unbind = () => {
       this.#highlight.leave(el);
+      this.#details.leave(el);
       untable?.();
       unshow?.();
       unown?.();

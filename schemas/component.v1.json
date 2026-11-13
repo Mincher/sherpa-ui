@@ -104,7 +104,8 @@
         "filters": { "description": "It asks for the filters of the fields it names itself, at run time: a grid, by its columns.", "const": true },
         "fields": { "description": "It reads only the fields it names itself, at run time; until it names any, every field.", "const": true },
         "zones": { "description": "Its field's zones come with its value: a gauge.", "type": "boolean" },
-        "stacks": { "description": "It stacks each segment by a Secondary: a bar chart.", "type": "boolean" }
+        "stacks": { "description": "It stacks each segment by a Secondary: a bar chart.", "type": "boolean" },
+        "detail": { "description": "Its rows open on rows of another type, which it names itself, at run time: a grid's detail.", "const": true }
       }
     },
     "takes": {

@@ -2809,6 +2809,13 @@
             },
             {
               "kind": "field",
+              "name": "detail",
+              "type": {
+                "text": "GridDetail | null"
+              }
+            },
+            {
+              "kind": "field",
               "name": "rowKey",
               "type": {
                 "text": "string | null"

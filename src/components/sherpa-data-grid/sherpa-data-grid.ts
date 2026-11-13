@@ -86,6 +86,7 @@ interface Configured {
   columns: GridColumn[];
   key: string | null;
   actions: GridAction[];
+  detail: GridDetail | null;
 }
 
 interface GridConfig {
@@ -106,7 +107,7 @@ interface GridConfig {
   groups?: GroupSummary[];
   /** Each row's OWN rows, by its key: a row OPENS on a sub-grid of them, under
    *  these columns. Will, TODO 570 */
-  detail?: GridDetail;
+  detail?: GridDetail | null;
   /** Each filterable column's FILTER as its source defines it, by field — so a
    *  heading opens the chip's own menu, the whole value list with it.
    *  TRAP T-a-heading-opens-the-chips-menu */
@@ -191,6 +192,11 @@ export class SherpaDataGrid extends SherpaElement {
       const { columns = [], key } = el as unknown as { columns?: GridColumn[]; key?: string | null };
       return columns.length ? [...new Set([...columns.flatMap((c) => [c.field, ...c.tags ?? []]), ...(key ? [key] : [])])] : undefined;
     },
+    // The type its rows open on, and the field of that type that holds a row's key. TODO 963
+    detail: (el) => {
+      const { type, by } = (el as unknown as { detail?: GridDetail | null }).detail ?? {};
+      return type && by ? { type, by } : undefined;
+    },
   };
   // …and a hover's matches.
   static takes: readonly Take[] = ['highlight'];
@@ -204,7 +210,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* CONFIGURATION a page sets once; rows and groups arrive as data beside it.
      TRAP T-configuration-is-not-data */
-  #config: Configured = { columns: [], key: null, actions: [] };
+  #config: Configured = { columns: [], key: null, actions: [], detail: null };
   /** The last data, less what it configured: what a new setting redraws beside. */
   #lastData: unknown = {};
   /** A redraw for new settings is queued. */
@@ -228,6 +234,14 @@ export class SherpaDataGrid extends SherpaElement {
   }
   set actions(actions: GridAction[]) {
     this.#configure({ actions });
+  }
+  /** What each row OPENS on: a sub-grid's columns, and its rows by each row's key; or, with `type` and `by`, where its
+   *  provider reads them. Kept across every populate. TODO 963 */
+  get detail(): GridDetail | null {
+    return this.#config.detail;
+  }
+  set detail(detail: GridDetail | null) {
+    this.#configure({ detail });
   }
 
   /** Every setting made in one moment redraws ONCE — three setters in a row

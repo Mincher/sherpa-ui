@@ -117,6 +117,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `columns` | `GridColumn[]` | read and write |  |
 | `key` | `string \| null` | read and write |  |
 | `actions` | `GridAction[]` | read and write |  |
+| `detail` | `GridDetail \| null` | read and write |  |
 | `rowKey` | `string \| null` | read and write |  |
 | `groups` | `GroupSummary[]` | read only |  |
 | `currentKey` | `string \| null` | read and write |  |
@@ -291,7 +292,7 @@ What each class's base rule reads:
 
 |  |  |
 |---|---|
-| Asks its provider for | `rows`, with `filters`, `fields` |
+| Asks its provider for | `rows`, with `filters`, `fields`, `detail` |
 | Takes beside its data | `highlight` |
 | Presents `grid` | from `segments`, `series`, `aggregate` data; as `data-column-filters` `data-scroll-shadow` |
 
