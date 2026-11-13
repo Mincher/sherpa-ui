@@ -1,7 +1,8 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * A node's details panel has its tabs inside its body: Details, JSON, Data, and Graph details last (plan 951 D1 A).
+ * A node's details panel has its tabs inside its body: Details, JSON, Data, Definition (TODO 967), and Graph details last
+ * (plan 951 D1 A).
  * Details is current to begin with, and the reader's tab stays while another node is picked. A frame has none; with
  * nothing picked, Graph details is the only tab.
  */
@@ -39,13 +40,13 @@ const labels = (page: Page) => strip(page).evaluate((el) => [...el.shadowRoot!.q
 const current = (page: Page) => strip(page).evaluate((el) => el.shadowRoot!.querySelector('.tab[data-current] .label')?.textContent);
 const press = (page: Page, n: number) => strip(page).evaluate((el, k) => (el.shadowRoot!.querySelectorAll('.tab')[k] as HTMLElement).click(), n);
 
-test('a node has Details, JSON, Data and Graph details tabs; Details first; JSON and Data show theirs; the tab stays while another node is picked', async ({ page }) => {
+test('a node has Details, JSON, Data, Definition and Graph details tabs; Details first; JSON and Data show theirs; the tab stays while another node is picked', async ({ page }) => {
   // Nothing picked: Graph details alone.
   await expect(strip(page)).toHaveCount(1);
   expect(await labels(page)).toEqual(['Graph details']);
   await header(page, 'f').click();
   await expect(strip(page)).toHaveCount(1);
-  expect(await labels(page)).toEqual(['Details', 'JSON', 'Data', 'Graph details']);
+  expect(await labels(page)).toEqual(['Details', 'JSON', 'Data', 'Definition', 'Graph details']);
   expect(await current(page)).toBe('Details');
   await expect(page.locator('#inspector sherpa-accordion[data-heading="Incoming JSON"]')).toBeHidden();
   await press(page, 1);
@@ -59,4 +60,23 @@ test('a node has Details, JSON, Data and Graph details tabs; Details first; JSON
   await expect(strip(page)).toHaveCount(1);
   expect(await current(page)).toBe('Data');
   await expect(page.locator('#inspector .data-pane')).toBeVisible();
+});
+
+test('the Definition tab shows the node\'s kind as the registry says it, for its type, as read-only JSON (Will, TODO 967)', async ({ page }) => {
+  // Picked by its keys: the panel stands over it here.
+  await header(page, 'o').focus();
+  await page.keyboard.press('Space');
+  await page.evaluate(() => window.__settled());
+  await expect(strip(page)).toHaveCount(1);
+  const at = (await labels(page)).indexOf('Definition');
+  await press(page, at);
+  const pane = page.locator('#inspector .definition-pane');
+  await expect(pane).toBeVisible();
+  const json = JSON.parse(await pane.getAttribute('data-code') ?? '{}');
+  // Its kind's id and the kind itself, with the type it is now: a Run result's own words and rows.
+  expect(json.kind).toBe('result');
+  expect(json.definition.heading).toBe('Run result');
+  expect(typeof json.type).toBe('string');
+  // A function a kind holds is named, as JSON has none.
+  expect(JSON.stringify(json)).not.toContain('undefined');
 });

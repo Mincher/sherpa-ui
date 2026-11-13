@@ -15,6 +15,7 @@
  * - socketsPane — A Custom Node's inputs, then its outputs, each a section: its Name, its Type, and Remove.
  * - modelsPane — The models a graph uses, the primary first, each with how many AI nodes use it; none, how to give one.
  * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
+ * - definitionPane — A node's kind as the registry says it, for its type: read-only JSON, for a reader who debugs.
  * - dataPane — What a node heard and said in a simulation: each socket's rows, in the data grid and as JSON.
  */
 import type { DefinitionDiff, NodeDefinition, NodeSocket } from '../data/node-library.js';
@@ -193,6 +194,13 @@ export function flowPane(flow: NodeFlow): HTMLElement {
   };
   pane.append(section('Incoming JSON', flow.incoming), section('Outgoing JSON', { outgoing: flow.outgoing, ...(flow.definition ? { definition: flow.definition } : {}) }));
   return pane;
+}
+
+/** A node's kind as the registry says it, resolved for its type: read-only JSON, for a reader who debugs. A function a
+ *  kind holds (its run, its checks) is named, as JSON has none. Will, TODO 967 */
+export function definitionPane(definition: unknown): HTMLElement {
+  const code = JSON.stringify(definition, (key, value: unknown) => (typeof value === 'function' ? `[function ${value.name || key}]` : value), 2);
+  return make('sherpa-code-block', { 'data-language': 'json', 'data-code': code, class: 'definition-pane' });
 }
 
 /** The most rows of a socket the pane writes out. */

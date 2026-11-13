@@ -98,7 +98,7 @@ import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, socketEdit, ungroupUse } from '../data/node-group.js';
 import { entityKind, type EntityRef } from '../data/entity.js';
 import { offeredKinds, savedCategories } from '../data/entity-types.js';
-import { dataPane, flowPane, instancePane, modelsPane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
+import { dataPane, definitionPane, flowPane, instancePane, modelsPane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
 import { graphModels } from '../data/graph-models.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
 import { valuesAt, valuesIn } from '../data/node-messages.js';
@@ -115,7 +115,7 @@ import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { nodeKinds, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { nodeKinds, kindOfNode, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -2040,6 +2040,8 @@ export interface InspectOptions {
   data?: { node: SimulatedNode; stale: boolean };
   /** An Output's: the values its messages can name, their samples, and Send a test. Plan 891 */
   output?: OutputFacts;
+  /** Its kind as the registry says it, resolved for its type: the Definition tab, read only. Will, TODO 967 */
+  definition?: unknown;
 }
 
 /** What an inspector holds: its node, the fields by their element, and whom it tells. */
@@ -2056,14 +2058,17 @@ const contentTab = new WeakMap<HTMLElement, string>();
 /** What each editor's Graph details tab shows, made fresh at each fill: the whole graph's models (plan 951). */
 const graphDetails = new WeakMap<HTMLElement, () => HTMLElement>();
 
-/** A node's body: Details, and an Output, a JSON and a Data tab when it has them, and Graph details LAST (plan 951 D1 A).
- *  With no node, Graph details alone. The reader's tab is kept per inspector. */
-function contentTabs(panel: HTMLElement, details: HTMLElement | undefined, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement): HTMLElement {
+/** A node's body: Details, and an Output, a JSON, a Data and a Definition tab when it has them, and Graph details LAST
+ *  (plan 951 D1 A). With no node, Graph details alone. The reader's tab is kept per inspector. */
+function contentTabs(
+  panel: HTMLElement, details: HTMLElement | undefined, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement, definition?: HTMLElement,
+): HTMLElement {
   const graph = graphDetails.get(panel)?.();
-  if (!json && !data && !output && !graph && details) return details;
+  if (!json && !data && !output && !definition && !graph && details) return details;
   const pages = [
     ...(details ? [{ id: 'details', label: 'Details', el: details }] : []), ...(output ? [{ id: 'output', label: 'Output', el: output }] : []),
     ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : []),
+    ...(definition ? [{ id: 'definition', label: 'Definition', el: definition }] : []),
     ...(graph ? [{ id: 'graph', label: 'Graph details', el: graph }] : []),
   ];
   const asked = contentTab.get(panel);
@@ -2153,7 +2158,8 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...(test ? [test] : []), ...remove);
   const connectedTo = (row: string): string[] => graph.connections.filter((r) => r.from === `${node.id}/${row}`).map((r) => name(r.to));
   const output = options.output ? outputPane(node, options.output, connectedTo) : undefined;
-  const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined, output);
+  const definition = options.definition === undefined ? undefined : definitionPane(options.definition);
+  const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined, output, definition);
   const { tabs } = options;
   if (tabs) {
     const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
@@ -3674,8 +3680,16 @@ export function bindWorkflow(
       onTest: () => canvas.dispatchEvent(new CustomEvent('output-test', { bubbles: true, composed: true, detail: { node: node.id, kind: node.kind, ...(type ? { type } : {}), values: { ...held?.values } } })),
     };
   };
+  /** A node's kind as the registry says it, resolved for its own type: the Definition tab. Will, TODO 967 */
+  const definitionOf = (node: GraphNode): unknown => {
+    const values = shown().nodes.find((n) => n.id === node.id)?.values;
+    const kind = kindOfNode(K(), { kind: node.kind, ...(values ? { values } : {}) });
+    const type = kind ? typeOf(K()[node.kind] ?? {}, values?.['type'])?.id : undefined;
+    return { kind: node.kind, ...(type ? { type } : {}), definition: kind ?? null };
+  };
   const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
+      definition: definitionOf(node),
       onEdit, extra: extraFor(node), ...(doc?.visual ? { visual: doc.visual(node) } : {}), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}), flow: { inner: innerGraph },
       ...(simulation?.result.nodes[node.id] ? { data: { node: simulation.result.nodes[node.id]!, stale: simulation.stale } } : {}),
       ...(isOutput(node) && !doc ? { output: outputFacts(node) } : {}),
