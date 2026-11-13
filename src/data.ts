@@ -245,8 +245,8 @@ export {
 } from './core/data/node-library.js';
 /* An ENTITY: a graph saved under a type, an id and a name; a Custom Node is the type `node`. Plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type */
 export {
-  ENTITY_SCHEMA, bodyOf, categoryOf, definitionOf, entityGraph, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf, withBody,
-  type Entity, type EntityBody, type EntityGraph, type EntityLibrary, type EntityQuery, type EntityRef,
+  ENTITY_SCHEMA, bodyOf, categoryOf, definitionOf, definitionPart, entityGraph, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf, withBody,
+  type Entity, type EntityBody, type EntityDefinition, type EntityGraph, type EntityLibrary, type EntityQuery, type EntityRef, type EntityVersion,
 } from './core/data/entity.js';
 /* Custom Nodes, one way: a door for each act, for the editor, an MCP tool and an app's assistant alike. Plan 942 */
 export { createNode, deleteNode, keepNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
@@ -259,6 +259,10 @@ export { FILTER_LENS, filterOf, presetOfEntity, presetsOver, sourceOf, type Page
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
+// Numbered versions on every entity: Save writes a draft, Publish makes the next number (plan 972).
+export {
+  draftChanged, hashOfDefinition, newestOf, nextVersion, publish, publishedOf, rollBack, versionsOf, type VersionAnswer, type VersionFacts,
+} from './core/data/entity-versions.js';
 // Every act an app can do, said once, through one door; and each type's own acts. Plan 964 N1, N2
 export { actSchema, actsOf, refChoices, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext, type Choice } from './core/data/acts.js';
 /* A UX flow: one act's input asked step by step, then a confirm; a dialog and the chat draw it. Plan 964 N4 */
