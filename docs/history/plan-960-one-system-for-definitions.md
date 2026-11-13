@@ -16,7 +16,11 @@ and definitions. I'm not 100% sure though so let's investigate and plan."
 It continues [vision-entities](vision-entities.md) (2026-11-05) and [plan 746](plan-746-entities-and-graph-views.md),
 whose E1 to E5 are built. It takes in 956 to 959 (Demos parts that move into the library).
 
-**Will, 2026-11-13: D1 A, D2 A, D3 A, D4 A, D5 A, D6 A ("your picks"); "go U0a!".**
+**Will, 2026-11-13: D1 A, D2 A, D3 A, D4 A, D5 A, D6 A ("your picks"); "go U0a!".** And on D6: "If we treat a
+filter as an entity that can be created then it can hold it's own graph definition. Not all entities need to be
+permanent." So a Filter is an entity of the type Filter, and its graph is its definition, as a Coworker's is. A Where
+(a chip, a page preset) is a lens made from it where a Where can say it. And an entity may be TEMPORARY: made, used
+and dropped in the tab or the session, and kept on the shelf only when it is saved (2.3).
 
 **Status: PLAN, 2026-11-13; U0a and U0b building.** Facts from five reads, each read only:
 sherpa-ui-e8 (nodes, graphs, entities), sherpa-ui-a9 (the data layer), sherpa-ui-bd (component, page and View
@@ -149,6 +153,10 @@ One graph body (`defs.v1 #/graph`) that `workflow.v3`, `entity.v2.graph` and `no
 
 A component spec takes no envelope: it describes a kind of element, made from code (bd).
 
+An entity need not be permanent (Will, on D6). A temporary entity (a Filter made on a page, a draft) lives in the tab
+or the session, through the same door, and goes on the shelf only when it is saved. The keeper has these tiers today
+(session, local, memory, IndexedDB, PageRemote: browser/page-state.ts:17); the door says which tier an entity is in.
+
 Later, from Harness (acp-module-91): an owner, a version record, a state (draft, checked, active, archived), and each
 `uses` pinned with a health check. Not now: there are no accounts (plan 746 D6).
 
@@ -272,4 +280,4 @@ flowchart LR
 | D3 | The word "entity" | **Any one thing of a type, a row or a graph thing**: your own use | "Record" for a row, "entity" only for a graph thing |
 | D4 | Old saves | **Delete the old schemas and their readers now**: your rule, "delete, never convert" | Keep the readers one more round |
 | D5 | A View's layout in a graph | **Card nodes into a Layout node, in order, with spans; the lens writes the layout tree; HTML is made from it** (plan 746 E7) | No graph for the layout: an outline only; graphs for the data and presentation |
-| D6 | What one Filter keeps. A Preset Filter's graph may hold Math, Time, Organise and Utils nodes and a use of another filter (entity-types.ts:83, preset-filter.ts:3); a Where cannot say those, nor an Any across two fields (where.ts:190) (a9) | **A Filter keeps a Where when a Where can say it, else its graph: one type, one truth for each Filter, nothing refused** | A Filter is always a Where: graphs a Where cannot say are refused, and a use is flattened |
+| D6 (A, and Will's words at the top: a Filter is an entity with its own graph; an entity may be temporary) | What one Filter keeps. A Preset Filter's graph may hold Math, Time, Organise and Utils nodes and a use of another filter (entity-types.ts:83, preset-filter.ts:3); a Where cannot say those, nor an Any across two fields (where.ts:190) (a9) | **A Filter keeps a Where when a Where can say it, else its graph: one type, one truth for each Filter, nothing refused** | A Filter is always a Where: graphs a Where cannot say are refused, and a use is flattened |
