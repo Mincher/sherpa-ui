@@ -15,7 +15,7 @@ import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextDefinition, type ContextInit, type ContextModule, type OpenPage } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
-import type { ActAnswer, ActCall } from '../../core/data/acts.js';
+import type { ActAnswer, ActCall, ActContext } from '../../core/data/acts.js';
 import type { Entity } from '../../core/data/entity.js';
 import type { EntityShelf } from '../../core/data/entity-shelf.js';
 import type { SeedMarks } from '../../core/data/entity-store.js';
@@ -165,11 +165,10 @@ export class SherpaOutlet extends SherpaElement {
   /** Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does;
    *  its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3 */
   async act(id: string, call: ActCall = {}): Promise<ActAnswer> {
-    const options = this.#options;
-    if (!options) return { refused: this.word('not-started') };
+    const ctx = this.actContext();
+    if (!ctx) return { refused: this.word('not-started') };
     const { runAct } = await import('../../core/data/acts.js');
-    const shelf = this.#nodes.entities;
-    const answer = await runAct(id, call, { stores: this.#stores(options), ...(shelf ? { entities: shelf } : {}), signal: this.signal });
+    const answer = await runAct(id, call, ctx);
     const keys = call.keys ?? [];
     // ONE event per answer, and one per undo, so a page draws a change no store tells it (a Coworker's new Run).
     if ('refused' in answer) {
@@ -179,6 +178,16 @@ export class SherpaOutlet extends SherpaElement {
     this.emit('act-run', { id, keys, done: answer.done });
     const { undo } = answer;
     return undo ? { ...answer, undo: async () => { await undo(); this.emit('act-run', { id, keys, undone: true }); } } : answer;
+  }
+
+  /** What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the
+   *  shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through
+   *  `act`, so the page hears it. None before `start`. Plan 964 N4 */
+  actContext(): ActContext | null {
+    const options = this.#options;
+    if (!options) return null;
+    const shelf = this.#nodes.entities;
+    return { stores: this.#stores(options), ...(shelf ? { entities: shelf } : {}), signal: this.signal };
   }
 
   /** Read app.json, load each Context's Views, then open the route's Context.

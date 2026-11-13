@@ -235,7 +235,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, act, start). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, act, actContext, start). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -365,6 +365,12 @@
           "name": "act",
           "args": "id: string, call: ActCall = {}",
           "description": "Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does; its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3"
+        },
+        {
+          "$type": "method",
+          "name": "actContext",
+          "args": "",
+          "description": "What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through `act`, so the page hears it. None before `start`. Plan 964 N4"
         },
         {
           "$type": "method",

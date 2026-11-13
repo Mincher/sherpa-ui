@@ -307,6 +307,13 @@ export async function init(root, { source, query, session, view, signal, header,
   it. Ask the reader before an act that `changes`; `outlet.act(id, { keys, input })` runs one over the outlet's stores. Every app.json type gives
   `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; `actsOf({ context, view, type })` lists a page's,
   `actsOf()` every act, and `actSchema(act)` is a call's JSON Schema, for a tool.
+- **A flow asks an act's input step by step** (`registerFlow`, `sherpa-ui/data`; plan 964 N4): JSON
+  (`schemas/flow.v1.json`), keyed by its act and said in its words: `{ "v": 1, "act": "user.invite", "steps": [{ "field":
+  "scope" }, { "field": "customer", "when": { "scope": { "eq": "customer" } } }], "confirm": true }`. A step is asked
+  only when its `when` holds over the answers before it. A dialog draws every step that holds (`stepsOf`); the chat asks
+  one at a time (`nextStep`, `answerStep`, each answer checked as the act checks it), then says the confirm, then runs
+  `outlet.act(act, { keys, input })`. An act with no flow has one made from its input (`flowOf`). A reader outside a
+  page reads the stores from `outlet.actContext()`.
 - **A press names its act in markup**: `<sherpa-button commandfor="<the outlet's id>" command="--user.suspend"
   value="u1">Suspend</sherpa-button>` — its keys its `value` (a key, or a JSON list), else the selected rows of the
   page's grid; a grid row action whose `id` is an act's runs on its rows. The outlet runs it through `runAct` at once

@@ -260,7 +260,12 @@ export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './co
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
 // Every act an app can do, said once, through one door; and each type's own acts. Plan 964 N1, N2
-export { actSchema, actsOf, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext } from './core/data/acts.js';
+export { actSchema, actsOf, refChoices, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext, type Choice } from './core/data/acts.js';
+/* A UX flow: one act's input asked step by step, then a confirm; a dialog and the chat draw it. Plan 964 N4 */
+export {
+  answerStep, flowFaults, flowOf, flowsOf, nextStep, registerFlow, stepsOf,
+  type Ask, type Flow, type FlowAnswers, type FlowContext, type FlowStep, type NextStep,
+} from './core/data/flows.js';
 // A graph type's entities as rows of its type, through the Store door; its seed entities as the reader's own. Plan 960 U3
 export { entityStore, seedEntities, type EntityRowOf, type SeedMarks } from './core/data/entity-store.js';
 /* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip — or a page's Query. Plan 746 E3, TODO 822 · TRAP T-a-graph-is-a-view-of-a-type */

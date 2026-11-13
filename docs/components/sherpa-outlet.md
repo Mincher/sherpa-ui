@@ -37,6 +37,7 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 | `reload()` | Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436 |
 | `refreshNav()` | Draw the nav again — after a View is saved or deleted, say. |
 | `act(id: string, call: ActCall = {})` | Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does; its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3 |
+| `actContext()` | What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through `act`, so the page hears it. None before `start`. Plan 964 N4 |
 | `start(options: OutletOptions)` | Read app.json, load each Context's Views, then open the route's Context. The router's `context` defaults to the app's own. |
 
 ## Events

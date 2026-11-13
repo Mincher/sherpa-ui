@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/flow.v1.json",
+  "title": "Sherpa-UI flow",
+  "description": "A UX flow (plan 964 N4): one act's input asked step by step, then a confirm. It is keyed by its act and said in its act's words; a page's dialog shows every step that holds, the chat one at a time, and both run the act through its one door. It asks only the act's input: the keys it runs on are the caller's. flowFaults() reads it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "act", "steps"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 1 },
+    "act": { "description": "The act it asks for, by id: `<type>.<verb>`.", "type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)?$" },
+    "steps": {
+      "description": "Its steps, in order: each a field of the act's input, said in that field's words. Every field the act needs is asked.",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field"],
+        "properties": {
+          "field": { "description": "A field of the act's input.", "type": "string", "minLength": 1 },
+          "when": { "description": "Asked only when this holds over the answers of the steps before it: { \"scope\": { \"eq\": \"Customer\" } }.", "$ref": "defs.v1.json#/$defs/where" }
+        }
+      }
+    },
+    "confirm": { "description": "It asks the reader before it runs, its words naming each answer. None: when its act changes data.", "type": "boolean" }
+  }
+}

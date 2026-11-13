@@ -22,6 +22,7 @@
                         opened for its Query alone; a toolbar's node-editor-open goes there
     act(id, { keys, input })  run an act over the outlet's stores and shelf, as a press does;
                         its answer { done, undo } or { refused }, said by the caller; fires act-run
+    actContext()        { stores, entities } an act runs over here, for a flow's steps; null before start
 
   Slots:
     (default)   the Context's markup, put there by the outlet

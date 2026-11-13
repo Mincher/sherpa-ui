@@ -11,7 +11,10 @@
  * - Act — One act: its id, words, target, input, whether it changes data, where a press offers it, and its run.
  * - registerAct — An app adds an act; one that is not one, or whose id is taken, is refused in words. How to take it back.
  * - actsOf — The acts that apply on a page (a Context, a View, its type); asked with nothing, every act.
+ * - inputFaults — Why a call's input is refused, in words: each field by its rules, each reference a row.
  * - runAct — The ONE door: the act found, its call checked by its type's rules, run; done or refused, in words.
+ * - Choice — One value a field offers, by its words.
+ * - refChoices — A reference's choices: its type's rows by key and title, through the store door; none past 200.
  * - actSchema — An act's call as a JSON Schema, a reference's choices read from its type's store: a tool is made from it.
  * - typeActs — A type's own acts, through its store: find, read, add, change and remove.
  */
@@ -107,7 +110,7 @@ export function actsOf(at: { context?: string; view?: string; type?: string } = 
 }
 
 /** Why a call's input is refused, in words; none when it is sound: each field by its rules, each reference a row. */
-async function inputFaults(input: Readonly<Record<string, StoredField>>, given: Readonly<Row>, ctx: ActContext): Promise<string[]> {
+export async function inputFaults(input: Readonly<Record<string, StoredField>>, given: Readonly<Row>, ctx: Pick<ActContext, 'stores'>): Promise<string[]> {
   const out = Object.keys(given).filter((name) => !(name in input)).map((name) => `it takes no "${name}"`);
   const rules = typeSchema({ key: '#', fields: input }).rules;
   for (const [name, field] of Object.entries(input)) {
@@ -157,15 +160,30 @@ export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): P
   }
 }
 
+/** One value a field offers, by its words: a value's label, or a referenced row's title. */
+export interface Choice {
+  value: string | number | boolean;
+  label: string;
+}
+
+/** A reference's choices: its type's rows, each by its key and its title, read through the store door. None where its
+ *  type has no store, or past 200 rows: a caller then takes its key in words. */
+export async function refChoices(ref: string, ctx?: Pick<ActContext, 'stores'>): Promise<Choice[] | undefined> {
+  const store = ctx ? storeOfType(ctx.stores, ref) : undefined;
+  if (!store) return undefined;
+  const type = entityTypes()[ref];
+  const title = type ? titleOf(type) : store.key;
+  const { rows } = await store.load({ take: 201 });
+  return rows.length <= 200 ? rows.map((r) => ({ value: r[store.key] as Choice['value'], label: String(r[title] ?? r[store.key]) })) : undefined;
+}
+
 /** A field as JSON Schema, a reference's choices read from its type's store (at most 200: past that, its key in words). */
 async function fieldSchema(field: StoredField, name: string, ctx?: ActContext): Promise<Record<string, unknown>> {
   const description = field.description ?? field.label ?? name;
   if (field.ref) {
-    const store = ctx ? storeOfType(ctx.stores, field.ref) : undefined;
-    const type = entityTypes()[field.ref];
-    const page = store ? await store.load({ take: 201 }) : undefined;
-    const one = page && page.rows.length <= 200
-      ? { oneOf: page.rows.map((r) => ({ const: r[store!.key], title: String(r[type ? titleOf(type) : store!.key] ?? r[store!.key]) })) }
+    const choices = await refChoices(field.ref, ctx);
+    const one = choices
+      ? { oneOf: choices.map((c) => ({ const: c.value, title: c.label })) }
       : { type: ['string', 'number'], description: `The key of a ${labelOf(field.ref)}.` };
     return field.many ? { type: 'array', items: one, uniqueItems: true, description } : { ...one, description };
   }
