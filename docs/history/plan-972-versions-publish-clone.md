@@ -7,7 +7,7 @@ and definitions, so that updates can be rolled back to previous versions." And: 
 created entity, should support versioning, too. Also the ability to clone, if permitted, to an editable, owned version
 for saving."
 
-**Status: PLAN, 2026-11-13, for Will.** Owner: sherpa-demos-67, with sherpa-ui-bd (measured) and -e8, -a9.
+**Status: Will picked D1 A and D2 A, 2026-11-13** ("Save is a draft", "Takes it at once"). Owner: sherpa-demos-67, with sherpa-ui-bd (measured) and -e8, -a9.
 
 ## 1. What works now (sherpa-ui-bd measured it on :4200, 3f388f3fc)
 
