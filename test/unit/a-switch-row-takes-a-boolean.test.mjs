@@ -19,7 +19,8 @@ const { readingsOf } = await import(new URL('where.js', core));
 
 test('every switch row of every kind takes a boolean, and no other row is changed to', () => {
   const switches = Object.entries(NODE_KINDS).flatMap(([id, k]) => k.rows.filter((r) => r.control === 'switch').map((r) => `${id}/${r.name}`));
-  assert.deepEqual(switches, ['scope/#filters', 'preset/on', 'saved/on']);
+  // A bar's Switch is View Filters' and a card's Presentation's (plan 960 U4.8).
+  assert.deepEqual(switches, ['view-filters/#filters', 'preset/on', 'saved/on', 'presentation/#filters']);
   for (const s of switches) {
     const [kind, row] = s.split('/');
     assert.equal(socketType(NODE_KINDS[kind], row, 'input'), 'boolean', s);
@@ -69,7 +70,8 @@ test('the Query draws a boolean input on each switch row, and refuses a connecti
   const query = { v: 1, scopes: { data: { holds: ['status'], readings: readingsOf({ status: { eq: 'active' } }) } } };
   const live = { presets: (s) => (s === 'data' ? [{ id: 'live', label: 'Live', readings: readingsOf({ status: { in: ['active'] } }) }] : []) };
   const g = queryGraph(query, definition, live);
-  const scope = g.nodes.find((n) => n.kind === 'scope');
+  // A card's bar is on its Presentation.
+  const scope = g.nodes.find((n) => n.id === 'presentation-data');
   assert.equal(scope.rows.find((r) => r.name === '#filters').input, 'boolean');
   const refused = connectionRequest(g, { from: scope.id, to: `${scope.id}/#filters` });
   assert.match(refused.refused, /takes no connection into .*Filters.*Switch is the reader's/);

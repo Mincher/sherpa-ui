@@ -88,7 +88,7 @@ test('the Query\'s Source › Store, Search fields, Apply on and a shared Presen
   assert.deepEqual(row('source', 'search').choices.map((c) => c.value), ['name', 'email', 'status']);
   assert.deepEqual([row('source', 'applyOn').value, labels(row('source', 'applyOn').choices)], ['input', ['Change', 'Input']]);
   const shown = g.nodes.find((n) => n.kind === 'presentation');
-  for (const r of shown.rows.filter((x) => x.name !== 'rows')) assert.ok(r.choices && !r.editable, `${r.name} is a read only picklist`);
+  for (const r of shown.rows.filter((x) => !x.property)) assert.ok(r.choices && !r.editable, `${r.name} is a read only picklist`);
   assert.equal(shown.rows.find((r) => r.name === 'kind').choices.length, 5);
 });
 

@@ -57,8 +57,8 @@ test('read: the Query\'s nodes and connections, each node\'s rows as its values'
   const def = read();
   assert.equal(def.v, 3);
   assert.deepEqual(values(def, 'when-view-seats.1'), { type: 'lt', b: 5 });
-  // The root's True goes into its scope (plan 944).
-  assert.ok(def.connections.some((r) => r.from === 'when-view-seats/true' && r.to === 'scope-view/seats'));
+  // The root's True goes into its chip on View Filters (plans 944, 960 U4.8).
+  assert.ok(def.connections.some((r) => r.from === 'when-view-seats/true' && r.to === 'view-filters/seats'));
 });
 
 test('a row\'s new value is the Query\'s request, and reads back', async () => {

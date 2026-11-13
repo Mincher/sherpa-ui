@@ -340,10 +340,11 @@ test('the Query editor selects and highlights what the box encloses or crosses; 
   const sel = '#q > svg.graph-connectors path[data-from]';
   const b = await page.evaluate((s) => [...document.querySelectorAll(s)].map((p) => { const r = p.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }; }), sel);
   expect(b.length).toBeGreaterThan(1);
-  const [left, top] = [Math.min(...b.map((r) => r.left)), Math.min(...b.map((r) => r.top))];
-  const [right, bottom] = [Math.max(...b.map((r) => r.right)), Math.max(...b.map((r) => r.bottom))];
-  // A box over the middle of the connections, from blank canvas below them.
-  await drag(page, [(left + right) / 2 - 5, bottom + 60], [(left + right) / 2 + 5, top - 5]);
+  const top = Math.min(...b.map((r) => r.top));
+  const bottom = Math.max(...b.map((r) => r.bottom));
+  // A box over the middle of the Trues' lines into View Filters (plan 960 U4.8), from blank canvas below them.
+  const t = await page.evaluate((s) => [...document.querySelectorAll(`${s}[data-from$="/true"]`)].map((p) => { const r = p.getBoundingClientRect(); return (r.left + r.right) / 2; }), sel);
+  await drag(page, [t[0]! - 5, bottom + 60], [t[0]! + 5, top - 5]);
   const n = await page.evaluate((s) => document.querySelectorAll(`${s}[data-selected]`).length, sel);
   expect(n).toBeGreaterThan(0);
   expect(await page.evaluate(() => document.getElementById('q')!.getAttribute('data-select-box'))).toBe('');

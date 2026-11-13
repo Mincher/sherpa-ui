@@ -1,12 +1,11 @@
 /**
- * A PAGE'S QUERY IS DRAWN AS NODES: its Source, each scope with its held
- * fields as rows, a Condition into each answered field, Arrange, Presentation
- * and the components — derived from the live Query, never kept; presets, saved
- * filters, status fields and superseded answers too. The rows go from each node's
- * Rows row into the next one's header; a Condition's True row (plan 944) and a
- * preset's header go into their scope's row. Each edit is the command a chip
- * asks, and Save writes the page definition. Will, TODO 555 · plan 695 N1 · plan 713 M3.
- * TRAP T-the-node-editor-asks-the-query
+ * A PAGE'S QUERY IS DRAWN AS NODES: its Source; View Filters, the View's bar,
+ * each held field a chip its filter's True joins; each card's Presentation, its
+ * own filters' Pass and its Organise on its rows' path, its bar its rows; and the
+ * View they go into (plan 960 U4.8) — derived from the live Query, never kept;
+ * presets, saved filters, status fields and superseded answers too. Each edit is
+ * the command a chip asks, and Save writes the page definition. Will, TODO 555 ·
+ * plan 695 N1 · plan 713 M3. TRAP T-the-node-editor-asks-the-query
  *
  *   node --test test/unit/a-query-is-drawn-as-nodes.test.mjs
  */
@@ -16,7 +15,7 @@ import assert from 'node:assert/strict';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { queryGraph, editedCondition, graphRequest, connectionRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph, editedCondition, graphRequest, connectionRequest, orderRequest } = await import(new URL('query-graph.js', core));
 const { readingsOf, treeReading, whereOf } = await import(new URL('where.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { checkPage, openSource, pageWithQuery } = await import(new URL('page-definition.js', core));
@@ -53,43 +52,47 @@ const components = [
 ];
 const graph = queryGraph(query, definition, { components });
 const node = (id) => graph.nodes.find((n) => n.id === id);
-/** A node's rows by name, but its Rows and True rows: they only send (plan 944). */
-const own = (n) => n.rows.filter((r) => r.name !== ROWS.name && r.name !== 'true');
+/** A node's rows by name, but those that only send: Results, a test's Pass, Fail and True, a Content (plans 944, 971). */
+const own = (n) => n.rows.filter((r) => !r.property);
 const values = (id) => Object.fromEntries(own(node(id)).map((r) => [r.name, r.value]));
 const row = (id, name) => node(id).rows.find((r) => r.name === name);
 
-test('the Records page\'s Query: its Source, each scope, its conditions, Organise, Presentation, each component', () => {
+test('the Records page\'s Query: its Source, View Filters, each card\'s path and Presentation, and the View (plan 960 U4.8)', () => {
   assert.deepEqual(graph.nodes.map((n) => `${n.kind}:${n.id}`), [
     'source:source',
-    'scope:scope-view', 'field:field-view-region', 'condition:when-view-region', 'presentation:show-r-donut', 'component:component-r-donut', 'component:component-r-line',
-    'scope:scope-data', 'field:field-data-status', 'condition:when-data-status', 'organise:organise-data', 'component:component-grid',
-    'scope:scope-r-bar', 'organise:organise-r-bar', 'presentation:show-r-bar', 'component:component-r-bar',
+    'field:field-view-region', 'condition:when-view-region', 'view-filters:view-filters', 'presentation:presentation-r-donut', 'presentation:presentation-r-line',
+    'field:field-data-status', 'condition:when-data-status', 'organise:organise-data', 'presentation:presentation-data',
+    'organise:organise-r-bar', 'presentation:presentation-r-bar',
+    'view:view',
   ]);
-  // The rows from each Rows row into the next header; each Field into its test, and the test's True row into its row (plan 944).
+  // Every Field reads the page's rows; a View filter's True joins its chip; a card's own filter's Pass is on its rows' path,
+  // then its Organise, then its Presentation; View Filters and each Content go into the View. No scope or component node.
   assert.deepEqual(graph.connections.map((r) => `${r.from} → ${r.to}`), [
-    'source/rows → scope-view', 'field-view-region/field → when-view-region', 'when-view-region/true → scope-view/region',
-    'scope-view/rows → show-r-donut', 'show-r-donut/rows → component-r-donut', 'scope-view/rows → component-r-line',
-    'scope-view/rows → scope-data', 'field-data-status/field → when-data-status', 'when-data-status/true → scope-data/status', 'scope-data/rows → organise-data', 'organise-data/rows → component-grid',
-    'scope-view/rows → scope-r-bar', 'scope-r-bar/rows → organise-r-bar', 'organise-r-bar/rows → show-r-bar', 'show-r-bar/rows → component-r-bar',
+    'source/rows → field-view-region', 'field-view-region/field → when-view-region', 'when-view-region/true → view-filters/region',
+    'view-filters/filters → view/filters',
+    'source/rows → presentation-r-donut', 'presentation-r-donut/content → view/content', 'source/rows → presentation-r-line', 'presentation-r-line/content → view/content',
+    'source/rows → field-data-status', 'field-data-status/field → when-data-status', 'when-data-status/pass → organise-data', 'organise-data/rows → presentation-data', 'presentation-data/content → view/content',
+    'source/rows → organise-r-bar', 'organise-r-bar/rows → presentation-r-bar', 'presentation-r-bar/content → view/content',
   ]);
 });
 
-test('each data node sends its rows from its Rows row, first; its header takes them, of any type; a condition sends its True', () => {
+test('the rows come in on a header, of any type, and leave by a row: Results, a test\'s Pass, a Content, the View Filters', () => {
   for (const n of graph.nodes) {
-    const data = !['condition', 'field', 'preset', 'saved', 'component'].includes(n.kind);
-    assert.equal(n.rows[0]?.name === ROWS.name, data, `${n.id}: its Rows row`);
-    assert.equal(n.output, undefined, `${n.id}: no header sends rows`);
-    // The Source is where the rows come from: nothing comes in on its header, and it forks nowhere.
-    if (n.kind === 'source') assert.deepEqual([n.input, n.branches], [undefined, undefined], n.id);
-    else if (data) assert.equal(n.input, 'any', `${n.id}: its header takes any`);
+    assert.equal(n.output, undefined, `${n.id}: no header sends`);
+    // The Source is where the rows come from, and the View where they end: nothing comes in on either header.
+    if (n.kind === 'source' || n.kind === 'view') assert.deepEqual([n.input, n.branches], [undefined, undefined], n.id);
+    else assert.equal(n.input, 'any', `${n.id}: its header takes any`);
+    if (['source', 'organise'].includes(n.kind)) assert.equal(n.rows[0].name, ROWS.name, `${n.id}: its Rows row, first`);
   }
-  // A test takes its Field's column on its header, and sends its True from its True row, 1 or 0 (plan 944);
-  // a Query's Field takes nothing, and sends its column.
-  assert.deepEqual([node('when-view-region').branches, node('when-view-region').input, socketType(node('when-view-region'), undefined, 'output'), socketType(node('when-view-region'), 'true', 'output')], [undefined, 'any', undefined, 'value']);
-  assert.deepEqual([node('field-view-region').input, node('field-view-region').branches, socketType(node('field-view-region'), 'field', 'output')], [undefined, undefined, 'object']);
-  // The scope's row takes what a True sends.
-  assert.ok(accepts(socketType(node('when-view-region'), 'true', 'output'), row('scope-view', 'region').input));
-  assert.equal(row('scope-view', 'rows').output, 'object');
+  // A test takes its Field's column on its header, and sends its Pass (the rows that hold) and its True, 1 or 0 (plan 971).
+  const when = node('when-view-region');
+  assert.deepEqual(['pass', 'fail', 'true'].map((r) => socketType(when, r, 'output')), ['object', 'object', 'value']);
+  assert.deepEqual([node('field-view-region').input, socketType(node('field-view-region'), 'field', 'output')], ['any', 'object']);
+  // A chip on View Filters takes what a True sends; a card's chip takes no line.
+  assert.ok(accepts(socketType(when, 'true', 'output'), row('view-filters', 'region').input));
+  assert.equal(row('presentation-data', 'status').input, undefined);
+  // The View: View Filters, one, and Content, many; no rows of its own, nothing out.
+  assert.deepEqual(node('view').rows.map((r) => [r.name, r.input, !!r.many, r.output]), [['filters', 'object', false, undefined], ['content', 'object', true, undefined]]);
 });
 
 test('each node shows what the Query and the definition say', () => {
@@ -97,15 +100,18 @@ test('each node shows what the Query and the definition say', () => {
   assert.equal(node('source').heading, 'Source');
   // No Count row now (plan 944).
   assert.deepEqual(values('source'), { store: 'customers', pageSize: 25, search: ['name', 'email'], applyOn: 'change' });
-  // Its Rows, the filter Switch, then each held field with a socket for its condition's True.
-  assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
-    ['rows', 'Results', undefined, undefined, undefined],
-    // A field's row takes its condition's True, a number (plan 944).
-    ['#filters', 'Filters', 'boolean', 'switch', true], ['region', 'Region', 'any', undefined, undefined], ['created', 'created', 'any', undefined, undefined],
+  // The Switch, then each held field, a chip saying its pick in words, then the output into the View.
+  assert.deepEqual(node('view-filters').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
+    ['#filters', 'Filters', 'boolean', 'switch', true], ['region', 'Region', 'any', undefined, 'equals(EMEA, APAC)'], ['created', 'created', 'any', undefined, undefined],
+    ['filters', 'View Filters', undefined, undefined, undefined],
   ]);
-  // A scope's name is the definition's, else its one component's, else its id.
-  assert.deepEqual([node('scope-view').heading, node('scope-data').heading, node('scope-r-bar').heading], ['View Context', 'Customer records', 'By status']);
-  assert.equal(values('show-r-donut').kind, 'donut');
+  // A card's Presentation: its bar — the Switch and its chips, an off one said so — then how it shows its rows, then its Content.
+  assert.deepEqual(node('presentation-data').rows.map((r) => [r.name, r.value]), [
+    ['#filters', true], ['status', 'Off: equals(active)'], ['plan', undefined], ['kind', ''], ['sort', ''], ['content', undefined],
+  ]);
+  // A Content is named by its component; the View's by the kind.
+  assert.deepEqual([node('view-filters').heading, node('presentation-data').heading, node('presentation-r-bar').heading, node('view').heading], ['View Filters', 'Customer records', 'By status', 'View']);
+  assert.equal(values('presentation-r-donut').kind, 'donut');
   // Is one of with no values to pick from: its words are tags. Plan 749 P4
   assert.deepEqual(values('when-view-region'), { type: 'in', b: ['EMEA', 'APAC'] });
   assert.deepEqual(values('field-view-region'), { field: 'region' });
@@ -113,14 +119,13 @@ test('each node shows what the Query and the definition say', () => {
   // Its sort, group and search, and its slot's axes (plan 960 U4.2: one Organise node).
   assert.deepEqual(values('organise-data'), { sort: 'name', direction: 'desc', group: 'plan', search: '', primary: '', secondary: '', segments: '' });
   const tree = JSON.stringify({ op: 'in', value: ['EMEA', 'APAC'] });
-  assert.deepEqual([node('when-view-region').ref, node('field-view-region').ref, node('organise-data').ref, node('scope-data').ref], [
-    { scope: 'view', field: 'region', path: '', tree }, { scope: 'view', field: 'region', tree }, { scope: 'data' }, { scope: 'data' },
+  assert.deepEqual([node('when-view-region').ref, node('field-view-region').ref, node('organise-data').ref, node('view-filters').ref, node('presentation-data').ref, node('view').ref], [
+    { scope: 'view', field: 'region', path: '', tree }, { scope: 'view', field: 'region', tree }, { scope: 'data' }, { scope: 'view' }, { scope: 'data', component: 'grid' }, undefined,
   ]);
   // Its own slot: every row a key a select holds; '' is the definition's.
   // A card's chart: its kind and its segments' order on the Presentation; its axes on its Organise node (plan 960 U4.2).
-  assert.deepEqual(values('show-r-bar'), { kind: 'donut', sort: '' });
+  assert.deepEqual(values('presentation-r-bar'), { '#filters': true, kind: 'donut', sort: '' });
   assert.deepEqual(values('organise-r-bar'), { sort: '', direction: 'asc', group: '', search: '', primary: '', secondary: 'status', segments: '' });
-  assert.equal(node('component-grid').heading, 'Customer records');
 });
 
 test('every connection joins an output to an input that is there, and that accepts its type', () => {
@@ -137,8 +142,9 @@ test('every connection joins an output to an input that is there, and that accep
 
 test('it reads left to right, and nothing in one column overlaps', () => {
   const x = (id) => node(id).x;
-  assert.ok(x('source') < x('field-view-region') && x('field-view-region') < x('when-view-region') && x('when-view-region') < x('scope-view'));
-  assert.ok(x('scope-view') < x('scope-data') && x('scope-data') < x('organise-data') && x('organise-data') < x('component-grid'));
+  assert.ok(x('source') < x('field-view-region') && x('field-view-region') < x('when-view-region') && x('when-view-region') < x('view-filters'));
+  assert.ok(x('when-data-status') < x('organise-data') && x('organise-data') < x('presentation-data') && x('presentation-data') < x('view'));
+  assert.equal(x('view-filters'), x('presentation-data'), 'View Filters stands with the Content');
   const columns = Object.groupBy(graph.nodes, (n) => n.x);
   for (const column of Object.values(columns)) {
     const ys = column.map((n) => n.y);
@@ -158,15 +164,19 @@ test('what a reader may change: everything a door takes — read only only what 
   const editable = (id) => Object.fromEntries(own(node(id)).map((r) => [r.name, !!r.editable]));
   assert.deepEqual([editable('when-view-region'), editable('field-view-region')], [{ type: true, b: true }, { field: true }]);
   assert.deepEqual(editable('organise-data'), { sort: true, direction: true, group: true, search: true, primary: true, secondary: true, segments: true });
-  assert.deepEqual(editable('scope-view')['#filters'], true);
+  // A bar's Switch changes; its chips are their Conditions' to change.
+  assert.deepEqual([editable('view-filters'), editable('presentation-data')], [
+    { '#filters': true, region: false, created: false }, { '#filters': true, status: false, plan: false, kind: true, sort: true },
+  ]);
+  assert.match(row('view-filters', 'region').hint, /Its Condition changes it/);
   // The page size changes live; the rest of the Source is the definition's, and says so.
   assert.deepEqual(editable('source'), { store: false, pageSize: true, search: false, applyOn: false });
   assert.match(row('source', 'search').hint, /page definition/);
   assert.equal(row('source', 'rows').hint, undefined, 'its Rows row says nothing of the definition');
   // A slot's presentation changes; one on the View has no slot to keep it, and says so.
-  assert.deepEqual(Object.values(editable('show-r-bar')), [true, true]);
-  assert.deepEqual(Object.values(editable('show-r-donut')), [false, false]);
-  assert.match(row('show-r-donut', 'kind').hint, /shares the View/);
+  assert.deepEqual(editable('presentation-r-bar'), { '#filters': true, kind: true, sort: true });
+  assert.deepEqual(editable('presentation-r-donut'), { kind: false, sort: false });
+  assert.match(row('presentation-r-donut', 'kind').hint, /shares the View/);
   // A pick list's operators, by their words; a number field's are its type's. The Field lists the fields the scope may hold.
   assert.deepEqual(node('when-view-region').rows[0].choices.map((c) => c.value), ['in', 'notin', 'eq', 'ne']);
   assert.deepEqual(node('field-view-region').rows[0].choices.map((c) => c.value), ['region', 'created']);
@@ -241,10 +251,11 @@ async function opened() {
 const nodeIn = (g, id) => g.nodes.find((n) => n.id === id);
 const valuesIn = (g, id) => Object.fromEntries(own(nodeIn(g, id)).map((r) => [r.name, r.value]));
 
-test('a PRESET is a node into its scope\'s row: its on, from the Query, and what it writes', async () => {
+test('a PRESET is a node into its bar\'s row: its on, from the Query, and what it writes', async () => {
   const { source, facts, draw } = await opened();
   const off = draw();
-  assert.deepEqual(nodeIn(off, 'scope-data').rows.map((r) => r.name), ['rows', '#filters', '@big', 'plan', 'seats']);
+  // A card with no component bound still has its Presentation: its bar is there, the Switch, its chips, then its presets.
+  assert.deepEqual(nodeIn(off, 'presentation-data').rows.map((r) => r.name), ['#filters', 'plan', 'seats', '@big', 'kind', 'sort', 'content']);
   assert.deepEqual(valuesIn(off, 'preset-data-big'), { on: false, seats: undefined }, 'what it writes is a Condition node now, not a line of words');
   const wrote = nodeIn(off, 'when-preset-data-big-seats');
   assert.deepEqual([wrote.kind, wrote.rows.every((r) => !r.editable), wrote.ref.scope], ['condition', true, undefined], 'read only: the definition owns it');
@@ -252,8 +263,8 @@ test('a PRESET is a node into its scope\'s row: its on, from the Query, and what
   assert.ok(off.connections.some((r) => r.from === 'when-preset-data-big-seats/true' && r.to === 'preset-data-big/seats'), 'from its True (plan 944)');
   assert.deepEqual(nodeIn(off, 'preset-data-big').ref, { scope: 'data', preset: 'big' });
   // Its True into its row: a boolean into a boolean.
-  assert.ok(off.connections.some((r) => r.from === 'preset-data-big' && r.to === 'scope-data/@big'));
-  assert.deepEqual([nodeIn(off, 'preset-data-big').output, nodeIn(off, 'scope-data').rows.find((r) => r.name === '@big').input], ['boolean', 'boolean']);
+  assert.ok(off.connections.some((r) => r.from === 'preset-data-big' && r.to === 'presentation-data/@big'));
+  assert.deepEqual([nodeIn(off, 'preset-data-big').output, nodeIn(off, 'presentation-data').rows.find((r) => r.name === '@big').input], ['boolean', 'boolean']);
   // Its on is the command a chip asks; drawn again, it is on, and its rows are its own, not a condition's.
   const preset = nodeIn(off, 'preset-data-big');
   source.query.ask(graphRequest({ node: preset, row: preset.rows[0], value: true }, facts));
@@ -270,7 +281,7 @@ test('a SAVED FILTER is a node: on no bar it says what it would add, and no conn
   const saved = nodeIn(g, 'saved-trials');
   assert.equal(saved.kind, 'saved');
   assert.deepEqual(saved.rows.map((r) => [r.name, r.value, !!r.editable]), [['on', false, false], ['view:status', undefined, false]]);
-  assert.ok(!g.connections.some((r) => r.from.startsWith('saved-trials') || r.to === 'saved-trials'), 'no connection out, none into the node itself');
+  assert.ok(!g.connections.some((r) => r.from.startsWith('saved-trials/') || r.from === 'saved-trials' || r.to === 'saved-trials'), 'no connection out, none into the node itself');
   const wrote = nodeIn(g, 'when-saved-trials-view:status');
   assert.ok(wrote.kind === 'condition' && wrote.rows.every((r) => !r.editable), 'its condition is a Condition node, read only');
   assert.ok(g.connections.some((r) => r.from === 'field-saved-trials-view:status/field' && r.to === wrote.id), 'on its Field');
@@ -279,10 +290,10 @@ test('a SAVED FILTER is a node: on no bar it says what it would add, and no conn
   const onBar = draw({ presets: (s) => (s === 'view' ? [{ id: 'saved:trials', label: 'Trials', readings: readingsOf({ status: { in: ['trial'] } }) }] : []) });
   assert.equal(nodeIn(onBar, 'saved-trials'), undefined);
   assert.equal(nodeIn(onBar, 'preset-view-saved:trials').kind, 'saved');
-  assert.ok(onBar.connections.some((r) => r.to === 'scope-view/@saved:trials'));
+  assert.ok(onBar.connections.some((r) => r.to === 'view-filters/@saved:trials'));
 });
 
-test('a STATUS FIELD is a node between the Source and the View: each value, and when a row has it', () => {
+test('a STATUS FIELD is a node between the Source and the cards: each value, and when a row has it', () => {
   const store = statusFields(new ArrayStore(rows, { key: 'id' }), {
     health: { type: 'status', label: 'Health', values: [{ value: 'at risk', status: 'critical', when: [{ seats: { lt: 10 } }] }, { value: 'healthy', status: 'success' }] },
   });
@@ -290,14 +301,20 @@ test('a STATUS FIELD is a node between the Source and the View: each value, and 
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
     ['Results', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
-  // The Source's rows get their status, then reach the View: never the Source's straight. They are the first Branch's Data too (plan 944).
-  assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), [
-    'source/rows → status-health', 'source/rows → branch-status-health.at risk/data', 'status-health/rows → scope-view',
+  // The Source's rows get their status, then reach each card: never the Source's straight. They are the first Branch's Data
+  // too (plan 944).
+  assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.from === 'status-health/rows').map((r) => `${r.from} → ${r.to}`), [
+    'source/rows → status-health', 'source/rows → branch-status-health.at risk/data',
+    // Every Field reads them, a preset's and a saved filter's too.
+    'status-health/rows → field-preset-data-big-seats', 'status-health/rows → presentation-data', 'status-health/rows → field-saved-trials-view:status',
   ]);
-  assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'scope-view').x);
+  assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'presentation-data').x);
+  // A Field reads the rows labelled.
+  const held = queryGraph({ v: 1, scopes: { view: { holds: ['health'], readings: readingsOf({ health: { in: ['at risk'] } }) } } }, page, { domains: store.domains });
+  assert.ok(held.connections.some((r) => r.from === 'status-health/rows' && r.to === 'field-view-health'));
 });
 
-test('a SUPERSEDED answer is drawn kept, not in force: read only, into its scope\'s row', () => {
+test('a SUPERSEDED answer is drawn kept, not in force: read only, into its chip on the card\'s bar', () => {
   const g = queryGraph({ v: 1, scopes: {
     view: { holds: ['status'], readings: readingsOf({ status: { in: ['active'] } }) },
     data: { holds: ['status'], readings: {}, superseded: readingsOf({ status: { in: ['trial'] } }) },
@@ -305,14 +322,59 @@ test('a SUPERSEDED answer is drawn kept, not in force: read only, into its scope
   const kept = nodeIn(g, 'kept-data-status');
   assert.equal(kept.description, 'Superseded: kept, not in force.');
   assert.ok([kept, nodeIn(g, 'field-kept-data-status-status')].every((n) => n.rows.filter((r) => !r.property).every((r) => !r.editable && /View holds/.test(r.hint))));
-  // From its True (plan 944).
-  assert.ok(g.connections.some((r) => r.from === 'kept-data-status/true' && r.to === 'scope-data/status'));
+  // From its True (plan 944), into its chip: the one chip on a card that takes a line, as it is no filter on the path.
+  assert.ok(g.connections.some((r) => r.from === 'kept-data-status/true' && r.to === 'presentation-data/status'));
+  assert.deepEqual(nodeIn(g, 'presentation-data').rows.find((r) => r.name === 'status').input, 'any');
   // It moves nowhere: a connection from it is refused.
-  assert.ok('refused' in connectionRequest(g, { from: 'kept-data-status/true', to: 'scope-view/status' }));
-  // Nor does a row that is no True: only its True goes into a field. No False now (plan 944).
-  const moves = queryGraph({ v: 1, scopes: { view: { holds: ['status'], readings: readingsOf({ status: { in: ['active'] } }) }, data: { holds: ['status'], readings: {} } } }, page);
-  assert.ok('refused' in connectionRequest(moves, { from: 'when-view-status/#false', to: 'scope-data/status' }));
-  assert.ok('request' in connectionRequest(moves, { from: 'when-view-status/true', to: 'scope-data/status' }), 'its True moves it');
+  assert.ok('refused' in connectionRequest(g, { from: 'kept-data-status/true', to: 'view-filters/status' }));
+});
+
+test('a field MOVES between scopes by its tree: a View filter onto a card\'s rows, a card\'s back into a chip of View Filters', () => {
+  const moves = queryGraph({ v: 1, scopes: {
+    view: { holds: ['status'], readings: readingsOf({ status: { in: ['active'] } }) },
+    data: { holds: ['plan', 'seats'], readings: readingsOf({ plan: { in: ['Pro'] }, seats: { gt: 5 } }) },
+  } }, page);
+  const ask = (from, to) => connectionRequest(moves, { from, to });
+  const moved = (r) => r.request.map(({ scope, field, reading }) => [scope, field, reading === null ? null : 'reading']);
+  // A View filter's Pass (or its True) onto a card's rows' path: its Presentation, its Organise or its And. Same field, that card.
+  for (const to of ['presentation-data', 'and-data']) assert.deepEqual(moved(ask('when-view-status/pass', to)), [['view', 'status', null], ['data', 'status', 'reading']], to);
+  assert.deepEqual(moved(ask('when-view-status/true', 'presentation-data')), [['view', 'status', null], ['data', 'status', 'reading']]);
+  // A card's filter back into a chip of View Filters: Send to View.
+  assert.deepEqual(moved(ask('when-data-plan/pass', 'view-filters/status')), [['data', 'plan', null], ['view', 'status', 'reading']]);
+  // Already there, nothing to do.
+  assert.equal(ask('when-data-plan/pass', 'and-data'), null);
+  // A card's chip takes no line; a row that is no True or Pass moves nothing; a View component's Content is no card's path.
+  for (const [from, to] of [['when-view-status/true', 'presentation-data/plan'], ['when-view-status/fail', 'presentation-data'], ['when-view-status/#false', 'presentation-data'], ['when-view-status/pass', 'view-filters']]) {
+    assert.match(ask(from, to).refused, /a filter's True goes into a chip of View Filters, its Pass onto a card's rows/, `${from} → ${to}`);
+  }
+});
+
+test('a card\'s own filters, two or more, join in ONE And whose Pass goes on; one goes on alone', () => {
+  const g = queryGraph({ v: 1, scopes: { data: { holds: ['plan', 'seats'], readings: readingsOf({ plan: { in: ['Pro'] }, seats: { gt: 5 } }) } } }, page);
+  const and = nodeIn(g, 'and-data');
+  assert.deepEqual([and.kind, and.rows.map((r) => [r.name, r.value, !!r.editable]), and.ref, and.description], [
+    'condition', [['type', 'and', false], ['pass', undefined, false], ['fail', undefined, false], ['true', undefined, false]], { scope: 'data' }, 'All of 2 filters',
+  ]);
+  assert.deepEqual(g.connections.filter((r) => r.to === 'and-data' || r.from === 'and-data/pass').map((r) => `${r.from} → ${r.to}`), [
+    'when-data-plan/pass → and-data', 'when-data-seats/pass → and-data', 'and-data/pass → presentation-data',
+  ]);
+  // Its Operation is no request: every filter of a card holds.
+  assert.equal(graphRequest({ node: and, row: and.rows[0], value: 'or' }), undefined);
+  const one = queryGraph({ v: 1, scopes: { data: { holds: ['plan'], readings: readingsOf({ plan: { in: ['Pro'] } }) } } }, page);
+  assert.deepEqual([nodeIn(one, 'and-data'), one.connections.some((r) => r.from === 'when-data-plan/pass' && r.to === 'presentation-data')], [undefined, true]);
+});
+
+test('a bar\'s chips in another order are the Query\'s order; the drawn order asks nothing', () => {
+  const g = queryGraph({ v: 1, scopes: { view: { holds: ['status', 'plan', 'seats'], readings: readingsOf({ status: { in: ['active'] }, seats: { gt: 5 } }) } } }, page);
+  const bar = nodeIn(g, 'view-filters');
+  assert.deepEqual(bar.rows.map((r) => r.name), ['#filters', 'status', 'plan', 'seats', 'filters']);
+  assert.equal(orderRequest(bar, { '#filters': true, status: 'equals(active)', seats: 'greaterThan(5)' }), undefined);
+  assert.deepEqual(orderRequest(bar, { seats: 'greaterThan(5)', '#filters': true, status: 'equals(active)' }), { scope: 'view', order: ['seats', 'status'] });
+  // Asked, the picked chips change places; the one with no pick keeps its own.
+  const holds = editQuery({ v: 1, scopes: { view: { holds: ['status', 'plan', 'seats'], readings: {} } } }, { scope: 'view', order: ['seats', 'status'] }).scopes.view.holds;
+  assert.deepEqual(holds, ['seats', 'plan', 'status']);
+  // A node with no bar has no order.
+  assert.equal(orderRequest(nodeIn(g, 'when-view-status'), { b: 'x', type: 'in' }), undefined);
 });
 
 test('every edit is the command a chip asks — a value typed by its field, the Switch, a preset, Sort, a page size', async () => {
@@ -322,7 +384,9 @@ test('every edit is the command a chip asks — a value typed by its field, the 
     const node = nodeIn(g, id);
     return graphRequest({ node, row: node.rows.find((r) => r.name === name), value }, facts);
   };
-  assert.deepEqual(ask('scope-data', '#filters', false), { scope: 'data', suspended: true });
+  assert.deepEqual(ask('presentation-data', '#filters', false), { scope: 'data', suspended: true });
+  assert.deepEqual(ask('view-filters', '#filters', false), { scope: 'view', suspended: true });
+  assert.equal(ask('presentation-data', 'plan', 'x'), undefined, 'a chip is its Condition\'s to change');
   assert.deepEqual(ask('preset-data-big', 'on', true), { scope: 'data', preset: 'big', on: true });
   assert.deepEqual(ask('source', 'pageSize', '50'), { pageSize: 50 });
   assert.equal(ask('source', 'pageSize', 'many'), undefined);
@@ -406,7 +470,8 @@ test('every value ticked is in force, and drawn as its own test, said as its chi
   const test_ = graph.nodes.find((n) => n.id === 'when-data-status');
   const op = test_.rows.find((r) => r.name === 'type');
   assert.deepEqual([op.value, op.choices.map((c) => c.label), op.editable], ['all', [ALL], false]);
-  assert.ok(graph.connections.some((c) => c.from === 'when-data-status/true' && c.to === 'scope-data/status'), 'its True joins its chip');
+  assert.ok(graph.connections.some((c) => c.from === 'when-data-status/pass' && c.to === 'presentation-data'), 'its Pass is on the card\'s rows');
+  assert.equal(graph.nodes.find((n) => n.id === 'presentation-data').rows.find((r) => r.name === 'status').value, ALL, 'its chip says it');
   assert.deepEqual(pageWithQuery(page, source.query.draft).source.scopes.data.where, { status: { all: true } });
   source.close();
 });

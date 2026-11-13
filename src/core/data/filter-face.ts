@@ -185,7 +185,7 @@ const NEGATIVE = new Set<FilterOp>(['ne', 'notin', 'notcontains', 'notbetween'])
  * `equals(A) OR (greaterThan(5) AND lessThan(9))`. The chip's value, its tip and
  * a grid heading's. Will, TODO 409. TRAP T-a-condition-badge-says-that-not-which
  */
-export function spellConditions(state: FilterState): string {
+export function spellConditions(state: Pick<FilterState, 'type' | 'values' | 'answer'>): string {
   const dated = state.type === 'date';
   const labelOf = new Map(state.values.map((v) => [v.value, v.label]));
   const part = (leaf: ConditionLeaf): string => {

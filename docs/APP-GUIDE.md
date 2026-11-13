@@ -385,6 +385,13 @@ A graph View is a View whose body is a canvas, showing one entity of a type
   It is the ONE node editor, on the page's Query as its document: every tool works there, and each
   edit is asked of the Query as a chip asks; the layout (places, ties, frames, stages, lanes) is kept
   for the tab beside it. `T-one-node-editor`
+- **A page's Query is three nodes** (plan 960 U4.8). **View Filters** is the View's bar: its
+  Switch, a chip per held field (its filter's True joins it) and a row per preset; the View's
+  Organise joins it. Each component is a **Presentation**, a Content: its rows come from the Source
+  through its own filters' Pass (two or more through one And) and its Organise, and its card's bar
+  is its rows, then Show as. The **View** takes View Filters and every Content. Move a field
+  between the View and a card by its filter: its True into a chip of View Filters, or its Pass
+  onto the card's rows. `T-the-node-editor-asks-the-query`
 - **A page and its Views go through one lens door.** `lensOf('query')` draws a page's Query and
   writes it back as the page (`pageWithQuery`); `lensOf('view')` draws the page with one of its
   Views put on its Query, and writes back the View (`viewWithQuery`), its `query` as the Query holds

@@ -196,7 +196,7 @@ export interface NodeKind {
   /** Its header input takes several connections (D4). */
   many?: true;
   output?: SocketType;
-  /** Its fixed rows; a Query node adds its own after them (a scope's fields). */
+  /** Its fixed rows; a Query node adds its own among them (a bar's chips and presets). */
   rows: readonly RowKind[];
   /** The data layer's name for what it stands for: a shape, or the function a workflow runs it by. */
   model: string;
@@ -227,6 +227,8 @@ export const propertyRow = (name: string, label: string, gives: Given = 'number'
 const propertySocket = (gives: Given): SocketType => (gives === 'boolean' ? 'boolean' : ['object', 'list', 'rows', 'field'].includes(gives) ? 'object' : 'value');
 /** A test's True: 1 where it holds, 0 where not (Will, plan 944). No node has a True or a False socket. */
 const TRUE = propertyRow('true', 'True');
+/** A bar's filter Switch: off, its filters are kept and filter nothing (a page's Query; plan 960 U4.8). */
+const FILTERS: RowKind = { name: '#filters', label: 'Filters', control: 'switch', input: 'boolean' };
 /** Results: the data rows a node sends on, a property like Count; they come in on its header (D1). It keeps the address `node/rows`. Plan 713 §3 */
 export const ROWS: Readonly<RowKind> = propertyRow('rows', 'Results', 'rows');
 
@@ -522,10 +524,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Status field', icon: 'status-ok', description: 'Label each row by conditions',
     input: 'any', rows: [ROWS], model: 'StatusField', graphs: ['query'], category: 'Status',
   },
-  // Its Switch, then a row per preset and per field it holds, each with a boolean input: a True.
-  scope: {
-    heading: 'Scope', icon: 'filter', input: 'any',
-    rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch', input: 'boolean' }], model: 'ScopeQuery', graphs: ['query'],
+  // The View's bar (plan 960 U4.8): its Switch, then a chip per held field (its tree's True joins it) and a row per preset.
+  // Its header takes the View's Organise; it goes into the View.
+  'view-filters': {
+    heading: 'View Filters', icon: 'filter', description: 'Filter every card in the View', input: 'any',
+    rows: [FILTERS, propertyRow('filters', 'View Filters', 'object')], model: 'ScopeQuery', graphs: ['query'],
   },
   // Logic: one test per Condition, And and Or joining tests (plan 783 D4). TRAP T-a-condition-is-a-tree-of-nodes
   condition: {
@@ -571,17 +574,24 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     ],
     model: 'Arrangement', graphs: ['query', 'workflow'], category: 'Organise',
   },
-  // How rows are shown: a chart's kind, and its segments' order. Its axes are the Organise node's.
+  // A card, the Content (plan 960 U4.8): its rows come in on its header; its bar, where it carries one (a Query adds its
+  // chips and presets after the Switch), then how its rows are shown. Its axes are the Organise node's.
   presentation: {
-    heading: 'Presentation', icon: 'insights', description: 'Choose how rows are shown', input: 'any',
+    heading: 'Presentation', icon: 'insights', description: 'Choose how a card shows its rows', input: 'any',
     rows: [
-      ROWS,
+      FILTERS,
       { name: 'kind', label: 'Show as', control: 'presentation' },
       { name: 'sort', label: 'Segment order', control: 'direction' },
+      propertyRow('content', 'Content', 'object'),
     ],
     model: 'Presentation', graphs: ['query'],
   },
-  component: { heading: 'Component', icon: 'table-columns', input: 'any', rows: [], model: 'bindSource', graphs: ['query'] },
+  // The View (Will, D4): the View Filters over every Content. No rows of its own, and nothing out.
+  view: {
+    heading: 'View', icon: 'table-columns', description: 'Put the View Filters over every card',
+    rows: [{ name: 'filters', label: 'View Filters', input: 'object' }, { name: 'content', label: 'Content', input: 'object', many: true }],
+    model: 'PageDefinition', graphs: ['query'],
+  },
   // A workflow: each kind over the data-layer function it runs by; a family's Type row picks what it does (plan 749).
   value: {
     heading: 'Value', icon: 'function', description: 'Primitive value variables', typeLabel: 'Type', defaultType: 'text',

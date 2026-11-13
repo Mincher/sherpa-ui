@@ -1,10 +1,11 @@
 /**
  * query-graph.ts — a page's Query drawn as nodes, for the Node Editor, and each edit made in
  * them as the command it asks. DERIVED each time the Query changes: the Source and its store's
- * status fields, each scope with its presets, saved filters, conditions and superseded answers,
- * its arrangement, presentation and components — and which node each step of a load lights; and
- * each Source a reader placed that the page does not read. Kinds are the one registry's. DOM-free.
- * Will, TODO 555 · docs/history/plan-78-query-editor.md · TRAP T-the-node-editor-asks-the-query
+ * status fields; the View Filters, the View's bar; each card's Presentation, its own filters and
+ * Organise on its rows' path; the View they go into; presets, saved filters and superseded answers
+ * — and which node each step of a load lights; and each Source a reader placed that the page does
+ * not read. Kinds are the one registry's. DOM-free. Will, TODO 555 · plan 960 U4.8
+ * docs/history/plan-78-query-editor.md · TRAP T-the-node-editor-asks-the-query
  * TRAP T-a-step-names-its-node · TRAP T-a-condition-is-a-tree-of-nodes
  *
  * Map:
@@ -14,7 +15,7 @@
  * - walkedNodes — Each node a scope's walk counted, and its rows, by the walk's own step ids.
  * - LoadSteps — What a page's load did after its read: its walk's counts, and the rows it arranged.
  * - traceQuerySteps — Say what a load did after its read, each a step of its node, under the load.
- * - GraphComponent — One component a scope's rows reach: its id, its label and how it shows them.
+ * - GraphComponent — One component of the page: a Content of the View, its id, its label and how it shows its rows.
  * - ScopePreset — One preset of a scope, as declared: its id, its name and the readings it writes.
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say, and the Sources a reader keeps.
  * - whereGraph — A Where as the graph a Filter keeps it as: a Source, a Field and a test per field, each group joined.
@@ -23,6 +24,7 @@
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a `when` that is no condition, a stray connection.
  * - queryGraph — A page's Query as nodes and connections, laid out in columns by depth.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
+ * - orderRequest — The order a bar's chips are written in, as the Query's request; none where it is the drawn one.
  * - PlaceFacts — What placing a node needs of the Query: its holds, fields, presets and which are on.
  * - KeptSource — A Source a reader placed that the page does not read: kept in the editor's draft, saved nowhere.
  * - PlaceAnswer — What placing a node asks: a command, a Source to keep, or why it cannot.
@@ -30,28 +32,31 @@
  * - placeRequest — The command placing a node asks in a scope, a Source to keep, or why it cannot.
  * - keptEdit — The kept Sources after an edit of one's Store row; none, the edit is no kept Source's.
  * - ConnectionAnswer — What a new connection asks: a command, or why it is refused; null, nothing to do.
- * - connectionRequest — The command a new connection asks: a condition into a field of a scope, moved or retargeted.
+ * - connectionRequest — The command a new connection asks: a filter moved into a chip of View Filters, or onto a card's rows.
  */
 import { SAVED_PRESET, storeOf, type PageDefinition } from './page-definition.js';
 import { pageFields } from './type-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
-import { ALL } from './filter-face.js';
+import { ALL, spellConditions } from './filter-face.js';
 import { parseWhere, readingsOf, treeReading, type Where } from './where.js';
 import { presetHeld } from './query-edits.js';
 import { entityRefOf, type EntityGraph } from './entity.js';
 import { FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
-  LIST_OPS, NODE_KINDS, ROWS, kindNode, propertyRow, resolveKind, rowChoices, rowOf, socketOf, storedValues,
+  LIST_OPS, NODE_KINDS, ROWS, TEST_KINDS, kindNode, resolveKind, rowChoices, rowOf, socketOf, storedValues,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeConnection, type RowChoice,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
 
-/** A Condition's True in the Query, as a workflow's: 1 or 0, the line its tree leaves by (plan 944). */
-const TRUE_ROW: GraphRow = propertyRow('true', 'True');
+/** A test's properties, as its kind gives them (plan 971 A): Pass and Fail, and a Condition's True. */
+const TEST_ROWS: Readonly<Record<'condition' | 'time', readonly GraphRow[]>> = {
+  condition: resolveKind(NODE_KINDS['condition']!, 'and').rows.filter((r) => r.property),
+  time: resolveKind(NODE_KINDS['time']!, 'duration').rows.filter((r) => r.property),
+};
 /** A reading with every value ticked, as the Query graph's test names it. */
 const EVERY = 'all';
 
@@ -70,7 +75,14 @@ export const QUERY_NODE = {
   saved: (id: string): string => `saved-${id}`,
   savedWhen: (id: string, field: string): string => `when-saved-${id}-${field}`,
   organise: (scope: string): string => `organise-${scope}`,
-  component: (id: string): string => `component-${id}`,
+  viewFilters: 'view-filters',
+  view: 'view',
+  /** A Content: a card's, the one that carries its bar, by its scope; any other by its component's id. */
+  presentation: (id: string): string => `presentation-${id}`,
+  /** The node that carries a scope's bar: the View's View Filters, a card's Presentation. */
+  bar: (scope: string): string => (scope === VIEW ? 'view-filters' : `presentation-${scope}`),
+  /** A card's own filters, two or more, joined. */
+  and: (scope: string): string => `and-${scope}`,
 } as const;
 
 /** The node an S3 span lights, by its step: the Source, by its load and by its store's reads. */
@@ -123,7 +135,7 @@ export function traceQuerySteps(applied: Query, { walk, total, statuses }: LoadS
   for (const [scope, results] of Object.entries(walk.results)) {
     const q = applied.scopes[scope];
     const rows = walk.ends?.[scope];
-    traceStep(QUERY_NODE.scope(scope), { parent, state: q?.suspended ? 'skipped' : 'done', ...(rows !== undefined ? { rows } : {}) });
+    traceStep(QUERY_NODE.bar(scope), { parent, state: q?.suspended ? 'skipped' : 'done', ...(rows !== undefined ? { rows } : {}) });
     for (const { node, rows: counted, field } of walkedNodes(scope, results)) {
       const off = !!q?.suspended || !!(field && q?.readings[field]?.suspended);
       traceStep(node, { parent, state: off ? 'skipped' : 'done', rows: counted });
@@ -140,7 +152,7 @@ const HEADER = 72;
 const ROW = 64;
 const GAP = 40;
 
-/** One component a scope's rows reach: its id, its label and how it shows them. */
+/** One component of the page: a Content of the View, its id, its label and how it shows its rows. */
 export interface GraphComponent {
   id: string;
   label: string;
@@ -161,7 +173,7 @@ export interface ScopePreset {
 export interface QueryGraphFacts {
   /** A field's name, as a reader sees it. */
   label?: (field: string) => string | undefined;
-  /** The components the page binds, so each scope reaches its own. */
+  /** The components the page binds: each is a Presentation, a Content of the View. */
   components?: readonly GraphComponent[];
   /** A field's type — text, number or date — which picks its operators. */
   type?: (field: string) => string | undefined;
@@ -182,7 +194,7 @@ export interface QueryGraphFacts {
 /** The operators a field's condition may take: its type's, and a pick list's. */
 const PICK_OPS: readonly FilterOp[] = ['in', 'notin', 'eq', 'ne'];
 
-/** The scope's filter Switch: the kind's own row, before its presets and fields. */
+/** A bar's filter Switch: the kind's own row, before its chips and presets. */
 const SWITCH = '#filters';
 
 /** Where a node sends its data rows on: its Rows row. Plan 713 §3 */
@@ -205,6 +217,8 @@ const SAVED_WORDS = 'A saved filter: Manage Saved Filters changes it.';
 const FROM_ENTITY = 'A Filter: its own graph changes it, in the Node Editor.';
 const NOT_ADDED = 'Not on a bar: add it from the Saved menu, and it joins as a preset.';
 const SUPERSEDED = 'The View holds this field: kept, not in force. It comes back when the View lets it go.';
+const CHIP = 'Its Condition changes it.';
+const EVERY_FILTER = 'Rows in every filter of the card.';
 
 /** The operators that pick several values; the ones that pick one. */
 const MANY = new Set(['in', 'notin']);
@@ -335,13 +349,26 @@ export function editedCondition(op: string, given: string | readonly string[], t
 /** What a presentation's row says where no slot keeps it: the View's is shared. */
 const SHARED = 'It shares the View: no slot keeps its own.';
 
-/** A presentation's rows: editable where it has a slot to keep them, its kind the definition's by default. */
-function presentationRows(presented: Presentation, kind: string | undefined, slot: boolean): GraphRow[] {
+/** A Presentation's rows: its card's bar, where it carries it; then how it shows its rows, editable where it has a slot to
+ *  keep them, its kind the definition's by default; then its Content. */
+function presentationRows(presented: Presentation, kind: string | undefined, slot: boolean, bar: readonly GraphRow[]): GraphRow[] {
   const kinds = rowChoices({ control: 'presentation' })!.map((c) => (c.value || !kind ? c : { ...c, label: `Default (${kind})` }));
   const sorts = [{ value: '', label: 'None' }, ...rowChoices({ control: 'direction' })!];
-  return rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).map((row): GraphRow => (row.name === ROWS.name ? row : slot
-    ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : sorts, value: String(row.value ?? '') }
-    : { ...row, value: String((row.name === 'kind' ? kind : row.value) ?? ''), hint: SHARED, choices: row.name === 'kind' ? kinds : sorts }));
+  return [...bar, ...rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).flatMap((row): GraphRow[] => {
+    if (row.name === SWITCH) return [];
+    if (row.property) return [row];
+    return [slot
+      ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : sorts, value: String(row.value ?? '') }
+      : { ...row, value: String((row.name === 'kind' ? kind : row.value) ?? ''), hint: SHARED, choices: row.name === 'kind' ? kinds : sorts }];
+  })];
+}
+
+/** A chip's pick in words, as its chip's tip spells it; none, it picks nothing. */
+function pickWords(reading: FieldReading | undefined, type: FieldType | undefined): string | undefined {
+  if (!reading) return undefined;
+  const tree = reading.all ? undefined : answerTree({ ...reading, suspended: false });
+  const said = reading.all ? ALL : tree ? spellConditions({ type: type ?? 'text', values: [], answer: tree }) : '';
+  return said ? `${reading.suspended ? 'Off: ' : ''}${said}` : undefined;
 }
 
 /** The axes an Organise node sets, by row, and the presentation key each keeps. */
@@ -439,13 +466,16 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     nodes.push({ ...made, column });
     return id;
   };
+  // The page's rows: each status field's, else the Source's (set once the status fields are drawn). Every Field reads them.
+  let fed: readonly string[] = [sent(QUERY_NODE.source)];
   // A field's whole tree (plan 783 D6): a Field node per field it reads, a test per leaf on its Field, an And or an Or per
-  // group, a part's True (1 or 0, plan 944) into its group's header. `into`: the connections into its Fields, where a status
-  // chain hands rows on. It returns where the root's True leaves: a Condition's True row, else its header (Time's Out).
+  // group, a part's True (1 or 0, plan 944) into its group's header. `into`: the connections into its Fields, the page's rows
+  // unless a status chain hands its own on. It returns where the root's True leaves (a Condition's True row, else its
+  // header: Time's Out), and its Pass, the rows that hold (plan 971).
   const treeNodes = (
     column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
-    apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, into = [] }: { back?: number; into?: readonly string[] } = {},
-  ): string => {
+    apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, into = fed }: { back?: number; into?: readonly string[] } = {},
+  ): { truth: string; pass: string } => {
     const whole = JSON.stringify(tree);
     const depth = (t: Condition): number => 1 + Math.max(0, ...(groupOf(t)?.[1] ?? []).map(depth));
     const fields = fieldsOf(tree, ctx.field);
@@ -454,7 +484,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const id = `field-${base}${fields.length > 1 || !root.startsWith('when-') ? `-${f}` : ''}`;
       const row: GraphRow = { name: 'field', label: 'Field', control: 'field', output: 'object', gives: 'field', value: f, editable: true, choices: ctx.fields };
       add(column - depth(tree) * back, id, 'field', [apply(row)], { heading: ctx.label(f), ref: { ...ref, field: f, tree: whole } });
-      // Its header takes rows only where a chain hands them on.
+      // Its header takes the rows it reads: none where a chain hands it none.
       const made = nodes.at(-1)!;
       if (!into.length) delete made.input;
       for (const from of into) connections.push({ from, to: id });
@@ -467,23 +497,23 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const off = part.off ? (row: GraphRow): GraphRow => apply({ ...row, hint: 'Off: kept, not applied.' }) : apply;
       const parts = groupOf(part);
       if (parts) {
-        add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS }), TRUE_ROW], { ...at, ref: nodeRef }, parts[0]);
+        add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS }), ...TEST_ROWS.condition], { ...at, ref: nodeRef }, parts[0]);
         parts[1].forEach((p, i) => connections.push({ from: walk(p, [...path, i + 1]), to: id }));
         return `${id}/true`;
       }
       const leaf = part as ConditionLeaf;
       const drawn = leafRows(leaf, ctx);
-      add(column - path.length * back, id, drawn.kind, drawn.kind === 'condition' ? [...drawn.rows.map(off), TRUE_ROW] : drawn.rows.map(off), { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
+      add(column - path.length * back, id, drawn.kind, [...drawn.rows.map(off), ...TEST_ROWS[drawn.kind]], { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
       connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
       return drawn.kind === 'condition' ? `${id}/true` : id;
     };
-    return walk(tree, []);
+    return { truth: walk(tree, []), pass: `${treeNodeId(root, [])}/pass` };
   };
   // A scope's presets: as declared now, else as its definition says them.
   const presetsOf = (scope: string): readonly ScopePreset[] => facts.presets?.(scope)
     ?? (definition.source?.scopes?.[scope]?.presets ?? []).map((p) => ({ id: p.id, label: p.label, readings: readingsOf(p.where, typed) }));
 
-  // The Source ─▶ each status field its store works out ─▶ the View: the rows go Rows row to header. Its store and how
+  // The Source ─▶ each status field its store works out ─▶ each Field and card: the rows go Rows row to header. Its store and how
   // the page reads it are the definition's, until Save; its page size changes live. It forks nowhere in a Query.
   const source = definition.source;
   const store = source && storeOf(source);
@@ -528,23 +558,23 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const column = 0.5 + at++ * 0.01;
       const said = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
         heading: value, description: groupWords(when),
-      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/no`] : [] });
+      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/no`] : [] }).truth;
       const branch = add(column + 0.002, QUERY_NODE.statusBranch(field, value), 'branch', resolveKind(NODE_KINDS['branch']!, 'any').rows.map((r): GraphRow => readOnly(FROM_STORE)({ ...r, ...(r.name === 'type' ? { value: 'any' } : {}) })), { heading: value, ref: { status: field, value } }, 'any');
       connections.push({ from: said, to: branch }, { from: before ? `${before}/no` : sent(QUERY_NODE.source), to: `${branch}/data` }, { from: `${branch}/yes`, to: `${node}/${value}` });
       before = branch;
     });
   }
-  // What the View's rows come from: each status field's, else the Source's.
-  const fed = statuses.length ? statuses.map(([field]) => sent(QUERY_NODE.status(field))) : [sent(QUERY_NODE.source)];
+  // The page's rows: each status field's, else the Source's.
+  if (statuses.length) fed = statuses.map(([field]) => sent(QUERY_NODE.status(field)));
 
-  // Each scope — and one its definition gives presets, held or not.
+  // Each scope, the View first — and one its definition gives presets, held or not. Every page has its View.
   const scopes = Object.entries(query.scopes);
   for (const [id, declared] of Object.entries(source?.scopes ?? {})) {
     if (declared.presets?.length && !query.scopes[id]) scopes.push([id, { holds: [], readings: {} }]);
   }
-  const view = scopes.find(([id]) => id === VIEW);
-  const ordered = view ? [view, ...scopes.filter(([id]) => id !== VIEW)] : scopes;
+  const ordered: [string, ScopeQuery][] = [[VIEW, query.scopes[VIEW] ?? { holds: [], readings: {} }], ...scopes.filter(([id]) => id !== VIEW)];
   const onBars = new Set<string>();
+  const view = QUERY_NODE.view;
   for (const [id, scope] of ordered) {
     const top = id === VIEW;
     const into = top ? 3 : 5;
@@ -558,24 +588,26 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const tree = answerTree(reading);
       return tree ? [[f, tree] as const] : [];
     });
+    const superseded = new Set(kept.map(([f]) => f));
     const presets = presetsOf(id);
     const fields = [...new Set([...scope.holds, ...where.map(([f]) => f), ...kept.map(([f]) => f)])];
     const shows = components.filter((c) => scopeOf(c) === id);
     // Its name: the definition's, else the one component that reads it.
     const named = source?.scopes?.[id]?.label
       ?? (components.find((c) => c.id === id) ?? (shows.length === 1 ? shows[0] : undefined))?.label;
-    // Each preset's and each condition's True comes into its row.
-    const rows: GraphRow[] = [
-      ...rowsOf('scope', { [SWITCH]: !scope.suspended }).map((row) => (row.name === SWITCH ? { ...row, editable: true } : row)),
+    // Its bar (plan 960 U4.8): the Switch, a chip per field it holds in order, saying its pick, then a row per preset. On View
+    // Filters each chip takes its filter's True; a card's chip takes no line, its filter on the rows' path.
+    const bar = QUERY_NODE.bar(id);
+    const chip = (f: string): GraphRow => {
+      const said = pickWords(scope.readings[f], typeOf(f) as FieldType | undefined);
+      return { name: f, label: label(f), ...(top || superseded.has(f) ? { input: 'any' as const } : {}), ...(said ? { value: said } : {}), hint: superseded.has(f) ? SUPERSEDED : CHIP };
+    };
+    const barRows: GraphRow[] = [
+      { ...rowOf(NODE_KINDS['view-filters']!.rows, SWITCH)!, value: !scope.suspended, editable: true },
+      ...fields.map(chip),
       ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'boolean' })),
-      ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'any' })),
     ];
-    const node = add(top ? 4 : 6, QUERY_NODE.scope(id), 'scope', rows, {
-      heading: named ?? (top ? 'View' : id),
-      description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
-      ref: { scope: id },
-    });
-    for (const from of top || !view ? fed : [sent(QUERY_NODE.scope(VIEW))]) connections.push({ from, to: node });
+    const description = `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`;
     // Each preset, and each saved filter on its bar: on or off, and what it writes.
     for (const p of presets) {
       const saved = p.id.startsWith(SAVED_PRESET);
@@ -591,55 +623,71 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
         ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })),
         ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'any' })),
       ], { heading: p.label, ref: { scope: id, preset: p.id }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
-      connections.push({ from, to: `${node}/@${p.id}` });
+      connections.push({ from, to: `${bar}/@${p.id}` });
       // What it writes: each field a Condition, the definition's to change.
       for (const [f, tree] of wrote) {
         const hint = saved ? SAVED_WORDS : entity ? FROM_ENTITY : FROM_DEFINITION;
-        connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)), to: `${from}/${f}` });
+        connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)).truth, to: `${from}/${f}` });
       }
     }
     const held = fields.map((f) => ({ value: f, label: label(f) }));
     const factsOf = (field: string): TreeFacts => ctxOf(field, held);
+    // Its own filters: a View filter's True into its chip; a card's Pass onto its rows' path.
+    const passes: string[] = [];
     for (const [field, condition, off] of where) {
-      const when = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
+      const { truth, pass } = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
         heading: label(field),
         description: off ? 'Off: kept, not applied.' : 'Applied.',
       }, { scope: id, field });
-      connections.push({ from: when, to: `${node}/${field}` });
+      if (top) connections.push({ from: truth, to: `${bar}/${field}` });
+      else passes.push(pass);
     }
-    // Its own answers the View holds over it: kept, not in force.
+    // Its own answers the View holds over it: kept, not in force, into its chip.
     for (const [field, condition] of kept) {
-      const from = treeNodes(into, `kept-${id}-${field}`, condition, factsOf(field), {
+      const { truth } = treeNodes(into, `kept-${id}-${field}`, condition, factsOf(field), {
         heading: label(field), description: 'Superseded: kept, not in force.',
       }, { scope: id, field, superseded: 'true' }, (row) => ({ ...row, editable: false, hint: SUPERSEDED }));
-      connections.push({ from, to: `${node}/${field}` });
+      connections.push({ from: truth, to: `${bar}/${field}` });
     }
-    // The scope's rows on their way out: organised, presented, then shown.
-    let out = node;
+    // A card's rows on their way: its filters, two or more joined in ONE And; then its Organise.
+    let rows: readonly string[] = passes.length ? passes : fed;
+    if (passes.length > 1) {
+      const and = add(6, QUERY_NODE.and(id), 'condition', [
+        { name: 'type', label: 'Operation', control: 'type', value: 'and', choices: JOINS, hint: EVERY_FILTER }, ...TEST_ROWS.condition,
+      ], { heading: named ?? id, description: `All of ${passes.length} filters`, ref: { scope: id } }, 'and');
+      for (const from of passes) connections.push({ from, to: and });
+      rows = [`${and}/pass`];
+    }
     // A slot keeps its card's presentation: a card's scope, not the View.
     const slotted = !top && (shows.length === 1 || shows.some((c) => c.id === id) || (!shows.length && !!scope.presentation));
     if (arranging(scope) || slotted) {
-      // Sort, Group and Search change as their chips do; the axes as a card's do.
-      out = add(7, QUERY_NODE.organise(id), 'organise', organiseRows(scope, keys, slotted), { ref: { scope: id } });
-      connections.push({ from: sent(node), to: out });
+      // Sort, Group and Search change as their chips do; the axes as a card's do. The View's arranges every card (Q2 A).
+      const organise = add(7, QUERY_NODE.organise(id), 'organise', organiseRows(scope, keys, slotted), { ref: { scope: id } });
+      for (const from of rows) connections.push({ from, to: organise });
+      rows = [sent(organise)];
     }
-    // Each component its own Presentation: its SLOT's — its card's scope, kept in the
-    // Query — and changed as Show as and Segment order change it. On the View it has no slot.
-    for (const c of shows) {
-      const slot = !top && (c.id === id || shows.length === 1);
-      const presented = slot ? scope.presentation : undefined;
-      let to = out;
-      if (presented || c.kind) {
-        to = add(8, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, slot), slot ? { ref: { scope: id } } : {});
-        connections.push({ from: sent(out), to });
-      }
-      connections.push({ from: sent(to), to: add(9, QUERY_NODE.component(c.id), 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
+    if (top) {
+      add(8, bar, 'view-filters', [...barRows, ...rowsOf('view-filters', {}).filter((row) => row.name !== SWITCH)], { description, ref: { scope: id } });
+      if (rows !== fed) connections.push({ from: rows[0]!, to: bar });
+      connections.push({ from: `${bar}/filters`, to: `${view}/filters` });
     }
-    // A slot's presentation with no component named to show it is still drawn.
-    if (scope.presentation && !shows.length) {
-      connections.push({ from: sent(out), to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, !top), { ref: { scope: id } }) });
+    // Each component a Content (Will, D4): its Presentation, its rows from the Source, a card's through its path. A card's
+    // bar is on one of them, the component named as its scope, else its first; a card with none still has its own.
+    const holder = top ? undefined : shows.find((c) => c.id === id) ?? shows[0];
+    const contents = shows.length ? shows : top && !scope.presentation ? [] : [undefined];
+    for (const c of contents) {
+      const bears = !top && c === holder;
+      const slot = !top && (!c || c.id === id || shows.length === 1);
+      const presented = slot ? scope.presentation ?? {} : {};
+      const node = add(8, bears ? bar : QUERY_NODE.presentation(c?.id ?? id), 'presentation', presentationRows(presented, c?.kind, slot, bears ? barRows : []), {
+        heading: c?.label ?? named ?? (top ? 'View' : id), ...(bears ? { description } : {}), ref: { scope: id, ...(c ? { component: c.id } : {}) },
+      });
+      for (const from of top ? fed : rows) connections.push({ from, to: node });
+      connections.push({ from: `${node}/content`, to: `${view}/content` });
     }
   }
+  // The View: the View Filters over every Content (Will, D4).
+  add(9, view, 'view', rowsOf('view', {}));
   // The page's own saved filters on no bar: what each would add, and no connection.
   for (const [id, set] of Object.entries(definition.savedFilters ?? {})) {
     if (!isSavedFilter(set) || onBars.has(id)) continue;
@@ -653,7 +701,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     ], { heading: set.label, ref: { saved: id } });
     // What it would add: each field a Condition the saved filter owns, and no connection out.
     for (const { name, field, tree } of wrote) {
-      connections.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)), to: `${from}/${name}` });
+      connections.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)).truth, to: `${from}/${name}` });
     }
   }
 
@@ -722,7 +770,8 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
   const scope = node.ref?.['scope'];
   if (!scope) return undefined;
   const was = Object.fromEntries(node.rows.map((r) => [r.name, r.value]));
-  if (node.kind === 'scope') return row.name === SWITCH ? { scope, suspended: !value } : undefined;
+  // A bar's Switch: on View Filters, or on a card's Presentation.
+  if (row.name === SWITCH) return { scope, suspended: !value };
   if (node.kind === 'preset' || node.kind === 'saved') {
     const preset = node.ref?.['preset'];
     return preset && row.name === 'on' ? { scope, preset, on: !!value } : undefined;
@@ -758,8 +807,19 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
     if (row.name === 'search') return { scope, search: pick('search') };
     return { scope, sort: pick('sort') || null, direction: pick('direction') === 'desc' ? 'desc' : 'asc' };
   }
-  if (node.kind === 'presentation') return { scope, presentation: { [row.name]: value ? String(value) : undefined } };
+  if (node.kind === 'presentation') return row.name === 'kind' || row.name === 'sort' ? { scope, presentation: { [row.name]: value ? String(value) : undefined } } : undefined;
   return undefined;
+}
+
+/** The order a bar's chips are written in, as the Query's request, `{ scope, order }`; none where it is the drawn one. A
+ *  bar's chips are its rows its kind has not, but its presets. A chip with no pick keeps no value, so it keeps its place. */
+export function orderRequest(node: GraphNode, written: Readonly<Record<string, unknown>> = {}): QueryRequest | undefined {
+  const scope = node.ref?.['scope'];
+  if (!scope || !node.rows.some((r) => r.name === SWITCH)) return undefined;
+  const own = new Set(NODE_KINDS[node.kind]?.rows.map((r) => r.name));
+  const chips = node.rows.map((r) => r.name).filter((name) => !own.has(name) && !name.startsWith('@'));
+  const order = Object.keys(written).filter((name) => chips.includes(name));
+  return order.join('\n') === chips.filter((name) => order.includes(name)).join('\n') ? undefined : { scope, order };
 }
 
 /** What placing a node needs to know of the Query: what a scope holds and may hold, its presets, and which are on; the
@@ -834,13 +894,14 @@ export function keptEdit(kept: readonly KeptSource[], { node, row, value }: Grap
 export type ConnectionAnswer = { request: QueryRequest } | { refused: string } | null;
 
 /**
- * The command a new connection asks. The Query takes a condition into a field of a scope:
- * the same field in another scope MOVES it there; another field takes it, keeping the
- * values that field has. Anything else, or a move that would then say nothing, is refused.
+ * The command a new connection asks. A filter's tree leaves by its root's True or Pass: into a chip of View Filters, it
+ * moves into the View, under that chip's field; onto a card's rows' path (the header of its Presentation, its Organise or
+ * its And), it moves into that card, its field the same. Another field takes it, keeping the values that field has. Anything
+ * else, or a move that would then say nothing, is refused. Plan 960 U4.8
  */
 export function connectionRequest(graph: DrawnGraph, { from, to }: NodeConnection, facts: Pick<QueryGraphFacts, 'type' | 'values'> = {}): ConnectionAnswer {
   const was = graph.nodes.find((n) => n.id === socketOf(from).node);
-  const { node: into, row: field = '' } = socketOf(to);
+  const { node: into, row = '' } = socketOf(to);
   const target = graph.nodes.find((n) => n.id === into);
   const scope = was?.ref?.['scope'];
   const old = was?.ref?.['field'];
@@ -848,14 +909,19 @@ export function connectionRequest(graph: DrawnGraph, { from, to }: NodeConnectio
   // A kept Source is no part of the Query: nothing it sends reaches one.
   if (was?.ref?.['kept']) return { refused: `"${was.heading}" is not the page's Source: the Query reads nothing from it.` };
   // A switch takes no connection here: nothing in a page's Query says "driven by a node".
-  if (rowOf(target?.rows ?? [], field)?.control === 'switch') {
-    return { refused: `The Query takes no connection into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], field)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };
+  if (rowOf(target?.rows ?? [], row)?.control === 'switch') {
+    return { refused: `The Query takes no connection into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], row)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };
   }
-  // A condition's True, at its tree's root: a Condition's True row, a Time's header (plan 944).
+  // A tree's root leaves by its True (a Time's, its header) or its Pass (plan 971); a part, or one kept, moves nowhere.
   const via = socketOf(from).row;
-  const fromTrue = was?.kind === 'condition' ? via === 'true' : was?.kind === 'time' && via === undefined;
-  if (!fromTrue || was!.ref?.['superseded'] || was!.ref?.['path'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
-    return { refused: `The Query has no connection from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition's True goes into a field of a scope.` };
+  const root = !!was && TEST_KINDS.has(was.kind) && !was.ref?.['path'] && !was.ref?.['superseded']
+    && (via === 'pass' || (was.kind === 'time' ? via === undefined : via === 'true'));
+  // Where it lands: a chip that takes a line, its field; a card's rows' path, its own.
+  const chip = !!row && !row.startsWith('@') && !!rowOf(target?.rows ?? [], row)?.input;
+  const path = !row && !!there && there !== VIEW && !target?.ref?.['field'] && !target?.ref?.['preset'];
+  const field = chip ? row : path ? old : undefined;
+  if (!root || !scope || !old || !there || !field) {
+    return { refused: `The Query has no connection from "${was?.heading ?? from}" to "${target?.heading ?? to}": a filter's True goes into a chip of View Filters, its Pass onto a card's rows.` };
   }
   if (scope === there && old === field) return null;
   const whole = treeOf(was!);

@@ -63,10 +63,10 @@ test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the 
     'field-view-seats/field → when-view-seats.1', 'when-view-seats.1/true → when-view-seats',
     'field-view-seats/field → when-view-seats.2.1', 'when-view-seats.2.1/true → when-view-seats.2',
     'field-view-seats/field → when-view-seats.2.2', 'when-view-seats.2.2/true → when-view-seats.2',
-    'when-view-seats.2/true → when-view-seats', 'when-view-seats/true → scope-view/seats',
+    'when-view-seats.2/true → when-view-seats', 'when-view-seats/true → view-filters/seats',
   ]);
-  // An And or an Or takes many of anything (TODO 939); a leaf the Field's column; the Field takes nothing in a Query.
-  assert.deepEqual([node(g, 'when-view-seats').input, node(g, 'when-view-seats').many, node(g, 'when-view-seats.1').input, node(g, 'field-view-seats').input], ['any', true, 'any', undefined]);
+  // An And or an Or takes many of anything (TODO 939); a leaf the Field's column; the Field the page's rows (plan 960 U4.8).
+  assert.deepEqual([node(g, 'when-view-seats').input, node(g, 'when-view-seats').many, node(g, 'when-view-seats.1').input, node(g, 'field-view-seats').input], ['any', true, 'any', 'any']);
   for (const { from, to } of g.connections) {
     const [a, b] = [socketOf(from), socketOf(to)];
     assert.ok(accepts(socketType(node(g, a.node), a.row, 'output'), socketType(node(g, b.node), b.row, 'input')), `${from} → ${to}`);
@@ -130,8 +130,8 @@ test('the Field picks another field: the whole reading MOVES there, as one chang
   assert.equal(asked.length, 2);
   assert.deepEqual([asked[0].field, asked[0].reading, asked[1].field], ['seats', null, 'plan']);
   assert.deepEqual(edit(g, facts, 'field-view-seats', 'field', 'seats').field, 'seats', 'the same field: the reading as it is');
-  assert.equal(connectionRequest(g, { from: 'when-view-seats.2/true', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a part\'s True goes into its group, drawn: the Query holds a whole tree');
-  assert.equal(connectionRequest(g, { from: 'field-view-seats/field', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a Field is no condition');
+  assert.equal(connectionRequest(g, { from: 'when-view-seats.2/true', to: 'view-filters/seats' }, facts).refused !== undefined, true, 'a part\'s True goes into its group, drawn: the Query holds a whole tree');
+  assert.equal(connectionRequest(g, { from: 'field-view-seats/field', to: 'view-filters/seats' }, facts).refused !== undefined, true, 'a Field is no condition');
 });
 
 test('placing a Field in a Query holds the scope\'s next field; a Condition is refused in words: it tests a Field', async () => {

@@ -61,7 +61,7 @@ test('the node ↔ step map: S3\'s spans light the Source, by its load and its s
     { v: 1, id: 'records', source: { store: 'customers', scopes: { view: { presets: [{ id: 'mine', label: 'Mine', where: { region: { in: ['EMEA'] } } }] } } } },
   );
   const ids = graph.nodes.map((n) => n.id);
-  for (const id of [QUERY_NODE.source, QUERY_NODE.scope('view'), QUERY_NODE.condition('view', 'region'), QUERY_NODE.preset('view', 'mine'), QUERY_NODE.organise('view')]) {
+  for (const id of [QUERY_NODE.source, QUERY_NODE.bar('view'), QUERY_NODE.viewFilters, QUERY_NODE.view, QUERY_NODE.condition('view', 'region'), QUERY_NODE.preset('view', 'mine'), QUERY_NODE.organise('view')]) {
     assert.ok(ids.includes(id), `${id} is drawn`);
   }
 });
@@ -85,7 +85,8 @@ test('a load\'s steps, from the walk\'s own counts: each scope and condition und
   traceQuerySteps(applied, { walk: { results }, total: load.detail.total }, load);
   const said = spans.map((s) => [s.detail.node, s.detail.state, s.detail.rows, s.trace === load.trace, s.parent === load.id]);
   assert.deepEqual(said, [
-    ['scope-view', 'done', undefined, true, true],
+    // A scope's step lights the node that carries its bar: the View's, View Filters (plan 960 U4.8).
+    ['view-filters', 'done', undefined, true, true],
     ['when-view-region', 'done', 2, true, true],
     ['when-view-plan', 'skipped', 1, true, true],
     ['organise-view', 'done', 2, true, true],

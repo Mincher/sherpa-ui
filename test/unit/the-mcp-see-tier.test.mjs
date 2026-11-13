@@ -120,7 +120,7 @@ test('call_component pages the pager as a reader would; watch_trace says that ac
   // The page asked its store, and the Node host answered under the same trace: the Source's reads (TODO 808).
   const store = node('source').map((s) => `${s.step} ${s.host} ${s.state}`);
   assert.ok(store.includes('request page done') && store.includes('answer server done'), store.join('; '));
-  assert.deepEqual(node('scope-data').map((s) => s.state), ['done']);
+  assert.deepEqual(node('presentation-data').map((s) => s.state), ['done']);
 });
 
 test('read_component reads the grid as it stands: its attributes, its columns, its parts', { skip }, async () => {
@@ -211,7 +211,7 @@ test('watch_trace after a query_source act lists its steps by node: the load, th
   const active = rows.filter((r) => r.status === 'active').length;
   assert.deepEqual(node('source').map((s) => [s.step, s.state, s.total]), [['load', 'done', active]]);
   assert.deepEqual(node('when-data-status').map((s) => [s.state, s.rows]), [['done', active]]);
-  assert.deepEqual(node('scope-data').map((s) => s.state), ['done']);
+  assert.deepEqual(node('presentation-data').map((s) => s.state), ['done']);
   assert.match(text, /- `when-data-status` — step \(page\): done, 0 ms, 10 row\(s\)/);
   const one = await call('watch_trace', { node: 'when-data-status' });
   assert.deepEqual(one.json.mcp.loads[1].nodes.map((n) => n.node), ['when-data-status']);

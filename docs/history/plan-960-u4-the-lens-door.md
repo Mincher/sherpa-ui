@@ -29,7 +29,7 @@ always made from it. Where the definition is not a graph (a Query, a View), the 
 | U4.7a The unfold door, in detail (2026-11-13; BUILT 2026-11-13 for workflows: the Query graph's Fields wait for U4.7b) | A row kind may say `unfolds: 'values'` (the Field's `field` row). Its node then has one OUTPUT row per value its picked field declares (`pickedField`: the type's or page's `values`; at most 12, else none and the hint says how many), named `v-<slug>` (the socket pattern takes no spaces: "At risk" is `v-at-risk`, a clash `-2`), labelled by the value's own words (a type's `labels`), read only, output `value`; a status field's values wear their looks. ONE door for a node's output rows, `outputRow(kind, node, name)`: the kind's own, else an unfolded one by its prefix, so a connection from one is checked, typed and sent where every output is (`socketType`, `sentFrom`, node-input, the check) with no facts; with facts, a `v-` row its field does not declare is a fault, in words. Simulate sends the value itself. In the Query graph the rows show only: a Condition there takes no connection into Value B | unit: a Field unfolds its field's values and no other field's; a new pick unfolds the new field's; none for a name or an email; a connection from `v-at-risk` into a Condition's Value B is sound and Simulate reads "At risk"; e2e: the rows draw, with their sockets | E1 A |
 | U4.7b A status field is one Field node (D1) | In the Query graph a status field is ONE Field node, its values its rows (U4.7a); the Status field kind, its Check chain and its tests go. Waits: how a reader reaches the rule (the type's), so it is not lost from sight | — | U4.7a; Will |
 | **U4.8** A View's graph (Will, 2026-11-13, D4: "a View Filters input and a Content input"; the Content node IS the Presentation node, A; build after U4.7, A); Q1 to Q3 answered) | Three nodes in place of today's chain (Source › View Context › a data-scope node with a row per preset and field › Organise › Presentation › grid). **View Filters** (the View scope's bar): its chips in order, each a field held with or without a pick, its filters Switch; a field's tree joins its chip, a Filter use (D2) joins as a preset. **Presentation** (the Content; one per card): its rows come from a Source through the nodes on the way, its local filters among them (Will, Q1); its bar (held chips, their order, its Switch) as rows; how its rows are shown. **View**: two inputs only, View Filters (one) and Content (many); no rows. Each edit is still the Query's own request, by the node's `ref`: a field moved between scopes is its tree's True moved from View Filters to a Presentation, or back (`connectionRequest`, send to View or return); chip order is the rows' order (`{ scope, order }`); the Switch is `{ scope, suspended }`; a held field with no pick is a chip with nothing joined; a preset is `{ scope, preset, on }`; sort, group, search and axes are the Organise's (U4.2) | unit: a page's Query drawn in the three nodes, each request read back the same; e2e: Coworkers' graph has the shape | U4.7 |
-| U4.8a The three nodes | `view-filters` and `view` kinds; `presentation` gains its chips, its Switch and its Content output; queryGraph draws them; the scope node and the View Context chain go; reconcile reads the new refs | as U4.8 | U4.8 |
+| U4.8a The three nodes (BUILT 2026-11-13, lane 960-u48: "U4.8a, as built" below) | `view-filters` and `view` kinds; `presentation` gains its chips, its Switch and its Content output; queryGraph draws them; the scope node and the View Context chain go; reconcile reads the new refs | as U4.8 | U4.8 |
 | U4.8b A page's Views in the graph chip (was U4.6b) | The `query` graph View's chip offers each page's Views under it; one opened is drawn with that View put on its Query (VIEW_LENS, U4.6a). Save writes a reader's own View to the keeper; a preset View is read only, and Save as makes a reader's own | e2e: a reader's View edited in the graph and saved comes back on its page | U4.8a |
 | U4.9 A Notification's To takes recipients (BUILT 2026-11-13, on sherpa-ui-a9's `recipient` flag; a To once typed warns unused; Will, 2026-11-13: "The 'To' input in a Notification node should take in rows containing data on the recipients. Recipients can be Users, Groups, Roles, AI Agents, or Coworkers"; "Right now To expects a value which doesn't make any sense") | To becomes an input of ROWS (`input: 'object'`, `needs: 'rows'`), not text. The library names no recipient type: an app's type says it is one, `recipient: true` (type.v1, sherpa-ui-a9's), one door, `recipientTypes()`. Rows into To from a store whose type is no recipient warn, naming the app's recipient types ("To takes rows of Users, Groups, Roles or Coworkers"); its `would` counts them ("Would send a notification to 3 recipients"). Demos marks user, group, role and coworker (Will, after: "Nevermind about AI Agents as recipients.") | unit: To takes rows; a non-recipient store warns in words; Simulate counts; e2e: a Users Source into To | a9's flag |
 
@@ -69,6 +69,55 @@ Presentation's rows: its bar (Q3 A): its Switch, each chip it holds in order, wi
   cannot disagree. A filter joins where it FILTERS: a View filter's True into its chip's row on View Filters; a card's
   own filter's Results onto the card's rows' path. A card's chip on its Presentation names its field and says its pick in words (its
   hint), from that same reading, and takes no line.
+
+### U4.8a, as built (2026-11-13, lane 960-u48; plan 971's Pass read for every "Results" above)
+
+**Ids** (`QUERY_NODE`), each with its kind and `ref`:
+
+- `view-filters` (`viewFilters`), kind `view-filters`, ref `{ scope: 'view' }`.
+- `presentation-<id>` (`presentation(id)`), kind `presentation`, ref `{ scope, component? }`: a card's, the one that carries
+  its bar, by its scope (`bar(scope)`); any other Content (a View component, a card's second component) by its own id.
+- `view`, kind `view`, no ref.
+- `and-<scope>` (`and(scope)`), kind `condition`, type And, ref `{ scope }`: a card's two or more filters joined.
+- Gone: `scope-<id>`, `component-<id>` and `show-<id>`; the kinds `scope` and `component`.
+
+**Rows.** View Filters: Filters (the Switch, `#filters`); a chip per held field, in order (its field's name, input any,
+its pick in words as its value, read only); a row per preset (`@<id>`, input boolean); then its output, View Filters
+(`filters`). Its header takes the View's Organise. Presentation: where it carries its card's bar, the same Switch, chips
+(no socket) and presets; then Show as and Segment order; then its output, Content (`content`). Its header takes the
+card's rows. View: View Filters (`filters`, one) and Content (`content`, many), and nothing else.
+
+**Lines.** Every Query Field reads the page's rows (its status fields' Results, else the Source's), but a status
+chain's. A View filter's True goes into its chip; a card's own filter's Pass into the card's And (two or more), then its
+Organise, then its Presentation; a card with neither takes the rows straight. The View's Organise takes the rows and
+sends its Results into View Filters. A preset goes into its bar's `@<id>`. View Filters into the View's View Filters;
+each Presentation's Content into its Content. A Query test draws its kind's Pass, Fail and True.
+
+**Edits → requests.** A Switch, on View Filters or a Presentation: `{ scope, suspended }`. A preset's On: `{ scope,
+preset, on }`. A tree's root, its True or Pass, into a View Filters chip: `{ scope, field, reading: null }` then
+`{ scope: 'view', field: <the chip>, reading }`; onto a card's path (the header of its Presentation, Organise or And):
+the same field moved into that card; the same scope and field ask nothing. A bar's chips written in another order:
+`{ scope, order }` (`orderRequest`, which the reconcile reads). Show as and Segment order: `{ scope, presentation }`.
+A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's rows as U4.2.
+
+**The picks** (❓, each with the other option):
+
+- ❓ A chip's pick in words is its VALUE, read only, and its hint says who changes it: a row with no control draws its
+  value ("Region: equals(EMEA)") and never its hint, and the values put the chips' order in the definition. Other: a
+  hint alone, and no order read from a graph.
+- ❓ A chip with no pick keeps no value, so an order written moves only the picked chips among their places. No
+  editor gesture reorders a node's rows yet: a definition written whole (the lens, an agent) can. Other: a word for
+  "no pick".
+- ❓ A bar's rows are its Switch, its chips, then its presets (the brief's order). Other: presets first, as the scope
+  node had them.
+- ❓ A card's superseded answer's True joins its chip, the one chip on a card that takes a line, where it joined the
+  scope node. Other: drawn with no line.
+- ❓ The View's Organise reads the page's rows. Other: drawn with nothing in.
+- ❓ A card with no component still gets its Presentation: its bar has nowhere else. A scope's bar is on one
+  Presentation: the component named as the scope, else its first.
+- ❓ A filter switched off stays on its card's path, as off filters stayed joined to their scope.
+- ❓ A load's trace lights a scope's step on the node that carries its bar (`bar(scope)`).
+
 | U4.9b A Source picks rows (Will, 2026-11-13: "Source picks rows", for ONE fixed recipient such as "Service desk"; BUILT 2026-11-13) | The Source kind's optional many pick, Rows (`control: 'rows'`, `picked`): its store's rows shown by the type's `title`, kept by its `key`; none picked, every row. Its choices come from the app through one fact, `storeRows(store)`; `rowPicks(type, rows)` makes them. Simulate sends only the picked rows. A page's Query graph offers no Rows pick: a page reads all its rows, and its Query filters them | unit: the pick's choices; Simulate sends the picked; none, every row; the Query's Source has none | U4.9 |
 
 ## Will's decisions

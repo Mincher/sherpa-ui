@@ -93,7 +93,8 @@ test('the Query graph lights as its source loads: the Source by the load and by 
   expect(lit['Source']![1]).toMatch(/^[\d.,]+ ms · 1 row · worker$/);
   expect(lit['customers'], 'no Store node').toBeUndefined();
   expect(lit['Region']).toEqual(['done', '1 row']);
-  expect(lit['View']).toEqual(['done', null]);
+  // The View's step lights its bar, View Filters (plan 960 U4.8).
+  expect(lit['View Filters']).toEqual(['done', null]);
   expect(r).toMatchObject({ worker: ['worker', true, 'worker', true], walk: [true, 1], listens: false });
 });
 

@@ -95,7 +95,8 @@ test('bindQueryEditor follows the Query as it changes, and its stop lets it go',
     return { drawn, before, followed, after: value() };
   }, FRAMES);
   // Is one of with no values to pick from is tags: its value, the comma string (plan 749 P4). The Field, then its test (plan 783 D6).
-  expect(r).toEqual({ drawn: ['Source', 'View', 'region', 'region'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
+  // View Filters, then the View they go into (plan 960 U4.8).
+  expect(r).toEqual({ drawn: ['Source', 'region', 'region', 'View Filters', 'View'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
 });
 
 test('a filter toolbar\'s ⋮ menu offers Open in Node Editor only where the host does, and a pick asks for it (TODO 822)', async ({ page }) => {
@@ -319,7 +320,7 @@ test('a drag from an OUTPUT socket draws a new connection, in its output\'s ink:
   expect(r).toEqual({ asked: [{ from: 'a', to: 'b/x' }], drafts: 0, after: before });
 });
 
-test('a condition dragged into the same field of another scope MOVES there, as one change through the one door', async ({ page }) => {
+test('a View filter\'s Pass dragged onto a card\'s rows MOVES it there, as one change through the one door (plan 960 U4.8)', async ({ page }) => {
   await page.evaluate(async () => {
     const { bindQueryEditor } = await import('/dist/app.js');
     const { readingsOf } = await import('/dist/data.js');
@@ -338,9 +339,9 @@ test('a condition dragged into the same field of another scope MOVES there, as o
     await window.__settled();
   });
   const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
-  // A condition's tree leaves by its True property (plan 944).
-  const [ax, ay] = await at('#root sherpa-node[data-icon="function"] sherpa-node-row[data-socket-name="True"]', 'output');
-  const [bx, by] = await at('#root sherpa-node[data-heading="data"] sherpa-node-row[data-label="region"]', 'input');
+  // Its tree leaves by its Pass (plan 971) onto the card's rows: its Presentation's header.
+  const [ax, ay] = await at('#root sherpa-node[data-icon="function"] sherpa-node-row[data-socket-name="Pass"]', 'output');
+  const [bx, by] = await at('#root sherpa-node[data-heading="data"]', 'input');
   await page.mouse.move(ax, ay);
   await page.mouse.down();
   await page.mouse.move(bx, by, { steps: 6 });
@@ -368,7 +369,7 @@ test('a condition dragged onto a field none of its values fit is REFUSED, and sa
   const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
   // A condition's tree leaves by its True property (plan 944).
   const [ax, ay] = await at('#root sherpa-node[data-icon="function"] sherpa-node-row[data-socket-name="True"]', 'output');
-  const [bx, by] = await at('#root sherpa-node[data-heading="View"] sherpa-node-row[data-label="plan"]', 'input');
+  const [bx, by] = await at('#root sherpa-node[data-heading="View Filters"] sherpa-node-row[data-label="plan"]', 'input');
   await page.mouse.move(ax, ay);
   await page.mouse.down();
   await page.mouse.move(bx, by, { steps: 6 });

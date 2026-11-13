@@ -116,5 +116,5 @@ test('the Query holds no constant: a connection into one of its Condition\'s Gro
     ],
     connections: [],
   };
-  assert.match(connectionRequest(graph, { from: 'a', to: 'b/group-2' }).refused, /a condition's True goes into a field of a scope/);
+  assert.match(connectionRequest(graph, { from: 'a', to: 'b/group-2' }).refused, /a filter's True goes into a chip of View Filters/);
 });

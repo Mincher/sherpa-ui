@@ -23,7 +23,7 @@ import type { NodeStage } from './node-stages.js';
 import type { NodeLane } from './node-lanes.js';
 import { bendFault, type Bend } from './connector-bends.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowNode } from './workflow.js';
-import { graphRequest, keptEdit, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
+import { graphRequest, keptEdit, orderRequest, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryRequest } from './query.js';
 
 /** What a reader gave a Query's graph that the Query does not hold: kept beside it, for the tab. */
@@ -127,7 +127,7 @@ const NODES_READ = 'The Query\'s nodes are its readings: turn a condition off, o
 
 /**
  * What changed between two definitions of a Query, as the Query's own requests: a row's new value (`graphRequest`, or a
- * kept Source's Store); a new connection (`connectionRequest`); a new node (`placeRequest`, in the scope of the node it joins, else
+ * kept Source's Store); a bar's chips in another order (`orderRequest`); a new connection (`connectionRequest`); a new node (`placeRequest`, in the scope of the node it joins, else
  * the View). A read-only row changed, a connection cut, or a reading removed, is refused; a kept Source removed goes. The layout is the written one's.
  * `graph` is the Query's graph as `before` was drawn from it. A kind that belongs in one scope (`scopeOf`) is placed there.
  */
@@ -153,6 +153,9 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
       if (row.editable) edits.push({ node: node.id, row: name, value: node.values?.[name] });
       else refuse('query-row', `No command takes "${row.label}" on "${live.heading}"${row.hint ? `: ${row.hint}` : '.'}`);
     }
+    // A bar's chips in another order: the Query's order.
+    const order = orderRequest(live, node.values);
+    if (order) requests.push(order);
   }
   // A new node: placed in the scope of the node it joins, else the View. Its own connections are the Query's to draw.
   const added = after.nodes.filter((n) => !was.has(n.id) && !drawn.has(n.id));

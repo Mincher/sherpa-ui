@@ -300,7 +300,7 @@ export function register(server) {
     definition: z.union([z.string(), z.record(z.unknown())]).describe('The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Filter, an app\'s own type'),
     of: z.string().optional().describe('What the definition is: `query`, a page\'s Query; `view`, one of its Views; else an entity\'s type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`; with `view`, it is the View'),
     view: z.union([z.string(), z.record(z.unknown())]).optional().describe('With a page: one of its Views (views.v1: `{ "label", "query", … }`). The page opens with the View put on its Query, as its View chip puts it; edits write the View back, its `query` as the Query holds it then (`viewWithQuery`)'),
-    components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own'),
+    components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`: each is a Presentation, a Content of the View; a card\'s carries its bar'),
     ...FACTS,
   };
 

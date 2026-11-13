@@ -6664,38 +6664,49 @@ connections between their sockets — checked by `schemas/workflow.v3.json` and 
 ### T-the-node-editor-asks-the-query
 
 **The Node Editor is one more VIEW of a page's Query, and it ASKS.** Will, TODO
-555; plan-78-query-editor.md. `queryGraph(query, definition, facts)` draws the
-Source and each status field its store works out, each scope with its held
-fields as rows, a Condition into each answered field, each preset and saved
-filter, each superseded answer, the scope's Organise (its sort, group, search and axes), its Presentation and its
-components — from the LIVE Query, each time it changes. It keeps no Query of its
-own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
+555; plan-78-query-editor.md; plan 960 U4.8. `queryGraph(query, definition, facts)`
+draws the Source and each status field its store works out; **View Filters**, the
+View's bar; a **Presentation** per component, each a Content; and the **View**
+they go into, its two inputs View Filters and Content — from the LIVE Query, each
+time it changes. A filter is a tree of Conditions on a Field that reads the page's
+rows. It keeps no Query of its own; a change made in it is a `QueryRequest`, as a
+chip's is (`graphRequest`).
 
 - **Derived, not stored.** The same Query draws the same graph. Only the nodes'
   places, their bends and the Sources a reader keeps are the editor's (kept per
   tab, `T-a-second-source-is-kept`). A second view that kept its own copy
   of what the first answered caused six filter bugs (the old panel).
-- **A field is a ROW of the scope that holds it**, not a node: moving a field
-  between scopes is moving its row, as Send to View is. A field the View
-  answers but no bar holds still gets a row, so its condition has a socket.
+- **A bar is rows** (Will, U4.8 Q3 A): its Switch, a chip per held field in
+  order, its pick in words, then a row per preset. The View's is on View
+  Filters, where a filter's True joins its chip. A card's is on its
+  Presentation, and its chips take no line: a card's own filter is ON ITS ROWS'
+  PATH, its Pass into the Presentation (two or more through ONE And), then its
+  Organise. A Branch is no filter: it sends all its Data one way. Moving a field
+  between scopes is moving its tree, its root's True or Pass into a chip of
+  View Filters or onto a card's path (`connectionRequest`), as Send to View is.
+  A field the View answers but no bar holds still gets a chip, so its condition
+  has a socket. The chips' order written back is the Query's (`orderRequest`).
 - **Conditions are read in the plain form** (`whereOf`,
   `T-one-way-to-write-a-condition`), so the editor shows what the field filters
   by, never what a control keeps for itself; an `off` one is kept, not applied.
   A condition node is the READER's answer: a preset's rows in it are the preset's.
-- **A preset is a node into its scope's row** (`@<id>`): its On, read from the
+- **A preset is a node into its bar's row** (`@<id>`): its On, read from the
   Query (`presetHeld`), and what it writes, read only. A saved filter on a bar is a
   preset `saved:<id>` (`SAVED_PRESET`), drawn as the saved kind; one on no bar says
   what it would add, with no connection. A status field sits between the Source and the
-  View, a row per value and when a row has it, from the store's `domains`. A
+  cards, a row per value and when a row has it, from the store's `domains`. A
   component scope's own answer the View holds over it (`superseded`) is a read-only
-  condition into its row: it moves nowhere.
-- **Laid out by depth**, in columns: conditions left of their scope, the View's
-  scopes right of it. The reader moves what overlaps.
+  condition into its chip, the one card chip with a line: it moves nowhere.
+- **Laid out by depth**, in columns: Fields and Conditions, then each card's And
+  and Organise, then View Filters over the Presentations, then the View. The
+  reader moves what overlaps.
 
 - **The page passes its components** (`facts.components`): a source keeps its
-  binds private. Each chart gets its own Presentation node: its slot's, where
-  the scope is its own, else its definition's kind. A scope is named by the
-  definition, else by the one component that reads it.
+  binds private. Each is its own Presentation: its slot's, where the scope is its
+  own, else its definition's kind. A card's bar is on one of them, the component
+  named as its scope, else its first; a card with none still has its own
+  Presentation. A load lights a scope's step on its bar's node
+  (`QUERY_NODE.bar`).
 - **`drawGraph` places a node where its graph says, when that place MOVED**; else
   it leaves the reader's. It WRITES NOTHING: a field's change is an edit it hands
   its host (`onEdit`), and a move too (`onMove`). `bindQueryEditor` keeps each moved
@@ -6714,7 +6725,7 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
   of or Is not one of. Equals is Is one of with one tick — the Query writes it
   so — and reads back as that.
 - **A picked node opens the INSPECTOR**: its rows again, the same values and the
-  same edits, with where each comes from and goes to. A component's node shows a
+  same edits, with where each comes from and goes to. A Presentation shows a
   live COPY of the page's component, with no ids, which asks the provider as the
   page's does — so it draws what the Query says. The editor sits inside the
   provider for that; off its page, the copy is made from the page's markup
@@ -6723,9 +6734,9 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 - **A drag from an OUTPUT socket draws a new connection** (Will, 2026-10-29). The
   drawing hears the press first, at the canvas, so it neither moves the node nor
   pans the view; let go within reach of an input socket, and the HOST is asked
-  (`onConnect`). The Query takes a condition into a field of a scope
-  (`connectionRequest`): the same field in another scope MOVES it there; another field
-  takes it, keeping only the values that field has. A connection the Query has no
+  (`onConnect`). The Query takes a filter's tree into a chip of View Filters or
+  onto a card's rows (`connectionRequest`): the same field in another scope MOVES
+  it there; another chip's field takes it, keeping only the values that field has. A connection the Query has no
   meaning for — or one that would then say nothing — is REFUSED and reported
   (`query-connection`): nothing moves.
 - **Save writes the definition** (`pageWithQuery`): each scope's holds, its own
@@ -7765,7 +7776,7 @@ of that type the canvas shows.
   definition, components, markup, stores, … })`, and load the source, as the page does, so each
   node lights. `markup` is the page's template off screen (`pageMarkup`, its View's own cards in
   `[data-view-content]`, parsed through the allow-list), where `pageComponents` reads the grids and
-  charts and a component node's live copy is copied from. `presentsOf` reads a tag not upgraded by
+  charts and a Presentation's live copy is copied from. `presentsOf` reads a tag not upgraded by
   its class, so an inert template answers.
 - **The header** shows `data-query`: the View's actions (★, Save, its menu) are not shown, since
   each edit is the page's as it is made, and a page is no entity to copy.

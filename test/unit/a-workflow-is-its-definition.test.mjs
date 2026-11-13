@@ -82,7 +82,8 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   // Math (plan 944).
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group, NODE_KINDS.organise.category], [undefined, undefined, undefined, undefined, 'Organise']);
   assert.equal(NODE_KINDS.math.types.count.label, 'Count');
-  assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'branch', 'preset', 'saved', 'organise', 'presentation', 'component', 'field']);
+  // A page's Query draws View Filters, each card's Presentation and the View (plan 960 U4.8).
+  assert.deepEqual(drawnIn('query'), ['source', 'status', 'view-filters', 'condition', 'branch', 'preset', 'saved', 'organise', 'presentation', 'view', 'field']);
   // One meaning per word: a Source is where rows come from, in both, and the Store kind is gone (TODO 808); a Condition
   // is one test, in both (plan 783 D4).
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');
@@ -97,7 +98,7 @@ test('each fault is reported by name, and the check says no', () => {
   const cases = [
     [{ nodes: [...nodes, { id: 'end', kind: 'result', x: 0, y: 0 }] }, 'two nodes are "end"'],
     [{ nodes: [...nodes, { id: 'odd', kind: 'teleport', x: 0, y: 0 }] }, 'the node "odd" is of the kind "teleport", which is not one'],
-    [{ nodes: [...nodes, { id: 'odd', kind: 'scope', x: 0, y: 0 }] }, 'the node "odd" is of the kind "scope", which a workflow does not run'],
+    [{ nodes: [...nodes, { id: 'odd', kind: 'view-filters', x: 0, y: 0 }] }, 'the node "odd" is of the kind "view-filters", which a workflow does not run'],
     [{ nodes: [...nodes, { id: 'more', kind: 'value', x: 0, y: 0, values: { colour: 'red' } }] }, 'the node "more" holds a value for "colour", a row its kind has not'],
     [{ nodes: [...nodes, { id: 'more', kind: 'condition', x: 0, y: 0, values: { type: 'equals' } }] }, 'the node "more" holds "equals" as its Check, which is none of its choices'],
     [{ connections: [{ from: 'gone', to: 'filter' }] }, 'a connection leaves "gone", which is no output socket'],

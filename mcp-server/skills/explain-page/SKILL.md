@@ -12,15 +12,16 @@ one sherpa-ui MCP tool.
 1. **Read its page definition** — the file app.json's Context names in
    `definition` — and a real page of its store's rows.
 2. **`definition_graph`** — that definition and those rows. It gives the Query as
-   nodes and connections: its store, its source, each scope with its conditions and
-   presets, its arrangement and its components. Its node ids are the ones the
+   nodes and connections: its store, its source; View Filters, the View's bar,
+   each filter and preset joined to it; each card's Presentation, its own filters
+   and arrangement on its rows' path; and the View. Its node ids are the ones the
    next steps name.
 3. **`query_source`** — the same, and one command a reader would ask: a pick,
    `{ "scope": "data", "field": "<field>", "reading": { "picked": ["<value>"] } }`,
    or a sort or a page. It gives the rows, the total and each field's state.
-4. **`watch_trace`** — that act's spans by node: the Source's load, each scope,
-   each condition and preset with the rows it left, the arrangement with the
-   total.
+4. **`watch_trace`** — that act's spans by node: the Source's load, each scope on
+   its bar (`view-filters`, a card's `presentation-<scope>`), each condition and
+   preset with the rows it left, the arrangement with the total.
 5. **Say it in the graph's terms**: which node narrows what, and why the total is
    what it is. For the page as drawn: `preview_page`, then `call_component` (the
    pagination, a toolbar's chip) and `watch_trace` again — the page's spans and its

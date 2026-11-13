@@ -134,7 +134,7 @@ A definition as the one Node Editor draws it, through its type's lens (`lensOf(t
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
 - `of` (optional) — What the definition is: `query`, a page's Query; `view`, one of its Views; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`; with `view`, it is the View
 - `view` (optional) — With a page: one of its Views (views.v1: `{ "label", "query", … }`). The page opens with the View put on its Query, as its View chip puts it; edits write the View back, its `query` as the Query holds it then (`viewWithQuery`)
-- `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
+- `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`: each is a Presentation, a Content of the View; a card's carries its bar
 - `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
 - `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
 - `entities` (optional) — The app's entities file (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)
@@ -151,7 +151,7 @@ Each edit made on the graph a definition's lens draws (`editWorkflow`, as the on
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
 - `of` (optional) — What the definition is: `query`, a page's Query; `view`, one of its Views; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`; with `view`, it is the View
 - `view` (optional) — With a page: one of its Views (views.v1: `{ "label", "query", … }`). The page opens with the View put on its Query, as its View chip puts it; edits write the View back, its `query` as the Query holds it then (`viewWithQuery`)
-- `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
+- `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`: each is a Presentation, a Content of the View; a card's carries its bar
 - `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
 - `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
 - `entities` (optional) — The app's entities file (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)

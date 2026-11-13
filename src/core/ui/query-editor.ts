@@ -40,7 +40,7 @@ export interface QueryEditorOptions extends QueryGraphFacts, Pick<WorkflowEditor
   toolbar?: HTMLElement;
   /** The node panel floating on the canvas: it lists the kinds a Query takes, and each one asked for is a request. */
   panel?: SherpaNodeList;
-  /** Where a component node's live copy is copied from, by id: the page's markup where the page is not on screen. Default, the document. */
+  /** Where a Presentation's live copy of its component is copied from, by id: the page's markup where the page is not on screen. Default, the document. */
   markup?: NonElementParentNode;
 }
 

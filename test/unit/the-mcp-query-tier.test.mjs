@@ -196,7 +196,7 @@ test('definition_graph draws a page\'s Query as queryGraph draws it over the ope
   const graph = queryGraph(source.query.draft, records, facts);
   assert.deepEqual({ nodes: json.nodes, connections: json.connections }, JSON.parse(JSON.stringify(graph)));
   const ids = json.nodes.map((n) => n.id);
-  for (const id of ['source', 'scope-view', 'scope-data', 'when-data-status', 'preset-data-high-risk', 'saved-at-risk']) assert.ok(ids.includes(id), id);
+  for (const id of ['source', 'view-filters', 'presentation-data', 'view', 'when-data-status', 'preset-data-high-risk', 'saved-at-risk']) assert.ok(ids.includes(id), id);
   // The graph the editor edits is the lens's, and its faults are the Query graph's own.
   assert.deepEqual(json.graph, JSON.parse(JSON.stringify(lensOf('query').toGraph(records, { ...facts, query: source.query }).workflow)));
   assert.deepEqual(json.graph.nodes.map((n) => n.id), ids);
@@ -256,15 +256,15 @@ test('edit_definition_graph refuses a dangling node and a connection the Query r
   const at = { definition: records, ...typed() };
   const dangling = await call('edit_definition_graph', { ...at, edits: [{ node: 'when-view-nope', row: 'b', value: 'x' }] });
   assert.equal(dangling.bad, true);
-  assert.match(dangling.text, /^The graph has no node "when-view-nope", so no edit was made\. Its nodes: source, .*\bscope-view\b/);
+  assert.match(dangling.text, /^The graph has no node "when-view-nope", so no edit was made\. Its nodes: source, .*\bview-filters\b/);
   // A connection the Query has no command for refuses the whole graph: nothing is asked, and no definition is written.
-  const connection = await call('edit_definition_graph', { ...at, edits: [{ connection: { from: 'source', to: 'scope-view/region' } }] });
+  const connection = await call('edit_definition_graph', { ...at, edits: [{ connection: { from: 'source', to: 'view-filters/region' } }] });
   assert.equal(connection.bad, false);
   const source = await direct(records, []);
-  const said = connectionRequest(queryGraph(source.query.draft, records, drawnFacts(source, records)), { from: 'source', to: 'scope-view/region' });
+  const said = connectionRequest(queryGraph(source.query.draft, records, drawnFacts(source, records)), { from: 'source', to: 'view-filters/region' });
   // Its own refusal first; where the row already has its test joined (a chip on All, TODO 965), the cut is refused too.
   assert.equal(connection.json.faults[0], said.refused);
-  assert.match(connection.text, /The Query has no connection from "Source" to "View Context": a condition's True goes into a field of a scope\./);
+  assert.match(connection.text, /The Query has no connection from "Source" to "View Filters": a filter's True goes into a chip of View Filters, its Pass onto a card's rows\./);
   assert.equal(connection.json.definition, undefined);
   assert.deepEqual(connection.json.query, source.query.draft);
   source.close();
