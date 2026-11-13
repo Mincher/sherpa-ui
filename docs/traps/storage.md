@@ -1092,5 +1092,4 @@ Sherpa Demos chose the store, kept the version and seeded by hand in
 
 - Site: `src/core/browser/idb-store.ts`
 - Site: `test/unit/local-records.test.mjs`
-- Site: `src/core/browser/type-stores.ts`
 - Site: `test/e2e/reforged-a-type-makes-its-store.spec.ts`

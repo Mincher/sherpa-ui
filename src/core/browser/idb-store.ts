@@ -10,6 +10,7 @@
  * - IdbStoreOptions — the store's name in the one database, and the fields it indexes
  * - LocalRecordsOptions — an IdbStore's options, and the rows a first run starts with
  * - localRecords — Records kept in this browser: IndexedDB where it has it, memory where not, seeded once per seed version.
+ * - typeStore — A type's store: local records made from it, seeded with its rows, the version a hash of them.
  * - IdbStore — Records in IndexedDB — the real local store.
  */
 import {
@@ -20,12 +21,16 @@ import {
   type LoadOptions,
   type LoadResult,
   type Row,
+  type Store,
 } from '../data/store.js';
 // Key, schema guard, totalCount, announce. TRAP T-one-class-to-catch
 import { BaseStore, type StoreOptions } from '../data/base-store.js';
 import { ArrayStore } from '../data/stores.js';
 import { report } from '../data/report.js';
 import { changedFields } from '../data/store-history.js';
+import { seedVersionOf } from '../data/seed-version.js';
+import { statusFields } from '../data/status-field.js';
+import { typeStatusFields, typeStoreOptions, type TypeDefinition } from '../data/type-definition.js';
 import { hasDatabase, openDatabase, readOne, transact, within, type RowRecord, type SeedRecord } from './database.js';
 
 /** The door `localRecords` seeds through; no other module holds it. */
@@ -72,6 +77,15 @@ export function localRecords(options: LocalRecordsOptions): { store: IdbStore | 
     }
   })();
   return { store, ready };
+}
+
+/** A type's store: local records made from it (its key, time and rules), seeded with its rows — the seed's version a
+ *  hash of them, so changed rows are a new seed and no one bumps a number — its status fields worked out. `ready`
+ *  settles once the seed is in. Its name, the type's id unless given. Plan 960 U3 · TRAP T-local-records-seed-themselves */
+export function typeStore(type: TypeDefinition, { rows = [], name = type.id }: { rows?: readonly Row[]; name?: string } = {}): { store: Store; ready: Promise<void> } {
+  const { store, ready } = localRecords({ name, ...typeStoreOptions(type), seed: rows, seedVersion: seedVersionOf(rows) });
+  const status = typeStatusFields(type);
+  return { store: Object.keys(status).length ? statusFields(store, status) : store, ready };
 }
 
 /* ── The store ─────────────────────────────────────────────────────────── */

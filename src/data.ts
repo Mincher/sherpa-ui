@@ -81,9 +81,10 @@ export {
   // IndexedDB, or memory where there is none, seeded once per seed version.
   localRecords,
   type LocalRecordsOptions,
+  // A type's own store: local records made from it, seeded with its rows, the version a hash of them. Plan 960 U3
+  typeStore,
 } from './core/browser/idb-store.js';
-// A type's own store: local records made from it, seeded with its rows, the version a hash of them. Plan 960 U3
-export { seedVersionOf, typeStore } from './core/browser/type-stores.js';
+export { seedVersionOf } from './core/data/seed-version.js';
 export {
   DataSource,
   type BoundControl,
