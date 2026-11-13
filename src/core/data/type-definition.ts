@@ -13,7 +13,8 @@
  * - typeStatusFields — A type's status fields, as statusFields() takes them.
  * - typeFields — Each field as a type and a page say it together, for a reader with no source open.
  * - pageFields — A page's fields as its type (`source.type`, from the type registry) and the page say them together.
- * - typeStoreOptions — What a store made from a type is given: its key, its time and its schema.
+ * - typeStoreOptions — What a store made from a type is given: its key, its type, its time and its schema.
+ * - storeOfType — A type's store among these, whatever the app names it: the one named by its id, else the ONE that holds it.
  * - TypeColumn — One grid column made from a field.
  * - typeColumns — A grid's columns made from a type: one per field but its key, in its order; each headed by its label.
  * - readFrom — A value read from an entity's graph, by a field's `from`.
@@ -24,7 +25,8 @@ import type { FieldDeclaration } from './data-source-types.js';
 import { entityTypes } from './entity-types.js';
 import type { NodeOutput, NodeSocket } from './node-library.js';
 import type { StatusField } from './status-field.js';
-import { cellValues } from './store.js';
+import { report } from './report.js';
+import { cellValues, type Store } from './store.js';
 import { email, max, min, number, oneOf, pattern, required, rules, url, type FieldDomain, type Rule } from './validate.js';
 
 /** A field a row holds, or reads from its graph: what its data is, never how a control asks for it. */
@@ -198,8 +200,19 @@ export function pageFields(
 }
 
 /** What a store made from a type is given: its key, its time and its schema. */
-export function typeStoreOptions(type: TypeDefinition): StoreOptions & { key: string; schema: ReturnType<typeof rules> } {
-  return { key: type.key ?? 'id', ...(type.time ? { time: type.time } : {}), schema: typeSchema(type) };
+export function typeStoreOptions(type: TypeDefinition): StoreOptions & { key: string; type: string; schema: ReturnType<typeof rules> } {
+  return { key: type.key ?? 'id', type: type.id, ...(type.time ? { time: type.time } : {}), schema: typeSchema(type) };
+}
+
+/** A type's store among these, whatever the app names it: the one named by its id, else the ONE that holds its rows
+ *  (`store.type`). Two that hold it, neither named by its id: none, and it says so. Plan 960 U3 */
+export function storeOfType(stores: Readonly<Record<string, Store>>, id: string): Store | undefined {
+  if (stores[id]) return stores[id];
+  const holding = Object.entries(stores).filter(([, store]) => store.type === id);
+  if (holding.length > 1) {
+    report({ code: 'store', message: `storeOfType: ${holding.map(([name]) => `"${name}"`).join(' and ')} each hold "${id}": name one "${id}".`, at: { type: id } });
+  }
+  return holding.length === 1 ? holding[0]![1] : undefined;
 }
 
 /** One grid column made from a field: no `header`, as the grid heads it with its source's label. */

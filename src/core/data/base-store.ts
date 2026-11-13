@@ -22,6 +22,8 @@ export interface StoreOptions {
   /** The field holding each row's TIME. No default.
    *  TRAP T-a-record-has-a-time-of-its-own */
   time?: string;
+  /** The id of the type whose rows it holds: `typeStoreOptions` gives it. */
+  type?: string;
   /** Refuse rows the store WRITES that fail. TRAP T-schema-guard-belongs-at-the-store */
   schema?: StandardSchema;
   /** Cap rows, dropping OLDEST first. TRAP T-max-rows-is-oldest-out-by-insertion */
@@ -46,6 +48,7 @@ interface KeptOrder extends Pick<LoadResult, 'dropped' | 'issues'> {
 export abstract class BaseStore extends EventTarget implements Store {
   readonly key: string;
   readonly time: string | undefined;
+  readonly type: string | undefined;
   /** The write guard, if the caller gave one. */
   protected readonly schema: StandardSchema | undefined;
   /** How many rows a READ checks. 0 = all of them. */
@@ -64,6 +67,7 @@ export abstract class BaseStore extends EventTarget implements Store {
     this.history = history ? new StoreHistory() : undefined;
     this.key = options.key ?? 'id';
     this.time = options.time;
+    this.type = options.type;
     this.schema = options.schema;
     this.sampleSize = options.sample ?? 0;
     this.capabilities = {

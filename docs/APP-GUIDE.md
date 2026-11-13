@@ -303,7 +303,8 @@ export async function init(root, { source, query, session, view, signal, header,
   type whose rows it acts on, its input as a type's fields (a `ref` field names another type's rows), whether it
   changes data, where a press offers it, and its `run`. A press, the AI chat and the MCP all call `runAct(id, { keys,
   input }, { stores: ctx.stores })`: it checks the call by the type's rules and answers `done` (with an `undo` where it
-  changed data) or `refused`, in words. Ask the reader before an act that `changes`. Every app.json type gives
+  changed data) or `refused`, in words. A type's store is found by its type (`storeOfType`), whatever the app names
+  it. Ask the reader before an act that `changes`; `outlet.act(id, { keys, input })` runs one over the outlet's stores. Every app.json type gives
   `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; `actsOf({ context, view, type })` lists a page's,
   `actsOf()` every act, and `actSchema(act)` is a call's JSON Schema, for a tool.
 - **A press names its act in markup**: `<sherpa-button commandfor="<the outlet's id>" command="--user.suspend"

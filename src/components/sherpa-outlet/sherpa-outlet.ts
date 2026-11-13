@@ -637,10 +637,10 @@ export class SherpaOutlet extends SherpaElement {
   async #runPressed(id: string, given: readonly unknown[], rows = false): Promise<void> {
     const options = this.#options;
     if (!options) return;
-    const { actsOf } = await import('../../core/data/acts.js');
+    const [{ actsOf }, { storeOfType }] = await Promise.all([import('../../core/data/acts.js'), import('../../core/data/type-definition.js')]);
     const act = actsOf().find((a) => a.id === id);
     if (!act) return;
-    const key = act.type ? this.#stores(options)[act.type]?.key ?? 'id' : 'id';
+    const key = act.type ? storeOfType(this.#stores(options), act.type)?.key ?? 'id' : 'id';
     const answer = await this.act(id, { keys: rows ? given.map((r) => (r as Record<string, unknown>)[key]) : given });
     const { SherpaToast } = await import('../sherpa-toast/sherpa-toast.js');
     if ('refused' in answer) {

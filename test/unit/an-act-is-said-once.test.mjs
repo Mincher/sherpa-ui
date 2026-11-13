@@ -10,9 +10,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ArrayStore, actSchema, actsOf, entityStore, makeShelf, onReport, registerAct, registerEntityType, runAct, typeActs,
-  typeFaults, typeStoreOptions,
+  ArrayStore, actSchema, actsOf, entityStore, makeShelf, onReport, registerAct, registerEntityType, runAct, storeOfType,
+  typeActs, typeFaults, typeStoreOptions,
 } from '../../dist/data.js';
+const { statusFields } = await import('../../dist/core/data/status-field.js');
 const { START } = await import('../../dist/core/data/node-start.js');
 
 const ROLE = { v: 1, id: 'role', label: 'Role', title: 'name', fields: { id: {}, name: { label: 'Name', required: true } } };
@@ -174,4 +175,33 @@ test('a graph type\'s own acts go through the shelf: an entity is never added as
     off();
     stop();
   }
+});
+
+test('a type\'s acts find its store whatever the app names it: the one named by its id, else the one that holds its rows', async () => {
+  await withActs([...typeActs(USER), assignRole], async () => {
+    // The app names its stores as its pages do: 'people' and 'role-list', each made from its type.
+    const people = usersStore();
+    const ctx = { stores: { people, 'role-list': rolesStore() } };
+    assert.equal(people.type, 'user', 'a store made from a type says its type');
+    assert.equal(storeOfType(ctx.stores, 'user'), people);
+    assert.equal((await runAct('user.read', { keys: ['u1'] }, ctx)).done, 'Read User "Ana".');
+    // A reference is checked in its type's store too: a role that is none is refused as no Role, not as no store.
+    assert.match((await runAct('user.assign-role', { keys: ['u2'], input: { role: 'owner' } }, ctx)).refused, /"owner" is no Role/);
+    assert.deepEqual((await actSchema(assignRole, ctx)).properties.input.properties.role.oneOf.map((o) => o.const), ['admin', 'reader']);
+    // A wrapper says its inner store's type: a status field is worked out over it.
+    const wrapped = statusFields(usersStore(), { live: { type: 'status', values: [{ value: 'on', where: ['status', 'eq', 'active'] }] } });
+    assert.equal(wrapped.type, 'user');
+    // One named by its id wins; two that hold it, neither named by it: none, said in words.
+    const own = usersStore();
+    assert.equal(storeOfType({ people, user: own }, 'user'), own);
+    const said = [];
+    const stop = onReport((r) => said.push(r.message));
+    try {
+      assert.equal(storeOfType({ people, staff: usersStore() }, 'user'), undefined);
+      assert.deepEqual(await runAct('user.read', { keys: ['u1'] }, { stores: { people, staff: usersStore() } }), { refused: 'There is no store of User.' });
+    } finally {
+      stop();
+    }
+    assert.match(said.join('\n'), /"people" and "staff" each hold "user": name one "user"/);
+  });
 });

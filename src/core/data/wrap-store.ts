@@ -15,7 +15,7 @@ const STORE_EVENTS = ['change', 'waiting', 'queued', 'lost'] as const;
 
 /** Every member of a store a wrapper forwards. */
 const MEMBERS = [
-  'key', 'time', 'capabilities', 'domains', 'history', 'stale',
+  'key', 'time', 'type', 'capabilities', 'domains', 'history', 'stale',
   'load', 'totalCount', 'byKey', 'insert', 'update', 'remove',
   'distinct', 'scan', 'changes', 'recheck', 'take', 'send', 'forget',
 ] as const;

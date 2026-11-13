@@ -300,8 +300,10 @@ typeFaults(device);   // [] — or each fault, in words
 const store = statusFields(new ArrayStore(rows, typeStoreOptions(device)), typeStatusFields(device));
 ```
 
-`typeStoreOptions` gives the store its key, its time and `typeSchema(type)`: the
-rules, and each field's words as its `domains`. A source declares those before
+`typeStoreOptions` gives the store its key, its type's id (`store.type`), its time
+and `typeSchema(type)`: the rules, and each field's words as its `domains`. The
+store says its type whatever the app names it, so the type's acts find it
+(`storeOfType`): the store named by the type's id, else the one that holds its rows. A source declares those before
 a page's own `source.fields`, so a page says only what its controls do
 (`select`, `op`, `advanced`, `section`, `range`), and its own word wins.
 A page names its type in `source.type`, and an app lists its types in `app.json`

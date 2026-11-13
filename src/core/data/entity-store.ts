@@ -50,7 +50,7 @@ export function entityStore(shelf: EntityShelf, type: TypeDefinition, { row, sig
     return row ? row(entity, own) : own;
   };
   const entities = (): Entity[] => shelf.list(type.id).flatMap((s) => shelf.get(s.id) ?? []);
-  const rows = new ArrayStore(entities().map(rowOf), { key: 'id', ...(type.time ? { time: type.time } : {}) });
+  const rows = new ArrayStore(entities().map(rowOf), { key: 'id', type: type.id, ...(type.time ? { time: type.time } : {}) });
   const fill = (): void => rows.setRows(entities().map(rowOf));
   let soon: ReturnType<typeof setTimeout> | undefined;
   shelf.watch(() => {

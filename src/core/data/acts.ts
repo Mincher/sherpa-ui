@@ -19,7 +19,7 @@ import type { EntityShelf } from './entity-shelf.js';
 import { entityTypes } from './entity-types.js';
 import { report } from './report.js';
 import type { Filter, Row, Store } from './store.js';
-import { titleOf, typeSchema, type StoredField, type TypeDefinition } from './type-definition.js';
+import { storeOfType, titleOf, typeSchema, type StoredField, type TypeDefinition } from './type-definition.js';
 import { fieldsFaults } from './type-faults.js';
 import { validateField } from './validate.js';
 
@@ -118,7 +118,7 @@ async function inputFaults(input: Readonly<Record<string, StoredField>>, given: 
         if (field.required) out.push(`it needs ${words}`);
         continue;
       }
-      const store = ctx.stores[field.ref];
+      const store = storeOfType(ctx.stores, field.ref);
       if (!store) {
         out.push(`there is no store of ${labelOf(field.ref)}`);
         continue;
@@ -143,7 +143,7 @@ export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): P
   if (!act) return { refused: `There is no act "${id}".` };
   const keys = call.keys ?? [];
   if (act.type) {
-    const store = ctx.stores[act.type];
+    const store = storeOfType(ctx.stores, act.type);
     if (!store) return { refused: `There is no store of ${labelOf(act.type)}.` };
     if (!act.many && keys.length > 1) return { refused: `${act.label} takes one ${labelOf(act.type)}, not ${keys.length}.` };
     for (const key of keys) if (!(await store.byKey(key))) return { refused: `There is no ${labelOf(act.type)} "${String(key)}".` };
@@ -161,7 +161,7 @@ export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): P
 async function fieldSchema(field: StoredField, name: string, ctx?: ActContext): Promise<Record<string, unknown>> {
   const description = field.description ?? field.label ?? name;
   if (field.ref) {
-    const store = ctx?.stores[field.ref];
+    const store = ctx ? storeOfType(ctx.stores, field.ref) : undefined;
     const type = entityTypes()[field.ref];
     const page = store ? await store.load({ take: 201 }) : undefined;
     const one = page && page.rows.length <= 200
@@ -218,7 +218,7 @@ function givenFields(type: TypeDefinition, withKey: boolean, required: boolean):
 }
 
 /**
- * A type's own acts, through its store (`ctx.stores[type.id]`), each refused in the store's words: find (rows whose
+ * A type's own acts, through its store (`storeOfType`, whatever the app names it), each refused in the store's words: find (rows whose
  * fields equal those given, a search), read (one row), add (a row; its undo removes it), change (rows' fields; its undo
  * puts each back) and remove (rows; its undo puts each back, a graph thing through its shelf).
  */
@@ -227,7 +227,7 @@ export function typeActs(type: TypeDefinition): Act[] {
   const key = type.key ?? 'id';
   const title = titleOf(type);
   const named = (row: Row | undefined): string => `${type.label} "${String(row?.[title] ?? row?.[key] ?? '')}"`;
-  const storeOf = (ctx: ActContext): Store => ctx.stores[id]!;
+  const storeOf = (ctx: ActContext): Store => storeOfType(ctx.stores, id)!;
   const keysOf = (call: ActCall): unknown[] => [...(call.keys ?? [])];
   const many = (n: number): string => (n === 1 ? `1 ${type.label}` : `${n} of ${type.label}`);
   return [

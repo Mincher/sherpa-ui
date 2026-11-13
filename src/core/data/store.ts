@@ -379,6 +379,9 @@ export interface Store extends EventTarget {
    * TRAP T-a-record-has-a-time-of-its-own
    */
   readonly time?: string | undefined;
+  /** The id of the type whose rows it holds, as `typeStoreOptions` gives it, whatever the app names the store: the type's
+   *  acts find it by this (`storeOfType`). Plan 960 U3 */
+  readonly type?: string | undefined;
   /** What it can do. TRAP T-a-store-says-what-it-can-do-once */
   readonly capabilities: StoreCapabilities;
   /** What each field MAY hold — a set in order, a number's ends — as the data's
