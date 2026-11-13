@@ -42,16 +42,18 @@ Filter use (a preset) ─True─────────────► View Fil
 Organise (the View's) ──────────────────► View Filters                               Q2 A: it arranges every card
 View Filters ───────────────────────────► View  [View Filters input]
 
-Source ─rows─► Check ─Yes─► Presentation ─► View  [Content input, one per card]      Q1: rows from the Source, filtered on the way
-               ▲ test: the card's own filters' Trues (an And where there are several), its presets' too
+Source ─rows─► Field ─► Condition ─Results─► Presentation ─► View  [Content, one per card]   Q1: filtered on the way
+               (two filters of its own: each Condition's Results into an And; the And's Results into the Presentation)
 Organise (the card's) ─► Presentation
 Presentation's rows: its bar (Q3 A): its Switch, each chip it holds in order, with or without a pick
 ```
 
-- A card's local filters are a CHECK on its rows' path (plan 944: Yes sends the rows its test holds for): one system,
-  no new filter node. A card with no filter of its own takes the Source's rows straight.
-- Moving a field between scopes is moving its tree's True: into View Filters (the View's), or into a card's Check (its
-  own): `connectionRequest`, as today's send to View and Return.
+- A card's local filters are its Conditions on its rows' path: a Condition's RESULTS are the rows that pass, and an And's
+  Results the rows in all of its inputs (plan 944): one system, no new filter node. A card with no filter of its own
+  takes the Source's rows straight. (Corrected 2026-11-13: a Check is no filter. It sends ALL its Data on Yes or No, by
+  one truth, so a Check would pass every row where any passes.)
+- Moving a field between scopes is moving its tree: its True into View Filters (the View's), or its Results onto the
+  card's rows' path (its own): `connectionRequest`, as today's send to View and Return.
 - Chip order is the order of a bar's rows; the Switch, its first row; a chip with no pick, a row with nothing joined.
 
 **Three points (sherpa-demos-67, 2026-11-13), answered:**
@@ -59,13 +61,13 @@ Presentation's rows: its bar (Q3 A): its Switch, each chip it holds in order, wi
 - **(a) Which Source a View filter's Field reads.** A page has ONE source (its `store` or `type`; every Demos page so),
   and every card of a page is a scope of it: a page's graph has one Source, and every Field reads it. A Source a reader
   places beside it (TODO 808) is no part of the Query. A field the Source has not got warns as a Field does today.
-- **(b) A Check takes several tests (YES, the one door for every Check, workflows too).** A Check's header (its test)
-  takes several connections, and holds where EVERY one holds, as an And; an Or is still its own node. So a card with two
-  filters of its own is one Check, not a Check and an And. Simulate, the Outgoing JSON's reader and the reconcile read a
-  Check's tests as an And.
+- **(b) No Check (CORRECTED 2026-11-13).** A Check branches all its Data by one truth; it filters no rows. A card's own
+  filters are its Conditions' Results on the rows' path, and two or more join in ONE And, whose Results are the rows in
+  all of them (an And already takes many inputs). No change to the Check. The earlier answer (a Check taking several
+  tests) is withdrawn.
 - **(c) A chip and the filter it shows, said once.** Both are drawn from ONE reading of the Query, the one truth, so they
-  cannot disagree. A filter's True joins where it FILTERS: a View filter into its chip's row on View Filters; a card's
-  own filter into the card's Check. A card's chip on its Presentation names its field and says its pick in words (its
+  cannot disagree. A filter joins where it FILTERS: a View filter's True into its chip's row on View Filters; a card's
+  own filter's Results onto the card's rows' path. A card's chip on its Presentation names its field and says its pick in words (its
   hint), from that same reading, and takes no line.
 | U4.9b A Source picks rows (Will, 2026-11-13: "Source picks rows", for ONE fixed recipient such as "Service desk"; BUILT 2026-11-13) | The Source kind's optional many pick, Rows (`control: 'rows'`, `picked`): its store's rows shown by the type's `title`, kept by its `key`; none picked, every row. Its choices come from the app through one fact, `storeRows(store)`; `rowPicks(type, rows)` makes them. Simulate sends only the picked rows. A page's Query graph offers no Rows pick: a page reads all its rows, and its Query filters them | unit: the pick's choices; Simulate sends the picked; none, every row; the Query's Source has none | U4.9 |
 
