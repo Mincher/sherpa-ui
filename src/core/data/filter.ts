@@ -15,7 +15,7 @@
  * - filterOf — A page's preset or a saved filter as the Filter it is, keeping its Where; or why not, in words.
  * - FILTER_LENS — A Filter's lens: drawn from its Where, else its graph; written back as a Where where one says it all.
  */
-import { entityGraph, entityKind, type Entity } from './entity.js';
+import { entityGraph, entityKind, withBody, type Entity } from './entity.js';
 import { FILTER, entityTypes, libraryOf, type EntityType } from './entity-types.js';
 import { graphWorkflow } from './entity-check.js';
 import { innerOf, kindsOf } from './node-library.js';
@@ -143,17 +143,14 @@ export function filterOf(given: PagePreset | (SavedFilter & { id: string }), sou
 /** The kinds a Where can say: a graph of only these is kept as its Where. */
 const SAID_BY_A_WHERE = new Set(['source', 'field', 'condition', 'time']);
 
-/** An entity with no body, ready for another. */
-const bare = ({ graph: _graph, query: _query, ...rest }: Entity): Omit<Entity, 'graph' | 'query'> => rest;
-
 /** A Filter's lens (plan 960 U4.4b, D6): drawn from its Where, or as its own graph; written back as a Where when the graph
  *  holds only what a Where says (a Source, Fields, tests, And and Or) and reads as one, else as its graph. A Where's places
  *  are not kept: it unfurls when shown. */
 export const FILTER_LENS: GraphLens<Entity, EntityFacts> = {
   graphOf: (entity) => whereGraph(entity.query?.where ?? {}, { ...(sourceOf(entity) ? { source: sourceOf(entity)! } : {}) }),
-  toGraph: (entity, facts) => ENTITY_LENS.toGraph(entity.query ? { ...bare(entity), graph: FILTER_LENS.graphOf!(entity) } : entity, facts),
+  toGraph: (entity, facts) => ENTITY_LENS.toGraph(entity.query ? withBody(entity, { graph: FILTER_LENS.graphOf!(entity) }) : entity, facts),
   fromGraph: (before, graph, facts) => {
-    const answer = ENTITY_LENS.fromGraph(bare(before) as Entity, graph, facts);
+    const answer = ENTITY_LENS.fromGraph(withBody(before, { graph: entityGraph(before) }), graph, facts);
     if ('faults' in answer) return answer;
     const drawn = answer.definition;
     const keeps = (facts?.types ?? entityTypes())[drawn.type]?.graph?.query;
@@ -161,7 +158,7 @@ export const FILTER_LENS: GraphLens<Entity, EntityFacts> = {
     const read = presetOfEntity(drawn, facts);
     if ('fault' in read) return answer;
     const source = sourceOf(drawn);
-    return { definition: { ...bare(drawn), query: { where: read.preset.where }, ...(source ? { settings: { ...drawn.settings, source } } : {}) } as Entity };
+    return { definition: { ...withBody(drawn, { query: { where: read.preset.where } }), ...(source ? { settings: { ...drawn.settings, source } } : {}) } };
   },
 };
 

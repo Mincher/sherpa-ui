@@ -22,7 +22,7 @@
  * - saveGraph — Save the graph on a canvas as the open entity's, its own tags if given: a preset is refused.
  * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named and tagged, under a free id.
  */
-import type { Entity, EntityGraph } from './entity.js';
+import { withBody, type Entity, type EntityBody, type EntityGraph } from './entity.js';
 import { isGroupEnd, layoutParts } from './graph-layout.js';
 import { tidyTags } from './tags.js';
 import type { EntityType } from './entity-types.js';
@@ -136,16 +136,17 @@ export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'co
   };
 }
 
-/** Save the graph on a canvas as the open entity's, and its own tags when given (the editor's `tags()`, TODO 828).
- *  A preset is refused, as the shelf refuses it: it is read only. */
-export async function saveGraph(shelf: EntityShelf, id: string, graph: EntityGraph, own: { tags?: readonly string[] } = {}): Promise<boolean> {
+/** Save a canvas's body as the open entity's: what its lens wrote back (`bodyOf(answer.definition)`), a graph or a query, in
+ *  place of the one it had; and its own tags when given (the editor's `tags()`, TODO 828). A preset is refused, as the
+ *  shelf refuses it: it is read only. */
+export async function saveGraph(shelf: EntityShelf, id: string, body: EntityBody, own: { tags?: readonly string[] } = {}): Promise<boolean> {
   const was = shelf.get(id);
-  return !!was && shelf.save({ ...was, graph, ...(own.tags ? { tags: tidyTags(own.tags) } : {}) });
+  return !!was && shelf.save({ ...withBody(was, body), ...(own.tags ? { tags: tidyTags(own.tags) } : {}) });
 }
 
-/** Save the graph on a canvas as a COPY of an entity, a preset's too: the reader's own, under the name
- *  and description given and a free id, through the shelf's `duplicate`. The copy's id, or none. */
-export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityGraph, named: { label: string; description?: string; tags?: readonly string[]; category?: string }): Promise<string | undefined> {
+/** Save a canvas's body as a COPY of an entity, a preset's too: the reader's own, under the name and description given
+ *  and a free id, through the shelf's `duplicate`. The copy's id, or none. */
+export async function saveGraphAs(shelf: EntityShelf, id: string, body: EntityBody, named: { label: string; description?: string; tags?: readonly string[]; category?: string }): Promise<string | undefined> {
   const was = shelf.get(id);
   const label = named.label.trim();
   if (!was || !label) return undefined;
@@ -155,5 +156,5 @@ export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityG
   const tags = named.tags && tidyTags(named.tags);
   // A category given is the copy's: Custom Nodes is none (plan 936).
   const category = named.category && named.category !== 'Custom Nodes' ? { category: named.category } : {};
-  return await shelf.duplicate(id, copy, { label, description: description || undefined, ...(tags ? { tags } : {}), ...category, graph }) ? copy : undefined;
+  return await shelf.duplicate(id, copy, { label, description: description || undefined, ...(tags ? { tags } : {}), ...category, ...body }) ? copy : undefined;
 }

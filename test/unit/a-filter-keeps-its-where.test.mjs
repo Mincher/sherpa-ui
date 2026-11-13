@@ -9,7 +9,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  NODE_KINDS, editWorkflow, entityFaults, entityGraph, filterOf, isEntity, lensOf, presetOfEntity, whereGraph,
+  NODE_KINDS, bodyOf, editWorkflow, entityFaults, entityGraph, filterOf, isEntity, lensOf, presetOfEntity, saveGraph,
+  saveGraphAs, whereGraph,
 } from '../../dist/data.js';
 
 const { PageKeeper, memoryTier } = await import(new URL('../../dist/core/browser/page-state.js', import.meta.url));
@@ -101,4 +102,21 @@ test('the shelf keeps a Filter\'s Where as it is', async () => {
   const kept = k.entities.get('big');
   assert.deepEqual(kept.query, filter.query);
   assert.equal(kept.graph, undefined);
+});
+
+test('a save takes the body its lens wrote back, in place of the one it had: one body, never both', async () => {
+  const k = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
+  const where = { seats: { gt: 10 } };
+  const asGraph = { ...keeping(where, 'big'), query: undefined, graph: whereGraph(where, { source: 'customers' }) };
+  delete asGraph.query;
+  assert.equal(await k.entities.save(asGraph), true);
+  // The lens writes it back as a Where: the save keeps that, and its graph goes.
+  const { definition } = lensOf('filter').fromGraph(asGraph, lensOf('filter').toGraph(asGraph).workflow);
+  assert.equal(await saveGraph(k.entities, 'big', bodyOf(definition)), true);
+  assert.deepEqual(k.entities.get('big').query, { where });
+  assert.equal(k.entities.get('big').graph, undefined);
+  // Saved as a copy, the copy keeps the body given; the graph given back makes it a graph again, with no query.
+  const copy = await saveGraphAs(k.entities, 'big', { graph: asGraph.graph }, { label: 'Big copy' });
+  assert.deepEqual(k.entities.get(copy).graph, asGraph.graph);
+  assert.equal(k.entities.get(copy).query, undefined);
 });

@@ -79,11 +79,11 @@ test('New graph and Save graph as take tags, tidied; a copy given none keeps the
   const id = await newGraph(k.entities, type, { label: 'Dates', tags: [' dates ', 'Dates', 'time'] });
   assert.deepEqual(k.entities.get(id).tags, ['dates', 'time']);
   const graph = k.entities.get(id).graph;
-  const copy = await saveGraphAs(k.entities, id, graph, { label: 'Dates two' });
+  const copy = await saveGraphAs(k.entities, id, { graph }, { label: 'Dates two' });
   assert.deepEqual(k.entities.get(copy).tags, ['dates', 'time']);
-  const retagged = await saveGraphAs(k.entities, id, graph, { label: 'Dates three', tags: ['calendar'] });
+  const retagged = await saveGraphAs(k.entities, id, { graph }, { label: 'Dates three', tags: ['calendar'] });
   assert.deepEqual(k.entities.get(retagged).tags, ['calendar']);
-  const untagged = await saveGraphAs(k.entities, id, graph, { label: 'Dates four', tags: [] });
+  const untagged = await saveGraphAs(k.entities, id, { graph }, { label: 'Dates four', tags: [] });
   assert.equal('tags' in k.entities.get(untagged), false);
 });
 

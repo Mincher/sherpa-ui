@@ -14,7 +14,7 @@
  * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
  */
 import { report } from './report.js';
-import { entityGraph, isEntity, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
+import { entityGraph, isEntity, usesOf, withBody, ENTITY_SCHEMA, type Entity, type EntityBody } from './entity.js';
 import { libraryOf } from './entity-types.js';
 import type { EntityFacts } from './entity-check.js';
 import type { NodeLibrary } from './node-library.js';
@@ -40,7 +40,7 @@ export interface EntityShelf {
   /** Why `remove` would keep an entity, in words: a preset, or another entity uses it; none when it would go. */
   whyKept(id: string): string | undefined;
   /** A copy under a new id, "<label> copy" unless `change` names it; `change` may carry the graph on a canvas, its tags, and none for its description. */
-  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; tags?: readonly string[]; category?: string; graph?: Entity['graph'] }): Promise<boolean>;
+  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; tags?: readonly string[]; category?: string } & Partial<EntityBody>): Promise<boolean>;
   /** Called with the list whenever it changes here, and when another tab changes it. Stops on the signal. */
   watch(handler: (list: EntitySummary[]) => void, signal?: AbortSignal): void;
   /** The entity as JSON text, with its `$schema` and without its `origin`. */
@@ -136,8 +136,10 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     async duplicate(id, newId, change = {}) {
       const was = shelf.get(id);
       if (!was) return refuse('entity', `duplicate: "${id}" is not there.`, id);
-      const { description, ...rest } = structuredClone(change);
-      const { description: had, ...copy } = { ...structuredClone(was), label: `${was.label} copy`, ...rest, id: newId };
+      const { description, graph, query, ...rest } = structuredClone(change);
+      // A body given is the copy's, in place of the one it had: one body, never both.
+      const from = graph ? withBody(was, { graph }) : query ? withBody(was, { query }) : was;
+      const { description: had, ...copy } = { ...structuredClone(from), label: `${was.label} copy`, ...rest, id: newId };
       const said = 'description' in change ? description : had;
       return shelf.save({ ...copy, ...(said ? { description: said } : {}) } as Entity);
     },

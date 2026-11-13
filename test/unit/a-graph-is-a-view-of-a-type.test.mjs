@@ -151,31 +151,31 @@ test('Save writes the graph on the canvas to the reader\'s own entity, and is re
   k.entityPresets = [filter('shipped', 'Shipped')];
   await k.entities.save(filter('mine', 'Mine'));
   const edited = { ...filter('x').graph, nodes: filter('x').graph.nodes.map((n) => (n.id === 'status' ? { ...n, values: { ...n.values, b: 'trial' } } : n)) };
-  assert.deepEqual(await heard(() => saveGraph(k.entities, 'mine', edited)), { result: true, said: [] });
+  assert.deepEqual(await heard(() => saveGraph(k.entities, 'mine', { graph: edited })), { result: true, said: [] });
   assert.equal(k.entities.get('mine').graph.nodes[1].values.b, 'trial');
-  const { result, said } = await heard(() => saveGraph(k.entities, 'shipped', edited));
+  const { result, said } = await heard(() => saveGraph(k.entities, 'shipped', { graph: edited }));
   assert.equal(result, false);
   assert.match(said[0], /"shipped" is a preset, which is read only/);
   assert.equal(k.entities.get('shipped').graph.nodes[1].values.b, 'active');
-  assert.equal(await saveGraph(k.entities, 'gone', edited), false);
+  assert.equal(await saveGraph(k.entities, 'gone', { graph: edited }), false);
 });
 
 test('Save graph as makes a COPY — of a preset too: the reader\'s own, named, under a free id, with the canvas\'s graph — and the graph chip lists it', async () => {
   const k = keeper();
   k.entityPresets = [filter('shipped', 'Shipped')];
   const edited = { ...filter('x').graph, nodes: filter('x').graph.nodes.map((n) => ({ ...n, x: n.x + 40 })) };
-  const id = await saveGraphAs(k.entities, 'shipped', edited, { label: 'My shipped', description: ' Mine now ' });
+  const id = await saveGraphAs(k.entities, 'shipped', { graph: edited }, { label: 'My shipped', description: ' Mine now ' });
   assert.equal(id, 'my-shipped');
   const copy = k.entities.get(id);
   assert.deepEqual([copy.origin, copy.label, copy.description, copy.graph.nodes[0].x], ['mine', 'My shipped', 'Mine now', 40]);
   assert.equal(k.entities.get('shipped').graph.nodes[0].x, 0);
   // The same name again: a free id, the reader's name kept.
-  assert.equal(await saveGraphAs(k.entities, id, edited, { label: 'My shipped' }), 'my-shipped-2');
+  assert.equal(await saveGraphAs(k.entities, id, { graph: edited }, { label: 'My shipped' }), 'my-shipped-2');
   assert.equal(k.entities.get('my-shipped-2').description, undefined);
   assert.deepEqual(graphRows(k.entities.list('filter'), id).map((r) => [r.value, r.section, !!r.selected]), [
     ['shipped', 'Presets', false], ['my-shipped', 'My graphs', true], ['my-shipped-2', 'My graphs', false], [NEW_GRAPH, undefined, false],
   ]);
-  assert.equal(await saveGraphAs(k.entities, 'shipped', edited, { label: '  ' }), undefined);
+  assert.equal(await saveGraphAs(k.entities, 'shipped', { graph: edited }, { label: '  ' }), undefined);
   // duplicate keeps a description it is not told of, and the label it is.
   await k.entities.save({ ...filter('described', 'Described'), description: 'Kept' });
   assert.equal(await k.entities.duplicate('described', 'described-copy'), true);

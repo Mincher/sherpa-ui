@@ -12,6 +12,9 @@
  * - EntityQuery — A body in place of a graph: a Filter's Where, the one truth; its lens draws its graph from it.
  * - EntityLibrary — The preset entities of an app, by id, and the types they are of (entities.v3).
  * - isEntity — Whether a value has the SHAPE of an entity, with one body; the persist guard.
+ * - EntityBody — An entity's one body: a graph, or a query.
+ * - withBody — The entity with this body in place of its own: one body, never both.
+ * - bodyOf — An entity's body as it keeps it: its query, else its graph.
  * - entityGraph — An entity's graph: its own, else the one its lens draws from its query; every read is this door.
  * - entityKind — The kind a use of an entity has in a graph: `<type>:<id>`, and a Custom Node's plain id.
  * - entityRefOf — The entity a use's kind names: the inverse of `entityKind`.
@@ -100,6 +103,19 @@ export function isEntity(value: unknown): value is Entity {
     && (value['settings'] === undefined || isObject(value['settings']));
 }
 
+/** An entity's one body: a graph, or a query. */
+export type EntityBody = { graph: EntityGraph; query?: never } | { query: EntityQuery; graph?: never };
+
+/** The entity with this body in place of its own: one body, never both. */
+export function withBody<E extends Pick<Entity, 'graph' | 'query'>>(entity: E, body: EntityBody): E {
+  const { graph: _graph, query: _query, ...rest } = entity;
+  return { ...rest, ...body } as unknown as E;
+}
+
+/** An entity's body as it keeps it: its query, else its graph. */
+export const bodyOf = (entity: Pick<Entity, 'type' | 'graph' | 'query'>): EntityBody =>
+  (entity.query ? { query: entity.query } : { graph: entityGraph(entity) });
+
 const NO_GRAPH: EntityGraph = { nodes: [] };
 
 /** An entity's graph: its own; else, for a query body, the one its type's lens draws from it (a Filter's Where); else
@@ -153,7 +169,7 @@ export function categoryOf(entity: Pick<Entity, 'category' | 'settings'>): strin
 }
 
 /** A graph's parts a Custom Node definition carries: its nodes, its connections and its layout. */
-const bodyOf = (graph: EntityGraph): Pick<NodeDefinition, 'nodes' | 'connections'> & ReturnType<typeof layoutParts> =>
+const definitionParts = (graph: EntityGraph): Pick<NodeDefinition, 'nodes' | 'connections'> & ReturnType<typeof layoutParts> =>
   ({ nodes: graph.nodes, ...(graph.connections ? { connections: graph.connections } : {}), ...layoutParts(graph) });
 
 /** A `node` entity as the Custom Node definition the node panel and the editor read; a preset's is read only. */
@@ -162,7 +178,7 @@ export function definitionOf(entity: Entity): NodeDefinition {
   return {
     v: 1, label: entity.label,
     inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [],
-    ...bodyOf(entityGraph(entity)),
+    ...definitionParts(entityGraph(entity)),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),
     ...(categoryOf(entity) ? { category: categoryOf(entity)! } : {}),

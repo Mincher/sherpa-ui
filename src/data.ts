@@ -243,8 +243,8 @@ export {
 } from './core/data/node-library.js';
 /* An ENTITY: a graph saved under a type, an id and a name; a Custom Node is the type `node`. Plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type */
 export {
-  ENTITY_SCHEMA, categoryOf, definitionOf, entityGraph, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf,
-  type Entity, type EntityGraph, type EntityLibrary, type EntityQuery, type EntityRef,
+  ENTITY_SCHEMA, bodyOf, categoryOf, definitionOf, entityGraph, entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf, withBody,
+  type Entity, type EntityBody, type EntityGraph, type EntityLibrary, type EntityQuery, type EntityRef,
 } from './core/data/entity.js';
 /* Custom Nodes, one way: a door for each act, for the editor, an MCP tool and an app's assistant alike. Plan 942 */
 export { createNode, deleteNode, keepNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
