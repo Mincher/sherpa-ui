@@ -296,7 +296,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   expect(await offered('field')).toEqual(said);
 });
 
-test('an input let go on the bare canvas offers a Value first', async ({ page }) => {
+test('an input let go on the bare canvas offers the kind placed last first, then a Value (TODO 968)', async ({ page }) => {
   await bind(page);
   await pressSearch(page);
   await item(page, 'organise').click();
@@ -314,7 +314,8 @@ test('an input let go on the bare canvas offers a Value first', async ({ page })
   await page.mouse.move(x1! + 300, y1! + 190, { steps: 8 });
   await page.mouse.up();
   const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
-  // An Organise's header takes any type: the kinds that give one, a Value first; an Output family too, by its properties (plan 917).
-  expect(choices[0]).toBe('value');
+  // An Organise's header takes any type: the kinds that give one, the Organise just placed first (TODO 968), then a Value;
+  // an Output family too, by its properties (plan 917).
+  expect(choices.slice(0, 2)).toEqual(['organise', 'value']);
   expect(choices).toContain('notify');
 });

@@ -43,7 +43,7 @@
  * - paletteOf — The node panel's list: each category with a workflow kind in it, in order; never a Query-only kind.
  * - paletteMatch — How a panel item answers a search: by its name or a tag, or by a type's name, whole first.
  * - fitOf — Where a new node of a kind joins a socket of a type: its header or a row, as a family's type.
- * - paletteFor — The palette's kinds a socket of a type could join, a Value first.
+ * - paletteFor — The palette's kinds a socket of a type could join: the ones used last first, then a Value.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
@@ -828,10 +828,12 @@ export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in', gi
   return undefined;
 }
 
-/** The palette's kinds a socket of a type could join, a Value first (D16), then the palette's order. */
-export function paletteFor(palette: readonly PaletteGroup[], type: SocketType, side: 'out' | 'in'): PaletteItem[] {
+/** The palette's kinds a socket of a type could join: the ones used last first, newest first (TODO 968), then a Value
+ *  (D16), then the palette's order. */
+export function paletteFor(palette: readonly PaletteGroup[], type: SocketType, side: 'out' | 'in', recent: readonly string[] = []): PaletteItem[] {
   const fit = palette.flatMap((g) => g.items).filter((i) => fitOf(i.kind, type, side));
-  return [...fit.filter((i) => i.id === 'value'), ...fit.filter((i) => i.id !== 'value')];
+  const rank = (i: PaletteItem): number => (recent.includes(i.id) ? recent.indexOf(i.id) : i.id === 'value' ? recent.length : recent.length + 1);
+  return fit.map((item, at) => ({ item, at })).sort((a, b) => rank(a.item) - rank(b.item) || a.at - b.at).map(({ item }) => item);
 }
 
 /** A socket address, read: its node, and its row or none for the header's. */

@@ -83,7 +83,7 @@ For a graph editor's list of the nodes it may place, one per family, in two tabs
 
 | Method | What it does |
 |---|---|
-| `askAdd(context: AddContext)` | Open "Add a node" where a line was let go: the kinds a socket of its type could join, a Value first. |
+| `askAdd(context: AddContext)` | Open "Add a node" where a line was let go: the kinds a socket of its type could join, the ones used last first. |
 
 ## Events
 

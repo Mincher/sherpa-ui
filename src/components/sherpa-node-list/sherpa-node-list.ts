@@ -37,6 +37,8 @@ export interface AddContext {
   /** Where it was let go: on the screen, to open the menu; on the plane, to place the node. */
   client: { x: number; y: number };
   at: { x: number; y: number };
+  /** The kinds placed last, newest first: the menu lists those that fit first (TODO 968). */
+  recent?: readonly string[];
 }
 
 /** The two lists, by who made a node: the kinds a file gives and every preset, and the reader's own (plan 936). */
@@ -260,10 +262,10 @@ export class SherpaNodeList extends SherpaElement {
 
   /* ── Add a node ───────────────────────────────────────────────────────── */
 
-  /** Open "Add a node" where a line was let go: the kinds a socket of its type could join, a Value first. */
+  /** Open "Add a node" where a line was let go: the kinds a socket of its type could join, the ones used last first. */
   askAdd(context: AddContext): void {
     // A family that fits only as another type says which: "Math › Count".
-    const choices = paletteFor(this.#palette, context.type, context.side).filter(({ kind }) => !context.gives || takesGiven(kind, context.gives)).map(({ id, kind }) => {
+    const choices = paletteFor(this.#palette, context.type, context.side, context.recent).filter(({ kind }) => !context.gives || takesGiven(kind, context.gives)).map(({ id, kind }) => {
       const type = fitOf(kind, context.type, context.side, context.gives)?.type;
       return { id, heading: type ? `${kind.heading} › ${kind.types![type]!.label}` : kind.heading };
     });

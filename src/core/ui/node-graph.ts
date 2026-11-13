@@ -70,7 +70,7 @@ import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
 import { dotsThrough, handlesOf, pathThrough, waypointsOf, type Pt } from './connector-path.js';
 import { clampedVia } from '../data/connector-bends.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
-import type { SessionStore } from '../browser/session.js';
+import { SessionList, type SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
@@ -2535,8 +2535,10 @@ interface Opened {
 
 /** Whether a value is a library's edits: definitions by id. */
 const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && typeof v === 'object' && !Array.isArray(v);
-/** Whether a value is a list of tags. */
-const isTags = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) => typeof t === 'string');
+/** Where the kinds placed last are kept, in the session. */
+const RECENT = '/nodes/recent';
+/** Whether a value is a list of words: tags, or kind ids. */
+const isWords = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) => typeof t === 'string');
 
 /** Keep a workflow's draft drawn on a canvas, and write each edit to it as a pure edit:
  *  a value, a move, a connection, a node's own name. A connection that would break the workflow is
@@ -2569,7 +2571,10 @@ export function bindWorkflow(
   let handed: NodeLibrary = given;
   // The open entity's own tags, a draft beside the workflow's, kept for the tab: the app's Save writes them. TODO 828
   const tagsAt = `/graph-tags/${workflow.id}`;
-  session?.persist(tagsAt, { shared: false, guard: isTags });
+  session?.persist(tagsAt, { shared: false, guard: isWords });
+  // The kinds placed last, newest first, in every tab: "Add a node" lists those first (TODO 968).
+  kept$?.persist(RECENT, { shared: true, guard: isWords });
+  const recents = kept$ && new SessionList<string>(kept$, RECENT, { max: 5, front: true });
   let handedTags: readonly string[] = own ? tidyTags(lib.nodes[own]?.tags) : [];
   let ownTags: readonly string[] = (session?.get(tagsAt) as string[] | undefined) ?? handedTags;
   const dirty = new Set(Object.keys(edited));
@@ -3077,6 +3082,7 @@ export function bindWorkflow(
   // A node the reader asked for, from the panel or "Add a node": through the one door, `{ add }`; picked, its panel shut. TODO 756
   const place = (kind: string, at: { x: number; y: number }, context?: AddContext, type?: string): void => {
     if (!K()[kind] || readOnly()) return;
+    recents?.add(kind);
     const free = (n: number): string => (shown().nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
     const id = free(1);
     edit(() => {
@@ -3942,7 +3948,7 @@ export function bindWorkflow(
       locked: (node) => ro || isGroupEnd(node.id),
       // A Custom Node's use opens on its drill-down, as on a double click (TODO 954).
       onOpen: (node) => open(node.id),
-      ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
+      ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd({ ...context, recent: recents?.all ?? [] }) } : {}),
       // A collapsed or expanded node changes height: its lane fits again.
       onCollapse: () => { if (shown().lanes?.length) write(shown()); },
     });

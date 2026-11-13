@@ -67,6 +67,14 @@ test("an app's own kind goes after the known categories; one with none is Other"
   assert.deepEqual(palette.slice(-2).map((g) => g.category), ['Agents', 'Other']);
 });
 
+test('the kinds placed last come first, newest first; one that does not fit is left out; then a Value (TODO 968)', () => {
+  const palette = paletteOf(NODE_KINDS);
+  const into = paletteFor(palette, 'value', 'in', ['organise', 'math', 'condition']).map((i) => i.id);
+  assert.deepEqual(into.slice(0, 3), ['math', 'condition', 'value']);
+  assert.ok(!into.includes('organise'));
+  assert.deepEqual(paletteFor(palette, 'value', 'in', []).map((i) => i.id), paletteFor(palette, 'value', 'in').map((i) => i.id));
+});
+
 test('a socket is offered the kinds that could join it, a Value first', () => {
   const palette = paletteOf(NODE_KINDS);
   // A value output goes into a header or row that takes a value or anything.

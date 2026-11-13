@@ -217,7 +217,7 @@
           "$type": "method",
           "name": "askAdd",
           "args": "context: AddContext",
-          "description": "Open \"Add a node\" where a line was let go: the kinds a socket of its type could join, a Value first."
+          "description": "Open \"Add a node\" where a line was let go: the kinds a socket of its type could join, the ones used last first."
         }
       ]
     }
