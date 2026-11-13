@@ -83,7 +83,7 @@ test('a multi-select row is ONE select: a chip that opens a menu of ticks, never
 
 type Sock = HTMLElement & { socketRect(side: string): DOMRect | null };
 const ink = (page: Page): Promise<Rgb> => page.evaluate(() => {
-  const el = Object.assign(document.createElement('div'), { style: 'background: var(--sherpa-style-success-indicator-accent); inline-size: 1px; block-size: 1px' });
+  const el = Object.assign(document.createElement('div'), { style: 'background: var(--sherpa-socket-ink-boolean); inline-size: 1px; block-size: 1px' });
   document.body.append(el);
   const [r, g, b] = getComputedStyle(el).backgroundColor.match(/[\d.]+/g)!.map(Number);
   el.remove();
@@ -112,19 +112,19 @@ async function socketPaint(page: Page, at: [number, number][]): Promise<Rgb[]> {
 
 test('a switch row has a boolean input socket: hollow until a connection joins it', async ({ page }) => {
   await bind(page);
-  const green = await ink(page);
+  const purple = await ink(page);
   expect(await page.evaluate((sel) => document.querySelector(`${sel} sherpa-node-row:has(sherpa-switch)`)!.getAttribute('data-input-socket'), GATE)).toBe('boolean');
   // Hollow: the middle is the face, not the ink (the connected one, below, is ink there).
   const [centre] = await socketPaint(page, [[.5, .5]]);
-  expect(near(centre!, green), 'hollow centre').toBe(false);
+  expect(near(centre!, purple), 'hollow centre').toBe(false);
 });
 
 test('a connected socket is filled: the shape is ink in the middle, not at its far corners', async ({ page }) => {
   // A Condition's True, a row (plan 944).
   await bind(page, [{ from: 'filter/true', to: 'gate/on' }]);
-  const green = await ink(page);
+  const purple = await ink(page);
   // Three corners: the fourth, bottom right, is inked or not by the fraction of a pixel the fitted view puts the socket on.
-  const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.04, .04], [.04, .96]])).map((p) => (near(p, green) ? 1 : 0));
+  const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.04, .04], [.04, .96]])).map((p) => (near(p, purple) ? 1 : 0));
   expect(mask).toEqual([1, 0, 0, 0]);
 });
 

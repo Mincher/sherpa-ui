@@ -259,7 +259,7 @@ const rectOf = (page: Page, id: string, side: string) => page.evaluate(([nodeId,
 for (const type of ['value', 'object', 'boolean', 'any']) {
   test(`an input socket of type ${type} draws its shape, filled when connected and hollow when not`, async ({ page }) => {
     const ink = type === 'any' ? await inkOf(page, '--sherpa-style-default-content-secondary')
-      : await inkOf(page, { value: '--sherpa-style-info-indicator-accent', object: '--sherpa-style-active-indicator-accent', boolean: '--sherpa-style-success-indicator-accent' }[type]!);
+      : await inkOf(page, `--sherpa-socket-ink-${type}`);
     await socketNode(page, 'sock', `data-input-socket="${type}" data-input-connected`);
     const filled = boxOf((await rectOf(page, 'sock', 'input'))!);
     const mask = (await paint(page, filled, PROBES)).map((p) => (near(p, ink) ? 1 : 0));
@@ -275,10 +275,10 @@ for (const type of ['value', 'object', 'boolean', 'any']) {
   });
 }
 
-test('an output socket pins its own type: a value info, an object active, a boolean success, whatever its node is', async ({ page }) => {
+test('an output socket takes its own type\'s ink, whatever its node is', async ({ page }) => {
   const seen: Record<string, boolean> = {};
-  for (const [type, token] of [['value', 'info'], ['object', 'active'], ['boolean', 'success']] as const) {
-    const ink = await inkOf(page, `--sherpa-style-${token}-indicator-accent`);
+  for (const type of ['value', 'object', 'boolean'] as const) {
+    const ink = await inkOf(page, `--sherpa-socket-ink-${type}`);
     // A picked node does not change a socket's own type.
     await socketNode(page, 'sock', `data-output-socket="${type}" data-output-connected data-current`);
     const [centre] = await paint(page, boxOf((await rectOf(page, 'sock', 'output'))!), [[.5, .5]]);
@@ -287,13 +287,13 @@ test('an output socket pins its own type: a value info, an object active, a bool
   expect(seen).toEqual({ value: true, object: true, boolean: true });
 });
 
-test('no node has a footer or a False, data-branches or not; a boolean output is one green circle on the header (plan 944)', async ({ page }) => {
-  const success = await inkOf(page, '--sherpa-style-success-indicator-accent');
+test('no node has a footer or a False, data-branches or not; a boolean output is one circle on the header, in its ink (plan 944)', async ({ page }) => {
+  const boolean = await inkOf(page, '--sherpa-socket-ink-boolean');
   // The old fork's attributes say nothing now: no footer, no False socket, no False tip.
   await socketNode(page, 'fork', 'data-branches data-output-socket="boolean" data-output-connected data-false-connected');
   expect(await page.evaluate(() => document.querySelector('#fork')!.shadowRoot!.querySelector('.footer, .socket-false, .tip-false'))).toBeNull();
   const circle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
-  expect(circle.map((p) => (near(p, success) ? 1 : 0))).toEqual(SHAPES['boolean']);
+  expect(circle.map((p) => (near(p, boolean) ? 1 : 0))).toEqual(SHAPES['boolean']);
 });
 
 test('a socket\'s tip says its type in words, on its socket\'s side: an input\'s to the left, an output\'s to the right', async ({ page }) => {
@@ -329,7 +329,7 @@ test('a connection takes the ink of its FROM socket\'s type', async ({ page }) =
     await (canvas.querySelector('#r') as Sock).rendered;
     return [...canvas.querySelectorAll('svg.graph-connectors path')].map((p) => getComputedStyle(p).stroke);
   });
-  const inks = await Promise.all(['info', 'active', 'success'].map((m) => inkOf(page, `--sherpa-style-${m}-indicator-accent`)));
+  const inks = await Promise.all(['value', 'object', 'boolean'].map((t) => inkOf(page, `--sherpa-socket-ink-${t}`)));
   expect(r.slice(0, 3).map((c) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number))).toEqual(inks);
   // A 'false' line has no ink of its own now (plan 944): it is drawn as a line of no type.
   expect(r.slice(3)).toEqual(['rgb(1, 2, 3)', 'rgb(1, 2, 3)']);

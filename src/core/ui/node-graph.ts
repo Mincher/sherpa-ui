@@ -836,6 +836,8 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const draft = document.createElementNS(SVG, 'path');
   draft.setAttribute('class', 'graph-draft');
   draft.setAttribute('stroke-dasharray', '6 4');
+  // From an output, or a lifted end: its FROM socket's ink, as the line it makes will be. Run back from an input: grey.
+  if (from) draft.dataset['type'] = outputType(drawn.graph, from);
   drawn.draft = draft;
   drawn.lifted = lifting ?? null;
   // While a line is dragged, every hidden socket shows: the one it left, and each it may join.

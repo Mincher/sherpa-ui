@@ -102,7 +102,7 @@ test('807: no socket is double height, a many input included: the same row\'s ou
     const r = (document.getElementById(i!) as Node).socketRect(s!)!;
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   }, [id, side] as const);
-  const ink = await inkOf(page, '--sherpa-style-active-indicator-accent');
+  const ink = await inkOf(page, '--sherpa-socket-ink-object');
   /** How many pixel rows the socket's ink paints down its MIDDLE column, in a box three times its height round it. Its middle:
    *  a dock may stand on a half pixel (the card does, here), and a column off the middle then counts one row fewer. TODO 887 */
   const painted = async (r: { x: number; y: number; w: number; h: number }, colour: Rgb): Promise<number> => {

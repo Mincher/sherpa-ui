@@ -178,16 +178,11 @@ sherpa-node:
   '&[data-step="running"]': active
   '&[data-step="failed"]': critical
   '&[data-step="skipped"]': inactive
-  # A SOCKET pins its own type's mode, whatever its node does (a picked or running
-  # node changes nothing): value info, object active, boolean success, any default.
-  # Will, 713 D5, D6. No node has a True or a False socket (plan 944).
-  '&[data-input-socket="value"] .socket-in': info
-  '&[data-input-socket="object"] .socket-in': active
-  '&[data-input-socket="boolean"] .socket-in': success
-  '&[data-input-socket="any"] .socket-in': default
-  '&[data-output-socket="value"] .socket-out': info
-  '&[data-output-socket="object"] .socket-out': active
-  '&[data-output-socket="boolean"] .socket-out': success
+  # A SOCKET pins default, whatever its node does (a picked or running node changes
+  # nothing): its face is the card's white. Its INK is its type's, not a mode's —
+  # no status colour (Will, 2026-11-13): sherpa-node-connectors.css lists them.
+  # No node has a True or a False socket (plan 944).
+  '& .socket': default
 
 sherpa-node-frame:
   # No Figma component yet (TODO 778). The frame pins Style=default; picked, active, as a picked node is.
@@ -195,13 +190,7 @@ sherpa-node-frame:
   '&[data-current]': active
 
 sherpa-node-row:
-  '&[data-input-socket="value"] .socket-in': info
-  '&[data-input-socket="object"] .socket-in': active
-  '&[data-input-socket="boolean"] .socket-in': success
-  '&[data-input-socket="any"] .socket-in': default
-  '&[data-output-socket="value"] .socket-out': info
-  '&[data-output-socket="object"] .socket-out': active
-  '&[data-output-socket="boolean"] .socket-out': success
+  '& .socket': default
 
 sherpa-notifications:
   # No Figma component. The unread pip wears the active mode's border.

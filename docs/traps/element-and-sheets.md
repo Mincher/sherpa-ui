@@ -1966,11 +1966,15 @@ so one box draws them all: a value a circle, an object a diamond, a boolean a ci
 round one was cut flat on one side in Chromium where the socket stood on a fraction
 of a pixel, as it does in a socket tab (Will saw it, 2026-11-11).
 
-- **The ink is a PIN, not a colour rule.** Each type pins its own Style mode on
-  the socket part (`state-pins.yaml`): value `info`, object `active`, boolean
-  `success`, any `default`; False is `critical` (Will, D5, D6). A picked or
-  running node changes none of them. Only the mode's `indicator-accent` is read:
-  `info`, `success` and `critical` resolve their SURFACE to plain white.
+- **The ink is the TYPE's, never a status's.** Each type's ink is said ONCE, on
+  `:root` in the page sheet `sherpa-node-connectors.css`:
+  `--sherpa-socket-ink-value` (info blue), `-object` (the active indigo),
+  `-boolean` (the brand purple). They inherit into every node's and row's
+  shadow root, where `.socket` sets `--_ink` from them by type; any is the
+  secondary grey. No red, green or yellow: those read as a status (Will,
+  2026-11-13, after boolean was the success green). The socket part pins
+  `default` (`'& .socket'` in `state-pins.yaml`), so a picked or running node
+  changes none of them and the hollow face stays the card's white.
 - **Hollow is the face inside the ring**; `data-input-connected` and
   `data-output-connected` (the host writes them) hide it, so a joined socket is
   filled. False has its own, `data-false-connected`.
@@ -1984,7 +1988,10 @@ of a pixel, as it does in a socket tab (Will saw it, 2026-11-11).
 - **Never colour alone.** Each socket has a tip that says its type in words
   ("True: a boolean"), and in forced colours the ink goes to `CanvasText` while
   the shape stays. A connection line takes the ink of its FROM socket's type, from
-  `data-type` on its path, in the page sheet `sherpa-node-connectors.css`.
+  `data-type` on its path, in the page sheet `sherpa-node-connectors.css` — the
+  same list the sockets read, so a line and its socket never differ. A line being
+  DRAGGED from an output, or a lifted end, takes it too; one run back from an
+  input has no source yet, so it is grey.
 
 - Site: `src/core/sherpa-node-sockets.css`
 - Site: `src/components/sherpa-node/sherpa-node-connectors.css`

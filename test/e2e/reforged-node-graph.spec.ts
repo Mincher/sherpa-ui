@@ -270,7 +270,7 @@ test('a picked node opens its inspector: its rows again, their connections, and 
 /** The middle of a drawn node's or row's socket, on the screen. */
 const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
 
-test('a drag from an OUTPUT socket draws a new connection: let go on an input socket, the host is asked; on bare canvas, nothing', async ({ page }) => {
+test('a drag from an OUTPUT socket draws a new connection, in its output\'s ink: let go on an input socket, the host is asked; on bare canvas, nothing', async ({ page }) => {
   await page.evaluate(async () => {
     const { drawGraph } = await import('/dist/app.js');
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
@@ -292,6 +292,15 @@ test('a drag from an OUTPUT socket draws a new connection: let go on an input so
   await page.mouse.down();
   await page.mouse.move((ax + bx) / 2, by + 40, { steps: 4 });
   const drafting = await page.evaluate(() => document.querySelectorAll('#root svg.graph-connectors path.graph-draft').length);
+  // The line being drawn is its FROM socket's ink already, as the line it makes will be.
+  const draftInk = await page.evaluate(() => {
+    const draft = document.querySelector('#root svg.graph-connectors path.graph-draft')!;
+    const probe = Object.assign(document.createElement('div'), { style: 'color: var(--sherpa-socket-ink-value)' });
+    document.body.append(probe);
+    const want = getComputedStyle(probe).color;
+    probe.remove();
+    return { type: draft.getAttribute('data-type'), same: getComputedStyle(draft).stroke === want };
+  });
   await page.mouse.move(bx, by, { steps: 4 });
   await page.mouse.up();
   // Onto the bare canvas: nothing.
@@ -306,6 +315,7 @@ test('a drag from an OUTPUT socket draws a new connection: let go on an input so
       JSON.stringify((document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: unknown }).view)],
   }));
   expect(drafting).toBe(1);
+  expect(draftInk).toEqual({ type: 'value', same: true });
   expect(r).toEqual({ asked: [{ from: 'a', to: 'b/x' }], drafts: 0, after: before });
 });
 
