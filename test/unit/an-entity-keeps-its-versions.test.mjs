@@ -118,3 +118,26 @@ test('a save may only ADD versions at the front: one that edits or drops a versi
   assert.equal(await k.entities.duplicate('trials', 'trials-copy'), true);
   assert.deepEqual(k.entities.get('trials-copy').versions.map((v) => [v.number, v.definition.label]), [[1, 'Leads copy']]);
 });
+
+test('every entity type has Publish and Roll back as acts, the library\'s and one an app registers, run through runAct', async () => {
+  const { actsOf, runAct } = await import(new URL('data/acts.js', core));
+  const { registerEntityType } = await import(new URL('data/entity-types.js', core));
+  const ids = () => actsOf().map((a) => a.id);
+  for (const type of ['filter', 'node']) {
+    assert.ok(ids().includes(`${type}.publish`) && ids().includes(`${type}.roll-back`), type);
+  }
+  const off = registerEntityType({ id: 'teammate', label: 'Teammate', graph: { families: ['data'] } });
+  try {
+    assert.ok(ids().includes('teammate.publish'), 'a type registered later has them too');
+  } finally {
+    off?.();
+  }
+  const k = keeper();
+  await k.entities.save(filter('trials', 'Trials', 'trial'));
+  await k.entities.save(filter('trials', 'Trials', 'lead'));
+  const ctx = { stores: {}, entities: k.entities };
+  assert.deepEqual(await runAct('filter.publish', { keys: ['trials'], input: { note: 'Leads' } }, ctx), { done: 'Published version 2.', result: { number: 2 } });
+  assert.equal(k.entities.get('trials').versions[0].note, 'Leads');
+  assert.deepEqual(await runAct('filter.roll-back', { keys: ['trials'], input: { version: 1 } }, ctx), { done: 'Rolled back to version 1, published as version 3.', result: { number: 3 } });
+  assert.deepEqual((await runAct('filter.publish', { keys: ['trials'] }, ctx)).refused, 'Nothing to publish: "Trials" is as version 3 says.');
+});

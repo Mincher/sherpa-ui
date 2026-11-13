@@ -68,6 +68,10 @@ export interface Act {
 const ID = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)?$/;
 const NAME = /^[a-z][a-z0-9-]*$/;
 const acts = new Map<string, Act>();
+
+/** Every graph type's version acts, the library's and the app's, made as they are asked: a type registered later has them
+ *  too, and none is registered twice. A row type (no graph part) keeps no versions. Plan 972 */
+const entityActs = (): Act[] => Object.values(entityTypes()).filter((t) => t.graph).flatMap((t) => versionActs({ id: t.id, label: t.label ?? t.id }));
 const isText = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 /** A type's name as a reader reads it. */
 const labelOf = (type: string): string => entityTypes()[type]?.label ?? type;
@@ -103,7 +107,7 @@ export function registerAct(act: Act): (() => void) | undefined {
  * nothing, every act: the chat may run any act from any page, the reader allowing a change (plan 964 N5).
  */
 export function actsOf(at: { context?: string; view?: string; type?: string } = {}): Act[] {
-  const all = [...acts.values()];
+  const all = [...acts.values(), ...entityActs().filter((a) => !acts.has(a.id))];
   if (at.context === undefined && at.view === undefined) return at.type === undefined ? all : all.filter((a) => a.type === at.type);
   return all.filter((a) => (a.where
     ? (!a.where.contexts || a.where.contexts.includes(at.context ?? '')) && (!a.where.views || a.where.views.includes(at.view ?? ''))
@@ -143,14 +147,19 @@ export async function inputFaults(input: Readonly<Record<string, StoredField>>, 
  * never throws. It never asks the reader: a caller does, when the act `changes`.
  */
 export async function runAct(id: string, call: ActCall = {}, ctx: ActContext): Promise<ActAnswer> {
-  const act = acts.get(id);
+  const act = acts.get(id) ?? entityActs().find((a) => a.id === id);
   if (!act) return { refused: `There is no act "${id}".` };
   const keys = call.keys ?? [];
   if (act.type) {
     const store = storeOfType(ctx.stores, act.type);
-    if (!store) return { refused: `There is no store of ${labelOf(act.type)}.` };
+    // An entity type with no store of its own is read on the shelf (plan 972: every entity type's Publish and Roll back).
+    const shelf = !store && entityTypes()[act.type] ? ctx.entities : undefined;
+    if (!store && !shelf) return { refused: `There is no store of ${labelOf(act.type)}.` };
     if (!act.many && keys.length > 1) return { refused: `${act.label} takes one ${labelOf(act.type)}, not ${keys.length}.` };
-    for (const key of keys) if (!(await store.byKey(key))) return { refused: `There is no ${labelOf(act.type)} "${String(key)}".` };
+    for (const key of keys) {
+      const there = store ? !!(await store.byKey(key)) : shelf!.get(String(key))?.type === act.type;
+      if (!there) return { refused: `There is no ${labelOf(act.type)} "${String(key)}".` };
+    }
   }
   const wrong = await inputFaults(act.input ?? {}, call.input ?? {}, ctx);
   if (wrong.length) return { refused: `${act.label}: ${wrong.join('; ')}.` };
@@ -320,14 +329,13 @@ export function typeActs(type: TypeDefinition): Act[] {
         };
       },
     },
-    // A graph thing publishes its draft as a numbered version, and rolls back to one (Will, plan 972).
-    ...(type.graph ? versionActs(type, keysOf) : []),
   ];
 }
 
-/** A graph thing's version acts: Publish its draft as the next number; Roll back to an earlier one. Neither has an undo: a
+/** An entity type's version acts: Publish its draft as the next number; Roll back to an earlier one. Neither has an undo: a
  *  version is never taken away, so a Roll back is how one goes back. Plan 972 */
-function versionActs(type: TypeDefinition, keysOf: (call: ActCall) => unknown[]): Act[] {
+function versionActs(type: { id: string; label: string }): Act[] {
+  const keysOf = (call: ActCall): unknown[] => [...(call.keys ?? [])];
   const shelfOf = (ctx: ActContext): EntityShelf | undefined => ctx.entities;
   const answered = (a: VersionAnswer, done: (n: number) => string): ActAnswer => ('refused' in a ? { refused: a.refused } : { done: done(a.number), result: a });
   return [
