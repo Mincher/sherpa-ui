@@ -68,7 +68,7 @@ export interface DataQuery {
 }
 
 /** What a store says of itself, as JSON: its capabilities whole, and the reads it answers. */
-export type StoreFacts = Pick<Store, 'key' | 'time' | 'domains' | 'capabilities'> & {
+export type StoreFacts = Pick<Store, 'key' | 'time' | 'type' | 'domains' | 'capabilities'> & {
   changes: boolean;
   /** It answers a field's values among the matches (`distinct`). */
   distinct?: boolean;
@@ -419,7 +419,8 @@ function factsOf(store: Store): StoreFacts {
   return {
     key: store.key, capabilities: { ...store.capabilities }, changes: typeof store.changes === 'function',
     distinct: typeof store.distinct === 'function', history: !!store.history,
-    ...(store.time !== undefined ? { time: store.time } : {}), ...(store.domains ? { domains: store.domains } : {}),
+    ...(store.time !== undefined ? { time: store.time } : {}), ...(store.type !== undefined ? { type: store.type } : {}),
+    ...(store.domains ? { domains: store.domains } : {}),
   };
 }
 

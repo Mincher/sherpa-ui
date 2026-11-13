@@ -41,6 +41,7 @@ export interface LiveStoreOptions extends StoreOptions {
 abstract class LiveStore extends EventTarget implements Store {
   readonly key: string;
   readonly time: string | undefined;
+  readonly type: string | undefined;
   protected readonly inner: ArrayStore;
   protected readonly options: LiveStoreOptions;
   /** Is the connection up. */
@@ -51,6 +52,7 @@ abstract class LiveStore extends EventTarget implements Store {
     this.options = options;
     this.key = options.key ?? 'id';
     this.time = options.time;
+    this.type = options.type;
     this.inner = options.into ?? new ArrayStore(options.rows ?? [], options);
     // The inner store's changes are THIS store's changes, so a DataSource
     // listens to one thing and never learns there are two.

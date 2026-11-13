@@ -10,9 +10,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ArrayStore, actSchema, actsOf, entityStore, makeShelf, onReport, registerAct, registerEntityType, runAct, storeOfType,
-  typeActs, typeFaults, typeStoreOptions,
+  ArrayStore, HeldStore, actSchema, actsOf, createDataHandler, defineStores, entityStore, fakeRemote, makeShelf, onReport, openRequestStore,
+  registerAct, registerEntityType, runAct, storeOfType, typeActs, typeFaults, typeStoreOptions,
 } from '../../dist/data.js';
+const { openWorkerStore } = await import('../../dist/core/browser/worker-store.js');
 const { statusFields } = await import('../../dist/core/data/status-field.js');
 const { START } = await import('../../dist/core/data/node-start.js');
 
@@ -203,5 +204,21 @@ test('a type\'s acts find its store whatever the app names it: the one named by 
       stop();
     }
     assert.match(said.join('\n'), /"people" and "staff" each hold "user": name one "user"/);
+  });
+});
+
+test('a store over the data protocol says its host\'s type, or the one the app gives; a fake remote keeps its store\'s', async () => {
+  await withActs(typeActs(USER), async () => {
+    const send = createDataHandler({ stores: defineStores(() => ({ customers: usersStore(), plain: new ArrayStore([], { key: 'id' }) })) });
+    // Its host's store was made from its type, so the facts say it: the page names it as it likes, and its acts find it.
+    const customers = await openRequestStore({ name: 'customers', send });
+    assert.equal(customers.type, 'user');
+    assert.equal((await runAct('user.read', { keys: ['u1'] }, { stores: { customers } })).done, 'Read User "Ana".');
+    // A host store with no type: the app says it, once, where it opens the store; through a worker or its fallback too.
+    assert.equal((await openRequestStore({ name: 'plain', send })).type, undefined);
+    assert.equal((await openRequestStore({ name: 'plain', send, type: 'user' })).type, 'user');
+    assert.equal((await openWorkerStore({ name: 'plain', fallback: send, type: 'user' })).type, 'user');
+    assert.equal(fakeRemote(usersStore(), { delay: 0 }).type, 'user');
+    assert.equal(new HeldStore(fakeRemote(usersStore(), { delay: 0 })).type, 'user', 'a held set says its source\'s');
   });
 });

@@ -168,6 +168,9 @@ export class HeldStore extends EventTarget implements Store {
   get time(): string | undefined {
     return this.#source.time;
   }
+  get type(): string | undefined {
+    return this.#source.type;
+  }
   get domains(): NonNullable<Store['domains']> {
     return this.#source.domains ?? {};
   }

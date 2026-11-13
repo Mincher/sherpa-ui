@@ -21,12 +21,14 @@ export interface WorkerStoreOptions {
   base?: string;
   /** Headers each request carries, read at each request. */
   headers?: () => Record<string, string>;
+  /** The id of the type whose rows it holds, where its host does not say it. */
+  type?: string;
 }
 
 /** The store, through the worker where it can answer, else through the page's own handler. */
 export async function openWorkerStore(options: WorkerStoreOptions): Promise<RequestStore> {
-  const { name, fallback, base, headers } = options;
-  const shared = { name, ...(base ? { base } : {}), ...(headers ? { headers } : {}) };
+  const { name, fallback, base, headers, type } = options;
+  const shared = { name, ...(base ? { base } : {}), ...(headers ? { headers } : {}), ...(type ? { type } : {}) };
   if (navigator.serviceWorker?.controller) {
     try {
       return await openRequestStore({ ...shared, origin: location.origin, send: (request) => fetch(request) });

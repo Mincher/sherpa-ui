@@ -31,6 +31,9 @@ export interface RequestStoreOptions {
   /** Headers each request carries — a sign-in, an app's own say — read at each
    *  request. Its host's store pick reads them; Sherpa never does. TRAP T-a-request-picks-its-stores */
   headers?: () => Record<string, string>;
+  /** The id of the type whose rows it holds, where its host does not say it (`store.type`), so the type's acts find
+   *  it whatever its name. Plan 960 U3 */
+  type?: string;
   /** How a read is sent: `QUERY` (the default), falling back to `POST` of the same
    *  body where a server or a proxy refuses it — or `POST` from the start. Plan 652 S10 */
   method?: 'QUERY' | 'POST';
@@ -70,7 +73,8 @@ export class RequestStore extends BaseStore {
     /* What its host's store can do, and nothing it did not say: a History only where
        its host's store keeps one, or a change it hears would claim to name its fields.
        TRAP T-a-store-says-what-it-can-do-once · TRAP T-a-store-keeps-its-history */
-    super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}) }, { reportsTotal: false, projects: false, sampled: false, ...facts.capabilities }, !!facts.history);
+    const type = options.type ?? facts.type;
+    super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}), ...(type ? { type } : {}) }, { reportsTotal: false, projects: false, sampled: false, ...facts.capabilities }, !!facts.history);
     this.#send = options.send;
     this.#post = options.method === 'POST';
     this.#headers = options.headers ?? ((): Record<string, string> => ({}));
