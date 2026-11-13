@@ -16,7 +16,27 @@ a Field and a Condition, as today. **D4**: Views are OFF the list of things buil
 U4.6b (a page's Views in the graph chip) is held; Views are prepared to fit the model (U4.6a's lens, already merged, and
 definition-level clean-ups), and their graph waits on Will.
 
-**Status: DECIDED in part, 2026-11-13; reviewed by sherpa-ui-e8.** Nothing changes until Will answers section
+**Will, 2026-11-13, D4's answer (the View's shape):** "The coworkers graph routes are weird. I'd expect filters to go
+into nodes for view & local contexts and those would then feed into the view node. Also the view node won't necessarily
+know the filters, or content, going into it. So it can't have rows that expect them like the Coworkers View node does
+at the moment. Instead it should just have a View Filters input and a Content input. Local filters will go into a
+Content (maybe a Presentation?) node then that will also go into the Content socket of the View node." Then: the Content
+node IS the Presentation node (A); plan it now and build it after U4.7 (A).
+
+```
+View-context filters ─► View Filters node ──────────────┐
+                                                        ├─► View node: two inputs, View Filters and Content (many)
+Local filters, Organise ─► Presentation (the Content) ──┘
+```
+
+- The View node knows neither its filters nor its content: no row per filter or per preset, only its two inputs.
+- The View Filters node holds the View's own filters (its chips, with or without a pick, in order; its Switch).
+- The local filters and the Organise go into the Presentation node, which says how the rows are shown and feeds the
+  View's Content input; each card is one more Presentation into the same input.
+- Today's chain (Source › View Context › the data scope node with a row per preset and field › Organise ›
+  Presentation › grid) goes.
+
+**Status: DECIDED, 2026-11-13; the View's shape to plan (sherpa-ui-e8), built after U4.7.** Nothing changes until Will answers section
 4. U4.6b (a page's Views in the graph chip) and U4.4b (D6) wait on it.
 
 ## 1. What a filter graph draws today (measured on Demos main, sherpa-ui 03698d639)
