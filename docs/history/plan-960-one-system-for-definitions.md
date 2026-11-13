@@ -54,8 +54,8 @@ names components, and the components upgrade it.
 | Thing | Kept as | Graph form today | Graph → JSON? |
 |---|---|---|---|
 | Workflow | `workflow.v3` (workflow.ts:73) | the JSON drawn as is | yes, lossless (T-a-workflow-is-its-definition) |
-| Entity: Coworker, Runbook, Expert, Custom Node, Preset Filter | `entity.v2` (entity.ts:41), `graph` inside | the same | yes, lossless |
-| A page's filters | the live Query (query.ts:63) | `queryGraph` (query-graph.ts:352), made each time | **to the live state only** (`reconcileQuery`, query-document.ts:134); nothing writes page.v1 or a View back |
+| Entity: Coworker, Runbook, Expert, Custom Node, Preset Filter | `entity.v2` (entity.ts:53; its graph :41) | the same | yes, lossless |
+| A page's filters | the live Query (query.ts:63) | `queryGraph` (query-graph.ts:352), made each time | an edit goes to the live Query (`reconcileQuery`, query-document.ts:134); the editor's Save writes it into page.v1 (`pageWithQuery`, page-definition.ts:227; query-editor.ts:164) **without sort, group and search**; **nothing writes a View back** |
 | Preset Filter → a page preset | `presetOfEntity` (preset-filter.ts:77) | the entity's graph | one way only |
 | Runbook prompt | Demos: `settings.prompt` beside the graph | Demos `writePrompt` (graph → text); N-zo (text → graph) | by an agent, on Save |
 | View, card presentation, layout | `views.v1`, HTML templates, `data-*` | none | none |
@@ -98,11 +98,15 @@ section 5.
   "id": "device", "label": "Device", "icon": "computer", "key": "id", "category": "Records",
   "fields": {
     "name":   { "type": "text", "label": "Name", "required": true },
-    "status": { "type": "status", "label": "Status",
-                "values": [{ "value": "online", "status": "success" }, { "value": "offline", "status": "danger" }] }
+    "status": { "type": "text", "label": "Status", "values": ["online", "offline"],
+                "statuses": { "online": "success", "offline": "critical" } }
   },
   "data": "data/devices.json" }
 ```
+
+`status` here is a STORED field with a look per value (`statuses`, data-source-types.ts:35; a look is one of success,
+warning, urgent, critical, info, chart-datum.ts:36). A DERIVED status field (`type: "status"`, each value with its
+`when`, status-field.ts:24) is a field too, and `statusFields` is made from it.
 
 A type with a graph adds `graph: { families, inputs, outputs, runs, reusable }` (today's `node-type.v1`, folded in).
 
@@ -159,10 +163,13 @@ registerLens(type, {
 
 - The editor and the MCP tools call ONLY this door. N-zo's tools call the MCP's.
 - Graph types (workflow, Coworker, Runbook, Expert, Custom Node): the identity. They are graphs.
-- A filter, a View's `query`, a page's presets: `queryDefinition` and `reconcileQuery`, wrapped, PLUS the missing half
-  that writes the definition (a reader's View or saved filter through the keeper; a page file through the MCP, for an
-  author). What the Query cannot say is refused in words, as today.
-- The graph's layout is a side record, never in the definition (the Query does this today, query-editor.ts:59).
+- A filter, a View's `query`, a page's presets: `queryDefinition`, `reconcileQuery` and `pageWithQuery`, wrapped, PLUS
+  the missing half: a View written back with its sort, group and search, and a Filter (a reader's through the keeper;
+  a shipped file through the MCP, for an author). What the Query cannot say is refused in words, as today.
+- Where the definition IS a graph (a workflow, a Coworker), its layout is part of it, as today: node places, frames,
+  stages and lanes (workflow.ts:83-87). Where a lens draws a definition that is not a graph (a Query, a View, a
+  Filter kept as a Where), the graph's layout is a side record, never in the definition (the Query does this today,
+  query-editor.ts:59).
 - A text lens is the same door with `toText` and `fromText`: a Runbook's prompt (959, with 956's references). Its
   `fromText` is an agent's, so an app gives it (Demos: Claude, or the app's own writer). The stored prompt is a copy
   that the lens makes again on each Save.
@@ -172,11 +179,13 @@ registerLens(type, {
 ### 2.5 Presentation: the graph makes the definition, the definition makes HTML
 
 - A card's data part (its query, presentation, axes, sort, group, segments) is data, so it maps to nodes. The Query
-  graph already draws it, read only (query-graph.ts header).
+  graph draws a card's presentation and edits it where the card has a slot (query-graph.ts:283-291); the edits go to
+  the live Query, as section 1 says, not to a definition. Axes and segments are not drawn yet: a card's segments and
+  bands are `data-*` on its chart (Demos views/dashboard-views.html:9-10), markup, not Query (bd).
 - A View's layout is a tree, not a flow (bd). Its graph lens places Card nodes into one Layout node, in order, each with
   its spans; `fromGraph` writes the `layout` tree (D5).
 - The definition makes plain HTML and `data-*` (the MCP's `writeLayout`, mcp-server/lib/pattern.js:327, moves into
-  the library); then the components upgrade it. **A graph never draws DOM.** It keeps PRINCIPLES 12, 17 and "can HTML
+  the library as it is: it reads no file and imports no `node:path`); then the components upgrade it. **A graph never draws DOM.** It keeps PRINCIPLES 12, 17 and "can HTML
   or CSS do it?" (bd).
 - A component is never a node (e8, bd).
 
@@ -189,7 +198,7 @@ registerLens(type, {
 | graph form, codec, Query view | a **lens** |
 | "node" for a DOM anatomy node and a graph node | a graph keeps "node"; the tree's is an **anatomy part** |
 | View: the VIEW scope, a saved View, a graph View, view markup | a **View** is the definition; the others take their own names |
-| preset: a scope's chips, a shipped entity, the Preset Filter type, the Preset Nodes tab | a shipped thing is **shipped** (`origin`); Preset Filter, savedFilter and preset become one **Filter** type |
+| preset: a scope's chips, a shipped entity, the Preset Filter type, the Preset Nodes tab | a shipped thing is **shipped** (`origin`); Preset Filter, savedFilter and preset become one **Filter** type (D6) |
 | template: a Context's file, a View's `file.html#id`, a component's `<template>` | a View's `template` and `content` become one field |
 | `definitionOf` twice | `nodeDefinitionOf` and `queryOf` |
 | Demos `app/view-schemas/` (holds page.v1) | `app/pages/` |
@@ -202,7 +211,7 @@ registerLens(type, {
 - Give a type a JS class: a type is JSON, and a lens is a registered function (e8).
 - Build accounts, versions or approval states now (plan 746 D6).
 
-## 5. The clear-out (U0)
+## 5. The clear-out (U0a now; U0b, the legacy shapes, after D4)
 
 **sherpa-ui (sherpa-ui-e8):**
 - Delete `entity-node.v2.json`, `entity-preset-filter.v2.json` (copies; nothing names them).
@@ -210,7 +219,7 @@ registerLens(type, {
   `readEntity` entity.ts:98, the v2 branch of `readWorkflow` workflow.ts:115, entity-files.ts:22) and their trap.
 - Stale words: workflow.ts:3, app-definition.ts:33, entity-files.ts:2 and :18, entity.ts:104, the descriptions of
   `entity.v2` and `entities.v2`, APP-GUIDE.md:159, :719, :732; view-markup.ts:16, :140 (`checkView` is gone);
-  docs/traps/data-layer.md:7566, :7658, :7750 (942's removed names).
+  docs/traps/data-layer.md:7566, :7658, :7750 (942's removed names: e8 fixes these in its 942 lane).
 
 **Demos (sherpa-demos-67):**
 
@@ -229,7 +238,8 @@ registerLens(type, {
 
 | Phase | Builds | Proves | Lane | After |
 |---|---|---|---|---|
-| **U0** Clear-out | section 5 | the suites pass; nothing reads a deleted shape | e8, demos | D4 |
+| **U0a** Clear-out, no decision needed | section 5 but the legacy shapes: the 2 copied schemas, the stale words, the Demos table (the trap lines go in e8's 942 lane) | the suites pass | e8, demos | none |
+| **U0b** Legacy shapes | `entity.v1`, `entities.v1`, `workflow.v2` and their readers | nothing reads a deleted shape | e8 | D4 |
 | **U1** Words and one body | the LEXICON section; `defs.v1 #/graph`; the envelope | schemas `$ref` one body | e8 | Will's yes to section 3 |
 | **U2** `type.v1` | the schema; rules from `fields`; `node-type.v1` folded in; `entities.v3`; `from` fields; `describe_data` writes a type | unit: a field said once makes rules, page fields and columns; a type file passes and fails in words | a9 (fields, rules), e8 (the graph part) | U1 |
 | **U3** One store door | `EntityStore`; one seed path; a default page from a type | e2e: a "user" type from 3 files is a working page; Demos' `followShelf`, `coworkerStore`, `SEED_VERSION` deleted | a9, demos | U2 |
@@ -243,7 +253,8 @@ registerLens(type, {
 
 ```mermaid
 flowchart LR
-  U0 --> U1 --> U2 --> U3
+  U0a --> U1 --> U2 --> U3
+  U0b --> U1
   U1 --> U4 --> U5
   U2 --> U6
   U4 --> U6 --> U7
@@ -259,3 +270,4 @@ flowchart LR
 | D3 | The word "entity" | **Any one thing of a type, a row or a graph thing**: your own use | "Record" for a row, "entity" only for a graph thing |
 | D4 | Old saves | **Delete the old schemas and their readers now**: your rule, "delete, never convert" | Keep the readers one more round |
 | D5 | A View's layout in a graph | **Card nodes into a Layout node, in order, with spans; the lens writes the layout tree; HTML is made from it** (plan 746 E7) | No graph for the layout: an outline only; graphs for the data and presentation |
+| D6 | What one Filter keeps. A Preset Filter's graph may hold Math, Time, Organise and Utils nodes and a use of another filter (entity-types.ts:83, preset-filter.ts:3); a Where cannot say those, nor an Any across two fields (where.ts:190) (a9) | **A Filter keeps a Where when a Where can say it, else its graph: one type, one truth for each Filter, nothing refused** | A Filter is always a Where: graphs a Where cannot say are refused, and a use is flattened |
