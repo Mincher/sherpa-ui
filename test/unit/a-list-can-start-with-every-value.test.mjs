@@ -73,3 +73,17 @@ test('a start filters the FIRST load: a first value, and All as "has a value" (T
   assert.deepEqual(all.debugState().filter, ['region', 'notin', [null, '']]);
   assert.equal(all.debugState().total, 3);
 });
+
+test('a page opened on its starts is at its default, under a View that names only its data scope (TODO 231)', async () => {
+  const source = await openSource({
+    store: 'rows', fields: { region: { label: 'Region', start: 'all' }, status: { label: 'Status' } },
+    scopes: { view: { label: 'View', holds: ['region', 'status'] }, data: { label: 'Rows' } },
+  }, new ArrayStore(ROWS, { key: 'id' }));
+  await source.load();
+  const base = structuredClone(source.query.applied);
+  const view = { v: 1, scopes: { data: { sort: [], group: null, search: '' } } };
+  // Region on All and Status on its first value are the page's own: a Reset would put them back as they are.
+  assert.equal(source.atDefault(base, view), true);
+  source.query.ask({ scope: 'view', field: 'status', reading: { picked: ['shut'] } });
+  assert.equal(source.atDefault(base, view), false);
+});

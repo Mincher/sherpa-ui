@@ -54,6 +54,7 @@
  * - .honour — Which picks are in force: `kind` (Show as), `axes` (Primary, Secondary). Off, kept, not shown.
  * - .honours — Is that kind of pick in force?
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
+ * - .resolved — The Query a given one would be once put in, applying nothing: one door for every put-in.
  * - .restoreDraft — Put a draft back as an Undo leaves it, and leave what is applied.
  * - .startWith — The answer a field opens on where nothing answers it — a fetching list's first value.
  * - .export — The whole question as JSON — the Query as applied.
@@ -524,23 +525,9 @@ export class QueryContext extends EventTarget {
     }
     // A whole Query put in — a View, a draft — ends a solo. TODO 690
     this.#soloing = null;
-    const next = definitionOf(query, options.holds === 'keep', this.#live.draft, {
-      defaults: this.#decl.defaults,
-      starts: this.#decl.starts,
-      readingsOf: (where) => this.#readingsOf(where),
-      carriesOver: (f) => this.#members.knows(f)?.carriesOver(f) ?? false,
-    });
-    options.lay?.(next);
-    // A restore that let a fixed field go, or switched one always on off, is put right. TODO 703
-    this.#decl.keepFixed(next);
-    this.#decl.fillOpens(next);
+    const next = this.resolved(query, options.holds === 'keep', this.#live.draft, options.lay);
     const was = arrangementOf(this.#live.applied);
     const before = this.#answered();
-    // Before the copy: a waiting scope's rows and chips read the same homes. TODO 612
-    rehome(next);
-    // An answer in force in a scope switched off is switched off. TRAP T-the-filter-switch-keeps-what-it-turned-off
-    keepOff(next, (scope) => this.#decl.alwaysOn(scope));
-    frozen(next);
     this.#live.applied = next;
     if (this.waiting()) this.#split();
     else this.#live.draft = next;
@@ -548,6 +535,28 @@ export class QueryContext extends EventTarget {
     this.#announce({
       fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes, ...(options.by ? { by: options.by } : {}),
     });
+  }
+
+  /**
+   * The Query a given one would be once put in, applying nothing: its definition (`keep`, a View's), `lay`'s edit, a
+   * fixed field kept (TODO 703), the opens filled, each answer at its home (TODO 612), and an answer in a scope switched
+   * off kept off; frozen. ONE door for a restore, a View, an Undo and a Reset's test, so they cannot drift.
+   * TRAP T-reset-to-default-is-the-views-own · TRAP T-the-filter-switch-keeps-what-it-turned-off
+   */
+  resolved(given: Query | QueryDefaults, keep: boolean, base: Query = this.#live.draft, lay?: (query: Query) => void): Query {
+    const next = definitionOf(given, keep, base, {
+      defaults: this.#decl.defaults,
+      starts: this.#decl.starts,
+      readingsOf: (where) => this.#readingsOf(where),
+      carriesOver: (f) => this.#members.knows(f)?.carriesOver(f) ?? false,
+    });
+    lay?.(next);
+    this.#decl.keepFixed(next);
+    this.#decl.fillOpens(next);
+    rehome(next);
+    keepOff(next, (scope) => this.#decl.alwaysOn(scope));
+    frozen(next);
+    return next;
   }
 
   /**
@@ -561,17 +570,7 @@ export class QueryContext extends EventTarget {
       report({ code: 'unknown-query', message: 'restoreDraft: not a v1 Query, so nothing was restored.' });
       return;
     }
-    const next = definitionOf(draft, false, this.#live.draft, {
-      defaults: this.#decl.defaults,
-      starts: this.#decl.starts,
-      readingsOf: (where) => this.#readingsOf(where),
-      carriesOver: (f) => this.#members.knows(f)?.carriesOver(f) ?? false,
-    });
-    this.#decl.keepFixed(next);
-    this.#decl.fillOpens(next);
-    rehome(next);
-    keepOff(next, (scope) => this.#decl.alwaysOn(scope));
-    frozen(next);
+    const next = this.resolved(draft, false, this.#live.draft);
     const was = this.#live.draft;
     const fields = new Set([...this.#answered()]);
     this.#live.draft = next;

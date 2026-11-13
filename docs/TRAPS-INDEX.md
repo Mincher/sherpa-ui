@@ -218,7 +218,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-push-writes-state-as-attributes](traps/data-layer.md#t-push-writes-state-as-attributes) — data-source-types, source-binding
 - [T-radial-tip-pushes-outward](traps/data-layer.md#t-radial-tip-pushes-outward) — format-tick
 - [T-read-check-drops-where-a-write-throws](traps/data-layer.md#t-read-check-drops-where-a-write-throws) — base-store, stores
-- [T-reset-to-default-is-the-views-own](traps/data-layer.md#t-reset-to-default-is-the-views-own) — data-source
+- [T-reset-to-default-is-the-views-own](traps/data-layer.md#t-reset-to-default-is-the-views-own) — data-source, query-context
 - [T-rest-update-is-patch-not-put](traps/data-layer.md#t-rest-update-is-patch-not-put) — stores
 - [T-result-is-the-hosts-half](traps/data-layer.md#t-result-is-the-hosts-half) — data-source, source-reads
 - [T-ring-segment-needs-two-radius-clamps](traps/data-layer.md#t-ring-segment-needs-two-radius-clamps) — format-tick

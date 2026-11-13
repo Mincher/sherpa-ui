@@ -79,7 +79,6 @@ import {
   answerOf, arrangementOf, compile, eachScope, filterKey, highlightOf, readingAnswered, sameFilter,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
-import { definitionOf } from './query-edits.js';
 import type { FieldStatus } from './field-status.js';
 import { QueryContext } from './query-context.js';
 import { compiles, type QueryChange, type QueryHandle } from './query-members.js';
@@ -355,9 +354,9 @@ export class DataSource extends EventTarget {
    * TRAP T-reset-to-default-is-the-views-own
    */
   atDefault(base: Query, view?: QueryDefaults): boolean {
-    // Read only, so neither is copied.
-    const first = this.#definition(base, false, this.#draft, false);
-    const second = view ? this.#definition(view, true, first, false) : null;
+    // As a Reset would put it in: the opens filled, a fixed field kept. Applies nothing.
+    const first = this.#context.resolved(base, false, this.#draft);
+    const second = view ? this.#context.resolved(view, true, first) : null;
     const facts = this.#compileFacts();
     const filters = (q: Query): string => {
       const { filter, only } = compile(q, facts);
@@ -1023,15 +1022,6 @@ export class DataSource extends EventTarget {
     this.#binding.drawScopesSoon();
   }
 
-  /** A definition as a whole Query: definitionOf, over this source. */
-  #definition(given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft, copy = true): Query {
-    return definitionOf(given, keep, base, {
-      defaults: this.#defaults,
-      starts: this.#member.live().starts,
-      readingsOf: (where) => this.readingsOf(where),
-      carriesOver: (f) => this.#catalogue.carriesOver(f),
-    }, copy);
-  }
 
   /* ── Loading ───────────────────────────────────────────────────────── */
 
