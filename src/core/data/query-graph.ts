@@ -558,7 +558,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const column = 0.5 + at++ * 0.01;
       const said = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
         heading: value, description: groupWords(when),
-      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/no`] : [] }).truth;
+      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: [before ? `${before}/no` : sent(QUERY_NODE.source)] }).truth;
       const branch = add(column + 0.002, QUERY_NODE.statusBranch(field, value), 'branch', resolveKind(NODE_KINDS['branch']!, 'any').rows.map((r): GraphRow => readOnly(FROM_STORE)({ ...r, ...(r.name === 'type' ? { value: 'any' } : {}) })), { heading: value, ref: { status: field, value } }, 'any');
       connections.push({ from: said, to: branch }, { from: before ? `${before}/no` : sent(QUERY_NODE.source), to: `${branch}/data` }, { from: `${branch}/yes`, to: `${node}/${value}` });
       before = branch;

@@ -46,7 +46,7 @@ test('Health is 3 value rows, and per `when` a Field per field, a test per rule 
   ]);
   const fields = g.nodes.filter((n) => n.kind === 'field');
   assert.deepEqual(fields.map((n) => [n.id, n.rows[0].value, n.input]), [
-    ['field-status-health.At risk-score', 'score', undefined], ['field-status-health.At risk-openTickets', 'openTickets', undefined],
+    ['field-status-health.At risk-score', 'score', 'any'], ['field-status-health.At risk-openTickets', 'openTickets', 'any'],
     ['field-status-health.Watch-score', 'score', 'any'], ['field-status-health.Watch-openTickets', 'openTickets', 'any'],
   ]);
   // Each root's True into its Branch; the Source's rows, then each No, into the Branch's Data (plan 944).
