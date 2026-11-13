@@ -31,7 +31,7 @@ import { needOf, pickSent, readInput, truthOf, type Given } from './node-input.j
 import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
 import { isOutput } from './node-routes.js';
-import { socketOf, truthy, TEST_KINDS, type DrawnGraph, type GraphNode } from './node-kinds.js';
+import { fieldsSent, socketOf, storedValues, truthy, TEST_KINDS, type DrawnGraph, type GraphNode } from './node-kinds.js';
 import { START } from './node-start.js';
 import { entityTypes } from './entity-types.js';
 
@@ -535,7 +535,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       const picked = node.rows.find((r) => r.control === 'rows')?.value;
       const keys = Array.isArray(picked) && picked.length ? new Set(picked.map(String)) : undefined;
       const key = typeof store === 'string' ? entityTypes()[store]?.key ?? 'id' : 'id';
-      return { kind: 'rows', rows: keys ? rows.filter((row) => keys.has(String(row[key]))) : rows, ...(cut ? { note: cut } : {}) };
+      const kept = keys ? rows.filter((row) => keys.has(String(row[key]))) : rows;
+      // Its Fields picked, only those on each row (TODO 969). None picked, every field.
+      const only = fieldsSent(node.rows, storedValues(node.rows));
+      const sent = only ? kept.map((row) => Object.fromEntries(Object.entries(row).filter(([name]) => only.includes(name)))) : kept;
+      return { kind: 'rows', rows: sent, ...(cut ? { note: cut } : {}) };
     }
     if (node.kind === 'field') {
       const name = node.rows.find((r) => r.gives === 'field')?.value;

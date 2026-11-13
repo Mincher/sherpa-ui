@@ -376,12 +376,18 @@ function fieldFor(row: GraphRow, locked: boolean, inNode = false): Field {
  *  field, and a fill sets values a field then measures (a tags field: a forced layout each). */
 const filled = new WeakMap<Field, string>();
 
+/** A many pick's ticks: its kept values; none kept, on a row where none is every choice, every choice (TODO 969). */
+function ticks(row: GraphRow): string[] {
+  const kept = Array.isArray(row.value) ? row.value.map(String) : [];
+  return !kept.length && row.every ? (row.choices ?? []).map((c) => c.value) : kept;
+}
+
 /** Whether a field shows its row's value as a fill would put it. */
 function shows(field: Field, row: GraphRow): boolean {
   if (row.control === 'tags') return JSON.stringify(field.tags ?? []) === JSON.stringify([row.value ?? []].flat().map(String));
   if (row.control === 'switch') return !!field.checked === !!row.value;
   if (row.control === 'datetime') return field.value === formatDateTime(String(row.value ?? ''));
-  if (row.multiple) return JSON.stringify(field.values ?? []) === JSON.stringify(Array.isArray(row.value) ? row.value.map(String) : []);
+  if (row.multiple) return JSON.stringify(field.values ?? []) === JSON.stringify(ticks(row));
   return field.value === (row.choices ? String(row.value ?? '') : shown(row));
 }
 
@@ -402,7 +408,7 @@ function fill(field: Field, row: GraphRow, note?: string): void {
     const calendar = field.querySelector('sherpa-calendar');
     if (calendar) put(calendar, 'value', isDateTime(String(row.value ?? '')) ? String(row.value) : undefined);
   } else if (row.control === 'switch') field.checked = !!row.value;
-  else if (row.multiple) field.values = Array.isArray(row.value) ? row.value.map(String) : [];
+  else if (row.multiple) field.values = ticks(row);
   // A select holds its value's KEY, and shows its label itself.
   else field.value = row.choices ? String(row.value ?? '') : shown(row);
 }
@@ -411,7 +417,12 @@ function fill(field: Field, row: GraphRow, note?: string): void {
 function read(field: Field, row: GraphRow): unknown {
   if (row.control === 'tags') return [...(field.tags ?? [])];
   if (row.control === 'datetime') return readDateTime(String(field.value ?? '')) ?? String(field.value ?? '').trim();
-  return row.control === 'switch' ? !!field.checked : row.multiple ? [...(field.values ?? [])] : field.value;
+  if (row.multiple) {
+    const values = [...(field.values ?? [])];
+    // Every choice ticked, on a row where none is every choice, keeps none: a choice added later is in it too.
+    return row.every && row.choices?.every((c) => values.includes(c.value)) ? [] : values;
+  }
+  return row.control === 'switch' ? !!field.checked : field.value;
 }
 
 /** A graph's connected inputs and sending outputs, by address: worked out once a graph. */

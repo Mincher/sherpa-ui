@@ -6349,6 +6349,11 @@ you decided to use chips instead of following precedent."*
   none picked, nothing, and its hint says so. A pick its field no longer declares is a fault, shown (`rowFault`).
 - It replaced U4.7a's row per value (`unfold`, the `v-` rows) and the node's multi-select chip (sherpa-quick-filter):
   both are gone.
+- **A row where none means every choice** says `every` (a Source's Fields, TODO 969: "defaults to All"). Nothing is
+  kept, so a field the store gains later is in it too; the editor DRAWS every choice ticked (`ticks`), and every choice
+  ticked again keeps none (`read`). The data layer's drawn value stays what is kept, so Simulate and the reach read the
+  truth (`fieldsSent`). Any pick of several with every one of two or more ticked says "All" on its face, as a chip's
+  Select all.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/node-input.ts`

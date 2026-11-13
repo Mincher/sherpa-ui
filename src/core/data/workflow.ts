@@ -34,7 +34,7 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type RowChoice, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type RowChoice, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -483,19 +483,21 @@ function shownAt(held: ReadonlyMap<string, WorkflowNode>, connections: readonly 
 }
 
 /** The fields of the rows that reach each node: the store of the FIRST Source up its connections — its header's first, then its
- *  rows', through the portals. A Group Input brings its use's rows, of any store: every store's fields. No Source: the
- *  facts' `rowsFrom`, else `none`. No facts, or a store they do not know: open. TODO 817 · TRAP T-a-field-reads-its-sources-fields */
+ *  rows', through the portals — narrowed to the fields that Source sends (TODO 969). A Source's own: its store's, every one.
+ *  A Group Input brings its use's rows, of any store: every store's fields. No Source: the facts' `rowsFrom`, else `none`.
+ *  No facts, or a store they do not know: open. TODO 817 · TRAP T-a-field-reads-its-sources-fields */
 function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, connections: readonly NodeConnection[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>): (id: string) => Reach {
   const known = facts.fieldsOf;
   if (!known) return () => ({});
-  const up = (id: string, seen: Set<string>): { store: unknown } | 'inside' | undefined => {
+  const up = (id: string, seen: Set<string>): { store: unknown; only?: readonly string[] } | 'inside' | undefined => {
     seen.add(id);
     const into = connections.filter((r) => socketOf(r.to).node === id);
     for (const r of [...into.filter((r) => socketOf(r.to).row === undefined), ...into.filter((r) => socketOf(r.to).row !== undefined)]) {
       const from = socketOf(r.from).node;
       const kind = kindOfNode(kinds, held.get(from));
       const row = kind?.rows.find((x) => x.control === 'store');
-      if (row) return { store: shownAt(held, connections, `${from}/${row.name}`) };
+      const only = row && fieldsSent(kind!.rows, held.get(from)?.values);
+      if (row) return { store: shownAt(held, connections, `${from}/${row.name}`), ...(only ? { only } : {}) };
       if (kind?.model === 'groupInput') return 'inside';
       const found = seen.has(from) ? undefined : up(from, seen);
       if (found) return found;
@@ -507,12 +509,19 @@ function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, connections: reado
     for (const fields of Object.values(known)) for (const [name, field] of Object.entries(fields)) all[name] ??= field;
     return all;
   };
-  const of = (store: unknown): Reach => (typeof store !== 'string' ? {} : Object.hasOwn(known, store) ? { fields: known[store]!, store } : { store });
+  const of = (store: unknown, only?: readonly string[]): Reach => {
+    if (typeof store !== 'string') return {};
+    if (!Object.hasOwn(known, store)) return { store };
+    const fields = known[store]!;
+    return { fields: only ? Object.fromEntries(Object.entries(fields).filter(([name]) => only.includes(name))) : fields, store };
+  };
   const memo = new Map<string, Reach>();
   return (id) => {
     if (memo.has(id)) return memo.get(id)!;
-    const found = up(id, new Set());
-    const reach = found === 'inside' ? { fields: any() } : found ? of(found.store) : facts.rowsFrom !== undefined ? of(facts.rowsFrom) : { fields: {}, none: true as const };
+    // A node that names a store picks from its own store's fields, every one: a Source's Fields.
+    const named = kindOfNode(kinds, held.get(id))?.rows.find((x) => x.control === 'store');
+    const found = named ? { store: shownAt(held, connections, `${id}/${named.name}`) } : up(id, new Set());
+    const reach = found === 'inside' ? { fields: any() } : found ? of(found.store, 'only' in found ? found.only : undefined) : facts.rowsFrom !== undefined ? of(facts.rowsFrom) : { fields: {}, none: true as const };
     memo.set(id, reach);
     return reach;
   };

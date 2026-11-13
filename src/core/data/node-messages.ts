@@ -11,7 +11,7 @@
  * - unreachedValues — What is wrong with each value a text names that no connection gives, in words.
  * - filled — A text with each value it names put in; one with no value, kept as it was.
  */
-import { kindOfNode, socketOf, type NodeKind, type NodeConnection } from './node-kinds.js';
+import { fieldsSent, kindOfNode, socketOf, type NodeKind, type NodeConnection } from './node-kinds.js';
 
 /** One value a text names: `{node.name}`, its node and name, and where it stands. */
 export interface MessagePart {
@@ -73,7 +73,9 @@ export function valuesAt(nodes: readonly Node[], connections: readonly NodeConne
     const value = (name: string, label: string, of?: string): MessageValue => ({ key: `{${nodeId}.${name}}`, name, label, ...(of ? { of } : {}) });
     const rows = kind.rows.filter((r) => r.output && r.gives !== 'rows').map((r) => value(r.name, r.label, r.gives ?? r.output));
     const store = kind.rows.some((r) => r.control === 'store') ? node.values?.['store'] : undefined;
-    const fields = typeof store === 'string' && fieldsOf[store] ? Object.entries(fieldsOf[store]).filter(([name]) => !rows.some((v) => v.name === name)).map(([name, f]) => value(name, f.label ?? name, f.type)) : [];
+    // The fields it sends: its Fields pick, none kept every one (TODO 969).
+    const only = fieldsSent(kind.rows, node.values);
+    const fields = typeof store === 'string' && fieldsOf[store] ? Object.entries(fieldsOf[store]).filter(([name]) => !rows.some((v) => v.name === name) && (!only || only.includes(name))).map(([name, f]) => value(name, f.label ?? name, f.type)) : [];
     return [{ node: nodeId, heading: node.heading ?? kind.heading, values: [...rows, ...fields] }];
   });
 }

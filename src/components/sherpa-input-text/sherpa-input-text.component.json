@@ -343,6 +343,18 @@
               "el": "optgroup"
             }
           ]
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "all"
+              }
+            }
+          ]
         }
       ],
       "color": [

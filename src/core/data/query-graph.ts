@@ -398,8 +398,8 @@ function owned(row: GraphRow, list: readonly { value: string; label: string }[] 
 
 /** A kind's fixed rows, each with its value. */
 function rowsOf(kind: string, values: Readonly<Record<string, unknown>>): GraphRow[] {
-  // A Source's Rows pick is a workflow's: a page reads all its rows, and its Query filters them.
-  return NODE_KINDS[kind]!.rows.filter((row) => row.control !== 'rows').map((row) => ({ ...row, value: values[row.name] }));
+  // A row a workflow's alone is not drawn: a page reads all its rows and fields, and its Query filters them.
+  return NODE_KINDS[kind]!.rows.filter((row) => !row.graphs || row.graphs.includes('query')).map((row) => ({ ...row, value: values[row.name] }));
 }
 
 /** Whether a status value's `when` is a condition: a group of conditions, or one comparison. */

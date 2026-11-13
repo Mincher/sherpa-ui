@@ -68,6 +68,7 @@
  * - GraphEdit — One row a reader changed: its node, its row and the new value.
  * - NodePlaces — Each node's place by its id: where a reader moved it.
  * - storedValues — What a node keeps of its drawn rows: each that holds a value, by its name.
+ * - fieldsSent — The fields a node's rows carry, by its `every` field pick: those it keeps; none kept, every field.
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
  * - placed — A graph with each node at its kept place.
  */
@@ -144,6 +145,10 @@ export interface RowKind {
   fork?: true;
   /** A pick on it is kept with the kinds placed last, so "Add a node" offers the kind with it picked (TODO 968). */
   recalls?: true;
+  /** A many pick that keeps none means every choice: drawn all ticked, and all ticked keeps none (TODO 969). */
+  every?: true;
+  /** Where it is drawn, where not every graph of its kind: a Source's Rows and Fields are a workflow's alone. */
+  graphs?: readonly NodeGraph[];
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
   /** An `entity` row's type: it picks one of the shelf's entities of it, as a Run Coworker's Coworker (plan 949). */
@@ -519,8 +524,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Source', icon: 'storage', description: 'Connect a data source',
     rows: [
       { ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' },
-      // Some of its rows, by title (Will, 2026-11-13: "Source picks rows"); none picked, every row. A workflow's only.
-      { name: 'picked', label: 'Rows', control: 'rows', multiple: true, optional: true },
+      // The fields its rows carry, All at the start (Will, 2026-11-13, TODO 969). A page's Query reads every field.
+      { name: 'fields', label: 'Fields', control: 'field', multiple: true, optional: true, every: true, graphs: ['workflow'] },
+      // Some of its rows, by title (Will, 2026-11-13: "Source picks rows"); none picked, every row. A page's Query reads all.
+      { name: 'picked', label: 'Rows', control: 'rows', multiple: true, optional: true, graphs: ['workflow'] },
     ], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
@@ -1146,6 +1153,13 @@ export type NodePlaces = Readonly<Record<string, { x: number; y: number; size?: 
 /** What a node keeps of its drawn rows: each that holds a value, by its name. */
 export const storedValues = (rows: readonly GraphRow[]): Record<string, unknown> =>
   Object.fromEntries(rows.filter((r) => r.value !== undefined && r.value !== null && r.value !== '').map((r) => [r.name, r.value]));
+
+/** The fields a node's rows carry, by its `every` field pick: those it keeps; none kept, every field (TODO 969). */
+export function fieldsSent(rows: readonly Pick<RowKind, 'name' | 'control' | 'every'>[], values: Readonly<Record<string, unknown>> | undefined): readonly string[] | undefined {
+  const row = rows.find((r) => r.every && r.control === 'field');
+  const kept = row && values?.[row.name];
+  return Array.isArray(kept) && kept.length ? kept.map(String) : undefined;
+}
 
 /** A node of a kind, its rows given: the kind's header and sockets, under its own. */
 export function kindNode(

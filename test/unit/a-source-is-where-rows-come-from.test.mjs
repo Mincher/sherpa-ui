@@ -10,11 +10,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { NODE_KINDS, paletteOf } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, fieldsSent, paletteOf } = await import(new URL('node-kinds.js', core));
 const { offeredKinds, registerEntityType } = await import(new URL('entity-types.js', core));
 const { editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { entityFaults } = await import(new URL('entity-check.js', core));
 const { graphRequest, keptEdit, placeRequest, queryGraph, connectionRequest } = await import(new URL('query-graph.js', core));
+const { simulateGraph } = await import(new URL('node-simulate.js', core));
+const { valuesAt } = await import(new URL('node-messages.js', core));
 const { pageWithQuery } = await import(new URL('page-definition.js', core));
 
 const inPanel = (palette) => palette.flatMap((g) => g.items.map((i) => `${g.category}:${i.id}`));
@@ -22,8 +24,9 @@ const inPanel = (palette) => palette.flatMap((g) => g.items.map((i) => `${g.cate
 test('every graph type\'s panel offers a Source, under Sources: a workflow, a Filter, a Custom Node, an app\'s type, the Query', () => {
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone');
   assert.deepEqual([NODE_KINDS.source.heading, NODE_KINDS.source.category, NODE_KINDS.source.graphs], ['Source', 'Sources', ['query', 'workflow']]);
-  // No Count row: Math › Count counts rows (plan 944). Its Rows picks some of the store's rows (plan 960 U4.9b).
-  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store'], ['picked', 'rows']]);
+  // No Count row: Math › Count counts rows (plan 944). Its Fields picks the fields its rows carry (TODO 969); its Rows
+  // picks some of the store's rows (plan 960 U4.9b).
+  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store'], ['fields', 'field'], ['picked', 'rows']]);
   const off = registerEntityType({ id: 'workflow', label: 'Workflow', graph: { runs: true } });
   try {
     for (const host of [undefined, 'filter:trials', 'mine', 'workflow:flow']) {
@@ -107,4 +110,36 @@ test('each kind\'s line is ONE short job in plain words: a few words, one line, 
     source: 'Connect a data source', field: 'Target a field from a connected Source', value: 'Primitive value variables',
     condition: 'Logical checks of a value against a condition', math: 'Numbers in, one number out',
   });
+});
+
+test('a Source\'s Fields picks its store\'s fields, none kept every one: its rows carry those, and a Field after it picks from them (TODO 969)', () => {
+  const fieldsOf = { customers: { name: { label: 'Name' }, status: { label: 'Status' }, region: { label: 'Region' } } };
+  const flowOf = (fields) => ({
+    v: 3, id: 'w',
+    nodes: [
+      { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'customers', ...(fields ? { fields } : {}) } },
+      { id: 'f', kind: 'field', x: 400, y: 0, values: {} },
+    ],
+    connections: [{ from: 's/rows', to: 'f' }],
+  });
+  const drawn = (fields) => workflowGraph(flowOf(fields), { fieldsOf });
+  // Its own choices are its store's, every one, whatever it keeps; a Field after it picks from the ones kept.
+  const row = (fields) => drawn(fields).nodes.find((n) => n.id === 's').rows.find((r) => r.name === 'fields');
+  assert.deepEqual([row(undefined).value, row(['status']).choices.map((c) => c.value)], [undefined, ['name', 'status', 'region']]);
+  assert.equal(row(undefined).every, true);
+  const picks = (fields) => drawn(fields).nodes.find((n) => n.id === 'f').rows.find((r) => r.name === 'field').choices.map((c) => c.value);
+  assert.deepEqual(picks(undefined), ['name', 'status', 'region'], 'none kept: every field');
+  assert.deepEqual(picks(['status', 'region']), ['status', 'region']);
+  // Simulate sends each row with only the fields kept.
+  const rows = [{ id: 'c1', name: 'Ada', status: 'trial', region: 'EMEA' }];
+  const sent = (fields) => simulateGraph(drawn(fields), { customers: rows }).nodes.f.incoming[0].rows;
+  assert.deepEqual(sent(undefined), rows);
+  assert.deepEqual(sent(['status']), [{ status: 'trial' }]);
+  // What a message after it can name: only the fields it sends.
+  const said = (fields) => valuesAt(flowOf(fields).nodes, flowOf(fields).connections, 'f', NODE_KINDS, fieldsOf).find((m) => m.node === 's').values.map((v) => v.name).filter((n) => n !== 'rows');
+  assert.deepEqual([said(undefined), said(['region'])], [['name', 'status', 'region'], ['region']]);
+  assert.deepEqual([fieldsSent(NODE_KINDS.source.rows, { fields: [] }), fieldsSent(NODE_KINDS.source.rows, { fields: ['name'] })], [undefined, ['name']]);
+  // A page's Query reads every field: its Source draws no Fields.
+  const page = { v: 1, id: 'p', source: { store: 'customers', fields: fieldsOf.customers } };
+  assert.ok(!queryGraph({ v: 1, scopes: {} }, page).nodes.find((n) => n.id === 'source').rows.some((r) => r.name === 'fields'));
 });

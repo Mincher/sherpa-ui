@@ -8,7 +8,7 @@
  * - InputPicks — One select's picks: its values, its face, and its menu of ticks.
  * - .values — The values ticked, in the order its choices list them.
  * - .set — Take new picks silently: a host's write says nothing.
- * - .face — Say the picks on the select's face, as one option.
+ * - .face — Say the picks on the select's face, as one option; every one ticked, "All".
  * - .wire — Listen to the select and the menu: the native list never opens, the menu of ticks does.
  */
 
@@ -27,6 +27,8 @@ export interface PicksHost {
   options(): readonly { value: string; label?: string }[];
   /** One empty option, from the field's own template. */
   option(): HTMLOptionElement | null;
+  /** The word its face says with every choice ticked. */
+  all(): string;
   readOnly(): boolean;
   off(): boolean;
   /** A tick changed the picks: the form, Clear and the events follow. */
@@ -55,14 +57,17 @@ export class InputPicks {
     this.face();
   }
 
-  /** Say the picks on the select's face, as ONE option: it reads as a single pick reads, "trial, At risk". */
+  /** Say the picks on the select's face, as ONE option: it reads as a single pick reads, "trial, At risk"; every one of two
+   *  or more ticked, "All", as a chip's Select all (TODO 969). */
   face(): void {
     const select = this.#host.$<HTMLSelectElement>('select.control');
     const option = this.#host.option();
     if (!select || !option) return;
-    const label = (value: string): string => this.#host.options().find((o) => o.value === value)?.label ?? value;
+    const options = this.#host.options();
+    const label = (value: string): string => options.find((o) => o.value === value)?.label ?? value;
+    const every = options.length > 1 && options.every((o) => this.#values.includes(o.value));
     option.value = this.#values.join(',');
-    option.textContent = this.#values.map(label).join(', ');
+    option.textContent = every ? this.#host.all() : this.#values.map(label).join(', ');
     select.replaceChildren(option);
     select.value = option.value;
   }

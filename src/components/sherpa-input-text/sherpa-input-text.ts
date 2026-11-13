@@ -135,6 +135,7 @@ export class SherpaInputText extends SherpaElement {
     on: (target, type, handler) => this.on(target, type, handler),
     options: () => this.#options,
     option: () => this.clone<HTMLOptionElement>(this.$<HTMLTemplateElement>('template.option-tpl')),
+    all: () => this.word('all'),
     readOnly: () => this.hasAttribute('readonly'),
     off: () => this.matches(':disabled'),
     changed: () => {
