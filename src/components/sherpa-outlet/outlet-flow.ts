@@ -13,7 +13,7 @@ import '../sherpa-dialog/sherpa-dialog.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-switch/sherpa-switch.js';
 import type { Act, ActAnswer, ActCall, ActContext } from '../../core/data/acts.js';
-import { answerStep, nextStep, stepsOf, type Ask, type Flow, type FlowAnswers } from '../../core/data/flows.js';
+import { answerStep, nextStep, stepsOf, type Ask, type Flow, type FlowAnswers, type NextStep } from '../../core/data/flows.js';
 
 /** What the dialog asks of its outlet: its parts, a field cloned from its prototype, a listener, the context an act runs
  *  over, the door it runs through, and the toast a press says. */
@@ -36,6 +36,8 @@ interface Open {
   keys: readonly unknown[];
   answers: FlowAnswers;
   fields: Map<string, { el: Field; ask: Ask }>;
+  /** The fields whose value was refused: each holds the button back until it is answered well. */
+  refused: Set<string>;
 }
 
 /** Each kind's prototype: a date is typed as text until the input has a date of its own. */
@@ -73,7 +75,7 @@ export class OutletFlow {
     const dialog = this.#dialog;
     if (!dialog) return;
     this.#close();
-    this.#open = { flow, act, keys, answers: {}, fields: new Map() };
+    this.#open = { flow, act, keys, answers: {}, fields: new Map(), refused: new Set() };
     dialog.setAttribute('data-heading', act.label);
     this.#text('.flow-about', act.description ?? '');
     this.#host.$('.flow-run')?.setAttribute('data-label', act.label);
@@ -119,10 +121,17 @@ export class OutletFlow {
     if (defaulted) return this.#draw();
     const holding = new Set(asks.map((a) => a.field));
     for (const [field, { el }] of open.fields) el.toggleAttribute('data-off', !holding.has(field));
-    const next = await nextStep(open.flow, open.answers, this.#ctx);
+    const next = await this.#next(open, asks);
     if (open !== this.#open) return;
     this.#text('.flow-said', 'confirm' in next ? next.confirm : '');
     this.#host.$('.flow-run')?.toggleAttribute('disabled', !('confirm' in next || 'run' in next));
+  }
+
+  /** Where the dialog stands. Every field is in view at once, so an optional step left as it is counts as skipped —
+   *  unless what it holds was refused, which holds the button back. The chat asks each, with Skip. */
+  #next(open: Open, asks: readonly Ask[]): Promise<NextStep> {
+    const skipped = asks.filter((a) => !a.required && !(a.field in open.answers) && !open.refused.has(a.field));
+    return nextStep(open.flow, { ...open.answers, ...Object.fromEntries(skipped.map((a) => [a.field, null])) }, this.#ctx);
   }
 
   /** A field's value as its step's answer: a pick by its choice's own value, a number as a number, none as null. */
@@ -156,8 +165,10 @@ export class OutletFlow {
     if (turn !== this.#turn || open !== this.#open) return;
     if ('answers' in got) {
       open.answers = got.answers;
+      open.refused.delete(field);
       at.el.removeAttribute('data-error');
     } else {
+      open.refused.add(field);
       // A refused answer is no answer: the step is open again, and the button waits.
       const { [field]: _gone, ...rest } = open.answers;
       open.answers = rest;
@@ -170,7 +181,7 @@ export class OutletFlow {
   async #run(): Promise<void> {
     const open = this.#open;
     if (!open) return;
-    const next = await nextStep(open.flow, open.answers, this.#ctx);
+    const next = await this.#next(open, await stepsOf(open.flow, open.answers, this.#ctx));
     if (!('confirm' in next || 'run' in next)) return;
     const answer = await this.#host.act(open.act.id, { keys: open.keys, input: 'confirm' in next ? next.input : next.run });
     if (open !== this.#open) return;

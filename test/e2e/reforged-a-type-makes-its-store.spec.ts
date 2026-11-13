@@ -209,10 +209,14 @@ test('a pressed act that needs input opens its flow: a field per step that holds
   await expect(run).toHaveAttribute('disabled', '');
   await field('status').locator('select').selectOption('offline');
   await expect.poll(shown).toEqual(['status', 'reason', 'urgent']);
-  // A short Reason is refused under its own field once it is left; a longer one clears it, and the act can run.
+  // Every field is in view: the optional Reason left as it is counts as skipped, so the act can run already.
+  await expect(page.locator('sherpa-outlet .flow-said')).toHaveText('Tag: Device "Alpha", Status Offline, Urgent No.');
+  await expect(run).not.toHaveAttribute('disabled');
+  // A short Reason is refused under its own field once it is left, and holds the button back; a longer one clears it.
   await field('reason').locator('input').fill('ab');
   await field('reason').locator('input').press('Tab');
   await expect(field('reason')).toHaveAttribute('data-error', /at least 3/);
+  await expect(run).toHaveAttribute('disabled', '');
   await field('reason').locator('input').fill('Broken');
   await expect(field('reason')).not.toHaveAttribute('data-error');
   await expect(page.locator('sherpa-outlet .flow-said')).toHaveText('Tag: Device "Alpha", Status Offline, Reason Broken, Urgent No.');
