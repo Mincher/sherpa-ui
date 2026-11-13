@@ -2850,11 +2850,9 @@ export function bindWorkflow(
     else if (doc) drawSoon = true;
     else draw();
   }, tag);
-  /** What a draw reads beside the graph: inside a Custom Node, the top graph's primary model too (plan 951). */
-  const factsAt = (inside: boolean): typeof facts => {
-    const primary = inside && !doc ? primaryOf(draft) : undefined;
-    return primary ? { ...facts, primary } : facts;
-  };
+  /** What a draw reads beside the graph: inside a Custom Node, the top graph's primary model too, or `null` where it has none
+   *  (plan 951). */
+  const factsAt = (inside: boolean): typeof facts => (inside && !doc ? { ...facts, primary: primaryOf(draft) ?? null } : facts);
   /** Mid-drag of a tie or a bend: the connections and ties as the draft has them, the nodes as drawn. */
   const lineGraph = (): FramedGraph => {
     const body = doc ? doc.graph(shown()) : workflowGraph(shown(), factsAt(!!path.length), K());

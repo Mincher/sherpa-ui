@@ -452,8 +452,9 @@ export interface WorkflowFacts {
   /** The shelf's entities, read at each draw: what an entity row picks, and where an Output Trigger's loop is looked for
    *  (plan 949). */
   entities?: () => readonly Pick<Entity, 'type' | 'id' | 'label' | 'graph'>[];
-  /** The primary model of the top graph this one is inside: the AI nodes of a Custom Node's body use it (plan 951). */
-  primary?: ModelPick;
+  /** The primary model of the top graph a Custom Node's body is opened inside: its AI nodes use it (plan 951). `null`: that
+   *  graph has none. None given: the body is opened alone, and uses the primary of whichever graph uses it. */
+  primary?: ModelPick | null;
 }
 
 type StoreFields = NonNullable<WorkflowFacts['fieldsOf']>[string];
@@ -602,6 +603,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   const top = hasStart(workflow);
   // The model an AI node uses with none joined to its own: its graph's Start's, or the top graph's it is inside (plan 951).
   const primary = top ? primaryOf(workflow) : facts.primary;
+  const alone = !top && facts.primary === undefined;
   const loops = shelf.length ? startLoops({ id: workflow.id, ...(workflow.label ? { label: workflow.label } : {}), graph: workflow }, shelf, kinds) : new Map<string, string>();
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   // Where a connection comes from, in words: "Group Input › Status".
@@ -764,9 +766,10 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       };
       const ins = flows.filter((r) => r.to === address && !bad.includes(r));
       const coming = ins.flatMap((r) => reading(r) ?? []);
-      // An AI node asks a model: with none joined, it uses the primary, and says so; with none, it warns (plans 926, 951).
+      // An AI node asks a model: with none joined, it uses the primary, and says so; with none, it warns. A body opened
+      // alone uses the primary of the graph that uses it (plans 926, 951).
       const unjoined = !ins.length && !bad.length && row.needs === 'model' && !row.optional;
-      if (unjoined && !primary) warnings.push({ row: row.name, words: 'Join a Model, here or to the Start' });
+      if (unjoined && !primary && !alone) warnings.push({ row: row.name, words: 'Join a Model, here or to the Start' });
       // A pick it cannot do without, left blank (plan 951).
       if (row.required && !ins.length && (has == null || has === '')) warnings.push({ row: row.name, words: `Pick a ${row.label.toLowerCase()}` });
       // A Runbook, or a new skill, is its instructions: with none, it has nothing to do.
@@ -794,6 +797,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       // Only what it cannot use came in: it reads null, read only.
       if (bad.length && !ins.length) return { ...own, value: null };
       if (unjoined && primary) return { ...own, value: primary.model, hint: 'From the Start' };
+      if (unjoined && alone) return { ...own, hint: 'From the graph that uses it' };
       // Connected, nothing sent yet, nothing held: it shows nothing — never a list's first choice — and says where from.
       const none = has == null || has === '' || (Array.isArray(has) && !has.length);
       if (!coming.length && ins.length && row.control && none) {

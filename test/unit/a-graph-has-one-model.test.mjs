@@ -63,11 +63,16 @@ const ASKS = {
 };
 const library = () => ({ v: 1, nodes: { asks: structuredClone(ASKS) } });
 
-test('inside a Custom Node, an AI node uses the top graph\'s primary: the editor gives it as a fact', () => {
+test('inside a Custom Node, an AI node uses the top graph\'s primary, which the editor gives as a fact; opened alone, the graph that uses it', () => {
   const lib = library();
   const body = innerOf(useOf(lib, 'asks', { id: 'asks-1', x: 0, y: 0 }), lib);
   const inner = workflowGraph(body.workflow, { primary: { provider: 'anthropic', model: 'sonnet' } }, body.kinds);
   assert.deepEqual([row(node(inner, 'inner-ask'), 'model').value, row(node(inner, 'inner-ask'), 'model').hint], ['sonnet', 'From the Start']);
+  // Opened alone, it uses the primary of whichever graph uses it, and does not warn; inside a graph with none, it warns.
+  const alone = workflowGraph(body.workflow, {}, body.kinds);
+  assert.deepEqual([row(node(alone, 'inner-ask'), 'model').hint, words(alone, 'inner-ask')], ['From the graph that uses it', []]);
+  const bare = workflowGraph(body.workflow, { primary: null }, body.kinds);
+  assert.deepEqual(words(bare, 'inner-ask'), ['model: Join a Model, here or to the Start']);
 });
 
 test('graphModels: the primary first, then each other model, with how many AI nodes use it, at any depth', () => {
