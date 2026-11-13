@@ -254,12 +254,12 @@
       }
     },
     "source": {
-      "description": "A page's source: which store, how it pages and searches, its fields and its scopes.",
+      "description": "A page's source: which store (its own, else its type's), how it pages and searches, its fields and its scopes.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["store"],
+      "anyOf": [{ "required": ["store"] }, { "required": ["type"] }],
       "properties": {
-        "store": { "description": "The name the app registered its store under.", "type": "string" },
+        "store": { "description": "The name the app registered its store under. None: its type's store (plan 960 U3).", "type": "string" },
         "type": { "description": "The page's type, by its id: its fields' words are the type's (type.v1, listed in app.json `types`), so `fields` says only what each control does (plan 960 U2).", "$ref": "#/$defs/id" },
         "pageSize": { "type": "integer", "minimum": 1 },
         "applyOn": { "description": "change: a filter applies once per act. input: LIVE, debounce ms after the last move. A remote source always waits for Apply.", "enum": ["change", "input"] },

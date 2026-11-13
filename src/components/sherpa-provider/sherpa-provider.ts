@@ -25,7 +25,7 @@ import type { Row, Store } from '../../core/data/store.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { PageKeeper, type PageState } from '../../core/browser/page-state.js';
 import { Updates } from '../../core/data/updates.js';
-import { checkPage, openSource, savedFiltersOf, type PageDefinition, type SourceDefinition } from '../../core/data/page-definition.js';
+import { checkPage, openSource, savedFiltersOf, storeOf, type PageDefinition, type SourceDefinition } from '../../core/data/page-definition.js';
 import { QueryContext } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
 import { PRESET_FILTER } from '../../core/data/entity-types.js';
@@ -447,12 +447,14 @@ export class SherpaProvider extends SherpaElement {
     this.#headless = options.bars === false;
     const page = (this.#page = new AbortController());
     const def = definition.source;
-    const store = def ? options.stores[def.store] : undefined;
+    // Its own store, else its type's. Plan 960 U3
+    const named = def ? storeOf(def) ?? '' : '';
+    const store = def ? options.stores[named] : undefined;
     if (def && !store) {
       report({
         code: 'provider-unknown-store',
-        message: `sherpa-provider: page "${definition.id}" names a store the app has not given, "${def.store}".`,
-        at: { store: def.store },
+        message: `sherpa-provider: page "${definition.id}" names a store the app has not given, "${named}".`,
+        at: { store: named },
       });
     }
     const opening = def && store ? this.#cards.opening(page.signal) : null;
@@ -484,12 +486,12 @@ export class SherpaProvider extends SherpaElement {
       // The page's own Views, then the reader's. TRAP T-view-library-is-one-vocabulary
       const library = shipped ? (): ViewLibrary => ({ ...shipped, ...this.#keeper.read(key).views }) : null;
       // Its store's Preset Filters, each a preset of its bar: read now, and again when the shelf moves. TODO 776
-      const presetFilters = (): Promise<readonly PagePreset[]> => this.#presetFilters(def.store, def.fields);
+      const presetFilters = (): Promise<readonly PagePreset[]> => this.#presetFilters(named, def.fields);
       const filters = await presetFilters();
       if (page.signal.aborted) return undefined;
       // The page as DEFINED, before a kept Query: what Reset to view defaults starts from.
       this.#pages.begin({
-        id: key, store: def.store, source, query: source.query, library, initial: source.query.applied,
+        id: key, store: named, source, query: source.query, library, initial: source.query.applied,
         savedFilters: savedFiltersOf(definition), presetFilters: filters, readPresetFilters: presetFilters,
       });
       this.#pages.sharing = this.#on('appContext');

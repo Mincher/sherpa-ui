@@ -30,10 +30,20 @@ sherpa-demos-67 (Demos). Written 2026-11-13, after U2 (`type.v1`, `source.type`,
    `id`, `label`, `description`, `tags`, each settings field the type names, each `from` field read from the graph —
    kept in step with the shelf (`watch`). A write of a settings field saves the entity through the shelf, so it is
    checked; a `from` field is never written; a remove is the shelf's (refused while another entity uses it). `row`
-   lets the app add the values it works out (a Coworker's Runs); their words are the type's fields.
+   lets the app add the values it works out (a Coworker's Runs); their words are the type's fields. It starts with the
+   shelf's rows at once and takes the shelf's changes as one, so a run of saves is one reload (point 5, TODO 948).
+   A graph type's seed entities go on the shelf as the reader's own, versioned by the same hash, and a reader's own
+   entity is left as it is (point 4: Demos' `SEED_VERSION` and `firstCoworkers`).
 3. **The app's stores** (`typeStores`): for each app.json type, its store by the type's id — a row type's from its
    `data` file, a graph type's from the keeper's shelf. The outlet makes them once the types are in; the app's own
    `stores()` wins by name, so an app may still make one by hand (a remote one, a debug pick).
+   - **A page names its store, or only its type** (sherpa-demos-67, point 1): `storeOf(source)` is its own `store`,
+     else its `type`, so a page over a type's store says `"type": "device"` alone.
+   - **A shared or remote store stays the app's** (point 2): one `defineStores` module is read by the Service Worker
+     and the server, so a store made page-side by the outlet would be a second one. The type gives such a store its
+     options (`typeStoreOptions`, `typeStatusFields`), and `typeStore(type, { rows })` runs where `localRecords` runs,
+     a worker too. The outlet makes a store only for a type that names a `data` file: the contributor's path.
+   - **Rows made in code** (point 3): `typeStore(type, { rows })`; the hash version makes a new day's rows a new seed.
 4. **A default page** (D2): a Context that names a `type` and no `template` gets the type's own page: its toolbar, a
    grid of `typeColumns`, a pager, and (U6) its Details form. Its page definition is made from the type: the store,
    the type, the View and data scopes, and nothing else.
@@ -50,7 +60,7 @@ sherpa-demos-67 (Demos). Written 2026-11-13, after U2 (`type.v1`, `source.type`,
 
 | Step | Builds | Proves | Lane |
 |---|---|---|---|
-| U3.1 | `typeStore`, the seed version from the rows, `typeStores` for row types, the outlet makes them | unit: a type and its rows make a seeded store, and a changed row is a new seed; e2e: a Context over a type's store with no store the app made | a9 |
-| U3.2 | `entityStore`; `typeStores` for graph types | unit: a Coworker saved on the shelf is a row at once, a settings write saves it, a `from` write is refused | a9 |
+| U3.1 | `typeStore`, the seed version from the rows, `typeStores` for row types, the outlet makes them; `storeOf` | unit: a type and its rows make a seeded store, and a changed row is a new seed; e2e: a Context over a type's store with no store the app made | a9 |
+| U3.2 | `entityStore`; `typeStores` for graph types; seed entities as the reader's own | unit: a Coworker saved on the shelf is a row at once, a settings write saves it, a `from` write is refused, a seed is put once per version | a9 |
 | U3.3 | the default page (D2) | e2e: a `user` type from 3 files (types/user.json, data/users.json, app.json) is a working page | a9 |
 | U3.4 | Demos: `pageStores` by hand, `followShelf`, `coworkerStore` and `SEED_VERSION` deleted; Users (plan 963) on it | Demos specs in 3 engines | demos-67 |

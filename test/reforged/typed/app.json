@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../schemas/app.v1.json",
+  "v": 1,
+  "default": "devices",
+  "types": { "device": "types/device.json" },
+  "contexts": {
+    "devices": { "label": "Devices", "template": "templates/devices.html", "definition": "pages/devices.json" }
+  }
+}

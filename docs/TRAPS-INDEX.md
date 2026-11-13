@@ -289,7 +289,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-idb-open-is-a-handshake-not-a-call](traps/storage.md#t-idb-open-is-a-handshake-not-a-call) — database
 - [T-library-re-read-on-every-pick](traps/storage.md#t-library-re-read-on-every-pick) — persist-view
 - [T-local-first-then-onward](traps/storage.md#t-local-first-then-onward) — page-state
-- [T-local-records-seed-themselves](traps/storage.md#t-local-records-seed-themselves) — idb-store
+- [T-local-records-seed-themselves](traps/storage.md#t-local-records-seed-themselves) — idb-store, type-stores
 - [T-max-rows-is-oldest-out-by-insertion](traps/data-layer.md#t-max-rows-is-oldest-out-by-insertion) — idb-store
 - [T-news-is-pushed-by-the-server](traps/data-layer.md#t-news-is-pushed-by-the-server) — follow-updates, worker-script
 - [T-numeric-keys-compare-as-strings](traps/data-layer.md#t-numeric-keys-compare-as-strings) — idb-store

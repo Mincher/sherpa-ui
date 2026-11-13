@@ -306,7 +306,11 @@ a page's own `source.fields`, so a page says only what its controls do
 (`select`, `op`, `advanced`, `section`, `range`), and its own word wins.
 A page names its type in `source.type`, and an app lists its types in `app.json`
 `types`, so a reader of a page's JSON with no source open (a graph, a tool) reads
-each field the same way: `pageFields(page.source)`. `typeColumns(type)` makes a
+each field the same way: `pageFields(page.source)`. A type that names its rows
+(`data`) has a store of its own, made by the outlet, by the type's id; a page that
+names only its type reads it (`storeOf`). Rows made in code go through
+`typeStore(type, { rows })`: its seed version is made from the rows, so no one
+bumps it. A shared or remote store stays the app's, in `defineStores`. `typeColumns(type)` makes a
 grid's columns. A field a graph holds says
 `"from": "<node id>/<path>"` and is read by `readFrom(graph, from)`; nothing
 writes it, so it has no rule.

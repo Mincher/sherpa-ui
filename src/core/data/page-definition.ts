@@ -8,6 +8,7 @@
  * - ScopeDefinition — One scope: its name, and the fields it offers and holds at the start.
  * - SourceDefinition — A page's source: which store, how it pages and searches, its fields and scopes.
  * - PageDefinition — One page, as JSON — its source, its saved filters, and its components' configuration.
+ * - storeOf — The store a page's source reads, by name: its own `store`, else its type's.
  * - checkPage — Check every name a page definition uses, as it opens; each broken one reports.
  * - openSource — Build a page's source from its definition, over the app's store. It checks nothing.
  * - presetReadings — A preset's conditions as readings, each field's its tree, typed once by its field.
@@ -63,9 +64,10 @@ export interface ScopeDefinition {
  *  scopes. No field lists its values: the data says them.
  *  TRAP T-the-data-says-what-a-field-may-hold */
 export interface SourceDefinition {
-  /** The name the app registered its store under. */
-  store: string;
-  /** Its type, by id: its fields' words are the type's, so `fields` says only what each control does. Plan 960 U2 */
+  /** The name the app registered its store under. None, its type's store (`storeOf`). */
+  store?: string;
+  /** Its type, by id: its fields' words are the type's, so `fields` says only what each control does; and, with no
+   *  `store`, its store is the type's. Plan 960 U2, U3 */
   type?: string;
   pageSize?: number;
   /** `input`: its filters apply live, debounced. Will, TODO 107 */
@@ -103,6 +105,12 @@ export interface PageDefinition {
  * page opening calls it first, and a server or a tool the same.
  * TRAP T-a-page-is-checked-as-it-opens
  */
+/** The store a page's source reads, by name: its own `store`, else its type's (the outlet makes a type's store by its
+ *  id). Plan 960 U3 */
+export function storeOf(source: Pick<SourceDefinition, 'store' | 'type'>): string | undefined {
+  return source.store ?? source.type;
+}
+
 export function checkPage(page: PageDefinition): boolean {
   if (page?.v !== 1 || typeof page.id !== 'string') {
     report({ code: 'page-definition', message: 'checkPage: it is not a v1 page definition.' });
@@ -113,7 +121,7 @@ export function checkPage(page: PageDefinition): boolean {
     problems.push({ code, message: `checkPage: page "${page.id}": ${message}`, at: { page: page.id, ...where } });
   };
   const source = page.source;
-  if (source && typeof source.store !== 'string') at('page-definition', 'its source names no store.', {});
+  if (source && typeof storeOf(source) !== 'string') at('page-definition', 'its source names no store and no type.', {});
   if (source?.type !== undefined && !/^[a-z][a-z0-9-]*$/.test(String(source.type))) at('page-definition', 'its source.type is no type\'s id (lowercase letters, digits, hyphens).', {});
   if (source) problems.push(...tiers(source).problems);
   for (const [scope, facts] of Object.entries(source?.scopes ?? {})) {

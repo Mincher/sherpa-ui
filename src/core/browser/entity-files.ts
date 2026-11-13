@@ -7,20 +7,22 @@
  * Map:
  * - readEntities — Entities read from JSON, each checked alone over those already kept; the bad reported, the rest kept.
  * - loadEntityLibrary — an app's preset entities from a JSON file, each checked
- * - loadTypes — an app's types from their JSON files (app.json `types`), each registered by its id
+ * - loadTypes — an app's types from their JSON files (app.json `types`), each registered by its id; those it registered
  */
 import { report } from '../data/report.js';
 import { isEntity, type Entity, type EntityLibrary } from '../data/entity.js';
 import { entityFaults, type EntityFacts } from '../data/entity-check.js';
 import { registerEntityType, type EntityType } from '../data/entity-types.js';
+import type { TypeDefinition } from '../data/type-definition.js';
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
 /** A type registered by its key, which is its id; one whose id is another is reported and left out. registerEntityType
- *  reports one typeFaults refuses. */
-function registerByKey(key: string, type: unknown, who: string): void {
-  if (isObject(type) && type['id'] === key) registerEntityType(type as unknown as EntityType);
-  else report({ code: 'entity-type', message: `${who}: the type under "${key}" has the id ${JSON.stringify(isObject(type) ? type['id'] ?? null : null)}, so it is left out.`, at: { type: key } });
+ *  reports one typeFaults refuses. Whether it was registered. */
+function registerByKey(key: string, type: unknown, who: string): boolean {
+  if (isObject(type) && type['id'] === key) return !!registerEntityType(type as unknown as EntityType);
+  report({ code: 'entity-type', message: `${who}: the type under "${key}" has the id ${JSON.stringify(isObject(type) ? type['id'] ?? null : null)}, so it is left out.`, at: { type: key } });
+  return false;
 }
 
 /** Entities read from JSON (entities.v3), its types registered first. Each is checked alone, over those already kept and the
@@ -81,15 +83,19 @@ export async function loadEntityLibrary(url: string | URL, facts?: EntityFacts):
 }
 
 /** An app's types from their JSON files (app.json `types`: id → its type.v1), each registered by its id, so a page that
- *  names one has its fields' words and an entity may be of one. One that cannot be read is reported and left out. Plan 960 U2 */
-export async function loadTypes(files: Readonly<Record<string, string | URL>>): Promise<void> {
-  await Promise.all(Object.entries(files).map(async ([key, url]) => {
+ *  names one has its fields' words and an entity may be of one. One that cannot be read is reported and left out. Those
+ *  it registered, by id: the outlet makes their stores. Plan 960 U2, U3 */
+export async function loadTypes(files: Readonly<Record<string, string | URL>>): Promise<Record<string, TypeDefinition>> {
+  const read = await Promise.all(Object.entries(files).map(async ([key, url]) => {
     try {
       const response = await fetch(new URL(url, document.baseURI));
       if (!response.ok) throw new Error(`${response.status}`);
-      registerByKey(key, await response.json(), 'loadTypes');
+      const type: unknown = await response.json();
+      return registerByKey(key, type, 'loadTypes') ? [[key, type as TypeDefinition] as const] : [];
     } catch (error) {
       report({ code: 'entity-type', message: `loadTypes: the type "${key}" could not be read (${error instanceof Error ? error.message : String(error)}).`, at: { type: key } });
+      return [];
     }
   }));
+  return Object.fromEntries(read.flat());
 }

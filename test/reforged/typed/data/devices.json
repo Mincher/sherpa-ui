@@ -1,0 +1,5 @@
+[
+  { "id": "d1", "name": "Alpha", "status": "online", "risk": 80 },
+  { "id": "d2", "name": "Bravo", "status": "offline", "risk": 10 },
+  { "id": "d3", "name": "Charlie", "status": "online", "risk": 40 }
+]

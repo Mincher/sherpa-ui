@@ -40,7 +40,8 @@ export interface OutletOptions {
   session: SessionStore;
   /** The app's stores by name, asked at each load: a debug switch may swap one.
    *  Hand back the SAME object for a store each time — each new one is a store
-   *  of its own to the data layer, with its own listeners and held rows. */
+   *  of its own to the data layer, with its own listeners and held rows. Beside
+   *  them, each app.json type's own store, by its id; the app's wins by name (plan 960 U3). */
   stores(): Record<string, Store>;
   /** Settles before a Context opens its data: its stores are seeded. */
   ready?: Promise<unknown>;
@@ -77,8 +78,10 @@ export class SherpaOutlet extends SherpaElement {
   #views: Record<string, ViewLibrary> = {};
   /** Settles once every Context's own Views are in. */
   #viewsReady: Promise<void> = Promise.resolve();
-  /** Settles once the app's types are registered and its preset entities are in the keeper. */
+  /** Settles once the app's types are registered, their stores seeded, and its preset entities are in the keeper. */
   #nodesReady: Promise<void> = Promise.resolve();
+  /** Each app.json type's store, by the type's id: made from its rows (plan 960 U3). */
+  #typeStores: Record<string, Store> = {};
   /** The app's preset entities, once loaded. */
   #entityPresets: readonly Entity[] = [];
   /** Only the newest load may commit. */
@@ -200,8 +203,14 @@ export class SherpaOutlet extends SherpaElement {
       // Fetched only where an app ships them: an app with none never loads them.
       this.#nodesReady = (async () => {
         const files = await import('../../core/browser/entity-files.js');
-        // Its types first: a page's fields and its entities are of them. Plan 960 U2
-        if (types) await files.loadTypes(Object.fromEntries(Object.entries(types).map(([id, path]) => [id, this.#url(path)])));
+        // Its types first: a page's fields and its entities are of them, and each type that names its rows has a store. Plan 960 U2, U3
+        if (types) {
+          const loaded = await files.loadTypes(Object.fromEntries(Object.entries(types).map(([id, path]) => [id, this.#url(path)])));
+          const { typeStores } = await import('../../core/browser/type-stores.js');
+          const made = await typeStores(loaded, (path) => this.#url(path));
+          this.#typeStores = made.stores;
+          await made.ready;
+        }
         if (entities) this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities))).entities);
       })();
     }
@@ -555,7 +564,7 @@ export class SherpaOutlet extends SherpaElement {
     const kept = provider.keeper.read(id).view;
     const view = kept && this.viewsOf(id)[kept] ? kept : undefined;
     await options.ready;
-    const stores = options.stores();
+    const stores = this.#stores(options);
     const source = await provider.open(definition, { key: id, stores, views, ...(view ? { view } : {}), bars: false });
     // Another asked meanwhile: a page opens over this one, and none closes it.
     if (token !== this.#pageToken && !this.#pageWanted && source) provider.close();
@@ -611,6 +620,11 @@ export class SherpaOutlet extends SherpaElement {
     if (id) await this.openGraph(id);
   }
 
+  /** The stores a page may name: each app.json type's, then the app's own, which wins by name. */
+  #stores(options: OutletOptions): Record<string, Store> {
+    return { ...this.#typeStores, ...options.stores() };
+  }
+
   /** Load one Context: its markup, its data, its module — each step given up
    *  when a newer load starts. */
   async #load(name: string): Promise<void> {
@@ -649,7 +663,7 @@ export class SherpaOutlet extends SherpaElement {
     const shelves = this.#nodes;
     const source: DataSource | undefined = definition && this.#provider ? await this.#provider.open(definition, {
       // ONE key: its state is kept and read under the Context's name. TODO 321
-      key: name, stores: options.stores(), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
+      key: name, stores: this.#stores(options), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
     }) : undefined;
     if (token !== this.#token) return;
     // Its row, drawn from the route, before its module runs: init is handed the graph it opens on.

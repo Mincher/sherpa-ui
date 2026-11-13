@@ -155,7 +155,9 @@ export function register(server) {
   }, tool(async (args) => {
     const files = contextFiles(args);
     if (files.template == null) return refuse('A Context has a template: give its `template`, or an app\'s `path` and `context`.');
-    const named = files.definition.value?.source?.store;
+    // Its own store, else its type's (storeOf, plan 960 U3).
+    const own = files.definition.value?.source;
+    const named = own?.store ?? own?.type;
     const store = typeof named === 'string' ? named : undefined;
     const rows = listOf(args.rows, 'rows');
     if (rows.some((r) => !r || typeof r !== 'object' || Array.isArray(r))) return refuse('Every row is a plain object: that is what a Sherpa row is.');

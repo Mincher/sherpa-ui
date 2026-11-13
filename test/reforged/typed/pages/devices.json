@@ -1,0 +1,35 @@
+{
+  "$schema": "../../../../schemas/page.v1.json",
+  "v": 1,
+  "id": "devices",
+  "source": {
+    "type": "device",
+    "pageSize": 10,
+    "scopes": {
+      "data": {
+        "label": "Devices",
+        "offers": "all",
+        "holds": [
+          "status"
+        ]
+      }
+    }
+  },
+  "ui": {
+    "grid": {
+      "key": "id",
+      "columns": [
+        {
+          "field": "name"
+        },
+        {
+          "field": "status"
+        },
+        {
+          "field": "risk",
+          "type": "number"
+        }
+      ]
+    }
+  }
+}

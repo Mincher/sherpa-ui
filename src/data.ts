@@ -112,6 +112,7 @@ export {
   pageWithQuery,
   presetReadings,
   SAVED_PRESET,
+  storeOf,
   type PageDefinition,
   type ScopeDefinition,
   type SourceDefinition,
