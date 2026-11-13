@@ -134,7 +134,11 @@ export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?
   for (const [field, reading] of Object.entries(readings)) {
     // The answer the field compiles from IS its condition, so the two cannot disagree.
     const state = fieldState({ field, ...facts?.(field) }, { ...reading, suspended: false });
-    // ALL filters nothing, so it says nothing: a start puts it back. TRAP T-all-is-an-answer
+    // ALL is kept as itself, never as its clause: a page or a View saved on it stays on it. TRAP T-all-is-an-answer
+    if (state.all && !state.held?.length) {
+      where[field] = { all: true, ...(reading.suspended ? { off: true } : {}) };
+      continue;
+    }
     if (state.fieldState !== 'active') continue;
     const tree = joinConditions('and', [state.answer, ...state.held ?? []]);
     if (tree) where[field] = { ...sugarOf(tree), ...(reading.suspended ? { off: true } : {}) };

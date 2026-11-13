@@ -86,8 +86,8 @@ test('nothing chosen is NO condition — neither type', () => {
   assert.deepEqual(s, { condition: null, answer: undefined, clause: undefined, badge: '' });
 });
 
-test('EVERYTHING ticked is no filter, so no condition either', () => {
-  assert.equal(shape(PLANS, { picked: ['Free', 'Pro', 'Enterprise'] }).condition, null);
+test('EVERYTHING ticked is a Simple answer: it filters, as Select all does (Will, 2026-11-13)', () => {
+  assert.equal(shape(PLANS, { picked: ['Free', 'Pro', 'Enterprise'] }).condition, 'simple');
 });
 
 test('an UNANSWERED row is not an Advanced condition', () => {

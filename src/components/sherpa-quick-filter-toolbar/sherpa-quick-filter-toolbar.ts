@@ -746,11 +746,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * for anything that owns one field — a legend bound to `plan` wrote
    * `{ plan: [...] }` and silently switched off the Status chip beside it.
    *
-   * An empty list CLEARS this chip — unticked and off, because "every value
-   * selected" and "no filter" are the same state and only one of them should
-   * look like a filter. `undefined` leaves it untouched.
+   * An empty list CLEARS this chip, unticked and off. `undefined` leaves it untouched.
    * TRAP T-one-field-does-not-own-the-whole-map
-   * TRAP T-everything-on-is-no-filter
    */
   setChipValues(id: string, picks: readonly string[] | undefined): void {
     if (picks === undefined) return;

@@ -7,8 +7,8 @@
     "fields": 13,
     "rows": 94,
     "cells": 1410,
-    "compiles": 1,
-    "clones": 13,
+    "compiles": 2,
+    "clones": 9,
     "scans": 7
   },
   "records/pick": {
@@ -68,7 +68,7 @@
     "rows": 25,
     "cells": 375,
     "compiles": 1,
-    "clones": 10,
+    "clones": 4,
     "scans": 3
   },
   "records/switch-on": {
@@ -128,7 +128,7 @@
     "rows": 22,
     "cells": 330,
     "compiles": 1,
-    "clones": 13,
+    "clones": 5,
     "scans": 3
   },
   "records/clear": {
@@ -152,7 +152,7 @@
     "rows": 94,
     "cells": 1410,
     "compiles": 1,
-    "clones": 11,
+    "clones": 7,
     "scans": 3
   },
   "records/add": {
@@ -223,8 +223,8 @@
     "fields": 13,
     "rows": 94,
     "cells": 1410,
-    "compiles": 1,
-    "clones": 13,
+    "compiles": 2,
+    "clones": 9,
     "scans": 7
   },
   "records/narrow": {
@@ -260,7 +260,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 2,
-    "clones": 16,
+    "clones": 8,
     "scans": 4
   },
   "remote/open": {
@@ -271,8 +271,8 @@
     "fields": 0,
     "rows": 10000,
     "cells": 150000,
-    "compiles": 0,
-    "clones": 25,
+    "compiles": 1,
+    "clones": 17,
     "scans": 14
   },
   "remote/pick": {
@@ -332,7 +332,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 15,
+    "clones": 7,
     "scans": 3
   },
   "remote/switch-on": {
@@ -392,7 +392,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 13,
+    "clones": 4,
     "scans": 2
   },
   "remote/clear": {
@@ -416,7 +416,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 7,
+    "clones": 5,
     "scans": 3
   },
   "remote/add": {
@@ -487,8 +487,8 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 0,
-    "clones": 25,
+    "compiles": 1,
+    "clones": 17,
     "scans": 12
   },
   "remote/narrow": {
@@ -524,7 +524,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 2,
-    "clones": 16,
+    "clones": 8,
     "scans": 4
   },
   "remote/apply-fetch": {
@@ -536,7 +536,7 @@
     "rows": 9162,
     "cells": 9162,
     "compiles": 2,
-    "clones": 17,
+    "clones": 8,
     "scans": 5
   },
   "remote/fetch-off": {
@@ -571,8 +571,8 @@
     "fields": 0,
     "rows": 10000,
     "cells": 150000,
-    "compiles": 0,
-    "clones": 25,
+    "compiles": 1,
+    "clones": 17,
     "scans": 14
   },
   "rest/pick": {
@@ -632,7 +632,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 15,
+    "clones": 7,
     "scans": 3
   },
   "rest/switch-on": {
@@ -692,7 +692,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 13,
+    "clones": 4,
     "scans": 2
   },
   "rest/clear": {
@@ -716,7 +716,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 7,
+    "clones": 5,
     "scans": 3
   },
   "rest/add": {
@@ -787,8 +787,8 @@
     "fields": 0,
     "rows": 10000,
     "cells": 150000,
-    "compiles": 0,
-    "clones": 26,
+    "compiles": 1,
+    "clones": 18,
     "scans": 16
   },
   "rest/narrow": {
@@ -824,7 +824,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 2,
-    "clones": 16,
+    "clones": 8,
     "scans": 4
   },
   "rest/missed-change": {
@@ -871,8 +871,8 @@
     "fields": 8,
     "rows": 2478,
     "cells": 37170,
-    "compiles": 1,
-    "clones": 10,
+    "compiles": 2,
+    "clones": 7,
     "scans": 5
   },
   "lean/change-unused": {
@@ -967,8 +967,8 @@
     "fields": 17,
     "rows": 10025,
     "cells": 150375,
-    "compiles": 0,
-    "clones": 25,
+    "compiles": 1,
+    "clones": 17,
     "scans": 12
   },
   "notheld/report": {
@@ -1052,7 +1052,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 0,
-    "clones": 31,
+    "clones": 15,
     "scans": 2
   },
   "notheld/add-field-again": {
@@ -1064,7 +1064,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 0,
-    "clones": 28,
+    "clones": 20,
     "scans": 0
   },
   "tiered/open": {
@@ -1075,8 +1075,8 @@
     "fields": 14,
     "rows": 94,
     "cells": 1504,
-    "compiles": 1,
-    "clones": 13,
+    "compiles": 2,
+    "clones": 9,
     "scans": 7
   },
   "tiered/pick-site": {
@@ -1123,8 +1123,8 @@
     "fields": 0,
     "rows": 33882,
     "cells": 388089,
-    "compiles": 0,
-    "clones": 25,
+    "compiles": 1,
+    "clones": 17,
     "scans": 6
   },
   "plain/report": {
@@ -1171,8 +1171,8 @@
     "fields": 0,
     "rows": 10000,
     "cells": 110000,
-    "compiles": 0,
-    "clones": 19,
+    "compiles": 1,
+    "clones": 13,
     "scans": 10
   },
   "wide/add-field": {
@@ -1184,7 +1184,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 0,
-    "clones": 14,
+    "clones": 8,
     "scans": 0
   },
   "wide/add-column": {

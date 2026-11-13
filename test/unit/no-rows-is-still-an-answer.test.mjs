@@ -29,6 +29,6 @@ test('the one day the rows hold is still a filter, not "everything ticked"', () 
   assert.deepEqual(readingClause(facts({ values: ['2024-12-07'] }), { picked: ['2024-12-07'] }), ['created', 'eq', '2024-12-07']);
 });
 
-test('a list field keeps its rule: every value ticked is no filter', () => {
-  assert.equal(readingClause({ field: 'plan', values: ['Pro', 'Free'] }, { picked: ['Pro', 'Free'] }), undefined);
+test('a list field keeps its rule: every value ticked is those values, a filter (Will, 2026-11-13)', () => {
+  assert.deepEqual(readingClause({ field: 'plan', values: ['Pro', 'Free'] }, { picked: ['Pro', 'Free'] }), ['plan', 'in', ['Pro', 'Free']]);
 });

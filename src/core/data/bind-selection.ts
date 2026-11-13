@@ -146,8 +146,8 @@ export function bindSelection<T extends EventTarget>(
    *  it — its own floors are the component's concern. */
   const write = (next: readonly string[]): void => {
     const want = next.filter((v) => known.has(v));
-    // EVERYTHING picked is no constraint. TRAP T-everything-on-is-no-filter
-    const answer = want.length === values.length ? [] : want;
+    // Every value picked is an answer too: it filters, as Select all does. TRAP T-all-is-an-answer
+    const answer = want;
     const at = home();
     if (at) {
       source.query.ask({ scope: at, field, reading: answer.length ? { picked: answer } : null });

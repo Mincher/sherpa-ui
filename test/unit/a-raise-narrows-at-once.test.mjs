@@ -46,6 +46,6 @@ test('a Query restored before a field\'s values are known compiles again once th
   // Its values unknown, two picks are a filter.
   assert.deepEqual(source.state.filter, ['plan', 'in', ['Free', 'Pro']]);
   await source.declareFromRows(['plan']);
-  // Read from the rows: Free and Pro are EVERY value, so it filters nothing. TRAP T-everything-on-is-no-filter
-  assert.equal(source.state.filter, undefined);
+  // Read from the rows: Free and Pro are EVERY value, which still filters: a row with no plan does not pass (Will, 2026-11-13).
+  assert.deepEqual(source.state.filter, ['plan', 'in', ['Free', 'Pro']]);
 });

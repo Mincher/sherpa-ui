@@ -67,12 +67,12 @@ test('a site under a customer that is picked says nothing more', async () => {
   assert.equal(london.parent, 'Northwind');
 });
 
-test('every customer ticked is no filter; a site alone still is', async () => {
+test('every customer ticked filters, as Select all does (Will, 2026-11-13); a site alone still does', async () => {
   const src = await source();
   src.query.ask({ scope: 'view', field: 'customer', reading: { picked: ['Contoso', 'Northwind', 'Tailspin'] } });
   await settle();
   assert.deepEqual(ids(src), [1, 2, 3, 4, 5, 6]);
-  assert.equal(src.selection('customer').fieldState, 'off');
+  assert.equal(src.selection('customer').fieldState, 'active');
   src.query.ask({ scope: 'view', field: 'customer', reading: { picked: [valueKey(at('Tailspin', 'Paris'))] } });
   await settle();
   assert.deepEqual(ids(src), [6]);

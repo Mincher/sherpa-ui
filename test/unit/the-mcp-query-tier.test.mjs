@@ -291,8 +291,9 @@ test('a page with one of its Views: drawn with the View on its Query, and edits 
   assert.deepEqual(data.where.openTickets, { gt: 4 });
   assert.deepEqual(data.where.status, view.query.scopes.data.where.status);
   assert.deepEqual(data.sort, [{ field: 'spend', direction: 'asc' }]);
-  // The rest as it was, in the plain form the one writer writes: one value picked is `eq`.
-  assert.deepEqual(json.definition.query.scopes.view.where, { health: { eq: 'At risk' } });
+  // The rest as it was, in the plain form the one writer writes: one value picked is `eq`; a field on All stays All,
+  // as All is every value picked, not no filter (Will, 2026-11-13).
+  assert.deepEqual(json.definition.query.scopes.view.where, { health: { eq: 'At risk' }, customer: { all: true }, region: { all: true } });
   // A View with no query has nothing to put on its page.
   const none = await call('definition_graph', { definition: records, view: { label: 'Nothing' }, ...typed() });
   assert.equal(none.bad, true);

@@ -356,8 +356,7 @@ that ONE value matches, within what its scope can see
 `drawValueResults`). A chip that is not picked wears none, as a saved filter
 that is off wears none (166). Only a list answer in force has values: rows,
 a range, a field that is off or held above have none. The one value is
-counted with NO list beside it — against a one-value field's whole list it
-reads as "everything", which is no filter (`T-everything-on-is-no-filter`).
+counted with NO list beside it: its own clause, whatever the field's list.
 
 **The header is ONE count, never a sum** — TODO 173. It counts the rows ANY of
 the field's values match, once each. A row holds one value of a field, so for
@@ -384,6 +383,7 @@ them once per scope that counts.
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-walk.ts`
 - Site: `src/components/sherpa-quick-filter/chip-says.ts`
+- Site: `test/e2e/reforged-select-all-is-every-value.spec.ts`
 
 ### T-a-scope-says-what-it-shows
 
@@ -1892,8 +1892,8 @@ other, a legend row that came back holding zero.
 
 The rules it settles, once:
 
-- EVERYTHING picked is `off` — the same rows as no filter, and only one of
-  them should look like a filter (`T-everything-on-is-no-filter`)
+- EVERYTHING picked is `active`: it filters, and a row with no value does not
+  pass, as Select all (`T-all-is-an-answer`, Will, 2026-11-13)
 - a TYPED condition is `active` with nothing ticked
 - a value no remaining row carries is `unavailable`, never dropped
   (`T-unavailable-value-sorts-below-a-divider`)
@@ -4366,32 +4366,6 @@ outbound path works, which is what makes it hard to see.
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/core/data/source-view.ts`
-
-### T-everything-on-is-no-filter
-
-Will, 2026-09-22: *"when all legend items are active then we can clear the
-filter chip selection and turn the filter chip off. Same outcome but a
-different visual representation."*
-
-Every value selected and no filter at all return the same rows, so only one of
-them should LOOK like a filter. The binding used to tick all four values, which
-left a chip reading "3 Plan Enterprise…" while nothing was being excluded.
-
-Clearing takes two steps, and `current = false` alone is not enough: the chip
-keeps its badge and value label, so it reads as set while claiming to be off.
-`values = []` unticks every row and re-derives the face; the `current = false`
-that follows is what makes it read as unset.
-
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/bind-selection.ts`
-- Site: `test/unit/bind-selection.test.mjs`
-- Site: `test/unit/field-selection.test.mjs`
-- Site: `test/unit/filter-state.test.mjs`
-- Site: `src/core/data/filter-state.ts`
-- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
-- Site: `src/core/data/source-counts.ts`
-- Site: `test/unit/a-raise-narrows-at-once.test.mjs`
-- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-two-bars-over-one-scope
 
@@ -7123,9 +7097,22 @@ page, as Will asked: the Records View holds Health.
 **ALL is said on purpose, as `none` is: `{ picked: [], all: true }`** — Will,
 TODO 489 (B): Customer and Region open with every value ticked and the chip ON,
 reading All. A field's `"start": "all"` opens it so; a reader's Select all on
-says it too. It filters nothing, so it compiles to no clause, a server field
-asks its store nothing, and the plain `where` form leaves it out — the start
-puts it back.
+says it too.
+
+**ALL IS EVERY VALUE PICKED, NOT NO FILTER** — Will, 2026-11-13: *"Select All
+should mean that all values are selected. It's semantically different from no
+filter applied."* It compiles to ONE clause, "has a value": `[field, 'notin',
+[null, …, '']]`, short however many values a field has and live by itself, so a
+row with no value (an empty cell, an empty list) does not pass, and its chip is
+counted as a picked chip is. The plain `where` form keeps it as `{ all: true }`,
+never as its clause, so a View or a page saved on All stays on All. The Query
+graph draws no Condition for it (`answerTree` gives none).
+
+**Every value ticked by hand is the same answer** — Will, 2026-11-13: it
+filters too (`in` those values), so a row with no value drops. It retired the
+rule that every value ticked is no filter (2026-09-22). To see the rows with no
+value, the reader switches the chip off. A legend is not a chip: with every row
+on, it picks nothing, so it narrows nothing.
 
 It is a FLAG, not a list of every value. A list goes stale: a value added later
 started unticked, and in a chained set Region kept, ticked and greyed, the
@@ -7147,6 +7134,8 @@ The face says "All" for the flag only: a list ticked by hand says its values.
 - Site: `test/unit/a-list-can-start-with-every-value.test.mjs`
 - Site: `test/e2e/reforged-menu.spec.ts`
 - Site: `src/components/sherpa-quick-filter/chip-answer.ts`
+- Site: `test/e2e/reforged-select-all-is-every-value.spec.ts`
+- Site: `src/core/data/bind-selection.ts`
 
 ### T-a-preset-is-its-own-part
 

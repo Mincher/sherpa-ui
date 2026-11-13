@@ -2457,8 +2457,7 @@ chip beside it. Measured: the Status chip went ON, then off again the moment an
 unrelated legend moved, with its own values untouched.
 
 `setChipValues(id, picks)` sets one chip and leaves the rest alone. `undefined`
-leaves it untouched; an empty list clears it — see
-T-everything-on-is-no-filter.
+leaves it untouched; an empty list clears it.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 

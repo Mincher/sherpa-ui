@@ -133,7 +133,7 @@ export class ChipAnswer {
   }
 
   /** Picks, and OFF where there are none or the answer is suspended. Nothing
-   *  ticked filters nothing: Will, TODO 550. TRAP T-everything-on-is-no-filter */
+   *  ticked filters nothing: Will, TODO 550. */
   #setPicks(picks: readonly string[], off = false, all = false): void {
     this.setValues(picks);
     // ALL ticks every value its menu has, and every one that comes. TRAP T-all-is-an-answer

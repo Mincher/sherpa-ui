@@ -578,6 +578,7 @@ export class DataSource extends EventTarget {
    * TRAP T-a-fetching-list-opens-on-its-first-value
    */
   async openOnFirst(): Promise<void> {
+    let took = false;
     for (const scope of this.query.scopes) {
       if (scope !== VIEW && !this.remote) continue;
       const before: Filter[] = [];
@@ -590,6 +591,7 @@ export class DataSource extends EventTarget {
         // ALL: every value it has, ticked, whichever come — no filter, and nothing to read. TRAP T-all-is-an-answer
         if (!answer && facts.select !== 'single' && facts.start === 'all') {
           this.query.startWith(scope, field, { picked: [], all: true });
+          took = true;
           continue;
         }
         if (!answer && facts.select !== 'single') {
@@ -608,6 +610,7 @@ export class DataSource extends EventTarget {
           if (first == null) continue;
           const start = { picked: [first] };
           this.query.startWith(scope, field, start);
+          took = true;
           const clause = readingClause(known, start);
           if (clause) before.push(clause);
           continue;
@@ -616,6 +619,8 @@ export class DataSource extends EventTarget {
         if (clause) before.push(clause);
       }
     }
+    // A start is taken in place, which tells nothing: the first load reads the Query as it opens.
+    if (took) this.#compileNow();
   }
 
   /** A tiered field's child values, from the rows the walk reads — one read for

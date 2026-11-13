@@ -172,7 +172,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
       };
       if (reading && !suspended && reading.picked?.length && facts.plainPicks(f, reading)) {
         const type = fieldFacts.type, keys = new Set(reading.picked.map(valueKey)), parentOf = step.tier?.parentOf ?? new Map();
-        // ONE value, no list beside it; a path is its two fields; a parent not picked counts its picked children. TRAP T-everything-on-is-no-filter · TRAP T-a-parent-pick-is-the-parent
+        // ONE value, no list beside it; a path is its two fields; a parent not picked counts its picked children. TRAP T-a-parent-pick-is-the-parent
         const kids = Map.groupBy(reading.picked.filter((v) => parentOf.has(valueKey(v))), (v) => parentOf.get(valueKey(v))!);
         step.each = [...reading.picked.map((v) => [valueKey(v), [v]] as const), ...[...kids].filter(([p]) => !keys.has(p))].flatMap(([key, picked]) => {
           const own = readingClause({ field: f, ...(type ? { type } : {}), ...step.tier }, { picked: [...picked], range: false });

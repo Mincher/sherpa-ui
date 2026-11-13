@@ -98,11 +98,11 @@ test('SUSPENDED keeps the values and stops filtering', async () => {
   assert.equal(source.rows.length, 4, 'and nothing is applied');
 });
 
-test('EVERYTHING selected is the same rows as no filter', async () => {
+test('EVERYTHING selected is an answer: it filters, and every row with a plan passes (Will, 2026-11-13)', async () => {
   const source = await ready();
   source.query.ask({ scope: 'view', field: 'plan', reading: { picked: PLANS } });
   await source.load();
-  assert.equal(source.selection('plan').fieldState, 'off', 'TRAP T-everything-on-is-no-filter');
+  assert.equal(source.selection('plan').fieldState, 'active');
   assert.equal(source.rows.length, 4);
 });
 

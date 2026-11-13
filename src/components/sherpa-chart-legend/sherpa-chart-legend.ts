@@ -226,7 +226,7 @@ export class SherpaChartLegend extends SherpaElement {
   }
 
   /** The labels ON — the door a provider reads and draws a pick through.
-   *  Everything on is no pick. TRAP T-everything-on-is-no-filter */
+   *  Every row on is no pick: a legend with every row on narrows nothing. */
   get picked(): string[] {
     if (this.#hostPick && !this.#everyLabel().length) return [...this.#hostPick];
     const on = this.#everyLabel().filter((l) => !this.#off.has(l));

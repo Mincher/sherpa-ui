@@ -84,7 +84,7 @@ export function filterFace(state: FilterState): FilterFace {
   const said = state.type === 'date' ? picks.map((day) => formatDate(day)) : picks;
 
   const typedSaid = typed ? sayTyped(lead ?? { op, text }, state.type === 'date') : '';
-  // ALL reads as All: on, and no filter. Will, TODO 489 · TRAP T-all-is-an-answer
+  // ALL reads as All: every value, on. Will, TODO 489 · TRAP T-all-is-an-answer
   const every = !!state.all;
   const value = typed ? typedSaid : every ? ALL : span || (said.length > 1 ? `${said[0]}…` : (said[0] ?? ''));
   const spelled = typed ? typedSaid : every ? ALL : span || said.join(', ');

@@ -43,10 +43,11 @@ test('one pick is ACTIVE; the rest stay unpicked and listed', () => {
   assert.equal(s.values.length, 3);
 });
 
-test('EVERYTHING picked is OFF — the same rows as no filter', () => {
+test('EVERYTHING picked is ACTIVE: it filters, as Select all does (Will, 2026-11-13)', () => {
   const s = fieldState(facts, { picked: OWNERS });
-  assert.equal(s.fieldState, 'off', 'TRAP T-everything-on-is-no-filter');
-  assert.equal(stateClause(s), undefined);
+  assert.equal(s.fieldState, 'active');
+  // Those values: a row with none of them, an empty one too, does not pass.
+  assert.equal(stateClause(s)[1], 'in');
 });
 
 test('a value no remaining row carries is UNAVAILABLE, not dropped', () => {
@@ -216,6 +217,6 @@ test('a pick outside the declared values is still a pick: the query and the coun
   const facts = { field: 'f', values: ['A', 'B', 'C'] };
   assert.deepEqual(clause(facts, { picked: ['Z'] }), ['f', 'eq', 'Z']);
   assert.deepEqual(clause(facts, { picked: ['A', 'Z'] }), ['f', 'in', ['A', 'Z']]);
-  // Every declared value ticked is still no filter.
-  assert.equal(clause(facts, { picked: ['A', 'B', 'C'] }) ?? null, null);
+  // Every declared value ticked is those values: it filters, as Select all does (Will, 2026-11-13).
+  assert.deepEqual(clause(facts, { picked: ['A', 'B', 'C'] }), ['f', 'in', ['A', 'B', 'C']]);
 });

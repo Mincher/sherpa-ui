@@ -83,11 +83,9 @@ test('the sort language is named, not the machine\'s: the same rows, the same or
   } finally { setCollation(); }
 });
 
-test('literal: every value ticked is still a filter, for a rule; for a reader it is none', () => {
+test('every value ticked is a filter, for a rule and for a reader alike (Will, 2026-11-13)', () => {
   const query = { v: 1, scopes: { view: { holds: ['plan'], readings: { plan: { picked: ['a', 'b'] } } } } };
-  const values = ['a', 'b'];
-  assert.equal(compile(query, { field: () => ({ values }) }).filter, undefined);
-  assert.ok(compile(query, { field: () => ({ values, literal: true }) }).filter);
+  assert.deepEqual(compile(query, { field: () => ({ values: ['a', 'b'] }) }).filter, ['plan', 'in', ['a', 'b']]);
 });
 
 test('replay: one Query, one set of rows, one clock, byte-equal rows, from a Query sent as JSON', async () => {

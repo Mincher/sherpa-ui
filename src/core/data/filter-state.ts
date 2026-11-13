@@ -139,9 +139,6 @@ export function isRanged(type: FieldType | undefined): boolean {
 
 /** What a caller knows about a field before anything is chosen. */
 export interface FieldFacts {
-  /** Every value ticked still filters: a rule says what it says, and a new value does
-   *  not slip through. For a reader, all ticked is no filter. TODO 614 */
-  literal?: boolean;
   field: string;
   label?: string;
   /** Its KIND, which decides how picks become a clause: two picks on a number
@@ -304,6 +301,9 @@ export function presetTouches(tree: Condition, value: string): boolean {
   return matchesFilter({ value }, conditionClause(tree, { field: 'value' }));
 }
 
+/** ALL as a clause: the field holds a value, any value, whichever come. Will, 2026-11-13 · TRAP T-all-is-an-answer */
+const HAS_A_VALUE: Condition = { op: 'notin', value: [null, ''] };
+
 /**
  * Work out one field's whole state — the ONLY place that decides whether a
  * field is filtering, which values are picked, and which are out of reach.
@@ -333,7 +333,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      row holds. TRAP T-a-value-can-be-an-object */
   const raws = [...declared];
   const all = raws.map(valueKey);
-  // ALL ticks every value it has, whichever come. TRAP T-all-is-an-answer
+  // ALL ticks every value it has, whichever come, and filters: a row with no value does not pass. TRAP T-all-is-an-answer
   const every = !!reading.all && type !== 'date' && reading.mode !== 'advanced' && (OP_TAKES[reading.op ?? DEFAULT_OP] ?? 'list') === 'list';
   /* The QUERY's comparison — a chip's option values may be spelled differently
      from the data. TRAP T-one-comparison-rule-for-query-and-ui */
@@ -365,18 +365,14 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   /** A pick the parent does not already say. */
   const own = (v: ValueEntry): boolean => v.state === 'picked' && !(v.parent && pickedKeys.has(v.parent));
 
-  /* A TYPED condition filters with nothing ticked; EVERYTHING ticked filters
-     nothing — counted over PARENTS on a tiered field. TRAP T-everything-on-is-no-filter */
+  /* A TYPED condition filters with nothing ticked; EVERY value ticked filters too: a row with no value does not pass
+     (Will, 2026-11-13). Counted over PARENTS on a tiered field. TRAP T-all-is-an-answer */
   const takesText = (OP_TAKES[op] ?? 'list') === 'text';
   const tops = parentOf ? values.filter((v) => !v.parent) : values;
   const chosen = tops.filter((v) => v.state === 'picked').length;
   const paths = parentOf ? values.filter((v) => v.parent && own(v)).length : 0;
   // Nothing ticked filters nothing. Will, TODO 550
-  const answered = takesText
-    ? text !== ''
-    : !facts.values || type === 'date'
-      ? chosen + paths > 0
-      : (chosen > 0 && (facts.literal || chosen < tops.length)) || paths > 0;
+  const answered = takesText ? text !== '' : chosen + paths > 0;
 
   /* The TREE answers for itself: a leaf is answered when its op has what it
      needs — text typed, or a value picked — so a half-built row narrows
@@ -396,7 +392,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
       : takesText ? { op, value: text }
         : picksLeaf(range && ends.length >= 2 ? 'between' : op, ends);
   // Typed here, whatever it came from: a Simple text, or a tree kept before. TRAP T-a-value-is-typed-once
-  const answer = said && typedTree(said, type);
+  const answer = every ? HAS_A_VALUE : said && typedTree(said, type);
   const advanced = mode === 'advanced' || op !== DEFAULT_OP;
   const held = Object.values(reading.byPreset ?? {}).map((p) => typedTree(p.tree, type));
 

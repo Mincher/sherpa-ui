@@ -76,17 +76,15 @@ test('a control change WRITES the field', () => {
     'a filter names what it KEEPS');
 });
 
-test('EVERYTHING picked is no constraint, not every value ticked', () => {
+test('EVERYTHING picked is an answer: every value ticked filters, as Select all does (Will, 2026-11-13)', () => {
   const source = sourceWith();
   const el = controlStub();
   bind(el, source, 'status', STATES);
 
   el.toggle('churned');
   el.toggle('churned');
-  /* Every value ticked says the same thing as nothing ticked, in a way that
-     LOOKS like a filter. TRAP T-everything-on-is-no-filter */
-  assert.deepEqual(picked(source, 'status'), []);
-  assert.equal(source.selection('status').fieldState, 'off');
+  assert.deepEqual([...picked(source, 'status')].sort(), [...STATES].sort());
+  assert.equal(source.selection('status').fieldState, 'active');
 });
 
 test('TWO CONTROLS over one field, and neither hears about the other', () => {
