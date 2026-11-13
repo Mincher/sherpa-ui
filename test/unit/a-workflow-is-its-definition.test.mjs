@@ -80,7 +80,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   // Sort and Group are kinds of their own, in Organise; Collection and its Count are gone, a Count a type of Math (plan 944).
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort.category, NODE_KINDS.group.category], [undefined, undefined, 'Organise', 'Organise']);
   assert.equal(NODE_KINDS.math.types.count.label, 'Count');
-  assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'check', 'preset', 'saved', 'arrange', 'presentation', 'component', 'field']);
+  assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'check', 'preset', 'saved', 'organise', 'presentation', 'component', 'field']);
   // One meaning per word: a Source is where rows come from, in both, and the Store kind is gone (TODO 808); a Condition
   // is one test, in both (plan 783 D4).
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');

@@ -32,7 +32,7 @@
  * - connectionRequest — The command a new connection asks: a condition into a field of a scope, moved or retargeted.
  */
 import { SAVED_PRESET, type PageDefinition } from './page-definition.js';
-import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest } from './query.js';
+import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
 import { readingsOf, treeReading } from './where.js';
@@ -64,7 +64,7 @@ export const QUERY_NODE = {
   presetWhen: (scope: string, preset: string, field: string): string => `when-preset-${scope}-${preset}-${field}`,
   saved: (id: string): string => `saved-${id}`,
   savedWhen: (id: string, field: string): string => `when-saved-${id}-${field}`,
-  arrange: (scope: string): string => `arrange-${scope}`,
+  organise: (scope: string): string => `organise-${scope}`,
   component: (id: string): string => `component-${id}`,
 } as const;
 
@@ -125,7 +125,7 @@ export function traceQuerySteps(applied: Query, { walk, total, statuses }: LoadS
     }
   }
   const arranged = arrangementOf(applied).scope;
-  if (arranged) traceStep(QUERY_NODE.arrange(arranged), { parent, state: 'done', ...(total !== undefined ? { rows: total } : {}) });
+  if (arranged) traceStep(QUERY_NODE.organise(arranged), { parent, state: 'done', ...(total !== undefined ? { rows: total } : {}) });
 }
 
 /** One column's width, in plane px: a node and the room for its connections. */
@@ -280,19 +280,34 @@ export function editedCondition(op: string, given: string | readonly string[], t
   return { op: at, value: one(text.trim()) };
 }
 
+/** What a presentation's row says where no slot keeps it: the View's is shared. */
+const SHARED = 'It shares the View: no slot keeps its own.';
+
 /** A presentation's rows: editable where it has a slot to keep them, its kind the definition's by default. */
-function presentationRows(
-  presented: Presentation, kind: string | undefined,
-  keys: readonly { value: string; label: string }[], slot: boolean,
-): GraphRow[] {
+function presentationRows(presented: Presentation, kind: string | undefined, slot: boolean): GraphRow[] {
   const kinds = rowChoices({ control: 'presentation' })!.map((c) => (c.value || !kind ? c : { ...c, label: `Default (${kind})` }));
   const sorts = [{ value: '', label: 'None' }, ...rowChoices({ control: 'direction' })!];
   return rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).map((row): GraphRow => (row.name === ROWS.name ? row : slot
-    ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : row.name === 'sort' ? sorts : keys, value: String(row.value ?? '') }
-    : {
-      ...row, value: String((row.name === 'kind' ? kind : row.value) ?? ''), hint: 'It shares the View: no slot keeps its own.',
-      choices: row.name === 'kind' ? kinds : row.name === 'sort' ? sorts : keys,
-    }));
+    ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : sorts, value: String(row.value ?? '') }
+    : { ...row, value: String((row.name === 'kind' ? kind : row.value) ?? ''), hint: SHARED, choices: row.name === 'kind' ? kinds : sorts }));
+}
+
+/** The axes an Organise node sets, by row, and the presentation key each keeps. */
+const AXES: Readonly<Record<string, keyof Presentation>> = { primary: 'primary', secondary: 'secondary', segments: 'group' };
+
+/** A scope's Organise rows (plan 960 U4.2): its sort, group and search, editable as their chips are; its axes, its slot's
+ *  presentation, editable where it has a slot to keep them. */
+function organiseRows(scope: ScopeQuery, keys: readonly { value: string; label: string }[], slot: boolean): GraphRow[] {
+  const first = scope.sort?.[0];
+  const presented = slot ? scope.presentation ?? {} : {};
+  const values: Record<string, unknown> = { sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '' };
+  for (const [row, key] of Object.entries(AXES)) values[row] = presented[key] ?? '';
+  return rowsOf('organise', values).map((row): GraphRow => {
+    if (row.name === ROWS.name) return row;
+    if (row.name === 'search') return { ...row, editable: true };
+    if (row.name in AXES && !slot) return { ...row, choices: keys, hint: SHARED };
+    return { ...row, editable: true, choices: row.name === 'direction' ? rowChoices(row)! : keys };
+  });
 }
 
 /** A row of the Query the definition owns: its list, read only, and no socket — no connection reaches it. */
@@ -428,7 +443,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     add(0, kept.id, 'source', rowsOf('source', { store: kept.store }).map((row) => (row.name === ROWS.name ? row
       : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(source?.store) }] });
   }
-  const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
+  // A worked-out status field: one with `when`. A stored field may carry looks per value (`statuses`) and is no status node.
+  const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when);
   const everyField = known.map((f) => ({ value: f, label: label(f) }));
   const readOnly = (hint: string) => (row: GraphRow): GraphRow => ({ ...row, editable: false, hint });
   const ctxOf = (field: string, fields: TreeFacts['fields']): TreeFacts => ({ field, type: typeOf, fields, values: (f) => facts.values?.(f), label });
@@ -540,33 +556,30 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       }, { scope: id, field, superseded: 'true' }, (row) => ({ ...row, editable: false, hint: SUPERSEDED }));
       connections.push({ from, to: `${node}/${field}` });
     }
-    // The scope's rows on their way out: arranged, presented, then shown.
+    // The scope's rows on their way out: organised, presented, then shown.
     let out = node;
-    if (arranging(scope)) {
-      const first = scope.sort?.[0];
-      // Sort, Group and Search change as their chips do.
-      out = add(7, QUERY_NODE.arrange(id), 'arrange', rowsOf('arrange', {
-        sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '',
-      }).map((row) => (row.name === ROWS.name ? row : row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? rowChoices(row)! : keys })), {
-        ref: { scope: id },
-      });
+    // A slot keeps its card's presentation: a card's scope, not the View.
+    const slotted = !top && (shows.length === 1 || shows.some((c) => c.id === id) || (!shows.length && !!scope.presentation));
+    if (arranging(scope) || slotted) {
+      // Sort, Group and Search change as their chips do; the axes as a card's do.
+      out = add(7, QUERY_NODE.organise(id), 'organise', organiseRows(scope, keys, slotted), { ref: { scope: id } });
       connections.push({ from: sent(node), to: out });
     }
     // Each component its own Presentation: its SLOT's — its card's scope, kept in the
-    // Query — and changed as Show as, Group and Sort change it. On the View it has no slot.
+    // Query — and changed as Show as and Segment order change it. On the View it has no slot.
     for (const c of shows) {
       const slot = !top && (c.id === id || shows.length === 1);
       const presented = slot ? scope.presentation : undefined;
       let to = out;
       if (presented || c.kind) {
-        to = add(8, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, keys, slot), slot ? { ref: { scope: id } } : {});
+        to = add(8, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, slot), slot ? { ref: { scope: id } } : {});
         connections.push({ from: sent(out), to });
       }
       connections.push({ from: sent(to), to: add(9, QUERY_NODE.component(c.id), 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
     }
     // A slot's presentation with no component named to show it is still drawn.
     if (scope.presentation && !shows.length) {
-      connections.push({ from: sent(out), to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
+      connections.push({ from: sent(out), to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, !top), { ref: { scope: id } }) });
     }
   }
   // The page's own saved filters on no bar: what each would add, and no connection.
@@ -677,7 +690,10 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
     });
     return { scope, field, reading: treeReading(next, type as FieldType | undefined) };
   }
-  if (node.kind === 'arrange') {
+  if (node.kind === 'organise') {
+    // An axis is the slot's presentation, as a card's chip sets it.
+    const axis = AXES[row.name];
+    if (axis) return { scope, presentation: { [axis]: value ? String(value) : undefined } };
     // A row cleared has no value: it asks for none, never the word "undefined".
     const pick = (name: string): string => String((row.name === name ? value : was[name]) ?? '');
     if (row.name === 'group') return { scope, group: pick('group') || null };
@@ -712,7 +728,7 @@ export type PlaceAnswer = { request: QueryRequest } | { refused: string } | { ke
 
 /** The kinds a Query draws and never places: a Field's tests are its chip's, and a status field the app's. Its node panel
  *  offers neither; `placeRequest` still says why, to one that asks. Will, 2026-11-10 */
-export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'check'];
+export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'check', 'organise'];
 
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the

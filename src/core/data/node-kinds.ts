@@ -527,26 +527,29 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Saved filter', icon: 'floppy-disk', description: 'Apply a filter the reader saved', output: 'boolean',
     rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'SavedFilter', graphs: ['query'], category: 'Saved filters',
   },
-  arrange: {
-    heading: 'Arrange', icon: 'sort-ascending', description: 'Order, group and search rows', input: 'any',
+  // ONE node for how rows are organised (Will, plan 960 U4.2): sorting, grouping, search, and the axes a chart reads —
+  // its Primary (X), its Secondary (Y) and its Segments' parts. An empty row does nothing.
+  organise: {
+    heading: 'Organise', icon: 'sort-ascending', description: 'Sort, group, search rows and set axes', input: 'any',
     rows: [
       ROWS,
       { name: 'sort', label: 'Sort', control: 'field' },
       { name: 'direction', label: 'Direction', control: 'direction' },
       { name: 'group', label: 'Group', control: 'field' },
       { name: 'search', label: 'Search', control: 'text' },
+      { name: 'primary', label: 'Primary', control: 'field' },
+      { name: 'secondary', label: 'Secondary', control: 'field' },
+      { name: 'segments', label: 'Segments', control: 'field' },
     ],
-    model: 'Arrangement', graphs: ['query'],
+    model: 'Arrangement', graphs: ['query'], category: 'Organise',
   },
+  // How rows are shown: a chart's kind, and its segments' order. Its axes are the Organise node's.
   presentation: {
     heading: 'Presentation', icon: 'insights', description: 'Choose how rows are shown', input: 'any',
     rows: [
       ROWS,
       { name: 'kind', label: 'Show as', control: 'presentation' },
-      { name: 'primary', label: 'Primary', control: 'field' },
-      { name: 'secondary', label: 'Secondary', control: 'field' },
-      { name: 'group', label: 'Group', control: 'field' },
-      { name: 'sort', label: 'Sort', control: 'direction' },
+      { name: 'sort', label: 'Segment order', control: 'direction' },
     ],
     model: 'Presentation', graphs: ['query'],
   },

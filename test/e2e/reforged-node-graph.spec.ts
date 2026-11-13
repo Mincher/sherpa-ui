@@ -197,14 +197,14 @@ test('in a SLOT, the editor\'s Sort and Group are its chart\'s, as a chip\'s are
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
     // A chart's summary in its card's scope: the card is its SLOT.
     bindSource(source, Object.assign(document.createElement('div'), { populate() {} }), { scope: 'card', rows: 'all', readonly: true });
-    // Its rows came arranged, so its Arrange node is drawn.
+    // Its rows came arranged, so its Organise node is drawn.
     await source.query.setQuery({ v: 1, scopes: { card: { holds: [], sort: [{ field: 'region', direction: 'asc' }] } } });
     (window as unknown as { source: unknown }).source = source;
     const definition = { v: 1 as const, id: 'cards', source: { store: 'plans', fields: { plan: { label: 'Plan' }, region: { label: 'Region' } } } };
     bindQueryEditor(canvas, source, { definition });
     await window.__settled();
   });
-  const arrange = page.locator('#root sherpa-node[data-heading="Arrange"]');
+  const arrange = page.locator('#root sherpa-node[data-heading="Organise"]');
   await arrange.locator('sherpa-node-row:has(sherpa-input-text[name="group"]) select').selectOption('plan');
   await page.evaluate(() => window.__settled());
   await arrange.locator('sherpa-node-row:has(sherpa-input-text[name="direction"]) select').selectOption('desc');

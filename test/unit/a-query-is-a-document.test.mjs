@@ -113,7 +113,7 @@ test('a new node is placed through the Query: a Field holds the scope\'s next fi
 test('a row cleared on the Arrange node asks for none, never the word "undefined"', async () => {
   const { read, write, q } = await opened();
   q.ask({ scope: 'view', search: 'Pr' });
-  write(editWorkflow(read(), { node: 'arrange-view', row: 'search', value: '' }, NODE_KINDS));
+  write(editWorkflow(read(), { node: 'organise-view', row: 'search', value: '' }, NODE_KINDS));
   assert.equal(q.draft.scopes.view.search ?? '', '');
-  assert.ok(!read().nodes.some((n) => n.id === 'arrange-view'), 'nothing is arranged now');
+  assert.ok(!read().nodes.some((n) => n.id === 'organise-view'), 'nothing is arranged now');
 });

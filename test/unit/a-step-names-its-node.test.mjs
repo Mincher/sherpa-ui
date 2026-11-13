@@ -61,7 +61,7 @@ test('the node ↔ step map: S3\'s spans light the Source, by its load and its s
     { v: 1, id: 'records', source: { store: 'customers', scopes: { view: { presets: [{ id: 'mine', label: 'Mine', where: { region: { in: ['EMEA'] } } }] } } } },
   );
   const ids = graph.nodes.map((n) => n.id);
-  for (const id of [QUERY_NODE.source, QUERY_NODE.scope('view'), QUERY_NODE.condition('view', 'region'), QUERY_NODE.preset('view', 'mine'), QUERY_NODE.arrange('view')]) {
+  for (const id of [QUERY_NODE.source, QUERY_NODE.scope('view'), QUERY_NODE.condition('view', 'region'), QUERY_NODE.preset('view', 'mine'), QUERY_NODE.organise('view')]) {
     assert.ok(ids.includes(id), `${id} is drawn`);
   }
 });
@@ -88,7 +88,7 @@ test('a load\'s steps, from the walk\'s own counts: each scope and condition und
     ['scope-view', 'done', undefined, true, true],
     ['when-view-region', 'done', 2, true, true],
     ['when-view-plan', 'skipped', 1, true, true],
-    ['arrange-view', 'done', 2, true, true],
+    ['organise-view', 'done', 2, true, true],
   ]);
   source.close();
 });

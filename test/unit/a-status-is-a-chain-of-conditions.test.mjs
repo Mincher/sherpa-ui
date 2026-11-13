@@ -115,3 +115,9 @@ test('planted faults: a `when` that is no condition, a No into nothing, a connec
   const row = { nodes: g.nodes, connections: [...g.connections, { from: 'check-status-health.Watch/no', to: 'status-health/Nope' }] };
   assert.ok(queryGraphFaults(row).some((f) => /into "status-health\/Nope" ends at a row/.test(f)));
 });
+
+test('only a worked-out status field is drawn as a status node: a stored field with looks per value is not (sherpa-ui-a9, plan 960 U2)', () => {
+  const looks = { plan: { statuses: { gold: 'success', basic: 'info' } }, health: { when: {}, statuses: { ok: 'success' } } };
+  const drawn = queryGraph({ v: 1, scopes: {} }, page, { domains: looks });
+  assert.deepEqual(drawn.nodes.filter((n) => n.kind === 'status').map((n) => n.ref?.field), ['health']);
+});

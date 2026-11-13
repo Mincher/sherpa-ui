@@ -13,18 +13,25 @@ always made from it. Where the definition is not a graph (a Query, a View), the 
 | Step | Builds | Proves | After |
 |---|---|---|---|
 | **U4.1** The door | `lens.ts`: `GraphLens`, `registerLens`, `lensOf`. Every entity type's lens is the identity by default: `toGraph` is `graphWorkflow`, `fromGraph` is `graphOfWorkflow` checked by `entityFaults`. A registered lens wins | unit: an entity goes to a graph and back the same; a fault refuses in words; a registered lens wins and is taken back | — |
-| **U4.2** Organise nodes | ONE set of Organise nodes in every graph: **Sort**, **Group**, **Search** and **Axes**. The Query graph's Arrange node goes; each scope's arrangement is a chain of them, edited by the requests a chip sends | unit and e2e: a page's sort, group and search drawn as nodes, edited there, read back the same; a workflow sorts, groups, searches and names its axes; no Arrange anywhere | U4.1 |
+| **U4.2** The Organise node | ONE **Organise** node in every graph (Will, below): rows for sorting (Sort, Direction), grouping (Group), Search, and the axes (Primary, Secondary, Segments). The workflow's Sort and Group kinds and the Query graph's Arrange go into it, and the Query's Presentation node keeps only how the rows are shown (a chart's kind, its segments' order, Secondary off). In a Query graph it is one per scope, edited by the requests a chip sends (arrangement and presentation alike); in a workflow it arranges the rows Simulate sends on and names the axes a chart reads | unit and e2e: a page's sort, group, search and axes drawn on its Organise node, edited there, read back the same; a workflow sorts, groups and searches its rows by it; no Sort, Group or Arrange kind left | U4.1 |
 | **U4.3** The Query lens | The data layer registers the `query` lens: `toGraph` is `queryDefinition`; `fromGraph` runs the reconciled requests on a copy of the Query, then `pageWithQuery`, now WITH sort, group and search; a View's `query` is written back the same way. The editor's `GraphDocument` for a Query becomes a thin use of it | e2e: a page's filters edited in the graph and saved come back the same from the JSON; a View saved from the graph keeps its sort, group and search | U4.2 |
 | **U4.4** The Filter type | `preset-filter` → `filter` (LEXICON §13), one change with Demos' presets. D6: a Filter keeps a Where where a Where can say it, else its graph. A Filter is a Custom Node used in a View definition, as in its filter toolbar (Will). An entity may be temporary: the tab's or the session's, on the shelf only when saved | unit: the four shapes (a View's `query`, a savedFilter, a preset, a Preset Filter) are one type; e2e: a Filter placed in a View's toolbar | **U2** (it renames inside entity-types.ts) |
 | **U4.5** The MCP through the door | One pair of tools by type: `definition_graph(type, definition)` and `edit_definition_graph(type, definition, edits)`. `workflow_graph`, `edit_workflow`, `query_graph` and `edit_query_graph` go, in the same change (no aliases) | the MCP tiers' tests on each type | U4.3 |
 
+## Will's decisions
+
+- **U4.2, 2026-11-13:** "Decision: A. Perhaps just a single 'Organise' node that lets you set Axes, Grouping, and
+  Sorting parameters. Saves on bloating the graph with lots of smaller nodes." So: axes in a workflow too (A), and ONE
+  Organise node, not four. Its rows: Sort and Direction, Group, Search, and Primary, Secondary and Segments (a chart's
+  X axis, Y axis and each segment's parts: the Query's `presentation.primary`, `secondary` and `group`). Each row picks
+  a field of the rows that reach it, or takes a Field joined to it. A row left empty does nothing.
+
 ## The picks (Will: "go with your picks"; say if one is wrong)
 
-- **Axes in a workflow** (U4.2): an Axes node names the fields a chart reads, x (a category or a date) and y (a measure
-  and its sum, count or mean), and sends its rows on with them. In a page's Query it reads and writes the scope's axes
-  (defs.v1 `axes`). Simulate passes the rows through. My pick, as a system; the other way is no Axes node in a workflow.
-- **Search** is a node of its own (one text, the fields it looks in), as Sort and Group are, not a row of Arrange.
+- **One Organise per scope** in a Query graph, always drawn, as Arrange is today: its rows are what the reader sets.
 - **The MCP's old tools go** in U4.5: one statement per act, by type.
+- **U4.2 lands in two parts:** the Query graph first (Arrange and the Presentation's axes into Organise), then the
+  workflow (Sort and Group into Organise, with Search and the axes in Simulate). Each with its Demos side.
 
 ## Coordination
 

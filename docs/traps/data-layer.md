@@ -6657,7 +6657,7 @@ connections between their sockets — checked by `schemas/workflow.v3.json` and 
 555; plan-78-query-editor.md. `queryGraph(query, definition, facts)` draws the
 Source and each status field its store works out, each scope with its held
 fields as rows, a Condition into each answered field, each preset and saved
-filter, each superseded answer, the scope's Arrange, its Presentation and its
+filter, each superseded answer, the scope's Organise (its sort, group, search and axes), its Presentation and its
 components — from the LIVE Query, each time it changes. It keeps no Query of its
 own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 

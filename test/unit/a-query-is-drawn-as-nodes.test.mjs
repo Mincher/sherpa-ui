@@ -58,19 +58,19 @@ const own = (n) => n.rows.filter((r) => r.name !== ROWS.name && r.name !== 'true
 const values = (id) => Object.fromEntries(own(node(id)).map((r) => [r.name, r.value]));
 const row = (id, name) => node(id).rows.find((r) => r.name === name);
 
-test('the Records page\'s Query: its Source, each scope, its conditions, Arrange, Presentation, each component', () => {
+test('the Records page\'s Query: its Source, each scope, its conditions, Organise, Presentation, each component', () => {
   assert.deepEqual(graph.nodes.map((n) => `${n.kind}:${n.id}`), [
     'source:source',
     'scope:scope-view', 'field:field-view-region', 'condition:when-view-region', 'presentation:show-r-donut', 'component:component-r-donut', 'component:component-r-line',
-    'scope:scope-data', 'field:field-data-status', 'condition:when-data-status', 'arrange:arrange-data', 'component:component-grid',
-    'scope:scope-r-bar', 'presentation:show-r-bar', 'component:component-r-bar',
+    'scope:scope-data', 'field:field-data-status', 'condition:when-data-status', 'organise:organise-data', 'component:component-grid',
+    'scope:scope-r-bar', 'organise:organise-r-bar', 'presentation:show-r-bar', 'component:component-r-bar',
   ]);
   // The rows from each Rows row into the next header; each Field into its test, and the test's True row into its row (plan 944).
   assert.deepEqual(graph.connections.map((r) => `${r.from} → ${r.to}`), [
     'source/rows → scope-view', 'field-view-region/field → when-view-region', 'when-view-region/true → scope-view/region',
     'scope-view/rows → show-r-donut', 'show-r-donut/rows → component-r-donut', 'scope-view/rows → component-r-line',
-    'scope-view/rows → scope-data', 'field-data-status/field → when-data-status', 'when-data-status/true → scope-data/status', 'scope-data/rows → arrange-data', 'arrange-data/rows → component-grid',
-    'scope-view/rows → scope-r-bar', 'scope-r-bar/rows → show-r-bar', 'show-r-bar/rows → component-r-bar',
+    'scope-view/rows → scope-data', 'field-data-status/field → when-data-status', 'when-data-status/true → scope-data/status', 'scope-data/rows → organise-data', 'organise-data/rows → component-grid',
+    'scope-view/rows → scope-r-bar', 'scope-r-bar/rows → organise-r-bar', 'organise-r-bar/rows → show-r-bar', 'show-r-bar/rows → component-r-bar',
   ]);
 });
 
@@ -110,13 +110,16 @@ test('each node shows what the Query and the definition say', () => {
   assert.deepEqual(values('when-view-region'), { type: 'in', b: ['EMEA', 'APAC'] });
   assert.deepEqual(values('field-view-region'), { field: 'region' });
   assert.deepEqual([node('when-view-region').heading, node('field-view-region').heading, node('when-data-status').description], ['Region', 'Region', 'Off: kept, not applied.']);
-  assert.deepEqual(values('arrange-data'), { sort: 'name', direction: 'desc', group: 'plan', search: '' });
+  // Its sort, group and search, and its slot's axes (plan 960 U4.2: one Organise node).
+  assert.deepEqual(values('organise-data'), { sort: 'name', direction: 'desc', group: 'plan', search: '', primary: '', secondary: '', segments: '' });
   const tree = JSON.stringify({ op: 'in', value: ['EMEA', 'APAC'] });
-  assert.deepEqual([node('when-view-region').ref, node('field-view-region').ref, node('arrange-data').ref, node('scope-data').ref], [
+  assert.deepEqual([node('when-view-region').ref, node('field-view-region').ref, node('organise-data').ref, node('scope-data').ref], [
     { scope: 'view', field: 'region', path: '', tree }, { scope: 'view', field: 'region', tree }, { scope: 'data' }, { scope: 'data' },
   ]);
   // Its own slot: every row a key a select holds; '' is the definition's.
-  assert.deepEqual(values('show-r-bar'), { kind: 'donut', primary: '', secondary: 'status', group: '', sort: '' });
+  // A card's chart: its kind and its segments' order on the Presentation; its axes on its Organise node (plan 960 U4.2).
+  assert.deepEqual(values('show-r-bar'), { kind: 'donut', sort: '' });
+  assert.deepEqual(values('organise-r-bar'), { sort: '', direction: 'asc', group: '', search: '', primary: '', secondary: 'status', segments: '' });
   assert.equal(node('component-grid').heading, 'Customer records');
 });
 
@@ -135,7 +138,7 @@ test('every connection joins an output to an input that is there, and that accep
 test('it reads left to right, and nothing in one column overlaps', () => {
   const x = (id) => node(id).x;
   assert.ok(x('source') < x('field-view-region') && x('field-view-region') < x('when-view-region') && x('when-view-region') < x('scope-view'));
-  assert.ok(x('scope-view') < x('scope-data') && x('scope-data') < x('arrange-data') && x('arrange-data') < x('component-grid'));
+  assert.ok(x('scope-view') < x('scope-data') && x('scope-data') < x('organise-data') && x('organise-data') < x('component-grid'));
   const columns = Object.groupBy(graph.nodes, (n) => n.x);
   for (const column of Object.values(columns)) {
     const ys = column.map((n) => n.y);
@@ -154,15 +157,15 @@ test('the graph is DERIVED: the same Query draws the same graph, and a changed o
 test('what a reader may change: everything a door takes — read only only what nothing outside takes yet', () => {
   const editable = (id) => Object.fromEntries(own(node(id)).map((r) => [r.name, !!r.editable]));
   assert.deepEqual([editable('when-view-region'), editable('field-view-region')], [{ type: true, b: true }, { field: true }]);
-  assert.deepEqual(editable('arrange-data'), { sort: true, direction: true, group: true, search: true });
+  assert.deepEqual(editable('organise-data'), { sort: true, direction: true, group: true, search: true, primary: true, secondary: true, segments: true });
   assert.deepEqual(editable('scope-view')['#filters'], true);
   // The page size changes live; the rest of the Source is the definition's, and says so.
   assert.deepEqual(editable('source'), { store: false, pageSize: true, search: false, applyOn: false });
   assert.match(row('source', 'search').hint, /page definition/);
   assert.equal(row('source', 'rows').hint, undefined, 'its Rows row says nothing of the definition');
   // A slot's presentation changes; one on the View has no slot to keep it, and says so.
-  assert.deepEqual(Object.values(editable('show-r-bar')), [true, true, true, true, true]);
-  assert.deepEqual(Object.values(editable('show-r-donut')), [false, false, false, false, false]);
+  assert.deepEqual(Object.values(editable('show-r-bar')), [true, true]);
+  assert.deepEqual(Object.values(editable('show-r-donut')), [false, false]);
   assert.match(row('show-r-donut', 'kind').hint, /shares the View/);
   // A pick list's operators, by their words; a number field's are its type's. The Field lists the fields the scope may hold.
   assert.deepEqual(node('when-view-region').rows[0].choices.map((c) => c.value), ['in', 'notin', 'eq', 'ne']);
@@ -171,8 +174,8 @@ test('what a reader may change: everything a door takes — read only only what 
     { ...definition, source: { ...definition.source, fields: { seats: { type: 'number' } } } });
   assert.deepEqual(typed.nodes.find((n) => n.id === 'when-view-seats').rows[0].choices.map((c) => c.label),
     ['Equals', 'Does not equal', 'Greater than', 'At least', 'Less than', 'At most', 'Between', 'Not between']);
-  assert.deepEqual(row('arrange-data', 'direction').choices, [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]);
-  assert.equal(row('arrange-data', 'sort').choices[0].label, 'None');
+  assert.deepEqual(row('organise-data', 'direction').choices, [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]);
+  assert.equal(row('organise-data', 'sort').choices[0].label, 'None');
 });
 
 test('an edited condition reads back as the condition its rows say', () => {
@@ -339,7 +342,7 @@ test('SAVE round-trips a page definition: definition → graph → edit → defi
     source.query.ask(graphRequest({ node, row: node.rows.find((r) => r.name === name), value }, facts));
   }
   // A slot's presentation is a PURE edit: editQuery gives the Query after it, the one given untouched.
-  const show = nodeIn(g, 'show-data');
+  const show = nodeIn(g, 'organise-data');
   const shown = graphRequest({ node: show, row: show.rows.find((r) => r.name === 'primary'), value: 'plan' }, facts);
   assert.ok(isPureEdit(shown));
   const before = structuredClone(source.query.draft);
