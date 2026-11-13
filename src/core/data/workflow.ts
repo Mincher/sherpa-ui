@@ -34,7 +34,7 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, outputRow, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, unfoldedRows, UNFOLDED, UNFOLD_MOST, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, outputRow, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, unfoldedRows, UNFOLDED, UNFOLD_MOST, type GraphRow, type RowChoice, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -456,6 +456,8 @@ export interface WorkflowFacts {
   /** The shelf's entities, read at each draw: what an entity row picks, and where an Output Trigger's loop is looked for
    *  (plan 949). */
   entities?: () => readonly Pick<Entity, 'type' | 'id' | 'label' | 'graph'>[];
+  /** A store's rows, each by its key and title (`rowPicks`): what a Source's Rows picks from. The app holds them. */
+  storeRows?: (store: string) => readonly RowChoice[];
   /** The primary model of the top graph a Custom Node's body is opened inside: its AI nodes use it (plan 951). `null`: that
    *  graph has none. None given: the body is opened alone, and uses the primary of whichever graph uses it. */
   primary?: ModelPick | null;
@@ -754,6 +756,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(types ? { types } : {}), ...(known ? { values: known } : {}), ...count,
         ...(row.control === 'portal' ? { portals: names } : {}),
         ...(row.control === 'entity' ? { entities: shelf.filter((e) => e.type === row.of).map((e) => ({ value: e.id, label: e.label })) } : {}),
+        ...(row.control === 'rows' ? { rows: facts.storeRows?.(String(values['store'] ?? '')) ?? [] } : {}),
       });
       // A Type row says the type's own value, and the line the type gives.
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};

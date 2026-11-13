@@ -22,8 +22,8 @@ const inPanel = (palette) => palette.flatMap((g) => g.items.map((i) => `${g.cate
 test('every graph type\'s panel offers a Source, under Sources: a workflow, a Filter, a Custom Node, an app\'s type, the Query', () => {
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone');
   assert.deepEqual([NODE_KINDS.source.heading, NODE_KINDS.source.category, NODE_KINDS.source.graphs], ['Source', 'Sources', ['query', 'workflow']]);
-  // No Count row: Math › Count counts rows (plan 944).
-  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store']]);
+  // No Count row: Math › Count counts rows (plan 944). Its Rows picks some of the store's rows (plan 960 U4.9b).
+  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store'], ['picked', 'rows']]);
   const off = registerEntityType({ id: 'workflow', label: 'Workflow', graph: { runs: true } });
   try {
     for (const host of [undefined, 'filter:trials', 'mine', 'workflow:flow']) {

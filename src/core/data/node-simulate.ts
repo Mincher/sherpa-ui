@@ -33,6 +33,7 @@ import { portalFlow } from './node-portals.js';
 import { isOutput } from './node-routes.js';
 import { socketOf, truthy, type DrawnGraph, type GraphNode } from './node-kinds.js';
 import { START } from './node-start.js';
+import { entityTypes } from './entity-types.js';
 
 /** What a simulation reads beyond its graph and rows: the clock a relative date means (left out, the machine's), and
  *  where a fetch stopped at its cap, by store, in words: a Source says it beside its rows. */
@@ -523,7 +524,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
         return { kind: 'rows', note: 'Not fetched yet' };
       }
       const cut = typeof store === 'string' ? facts.partial?.[store] : undefined;
-      return { kind: 'rows', rows, ...(cut ? { note: cut } : {}) };
+      // Its Rows picked, only those: by its type's key (plan 960 U4.9b). None picked, every row.
+      const picked = node.rows.find((r) => r.control === 'rows')?.value;
+      const keys = Array.isArray(picked) && picked.length ? new Set(picked.map(String)) : undefined;
+      const key = typeof store === 'string' ? entityTypes()[store]?.key ?? 'id' : 'id';
+      return { kind: 'rows', rows: keys ? rows.filter((row) => keys.has(String(row[key]))) : rows, ...(cut ? { note: cut } : {}) };
     }
     if (node.kind === 'field') {
       const name = node.rows.find((r) => r.gives === 'field')?.value;

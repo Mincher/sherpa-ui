@@ -67,6 +67,7 @@ Presentation's rows: its bar (Q3 A): its Switch, each chip it holds in order, wi
   cannot disagree. A filter's True joins where it FILTERS: a View filter into its chip's row on View Filters; a card's
   own filter into the card's Check. A card's chip on its Presentation names its field and says its pick in words (its
   hint), from that same reading, and takes no line.
+| U4.9b A Source picks rows (Will, 2026-11-13: "Source picks rows", for ONE fixed recipient such as "Service desk"; BUILT 2026-11-13) | The Source kind's optional many pick, Rows (`control: 'rows'`, `picked`): its store's rows shown by the type's `title`, kept by its `key`; none picked, every row. Its choices come from the app through one fact, `storeRows(store)`; `rowPicks(type, rows)` makes them. Simulate sends only the picked rows. A page's Query graph offers no Rows pick: a page reads all its rows, and its Query filters them | unit: the pick's choices; Simulate sends the picked; none, every row; the Query's Source has none | U4.9 |
 
 ## Will's decisions
 

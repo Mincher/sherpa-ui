@@ -112,7 +112,7 @@ export function truthy(value: unknown): boolean {
 export type RowControl =
   | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
   | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal'
-  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity';
+  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity' | 'rows';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -503,7 +503,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   source: {
     heading: 'Source', icon: 'storage', description: 'Connect a data source',
-    rows: [{ ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
+    rows: [
+      { ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' },
+      // Some of its rows, by title (Will, 2026-11-13: "Source picks rows"); none picked, every row. A workflow's only.
+      { name: 'picked', label: 'Rows', control: 'rows', multiple: true, optional: true },
+    ], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
@@ -937,6 +941,8 @@ export interface RowFacts {
   provider?: unknown;
   /** The shelf's entities of an `entity` row's type: what it picks (plan 949). */
   entities?: readonly RowChoice[];
+  /** A store's rows, each by its key and title: what a `rows` row picks (plan 960 U4.9b). */
+  rows?: readonly RowChoice[];
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
@@ -969,6 +975,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (row.control === 'type') return facts.types && [...facts.types];
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
   // The app's catalog (plans 926, 941), or the shelf's entities of a type (949): one with none picked says so, as a pick does.
+  if (row.control === 'rows') return facts.rows && [...facts.rows];
   const listed = row.control === 'entity' ? facts.entities : catalogChoices(row.control, facts.provider);
   if (listed) return [...(row.value != null && row.value !== '' ? [] : [{ value: '', label: 'Pick one' }]), ...listed];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
