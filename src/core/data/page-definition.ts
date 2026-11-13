@@ -15,6 +15,7 @@
  * - savedFiltersOf — A page's own saved filters: each that is a name and a query.
  * - SAVED_PRESET — The id a saved filter goes by as a preset on a bar: this, then its own.
  * - pageWithQuery — The page definition with a Query written in: what an editor's Save hands its app.
+ * - viewWithQuery — A View with its `query` written from a Query: what the graph's Save writes for a View.
  * - checkTiers — A page's child fields, each reported where it cannot be one.
  */
 import { DataSource, type FieldDeclaration, type FilterSet } from './data-source.js';
@@ -22,7 +23,8 @@ import { answerTree, type FieldReading, type FieldType } from './filter-state.js
 import { report, type Report } from './report.js';
 import type { SortSpec, Store } from './store.js';
 import type { QueryContext } from './query-context.js';
-import { VIEW, isSavedFilter, type AxesDefinition, type PresentationDefinition, type Query, type SavedFilter } from './query.js';
+import { VIEW, isSavedFilter, statedQuery, type AxesDefinition, type PresentationDefinition, type Query, type QueryDefaults, type SavedFilter } from './query.js';
+import { pageFields } from './type-definition.js';
 import { whereOf, type Where } from './where.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
@@ -241,9 +243,9 @@ export const SAVED_PRESET = 'saved:';
 /**
  * The page definition with a Query written in — what an editor's Save hands its app:
  * each scope's holds, its answers at the start (the reader's own; a preset's rows are the
- * preset's), its slot's presentation over the definition's, and the page size. The rest
- * is the definition's. A sort, a group and a search have no place in a page: a View keeps
- * them. `checkPage` checks what it makes. Plan 695 N1 · TRAP T-one-node-registry
+ * preset's), its slot's presentation over the definition's, its sort, group and search
+ * (plan 960 U4.3), and the page size. The rest is the definition's. `checkPage` checks
+ * what it makes. Plan 695 N1 · TRAP T-one-node-registry
  */
 export function pageWithQuery(
   page: PageDefinition, query: Query, facts: { pageSize?: number | null; type?: (field: string) => FieldType | undefined } = {},
@@ -251,7 +253,8 @@ export function pageWithQuery(
   const copy = structuredClone(page);
   const source = copy.source;
   if (!source) return copy;
-  const type = (field: string): FieldType | undefined => facts.type?.(field) ?? source.fields?.[field]?.type;
+  const declared = pageFields(source);
+  const type = (field: string): FieldType | undefined => facts.type?.(field) ?? declared[field]?.type as FieldType | undefined;
   const scopes: Record<string, ScopeDefinition> = {};
   for (const id of new Set([...Object.keys(source.scopes ?? {}), ...Object.keys(query.scopes)])) {
     const { holds: _held, where: _said, presentation, sort: _sorted, group: _grouped, search: _searched, ...kept } = source.scopes?.[id] ?? {};
@@ -278,6 +281,18 @@ export function pageWithQuery(
   const size = facts.pageSize ?? pageSize;
   copy.source = { ...rest, ...(size ? { pageSize: size } : {}), ...(Object.keys(scopes).length ? { scopes } : {}) };
   return copy;
+}
+
+/** A View with its `query` written from a Query (`statedQuery`), each answer typed by its field: what the graph's Save
+ *  writes for a View. The rest is the View's. Plan 960 U4.6 */
+export function viewWithQuery<V extends { query?: QueryDefaults }>(
+  view: V, query: Query, facts: { type?: (field: string) => FieldType | undefined } = {},
+): V {
+  const typed = (field: string): { type?: FieldType } => {
+    const t = facts.type?.(field);
+    return t ? { type: t } : {};
+  };
+  return { ...structuredClone(view), query: statedQuery(query, (readings) => whereOf(readings, typed)) };
 }
 
 /** A page's child fields, and each place one cannot be — not declared, under a

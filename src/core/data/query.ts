@@ -25,6 +25,8 @@
  * - arrangementOf — How a Query arranges its rows; none, an empty arrangement.
  * - withoutArrangement — The Query with no arrangement: what filters, and nothing of the order.
  * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
+ * - namedArrangement — The Query naming how it arranges its rows, none too, in place.
+ * - statedQuery — A Query as a View states it: the one writer of a View's `query`.
  * - QueryRequest — One edit to the Query, as anyone asks it through `QueryContext.ask()`; a list is one change.
  * - SavedFilter — A saved filter: a name, and each scope's filters as a View writes them.
  * - isSavedFilter — Is this a saved filter — a name, and a query definition?
@@ -206,6 +208,26 @@ export function withoutArrangement(query: Query): Query {
 export interface QueryDefaults {
   v: 1;
   scopes: Record<string, ViewScope>;
+}
+
+/** The Query naming how it arranges its rows, none too, in place: a View saved from it puts them back as they were. */
+export function namedArrangement(query: Query): Query {
+  if (!arrangementOf(query).scope) query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), sort: [] };
+  return query;
+}
+
+/** A Query as a View states it: each scope as it stands, each answer in the plain form `plain` writes, a kept answer
+ *  field by field (`{}` stays none, D2 A), and its arrangement named. The one writer of a View's `query`: the View
+ *  chip's Save and the graph's (plan 960 U4.6). TRAP T-a-view-is-json */
+export function statedQuery(query: Query, plain: (readings: Record<string, FieldReading>) => Where): QueryDefaults {
+  const scopes: QueryDefaults['scopes'] = {};
+  for (const [id, { readings, superseded, ...rest }] of Object.entries(namedArrangement(structuredClone(query)).scopes)) {
+    const where = plain(readings);
+    const kept = superseded && Object.fromEntries(Object.entries(superseded)
+      .map(([f, r]) => [f, Object.keys(r).length ? plain({ [f]: r })[f] ?? {} : {}]));
+    scopes[id] = { ...rest, ...(Object.keys(where).length ? { where } : {}), ...(kept ? { superseded: kept } : {}) };
+  }
+  return { v: 1, scopes };
 }
 
 /** One edit to the Query, as a control, the node editor or an agent asks it:

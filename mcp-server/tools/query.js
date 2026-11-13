@@ -256,27 +256,34 @@ export function register(server) {
   });
   /** The kinds a workflow may place: the shipped, and each entity's Custom Node. */
   const kindsWith = (dl, library) => ({ ...dl.nodeKinds(), ...dl.kindsOf(library) });
-  /** What a definition is: `query` for a page (page.v1), else the type an entity says. */
-  const whatOf = (args, definition) => args.of ?? (definition?.source ? 'query' : definition?.type);
+  /** What a definition is: `view` for a page with one of its Views, `query` for a page (page.v1), else an entity's type. */
+  const whatOf = (args, definition) => args.of ?? (args.view ? 'view' : definition?.source ? 'query' : definition?.type);
   /** The lens that draws it (plan 960 U4), or why there is none. */
   const lensFor = (dl, of) => {
     const lens = typeof of === 'string' ? dl.lensOf(of) : undefined;
-    if (!lens) throw new Error(`No lens draws "${of ?? 'it'}": give a page (page.v1) for its Query, or an entity (entity.v2) of a type the app has, with its entities file for an app's types.`);
+    if (!lens) throw new Error(`No lens draws "${of ?? 'it'}": give a page (page.v1) for its Query, with \`view\` for one of its Views, or an entity (entity.v2) of a type the app has, with its entities file for an app's types.`);
     return lens;
   };
   /**
-   * A definition through its lens. A page's Query is opened over its rows, as query_source opens it; an entity is drawn
-   * as its canvas edits it, over the app's entities. `then` is handed the lens, the facts it reads, the definition, the
-   * graph drawn now, the kinds a graph may place, and the page where it is one.
+   * A definition through its lens. A page's Query is opened over its rows, as query_source opens it, with a View put on it
+   * when one is given (its lens writes the View back); an entity is drawn as its canvas edits it, over the app's entities.
+   * `then` is handed the lens, the facts it reads, the definition, the graph drawn now, the kinds a graph may place, and the
+   * page where it is one.
    */
   const throughLens = async (dl, args, heard, list, library, then) => {
     const definition = given(args.definition, 'definition');
     const of = whatOf(args, definition);
     const lens = lensFor(dl, of);
-    if (of === 'query') {
-      return overPage(dl, args, heard, (page) => {
-        const facts = { ...graphFacts(dl, page, args.components), query: page.source.query };
-        return then({ lens, facts, definition: page.definition, drawn: () => dl.queryDrawn(page.definition, facts), kinds: dl.NODE_KINDS, page });
+    if (of === 'query' || of === 'view') {
+      const view = of === 'view' ? given(args.view, 'view') : undefined;
+      if (of === 'view' && !view?.query) throw new Error('A View is drawn on its page: give the page as `definition`, and the View, with its `query`, as `view`.');
+      return overPage(dl, args, heard, async (page) => {
+        if (view) {
+          await page.source.query.setQuery(view.query, { holds: 'keep' });
+          await page.source.load();
+        }
+        const facts = { ...graphFacts(dl, page, args.components), query: page.source.query, ...(view ? { page: page.definition } : {}) };
+        return then({ lens, facts, definition: view ?? page.definition, drawn: () => dl.queryDrawn(page.definition, facts), kinds: dl.NODE_KINDS, page });
       });
     }
     const kinds = kindsWith(dl, library);
@@ -291,7 +298,8 @@ export function register(server) {
   const DEFINITION = {
     ...PAGE,
     definition: z.union([z.string(), z.record(z.unknown())]).describe('The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Filter, an app\'s own type'),
-    of: z.string().optional().describe('What the definition is: `query`, a page\'s Query; else an entity\'s type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`'),
+    of: z.string().optional().describe('What the definition is: `query`, a page\'s Query; `view`, one of its Views; else an entity\'s type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`; with `view`, it is the View'),
+    view: z.union([z.string(), z.record(z.unknown())]).optional().describe('With a page: one of its Views (views.v1: `{ "label", "query", … }`). The page opens with the View put on its Query, as its View chip puts it; edits write the View back, its `query` as the Query holds it then (`viewWithQuery`)'),
     components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own'),
     ...FACTS,
   };
@@ -311,7 +319,7 @@ export function register(server) {
 
   server.registerTool('edit_definition_graph', {
     title: 'Edit a definition by its graph',
-    description: 'Each edit made on the graph a definition\'s lens draws (`editWorkflow`, as the one Node Editor makes it): a row\'s value, `{ "node", "row", "value" }`; a node\'s own name, line or place, `{ "node", "set": { … } }`; a new connection, `{ "connection": { "from", "to" } }`. Then the graph is written back through the lens (`fromGraph`): the definition it says now, checked, or the faults that refuse it, in words. A page\'s Query asks each change as a chip asks it, and its page is saved as the Query holds it then (`pageWithQuery`)',
+    description: 'Each edit made on the graph a definition\'s lens draws (`editWorkflow`, as the one Node Editor makes it): a row\'s value, `{ "node", "row", "value" }`; a node\'s own name, line or place, `{ "node", "set": { … } }`; a new connection, `{ "connection": { "from", "to" } }`. Then the graph is written back through the lens (`fromGraph`): the definition it says now, checked, or the faults that refuse it, in words. A page\'s Query asks each change as a chip asks it, and its page is saved as the Query holds it then (`pageWithQuery`), or, with `view`, the View (`viewWithQuery`)',
     inputSchema: { ...DEFINITION, edits: z.union([z.string(), z.array(z.record(z.unknown()))]).describe('Each a WorkflowEdit, in turn') },
   }, act(async (dl, args, heard) => withEntities(dl, given(args.entities, 'entities'), (list, library) => throughLens(dl, args, heard, list, library, async ({ lens, facts, definition, kinds, page }) => {
     let graph = lens.toGraph(definition, facts).workflow;

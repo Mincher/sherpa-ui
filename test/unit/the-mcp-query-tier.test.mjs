@@ -276,6 +276,29 @@ test('edit_definition_graph refuses a read-only row, in the data layer\'s words,
   assert.equal(readOnly.json.definition, undefined);
 });
 
+test('a page with one of its Views: drawn with the View on its Query, and edits written back as the View (plan 960 U4.6a)', { skip }, async () => {
+  const view = fromDemos('views/records-views.json').risk;
+  const drawn = await call('definition_graph', { definition: records, view, ...typed() });
+  assert.equal(drawn.bad, false, drawn.text);
+  const ids = drawn.json.nodes.map((n) => n.id);
+  for (const id of ['when-view-health', 'when-data-openTickets', 'when-data-status', 'organise-data']) assert.ok(ids.includes(id), id);
+  const edits = [{ node: 'when-data-openTickets', row: 'b', value: '4' }, { node: 'organise-data', row: 'sort', value: 'spend' }];
+  const { bad, text, json } = await call('edit_definition_graph', { definition: records, view, ...typed(), edits });
+  assert.equal(bad, false, text);
+  assert.deepEqual(json.faults, []);
+  assert.equal(json.definition.label, view.label);
+  const data = json.definition.query.scopes.data;
+  assert.deepEqual(data.where.openTickets, { gt: 4 });
+  assert.deepEqual(data.where.status, view.query.scopes.data.where.status);
+  assert.deepEqual(data.sort, [{ field: 'spend', direction: 'asc' }]);
+  // The rest as it was, in the plain form the one writer writes: one value picked is `eq`.
+  assert.deepEqual(json.definition.query.scopes.view.where, { health: { eq: 'At risk' } });
+  // A View with no query has nothing to put on its page.
+  const none = await call('definition_graph', { definition: records, view: { label: 'Nothing' }, ...typed() });
+  assert.equal(none.bad, true);
+  assert.match(none.text, /A View is drawn on its page/);
+});
+
 test('definition_graph draws a workflow entity through its type\'s lens: workflowGraph, its faults, and the kinds a graph may place', { skip }, async () => {
   const facts = { fieldsOf: { customers: records.source.fields }, stores: ['customers'] };
   const { bad, text, json } = await call('definition_graph', { definition: entity, entities, ...facts });

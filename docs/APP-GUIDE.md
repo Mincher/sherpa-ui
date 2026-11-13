@@ -372,6 +372,12 @@ A graph View is a View whose body is a canvas, showing one entity of a type
   It is the ONE node editor, on the page's Query as its document: every tool works there, and each
   edit is asked of the Query as a chip asks; the layout (places, ties, frames, stages, lanes) is kept
   for the tab beside it. `T-one-node-editor`
+- **A page and its Views go through one lens door.** `lensOf('query')` draws a page's Query and
+  writes it back as the page (`pageWithQuery`); `lensOf('view')` draws the page with one of its
+  Views put on its Query, and writes back the View (`viewWithQuery`), its `query` as the Query holds
+  it then: filters, sort, group and search. A View's `query` has one writer, `statedQuery`: the View
+  chip's Save and the graph's write the same. The MCP's `edit_definition_graph` takes a page and a
+  `view`, for a View in your views file.
 
 ## 9. The session
 

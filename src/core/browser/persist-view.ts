@@ -15,7 +15,7 @@
  * - onViewPicked — Wire a View chip to a library: pick one, and the screen reconfigures.
  * - viewQueryOf — What is on screen as a View's JSON: the applied Query, with the rows' arrangement.
  */
-import type { Query, QueryDefaults } from '../data/query.js';
+import { statedQuery, type Query, type QueryDefaults } from '../data/query.js';
 import type { FieldReading } from '../data/filter-state.js';
 import { whereOf, type Where } from '../data/where.js';
 import { applyState } from '../ui/apply-state.js';
@@ -391,16 +391,7 @@ export function onViewPicked(
  *  arranged it. TRAP T-a-view-is-json · TRAP T-group-and-sort-are-component-scope */
 export function viewQueryOf(source: ViewSource): QueryDefaults {
   // In the plain form, by the source's field types. TRAP T-one-way-to-write-a-condition
-  const plain = (readings: Record<string, FieldReading>): Where => source.whereOf?.(readings) ?? whereOf(readings);
-  const scopes: QueryDefaults['scopes'] = {};
-  for (const [id, { readings, superseded, ...rest }] of Object.entries(source.query.export().query.scopes)) {
-    const where = plain(readings);
-    // A kept answer too, field by field: `{}` stays none. D2 A
-    const kept = superseded && Object.fromEntries(Object.entries(superseded)
-      .map(([f, r]) => [f, Object.keys(r).length ? plain({ [f]: r })[f] ?? {} : {}]));
-    scopes[id] = { ...rest, ...(Object.keys(where).length ? { where } : {}), ...(kept ? { superseded: kept } : {}) };
-  }
-  return { v: 1, scopes };
+  return statedQuery(source.query.export().query, (readings) => source.whereOf?.(readings) ?? whereOf(readings));
 }
 
 /** A source as a View is saved from: its Query's export, and its field types. */

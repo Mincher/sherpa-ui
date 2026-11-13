@@ -62,7 +62,7 @@
  */
 import type { FilterSet, QueryState } from './data-source-types.js';
 import {
-  arrangementOf, copyQuery, emptyScope, freezeReading, sameAnswer, VIEW,
+  arrangementOf, copyQuery, emptyScope, freezeReading, namedArrangement, sameAnswer, VIEW,
   type AxesDefinition, type AxisOffers, type Presentation, type PresentationDefinition, type Query, type QueryDefaults,
   type QueryRequest,
 } from './query.js';
@@ -607,9 +607,7 @@ export class QueryContext extends EventTarget {
       const reading = query.scopes[scope]?.readings[field];
       if (reading?.suspended) delete reading.suspended;
     }
-    // It names its arrangement, none too: a View saved from it puts back the rows as they were.
-    if (!arrangementOf(query).scope) query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), sort: [] };
-    return { v: 1, query };
+    return { v: 1, query: namedArrangement(query) };
   }
 
   /** Take a question back in, exactly. */

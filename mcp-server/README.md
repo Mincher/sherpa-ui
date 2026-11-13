@@ -132,7 +132,8 @@ A definition as the one Node Editor draws it, through its type's lens (`lensOf(t
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
 - `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
-- `of` (optional) — What the definition is: `query`, a page's Query; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`
+- `of` (optional) — What the definition is: `query`, a page's Query; `view`, one of its Views; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`; with `view`, it is the View
+- `view` (optional) — With a page: one of its Views (views.v1: `{ "label", "query", … }`). The page opens with the View put on its Query, as its View chip puts it; edits write the View back, its `query` as the Query holds it then (`viewWithQuery`)
 - `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
 - `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
 - `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
@@ -140,7 +141,7 @@ A definition as the one Node Editor draws it, through its type's lens (`lensOf(t
 
 #### `edit_definition_graph` — Edit a definition by its graph
 
-Each edit made on the graph a definition's lens draws (`editWorkflow`, as the one Node Editor makes it): a row's value, `{ "node", "row", "value" }`; a node's own name, line or place, `{ "node", "set": { … } }`; a new connection, `{ "connection": { "from", "to" } }`. Then the graph is written back through the lens (`fromGraph`): the definition it says now, checked, or the faults that refuse it, in words. A page's Query asks each change as a chip asks it, and its page is saved as the Query holds it then (`pageWithQuery`)
+Each edit made on the graph a definition's lens draws (`editWorkflow`, as the one Node Editor makes it): a row's value, `{ "node", "row", "value" }`; a node's own name, line or place, `{ "node", "set": { … } }`; a new connection, `{ "connection": { "from", "to" } }`. Then the graph is written back through the lens (`fromGraph`): the definition it says now, checked, or the faults that refuse it, in words. A page's Query asks each change as a chip asks it, and its page is saved as the Query holds it then (`pageWithQuery`), or, with `view`, the View (`viewWithQuery`)
 
 - `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Filter, an app's own type
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
@@ -148,7 +149,8 @@ Each edit made on the graph a definition's lens draws (`editWorkflow`, as the on
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
 - `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
-- `of` (optional) — What the definition is: `query`, a page's Query; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`
+- `of` (optional) — What the definition is: `query`, a page's Query; `view`, one of its Views; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`; with `view`, it is the View
+- `view` (optional) — With a page: one of its Views (views.v1: `{ "label", "query", … }`). The page opens with the View put on its Query, as its View chip puts it; edits write the View back, its `query` as the Query holds it then (`viewWithQuery`)
 - `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
 - `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
 - `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
