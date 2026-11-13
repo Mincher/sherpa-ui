@@ -82,7 +82,8 @@ test('the Markdown editor keeps the caret in view as it types past its most line
   await page.keyboard.type('the end');
   const r = await page.locator('sherpa-markdown-editor').evaluate((el) => {
     const content = el.shadowRoot!.querySelector<HTMLElement>('.content')!;
-    const caret = document.getSelection()!.getRangeAt(0).getBoundingClientRect();
+    // The caret is at the end of the last line: WebKit's document selection does not say a shadow root's.
+    const caret = content.querySelector('.line:last-child')!.getBoundingClientRect();
     const box = content.getBoundingClientRect();
     return { height: content.clientHeight, top: content.scrollTop, inView: caret.bottom <= box.bottom + 1 && caret.top >= box.top - 1 };
   });
