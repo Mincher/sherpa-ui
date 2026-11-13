@@ -130,6 +130,142 @@
         }
       },
       {
+        "el": "sherpa-dialog",
+        "class": "flow",
+        "part": "flow",
+        "children": [
+          {
+            "el": "p",
+            "class": "flow-about"
+          },
+          {
+            "el": "div",
+            "class": "flow-steps"
+          },
+          {
+            "el": "p",
+            "class": "flow-said"
+          },
+          {
+            "el": "sherpa-callout",
+            "class": "flow-refused",
+            "attrs": {
+              "data-status": "critical",
+              "role": "alert"
+            },
+            "children": [
+              {
+                "el": "span",
+                "class": "flow-refused-words"
+              }
+            ]
+          },
+          {
+            "el": "div",
+            "class": "flow-actions",
+            "attrs": {
+              "slot": "footer"
+            },
+            "children": [
+              {
+                "el": "sherpa-button",
+                "class": "flow-cancel",
+                "attrs": {
+                  "data-look": "transparent",
+                  "data-label": "Cancel"
+                }
+              },
+              {
+                "el": "sherpa-button",
+                "class": "flow-run",
+                "attrs": {
+                  "disabled": ""
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "flow-text",
+        "children": [
+          {
+            "el": "sherpa-input-text",
+            "class": "flow-step",
+            "attrs": {
+              "data-attr-data-field": "field",
+              "data-attr-data-label": "label",
+              "data-attr-data-description": "description"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "flow-number",
+        "children": [
+          {
+            "el": "sherpa-input-text",
+            "class": "flow-step",
+            "attrs": {
+              "data-type": "number",
+              "data-attr-data-field": "field",
+              "data-attr-data-label": "label",
+              "data-attr-data-description": "description"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "flow-one",
+        "children": [
+          {
+            "el": "sherpa-input-text",
+            "class": "flow-step",
+            "attrs": {
+              "data-type": "select",
+              "data-attr-data-field": "field",
+              "data-attr-data-label": "label",
+              "data-attr-data-description": "description"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "flow-many",
+        "children": [
+          {
+            "el": "sherpa-input-text",
+            "class": "flow-step",
+            "attrs": {
+              "data-type": "select",
+              "multiple": "",
+              "data-attr-data-field": "field",
+              "data-attr-data-label": "label",
+              "data-attr-data-description": "description"
+            }
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "flow-boolean",
+        "children": [
+          {
+            "el": "sherpa-switch",
+            "class": "flow-step",
+            "attrs": {
+              "data-attr-data-field": "field",
+              "data-attr-data-label": "label",
+              "data-attr-data-description": "description"
+            }
+          }
+        ]
+      },
+      {
         "el": "template",
         "class": "words",
         "children": [
@@ -320,12 +456,28 @@
         "refused": "string",
         "undone": "true"
       }
+    },
+    {
+      "$type": "event",
+      "name": "act-input",
+      "description": "A pressed act needs input, a request: prevented, the page asks it; else the outlet's dialog does.",
+      "bubbles": true,
+      "cancelable": true,
+      "composed": true,
+      "detail": {
+        "id": "string",
+        "keys": "readonly unknown[]"
+      }
     }
   ],
   "tokens": {
     "reach.z-index": "{sherpa.layer-banners}",
     "reach-actions.gap": "{sherpa.display-mode-space-2xs}",
-    "reach-actions.margin-inline-start": "{sherpa.display-mode-space-xs}"
+    "reach-actions.margin-inline-start": "{sherpa.display-mode-space-xs}",
+    "flow-steps.gap": "{sherpa.display-mode-space-sm}",
+    "flow-about.margin": "{sherpa.display-mode-space-sm}",
+    "flow-said.margin": "{sherpa.display-mode-space-sm}",
+    "flow-actions.gap": "{sherpa.display-mode-space-xs}"
   },
   "$extensions": {
     "sherpa": {

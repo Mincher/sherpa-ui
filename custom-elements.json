@@ -9381,6 +9381,13 @@
               "type": {
                 "text": "CustomEvent<{ done: string; id: string; keys: readonly unknown[]; refused: string; undone: true }>"
               }
+            },
+            {
+              "name": "act-input",
+              "description": "A pressed act needs input, a request: prevented, the page asks it; else the outlet's dialog does.",
+              "type": {
+                "text": "CustomEvent<{ id: string; keys: readonly unknown[] }>"
+              }
             }
           ],
           "slots": [
@@ -9390,6 +9397,9 @@
             }
           ],
           "cssParts": [
+            {
+              "name": "flow"
+            },
             {
               "name": "reach"
             }

@@ -316,7 +316,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — persist-view
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (97)
+## The join and the app layer (98)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](traps/join-and-app.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -344,6 +344,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-hovered-chip-previews-the-highlight](traps/data-layer.md#t-a-hovered-chip-previews-the-highlight) — bind-source, provider
 - [T-a-kind-is-registered-never-a-tag](traps/join-and-app.md#t-a-kind-is-registered-never-a-tag) — provider
 - [T-a-legend-toggle-is-a-filter](traps/join-and-app.md#t-a-legend-toggle-is-a-filter) — provider
+- [T-a-multi-select-is-one-row](traps/data-layer.md#t-a-multi-select-is-one-row) — outlet
 - [T-a-nested-control-steers-through-its-own-binding](traps/join-and-app.md#t-a-nested-control-steers-through-its-own-binding) — bind-source
 - [T-a-notice-is-heard-never-ordered](traps/data-layer.md#t-a-notice-is-heard-never-ordered) — provider
 - [T-a-page-goes-out-as-json](traps/data-layer.md#t-a-page-goes-out-as-json) — provider

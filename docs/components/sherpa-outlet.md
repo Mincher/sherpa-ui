@@ -54,6 +54,7 @@ Each one bubbles.
 | `graph-change` | `{ graph: OpenGraph \| null; page: OpenPage \| undefined }` | The graph View's entity moved. |
 | `graph-new` | `{ type: string }` | New graph… was picked, a request: prevented, the app makes it. A host may call `preventDefault()` to take it over. |
 | `act-run` | `{ done: string; id: string; keys: readonly unknown[]; refused: string; undone: true }` | An act ran (pressed, or through act()), or was refused, or was undone: a page draws its change. |
+| `act-input` | `{ id: string; keys: readonly unknown[] }` | A pressed act needs input, a request: prevented, the page asks it; else the outlet's dialog does. A host may call `preventDefault()` to take it over. |
 
 ## Slots
 
@@ -65,7 +66,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`reach`
+`flow`, `reach`
 
 ## CSS custom properties it reads
 
@@ -76,6 +77,10 @@ What each class's base rule reads:
 | `--sherpa-layer-banners` | `.reach` | `z-index` |
 | `--sherpa-display-mode-space-2xs` | `.reach-actions` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.reach-actions` | `margin-inline-start` |
+| `--sherpa-display-mode-space-sm` | `.flow-steps` | `gap` |
+| `--sherpa-display-mode-space-sm` | `.flow-about` | `margin` |
+| `--sherpa-display-mode-space-sm` | `.flow-said` | `margin` |
+| `--sherpa-display-mode-space-xs` | `.flow-actions` | `gap` |
 
 ## Data
 

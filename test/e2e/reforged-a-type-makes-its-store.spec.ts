@@ -153,3 +153,75 @@ test('outlet.act runs an act with its input through the same door as a press, fi
     { id: 'device.read', keys: ['d1'], done: 'Read Device "Alpha".' },
   ]);
 });
+
+test('a pressed act that needs input opens its flow: a field per step that holds, each answer checked, then it runs as a press does', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=devices');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  await page.evaluate(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const { registerAct, registerFlow, storeOfType } = await import('/dist/data.js');
+    // Tag: its Status asked, its Reason only for Offline, a yes or no; the app orders them in a flow.
+    registerAct({
+      id: 'device.tag', label: 'Tag', type: 'device', changes: true,
+      input: {
+        status: { label: 'Status', required: true, values: ['online', 'offline'], labels: { online: 'Online', offline: 'Offline' } },
+        reason: { label: 'Reason', min: 3 },
+        urgent: { type: 'boolean', label: 'Urgent' },
+      },
+      async run(call, ctx) {
+        const store = storeOfType(ctx.stores, 'device')!;
+        const key = call.keys?.[0];
+        const was = (await store.byKey(key))!;
+        await store.update(key, { status: call.input?.['status'] });
+        return { done: `Tagged ${String(was['name'])} ${String(call.input?.['status'])}.`, undo: async () => { await store.update(key, { status: was['status'] }); } };
+      },
+    });
+    registerFlow({ v: 1, act: 'device.tag', steps: [{ field: 'status' }, { field: 'reason', when: { status: { eq: 'offline' } } }, { field: 'urgent' }] });
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+  });
+  const status = () => page.evaluate(async () => {
+    const { storeOfType } = await import('/dist/data.js');
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { actContext(): Parameters<typeof storeOfType>[0] extends infer S ? { stores: S } : never };
+    return (await storeOfType(outlet.actContext().stores, 'device')?.byKey('d1'))?.['status'];
+  });
+  const dialog = page.locator('sherpa-outlet .flow');
+  const open = () => dialog.evaluate((d) => (d as HTMLElement & { open: boolean }).open);
+  const field = (name: string) => page.locator(`sherpa-outlet .flow-step[data-field="${name}"]`);
+  const shown = () => page.locator('sherpa-outlet .flow-step:not([data-off])').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset['field']));
+  const run = page.locator('sherpa-outlet .flow-run');
+  await expect.poll(status).toBe('online');
+
+  // A page that asks it itself prevents act-input: nothing opens.
+  await page.evaluate(() => document.querySelector('sherpa-outlet')!.addEventListener('act-input', (e) => {
+    e.preventDefault();
+    (window as unknown as { __asked: unknown }).__asked = (e as CustomEvent).detail;
+  }, { once: true }));
+  await page.locator('#tag-alpha').click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __asked?: unknown }).__asked)).toEqual({ id: 'device.tag', keys: ['d1'] });
+  expect(await open()).toBe(false);
+
+  await page.locator('#tag-alpha').click();
+  await expect.poll(open).toBe(true);
+  await expect(dialog).toHaveAttribute('data-heading', 'Tag');
+  await expect.poll(shown).toEqual(['status', 'urgent']);
+  await expect(run).toHaveAttribute('disabled', '');
+  await field('status').locator('select').selectOption('offline');
+  await expect.poll(shown).toEqual(['status', 'reason', 'urgent']);
+  // A short Reason is refused under its own field once it is left; a longer one clears it, and the act can run.
+  await field('reason').locator('input').fill('ab');
+  await field('reason').locator('input').press('Tab');
+  await expect(field('reason')).toHaveAttribute('data-error', /at least 3/);
+  await field('reason').locator('input').fill('Broken');
+  await expect(field('reason')).not.toHaveAttribute('data-error');
+  await expect(page.locator('sherpa-outlet .flow-said')).toHaveText('Tag: Device "Alpha", Status Offline, Reason Broken, Urgent No.');
+  await expect(run).not.toHaveAttribute('disabled');
+  await run.click();
+  await expect.poll(open).toBe(false);
+  await expect.poll(status).toBe('offline');
+  const toast = page.locator('sherpa-toast').filter({ hasText: 'Tagged Alpha offline.' });
+  await expect(toast).toHaveCount(1);
+  await toast.locator('[part="action"], .action').first().click();
+  await expect.poll(status).toBe('online');
+});

@@ -30,6 +30,7 @@ import type { Store } from '../../core/data/store.js';
 import type { Route } from '../../core/browser/route.js';
 import type { RouteChange, SherpaRouter } from '../sherpa-router/sherpa-router.js';
 import type { SherpaProvider } from '../sherpa-provider/sherpa-provider.js';
+import type { OutletFlow } from './outlet-flow.js';
 import { OutletNav } from './outlet-nav.js';
 import '../sherpa-callout/sherpa-callout.js';
 
@@ -642,7 +643,9 @@ export class SherpaOutlet extends SherpaElement {
   };
 
   /** Run an act a press named, through `act`, and say what it did in a toast, with Undo where it changed data; a
-   *  refusal in its words. A press is the reader's own act, so it runs at once (plan 964 N1b, pick A). */
+   *  refusal in its words. A press is the reader's own act, so it runs at once (plan 964 N1b, pick A) — unless it still
+   *  needs input: then its flow asks it, in the outlet's dialog, where the page does not ask it itself (`act-input`). An
+   *  act whose input is all optional runs at once, unless the app registered a flow for it (plan 964 N4). */
   async #runPressed(id: string, given: readonly unknown[], rows = false): Promise<void> {
     const options = this.#options;
     if (!options) return;
@@ -650,7 +653,30 @@ export class SherpaOutlet extends SherpaElement {
     const act = actsOf().find((a) => a.id === id);
     if (!act) return;
     const key = act.type ? storeOfType(this.#stores(options), act.type)?.key ?? 'id' : 'id';
-    const answer = await this.act(id, { keys: rows ? given.map((r) => (r as Record<string, unknown>)[key]) : given });
+    const keys = rows ? given.map((r) => (r as Record<string, unknown>)[key]) : given;
+    if (act.input && Object.keys(act.input).length) {
+      const { flowOf, flowsOf, nextStep } = await import('../../core/data/flows.js');
+      const own = flowsOf().find((f) => f.act === id);
+      const flow = Object.values(act.input).some((f) => f.required) || own ? own ?? flowOf(id) : undefined;
+      if (flow && 'step' in await nextStep(flow, {}, { ...this.actContext()!, keys })) {
+        if (!this.emit('act-input', { id, keys }, { cancelable: true })) return;
+        const { OutletFlow } = await import('./outlet-flow.js');
+        this.#flow ??= new OutletFlow({
+          $: (sel) => this.$(sel), cloneItem: (from, item) => this.cloneItem(from, item), on: (t, type, h) => this.on(t, type, h),
+          actContext: () => this.actContext(), act: (actId, call) => this.act(actId, call), said: (answer) => this.#said(answer),
+        });
+        await this.#flow.open(flow, act, keys);
+        return;
+      }
+    }
+    await this.#said(await this.act(id, { keys }));
+  }
+
+  /** The dialog a pressed act opens to ask its input: made the first time one does. */
+  #flow: OutletFlow | null = null;
+
+  /** What a press says of an act's answer: a toast, with Undo where it changed data; a refusal in its words. */
+  async #said(answer: ActAnswer): Promise<void> {
     const { SherpaToast } = await import('../sherpa-toast/sherpa-toast.js');
     if ('refused' in answer) {
       SherpaToast.critical(answer.refused);

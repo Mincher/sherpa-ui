@@ -317,7 +317,10 @@ export async function init(root, { source, query, session, view, signal, header,
 - **A press names its act in markup**: `<sherpa-button commandfor="<the outlet's id>" command="--user.suspend"
   value="u1">Suspend</sherpa-button>` — its keys its `value` (a key, or a JSON list), else the selected rows of the
   page's grid; a grid row action whose `id` is an act's runs on its rows. The outlet runs it through `runAct` at once
-  and says it in a toast, with Undo where it changed data; a refusal in its words.
+  and says it in a toast, with Undo where it changed data; a refusal in its words. An act that still needs input (a
+  required field, or any field where the app registered a flow) opens its flow in the outlet's dialog first: a field per
+  step that holds, each answer checked, the confirm's words, and its button runs it. A page that asks it itself prevents
+  `act-input`.
 
 ## 8. Views
 

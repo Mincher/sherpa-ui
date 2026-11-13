@@ -105,14 +105,17 @@ test('the chat: one step at a time, each answer checked as the act checks it, th
     assert.equal((await nextStep(FLOW, answers, c)).step.field, 'name');
     assert.match((await answer('name', 'A')).refused, /Invite: Name: Must be at least 2 characters/);
     await answer('name', 'Ana');
-    assert.match((await answer('email', 'ana')).refused, /Invite: Email: /);
+    const email = await answer('email', 'ana');
+    assert.match(email.refused, /Invite: Email: /);
+    assert.equal(email.field, 'email');
+    assert.ok(email.error && !email.error.startsWith('Email:'), 'under its field, the field\'s own words');
     await answer('email', 'ana@x.io');
     assert.match((await answer('customer', 'acme')).refused, /Invite does not ask "customer" now/);
     await answer('scope', 'customer');
     assert.equal((await nextStep(FLOW, answers, c)).step.field, 'customer');
     assert.match((await answer('customer', 'nope')).refused, /"nope" is no Customer/);
     await answer('customer', 'acme');
-    assert.match((await answer('scope', '')).refused, /Invite: it needs Scope/);
+    assert.deepEqual(await answer('scope', ''), { refused: 'Invite: it needs Scope.', field: 'scope', error: 'It needs Scope' });
     await answer('roles', ['admin', 'reader']);
     assert.deepEqual(await nextStep(FLOW, answers, c), {
       confirm: 'Invite: Name Ana, Email ana@x.io, Scope Customer, Customer Acme, Roles Admin and Reader.',

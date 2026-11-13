@@ -50,3 +50,21 @@
   vertical-align: middle;
 }
 
+
+/* The dialog a pressed act opens to ask its input (plan 964 N4): drawn once its module is in. */
+.flow:not(:defined) { display: none; }
+.flow-steps {
+  display: grid;
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+}
+.flow-step[data-off],
+.flow-about:empty,
+.flow-said:empty,
+.flow-refused:has(.flow-refused-words:empty) { display: none; }
+.flow-about { margin: 0 0 var(--sherpa-display-mode-space-sm, 12px); }
+.flow-said { margin: var(--sherpa-display-mode-space-sm, 12px) 0 0; }
+.flow-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}

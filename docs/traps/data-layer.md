@@ -6341,7 +6341,8 @@ shown as a chip. Again, it should be a dropdown input. Same goes for Notificatio
 you decided to use chips instead of following precedent."*
 
 - **The precedent is the single pick.** Every row with `multiple` (a Field's Values, a Source's Rows, a Notification's
-  Channels, a Condition's Is one of where its values are known) draws with the SAME dropdown a single pick uses:
+  Channels, a Condition's Is one of where its values are known, a flow's step of several in the outlet's dialog) draws
+  with the SAME dropdown a single pick uses:
   sherpa-input-text's select, with `multiple`, its menu the tags field's menu of ticks. One input, one door.
 - **The Field's Values** (`valuesOf: 'field'`) offers only the values its OWN field declares, and draws only where it
   declares some. It sends what is picked: one value, or the list (`pickSent`, the one rule for a pick of several);
@@ -6357,6 +6358,7 @@ you decided to use chips instead of following precedent."*
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `src/components/sherpa-input-text/input-picks.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.html`
 - Site: `test/unit/a-field-is-a-node.test.mjs`
 - Site: `test/unit/a-logic-type-is-an-operator.test.mjs`
 - Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`

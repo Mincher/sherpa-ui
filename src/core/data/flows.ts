@@ -17,6 +17,7 @@
  * - flowsOf — The flows of the acts that apply on a page.
  * - stepsOf — Every step whose `when` holds now, as Asks: the dialog's form.
  * - nextStep — The first step still unanswered, else the confirm or the run: the chat's next message.
+ * - StepRefusal — Why an answer is refused: the whole sentence, and its field's own words.
  * - answerStep — One answer, checked as the act checks it: the answers with it, or why not.
  */
 import { actsOf, inputFaults, refChoices, type Act, type Choice } from './acts.js';
@@ -230,16 +231,27 @@ export async function nextStep(flow: Flow, answers: FlowAnswers, ctx: FlowContex
   return { confirm: `${parts.act.label}: ${[...(targets ? [targets] : []), ...words].join(', ')}.`, input };
 }
 
+/** Why an answer is refused: the whole sentence, for the chat; and its field's own words, for the field it is under. */
+export interface StepRefusal {
+  refused: string;
+  field: string;
+  error: string;
+}
+
 /** One answer, checked as the act checks it — its rules, a reference a row of its type — and only for a step asked now.
  *  Null, or nothing, skips a step that is not required. The answers with it, or why not, in words. */
-export async function answerStep(flow: Flow, answers: FlowAnswers, field: string, value: unknown, ctx: FlowContext): Promise<{ answers: FlowAnswers } | { refused: string }> {
+export async function answerStep(flow: Flow, answers: FlowAnswers, field: string, value: unknown, ctx: FlowContext): Promise<{ answers: FlowAnswers } | StepRefusal | { refused: string }> {
   const parts = partsOf(flow);
   if ('refused' in parts) return parts;
   const def = parts.input[field];
   if (!def || !holding(flow, answers).some((s) => s.field === field)) return { refused: `${parts.act.label} does not ask "${field}" now.` };
-  if (empty(value)) {
-    return def.required ? { refused: `${parts.act.label}: it needs ${def.label ?? field}.` } : { answers: { ...answers, [field]: null } };
-  }
+  const label = def.label ?? field;
+  // The field's own words: its label is the field's, so a fault said with it drops it.
+  const refuse = (faults: readonly string[]): StepRefusal => {
+    const own = faults.map((f) => (f.startsWith(`${label}: `) ? f.slice(label.length + 2) : f)).join('; ');
+    return { refused: `${parts.act.label}: ${faults.join('; ')}.`, field, error: own.charAt(0).toUpperCase() + own.slice(1) };
+  };
+  if (empty(value)) return def.required ? refuse([`it needs ${label}`]) : { answers: { ...answers, [field]: null } };
   const wrong = await inputFaults({ [field]: def }, { [field]: value }, ctx);
-  return wrong.length ? { refused: `${parts.act.label}: ${wrong.join('; ')}.` } : { answers: { ...answers, [field]: value } };
+  return wrong.length ? refuse(wrong) : { answers: { ...answers, [field]: value } };
 }

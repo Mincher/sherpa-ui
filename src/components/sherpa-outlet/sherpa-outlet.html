@@ -31,6 +31,7 @@
 
   Parts:
     reach       the "Unable to reach data" banner over the top of the content
+    flow        the dialog a pressed act opens to ask its input: a field per step of its flow
 
   Fires:
     context-change — detail: { context, view }
@@ -41,6 +42,7 @@
     graph-change — the graph View's entity moved. detail: { graph, page? }, page on a `query` graph
     graph-new — New graph… was picked, a request: prevented, the app makes it. detail: { type }
     act-run — an act ran (pressed, or through act()), or was refused, or was undone: a page draws its change. detail: { id, keys, done?, refused?, undone? }
+    act-input — a pressed act needs input, a request: prevented, the page asks it; else the outlet's dialog does. detail: { id, keys }
 -->
 <template id="default">
   <!-- UNABLE TO REACH DATA, floating over the top of the content: no height, so
@@ -64,6 +66,23 @@
   <div class="reach-say" role="status"></div>
   <div class="reach-after" tabindex="-1"></div>
   <slot data-accepts="content"></slot>
+  <!-- A pressed act that needs input asks it here: a field per step of its flow, drawn from stepsOf (plan 964 N4). -->
+  <sherpa-dialog class="flow" part="flow">
+    <p class="flow-about"></p>
+    <div class="flow-steps"></div>
+    <p class="flow-said"></p>
+    <sherpa-callout class="flow-refused" data-status="critical" role="alert"><span class="flow-refused-words"></span></sherpa-callout>
+    <div class="flow-actions" slot="footer">
+      <sherpa-button class="flow-cancel" data-look="transparent" data-label="Cancel"></sherpa-button>
+      <sherpa-button class="flow-run" disabled></sherpa-button>
+    </div>
+  </sherpa-dialog>
+  <!-- One field per kind of step: a pick of one or several is ONE dropdown. TRAP T-a-multi-select-is-one-row -->
+  <template class="flow-text"><sherpa-input-text class="flow-step" data-attr-data-field="field" data-attr-data-label="label" data-attr-data-description="description"></sherpa-input-text></template>
+  <template class="flow-number"><sherpa-input-text class="flow-step" data-type="number" data-attr-data-field="field" data-attr-data-label="label" data-attr-data-description="description"></sherpa-input-text></template>
+  <template class="flow-one"><sherpa-input-text class="flow-step" data-type="select" data-attr-data-field="field" data-attr-data-label="label" data-attr-data-description="description"></sherpa-input-text></template>
+  <template class="flow-many"><sherpa-input-text class="flow-step" data-type="select" multiple data-attr-data-field="field" data-attr-data-label="label" data-attr-data-description="description"></sherpa-input-text></template>
+  <template class="flow-boolean"><sherpa-switch class="flow-step" data-attr-data-field="field" data-attr-data-label="label" data-attr-data-description="description"></sherpa-switch></template>
   <!-- Why it could not be reached, by the failure's kind. TRAP T-a-word-is-in-the-markup -->
   <template class="words">
     <span data-word="unreached">Unable to reach data. The last data is still shown, and may be out of date.</span>
