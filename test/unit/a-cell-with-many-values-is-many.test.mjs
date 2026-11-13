@@ -39,9 +39,12 @@ test('a filter holds when any of its values holds it, and its opposite when none
   assert.deepEqual(ids(filterRows(ROWS, ['customers', 'notin', ['Contoso']])), ['triage', 'none', 'one']);
   assert.deepEqual(ids(filterRows(ROWS, ['customers', 'ne', 'Northwind'])), ['backups', 'triage', 'none']);
   assert.deepEqual(ids(filterRows(ROWS, ['customers', 'contains', 'wind'])), ['patch-all', 'one']);
-  // An empty list is no value, as an empty cell is: "has a value" (Select all) drops it.
-  assert.deepEqual(ids(filterRows(ROWS, ['customers', 'notin', [null, undefined, '']])), ['patch-all', 'backups', 'triage', 'one']);
-  assert.deepEqual(ids(filterRows([{ id: 'blank', customers: '' }, ...ROWS], ['customers', 'notin', [null, undefined, '']])), ['patch-all', 'backups', 'triage', 'one']);
+  // An empty list is no value, as an empty cell and a missing field are: "has a value" (Select all) drops each. The
+  // clause is JSON: a list sent to a server says null for a missing value too.
+  const hasValue = JSON.parse(JSON.stringify(['customers', 'notin', [null, '']]));
+  const more = [{ id: 'blank', customers: '' }, { id: 'missing' }, { id: 'null', customers: null }, ...ROWS];
+  assert.deepEqual(ids(filterRows(more, hasValue)), ['patch-all', 'backups', 'triage', 'one']);
+  assert.deepEqual(ids(filterRows(more, ['customers', 'in', [null]])), ['missing', 'null', 'none'], 'a list that holds null matches a missing value and an empty list too');
 });
 
 test('a row is grouped under each of its values', () => {

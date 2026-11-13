@@ -578,7 +578,7 @@ export function filterTest(filter: Filter | undefined, now: Date = new Date()): 
   const [field, op, value] = filter as FilterClause;
   /* A list cell is many values: a test holds when ANY of them holds it, and its opposite (ne, notin, notcontains,
      notbetween) when NONE does. One value is a list of one; an EMPTY list is no value, as an empty cell is, so
-     "has a value" (Select all, notin [null, undefined, '']) drops it. Will, 2026-11-13 */
+     "has a value" (Select all, notin [null, '']) drops it. Will, 2026-11-13 */
   const any = (test: (a: unknown) => boolean) => (row: Row): boolean => {
     const v = readField(row, field);
     return Array.isArray(v) ? (v.length ? v.some(test) : test(undefined)) : test(v);
@@ -642,18 +642,18 @@ export function filterTest(filter: Filter | undefined, now: Date = new Date()): 
 }
 
 /** A list's values as `looseEqual` reads them, worked out ONCE per list. */
-const listKeys = new WeakMap<readonly unknown[], { keys: Set<string>; nul: boolean; undef: boolean }>();
+const listKeys = new WeakMap<readonly unknown[], { keys: Set<string>; none: boolean }>();
 
 /** Is a row's value one of a list's, as `looseEqual` says — through a Set, not a
- *  key per list value per row. A null or undefined matches only itself. TODO 369 */
+ *  key per list value per row. In a list, null and a MISSING value (undefined) are one "no value": JSON carries no
+ *  undefined, so a list sent to a server says null for both, and a local store and a server must answer alike. TODO 369 */
 function inList(actual: unknown, list: readonly unknown[]): boolean {
   let known = listKeys.get(list);
   if (!known) {
-    known = { keys: new Set(list.filter((v) => v != null).map(text)), nul: list.includes(null), undef: list.includes(undefined) };
+    known = { keys: new Set(list.filter((v) => v != null).map(text)), none: list.some((v) => v == null) };
     listKeys.set(list, known);
   }
-  if (actual === null) return known.nul;
-  if (actual === undefined) return known.undef;
+  if (actual == null) return known.none;
   // NaN equals nothing, itself included, as `===` says.
   if (typeof actual === 'number' && Number.isNaN(actual)) return false;
   return known.keys.has(text(actual));

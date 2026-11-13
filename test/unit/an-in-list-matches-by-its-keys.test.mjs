@@ -28,10 +28,12 @@ test('text without case, numbers as numbers or their text, objects by their fiel
   assert.equal(isNot('Team', ['free', 'PRO']), true);
 });
 
-test('null, undefined and the empty string each match only themselves', () => {
+test('null and a missing value are one "no value" in a list; the empty string matches only itself', () => {
   assert.equal(is(null, [null]), true);
   assert.equal(is(null, ['']), false);
-  assert.equal(is(undefined, [null]), false);
+  // JSON carries no undefined: a list sent to a server says null for both, so a local store answers alike.
+  assert.equal(is(undefined, [null]), true);
+  assert.equal(is(null, [undefined]), true);
   assert.equal(is(undefined, [undefined]), true);
   assert.equal(is('', ['']), true);
   assert.equal(is('', [null]), false);
