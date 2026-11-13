@@ -550,6 +550,12 @@ object list And, Or and Is empty: a comparison needs a Field. A mixture lists ev
 operation one of them takes. An input the pick does not take is ignored: its line is
 dashed, and its tip says why. Where no input fits, the pick stays and the node warns.
 
+A Field node's field row UNFOLDS a row per value its field declares (its type's or page's
+`values`), each giving that value: join one to a Condition's Value B. Only the field picked on
+that node unfolds; a field with no values (a name) unfolds none, and one with more than
+`UNFOLD_MOST` none, its hint saying how many. A value row is named by its words (`v-at-risk`).
+Filtering stays the Condition's (plan 960 U4.7a; Will, D1 and E1 A).
+
 ### Outputs
 
 An Output is a node per FAMILY, each a kind of its types (plan 917): `notify`

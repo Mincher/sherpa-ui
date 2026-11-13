@@ -47,6 +47,10 @@
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
  * - rowOf — The row of a kind a name says.
+ * - UNFOLDED — The prefix of an unfolded row's name: "At risk" unfolds as `v-at-risk`.
+ * - UNFOLD_MOST — The most values a row unfolds: a field with more unfolds none, and says how many.
+ * - unfoldedRows — The rows a pick unfolds, one per value, each giving it, read only.
+ * - outputRow — One output row of a kind: its own by name, else the value row a `v-` name says.
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several connections.
  * - NodeConnection — One connection: an output socket to an input socket.
@@ -147,6 +151,9 @@ export interface RowKind {
   required?: true;
   /** An input the node can do without: nothing joined, it does not warn, as a `needs` row else would (plan 951). */
   optional?: true;
+  /** It UNFOLDS rows from what it picks: a Field's field row, a row per value its field declares, each giving that value
+   *  (Will, 2026-11-13, D1 and E1 A). Only the field picked on THIS node; a field that declares none unfolds none. */
+  unfolds?: 'values';
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -574,7 +581,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Rows in, a column out, `{ rows, field }`; one record in, that field's value. Its True: the field is there. Plan 783 D1, D2
   field: {
     heading: 'Field', icon: 'price-tag', description: 'Target a field from a connected Source', input: 'any', needs: 'object',
-    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' }], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
+    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field', unfolds: 'values' }], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
   math: {
@@ -846,10 +853,35 @@ export function rowOf<R extends Pick<RowKind, 'name'>>(rows: readonly R[], name:
   return rows.find((r) => r.name === name);
 }
 
+/** The prefix of an unfolded row's name: "At risk" unfolds as `v-at-risk` (a socket's name takes no space). */
+export const UNFOLDED = 'v-';
+/** The most values a row unfolds: a field with more unfolds none, and says how many. */
+export const UNFOLD_MOST = 12;
+
+/** The rows a pick unfolds, one per value, each giving it: named by its words (`v-at-risk`; a clash, `-2`), read only. */
+export function unfoldedRows(values: readonly unknown[]): GraphRow[] {
+  const taken = new Set<string>();
+  return values.map((value) => {
+    const base = `${UNFOLDED}${String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'value'}`;
+    let name = base;
+    for (let n = 2; taken.has(name); n++) name = `${base}-${n}`;
+    taken.add(name);
+    return { name, label: String(value), output: 'value' as const, value, unfolded: true as const };
+  });
+}
+
+/** One output row of a kind: its own by name; else, where a row of it unfolds, the value row a `v-` name says. One door
+ *  for a node's outputs, so a connection from an unfolded row is checked and typed where every output is. */
+export function outputRow(kind: Pick<Sockets, 'rows'>, name: string): RowKind | undefined {
+  const own = rowOf(kind.rows, name);
+  if (own) return own;
+  return name.startsWith(UNFOLDED) && kind.rows.some((r) => r.unfolds) ? { name, label: name, output: 'value' } : undefined;
+}
+
 /** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row) or a row's — on one side;
  *  none, it has no such socket. */
 export function socketType(kind: Sockets, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
-  return row === undefined ? kind[side] : rowOf(kind.rows, row)?.[side];
+  return row === undefined ? kind[side] : (side === 'output' ? outputRow(kind, row) : rowOf(kind.rows, row))?.[side];
 }
 
 /** Whether an input of a kind, or of a node drawn of it, takes several connections: its header's (no row), or a row's. */
@@ -1018,6 +1050,8 @@ export interface GraphRow extends RowKind {
   custom?: true;
   /** A property with nothing to say: Results or Count where no rows reach its node, only a value (TODO 924). */
   idle?: true;
+  /** Unfolded from a row's pick (`unfolds`): it gives its value, read only. */
+  unfolded?: true;
 }
 
 /** A node's size, in times its natural width and height; each from 1 (as it is) to 2 (double). */

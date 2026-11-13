@@ -512,6 +512,9 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       if ('note' in read) return { kind: 'value', note: read.note };
       return { kind: 'value', value: (read.passed ?? read.kept.length > 0) ? 1 : 0 };
     }
+    // A row unfolded from a pick gives its value (a Field's value row, Will E1 A).
+    const unfolded = row === undefined ? undefined : node.rows.find((r) => r.name === row && r.unfolded);
+    if (unfolded) return { kind: 'value', value: unfolded.value };
     if (node.kind === 'source') {
       const store = node.rows.find((r) => r.control === 'store')?.value;
       const rows = typeof store === 'string' ? rowsByStore[store] : undefined;

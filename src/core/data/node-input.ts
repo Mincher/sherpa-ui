@@ -25,7 +25,7 @@
  */
 import { typedValue } from './filter-state.js';
 import { isDateTime } from './format-date.js';
-import { SOCKET_WORDS, fixedChoices, kindOfNode, resolveKind, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
+import { SOCKET_WORDS, fixedChoices, kindOfNode, outputRow, resolveKind, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
 
 /** What reaches an input, as finely as its source says: its socket's type, or rows, a list, a number or a Field's
  *  column, `{ rows, field }` (an object, plan 783 D2). */
@@ -86,7 +86,7 @@ export function givenAt(node: { kind: string; values?: Readonly<Record<string, u
     const type = socketType(kind, row, 'output');
     return type && type !== 'any' ? { kind: type } : undefined;
   }
-  const out = rowOf(kind.rows, row);
+  const out = outputRow(kind, row);
   if (!out?.output || out.output === 'any') return undefined;
   const value = node!.values?.[row];
   if (out.control && (value === undefined || value === '')) return undefined;
