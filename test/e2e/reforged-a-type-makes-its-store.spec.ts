@@ -85,7 +85,9 @@ test('a page\'s module reads another type\'s rows through ctx.stores, the stores
     await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({ alerts: { load: () => null } }) });
     const seen = () => (window as unknown as { __typed?: { stores: string[]; teammates?: number } }).__typed;
     for (let i = 0; i < 100 && !seen(); i++) await new Promise((done) => setTimeout(done, 50));
-    return seen();
+    // Each app.json type's own acts are registered: the chat works with any of them (plan 964 N2).
+    const { actsOf } = await import('/dist/index.js');
+    return { ...seen(), acts: actsOf({ type: 'device' }).map((a: { id: string }) => a.id) };
   });
-  expect(r).toEqual({ stores: ['alerts', 'device', 'teammate'], teammates: 2 });
+  expect(r).toEqual({ stores: ['alerts', 'device', 'teammate'], teammates: 2, acts: ['device.find', 'device.read', 'device.add', 'device.change', 'device.remove'] });
 });

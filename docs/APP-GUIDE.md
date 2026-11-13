@@ -299,6 +299,13 @@ export async function init(root, { source, query, session, view, signal, header,
 - A component's property is set AFTER it is defined.
   `T-a-property-set-before-upgrade-shadows-its-accessor`
 - A Context with nothing of its own needs no module.
+- **An act is said once** (`registerAct`, `sherpa-ui/data`; plan 964): its id (`<type>.<verb>`), its words, the
+  type whose rows it acts on, its input as a type's fields (a `ref` field names another type's rows), whether it
+  changes data, where a press offers it, and its `run`. A press, the AI chat and the MCP all call `runAct(id, { keys,
+  input }, { stores: ctx.stores })`: it checks the call by the type's rules and answers `done` (with an `undo` where it
+  changed data) or `refused`, in words. Ask the reader before an act that `changes`. Every app.json type gives
+  `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; `actsOf({ context, view, type })` lists a page's,
+  `actsOf()` every act, and `actSchema(act)` is a call's JSON Schema, for a tool.
 
 ## 8. Views
 

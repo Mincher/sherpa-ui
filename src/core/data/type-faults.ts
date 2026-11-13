@@ -5,12 +5,13 @@
  *
  * Map:
  * - typeFaults — What is wrong with a type, in words; none when it is sound.
+ * - fieldsFaults — What is wrong with fields asked of a reader (an act's input), in words; none when they are sound.
  */
 import { parseWhere, type Where } from './where.js';
 
 const ID = /^[a-z][a-z0-9-]*$/;
-const TOP = ['$schema', 'v', 'id', 'label', 'description', 'tags', 'icon', 'category', 'key', 'time', 'fields', 'data', 'graph'];
-const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from'];
+const TOP = ['$schema', 'v', 'id', 'label', 'description', 'tags', 'icon', 'category', 'key', 'time', 'title', 'fields', 'data', 'graph'];
+const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'many'];
 const STATUS = ['type', 'label', 'description', 'values'];
 const KINDS = ['text', 'number', 'date', 'boolean'];
 const PATH = /^[^/]+(\/[^/]+)*$/;
@@ -82,6 +83,12 @@ function storedFaults(f: Loose): string[] {
     else if (named) for (const v of Object.keys(map)) if (!named.has(v)) out.push(`its ${k} name "${v}", which is none of its values`);
   }
   if ('from' in f && (typeof f['from'] !== 'string' || !PATH.test(f['from']))) out.push('its from is a node\'s id, then a path in its values: when/every');
+  if ('ref' in f) {
+    if (!isText(f['ref']) || !ID.test(f['ref'])) out.push('its ref is a type\'s id (lowercase letters, digits, hyphens)');
+    if (kind !== 'text' || 'values' in f) out.push('a reference is text, its choices the other type\'s rows: no type, no values');
+  }
+  if ('many' in f && typeof f['many'] !== 'boolean') out.push('its many is not true or false');
+  else if (f['many'] && !('ref' in f)) out.push('only a reference holds many: { "ref": "role", "many": true }');
   return out;
 }
 
@@ -128,6 +135,9 @@ export function typeFaults(given: unknown): string[] {
   const keyField = typeof key === 'string' ? fields[key] : undefined;
   if (!isObject(keyField) && !('graph' in given && key === 'id')) out.push(`its key, ${JSON.stringify(key)}, is no field`);
   else if (isObject(keyField) && (keyField['type'] === 'status' || 'from' in keyField)) out.push(`its key, "${key}", is a field each row holds: no status, nothing read from its graph`);
+  if ('title' in given && !(typeof given['title'] === 'string' && (given['title'] in fields || ('graph' in given && given['title'] === 'label')))) {
+    out.push(`its title, ${JSON.stringify(given['title'])}, is no field`);
+  }
   if ('time' in given) {
     const time = typeof given['time'] === 'string' ? fields[given['time']] : undefined;
     if (!isObject(time)) out.push(`its time, ${JSON.stringify(given['time'])}, is no field`);
@@ -138,4 +148,11 @@ export function typeFaults(given: unknown): string[] {
     out.push(...faults.map((w) => `${name}: ${w}`));
   }
   return out;
+}
+
+/** What is wrong with fields asked of a reader (an act's input: fields as a type says them, never a status), in words. */
+export function fieldsFaults(fields: unknown): string[] {
+  if (!isObject(fields)) return ['its fields are an object of name → field'];
+  return Object.entries(fields).flatMap(([name, f]) => (!isObject(f) ? ['it is not an object']
+    : f['type'] === 'status' ? ['a status is worked out, never asked'] : storedFaults(f)).map((w) => `${name}: ${w}`));
 }

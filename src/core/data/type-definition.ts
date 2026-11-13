@@ -17,6 +17,7 @@
  * - TypeColumn — One grid column made from a field.
  * - typeColumns — A grid's columns made from a type: one per field but its key, in its order; each headed by its label.
  * - readFrom — A value read from an entity's graph, by a field's `from`.
+ * - titleOf — The field that names a row as a reader reads it: its type's `title`, else label, else name, else its key.
  */
 import type { StoreOptions } from './base-store.js';
 import type { FieldDeclaration } from './data-source-types.js';
@@ -47,6 +48,10 @@ export interface StoredField {
   time?: boolean;
   /** Read from its entity's graph, never kept beside it: `<node id>/<path in its values>`. */
   from?: string;
+  /** A row of another type, by its id: the value is that row's key, its choices that type's rows (plan 964). */
+  ref?: string;
+  /** With `ref`: a list of that type's keys. */
+  many?: boolean;
 }
 
 /** One field of a type: stored, or a status worked out from the row's other fields. */
@@ -80,6 +85,8 @@ export interface TypeDefinition {
   /** None: `id`. */
   key?: string;
   time?: string;
+  /** The field that names a row as a reader reads it (`titleOf`). */
+  title?: string;
   /** None for a graph thing whose rows are its entities' id, label, description and tags alone. */
   fields?: Readonly<Record<string, TypeField>>;
   /** Its seed rows: a JSON file or a URL. */
@@ -207,4 +214,11 @@ export function readFrom(
   const [id, ...path] = from.split('/');
   const node = graph?.nodes?.find((n) => n.id === id);
   return path.reduce<unknown>((at, part) => (isObject(at) ? at[part] : undefined), node?.values);
+}
+
+/** The field that names a row as a reader reads it (a reference shows it): its type's `title`, else `label` (a graph
+ *  thing's name), else `name`, else its key. */
+export function titleOf(type: Pick<TypeDefinition, 'title' | 'fields' | 'graph' | 'key'>): string {
+  const fields = type.fields ?? {};
+  return type.title ?? (type.graph || 'label' in fields ? 'label' : 'name' in fields ? 'name' : type.key ?? 'id');
 }

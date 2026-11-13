@@ -6,6 +6,8 @@ WebMCP and the MCP all go through that one door" (D1 A), and "each type gives it
 door". Owner sherpa-ui-a9 (the library), sherpa-demos-67 (Demos' acts, then N-zo from them, N3). Written 2026-11-13,
 after plan 960 U3. The API is agreed with sherpa-demos-67 before it is built.
 
+**sherpa-demos-67, 2026-11-13: "OK" on all five picks, with two notes, both taken: an input field may name another type's rows (`ref`, `many`; a type's `title` names a row), and `actsOf()` with nothing lists every act (the chat runs any act from any page).**
+
 ## 1. The shape (the data layer, DOM-free, `sherpa-ui/data`)
 
 ```ts

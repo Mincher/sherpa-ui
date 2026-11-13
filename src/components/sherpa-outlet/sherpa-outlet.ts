@@ -206,6 +206,11 @@ export class SherpaOutlet extends SherpaElement {
         const files = await import('../../core/browser/entity-files.js');
         // Its types first: a page's fields and its entities are of them. Plan 960 U2
         const loaded = types ? await files.loadTypes(Object.fromEntries(Object.entries(types).map(([id, path]) => [id, this.#url(path)]))) : {};
+        // Each type's own acts — find, read, add, change, remove — through its store: the chat works with any of them. Plan 964 N2
+        if (Object.keys(loaded).length) {
+          const { registerAct, typeActs } = await import('../../core/data/acts.js');
+          for (const type of Object.values(loaded)) for (const act of typeActs(type)) registerAct(act);
+        }
         if (entities) this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities))).entities);
         // Then each type's store: a row type's from its rows, a graph type's from the shelf, once its presets are in, its seed
         // entities the reader's own, their marks kept in this browser. Plan 960 U3

@@ -15,6 +15,7 @@
     "category": { "description": "The group it stands in, where an app lists its types and the Nodes panel its entities: Records, Runbooks. None, for a graph thing: Custom Nodes.", "type": "string", "minLength": 1 },
     "key": { "description": "The field each row is known by. None: id. It is one of its fields, and required.", "type": "string", "minLength": 1 },
     "time": { "description": "The date field each row's time is: a page's Date filter reads it.", "type": "string", "minLength": 1 },
+    "title": { "description": "The field that names a row as a reader reads it: a reference to it shows this. None: label, else name, else its key.", "type": "string", "minLength": 1 },
     "fields": {
       "description": "Each field, by name, in the order a page lists them. A dotted name reads a part of an object: location.floor.",
       "type": "object", "minProperties": 1,
@@ -64,7 +65,9 @@
         "from": {
           "description": "Read from its entity's graph, never kept beside it: a node's id, then a path in its values, as when/every.",
           "type": "string", "pattern": "^[^/]+(/[^/]+)*$"
-        }
+        },
+        "ref": { "description": "A row of another type: its value is that row's key, its choices that type's rows, each by its title (plan 964).", "$ref": "defs.v1.json#/$defs/id" },
+        "many": { "description": "With ref: a list of that type's keys.", "type": "boolean" }
       }
     }
   }

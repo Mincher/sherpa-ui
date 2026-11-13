@@ -257,6 +257,8 @@ export { FILTER_LENS, filterOf, presetOfEntity, presetsOver, sourceOf, type Page
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
+// Every act an app can do, said once, through one door; and each type's own acts. Plan 964 N1, N2
+export { actSchema, actsOf, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext } from './core/data/acts.js';
 // A graph type's entities as rows of its type, through the Store door; its seed entities as the reader's own. Plan 960 U3
 export { entityStore, seedEntities, type EntityRowOf, type SeedMarks } from './core/data/entity-store.js';
 /* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip — or a page's Query. Plan 746 E3, TODO 822 · TRAP T-a-graph-is-a-view-of-a-type */
@@ -303,10 +305,10 @@ export { statusFields, type StatusField, type StatusValue } from './core/data/st
 /* A TYPE, said once (type.v1): the store's rules, a page's fields and a grid's columns are made from its fields.
    Plan 960 U2 · TRAP T-a-field-is-declared-once */
 export {
-  pageFields, readFrom, typeColumns, typeFields, typeSchema, typeStatusFields, typeStoreOptions,
+  pageFields, readFrom, titleOf, typeColumns, typeFields, typeSchema, typeStatusFields, typeStoreOptions,
   type StoredField, type TypeColumn, type TypeDefinition, type TypeField, type TypeGraph,
 } from './core/data/type-definition.js';
-export { typeFaults } from './core/data/type-faults.js';
+export { fieldsFaults, typeFaults } from './core/data/type-faults.js';
 // A write made offline waits, and is sent once. Plan 652 S7a
 export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './core/data/outbox.js';
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6
