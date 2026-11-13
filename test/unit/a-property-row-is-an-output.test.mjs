@@ -4,8 +4,8 @@
  * node that could provide it. A property row is an output only row in a node that provides a property (raw or calculated)
  * from the node's data or calculations from it's code logic." "So 'Field' could have a 'Count' property, for example."
  * One row kind, one definition. Count was its first use; it is a Math type now, and a test's True (1 or 0) is the property
- * (plan 944). Sort and Group are kinds of their own, in Organise; a saved Collection reads with a fault in words: nothing
- * converts it.
+ * (plan 944). Sort and Group are rows of ONE Organise node now (plan 960 U4.2); a saved Collection, Sort or Group reads with
+ * a fault in words: nothing converts it.
  *
  *   node --test test/unit/a-property-row-is-an-output.test.mjs
  *
@@ -30,18 +30,18 @@ const testing = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }];
 const at = (g, id) => g.nodes.find((n) => n.id === id);
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
 
-test('Sort and Group are kinds of their own in Organise; the Collection family and its Count type are gone', () => {
-  assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count], [undefined, undefined]);
+test('Organise is the one kind in its category, Sort and Group its rows; the Collection family and its Count type are gone', () => {
+  assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group], [undefined, undefined, undefined, undefined]);
   assert.ok(!NODE_CATEGORIES.includes('Collections') && NODE_CATEGORIES.indexOf('Organise') === NODE_CATEGORIES.indexOf('Time') + 1);
-  assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Organise').items.map((i) => i.id), ['sort', 'group']);
-  // Each takes the Field it works on on its header (plan 783 D5), has no types, and sends its rows from its Rows row.
-  for (const id of ['sort', 'group']) {
-    const kind = resolveKind(NODE_KINDS[id]);
-    assert.deepEqual([kind.types, kind.needs, kind.input, kind.branches, kind.rows[0].name], [undefined, 'field', 'any', undefined, 'rows'], id);
-  }
-  assert.deepEqual(NODE_KINDS.sort.rows.map((r) => r.name), ['rows', 'direction']);
-  // A saved Collection reads with today's fault: nothing converts it (a clean system).
+  assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Organise').items.map((i) => i.id), ['organise']);
+  // It needs rows on its header, no Field there, has no types, and sends its rows from its Rows row (plan 960 U4.2).
+  const kind = resolveKind(NODE_KINDS.organise);
+  assert.deepEqual([kind.types, kind.needs, kind.input, kind.branches, kind.rows[0].name], [undefined, 'rows', 'any', undefined, 'rows']);
+  // Its fields are its own rows, each taking a value in.
+  assert.deepEqual(kind.rows.slice(1).map((r) => [r.name, r.input]), ['sort', 'direction', 'group', 'search', 'primary', 'secondary', 'segments'].map((n) => [n, 'value']));
+  // A saved Collection, Sort or Group reads with today's fault: nothing converts it (a clean system).
   assert.deepEqual(workflowFaults(flow([{ id: 'old', kind: 'collection', x: 0, y: 0, values: { type: 'sort' } }])), ['the node "old" is of the kind "collection", which is not one']);
+  for (const old of ['sort', 'group']) assert.deepEqual(workflowFaults(flow([{ id: 'old', kind: old, x: 0, y: 0 }])), [`the node "old" is of the kind "${old}", which is not one`]);
 });
 
 test('a property row is output only: no control, no input, no value; one definition, the True of each test (plan 944)', () => {
@@ -56,8 +56,8 @@ test('a property row is output only: no control, no input, no value; one definit
   // One definition: the very same row object, on each.
   const same = [['condition', 'eq'], ['condition', 'between'], ['condition', 'and'], ['prompt', 'boolean']].map(([id, type]) => resolveKind(NODE_KINDS[id], type).rows.find((r) => r.name === 'true'));
   assert.ok(same.every((r) => r === same[0]));
-  // No Count row on a Source, a Field, a Group or a Sort (plan 944). And and Or say their True, Pass and Fail.
-  for (const id of ['source', 'field', 'group', 'sort']) assert.deepEqual(NODE_KINDS[id].rows.filter((r) => r.property && r.name !== 'rows'), [], id);
+  // No Count row on a Source, a Field or an Organise (plan 944). And and Or say their True, Pass and Fail.
+  for (const id of ['source', 'field', 'organise']) assert.deepEqual(NODE_KINDS[id].rows.filter((r) => r.property && r.name !== 'rows'), [], id);
   assert.deepEqual(resolveKind(NODE_KINDS.condition, 'and').rows.filter((r) => r.property && r.name !== 'rows').map((r) => [r.name, r.gives]), [['true', 'number'], ['pass', 'number'], ['fail', 'number']]);
 });
 
@@ -72,8 +72,8 @@ test('a property row sends a number before a run, as a Result does: it connects 
   const row = at(g, 'c').rows.find((r) => r.name === 'true');
   assert.deepEqual([row.output, row.control, row.input, !!row.property], ['value', undefined, undefined, true]);
   // A True into a field-needing header warns, as any number does.
-  const bad = flow([source, field, tested, { id: 'k', kind: 'sort', x: 900, y: 0 }], [...testing, { from: 'c/true', to: 'k' }]);
-  assert.deepEqual(said(workflowGraph(bad)), { k: [['', 'Sort takes a field; it was given a number']] });
+  const bad = flow([source, field, tested, { id: 'k', kind: 'tag', x: 900, y: 0 }], [...testing, { from: 'c/true', to: 'k' }]);
+  assert.deepEqual(said(workflowGraph(bad)), { k: [['', 'Tag takes a field; it was given a number']] });
   // The Outgoing JSON lists it among a node's outputs.
   assert.deepEqual(nodeFlow(g, 'c').outgoing.map((o) => [o.socket, o.type]), [['Results', 'object'], ['True', 'value']]);
 });
@@ -114,7 +114,7 @@ test('a graph with a fault does not save: checkWorkflow says no, in words, for a
   const { checkWorkflow } = await import(new URL('workflow.js', core));
   const { setReportSink } = await import(new URL('report.js', core)).catch(() => ({}));
   const old = flow([{ id: 'old', kind: 'collection', x: 0, y: 0, values: { type: 'sort' } }]);
-  const noTrue = flow([source, { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'add' } }, { id: 'k', kind: 'sort', x: 600, y: 0 }], [{ from: 's/rows', to: 'k' }, { from: 'm', to: 'k' }]);
+  const noTrue = flow([source, { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'add' } }, { id: 'k', kind: 'organise', x: 600, y: 0 }], [{ from: 's/rows', to: 'k' }, { from: 'm', to: 'k' }]);
   void setReportSink;
   assert.deepEqual(workflowFaults(old), ['the node "old" is of the kind "collection", which is not one']);
   assert.match(workflowFaults(noTrue).join('; '), /a connection leaves "m", which is no output socket/);

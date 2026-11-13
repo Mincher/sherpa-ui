@@ -19,7 +19,7 @@ const { asNode, savedCategories } = await import(new URL('entity-types.js', core
 const RUNBOOK = { id: 'runbook', label: 'Runbook', runs: false, category: 'Runbooks', inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'found', label: 'Found', type: 'object' }] };
 const steps = (category) => ({
   v: 2, type: 'runbook', id: 'patch-review', label: 'Patch review', ...(category ? { category } : {}),
-  graph: { nodes: [{ id: 'sort', kind: 'sort', x: 0, y: 0 }], connections: [{ from: '#in/rows', to: 'sort' }, { from: 'sort/rows', to: '#out/found' }] },
+  graph: { nodes: [{ id: 'sort', kind: 'organise', x: 0, y: 0, values: { sort: 'name' } }], connections: [{ from: '#in/rows', to: 'sort' }, { from: 'sort/rows', to: '#out/found' }] },
 });
 
 test('Runbooks stands after Custom Nodes; savedCategories is Custom Nodes, Runbooks and each an app\'s types name', () => {
@@ -47,7 +47,7 @@ test('a definition of a category other than a node\'s saves it at the top, and r
 test('Save as Custom Node with Runbooks: its kind stands under Runbooks in the panel', () => {
   const workflow = {
     v: 3, id: 'w',
-    nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'a', kind: 'sort', x: 300, y: 0 }, { id: 'b', kind: 'group', x: 600, y: 0 }],
+    nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'a', kind: 'organise', x: 300, y: 0, values: { sort: 'name' } }, { id: 'b', kind: 'organise', x: 600, y: 0, values: { group: 'status' } }],
     connections: [{ from: 's/rows', to: 'a' }, { from: 'a/rows', to: 'b' }],
   };
   const made = groupNodes(workflow, ['a', 'b'], { v: 1, nodes: {} }, { label: 'My steps', category: 'Runbooks' });

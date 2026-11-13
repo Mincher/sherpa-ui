@@ -83,8 +83,8 @@ test('each fault is named, in words', () => {
 test('a family outside the type is a fault; a use of an entity is not bounded by it', () => {
   const sent = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'end', kind: 'result', x: 720, y: 0 }], connections: ACTIVE.graph.connections } });
   assert.match(faults(sent).join('\n'), /places "end", of the family "Output", which a Preset Filter does not take: Sources, Variables, Math, Logic, Time, Organise, Utils/);
-  // A Sort, of Organise: a family a Preset Filter takes.
-  const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'sort', x: 720, y: 200 }], connections: [...ACTIVE.graph.connections, { from: 'field/field', to: 'order' }] } });
+  // An Organise, of the Organise family: one a Preset Filter takes.
+  const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'organise', x: 720, y: 200 }], connections: [...ACTIVE.graph.connections, { from: 'field/field', to: 'order' }] } });
   assert.deepEqual(faults(sorted), []);
   const sources = { id: 'sources-only', label: 'Sources only', runs: false, families: ['Sources'] };
   assert.match(faults({ ...sorted, type: 'sources-only' }, { types: { 'sources-only': sources } }).join('\n'), /places "order", of the family "Organise"/);

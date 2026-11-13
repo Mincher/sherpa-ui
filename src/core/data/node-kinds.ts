@@ -194,6 +194,8 @@ export interface NodeKind {
   category?: string;
   /** A reader's words for a Custom Node: the panel lists it under each, inside its category, and its search finds it by one. */
   tags?: readonly string[];
+  /** Words the panel's search finds it by, beside its name, and lists it under none: what it does, as "sort" finds Organise. */
+  keywords?: readonly string[];
   /** What it would do, where it acts outside the graph: a type's (`NodeType.would`). */
   would?: string;
   /** A FAMILY: one node, and its first row picks the type, kept as the node's `type` value. Its rows and sockets
@@ -530,18 +532,19 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // ONE node for how rows are organised (Will, plan 960 U4.2): sorting, grouping, search, and the axes a chart reads —
   // its Primary (X), its Secondary (Y) and its Segments' parts. An empty row does nothing.
   organise: {
-    heading: 'Organise', icon: 'sort-ascending', description: 'Sort, group, search rows and set axes', input: 'any',
+    heading: 'Organise', icon: 'sort-ascending', description: 'Sort, group, search rows and set axes', input: 'any', needs: 'rows',
+    keywords: ['sort', 'group', 'search', 'axes'],
     rows: [
       ROWS,
-      { name: 'sort', label: 'Sort', control: 'field' },
-      { name: 'direction', label: 'Direction', control: 'direction' },
-      { name: 'group', label: 'Group', control: 'field' },
-      { name: 'search', label: 'Search', control: 'text' },
-      { name: 'primary', label: 'Primary', control: 'field' },
-      { name: 'secondary', label: 'Secondary', control: 'field' },
-      { name: 'segments', label: 'Segments', control: 'field' },
+      { name: 'sort', label: 'Sort', control: 'field', input: 'value' },
+      { name: 'direction', label: 'Direction', control: 'direction', input: 'value' },
+      { name: 'group', label: 'Group', control: 'field', input: 'value' },
+      { name: 'search', label: 'Search', control: 'text', input: 'value' },
+      { name: 'primary', label: 'Primary', control: 'field', input: 'value' },
+      { name: 'secondary', label: 'Secondary', control: 'field', input: 'value' },
+      { name: 'segments', label: 'Segments', control: 'field', input: 'value' },
     ],
-    model: 'Arrangement', graphs: ['query'], category: 'Organise',
+    model: 'Arrangement', graphs: ['query', 'workflow'], category: 'Organise',
   },
   // How rows are shown: a chart's kind, and its segments' order. Its axes are the Organise node's.
   presentation: {
@@ -602,15 +605,6 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       },
     },
     rows: [], model: 'timeCheck', graphs: ['workflow'], category: 'Time',
-  },
-  // Sort and Group take the Field they work on, on the header (plan 783 D5); a count is a property row (TODO 835).
-  sort: {
-    heading: 'Sort', icon: 'sort-ascending', description: 'Put rows in order of a field', input: 'any', needs: 'field',
-    rows: [ROWS, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }], model: 'sortRows', graphs: ['workflow'], category: 'Organise',
-  },
-  group: {
-    heading: 'Group', icon: 'group', description: 'Group rows by a field', input: 'any', needs: 'field',
-    rows: [ROWS], model: 'groupRows', graphs: ['workflow'], category: 'Organise',
   },
   // Text from text, given from its Result row: a list, where Split by makes one.
   text: {
@@ -771,11 +765,11 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
   return [...groups].filter(([c, items]) => items.length || (graph === 'workflow' && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
 }
 
-/** How a panel item answers a search: by its name or a tag, `{}`; by a type's name, `{ type }`, the one it names whole first
- *  ("not" is Not, not Does not equal); none, not at all. Nothing typed finds all. */
-export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags'>, query: string): { type?: string } | undefined {
+/** How a panel item answers a search: by its name, a tag or a keyword, `{}`; by a type's name, `{ type }`, the one it names
+ *  whole first ("not" is Not, not Does not equal); none, not at all. Nothing typed finds all. */
+export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags' | 'keywords'>, query: string): { type?: string } | undefined {
   const q = query.trim().toLowerCase();
-  if (!q || kind.heading.toLowerCase().includes(q) || kind.tags?.some((t) => t.toLowerCase().includes(q))) return {};
+  if (!q || kind.heading.toLowerCase().includes(q) || [...kind.tags ?? [], ...kind.keywords ?? []].some((t) => t.toLowerCase().includes(q))) return {};
   const types = Object.entries(kind.types ?? {});
   const hit = types.find(([, t]) => t.label.toLowerCase() === q) ?? types.find(([, t]) => t.label.toLowerCase().includes(q));
   return hit ? { type: hit[0] } : undefined;

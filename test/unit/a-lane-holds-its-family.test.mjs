@@ -16,15 +16,15 @@ const { NODE_KINDS } = await import(new URL('node-kinds.js', core));
 const { LANES_BY_FAMILY, LANE_PAD, LANE_GAP, laneOf, laneBands, fitLanes } = await import(new URL('node-lanes.js', core));
 
 const H = () => 100;
-// A Source (Data) and a Value (Values) meet at a Condition (logic), which sends to a Sort (Organise) and an Output.
+// A Source (Data) and a Value (Values) meet at a Condition (logic), which sends to an Organise (Organise) and an Output.
 const flow = () => editWorkflow({
   v: 3, id: 'l',
   nodes: [
     { id: 'src', kind: 'source', x: 0, y: 0 }, { id: 'val', kind: 'value', x: 0, y: 300 },
-    { id: 'cond', kind: 'condition', x: 300, y: 150 }, { id: 'sort', kind: 'sort', x: 600, y: 150 },
+    { id: 'cond', kind: 'condition', x: 300, y: 150 }, { id: 'org', kind: 'organise', x: 600, y: 150 },
     { id: 'out', kind: 'result', x: 900, y: 150 }, { id: 'lone', kind: 'condition', x: 0, y: 900 },
   ],
-  connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'out' }],
+  connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'org' }, { from: 'org/rows', to: 'out' }],
 }, { lanes: LANES_BY_FAMILY });
 
 test('a node stands in its family\'s lane; a logic node in the junction between the lanes it joins; one joined to none, in none', () => {
@@ -32,7 +32,7 @@ test('a node stands in its family\'s lane; a logic node in the junction between 
   const at = (id) => laneOf(w, id, NODE_KINDS);
   assert.equal(at('src'), 'data');
   assert.equal(at('val'), 'values');
-  assert.equal(at('sort'), 'organise');
+  assert.equal(at('org'), 'organise');
   assert.equal(at('out'), 'output');
   // It joins Data, Values and Organise: the junction just above the lowest, under Values.
   assert.equal(at('cond'), 'junction:values');
@@ -133,7 +133,7 @@ test('lane A › junction › lane A › junction is ONE junction lane: each sta
 
 
 test('2,000 nodes: the graph is read once, not once a node — the bands grow with the graph, not its square (890)', () => {
-  const kinds = ['source', 'field', 'value', 'condition', 'sort', 'group', 'math', 'output', 'text'];
+  const kinds = ['source', 'field', 'value', 'condition', 'organise', 'organise', 'math', 'output', 'text'];
   const many = (n) => {
     const nodes = Array.from({ length: n }, (_, i) => ({ id: `n${i}`, kind: kinds[i % kinds.length], x: (i % 40) * 360, y: Math.floor(i / 40) * 200 }));
     const connections = nodes.slice(1).map((m, i) => ({ from: nodes[i].kind === 'source' ? `${nodes[i].id}/rows` : nodes[i].id, to: m.id }));

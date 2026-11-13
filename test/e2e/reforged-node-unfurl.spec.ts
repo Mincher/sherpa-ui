@@ -267,7 +267,7 @@ test('no Source is lone: the Start joins each, so each stands right of it; a lon
 // the stages pushed the Report nodes onto each other.
 const STAGED: [string, string, number, number, Record<string, unknown>?][] = [
   ['src', 'source', 0, 0, { store: 'users' }], ['pick', 'field', 360, 0], ['keep', 'condition', 720, 0, { type: 'eq', b: 'x' }],
-  ['sort1', 'sort', 1140, 0], ['sort2', 'sort', 1140, 300],
+  ['sort1', 'organise', 1140, 0], ['sort2', 'organise', 1140, 300],
   ['end1', 'result', 1740, 0], ['end2', 'result', 1740, 300], ['note', 'value', 1740, 600, { type: 'text', value: 'n' }],
 ];
 const STAGED_CONNECTIONS = [

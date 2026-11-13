@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** A workflow bound on the harness canvas: Source › Field (Status) › Condition, a Value into its Value B; a Sort waits. */
+/** A workflow bound on the harness canvas: Source › Field (Status) › Condition, a Value into its Value B; an Organise waits. */
 const BIND = `async (connections) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
@@ -30,7 +30,7 @@ const BIND = `async (connections) => {
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 260, values: { value: 'active' } },
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } },
-    { id: 'sort', kind: 'sort', x: 720, y: 0, values: { direction: 'asc' } },
+    { id: 'sort', kind: 'organise', x: 720, y: 0, values: { direction: 'asc' } },
     { id: 'pick', kind: 'field', x: 0, y: 460, values: { field: 'status' } },
   ], connections: connections ?? [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }] };
   window.editor = bindWorkflow(canvas, flow, {
@@ -93,7 +93,7 @@ test('a picklist row edits through the draft\'s one door: the Condition\'s Value
   await page.locator(`${filterValue} select`).selectOption('churned');
   await page.locator(`${row('Value', 'type')} select`).selectOption('text');
   const types = await page.locator(`${row('Value', 'type')} option`).allTextContents();
-  await page.locator(`${row('Sort', 'direction')} select`).selectOption('desc');
+  await page.locator(`${row('Organise', 'direction')} select`).selectOption('desc');
   const r = await draft(page);
   expect(options).toEqual(['active', 'trial', 'churned']);
   expect(types).toEqual(['Text', 'Integer', 'Decimal', 'Date', 'True/false', 'List']);
@@ -125,7 +125,7 @@ test('a Value node connected to a picklist OVERRIDES it: "active Custom", read o
 
 test('557 a connection\'s input end dragged to another input RECONNECTS it: the first row has its own pick back', async ({ page }) => {
   await bind(page);
-  // A Sort has no Field row now (plan 783 D5): the other picklist is the Field node's own.
+  // The other picklist is the Field node's own.
   const from = await at(page, row('Condition', 'b'), 'input');
   const to = await at(page, row('Field', 'field'), 'input');
   await drag(page, from, to);
@@ -167,12 +167,12 @@ test('558 a connection\'s end let go over the bare canvas BREAKS it; a click on 
 test('a line dragged out of an unconnected picklist\'s input onto the bare canvas makes a Value node there, holding the row\'s pick, connected in', async ({ page }) => {
   await bind(page, FED);
   const spot = await blank(page);
-  await drag(page, await at(page, row('Sort', 'direction'), 'input'), spot);
+  await drag(page, await at(page, row('Organise', 'direction'), 'input'), spot);
   const r = await draft(page);
   expect(r.connections).toEqual(['start/rows → pick', 'pick/field → filter', 'value-1/value → sort/direction']);
   expect(r.nodes['value-1']).toEqual({ value: 'asc' });
   // The row mirrors it, and marks it Custom; its own pick is kept.
-  const text = await page.evaluate(() => document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"]')!.shadowRoot!.querySelector('select')!.selectedOptions[0]!.textContent);
+  const text = await page.evaluate(() => document.querySelector('#root sherpa-node[data-heading="Organise"] sherpa-input-text[name="direction"]')!.shadowRoot!.querySelector('select')!.selectedOptions[0]!.textContent);
   expect(text).toBe('asc Custom');
   expect(r.nodes['sort']).toEqual({ direction: 'asc' });
 });
@@ -200,12 +200,12 @@ test('with no pointer: the inspector\'s "Custom value" makes the Value node; its
 
 test('559 a click on the blank canvas deselects every node and puts the empty state back; a drag across it does not', async ({ page }) => {
   await bind(page);
-  await page.locator('#root sherpa-node[data-heading="Sort"]').click({ position: { x: 40, y: 12 } });
+  await page.locator('#root sherpa-node[data-heading="Organise"]').click({ position: { x: 40, y: 12 } });
   const state = () => page.evaluate(() => ({
     current: [...document.querySelectorAll('#root sherpa-node[data-current]')].map((n) => (n as HTMLElement).dataset['heading']),
     open: (document.getElementById('inspector') as HTMLElement & { open: boolean }).open,
   }));
-  expect(await state()).toEqual({ current: ['Sort'], open: true });
+  expect(await state()).toEqual({ current: ['Organise'], open: true });
   const [x, y] = await blank(page);
   // A pan (Space + drag; a plain drag is a box now): the pointer moves, so it is no click.
   await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas')!.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
@@ -215,7 +215,7 @@ test('559 a click on the blank canvas deselects every node and puts the empty st
   await page.mouse.move(x + 30, y + 10, { steps: 4 });
   await page.mouse.up();
   await page.keyboard.up('Space');
-  expect(await state()).toEqual({ current: ['Sort'], open: true });
+  expect(await state()).toEqual({ current: ['Organise'], open: true });
   const [bx, by] = await blank(page);
   await page.mouse.click(bx, by);
   await settle(page);

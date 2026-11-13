@@ -302,7 +302,8 @@ function organiseRows(scope: ScopeQuery, keys: readonly { value: string; label: 
   const presented = slot ? scope.presentation ?? {} : {};
   const values: Record<string, unknown> = { sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '' };
   for (const [row, key] of Object.entries(AXES)) values[row] = presented[key] ?? '';
-  return rowsOf('organise', values).map((row): GraphRow => {
+  // The Query owns each row: none takes a connection, as a chip's value takes none.
+  return rowsOf('organise', values).map(({ input: _in, ...row }): GraphRow => {
     if (row.name === ROWS.name) return row;
     if (row.name === 'search') return { ...row, editable: true };
     if (row.name in AXES && !slot) return { ...row, choices: keys, hint: SHARED };

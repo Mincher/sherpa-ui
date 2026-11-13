@@ -54,7 +54,7 @@ const BIND = `async (org) => {
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
     useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),
-    { id: 'sort', kind: 'sort', x: 0, y: 260, values: { direction: 'asc' } },
+    { id: 'sort', kind: 'organise', x: 0, y: 260, values: { direction: 'asc' } },
     { id: 'end', kind: 'result', x: 700, y: 0 },
   ], connections: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
   const canvas = document.getElementById('cv');
@@ -95,8 +95,8 @@ const can = (page: Page) => page.evaluate(() => ({
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-list sherpa-list-item[data-kind="${kind}"]`);
 const STORE_ROWS = '#cv > sherpa-node[data-heading="Source"] sherpa-node-row[data-output-socket]';
-const SORT = '#cv > sherpa-node[data-heading="Sort"]';
-const SORT_ROWS = `${SORT} sherpa-node-row`;
+const ORGANISE = '#cv > sherpa-node[data-heading="Organise"]';
+const ORGANISE_ROWS = `${ORGANISE} sherpa-node-row`;
 const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
 const at = (page: Page, selector: string, side: string) =>
   page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
@@ -197,12 +197,12 @@ test('a connection and a row pick: each is one step, back and forward, to the sa
   await bind(page);
   const s0 = await state(page);
   // A row pick.
-  await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc');
+  await page.locator('#cv > sherpa-node[data-heading="Organise"] sherpa-input-text[name="direction"] select').selectOption('desc');
   await settle(page);
   const s1 = await state(page);
   expect(s1).not.toBe(s0);
-  // A connection: the Source's rows to the Sort.
-  await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
+  // A connection: the Source's rows to the Organise.
+  await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, ORGANISE, 'input'));
   const s2 = await state(page);
   expect(s2).not.toBe(s1);
   await press(page, 'undo');
@@ -219,12 +219,12 @@ test('a connection and a row pick: each is one step, back and forward, to the sa
 const EDITS: [string, (page: Page) => Promise<void>][] = [
   ['place', async (page) => { await item(page, 'math').click(); }],
   ['move', async (page) => {
-    const b = (await header(page, 'Sort').boundingBox())!;
+    const b = (await header(page, 'Organise').boundingBox())!;
     await drag(page, [b.x + 40, b.y + 10], [b.x + 100, b.y + 60]);
   }],
-  ['row pick', async (page) => { await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc'); }],
+  ['row pick', async (page) => { await page.locator('#cv > sherpa-node[data-heading="Organise"] sherpa-input-text[name="direction"] select').selectOption('desc'); }],
   ['connection', async (page) => {
-    await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
+    await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, ORGANISE, 'input'));
   }],
   ['cut a connection', async (page) => {
     const [mx, my] = await page.evaluate(() => {
@@ -249,10 +249,10 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
       }
       throw new Error('no blank spot');
     });
-    await drag(page, await at(page, `${SORT_ROWS}:has([name="direction"])`, 'input'), spot);
+    await drag(page, await at(page, `${ORGANISE_ROWS}:has([name="direction"])`, 'input'), spot);
   }],
   ['remove a node', async (page) => {
-    await page.locator(SORT).click({ position: { x: 40, y: 12 } });
+    await page.locator(ORGANISE).click({ position: { x: 40, y: 12 } });
     await settle(page);
     await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
     await page.locator('#inspector').getByRole('button', { name: 'Remove node' }).click();
@@ -265,7 +265,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
   ['make a Custom Node', async (page) => {
     await header(page, 'Source').focus();
     await page.keyboard.press('Space');
-    await header(page, 'Sort').focus();
+    await header(page, 'Organise').focus();
     await page.keyboard.press('Space');
     await settle(page);
     await saveAs(page, 'Pair');
@@ -291,7 +291,7 @@ test('Ungroup is a step too: Undo makes the Custom Node again, a second Undo put
   const s0 = await state(page);
   await header(page, 'Source').focus();
   await page.keyboard.press('Space');
-  await header(page, 'Sort').focus();
+  await header(page, 'Organise').focus();
   await page.keyboard.press('Space');
   await settle(page);
   await saveAs(page, 'Pair');

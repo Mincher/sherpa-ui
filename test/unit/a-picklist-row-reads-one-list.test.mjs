@@ -60,7 +60,7 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
 
 test('every workflow picklist row takes a value in; the Value node has its Type', () => {
   const kind = (id) => (id === 'filter' ? resolveKind(NODE_KINDS.condition) : NODE_KINDS[id]);
-  for (const [id, row] of [['source', 'store'], ['field', 'field'], ['filter', 'b'], ['sort', 'direction']]) {
+  for (const [id, row] of [['source', 'store'], ['field', 'field'], ['filter', 'b'], ['organise', 'direction']]) {
     assert.equal(socketType(kind(id), row, 'input'), 'value', `${id} › ${row}`);
   }
   const value = resolveKind(NODE_KINDS.value);
@@ -123,7 +123,7 @@ test('a row a connection drives that sends nothing yet, and that holds nothing, 
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'pick', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
       { id: 'match', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } },
-      { id: 'order', kind: 'sort', x: 720, y: 0 },
+      { id: 'order', kind: 'organise', x: 720, y: 0 },
     ],
     connections: [
       { from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: '#in/status', to: 'match/b' },
@@ -187,7 +187,7 @@ test('a multi-select row holds, takes and sends ONE object: each connected pick 
 test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its type; a connection of another type into a picklist warns', () => {
   const sorted = (direction) => ({
     v: 3, id: 's', nodes: [
-      { id: 's', kind: 'sort', x: 0, y: 0, values: { direction } },
+      { id: 's', kind: 'organise', x: 0, y: 0, values: { direction } },
     ],
   });
   assert.deepEqual(workflowFaults(sorted('asc')), []);
@@ -240,7 +240,7 @@ test('a Value node is ADDED for a picklist row, holding its own pick, and connec
   assert.deepEqual(workflowFaults(gone), []);
   assert.deepEqual(editWorkflow(made, { remove: 'nope' }).connections, made.connections);
   // Add: an id that is free; one that is not leaves the workflow alone.
-  assert.equal(editWorkflow(base, { add: { id: 'x', kind: 'group', x: 1, y: 2 } }).nodes.length, 6);
-  assert.deepEqual(editWorkflow(base, { add: { id: 'end', kind: 'sort', x: 1, y: 2 } }), base);
+  assert.equal(editWorkflow(base, { add: { id: 'x', kind: 'organise', x: 1, y: 2 } }).nodes.length, 6);
+  assert.deepEqual(editWorkflow(base, { add: { id: 'end', kind: 'organise', x: 1, y: 2 } }), base);
   assert.deepEqual(base, flow({ b: 'trial' }), 'the one given is untouched');
 });

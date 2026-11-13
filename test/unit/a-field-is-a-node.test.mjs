@@ -61,7 +61,7 @@ test('Store → Field sends a column, { rows, field }: the field\'s name, words 
 test('a column fits what takes a field, rows, an object or a list; numbers where it is a number, a date where it is a date', () => {
   const nodes = [
     store, field('seats', 'seats'), field('status', 'status'), field('joined', 'joined'),
-    { id: 'c', kind: 'condition', x: 600, y: 0 }, { id: 'count', kind: 'group', x: 600, y: 200 },
+    { id: 'c', kind: 'condition', x: 600, y: 0 }, { id: 'count', kind: 'organise', x: 600, y: 200 },
     { id: 'avg', kind: 'math', x: 600, y: 400, values: { type: 'average' } }, { id: 'time', kind: 'time', x: 600, y: 600 },
     { id: 'end', kind: 'result', x: 900, y: 0 },
   ];
@@ -88,7 +88,7 @@ test('a column is no ONE value: Add\'s Value A warns, unless one record came in,
   assert.deepEqual(sentFrom(one, 'f/field', facts, kinds), { kind: 'number' });
   assert.deepEqual(said(workflowGraph(one, facts, kinds)), {});
   assert.deepEqual(columnOf({ name: 'status' }, { kind: 'object' }), { kind: 'value' });
-  assert.equal(readInput({ label: 'Sort', needs: 'field' }, { kind: 'rows' }).warning, 'Sort takes a field; it was given rows: connect a Field in');
+  assert.equal(readInput({ label: 'Tag', needs: 'field' }, { kind: 'rows' }).warning, 'Tag takes a field; it was given rows: connect a Field in');
 });
 
 test('what it cannot use warns and sends nothing: a Value into its header, a field the rows do not have', () => {
@@ -106,29 +106,34 @@ test('what it cannot use warns and sends nothing: a Value into its header, a fie
   assert.equal(at(workflowGraph(stranger, {}), 'f').warnings, undefined);
 });
 
-test('Sort, Group and Tag › Includes take a Field on their header, and have no Field row (D5, plan 835)', () => {
+test('Tag › Includes takes a Field on its header (D5, plan 835); Organise takes rows there and picks its fields in its own rows (plan 960 U4.2)', () => {
   const field = { id: 'f', kind: 'field', x: 300, y: 0, values: { field: 'status' } };
-  const node = (id, kind) => ({ id, kind, x: 600, y: 0 });
-  const nodes = [store, field, node('sort', 'sort'), node('group', 'group'), node('tag', 'tag')];
+  const node = (id, kind, values) => ({ id, kind, x: 600, y: 0, ...(values ? { values } : {}) });
+  const nodes = [store, field, node('org', 'organise', { sort: 'seats', direction: 'desc', group: 'status' }), node('tag', 'tag')];
   for (const n of nodes.slice(2)) assert.ok(!workflowGraph(flow([n], [])).nodes[0].rows.some((r) => r.name === 'field'), `${n.id} has no Field row`);
-  const fed = flow(nodes, [{ from: 's/rows', to: 'f' }, ...['sort', 'group', 'tag'].map((to) => ({ from: 'f/field', to }))]);
-  assert.deepEqual(said(workflowGraph(fed, facts)), {}, 'each takes the Field');
-  // Rows with no Field: Sort, Group and Tag warn, and say what to connection. The Field, no Source in, says so.
-  const bare = flow(nodes, ['sort', 'group', 'tag'].map((to) => ({ from: 's/rows', to })));
+  const fed = flow(nodes, [{ from: 's/rows', to: 'f' }, ...['org', 'tag'].map((to) => ({ from: 'f/field', to }))]);
+  assert.deepEqual(said(workflowGraph(fed, facts)), {}, 'each takes the Field: a Tag reads its column, an Organise its rows');
+  // Rows with no Field: the Tag warns, and says what to connect. An Organise takes them. The Field, no Source in, says so.
+  const bare = flow(nodes, ['org', 'tag'].map((to) => ({ from: 's/rows', to })));
   assert.deepEqual(said(workflowGraph(bare, facts)), {
     f: [['field', 'No store\'s rows come in: connect a Source in']],
-    sort: [['', 'Sort takes a field; it was given rows: connect a Field in']],
-    group: [['', 'Group takes a field; it was given rows: connect a Field in']],
     tag: [['', 'Tag takes a field; it was given rows: connect a Field in']],
   });
-  // Each passes the rows on from its Rows row, as the Field carries them.
-  for (const id of ['sort', 'group', 'tag']) assert.deepEqual(sentFrom(fed, `${id}/rows`, facts), { kind: 'rows' }, id);
+  // Each passes the rows on from its Rows row.
+  for (const id of ['org', 'tag']) assert.deepEqual(sentFrom(fed, `${id}/rows`, facts), { kind: 'rows' }, id);
+  assert.deepEqual(sentFrom(bare, 'org/rows', facts), { kind: 'rows' });
+  // Organise's Sort and Group are its own rows, each a pick of the fields of the rows that come in.
+  const org = workflowGraph(bare, facts).nodes.find((n) => n.id === 'org');
+  for (const name of ['sort', 'group']) {
+    const row = org.rows.find((r) => r.name === name);
+    assert.deepEqual([row.value, row.input, row.choices.map((c) => c.value)], [name === 'sort' ? 'seats' : 'status', 'value', ['status', 'seats', 'joined']], name);
+  }
   // A Tag's closed list is the Field's values: free with none known, closed where they are.
   const values = { fieldsOf: { customers: { ...fields, status: { label: 'Status', values: ['active', 'trial'] } } } };
   const tags = (f) => workflowGraph(fed, f).nodes.find((n) => n.id === 'tag').rows.find((r) => r.name === 'value');
   assert.deepEqual([tags(facts).closed, tags(values).closed, tags(values).choices.map((c) => c.value)], [undefined, true, ['active', 'trial']]);
   const stranger = { ...fed, nodes: fed.nodes.map((n) => (n.id === 'tag' ? { ...n, values: { value: ['gold'] } } : n)) };
   assert.deepEqual(workflowFaults(stranger, NODE_KINDS, values), ['the node "tag"\'s Tags: "gold" is not a value of Status']);
-  // A field row a Sort held before is no row now: nothing converts it (D9).
-  assert.deepEqual(workflowFaults(flow([{ ...node('old', 'sort'), values: { field: 'status' } }], [])), ['the node "old" holds a value for "field", a row its kind has not']);
+  // A field row is no row of an Organise: nothing converts one held before (D9).
+  assert.deepEqual(workflowFaults(flow([node('old', 'organise', { field: 'status' })], [])), ['the node "old" holds a value for "field", a row its kind has not']);
 });

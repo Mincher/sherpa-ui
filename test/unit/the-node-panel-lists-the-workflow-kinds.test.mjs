@@ -16,10 +16,11 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
   assert.deepEqual(palette.map((g) => g.category), ['Triggers', 'Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['trigger'], ['source'], [], ['value', 'field'], ['math'], ['condition', 'check'], ['model', 'prompt', 'runbook', 'skill'], ['time'], ['sort', 'group'], ['text', 'tag', 'portal'], ['notify', 'content', 'response', 'result', 'output-trigger']]);
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['trigger'], ['source'], [], ['value', 'field'], ['math'], ['condition', 'check'], ['model', 'prompt', 'runbook', 'skill'], ['time'], ['organise'], ['text', 'tag', 'portal'], ['notify', 'content', 'response', 'result', 'output-trigger']]);
   // Twenty items, in the plan's order: the Trigger first, in Triggers (plan 941 D1 B); the Portal is a Utils (TODO 779); Notify, an
-  // Output of type Notification (plan 891); the AI nodes after Logic (plan 926); the Check after Condition (plan 944).
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  // Output of type Notification (plan 891); the AI nodes after Logic (plan 926); the Check after Condition (plan 944); one
+  // Organise, for sorting and grouping (plan 960 U4.2).
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -42,7 +43,10 @@ test('a search finds a family by its name, or by a type\'s: "round" finds Math, 
   const found = (q) => items.flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
   assert.deepEqual(found('round'), [['math', 'round']]);
   assert.deepEqual(found('ROUND '), [['math', 'round']], 'any case, trimmed');
-  assert.deepEqual(found('sor'), [['sort', undefined]]);
+  assert.deepEqual(found('organ'), [['organise', undefined]]);
+  // What it does finds it too, by its keywords: "sort" and "group" find Organise (plan 960 U4.2).
+  assert.deepEqual(found('sort'), [['organise', undefined]]);
+  assert.deepEqual(found('group').map(([id]) => id), ['organise']);
   // Logic's Between takes two ends of a value; Time's, of a date.
   assert.deepEqual(found('between'), [['condition', 'between'], ['time', 'between']]);
   assert.deepEqual(found('includes'), [['tag', 'includes']]);
@@ -53,7 +57,7 @@ test('a search finds a family by its name, or by a type\'s: "round" finds Math, 
   // Math's Count counts rows (plan 944).
   assert.deepEqual(found('count'), [['math', 'count']]);
   assert.deepEqual(found('zzz'), []);
-  assert.equal(found('').length, 22, 'nothing typed finds all');
+  assert.equal(found('').length, 21, 'nothing typed finds all');
 });
 
 test("an app's own kind goes after the known categories; one with none is Other", () => {
@@ -70,13 +74,13 @@ test('a socket is offered the kinds that could join it, a Value first', () => {
   assert.ok(fromValue.includes('condition') && fromValue.includes('result') && !fromValue.includes('value'));
   assert.ok(fromValue.includes('math') && fromValue.includes('time'));
   // An input that takes a value is fed by a kind that gives one: a Value first; a Math its Result, a Condition its True.
-  // No Group: its Count row is gone (plan 944).
+  // No Organise: it has no Count row (plan 944), and sends rows alone.
   const into = paletteFor(palette, 'value', 'in').map((i) => i.id);
   assert.equal(into[0], 'value');
-  assert.ok(into.includes('condition') && into.includes('math') && !into.includes('group'));
+  assert.ok(into.includes('condition') && into.includes('math') && !into.includes('organise'));
   assert.deepEqual(fitOf(NODE_KINDS['condition'], 'value', 'in'), { row: 'true' });
-  assert.equal(fitOf(NODE_KINDS['group'], 'value', 'in'), undefined);
-  assert.deepEqual(fitOf(NODE_KINDS['sort'], 'object', 'out'), {}, 'a Sort takes the rows on its header');
+  assert.equal(fitOf(NODE_KINDS['organise'], 'value', 'in'), undefined);
+  assert.deepEqual(fitOf(NODE_KINDS['organise'], 'object', 'out'), {}, 'an Organise takes the rows on its header');
   // A list into a Math's own type: Floor takes it, in its Values row.
   assert.deepEqual(fitOf(NODE_KINDS['math'], 'object', 'out'), { row: 'values', type: 'floor' });
   assert.deepEqual(fitOf(NODE_KINDS['text'], 'object', 'in'), { row: 'result', type: 'split' });
@@ -95,8 +99,9 @@ test('"Add a node" from what an output gives lists only the kinds that can use i
   // A portal's In takes anything (TODO 779).
   // An AI node's header reads anything: the data it asks about (plan 926).
   // A Check's Data takes anything (plan 944).
-  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
-  // Rows fit no Tag (it takes a Field) and no Time: their inputs never read rows. Math does, as Count (plan 944).
-  assert.deepEqual(offered('rows'), ['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
+  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'time', 'organise', 'text', 'tag', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
+  // Rows fit no Tag (it takes a Field) and no Time: their inputs never read rows. Math does, as Count (plan 944), and an
+  // Organise, on its header (plan 960 U4.2).
+  assert.deepEqual(offered('rows'), ['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'organise', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
   assert.deepEqual([takesGiven(NODE_KINDS.math, 'rows'), takesGiven(NODE_KINDS.math, 'field'), takesGiven(NODE_KINDS.value, 'field')], [true, true, false]);
 });

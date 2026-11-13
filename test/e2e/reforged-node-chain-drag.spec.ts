@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
       v: 3, id: 'z',
       nodes: [
         { id: 's', kind: 'source', x: 0, y: 0, heading: 'S', values: { store: 'users' } },
-        { id: 't', kind: 'sort', x: 500, y: 0, heading: 'T' },
+        { id: 't', kind: 'condition', x: 500, y: 0, heading: 'T', values: { type: 'empty' } },
         { id: 'o', kind: 'result', x: 1000, y: 0, heading: 'O' },
       ],
       connections: [{ from: 's/rows', to: 't' }, { from: 't/rows', to: 'o' }],
@@ -62,7 +62,7 @@ async function dragNode(page: Page, heading: string, by: [number, number], key?:
 test('⌘ or Ctrl on a drag pulls the nodes it joins, and theirs, each connector as long as it was; one Undo puts all back', async ({ page }) => {
   const key = await primary(page);
   const before = await places(page);
-  // 150 screen px at 0.5 is 300 on the plane, away from the Sort: it and the Source come along.
+  // 150 screen px at 0.5 is 300 on the plane, away from T: it and the Source come along.
   await dragNode(page, 'O', [150, 0], key);
   const after = await places(page);
   expect(after['o']![0]).toBeGreaterThan(before['o']![0] + 250);
@@ -87,7 +87,7 @@ test('a plain drag pulls none; the setting off, ⌘ or Ctrl pulls none either', 
 test('every drag: a node dragged onto another pushes it away, no nearer than their radii', async ({ page }) => {
   const radius = (heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluate((n) => Math.max((n as HTMLElement).offsetWidth, (n as HTMLElement).offsetHeight) / 2);
   const before = await places(page);
-  // The Source onto the Sort: 500 plane px is 250 on the screen.
+  // The Source onto T: 500 plane px is 250 on the screen.
   await dragNode(page, 'S', [250, 0]);
   const after = await places(page);
   expect(after['s']![0]).toBeGreaterThan(before['s']![0] + 400);
@@ -104,7 +104,7 @@ test('⌘ or Ctrl and an arrow on a node\'s header pulls the nodes it joins, as 
   await settle(page);
   const after = await places(page);
   expect(after['o']![0] - before['o']![0]).toBeGreaterThan(0);
-  // A rope pulls along its line: the Sort's Rows row sits lower than the Output's header, so it comes right and up.
+  // A rope pulls along its line: T's Rows row sits lower than the Output's header, so it comes right and up.
   expect(after['t']![0]).toBeGreaterThan(before['t']![0]);
   expect(after['s']![0]).toBeGreaterThan(before['s']![0]);
 });

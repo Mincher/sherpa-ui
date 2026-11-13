@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
       { id: 'src', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'val', kind: 'value', x: 0, y: 40 },
       { id: 'cond', kind: 'condition', x: 330, y: 20 },
-      { id: 'sort', kind: 'sort', x: 660, y: 20 },
+      { id: 'sort', kind: 'organise', x: 660, y: 20 },
       { id: 'end', kind: 'result', x: 990, y: 0 },
     ], connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'),
@@ -47,7 +47,7 @@ const span = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[da
 
 test('Swimlanes on: a band for each family that has a node, the logic node in a junction, no band over the next; off, they go and each node goes back', async ({ page }) => {
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(0);
-  const before = await Promise.all(['Source', 'Value', 'Condition', 'Sort', 'Run result'].map((h) => span(page, h)));
+  const before = await Promise.all(['Source', 'Value', 'Condition', 'Organise', 'Run result'].map((h) => span(page, h)));
   // Each node moves by a transition, as Unfurl's do: the plane says so while they go (TODO 929).
   const easing = await page.locator('sherpa-node-toolbar sherpa-button.lanes').evaluate((el) => {
     (el.shadowRoot!.querySelector('button') as HTMLElement).click();
@@ -61,7 +61,7 @@ test('Swimlanes on: a band for each family that has a node, the logic node in a 
   expect(bands[2]!.type).toBe('junction');
   for (let i = 1; i < bands.length; i++) expect(bands[i]!.top).toBeGreaterThan(bands[i - 1]!.bottom);
   // Each node inside its band.
-  for (const [heading, band] of [['Source', 0], ['Value', 1], ['Condition', 2], ['Sort', 3], ['Run result', 4]] as const) {
+  for (const [heading, band] of [['Source', 0], ['Value', 1], ['Condition', 2], ['Organise', 3], ['Run result', 4]] as const) {
     const s = await span(page, heading);
     expect(s.top).toBeGreaterThanOrEqual(bands[band]!.top);
     expect(s.bottom).toBeLessThanOrEqual(bands[band]!.bottom);
@@ -80,7 +80,7 @@ test('Swimlanes on: a band for each family that has a node, the logic node in a 
   // Off: the rows go, and each node goes back where it stood before; Undo turns them back on.
   await press(page, 'lanes');
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(0);
-  expect(await Promise.all(['Source', 'Value', 'Condition', 'Sort', 'Run result'].map((h) => span(page, h)))).toEqual(before);
+  expect(await Promise.all(['Source', 'Value', 'Condition', 'Organise', 'Run result'].map((h) => span(page, h)))).toEqual(before);
   await press(page, 'undo');
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(5);
 });
@@ -103,7 +103,7 @@ test('with Swimlanes on, Arrange, Unfurl and the zip tie are off and the ties ar
   await expect(tool('tie')).toHaveAttribute('disabled', '');
   await expect(tool('arrange')).toHaveAttribute('disabled', '');
   // T on picked nodes ties nothing while the lanes place them.
-  await page.locator('#cv > sherpa-node[data-heading="Sort"] >> .header[role="button"]').focus();
+  await page.locator('#cv > sherpa-node[data-heading="Organise"] >> .header[role="button"]').focus();
   await page.keyboard.press('t');
   await settle(page);
   expect(await page.evaluate(() => (window as never as { ed: { workflow(): { ties?: unknown[] } } }).ed.workflow().ties ?? [])).toEqual([]);
@@ -113,7 +113,7 @@ test('with Swimlanes on, Arrange, Unfurl and the zip tie are off and the ties ar
 });
 
 test('a tie made before Swimlanes is hidden while they are on, and drawn again after', async ({ page }) => {
-  await page.locator('#cv > sherpa-node[data-heading="Sort"] >> .header[role="button"]').focus();
+  await page.locator('#cv > sherpa-node[data-heading="Organise"] >> .header[role="button"]').focus();
   await page.keyboard.press('t');
   await settle(page);
   expect((await page.evaluate(() => (window as never as { ed: { workflow(): { ties?: unknown[] } } }).ed.workflow().ties ?? [])).length).toBe(1);

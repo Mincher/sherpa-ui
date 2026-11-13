@@ -76,7 +76,7 @@ test('it docks on the canvas as a card, 8px in from its top, bottom and left, wi
   expect(after).toBe(card!.left);
 });
 
-test('it lists each category with its families, twenty-three, never a Query-only one; "sor" shows only Sort', async ({ page }) => {
+test('it lists each category with its families, twenty-one, never a Query-only one; "organ" shows only Organise', async ({ page }) => {
   await bind(page);
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   // The Preset tab's categories, then the Custom tab's: Custom Nodes, the reader's own (plan 936).
@@ -84,17 +84,16 @@ test('it lists each category with its families, twenty-three, never a Query-only
   const names = () => page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   // An Output per family, Request none till an app adds a type (plan 917); the AI nodes after Logic (plan 926); Check in
   // Logic, after Condition (plan 944); the Trigger first, in Triggers (plan 941).
-  expect(await names()).toEqual(['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  expect(await names()).toEqual(['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // A family's line is its synopsis, never its types (TODO 809).
-  expect(await item(page, 'sort').getAttribute('data-description')).toBe('Put rows in order of a field');
-  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('sor');
-  expect(await names()).toEqual(['Sort']);
+  expect(await item(page, 'organise').getAttribute('data-description')).toBe('Sort, group, search rows and set axes');
+  await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('organ');
+  expect(await names()).toEqual(['Organise']);
   expect(await page.locator('sherpa-node-list .category-heading:visible').count()).toBe(1);
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('zzz');
   expect(await names()).toEqual([]);
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('');
-  expect((await names()).length).toBe(22);
-  expect(await item(page, 'group').getAttribute('data-description')).toBe('Group rows by a field');
+  expect((await names()).length).toBe(21);
 });
 
 test('"round" shows Math, says Round, and a click places a Math whose type is Round; its rows follow the type', async ({ page }) => {
@@ -144,18 +143,18 @@ test('Enter on an item places it', async ({ page }) => {
   const onValue = () => page.evaluate(() => {
     let el: Element | null = document.activeElement;
     while (el?.shadowRoot?.activeElement) el = el.shadowRoot.activeElement;
-    return !!el && !!el.getRootNode() && ((el.getRootNode() as ShadowRoot).host as HTMLElement | undefined)?.dataset?.['kind'] === 'sort';
+    return !!el && !!el.getRootNode() && ((el.getRootNode() as ShadowRoot).host as HTMLElement | undefined)?.dataset?.['kind'] === 'organise';
   });
   for (let i = 0; i < 40 && !(await onValue()); i++) await page.keyboard.press('Tab');
   // WebKit's Tab skips buttons unless asked to; the row's own button takes the focus there.
   if (test.info().project.name === 'webkit') {
-    await page.locator('sherpa-node-list sherpa-list-item[data-kind="sort"]').evaluate((el) => (el.shadowRoot!.querySelector('button:not(.drag):not(.expand)') as HTMLElement).focus());
+    await page.locator('sherpa-node-list sherpa-list-item[data-kind="organise"]').evaluate((el) => (el.shadowRoot!.querySelector('button:not(.drag):not(.expand)') as HTMLElement).focus());
   }
   expect(await onValue()).toBe(true);
   await page.keyboard.press('Enter');
   await settle(page);
-  expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['source', 'sort']);
-  expect(await pick(page)).toEqual({ current: ['Sort'], open: true, tab: true });
+  expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['source', 'organise']);
+  expect(await pick(page)).toEqual({ current: ['Organise'], open: true, tab: true });
 });
 
 test('a drag goes into the stage under the cursor, though the node\'s middle stands past it (923)', async ({ page }) => {
@@ -258,8 +257,8 @@ test('a connection let go on the bare canvas opens "Add a node": the kinds that 
   const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // Rows (an object) leave the Store row: the families whose header or a row takes one.
   // A portal's In takes anything (TODO 779); an AI node's header reads anything (plan 926); a Math Count's Rows and a Check
-  // take rows (plan 944).
-  expect(choices).toEqual(['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
+  // take rows (plan 944); an Organise takes them on its header (plan 960 U4.2).
+  expect(choices).toEqual(['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'organise', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
   const count = page.locator('sherpa-node-list sherpa-menu.add button[value="condition"]');
   // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
   if (test.info().project.name === 'webkit') {
@@ -282,7 +281,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   const said = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   // Said by its socket alone; what an output gives narrows it (below). A Model takes nothing in (plan 951).
   // A Check takes anything, on its header and its Data (plan 944).
-  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // What it gives narrows it (plan 783 F6): rows to the kinds that can use rows; a Field's column to those that take one.
   const offered = async (gives: string) => {
     await page.keyboard.press('Escape');
@@ -291,21 +290,22 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
     await expect(menu).toHaveAttribute('open', '');
     return page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   };
-  // Rows into a Math are its Count's, never Floor's list of numbers; a Check takes them too (plan 944).
-  expect(await offered('rows')).toEqual(['Field', 'Math › Count', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  // Rows into a Math are its Count's, never Floor's list of numbers; a Check takes them too (plan 944), and an Organise, on
+  // its header (plan 960 U4.2).
+  expect(await offered('rows')).toEqual(['Field', 'Math › Count', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Organise', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   expect(await offered('field')).toEqual(said);
 });
 
 test('an input let go on the bare canvas offers a Value first', async ({ page }) => {
   await bind(page);
   await pressSearch(page);
-  await item(page, 'sort').click();
+  await item(page, 'organise').click();
   await settle(page);
   // The inspector shut, the bare canvas is free.
   await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { hide(): void }).hide());
-  // The new Sort's header input takes any type; the line runs from it out to the bare canvas.
+  // The new Organise's header input takes any type; the line runs from it out to the bare canvas.
   const [x1, y1] = await page.evaluate(() => {
-    const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Sort')!;
+    const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Organise')!;
     const r = el.socketRect('input');
     return [r.left + r.width / 2, r.top + r.height / 2];
   });
@@ -314,7 +314,7 @@ test('an input let go on the bare canvas offers a Value first', async ({ page })
   await page.mouse.move(x1! + 300, y1! + 190, { steps: 8 });
   await page.mouse.up();
   const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
-  // A Sort's header takes any type: the kinds that give one, a Value first; an Output family too, by its properties (plan 917).
+  // An Organise's header takes any type: the kinds that give one, a Value first; an Output family too, by its properties (plan 917).
   expect(choices[0]).toBe('value');
   expect(choices).toContain('notify');
 });

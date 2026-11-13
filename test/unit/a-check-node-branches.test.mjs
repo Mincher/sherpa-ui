@@ -30,7 +30,7 @@ test('no kind forks: a test\'s True is a property, 1 or 0; the Check\'s Yes and 
     assert.deepEqual(kind.rows.filter((r) => r.property).map((r) => r.name), ['rows', 'true', ...(['and', 'or'].includes(type) ? ['pass', 'fail'] : [])], type);
   }
   assert.deepEqual(NODE_KINDS.check.rows.map((r) => [r.name, r.input ?? r.output]), [['data', 'any'], ['yes', 'object'], ['no', 'object']]);
-  for (const id of ['source', 'field', 'group']) assert.ok(!NODE_KINDS[id].rows.some((r) => r.name === 'count'), id);
+  for (const id of ['source', 'field', 'organise']) assert.ok(!NODE_KINDS[id].rows.some((r) => r.name === 'count'), id);
   assert.deepEqual(resolveKind(NODE_KINDS.math, 'count').rows.map((r) => r.name), ['type', 'rows', 'result']);
   // A line from a Condition's header is a fault: it has no such socket.
   const old = { v: 3, id: 'old', nodes: [...users, N('c', 'condition', { type: 'eq', b: 'active' }), N('o', 'result')], connections: [...toStatus, C('c', 'o')] };

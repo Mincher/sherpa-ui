@@ -23,7 +23,7 @@ const shelfOf = (presets = []) => {
   let mine = {};
   return makeShelf({ presets: () => presets, mine: () => mine, keep: (next) => { mine = next; }, heard: () => {} });
 };
-const body = { nodes: [{ id: 'sort', kind: 'sort', x: 0, y: 0 }], connections: [{ from: '#in/rows', to: 'sort' }, { from: 'sort/rows', to: '#out/found' }] };
+const body = { nodes: [{ id: 'sort', kind: 'organise', x: 0, y: 0, values: { sort: 'name' } }], connections: [{ from: '#in/rows', to: 'sort' }, { from: 'sort/rows', to: '#out/found' }] };
 const sockets = { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'found', label: 'Found', type: 'object' }] };
 const quiet = () => onReport(() => {});
 

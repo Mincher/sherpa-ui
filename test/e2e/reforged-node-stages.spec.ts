@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
-      { id: 'sort', kind: 'sort', x: 330, y: 0, values: { direction: 'asc' } },
+      { id: 'sort', kind: 'condition', x: 330, y: 0, values: { type: 'empty' } },
       { id: 'end', kind: 'result', x: 660, y: 0 },
     ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'), stageDialog: document.getElementById('stage'),
@@ -198,10 +198,10 @@ test('a FRAME dragged follows the nodes\' rule: without Shift its nodes stay in 
   // Lower, so the frame's header (above its nodes) is clear of the stage bars.
   await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { panTo(x: number, y: number): void }).panTo(360, 160));
   await settle(page);
-  // Frame the Source and the Sort.
+  // Frame the Source and the Condition.
   const pickHeader = async (heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`).click({ modifiers: ['Shift'] });
   await pickHeader('Source');
-  await pickHeader('Sort');
+  await pickHeader('Condition');
   await page.locator('sherpa-node-toolbar sherpa-button.frame').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
   const frameHeader = page.locator('#cv > sherpa-node-frame >> .header[role="group"]');
@@ -273,7 +273,7 @@ test('with Allow stage resizes to move nodes, the edge goes past the nodes: they
   // The app's setting, on: a provider writes it; here, by hand, and the stages drawn again by a step and its Undo.
   await page.locator('#cv > sherpa-node-stage').evaluateAll((els) => { for (const el of els) el.setAttribute('data-pushes', ''); });
   const undo = () => page.locator('sherpa-node-toolbar sherpa-button.undo').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
-  await page.locator('#cv > sherpa-node[data-heading="Sort"] >> .header[role="button"]').focus();
+  await page.locator('#cv > sherpa-node[data-heading="Condition"] >> .header[role="button"]').focus();
   await page.keyboard.press('ArrowDown');
   await undo();
   await settle(page);

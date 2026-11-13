@@ -170,7 +170,7 @@ test('definitionDiff: each kind of change, plain data; a version ignores where a
   assert.deepEqual(change((d) => { d.inputs[1].default = 'owner'; }).inputs.changed, ['role']);
   assert.deepEqual(change((d) => d.outputs.push({ name: 'blocked', type: 'object' })).outputs.added, ['blocked']);
   assert.deepEqual(change((d) => { d.nodes[1].values.type = 'ne'; }).nodes.changed, ['has-role']);
-  assert.deepEqual(change((d) => d.nodes.push({ id: 'more', kind: 'group', x: 0, y: 0 })).nodes.added, ['more']);
+  assert.deepEqual(change((d) => d.nodes.push({ id: 'more', kind: 'organise', x: 0, y: 0 })).nodes.added, ['more']);
   assert.deepEqual(change((d) => d.nodes.pop()).nodes.removed, ['has-role']);
   assert.deepEqual(change((d) => d.connections.pop()).connections.removed, [{ from: 'has-role/true', to: '#out' }]);
   assert.deepEqual(change((d) => { d.label = 'Org rules'; }).label, { from: 'Org permissions', to: 'Org rules' });

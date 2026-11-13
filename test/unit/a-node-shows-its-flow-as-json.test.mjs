@@ -20,7 +20,7 @@ const graph = () => workflowGraph({
     { id: 'field', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
     { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },
     { id: 'end', kind: 'result', x: 720, y: 0 },
-    { id: 'alone', kind: 'sort', x: 0, y: 400 },
+    { id: 'alone', kind: 'organise', x: 0, y: 400 },
   ],
   connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }],
 }, { fields: { status: { label: 'Status' } } });
@@ -47,8 +47,9 @@ test('a Value carries its value', () => {
 
 test('a node with no connections has sockets and no one on them', () => {
   const flow = nodeFlow(graph(), 'alone');
-  assert.deepEqual(flow.incoming.map((i) => i.from), [[], [], []].slice(0, flow.incoming.length));
-  assert.ok(flow.outgoing.every((o) => o.to.length === 0));
+  // An Organise: its header and each of its rows an input, its Rows an output.
+  assert.deepEqual(flow.incoming.map((i) => [i.socket, i.from]), [['In', []], ...['Sort', 'Direction', 'Group', 'Search', 'Primary', 'Secondary', 'Segments'].map((s) => [s, []])]);
+  assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.to]), [['Results', []]]);
 });
 
 test('an Output has an input and no output', () => {

@@ -1,6 +1,6 @@
 /**
- * SIMULATE runs the rest of the kinds: a Value, Math and Text send a value, Sort puts the rows in a field's order, Group
- * gathers each value's rows, Time and Tag test as a Condition does, and a Custom Node's body is run as
+ * SIMULATE runs the rest of the kinds: a Value, Math and Text send a value, Organise keeps the rows with its Search, puts
+ * them in its Sort field's order and gathers them by its Group field (plan 960 U4.2), Time and Tag test as a Condition does, and a Custom Node's body is run as
  * a graph of its own, its Group Input fed what the use hears. A value that cannot be made says why, in words, and sends no
  * number. The simulator is generic: it names no kind but by its row names. Will, TODO 836 P6
  * · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
@@ -68,33 +68,47 @@ test('a Value reads as its type says: an integer drops its decimals, a boolean i
   assert.match(v('integer', 'x').note, /is not a number/);
 });
 
-const arrange = (kind, values) => graphOf(
-  [N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'seats' }), N('x', kind, values), N('o', 'result')],
-  [R('s/rows', 'f'), R('f/field', 'x'), R('x/rows', 'o')],
+/** An Organise its rows come into on its header, straight from the Source; its fields are its own rows' values. */
+const organise = (values) => graphOf(
+  [N('s', 'source', { store: 'customers' }), N('x', 'organise', values), N('o', 'result')],
+  [R('s/rows', 'x'), R('x/rows', 'o')],
 );
+const organised = (values) => out(simulateGraph(organise(values), { customers: ROWS }), 'x', 'x/rows');
 
-test('Sort puts the rows in their field\'s order, each way; the same rows, none lost', () => {
-  const asc = out(simulateGraph(arrange('sort', { direction: 'asc' }), { customers: ROWS }), 'x', 'x/rows').rows;
+test('Organise puts the rows in its Sort field\'s order, each way; the same rows, none lost', () => {
+  const asc = organised({ sort: 'seats', direction: 'asc' }).rows;
   assert.deepEqual(asc.map((r) => r.seats), [5, 12, 12, 30, 70]);
-  const desc = out(simulateGraph(arrange('sort', { direction: 'desc' }), { customers: ROWS }), 'x', 'x/rows').rows;
+  const desc = organised({ sort: 'seats', direction: 'desc' }).rows;
   assert.deepEqual(desc.map((r) => r.seats), [70, 30, 12, 12, 5]);
   assert.deepEqual(asc.map((r) => r.id).slice(1, 3), [3, 4], 'equal values keep their order');
   assert.equal(new Set(asc).size, ROWS.length);
 });
 
-test('Group gathers each value\'s rows, the groups in the order they first appear; it has no Count row (plan 944)', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'plan' }), N('x', 'group'), N('o', 'result'), N('m', 'math', { type: 'count' })],
-    [R('s/rows', 'f'), R('f/field', 'x'), R('x/rows', 'o'), R('x/rows', 'm/rows')]);
+test('Organise gathers its Group field\'s rows, the groups in the order they first appear; it has no Count row (plan 944)', () => {
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('x', 'organise', { group: 'plan' }), N('o', 'result'), N('m', 'math', { type: 'count' })],
+    [R('s/rows', 'x'), R('x/rows', 'o'), R('x/rows', 'm/rows')]);
   const sim = simulateGraph(g, { customers: ROWS });
   assert.deepEqual(out(sim, 'x', 'x/rows').rows.map((r) => r.id), [1, 3, 2, 5, 4]);
   // A Math Count counts the rows it sends, none lost (plan 944).
   assert.deepEqual([out(sim, 'x', 'x/count'), out(sim, 'm', 'm/result').value], [undefined, 5]);
 });
 
-test('Sort and Group with no Field connected in say so and send no rows', () => {
-  const sim = simulateGraph(graphOf([N('s', 'source', { store: 'customers' }), N('x', 'sort', {})], [R('s/rows', 'x')]), { customers: ROWS });
-  assert.equal(out(sim, 'x', 'x/rows').rows, undefined);
-  assert.match(out(sim, 'x', 'x/rows').note, /No Field is connected in/);
+test('Organise keeps the rows that hold its Search, in any field, any case; then sorts, then groups; its axes change nothing', () => {
+  assert.deepEqual(organised({ search: 'PRO' }).rows.map((r) => r.id), [1, 3]);
+  assert.deepEqual(organised({ search: '12' }).rows.map((r) => r.id), [3, 4], 'a number field holds it too');
+  assert.deepEqual(organised({ search: 'free', sort: 'seats', direction: 'desc' }).rows.map((r) => r.id), [5, 2]);
+  // Sorted by Seats first, then gathered by Plan: each plan's rows in their sorted order, the plans as they first come.
+  assert.deepEqual(organised({ sort: 'seats', group: 'plan' }).rows.map((r) => r.id), [2, 5, 3, 1, 4]);
+  assert.deepEqual(organised({ primary: 'plan', secondary: 'seats', segments: 'tags' }).rows.map((r) => r.id), [1, 2, 3, 4, 5]);
+});
+
+test('Organise passes on the rows a Field on its header carries; with no rows in, it says so and sends none', () => {
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'plan' }), N('x', 'organise', { sort: 'seats', direction: 'desc' })],
+    [R('s/rows', 'f'), R('f/field', 'x')]);
+  assert.deepEqual(out(simulateGraph(g, { customers: ROWS }), 'x', 'x/rows').rows.map((r) => r.seats), [70, 30, 12, 12, 5]);
+  const alone = out(simulateGraph(graphOf([N('x', 'organise', { sort: 'seats' })], []), { customers: ROWS }), 'x', 'x/rows');
+  assert.equal(alone.rows, undefined);
+  assert.match(alone.note, /No rows reach it/);
 });
 
 test('Time and Tag keep rows as a Condition does: a Tag the rows that include a value', () => {

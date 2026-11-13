@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
-      { id: 'sort', kind: 'sort', x: 330, y: 0, values: { direction: 'asc' } },
+      { id: 'sort', kind: 'organise', x: 330, y: 0, values: { sort: 'status', direction: 'asc' } },
       { id: 'end', kind: 'result', x: 660, y: 0 },
     ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'),
@@ -52,18 +52,18 @@ const rows = (page: Page, heading: string) => node(page, heading).evaluate((el) 
 }));
 
 test('a double click on a header collapses the node to its sockets, and again expands it', async ({ page }) => {
-  const tall = (await node(page, 'Sort').boundingBox())!.height;
-  await header(page, 'Sort').dblclick();
+  const tall = (await node(page, 'Organise').boundingBox())!.height;
+  await header(page, 'Organise').dblclick();
   await settle(page);
-  await expect(node(page, 'Sort')).toHaveAttribute('data-collapsed', '');
-  const shut = await rows(page, 'Sort');
+  await expect(node(page, 'Organise')).toHaveAttribute('data-collapsed', '');
+  const shut = await rows(page, 'Organise');
   // The Direction pick is gone; Results keeps its socket; the tip names each row and says its value.
   expect(shut.find((r) => r.name === 'Direction')).toMatchObject({ field: 'none', value: 'Ascending' });
   expect(shut.find((r) => r.out)).toMatchObject({ out: 'visible' });
-  expect((await node(page, 'Sort').boundingBox())!.height).toBeLessThan(tall);
-  await header(page, 'Sort').dblclick();
+  expect((await node(page, 'Organise').boundingBox())!.height).toBeLessThan(tall);
+  await header(page, 'Organise').dblclick();
   await settle(page);
-  await expect(node(page, 'Sort')).not.toHaveAttribute('data-collapsed');
+  await expect(node(page, 'Organise')).not.toHaveAttribute('data-collapsed');
 });
 
 test('Collapse all, then Hide unconnected: an unconnected socket hides, and a hover or a dragged line shows it', async ({ page }) => {
@@ -76,10 +76,10 @@ test('Collapse all, then Hide unconnected: an unconnected socket hides, and a ho
   await expect(tool('hide')).not.toHaveAttribute('disabled');
   await press(page, 'hide');
   await page.mouse.move(5, 5);
-  // The Source's Results is connected and shows; the Sort's header output is not connected, and hides.
-  const headerOut = () => node(page, 'Sort').evaluate((el) => getComputedStyle(el.shadowRoot!.querySelector('.header .socket-out')!).visibility);
+  // The Source's Results is connected and shows; the Organise's header output is not connected, and hides.
+  const headerOut = () => node(page, 'Organise').evaluate((el) => getComputedStyle(el.shadowRoot!.querySelector('.header .socket-out')!).visibility);
   expect(await headerOut()).toBe('hidden');
-  await header(page, 'Sort').hover();
+  await header(page, 'Organise').hover();
   expect(await headerOut()).toBe('visible');
   // A line dragged from the Source's output: every node shows its sockets till it lets go.
   const out = await node(page, 'Source').evaluate((el) => {
@@ -98,20 +98,20 @@ test('Collapse all, then Hide unconnected: an unconnected socket hides, and a ho
   await expect(page.locator('#cv > sherpa-node[data-collapsed]')).toHaveCount(0);
 });
 
-test('a collapsed node\'s name ends with what its first field holds: "Sort: Ascending"; expanded, its own name', async ({ page }) => {
-  const title = () => node(page, 'Sort').evaluate((el) => el.shadowRoot!.querySelector('.heading')!.getAttribute('data-heading'));
-  expect(await title()).toBe('Sort');
-  await header(page, 'Sort').dblclick();
+test('a collapsed node\'s name ends with what its first field holds: "Organise: Status"; expanded, its own name', async ({ page }) => {
+  const title = () => node(page, 'Organise').evaluate((el) => el.shadowRoot!.querySelector('.heading')!.getAttribute('data-heading'));
+  expect(await title()).toBe('Organise');
+  await header(page, 'Organise').dblclick();
   await settle(page);
-  expect(await title()).toBe('Sort: Ascending');
-  await header(page, 'Sort').dblclick();
+  expect(await title()).toBe('Organise: Status');
+  await header(page, 'Organise').dblclick();
   await settle(page);
-  expect(await title()).toBe('Sort');
+  expect(await title()).toBe('Organise');
 });
 
 test('collapsed, every socket stands in one stack a side, in its order, in the header\'s middle; the node is its header alone, as tall as its longest stack (935)', async ({ page }) => {
   const centre = (r: DOMRect) => ({ x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) });
-  const read = () => node(page, 'Sort').evaluate((el) => {
+  const read = () => node(page, 'Organise').evaluate((el) => {
     const rect = (e: Element | null | undefined) => (e ? e.getBoundingClientRect() : null);
     const rows = [...el.querySelectorAll('sherpa-node-row')];
     return {
@@ -123,7 +123,7 @@ test('collapsed, every socket stands in one stack a side, in its order, in the h
     };
   });
   const open = await read();
-  await header(page, 'Sort').dblclick();
+  await header(page, 'Organise').dblclick();
   await settle(page);
   const shut = await read();
   const head = centre(shut.head as DOMRect);
@@ -136,7 +136,7 @@ test('collapsed, every socket stands in one stack a side, in its order, in the h
     expect(Math.abs(p.x - head.x)).toBeLessThanOrEqual(1);
     expect(Math.abs(p.y - (head.y + (i + 1) * step))).toBeLessThanOrEqual(1);
   });
-  // The Sort's header has no output: its first row output stands at the header's middle.
+  // The Organise's header has no output: its first row output stands at the header's middle.
   expect(Math.abs(outs[0]!.y - head.y)).toBeLessThanOrEqual(1);
   expect(shut.height).toBeLessThan(open.height);
   // The node is its header alone, grown to hold its taller stack (TODO 935).
@@ -145,17 +145,17 @@ test('collapsed, every socket stands in one stack a side, in its order, in the h
   // The stack stands in the header's middle.
   const top = head.y - step / 2;
   const bottom = Math.max(ins.at(-1)!.y, outs.at(-1)!.y) + step / 2;
-  const box = await node(page, 'Sort').evaluate((el) => el.shadowRoot!.querySelector('.header')!.getBoundingClientRect().toJSON());
+  const box = await node(page, 'Organise').evaluate((el) => el.shadowRoot!.querySelector('.header')!.getBoundingClientRect().toJSON());
   expect(Math.abs((top - box.y) - (box.y + box.height - bottom))).toBeLessThanOrEqual(2);
 });
 
 // TRAP T-an-anchor-drawn-as-contents-has-no-box
 test('collapsed, a row socket\'s tip still hangs from its socket, as a header socket\'s does (920)', async ({ page }) => {
-  await header(page, 'Sort').dblclick();
+  await header(page, 'Organise').dblclick();
   await settle(page);
-  await expect(node(page, 'Sort')).toHaveAttribute('data-collapsed', '');
+  await expect(node(page, 'Organise')).toHaveAttribute('data-collapsed', '');
   // Each socket a row draws, and the header's: its middle on screen, and how far its tip opens from it.
-  const sockets = await node(page, 'Sort').evaluate((el) => [
+  const sockets = await node(page, 'Organise').evaluate((el) => [
     ...[...el.querySelectorAll('sherpa-node-row')].flatMap((row) => (['in', 'out'] as const)
       .filter((side) => row.hasAttribute(`data-${side === 'in' ? 'input' : 'output'}-socket`))
       .map((side) => ({ at: `${row.getAttribute('data-socket-name')} ${side}`, row: [...el.querySelectorAll('sherpa-node-row')].indexOf(row), side }))),
@@ -163,14 +163,14 @@ test('collapsed, a row socket\'s tip still hangs from its socket, as a header so
   ]);
   expect(sockets.length).toBeGreaterThan(1);
   for (const s of sockets) {
-    const box = await node(page, 'Sort').evaluate((el, { row, side }) => {
+    const box = await node(page, 'Organise').evaluate((el, { row, side }) => {
       const root = row < 0 ? el.shadowRoot! : el.querySelectorAll('sherpa-node-row')[row]!.shadowRoot!;
       const r = root.querySelector(`${row < 0 ? '.header ' : ''}.socket-${side}`)!.getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height };
     }, s);
     await page.mouse.move(box.x, box.y);
     await settle(page);
-    const away = await node(page, 'Sort').evaluate((el, { row, side, x, y, w, h }) => {
+    const away = await node(page, 'Organise').evaluate((el, { row, side, x, y, w, h }) => {
       const root = row < 0 ? el.shadowRoot! : el.querySelectorAll('sherpa-node-row')[row]!.shadowRoot!;
       const tip = root.querySelector<HTMLElement>(`${row < 0 ? '.header ' : ''}.tip-${side}`)!;
       if (!tip.matches(':popover-open')) return null;

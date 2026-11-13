@@ -77,7 +77,7 @@ test('an In takes many connections; its Out draws a row for each, labelled from 
 
 test('1-to-many: every Out of the name draws the same rows; many-to-1: an In of each, the rows of both; many-to-many', () => {
   // Two Outs: each draws the In's two rows, each connected on alone.
-  const w = flow([...twoIn().nodes, portal('o2', 'out', 'pipe', 600, 300), { id: 'n', kind: 'group', x: 900, y: 300 }],
+  const w = flow([...twoIn().nodes, portal('o2', 'out', 'pipe', 600, 300), { id: 'n', kind: 'organise', x: 900, y: 300 }],
     [...twoIn().connections, { from: 'o2/@s/rows', to: 'n' }]);
   const g = workflowGraph(w, facts);
   assert.deepEqual(rowsOf(g, 'o2'), rowsOf(g, 'o'));

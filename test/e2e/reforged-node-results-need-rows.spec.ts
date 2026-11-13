@@ -13,7 +13,7 @@ const bind = (page: import('@playwright/test').Page, connections: { from: string
     { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'f', kind: 'field', x: 360, y: 0, values: { field: 'status' } },
     // Counting is a Math type (plan 944).
     { id: 'm', kind: 'math', x: 360, y: 300, values: { type: 'count' } },
-    { id: 'c', kind: 'condition', x: 720, y: 0, values: { type: 'eq', b: '0' } }, { id: 'sorted', kind: 'sort', x: 1080, y: 0 },
+    { id: 'c', kind: 'condition', x: 720, y: 0, values: { type: 'eq', b: '0' } }, { id: 'sorted', kind: 'organise', x: 1080, y: 0 },
   ], connections: [{ from: 's/rows', to: 'f' }, { from: 's/rows', to: 'm/rows' }, ...wires] }, { session: new SessionStore(), stores: ['users'], fieldsOf: { users: { status: { label: 'Status' } } } });
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));

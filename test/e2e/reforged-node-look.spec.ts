@@ -194,7 +194,7 @@ const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const flow = { v: 3, id: 'g', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
-    { id: 'sort', kind: 'sort', x: 360, y: 0, values: { field: 'status', direction: 'asc' } },
+    { id: 'sort', kind: 'organise', x: 360, y: 0, values: { sort: 'status', direction: 'asc' } },
     { id: 'end', kind: 'result', x: 700, y: 0 },
   ], connections: [{ from: 'start/rows', to: 'sort' }] };
   const canvas = document.getElementById('cv');
@@ -288,7 +288,7 @@ test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothin
 });
 
 // — 756: every category, picked, takes the SAME active fill and border; the panel's node adds the same ring.
-const CATS = { Sources: 'source', Variables: 'value', Logic: 'condition', Organise: 'sort', Output: 'result', 'Custom Nodes': 'mine', AI: 'agent' } as const;
+const CATS = { Sources: 'source', Variables: 'value', Logic: 'condition', Organise: 'organise', Output: 'result', 'Custom Nodes': 'mine', AI: 'agent' } as const;
 async function bindCategories(page: Page): Promise<void> {
   await page.setViewportSize({ width: 1900, height: 1300 });
   await page.evaluate(async (cats) => {

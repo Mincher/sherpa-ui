@@ -96,8 +96,8 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
     if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, name === 'source' ? { ...ROWS, beside: 'store' } : ROWS], `${name}: its Rows row, first`);
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
-  assert.deepEqual(named((k) => k.rows.some((r) => r.name === ROWS.name)), ['source', 'status', 'scope', 'organise', 'presentation', 'sort', 'group']);
-  // A family's types say their own rows: every Logic type, a Sort, a Group by and a Tag send theirs from a Rows row, first.
+  assert.deepEqual(named((k) => k.rows.some((r) => r.name === ROWS.name)), ['source', 'status', 'scope', 'organise', 'presentation']);
+  // A family's types say their own rows: every Logic type and a Tag send theirs from a Rows row, first.
   const typed = all.flatMap(([n, k]) => Object.entries(k.types ?? {}).map(([t, type]) => [`${n} › ${t}`, type.rows ?? []]));
   for (const [name, rows] of typed) if (rows.includes(ROWS)) assert.equal(rows.indexOf(ROWS), 0, `${name}: its Rows row, first`);
   assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), [
@@ -122,7 +122,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   // Every kind a workflow runs, the Trigger (plan 941), the Check, the end and a portal, which passes on what reaches it (TODO 779), among them.
-  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'check', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'check', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
 });
 
 test('every shipped kind says its types once: no output sends any; none forks; a multi-select row is an object, one connection in', () => {

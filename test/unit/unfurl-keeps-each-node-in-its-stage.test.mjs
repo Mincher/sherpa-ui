@@ -28,10 +28,10 @@ function coworker() {
     nodes: [
       at('when', 'value', 0, 900, 'plan'), at('devices', 'source', 0, 0, 'plan'), at('customer', 'field', 360, 0, 'plan'),
       at('theirs', 'condition', 720, 0, 'plan'), at('provider', 'value', 0, 500, 'plan'), at('model', 'value', 360, 500, 'plan'),
-      at('brief', 'math', 1100, 300, 'plan'), at('expert-1', 'sort', 1100, 700, 'plan'),
-      at('run', 'sort', 1960, 0, 'run'),
+      at('brief', 'math', 1100, 300, 'plan'), at('expert-1', 'organise', 1100, 700, 'plan'),
+      at('run', 'organise', 1960, 0, 'run'),
       at('count', 'math', 2840, 0, 'report'), at('done', 'result', 3600, 0, 'report'), at('notice', 'result', 3600, 300, 'report'),
-      at('expert-2', 'sort', 2840, 700, 'report'), at('expert-3', 'sort', 2840, 1100, 'report'), at('note', 'value', 3200, 1500, 'report'),
+      at('expert-2', 'organise', 2840, 700, 'report'), at('expert-3', 'organise', 2840, 1100, 'report'), at('note', 'value', 3200, 1500, 'report'),
     ],
     connections: [
       R('devices/rows', 'customer'), R('customer/field', 'theirs'), R('provider/value', 'model/a'), R('model/value', 'brief/a'),

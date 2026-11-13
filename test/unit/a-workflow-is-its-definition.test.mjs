@@ -75,10 +75,12 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  // A Check is drawn in both, beside the Condition (plan 944); a Trigger in a workflow alone (plan 941).
-  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'check', 'value', 'field', 'math', 'time', 'sort', 'group', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
-  // Sort and Group are kinds of their own, in Organise; Collection and its Count are gone, a Count a type of Math (plan 944).
-  assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort.category, NODE_KINDS.group.category], [undefined, undefined, 'Organise', 'Organise']);
+  // A Check is drawn in both, beside the Condition (plan 944), and so is Organise (plan 960 U4.2); a Trigger in a workflow
+  // alone (plan 941).
+  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'check', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  // Sort and Group are rows of the one Organise kind (plan 960 U4.2); Collection and its Count are gone, a Count a type of
+  // Math (plan 944).
+  assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group, NODE_KINDS.organise.category], [undefined, undefined, undefined, undefined, 'Organise']);
   assert.equal(NODE_KINDS.math.types.count.label, 'Count');
   assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'check', 'preset', 'saved', 'organise', 'presentation', 'component', 'field']);
   // One meaning per word: a Source is where rows come from, in both, and the Store kind is gone (TODO 808); a Condition

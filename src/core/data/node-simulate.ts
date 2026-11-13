@@ -443,29 +443,24 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return { kind: 'value', value: own };
   };
 
-  /** The rows a Sort or Group hears, and the field it reads: from the Field connected to its header. */
-  const fielded = (node: GraphNode): { field: string; rows: readonly Row[] } | { note: string } => {
-    const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
-    if (!fed) return { note: 'No Field is connected in' };
-    if (!fed.rows) return { note: fed.note ?? 'No rows reach it' };
-    return { field: String(fed.value ?? ''), rows: fed.rows };
-  };
-
-  /** Sort puts the rows in their field's order; Group gathers each value's rows, the groups in the order they first appear. */
-  const arranged = (node: GraphNode): Sent => {
-    const read = fielded(node);
-    if ('note' in read) return { kind: 'rows', note: read.note };
-    const { field, rows } = read;
-    if (node.kind === 'sort') {
-      const dir = heard(node, 'direction').value === 'desc' ? -1 : 1;
-      const order = [...rows].sort((x, y) => {
-        const a = x[field], b = y[field];
+  /** An Organise node's rows (plan 960 U4.2): those that contain its Search, in its Sort's order, then gathered by its Group,
+   *  each value's rows in the order they stand, the groups in the order they first appear. Its axes pass them on as they are. */
+  const organised = (node: GraphNode): Sent => {
+    const came = into(node.id).map((p) => p.sent).find((s) => s.rows) ?? into(node.id)[0]?.sent;
+    if (!came?.rows) return { kind: 'rows', note: came?.note ?? 'No rows reach it' };
+    const own = (name: string): string => String(heard(node, name).value ?? '').trim();
+    const search = own('search').toLowerCase();
+    let rows = search ? came.rows.filter((r) => Object.values(r).some((v) => v != null && String(v).toLowerCase().includes(search))) : [...came.rows];
+    const sort = own('sort');
+    if (sort) {
+      const dir = own('direction') === 'desc' ? -1 : 1;
+      rows = rows.sort((x, y) => {
+        const a = x[sort], b = y[sort];
         return a == null ? (b == null ? 0 : 1) : b == null ? -1 : (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b), 'en', { numeric: true })) * dir;
       });
-      return { kind: 'rows', rows: order };
     }
-    const groups = Map.groupBy(rows, (r) => String(r[field] ?? ''));
-    return { kind: 'rows', rows: [...groups.values()].flat() };
+    const group = own('group');
+    return { kind: 'rows', rows: group ? [...Map.groupBy(rows, (r) => String(r[group] ?? '')).values()].flat() : rows };
   };
 
   /** A Custom Node, run: its body is a graph of its own, its Group Input fed what the use hears, and what its Group Output
@@ -545,7 +540,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (node.kind === 'value') return valued(node);
     if (node.kind === 'math') return math(node);
     if (node.kind === 'text') return text(node);
-    if (node.kind === 'sort' || node.kind === 'group') return arranged(node);
+    if (node.kind === 'organise') return organised(node);
     // A Model sends its pick (plans 926, 951).
     if (node.kind === 'model') return { kind: 'value', value: node.rows.find((r) => r.name === row)?.value };
     // An Output, an AI node or a Trigger acts outside the graph, so it fires nothing: each output sends a stand-in, by what it gives,

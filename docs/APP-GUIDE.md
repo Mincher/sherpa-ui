@@ -562,6 +562,15 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
   `{ node, kind, type, values }` on the canvas: send the test to the reader there.
   Sherpa sends nothing.
 
+### Organise
+
+One **Organise** node sorts, groups and searches rows, and names a chart's axes, in every
+graph (Will, plan 960 U4.2). Its rows: Sort and Direction, Group, Search, and Primary (X),
+Secondary (Y) and Segments. Each picks a field of the rows that reach it; an empty one does
+nothing. In a page's Query graph it is each scope's own, and each edit is the request its
+chip sends; a chart card's axes are set there. In a workflow, Simulate keeps the rows that
+contain its Search, puts them in its Sort's order, then gathers them by its Group.
+
 ### AI nodes
 
 The AI category has four nodes. A **Model** picks a provider and one of its models,

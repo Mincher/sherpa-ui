@@ -57,7 +57,7 @@ test('through a chain: an And fed a test\'s Results shows them; an And of Trues 
 
 test('one a connection still leaves stays, and its node says why it sends nothing (D1 A)', () => {
   const g = graphOf(
-    [...source, N('c', 'condition', { type: 'gt', b: '0' }), N('sorted', 'sort', { direction: 'asc' })],
+    [...source, N('c', 'condition', { type: 'gt', b: '0' }), N('sorted', 'organise', { direction: 'asc' })],
     [...fromSource, { from: 'm/result', to: 'c' }, { from: 'c/rows', to: 'sorted' }],
   );
   assert.deepEqual(idle(g, 'c'), ['rows']);

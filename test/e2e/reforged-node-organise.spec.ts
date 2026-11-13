@@ -1,8 +1,8 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * ORGANISE AND PROPERTY ROWS — Will, TODO 835. Sort and Group are two kinds in an Organise category; Collection and its Count
- * type are gone. A property row is output only: an output socket and none in, and its connection is any output's. No node has
+ * ORGANISE AND PROPERTY ROWS — Will, TODO 835. Sort and Group are rows of ONE Organise node (plan 960 U4.2); Collection and
+ * its Count type are gone. A property row is output only: an output socket and none in, and its connection is any output's. No node has
  * a Count property: a Math of type Count gives how many rows come in (plan 944). Real pointer and keys; the platform's own
  * select. Plan 835
  */
@@ -82,22 +82,24 @@ const BARE = { v: 3, id: 'g', nodes: [node('start', 'source', 360, 0, { store: '
 const rowOf = (page: Page, heading: string, label: string) => card(page, heading).locator(`sherpa-node-row[data-label="${label}"]`);
 const connections = async (page: Page) => (await flow(page)).connections.map((r) => `${r.from} → ${r.to}`);
 
-test('the panel lists Organise: Sort and Group; a Group dragged from it is placed, and no Collection is offered', async ({ page }) => {
+test('the panel lists Organise, one node; one dragged from it is placed, and no Collection, Sort or Group is offered', async ({ page }) => {
   await bind(page, BARE);
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toContain('Organise');
   expect(heads).not.toContain('Collections');
   const names = await page.locator('sherpa-node-list sherpa-list-item').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
-  expect(names).toEqual(expect.arrayContaining(['Sort', 'Group']));
-  expect(names).not.toContain('Collection');
+  expect(names).toContain('Organise');
+  for (const gone of ['Collection', 'Sort', 'Group']) expect(names).not.toContain(gone);
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;
-  await place(page, 'group', [box.x + 560, box.y + 420]);
-  expect((await flow(page)).nodes.map((n) => n.kind)).toEqual(['source', 'math', 'field', 'group']);
+  await place(page, 'organise', [box.x + 560, box.y + 420]);
+  expect((await flow(page)).nodes.map((n) => n.kind)).toEqual(['source', 'math', 'field', 'organise']);
   // Its one property, Results: an output, and no input. It has no Count (plan 944).
-  await expect(card(page, 'Group')).toHaveAttribute('data-category', 'organise');
-  await expect(rowOf(page, 'Group', 'Results')).toHaveAttribute('data-output-socket', 'object');
-  await expect(rowOf(page, 'Group', 'Results')).not.toHaveAttribute('data-input-socket');
-  await expect(rowOf(page, 'Group', 'Count')).toHaveCount(0);
+  await expect(card(page, 'Organise')).toHaveAttribute('data-category', 'organise');
+  await expect(rowOf(page, 'Organise', 'Results')).toHaveAttribute('data-output-socket', 'object');
+  await expect(rowOf(page, 'Organise', 'Results')).not.toHaveAttribute('data-input-socket');
+  await expect(rowOf(page, 'Organise', 'Count')).toHaveCount(0);
+  // Its Sort and Group are its own rows, each taking a value in (plan 960 U4.2).
+  for (const name of ['sort', 'group']) await expect(card(page, 'Organise').locator(`sherpa-node-row:has([name="${name}"])`)).toHaveAttribute('data-input-socket', 'value');
 });
 
 test('a property row connects like any output: the Source\'s Results into a Math of type Count by the real pointer, and its Result into Value A (plan 944)', async ({ page }) => {
@@ -115,15 +117,15 @@ test('a property row connects like any output: the Source\'s Results into a Math
   await expect(card(page, 'How many')).not.toHaveAttribute('data-warning');
   await expect(card(page, 'Math')).not.toHaveAttribute('data-warning');
   await expect(card(page, 'Math').locator('sherpa-input-text[name="a"]')).toHaveAttribute('data-description', /How many › Result/);
-  // A count into a Sort's header, which takes a field, warns as any number does: the graph stays open.
+  // A count into a Tag's header, which takes a field, warns as any number does: the graph stays open.
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;
-  await place(page, 'sort', [box.x + 560, box.y + 460]);
-  await drag(page, await socket(page, 'How many', 'output', 'Result'), await socket(page, 'Sort', 'input'));
-  await expect(card(page, 'Sort')).toHaveAttribute('data-warning', 'Sort takes a field; it was given a number');
+  await place(page, 'tag', [box.x + 560, box.y + 460]);
+  await drag(page, await socket(page, 'How many', 'output', 'Result'), await socket(page, 'Tag', 'input'));
+  await expect(card(page, 'Tag')).toHaveAttribute('data-warning', 'Tag takes a field; it was given a number');
   // Save hands the graph over, the Count's connections among its rows.
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
   const saved = await page.evaluate(() => JSON.parse(JSON.stringify((window as never as { saved: Flow[] }).saved.at(-1))) as Flow);
-  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/rows → count/rows', 'count/result → add/a', 'count/result → sort-1']);
+  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/rows → count/rows', 'count/result → add/a', 'count/result → tag-1']);
 });
 
 test('a saved Collection draws nothing and says why: nothing converts it', async ({ page }) => {

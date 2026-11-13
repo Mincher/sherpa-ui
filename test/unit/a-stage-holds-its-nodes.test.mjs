@@ -17,7 +17,7 @@ const { onReport } = await import(new URL('report.js', core));
 
 const flow = () => ({
   v: 3, id: 'f',
-  nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'sort', x: 400, y: 0 }],
+  nodes: [{ id: 'a', kind: 'source', x: 0, y: 0 }, { id: 'b', kind: 'organise', x: 400, y: 0 }],
   connections: [{ from: 'a/rows', to: 'b' }],
 });
 const heard = () => { const said = []; const stop = onReport((r) => said.push(r.message)); return { said, stop }; };
@@ -48,7 +48,7 @@ test('a node let go in the next stage joins it; a stage that grows pushes the ne
   const back = fitStages(editWorkflow(editWorkflow(w, { node: 'a', set: { x: 0 } }), { restage: ['a'] }), nodeWidth);
   assert.equal(back.nodes.find((n) => n.id === 'a').stage, 'stage-1');
   // Stage 1 grows: a node of it placed out to its right edge pushes stage 2 and b along.
-  const grown = { ...back, nodes: [...back.nodes, { id: 'c', kind: 'sort', x: two.left - STAGE_PAD - NODE_WIDTH / 2, y: 200, stage: 'stage-1' }] };
+  const grown = { ...back, nodes: [...back.nodes, { id: 'c', kind: 'organise', x: two.left - STAGE_PAD - NODE_WIDTH / 2, y: 200, stage: 'stage-1' }] };
   const fit = fitStages(grown, nodeWidth);
   const [one, next] = stageBands(fit, nodeWidth).bands;
   assert.ok(next.left >= one.right + STAGE_GAP, 'stage 2 starts after stage 1 ends');
@@ -86,7 +86,7 @@ test('a new node goes in the stage under the point it was let go at, though its 
   const [one] = stageBands(w, nodeWidth).bands;
   // Let go just inside stage 1's right edge: its left edge there, its middle past it.
   const at = one.right - 20;
-  w = editWorkflow(w, { add: { id: 'c', kind: 'sort', x: at, y: 200 } });
+  w = editWorkflow(w, { add: { id: 'c', kind: 'organise', x: at, y: 200 } });
   assert.notEqual(editWorkflow(w, { restage: ['c'] }).nodes.find((n) => n.id === 'c').stage, 'stage-1', 'by its middle: not stage 1');
   assert.equal(editWorkflow(w, { restage: ['c'], by: at }).nodes.find((n) => n.id === 'c').stage, 'stage-1', 'by the point: stage 1');
 });
@@ -122,8 +122,8 @@ test('an edge dragged makes a stage wider and the next as much narrower, no node
 });
 
 test('given the nodes\' heights, the edge goes past them: the stage it narrows pushes its nodes in, in order, the gap kept, to its widest node (901)', () => {
-  // Stage 1 holds a Source at 48 and two Sorts at 400, side by side down; stage 2 a Sort at its start.
-  let w = editWorkflow({ ...flow(), nodes: [...flow().nodes, { id: 'c', kind: 'sort', x: 400, y: 300 }] }, { addStage: {} });
+  // Stage 1 holds a Source at 48 and two Organise nodes at 400, side by side down; stage 2 one at its start.
+  let w = editWorkflow({ ...flow(), nodes: [...flow().nodes, { id: 'c', kind: 'organise', x: 400, y: 300 }] }, { addStage: {} });
   w = fitStages(editWorkflow(w, { node: 'b', set: { x: 400 } }), nodeWidth);
   const at = (wf, id) => wf.nodes.find((n) => n.id === id).x;
   const [one] = stageBands(w, nodeWidth).bands;

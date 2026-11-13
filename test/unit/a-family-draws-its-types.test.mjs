@@ -39,9 +39,10 @@ test('each family: its types in order, the Type row first, and the rows, sockets
     }
   }
   assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average', 'Count']);
-  // Sort and Group are kinds of their own, in Organise, and take the Field they work on on their header (plan 835): no types.
-  // A Group has no Count row now (plan 944).
-  assert.deepEqual(['sort', 'group'].map((k) => [NODE_KINDS[k].types, NODE_KINDS[k].category, NODE_KINDS[k].rows.map((r) => r.name)]), [[undefined, 'Organise', ['rows', 'direction']], [undefined, 'Organise', ['rows']]]);
+  // Organise is one kind, no types (plan 960 U4.2): rows on its header, its fields in its own rows; no Count row (plan 944).
+  const organise = NODE_KINDS.organise;
+  assert.deepEqual([organise.types, organise.category, organise.input, organise.needs, organise.rows.map((r) => r.name)],
+    [undefined, 'Organise', 'any', 'rows', ['rows', 'sort', 'direction', 'group', 'search', 'primary', 'secondary', 'segments']]);
   assert.deepEqual(['value', 'math', 'time', 'text'].map((k) => NODE_KINDS[k].typeLabel), ['Type', 'Operation', 'Check', 'Operation']);
   // Each Math, Time and Text type says what it does, under its select.
   for (const id of ['math', 'time', 'text']) for (const [type, t] of Object.entries(NODE_KINDS[id].types)) assert.ok(t.help, `${id} › ${type} has a hint`);
