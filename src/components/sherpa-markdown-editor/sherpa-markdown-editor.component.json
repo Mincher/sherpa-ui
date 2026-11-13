@@ -398,7 +398,7 @@
             "children": [
               {
                 "el": "div",
-                "class": "content",
+                "class": "content sherpa-text-area",
                 "part": "content",
                 "attrs": {
                   "id": "content",
@@ -413,7 +413,7 @@
               },
               {
                 "el": "textarea",
-                "class": "source",
+                "class": "source sherpa-text-area",
                 "part": "source",
                 "attrs": {
                   "aria-labelledby": "label",

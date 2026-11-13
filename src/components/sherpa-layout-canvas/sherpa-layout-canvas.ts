@@ -37,6 +37,21 @@ const BOX_SLOP = 4;
 /** A box on the plane, in plane px. */
 interface Box { left: number; top: number; right: number; bottom: number }
 
+/** Is there a box between the wheel's target and `stop` that scrolls the way the wheel turns? It takes the wheel at its
+ *  ends too, as `overscroll-behavior: contain` says, so the canvas does not move under a text being read. */
+function scrollsUnder(event: WheelEvent, stop: Element): boolean {
+  for (const target of event.composedPath()) {
+    if (target === stop) return false;
+    if (!(target instanceof Element)) continue;
+    const down = event.deltaY !== 0 && target.scrollHeight > target.clientHeight;
+    const across = event.deltaX !== 0 && target.scrollWidth > target.clientWidth;
+    if (!down && !across) continue;
+    const { overflowX, overflowY } = getComputedStyle(target);
+    if ((down && /auto|scroll/.test(overflowY)) || (across && /auto|scroll/.test(overflowX))) return true;
+  }
+  return false;
+}
+
 /** A press in progress: a pan from where the view was, or a box (its mode from the keys held). */
 interface Drag { id: number; x: number; y: number; from: [number, number]; box: boolean; mode: BoxMode }
 
@@ -316,8 +331,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   /* ── Pointer, wheel and keys ──────────────────────────────────────────── */
 
-  /** A wheel pans; with Ctrl or ⌘ — a trackpad's pinch — it zooms about the pointer. */
+  /** A wheel pans; with Ctrl or ⌘ — a trackpad's pinch — it zooms about the pointer. Over a box that scrolls its way (a
+   *  node's text area), a plain wheel is the box's. TODO 953 */
   #onWheel = (event: WheelEvent): void => {
+    if (!event.ctrlKey && !event.metaKey && scrollsUnder(event, event.currentTarget as Element)) return;
     event.preventDefault();
     if (event.ctrlKey || event.metaKey) {
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();

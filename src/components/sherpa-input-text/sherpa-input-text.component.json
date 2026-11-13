@@ -157,10 +157,10 @@
                 },
                 {
                   "el": "textarea",
-                  "class": "control",
+                  "class": "control sherpa-text-area",
                   "part": "control",
                   "attrs": {
-                    "rows": "3"
+                    "rows": "4"
                   }
                 },
                 {
@@ -1278,6 +1278,11 @@
       "$type": "state",
       "name": "select",
       "selector": ":host([data-type=\"select\"])"
+    },
+    {
+      "$type": "state",
+      "name": "multiline",
+      "selector": ":host([data-multiline])"
     },
     {
       "$type": "state",

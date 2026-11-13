@@ -43,12 +43,13 @@
 .input {
   flex: 1 1 auto;
   min-inline-size: 0;
+  /* One line to eight, then it scrolls (sherpa-text-area.css). */
+  --_text-area-lines-min: 1;
+  --_text-area-lines-max: 8;
   min-block-size: var(--sherpa-display-mode-size-lg, 24px);
-  max-block-size: 160px;
   border: none;
   background: transparent;
   resize: none;
-  overflow-y: auto;
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);

@@ -6,10 +6,11 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
-const MAX_HEIGHT = 160;
-
 export class SherpaPromptComposer extends SherpaElement {
-  static override css = new URL('./sherpa-prompt-composer.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-text-area.css', import.meta.url),
+    new URL('./sherpa-prompt-composer.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-prompt-composer.html', import.meta.url);
   static override delegatesFocus = true;
 
@@ -31,7 +32,6 @@ export class SherpaPromptComposer extends SherpaElement {
     this.#syncPlaceholder();
     this.#syncDisabled();
     this.$('.form')?.addEventListener('submit', this.#onSubmit);
-    this.#input?.addEventListener('input', this.#autoresize);
     this.#input?.addEventListener('keydown', this.#onKeyDown);
     this.$('.send')?.addEventListener('button-click', this.#onSend);
     this.$('.attach')?.addEventListener('button-click', () => this.#onLeading('composer-attach'));
@@ -56,7 +56,6 @@ export class SherpaPromptComposer extends SherpaElement {
       return;
     }
     this.#input.value = v ?? '';
-    this.#autoresize();
   }
 
   clear(): void {
@@ -107,14 +106,6 @@ export class SherpaPromptComposer extends SherpaElement {
     this.emit('prompt-submit', { text });
     this.clear();
   }
-
-  /** Grow the textarea to fit its content, up to MAX_HEIGHT, then scroll. */
-  #autoresize = (): void => {
-    const input = this.#input;
-    if (!input) return;
-    input.style.height = 'auto';
-    input.style.height = `${Math.min(input.scrollHeight, MAX_HEIGHT)}px`;
-  };
 }
 
 define('sherpa-prompt-composer', SherpaPromptComposer);

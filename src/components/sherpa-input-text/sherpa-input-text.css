@@ -279,10 +279,12 @@ select.control::-ms-expand { display: none; }
   box-shadow: inset 0 0 0 2px var(--_border-focus);
 }
 
-textarea.control {
-  resize: vertical;
-  align-self: stretch;
+/* A text area is a box padded all round, its text and icons at the top; its text grows and scrolls (sherpa-text-area.css). */
+:host([data-multiline]) .control-row {
+  align-items: flex-start;
+  padding-block: var(--sherpa-structure-space-padding, 8px);
 }
+textarea.control { padding-block: 0; }
 
 /* ── Icon glyphs ──────────────────────────────────────────────────────── */
 .icon {

@@ -1,0 +1,14 @@
+/*
+ * sherpa-text-area.css — the TEXT of a field that takes more than one line: it grows with its text from its fewest
+ * lines to its most, then scrolls, and a wheel at its end moves nothing under it (a canvas, a panel). Picked by
+ * class: .sherpa-text-area. A component sets its own `--_text-area-lines-min` and `-max`. TODO 953
+ */
+
+.sherpa-text-area {
+  field-sizing: content;
+  min-block-size: calc(var(--_text-area-lines-min, 4) * var(--sherpa-theme-content-line-height-base, 20px));
+  max-block-size: calc(var(--_text-area-lines-max, 20) * var(--sherpa-theme-content-line-height-base, 20px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  resize: vertical;
+}

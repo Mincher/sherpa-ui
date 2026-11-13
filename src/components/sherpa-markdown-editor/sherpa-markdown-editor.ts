@@ -30,7 +30,10 @@ const TYPING_MS = 1000;
 const TEXT_NODE = 3;
 
 export class SherpaMarkdownEditor extends SherpaElement {
-  static override css = new URL('./sherpa-markdown-editor.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-text-area.css', import.meta.url),
+    new URL('./sherpa-markdown-editor.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-markdown-editor.html', import.meta.url);
 
   static override props = {
@@ -443,7 +446,19 @@ export class SherpaMarkdownEditor extends SherpaElement {
     if (!this.#inContent()) return;
     const a = this.#pointAt(start);
     const f = start === end ? a : this.#pointAt(end);
-    document.getSelection()?.setBaseAndExtent(a[0], a[1], f[0], f[1]);
+    const selection = document.getSelection();
+    selection?.setBaseAndExtent(a[0], a[1], f[0], f[1]);
+    // A selection set by code is not scrolled to, as a typed one is: the box brings the caret into view. TODO 953
+    const content = this.$('.content');
+    if (!content || !selection?.rangeCount) return;
+    const range = document.createRange();
+    range.setStart(f[0], f[1]);
+    let caret = range.getBoundingClientRect();
+    // A caret at an empty line's break has no box of its own: its line's.
+    if (!caret.height) caret = (f[0] instanceof Element ? f[0] : f[0].parentElement)?.closest('.line')?.getBoundingClientRect() ?? caret;
+    const box = content.getBoundingClientRect();
+    if (caret.bottom > box.bottom) content.scrollTop += caret.bottom - box.bottom;
+    else if (caret.top < box.top) content.scrollTop -= box.top - caret.top;
   }
 
   /** The caret moved in the formatted box: kept, its spans opened, the tools told. */

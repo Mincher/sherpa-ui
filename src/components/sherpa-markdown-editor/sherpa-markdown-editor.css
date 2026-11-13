@@ -125,10 +125,7 @@
   display: block;
   box-sizing: border-box;
   inline-size: 100%;
-  /* Figma's box is 96 high at rest: its text area, inside its padding. */
-  min-block-size: 80px;
-  max-block-size: 400px;
-  overflow-y: auto;
+  /* Figma's box is 96 high at rest: four lines (sherpa-text-area.css), inside its padding. */
   margin: 0;
   padding: 0;
   border: 0;
@@ -148,8 +145,6 @@
 /* The Markdown itself: a plain text area, in the code face. */
 .source {
   display: none;
-  resize: vertical;
-  field-sizing: content;
   font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
 }
 :host([data-view="markdown"]) .content { display: none; }
@@ -295,7 +290,7 @@
 
 /* One line: a title or a file name. No toolbar, as tall as its line (TODO 913). */
 :host([data-single-line]) :is(.bar, .help) { display: none; }
-:host([data-single-line]) :is(.content, .source) { min-block-size: 0; }
+:host([data-single-line]) :is(.content, .source) { min-block-size: 0; resize: none; }
 
 /* ── Disabled: a PIN (inactive), never opacity ─────────────────────── */
 :host(:disabled) :is(.box, .content, .source) { cursor: not-allowed; }

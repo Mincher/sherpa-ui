@@ -30,7 +30,7 @@
       "children": [
         {
           "el": "textarea",
-          "class": "input",
+          "class": "input sherpa-text-area",
           "part": "input",
           "attrs": {
             "rows": "1",

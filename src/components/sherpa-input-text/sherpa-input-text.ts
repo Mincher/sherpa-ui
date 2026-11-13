@@ -50,7 +50,10 @@ type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 export interface InputOption { value: string; label?: string; disabled?: boolean; title?: string; group?: string }
 
 export class SherpaInputText extends SherpaElement {
-  static override css = new URL('./sherpa-input-text.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-text-area.css', import.meta.url),
+    new URL('./sherpa-input-text.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-input-text.html', import.meta.url);
   static override delegatesFocus = true;
 
