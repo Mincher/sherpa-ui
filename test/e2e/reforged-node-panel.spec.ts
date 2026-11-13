@@ -224,27 +224,29 @@ test('a drag let go on the card, or off the canvas, places nothing', async ({ pa
   expect((await draft(page)).nodes.map((n) => n.id)).toEqual(['start']);
 });
 
-test('a connection let go on the bare canvas opens "Add a node": the kinds that take its type, a Value first when the socket takes one', async ({ page }) => {
-  await bind(page);
-  // At zoom 1 from the top left, the Source stands clear of the minimap (plan 944 made it shorter).
+/** The Source's output (rows, an object) let go on the bare canvas, at zoom 1 from the top left: there the Source stands
+ *  clear of the minimap (plan 944 made it shorter). "Add a node" opens; its choices' values are returned. */
+async function dropRows(page: Page): Promise<string[]> {
   await page.evaluate(async () => {
     const canvas = document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     canvas.zoomTo(1);
     canvas.panTo(40, 40);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
-  // Start's output (rows, an object) dropped on the bare canvas.
   const [x1, y1] = await page.evaluate(() => {
     const el = [...document.querySelectorAll<HTMLElement & { socketRect(s: string): DOMRect }>('#root sherpa-layout-canvas > sherpa-node')].find((n) => n.dataset['heading'] === 'Source')!;
     const row = el.querySelector('sherpa-node-row:has(sherpa-input-text[name="store"])') as HTMLElement & { socketRect(s: string): DOMRect };
     const r = row.socketRect('output');
     return [r.left + r.width / 2, r.top + r.height / 2];
   });
-  // Let go where nothing is drawn: the first point below and right of the socket that hits the bare canvas.
+  // Let go where nothing is drawn: the first point below and right of the socket that hits the bare canvas, 40px clear of
+  // every node, so it lands on no socket.
   const [x2, y2] = await page.evaluate(([x, y]: number[]) => {
+    const near = [...document.querySelectorAll('#root sherpa-layout-canvas > sherpa-node')].map((n) => n.getBoundingClientRect());
+    const clear = (px: number, py: number): boolean => !near.some((r) => px > r.left - 40 && px < r.right + 40 && py > r.top - 40 && py < r.bottom + 40);
     for (let dy = 120; dy < 600; dy += 20) for (let dx = 60; dx < 400; dx += 40) {
       const hit = document.elementFromPoint(x! + dx, y! + dy);
-      if (hit?.localName === 'sherpa-layout-canvas') return [x! + dx, y! + dy];
+      if (hit?.localName === 'sherpa-layout-canvas' && clear(x! + dx, y! + dy)) return [x! + dx, y! + dy];
     }
     return [x! + 150, y! + 200];
   }, [x1!, y1!]);
@@ -252,24 +254,54 @@ test('a connection let go on the bare canvas opens "Add a node": the kinds that 
   await page.mouse.down();
   await page.mouse.move(x2!, y2!, { steps: 8 });
   await page.mouse.up();
-  const menu = page.locator('sherpa-node-list sherpa-menu.add');
-  await expect(menu).toHaveAttribute('open', '');
-  const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
+  await expect(page.locator('sherpa-node-list sherpa-menu.add')).toHaveAttribute('open', '');
+  return page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
+}
+
+/** Pick a choice of "Add a node" by its value. WebKit's hit test puts a menu's card over its rows for a pointer; the key
+ *  reaches them. */
+async function choose(page: Page, value: string): Promise<void> {
+  const choice = page.locator(`sherpa-node-list sherpa-menu.add button[value="${value}"]`);
+  if (test.info().project.name === 'webkit') {
+    await choice.evaluate((b: HTMLElement) => b.focus());
+    await page.keyboard.press('Enter');
+  } else await choice.click();
+  await settle(page);
+}
+
+test('a connection let go on the bare canvas opens "Add a node": the kinds that take its type, a Value first when the socket takes one', async ({ page }) => {
+  await bind(page);
+  const choices = await dropRows(page);
   // Rows (an object) leave the Store row: the families whose header or a row takes one.
   // A portal's In takes anything (TODO 779); an AI node's header reads anything (plan 926); a Math Count's Rows and a Branch
   // take rows (plan 944); an Organise takes them on its header (plan 960 U4.2).
   expect(choices).toEqual(['field', 'math', 'condition', 'branch', 'prompt', 'runbook', 'skill', 'organise', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
-  const count = page.locator('sherpa-node-list sherpa-menu.add button[value="condition"]');
-  // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
-  if (test.info().project.name === 'webkit') {
-    await count.evaluate((b: HTMLElement) => b.focus());
-    await page.keyboard.press('Enter');
-  } else await count.click();
-  await settle(page);
+  await choose(page, 'condition');
   const r = await draft(page);
   expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'condition']);
   expect(r.connections).toEqual(['start/rows → condition-1']);
   expect(await pick(page)).toEqual({ current: ['Condition'], open: true, tab: true });
+});
+
+test('a field picked on a Field is offered as its own choice next time: Field › Status, placed with it picked (TODO 968)', async ({ page }) => {
+  await bind(page);
+  await dropRows(page);
+  await choose(page, 'field');
+  await page.locator('#root sherpa-layout-canvas > sherpa-node[data-heading="Field"] sherpa-input-text[name="field"] select').selectOption('status');
+  await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { hide(): void }).hide());
+  const choices = await dropRows(page);
+  // The use first, newest; the plain Field after, for another field.
+  expect(choices.slice(0, 2)).toEqual(['field?field=status', 'field']);
+  expect(await page.locator('sherpa-node-list sherpa-menu.add button[value]').first().textContent()).toBe('Field › Status');
+  await choose(page, 'field?field=status');
+  const saved = await page.evaluate(() => {
+    const w = window as unknown as { editor: { save(): boolean }; saved: { nodes: { id: string; values?: { field?: string } }[]; connections?: { from: string; to: string }[] }[] };
+    w.editor.save();
+    const d = w.saved.at(-1)!;
+    return { field: d.nodes.find((n) => n.id === 'field-2')?.values?.field, joined: (d.connections ?? []).some((r) => r.from === 'start/rows' && r.to === 'field-2') };
+  });
+  expect(saved).toEqual({ field: 'status', joined: true });
 });
 
 test('"Add a node" for a list says the type a family takes it as: Math › Floor, Text › Join', async ({ page }) => {

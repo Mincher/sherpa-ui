@@ -114,7 +114,7 @@ import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { nodeKinds, kindOfNode, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type SocketType } from '../data/node-kinds.js';
+import { nodeKinds, kindOfNode, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, rowOf, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type RecentUse, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -2535,10 +2535,13 @@ interface Opened {
 
 /** Whether a value is a library's edits: definitions by id. */
 const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && typeof v === 'object' && !Array.isArray(v);
-/** Where the kinds placed last are kept, in the session. */
+/** Where the kinds placed or set last are kept, in the session. */
 const RECENT = '/nodes/recent';
-/** Whether a value is a list of words: tags, or kind ids. */
+/** Whether a value is a list of words: tags. */
 const isWords = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) => typeof t === 'string');
+/** Whether a value is a list of recent uses: each a kind, and its picks by row. */
+const isUses = (v: unknown): v is RecentUse[] => Array.isArray(v) && v.every((u: Partial<RecentUse> | null) => typeof u?.kind === 'string'
+  && (u.values === undefined || (!!u.values && typeof u.values === 'object' && Object.values(u.values).every((p) => typeof p === 'string'))));
 
 /** Keep a workflow's draft drawn on a canvas, and write each edit to it as a pure edit:
  *  a value, a move, a connection, a node's own name. A connection that would break the workflow is
@@ -2572,9 +2575,9 @@ export function bindWorkflow(
   // The open entity's own tags, a draft beside the workflow's, kept for the tab: the app's Save writes them. TODO 828
   const tagsAt = `/graph-tags/${workflow.id}`;
   session?.persist(tagsAt, { shared: false, guard: isWords });
-  // The kinds placed last, newest first, in every tab: "Add a node" lists those first (TODO 968).
-  kept$?.persist(RECENT, { shared: true, guard: isWords });
-  const recents = kept$ && new SessionList<string>(kept$, RECENT, { max: 5, front: true });
+  // The kinds placed or set last, newest first, in every tab: "Add a node" lists those first (TODO 968).
+  kept$?.persist(RECENT, { shared: true, guard: isUses });
+  const recents = kept$ && new SessionList<RecentUse>(kept$, RECENT, { max: 5, front: true });
   let handedTags: readonly string[] = own ? tidyTags(lib.nodes[own]?.tags) : [];
   let ownTags: readonly string[] = (session?.get(tagsAt) as string[] | undefined) ?? handedTags;
   const dirty = new Set(Object.keys(edited));
@@ -2901,6 +2904,8 @@ export function bindWorkflow(
       if (next !== lib) setLib(next, [id!]);
       return;
     }
+    // A pick on a row that recalls it: "Add a node" offers the kind with it picked (TODO 968).
+    if (row.recalls && typeof value === 'string' && value && !readOnly()) recents?.add({ kind: node.kind, values: { [row.name]: value } });
     const own = OWN[row.name];
     // A portal's name, or a Rename, can join a loop: checked as a connection is, and refused the same way; a refused pick draws back. TODO 779
     const portal = portalOf(node);
@@ -3080,9 +3085,9 @@ export function bindWorkflow(
   const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(shown(), to, at, K()));
   const onCustom = (to: string, at: { x: number; y: number }): void => customAt(to, { x: Math.round(at.x), y: Math.round(at.y) });
   // A node the reader asked for, from the panel or "Add a node": through the one door, `{ add }`; picked, its panel shut. TODO 756
-  const place = (kind: string, at: { x: number; y: number }, context?: AddContext, type?: string): void => {
+  const place = (kind: string, at: { x: number; y: number }, context?: AddContext, type?: string, chosen?: RecentUse['values']): void => {
     if (!K()[kind] || readOnly()) return;
-    recents?.add(kind);
+    recents?.add({ kind, ...(chosen ? { values: chosen } : {}) });
     const free = (n: number): string => (shown().nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
     const id = free(1);
     edit(() => {
@@ -3090,7 +3095,8 @@ export function bindWorkflow(
       // A node let go by its output sits left of the point, so its output meets the line. A family takes the type it fits, or was found by.
       const x = Math.round(at.x - (context?.side === 'in' ? 280 : 0));
       const typed = type ?? fit?.type;
-      const added = { id, kind, x, y: Math.round(at.y), ...(typed ? { values: { type: typed } } : {}) };
+      const values = { ...(typed ? { type: typed } : {}), ...chosen };
+      const added = { id, kind, x, y: Math.round(at.y), ...(Object.keys(values).length ? { values } : {}) };
       // A use of a Custom Node records the definition it is placed from (D11).
       write(editWorkflow(shown(), { add: K()[kind]!.model === 'graph' && lib.nodes[kind] ? useOf(lib, kind, added) : added }, K()));
       if (context && fit) {
@@ -3108,13 +3114,26 @@ export function bindWorkflow(
     shut = !inspector?.open;
     picks.peek(node, graph);
   };
+  // The recent uses, each pick said by its label; a pick no store here has is left out. No stores known: any is kept.
+  const recalled = (): RecentUse[] => {
+    const fields = facts.fieldsOf && Object.fromEntries(Object.values(facts.fieldsOf).flatMap((f) => Object.entries(f)));
+    return (recents?.all ?? []).flatMap((use) => {
+      if (!use.values) return [use];
+      const rows = kindOfNode(K(), use)?.rows ?? [];
+      const said = Object.entries(use.values).map(([name, value]) => {
+        const row = rowOf(rows, name);
+        return !row ? undefined : fields ? rowChoices(row, { fields })?.find((c) => c.value === value)?.label : value;
+      });
+      return said.every((s) => s !== undefined) ? [{ ...use, label: said.join(' › ') }] : [];
+    });
+  };
   const planeAt = (clientX: number, clientY: number): { x: number; y: number } => {
     const [x, y] = planeOf(canvas, { clientX, clientY });
     return { x, y };
   };
   const onAdded = (event: Event): void => {
-    const { kind, type, point, context } = (event as CustomEvent<{ kind: string; type?: string; point?: { x: number; y: number }; context?: AddContext }>).detail;
-    if (context) return place(kind, context.at, context);
+    const { kind, type, values, point, context } = (event as CustomEvent<{ kind: string; type?: string; values?: RecentUse['values']; point?: { x: number; y: number }; context?: AddContext }>).detail;
+    if (context) return place(kind, context.at, context, undefined, values);
     const box = canvas.getBoundingClientRect();
     if (!point) return place(kind, planeAt(box.left + box.width / 2 - 120, box.top + box.height / 2 - 40), undefined, type);
     // Let go off the canvas: nothing is placed.
@@ -3948,7 +3967,7 @@ export function bindWorkflow(
       locked: (node) => ro || isGroupEnd(node.id),
       // A Custom Node's use opens on its drill-down, as on a double click (TODO 954).
       onOpen: (node) => open(node.id),
-      ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd({ ...context, recent: recents?.all ?? [] }) } : {}),
+      ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd({ ...context, recent: recalled() }) } : {}),
       // A collapsed or expanded node changes height: its lane fits again.
       onCollapse: () => { if (shown().lanes?.length) write(shown()); },
     });

@@ -43,6 +43,8 @@
  * - paletteOf — The node panel's list: each category with a workflow kind in it, in order; never a Query-only kind.
  * - paletteMatch — How a panel item answers a search: by its name or a tag, or by a type's name, whole first.
  * - fitOf — Where a new node of a kind joins a socket of a type: its header or a row, as a family's type.
+ * - RecentUse — A kind placed or set last: with its picks on its `recalls` rows, a use of its own.
+ * - PaletteChoice — One choice of "Add a node": a kind, or a use of it with its picks.
  * - paletteFor — The palette's kinds a socket of a type could join: the ones used last first, then a Value.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
@@ -140,6 +142,8 @@ export interface RowKind {
   passes?: string;
   /** One way of a fork: what it sends goes no other way, as a test's Pass and Fail or a Branch's Yes and No (plan 971). */
   fork?: true;
+  /** A pick on it is kept with the kinds placed last, so "Add a node" offers the kind with it picked (TODO 968). */
+  recalls?: true;
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
   /** An `entity` row's type: it picks one of the shelf's entities of it, as a Run Coworker's Coworker (plan 949). */
@@ -609,7 +613,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   field: {
     heading: 'Field', icon: 'price-tag', description: 'Target a field from a connected Source', input: 'any', needs: 'object',
     rows: [
-      { name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' },
+      { name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field', recalls: true },
       // The values it sends, picked from its field's own: one dropdown, a menu of ticks (Will, D1, E1 A).
       { name: 'values', label: 'Values', control: 'values', multiple: true, output: 'object', valuesOf: 'field', optional: true },
     ], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
@@ -838,12 +842,32 @@ export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in', gi
   return undefined;
 }
 
-/** The palette's kinds a socket of a type could join: the ones used last first, newest first (TODO 968), then a Value
- *  (D16), then the palette's order. */
-export function paletteFor(palette: readonly PaletteGroup[], type: SocketType, side: 'out' | 'in', recent: readonly string[] = []): PaletteItem[] {
+/** A kind placed or set last: with its picks on its `recalls` rows, a use of its own (TODO 968). */
+export interface RecentUse {
+  kind: string;
+  values?: Readonly<Record<string, string>>;
+  /** How its picks read, found when "Add a node" opens; never kept. */
+  label?: string;
+}
+
+/** One choice of "Add a node": a kind, or a use of it with its picks. */
+export interface PaletteChoice extends PaletteItem {
+  values?: Readonly<Record<string, string>>;
+  label?: string;
+}
+
+/** The palette's kinds a socket of a type could join: the ones used last first, newest first, a use with its picks its own
+ *  choice (TODO 968); then a Value (D16), then the palette's order. */
+export function paletteFor(palette: readonly PaletteGroup[], type: SocketType, side: 'out' | 'in', recent: readonly RecentUse[] = []): PaletteChoice[] {
   const fit = palette.flatMap((g) => g.items).filter((i) => fitOf(i.kind, type, side));
-  const rank = (i: PaletteItem): number => (recent.includes(i.id) ? recent.indexOf(i.id) : i.id === 'value' ? recent.length : recent.length + 1);
-  return fit.map((item, at) => ({ item, at })).sort((a, b) => rank(a.item) - rank(b.item) || a.at - b.at).map(({ item }) => item);
+  const byId = new Map(fit.map((i) => [i.id, i]));
+  const used = recent.flatMap(({ kind, values, label }): PaletteChoice[] => {
+    const item = byId.get(kind);
+    return item ? [values ? { ...item, values, ...(label ? { label } : {}) } : item] : [];
+  });
+  const plain = new Set(used.filter((c) => !c.values).map((c) => c.id));
+  const value = byId.get('value');
+  return [...used, ...(value && !plain.has('value') ? [value] : []), ...fit.filter((i) => i.id !== 'value' && !plain.has(i.id))];
 }
 
 /** A socket address, read: its node, and its row or none for the header's. */

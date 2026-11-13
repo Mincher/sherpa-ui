@@ -8062,7 +8062,7 @@
               "name": "node-add",
               "description": "An item was clicked, Enter was pressed on it, or it was dropped, or a choice of \"Add a node\" was picked.",
               "type": {
-                "text": "CustomEvent<{ context: AddContext; kind: string | undefined; point: { x: number; y: number; }; type: string }>"
+                "text": "CustomEvent<{ context: AddContext; kind: string | undefined; point: { x: number; y: number; }; type: string; values: Readonly<Record<string, string>> | undefined }>"
               }
             }
           ],

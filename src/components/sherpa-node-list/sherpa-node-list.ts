@@ -14,7 +14,7 @@
  * Map:
  * - AddContext — Where "Add a node" opens, and what it is for: a socket of a type, dragged to a point.
  */import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { categorySlug, fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type PaletteItem, type SocketType } from '../../core/data/node-kinds.js';
+import { categorySlug, fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteChoice, type PaletteGroup, type PaletteItem, type RecentUse, type SocketType } from '../../core/data/node-kinds.js';
 import { takesGiven, type Given } from '../../core/data/node-input.js';
 // Defined before the template stamps them.
 import '../sherpa-input-text/sherpa-input-text.js';
@@ -37,8 +37,8 @@ export interface AddContext {
   /** Where it was let go: on the screen, to open the menu; on the plane, to place the node. */
   client: { x: number; y: number };
   at: { x: number; y: number };
-  /** The kinds placed last, newest first: the menu lists those that fit first (TODO 968). */
-  recent?: readonly string[];
+  /** The kinds placed or set last, newest first: the menu lists those that fit first, a use with its picks its own (TODO 968). */
+  recent?: readonly RecentUse[];
 }
 
 /** The two lists, by who made a node: the kinds a file gives and every preset, and the reader's own (plan 936). */
@@ -95,6 +95,8 @@ export class SherpaNodeList extends SherpaElement {
   #palette: readonly PaletteGroup[] = [];
   /** What "Add a node" is open for, until a choice or a close. */
   #context: AddContext | null = null;
+  /** Its choices, by the value each is stamped with. */
+  #offered = new Map<string, PaletteChoice>();
   /** A drag just ended: the click it makes is not a place. */
   #dragged = false;
   /** Each item's kind. */
@@ -264,12 +266,14 @@ export class SherpaNodeList extends SherpaElement {
 
   /** Open "Add a node" where a line was let go: the kinds a socket of its type could join, the ones used last first. */
   askAdd(context: AddContext): void {
-    // A family that fits only as another type says which: "Math › Count".
-    const choices = paletteFor(this.#palette, context.type, context.side, context.recent).filter(({ kind }) => !context.gives || takesGiven(kind, context.gives)).map(({ id, kind }) => {
+    const offered = paletteFor(this.#palette, context.type, context.side, context.recent).filter(({ kind }) => !context.gives || takesGiven(kind, context.gives));
+    if (!offered.length) return;
+    this.#offered = new Map(offered.map((c) => [c.values ? `${c.id}?${new URLSearchParams({ ...c.values })}` : c.id, c]));
+    // A family that fits only as another type says which, and a use its picks: "Math › Count", "Field › Status".
+    const choices = [...this.#offered].map(([id, { kind, label }]) => {
       const type = fitOf(kind, context.type, context.side, context.gives)?.type;
-      return { id, heading: type ? `${kind.heading} › ${kind.types![type]!.label}` : kind.heading };
+      return { id, heading: [kind.heading, type && kind.types![type]!.label, label].filter(Boolean).join(' › ') };
     });
-    if (!choices.length) return;
     this.#context = context;
     this.renderItems('.add', 'template.choice-tpl', choices);
     // Fixed in the window, so the panel's clip never reaches the point the menu is anchored to.
@@ -283,8 +287,9 @@ export class SherpaNodeList extends SherpaElement {
   #onChoose = (event: Event): void => {
     const { value } = (event as CustomEvent<{ value: string }>).detail;
     const context = this.#context;
+    const choice = this.#offered.get(value);
     this.#context = null;
-    if (context) this.emit('node-add', { kind: value, context });
+    if (context && choice) this.emit('node-add', { kind: choice.id, ...(choice.values ? { values: choice.values } : {}), context });
   };
 }
 

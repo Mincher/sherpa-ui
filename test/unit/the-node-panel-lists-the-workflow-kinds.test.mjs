@@ -69,10 +69,21 @@ test("an app's own kind goes after the known categories; one with none is Other"
 
 test('the kinds placed last come first, newest first; one that does not fit is left out; then a Value (TODO 968)', () => {
   const palette = paletteOf(NODE_KINDS);
-  const into = paletteFor(palette, 'value', 'in', ['organise', 'math', 'condition']).map((i) => i.id);
+  const into = paletteFor(palette, 'value', 'in', [{ kind: 'organise' }, { kind: 'math' }, { kind: 'condition' }]).map((i) => i.id);
   assert.deepEqual(into.slice(0, 3), ['math', 'condition', 'value']);
   assert.ok(!into.includes('organise'));
   assert.deepEqual(paletteFor(palette, 'value', 'in', []).map((i) => i.id), paletteFor(palette, 'value', 'in').map((i) => i.id));
+});
+
+test('a use with its picks is its own choice; its kind is offered plain too, in its place (TODO 968)', () => {
+  const palette = paletteOf(NODE_KINDS);
+  const status = { kind: 'field', values: { field: 'status' }, label: 'Status' };
+  const out = paletteFor(palette, 'object', 'out', [status, { kind: 'math' }]);
+  // Rows take no Value; the plain Field is still there for another field, first of the rest, as the palette has it.
+  assert.deepEqual(out.slice(0, 3).map((c) => [c.id, c.values?.field, c.label]), [['field', 'status', 'Status'], ['math', undefined, undefined], ['field', undefined, undefined]]);
+  assert.equal(out.filter((c) => c.id === 'math').length, 1);
+  // The Field kind keeps a pick of its field.
+  assert.equal(NODE_KINDS.field.rows.find((r) => r.name === 'field').recalls, true);
 });
 
 test('a socket is offered the kinds that could join it, a Value first', () => {

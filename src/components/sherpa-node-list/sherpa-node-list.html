@@ -10,9 +10,9 @@
 
   Fires:
     node-add — an item was clicked, Enter was pressed on it, or it was dropped, or a choice of
-               "Add a node" was picked. detail: { kind, type?, point?, context? } — `type` is the
-               family's type a search found it by; `point` is where a drag was let go, in client
-               pixels; `context` is what askAdd() was given.
+               "Add a node" was picked. detail: { kind, type?, values?, point?, context? } — `type` is the
+               family's type a search found it by; `values` a recent use's picks; `point` is where a
+               drag was let go, in client pixels; `context` is what askAdd() was given.
 
   Methods:
     askAdd(context) — open "Add a node" at a point: the kinds a socket of a type could join

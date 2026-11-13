@@ -91,7 +91,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `node-add` | `{ context: AddContext; kind: string \| undefined; point: { x: number; y: number; }; type: string }` | An item was clicked, Enter was pressed on it, or it was dropped, or a choice of "Add a node" was picked. |
+| `node-add` | `{ context: AddContext; kind: string \| undefined; point: { x: number; y: number; }; type: string; values: Readonly<Record<string, string>> \| undefined }` | An item was clicked, Enter was pressed on it, or it was dropped, or a choice of "Add a node" was picked. |
 
 ## Parts
 

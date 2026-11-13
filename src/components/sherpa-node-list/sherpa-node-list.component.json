@@ -187,7 +187,8 @@
         "context": "AddContext",
         "kind": "string | undefined",
         "point": "{ x: number; y: number; }",
-        "type": "string"
+        "type": "string",
+        "values": "Readonly<Record<string, string>> | undefined"
       }
     }
   ],
