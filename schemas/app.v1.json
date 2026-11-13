@@ -22,7 +22,7 @@
       "additionalProperties": { "$ref": "defs.v1.json#/$defs/context" }
     },
     "entities": {
-      "description": "The app's preset entities, its Custom Nodes among them (the type node): a path to an entities.v2.json. Read only; the reader's own are kept apart, app-wide.",
+      "description": "The app's preset entities, its Custom Nodes among them (the type node): a path to an entities.v3.json, with the types they are of. Read only; the reader's own are kept apart, app-wide.",
       "type": "string"
     },
     "sections": {

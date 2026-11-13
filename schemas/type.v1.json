@@ -2,16 +2,17 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/type.v1.json",
   "title": "Sherpa-UI type",
-  "description": "A kind of thing, said once (plan 960 U2): a row type, as a Device, or a graph thing, as a Coworker. Its fields say only what the data is. The store's rules (typeSchema), what a page knows of each field and a grid's columns (typeColumns) are made from them, so a page's source.fields says only what its controls do. typeFaults() reads it.",
+  "description": "A kind of thing, said once (plan 960 U2): a row type, as a Device, or a graph thing, as a Coworker. Its fields say only what the data is. The store's rules (typeSchema), what a page knows of each field and a grid's columns (typeColumns) are made from them, so a page's source.fields says only what its controls do. A graph thing says its graph part too; its entity's id, label, description and tags are its fields beside its own. typeFaults() reads it.",
   "type": "object",
   "allOf": [{ "$ref": "defs.v1.json#/$defs/envelope" }],
   "unevaluatedProperties": false,
-  "required": ["v", "id", "label", "fields"],
+  "required": ["v", "id", "label"],
+  "anyOf": [{ "required": ["fields"] }, { "required": ["graph"] }],
   "properties": {
     "v": { "const": 1 },
     "type": false,
     "icon": { "type": "string", "minLength": 1 },
-    "category": { "description": "The group it stands in, where an app lists its types: Records, Runbooks.", "type": "string", "minLength": 1 },
+    "category": { "description": "The group it stands in, where an app lists its types and the Nodes panel its entities: Records, Runbooks. None, for a graph thing: Custom Nodes.", "type": "string", "minLength": 1 },
     "key": { "description": "The field each row is known by. None: id. It is one of its fields, and required.", "type": "string", "minLength": 1 },
     "time": { "description": "The date field each row's time is: a page's Date filter reads it.", "type": "string", "minLength": 1 },
     "fields": {
@@ -19,7 +20,19 @@
       "type": "object", "minProperties": 1,
       "additionalProperties": { "$ref": "#/$defs/field" }
     },
-    "data": { "description": "Its seed rows: a JSON file or a URL, from the app's folder.", "type": "string", "minLength": 1 }
+    "data": { "description": "Its seed rows: a JSON file or a URL, from the app's folder.", "type": "string", "minLength": 1 },
+    "graph": {
+      "description": "A graph thing's graph part (plan 942 D2 A, folded in by plan 960 U2): the sockets every entity of it has, the families its graph may place, and whether it runs. Each entity of it is an entity.v2 whose graph is what it does.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "families": { "description": "The families (a kind's category) its graph may place; none, any. A use of an entity is always allowed.", "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "inputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeInput" } },
+        "outputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeOutput" } },
+        "runs": { "description": "It needs the runner to be of use; none, false: only defined.", "type": "boolean" },
+        "reusable": { "description": "Its entities are Custom Nodes a graph may place; none, true. False (a Coworker): the Nodes panel leaves them out, and an Output Trigger starts one (plan 949).", "type": "boolean" }
+      }
+    }
   },
   "$defs": {
     "field": {

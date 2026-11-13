@@ -9,7 +9,7 @@
  * - EntityRef — One entity a graph places: its type and id.
  * - EntityGraph — An entity's graph: a workflow's nodes and connections, with `#in` and `#out` as a Custom Node has.
  * - Entity — One entity, as JSON.
- * - EntityLibrary — The preset entities of an app, by id (entities.v2).
+ * - EntityLibrary — The preset entities of an app, by id, and the types they are of (entities.v3).
  * - isEntity — Whether a value has the SHAPE of an entity; the persist guard.
  * - entityKind — The kind a use of an entity has in a graph: `<type>:<id>`, and a Custom Node's plain id.
  * - entityRefOf — The entity a use's kind names: the inverse of `entityKind`.
@@ -68,12 +68,11 @@ export interface Entity {
   origin?: 'preset' | 'mine';
 }
 
-/** The preset entities of an app, by id (entities.v2), and the types of Custom Node they are of, as JSON (plan 942). */
+/** The preset entities of an app, by id, and the types they are of, each a type.v1 by its id (entities.v3; plan 960 U2). */
 export interface EntityLibrary {
   $schema?: string;
-  v: 2;
-  /** Each type by id: a category, an icon and fixed sockets (`node-type.v1`); each node of it a sub-graph. */
-  types?: Readonly<Record<string, Omit<import('./entity-types.js').EntityType, 'id' | 'settingsFaults'>>>;
+  v: 3;
+  types?: Readonly<Record<string, import('./type-definition.js').TypeDefinition>>;
   entities: Readonly<Record<string, Entity>>;
 }
 

@@ -1,5 +1,5 @@
 /**
- * entity-files.ts — an app's preset entities from a file: JSON (schemas/entities.v2.json), named by
+ * entity-files.ts — an app's preset entities and their types from a file: JSON (schemas/entities.v3.json), named by
  * app.json `entities`. The presets are read only; the reader's own live in the page keeper. Each is
  * checked alone: the bad reported in `checkEntity`'s words, the rest kept. Will, plan 746 E2
  * TRAP T-an-entity-is-an-envelope-and-a-type
@@ -11,22 +11,25 @@
 import { report } from '../data/report.js';
 import { isEntity, type Entity, type EntityLibrary } from '../data/entity.js';
 import { entityFaults, type EntityFacts } from '../data/entity-check.js';
-import { registerEntityType } from '../data/entity-types.js';
+import { registerEntityType, type EntityType } from '../data/entity-types.js';
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** Entities read from JSON (entities.v2). Each is checked alone, over those already kept and the
+/** Entities read from JSON (entities.v3), its types registered first. Each is checked alone, over those already kept and the
  *  `known` ones around it, so one bad one is reported and the rest still load; a use of one defined
  *  later is tried again once that one is in. The key of each must be its id. */
 export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibrary {
-  const given = isObject(read) && read['v'] === 2 && isObject(read['entities']) ? read['entities'] : undefined;
+  const given = isObject(read) && read['v'] === 3 && isObject(read['entities']) ? read['entities'] : undefined;
   if (!given) {
-    report({ code: 'entity', message: 'loadEntityLibrary: it is not an entity library: a v2 with its entities by id.', at: {} });
-    return { v: 2, entities: {} };
+    report({ code: 'entity', message: 'loadEntityLibrary: it is not an entity library: a v3 with its entities by id.', at: {} });
+    return { v: 3, entities: {} };
   }
-  // Its types first, as JSON (plan 942 D2 A): its entities may be of them.
+  // Its types first, each a type.v1 (plan 960 U2): its entities may be of them. A type's key is its id.
   if (isObject(read) && isObject(read['types'])) {
-    for (const [id, type] of Object.entries(read['types'])) if (isObject(type)) registerEntityType({ ...(type as { label: string }), id });
+    for (const [key, type] of Object.entries(read['types'])) {
+      if (isObject(type) && type['id'] !== key) report({ code: 'entity-type', message: `loadEntityLibrary: the type under "${key}" has the id ${JSON.stringify(type['id'] ?? null)}, so it is left out.`, at: { type: key } });
+      else registerEntityType(type as unknown as EntityType);
+    }
   }
   const kept: Record<string, Entity> = {};
   let waiting = Object.entries(given);
@@ -53,7 +56,7 @@ export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibr
   for (const [key, found] of faults) {
     for (const fault of found) report({ code: 'entity', message: `loadEntityLibrary: ${fault}, so "${key}" is left out.`, at: { entity: key } });
   }
-  return { v: 2, entities: kept };
+  return { v: 3, entities: kept };
 }
 
 /** An app's preset entities from a JSON file. One that fails the checks is reported and left out; a
@@ -67,7 +70,7 @@ export async function loadEntityLibrary(url: string | URL, facts?: EntityFacts):
     read = await response.json();
   } catch (error) {
     report({ code: 'entity', message: `loadEntityLibrary: the file could not be read (${error instanceof Error ? error.message : String(error)}).`, at: { url: String(url) } });
-    return { v: 2, entities: {} };
+    return { v: 3, entities: {} };
   }
   return readEntities(read, facts);
 }

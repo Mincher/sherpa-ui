@@ -304,7 +304,7 @@ export function register(server) {
   const FACTS = {
     fieldsOf: z.union([z.string(), z.record(z.unknown())]).optional().describe('Each store\'s fields, by the store\'s name — a page definition\'s `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from'),
     stores: z.union([z.string(), z.array(z.string())]).optional().describe('The stores a Source\'s Store row picks, by the names the app gives them'),
-    entities: z.union([z.string(), z.record(z.unknown()), z.array(z.unknown())]).optional().describe('The app\'s entities file (entities.v2: `{ "v": 2, "types", "entities" }`) or a list of entities: each is a Custom Node a node may place by its use\'s kind, so a use of one is no fault (plan 942 D3 A)'),
+    entities: z.union([z.string(), z.record(z.unknown()), z.array(z.unknown())]).optional().describe('The app\'s entities file (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id) or a list of entities: each is a Custom Node a node may place by its use\'s kind, so a use of one is no fault (plan 942 D3 A)'),
   };
   const factsOf = (args) => ({
     ...(args.fieldsOf ? { fieldsOf: given(args.fieldsOf, 'fieldsOf') } : {}), ...(args.stores ? { stores: listOf(args.stores, 'stores') } : {}),

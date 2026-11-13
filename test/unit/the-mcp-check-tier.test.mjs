@@ -292,11 +292,11 @@ test('check_custom_node: checked as Save checks it; each fault in words; with no
   // A use of another entity: a fault alone; no fault beside the app's entities file.
   const outer = { ...HAS_ROLE, id: 'outer', label: 'Outer', graph: { nodes: [{ id: 'u', kind: 'has-role', x: 0, y: 0 }], connections: [] }, settings: { inputs: [], outputs: [] } };
   assert.match((await call('check_custom_node', { node: JSON.stringify(outer) })).text, /fault\(s\) in "Outer"/);
-  const known = await call('check_custom_node', { node: JSON.stringify(outer), entities: JSON.stringify({ v: 2, entities: { 'has-role': HAS_ROLE } }) });
+  const known = await call('check_custom_node', { node: JSON.stringify(outer), entities: JSON.stringify({ v: 3, entities: { 'has-role': HAS_ROLE } }) });
   assert.match(known.text, /No fault\. "Outer"/);
   // A type the file says is known for that call alone.
   const typed = { v: 2, type: 'playbook', id: 'p', label: 'P', graph: { nodes: [] } };
-  assert.match((await call('check_custom_node', { node: JSON.stringify(typed), entities: JSON.stringify({ v: 2, types: { playbook: { label: 'Playbook', category: 'Runbooks' } }, entities: {} }) })).text, /No fault\. "P" is a Custom Node of Runbooks, placed as the kind "playbook:p"\./);
+  assert.match((await call('check_custom_node', { node: JSON.stringify(typed), entities: JSON.stringify({ v: 3, types: { playbook: { v: 1, id: 'playbook', label: 'Playbook', category: 'Runbooks', graph: {} } }, entities: {} }) })).text, /No fault\. "P" is a Custom Node of Runbooks, placed as the kind "playbook:p"\./);
   assert.match((await call('check_custom_node', { node: JSON.stringify(typed) })).text, /fault\(s\) in "P"/);
   // The schema's words; not JSON is refused.
   assert.match((await call('check_custom_node', { node: JSON.stringify({ ...HAS_ROLE, routes: [] }) })).text, /entity\.v2: /);

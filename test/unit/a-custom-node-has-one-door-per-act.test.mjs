@@ -73,11 +73,11 @@ test('a type as JSON — an entities file\'s types — fixes its category and so
   const stop = quiet();
   try {
     const file = {
-      v: 2,
-      types: { playbook: { label: 'Playbook', icon: 'book-open-lines', category: 'Runbooks', ...sockets } },
+      v: 3,
+      types: { playbook: { v: 1, id: 'playbook', label: 'Playbook', icon: 'book-open-lines', category: 'Runbooks', graph: sockets } },
       entities: { triage: { v: 2, type: 'playbook', id: 'triage', label: 'Triage', graph: body } },
     };
-    assert.deepEqual(schemaCheck('entities.v2.json')(file), []);
+    assert.deepEqual(schemaCheck('entities.v3.json')(file), []);
     const read = readEntities(file);
     assert.deepEqual(Object.keys(read.entities), ['triage']);
     assert.equal(entityTypes().playbook.category, 'Runbooks');

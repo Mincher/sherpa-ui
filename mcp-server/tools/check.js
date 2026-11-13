@@ -111,7 +111,7 @@ export function register(server) {
     description: 'A Custom Node\'s JSON, an entity (entity.v2) of the type node or any other type, checked as the shelf\'s Save checks it (plan 942 D3 A): against entity.v2.json, then `entityFaults`, over the app\'s other entities and its types. Each fault is said in words; with none, the node it offers: its use\'s kind, its category, its inputs and outputs, and how many nodes its graph holds. It writes nothing: an agent writes the JSON into the app\'s entities file itself',
     inputSchema: {
       node: z.string().describe('The Custom Node, as JSON: `{ "v": 2, "type": "node", "id", "label", "graph": { "nodes", "connections" }, "settings": { "inputs", "outputs" } }`'),
-      entities: z.string().optional().describe('The app\'s entities file, as JSON (entities.v2: `{ "v": 2, "types", "entities" }`), or a list of entities: its types are known, and a use of one of its entities is no fault'),
+      entities: z.string().optional().describe('The app\'s entities file, as JSON (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id), or a list of entities: its types are known, and a use of one of its entities is no fault'),
     },
   }, tool(async ({ node: text, entities }) => {
     let entity;

@@ -145,3 +145,27 @@ test('a field the graph holds is read from it, never kept beside it', () => {
   assert.equal(schema.rules.every, undefined, 'it is never written, so it has no rule');
   assert.deepEqual(schema.domains.every, { label: 'Runs', values: ['day', 'week'] });
 });
+
+test('a graph thing says its graph part in the same type file; node-type.v1 is folded in', () => {
+  const COWORKER = {
+    v: 1, id: 'coworker', label: 'Coworker', icon: 'agent', category: 'Coworkers',
+    fields: { every: { label: 'Runs', from: 'when/every' } },
+    graph: { runs: true, reusable: false, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], families: ['Sources', 'AI'] },
+  };
+  assert.deepEqual(ofSchema(COWORKER), []);
+  assert.deepEqual(typeFaults(COWORKER), [], 'its key is its entity\'s id, so need not be a field');
+  const bare = { v: 1, id: 'flow', label: 'Flow', graph: {} };
+  assert.deepEqual([ofSchema(bare), typeFaults(bare)], [[], []], 'a graph part alone is a type');
+  const broken = [
+    [{ ...bare, graph: { reusable: 'no' } }, /graph: its reusable is not true or false/],
+    [{ ...bare, graph: { inputs: [{ name: 'rows', type: 'rows' }] } }, /graph: its input "rows": its type is one of value, object, boolean/],
+    [{ ...bare, graph: { outputs: [{ type: 'object' }] } }, /graph: its outputs 1 has no name/],
+    [{ ...bare, graph: { families: 'Sources' } }, /graph: its families are a list of names/],
+    [{ ...bare, graph: { sockets: [] } }, /graph: it has "sockets", which a graph part does not keep/],
+    [{ v: 1, id: 'none', label: 'None' }, /it has no fields, and no graph/],
+  ];
+  for (const [type, words] of broken) {
+    assert.ok(ofSchema(type).length, `the schema refuses ${words}`);
+    assert.match(typeFaults(type).join('\n'), words);
+  }
+});

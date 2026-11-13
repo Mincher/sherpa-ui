@@ -156,7 +156,7 @@ Plus the app's stores, and its Views as JSON.
 - `chrome.header: false` takes the app header away while it is open;
   `chrome.filters: false` its filter row, and `"views"` leaves the View chip
   alone there, for a Context with no definition (see "Graph Views").
-- `entities` is the app's preset entities, an `entities.v2.json`: read only,
+- `entities` is the app's preset entities and their types, an `entities.v3.json`: read only,
   listed with the reader's own; its Custom Nodes are its entities of the type
   `node`. See "Entities", below.
 - `checkApp(app)` reports every broken name. `T-an-app-is-its-definition`
@@ -779,7 +779,8 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   entity. A save runs `checkEntity` and says each fault in words; a remove is refused
   while another entity uses it, naming who. `nodes` is the same shelf seen as Custom Nodes:
   every entity, as the node it offers, by its use's kind.
-- **The presets** are the file `app.json` `entities` names (`entities.v2`: `{ v, types, entities: { id: entity } }`),
+- **The presets** are the file `app.json` `entities` names (`entities.v3`: `{ v, types: { id: type }, entities: { id: entity } }`,
+  each type a `type.v1` with its `graph` part: `{ families, inputs, outputs, runs, reusable }`),
   read by the outlet through `loadEntityLibrary(url)`; one that fails is reported and left out.
   They are read only: `duplicate` makes the reader's own.
 - **The reader's own** are one NAMED part of the keeper, as the nodes are: every tab,

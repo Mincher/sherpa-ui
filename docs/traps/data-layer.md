@@ -7558,7 +7558,7 @@ followed the range and its axis was every month the field holds, most at 0.
 Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 
 - **The definition is JSON** (`defs.v1#/$defs/nodeDefinition`), an app's shipped as entities of
-  the type `node` (`entities.v2.json`; app.v1 `nodes` is gone, TODO 777): a
+  the type `node` (`entities.v3.json`; app.v1 `nodes` is gone, TODO 777): a
   label, `inputs`, `outputs` and a body of `nodes` and `connections`. Inside, `#in`, `#in/<name>`,
   `#out` and `#out/<name>` are the Group Input and Group Output; `innerOf` lays them out as
   two nodes of the kinds `#group-input` and `#group-output`, so the body is checked and drawn
@@ -7652,12 +7652,14 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
   A Custom Node is the type `node`, its sockets in `settings`; `nodeEntityOf` and `definitionOf`
   are the two ways round. An app ships its Custom Nodes as entities (app.v1 `nodes` and its
   `loadNodeLibrary` are gone, TODO 777); the old `nodes` part is not read (TODO 816).
-- **The type registry** (`entity-types.ts`, the data layer, light): each type says its settings check
-  (and its schema in `schemas/entity-<type>.v1.json`), the families its graph may place (a kind's
-  category), the `#in` and `#out` it demands, and `runs`. Two ship: `preset-filter` and `node`.
-  An app adds its own with `registerEntityType`; a clash with a shipped type is refused. The data
-  layer has no schema validator, so the checks are hand-written (as `checkNodeLibrary`'s are) and
-  a test holds the schema and the check to the same answers.
+- **The type registry** (`entity-types.ts`, the data layer, light): each type is a `type.v1`
+  (plan 960 U2) whose `graph` part says the families its graph may place (a kind's category), the
+  `#in` and `#out` it demands, `runs` and `reusable`; beside it, in code, its settings check (and
+  its schema in `schemas/entity-<type>.v1.json`) and `defaults`. Two ship: `preset-filter` and
+  `node`. An app adds its own with `registerEntityType`, or in its entities file's `types`
+  (entities.v3); `typeFaults` refuses a bad one, in words, and a clash with a shipped type is
+  refused. The data layer has no schema validator, so the checks are hand-written (as
+  `checkNodeLibrary`'s are) and a test holds the schema and the check to the same answers.
 - **Any entity is a node in any graph** (D1): `asNode` is the box it offers, its kind is
   `<type>:<id>` (a `node`'s is its plain id, as today). `libraryOf` keys the boxes by kind, so
   `innerOf`, `useOf`, `definitionDiff` and `updateInstance` serve entities as they serve Custom

@@ -73,10 +73,10 @@ test('Simulate: a Trigger\'s header sends True; the Start says what would start 
 
 test('a type that is not reusable makes no node: the panel has none, and a graph that places one is refused', () => {
   const stop = onReport(() => {});
-  const undo = registerEntityType({ id: 'teammate', label: 'Teammate', reusable: false });
+  const undo = registerEntityType({ id: 'teammate', label: 'Teammate', graph: { reusable: false } });
   try {
-    assert.equal(registerEntityType({ id: 'odd', label: 'Odd', reusable: 'no' }), undefined, 'reusable is true or false');
-    assert.deepEqual(schemaCheck('node-type.v1.json')({ label: 'Teammate', reusable: false }), []);
+    assert.equal(registerEntityType({ id: 'odd', label: 'Odd', graph: { reusable: 'no' } }), undefined, 'reusable is true or false');
+    assert.deepEqual(schemaCheck('type.v1.json')({ v: 1, id: 'teammate', label: 'Teammate', graph: { reusable: false } }), []);
     const mate = { v: 2, type: 'teammate', id: 'ana', label: 'Ana', graph: { nodes: [trigger('when', 0, 0)], connections: [{ from: 'when', to: START }] } };
     assert.deepEqual(Object.keys(libraryOf([mate]).nodes), []);
     // Its own graph has no Group Input or Output, so it has a Start: the Trigger joined to it is no fault, and the schema takes it.

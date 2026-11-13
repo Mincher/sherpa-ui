@@ -78,7 +78,7 @@ Markup against the component specs, as `npx sherpa-ui check-usage` checks an app
 A Custom Node's JSON, an entity (entity.v2) of the type node or any other type, checked as the shelf's Save checks it (plan 942 D3 A): against entity.v2.json, then `entityFaults`, over the app's other entities and its types. Each fault is said in words; with none, the node it offers: its use's kind, its category, its inputs and outputs, and how many nodes its graph holds. It writes nothing: an agent writes the JSON into the app's entities file itself
 
 - `node` — The Custom Node, as JSON: `{ "v": 2, "type": "node", "id", "label", "graph": { "nodes", "connections" }, "settings": { "inputs", "outputs" } }`
-- `entities` (optional) — The app's entities file, as JSON (entities.v2: `{ "v": 2, "types", "entities" }`), or a list of entities: its types are known, and a use of one of its entities is no fault
+- `entities` (optional) — The app's entities file, as JSON (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id), or a list of entities: its types are known, and a use of one of its entities is no fault
 
 #### `describe_data` — Describe data
 
@@ -154,7 +154,7 @@ A workflow definition (workflow.v3) as nodes and connections (`workflowGraph`) �
 - `workflow` — The workflow definition, as its JSON: `{ "v": 3, "id", "nodes", "connections" }`
 - `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
 - `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
-- `entities` (optional) — The app's entities file (entities.v2: `{ "v": 2, "types", "entities" }`) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)
+- `entities` (optional) — The app's entities file (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)
 
 #### `edit_workflow` — Edit a workflow
 
@@ -162,7 +162,7 @@ A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v3. A
 
 - `workflow` — The workflow definition, as its JSON
 - `edits` — Each a WorkflowEdit, in turn
-- `entities` (optional) — The app's entities file (entities.v2: `{ "v": 2, "types", "entities" }`) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)
+- `entities` (optional) — The app's entities file (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)
 
 ### The compose tier: a need → a pattern → a page, each page checked · `tools/compose.js`
 

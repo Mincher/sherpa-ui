@@ -124,7 +124,7 @@ test('an EMPTY graph is a new one: its outputs are asked for once it places a no
 });
 
 test('the canvas edits an entity\'s graph as a workflow — its Group Input and Output where its type has sockets — and keeps its own nodes back', () => {
-  const off = registerEntityType({ id: 'flow', label: 'Flow', runs: true });
+  const off = registerEntityType({ id: 'flow', label: 'Flow', graph: { runs: true } });
   try {
     const kinds = (e) => graphWorkflow(e).workflow.nodes.map((n) => n.id);
     assert.deepEqual(kinds(filter('pf')), ['start', 'status', 'field', '#out']);

@@ -168,7 +168,7 @@ library `app.v1`, `views.v1` and `workflow.v3` use too.
   each drawn from its field — one definition per field
   (`T-a-field-is-declared-once`). The View chip lists `views`.
 - **Its markup is its Context's**, named in the app definition (`app.v1.json`,
-  TODO 190) — not here. Its `entities` key names the app's preset entities (`entities.v2`): graphs
+  TODO 190) — not here. Its `entities` key names the app's preset entities (`entities.v3`): graphs
   saved under a type, each with a settings schema of its type (plan 746).
 
 ---

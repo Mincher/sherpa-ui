@@ -197,10 +197,11 @@ test('an entity kept before plan 934, a v1, is not read: a file reports it and k
   const said = [];
   const off = onReport((r) => said.push(r.message));
   try {
-    // A file of entities: an old one in a v2 is left out, in words; an old file is none.
-    assert.deepEqual(Object.keys(readEntities({ v: 2, entities: { before: was, now: filter('now') } }).entities), ['now']);
+    // A file of entities: an old one in a v3 is left out, in words; an old file is none.
+    assert.deepEqual(Object.keys(readEntities({ v: 3, entities: { before: was, now: filter('now') } }).entities), ['now']);
     assert.deepEqual(readEntities({ v: 1, entities: { now: filter('now') } }).entities, {});
-    assert.ok(said.some((m) => m.includes('"before"')) && said.some((m) => m.includes('a v2 with its entities by id')), said.join(' | '));
+    assert.deepEqual(readEntities({ v: 2, entities: { now: filter('now') } }).entities, {}, 'an old file is no file: D4, delete never convert');
+    assert.ok(said.some((m) => m.includes('"before"')) && said.some((m) => m.includes('a v3 with its entities by id')), said.join(' | '));
   } finally {
     off();
   }
@@ -252,7 +253,7 @@ test('the keeper pushes the reader\'s entities to the server and takes them back
 
 test('a file of presets: each is checked alone, the bad reported in checkEntity\'s words and the rest load; the key is the id', async () => {
   const { result, reports } = await heard(() => readEntities({
-    v: 2, entities: {
+    v: 3, entities: {
       // Before the one it places: tried again once that one is in.
       after: placing('after', 'preset-filter:before'),
       before: { ...filter('before'), $schema: 'x' },
@@ -270,9 +271,9 @@ test('a file of presets: each is checked alone, the bad reported in checkEntity\
   assert.match(said, /"recipe", which this app does not have/);
   assert.match(said, /sends nothing to its output "where"/);
   assert.ok(reports.every((r) => r.code === 'entity'));
-  assert.deepEqual(schemaCheck('entities.v2.json')({ v: 2, entities: { before: filter('before') } }), []);
+  assert.deepEqual(schemaCheck('entities.v3.json')({ v: 3, entities: { before: filter('before') } }), []);
   const none = await heard(() => readEntities([1]));
-  assert.deepEqual(none.result, { v: 2, entities: {} });
+  assert.deepEqual(none.result, { v: 3, entities: {} });
   assert.equal(none.reports.length, 1);
 });
 

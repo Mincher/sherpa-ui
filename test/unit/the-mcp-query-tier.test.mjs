@@ -269,7 +269,7 @@ test('workflow_graph and edit_workflow take the app\'s entities: a use of one is
     nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'u', kind: 'has-role', x: 360, y: 0 }],
     connections: [{ from: 's/rows', to: 'u/rows' }],
   };
-  const entities = JSON.stringify({ v: 2, entities: { 'has-role': HAS_ROLE } });
+  const entities = JSON.stringify({ v: 3, entities: { 'has-role': HAS_ROLE } });
   const alone = await call('workflow_graph', { workflow: placed });
   assert.ok(alone.json.reports.some((r) => /has-role/.test(r.message)), 'alone, its kind is unknown');
   const known = await call('workflow_graph', { workflow: placed, entities });

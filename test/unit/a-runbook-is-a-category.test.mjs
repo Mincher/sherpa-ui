@@ -16,7 +16,7 @@ const { groupNodes } = await import(new URL('node-group.js', core));
 const { definitionOf, nodeEntityOf } = await import(new URL('entity.js', core));
 const { asNode, savedCategories } = await import(new URL('entity-types.js', core));
 
-const RUNBOOK = { id: 'runbook', label: 'Runbook', runs: false, category: 'Runbooks', inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'found', label: 'Found', type: 'object' }] };
+const RUNBOOK = { id: 'runbook', label: 'Runbook', category: 'Runbooks', graph: { runs: false, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'found', label: 'Found', type: 'object' }] } };
 const steps = (category) => ({
   v: 2, type: 'runbook', id: 'patch-review', label: 'Patch review', ...(category ? { category } : {}),
   graph: { nodes: [{ id: 'sort', kind: 'organise', x: 0, y: 0, values: { sort: 'name' } }], connections: [{ from: '#in/rows', to: 'sort' }, { from: 'sort/rows', to: '#out/found' }] },
@@ -25,7 +25,7 @@ const steps = (category) => ({
 test('Runbooks stands after Custom Nodes; savedCategories is Custom Nodes, Runbooks and each an app\'s types name', () => {
   assert.deepEqual(NODE_CATEGORIES.slice(2, 4), ['Custom Nodes', 'Runbooks']);
   assert.deepEqual(savedCategories({}), ['Custom Nodes', 'Runbooks']);
-  assert.deepEqual(savedCategories({ a: { category: 'Agents' }, b: { category: 'Runbooks' }, c: {} }), ['Custom Nodes', 'Runbooks', 'Agents']);
+  assert.deepEqual(savedCategories({ a: { category: 'Agents', graph: {} }, b: { category: 'Runbooks', graph: {} }, c: { graph: {} }, rows: { category: 'Records' } }), ['Custom Nodes', 'Runbooks', 'Agents'], 'a row type\'s category lists rows, not nodes');
 });
 
 test('an entity\'s category: its own, else its type\'s; a node\'s settings say a node\'s; the schema takes it', () => {

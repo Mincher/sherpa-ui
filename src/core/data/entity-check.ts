@@ -85,15 +85,15 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
   for (const node of readWorkflow({ v: 3, id: entity.id, nodes: entity.graph.nodes }).workflow?.nodes ?? []) {
     const kind = kinds[node.kind];
     if (!kind || takes(type, kind)) continue;
-    problems.push(`${at} places "${node.id}", of the family "${kind.category ?? 'Other'}", which a ${type.label} does not take: ${type.families!.join(', ')}`);
+    problems.push(`${at} places "${node.id}", of the family "${kind.category ?? 'Other'}", which a ${type.label} does not take: ${type.graph!.families!.join(', ')}`);
   }
   for (const node of entity.graph.nodes) {
     const used = node.kind.includes(':') ? types[entityRefOf(node.kind).type] : undefined;
-    if (used?.reusable === false) problems.push(`${at} places "${node.id}", a ${used.label}, which is not reusable`);
+    if (used?.graph?.reusable === false) problems.push(`${at} places "${node.id}", a ${used.label}, which is not reusable`);
     else if (node.kind.includes(':') && !(node.kind in kinds)) problems.push(`${at} places "${node.id}", a use of "${node.kind}", which is not there`);
   }
   // An EMPTY graph is a new one: its outputs are asked for once it places a node. TRAP T-a-graph-is-a-view-of-a-type
-  for (const out of entity.graph.nodes.length ? type.outputs ?? [] : []) {
+  for (const out of entity.graph.nodes.length ? type.graph?.outputs ?? [] : []) {
     if (!(entity.graph.connections ?? []).some((r) => r.to === '#out' || r.to === `#out/${out.name}`)) problems.push(`${at} sends nothing to its output "${out.name}": connect one to #out/${out.name}`);
   }
   for (const use of entity.uses ?? []) {

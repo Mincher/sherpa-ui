@@ -175,7 +175,7 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
 });
 
 test('an app\'s type is used as a node too; and the keeper\'s modules stay light: no node kind, no workflow', () => {
-  const off = registerEntityType({ id: 'ui-card', label: 'UI Card', runs: false, icon: 'grid', families: ['Sources'], outputs: [{ name: 'present', type: 'object' }] });
+  const off = registerEntityType({ id: 'ui-card', label: 'UI Card', icon: 'grid', graph: { runs: false, families: ['Sources'], outputs: [{ name: 'present', type: 'object' }] } });
   try {
     const card = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'preset-filter:trials', x: 0, y: 0 }], connections: [] } };
     const node = asNode(card);

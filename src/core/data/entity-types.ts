@@ -9,7 +9,7 @@
  *
  * Map:
  * - savedCategories — The categories a reader may save a Custom Node or a graph in: Custom Nodes, Runbooks, and the app's.
- * - EntityType — One type: its words, the families its graph may place, its sockets, its settings check.
+ * - EntityType — One type: a type.v1 with its graph part, and the code JSON cannot say: its settings check and defaults.
  * - PRESET_FILTER — The Preset Filter type's id: a preset of its store's pages, and the first half of its preset's id.
  * - ENTITY_TYPES — The types the library ships: `preset-filter` and `node`.
  * - entityTypes — Every type now: the shipped, and those an app registered.
@@ -24,43 +24,31 @@
 import { report } from './report.js';
 import type { NodeKind } from './node-kinds.js';
 import type { NodeDefinition, NodeLibrary, NodeOutput, NodeSocket } from './node-library.js';
+import type { TypeDefinition } from './type-definition.js';
+import { typeFaults } from './type-faults.js';
 import { categoryOf, entityKind, entityRefOf, ENTITY_SCHEMA, definitionOf, type Entity } from './entity.js';
 import { layoutParts } from './graph-layout.js';
 import type { WorkflowDefinition } from './workflow.js';
 
 /** The categories a reader may save a Custom Node or a graph in (plan 936 D3 A): Custom Nodes, Runbooks, and each one an
- *  app's entity types name. */
-export function savedCategories(types: Readonly<Record<string, Pick<EntityType, 'category'>>> = entityTypes()): string[] {
-  return [...new Set(['Custom Nodes', 'Runbooks', ...Object.values(types).flatMap((t) => (t.category ? [t.category] : []))])];
+ *  app's graph types name. A row type's category lists rows, not nodes. */
+export function savedCategories(types: Readonly<Record<string, Pick<EntityType, 'category' | 'graph'>>> = entityTypes()): string[] {
+  return [...new Set(['Custom Nodes', 'Runbooks', ...Object.values(types).flatMap((t) => (t.graph && t.category ? [t.category] : []))])];
 }
 
-/** One type: its words, the families its graph may place, its sockets, its settings check. */
-export interface EntityType {
-  /** A kebab-case noun: the `type` of an entity, and the first half of a use's kind. */
-  id: string;
-  label: string;
-  icon?: string;
+/** One type: a type.v1 — its id (a kebab-case noun: an entity's `type`, and the first half of a use's kind), its words,
+ *  its category in the Nodes panel (plan 936; none, Custom Nodes) and its graph part — and the code JSON cannot say: its
+ *  settings check (a `node`'s socket lists) and the settings a new entity starts with. Plan 960 U2 */
+export interface EntityType extends Omit<TypeDefinition, '$schema' | 'v'> {
+  $schema?: string;
+  v?: 1;
   /** The schema that says what its settings hold (schemas/), for authors and the tests. */
   schema?: string;
   /** Faults in its settings, in words; none when they are as the type keeps them. */
   settingsFaults?(settings: Readonly<Record<string, unknown>>): string[];
-  /** The families (a kind's category) its graph may place; none given, any. A use of an entity is always allowed. */
-  families?: readonly string[];
-  /** The category its entities stand in, in the Nodes panel, as a Runbook type's Runbooks (plan 936). None: Custom Nodes. */
-  category?: string;
-  /** The sockets it demands: `#in` and `#out`. A `node` has none here: its settings say them. */
-  inputs?: readonly NodeSocket[];
-  outputs?: readonly NodeOutput[];
-  /** It needs the runner to be of use (true), or is only DEFINED (false, as a type from JSON is by default). */
-  runs?: boolean;
-  /** Its entities are Custom Nodes a graph may place (true, the default), or not (false, a Coworker): the Nodes panel leaves
-   *  them out, and a graph that places one is refused. An Output Trigger starts one (plan 949). */
-  reusable?: boolean;
   /** The settings a new entity of this type starts with. */
   defaults?: Readonly<Record<string, unknown>>;
 }
-
-const ID = /^[a-z][a-z0-9-]*$/;
 
 /** Faults for keys a settings object may not have, and one it must. */
 function keysFault(settings: Readonly<Record<string, unknown>>, allowed: readonly string[], required: readonly string[] = []): string[] {
@@ -80,13 +68,15 @@ export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
     id: PRESET_FILTER, label: 'Preset Filter', icon: 'filter', schema: 'entity-preset-filter.v1.json',
     // A graph that decides a condition: where its rows come from, its values and sums, the logic, dates, sort and group, text and
     // tags; no Output (its `#out` is the end). A Sort, Group or Count saved before is a Collection's type (plan 749 P3).
-    families: ['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils'],
-    outputs: [{ name: 'where', label: 'Where', type: 'boolean' }],
-    runs: false,
+    graph: {
+      families: ['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Organise', 'Utils'],
+      outputs: [{ name: 'where', label: 'Where', type: 'boolean' }],
+      runs: false,
+    },
     settingsFaults: (s) => [...keysFault(s, ['source']), ...('source' in s && typeof s['source'] !== 'string' ? ['its source is not a name'] : [])],
   },
   node: {
-    id: 'node', label: 'Custom Node', icon: 'folder', schema: 'entity-node.v1.json', runs: false, defaults: { inputs: [], outputs: [] },
+    id: 'node', label: 'Custom Node', icon: 'folder', schema: 'entity-node.v1.json', graph: { runs: false }, defaults: { inputs: [], outputs: [] },
     settingsFaults: (s) => [
       ...keysFault(s, ['inputs', 'outputs', 'category', 'icon'], ['inputs', 'outputs']),
       ...(['inputs', 'outputs'] as const).filter((k) => k in s && !Array.isArray(s[k])).map((k) => `its ${k} are not a list`),
@@ -102,12 +92,14 @@ export function entityTypes(): Readonly<Record<string, EntityType>> {
   return { ...Object.fromEntries(added), ...ENTITY_TYPES };
 }
 
-/** An app adds a type, from its own file or as JSON (`node-type.v1`, an entities file's `types`; plan 942 D2 A). A clash
- *  with a shipped type, or a type that is no name, is refused and reported. It answers how to take it back, or none. */
+/** An app adds a type, from its own file or as JSON (a type.v1 with its graph part, an entities file's `types`; plans 942
+ *  D2 A, 960 U2). A type typeFaults refuses, or a clash with a shipped one, is refused and reported. It answers how to
+ *  take it back, or none. */
 export function registerEntityType(type: EntityType): (() => void) | undefined {
-  const flag = (v: unknown): boolean => v === undefined || typeof v === 'boolean';
-  if (!ID.test(String(type?.id)) || typeof type.label !== 'string' || !flag(type.runs) || !flag(type.reusable)) {
-    report({ code: 'entity-type', message: 'registerEntityType: a type needs an id that is a name (lowercase letters, digits, hyphens) and a label; `runs` and `reusable`, if given, are true or false.', at: {} });
+  const { schema: _schema, settingsFaults: _check, defaults: _defaults, ...json } = type ?? ({} as EntityType);
+  const faults = typeFaults({ ...json, v: 1 });
+  if (faults.length) {
+    report({ code: 'entity-type', message: `registerEntityType: the type ${JSON.stringify(type?.id ?? null)} is refused: ${faults.join('; ')}.`, at: { ...(typeof type?.id === 'string' ? { type: type.id } : {}) } });
     return undefined;
   }
   if (type.id in ENTITY_TYPES) {
@@ -120,8 +112,9 @@ export function registerEntityType(type: EntityType): (() => void) | undefined {
 
 /** Whether a type's graph may place a kind: one of a family it takes (none given, any), or a node any
  *  entity offers, which no family bounds (D1). The check and the node panel both ask it. */
-export function takes(type: Pick<EntityType, 'families'>, kind: Pick<NodeKind, 'model' | 'category'>): boolean {
-  return kind.model === 'graph' || !type.families || type.families.includes(kind.category ?? 'Other');
+export function takes(type: Pick<EntityType, 'graph'>, kind: Pick<NodeKind, 'model' | 'category'>): boolean {
+  const families = type.graph?.families;
+  return kind.model === 'graph' || !families || families.includes(kind.category ?? 'Other');
 }
 
 /** The inputs and outputs an entity has: its type's, or for a `node` its own settings'. */
@@ -130,7 +123,7 @@ export function socketsOf(entity: Entity, type: EntityType | undefined = entityT
   if (entity.type === 'node' || !type) {
     return { inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [] };
   }
-  return { inputs: [...(type.inputs ?? [])], outputs: [...(type.outputs ?? [])] };
+  return { inputs: [...(type.graph?.inputs ?? [])], outputs: [...(type.graph?.outputs ?? [])] };
 }
 
 /** An entity as the Custom Node it offers: its graph in a box, with its sockets. Any entity can be placed in
@@ -154,7 +147,7 @@ export function asNode(entity: Entity, types: Readonly<Record<string, EntityType
  *  Custom Node, and a use follows its definition with the version and snapshot recorded. */
 export function libraryOf(entities: readonly Entity[], types: Readonly<Record<string, EntityType>> = entityTypes()): NodeLibrary {
   // One of a type that is not reusable is no node (plan 949).
-  return { v: 1, nodes: Object.fromEntries(entities.filter((e) => types[e.type]?.reusable !== false).map((e) => [entityKind(e), asNode(e, types)])) };
+  return { v: 1, nodes: Object.fromEntries(entities.filter((e) => types[e.type]?.graph?.reusable !== false).map((e) => [entityKind(e), asNode(e, types)])) };
 }
 
 /** The kinds a graph's node panel offers, of those given: a kind its type `takes`; and a Custom Node —

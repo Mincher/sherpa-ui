@@ -86,7 +86,7 @@ test('a family outside the type is a fault; a use of an entity is not bounded by
   // An Organise, of the Organise family: one a Preset Filter takes.
   const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'organise', x: 720, y: 200 }], connections: [...ACTIVE.graph.connections, { from: 'field/field', to: 'order' }] } });
   assert.deepEqual(faults(sorted), []);
-  const sources = { id: 'sources-only', label: 'Sources only', runs: false, families: ['Sources'] };
+  const sources = { id: 'sources-only', label: 'Sources only', graph: { runs: false, families: ['Sources'] } };
   assert.match(faults({ ...sorted, type: 'sources-only' }, { types: { 'sources-only': sources } }).join('\n'), /places "order", of the family "Organise"/);
   // A type with no families takes any; a `node` is one.
   assert.deepEqual(faults({ ...sent, type: 'node', settings: { inputs: [], outputs: [{ name: 'where', type: 'boolean' }] } }), []);
@@ -113,15 +113,22 @@ test('a cycle of entities is refused, said once, from either end; and one that h
   assert.deepEqual(faults(make({ id: 'top', uses: [{ type: 'preset-filter', id: 'x' }] }), { entities: [make({ id: 'x', uses: [] })] }), []);
 });
 
-test('an app adds a type; a clash with a shipped one is refused; taking it back takes it away', () => {
-  const card = { id: 'ui-card', label: 'UI Card', runs: false, outputs: [{ name: 'present', type: 'object' }], families: ['Sources'] };
-  const { result: off, reports } = heard(() => [T.registerEntityType({ ...card, id: 'preset-filter' }), T.registerEntityType({ ...card, id: 'Bad Name' }), T.registerEntityType(card)]);
-  assert.deepEqual(off.slice(0, 2), [undefined, undefined]);
-  assert.equal(reports.filter((r) => r.code === 'entity-type').length, 2);
+test('an app adds a type; a clash with a shipped one, or a type typeFaults refuses, is refused in words; taking it back takes it away', () => {
+  const card = { id: 'ui-card', label: 'UI Card', graph: { runs: false, outputs: [{ name: 'present', type: 'object' }], families: ['Sources'] } };
+  const { result: off, reports } = heard(() => [
+    T.registerEntityType({ ...card, id: 'preset-filter' }), T.registerEntityType({ ...card, id: 'Bad Name' }),
+    T.registerEntityType({ ...card, graph: { ...card.graph, reusable: 'no' } }), T.registerEntityType({ id: 'bare', label: 'Bare' }), T.registerEntityType(card),
+  ]);
+  assert.deepEqual(off.slice(0, 4), [undefined, undefined, undefined, undefined]);
+  const said = reports.filter((r) => r.code === 'entity-type').map((r) => r.message);
+  assert.equal(said.length, 4);
+  assert.match(said.join('\n'), /"preset-filter" is a type the library ships/);
+  assert.match(said.join('\n'), /graph: its reusable is not true or false/);
+  assert.match(said.join('\n'), /"bare" is refused: it has no fields, and no graph/);
   assert.ok(T.entityTypes()['ui-card']);
   const e = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'orders' } }], connections: [{ from: 'start/rows', to: '#out/present' }] } };
   assert.deepEqual(faults(e), []);
-  off[2]();
+  off[4]();
   assert.match(faults(e).join('\n'), /type "ui-card", which this app does not have/);
   // Facts may carry the types instead of the registry: a test, a server.
   assert.deepEqual(faults(e, { types: { ...T.ENTITY_TYPES, 'ui-card': card } }), []);

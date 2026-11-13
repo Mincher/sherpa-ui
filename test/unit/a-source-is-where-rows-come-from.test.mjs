@@ -24,7 +24,7 @@ test('every graph type\'s panel offers a Source, under Sources: a workflow, a Pr
   assert.deepEqual([NODE_KINDS.source.heading, NODE_KINDS.source.category, NODE_KINDS.source.graphs], ['Source', 'Sources', ['query', 'workflow']]);
   // No Count row: Math › Count counts rows (plan 944).
   assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store']]);
-  const off = registerEntityType({ id: 'workflow', label: 'Workflow', runs: true });
+  const off = registerEntityType({ id: 'workflow', label: 'Workflow', graph: { runs: true } });
   try {
     for (const host of [undefined, 'preset-filter:trials', 'mine', 'workflow:flow']) {
       assert.ok(inPanel(paletteOf(offeredKinds(NODE_KINDS, host, {}))).includes('Sources:source'), `${host ?? 'a workflow of no entity'} offers Source`);
