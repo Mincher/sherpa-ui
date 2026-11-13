@@ -926,6 +926,11 @@ export class SherpaProvider extends SherpaElement {
           const filtered = asks.filters?.(el);
           // Its columns' values are needed now. TRAP T-a-field-reads-its-values-when-needed
           if (filtered) src.readValues(filtered);
+          // Each field it reads, by its label: a heading with no filter says it too. Plan 960 U2
+          const headings = Object.fromEntries((asks.fields?.(el) ?? []).flatMap((f) => {
+            const label = src.fieldFacts(f).label;
+            return label ? [[f, label]] : [];
+          }));
           // A heading's Group button offers what the app's `axes` leave. Will, TODO 662
           const groupOffer = typeof scope === 'string' ? src.query.axesOf(scope, 'grid').group : undefined;
           return {
@@ -935,6 +940,7 @@ export class SherpaProvider extends SherpaElement {
             /* Each FILTER as the source defines it, as a chip's is — the whole
                column too, which one page cannot say. TRAP T-a-heading-opens-the-chips-menu */
             ...(filtered ? { filters: Object.fromEntries(filtered.map((f) => [f, src.filterDef(f)])) } : {}),
+            ...(Object.keys(headings).length ? { headings } : {}),
           };
         } }
         : {}),

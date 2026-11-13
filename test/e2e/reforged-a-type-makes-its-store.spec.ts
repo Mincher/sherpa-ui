@@ -26,6 +26,7 @@ test('a page over a type\'s store opens with the type\'s rows and words, and no 
     };
   });
   expect(r.rows).toBe(3);
+  // Risk is `filterable: false`: its heading has no filter, and says its type's label all the same.
   expect(r.heads).toEqual(['Device name', 'Status', 'Risk']);
   expect(r.chips).toContain('status');
 });

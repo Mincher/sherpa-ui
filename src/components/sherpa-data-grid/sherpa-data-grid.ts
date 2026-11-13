@@ -111,6 +111,8 @@ interface GridConfig {
    *  heading opens the chip's own menu, the whole value list with it.
    *  TRAP T-a-heading-opens-the-chips-menu */
   filters?: Readonly<Record<string, FieldFilter>>;
+  /** Each field's label as its source names it, for a heading with no filter (`filterable: false`). Plan 960 U2 */
+  headings?: Readonly<Record<string, string>>;
   /** The fields its Group offers, as its app's `axes` leave them: a heading's Group
    *  button too. Will, TODO 662 */
   groupOffer?: AxisOffer;
@@ -574,7 +576,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#data = new ColumnFacts(this.#rows, Array.isArray(cfg.groups) ? cfg.groups : null);
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
-    this.#filters.take(cfg.filters);
+    this.#filters.take(cfg.filters, cfg.headings);
     this.#groupOffer = cfg.groupOffer;
     this.#find.read(this.dataset['needles']);
     this.#actions.take(cfg.actions);

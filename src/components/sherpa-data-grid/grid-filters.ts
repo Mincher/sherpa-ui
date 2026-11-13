@@ -98,6 +98,8 @@ export class GridFilters {
   readonly filter: FilterHostController;
   /** Each heading's filter as its source defines it, as the last populate gave them. */
   #given: Readonly<Record<string, FieldFilter>> = {};
+  /** Each field's label as its source names it: a heading with no filter reads it. */
+  #headings: Readonly<Record<string, string>> = {};
   /** What each heading menu was last told it holds, by field — or what its reader applied. */
   #drawn = new Map<string, FieldReading | null>();
   /** Each heading menu's values, as it was last told them, by field. */
@@ -132,9 +134,10 @@ export class GridFilters {
     return this.#given;
   }
 
-  /** The filters a populate gave. */
-  take(filters: Readonly<Record<string, FieldFilter>> | undefined): void {
+  /** The filters a populate gave, and each field's label. */
+  take(filters: Readonly<Record<string, FieldFilter>> | undefined, headings?: Readonly<Record<string, string>>): void {
     this.#given = filters ?? {};
+    this.#headings = headings ?? {};
   }
 
   /** A heading row is drawn: its joined menus are joined again. */
@@ -579,7 +582,7 @@ export class GridFilters {
 
   /** A field's name, as its heading says it: its column's, else its source's. */
   fieldLabel(field: string): string {
-    return this.#column(field)?.header ?? this.#given[field]?.label ?? field;
+    return this.#column(field)?.header ?? this.#given[field]?.label ?? this.#headings[field] ?? field;
   }
 
   /** A field's ticked values in force — none while it is suspended or answered by

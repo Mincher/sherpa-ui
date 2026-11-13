@@ -27,7 +27,8 @@
         },
         {
           "field": "risk",
-          "type": "number"
+          "type": "number",
+          "filterable": false
         }
       ]
     }
