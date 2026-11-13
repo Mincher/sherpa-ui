@@ -304,7 +304,10 @@ const store = statusFields(new ArrayStore(rows, typeStoreOptions(device)), typeS
 rules, and each field's words as its `domains`. A source declares those before
 a page's own `source.fields`, so a page says only what its controls do
 (`select`, `op`, `advanced`, `section`, `range`), and its own word wins.
-`typeColumns(type)` makes a grid's columns. A field a graph holds says
+A page names its type in `source.type`, and an app lists its types in `app.json`
+`types`, so a reader of a page's JSON with no source open (a graph, a tool) reads
+each field the same way: `pageFields(page.source)`. `typeColumns(type)` makes a
+grid's columns. A field a graph holds says
 `"from": "<node id>/<path>"` and is read by `readFrom(graph, from)`; nothing
 writes it, so it has no rule.
 

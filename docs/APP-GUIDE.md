@@ -156,6 +156,9 @@ Plus the app's stores, and its Views as JSON.
 - `chrome.header: false` takes the app header away while it is open;
   `chrome.filters: false` its filter row, and `"views"` leaves the View chip
   alone there, for a Context with no definition (see "Graph Views").
+- `types` is the app's types, by id: each a path to its `type.v1` file (`{ "device": "types/device.json" }`),
+  registered before a Context opens. A page names its own (`source.type`), and says in `source.fields` only what
+  each control does: the words are the type's (`pageFields`, `sherpa://data-rules` "A type says each field once").
 - `entities` is the app's preset entities and their types, an `entities.v3.json`: read only,
   listed with the reader's own; its Custom Nodes are its entities of the type
   `node`. See "Entities", below.

@@ -256,6 +256,26 @@ test('validate_rows: rows against a type, as the data layer\'s own validate and 
   assert.match(ends.text, /seats: its min is more than its max/);
 });
 
+test('validate_app checks the app\'s types: each file a type, its id its key, and a page names only a type the app lists', async () => {
+  const app = mkdtempSync(join(work, 'typed-'));
+  const write = (file, value) => {
+    mkdirSync(dirname(join(app, file)), { recursive: true });
+    writeFileSync(join(app, file), typeof value === 'string' ? value : JSON.stringify(value));
+  };
+  write('app.json', { v: 1, product: { name: 'Typed' }, default: 'devices', contexts: { devices: { label: 'Devices', template: 'devices.html', definition: 'devices.json' } },
+    types: { device: 'types/device.json', named: 'types/named.json', bare: 'types/bare.json' } });
+  write('devices.html', '<sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>');
+  write('devices.json', { v: 1, id: 'devices', source: { store: 'devices', type: 'record' } });
+  write('types/device.json', { v: 1, id: 'device', label: 'Device', fields: { id: {}, name: { label: 'Name' } } });
+  write('types/named.json', { v: 1, id: 'other', label: 'Other', fields: { id: {} } });
+  write('types/bare.json', { v: 1, id: 'bare', label: 'Bare' });
+  const { text } = await call('validate_app', { path: app });
+  assert.match(text, /types\/named\.json: its id is "other", and app\.json lists it as "named"/);
+  assert.match(text, /types\/bare\.json: type\/ must have required property 'fields'/);
+  assert.match(text, /contexts\.devices\.definition names the type "record", which app\.json `types` does not list/);
+  assert.doesNotMatch(text, /types\/device\.json/);
+});
+
 const STARTER = existsSync(`${ROOT}../Sherpa Starter/index.mjs`);
 test('scaffold_app gives the Starter\'s files, named, and validate_app finds them sound', { skip: !STARTER && 'no ../Sherpa Starter beside this checkout' }, async () => {
   const { bad, text: out } = await call('scaffold_app', { name: 'My Shop' });

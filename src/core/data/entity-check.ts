@@ -75,6 +75,8 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
   const type = types[entity.type];
   const at = `the ${type?.label ?? entity.type} "${entity.id}"`;
   if (!type) return [`${at} is of the type "${entity.type}", which this app does not have: ${Object.keys(types).join(', ')}`];
+  // A row type keeps rows, not graphs (plan 960 U2).
+  if (!type.graph) return [`${at} is of the type "${type.label}", which keeps no graph`];
   const problems: string[] = [];
   const others = (facts.entities ?? []).filter((e) => !(e.type === entity.type && e.id === entity.id));
   const all = [...others, entity];

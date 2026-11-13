@@ -30,6 +30,8 @@ export interface AppDefinition {
   /** The Context the app opens on — the nav's Home. */
   default: string;
   contexts: Record<string, ContextDefinition>;
+  /** The app's types, by id: each a path to its type.v1 file, registered before a Context opens (plan 960 U2). */
+  types?: Readonly<Record<string, string>>;
   /** The app's preset entities and their types, as JSON (entities.v3): read only, listed with the reader's own. */
   entities?: string;
   /** The nav's sections, in order: a label and the Contexts it lists. */

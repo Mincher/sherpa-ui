@@ -65,6 +65,8 @@ export interface ScopeDefinition {
 export interface SourceDefinition {
   /** The name the app registered its store under. */
   store: string;
+  /** Its type, by id: its fields' words are the type's, so `fields` says only what each control does. Plan 960 U2 */
+  type?: string;
   pageSize?: number;
   /** `input`: its filters apply live, debounced. Will, TODO 107 */
   applyOn?: 'change' | 'input';
@@ -112,6 +114,7 @@ export function checkPage(page: PageDefinition): boolean {
   };
   const source = page.source;
   if (source && typeof source.store !== 'string') at('page-definition', 'its source names no store.', {});
+  if (source?.type !== undefined && !/^[a-z][a-z0-9-]*$/.test(String(source.type))) at('page-definition', 'its source.type is no type\'s id (lowercase letters, digits, hyphens).', {});
   if (source) problems.push(...tiers(source).problems);
   for (const [scope, facts] of Object.entries(source?.scopes ?? {})) {
     for (const [list, code] of [['fixed', 'fixed-field-not-held'], ['alwaysOn', 'always-on-field-not-held']] as const) {

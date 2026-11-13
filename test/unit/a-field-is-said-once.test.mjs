@@ -169,3 +169,58 @@ test('a graph thing says its graph part in the same type file; node-type.v1 is f
     assert.match(typeFaults(type).join('\n'), words);
   }
 });
+
+test('a page names its type: a reader of its JSON reads each field as the type and the page say it (pageFields)', async () => {
+  const { pageFields, registerEntityType, checkPage, onReport } = await import('../../dist/data.js');
+  const page = { store: 'devices', type: 'device', fields: { name: { advanced: 'only', op: 'contains' }, status: { label: 'State' } } };
+  // From the registry, as the app's types are registered from app.json `types`.
+  const off = registerEntityType(DEVICE);
+  try {
+    const fields = pageFields(page);
+    assert.deepEqual(fields.name, { label: 'Name', advanced: 'only', op: 'contains' });
+    assert.equal(fields.status.label, 'State');
+    assert.equal(fields.risk.type, 'number');
+    assert.equal(fields.health.label, 'Health');
+  } finally {
+    off();
+  }
+  // A type the app has not, or none named: the page's own fields alone.
+  assert.deepEqual(pageFields(page), page.fields);
+  assert.deepEqual(pageFields({ store: 'x' }), {});
+  assert.deepEqual(pageFields(page, { device: DEVICE }).risk, { type: 'number', min: 0, max: 100, label: 'Risk' });
+  // checkPage holds its name to a type's id.
+  const said = [];
+  const stop = onReport((r) => said.push(r.message));
+  try {
+    assert.equal(checkPage({ v: 1, id: 'p', source: { store: 'x', type: 'Device Type' } }), false);
+  } finally {
+    stop();
+  }
+  assert.match(said.join('\n'), /its source\.type is no type's id/);
+});
+
+test('an app\'s types load from their files and register by id; an entity of a row type is refused', async () => {
+  const { entityTypes, entityFaults, onReport } = await import('../../dist/data.js');
+  const { loadTypes } = await import('../../dist/core/browser/entity-files.js');
+  const files = { 'type-a': { ...DEVICE, id: 'type-a' }, 'type-b': { ...DEVICE, id: 'other' }, 'type-c': null };
+  const was = { fetch: globalThis.fetch, document: globalThis.document };
+  globalThis.document = { baseURI: 'http://app.test/' };
+  globalThis.fetch = async (url) => {
+    const name = new URL(url).pathname.slice(1, -5);
+    return files[name] === null ? { ok: false, status: 404 } : { ok: true, json: async () => files[name] };
+  };
+  const said = [];
+  const stop = onReport((r) => said.push(r.message));
+  try {
+    await loadTypes({ 'type-a': 'type-a.json', 'type-b': 'type-b.json', 'type-c': 'type-c.json' });
+  } finally {
+    stop();
+    Object.assign(globalThis, was);
+  }
+  assert.ok(entityTypes()['type-a'], 'registered by its id');
+  assert.equal(entityTypes()['type-b'], undefined);
+  assert.match(said.join('\n'), /loadTypes: the type under "type-b" has the id "other", so it is left out/);
+  assert.match(said.join('\n'), /loadTypes: the type "type-c" could not be read \(404\)/);
+  const entity = { v: 2, type: 'type-a', id: 'one', label: 'One', graph: { nodes: [] } };
+  assert.match((await entityFaults(entity)).join('\n'), /is of the type "Device", which keeps no graph/);
+});

@@ -260,6 +260,7 @@
       "required": ["store"],
       "properties": {
         "store": { "description": "The name the app registered its store under.", "type": "string" },
+        "type": { "description": "The page's type, by its id: its fields' words are the type's (type.v1, listed in app.json `types`), so `fields` says only what each control does (plan 960 U2).", "$ref": "#/$defs/id" },
         "pageSize": { "type": "integer", "minimum": 1 },
         "applyOn": { "description": "change: a filter applies once per act. input: LIVE, debounce ms after the last move. A remote source always waits for Apply.", "enum": ["change", "input"] },
         "debounce": { "description": "How long a live filter waits after the last move, in ms. Default 300.", "type": "integer", "minimum": 0 },

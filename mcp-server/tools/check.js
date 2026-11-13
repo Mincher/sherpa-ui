@@ -16,8 +16,8 @@
  */
 import { z } from 'zod/v3';
 import { appFile, load, starterFiles } from '../lib/sherpa.js';
-import { checkAppFolder, checkPageFiles, dataLayer, findings, schemaCheck, withEntities } from '../lib/check.js';
-import { fromRows, fromSchema, fromType, needOf, splitFields, statusProblems, typeOf, typeProblems, typedStore } from '../lib/describe.js';
+import { checkAppFolder, checkPageFiles, dataLayer, findings, schemaCheck, typeProblems, withEntities } from '../lib/check.js';
+import { fromRows, fromSchema, fromType, needOf, splitFields, statusProblems, typeOf, typedStore } from '../lib/describe.js';
 import { answer, refuse } from '../lib/reply.js';
 
 /** A tool's work: what it cannot do is said as a refusal, never thrown at the client. */

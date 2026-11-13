@@ -21,7 +21,8 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { imported, served } from './sherpa.js';
-import { typedStore, typeProblems } from './describe.js';
+import { typeProblems } from './check.js';
+import { typedStore } from './describe.js';
 
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 /** Never these, should the system pick one: an app's own servers listen there. */

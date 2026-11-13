@@ -9,6 +9,7 @@
  * - dataLayer — sherpa-ui/data as it ships; it throws, saying why, when it is not built
  * - heard — what the data layer reports while a check runs, each in its own words and code
  * - withEntities — an app's entities (an entities.v3 file, or a list), its types registered while `run` runs, then taken back
+ * - typeProblems — what is wrong with a type an agent gives: its schema's words, then the data layer's
  * - checkPageFiles — a Context's files: its definition, its Views, its template and each View's, and each `ui`
  * - checkAppFolder — an app.json and every file it names; each Context as checkPageFiles checks it
  * - usageOwn — a project's own hooks, from the sherpa-usage.json nearest an app's folder
@@ -71,6 +72,12 @@ export async function withEntities(dl, given, run) {
   } finally {
     for (const back of undo) back();
   }
+}
+
+/** What is wrong with a type an agent gives: its schema's words, then the data layer's (typeFaults); none when sound. */
+export function typeProblems(dl, type) {
+  const shape = schemaCheck('type.v1.json')(type);
+  return shape.length ? shape.map((e) => `type${e}`) : dl.typeFaults(type);
 }
 
 /** JSON text as a value, or why it is not JSON. */
@@ -250,10 +257,30 @@ export async function checkAppFolder(target, { context } = {}) {
     if (got == null) part.problems.push(`${key} names "${rel}", which is not in the app's folder (at run time: context-file-unread)`);
     return got;
   };
+  // The app's types (plan 960 U2): each file read, checked as type.v1 and by typeFaults, and its id its key.
+  const types = isObject(app?.types) ? app.types : {};
+  if (Object.keys(types).length) {
+    const part = { name: 'Types', checked: 'each file app.json `types` names: type.v1.json, then typeFaults; its id is its key', problems: [], notes: [] };
+    for (const [id, rel] of Object.entries(types)) {
+      const text = named(part, `types.${id}`, rel);
+      if (text == null) continue;
+      const read = parsed(text, rel);
+      if (read.problem) part.problems.push(read.problem);
+      else {
+        part.problems.push(...typeProblems(dl, read.value).map((p) => `${rel}: ${p}`));
+        if (isObject(read.value) && read.value.id !== id) part.problems.push(`${rel}: its id is ${JSON.stringify(read.value.id ?? null)}, and app.json lists it as "${id}"`);
+      }
+    }
+    head.problems.push(...part.problems);
+    head.notes.push(`${Object.keys(types).length} type(s) checked: ${Object.keys(types).join(', ')}`);
+  }
   const pages = [];
   for (const [name, ctx] of Object.entries(contexts).filter(([n]) => !context || n === context)) {
     const files = filesPart();
     const got = Object.fromEntries(FILES.map((key) => [key, named(files, `contexts.${name}.${key}`, ctx?.[key])]));
+    // A page that names its type names one the app lists: else its fields have no words.
+    const typed = got.definition == null ? undefined : parsed(got.definition, 'definition').value?.source?.type;
+    if (typeof typed === 'string' && !(typed in types)) files.problems.push(`contexts.${name}.definition names the type "${typed}", which app.json \`types\` does not list`);
     const views = typeof ctx?.views === 'string' ? path.posix.dirname(ctx.views) : '.';
     const page = await checkPageFiles({
       definition: got.definition ?? undefined,

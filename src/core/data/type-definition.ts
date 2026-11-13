@@ -12,6 +12,7 @@
  * - typeSchema — The store's schema made from a type: each stored field's rules, and what each field is.
  * - typeStatusFields — A type's status fields, as statusFields() takes them.
  * - typeFields — Each field as a type and a page say it together, for a reader with no source open.
+ * - pageFields — A page's fields as its type (`source.type`, from the type registry) and the page say them together.
  * - typeStoreOptions — What a store made from a type is given: its key, its time and its schema.
  * - TypeColumn — One grid column made from a field.
  * - typeColumns — A grid's columns made from a type: one per field but its key, in its order; each headed by its label.
@@ -19,6 +20,7 @@
  */
 import type { StoreOptions } from './base-store.js';
 import type { FieldDeclaration } from './data-source-types.js';
+import { entityTypes } from './entity-types.js';
 import type { NodeOutput, NodeSocket } from './node-library.js';
 import type { StatusField } from './status-field.js';
 import { email, max, min, number, oneOf, pattern, required, rules, url, type FieldDomain, type Rule } from './validate.js';
@@ -116,7 +118,7 @@ function wordsOf(field: StoredField): FieldDomain {
  * The store's schema made from a type: each stored field's rules, and its `domains` — what each field is — which a
  * DataSource declares before a page's own fields. A status field is the statusFields() wrapper's (`typeStatusFields`).
  */
-export function typeSchema(type: TypeDefinition): ReturnType<typeof rules> {
+export function typeSchema(type: Pick<TypeDefinition, 'key' | 'fields'>): ReturnType<typeof rules> {
   const key = type.key ?? 'id';
   const map: Record<string, Rule[]> = {};
   const stored = Object.entries(type.fields ?? {}).filter((e): e is [string, StoredField] => !isStatus(e[1]));
@@ -144,7 +146,7 @@ export function typeStatusFields(type: TypeDefinition): Record<string, StatusFie
  * order, then the page's own.
  */
 export function typeFields(
-  type: TypeDefinition, own: Readonly<Record<string, FieldDeclaration>> = {},
+  type: Pick<TypeDefinition, 'key' | 'fields'>, own: Readonly<Record<string, FieldDeclaration>> = {},
 ): Record<string, FieldDeclaration & { values?: unknown[] }> {
   const domains = typeSchema(type).domains;
   const out: Record<string, FieldDeclaration & { values?: unknown[] }> = {};
@@ -158,6 +160,19 @@ export function typeFields(
   }
   for (const [name, facts] of Object.entries(own)) out[name] ??= { ...facts };
   return out;
+}
+
+/**
+ * A page's fields as its type and the page say them together (typeFields): its type is the one its `source.type` names,
+ * from the type registry (app.json `types`, or registerEntityType). A page that names none, or one the app has not, is
+ * its own fields alone. For a reader of a page's JSON with no source open: a source's own `filterDef` says the same.
+ */
+export function pageFields(
+  source: { readonly type?: string | undefined; readonly fields?: Readonly<Record<string, FieldDeclaration>> | undefined } | undefined,
+  types: Readonly<Record<string, Pick<TypeDefinition, 'key' | 'fields'>>> = entityTypes(),
+): Record<string, FieldDeclaration & { values?: unknown[] }> {
+  const type = source?.type ? types[source.type] : undefined;
+  return type ? typeFields(type, source?.fields) : { ...source?.fields };
 }
 
 /** What a store made from a type is given: its key, its time and its schema. */

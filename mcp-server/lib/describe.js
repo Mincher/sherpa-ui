@@ -12,7 +12,6 @@
  * - splitFields — a page's own fields → each field as its type says it, and the controls its page keeps
  * - typeOf — fields as fromRows says them, and the status fields → a type (type.v1)
  * - fromType — a type, and a page's own fields over it → each field as fromRows says one
- * - typeProblems — what is wrong with a type an agent gives: its schema's words, then the data layer's
  * - typedStore — rows as a store made from their type: its key, time, rules, words and status fields
  * - statusProblems — the status fields an agent gives, against what statusFields() takes: each problem, none when sound
  * - fieldKinds — the fields of each kind a pattern's `each` stands for, each with its label
@@ -222,12 +221,6 @@ export function fromType(type, own = {}) {
   return Object.entries(type.fields).map(([name, field]) => ({
     name, field, ...(own[name] ? { page: own[name] } : {}), why: ['the type says it'], left: name === key ? 'the key' : null,
   }));
-}
-
-/** What is wrong with a type an agent gives: its schema's words, then the data layer's (typeFaults); none when sound. */
-export function typeProblems(dl, type) {
-  const shape = schemaCheck('type.v1.json')(type);
-  return shape.length ? shape.map((e) => `type${e}`) : dl.typeFaults(type);
 }
 
 /** Rows as a store made from their type — its key, time, rules, words and status fields, as an app makes it; no type, the rows alone. */

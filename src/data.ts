@@ -293,7 +293,7 @@ export { statusFields, type StatusField, type StatusValue } from './core/data/st
 /* A TYPE, said once (type.v1): the store's rules, a page's fields and a grid's columns are made from its fields.
    Plan 960 U2 · TRAP T-a-field-is-declared-once */
 export {
-  readFrom, typeColumns, typeFields, typeSchema, typeStatusFields, typeStoreOptions,
+  pageFields, readFrom, typeColumns, typeFields, typeSchema, typeStatusFields, typeStoreOptions,
   type StoredField, type TypeColumn, type TypeDefinition, type TypeField, type TypeGraph,
 } from './core/data/type-definition.js';
 export { typeFaults } from './core/data/type-faults.js';

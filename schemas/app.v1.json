@@ -21,6 +21,12 @@
       "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },
       "additionalProperties": { "$ref": "defs.v1.json#/$defs/context" }
     },
+    "types": {
+      "description": "The app's types, by id: each a path to its type.v1 file. Registered before a Context opens, so a page that names one (source.type) has its fields' words, and an entity may be of one (plan 960 U2).",
+      "type": "object",
+      "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
     "entities": {
       "description": "The app's preset entities, its Custom Nodes among them (the type node): a path to an entities.v3.json, with the types they are of. Read only; the reader's own are kept apart, app-wide.",
       "type": "string"

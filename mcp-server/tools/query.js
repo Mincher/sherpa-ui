@@ -16,8 +16,8 @@ import { z } from 'zod/v3';
 import { imported } from '../lib/sherpa.js';
 import { traced } from '../lib/trace.js';
 import { answer, refuse } from '../lib/reply.js';
-import { withEntities } from '../lib/check.js';
-import { typedStore, typeProblems } from '../lib/describe.js';
+import { typeProblems, withEntities } from '../lib/check.js';
+import { typedStore } from '../lib/describe.js';
 
 /** Hosts a data path may name: this machine, never another. */
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);

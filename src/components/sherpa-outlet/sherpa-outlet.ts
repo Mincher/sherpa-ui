@@ -77,7 +77,7 @@ export class SherpaOutlet extends SherpaElement {
   #views: Record<string, ViewLibrary> = {};
   /** Settles once every Context's own Views are in. */
   #viewsReady: Promise<void> = Promise.resolve();
-  /** Settles once the app's preset entities are in the keeper. */
+  /** Settles once the app's types are registered and its preset entities are in the keeper. */
   #nodesReady: Promise<void> = Promise.resolve();
   /** The app's preset entities, once loaded. */
   #entityPresets: readonly Entity[] = [];
@@ -195,12 +195,14 @@ export class SherpaOutlet extends SherpaElement {
       if (context.views) this.#views[name] = await loadViewLibrary(this.#url(context.views));
     })).then(() => undefined);
     // The presets are the keeper's, so every editor lists them with the reader's own. Its Custom Nodes are its entities of the type `node`.
-    if (options.app.entities) {
-      const { entities } = options.app;
-      // Fetched only where an app ships presets: an app with none never loads them.
+    if (options.app.entities || options.app.types) {
+      const { entities, types } = options.app;
+      // Fetched only where an app ships them: an app with none never loads them.
       this.#nodesReady = (async () => {
         const files = await import('../../core/browser/entity-files.js');
-        this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities))).entities);
+        // Its types first: a page's fields and its entities are of them. Plan 960 U2
+        if (types) await files.loadTypes(Object.fromEntries(Object.entries(types).map(([id, path]) => [id, this.#url(path)])));
+        if (entities) this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities))).entities);
       })();
     }
     // The nav first, so a first click finds its rows. TRAP T-the-outlet-keeps-the-nav
