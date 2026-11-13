@@ -33,6 +33,27 @@ always made from it. Where the definition is not a graph (a Query, a View), the 
 | U4.8b A page's Views in the graph chip (was U4.6b) | The `query` graph View's chip offers each page's Views under it; one opened is drawn with that View put on its Query (VIEW_LENS, U4.6a). Save writes a reader's own View to the keeper; a preset View is read only, and Save as makes a reader's own | e2e: a reader's View edited in the graph and saved comes back on its page | U4.8a |
 | U4.9 A Notification's To takes recipients (Will, 2026-11-13: "The 'To' input in a Notification node should take in rows containing data on the recipients. Recipients can be Users, Groups, Roles, AI Agents, or Coworkers"; "Right now To expects a value which doesn't make any sense") | To becomes an input of ROWS (`input: 'object'`, `needs: 'rows'`), not text. The library names no recipient type: an app's type says it is one, `recipient: true` (type.v1, sherpa-ui-a9's), one door, `recipientTypes()`. Rows into To from a store whose type is no recipient warn, naming the app's recipient types ("To takes rows of Users, Groups, Roles or Coworkers"); its `would` counts them ("Would send a notification to 3 recipients"). Demos marks user, group, role and coworker (Will, after: "Nevermind about AI Agents as recipients.") | unit: To takes rows; a non-recipient store warns in words; Simulate counts; e2e: a Users Source into To | a9's flag |
 
+
+### U4.8, the wiring (2026-11-13, from Will's D4 and Q1 to Q3; to check before it is built)
+
+```
+Source ─rows─► Field ─► Condition ─True─► View Filters  [its row for that field]     a View filter (a chip on the View's bar)
+Filter use (a preset) ─True─────────────► View Filters  [its row for that preset]
+Organise (the View's) ──────────────────► View Filters                               Q2 A: it arranges every card
+View Filters ───────────────────────────► View  [View Filters input]
+
+Source ─rows─► Check ─Yes─► Presentation ─► View  [Content input, one per card]      Q1: rows from the Source, filtered on the way
+               ▲ test: the card's own filters' Trues (an And where there are several), its presets' too
+Organise (the card's) ─► Presentation
+Presentation's rows: its bar (Q3 A): its Switch, each chip it holds in order, with or without a pick
+```
+
+- A card's local filters are a CHECK on its rows' path (plan 944: Yes sends the rows its test holds for): one system,
+  no new filter node. A card with no filter of its own takes the Source's rows straight.
+- Moving a field between scopes is moving its tree's True: into View Filters (the View's), or into a card's Check (its
+  own): `connectionRequest`, as today's send to View and Return.
+- Chip order is the order of a bar's rows; the Switch, its first row; a chip with no pick, a row with nothing joined.
+
 ## Will's decisions
 
 - **U4.2, 2026-11-13:** "Decision: A. Perhaps just a single 'Organise' node that lets you set Axes, Grouping, and
