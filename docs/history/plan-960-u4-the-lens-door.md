@@ -24,6 +24,8 @@ always made from it. Where the definition is not a graph (a Query, a View), the 
 | **U4.6** A View's filters written back (Will, 2026-11-13: A, beside U3) | The part U4.3 moved out. A View's `query` is written from the Query by ONE writer, `statedQuery`, in the data layer: the View chip's Save (`viewQueryOf`) and the graph's Save alike. The `view` lens is the Query lens with another Save: a View's `query` from the Query as the graph left it, its sort, group and search with it | — | U4.5 |
 | U4.6a The data layer and the MCP | `statedQuery` (query.ts), `viewWithQuery` (page-definition.ts), the `view` lens (query-lens.ts, one maker for both lenses). The MCP's `definition_graph` and `edit_definition_graph` take a `view` beside a page: the page opened on that View, and the View written back: the author's path for a preset View in a views.v1 file | unit: a View's query drawn and written back the same; an edit to its sort, a filter and a search lands in its `query`; `viewQueryOf` is `statedQuery` | U4.5 |
 | U4.6b The editor | The `query` graph View's chip offers each page's Views under it; one opened is the page with that View put on its Query. Save writes a reader's own View back to the keeper; a preset View is read only, and Save as makes a reader's own | e2e: a reader's View edited in the graph and saved comes back on its page with its filters, sort, group and search | U4.6a |
+| U4.4b, in detail (2026-11-13, after Will's D2: one node, with a sub-graph) | `entity.v2`: a `graph`, or, for a Filter, `settings.where` (entity-filter.v1). ONE door, `entityGraph(entity)`: its graph, else the one its lens draws from its Where (`whereGraph`: a Source, a Field and a Condition per field, an And to `#out/where`, as Filters are drawn today, D3 B). The nine files that read `entity.graph` read it there. The `filter` lens writes back a Where when the graph says one losslessly (Source, Field, Condition, And, Or only), else the graph; a Where's layout is a side record, as the Query's. `filterOf(preset or saved filter, source)` makes a Filter of the other shapes; `presetOfEntity` reads one back | unit: the four shapes are one Filter, drawn and written back the same; a graph with a Math node stays a graph | U4.4a; sherpa-ui-a9 reviews the envelope |
+| **U4.7** The Field node's rows (Will, 2026-11-13, D1: "Field nodes can have multiple, conditional, rows that can expose more options like values") | One door for every kind: a row may UNFOLD rows from what it picks (`unfolds`). The Field's field row unfolds a row per value its field declares (its type's or page's `values`; a status field's values, with their looks), drawn by `workflowGraph` and `queryGraph` alike. In the Query graph a status field is ONE Field node: the Status field kind and its chain of Checks go (its rule is the type's; how a reader reaches it waits). TODO 914 (one Field node, several fields) comes after, each field unfolding its own | unit: a Field on a field with values unfolds them, in both graphs; e2e: Health is one node | E1 (Will) |
 
 ## Will's decisions
 
@@ -32,6 +34,12 @@ always made from it. Where the definition is not a graph (a Query, a View), the 
   Organise node, not four. Its rows: Sort and Direction, Group, Search, and Primary, Secondary and Segments (a chart's
   X axis, Y axis and each segment's parts: the Query's `presentation.primary`, `secondary` and `group`). Each row picks
   a field of the rows that reach it, or takes a Field joined to it. A row left empty does nothing.
+
+- **U4.7, E1, open (2026-11-13):** what a Field's value row does. **A** (my pick): it GIVES that value: join it to a
+  Condition's Value B, or any row that takes a value. Filtering stays the Condition's (D3 B), so there is one way to
+  filter. **B**: it SENDS the rows whose field is that value, a Branch as a Check's Yes and No: the Field node filters
+  too, a second way. My other picks, say if wrong: a field with more than 12 values unfolds none, and its hint says how
+  many; a value row is read only (its values are its field's).
 
 ## The picks (Will: "go with your picks"; say if one is wrong)
 
