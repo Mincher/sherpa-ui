@@ -44,7 +44,7 @@ test('list_components names every element the package defines, with what it asks
   for (const m of JSON.parse(disk('custom-elements.json')).modules) {
     assert.match(text, new RegExp(`\\*\\*${m.declarations[0].tagName}\\*\\*`));
   }
-  assert.match(text, /\*\*sherpa-data-grid\*\* .*\n {2}.*asks \{"shape":"rows","filters":true,"fields":true\} · takes highlight · presents grid/);
+  assert.match(text, /\*\*sherpa-data-grid\*\* .*\n {2}.*asks \{"shape":"rows","filters":true,"fields":true,"detail":true\} · takes highlight · presents grid/);
   assert.doesNotMatch(text, /Figma:/);
   const charts = await call('list_components', { category: 'chart' });
   assert.match(charts.text, /^6 component\(s\) in chart/);
