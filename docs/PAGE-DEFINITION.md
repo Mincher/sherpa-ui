@@ -94,6 +94,10 @@ library `app.v1`, `views.v1` and `workflow.v3` use too.
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
   out, a scope a page of rows is drawn in does, and the View does not
   (`T-group-and-sort-are-component-scope`).
+- **A scope's `sort`, `group` and `search`** are how its rows start arranged: the
+  order (a field and its direction each), the field they are grouped by, and the free
+  text they are searched for. A reader changes each, by its chip or the graph's
+  Organise node, and the graph's Save writes them back (plan 960 U4.3).
 - **`axes`** says which fields each axis's chip offers — `primary`,
   `secondary`, `group` — each only those `available`, less those
   `unavailable`, for every view or per view, `grid` or `chart`:

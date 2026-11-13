@@ -365,3 +365,30 @@ test('SAVE round-trips a page definition: definition → graph → edit → defi
   const again = await openSource(saved.source, new ArrayStore(rows, { key: 'id' }));
   assert.deepEqual(valuesIn(queryGraph(again.query.draft, saved, { values: (f) => again.valuesFor(f).map(String) }), 'when-view-status').type, 'notin');
 });
+
+test('a scope\'s arrangement is the page\'s too: it opens sorted, grouped and searched, and SAVE writes what the reader changed (plan 960 U4.3)', async () => {
+  const people = [{ id: 1, name: 'Ann', plan: 'Pro' }, { id: 2, name: 'Bo', plan: 'Free' }, { id: 3, name: 'Cy', plan: 'Pro' }];
+  const def = {
+    v: 1, id: 'people',
+    source: {
+      store: 'people', fields: { name: { label: 'Name' }, plan: { label: 'Plan' } },
+      scopes: { list: { label: 'List', arranges: true, sort: [{ field: 'name', direction: 'desc' }], group: 'plan', search: 'n' } },
+    },
+  };
+  assert.deepEqual(schemaCheck('page.v1.json')(def), []);
+  const source = await openSource(def.source, new ArrayStore(people, { key: 'id' }));
+  const list = source.query.draft.scopes.list;
+  assert.deepEqual([list.sort, list.group, list.search], [[{ field: 'name', direction: 'desc' }], 'plan', 'n']);
+  // Drawn on its Organise node; Save writes it back as it is.
+  const g = queryGraph(source.query.draft, def, {});
+  assert.deepEqual(Object.fromEntries(nodeIn(g, 'organise-list').rows.filter((r) => ['sort', 'direction', 'group', 'search'].includes(r.name)).map((r) => [r.name, r.value])), { sort: 'name', direction: 'desc', group: 'plan', search: 'n' });
+  assert.deepEqual(pageWithQuery(def, source.query.draft).source.scopes.list, def.source.scopes.list);
+  // The reader sorts by Plan and clears the search, on the node: Save writes that.
+  const organise = nodeIn(g, 'organise-list');
+  source.query.ask(graphRequest({ node: organise, row: organise.rows.find((r) => r.name === 'sort'), value: 'plan' }, {}));
+  source.query.ask(graphRequest({ node: organise, row: organise.rows.find((r) => r.name === 'search'), value: '' }, {}));
+  const saved = pageWithQuery(def, source.query.draft);
+  assert.deepEqual(saved.source.scopes.list, { label: 'List', arranges: true, sort: [{ field: 'plan', direction: 'desc' }], group: 'plan' });
+  assert.equal(checkPage(saved), true);
+  assert.deepEqual(schemaCheck('page.v1.json')(saved), []);
+});

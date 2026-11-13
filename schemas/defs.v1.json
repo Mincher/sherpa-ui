@@ -245,6 +245,9 @@
         "alwaysOn": { "description": "Fields it holds that a reader cannot switch off.", "$ref": "#/$defs/fieldNames" },
         "where": { "description": "Its answers at the start. Reset puts them back.", "$ref": "#/$defs/where" },
         "arranges": { "description": "Group and Sort arrange its rows. Left out, a scope a page of rows is drawn in does, and the View does not.", "type": "boolean" },
+        "sort": { "description": "The order its rows start in: a field and its direction each. A reader's Sort changes it; the graph's Save writes it (plan 960 U4.3).", "type": "array", "items": { "$ref": "#/$defs/sort" } },
+        "group": { "description": "The field its rows start grouped by.", "type": "string", "minLength": 1 },
+        "search": { "description": "The free text its rows start searched for.", "type": "string" },
         "presets": { "type": "array", "items": { "$ref": "#/$defs/preset" } },
         "presentation": { "$ref": "#/$defs/presentationDefinition" },
         "sets": { "type": "array", "items": { "$ref": "#/$defs/filterSet" } }

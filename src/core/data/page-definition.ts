@@ -19,7 +19,7 @@
 import { DataSource, type FieldDeclaration, type FilterSet } from './data-source.js';
 import { answerTree, type FieldReading, type FieldType } from './filter-state.js';
 import { report, type Report } from './report.js';
-import type { Store } from './store.js';
+import type { SortSpec, Store } from './store.js';
 import type { QueryContext } from './query-context.js';
 import { VIEW, isSavedFilter, type AxesDefinition, type PresentationDefinition, type Query, type SavedFilter } from './query.js';
 import { whereOf, type Where } from './where.js';
@@ -27,6 +27,11 @@ import { whereOf, type Where } from './where.js';
 /** One scope: its name, and the fields it offers and holds at the start. */
 export interface ScopeDefinition {
   label?: string;
+  /** How its rows start arranged: the order, a field and its direction each; the field they are grouped by; the free text
+   *  they are searched for. A reader changes each; the graph's Save writes them (plan 960 U4.3). */
+  sort?: readonly SortSpec[];
+  group?: string;
+  search?: string;
   /** Every field it may add — `'all'`, every field the page declares. */
   offers?: readonly string[] | 'all';
   holds?: readonly string[];
@@ -178,6 +183,11 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
       source.declareOwn(scope, facts.holds);
     }
     if (facts.where) source.query.declareStart(scope, source.readingsOf(facts.where));
+    // How its rows start arranged, as a reader's Sort, Group and Search would ask it (plan 960 U4.3).
+    const first = facts.sort?.[0];
+    if (first) source.query.ask({ scope, sort: first.field, direction: first.direction ?? 'asc' });
+    if (facts.group) source.query.ask({ scope, group: facts.group });
+    if (facts.search) source.query.ask({ scope, search: facts.search });
     if (facts.presentation) source.query.declarePresentation(scope, facts.presentation);
     if (facts.axes) source.query.declareAxes(facts.axes, scope);
     if (facts.presets?.length) {
@@ -233,7 +243,7 @@ export function pageWithQuery(
   const type = (field: string): FieldType | undefined => facts.type?.(field) ?? source.fields?.[field]?.type;
   const scopes: Record<string, ScopeDefinition> = {};
   for (const id of new Set([...Object.keys(source.scopes ?? {}), ...Object.keys(query.scopes)])) {
-    const { holds: _held, where: _said, presentation, ...kept } = source.scopes?.[id] ?? {};
+    const { holds: _held, where: _said, presentation, sort: _sorted, group: _grouped, search: _searched, ...kept } = source.scopes?.[id] ?? {};
     const now = query.scopes[id];
     const own = Object.fromEntries(Object.entries(now?.readings ?? {}).map(([field, { byPreset: _preset, ...reading }]) => [field, reading]));
     const where = whereOf(own, (field) => {
@@ -246,6 +256,10 @@ export function pageWithQuery(
       ...(now?.holds.length ? { holds: [...now.holds] } : {}),
       ...(Object.keys(where).length ? { where } : {}),
       ...(shown ? { presentation: shown } : {}),
+      // Its arrangement as the Query holds it now (plan 960 U4.3): a sort, a group and a search are a page's to save too.
+      ...(now?.sort?.length ? { sort: structuredClone(now.sort) } : {}),
+      ...(now?.group ? { group: now.group } : {}),
+      ...(now?.search ? { search: now.search } : {}),
     };
     if (Object.keys(scope).length) scopes[id] = scope;
   }

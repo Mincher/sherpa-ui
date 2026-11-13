@@ -199,7 +199,7 @@
   "src/core/data/notices.ts": 47,
   "src/core/data/outbox.ts": 65,
   "src/core/data/output-triggers.ts": 67,
-  "src/core/data/page-definition.ts": 303,
+  "src/core/data/page-definition.ts": 317,
   "src/core/data/pointer.ts": 62,
   "src/core/data/preset-filter.ts": 122,
   "src/core/data/query-context.ts": 686,
