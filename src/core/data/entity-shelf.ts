@@ -14,7 +14,7 @@
  * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
  */
 import { report } from './report.js';
-import { isEntity, readEntity, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
+import { isEntity, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
 import { libraryOf } from './entity-types.js';
 import type { EntityFacts } from './entity-check.js';
 import type { NodeLibrary } from './node-library.js';
@@ -161,7 +161,6 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
         refuse('entity', 'import: it is not JSON.', '');
         return undefined;
       }
-      read = readEntity(read);
       if (!isEntity(read)) {
         refuse('entity', 'import: it is not an entity: a v2 with a type, an id, a name and a graph.', '');
         return undefined;

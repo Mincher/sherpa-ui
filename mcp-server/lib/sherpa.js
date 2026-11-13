@@ -18,7 +18,7 @@
  * - components — every element the package defines, from its custom-elements.json
  * - spec — a component's spec; null for a name that is no component
  * - example — a component's example, its markup joined; null when it has none
- * - schemaVersion — a contract's newest version on disk: 2 for workflow.v3.json; null, none
+ * - schemaVersion — a contract's newest version on disk: 3 for workflow.v3.json; null, none
  * - readSchema — a contract by name, at its newest version, as text; null when there is none
  * - schemas — each contract in schemas/ by name, at its newest version, with its own title
  * - patterns — the name of each pattern sherpa-ui ships in patterns/, in order
@@ -138,13 +138,13 @@ export function example(name) {
   return { ...ex, html: [ex.html].flat().join('') };
 }
 
-/** A contract file's name and version: `workflow`, 2 for workflow.v3.json. */
+/** A contract file's name and version: `workflow`, 3 for workflow.v3.json. */
 const versioned = (file) => {
   const m = /^(.+)\.v(\d+)\.json$/.exec(file);
   return m ? { name: m[1], v: Number(m[2]) } : null;
 };
 
-/** A contract's newest version on disk: 2 for workflow.v3.json; null, none. */
+/** A contract's newest version on disk: 3 for workflow.v3.json; null, none. */
 export function schemaVersion(name) {
   const vs = readdirSync(path.join(SHERPA_ROOT, path.dirname(READS.schema))).flatMap((f) => (versioned(f)?.name === name ? [versioned(f).v] : []));
   return vs.length ? Math.max(...vs) : null;

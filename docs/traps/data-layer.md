@@ -6599,7 +6599,7 @@ allowed it.
 ### T-a-workflow-is-its-definition
 
 **A workflow is ONE JSON document** — its nodes, each node's values, and the
-connections between their sockets — checked by `schemas/workflow.v2.json` and by
+connections between their sockets — checked by `schemas/workflow.v3.json` and by
 `checkWorkflow`. Will, TODO 78; plan-78-workflow-data.md.
 
 - **A node holds only what the reader may change**: its place, its own name and
@@ -7542,7 +7542,7 @@ followed the range and its axis was every month the field holds, most at 0.
 Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 
 - **The definition is JSON** (`defs.v1#/$defs/nodeDefinition`), an app's shipped as entities of
-  the type `node` (`entities.v1.json`; app.v1 `nodes` is gone, TODO 777): a
+  the type `node` (`entities.v2.json`; app.v1 `nodes` is gone, TODO 777): a
   label, `inputs`, `outputs` and a body of `nodes` and `connections`. Inside, `#in`, `#in/<name>`,
   `#out` and `#out/<name>` are the Group Input and Group Output; `innerOf` lays them out as
   two nodes of the kinds `#group-input` and `#group-output`, so the body is checked and drawn
@@ -7630,7 +7630,7 @@ the group's internal node sockets. I never said that a group input was of a cert
 **An entity is ONE envelope for every kind of saved graph, and its TYPE says the rest.**
 Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build the core".
 
-- **The envelope** (`schemas/entity.v1.json`, `entity.ts`): `{ v, type, id, label, description?,
+- **The envelope** (`schemas/entity.v2.json`, `entity.ts`): `{ v, type, id, label, description?,
   graph { nodes, connections, ties }, settings, uses, origin }`. The graph is a workflow's, with `#in`
   and `#out` as a Custom Node has. `origin` (`preset` or `mine`) is set on READ, never written.
   A Custom Node is the type `node`, its sockets in `settings`; `nodeEntityOf` and `definitionOf`
@@ -8095,28 +8095,6 @@ N4); Fetch and Simulate are its first two users.
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-task-queue-knows-nothing-of-what-it-runs.test.mjs`
 - Site: `test/e2e/reforged-node-fetch-caches-the-rows.spec.ts`
-
-### T-a-saved-graph-is-read-in-the-new-words
-
-**A graph saved before plan 934 reads ONCE in the new words: its `routes` are its `connections`.** Will,
-2026-11-11: a graph's one link is a Connection, and the saved key follows. A reader's graphs are kept in
-the store, in files, in an import and in a tab's draft, so each door reads the old shape before it judges
-it: `readEntity` reads an entity v1 as a v2 (`inNewWords`: the graph's `routes`, each zip tie's, and the
-`was` of each use of a Custom Node), `readWorkflow` reads a v2 as a v3, and a tab's Custom Node edits read
-the same way. Nothing writes the old key, and no API takes it.
-
-Without it the reader loses work in silence: `isEntity` asks for a v2, and the session's guard DROPS a
-value it refuses, so a draft kept as a v2 went, and an entity kept as a v1 was left out of the shelf.
-Measured: the keeper read a stored v1 back with every Connection; `readWorkflow` read a v2 draft with
-its zip tie's.
-
-- Site: `src/core/data/entity.ts`
-- Site: `src/core/data/workflow.ts`
-- Site: `src/core/browser/entity-files.ts`
-- Site: `src/core/browser/page-state.ts`
-- Site: `src/core/ui/node-graph.ts`
-- Site: `test/unit/a-workflow-is-its-definition.test.mjs`
-- Site: `test/unit/an-entity-shelf-is-one-door.test.mjs`
 
 ### T-a-route-is-start-to-end
 

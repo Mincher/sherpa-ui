@@ -43,17 +43,11 @@ test('a real workflow passes its schema and the check', () => {
   assert.deepEqual(check(good), { ok: true, heard: [] });
 });
 
-test('a v3 is read as itself; a v2, kept before plan 934, reads in the new words; anything else is no workflow, and says so', () => {
+test('a v3 is read as itself; anything else is no workflow, and says so: a v2, kept before plan 934, too (plan 960 D4)', () => {
   assert.equal(readWorkflow(good).workflow, good);
   assert.deepEqual(good.connections.map((r) => r.from), ['start/rows', 'field/field', 'status/value', 'filter/rows']);
-  // A tab's draft from before: its routes, and a zip tie's, are its connections. TRAP T-a-saved-graph-is-read-in-the-new-words
-  const tie = { id: 't', x: 0, y: 0, routes: good.connections.slice(0, 2) };
-  const read = readWorkflow({ v: 2, id: 'old', nodes: good.nodes, routes: good.connections, ties: [tie] }).workflow;
-  assert.equal(read.v, 3);
-  assert.deepEqual(read.connections, good.connections);
-  assert.deepEqual(read.ties[0], { id: 't', x: 0, y: 0, connections: good.connections.slice(0, 2) });
-  assert.equal('routes' in read, false);
-  for (const odd of [{ v: 1, id: 'x', nodes: [] }, { v: 4, id: 'x', nodes: [] }, { id: 'x' }, null]) {
+  const kept = { v: 2, id: 'old', nodes: good.nodes, routes: good.connections };
+  for (const odd of [kept, { v: 1, id: 'x', nodes: [] }, { v: 4, id: 'x', nodes: [] }, { id: 'x' }, null]) {
     assert.deepEqual(workflowFaults(odd), ['it is not a workflow definition: a v3']);
   }
 });

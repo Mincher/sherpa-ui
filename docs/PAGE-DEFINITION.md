@@ -31,7 +31,7 @@ One JSON document per page. The same rule as a View: **a definition is data**
 (`T-a-view-is-json`), so a service or an agent can read and write it. Its schema
 is `schemas/page.v1.json`, and every shape in it — a field, a scope, a condition,
 a saved filter, a component's config — is `schemas/defs.v1.json`'s, the one
-library `app.v1`, `views.v1` and `workflow.v2` use too.
+library `app.v1`, `views.v1` and `workflow.v3` use too.
 
 ```json
 {
@@ -164,7 +164,7 @@ library `app.v1`, `views.v1` and `workflow.v2` use too.
   each drawn from its field — one definition per field
   (`T-a-field-is-declared-once`). The View chip lists `views`.
 - **Its markup is its Context's**, named in the app definition (`app.v1.json`,
-  TODO 190) — not here. Its `entities` key names the app's preset entities (`entities.v1`): graphs
+  TODO 190) — not here. Its `entities` key names the app's preset entities (`entities.v2`): graphs
   saved under a type, each with a settings schema of its type (plan 746).
 
 ---

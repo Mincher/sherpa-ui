@@ -13,7 +13,7 @@
  * - keepNode — Keep a Custom Node the editor made or changed, by its use's kind: the entity it is, checked.
  * - deleteNode — Forget one of the reader's Custom Nodes, unless a graph uses it.
  */
-import { isEntity, nodeEntityOf, readEntity, type Entity } from './entity.js';
+import { isEntity, nodeEntityOf, type Entity } from './entity.js';
 import { asNode, entityTypes } from './entity-types.js';
 import { entityFaults, type EntityFacts } from './entity-check.js';
 import { freeId } from './graph-views.js';
@@ -55,7 +55,7 @@ export async function createNode(shelf: EntityShelf, json: unknown, facts: Entit
       return { faults: ['it is not JSON'] };
     }
   }
-  const read = readEntity(value) as Partial<Entity> & Record<string, unknown>;
+  const read = value as Partial<Entity> & Record<string, unknown>;
   const label = typeof read?.label === 'string' ? read.label.trim() : '';
   if (!label) return { faults: ['it has no name: give it a label'] };
   const type = typeof read.type === 'string' ? read.type : 'node';

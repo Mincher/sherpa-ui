@@ -245,7 +245,7 @@ test('edit_workflow is editWorkflow, checked; an edit to a node it has not got i
   assert.deepEqual(json.reports, []);
   const dangling = await call('edit_workflow', { workflow, edits: [{ node: 'ghost', row: 'value', value: 1 }] });
   assert.equal(dangling.bad, true);
-  assert.match(dangling.text, /The workflow has no node "ghost", so no edit was made\. Its nodes: start, field, status, filter, end\./);
+  assert.ok(dangling.text.includes(`The workflow has no node "ghost", so no edit was made. Its nodes: ${workflow.nodes.map((n) => n.id).join(', ')}.`), dangling.text);
   // A connection made into a node it has not got is made, and checkWorkflow says so.
   const connected = await call('edit_workflow', { workflow, edits: [{ connection: { from: 'status/value', to: 'ghost/value' } }] });
   assert.equal(connected.bad, false);

@@ -1,5 +1,5 @@
 /**
- * entity-files.ts — an app's preset entities from a file: JSON (schemas/entities.v1.json), named by
+ * entity-files.ts — an app's preset entities from a file: JSON (schemas/entities.v2.json), named by
  * app.json `entities`. The presets are read only; the reader's own live in the page keeper. Each is
  * checked alone: the bad reported in `checkEntity`'s words, the rest kept. Will, plan 746 E2
  * TRAP T-an-entity-is-an-envelope-and-a-type
@@ -9,19 +9,17 @@
  * - loadEntityLibrary — an app's preset entities from a JSON file, each checked
  */
 import { report } from '../data/report.js';
-import { isEntity, readEntity, type Entity, type EntityLibrary } from '../data/entity.js';
+import { isEntity, type Entity, type EntityLibrary } from '../data/entity.js';
 import { entityFaults, type EntityFacts } from '../data/entity-check.js';
 import { registerEntityType } from '../data/entity-types.js';
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** Entities read from JSON (entities.v1). Each is checked alone, over those already kept and the
+/** Entities read from JSON (entities.v2). Each is checked alone, over those already kept and the
  *  `known` ones around it, so one bad one is reported and the rest still load; a use of one defined
  *  later is tried again once that one is in. The key of each must be its id. */
 export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibrary {
-  // An entities.v1, saved before plan 934, holds v1 entities: each reads once as a v2. TRAP T-a-saved-graph-is-read-in-the-new-words
-  const given = isObject(read) && (read['v'] === 1 || read['v'] === 2) && isObject(read['entities'])
-    ? Object.fromEntries(Object.entries(read['entities']).map(([key, entity]) => [key, readEntity(entity)])) : undefined;
+  const given = isObject(read) && read['v'] === 2 && isObject(read['entities']) ? read['entities'] : undefined;
   if (!given) {
     report({ code: 'entity', message: 'loadEntityLibrary: it is not an entity library: a v2 with its entities by id.', at: {} });
     return { v: 2, entities: {} };

@@ -1,5 +1,5 @@
 /**
- * A CUSTOM NODE HAS TAGS: an entity's `tags`, a list of words, in the envelope (entity.v1) and in a
+ * A CUSTOM NODE HAS TAGS: an entity's `tags`, a list of words, in the envelope (entity.v2) and in a
  * Custom Node's definition. Set by Save as Custom Node, New graph and Save graph as; tidied
  * (trimmed, one of each); kept through the shelf and its Custom Node view both ways; checked in words;
  * and read by the node panel, whose search finds a node by one. Will, TODO 784.

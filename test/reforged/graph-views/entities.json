@@ -1,6 +1,6 @@
 {
   "$schema": "../../../schemas/entities.v2.json",
-  "v": 1,
+  "v": 2,
   "entities": {
     "shipped": {
       "v": 2, "type": "preset-filter", "id": "shipped", "label": "Shipped",

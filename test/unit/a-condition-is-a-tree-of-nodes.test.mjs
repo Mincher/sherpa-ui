@@ -195,6 +195,6 @@ test('a planted fault in each check: an operator the Field\'s type does not take
 test('the Filter kind is gone, and no file reads as one (TODO 777): a node of it is a fault', () => {
   assert.equal(NODE_KINDS.filter, undefined);
   const saved = (v) => ({ v, id: 'old', nodes: [{ id: 'f', kind: 'filter', x: 0, y: 0, values: { field: 'status', op: 'eq' } }], connections: [] });
-  assert.equal(readWorkflow(saved(2)).workflow.nodes[0].kind, 'filter');
-  assert.deepEqual(workflowFaults(saved(2)), ['the node "f" is of the kind "filter", which is not one']);
+  assert.equal(readWorkflow(saved(3)).workflow.nodes[0].kind, 'filter');
+  assert.deepEqual(workflowFaults(saved(3)), ['the node "f" is of the kind "filter", which is not one']);
 });

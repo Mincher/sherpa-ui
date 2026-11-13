@@ -94,7 +94,7 @@ import {
 import { aiWords } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, socketEdit, ungroupUse } from '../data/node-group.js';
-import { entityKind, type EntityRef, inNewWords } from '../data/entity.js';
+import { entityKind, type EntityRef } from '../data/entity.js';
 import { offeredKinds, savedCategories } from '../data/entity-types.js';
 import { dataPane, flowPane, instancePane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
@@ -2529,15 +2529,13 @@ export function bindWorkflow(
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition => {
     const d = v as { v?: unknown; id?: unknown; nodes?: unknown } | null;
-    // A v2, kept before plan 934, is the reader's draft too: readWorkflow reads it in the new words, never drops it.
-    return !!d && typeof d === 'object' && (d.v === 3 || d.v === 2) && d.id === workflow.id && Array.isArray(d.nodes);
+    return !!d && typeof d === 'object' && d.v === 3 && d.id === workflow.id && Array.isArray(d.nodes);
   };
   session?.persist(pointer, { shared: false, guard: isDraft });
   // The definitions this tab edited: kept beside the draft, over the app's library.
   const editsAt = `/node-edits/${workflow.id}`;
   session?.persist(editsAt, { shared: false, guard: isEdits });
-  // Each kept before plan 934 reads in the new words. TRAP T-a-saved-graph-is-read-in-the-new-words
-  const edited = Object.fromEntries(Object.entries(session?.get(editsAt) as Record<string, NodeDefinition> | undefined ?? {}).map(([k, d]) => [k, inNewWords(d)]));
+  const edited = { ...session?.get(editsAt) as Record<string, NodeDefinition> | undefined };
   // The entity this graph is, by the kind its use has: the library holds its SAVED copy; the draft is its own.
   const own = entity && entityKind(entity);
   let given = library ?? { v: 1, nodes: {} };

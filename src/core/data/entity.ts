@@ -10,8 +10,6 @@
  * - EntityGraph — An entity's graph: a workflow's nodes and connections, with `#in` and `#out` as a Custom Node has.
  * - Entity — One entity, as JSON.
  * - EntityLibrary — The preset entities of an app, by id (entities.v2).
- * - inNewWords — A graph or Custom Node body saved before plan 934 as it reads now: its routes are connections.
- * - readEntity — An entity as this version reads it: a v1, saved before plan 934, read once as a v2.
  * - isEntity — Whether a value has the SHAPE of an entity; the persist guard.
  * - entityKind — The kind a use of an entity has in a graph: `<type>:<id>`, and a Custom Node's plain id.
  * - entityRefOf — The entity a use's kind names: the inverse of `entityKind`.
@@ -79,29 +77,7 @@ export interface EntityLibrary {
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** A graph or Custom Node body saved before plan 934 as it reads now: its `routes`, each zip tie's, and the
- *  `was` of each use of a Custom Node are `connections`. One saved since is as it was. Pure.
- *  TRAP T-a-saved-graph-is-read-in-the-new-words */
-export function inNewWords<T>(body: T): T {
-  if (!isObject(body)) return body;
-  const { routes, ties, nodes, ...rest } = body;
-  return {
-    ...rest,
-    ...(nodes !== undefined ? { nodes: Array.isArray(nodes) ? nodes.map((n) => (isObject(n) && isObject(n['was']) ? { ...n, was: inNewWords(n['was']) } : n)) : nodes } : {}),
-    ...(routes !== undefined && rest['connections'] === undefined ? { connections: routes } : {}),
-    ...(ties !== undefined ? { ties: Array.isArray(ties) ? ties.map((t) => inNewWords(t)) : ties } : {}),
-  } as T;
-}
-
-/** An entity as this version reads it: a v1, saved before plan 934, read once as a v2, its graph in the new
- *  words. Anything else is as it was, for `isEntity` to judge. */
-export function readEntity(value: unknown): unknown {
-  if (!isObject(value) || value['v'] !== 1 || !isObject(value['graph'])) return value;
-  const { $schema, ...rest } = value;
-  return { ...(typeof $schema === 'string' ? { $schema: $schema.replace('entity.v1.json', 'entity.v2.json') } : {}), ...rest, v: 2, graph: inNewWords(value['graph']) };
-}
-
-/** Whether a value has the SHAPE of an entity: a v1 with a type, an id, a name and a graph. */
+/** Whether a value has the SHAPE of an entity: a v2 with a type, an id, a name and a graph. */
 export function isEntity(value: unknown): value is Entity {
   if (!isObject(value) || value['v'] !== 2) return false;
   const { type, id, label, graph } = value;

@@ -1,7 +1,7 @@
 /**
  * workflow.ts — a workflow, set up from ONE JSON document: its nodes, their values and the
  * connections between their sockets. Its check, the graph it draws, and its edits, each pure.
- * Its kinds are the one registry's. It is a v2. Will, TODOs 78, 713
+ * Its kinds are the one registry's. It is a v3. Will, TODOs 78, 713
  * · docs/history/plan-78-workflow-data.md · TRAP T-a-workflow-is-its-definition · TRAP T-a-socket-says-its-type · TRAP T-a-condition-is-a-tree-of-nodes
  *
  * Map:
@@ -28,7 +28,7 @@
  * - addCustomValue — A Value node made for a picklist row and connected to it: the row mirrors it, and keeps its own pick.
  */
 import { nodeTitle } from './node-title.js';
-import { inNewWords, type Entity } from './entity.js';
+import type { Entity } from './entity.js';
 import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
@@ -105,14 +105,12 @@ const asList = (value: unknown): unknown[] => (Array.isArray(value) ? value
 const asOne = (value: unknown): unknown => (!Array.isArray(value) ? value : value.length === 1 ? value[0] : value.map(String).join(', '));
 
 /**
- * A workflow as v2, the one given; anything else is none, and says so. A kind or a type is
+ * A workflow as v3, the one given; anything else is none, and says so. A kind or a type is
  * read as it is named: an old one is none (TODO 777). No v1 ships: its read is gone (Will,
  * 2026-11-10). TRAP T-a-workflow-is-its-definition
  */
 export function readWorkflow(given: WorkflowDefinition): WorkflowRead {
   const v = (given as { v?: unknown } | null)?.v;
-  // A v2, saved before plan 934 (a tab's draft), reads once in the new words. TRAP T-a-saved-graph-is-read-in-the-new-words
-  if (v === 2 && Array.isArray(given.nodes)) return { workflow: { ...inNewWords(given), v: 3 }, faults: [] };
   if (v !== 3 || !Array.isArray(given.nodes)) return { faults: ['it is not a workflow definition: a v3'] };
   return { workflow: given, faults: [] };
 }

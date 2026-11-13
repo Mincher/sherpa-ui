@@ -3,7 +3,7 @@
  * type, behind list / get / save / remove / duplicate / export / import / watch. A save is checked
  * by checkEntity; a remove is refused while another entity uses it, naming who; the reader's own are
  * ONE named part of the keeper, so every tab sees them and the server is sent them; a stored value of
- * the wrong shape is dropped. The Custom Node shelf is a VIEW of it; the old `nodes` part is gone. Will, plan 746 E2. TRAP T-an-entity-is-an-envelope-and-a-type
+ * the wrong shape is dropped. Its `library()` is every reusable entity as a Custom Node; the old `nodes` part is gone. Will, plan 746 E2. TRAP T-an-entity-is-an-envelope-and-a-type
  *
  *   node --test test/unit/an-entity-shelf-is-one-door.test.mjs
  */
@@ -15,7 +15,7 @@ const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier, NODES_PAGE } = await import(new URL('browser/page-state.js', core));
 const { readEntities } = await import(new URL('browser/entity-files.js', core));
 const { makeShelf, joinEntities } = await import(new URL('data/entity-shelf.js', core));
-const { definitionOf, nodeEntityOf, readEntity, isEntity } = await import(new URL('data/entity.js', core));
+const { definitionOf, nodeEntityOf, isEntity } = await import(new URL('data/entity.js', core));
 const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
@@ -188,34 +188,28 @@ test('the persist guard drops a stored entity of the wrong shape, and a preset s
 /** An entity as it was kept before plan 934: a v1, its graph's links its `routes`. */
 const keptBefore = (e) => {
   const { connections, ...graph } = e.graph;
-  return { ...e, v: 1, graph: { ...graph, routes: connections, ties: [{ id: 't', x: 0, y: 0, routes: connections.slice(0, 1) }] } };
+  return { ...e, v: 1, graph: { ...graph, routes: connections } };
 };
 
-test('an entity kept before plan 934 reads once in the new words: a file, the store, an import; none is lost. TRAP T-a-saved-graph-is-read-in-the-new-words', async () => {
-  const now = filter('before');
-  const was = keptBefore(now);
-  const read = readEntity(was);
-  assert.equal(read.v, 2);
-  assert.deepEqual(read.graph.connections, now.graph.connections);
-  assert.deepEqual(read.graph.ties[0].connections, now.graph.connections.slice(0, 1));
-  assert.equal('routes' in read.graph, false);
-  assert.ok(isEntity(read) && !isEntity(was));
-  assert.equal(readEntity(now), now, 'one saved since is as it was');
-  // A use of a Custom Node keeps the definition it was made from: that reads in the new words too.
-  const use = { ...was, graph: { ...was.graph, nodes: [...was.graph.nodes, { id: 'u', kind: 'has-role', x: 0, y: 0, was: { v: 1, label: 'Has role', inputs: [], outputs: [], nodes: [], routes: [{ from: 'a', to: 'b' }] } }] } };
-  assert.deepEqual(readEntity(use).graph.nodes.at(-1).was.connections, [{ from: 'a', to: 'b' }]);
-  // A file of entities, entities.v1.
-  const file = readEntities({ v: 1, entities: { before: was } });
-  assert.deepEqual(file.entities.before.graph.connections, now.graph.connections);
+test('an entity kept before plan 934, a v1, is not read: a file reports it and keeps the rest, the store drops it, an import refuses it (plan 960 D4: delete, never convert)', async () => {
+  const was = keptBefore(filter('before'));
+  assert.equal(isEntity(was), false);
+  const said = [];
+  const off = onReport((r) => said.push(r.message));
+  try {
+    // A file of entities: an old one in a v2 is left out, in words; an old file is none.
+    assert.deepEqual(Object.keys(readEntities({ v: 2, entities: { before: was, now: filter('now') } }).entities), ['now']);
+    assert.deepEqual(readEntities({ v: 1, entities: { now: filter('now') } }).entities, {});
+    assert.ok(said.some((m) => m.includes('"before"')) && said.some((m) => m.includes('a v2 with its entities by id')), said.join(' | '));
+  } finally {
+    off();
+  }
   // The reader's own, as the store keeps them.
   const local = memoryTier();
-  local.write('sherpa:page:#app', { v: 3, entities: { before: was } });
-  const kept = keeper(local).entities.get('before');
-  assert.deepEqual(kept.graph.connections, now.graph.connections);
+  local.write('sherpa:page:#app', { v: 3, entities: { before: was, now: filter('now') } });
+  assert.deepEqual(ids(keeper(local).entities), ['now']);
   // An import.
-  const k = keeper(memoryTier());
-  assert.equal(await k.entities.import(JSON.stringify({ ...was, id: 'imported' })), 'imported');
-  assert.deepEqual(k.entities.get('imported').graph.connections, now.graph.connections);
+  assert.equal(await keeper(memoryTier()).entities.import(JSON.stringify({ ...was, id: 'imported' })), undefined);
 });
 
 test('the old `nodes` is not read; a Custom Node is an entity of the type `node`', async () => {

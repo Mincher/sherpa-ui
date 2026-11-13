@@ -13,7 +13,7 @@
  * - MarkupReport — What `parseViewMarkup` dropped, for a caller that wants to report it.
  * - ParseResult — the parsed fragment, plus what the allow-list dropped
  * - parseViewMarkup — Parse saved view markup into a fragment, dropping anything outside the vocabulary.
- * - checkViewMarkup — Check saved markup WITHOUT building it — the markup twin of `checkView`.
+ * - checkViewMarkup — Check saved markup WITHOUT building it.
  */
 import { viewHtml } from '../ui/trusted-html.js';
 
@@ -137,7 +137,7 @@ export function parseViewMarkup(markup: string): ParseResult {
 }
 
 /**
- * Check saved markup WITHOUT building it — the markup twin of `checkView`.
+ * Check saved markup WITHOUT building it.
  *
  * Browser only (it needs `DOMParser`); a Node server checks at its own edge.
  */

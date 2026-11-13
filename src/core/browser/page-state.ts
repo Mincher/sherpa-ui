@@ -29,7 +29,7 @@
 import type { Query, QueryDefaults, SavedFilter } from '../data/query.js';
 import { isSavedFilter } from '../data/query.js';
 import type { SharedView } from '../data/query-edits.js';
-import { isEntity, readEntity, type Entity } from '../data/entity.js';
+import { isEntity, type Entity } from '../data/entity.js';
 import { makeShelf, type EntityShelf } from '../data/entity-shelf.js';
 import { applyView, type SavedView } from './persist-view.js';
 import type { EntityRecord, ViewRecord } from './database.js';
@@ -114,9 +114,7 @@ function cleaned(part: Part, value: unknown): unknown {
   if (whole) return whole(value) ? value : undefined;
   if (!isPlainObject(value)) return undefined;
   const ok = ENTRY[part]!;
-  // An entity kept before plan 934 reads once as a v2.
-  const read = part === 'entities' ? readEntity : (v: unknown) => v;
-  return Object.fromEntries(Object.entries(value).map(([k, entry]) => [k, read(entry)]).filter(([, entry]) => ok(entry)));
+  return Object.fromEntries(Object.entries(value).filter(([, entry]) => ok(entry)));
 }
 
 /** Where a part is kept: read now, written now. `undefined` forgets the key. */
@@ -465,8 +463,7 @@ export class PageKeeper {
       await this.#written;
       const { hasDatabase, readAll } = await import('./database.js');
       if (!hasDatabase()) return {};
-      // One kept before plan 934 reads once as a v2. TRAP T-a-saved-graph-is-read-in-the-new-words
-      return Object.fromEntries((await readAll('entities')).map(({ id, entity }) => [id, readEntity(entity)]).filter(([, e]) => isEntity(e)));
+      return Object.fromEntries((await readAll('entities')).map(({ id, entity }) => [id, entity]).filter(([, e]) => isEntity(e)));
     } catch (error) {
       this.#say(error, 'pull');
       return {};

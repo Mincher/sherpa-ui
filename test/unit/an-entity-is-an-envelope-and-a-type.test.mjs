@@ -1,6 +1,6 @@
 /**
  * AN ENTITY IS AN ENVELOPE AND A TYPE: a graph saved under a type, an id and a name. One envelope
- * (entity.v1), a settings schema per type, and a registry in the data layer that an app adds to.
+ * (entity.v2), a settings schema per type, and a registry in the data layer that an app adds to.
  * Each fault is named in words; a loop of entities is refused; a family outside the type is a
  * fault. ANY entity can be placed as a node in ANY graph (asNode), by the kind `<type>:<id>`, and a
  * use follows its definition (version, snapshot, diff, update) as a Custom Node's does.
