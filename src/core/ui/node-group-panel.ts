@@ -14,6 +14,9 @@
  * - SocketAsk — What a Custom Node's sockets may ask: a new name, a new type, or to go.
  * - socketsPane — A Custom Node's inputs, then its outputs, each a section: its Name, its Type, and Remove.
  * - modelsPane — The models a graph uses, the primary first, each with how many AI nodes use it; none, how to give one.
+ * - VersionView — What Graph details says of the open entity's versions: each one published, and whether its draft changed.
+ * - VersionAsk — What the version part may ask: Publish the draft, Roll back to a number. None: it only shows.
+ * - versionPane — The open entity's version, whether its draft changed, Publish, and its History with Roll back.
  * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
  * - definitionPane — A node's kind as the registry says it, for its type: read-only JSON, for a reader who debugs.
  * - dataPane — What a node heard and said in a simulation: each socket's rows, in the data grid and as JSON.
@@ -21,6 +24,8 @@
 import type { DefinitionDiff, NodeDefinition, NodeSocket } from '../data/node-library.js';
 import type { SocketChange } from '../data/node-group.js';
 import type { GraphModel } from '../data/graph-models.js';
+import type { EntityVersion } from '../data/entity.js';
+import { formatDateTime } from '../data/format-date.js';
 import { aiWords } from '../data/ai-catalog.js';
 import type { NodeFlow } from '../data/node-flow.js';
 import type { SimulatedNode, Slot } from '../data/node-simulate.js';
@@ -178,6 +183,67 @@ export function modelsPane(models: readonly GraphModel[]): HTMLElement {
   }));
   void customElements.whenDefined('sherpa-key-value-list').then(() => (list as HTMLElement & { populate(items: unknown): void }).populate(items));
   return list;
+}
+
+/** What Graph details says of the open entity's versions: each one published, newest first, and whether its draft changed
+ *  since the newest. */
+export interface VersionView {
+  versions: readonly Pick<EntityVersion, 'number' | 'at' | 'by' | 'note'>[];
+  changed: boolean;
+}
+
+/** What the version part may ask: Publish the draft, Roll back to a number. None given, it only shows (a preset). */
+export interface VersionAsk {
+  publish?: () => void;
+  rollBack?: (number: number) => void;
+}
+
+/** An instant as the reader's clock reads it: "13 Nov 2026, 09:00". */
+function whenOf(at: string): string {
+  const d = new Date(at);
+  if (Number.isNaN(d.getTime())) return at;
+  const two = (n: number): string => String(n).padStart(2, '0');
+  return formatDateTime(`${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}T${two(d.getHours())}:${two(d.getMinutes())}`);
+}
+
+/** The open entity's version (plan 972; Will: in Graph details, not on the canvas): its number, "Unpublished changes" where
+ *  its draft changed, Publish there, and its History, each older version with Roll back. `shown` keeps History open when
+ *  the pane is drawn again. */
+export function versionPane(view: VersionView, ask: VersionAsk = {}, shown: { history: boolean } = { history: false }): HTMLElement {
+  const pane = make('sherpa-stack', { 'data-gap': 'sm', class: 'graph-version' });
+  const [newest] = view.versions;
+  const facts = make('sherpa-key-value-list', { 'data-orientation': 'vertical' });
+  const items = [
+    { key: 'Version', value: newest ? String(newest.number) : 'Not published' },
+    ...(view.changed ? [{ key: 'Status', value: 'Unpublished changes' }] : []),
+  ];
+  void customElements.whenDefined('sherpa-key-value-list').then(() => (facts as HTMLElement & { populate(items: unknown): void }).populate(items));
+  pane.append(facts);
+  if (view.changed && ask.publish) pane.append(button('Publish', ask.publish, { 'data-look': 'saturated', class: 'graph-publish' }));
+  if (view.versions.length) {
+    const count = view.versions.length;
+    const history = make('sherpa-accordion', {
+      'data-heading': 'History', 'data-description': `${count} ${count === 1 ? 'version' : 'versions'}`, class: 'graph-history', ...(shown.history ? { open: '' } : {}),
+    });
+    history.addEventListener('accordion-open', () => { shown.history = true; });
+    history.addEventListener('accordion-close', () => { shown.history = false; });
+    const rows = make('sherpa-stack', { 'data-gap': 'md' });
+    for (const [i, v] of view.versions.entries()) {
+      const row = make('sherpa-stack', { 'data-gap': 'xs', 'data-version': String(v.number) });
+      const words = make('p', {});
+      words.style.margin = '0';
+      // A note in quotes: it is the publisher's words, not a button's.
+      words.textContent = [`Version ${v.number}`, v.at ? whenOf(v.at) : '', v.by, v.note ? `“${v.note}”` : ''].filter(Boolean).join(' · ');
+      row.append(words);
+      // The newest is what the uses have now: nothing to roll back to.
+      const back = ask.rollBack;
+      if (i > 0 && back) row.append(button(`Roll back to version ${v.number}`, () => back(v.number)));
+      rows.append(row);
+    }
+    history.append(rows);
+    pane.append(history);
+  }
+  return pane;
 }
 
 /** A node's definition view as JSON: Incoming and Outgoing, each a collapsible section holding a code block, shut when long. */

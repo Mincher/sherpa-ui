@@ -31,8 +31,9 @@ test.beforeEach(async ({ page }) => {
   }, { trials: filter('trials', 'Trials', 'trial'), active: { ...filter('active', 'Active', 'active'), origin: 'preset' } });
 });
 
-/** Bind the Filter "Outer" — a use of Trials on it — with every entity as the library, "Top" holding Outer. */
-const bind = (page: Page) => page.evaluate(async () => {
+/** Bind the Filter "Outer" — a use of Trials on it — with every entity as the library, "Top" holding Outer. Read only: as
+ *  a preset is bound. */
+const bind = (page: Page, readOnly = false) => page.evaluate(async (readOnly) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const { NODE_KINDS, graphWorkflow, kindsOf, libraryOf, makeShelf, runAct, useOf } = await import('/dist/data.js');
   const w = window as unknown as Record<string, unknown> & { ENTITIES: Record<string, Record<string, unknown>> };
@@ -51,6 +52,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   // The app's shelf and its acts (plan 972c): a Clone saves the copy, and the outlet hands the library back.
   let mine: Record<string, unknown> = { trials, outer, top };
   const shelf = makeShelf({ presets: () => [active], mine: () => mine, keep: (next: Record<string, unknown>) => { mine = next; }, heard: () => undefined } as never);
+  w['shelf'] = shelf;
   const act = async (id: string, call: unknown) => {
     const answer = await runAct(id, call as never, { stores: {}, entities: shelf } as never);
     (w['ed'] as { refresh(l: unknown): void }).refresh(shelf.library());
@@ -63,14 +65,14 @@ const bind = (page: Page) => page.evaluate(async () => {
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, workflow, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
-    confirm: document.getElementById('confirm') as never, kinds, library, entity: outer, act,
+    confirm: document.getElementById('confirm') as never, kinds, library, entity: outer, act, readOnly, kept: () => shelf.get('outer') as never,
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'lead'] } } }, stores: ['customers'],
   });
   // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
   (window as never as { __keepEdits(e: unknown, k: (id: string, d: never) => unknown): void }).__keepEdits(w['ed'], (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]));
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-});
+}, readOnly);
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const ed = <T>(page: Page, fn: string) => page.evaluate(`(() => { const ed = window.ed; return ${fn}; })()`) as Promise<T>;
 /** What the panel lists: each item's kind, by its category. */
@@ -170,4 +172,58 @@ test('"Update all instances" updates every other graph that uses it, and never t
   const handed = await page.evaluate(() => (window as unknown as { savedNodes: [string, { nodes: { version?: string }[] }][] }).savedNodes.map(([id]) => id));
   expect(handed).toEqual(['filter:other']);
   expect(await page.evaluate(() => (window as unknown as { saved: { id: string }[] }).saved.map((d) => d.id))).toEqual(['outer']);
+});
+
+/** Graph details' version part: its facts as the list says them, its buttons, and History's rows. */
+const version = (page: Page) => page.locator('#inspector .graph-version').evaluate((pane) => ({
+  facts: [...pane.querySelectorAll('sherpa-key-value-list')].flatMap((l) => [...(l.shadowRoot ?? l).querySelectorAll('dt, dd')].map((n) => n.textContent?.trim())),
+  publish: !!pane.querySelector(':scope > sherpa-button[data-label="Publish"]'),
+  history: [...pane.querySelectorAll('.graph-history [data-version]')].map((row) => [row.querySelector('p')?.textContent?.split(' · ')[0], row.querySelector('sherpa-button')?.getAttribute('data-label') ?? null]),
+  open: pane.querySelector('.graph-history')?.hasAttribute('open') ?? false,
+}));
+/** Outer published once, then its draft renamed, as the app keeps it. */
+const drafted = (page: Page) => page.evaluate(async () => {
+  const shelf = (window as unknown as { shelf: { get(id: string): Record<string, unknown>; save(e: unknown): Promise<boolean>; library(): unknown } }).shelf;
+  await shelf.save(shelf.get('outer'));
+  await shelf.save({ ...shelf.get('outer'), label: 'Outer, renamed' });
+  (window as unknown as { ed: { refresh(l: unknown): void } }).ed.refresh(shelf.library());
+});
+
+test('Graph details says the open entity\'s version: Unpublished changes and Publish where its draft changed; History rolls back (plan 972, Will)', async ({ page }) => {
+  await bind(page);
+  await drafted(page);
+  await settle(page);
+  expect(await version(page)).toEqual({ facts: ['Version', '1', 'Status', 'Unpublished changes'], publish: true, history: [['Version 1', null]], open: false });
+  // Publish, through the app's act: version 2, nothing unpublished, and version 1 may be rolled back to.
+  await press(page.locator('#inspector .graph-version > sherpa-button[data-label="Publish"]'));
+  await settle(page);
+  expect(await version(page)).toEqual({ facts: ['Version', '2'], publish: false, history: [['Version 2', null], ['Version 1', 'Roll back to version 1']], open: false });
+  // History opened by the reader, then a Roll back: published again as version 3, and History stays open.
+  await page.locator('#inspector .graph-history').evaluate((el) => (el.shadowRoot!.querySelector('summary') as HTMLElement).click());
+  await settle(page);
+  await press(page.locator('#inspector .graph-history [data-version="1"] sherpa-button'));
+  await settle(page);
+  expect(await version(page)).toMatchObject({ facts: ['Version', '3'], publish: false, open: true });
+  expect((await version(page)).history.map(([words]) => words)).toEqual(['Version 3', 'Version 2', 'Version 1']);
+  expect(await page.evaluate(() => (window as unknown as { shelf: { get(id: string): { label: string } } }).shelf.get('outer').label)).toBe('Outer');
+});
+
+test('a read-only graph shows its version and History, with no Publish and no Roll back; inside a use, none', async ({ page }) => {
+  await bind(page, true);
+  await drafted(page);
+  await page.evaluate(async () => {
+    const shelf = (window as unknown as { shelf: { get(id: string): unknown; save(e: unknown): Promise<boolean> } }).shelf;
+    const { publish } = await import('/dist/data.js');
+    await publish(shelf as never, 'outer');
+  });
+  await ed(page, "ed.refresh(window.shelf.library())");
+  await settle(page);
+  expect(await version(page)).toEqual({ facts: ['Version', '2'], publish: false, history: [['Version 2', null], ['Version 1', null]], open: false });
+  await header(page, 'Trials').focus();
+  await page.keyboard.press('Enter');
+  await settle(page);
+  await page.locator('#cv').click({ position: { x: 1000, y: 600 } });
+  await settle(page);
+  expect(await page.locator('#inspector .graph-details').count()).toBe(1);
+  expect(await page.locator('#inspector .graph-version').count()).toBe(0);
 });

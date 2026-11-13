@@ -95,10 +95,11 @@ import {
 import { aiWords } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, socketEdit, ungroupUse } from '../data/node-group.js';
-import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
+import { entityKind, entityRefOf, type Entity, type EntityRef } from '../data/entity.js';
+import { draftChanged, versionsOf } from '../data/entity-versions.js';
 import type { ActAnswer, ActCall } from '../data/acts.js';
 import { offeredKinds, savedCategories } from '../data/entity-types.js';
-import { dataPane, definitionPane, flowPane, instancePane, modelsPane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
+import { dataPane, definitionPane, flowPane, instancePane, modelsPane, socketsPane, updatePane, versionPane, type SocketAsk } from './node-group-panel.js';
 import { graphModels } from '../data/graph-models.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
 import { valuesAt, valuesIn } from '../data/node-messages.js';
@@ -2050,15 +2051,27 @@ const inspecting = new WeakMap<HTMLElement, Inspecting>();
 
 const contentTab = new WeakMap<HTMLElement, string>();
 
-/** What each editor's Graph details tab shows, made fresh at each fill: the whole graph's models (plan 951). */
-const graphDetails = new WeakMap<HTMLElement, () => HTMLElement>();
+/** What each editor's Graph details tab shows, made fresh at each fill: the open entity's version, and the whole graph's
+ *  models (plans 951, 972). */
+const graphDetails = new WeakMap<HTMLElement, { version(): HTMLElement | undefined; models(): HTMLElement }>();
+
+/** The Graph details tab, made fresh: the version, then the models. None where the editor gives no tab. */
+function detailsOf(panel: HTMLElement): HTMLElement | undefined {
+  const parts = graphDetails.get(panel);
+  if (!parts) return undefined;
+  const details = document.createElement('sherpa-stack');
+  details.className = 'graph-details';
+  details.setAttribute('data-gap', 'lg');
+  details.append(...[parts.version()].filter((el): el is HTMLElement => !!el), parts.models());
+  return details;
+}
 
 /** A node's body: Details, and an Output, a JSON, a Data and a Definition tab when it has them, and Graph details LAST
  *  (plan 951 D1 A). With no node, Graph details alone. The reader's tab is kept per inspector. */
 function contentTabs(
   panel: HTMLElement, details: HTMLElement | undefined, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement, definition?: HTMLElement,
 ): HTMLElement {
-  const graph = graphDetails.get(panel)?.();
+  const graph = detailsOf(panel);
   if (!json && !data && !output && !definition && !graph && details) return details;
   const pages = [
     ...(details ? [{ id: 'details', label: 'Details', el: details }] : []), ...(output ? [{ id: 'output', label: 'Output', el: output }] : []),
@@ -2195,11 +2208,14 @@ export function inspectNone(panel: HTMLElement): void {
   panel.removeAttribute('data-icon');
 }
 
-/** The Graph details tab drawn again in place, where the inspector shows it: the models change as the graph does. */
-function refreshGraphDetails(panel: HTMLElement | undefined): void {
-  const make = panel && graphDetails.get(panel);
-  const shown = make && panel.querySelector('.content-tabs > [data-tab="graph"] .graph-models');
-  if (shown) shown.replaceWith(make());
+/** The Graph details tab drawn again in place, where the inspector shows it: its models, as the graph changes; `all`, its
+ *  version too, as what the app keeps changes. */
+function refreshGraphDetails(panel: HTMLElement | undefined, all = false): void {
+  const parts = panel && graphDetails.get(panel);
+  const shown = parts && panel.querySelector('.content-tabs > [data-tab="graph"] .graph-details');
+  if (!shown) return;
+  if (all) shown.replaceWith(detailsOf(panel)!);
+  else shown.querySelector(':scope > .graph-models')?.replaceWith(parts.models());
 }
 
 /** The editor's inspector is always there: a tab to begin with, and its empty state until a node is picked. */
@@ -2509,9 +2525,13 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   /** The entity this graph is: the panel offers what `offeredKinds` says of it, and inside each node opened, of
    *  that one; "Update all instances" never writes its saved copy over the draft. TRAP T-an-entity-is-used-as-a-node */
   entity?: EntityRef;
-  /** The app's acts, run as a press runs them (`outlet.act`), so its permissions are checked in one place: "Copy to my
-   *  nodes" runs `<type>.clone` through it, and its copy comes back in the library (plan 972c). None: no copy is offered. */
+  /** The app's acts, run as a press runs them (`outlet.act`), so its permissions are checked in one place: Clone runs
+   *  `<type>.clone` through it, and its copy comes back in the library (plan 972c); Graph details' Publish and Roll back
+   *  run there too. None: no Clone, Publish or Roll back is offered. */
   act?: (id: string, call: ActCall) => Promise<ActAnswer>;
+  /** The open entity as the app keeps it NOW: Graph details shows its version and History from it (plan 972). None: no
+   *  version is shown. */
+  kept?: () => Entity | undefined;
   /** The store a Source names, by its id: what Fetch reads. None, or it says none, the Source is "not fetched yet". TODO 836 */
   storeOf?: (id: string) => Store | undefined | Promise<Store | undefined>;
   /** The cap of a fetch: rows and bytes. Left out, 100,000 rows and 50 MB. */
@@ -2568,7 +2588,7 @@ const isUses = (v: unknown): v is RecentUse[] => Array.isArray(v) && v.every((u:
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
-  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, act, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, act, kept: keptNow, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;
@@ -3774,8 +3794,25 @@ export function bindWorkflow(
     const ids = multi.size ? [...multi] : current ? [current] : [];
     if (ids.length && !readOnly()) onRemoveNodes(ids, []);
   });
-  // The Graph details tab: the whole graph's models, the primary first, from the top graph at any depth (plan 951).
-  if (inspector && !doc) graphDetails.set(inspector, () => modelsPane(graphModels(draft, lib, topKinds())));
+  /** History open or shut, kept as Graph details is drawn again. */
+  const historyShown = { history: false };
+  /** Publish or Roll back the open entity, through the app's acts; Graph details is drawn again from what it keeps. */
+  const versionAct = async (verb: 'publish' | 'roll-back', input?: Readonly<Record<string, unknown>>): Promise<void> => {
+    if (!act || !entity) return;
+    const answer = await act(`${entity.type}.${verb}`, { keys: [entity.id], ...(input ? { input } : {}) });
+    notify('done' in answer ? answer.done : answer.refused, 'done' in answer ? 'success' : 'critical');
+    refreshGraphDetails(inspector, true);
+  };
+  /** The open entity's version, at the top graph: Publish and Roll back where the app gives its acts, none on a preset. */
+  const versionPart = (): HTMLElement | undefined => {
+    const now = path.length ? undefined : keptNow?.();
+    if (!now) return undefined;
+    const ask = act && !preset ? { publish: () => void versionAct('publish'), rollBack: (n: number) => void versionAct('roll-back', { version: n }) } : {};
+    return versionPane({ versions: versionsOf(now), changed: draftChanged(now) }, ask, historyShown);
+  };
+  // The Graph details tab: the open entity's version, then the whole graph's models, the primary first, from the top graph
+  // at any depth (plans 951, 972).
+  if (inspector && !doc) graphDetails.set(inspector, { version: versionPart, models: () => modelsPane(graphModels(draft, lib, topKinds())) });
   keepOpen(inspector);
   // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
   //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.
@@ -4131,6 +4168,8 @@ export function bindWorkflow(
       for (const [kind, done] of awaited) if (lib.nodes[kind]) { awaited.delete(kind); done(); }
       refreshPanel();
       draw();
+      // What the app keeps moved: Graph details says its version again.
+      refreshGraphDetails(inspector, true);
     },
     library: () => lib,
     edits: () => structuredClone(edits()),

@@ -508,7 +508,9 @@ outputs said once: an entity of the type `node`. They are app-wide, in two halve
 - **The presets**, which the app ships as entities of the type `node` in the
   file `app.json` `entities` names. They are read only; a reader clones one to
   edit it (`<type>.clone`, the act `clone` runs; give `bindWorkflow` the outlet's
-  `act`, and its Clone button runs it). `loadEntityLibrary(url)` reads the file: each entity
+  `act`, and its Clone button runs it). Give it `kept` too, the open entity as
+  the shelf keeps it now, and its Graph details tab shows the entity's version:
+  Unpublished changes and Publish, and History with Roll back, through `act`. `loadEntityLibrary(url)` reads the file: each entity
   goes through `checkEntity`, one that fails is reported in its words and left
   out, and the rest still load. The outlet does this for you.
 - **The reader's own**, in the page keeper's `entities`, the one entity shelf. They
