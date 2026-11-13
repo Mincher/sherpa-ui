@@ -180,6 +180,12 @@ registerLens(type, {
   stages and lanes (workflow.ts:83-87). Where a lens draws a definition that is not a graph (a Query, a View, a
   Filter kept as a Where), the graph's layout is a side record, never in the definition (the Query does this today,
   query-editor.ts:59).
+- **Organise nodes in every graph** (Will, 2026-11-13: "Also graphs should support nodes for 'Organise' functionality
+  like axes, groups & sorting"). Today there are two forms: Sort and Group (node-kinds.ts:601, :605, category Organise,
+  workflow graphs only) and the Query graph's one Arrange node (:526: sort, direction, group and search, Query graphs
+  only). No Axes node exists: a View's axes are in defs.v1 `$defs/axes`, `axisOffer` and a card's `data-*` (e8). The
+  plan (my pick, as a system): ONE set of Organise nodes, Sort, Group, Axes and Search, in every graph; Arrange goes; the
+  Query lens reads and writes them. U4.
 - A text lens is the same door with `toText` and `fromText`: a Runbook's prompt (959, with 956's references). Its
   `fromText` is an agent's, so an app gives it (Demos: Claude, or the app's own writer). The stored prompt is a copy
   that the lens makes again on each Save.
@@ -200,6 +206,11 @@ registerLens(type, {
 - A component is never a node (e8, bd).
 
 ## 3. Words (a LEXICON section, for Will's yes)
+
+**Will, 2026-11-13 (to sherpa-ui-e8):** "Entity: yes. Lens: yes. Preset Filter: Just a filter definition saved as a
+custom node and used in a wider view definition (filter toolbar for example)." So there is no Preset Filter type: a
+**Filter** definition, offered as a Custom Node (plan 746 D1: any entity offers one), is used inside a View definition,
+for example in its filter toolbar. The other rows wait on his yes.
 
 | Today | Proposed |
 |---|---|
@@ -254,7 +265,7 @@ registerLens(type, {
 | **U1** Words and one body | the LEXICON section; `defs.v1 #/graph`; the envelope | schemas `$ref` one body | e8 | Will's yes to section 3 |
 | **U2** `type.v1` | the schema; rules from `fields`; `node-type.v1` folded in; `entities.v3`; `from` fields; `describe_data` writes a type | unit: a field said once makes rules, page fields and columns; a type file passes and fails in words | a9 (fields, rules), e8 (the graph part) | U1 |
 | **U3** One store door | `EntityStore`; one seed path; a default page from a type | e2e: a "user" type from 3 files is a working page; Demos' `followShelf`, `coworkerStore`, `SEED_VERSION` deleted | a9, demos | U2 |
-| **U4** The lens door | `registerLens`; identity lenses; the Query lens writes a View and a Filter back; the Filter type takes the four shapes | e2e: a page's filters edited in the graph and saved come back the same from the JSON; MCP tools through the door | e8 | U1 (beside U2) |
+| **U4** The lens door | `registerLens`; identity lenses; the Query lens writes a View and a Filter back; the Filter type takes the four shapes; one set of Organise nodes (Sort, Group, Axes, Search) in every graph, Arrange gone | e2e: a page's filters edited in the graph and saved come back the same from the JSON; MCP tools through the door | e8 | U1 (beside U2) |
 | **U5** Text lens | the Runbook prompt (959) and references (956) in the library | Demos' prompt-refs.js and runbook-prompt.js deleted | e8, demos | U4 |
 | **U6** Form lens | a Details form from `fields` | a Coworker edited in the form and in the graph is one thing | bd | U2, U4 |
 | **U7** Presentation | Card and View types (plan 746 E6, E7); the `layout` part; `writeLayout` in the library | e2e: a View built in the graph makes the same HTML as its template | bd, e8 | U4, U6 |
