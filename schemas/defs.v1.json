@@ -436,12 +436,12 @@
       }
     },
     "socket": {
-      "description": "A node's header socket, \"node\" (its input is its data); a row's, \"node/row\" (\"node/rows\" sends its data rows, \"node/true\" a test's 1 or 0); a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826); or the Start, \"#start\", which each Trigger's header joins in a top graph (plan 949).",
-      "type": "string", "pattern": "^(#start|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?)$"
+      "description": "A node's header socket, \"node\" (its input is its data); a row's, \"node/row\" (\"node/rows\" sends its data rows, \"node/true\" a test's 1 or 0); a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826); or the Start, \"#start\", which each Trigger's header joins in a top graph (plan 949), and \"#start/model\", the graph's primary model (plan 951).",
+      "type": "string", "pattern": "^(#start(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?)$"
     },
     "innerSocket": {
-      "description": "An address inside a Custom Node's body: a node's socket, or the Group Input's (\"#in\", \"#in/<name>\") or Group Output's (\"#out\", \"#out/<name>\"); a portal Out's row names its source, \"node/@#in/<name>\" for one that comes in by the Group Input; or, in a graph with neither, the Start, \"#start\", which each Trigger's header joins (plan 949).",
-      "type": "string", "pattern": "^(#start|(#in|#out)(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?)$"
+      "description": "An address inside a Custom Node's body: a node's socket, or the Group Input's (\"#in\", \"#in/<name>\") or Group Output's (\"#out\", \"#out/<name>\"); a portal Out's row names its source, \"node/@#in/<name>\" for one that comes in by the Group Input; or, in a graph with neither, the Start, \"#start\", which each Trigger's header joins (plan 949), and \"#start/model\", the primary model (plan 951).",
+      "type": "string", "pattern": "^((#start|#in|#out)(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?)$"
     },
     "innerConnection": {
       "description": "A connection inside a Custom Node's body: it may start at the Group Input and end at the Group Output.",

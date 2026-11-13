@@ -76,7 +76,7 @@ import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
-import { START, withStart, withStartKind } from '../data/node-start.js';
+import { START, primaryOf, withStart, withStartKind } from '../data/node-start.js';
 import { isGroupEnd } from '../data/graph-layout.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { dragTo, startDrag, type ChainDrag, type ChainLink, type ChainNode } from '../data/node-chain.js';
@@ -96,7 +96,8 @@ import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, socketEdit, ungroupUse } from '../data/node-group.js';
 import { entityKind, type EntityRef } from '../data/entity.js';
 import { offeredKinds, savedCategories } from '../data/entity-types.js';
-import { dataPane, flowPane, instancePane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
+import { dataPane, flowPane, instancePane, modelsPane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
+import { graphModels } from '../data/graph-models.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
 import { valuesAt, valuesIn } from '../data/node-messages.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
@@ -259,8 +260,8 @@ function shown(row: GraphRow): string {
   const value = row.value;
   if (value === undefined || value === null) return '';
   if (row.control === 'direction') return value === 'desc' ? 'Descending' : value === 'asc' ? 'Ascending' : String(value);
-  // A joined provider or model, by its words (plan 926).
-  if (row.needs === 'provider' || row.needs === 'model') return aiWords(row.needs, value) ?? String(value);
+  // A joined model, by its words (plan 926).
+  if (row.needs === 'model') return aiWords('model', value) ?? String(value);
   return Array.isArray(value) ? value.join(', ') : String(value);
 }
 
@@ -2039,12 +2040,21 @@ const inspecting = new WeakMap<HTMLElement, Inspecting>();
 
 const contentTab = new WeakMap<HTMLElement, string>();
 
-/** A node's body: Details, and an Output, a JSON and a Data tab when it has them. The reader's tab is kept per inspector. */
-function contentTabs(panel: HTMLElement, details: HTMLElement, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement): HTMLElement {
-  if (!json && !data && !output) return details;
-  const pages = [{ id: 'details', label: 'Details', el: details }, ...(output ? [{ id: 'output', label: 'Output', el: output }] : []), ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : [])];
+/** What each editor's Graph details tab shows, made fresh at each fill: the whole graph's models (plan 951). */
+const graphDetails = new WeakMap<HTMLElement, () => HTMLElement>();
+
+/** A node's body: Details, and an Output, a JSON and a Data tab when it has them, and Graph details LAST (plan 951 D1 A).
+ *  With no node, Graph details alone. The reader's tab is kept per inspector. */
+function contentTabs(panel: HTMLElement, details: HTMLElement | undefined, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement): HTMLElement {
+  const graph = graphDetails.get(panel)?.();
+  if (!json && !data && !output && !graph && details) return details;
+  const pages = [
+    ...(details ? [{ id: 'details', label: 'Details', el: details }] : []), ...(output ? [{ id: 'output', label: 'Output', el: output }] : []),
+    ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : []),
+    ...(graph ? [{ id: 'graph', label: 'Graph details', el: graph }] : []),
+  ];
   const asked = contentTab.get(panel);
-  const current = pages.some((p) => p.id === asked) ? asked! : 'details';
+  const current = pages.some((p) => p.id === asked) ? asked! : pages[0]!.id;
   const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
   strip.setAttribute('data-current-id', current);
   strip.className = 'content-tabs';
@@ -2154,16 +2164,28 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   inspecting.set(panel, { node, fields, options });
 }
 
-/** The inspector with nothing picked: its empty state, in place of a node. */
+/** The inspector with nothing picked: the Graph details tab alone, where its editor gives one (plan 951); else its empty state. */
 export function inspectNone(panel: HTMLElement): void {
   inspecting.delete(panel);
-  const note = document.createElement('sherpa-empty-state');
-  note.setAttribute('data-size', 'sm');
-  note.setAttribute('data-heading', 'No node selected');
-  note.setAttribute('data-description', 'Pick a node on the canvas to see its details.');
-  panel.replaceChildren(note);
-  panel.setAttribute('data-heading', 'Details');
+  if (graphDetails.has(panel)) {
+    panel.replaceChildren(contentTabs(panel, undefined));
+    panel.setAttribute('data-heading', 'Graph details');
+  } else {
+    const note = document.createElement('sherpa-empty-state');
+    note.setAttribute('data-size', 'sm');
+    note.setAttribute('data-heading', 'No node selected');
+    note.setAttribute('data-description', 'Pick a node on the canvas to see its details.');
+    panel.replaceChildren(note);
+    panel.setAttribute('data-heading', 'Details');
+  }
   panel.removeAttribute('data-icon');
+}
+
+/** The Graph details tab drawn again in place, where the inspector shows it: the models change as the graph does. */
+function refreshGraphDetails(panel: HTMLElement | undefined): void {
+  const make = panel && graphDetails.get(panel);
+  const shown = make && panel.querySelector('.content-tabs > [data-tab="graph"] .graph-models');
+  if (shown) shown.replaceWith(make());
 }
 
 /** The editor's inspector is always there: a tab to begin with, and its empty state until a node is picked. */
@@ -2828,9 +2850,14 @@ export function bindWorkflow(
     else if (doc) drawSoon = true;
     else draw();
   }, tag);
+  /** What a draw reads beside the graph: inside a Custom Node, the top graph's primary model too (plan 951). */
+  const factsAt = (inside: boolean): typeof facts => {
+    const primary = inside && !doc ? primaryOf(draft) : undefined;
+    return primary ? { ...facts, primary } : facts;
+  };
   /** Mid-drag of a tie or a bend: the connections and ties as the draft has them, the nodes as drawn. */
   const lineGraph = (): FramedGraph => {
-    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), facts, K());
+    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), factsAt(!!path.length), K());
     return lanesOn() ? { ...body, ties: [] } : body;
   };
   /** Mid-drag: each node where the draft says (a stage that grew pushes others), the lines, the stages and lanes. */
@@ -3570,7 +3597,7 @@ export function bindWorkflow(
   // A use's inside, drawn: its Outgoing JSON says the condition it sends, read there. TODO 776
   const innerGraph = (node: GraphNode): DrawnGraph | undefined => {
     const use = innerOf(node, lib, K());
-    return use && workflowGraph(use.workflow, facts, use.kinds);
+    return use && workflowGraph(use.workflow, factsAt(true), use.kinds);
   };
   /** Every tag the app's Custom Nodes have: what a Tags field offers. */
   const knownTags = (): string[] => [...new Set(Object.values(lib.nodes).flatMap((d) => tidyTags(d.tags)))].sort();
@@ -3654,6 +3681,8 @@ export function bindWorkflow(
     const ids = multi.size ? [...multi] : current ? [current] : [];
     if (ids.length && !readOnly()) onRemoveNodes(ids, []);
   });
+  // The Graph details tab: the whole graph's models, the primary first, from the top graph at any depth (plan 951).
+  if (inspector && !doc) graphDetails.set(inspector, () => modelsPane(graphModels(draft, lib, topKinds())));
   keepOpen(inspector);
   // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
   //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.
@@ -3870,8 +3899,9 @@ export function bindWorkflow(
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
-    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), facts, K());
+    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), factsAt(!!path.length), K());
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
+    refreshGraphDetails(inspector);
     // Swimlanes on: the tie tool goes off, and the ties are hidden, not gone.
     const laning = lanesOn();
     if (laning && tying) {

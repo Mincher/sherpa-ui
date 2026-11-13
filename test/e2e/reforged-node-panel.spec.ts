@@ -84,7 +84,7 @@ test('it lists each category with its families, twenty-three, never a Query-only
   const names = () => page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   // An Output per family, Request none till an app adds a type (plan 917); the AI nodes after Logic (plan 926); Check in
   // Logic, after Condition (plan 944); the Trigger first, in Triggers (plan 941).
-  expect(await names()).toEqual(['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Provider', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  expect(await names()).toEqual(['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // A family's line is its synopsis, never its types (TODO 809).
   expect(await item(page, 'sort').getAttribute('data-description')).toBe('Put rows in order of a field');
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('sor');
@@ -93,7 +93,7 @@ test('it lists each category with its families, twenty-three, never a Query-only
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('zzz');
   expect(await names()).toEqual([]);
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('');
-  expect((await names()).length).toBe(23);
+  expect((await names()).length).toBe(22);
   expect(await item(page, 'group').getAttribute('data-description')).toBe('Group rows by a field');
 });
 
@@ -280,9 +280,9 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   const menu = page.locator('sherpa-node-list sherpa-menu.add');
   await expect(menu).toHaveAttribute('open', '');
   const said = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
-  // Said by its socket alone, an object fits a Model's Provider row too; what an output gives narrows it (below).
+  // Said by its socket alone; what an output gives narrows it (below). A Model takes nothing in (plan 951).
   // A Check takes anything, on its header and its Data (plan 944).
-  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Check', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Time', 'Sort', 'Group', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // What it gives narrows it (plan 783 F6): rows to the kinds that can use rows; a Field's column to those that take one.
   const offered = async (gives: string) => {
     await page.keyboard.press('Escape');
@@ -293,7 +293,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   };
   // Rows into a Math are its Count's, never Floor's list of numbers; a Check takes them too (plan 944).
   expect(await offered('rows')).toEqual(['Field', 'Math › Count', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
-  expect(await offered('field')).toEqual(said.filter((s) => s !== 'Model'));
+  expect(await offered('field')).toEqual(said);
 });
 
 test('an input let go on the bare canvas offers a Value first', async ({ page }) => {

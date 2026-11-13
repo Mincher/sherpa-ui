@@ -142,6 +142,10 @@ export interface RowKind {
   of?: string;
   /** A `message` row of one line, as a title or a file name: its editor has no toolbar and takes no line break. TODO 913 */
   singleLine?: true;
+  /** A pick the node cannot do without: left blank, with nothing joined, it warns "Pick a …" (plan 951). */
+  required?: true;
+  /** An input the node can do without: nothing joined, it does not warn, as a `needs` row else would (plan 951). */
+  optional?: true;
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -633,15 +637,15 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'portal', graphs: ['workflow'], category: 'Utils',
   },
-  // AI (plan 926): a Provider and a Model say which model; a Prompt, a Runbook and a Skill ask it, each giving what it
-  // Expects. The app gives the lists (`registerAiCatalog`). Simulate asks no model: each says what it would do.
-  provider: {
-    heading: 'Provider', icon: 'buildings', description: 'Pick an AI provider',
-    rows: [{ name: 'provider', label: 'Provider', control: 'provider', output: 'object', gives: 'provider' }], model: 'aiProvider', graphs: ['workflow'], category: 'AI',
-  },
+  // AI (plans 926, 951): a Model says which provider and model, both; a Prompt, a Runbook and a Skill ask it, each giving
+  // what it Expects. One joined to the Start is the graph's primary. The app gives the lists (`registerAiCatalog`). Simulate
+  // asks no model: each says what it would do.
   model: {
-    heading: 'Model', icon: 'microchip-ai', description: 'Pick a model of the joined provider',
-    rows: [{ name: 'provider', label: 'Provider', input: 'object', needs: 'provider' }, { name: 'model', label: 'Model', control: 'model', output: 'object', gives: 'model' }],
+    heading: 'Model', icon: 'microchip-ai', description: 'Pick an AI provider and its model',
+    rows: [
+      { name: 'provider', label: 'Provider', control: 'provider', required: true },
+      { name: 'model', label: 'Model', control: 'model', output: 'object', gives: 'model', required: true },
+    ],
     model: 'aiModel', graphs: ['workflow'], category: 'AI',
   },
   prompt: {
@@ -896,7 +900,7 @@ export interface RowFacts {
   count?: number;
   /** Every name the graph's portals hold, in order: what a portal's Name row picks. */
   portals?: readonly string[];
-  /** The provider joined into a Model node: what its Model row picks from (plan 926). */
+  /** The provider a Model node picked: what its Model row picks from (plans 926, 951). */
   provider?: unknown;
   /** The shelf's entities of an `entity` row's type: what it picks (plan 949). */
   entities?: readonly RowChoice[];

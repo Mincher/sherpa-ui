@@ -193,7 +193,8 @@ export {
   type NodeStage, type StageBand,
 } from './core/data/node-stages.js';
 // The Start: a top graph's entry point, its Triggers joined to it (plan 949).
-export { START, START_KIND, hasStart, startFaults, unstarted, withStart, withStartKind } from './core/data/node-start.js';
+export { START, START_KIND, hasStart, modelInto, primaryOf, startFaults, unstarted, withStart, withStartKind, type ModelPick } from './core/data/node-start.js';
+export { graphModels, type GraphModel } from './core/data/graph-models.js';
 // The way out: what a graph's Output Triggers start, and the loops among them across the shelf (plan 949).
 export { OUTPUT_TRIGGER } from './core/data/node-kinds.js';
 export { startLoops, startsOf, type Graphed } from './core/data/output-triggers.js';

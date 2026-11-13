@@ -564,11 +564,20 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
 
 ### AI nodes
 
-The AI category has five nodes. A **Provider** and a **Model** say which model; a
-**Prompt**, a **Runbook** and a **Skill** ask it. Each of the last three has
+The AI category has four nodes. A **Model** picks a provider and one of its models,
+both; a **Prompt**, a **Runbook** and a **Skill** ask it. Each of the last three has
 **Expects** as its Type picker: True/false gives a True, 1 or 0, as a Condition does;
-Text, Number, Data and List give an Answer, a property. With no Model joined, a node
-warns "Join a Model"; with no Provider, a Model warns "Join a Provider".
+Text, Number, Data and List give an Answer, a property. A Model with a pick left blank
+warns "Pick a provider" or "Pick a model".
+
+**One model for the whole graph** (plan 951). A Model joined to the Start's Model row
+is the graph's PRIMARY. Every AI node with no Model of its own uses it, in the graph
+and in every Custom Node inside it, and its Model row says "From the Start". A Model
+joined to an AI node's own row overrides it. With neither, the node warns "Join a
+Model, here or to the Start". A graph with no AI needs no primary: the Start does not
+warn. `graphModels(workflow, library)` lists every model used, the primary first, each
+with how many AI nodes use it. The editor's **Graph details** tab shows that list: it
+is the only tab with no node picked, and the last tab with one.
 
 Sherpa ships no providers, models or skills. Register yours once, at load, before a
 graph opens:
@@ -580,7 +589,7 @@ registerAiCatalog({
 });
 ```
 
-- A Model lists the models of the Provider joined to it.
+- A Model lists the models of the provider it picked.
 - A Skill lists yours, then New; a new one is its Instructions. A Runbook is its
   own Instructions, for the model to run.
 - Your runbooks are nodes of the **Runbooks** category, not a list (plan 936): see

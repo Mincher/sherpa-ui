@@ -3,11 +3,15 @@
  * header's True; it sends nothing (D2 A), and its line to each Source is drawn, never kept (Will). It is kept as any node
  * is, and moved, unfurled and arranged as one (Will, TODO 955): added where a graph has none, beside the Triggers joined
  * to it in the first stage; never removed; always in the first stage. A graph with a Group Input or Output is entered by
- * them, and has none. Pure: no DOM.
+ * them, and has none. A Model joined to its Model row is the graph's PRIMARY: every AI node uses it, in its Custom
+ * Nodes too, unless one is joined to its own (plan 951). Pure: no DOM.
  *
  * Map:
  * - START — The Start's node id, and its kind's: `#start`.
- * - START_KIND — The Start's kind: an input for many Triggers; an output for its drawn lines; no rows. Not in the panel.
+ * - START_KIND — The Start's kind: an input for many Triggers; an output for its drawn lines; a Model row. Not in the panel.
+ * - ModelPick — A provider and its model, as a Model node picks them.
+ * - modelInto — The pick of the Model node a connection into a row comes from.
+ * - primaryOf — The graph's primary model: the pick of the Model joined to its Start's Model row; none, it has none.
  * - withStartKind — The kinds with the Start's: what draws and checks a top graph adds.
  * - hasStart — Whether a graph has a Start: one with no Group Input or Group Output.
  * - withStart — The graph with its Start, in the first stage; one added stands right of its Triggers there, clear of all.
@@ -21,11 +25,29 @@ import { DEFAULT_STAGE, STAGE_PAD } from './node-stages.js';
 export const START = '#start';
 
 /** The Start's kind: an input that takes many Triggers; an output, for its lines to the Sources, which are drawn and send
- *  nothing (D2 A); no rows. It wears its Triggers' look; its `#` keeps it out of the panel. */
+ *  nothing (D2 A); a Model row, the graph's primary, which a graph may go without. It wears its Triggers' look; its `#`
+ *  keeps it out of the panel. */
 export const START_KIND: NodeKind = {
   heading: 'Start', icon: 'play', description: 'Where the graph starts: its Triggers join it', input: 'boolean', many: true,
-  output: 'boolean', rows: [], model: 'start', graphs: ['workflow'], category: 'Triggers',
+  output: 'boolean', rows: [{ name: 'model', label: 'Model', input: 'object', needs: 'model', optional: true }], model: 'start', graphs: ['workflow'], category: 'Triggers',
 };
+
+/** A provider and its model, as a Model node picks them. */
+export interface ModelPick {
+  provider?: string;
+  model: string;
+}
+
+/** The pick of the Model node a connection into `to` comes from; none, it is no Model's, or picks no model. */
+export function modelInto(graph: Pick<Graph, 'connections'> & { nodes: readonly { id: string; kind: string; values?: Readonly<Record<string, unknown>> }[] }, to: string): ModelPick | undefined {
+  const from = (graph.connections ?? []).find((r) => r.to === to);
+  const node = from && graph.nodes.find((n) => n.id === socketOf(from.from).node);
+  const { provider, model } = node?.kind === 'model' ? node.values ?? {} : {};
+  return typeof model === 'string' && model ? { model, ...(typeof provider === 'string' && provider ? { provider } : {}) } : undefined;
+}
+
+/** The graph's primary model: the pick of the Model joined to its Start's Model row; none, it has none (plan 951). */
+export const primaryOf = (graph: Parameters<typeof modelInto>[0]): ModelPick | undefined => modelInto(graph, `${START}/model`);
 
 /** The kinds with the Start's: what draws and checks a top graph adds, as a body's adds its Group Input's. */
 export const withStartKind = <K extends Readonly<Record<string, NodeKind>>>(kinds: K): K => (START in kinds ? kinds : { ...kinds, [START]: START_KIND });

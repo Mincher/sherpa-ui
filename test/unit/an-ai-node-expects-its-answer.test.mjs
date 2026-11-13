@@ -1,8 +1,8 @@
 /**
- * AI NODES: a Provider and a Model say which model; a Prompt, a Runbook and a Skill ask it. Each of the three EXPECTS an
+ * AI NODES: a Model says which provider and model, both (plan 951); a Prompt, a Runbook and a Skill ask it. Each of the three EXPECTS an
  * answer — True/false, Text, Number, Data or List — its Type picker, and its sockets follow: True/false gives a True row,
  * 1 or 0, as a Condition does (plan 944); the rest give an Answer. The app gives the lists (`registerAiCatalog`); Sherpa ships none. With no
- * Model or Provider joined, a node says so. Simulate asks no model. Will, plan 926 (D1 A, D2 A). A Runbook is its own words:
+ * Model joined and no primary, a node says so; a Model with a pick left blank says so. Simulate asks no model. Will, plan 926 (D1 A, D2 A). A Runbook is its own words:
  * the app's runbooks are nodes of the Runbooks category (plan 936 D1 B).
  *
  *   node --test test/unit/an-ai-node-expects-its-answer.test.mjs
@@ -24,20 +24,21 @@ const CATALOG = {
   providers: { anthropic: { label: 'Anthropic', models: { opus: 'Claude Opus 5.5', sonnet: 'Claude Sonnet 5.5' } }, other: { label: 'Other', models: { m1: 'Model One' } } },
   skills: { summarise: { label: 'Summarise tickets' } },
 };
-// A Provider, its Model, and a Prompt asking it.
+// A Model, and a Prompt asking it.
 const asked = (expects, more = {}) => [
-  [N('p', 'provider', { provider: 'anthropic' }), N('m', 'model', { model: 'opus' }), N('q', 'prompt', { type: expects, prompt: 'Is it late?', ...more })],
-  [{ from: 'p/provider', to: 'm/provider' }, { from: 'm/model', to: 'q/model' }],
+  [N('m', 'model', { provider: 'anthropic', model: 'opus' }), N('q', 'prompt', { type: expects, prompt: 'Is it late?', ...more })],
+  [{ from: 'm/model', to: 'q/model' }],
 ];
 
-test('five AI kinds, in the AI category, in workflows only; the panel lists them under AI', () => {
-  for (const id of ['provider', 'model', 'prompt', 'runbook', 'skill']) {
+test('four AI kinds, in the AI category, in workflows only; the panel lists them under AI; no Provider node (plan 951)', () => {
+  assert.equal(NODE_KINDS.provider, undefined);
+  for (const id of ['model', 'prompt', 'runbook', 'skill']) {
     assert.equal(NODE_KINDS[id].category, 'AI', id);
     assert.deepEqual(NODE_KINDS[id].graphs, ['workflow'], id);
   }
   assert.ok(NODE_CATEGORIES.indexOf('AI') === NODE_CATEGORIES.indexOf('Logic') + 1, 'after Logic');
   const ai = paletteOf(nodeKinds()).find((s) => s.category === 'AI');
-  assert.deepEqual(ai.items.map((i) => i.id), ['provider', 'model', 'prompt', 'runbook', 'skill']);
+  assert.deepEqual(ai.items.map((i) => i.id), ['model', 'prompt', 'runbook', 'skill']);
 });
 
 test('Expects is the Type picker of a Prompt, a Runbook and a Skill; its sockets follow the pick', () => {
@@ -60,17 +61,16 @@ test('Expects is the Type picker of a Prompt, a Runbook and a Skill; its sockets
   assert.equal(kindOfNode(NODE_KINDS, { kind: 'prompt' }).rows.find((r) => r.name === 'answer').gives, 'value');
 });
 
-test('the lists are the app\'s: none shipped; a Model lists the joined Provider\'s models', () => {
+test('the lists are the app\'s: none shipped; a Model lists its own Provider\'s models', () => {
   assert.deepEqual(Object.keys(aiCatalog().providers), [], 'Sherpa ships none');
   const undo = registerAiCatalog(CATALOG);
   try {
     const [nodes, connections] = asked('text');
     const g = graphOf(nodes, connections);
-    assert.deepEqual(row(node(g, 'p'), 'provider').choices.map((c) => c.label), ['Anthropic', 'Other']);
+    assert.deepEqual(row(node(g, 'm'), 'provider').choices.map((c) => c.label), ['Anthropic', 'Other']);
     assert.deepEqual(row(node(g, 'm'), 'model').choices.map((c) => c.label), ['Claude Opus 5.5', 'Claude Sonnet 5.5']);
-    // Another provider joined: its models.
-    nodes[0].values.provider = 'other';
-    nodes[1].values.model = '';
+    // Another provider picked: its models.
+    nodes[0].values = { provider: 'other', model: '' };
     assert.deepEqual(row(node(graphOf(nodes, connections), 'm'), 'model').choices.map((c) => c.label), ['Pick one', 'Model One']);
     // A Skill lists the app's, then New; a Runbook picks nothing: it is its Model and its Instructions (plan 936 D1 B).
     const r = graphOf([N('r', 'runbook'), N('s', 'skill')]);
@@ -82,11 +82,12 @@ test('the lists are the app\'s: none shipped; a Model lists the joined Provider\
   assert.deepEqual(Object.keys(aiCatalog().providers), [], 'undone');
 });
 
-test('with no Model joined an AI node says so; no Provider, a Model says so; a wrong input reads null and warns', () => {
+test('with no Model joined and no primary an AI node says so; a Model with a pick blank says so; a wrong input reads null and warns', () => {
   const words = (g, id) => (node(g, id).warnings ?? []).map((w) => `${w.row ?? ''}: ${w.words}`);
   const g = graphOf([N('q', 'prompt'), N('m', 'model')]);
-  assert.deepEqual(words(g, 'q'), ['model: Join a Model']);
-  assert.deepEqual(words(g, 'm'), ['provider: Join a Provider']);
+  assert.deepEqual(words(g, 'q'), ['model: Join a Model, here or to the Start']);
+  assert.deepEqual(words(g, 'm'), ['provider: Pick a provider', 'model: Pick a model']);
+  assert.deepEqual(words(graphOf([N('m', 'model', { provider: 'anthropic' })]), 'm'), ['model: Pick a model']);
   // A Value is no model.
   const wrong = graphOf([N('v', 'value', { type: 'text', value: 'opus' }), N('q', 'prompt')], [{ from: 'v/value', to: 'q/model' }]);
   assert.match(words(wrong, 'q').join(), /Model takes a model; it was given/);

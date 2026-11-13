@@ -44,7 +44,7 @@ import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands,
 import { addressRow, portalFlow, portalHint, portalNames, portalOf, renamedPortals, type FlowConnection, type PortalFlow } from './node-portals.js';
 import { unreachedValues, valuesAt, valuesIn, type MessageSource } from './node-messages.js';
 import { NEW_CHOICE } from './ai-catalog.js';
-import { hasStart, startFaults, unstarted, withStart, withStartKind } from './node-start.js';
+import { hasStart, primaryOf, startFaults, unstarted, withStart, withStartKind, type ModelPick } from './node-start.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -450,6 +450,8 @@ export interface WorkflowFacts {
   /** The shelf's entities, read at each draw: what an entity row picks, and where an Output Trigger's loop is looked for
    *  (plan 949). */
   entities?: () => readonly Pick<Entity, 'type' | 'id' | 'label' | 'graph'>[];
+  /** The primary model of the top graph this one is inside: the AI nodes of a Custom Node's body use it (plan 951). */
+  primary?: ModelPick;
 }
 
 type StoreFields = NonNullable<WorkflowFacts['fieldsOf']>[string];
@@ -576,14 +578,6 @@ export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<Wo
   return sender(held, connections, kinds, fieldsReach(held, connections, kinds, facts))(from);
 }
 
-/** The provider a Model node's Provider row is joined to: the pick of the Provider node its connection comes from (plan 926). */
-function providerInto(nodes: readonly WorkflowNode[], connections: readonly { from: string; to: string }[], id: string): unknown {
-  const connection = connections.find((r) => r.to === `${id}/provider`);
-  const from = connection && socketOf(connection.from);
-  const node = from && nodes.find((n) => n.id === from.node);
-  return node?.kind === 'provider' ? node.values?.['provider'] : undefined;
-}
-
 /** A workflow as nodes and connections: each node its kind's, at its own place,
  *  with its values. A row a connection drives is read only. Where the connection comes from a node that
  *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
@@ -604,6 +598,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   // The shelf, once a draw; and each Output Trigger that would start a loop, blocked (plan 949 D5 A).
   const shelf = facts.entities?.() ?? [];
   const top = hasStart(workflow);
+  // The model an AI node uses with none joined to its own: its graph's Start's, or the top graph's it is inside (plan 951).
+  const primary = top ? primaryOf(workflow) : facts.primary;
   const loops = shelf.length ? startLoops({ id: workflow.id, ...(workflow.label ? { label: workflow.label } : {}), graph: workflow }, shelf, kinds) : new Map<string, string>();
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   // Where a connection comes from, in words: "Group Input › Status".
@@ -643,7 +639,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const given = givenAt(from, row, kinds)?.kind ?? got.kind;
       if (given === 'field') return [rowsHeard(fromId, seen) !== false];
       // A boolean — a check's, or a steer into a joiner — is no rows (TODO 939).
-      return [!['value', 'number', 'boolean', 'provider', 'model'].includes(given)];
+      return [!['value', 'number', 'boolean', 'model'].includes(given)];
     });
     const heard = answers.length ? answers.some(Boolean) : undefined;
     heardOf.set(id, heard);
@@ -726,8 +722,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};
       // A Field row picks from the fields of the Source its rows come from (TODO 817).
       const fields = row.control === 'field' ? reach(node.id).fields : undefined;
-      // A Model row picks from the models of the Provider joined to its node (plan 926).
-      const provider = row.control === 'model' ? providerInto(workflow.nodes, flows, node.id) : undefined;
+      // A Model row picks from the models of its node's own Provider (plans 926, 951).
+      const provider = row.control === 'model' ? values['provider'] : undefined;
       const list = rowChoices({ ...plain, value: has }, {
         ...(provider ? { provider } : {}),
         ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(types ? { types } : {}), ...(known ? { values: known } : {}), ...count,
@@ -766,10 +762,11 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       };
       const ins = flows.filter((r) => r.to === address && !bad.includes(r));
       const coming = ins.flatMap((r) => reading(r) ?? []);
-      // An AI node asks a model, and a Model node a provider: with none joined, it says so (plan 926).
-      if (!ins.length && !bad.length && (row.needs === 'model' || row.needs === 'provider')) {
-        warnings.push({ row: row.name, words: row.needs === 'model' ? 'Join a Model' : 'Join a Provider' });
-      }
+      // An AI node asks a model: with none joined, it uses the primary, and says so; with none, it warns (plans 926, 951).
+      const unjoined = !ins.length && !bad.length && row.needs === 'model' && !row.optional;
+      if (unjoined && !primary) warnings.push({ row: row.name, words: 'Join a Model, here or to the Start' });
+      // A pick it cannot do without, left blank (plan 951).
+      if (row.required && !ins.length && (has == null || has === '')) warnings.push({ row: row.name, words: `Pick a ${row.label.toLowerCase()}` });
       // A Runbook, or a new skill, is its instructions: with none, it has nothing to do.
       if (row.name === 'instructions' && (node.kind === 'runbook' || values['skill'] === NEW_CHOICE) && !String(has ?? '').trim() && !ins.length) {
         warnings.push({ row: row.name, words: 'Write its instructions' });
@@ -794,6 +791,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       }
       // Only what it cannot use came in: it reads null, read only.
       if (bad.length && !ins.length) return { ...own, value: null };
+      if (unjoined && primary) return { ...own, value: primary.model, hint: 'From the Start' };
       // Connected, nothing sent yet, nothing held: it shows nothing — never a list's first choice — and says where from.
       const none = has == null || has === '' || (Array.isArray(has) && !has.length);
       if (!coming.length && ins.length && row.control && none) {

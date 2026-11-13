@@ -546,8 +546,8 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (node.kind === 'math') return math(node);
     if (node.kind === 'text') return text(node);
     if (node.kind === 'sort' || node.kind === 'group') return arranged(node);
-    // A Provider or a Model sends its pick (plan 926).
-    if (node.kind === 'provider' || node.kind === 'model') return { kind: 'value', value: node.rows.find((r) => r.name === row)?.value };
+    // A Model sends its pick (plans 926, 951).
+    if (node.kind === 'model') return { kind: 'value', value: node.rows.find((r) => r.name === row)?.value };
     // An Output, an AI node or a Trigger acts outside the graph, so it fires nothing: each output sends a stand-in, by what it gives,
     // so what it feeds runs too (plans 891, 926). A True/false AI node's True is 1.
     if (isOutput(node) || node.would) {

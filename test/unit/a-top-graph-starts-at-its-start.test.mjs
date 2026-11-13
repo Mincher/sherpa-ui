@@ -28,7 +28,7 @@ test('every top graph has its Start, last, left of its nodes where it had none; 
   const drawn = workflowGraph(g);
   assert.deepEqual([drawn.nodes.at(-1).id, drawn.nodes.at(-1).heading, start(drawn).x, start(drawn).y], [START, 'Start', -360, 0]);
   // An output too, for its drawn lines to the Sources, which are never kept (Will).
-  assert.deepEqual([start(drawn).input, start(drawn).many, start(drawn).output, start(drawn).rows], ['boolean', true, 'boolean', []]);
+  assert.deepEqual([start(drawn).input, start(drawn).many, start(drawn).output, start(drawn).rows.map((r) => r.name)], ['boolean', true, 'boolean', ['model']]);
   // Added once; kept as any node after, where it was put: a second pass moves it not, nor adds one.
   const kept = withStart(g, nodeWidth);
   assert.deepEqual([start(kept).x, start(kept).y], [-360, 0]);

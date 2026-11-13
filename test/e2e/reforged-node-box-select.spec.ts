@@ -385,11 +385,11 @@ test('756: a box picks one node or several with the panel a tab, and the toolbar
   await settle(page);
   expect((await picked(page)).nodes).toEqual(['s1', 's2', 's3']);
   expect(await panel(page)).toEqual({ open: true, tab: true, heading: '3 nodes picked' });
-  // A click on blank puts the empty state back; a click on one node fills it with that node.
+  // A click on blank puts Graph details back, alone (plan 951); a click on one node fills it with that node.
   await page.mouse.click(a.right + 60, a.top - 20);
   await settle(page);
-  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'Details' });
-  await expect(page.locator('#inspector sherpa-empty-state')).toHaveCount(1);
+  expect(await panel(page)).toEqual({ open: true, tab: true, heading: 'Graph details' });
+  await expect(page.locator('#inspector .graph-models')).toHaveCount(1);
   const [hx, hy] = await header(page, 'e1');
   await page.mouse.click(hx, hy);
   await settle(page);

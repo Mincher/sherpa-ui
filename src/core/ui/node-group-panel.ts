@@ -1,6 +1,7 @@
 /**
  * node-group-panel.ts — the parts of a node's inspector that belong to a Custom Node: what to do
- * with an instance (Open, Ungroup), its sockets (rename, retype, remove), the update's diff and its split button, and a
+ * with an instance (Open, Ungroup), its sockets (rename, retype, remove), the update's diff and its split button, the
+ * Graph details tab's models, and a
  * node's incoming and outgoing JSON, and the rows it heard and said in a simulation. Each is composed of Sherpa's own components and
  * only ASKS: the editor acts. Will, TODO 719 · plan 713 §9.2, M10, M11, D9, D11
  *
@@ -12,11 +13,14 @@
  * - instancePane — The buttons for one instance: Open, Ungroup.
  * - SocketAsk — What a Custom Node's sockets may ask: a new name, a new type, or to go.
  * - socketsPane — A Custom Node's inputs, then its outputs, each a section: its Name, its Type, and Remove.
+ * - modelsPane — The models a graph uses, the primary first, each with how many AI nodes use it; none, how to give one.
  * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
  * - dataPane — What a node heard and said in a simulation: each socket's rows, in the data grid and as JSON.
  */
 import type { DefinitionDiff, NodeDefinition, NodeSocket } from '../data/node-library.js';
 import type { SocketChange } from '../data/node-group.js';
+import type { GraphModel } from '../data/graph-models.js';
+import { aiWords } from '../data/ai-catalog.js';
 import type { NodeFlow } from '../data/node-flow.js';
 import type { SimulatedNode, Slot } from '../data/node-simulate.js';
 import '../../components/sherpa-data-grid/sherpa-data-grid.js';
@@ -153,6 +157,22 @@ export function socketsPane(sockets: Pick<NodeDefinition, 'inputs' | 'outputs'>,
     }
   }
   return pane;
+}
+
+/** The models a graph uses, the primary first: each its model's and provider's words, and how many AI nodes use it. None,
+ *  an empty state says how to give the graph one (plan 951 D2 A). */
+export function modelsPane(models: readonly GraphModel[]): HTMLElement {
+  if (!models.length) {
+    return make('sherpa-empty-state', { 'data-size': 'sm', 'data-heading': 'No models', 'data-description': 'Join a Model to the Start: every AI node uses it', class: 'graph-models' });
+  }
+  const list = make('sherpa-key-value-list', { 'data-orientation': 'vertical', class: 'graph-models' });
+  const uses = (n: number): string => `${n} AI ${n === 1 ? 'node' : 'nodes'}`;
+  const items = models.map((m) => ({
+    key: aiWords('model', m.model) ?? m.model,
+    value: [m.provider && (aiWords('provider', m.provider) ?? m.provider), m.primary ? 'Primary' : undefined, uses(m.uses)].filter(Boolean).join(' · '),
+  }));
+  void customElements.whenDefined('sherpa-key-value-list').then(() => (list as HTMLElement & { populate(items: unknown): void }).populate(items));
+  return list;
 }
 
 /** A node's definition view as JSON: Incoming and Outgoing, each a collapsible section holding a code block, shut when long. */

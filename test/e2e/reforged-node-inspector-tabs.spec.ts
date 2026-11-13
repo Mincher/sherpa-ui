@@ -1,8 +1,9 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * A node's details panel has three tabs inside its body: Details, JSON, Data. Details is current to begin with,
- * and the reader's tab stays while another node is picked. A frame and the empty state have none.
+ * A node's details panel has its tabs inside its body: Details, JSON, Data, and Graph details last (plan 951 D1 A).
+ * Details is current to begin with, and the reader's tab stays while another node is picked. A frame has none; with
+ * nothing picked, Graph details is the only tab.
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -38,10 +39,13 @@ const labels = (page: Page) => strip(page).evaluate((el) => [...el.shadowRoot!.q
 const current = (page: Page) => strip(page).evaluate((el) => el.shadowRoot!.querySelector('.tab[data-current] .label')?.textContent);
 const press = (page: Page, n: number) => strip(page).evaluate((el, k) => (el.shadowRoot!.querySelectorAll('.tab')[k] as HTMLElement).click(), n);
 
-test('a node has Details, JSON and Data tabs; Details first; JSON and Data show theirs; the tab stays while another node is picked', async ({ page }) => {
+test('a node has Details, JSON, Data and Graph details tabs; Details first; JSON and Data show theirs; the tab stays while another node is picked', async ({ page }) => {
+  // Nothing picked: Graph details alone.
+  await expect(strip(page)).toHaveCount(1);
+  expect(await labels(page)).toEqual(['Graph details']);
   await header(page, 'f').click();
   await expect(strip(page)).toHaveCount(1);
-  expect(await labels(page)).toEqual(['Details', 'JSON', 'Data']);
+  expect(await labels(page)).toEqual(['Details', 'JSON', 'Data', 'Graph details']);
   expect(await current(page)).toBe('Details');
   await expect(page.locator('#inspector sherpa-accordion[data-heading="Incoming JSON"]')).toBeHidden();
   await press(page, 1);
