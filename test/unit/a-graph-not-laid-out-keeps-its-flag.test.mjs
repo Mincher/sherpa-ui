@@ -17,7 +17,7 @@ const { layoutParts } = await import(new URL('graph-layout.js', core));
 const { asNode } = await import(new URL('entity-types.js', core));
 
 const nodes = [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'o', kind: 'result', x: 0, y: 0 }];
-const made = (type, settings) => ({ v: 2, type, id: 'made', label: 'Made', graph: { nodes, connections: [{ from: 's/rows', to: 'o' }], unfurl: true }, ...(settings ? { settings } : {}) });
+const made = (type, settings) => ({ v: 3, type, id: 'made', label: 'Made', graph: { nodes, connections: [{ from: 's/rows', to: 'o' }], unfurl: true }, ...(settings ? { settings } : {}) });
 
 test('an entity\'s graph keeps the flag on its canvas: with no sockets, and as a Custom Node\'s inside', () => {
   assert.equal(graphWorkflow(made('workflow')).workflow.unfurl, true);
@@ -32,5 +32,5 @@ test('a graph kept again keeps it until the editor drops it; one laid out has no
   assert.deepEqual(layoutParts({ unfurl: undefined }), {});
   const node = made('node', { inputs: [], outputs: [] });
   assert.deepEqual(entityFaults(node), []);
-  assert.deepEqual(schemaCheck('entity.v2.json')(node), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')(node), []);
 });

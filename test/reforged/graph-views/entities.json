@@ -3,19 +3,113 @@
   "v": 3,
   "entities": {
     "shipped": {
-      "v": 2, "type": "filter", "id": "shipped", "label": "Shipped",
+      "v": 3,
+      "type": "filter",
+      "id": "shipped",
+      "label": "Shipped",
       "graph": {
         "nodes": [
-          { "id": "start", "kind": "source", "x": 0, "y": 0, "values": { "store": "customers" } },
-          { "id": "field", "kind": "field", "x": 360, "y": 0, "values": { "field": "status" } },
-          { "id": "status", "kind": "condition", "x": 720, "y": 0, "values": { "type": "eq", "b": "active" } }
+          {
+            "id": "start",
+            "kind": "source",
+            "x": 0,
+            "y": 0,
+            "values": {
+              "store": "customers"
+            }
+          },
+          {
+            "id": "field",
+            "kind": "field",
+            "x": 360,
+            "y": 0,
+            "values": {
+              "field": "status"
+            }
+          },
+          {
+            "id": "status",
+            "kind": "condition",
+            "x": 720,
+            "y": 0,
+            "values": {
+              "type": "eq",
+              "b": "active"
+            }
+          }
         ],
         "connections": [
-          { "from": "start/rows", "to": "field" },
-          { "from": "field/field", "to": "status" },
-          { "from": "status/true", "to": "#out/where" }
+          {
+            "from": "start/rows",
+            "to": "field"
+          },
+          {
+            "from": "field/field",
+            "to": "status"
+          },
+          {
+            "from": "status/true",
+            "to": "#out/where"
+          }
         ]
-      }
+      },
+      "versions": [
+        {
+          "number": 1,
+          "at": "2026-11-13T00:00:00.000Z",
+          "by": "shipped",
+          "hash": "0212a5e1eb81f7",
+          "definition": {
+            "label": "Shipped",
+            "graph": {
+              "nodes": [
+                {
+                  "id": "start",
+                  "kind": "source",
+                  "x": 0,
+                  "y": 0,
+                  "values": {
+                    "store": "customers"
+                  }
+                },
+                {
+                  "id": "field",
+                  "kind": "field",
+                  "x": 360,
+                  "y": 0,
+                  "values": {
+                    "field": "status"
+                  }
+                },
+                {
+                  "id": "status",
+                  "kind": "condition",
+                  "x": 720,
+                  "y": 0,
+                  "values": {
+                    "type": "eq",
+                    "b": "active"
+                  }
+                }
+              ],
+              "connections": [
+                {
+                  "from": "start/rows",
+                  "to": "field"
+                },
+                {
+                  "from": "field/field",
+                  "to": "status"
+                },
+                {
+                  "from": "status/true",
+                  "to": "#out/where"
+                }
+              ]
+            }
+          }
+        }
+      ]
     }
   }
 }

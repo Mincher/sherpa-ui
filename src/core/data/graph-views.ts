@@ -120,7 +120,7 @@ export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' |
   const id = freeId(label, taken.map((e) => e.id), type.id);
   const description = named.description?.trim();
   const entity: Entity = {
-    v: 2, type: type.id, id, label, ...(description ? { description } : {}), ...(tidyTags(named.tags).length ? { tags: tidyTags(named.tags) } : {}),
+    v: 3, type: type.id, id, label, ...(description ? { description } : {}), ...(tidyTags(named.tags).length ? { tags: tidyTags(named.tags) } : {}),
     graph: { nodes: [], connections: [] },
     ...(type.defaults ? { settings: structuredClone(type.defaults) } : {}),
   };

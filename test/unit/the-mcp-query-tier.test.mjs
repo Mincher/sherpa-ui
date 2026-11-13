@@ -360,12 +360,12 @@ test('sherpa://node-kinds is NODE_KINDS as the registry says it', async () => {
 
 test('definition_graph and edit_definition_graph take the app\'s entities: a use of one in a workflow is a Custom Node, no fault (plan 942 D3 A)', async () => {
   const HAS_ROLE = {
-    v: 2, type: 'node', id: 'has-role', label: 'Has role',
+    v: 3, type: 'node', id: 'has-role', label: 'Has role',
     graph: { nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'role' } }], connections: [{ from: '#in/rows', to: 'f' }, { from: 'f/field', to: '#out/role' }] },
     settings: { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'role', label: 'Role', type: 'value' }] },
   };
   const placed = {
-    v: 2, type: 'workflow', id: 'w', label: 'Roles',
+    v: 3, type: 'workflow', id: 'w', label: 'Roles',
     graph: {
       nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'u', kind: 'has-role', x: 360, y: 0 }],
       connections: [{ from: 's/rows', to: 'u/rows' }],

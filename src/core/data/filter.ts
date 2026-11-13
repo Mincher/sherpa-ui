@@ -138,7 +138,7 @@ export function filterOf(given: PagePreset | (SavedFilter & { id: string }), sou
     if (said.length !== 1) return { fault: `the saved filter "${given.label}" says ${said.length ? 'its filters in more than one scope' : 'no filter'}, so it is no one Filter` };
     where = said[0]![1].where!;
   }
-  return { filter: { v: 2, type: FILTER, id: given.id, label: given.label, query: { where: where! }, settings: { source } } };
+  return { filter: { v: 3, type: FILTER, id: given.id, label: given.label, query: { where: where! }, settings: { source } } };
 }
 
 /** One field's condition in a reader's words: "equals trial", "is one of Pro, Enterprise", "in the last 3 months". */
@@ -158,7 +158,7 @@ function conditionWords(given: Where[string] | undefined): string {
 
 /** A graph read as the Where it says, where it says one. */
 const whereOfGraph = (graph: EntityGraph): Where | undefined => {
-  const read = presetOfEntity({ v: 2, type: FILTER, id: 'f', label: 'F', graph });
+  const read = presetOfEntity({ v: 3, type: FILTER, id: 'f', label: 'F', graph });
   return 'preset' in read ? read.preset.where : undefined;
 };
 

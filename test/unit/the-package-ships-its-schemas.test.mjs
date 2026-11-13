@@ -16,7 +16,7 @@ test('npm pack carries every schema', () => {
   const out = execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd: ROOT, encoding: 'utf8' });
   const files = new Set(JSON.parse(out)[0].files.map((f) => f.path));
   const schemas = readdirSync(`${ROOT}schemas`);
-  for (const name of ['defs.v1.json', 'page.v1.json', 'app.v1.json', 'views.v1.json', 'entity.v2.json', 'workflow.v3.json', 'component.v1.json', 'pattern.v1.json']) assert.ok(schemas.includes(name), name);
+  for (const name of ['defs.v1.json', 'page.v1.json', 'app.v1.json', 'views.v1.json', 'entity.v3.json', 'workflow.v3.json', 'component.v1.json', 'pattern.v1.json']) assert.ok(schemas.includes(name), name);
   for (const name of schemas) assert.ok(files.has(`schemas/${name}`), `schemas/${name} is not packed`);
 });
 

@@ -62,7 +62,7 @@ export interface WorkflowNode {
   /** Each row's value, by the row's name. */
   values?: Readonly<Record<string, unknown>>;
   /** A use of a Custom Node: the version of its definition it follows, and the definition it was made from. */
-  version?: string;
+  version?: number;
   was?: NodeSnapshot;
   /** The stage it is in: one of its workflow's `stages`. None, with stages written, it joins the nearest at the next fit. */
   stage?: string;

@@ -1,6 +1,7 @@
 /**
  * A CUSTOM NODE'S SOCKETS CHANGE after it is made (plan 942 D4 A): an input or an output renamed, retyped or removed,
- * each ONE edit. The use it was made on follows the definition; every other use says Update available. A removed socket
+ * each ONE edit. The use it was made on follows the definition; once it is PUBLISHED (plan 972 D1 A, a draft edit keeps its
+ * number), every other use says Update available, and this one has it already (D2 A). A removed socket
  * takes its connections, inside and on that use. Refused in words: a preset, a socket it has not, no name, no type.
  * Will, TODO 942 · docs/history/plan-942-custom-nodes-one-way.md
  *
@@ -36,6 +37,8 @@ const flow = (library = hasLib()) => ({ // has2's Status is fed too, so a remove
 });
 const said = (connections) => (connections ?? []).map((r) => `${r.from} → ${r.to}`).sort();
 const socket = (made, side, name) => made.library.nodes['has-status'][side].find((s) => s.name === name);
+/** The library once the edited definition is published: its next number (plan 972). */
+const published = (library) => ({ ...library, nodes: { ...library.nodes, 'has-status': { ...library.nodes['has-status'], version: 2 } } });
 
 test('a rename is the socket\'s label: its name, and so every connection, stays; this use follows, the other says Update available', () => {
   const made = socketEdit(flow(), 'has', 'inputs', 'status', { label: '  State ' }, hasLib());
@@ -48,7 +51,9 @@ test('a rename is the socket\'s label: its name, and so every connection, stays;
   assert.equal(lib.nodeKindOf(made.library.nodes['has-status']).rows.find((r) => r.name === 'status').label, 'State');
   const inner = lib.innerOf(made.workflow.nodes.find((n) => n.id === 'has'), made.library);
   assert.equal(inner.kinds[lib.GROUP_INPUT].rows.find((r) => r.name === 'status').label, 'State');
-  assert.deepEqual(lib.staleUses(made.workflow, made.library), ['has2']);
+  // A draft: no use sees it. Published: the other use says Update available; this one has it.
+  assert.deepEqual(lib.staleUses(made.workflow, made.library), []);
+  assert.deepEqual(lib.staleUses(made.workflow, published(made.library)), ['has2']);
   // Its own value stays.
   assert.deepEqual(made.workflow.nodes.find((n) => n.id === 'has').values, { status: 'open' });
 });
@@ -60,7 +65,7 @@ test('a new type keeps each connection; only an object\'s list picks several', (
   assert.deepEqual(said(made.workflow.connections), said(flow().connections));
   const out = socketEdit(flow(), 'has', 'outputs', 'matching', { type: 'boolean' }, hasLib());
   assert.equal(socket(out, 'outputs', 'matching').type, 'boolean');
-  assert.deepEqual(lib.staleUses(out.workflow, out.library), ['has2']);
+  assert.deepEqual(lib.staleUses(out.workflow, published(out.library)), ['has2']);
 });
 
 test('a removed input takes its connections, inside and on every use of this graph, and this use\'s value for it', () => {
@@ -70,7 +75,7 @@ test('a removed input takes its connections, inside and on every use of this gra
   assert.deepEqual(said(made.library.nodes['has-status'].connections), ['#in/records → has-status', 'has-status/pass → #out/matching']);
   assert.deepEqual(said(made.workflow.connections), ['has/matching → end', 'start/rows → has/records']);
   assert.equal(made.workflow.nodes.find((n) => n.id === 'has').values?.status, undefined);
-  assert.deepEqual(lib.staleUses(made.workflow, made.library), ['has2']);
+  assert.deepEqual(lib.staleUses(made.workflow, published(made.library)), ['has2']);
   // Nothing left is a fault: a connection kept on has2's Status would be one, as it is drawn from the definition now.
   assert.deepEqual(lib.workflowFaultsDeep(made.workflow, made.library), []);
 });
@@ -85,10 +90,11 @@ test('a removed output takes its connections, inside and on this use', () => {
 
 test('a use that does not follow its definition is left as it was: it says Update available', () => {
   const library = hasLib();
-  const stale = { ...flow(library), nodes: flow(library).nodes.map((n) => (n.id === 'has' ? { ...n, version: 'old' } : n)) };
+  // It follows an older number: it is left as it was, and is behind the draft; the other use, at the number, is not.
+  const stale = { ...flow(library), nodes: flow(library).nodes.map((n) => (n.id === 'has' ? { ...n, version: 0 } : n)) };
   const made = socketEdit(stale, 'has', 'inputs', 'status', { label: 'State' }, library);
-  assert.equal(made.workflow.nodes.find((n) => n.id === 'has').version, 'old');
-  assert.deepEqual(lib.staleUses(made.workflow, made.library), ['has', 'has2']);
+  assert.equal(made.workflow.nodes.find((n) => n.id === 'has').version, 0);
+  assert.deepEqual(lib.staleUses(made.workflow, made.library), ['has']);
 });
 
 test('refused, in words: a preset, a socket it has not, a name that is none, a type that is none, a node that is no Custom Node', () => {

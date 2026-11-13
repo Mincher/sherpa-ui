@@ -14,7 +14,8 @@
  * - CustomKind — The NodeKind of a definition, with its category and its preset flag.
  * - GROUP_INPUT — The kind of the Group Input node drawn inside a definition: `#in`.
  * - GROUP_OUTPUT — The kind of the Group Output node drawn inside a definition: `#out`.
- * - versionOf — A definition's version: a hash of what a use follows, never its places.
+ * - versionOf — A definition's content hash: what a use follows, never its places. A kept version holds it.
+ * - numberOf — A definition's version number: its entity's newest published one, else 1 (plan 972).
  * - nodeKindOf — A definition as a NodeKind: a row per input and output, `model: 'graph'`.
  * - kindsOf — Every definition of a library as a kind, by id; one a shipped kind owns is left out.
  * - Inner — What a use runs: its definition, its body as a workflow, the kinds it needs, its parameters.
@@ -32,6 +33,7 @@
  * - tagDefinition — A definition's tags set, tidied: every use shares them, no use goes stale; a preset's refused.
  * - copyToMine — A custom, editable copy of a definition (a preset's, as "Copy to my nodes").
  */
+import { hashOf, stable } from './content-hash.js';
 import { withoutBends } from './connector-bends.js';
 import { tidyTags } from './tags.js';
 import { report } from './report.js';
@@ -100,6 +102,8 @@ export interface NodeDefinition extends NodeSnapshot {
   settings?: Readonly<Record<string, unknown>>;
   /** Not laid out yet, as its entity's graph says: no part of its version (TODO 958). */
   unfurl?: true;
+  /** The number of the published version it is: its entity's newest (plan 972). None: 1. */
+  version?: number;
 }
 
 /** Every Custom Node of an app, by id (D13). */
@@ -125,40 +129,20 @@ const ID = /^[a-z][a-z0-9-]*$/;
 const KEY = /^[a-z][a-z0-9-]*(:[a-z][a-z0-9-]*)?$/;
 const TYPES: readonly string[] = ['value', 'object', 'boolean'];
 
-/** A value as text, its keys in order, so the same content is the same text. */
-function stable(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.entries(value).filter(([, v]) => v !== undefined).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => `${JSON.stringify(k)}:${stable(v)}`).join(',')}}`;
-  }
-  return JSON.stringify(value) ?? 'null';
-}
-
 /** Whether an id is a kind that is not a Custom Node: a use could not tell it apart. */
 const shipped = (kinds: Kinds, id: string): boolean => !!kinds[id] && kinds[id]!.model !== 'graph';
 
 /** A node as a version reads it: where it sits, and the stage it stands in, are no change. */
 const unplaced = ({ x: _x, y: _y, stage: _stage, ...rest }: WorkflowNode): Omit<WorkflowNode, 'x' | 'y' | 'stage'> => rest;
 
-/** A 53-bit text hash (cyrb53): a version, not a secret. */
-function hashOf(text: string): string {
-  let h1 = 0xdeadbeef;
-  let h2 = 0x41c6ce57;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text.charCodeAt(i);
-    h1 = Math.imul(h1 ^ ch, 2654435761);
-    h2 = Math.imul(h2 ^ ch, 1597334677);
-  }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');
-}
-
-/** A definition's version: a hash of what a use follows — its name, sockets, nodes and connections,
- *  never where its nodes sit, nor its category or icon. */
+/** A definition's content hash: what a use follows — its name, sockets, nodes and connections, never where its nodes
+ *  sit, nor its category or icon. A kept version holds it, to tell a change. */
 export function versionOf(definition: NodeSnapshot): string {
   return hashOf(stable({ ...snapshotOf(definition), nodes: definition.nodes.map(unplaced) }));
 }
+
+/** A definition's version number: the newest its entity published, else 1. A use records it and follows it. Plan 972 */
+export const numberOf = (definition: Pick<NodeDefinition, 'version'>): number => definition.version ?? 1;
 
 /** What a use records of a definition. */
 function snapshotOf(d: NodeSnapshot): NodeSnapshot {
@@ -246,7 +230,7 @@ export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, libra
  *  later change shows as a diff. New uses follow the definition saved now. */
 export function useOf(library: NodeLibrary, kind: string, at: Pick<WorkflowNode, 'id' | 'x' | 'y'> & Partial<WorkflowNode>): WorkflowNode {
   const definition = library.nodes[kind];
-  return { ...at, kind, ...(definition ? { version: versionOf(definition), was: snapshotOf(structuredClone(definition)) } : {}) };
+  return { ...at, kind, ...(definition ? { version: numberOf(definition), was: snapshotOf(structuredClone(definition)) } : {}) };
 }
 
 /** A fault inside a body, named by its path: "Org permissions › Condition: the node …". */
@@ -346,9 +330,9 @@ export interface DefinitionDiff {
   stale: boolean;
   /** The use recorded the definition it was made from, so the lists below are known. */
   known: boolean;
-  /** The versions: the use's, and the library's now. */
-  recorded?: string;
-  current: string;
+  /** The version numbers: the use's, and the library's now. */
+  recorded?: number;
+  current: number;
   label?: { from: string; to: string };
   inputs: SocketDiff;
   outputs: SocketDiff;
@@ -378,16 +362,19 @@ const socketDiff = (was: readonly (NodeSocket | NodeOutput)[], now: readonly (No
   };
 };
 
-/** The change between a use's recorded definition and the library's now. None: the use is of no
- *  definition in the library. A use that recorded no definition is stale with nothing listed. */
+/** The change between a use's recorded definition and the library's now. None: the use is of no definition in the
+ *  library. Stale where its number is behind the published one and it is not already what that says; one that recorded
+ *  no definition is stale with nothing listed. Plan 972 */
 export function definitionDiff(use: Pick<WorkflowNode, 'kind' | 'version' | 'was'>, library: NodeLibrary): DefinitionDiff | undefined {
   const now = library?.nodes?.[use.kind];
   if (!now) return undefined;
-  const current = versionOf(now);
+  const current = numberOf(now);
   const was = use.was;
   const none: SocketDiff = { added: [], removed: [], retyped: [], changed: [] };
+  /* Stale: behind the published number, and not already what it says. A draft edit keeps the number, so no use sees it
+     (plan 972 D1 A); the use you edited through already holds what you publish, so it takes it at once (D2 A). */
   const diff: DefinitionDiff = {
-    stale: use.version !== current, known: !!was, current, ...(use.version ? { recorded: use.version } : {}),
+    stale: use.version !== current && !(was && versionOf(was) === versionOf(now)), known: !!was, current, ...(use.version ? { recorded: use.version } : {}),
     inputs: none, outputs: none, nodes: { added: [], removed: [], changed: [] }, connections: { added: [], removed: [] },
   };
   if (!was || !diff.stale) return diff;
@@ -432,7 +419,7 @@ export function updateInstance(workflow: WorkflowDefinition, id: string, library
   const all: Kinds = { ...kindsOf(library), ...kinds };
   const lost = Object.keys(use.values ?? {}).filter((name) => !rowOf(all[use.kind]!.rows, name));
   const kept = lost.reduce((w, row) => editWorkflow(w, { node: id, row, value: null }, all), workflow);
-  return editWorkflow(kept, { node: id, set: { version: versionOf(definition), was: snapshotOf(structuredClone(definition)) } }, all);
+  return editWorkflow(kept, { node: id, set: { version: numberOf(definition), was: snapshotOf(structuredClone(definition)) } }, all);
 }
 
 /** The workflow with every use of one definition brought to the library's (Update all instances on

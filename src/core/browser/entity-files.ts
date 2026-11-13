@@ -46,7 +46,7 @@ export function readEntities(read: unknown, facts: EntityFacts = {}): EntityLibr
     faults = new Map();
     const next: typeof waiting = [];
     for (const [key, entity] of waiting) {
-      const found = !isEntity(entity) ? ['it is not an entity: a v2 with a type, an id, a name and a graph']
+      const found = !isEntity(entity) ? ['it is not an entity: a v3 with a type, an id, a name and a graph']
         : entity.id !== key ? [`its key is "${key}", but its id is "${entity.id}"`]
           : entityFaults(entity, { ...facts, entities: [...(facts.entities ?? []), ...Object.values(kept)] });
       if (found.length) {

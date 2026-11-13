@@ -17,6 +17,7 @@ const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
 const { offeredKinds, asNode, registerEntityType } = await import(new URL('data/entity-types.js', core));
 const { entityFaults } = await import(new URL('data/entity-check.js', core));
+const { publish } = await import(new URL('data/entity-versions.js', core));
 const { entityKind, entityRefOf, nodeEntityOf } = await import(new URL('data/entity.js', core));
 const lib = await import(new URL('data/node-library.js', core));
 const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', core));
@@ -25,7 +26,7 @@ const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', co
 
 /** Records whose status is one value — Source › Field › Condition — sent to the Filter's Where. */
 const filter = (id, label, value = 'active', extra = {}) => ({
-  v: 2, type: 'filter', id, label,
+  v: 3, type: 'filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -71,7 +72,8 @@ test('every entity is a node the panel offers, by its use\'s kind; a preset is r
   assert.deepEqual(entityRefOf('has-role'), { type: 'node', id: 'has-role' });
   assert.equal(entityKind(entityRefOf('filter:trials')), 'filter:trials');
   const back = nodeEntityOf('filter:trials', asNode(k.entities.get('trials')));
-  const { origin: _o, ...kept } = k.entities.get('trials');
+  // Its versions are the shelf's (plan 972), no part of the node it offers.
+  const { origin: _o, versions: _v, ...kept } = k.entities.get('trials');
   assert.deepEqual(back, kept);
 });
 
@@ -98,7 +100,8 @@ test('a use flattens: placed, it records its version; inside, it is the entity\'
   const trials = filter('trials', 'Trials', 'trial');
   const library = { v: 1, nodes: { 'filter:trials': asNode(trials) } };
   const flow = flowOf(library, 'filter:trials');
-  assert.equal(flow.nodes[0].version, lib.versionOf(asNode(trials)));
+  // It follows the published number: none published, 1 (plan 972).
+  assert.equal(flow.nodes[0].version, 1);
   assert.deepEqual(lib.workflowFaultsDeep(flow, library), []);
   const inner = lib.innerOf(flow.nodes[0], library);
   // It has outputs and no inputs: a Group Output, and no Group Input (plan 949).
@@ -133,16 +136,20 @@ test('an edit inside goes back to its entity, of its own type, its settings kept
   assert.match(preset.faults.join('\n'), /preset, which is read only/);
 });
 
-test('D11: the entity saved again — each use says so, its diff names the change, and an update keeps its own values; Update all on the graph', async () => {
+test('D11: the entity saved again is a draft no use sees; PUBLISHED, each use says so, its diff names the change, and an update keeps its own values; Update all on the graph (plan 972)', async () => {
   const k = keeper();
   await k.entities.save(filter('trials', 'Trials', 'trial'));
   const before = k.entities.library();
   let flow = flowOf(before, 'filter:trials', ['one', 'two']);
   flow = { ...flow, nodes: flow.nodes.map((n) => (n.id === 'one' ? { ...n, heading: 'Trials, mine' } : n)) };
   assert.deepEqual(lib.staleUses(flow, before), []);
-  // Saved again, from its own canvas, as Save writes it.
+  // Saved again, from its own canvas, as Save writes it: a draft (D1 A).
   await k.entities.save(filter('trials', 'Trials', 'lead'));
+  assert.deepEqual(lib.staleUses(flow, k.entities.library()), []);
+  // Published: version 2.
+  assert.deepEqual(await publish(k.entities, 'trials'), { number: 2 });
   const after = k.entities.library();
+  assert.equal(after.nodes['filter:trials'].version, 2);
   assert.deepEqual(lib.staleUses(flow, after), ['one', 'two']);
   const diff = lib.definitionDiff(flow.nodes[0], after);
   assert.deepEqual([diff.stale, diff.known, diff.nodes.changed], [true, true, ['status']]);
@@ -177,7 +184,7 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
 test('an app\'s type is used as a node too; and the keeper\'s modules stay light: no node kind, no workflow', () => {
   const off = registerEntityType({ id: 'ui-card', label: 'UI Card', icon: 'grid', graph: { runs: false, families: ['Sources'], outputs: [{ name: 'present', type: 'object' }] } });
   try {
-    const card = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'filter:trials', x: 0, y: 0 }], connections: [] } };
+    const card = { v: 3, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'f', kind: 'filter:trials', x: 0, y: 0 }], connections: [] } };
     const node = asNode(card);
     assert.deepEqual([node.icon, node.outputs.map((o) => o.name)], ['grid', ['present']]);
     // A card takes a Source, not a Condition; any entity's node, as a Filter's.

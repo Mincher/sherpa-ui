@@ -38,7 +38,7 @@ test('the Start has a Model row a graph may go without; one joined is the primar
   assert.deepEqual(workflowFaults(graph()), []);
   // Its schemas take the line into the Start's row: a top workflow's, and an entity's graph (found by the Demos check).
   assert.deepEqual(schemaCheck('workflow.v3.json')(graph()), []);
-  assert.deepEqual(schemaCheck('entity.v2.json')({ v: 2, type: 'workflow', id: 'g', label: 'G', graph: { nodes: graph().nodes, connections: graph().connections } }), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')({ v: 3, type: 'workflow', id: 'g', label: 'G', graph: { nodes: graph().nodes, connections: graph().connections } }), []);
   const none = { ...graph(), connections: [{ from: 'when', to: START }] };
   assert.equal(primaryOf(none), undefined);
   assert.deepEqual(words(workflowGraph(none), START), []);

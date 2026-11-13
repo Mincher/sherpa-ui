@@ -121,8 +121,8 @@ test('an entity keeps its frames: the graph saved, the definition it offers, and
   const framed = editWorkflow(flow(), { frame: { nodes: ['s1', 'p1'] } });
   const graph = graphOfWorkflow(framed);
   assert.deepEqual(graph.frames, framed.frames);
-  const entity = { v: 2, type: 'node', id: 'framed', label: 'Framed', graph, settings: { inputs: [], outputs: [] } };
-  assert.deepEqual(schemaCheck('entity.v2.json')(entity), []);
+  const entity = { v: 3, type: 'node', id: 'framed', label: 'Framed', graph, settings: { inputs: [], outputs: [] } };
+  assert.deepEqual(schemaCheck('entity.v3.json')(entity), []);
   const definition = definitionOf(entity);
   assert.deepEqual(definition.frames, framed.frames);
   assert.deepEqual(nodeEntityOf('framed', definition).graph.frames, framed.frames);

@@ -151,7 +151,7 @@ test('a connection of another type joins and warns (TODO 770); a row\'s own faul
 
 test('an entity\'s output and a Custom Node\'s: a Filter\'s Where into a Tag is a boolean, and a Custom Node\'s header takes anything', () => {
   const entity = {
-    v: 2, type: 'filter', id: 'active', label: 'Active',
+    v: 3, type: 'filter', id: 'active', label: 'Active',
     graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], connections: [{ from: 'c', to: '#out/where' }] }, settings: { source: 'customers' },
   };
   const library = libraryOf([entity]);

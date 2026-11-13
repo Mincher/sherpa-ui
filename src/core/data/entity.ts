@@ -8,7 +8,10 @@
  * - ENTITY_SCHEMA — The id of the envelope's schema, for the `$schema` of a file.
  * - EntityRef — One entity a graph places: its type and id.
  * - EntityGraph — An entity's graph: a workflow's nodes and connections, with `#in` and `#out` as a Custom Node has.
- * - Entity — One entity, as JSON.
+ * - Entity — One entity, as JSON: its draft, and the versions it has published.
+ * - EntityDefinition — What a version keeps of an entity: its name, words, body and settings; never its tags or category.
+ * - EntityVersion — One published version: its number, when and by whom, a note, a content hash, its definition.
+ * - definitionPart — An entity's definition, as a version keeps it.
  * - EntityQuery — A body in place of a graph: a Filter's Where, the one truth; its lens draws its graph from it.
  * - EntityLibrary — The preset entities of an app, by id, and the types they are of (entities.v3).
  * - isEntity — Whether a value has the SHAPE of an entity, with one body; the persist guard.
@@ -32,7 +35,7 @@ import { registeredLens } from './lens-registry.js';
 import type { Where } from './where.js';
 
 /** The id of the envelope's schema, for the `$schema` of a file. */
-export const ENTITY_SCHEMA = 'https://sherpa-ui.dev/schemas/entity.v2.json';
+export const ENTITY_SCHEMA = 'https://sherpa-ui.dev/schemas/entity.v3.json';
 
 const ID = /^[a-z][a-z0-9-]*$/;
 
@@ -56,10 +59,11 @@ export interface EntityGraph {
   unfurl?: true;
 }
 
-/** One entity, as JSON. `origin` is set when it is read and never written. */
+/** One entity, as JSON. `origin` is set when it is read and never written. Its graph (or query), name and settings
+ *  are its working DRAFT; `versions` are what it has published (plan 972). */
 export interface Entity {
   $schema?: string;
-  v: 2;
+  v: 3;
   type: string;
   id: string;
   label: string;
@@ -74,7 +78,30 @@ export interface Entity {
   query?: EntityQuery;
   settings?: Readonly<Record<string, unknown>>;
   uses?: readonly EntityRef[];
+  /** Its published versions, newest first. A save never edits or drops one; the shelf publishes the first on a new id's
+   *  first save. Plan 972 */
+  versions?: readonly EntityVersion[];
   origin?: 'preset' | 'mine';
+}
+
+/** What a version keeps of an entity: its name, words, body and settings. Its tags and category only file it in the Nodes
+ *  panel, so they are no part of a version: they apply at once, and no use goes stale for them. Plan 972 */
+export type EntityDefinition = Pick<Entity, 'label' | 'description' | 'graph' | 'query' | 'settings'>;
+
+/** One published version: its number, when and by whom, a note, its definition's content hash, and its definition. */
+export interface EntityVersion {
+  number: number;
+  at: string;
+  by?: string;
+  note?: string;
+  hash: string;
+  definition: EntityDefinition;
+}
+
+/** An entity's definition, as a version keeps it: its own parts only, none left undefined. */
+export function definitionPart(entity: Entity): EntityDefinition {
+  const { label, description, graph, query, settings } = entity;
+  return { label, ...(description ? { description } : {}), ...(graph ? { graph } : {}), ...(query ? { query } : {}), ...(settings ? { settings } : {}) };
 }
 
 /** A body in place of a graph (plan 960 U4.4b): a Filter's Where, the one truth; its lens draws its graph from it. */
@@ -92,9 +119,15 @@ export interface EntityLibrary {
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** Whether a value has the SHAPE of an entity: a v2 with a type, an id, a name and ONE body: a graph, or a query. */
+/** Whether a value has the SHAPE of a version: a number from 1, when, a hash and a definition. */
+const isVersion = (v: unknown): boolean => isObject(v) && Number.isInteger(v['number']) && (v['number'] as number) >= 1
+  && typeof v['at'] === 'string' && typeof v['hash'] === 'string' && isObject(v['definition']);
+
+/** Whether a value has the SHAPE of an entity: a v3 with a type, an id, a name and ONE body: a graph, or a query; and its
+ *  versions, where it has them. A v2 is no entity: a stored one goes (plan 972; Will: never convert). */
 export function isEntity(value: unknown): value is Entity {
-  if (!isObject(value) || value['v'] !== 2) return false;
+  if (!isObject(value) || value['v'] !== 3) return false;
+  if (value['versions'] !== undefined && !(Array.isArray(value['versions']) && value['versions'].every(isVersion))) return false;
   const { type, id, label, graph, query } = value;
   const drawn = isObject(graph) && Array.isArray(graph['nodes']);
   const said = isObject(query) && isObject(query['where']);
@@ -152,7 +185,7 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
     ? { inputs: definition.inputs, outputs: definition.outputs, ...(definition.category ? { category: definition.category } : {}), ...(definition.icon ? { icon: definition.icon } : {}) }
     : definition.settings;
   return {
-    v: 2, type, id, label: definition.label,
+    v: 3, type, id, label: definition.label,
     ...(definition.description ? { description: definition.description } : {}),
     ...(definition.tags?.length ? { tags: definition.tags } : {}),
     ...(type !== 'node' && definition.category ? { category: definition.category } : {}),

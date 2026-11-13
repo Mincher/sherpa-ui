@@ -47,7 +47,7 @@ test('createNode keeps a Custom Node from its JSON, a node when it names no type
 test('readNode gives the entity and the node it offers; updateNode changes the reader\'s own, never a preset; deleteNode forgets', async () => {
   const stop = quiet();
   try {
-    const preset = { v: 2, type: 'node', id: 'shipped', label: 'Shipped', origin: 'preset', graph: body, settings: sockets };
+    const preset = { v: 3, type: 'node', id: 'shipped', label: 'Shipped', origin: 'preset', graph: body, settings: sockets };
     const shelf = shelfOf([preset]);
     await createNode(shelf, { id: 'mine', label: 'Mine', graph: body, settings: sockets });
     const read = readNode(shelf, 'mine');
@@ -75,7 +75,7 @@ test('a type as JSON — an entities file\'s types — fixes its category and so
     const file = {
       v: 3,
       types: { playbook: { v: 1, id: 'playbook', label: 'Playbook', icon: 'book-open-lines', category: 'Runbooks', graph: sockets } },
-      entities: { triage: { v: 2, type: 'playbook', id: 'triage', label: 'Triage', graph: body } },
+      entities: { triage: { v: 3, type: 'playbook', id: 'triage', label: 'Triage', graph: body } },
     };
     assert.deepEqual(schemaCheck('entities.v3.json')(file), []);
     const read = readEntities(file);

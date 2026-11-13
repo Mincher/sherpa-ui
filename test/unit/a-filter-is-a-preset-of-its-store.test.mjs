@@ -42,14 +42,14 @@ const fieldNode = (id, field, x = 200, y = 0) => ({ id, kind: 'field', x, y, val
 const test_ = (id, type, b, x = 400, y = 0) => ({ id, kind: 'condition', x, y, values: { type, ...(b === undefined ? {} : { b }) } });
 /** Demos' own, rebuilt (plan 783 D9): Source › Field (Status) › Condition (Equals active) › its True › Where (plan 944). */
 const active = {
-  v: 2, type: 'filter', id: 'active-customers', label: 'Active customers', settings: { source: 'customers' },
+  v: 3, type: 'filter', id: 'active-customers', label: 'Active customers', settings: { source: 'customers' },
   graph: {
     nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('field', 'status'), test_('status', 'eq', 'active')],
     connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
   },
 };
 /** A Filter whose nodes and connections are given, over customers. */
-const filter = (id, nodes, connections, extra = {}) => ({ v: 2, type: 'filter', id, label: id, settings: { source: 'customers' }, graph: { nodes, connections }, ...extra });
+const filter = (id, nodes, connections, extra = {}) => ({ v: 3, type: 'filter', id, label: id, settings: { source: 'customers' }, graph: { nodes, connections }, ...extra });
 /** Pro, And Active customers placed beside it. */
 const proActive = filter('pro-active', [
   { id: 'use', kind: 'filter:active-customers', x: 0, y: 240 }, fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), test_('and', 'and', undefined, 600),
@@ -176,7 +176,7 @@ test('what has no preset form is said in words: Or across two fields, an empty v
 test('a page lists only its store\'s: settings name the source, else its Store node; the app\'s then the reader\'s', () => {
   const orders = filter('orders', active.graph.nodes, active.graph.connections, { settings: { source: 'orders' } });
   const bare = { ...filter('bare', active.graph.nodes, active.graph.connections), settings: undefined };
-  const node = { v: 2, type: 'node', id: 'a-node', label: 'A node', graph: { nodes: [], connections: [] }, settings: { inputs: [], outputs: [] } };
+  const node = { v: 3, type: 'node', id: 'a-node', label: 'A node', graph: { nodes: [], connections: [] }, settings: { inputs: [], outputs: [] } };
   assert.equal(sourceOf(bare), 'customers', 'its Store names it');
   const { presets, faults } = presetsOver('customers', [active, orders, bare, node, proActive]);
   assert.deepEqual(presets.map((p) => p.id), ['filter:active-customers', 'filter:bare', 'filter:pro-active']);

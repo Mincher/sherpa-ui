@@ -49,7 +49,7 @@ test('two Sources in one graph: customers and devices, each its own id and store
   assert.deepEqual(drawn.map((n) => [n.id, n.heading, n.rows.find((r) => r.name === 'store').value]), [['source-1', 'Source', 'customers'], ['source-2', 'Source', 'devices']]);
   assert.deepEqual(drawn[1].rows.find((r) => r.name === 'store').choices.map((c) => c.value), ['customers', 'devices']);
   // As an entity of a type, too; only a second node of the SAME id is a fault.
-  assert.deepEqual(entityFaults({ v: 2, type: 'node', id: 'both', label: 'Both', graph: { nodes: both.nodes, connections: [] }, settings: { inputs: [], outputs: [] } }), []);
+  assert.deepEqual(entityFaults({ v: 3, type: 'node', id: 'both', label: 'Both', graph: { nodes: both.nodes, connections: [] }, settings: { inputs: [], outputs: [] } }), []);
   assert.ok(workflowFaults({ ...both, nodes: [...both.nodes, both.nodes[0]] }).includes('two nodes are "source-1"'));
 });
 

@@ -24,7 +24,7 @@
     },
     "data": { "description": "Its seed rows: a JSON file or a URL, from the app's folder.", "type": "string", "minLength": 1 },
     "graph": {
-      "description": "A graph thing's graph part (plan 942 D2 A, folded in by plan 960 U2): the sockets every entity of it has, the families its graph may place, and whether it runs. Each entity of it is an entity.v2 whose graph is what it does.",
+      "description": "A graph thing's graph part (plan 942 D2 A, folded in by plan 960 U2): the sockets every entity of it has, the families its graph may place, and whether it runs. Each entity of it is an entity.v3 whose graph is what it does.",
       "type": "object",
       "additionalProperties": false,
       "properties": {

@@ -18,7 +18,7 @@ const { asNode, savedCategories } = await import(new URL('entity-types.js', core
 
 const RUNBOOK = { id: 'runbook', label: 'Runbook', category: 'Runbooks', graph: { runs: false, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'found', label: 'Found', type: 'object' }] } };
 const steps = (category) => ({
-  v: 2, type: 'runbook', id: 'patch-review', label: 'Patch review', ...(category ? { category } : {}),
+  v: 3, type: 'runbook', id: 'patch-review', label: 'Patch review', ...(category ? { category } : {}),
   graph: { nodes: [{ id: 'sort', kind: 'organise', x: 0, y: 0, values: { sort: 'name' } }], connections: [{ from: '#in/rows', to: 'sort' }, { from: 'sort/rows', to: '#out/found' }] },
 });
 
@@ -33,8 +33,8 @@ test('an entity\'s category: its own, else its type\'s; a node\'s settings say a
   assert.equal(asNode(steps(), types).category, 'Runbooks', 'its type\'s');
   assert.equal(asNode(steps('Checks'), types).category, 'Checks', 'its own wins');
   assert.equal(asNode(steps(), { runbook: { ...RUNBOOK, category: undefined } }).category, undefined, 'none: Custom Nodes, as before');
-  assert.equal(definitionOf({ v: 2, type: 'node', id: 'n', label: 'N', graph: { nodes: [] }, settings: { inputs: [], outputs: [], category: 'Runbooks' } }).category, 'Runbooks');
-  assert.deepEqual(schemaCheck('entity.v2.json')(steps('Runbooks')), []);
+  assert.equal(definitionOf({ v: 3, type: 'node', id: 'n', label: 'N', graph: { nodes: [] }, settings: { inputs: [], outputs: [], category: 'Runbooks' } }).category, 'Runbooks');
+  assert.deepEqual(schemaCheck('entity.v3.json')(steps('Runbooks')), []);
 });
 
 test('a definition of a category other than a node\'s saves it at the top, and reads back the same', () => {

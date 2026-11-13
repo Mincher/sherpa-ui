@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://sherpa-ui.dev/schemas/entity.v2.json",
+  "$id": "https://sherpa-ui.dev/schemas/entity.v3.json",
   "title": "Sherpa-UI entity",
   "description": "One entity: a body saved under a type, an id and a name: its graph, or, for a type that keeps one, its query (a Filter's Where). The envelope is the same for every type; the type's own schema (entity-<type>.v1.json) says what its settings hold. Its use inside another graph is a node whose kind is \"<type>:<id>\". checkEntity() reads it. docs/history/plan-746-entities-and-graph-views.md",
   "type": "object",
@@ -9,7 +9,7 @@
   "required": ["v", "type", "id", "label"],
   "oneOf": [{ "required": ["graph"] }, { "required": ["query"] }],
   "properties": {
-    "v": { "const": 2 },
+    "v": { "const": 3 },
     "category": {
       "description": "The category its node stands in, in the Nodes panel, as Runbooks. None: a node's settings', its type's, else Custom Nodes.",
       "type": "string", "minLength": 1
@@ -30,6 +30,30 @@
       "items": {
         "type": "object", "additionalProperties": false, "required": ["type", "id"],
         "properties": { "type": { "$ref": "defs.v1.json#/$defs/id" }, "id": { "$ref": "defs.v1.json#/$defs/id" } }
+      }
+    },
+    "versions": {
+      "description": "Its published versions, newest first (plan 972). Its label, words, body and settings are its working draft; a use and the node library read its newest version. A save never edits or drops one; a new id's first save publishes version 1.",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["number", "at", "hash", "definition"],
+        "properties": {
+          "number": { "type": "integer", "minimum": 1 },
+          "at": { "description": "When it was published: an ISO date and time.", "type": "string", "format": "date-time" },
+          "by": { "description": "Who published it: the app's current User where there is one, else free text.", "type": "string" },
+          "note": { "description": "Why: a Roll back says which version it brings back.", "type": "string" },
+          "hash": { "description": "Its definition's content hash: what tells a draft from it.", "type": "string" },
+          "definition": {
+            "description": "What it keeps of the entity: its name, words, body and settings. Its tags and category file it, and are no part of a version.",
+            "type": "object", "additionalProperties": false, "required": ["label"],
+            "properties": {
+              "label": { "type": "string", "minLength": 1 }, "description": { "type": "string" },
+              "graph": { "type": "object", "$ref": "defs.v1.json#/$defs/graph", "unevaluatedProperties": false, "required": ["nodes"] },
+              "query": { "type": "object", "required": ["where"], "properties": { "where": { "$ref": "defs.v1.json#/$defs/where" } } },
+              "settings": { "type": "object" }
+            }
+          }
+        }
       }
     },
     "origin": { "description": "Set on read, never written: a preset is a file's and read only; the reader's own are mine.", "enum": ["preset", "mine"] }

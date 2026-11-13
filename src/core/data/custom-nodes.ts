@@ -62,8 +62,8 @@ export async function createNode(shelf: EntityShelf, json: unknown, facts: Entit
   const taken = shelf.list().map((e) => e.id);
   const id = typeof read.id === 'string' && read.id && !taken.includes(read.id) ? read.id : freeId(label, taken, type);
   const { origin: _origin, $schema: _schema, ...rest } = read;
-  const entity = { ...rest, v: 2, type, id, label, graph: read.graph ?? { nodes: [] }, ...(type === 'node' && !read.settings ? { settings: { inputs: [], outputs: [] } } : {}) };
-  if (!isEntity(entity)) return { faults: ['it is not an entity: a v2 with a type, an id, a name and a graph'] };
+  const entity = { ...rest, v: 3, type, id, label, graph: read.graph ?? { nodes: [] }, ...(type === 'node' && !read.settings ? { settings: { inputs: [], outputs: [] } } : {}) };
+  if (!isEntity(entity)) return { faults: ['it is not an entity: a v3 with a type, an id, a name and a graph'] };
   return keep(shelf, entity, facts);
 }
 

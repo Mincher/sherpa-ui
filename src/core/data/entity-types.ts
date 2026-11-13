@@ -23,6 +23,7 @@
  * - offeredKinds — The kinds a graph's node panel offers: what its type takes, and no node that would hold it in a loop.
  * - entityOf — A workflow's graph as an entity of a type.
  */
+import { newestOf, publishedOf } from './entity-versions.js';
 import { report } from './report.js';
 import type { NodeKind, RowChoice } from './node-kinds.js';
 import type { NodeDefinition, NodeLibrary, NodeOutput, NodeSocket } from './node-library.js';
@@ -159,8 +160,11 @@ export function asNode(entity: Entity, types: Readonly<Record<string, EntityType
  *  functions, `innerOf`, `useOf`, `definitionDiff` and `updateInstance` then take an entity as they take a
  *  Custom Node, and a use follows its definition with the version and snapshot recorded. */
 export function libraryOf(entities: readonly Entity[], types: Readonly<Record<string, EntityType>> = entityTypes()): NodeLibrary {
-  // One of a type that is not reusable is no node (plan 949).
-  return { v: 1, nodes: Object.fromEntries(entities.filter((e) => types[e.type]?.graph?.reusable !== false).map((e) => [entityKind(e), asNode(e, types)])) };
+  // One of a type that is not reusable is no node (plan 949). A use reads what was PUBLISHED, and its number (plan 972 D1 A).
+  return {
+    v: 1, nodes: Object.fromEntries(entities.filter((e) => types[e.type]?.graph?.reusable !== false)
+      .map((e) => [entityKind(e), { ...asNode(publishedOf(e), types), version: newestOf(e)?.number ?? 1 }])),
+  };
 }
 
 /** The kinds a graph's node panel offers, of those given: a kind its type `takes`; and a Custom Node —
@@ -187,7 +191,7 @@ export function offeredKinds<K extends Pick<NodeKind, 'model' | 'category'>>(
 export function entityOf(workflow: Pick<WorkflowDefinition, 'id' | 'label' | 'nodes' | 'connections' | 'ties' | 'frames' | 'stages' | 'lanes' | 'beforeLanes'>, type: string, settings?: Readonly<Record<string, unknown>>): Entity {
   // Its stages and swimlanes are kept as its frames are: a Save that dropped them lost them on the next load (TODO 933).
   return {
-    $schema: ENTITY_SCHEMA, v: 2, type, id: workflow.id, label: workflow.label ?? workflow.id,
+    $schema: ENTITY_SCHEMA, v: 3, type, id: workflow.id, label: workflow.label ?? workflow.id,
     graph: { nodes: workflow.nodes, ...(workflow.connections ? { connections: workflow.connections } : {}), ...layoutParts(workflow) },
     ...(settings ? { settings } : {}),
   };

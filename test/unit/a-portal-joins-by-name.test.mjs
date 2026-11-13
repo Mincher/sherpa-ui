@@ -153,7 +153,7 @@ test('a loop through a row is a loop', () => {
 
 /** Demos' Active customers Filter, its Field sent through a portal row to its Condition. */
 const throughPortal = {
-  v: 2, type: 'filter', id: 'portal-active', label: 'Active, through a portal', settings: { source: 'customers' },
+  v: 3, type: 'filter', id: 'portal-active', label: 'Active, through a portal', settings: { source: 'customers' },
   graph: {
     nodes: [source('start'), field('field', 'status', 300), portal('in', 'in', 'status', 600), portal('out', 'out', 'status', 900), cond('status', 'eq', 'active', 1200)],
     // The test's True into the Group Output (plan 944).

@@ -224,7 +224,7 @@ test('an app\'s types load from their files and register by id; an entity of a r
   assert.equal(entityTypes()['type-b'], undefined);
   assert.match(said.join('\n'), /loadTypes: the type under "type-b" has the id "other", so it is left out/);
   assert.match(said.join('\n'), /loadTypes: the type "type-c" could not be read \(404\)/);
-  const entity = { v: 2, type: 'type-a', id: 'one', label: 'One', graph: { nodes: [] } };
+  const entity = { v: 3, type: 'type-a', id: 'one', label: 'One', graph: { nodes: [] } };
   assert.match((await entityFaults(entity)).join('\n'), /is of the type "Device", which keeps no graph/);
 });
 

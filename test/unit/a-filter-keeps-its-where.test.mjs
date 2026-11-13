@@ -16,7 +16,7 @@ import {
 const { PageKeeper, memoryTier } = await import(new URL('../../dist/core/browser/page-state.js', import.meta.url));
 
 /** A Filter over customers that keeps its Where. */
-const keeping = (where, id = 'f') => ({ v: 2, type: 'filter', id, label: 'F', query: { where }, settings: { source: 'customers' } });
+const keeping = (where, id = 'f') => ({ v: 3, type: 'filter', id, label: 'F', query: { where }, settings: { source: 'customers' } });
 
 const WHERES = [
   { status: { eq: 'active' } },
@@ -35,7 +35,7 @@ test('a Where is drawn as a Filter\'s graph, a Source, a Field and a test each, 
     const graph = whereGraph(where, { source: 'customers' });
     assert.ok(graph.nodes.every((n) => ['source', 'field', 'condition', 'time'].includes(n.kind)), JSON.stringify(where));
     assert.deepEqual(entityGraph(keeping(where)), graph, 'entityGraph draws its query body');
-    const read = presetOfEntity({ v: 2, type: 'filter', id: 'f', label: 'F', graph, settings: { source: 'customers' } });
+    const read = presetOfEntity({ v: 3, type: 'filter', id: 'f', label: 'F', graph, settings: { source: 'customers' } });
     assert.deepEqual(read.preset?.where, where, JSON.stringify(read));
   }
 });
@@ -73,7 +73,7 @@ test('a page\'s preset, a saved filter and a Filter are one type: each a Filter 
   const fromPreset = filterOf({ id: 'pro', label: 'Pro plans', where }, 'customers').filter;
   const fromSaved = filterOf({ id: 'pro', label: 'Pro plans', query: { v: 1, scopes: { data: { where } } } }, 'customers').filter;
   assert.deepEqual(fromPreset, fromSaved);
-  assert.deepEqual(fromPreset, { v: 2, type: 'filter', id: 'pro', label: 'Pro plans', query: { where }, settings: { source: 'customers' } });
+  assert.deepEqual(fromPreset, { v: 3, type: 'filter', id: 'pro', label: 'Pro plans', query: { where }, settings: { source: 'customers' } });
   // A Filter that keeps a graph is written back as the same Filter, once its graph says the Where.
   const { workflow } = lensOf('filter').toGraph(fromPreset);
   const drawn = { ...fromPreset, query: undefined, graph: entityGraph(fromPreset) };
@@ -89,9 +89,9 @@ test('one body, never both; a type that keeps no query is told so', () => {
   const where = { status: { eq: 'active' } };
   assert.equal(isEntity(keeping(where)), true);
   assert.equal(isEntity({ ...keeping(where), graph: { nodes: [] } }), false, 'both bodies');
-  assert.equal(isEntity({ v: 2, type: 'filter', id: 'f', label: 'F' }), false, 'no body');
+  assert.equal(isEntity({ v: 3, type: 'filter', id: 'f', label: 'F' }), false, 'no body');
   assert.deepEqual(entityFaults(keeping(where)), []);
-  const node = { v: 2, type: 'node', id: 'n', label: 'N', query: { where } };
+  const node = { v: 3, type: 'node', id: 'n', label: 'N', query: { where } };
   assert.ok(entityFaults(node).some((f) => /keeps a query, which a .* does not/.test(f)), entityFaults(node).join('; '));
 });
 
@@ -127,7 +127,7 @@ test('a use\'s Update says what the Filter says now, field by field, not the nod
     nodes: [{ id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }, { id: 'trial', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } }],
     connections: [{ from: 'status/field', to: 'trial' }, { from: 'trial/true', to: '#out/where' }],
   };
-  const before = { v: 2, type: 'filter', id: 'trials', label: 'Trials', graph, settings: { source: 'customers' } };
+  const before = { v: 3, type: 'filter', id: 'trials', label: 'Trials', graph, settings: { source: 'customers' } };
   const was = libraryOf([before]).nodes['filter:trials'];
   // Saved again as its Where, one value changed: its drawing's ids are new.
   const after = keeping({ status: { eq: 'suspended' } }, 'trials');

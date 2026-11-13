@@ -295,7 +295,7 @@ test('scaffold_app gives the Starter\'s files, named, and validate_app finds the
 
 /** A Custom Node, as an entity: Rows in, the rows' Role out. */
 const HAS_ROLE = {
-  v: 2, type: 'node', id: 'has-role', label: 'Has role',
+  v: 3, type: 'node', id: 'has-role', label: 'Has role',
   graph: { nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'role' } }], connections: [{ from: '#in/rows', to: 'f' }, { from: 'f/field', to: '#out/role' }] },
   settings: { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'role', label: 'Role', type: 'value' }] },
 };
@@ -315,10 +315,10 @@ test('check_custom_node: checked as Save checks it; each fault in words; with no
   const known = await call('check_custom_node', { node: JSON.stringify(outer), entities: JSON.stringify({ v: 3, entities: { 'has-role': HAS_ROLE } }) });
   assert.match(known.text, /No fault\. "Outer"/);
   // A type the file says is known for that call alone.
-  const typed = { v: 2, type: 'playbook', id: 'p', label: 'P', graph: { nodes: [] } };
+  const typed = { v: 3, type: 'playbook', id: 'p', label: 'P', graph: { nodes: [] } };
   assert.match((await call('check_custom_node', { node: JSON.stringify(typed), entities: JSON.stringify({ v: 3, types: { playbook: { v: 1, id: 'playbook', label: 'Playbook', category: 'Runbooks', graph: {} } }, entities: {} }) })).text, /No fault\. "P" is a Custom Node of Runbooks, placed as the kind "playbook:p"\./);
   assert.match((await call('check_custom_node', { node: JSON.stringify(typed) })).text, /fault\(s\) in "P"/);
   // The schema's words; not JSON is refused.
-  assert.match((await call('check_custom_node', { node: JSON.stringify({ ...HAS_ROLE, routes: [] }) })).text, /entity\.v2: /);
+  assert.match((await call('check_custom_node', { node: JSON.stringify({ ...HAS_ROLE, routes: [] }) })).text, /entity\.v3: /);
   assert.equal((await call('check_custom_node', { node: '{' })).bad, true);
 });

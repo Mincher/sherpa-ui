@@ -14,7 +14,8 @@
  * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
  */
 import { report } from './report.js';
-import { entityGraph, isEntity, usesOf, withBody, ENTITY_SCHEMA, type Entity, type EntityBody } from './entity.js';
+import { definitionPart, entityGraph, isEntity, usesOf, withBody, ENTITY_SCHEMA, type Entity, type EntityBody, type EntityVersion } from './entity.js';
+import { nextVersion, versionsOf } from './entity-versions.js';
 import { libraryOf } from './entity-types.js';
 import type { EntityFacts } from './entity-check.js';
 import type { NodeLibrary } from './node-library.js';
@@ -81,6 +82,13 @@ function kept(entity: Entity, all: readonly Entity[]): Entity {
   return { ...plain, ...(tags === undefined || (Array.isArray(tags) && !tags.length) ? {} : { tags }), ...(uses.length ? { uses } : {}) };
 }
 
+/** Do these versions keep the stored ones, unedited, at their tail, every number newer than the one after it? */
+function extendsVersions(given: readonly EntityVersion[], stored: readonly EntityVersion[]): boolean {
+  const tail = given.slice(given.length - stored.length);
+  return given.length >= stored.length && stored.every((v, i) => v.number === tail[i]!.number && v.hash === tail[i]!.hash)
+    && given.every((v, i) => i === 0 || given[i - 1]!.number > v.number);
+}
+
 /** Names as words: "A", "A and B", "A, B and C". */
 const named = (labels: readonly string[]): string => {
   const quoted = labels.map((l) => `"${l}"`);
@@ -101,14 +109,23 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     get: (id) => all().find((e) => e.id === id),
 
     async save(entity) {
-      if (!isEntity(entity)) return refuse('entity', 'save: it is not an entity: a v2 with a type, an id, a name and a graph.', String((entity as { id?: unknown })?.id ?? ''));
+      if (!isEntity(entity)) return refuse('entity', 'save: it is not an entity: a v3 with a type, an id, a name and a graph.', String((entity as { id?: unknown })?.id ?? ''));
       const here = all();
       const held = here.find((e) => e.id === entity.id);
       if (held?.origin === 'preset') return refuse(entity.type, `save: "${entity.id}" is a preset, which is read only: use "Copy to my entities".`, entity.id);
       if (held && held.type !== entity.type) return refuse(entity.type, `save: "${entity.id}" is already a ${held.type}: an id names one entity.`, entity.id);
       const [{ checkEntity }, { finalGraph }] = await Promise.all([import('./entity-check.js'), import('./workflow.js')]);
       // Its graph as Save writes it: what a node keeps for its other types stays behind. A query body is kept as it is.
-      const next = kept(entity.graph ? { ...entity, graph: finalGraph(entity.graph, facts().kinds) } : entity, here);
+      const draft = kept(entity.graph ? { ...entity, graph: finalGraph(entity.graph, facts().kinds) } : entity, here);
+      /* Its versions (plan 972): none given keeps the stored ones; given, they may only ADD newer ones at the front, so a
+         save never edits or drops a version. A new id's first save publishes version 1. */
+      const stored = held ? versionsOf(held) : [];
+      const given = entity.versions;
+      if (given && !extendsVersions(given, stored)) {
+        return refuse(entity.type, `save: "${entity.id}"'s versions must keep the ones it has (${stored.map((v) => v.number).join(', ')}) and only add newer ones in front.`, entity.id);
+      }
+      const versions = given?.length ? given : stored.length ? stored : [nextVersion({}, definitionPart(draft))];
+      const next = { ...draft, versions };
       if (!checkEntity(next, { ...facts(), entities: here.filter((e) => e.id !== next.id) })) return false;
       port.keep({ ...port.mine(), [next.id]: next });
       return true;
@@ -139,7 +156,8 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
       const { description, graph, query, ...rest } = structuredClone(change);
       // A body given is the copy's, in place of the one it had: one body, never both.
       const from = graph ? withBody(was, { graph }) : query ? withBody(was, { query }) : was;
-      const { description: had, ...copy } = { ...structuredClone(from), label: `${was.label} copy`, ...rest, id: newId };
+      // A copy is new: it starts at version 1, not its source's (plan 972).
+      const { description: had, versions: _versions, ...copy } = { ...structuredClone(from), label: `${was.label} copy`, ...rest, id: newId };
       const said = 'description' in change ? description : had;
       return shelf.save({ ...copy, ...(said ? { description: said } : {}) } as Entity);
     },
@@ -164,7 +182,7 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
         return undefined;
       }
       if (!isEntity(read)) {
-        refuse('entity', 'import: it is not an entity: a v2 with a type, an id, a name and a graph.', '');
+        refuse('entity', 'import: it is not an entity: a v3 with a type, an id, a name and a graph.', '');
         return undefined;
       }
       const taken = new Set(all().map((e) => e.id));

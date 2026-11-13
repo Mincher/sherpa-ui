@@ -158,12 +158,14 @@ test('an id # in a body is reserved for Group Input and Output', () => {
 test('definitionDiff: each kind of change, plain data; a version ignores where a node sits', () => {
   const l = library();
   const use = lib.useOf(l, 'org-permissions', { id: 'perm', x: 0, y: 0 });
-  assert.equal(use.version, lib.versionOf(ORG));
+  // It follows the published number; none published, 1 (plan 972).
+  assert.equal(use.version, 1);
   assert.equal(lib.definitionDiff(use, l).stale, false);
   const moved = structuredClone(l);
   moved.nodes['org-permissions'].nodes[0].x = 999;
   assert.equal(lib.definitionDiff(use, moved).stale, false, 'moving a node is no change');
-  const change = (fn) => { const next = structuredClone(l); fn(next.nodes['org-permissions']); return lib.definitionDiff(use, next); };
+  // Each change PUBLISHED, as version 2: a draft edit keeps the number, and no use sees it (plan 972 D1 A).
+  const change = (fn) => { const next = structuredClone(l); fn(next.nodes['org-permissions']); next.nodes['org-permissions'].version = 2; return lib.definitionDiff(use, next); };
   assert.deepEqual(change((d) => d.inputs.push({ name: 'org', type: 'value' })).inputs.added, ['org']);
   assert.deepEqual(change((d) => d.inputs.shift()).inputs.removed, ['users']);
   assert.deepEqual(change((d) => { d.inputs[0].type = 'value'; }).inputs.retyped, [{ name: 'users', from: 'object', to: 'value' }]);
@@ -186,6 +188,7 @@ test('an update keeps the instance\'s own values, drops those of a row lost, and
   const next = structuredClone(l);
   next.nodes['org-permissions'].outputs.push({ name: 'blocked', type: 'object' });
   next.nodes['org-permissions'].inputs.push({ name: 'org', type: 'value', control: 'text' });
+  next.nodes['org-permissions'].version = 2;
   assert.deepEqual(lib.staleUses(w, next), ['perm']);
   const frozen = structuredClone(w);
   const kinds = { ...NODE_KINDS, ...lib.kindsOf(next) };
@@ -193,7 +196,7 @@ test('an update keeps the instance\'s own values, drops those of a row lost, and
   assert.deepEqual(w, frozen, 'the one given, untouched');
   const perm = updated.nodes.find((n) => n.id === 'perm');
   assert.deepEqual(perm.values, { role: 'owner' }, 'its own value kept; the lost row\'s gone');
-  assert.equal(perm.version, lib.versionOf(next.nodes['org-permissions']));
+  assert.equal(perm.version, 2);
   assert.deepEqual(lib.staleUses(updated, next), []);
   assert.deepEqual(workflowFaults(updated, kinds), []);
   assert.equal(lib.updateInstance(w, 'end', next), w, 'a node that is no use');

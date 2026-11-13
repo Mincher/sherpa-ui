@@ -18,7 +18,7 @@ const { GROUP_INPUT, GROUP_OUTPUT } = await import(new URL('node-library.js', co
 const nodes = [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'role' } }];
 /** A Custom Node: Rows in, the Role out, in a stage. */
 const HAS_ROLE = {
-  v: 2, type: 'node', id: 'has-role', label: 'Has role',
+  v: 3, type: 'node', id: 'has-role', label: 'Has role',
   graph: { nodes: nodes.map((n) => ({ ...n, stage: 'find' })), connections: [{ from: '#in/rows', to: 'f' }, { from: 'f/field', to: '#out/role' }], stages: [{ id: 'find', label: 'Find', x: -40 }] },
   settings: { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'role', label: 'Role', type: 'value' }] },
 };

@@ -17,7 +17,7 @@
  * - heldInputs — Each connection a use's header holds from before, read once as its own new input; a preset's stays.
  */
 import { NODE_KINDS, nodeKinds, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeConnection, type SocketType } from './node-kinds.js';
-import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
+import { kindsOf, numberOf, updateInstance, useOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tidyTags } from './tags.js';
 import { nodeWidth, tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 import { restage } from './node-stages.js';
@@ -277,7 +277,7 @@ export function ungroupUse(
 
 /** A workflow whose use takes its definition's change where it followed the definition before; else as it was (D11). */
 function follows(workflow: WorkflowDefinition, use: WorkflowNode, was: NodeDefinition, library: NodeLibrary, kinds: Kinds): WorkflowDefinition {
-  return use.version === versionOf(was) ? updateInstance(workflow, use.id, library, kinds) : workflow;
+  return use.version === numberOf(was) ? updateInstance(workflow, use.id, library, kinds) : workflow;
 }
 
 /**

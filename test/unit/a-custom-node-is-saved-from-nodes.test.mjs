@@ -153,9 +153,12 @@ test('a Custom Node\'s header takes anything: each connection let go on it adds 
   // Nothing about it is a fault: the draft, and the library Save would check.
   assert.deepEqual(lib.workflowFaultsDeep(three.workflow, three.library, undefined, facts), []);
   assert.equal(lib.checkNodeLibrary(three.library, undefined, facts), true);
-  // The edit is the DEFINITION's: the use that took it follows it; the other use says Update available.
-  assert.deepEqual(lib.staleUses(three.workflow, three.library), ['has2']);
-  assert.deepEqual(lib.definitionDiff(three.workflow.nodes.find((n) => n.id === 'has2'), three.library).inputs.added, ['start-rows', 'val-value', 'c-true']);
+  // The edit is the DEFINITION's DRAFT: no use sees it (plan 972 D1 A). PUBLISHED, the use that took it has it already
+  // (D2 A); the other use says Update available.
+  assert.deepEqual(lib.staleUses(three.workflow, three.library), []);
+  const published = { ...three.library, nodes: { ...three.library.nodes, 'has-status': { ...three.library.nodes['has-status'], version: 2 } } };
+  assert.deepEqual(lib.staleUses(three.workflow, published), ['has2']);
+  assert.deepEqual(lib.definitionDiff(three.workflow.nodes.find((n) => n.id === 'has2'), published).inputs.added, ['start-rows', 'val-value', 'c-true']);
 });
 
 test('inside, a new row connections on to any inner socket, and Ungroup joins its source through it; a row that feeds nothing inside is dropped', () => {

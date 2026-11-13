@@ -75,9 +75,9 @@ Markup against the component specs, as `npx sherpa-ui check-usage` checks an app
 
 #### `check_custom_node` — Check a Custom Node
 
-A Custom Node's JSON, an entity (entity.v2) of the type node or any other type, checked as the shelf's Save checks it (plan 942 D3 A): against entity.v2.json, then `entityFaults`, over the app's other entities and its types. Each fault is said in words; with none, the node it offers: its use's kind, its category, its inputs and outputs, and how many nodes its graph holds. It writes nothing: an agent writes the JSON into the app's entities file itself
+A Custom Node's JSON, an entity (entity.v3) of the type node or any other type, checked as the shelf's Save checks it (plan 942 D3 A): against entity.v3.json, then `entityFaults`, over the app's other entities and its types. Each fault is said in words; with none, the node it offers: its use's kind, its category, its inputs and outputs, and how many nodes its graph holds. It writes nothing: an agent writes the JSON into the app's entities file itself
 
-- `node` — The Custom Node, as JSON: `{ "v": 2, "type": "node", "id", "label", "graph": { "nodes", "connections" }, "settings": { "inputs", "outputs" } }`
+- `node` — The Custom Node, as JSON: `{ "v": 3, "type": "node", "id", "label", "graph": { "nodes", "connections" }, "settings": { "inputs", "outputs" } }`
 - `entities` (optional) — The app's entities file, as JSON (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id), or a list of entities: its types are known, and a use of one of its entities is no fault
 
 #### `describe_data` — Describe data
@@ -126,7 +126,7 @@ Open a page as its provider does — `checkPage`, then `openSource` over the row
 
 A definition as the one Node Editor draws it, through its type's lens (`lensOf(type).toGraph`, plan 960 U4): a page's Query, opened over its rows as query_source opens it, or an entity, as its canvas edits it. Each node its kind's header, sockets and rows with their values, choices and `editable`, at its place; the connections; every fault its check reports; the graph as the definition the editor edits; and the kinds a graph may place
 
-- `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Filter, an app's own type
+- `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v3): a workflow, a Custom Node, a Filter, an app's own type
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
 - `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's: its `source.store`, else its `type`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
@@ -143,7 +143,7 @@ A definition as the one Node Editor draws it, through its type's lens (`lensOf(t
 
 Each edit made on the graph a definition's lens draws (`editWorkflow`, as the one Node Editor makes it): a row's value, `{ "node", "row", "value" }`; a node's own name, line or place, `{ "node", "set": { … } }`; a new connection, `{ "connection": { "from", "to" } }`. Then the graph is written back through the lens (`fromGraph`): the definition it says now, checked, or the faults that refuse it, in words. A page's Query asks each change as a chip asks it, and its page is saved as the Query holds it then (`pageWithQuery`), or, with `view`, the View (`viewWithQuery`)
 
-- `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Filter, an app's own type
+- `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v3): a workflow, a Custom Node, a Filter, an app's own type
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
 - `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's: its `source.store`, else its `type`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id

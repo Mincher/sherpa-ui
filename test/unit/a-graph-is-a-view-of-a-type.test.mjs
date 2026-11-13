@@ -23,7 +23,7 @@ const { checkApp } = await import(new URL('data/app-definition.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
 const filter = (id, label = id) => ({
-  v: 2, type: 'filter', id, label,
+  v: 3, type: 'filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -102,7 +102,10 @@ test('New graph makes an empty entity of the type, checked and kept: its name or
   // The id a preset holds is not taken over.
   assert.equal(first, 'new-filter-2');
   const made = k.entities.get(first);
-  assert.deepEqual({ ...made }, { v: 2, type: 'filter', id: first, label: 'New Filter', graph: { nodes: [], connections: [] }, origin: 'mine' });
+  // Its first save publishes version 1 (plan 972).
+  const { versions, ...envelope } = made;
+  assert.deepEqual(envelope, { v: 3, type: 'filter', id: first, label: 'New Filter', graph: { nodes: [], connections: [] }, origin: 'mine' });
+  assert.deepEqual(versions.map((v) => [v.number, v.definition.label]), [[1, 'New Filter']]);
   assert.equal(checkEntity(made), true);
   // A second default reads apart; a name of the reader's is theirs, with its description.
   const second = await newGraph(k.entities, types['filter']);
@@ -117,7 +120,7 @@ test('New graph makes an empty entity of the type, checked and kept: its name or
 });
 
 test('an EMPTY graph is a new one: its outputs are asked for once it places a node', () => {
-  const empty = { v: 2, type: 'filter', id: 'empty', label: 'Empty', graph: { nodes: [], connections: [] } };
+  const empty = { v: 3, type: 'filter', id: 'empty', label: 'Empty', graph: { nodes: [], connections: [] } };
   assert.deepEqual(entityFaults(empty), []);
   const placed = { ...empty, graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0 }], connections: [] } };
   assert.deepEqual(entityFaults(placed), ['the Filter "empty" sends nothing to its output "where": connect one to #out/where']);
@@ -129,12 +132,12 @@ test('the canvas edits an entity\'s graph as a workflow — its Group Input and 
     const kinds = (e) => graphWorkflow(e).workflow.nodes.map((n) => n.id);
     assert.deepEqual(kinds(filter('pf')), ['start', 'status', 'field', '#out']);
     const node = {
-      v: 2, type: 'node', id: 'has-role', label: 'Has role',
+      v: 3, type: 'node', id: 'has-role', label: 'Has role',
       graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in/users', to: 'c' }, { from: 'c/pass', to: '#out/allowed' }] },
       settings: { inputs: [{ name: 'users', type: 'object' }], outputs: [{ name: 'allowed', type: 'object' }] },
     };
     assert.deepEqual(kinds(node), ['#in', 'c', '#out']);
-    const flow = { v: 2, type: 'flow', id: 'onboard', label: 'Onboard', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0 }], connections: [] } };
+    const flow = { v: 3, type: 'flow', id: 'onboard', label: 'Onboard', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0 }], connections: [] } };
     assert.deepEqual(kinds(flow), ['start']);
     const { workflow, kinds: offered } = graphWorkflow(filter('pf', 'PF'));
     // Its id the entity's, so its tab draft is its own; its own kind not offered on its canvas.

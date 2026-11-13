@@ -22,7 +22,7 @@ const TEAMMATE = {
   graph: { runs: true, reusable: false },
 };
 const mate = (id, label, settings = { status: 'active', minutes: 30 }, every = 'week') => ({
-  v: 2, type: 'teammate', id, label,
+  v: 3, type: 'teammate', id, label,
   graph: { nodes: [{ id: 'when', kind: 'trigger', x: 0, y: 0, values: { type: 'schedule', every, at: '02:00' } }], connections: [{ from: 'when', to: START }] },
   settings,
 });

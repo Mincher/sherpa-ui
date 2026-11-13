@@ -18,7 +18,7 @@ async function start(page: Page, url = '/test/reforged/graph-views.html', mine =
     const { SessionStore } = await import('/dist/index.js');
     const outlet = document.querySelector('sherpa-outlet');
     const { keeper } = document.querySelector('sherpa-provider');
-    if (${mine} && !keeper.entities.get('mine')) await keeper.entities.save({ v: 2, type: 'filter', id: 'mine', label: 'Mine', graph: { nodes: [], connections: [] } });
+    if (${mine} && !keeper.entities.get('mine')) await keeper.entities.save({ v: 3, type: 'filter', id: 'mine', label: 'Mine', graph: { nodes: [], connections: [] } });
     const base = new URL('/test/reforged/graph-views/app.json', location.href);
     await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
   })()`);

@@ -137,7 +137,7 @@ test('inside a Custom Node the Group Input brings any store\'s rows: every store
 
 test('a Filter with no Source reads its own store\'s rows: its settings\' source (`rowsFrom`)', () => {
   const preset = (store) => ({
-    v: 2, type: 'filter', id: `laptops-${store}`, label: 'Laptops', settings: { source: store },
+    v: 3, type: 'filter', id: `laptops-${store}`, label: 'Laptops', settings: { source: store },
     graph: { nodes: [field('f', 'type'), cond('c', 'eq', 0, 'Laptop')], connections: connection('f/field → c', 'c → #out/where') },
   });
   assert.deepEqual(presetOfEntity(preset('devices'), { fieldsOf: FIELDS }).preset.where, { type: { eq: 'Laptop' } });

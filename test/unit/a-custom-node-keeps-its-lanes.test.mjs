@@ -27,7 +27,7 @@ test('a definition keeps its lanes, and the places they would put back; the sche
   const org = laned().nodes.org;
   assert.deepEqual([org.lanes.length, org.beforeLanes], [LANES_BY_FAMILY.length, BEFORE]);
   assert.deepEqual(schemaCheck('defs.v1.json#/$defs/nodeDefinition')(laned().nodes.org), []);
-  assert.deepEqual(schemaCheck('entity.v2.json')(nodeEntityOf('org', org)), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')(nodeEntityOf('org', org)), []);
 });
 
 test('as an entity and back, the lanes come too', () => {

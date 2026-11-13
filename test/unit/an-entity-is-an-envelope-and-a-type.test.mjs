@@ -1,6 +1,6 @@
 /**
  * AN ENTITY IS AN ENVELOPE AND A TYPE: a graph saved under a type, an id and a name. One envelope
- * (entity.v2), a settings schema per type, and a registry in the data layer that an app adds to.
+ * (entity.v3), a settings schema per type, and a registry in the data layer that an app adds to.
  * Each fault is named in words; a loop of entities is refused; a family outside the type is a
  * fault. ANY entity can be placed as a node in ANY graph (asNode), by the kind `<type>:<id>`, and a
  * use follows its definition (version, snapshot, diff, update) as a Custom Node's does.
@@ -23,7 +23,7 @@ const { onReport } = await import(new URL('report.js', core));
 
 /** Customers whose status is active: a condition out. */
 const ACTIVE = {
-  v: 2, type: 'filter', id: 'active-customers', label: 'Active customers', description: 'Customers who are active.',
+  v: 3, type: 'filter', id: 'active-customers', label: 'Active customers', description: 'Customers who are active.',
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -53,7 +53,7 @@ const heard = (run) => {
 test('a good entity passes, in the shape the schema says; and so do the types\' settings', () => {
   assert.deepEqual(faults(make()), []);
   assert.equal(C.checkEntity(make()), true);
-  assert.deepEqual(schemaCheck('entity.v2.json')(make()), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')(make()), []);
   assert.deepEqual(schemaCheck('entity-filter.v1.json')(make().settings), []);
   assert.ok(E.isEntity(make()));
   // The schema and the checks say the same of settings.
@@ -126,7 +126,7 @@ test('an app adds a type; a clash with a shipped one, or a type typeFaults refus
   assert.match(said.join('\n'), /graph: its reusable is not true or false/);
   assert.match(said.join('\n'), /"bare" is refused: it has no fields, and no graph/);
   assert.ok(T.entityTypes()['ui-card']);
-  const e = { v: 2, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'orders' } }], connections: [{ from: 'start/rows', to: '#out/present' }] } };
+  const e = { v: 3, type: 'ui-card', id: 'orders', label: 'Orders', graph: { nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'orders' } }], connections: [{ from: 'start/rows', to: '#out/present' }] } };
   assert.deepEqual(faults(e), []);
   off[4]();
   assert.match(faults(e).join('\n'), /type "ui-card", which this app does not have/);
@@ -151,11 +151,13 @@ test('any entity is a node in any graph: its kind is `<type>:<id>`, a use follow
   const flow = { v: 3, id: 'flow', nodes: [{ id: 'pick', ...lib.useOf(library, kind, { id: 'pick', x: 0, y: 0 }) }, { id: 'end', kind: 'result', x: 360, y: 0 }], connections: [{ from: 'pick', to: 'end' }] };
   assert.deepEqual(lib.workflowFaultsDeep(flow, library), []);
   assert.ok(lib.innerOf(flow.nodes[0], library));
-  assert.equal(flow.nodes[0].version, lib.versionOf(T.asNode(recent)));
+  // It follows the published number: none published, 1 (plan 972).
+  assert.equal(flow.nodes[0].version, 1);
   assert.deepEqual(lib.staleUses(flow, library), []);
-  // The entity changes: the use shows a diff and an update brings it, keeping its values.
+  // The entity changes and is PUBLISHED as version 2: the use shows a diff and an update brings it, keeping its values.
   const edited = { ...recent, graph: { ...recent.graph, nodes: recent.graph.nodes.map((n) => (n.id === 'status' ? { ...n, values: { value: 'trial' } } : n)) } };
-  const next = T.libraryOf([edited]);
+  const drafted = T.libraryOf([edited]);
+  const next = { ...drafted, nodes: { [kind]: { ...drafted.nodes[kind], version: 2 } } };
   assert.deepEqual(lib.staleUses(flow, next), ['pick']);
   assert.deepEqual(lib.definitionDiff(flow.nodes[0], next).nodes.changed, ['status']);
   assert.deepEqual(lib.staleUses(lib.updateInstance(flow, 'pick', next), next), []);
@@ -177,7 +179,7 @@ test('a Custom Node is the type `node`: the envelope wraps today\'s definition, 
   const entity = E.nodeEntityOf('org-permissions', definition);
   assert.deepEqual(entity.settings.inputs, definition.inputs);
   assert.deepEqual(faults(entity), []);
-  assert.deepEqual(schemaCheck('entity.v2.json')(entity), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')(entity), []);
   assert.deepEqual(schemaCheck('entity-node.v1.json')(entity.settings), []);
   assert.deepEqual(E.definitionOf(entity), definition);
   assert.deepEqual(E.definitionOf({ ...entity, origin: 'preset' }), { ...definition, preset: true });
@@ -203,7 +205,7 @@ test('a Save keeps the canvas\'s layout: stages, swimlanes and the places before
   let w = editWorkflow({ v: 3, id: 'laid', label: 'Laid out', nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 400, y: 0 }], connections: [] }, { addStage: {} });
   w = editWorkflow(w, { lanes: LANES_BY_FAMILY });
   const entity = T.entityOf(w, 'workflow');
-  assert.deepEqual(schemaCheck('entity.v2.json')(entity), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')(entity), []);
   assert.deepEqual([entity.graph.stages.length, entity.graph.lanes.length, Object.keys(entity.graph.beforeLanes)], [2, LANES_BY_FAMILY.length, ['s', 'v']]);
   // The editor's Save, the graph alone, keeps them too.
   const { graphOfWorkflow } = await import(new URL('graph-views.js', core));

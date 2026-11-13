@@ -71,7 +71,7 @@ function loopOf(start: Entity, all: readonly Entity[]): string[] | undefined {
  *  entities, and each fault of the graph itself, named by its path. Faults come in the data layer's
  *  words; it never throws. */
 export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] {
-  if (!isEntity(entity)) return ['it is not an entity: a v2 with a type, an id, a name and one body, a graph or a query'];
+  if (!isEntity(entity)) return ['it is not an entity: a v3 with a type, an id, a name and one body, a graph or a query'];
   const types = facts.types ?? entityTypes();
   const type = types[entity.type];
   const at = `the ${type?.label ?? entity.type} "${entity.id}"`;

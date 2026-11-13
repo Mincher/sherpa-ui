@@ -37,7 +37,7 @@ test('every top graph has its Start, last, left of its nodes where it had none; 
   assert.deepEqual(workflowGraph(moved).nodes.filter((n) => n.id === START).map((n) => [n.x, n.y]), [[900, 500]]);
   // Kept, the schemas take it, as a workflow's node and an entity's.
   assert.deepEqual(schemaCheck('workflow.v3.json')(moved), []);
-  assert.deepEqual(schemaCheck('entity.v2.json')({ v: 2, type: 'node', id: 'g', label: 'G', graph: { nodes: moved.nodes, connections: moved.connections }, settings: { inputs: [], outputs: [] } }), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')({ v: 3, type: 'node', id: 'g', label: 'G', graph: { nodes: moved.nodes, connections: moved.connections }, settings: { inputs: [], outputs: [] } }), []);
 });
 
 test('each Trigger joins it by its header; the Start stands right of them, at their middle; no fault, and the schema takes it', () => {
@@ -77,13 +77,13 @@ test('a type that is not reusable makes no node: the panel has none, and a graph
   try {
     assert.equal(registerEntityType({ id: 'odd', label: 'Odd', graph: { reusable: 'no' } }), undefined, 'reusable is true or false');
     assert.deepEqual(schemaCheck('type.v1.json')({ v: 1, id: 'teammate', label: 'Teammate', graph: { reusable: false } }), []);
-    const mate = { v: 2, type: 'teammate', id: 'ana', label: 'Ana', graph: { nodes: [trigger('when', 0, 0)], connections: [{ from: 'when', to: START }] } };
+    const mate = { v: 3, type: 'teammate', id: 'ana', label: 'Ana', graph: { nodes: [trigger('when', 0, 0)], connections: [{ from: 'when', to: START }] } };
     assert.deepEqual(Object.keys(libraryOf([mate]).nodes), []);
     // Its own graph has no Group Input or Output, so it has a Start: the Trigger joined to it is no fault, and the schema takes it.
     assert.deepEqual(entityFaults(mate), []);
-    assert.deepEqual(schemaCheck('entity.v2.json')(mate), []);
+    assert.deepEqual(schemaCheck('entity.v3.json')(mate), []);
     assert.deepEqual(graphWorkflow(mate).workflow.nodes.map((n) => n.id), ['when']);
-    const other = { v: 2, type: 'teammate', id: 'bo', label: 'Bo', graph: { nodes: [{ id: 'x', kind: 'teammate:ana', x: 0, y: 0 }] } };
+    const other = { v: 3, type: 'teammate', id: 'bo', label: 'Bo', graph: { nodes: [{ id: 'x', kind: 'teammate:ana', x: 0, y: 0 }] } };
     assert.ok(entityFaults(other, { entities: [mate] }).includes('the Teammate "bo" places "x", a Teammate, which is not reusable'));
   } finally {
     undo?.();

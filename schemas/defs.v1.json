@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/defs.v1.json",
   "title": "Sherpa-UI definition shapes",
-  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1, entity.v2 and workflow.v3 $ref these, and define none of their own.",
+  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1, entity.v3 and workflow.v3 $ref these, and define none of their own.",
   "$defs": {
     "id": {
       "description": "A name a URL or a store files things under.",
@@ -296,7 +296,7 @@
         "content": { "description": "A reader's saved View's markup. A shipped View names a template instead.", "type": "string" },
         "settings": { "description": "The app's own settings it lays, by pointer: the app reads them.", "type": "object", "propertyNames": { "pattern": "^/" } },
         "graph": {
-          "description": "A GRAPH View: its body is a canvas bound to one entity of this type (entity.v2), picked in the graph chip beside the View chip. It has no template or content.",
+          "description": "A GRAPH View: its body is a canvas bound to one entity of this type (entity.v3), picked in the graph chip beside the View chip. It has no template or content.",
           "type": "object", "additionalProperties": false, "required": ["type"],
           "properties": { "type": { "description": "The entity type, as the type registry names it: filter, node, or one the app registers.", "$ref": "#/$defs/id" } }
         }
@@ -362,7 +362,7 @@
         "heading": { "description": "Its own name, in place of its kind's.", "type": "string" },
         "description": { "description": "Its own line, in place of its kind's.", "type": "string" },
         "values": { "description": "Each row's value, by the row's name, typed as its row takes it: a Filter's field, op and value are one condition.", "type": "object" },
-        "version": { "description": "A use of a Custom Node: the version of its definition it follows (a hash). The editor shows an update where the library's differs.", "type": "string" },
+        "version": { "description": "A use of a Custom Node: the number of its definition's published version it follows (plan 972). The editor shows an update where the library's is newer.", "type": "integer", "minimum": 1 },
         "was": { "description": "A use of a Custom Node: the definition it was made from, kept so a change can show as a diff.", "$ref": "#/$defs/nodeDefinition" },
         "stage": { "description": "The stage it is in: one of its workflow's stages. Absent, it is in none; a workflow with no stages has one, and every node is in it.", "$ref": "#/$defs/id" }
       }
@@ -491,7 +491,7 @@
       }
     },
     "graph": {
-      "description": "A graph's body, said once (plan 960 U1): its nodes, the connections between their sockets, and how its canvas lays them out, as zip ties, frames, stages and swimlanes. workflow.v3, entity.v2's graph and a nodeDefinition $ref it. Inside a Custom Node's body or a type's graph, #in and #out are its own sockets.",
+      "description": "A graph's body, said once (plan 960 U1): its nodes, the connections between their sockets, and how its canvas lays them out, as zip ties, frames, stages and swimlanes. workflow.v3, entity.v3's graph and a nodeDefinition $ref it. Inside a Custom Node's body or a type's graph, #in and #out are its own sockets.",
       "type": "object",
       "properties": {
         "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
@@ -515,7 +515,7 @@
         "preset": { "description": "From a file, read only: \"Copy to my nodes\" makes a custom one.", "const": true },
         "inputs": { "type": "array", "items": { "$ref": "#/$defs/nodeInput" } },
         "outputs": { "type": "array", "items": { "$ref": "#/$defs/nodeOutput" } },
-        "settings": { "description": "The settings of the entity it is, where that is not a `node` (entity.v2): a copy keeps them. plan-746 E5", "type": "object" }
+        "settings": { "description": "The settings of the entity it is, where that is not a `node` (entity.v3): a copy keeps them. plan-746 E5", "type": "object" }
       }
     }
   }

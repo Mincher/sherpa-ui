@@ -12,7 +12,7 @@ const SETUP = `async () => {
   const { PageKeeper } = await import('/dist/index.js');
   const keeper = new PageKeeper();
   window.keeper = keeper;
-  window.filter = (id, label, kind) => ({ v: 2, type: 'filter', id, label,
+  window.filter = (id, label, kind) => ({ v: 3, type: 'filter', id, label,
     graph: kind ? { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], connections: [{ from: 'inner', to: '#out/where' }] } : { nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
@@ -62,7 +62,7 @@ test('a saved entity shows in a second tab, live and after a reload; a preset is
 
   // Out and back in as JSON; then forgotten, it goes from every tab.
   const json = await second.evaluate(() => (window as unknown as W).keeper.entities.export('outer'));
-  expect(JSON.parse(json).$schema).toContain('entity.v2.json');
+  expect(JSON.parse(json).$schema).toContain('entity.v3.json');
   await second.evaluate(() => (window as unknown as W).keeper.entities.remove('outer'));
   await expect.poll(() => listed(first)).toEqual(['shipped (preset)', 'recent']);
   expect(await second.evaluate((text) => (window as unknown as W).keeper.entities.import(text), json)).toBe('outer');

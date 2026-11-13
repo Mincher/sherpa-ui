@@ -27,7 +27,7 @@ const staged = () => editDefinition(library(), 'org', { stages: STAGES });
 test('a definition keeps its stages; the schemas take them', () => {
   assert.deepEqual(staged().nodes.org.stages, STAGES);
   assert.deepEqual(schemaCheck('defs.v1.json#/$defs/nodeDefinition')(staged().nodes.org), []);
-  assert.deepEqual(schemaCheck('entity.v2.json')(nodeEntityOf('org', staged().nodes.org)), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')(nodeEntityOf('org', staged().nodes.org)), []);
 });
 
 test('as an entity and back, the stages come too, and its nodes find them: no fault', () => {

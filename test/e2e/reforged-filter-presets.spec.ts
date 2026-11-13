@@ -21,7 +21,7 @@ const SETUP = `
     { id: 3, status: 'trial', plan: 'Pro' }, { id: 4, status: 'churned', plan: 'Pro' },
   ];
   const filter = (id, label, field, value, store = 'customers') => ({
-    v: 2, type: 'filter', id, label, settings: { source: store },
+    v: 3, type: 'filter', id, label, settings: { source: store },
     graph: {
       nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field } }, { id: 'c', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }],
       connections: [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }],

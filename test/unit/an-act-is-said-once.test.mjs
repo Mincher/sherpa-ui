@@ -159,7 +159,7 @@ test('a graph type\'s own acts go through the shelf: an entity is never added as
     let mine = {};
     const ears = new Set();
     const shelf = makeShelf({ presets: () => [], mine: () => mine, keep: (next) => { mine = next; for (const ear of ears) ear(); }, heard: (ear) => ears.add(ear) });
-    await shelf.save({ v: 2, type: 'teammate', id: 'ana', label: 'Ana', graph: { nodes: [{ id: 'when', kind: 'trigger', x: 0, y: 0, values: { type: 'schedule' } }], connections: [{ from: 'when', to: START }] }, settings: { status: 'active' } });
+    await shelf.save({ v: 3, type: 'teammate', id: 'ana', label: 'Ana', graph: { nodes: [{ id: 'when', kind: 'trigger', x: 0, y: 0, values: { type: 'schedule' } }], connections: [{ from: 'when', to: START }] }, settings: { status: 'active' } });
     const ctx = { stores: { teammate: entityStore(shelf, TEAMMATE) }, entities: shelf };
     await withActs(typeActs(TEAMMATE), async () => {
       assert.match((await runAct('teammate.add', { input: { status: 'active' } }, ctx)).refused, /A Teammate is made in its editor, not as a row/);

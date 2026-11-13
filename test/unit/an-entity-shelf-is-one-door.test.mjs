@@ -20,7 +20,7 @@ const { deleteNode, keepNode } = await import(new URL('data/custom-nodes.js', co
 const { onReport } = await import(new URL('data/report.js', core));
 
 const filter = (id, label = id, extra = {}) => ({
-  v: 2, type: 'filter', id, label,
+  v: 3, type: 'filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
@@ -88,7 +88,7 @@ test('an id names ONE entity: another type may not take it; a fault in a save re
   const k = keeper();
   await k.entities.save(filter('one'));
   const { result, reports } = await heard(async () => [
-    await k.entities.save({ v: 2, type: 'node', id: 'one', label: 'Same id', graph: { nodes: [] }, settings: { inputs: [], outputs: [] } }),
+    await k.entities.save({ v: 3, type: 'node', id: 'one', label: 'Same id', graph: { nodes: [] }, settings: { inputs: [], outputs: [] } }),
     await k.entities.save({ ...filter('bad'), type: 'recipe' }),
     await k.entities.save(filter('also-bad', 'x', { settings: { colour: 'red' } })),
     await k.entities.save({ nope: true }),
@@ -134,9 +134,9 @@ test('duplicate takes a new id; export and import are JSON with a $schema and ro
 
   const text = k.entities.export('one');
   const json = JSON.parse(text);
-  assert.equal(json.$schema, 'https://sherpa-ui.dev/schemas/entity.v2.json');
+  assert.equal(json.$schema, 'https://sherpa-ui.dev/schemas/entity.v3.json');
   assert.equal('origin' in json, false);
-  assert.deepEqual(schemaCheck('entity.v2.json')(json), []);
+  assert.deepEqual(schemaCheck('entity.v3.json')(json), []);
   assert.equal(k.entities.export('ghost'), undefined);
   // Out, away, back in: the same entity.
   const before = k.entities.get('one');
@@ -180,7 +180,7 @@ test('a watcher is told at once, and stops on the signal', async () => {
 test('the persist guard drops a stored entity of the wrong shape, and a preset smuggled in as the reader\'s', () => {
   const local = memoryTier();
   local.write('sherpa:page:#app', { v: 3, entities: {
-    ok: filter('ok'), wrong: { label: 'No graph' }, later: { ...filter('later'), v: 3 }, sneaky: { ...filter('sneaky'), origin: 'preset' }, 'Bad Id': { ...filter('x'), id: 'Bad Id' },
+    ok: filter('ok'), wrong: { label: 'No graph' }, later: { ...filter('later'), v: 4 }, sneaky: { ...filter('sneaky'), origin: 'preset' }, 'Bad Id': { ...filter('x'), id: 'Bad Id' },
   } });
   assert.deepEqual(Object.keys(keeper(local).read(NODES_PAGE).entities), ['ok']);
 });

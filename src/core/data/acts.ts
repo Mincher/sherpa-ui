@@ -20,6 +20,7 @@
  */
 import type { EntityShelf } from './entity-shelf.js';
 import { entityTypes } from './entity-types.js';
+import { publish, rollBack, type VersionAnswer } from './entity-versions.js';
 import { report } from './report.js';
 import type { Filter, Row, Store } from './store.js';
 import { storeOfType, titleOf, typeSchema, type StoredField, type TypeDefinition } from './type-definition.js';
@@ -317,6 +318,39 @@ export function typeActs(type: TypeDefinition): Act[] {
             }
           },
         };
+      },
+    },
+    // A graph thing publishes its draft as a numbered version, and rolls back to one (Will, plan 972).
+    ...(type.graph ? versionActs(type, keysOf) : []),
+  ];
+}
+
+/** A graph thing's version acts: Publish its draft as the next number; Roll back to an earlier one. Neither has an undo: a
+ *  version is never taken away, so a Roll back is how one goes back. Plan 972 */
+function versionActs(type: TypeDefinition, keysOf: (call: ActCall) => unknown[]): Act[] {
+  const shelfOf = (ctx: ActContext): EntityShelf | undefined => ctx.entities;
+  const answered = (a: VersionAnswer, done: (n: number) => string): ActAnswer => ('refused' in a ? { refused: a.refused } : { done: done(a.number), result: a });
+  return [
+    {
+      id: `${type.id}.publish`, label: 'Publish', type: type.id, changes: true,
+      description: `Publish a ${type.label}'s draft as its next version: only then do its uses see it.`,
+      input: { note: { label: 'Note' } },
+      async run(call, ctx) {
+        const shelf = shelfOf(ctx);
+        if (!shelf) return { refused: 'Publish: the app has no entities here.' };
+        const note = call.input?.['note'];
+        return answered(await publish(shelf, String(keysOf(call)[0]), { ...(note ? { note: String(note) } : {}) }), (n) => `Published version ${n}.`);
+      },
+    },
+    {
+      id: `${type.id}.roll-back`, label: 'Roll back', type: type.id, changes: true,
+      description: `Roll a ${type.label} back to an earlier version: it is published again as the next one, so nothing is lost.`,
+      input: { version: { type: 'number', label: 'Version', min: 1, required: true } },
+      async run(call, ctx) {
+        const shelf = shelfOf(ctx);
+        if (!shelf) return { refused: 'Roll back: the app has no entities here.' };
+        const number = Number(call.input?.['version']);
+        return answered(await rollBack(shelf, String(keysOf(call)[0]), number), (n) => `Rolled back to version ${number}, published as version ${n}.`);
       },
     },
   ];
