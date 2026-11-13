@@ -22,7 +22,7 @@ permanent." So a Filter is an entity of the type Filter, and its graph is its de
 (a chip, a page preset) is a lens made from it where a Where can say it. And an entity may be TEMPORARY: made, used
 and dropped in the tab or the session, and kept on the shelf only when it is saved (2.3).
 
-**Status: PLAN, 2026-11-13; U0a and U0b building.** Facts from five reads, each read only:
+**Status, 2026-11-13: U0a, U0b and U1 (its answered words) done. Will: "Go with your picks for now" — U2 and U4 start, side by side.** Facts from five reads, each read only:
 sherpa-ui-e8 (nodes, graphs, entities), sherpa-ui-a9 (the data layer), sherpa-ui-bd (component, page and View
 definitions), acp-module-91 (how Harness keeps its definitions), and a check of every graph in Demos (sherpa-demos-67).
 Paths are sherpa-ui's unless they say Demos.

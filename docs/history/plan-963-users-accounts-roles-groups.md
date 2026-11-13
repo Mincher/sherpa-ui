@@ -11,7 +11,9 @@ any User in that Group gets that Role & Permissions. We will need a User Managem
 acp-module agents, and project, to get an idea of what we have there so far. Improve upon it with the ideas in this
 prompt as well as Sherpa capabilities. We'll need to plan for this to ensure it works with the new model."
 
-**Status: PLAN, 2026-11-13.** Nothing is built until Will answers section 6. Owner: sherpa-demos-67 (Demos), on plan
+**Will, 2026-11-13: "Go with your picks for now" — D1 A, D2 A, D3 A, D4 A, D5 A.**
+
+**Status: PLAN, 2026-11-13; waits on plan 960 U2 and U3 (D5 A).** Owner: sherpa-demos-67 (Demos), on plan
 960's types (U2) and store door (U3). UI/X only, from generated data, as the Coworkers are (plan 945).
 
 ## 1. What Harness has (acp-module-91, read only; Demos copies no code)
