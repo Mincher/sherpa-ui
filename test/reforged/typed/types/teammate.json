@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../../schemas/type.v1.json",
+  "v": 1,
+  "id": "teammate",
+  "label": "Teammate",
+  "category": "Teammates",
+  "data": "data/teammates.json",
+  "fields": {
+    "status": { "label": "Status", "values": ["active", "paused"] },
+    "every": { "label": "Runs", "from": "when/every" }
+  },
+  "graph": { "runs": true, "reusable": false }
+}

@@ -17,6 +17,7 @@ import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
 import type { Entity } from '../../core/data/entity.js';
 import type { EntityShelf } from '../../core/data/entity-shelf.js';
+import type { SeedMarks } from '../../core/data/entity-store.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { GRAPH_CHIP, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { NEW_GRAPH, PAGE_QUERY, graphRows, newGraph, openOf, pageRows, pagesOf, type OpenGraph } from '../../core/data/graph-views.js';
@@ -203,15 +204,23 @@ export class SherpaOutlet extends SherpaElement {
       // Fetched only where an app ships them: an app with none never loads them.
       this.#nodesReady = (async () => {
         const files = await import('../../core/browser/entity-files.js');
-        // Its types first: a page's fields and its entities are of them, and each type that names its rows has a store. Plan 960 U2, U3
-        if (types) {
-          const loaded = await files.loadTypes(Object.fromEntries(Object.entries(types).map(([id, path]) => [id, this.#url(path)])));
+        // Its types first: a page's fields and its entities are of them. Plan 960 U2
+        const loaded = types ? await files.loadTypes(Object.fromEntries(Object.entries(types).map(([id, path]) => [id, this.#url(path)]))) : {};
+        if (entities) this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities))).entities);
+        // Then each type's store: a row type's from its rows, a graph type's from the shelf, once its presets are in, its seed
+        // entities the reader's own, their marks kept in this browser. Plan 960 U3
+        if (Object.keys(loaded).length) {
           const { typeStores } = await import('../../core/browser/type-stores.js');
-          const made = await typeStores(loaded, (path) => this.#url(path));
+          const marks = (type: string): SeedMarks => {
+            const at = `/seeds/${type}`;
+            options.session.persist(at);
+            return { get: () => options.session.get(at) as ReturnType<SeedMarks['get']>, set: (next) => options.session.set(at, next) };
+          };
+          const shelf = this.#nodes.entities;
+          const made = await typeStores(loaded, (path) => this.#url(path), { ...(shelf ? { shelf } : {}), marks, signal: this.signal });
           this.#typeStores = made.stores;
           await made.ready;
         }
-        if (entities) this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities))).entities);
       })();
     }
     // The nav first, so a first click finds its rows. TRAP T-the-outlet-keeps-the-nav

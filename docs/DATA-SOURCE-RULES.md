@@ -310,7 +310,11 @@ each field the same way: `pageFields(page.source)`. A type that names its rows
 (`data`) has a store of its own, made by the outlet, by the type's id; a page that
 names only its type reads it (`storeOf`). Rows made in code go through
 `typeStore(type, { rows })`: its seed version is made from the rows, so no one
-bumps it. A shared or remote store stays the app's, in `defineStores`. `typeColumns(type)` makes a
+bumps it. A shared or remote store stays the app's, in `defineStores`. A graph
+type's entities are rows of their type too (`entityStore(shelf, type)`): each its
+id, label, settings and the fields its graph holds, kept in step with the shelf,
+a write saved back through it. Its `data` file's entities are seeded on the shelf
+as the reader's own, once per seed (`seedEntities`). `typeColumns(type)` makes a
 grid's columns. A field a graph holds says
 `"from": "<node id>/<path>"` and is read by `readFrom(graph, from)`; nothing
 writes it, so it has no rule.

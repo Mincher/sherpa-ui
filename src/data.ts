@@ -256,6 +256,8 @@ export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type PresetFilt
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
+// A graph type's entities as rows of its type, through the Store door; its seed entities as the reader's own. Plan 960 U3
+export { entityStore, seedEntities, type EntityRowOf, type SeedMarks } from './core/data/entity-store.js';
 /* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip — or a page's Query. Plan 746 E3, TODO 822 · TRAP T-a-graph-is-a-view-of-a-type */
 export {
   NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs,

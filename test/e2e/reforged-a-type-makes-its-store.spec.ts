@@ -29,3 +29,25 @@ test('a page over a type\'s store opens with the type\'s rows and words, and no 
   expect(r.heads).toEqual(['Device name', 'Status', 'Risk']);
   expect(r.chips).toContain('status');
 });
+
+test('a graph type\'s entities are rows of its type: its data file\'s entities seeded as the reader\'s own, each a row', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=teammates');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const r = await page.evaluate(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+    const grid = () => document.querySelector('#grid') as HTMLElement & { shadowRoot: ShadowRoot };
+    for (let i = 0; i < 100 && grid()?.shadowRoot?.querySelectorAll('.row').length !== 2; i++) await new Promise((done) => setTimeout(done, 50));
+    const shelf = (document.querySelector('sherpa-provider') as unknown as { keeper: { entities: { get(id: string): { origin?: string } | undefined } } }).keeper.entities;
+    return {
+      rows: [...grid().shadowRoot.querySelectorAll('.row')].map((row) => (row as HTMLElement).innerText.replace(/\s+/g, ' ').trim()),
+      origin: shelf.get('ana')?.origin,
+    };
+  });
+  expect(r.rows.length).toBe(2);
+  expect(r.rows.join(' | ')).toMatch(/Ana.*active.*week/);
+  expect(r.rows.join(' | ')).toMatch(/Bo.*active.*day/);
+  expect(r.origin).toBe('mine');
+});

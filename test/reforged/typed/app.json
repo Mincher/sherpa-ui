@@ -2,8 +2,20 @@
   "$schema": "../../../schemas/app.v1.json",
   "v": 1,
   "default": "devices",
-  "types": { "device": "types/device.json" },
+  "types": {
+    "device": "types/device.json",
+    "teammate": "types/teammate.json"
+  },
   "contexts": {
-    "devices": { "label": "Devices", "template": "templates/devices.html", "definition": "pages/devices.json" }
+    "devices": {
+      "label": "Devices",
+      "template": "templates/devices.html",
+      "definition": "pages/devices.json"
+    },
+    "teammates": {
+      "label": "Teammates",
+      "template": "templates/teammates.html",
+      "definition": "pages/teammates.json"
+    }
   }
 }

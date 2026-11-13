@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../schemas/page.v1.json",
+  "v": 1,
+  "id": "teammates",
+  "source": {
+    "type": "teammate",
+    "pageSize": 10,
+    "scopes": {
+      "data": {
+        "label": "Teammates",
+        "offers": "all"
+      }
+    }
+  },
+  "ui": {
+    "grid": {
+      "key": "id",
+      "columns": [
+        {
+          "field": "label",
+          "header": "Name"
+        },
+        {
+          "field": "status"
+        },
+        {
+          "field": "every"
+        }
+      ]
+    }
+  }
+}
