@@ -296,7 +296,7 @@
   "src/core/ui/trusted-html.ts": 39,
   "src/core/worker/app-files.ts": 135,
   "src/core/worker/serve-data.ts": 153,
-  "src/data.ts": 513,
+  "src/data.ts": 515,
   "src/index.ts": 10,
   "src/server.ts": 13,
   "src/worker.ts": 9,

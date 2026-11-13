@@ -82,6 +82,8 @@ export {
   localRecords,
   type LocalRecordsOptions,
 } from './core/browser/idb-store.js';
+// A type's own store: local records made from it, seeded with its rows, the version a hash of them. Plan 960 U3
+export { seedVersionOf, typeStore } from './core/browser/type-stores.js';
 export {
   DataSource,
   type BoundControl,

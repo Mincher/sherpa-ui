@@ -8,8 +8,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { onReport } from '../../dist/data.js';
-const { seedVersionOf, typeStore, typeStores } = await import('../../dist/core/browser/type-stores.js');
+import { onReport, seedVersionOf, typeStore } from '../../dist/data.js';
+const { typeStores } = await import('../../dist/core/browser/type-stores.js');
 
 const DEVICE = {
   v: 1, id: 'device', label: 'Device', data: 'data/devices.json',
