@@ -306,3 +306,39 @@ test('a graph in stages: each node stays in its own stage, inside its band, none
   await settle(page);
   expect(await flow(page)).toEqual(before);
 });
+
+test('a graph not laid out yet is unfurled and saved the first time it shows, and the flag goes; read only, it is left (TODO 958)', async ({ page }) => {
+  const open = (readOnly: boolean) => page.evaluate(async (ro) => {
+    document.getElementById('root')!.innerHTML = `
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
+      <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`;
+    await customElements.whenDefined('sherpa-node-toolbar');
+    await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const w = window as never as { saved: unknown[]; ed: unknown };
+    w.saved = [];
+    const canvas = document.getElementById('cv')!;
+    canvas.addEventListener('definition-save', (e) => w.saved.push((e as CustomEvent).detail.definition));
+    // As an agent makes it: every node at one place, and the flag.
+    const at = (id: string, kind: string, values?: Record<string, unknown>) => ({ id, kind, x: 0, y: 0, heading: id, ...(values ? { values } : {}) });
+    w.ed = bindWorkflow(canvas as never, {
+      v: 3, id: 'made', unfurl: true,
+      nodes: [at('s', 'source', { store: 'users' }), at('f', 'field', { field: 'status' }), at('c', 'condition', { type: 'eq' }), at('o', 'result')],
+      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'o' }],
+    } as never, { session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'], readOnly: ro });
+    await window.__settled();
+  }, readOnly);
+  const saved = () => page.evaluate(() => (window as never as { saved: Record<string, unknown>[] }).saved);
+  await open(false);
+  await expect.poll(async () => (await saved()).length).toBe(1);
+  await settle(page);
+  expect(overlaps(await rects(page))).toEqual([]);
+  expect((await saved())[0]!['unfurl']).toBeUndefined();
+  expect((await flow(page) as Flow & { unfurl?: true }).unfurl).toBeUndefined();
+  // Read only: it is not moved, and nothing is saved.
+  await open(true);
+  await settle(page);
+  await settle(page);
+  expect(await saved()).toEqual([]);
+  expect(overlaps(await rects(page)).length).toBeGreaterThan(0);
+});

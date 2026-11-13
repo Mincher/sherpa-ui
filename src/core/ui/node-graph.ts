@@ -3977,7 +3977,7 @@ export function bindWorkflow(
   }));
   // A run lights its nodes: each step names its node, and the run its workflow. N4 reports.
   const unwatch = watchSteps(canvas, { claims: (span) => span.detail?.['graph'] === workflow.id });
-  return {
+  const editor: WorkflowEditor = {
     save(): boolean {
       // A document saves itself: what it hands over, or nothing where it may not be saved.
       if (doc) {
@@ -4086,4 +4086,21 @@ export function bindWorkflow(
       picks.stop();
     },
   };
+  // A graph not laid out yet (TODO 958): the first time it shows, it is unfurled and saved, as a reader's Unfurl and Save
+  // would, once its nodes are drawn and measured. Save drops the flag; one that cannot be saved keeps it, for next time.
+  if (draft.unfurl && !doc && !preset) {
+    const frame = (): Promise<void> => new Promise((done) => requestAnimationFrame(() => done()));
+    const measured = (): boolean => { const boxes = nodeBoxes(); return boxes.length >= draft.nodes.length && boxes.every((b) => b.right > b.left); };
+    void (async () => {
+      for (let i = 0; i < 120 && !measured(); i++) await frame();
+      await frame();
+      await frame();
+      if (!draft.unfurl || !measured() || path.length) return;
+      if (!lanesOn()) unfurlGraph(canvas, shown());
+      const { unfurl: _laid, ...laid } = draft;
+      draft = laid;
+      editor.save();
+    })();
+  }
+  return editor;
 }

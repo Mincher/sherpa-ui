@@ -492,7 +492,8 @@
         "frames": { "type": "array", "items": { "$ref": "#/$defs/frame" } },
         "stages": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/stage" } },
         "lanes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/lane" } },
-        "beforeLanes": { "$ref": "#/$defs/beforeLanes" }
+        "beforeLanes": { "$ref": "#/$defs/beforeLanes" },
+        "unfurl": { "description": "Not laid out yet, as a graph an agent made: the editor unfurls it the first time it shows it, then saves it without this (TODO 958).", "const": true }
       }
     },
     "nodeDefinition": {

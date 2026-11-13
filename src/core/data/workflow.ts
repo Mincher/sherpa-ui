@@ -67,9 +67,8 @@ export interface WorkflowNode {
   stage?: string;
 }
 
-/** One workflow, as JSON (v2) — its nodes and its connections. A node's data comes in on its
- *  header and leaves from its Rows row, `node/rows`; where it forks, its header sends True
- *  and `node/#false` False. */
+/** One workflow, as JSON (v3): its nodes and its connections. A node's data comes in on its header and leaves from its
+ *  Rows row, `node/rows`. */
 export interface WorkflowDefinition {
   $schema?: string;
   v: 3;
@@ -87,11 +86,14 @@ export interface WorkflowDefinition {
   lanes?: readonly NodeLane[];
   /** Each node's place before Swimlanes were turned on: turning them off puts it back (TODO 929). */
   beforeLanes?: Readonly<Record<string, { x: number; y: number }>>;
+  /** Not laid out yet, as a graph an agent made: the editor unfurls it the first time it shows it, and saves it without
+   *  this (TODO 958). */
+  unfurl?: true;
 }
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
-/** A workflow read as v2, and each fault the read met; no workflow, it is not one. */
+/** A workflow read as v3, and each fault the read met; no workflow, it is not one. */
 export interface WorkflowRead {
   workflow?: WorkflowDefinition;
   faults: string[];

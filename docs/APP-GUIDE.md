@@ -698,7 +698,9 @@ stage before, Add stage after and Remove. A default name is its place (Stage 1,
 Stage 2): one added or moved before Stage 1 is Stage 1. A new stage takes the next
 data-viz colour no stage wears (`nextStageColour`); an app that makes stages gives
 them colours the same way, `colourStages(stages, DATA_VIZ_SWATCHES.map((s) => s.value))`,
-so stage 1 wears colour 1. Give `bindWorkflow` a
+so stage 1 wears colour 1. A graph an app or an agent makes without laying it out
+sets `unfurl: true` on its graph: the editor unfurls it the first time it shows it,
+as the toolbar's Unfurl would, and saves it without the flag. Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:
 
 ```html

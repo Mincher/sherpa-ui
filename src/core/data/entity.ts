@@ -45,6 +45,8 @@ export interface EntityGraph {
   stages?: WorkflowDefinition['stages'];
   lanes?: WorkflowDefinition['lanes'];
   beforeLanes?: WorkflowDefinition['beforeLanes'];
+  /** Not laid out yet: the editor unfurls it the first time it shows it, and a Save drops this (TODO 958). */
+  unfurl?: true;
 }
 
 /** One entity, as JSON. `origin` is set when it is read and never written. */
