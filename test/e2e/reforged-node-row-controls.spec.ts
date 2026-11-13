@@ -56,15 +56,6 @@ const shown = (page: Page, heading: string, name: string) => page.evaluate((sel)
   const typed = el.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
   return { tags: el.dataset['type'] === 'tags' ? el.tags : undefined, value: el.value, typed: typed.value, error: el.getAttribute('data-error'), readonly: el.hasAttribute('readonly') };
 }, field(heading, name));
-const typeInto = async (page: Page, heading: string, name: string, words: string[]) => {
-  await page.locator(`${field(heading, name)} .control-row > .control`).first().click();
-  for (const word of words) {
-    await page.keyboard.type(word);
-    await page.keyboard.press('Enter');
-  }
-  await settle(page);
-};
-
 test('Is one of takes tags by real keys: Enter and a comma each make one, and the draft holds the list', async ({ page }) => {
   await bind(page);
   await page.locator(`${field('By plan', 'b')} .control-row > .control`).first().click();
@@ -82,32 +73,28 @@ test('Is one of takes tags by real keys: Enter and a comma each make one, and th
   expect(await page.locator('#root sherpa-node[data-heading="By plan"] sherpa-node-row:has([name="b"])').getAttribute('data-input-socket')).toBe('object');
 });
 
-test('a CLOSED list refuses a stranger and says so; a known value, typed in any case, is taken; its menu ticks the values', async ({ page }) => {
+test('a list of known values is ONE dropdown of ticks: its menu ticks the field\'s values; a tick adds, an untick removes (TRAP T-a-multi-select-is-one-row)', async ({ page }) => {
   await bind(page);
-  await typeInto(page, 'By status', 'b', ['gold']);
-  expect(await shown(page, 'By status', 'b')).toEqual({ tags: ['active'], value: 'active', typed: 'gold', error: '“gold” is not one of the choices.', readonly: false });
-  expect((await values(page))['s']!['b']).toEqual(['active']);
-  // Mended: the message goes as the word changes; TRIAL is the value trial.
-  await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.type('TRIAL');
-  await page.keyboard.press('Enter');
-  await settle(page);
-  expect(await shown(page, 'By status', 'b')).toEqual({ tags: ['active', 'trial'], value: 'active,trial', typed: '', error: null, readonly: false });
-  expect((await values(page))['s']!['b']).toEqual(['active', 'trial']);
-  // The menu lists the field's values, ticked as the tags are; an untick removes one.
-  await page.locator(`${field('By status', 'b')} .tags-button`).first().click();
-  const menu = page.locator(`${field('By status', 'b')} .tags-menu`).first();
+  // The single pick's own input, with `multiple`: its face says the picks, no tags and no typing.
+  const seen = await page.evaluate((sel) => {
+    const el = document.querySelector(sel) as HTMLElement & { values: string[] };
+    return { type: el.getAttribute('data-type'), multiple: el.hasAttribute('multiple'), values: el.values, says: el.shadowRoot!.querySelector('select')!.selectedOptions[0]?.textContent };
+  }, field('By status', 'b'));
+  expect(seen).toEqual({ type: 'select', multiple: true, values: ['active'], says: 'active' });
+  // Its menu lists the field's values, ticked as held; a tick adds one.
+  await page.locator(field('By status', 'b')).locator('select.control').first().click();
+  const menu = page.locator(`${field('By status', 'b')} .picks-menu`).first();
   await expect(menu).toHaveAttribute('open', '');
-  const rows = () => page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll<HTMLInputElement>('.tags-menu input[type="checkbox"]')].filter((i) => i.value).map((i) => [i.value, i.checked]), field('By status', 'b'));
-  expect(await rows()).toEqual([['active', true], ['trial', true]]);
+  const rows = () => page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll<HTMLInputElement>('.picks-menu input[type="checkbox"]')].filter((i) => i.value).map((i) => [i.value, i.checked]), field('By status', 'b'));
+  expect(await rows()).toEqual([['active', true], ['trial', false]]);
+  await menu.locator('input[value="trial"]').click();
+  await settle(page);
+  expect((await values(page))['s']!['b']).toEqual(['active', 'trial']);
+  // An untick removes one.
   await menu.locator('input[value="active"]').click();
   await page.keyboard.press('Escape');
   await settle(page);
   expect((await values(page))['s']!['b']).toEqual(['trial']);
-  // Opened again, a value not a tag is offered unticked.
-  await page.locator(`${field('By status', 'b')} .tags-button`).first().click();
-  await expect(menu).toHaveAttribute('open', '');
-  expect(await rows()).toEqual([['trial', true], ['active', false]]);
 });
 
 test('a Value › List connected to Is one of OVERRIDES its tags (D7): read only, its own kept; cut, they are back', async ({ page }) => {

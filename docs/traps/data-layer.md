@@ -6360,6 +6360,7 @@ you decided to use chips instead of following precedent."*
 - Site: `test/unit/a-field-is-a-node.test.mjs`
 - Site: `test/unit/a-logic-type-is-an-operator.test.mjs`
 - Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`
+- Site: `test/e2e/reforged-node-row-controls.spec.ts`
 
 ### T-a-row-says-its-own-fault
 

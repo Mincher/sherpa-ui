@@ -1,15 +1,15 @@
 {
   "app.js": {
-    "files": 219,
+    "files": 220,
     "brotli": {
-      "js": 378073,
+      "js": 378335,
       "fetched": 0
     }
   },
   "components.js": {
-    "files": 166,
+    "files": 167,
     "brotli": {
-      "js": 313759,
+      "js": 314392,
       "fetched": 8607
     }
   },
@@ -21,9 +21,9 @@
     }
   },
   "components/sherpa-app-header/sherpa-app-header.js": {
-    "files": 40,
+    "files": 41,
     "brotli": {
-      "js": 71169,
+      "js": 71905,
       "fetched": 0
     }
   },
@@ -91,9 +91,9 @@
     }
   },
   "components/sherpa-chart-legend/sherpa-chart-legend.js": {
-    "files": 52,
+    "files": 53,
     "brotli": {
-      "js": 86524,
+      "js": 87260,
       "fetched": 0
     }
   },
@@ -126,9 +126,9 @@
     }
   },
   "components/sherpa-container-header/sherpa-container-header.js": {
-    "files": 39,
+    "files": 40,
     "brotli": {
-      "js": 67889,
+      "js": 68625,
       "fetched": 0
     }
   },
@@ -140,23 +140,23 @@
     }
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "files": 81,
+    "files": 82,
     "brotli": {
-      "js": 135199,
+      "js": 135935,
       "fetched": 0
     }
   },
   "components/sherpa-data-viz-header/sherpa-data-viz-header.js": {
-    "files": 40,
+    "files": 41,
     "brotli": {
-      "js": 68931,
+      "js": 69667,
       "fetched": 0
     }
   },
   "components/sherpa-dialog/sherpa-dialog.js": {
-    "files": 39,
+    "files": 40,
     "brotli": {
-      "js": 67889,
+      "js": 68625,
       "fetched": 0
     }
   },
@@ -175,9 +175,9 @@
     }
   },
   "components/sherpa-filter-panel/sherpa-filter-panel.js": {
-    "files": 69,
+    "files": 70,
     "brotli": {
-      "js": 125067,
+      "js": 125803,
       "fetched": 0
     }
   },
@@ -196,9 +196,9 @@
     }
   },
   "components/sherpa-input-text/sherpa-input-text.js": {
-    "files": 39,
+    "files": 40,
     "brotli": {
-      "js": 67889,
+      "js": 68625,
       "fetched": 0
     }
   },
@@ -210,9 +210,9 @@
     }
   },
   "components/sherpa-layout-canvas/sherpa-layout-canvas.js": {
-    "files": 48,
+    "files": 49,
     "brotli": {
-      "js": 81937,
+      "js": 82673,
       "fetched": 0
     }
   },
@@ -259,16 +259,16 @@
     }
   },
   "components/sherpa-markdown-editor/sherpa-markdown-editor.js": {
-    "files": 44,
+    "files": 45,
     "brotli": {
-      "js": 82661,
+      "js": 83397,
       "fetched": 0
     }
   },
   "components/sherpa-menu/sherpa-menu.js": {
-    "files": 39,
+    "files": 40,
     "brotli": {
-      "js": 67889,
+      "js": 68625,
       "fetched": 0
     }
   },
@@ -280,9 +280,9 @@
     }
   },
   "components/sherpa-metric/sherpa-metric.js": {
-    "files": 42,
+    "files": 43,
     "brotli": {
-      "js": 73172,
+      "js": 73908,
       "fetched": 0
     }
   },
@@ -301,16 +301,16 @@
     }
   },
   "components/sherpa-nav/sherpa-nav.js": {
-    "files": 42,
+    "files": 43,
     "brotli": {
-      "js": 77719,
+      "js": 78455,
       "fetched": 0
     }
   },
   "components/sherpa-node-frame/sherpa-node-frame.js": {
-    "files": 40,
+    "files": 41,
     "brotli": {
-      "js": 69772,
+      "js": 70508,
       "fetched": 0
     }
   },
@@ -322,9 +322,9 @@
     }
   },
   "components/sherpa-node-list/sherpa-node-list.js": {
-    "files": 50,
+    "files": 51,
     "brotli": {
-      "js": 90768,
+      "js": 91401,
       "fetched": 0
     }
   },
@@ -336,9 +336,9 @@
     }
   },
   "components/sherpa-node-stage/sherpa-node-stage.js": {
-    "files": 41,
+    "files": 42,
     "brotli": {
-      "js": 70587,
+      "js": 71323,
       "fetched": 0
     }
   },
@@ -350,16 +350,16 @@
     }
   },
   "components/sherpa-node/sherpa-node.js": {
-    "files": 43,
+    "files": 44,
     "brotli": {
-      "js": 74416,
+      "js": 75152,
       "fetched": 0
     }
   },
   "components/sherpa-notifications/sherpa-notifications.js": {
-    "files": 41,
+    "files": 42,
     "brotli": {
-      "js": 72048,
+      "js": 72784,
       "fetched": 0
     }
   },
@@ -371,23 +371,23 @@
     }
   },
   "components/sherpa-overlay-panel/sherpa-overlay-panel.js": {
-    "files": 44,
+    "files": 45,
     "brotli": {
-      "js": 79190,
+      "js": 79926,
       "fetched": 0
     }
   },
   "components/sherpa-pagination/sherpa-pagination.js": {
-    "files": 41,
+    "files": 42,
     "brotli": {
-      "js": 71362,
+      "js": 72098,
       "fetched": 0
     }
   },
   "components/sherpa-panel/sherpa-panel.js": {
-    "files": 40,
+    "files": 41,
     "brotli": {
-      "js": 68856,
+      "js": 69592,
       "fetched": 0
     }
   },
@@ -415,14 +415,14 @@
   "components/sherpa-provider/sherpa-provider.js": {
     "files": 80,
     "brotli": {
-      "js": 113169,
+      "js": 113105,
       "fetched": 0
     }
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "files": 66,
+    "files": 67,
     "brotli": {
-      "js": 120764,
+      "js": 121500,
       "fetched": 0
     }
   },
@@ -455,23 +455,23 @@
     }
   },
   "components/sherpa-select-card/sherpa-select-card.js": {
-    "files": 43,
+    "files": 44,
     "brotli": {
-      "js": 74042,
+      "js": 74778,
       "fetched": 0
     }
   },
   "components/sherpa-select-checkbox/sherpa-select-checkbox.js": {
-    "files": 40,
+    "files": 41,
     "brotli": {
-      "js": 70418,
+      "js": 71154,
       "fetched": 0
     }
   },
   "components/sherpa-select-group/sherpa-select-group.js": {
-    "files": 43,
+    "files": 44,
     "brotli": {
-      "js": 73736,
+      "js": 74472,
       "fetched": 0
     }
   },
@@ -483,9 +483,9 @@
     }
   },
   "components/sherpa-slider/sherpa-slider.js": {
-    "files": 40,
+    "files": 41,
     "brotli": {
-      "js": 70616,
+      "js": 71352,
       "fetched": 0
     }
   },
@@ -562,14 +562,14 @@
   "data.js": {
     "files": 111,
     "brotli": {
-      "js": 166121,
+      "js": 165732,
       "fetched": 0
     }
   },
   "index.js": {
-    "files": 295,
+    "files": 296,
     "brotli": {
-      "js": 526249,
+      "js": 526473,
       "fetched": 8607
     }
   }
