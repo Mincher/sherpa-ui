@@ -10,8 +10,8 @@
  * - bindStages — Bind a workflow editor's stages to its canvas.
  */
 import { editWorkflow, nodeWidth, type WorkflowDefinition } from '../data/workflow.js';
-import { heldBands, stageBands, stageWidthRange, stagesOf } from '../data/node-stages.js';
-import { randomSwatch } from './swatches.js';
+import { heldBands, nextStageColour, stageBands, stageWidthRange, stagesOf } from '../data/node-stages.js';
+import { DATA_VIZ_SWATCHES } from './swatches.js';
 import { keepOrder } from './keep-order.js';
 
 /** What the stages need of their editor. */
@@ -133,13 +133,11 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     if (action === 'edit') return openEdit(id);
     if (host.readOnly()) return;
     if (action === 'remove') return host.write(editWorkflow(w, { removeStage: id }));
-    // A new stage takes a palette colour at random, one its neighbours do not wear. Will, TODO 904
-    const stages = stagesOf(w);
-    const at = stages.findIndex((s) => s.id === id);
-    const near = action === 'add-before' ? [stages[at - 1], stages[at]] : [stages[at], stages[at + 1]];
-    const colour = randomSwatch(near.map((s) => s?.colour));
-    if (action === 'add-before') host.write(editWorkflow(w, { addStage: { before: id, colour } }));
-    else if (action === 'add-after') host.write(editWorkflow(w, { addStage: { after: id, colour } }));
+    // A new stage takes the palette's next colour, as every graph's stages do (Will, TODO 957).
+    const next = nextStageColour(stagesOf(w), DATA_VIZ_SWATCHES.map((s) => s.value));
+    const colour = next ? { colour: next } : {};
+    if (action === 'add-before') host.write(editWorkflow(w, { addStage: { before: id, ...colour } }));
+    else if (action === 'add-after') host.write(editWorkflow(w, { addStage: { after: id, ...colour } }));
   };
   /** Move left or right: one place along the row, its nodes with it, one step. */
   const onMove = (event: Event): void => {

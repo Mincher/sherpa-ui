@@ -24,6 +24,8 @@
  * - stageWidthRange — The widths a stage's end edge can give it: room for its nodes, and the next one's; or, pushing, their widest.
  * - resizeStage — The workflow with a stage this wide and the next as much narrower, by the edge between them; given the
  * - stageFaults — Every fault in a workflow's stages, in words.
+ * - nextStageColour — The colour a new stage takes: the first of the palette no stage wears; all worn, the next in turn.
+ * - colourStages — Each stage its colour: its own, else the next; made from nothing, stage i wears colour i.
  */
 import { packBands, type BandGroup } from './node-bands.js';
 
@@ -287,4 +289,20 @@ export function stageFaults(workflow: Staged): string[] {
     if (n.stage && !n.id.startsWith('#') && !seen.has(n.stage)) faults.push(`the node "${n.id}" is in the stage "${n.stage}", which is not there`);
   }
   return faults;
+}
+
+/** The colour a new stage takes, from the palette given (Will, TODO 957: "iterate through the available colours"): the
+ *  first that no stage wears; all worn, the next in turn. None given, none. */
+export function nextStageColour(stages: readonly Pick<NodeStage, 'colour'>[], colours: readonly string[]): string | undefined {
+  return colours.find((c) => !stages.some((s) => s.colour === c)) ?? colours[stages.length % colours.length];
+}
+
+/** Each stage its colour: its own, else the next by `nextStageColour`. Made from nothing, stage i wears colour i. */
+export function colourStages<S extends Pick<NodeStage, 'colour'>>(stages: readonly S[], colours: readonly string[]): S[] {
+  const done: S[] = [];
+  for (const [i, s] of stages.entries()) {
+    const colour = s.colour ? undefined : nextStageColour([...done, ...stages.slice(i + 1)], colours);
+    done.push(colour ? { ...s, colour } : s);
+  }
+  return done;
 }

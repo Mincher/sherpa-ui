@@ -100,8 +100,8 @@ test('Add stage before Stage 1 is Stage 1, and the old one Stage 2: a default na
   await more(page, 0, 'add-before');
   const w = await flow(page);
   expect(w.stages!.map((s) => [s.id, s.label])).toEqual([['stage-2', 'Stage 1'], ['stage-1', 'Stage 2']]);
-  // A new stage takes a palette colour at random (TODO 904).
-  expect(w.stages![0]!.colour).toMatch(/^var\(--sherpa-data-viz-series-border-(10|[1-9])\)$/);
+  // A new stage takes the palette's first colour no stage wears: Stage 1 wears none (Will, TODO 957).
+  expect(w.stages![0]!.colour).toBe('var(--sherpa-data-viz-series-border-1)');
   await expect(stage(page, 0)).toHaveAttribute('data-heading', 'Stage 1');
   await expect(stage(page, 1)).toHaveAttribute('data-heading', 'Stage 2');
   // Its nodes moved on with the old Stage 1; the Start stands in the new first one (Will, TODO 955).

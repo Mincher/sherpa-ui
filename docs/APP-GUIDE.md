@@ -695,7 +695,10 @@ the edge goes past the nodes: the stage it narrows pushes them in, across only, 
 order, a node pushing the one it meets with their gap kept, down to its widest node;
 there they may overlap. The push is drawn as it goes and is one Undo. Each stage bar has Move left and Move right, and More: Edit, Add
 stage before, Add stage after and Remove. A default name is its place (Stage 1,
-Stage 2): one added or moved before Stage 1 is Stage 1. Give `bindWorkflow` a
+Stage 2): one added or moved before Stage 1 is Stage 1. A new stage takes the next
+data-viz colour no stage wears (`nextStageColour`); an app that makes stages gives
+them colours the same way, `colourStages(stages, DATA_VIZ_SWATCHES.map((s) => s.value))`,
+so stage 1 wears colour 1. Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:
 
 ```html

@@ -5,7 +5,6 @@
  * Map:
  * - Swatch — One colour a picker offers: its value, its words, and its fill.
  * - DATA_VIZ_SWATCHES — The ten data-viz series colours.
- * - randomSwatch — A swatch at random, one the neighbours given do not wear where it can.
  */
 
 /** One colour a picker offers: the value it keeps (a CSS colour, a token), its words, and the fill its chip shows. */
@@ -23,10 +22,3 @@ export const DATA_VIZ_SWATCHES: readonly Swatch[] = NAMES.map((label, i) => ({
   label,
   fill: `var(--sherpa-data-viz-series-${i + 1})`,
 }));
-
-/** A swatch's value at random from `from`, one none of `beside` wears where one is left. */
-export function randomSwatch(beside: readonly (string | undefined)[] = [], from: readonly Swatch[] = DATA_VIZ_SWATCHES): string {
-  const free = from.filter((s) => !beside.includes(s.value));
-  const pool = free.length ? free : from;
-  return pool[Math.floor(Math.random() * pool.length)]!.value;
-}
