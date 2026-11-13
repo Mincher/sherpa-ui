@@ -45,9 +45,11 @@ test('Organise is the one kind in its category, Sort and Group its rows; the Col
 });
 
 test('a property row is output only: no control, no input, no value; one definition, the True of each test (plan 944)', () => {
-  const props = (kind) => kind.rows.filter((r) => r.property && r.name !== 'rows');
+  // Beside the rows it sends (a test's Pass and Fail, plan 971), a test's one property is its True.
+  const props = (kind) => kind.rows.filter((r) => r.property && r.gives !== 'rows');
   for (const [id, type] of [['condition', 'eq'], ['condition', 'between'], ['condition', 'not'], ['condition', 'empty'], ['prompt', 'boolean']]) {
     const kind = resolveKind(NODE_KINDS[id], type);
+    if (id === 'condition') assert.deepEqual(kind.rows.filter((r) => r.property && r.gives === 'rows').map((r) => r.name), ['pass', 'fail'], type);
     const [row, ...more] = props(kind);
     assert.deepEqual([more.length, row.name, row.label, row.control, row.input, row.output, row.gives], [0, 'true', 'True', undefined, undefined, 'value', 'number'], `${id} › ${type}`);
     assert.deepEqual(socketType(kind, 'true', 'input'), undefined);
@@ -56,9 +58,9 @@ test('a property row is output only: no control, no input, no value; one definit
   // One definition: the very same row object, on each.
   const same = [['condition', 'eq'], ['condition', 'between'], ['condition', 'and'], ['prompt', 'boolean']].map(([id, type]) => resolveKind(NODE_KINDS[id], type).rows.find((r) => r.name === 'true'));
   assert.ok(same.every((r) => r === same[0]));
-  // No Count row on a Source, a Field or an Organise (plan 944). And and Or say their True, Pass and Fail.
+  // No Count row on a Source, a Field or an Organise (plan 944). And, as every test, gives its Pass and Fail rows, then its True.
   for (const id of ['source', 'field', 'organise']) assert.deepEqual(NODE_KINDS[id].rows.filter((r) => r.property && r.name !== 'rows'), [], id);
-  assert.deepEqual(resolveKind(NODE_KINDS.condition, 'and').rows.filter((r) => r.property && r.name !== 'rows').map((r) => [r.name, r.gives]), [['true', 'number'], ['pass', 'number'], ['fail', 'number']]);
+  assert.deepEqual(resolveKind(NODE_KINDS.condition, 'and').rows.filter((r) => r.property).map((r) => [r.name, r.gives]), [['pass', 'rows'], ['fail', 'rows'], ['true', 'number']]);
 });
 
 test('a property row sends a number before a run, as a Result does: it connects like any output, into a number or a value', () => {
@@ -75,7 +77,7 @@ test('a property row sends a number before a run, as a Result does: it connects 
   const bad = flow([source, field, tested, { id: 'k', kind: 'tag', x: 900, y: 0 }], [...testing, { from: 'c/true', to: 'k' }]);
   assert.deepEqual(said(workflowGraph(bad)), { k: [['', 'Tag takes a field; it was given a number']] });
   // The Outgoing JSON lists it among a node's outputs.
-  assert.deepEqual(nodeFlow(g, 'c').outgoing.map((o) => [o.socket, o.type]), [['Results', 'object'], ['True', 'value']]);
+  assert.deepEqual(nodeFlow(g, 'c').outgoing.map((o) => [o.socket, o.type]), [['Pass', 'object'], ['Fail', 'object'], ['True', 'value']]);
 });
 
 test('a property row connects through a portal as a row, and a Custom Node takes it as an output: Save as and Ungroup keep its connection', () => {

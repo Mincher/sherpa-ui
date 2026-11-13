@@ -136,8 +136,10 @@ export interface RowKind {
   beside?: string;
   /** A PROPERTY row: output only, a value the node provides from its own data or logic (`propertyRow`). TODO 835 */
   property?: true;
-  /** A property that sends on what reaches the row of this name: a Check's Yes and No, its Data (plan 944). */
+  /** A property that sends on what reaches the row of this name: a Branch's Yes and No, its Data (plan 944). */
   passes?: string;
+  /** One way of a fork: what it sends goes no other way, as a test's Pass and Fail or a Branch's Yes and No (plan 971). */
+  fork?: true;
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
   /** An `entity` row's type: it picks one of the shelf's entities of it, as a Run Coworker's Coworker (plan 949). */
@@ -450,14 +452,14 @@ const compareTypes = (ops: readonly FilterOp[]): Record<string, NodeType> => Obj
  *  `truthOf` reads them; then the comparisons. Each leads with Rows: the rows it lets through. A Query draws its tree
  *  with these: Not and Is empty are a workflow's alone. Plan 749 P5 */
 /** A test's Pass: the rows that hold it; its Fail: the rows that do not, so neither route is lost (Will, plan 971 A). */
-const [PASS, FAIL] = [propertyRow('pass', 'Pass', 'rows'), propertyRow('fail', 'Fail', 'rows')];
+const [PASS, FAIL]: readonly [RowKind, RowKind] = [{ ...propertyRow('pass', 'Pass', 'rows'), fork: true }, { ...propertyRow('fail', 'Fail', 'rows'), fork: true }];
 /** The kinds that test: each gives Pass, Fail and its truth (plan 971 A). */
 export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time', 'tag']);
 /** A Branch's Data in, and its Yes and No, each sending ALL of it. */
 const BRANCH: readonly RowKind[] = [
   { name: 'data', label: 'Data', input: 'any' },
-  { name: 'yes', label: 'Yes', output: 'object', property: true, passes: 'data' },
-  { name: 'no', label: 'No', output: 'object', property: true, passes: 'data' },
+  { name: 'yes', label: 'Yes', output: 'object', property: true, passes: 'data', fork: true },
+  { name: 'no', label: 'No', output: 'object', property: true, passes: 'data', fork: true },
 ];
 const LOGIC: Readonly<Record<string, NodeType>> = {
   // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
@@ -498,7 +500,7 @@ export function conditionFits(inputs: readonly ConditionInput[]): ReadonlySet<st
 }
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
- *  Only the Check node branches (plan 944): a test has a True property, 1 or 0, and no True or False socket. */
+ *  Only the Branch node branches (plans 944, 971): a test gives Pass, Fail and True (1 or 0); no True or False socket. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
   // A Start node: nothing comes in; what it heard leaves by its rows. Any one of a graph's Triggers starts it (Will, D2 B). Its
@@ -533,7 +535,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // The ONE node that branches (plan 944; Branch, plan 971 A): its test on its header, its truth said on it, its When; ALL its
   // Data goes on by Yes where it holds, by No where not, and the other sends nothing. It filters no rows: a test does.
   branch: {
-    heading: 'Branch', icon: 'diverging-arrows', description: 'Send all the data one way, by its When', input: 'any',
+    heading: 'Branch', icon: 'diverging-arrows', description: 'Send all data one way, by its When', input: 'any',
     typeLabel: 'When', defaultType: 'any',
     types: {
       any: { label: 'Any', help: 'Yes when any row passes, or the value is true', rows: BRANCH },
@@ -1045,7 +1047,7 @@ export interface GraphRow extends RowKind {
   fault?: string;
   /** Connections drive its picklist: it shows what comes in, each marked Custom, and its own pick waits. */
   custom?: true;
-  /** A property with nothing to say: Results or Count where no rows reach its node, only a value (TODO 924). */
+  /** A row of rows with nothing to say: Results, or a test's Pass and Fail, where only a value reaches its node (TODO 924). */
   idle?: true;
 }
 

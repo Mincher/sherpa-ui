@@ -44,7 +44,7 @@ const backwards = (g, places) => g.connections.filter((r) => places[node(r.to)].
 
 // Demos' shipped workflow, tidy: a Source, a Field, a Value and a Condition, an Output.
 const demos = graphOf([['start', 0, 0], ['field', 360, 0], ['status', 360, 240], ['filter', 720, 0], ['end', 1080, 0]],
-  [R('start/rows', 'field'), R('field/field', 'filter'), R('status/value', 'filter/b'), R('filter/rows', 'end')]);
+  [R('start/rows', 'field'), R('field/field', 'filter'), R('status/value', 'filter/b'), R('filter/pass', 'end')]);
 // A store, four fields, four conditions each with a value, an And, an Output; laid out in columns, crossed.
 function tree() {
   const nodes = [['store', 0, 400]];

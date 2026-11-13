@@ -27,7 +27,7 @@ const flow = () => ({
     { id: 'end', kind: 'result', x: 720, y: 0 },
   ],
   connections: [
-    { from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' },
+    { from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/pass', to: 'end' },
   ],
 });
 const sorted = (w) => ({
@@ -52,9 +52,9 @@ test('each connection over the edge is a typed socket; the use is joined as the 
   const made = groupNodes(flow(), ['cond'], empty(), { label: 'Status check' }, undefined, facts);
   const d = made.library.nodes[made.id];
   assert.deepEqual(d.inputs.map((i) => [i.name, i.type]), [['start-rows', 'object'], ['val-value', 'value']]);
-  assert.deepEqual(d.outputs.map((o) => [o.name, o.type]), [['cond-rows', 'object']]);
+  assert.deepEqual(d.outputs.map((o) => [o.name, o.type]), [['cond-pass', 'object']]);
   assert.deepEqual(made.workflow.connections.map((r) => `${r.from} → ${r.to}`).sort(), [
-    `${made.use}/cond-rows → end`, `start/rows → ${made.use}/start-rows`, `val/value → ${made.use}/val-value`,
+    `${made.use}/cond-pass → end`, `start/rows → ${made.use}/start-rows`, `val/value → ${made.use}/val-value`,
   ].sort());
   assert.deepEqual(lib.workflowFaultsDeep(made.workflow, made.library, undefined, facts), []);
   assert.equal(lib.checkNodeLibrary(made.library, undefined, facts), true);
@@ -89,7 +89,7 @@ test('refused in words: nothing picked, no name, a Group node, a loop through ou
   // Two types: a Store's rows (an object) into the Value row, beside the header it feeds. Any connection joins any
   // input (TODO 770): ONE socket, typed by what its source sends; inside, the Value reads null and warns, as outside.
   const bad = flow();
-  bad.connections = [{ from: 'start/rows', to: 'cond' }, { from: 'start/rows', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }];
+  bad.connections = [{ from: 'start/rows', to: 'cond' }, { from: 'start/rows', to: 'cond/b' }, { from: 'cond/pass', to: 'end' }];
   assert.deepEqual(workflowGraph(bad).nodes.find((n) => n.id === 'cond').warnings, [
     { words: 'Equals takes a field or a value; it was given rows: connect a Field in' }, { row: 'b', words: 'Value B takes a value; it was given rows' },
   ]);
@@ -110,7 +110,7 @@ const HAS = {
   outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
   nodes: [{ id: 'has-status', kind: 'condition', x: 0, y: 0, values: { type: 'eq' } }],
   // An output made from the test's True property (plan 944).
-  connections: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/rows', to: '#out/matching' }, { from: 'has-status/true', to: '#out' }],
+  connections: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/pass', to: '#out/matching' }, { from: 'has-status/true', to: '#out' }],
 };
 const hasLib = (preset = false) => ({ v: 1, nodes: { 'has-status': { ...structuredClone(HAS), ...(preset ? { preset: true } : {}) } } });
 /** A Store, a Value and a Condition beside two uses of Has status, its Matching on to the Output. */
@@ -217,7 +217,7 @@ test('the Group Input shows a row per connected input, each an output socket con
       { id: 'end', kind: 'result', x: 720, y: 0 },
     ],
     connections: [
-      { from: 'start/rows', to: 'a' }, { from: 'start/rows', to: 'b' }, { from: 'val/value', to: 'a/b' }, { from: 'val/value', to: 'b/b' }, { from: 'a/rows', to: 'end' },
+      { from: 'start/rows', to: 'a' }, { from: 'start/rows', to: 'b' }, { from: 'val/value', to: 'a/b' }, { from: 'val/value', to: 'b/b' }, { from: 'a/pass', to: 'end' },
     ],
   };
   const made = groupNodes(w, ['a', 'b'], empty(), { label: 'Both' }, undefined, facts);

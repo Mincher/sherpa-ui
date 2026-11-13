@@ -26,9 +26,10 @@ test('each family: its types in order, the Type row first, and the rows, sockets
       // Count: how many rows come in (plan 944).
       count: ['rows', 'result'],
     },
-    time: { between: ['start', 'end'], duration: ['when', 'n', 'unit'] },
+    // A test leads with Pass and Fail (plan 971).
+    time: { between: ['pass', 'fail', 'start', 'end'], duration: ['pass', 'fail', 'when', 'n', 'unit'] },
     text: { append: ['a', 'b', 'result'], prepend: ['a', 'b', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'] },
-    tag: { includes: ['rows', 'value'] },
+    tag: { includes: ['pass', 'fail', 'value'] },
   };
   for (const [id, types] of Object.entries(rows)) {
     assert.deepEqual(Object.keys(NODE_KINDS[id].types), Object.keys(types), id);
@@ -56,7 +57,7 @@ test('each family: its types in order, the Type row first, and the rows, sockets
   assert.deepEqual(resolveKind(NODE_KINDS.math, 'count').rows.slice(1).map((r) => [r.name, r.input, r.needs, r.output, r.gives, r.many]), [['rows', 'object', 'rows', undefined, undefined, undefined], ['result', undefined, undefined, 'value', 'number', undefined]]);
   // Time takes the date on its header, of any type (D1), and sends a boolean: True, it holds (no False now, TODO 831).
   assert.deepEqual([NODE_KINDS.time.input, NODE_KINDS.time.output], ['any', 'boolean']);
-  assert.deepEqual(resolveKind(NODE_KINDS.time, 'duration').rows.slice(1).map((r) => r.control), ['span', 'number', 'unit']);
+  assert.deepEqual(resolveKind(NODE_KINDS.time, 'duration').rows.slice(3).map((r) => r.control), ['span', 'number', 'unit']);
 });
 
 test('Math placed, then Round picked: its rows are redrawn, and Add\'s B waits in the draft', () => {

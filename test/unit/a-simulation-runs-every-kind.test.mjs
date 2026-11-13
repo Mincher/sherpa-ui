@@ -111,11 +111,12 @@ test('Organise passes on the rows a Field on its header carries; with no rows in
   assert.match(alone.note, /No rows reach it/);
 });
 
-test('Time and Tag keep rows as a Condition does: a Tag the rows that include a value', () => {
+test('Time and Tag keep rows as a Condition does: a Tag\'s Pass the rows that include a value, its Fail the rest', () => {
   const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'tags' }), N('x', 'tag', { type: 'includes', value: ['a'] }), N('o', 'result')],
     [R('s/rows', 'f'), R('f/field', 'x'), R('x', 'o')]);
   const sim = simulateGraph(g, { customers: ROWS });
   assert.equal(sim.faults.some((f) => /not simulated/.test(f)), false, JSON.stringify(sim.faults));
+  assert.deepEqual(['x/pass', 'x/fail'].map((at) => out(sim, 'x', at).rows.map((r) => r.id)), [[1, 3], [2, 4, 5]]);
 });
 
 test('a Custom Node runs its body: its Group Input is fed what the use hears, and its Group Output is what the use sends', () => {

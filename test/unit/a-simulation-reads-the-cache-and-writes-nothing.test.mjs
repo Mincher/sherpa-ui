@@ -28,7 +28,7 @@ const rowsOf = (n) => Array.from({ length: n }, (_, i) => ({ id: i, status: STAT
 // Source › Field › Condition › Output.
 const chain = (field, type, b) => graphOf(
   [N('s', 'source', { store: 'customers' }), N('f', 'field', { field }), N('c', 'condition', { type, b }), N('o', 'result')],
-  [R('s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o')],
+  [R('s/rows', 'f'), R('f/field', 'c'), R('c/pass', 'o')],
 );
 
 test('a Source sends the cached rows; a Field sends its name and the rows into it; the Output hears what is connected to it', () => {
@@ -41,14 +41,15 @@ test('a Source sends the cached rows; a Field sends its name and the rows into i
   assert.deepEqual(sim.faults, []);
 });
 
-test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, in; its True is 1 or 0, and carries no rows (plan 944)', () => {
+test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, in; its Fail the rest; its True is 1 or 0, and carries no rows (plan 944)', () => {
   const tests = [['status', 'eq', 'active'], ['status', 'ne', 'trial'], ['seats', 'gt', 50], ['seats', 'lt', 10], ['region', 'eq', 'EMEA'], ['status', 'in', ['trial', 'churned']]];
   for (let round = 0; round < 20; round++) {
     const rows = rowsOf(10 + Math.floor(rnd() * 90));
     const [field, type, b] = tests[round % tests.length];
     const sim = simulateGraph(chain(field, type, b), { customers: rows });
     const kept = filterRows(rows, [field, type, b]);
-    assert.deepEqual(out(sim, 'c', 'c/rows').rows, kept, `${field} ${type}`);
+    assert.deepEqual(out(sim, 'c', 'c/pass').rows, kept, `${field} ${type}`);
+    assert.deepEqual(out(sim, 'c', 'c/fail').rows, rows.filter((r) => !kept.includes(r)), `${field} ${type} Fail`);
     // True is 1 where any row passes, 0 where none does: no rows. No True or False socket (plan 944).
     assert.deepEqual([out(sim, 'c', 'c/true').value, out(sim, 'c', 'c/true').rows], [kept.length > 0 ? 1 : 0, undefined], `${field} ${type} True`);
     assert.deepEqual([out(sim, 'c', 'c'), out(sim, 'c', 'c/#false')], [undefined, undefined], `${field} ${type}: no fork`);
@@ -60,17 +61,17 @@ test('two tests in a row are And: the second keeps what the first kept', () => {
   const g = graphOf(
     [N('s', 'source', { store: 'customers' }), N('f1', 'field', { field: 'status' }), N('a', 'condition', { type: 'eq', b: 'active' }),
       N('f2', 'field', { field: 'region' }), N('b', 'condition', { type: 'eq', b: 'EMEA' }), N('o', 'result')],
-    [R('s/rows', 'f1'), R('f1/field', 'a'), R('a/rows', 'f2'), R('f2/field', 'b'), R('b/rows', 'o')],
+    [R('s/rows', 'f1'), R('f1/field', 'a'), R('a/pass', 'f2'), R('f2/field', 'b'), R('b/pass', 'o')],
   );
   const sim = simulateGraph(g, { customers: rows });
   assert.deepEqual(into(sim, 'o', 'o').rows, rows.filter((r) => r.status === 'active' && r.region === 'EMEA'));
 });
 
-test('And keeps what every part kept, Or what any part kept, their Results in; the rows are the cache\'s own (939)', () => {
+test('And keeps what every part kept, Or what any part kept, their Pass in; the rows are the cache\'s own (939)', () => {
   const rows = rowsOf(80);
   const parts = [N('s', 'source', { store: 'customers' }), N('f1', 'field', { field: 'status' }), N('a', 'condition', { type: 'eq', b: 'active' }),
     N('f2', 'field', { field: 'region' }), N('b', 'condition', { type: 'eq', b: 'EMEA' })];
-  const wired = [R('s/rows', 'f1'), R('s/rows', 'f2'), R('f1/field', 'a'), R('f2/field', 'b'), R('a/rows', 'j'), R('b/rows', 'j'), R('j/rows', 'o')];
+  const wired = [R('s/rows', 'f1'), R('s/rows', 'f2'), R('f1/field', 'a'), R('f2/field', 'b'), R('a/pass', 'j'), R('b/pass', 'j'), R('j/pass', 'o')];
   for (const [type, keep] of [['and', (r) => r.status === 'active' && r.region === 'EMEA'], ['or', (r) => r.status === 'active' || r.region === 'EMEA']]) {
     const sim = simulateGraph(graphOf([...parts, N('j', 'condition', { type }), N('o', 'result')], wired), { customers: rows });
     const got = into(sim, 'o', 'o').rows;
@@ -92,10 +93,10 @@ test('a Source with no cached rows is "not fetched yet": a note and a fault, nev
 });
 
 test('a test with no Field says why, and its rows are none, not all', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('c', 'condition', { type: 'eq', b: 'active' }), N('o', 'result')], [R('s/rows', 'c'), R('c/rows', 'o')]);
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('c', 'condition', { type: 'eq', b: 'active' }), N('o', 'result')], [R('s/rows', 'c'), R('c/pass', 'o')]);
   const sim = simulateGraph(g, { customers: rowsOf(5) });
   assert.ok(sim.faults.some((f) => f.includes('tests no Field')), JSON.stringify(sim.faults));
-  assert.equal(out(sim, 'c', 'c/rows').rows, undefined);
+  assert.deepEqual([out(sim, 'c', 'c/pass').rows, out(sim, 'c', 'c/fail').rows], [undefined, undefined]);
 });
 
 test('a kind not simulated yet says so and sends no rows', () => {
@@ -110,7 +111,7 @@ test('rows flow through a portal as through a connection', () => {
   const g = graphOf(
     [N('s', 'source', { store: 'customers' }), N('in', 'portal', { type: 'in', name: 'rows' }), N('out', 'portal', { type: 'out', name: 'rows' }),
       N('f', 'field', { field: 'status' }), N('c', 'condition', { type: 'eq', b: 'trial' }), N('o', 'result')],
-    [R('s/rows', 'in'), R('out/@s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o')],
+    [R('s/rows', 'in'), R('out/@s/rows', 'f'), R('f/field', 'c'), R('c/pass', 'o')],
   );
   const sim = simulateGraph(g, { customers: rows });
   assert.deepEqual(into(sim, 'o', 'o').rows, rows.filter((r) => r.status === 'trial'));
@@ -134,7 +135,7 @@ test('it is fast: 100,000 rows through a Source, a Field, five Conditions and an
   tests.forEach(([field, type, b], i) => {
     nodes.push(N(`f${i}`, 'field', { field }), N(`c${i}`, 'condition', { type, b }));
     connections.push(R(from, `f${i}`), R(`f${i}/field`, `c${i}`));
-    from = `c${i}/rows`;
+    from = `c${i}/pass`;
   });
   connections.push(R(from, 'o'));
   const g = graphOf(nodes, connections);
@@ -147,13 +148,13 @@ test('it is fast: 100,000 rows through a Source, a Field, five Conditions and an
   assert.ok(ms < 1000, `${ms} ms`);
 });
 
-test('a Math Count is the row count: a Source\'s rows, a Field\'s rows into it, a Condition\'s rows it kept; none, a note (plan 944)', () => {
+test('a Math Count is the row count: a Source\'s rows, a Field\'s rows into it, a Condition\'s Pass; none, a note (plan 944)', () => {
   const rows = rowsOf(60);
   // No node has a Count row now: a Math Count counts what reaches it (plan 944).
   const counted = graphOf(
     [N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'status' }), N('c', 'condition', { type: 'eq', b: 'active' }),
       N('ms', 'math', { type: 'count' }), N('mf', 'math', { type: 'count' }), N('mc', 'math', { type: 'count' }), N('lone', 'math', { type: 'count' })],
-    [R('s/rows', 'f'), R('f/field', 'c'), R('s/rows', 'ms/rows'), R('f/field', 'mf/rows'), R('c/rows', 'mc/rows')],
+    [R('s/rows', 'f'), R('f/field', 'c'), R('s/rows', 'ms/rows'), R('f/field', 'mf/rows'), R('c/pass', 'mc/rows')],
   );
   const sim = simulateGraph(counted, { customers: rows });
   const kept = rows.filter((r) => r.status === 'active').length;
@@ -244,15 +245,15 @@ test('a node\'s light: the rows it heard and said, "120 → 30", and its time; t
   assert.equal(lightOf({ incoming: [], outgoing: [] }, 5), '5 ms');
 });
 
-test('the rows true: a test\'s Results are what passed, its True 1; a test nothing passes keeps 0 rows, its True 0 (plan 944)', () => {
-  // trueOf is gone: a test's Results and its True row say it (plan 944).
+test('the rows true: a test\'s Pass is what passed, its Fail the rest, its True 1; a test nothing passes keeps 0 rows, its True 0 (plan 944)', () => {
+  // trueOf is gone: a test's Pass, Fail and True rows say it (plans 944, 971).
   assert.equal(trueOf, undefined);
   const rows = rowsOf(120);
   const kept = rows.filter((r) => r.status === 'active').length;
-  const said = (sim) => [out(sim, 'c', 'c/rows').rows?.length, out(sim, 'c', 'c/true').value];
-  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), { customers: rows })), [kept, 1]);
-  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'no-such-status'), { customers: rows })), [0, 0]);
-  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), {})), [undefined, undefined]);
+  const said = (sim) => [out(sim, 'c', 'c/pass').rows?.length, out(sim, 'c', 'c/fail').rows?.length, out(sim, 'c', 'c/true').value];
+  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), { customers: rows })), [kept, 120 - kept, 1]);
+  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'no-such-status'), { customers: rows })), [0, 120, 0]);
+  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), {})), [undefined, undefined, undefined]);
 });
 
 test('Pause lets the node in hand finish and goes no further; Play goes on from the next node; Stop ends the run, keeping the nodes done', async () => {

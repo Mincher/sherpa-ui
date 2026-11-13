@@ -351,19 +351,26 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   };
 
   /** A Condition's verdict, by its kind: a test keeps rows; And and Or join their inputs, each true where it is above zero,
-   *  true, or not empty. `passed` is its True, 1 or 0; Pass and Fail count its inputs. */
+   *  true, or not empty. `passed` is its True, 1 or 0. Their Fail is every row a joined test tested that their Pass is not,
+   *  as the Outgoing JSON's opposite says (plan 971 A). */
   const verdict = (node: GraphNode): Verdict | string | { note: string } => {
     const type = node.rows.find((r) => r.name === 'type')?.value;
     if (node.kind === 'condition' && (type === 'and' || type === 'or')) {
       const came = into(node.id);
       if (!came.length) return `"${node.heading}" joins nothing: connect its inputs in`;
-      const each = came.map(({ sent: s }) => ({ ok: holds(s), ...(s.rows ? { rows: s.rows } : {}) }));
+      const each = came.map(({ from, sent: s }) => {
+        const at = socketOf(from);
+        const src = held.get(at.node);
+        const v = s.rows && src && TEST_KINDS.has(src.kind) && (at.row === 'pass' || at.row === 'fail') ? verdict(src) : undefined;
+        const split = v && typeof v !== 'string' && !('note' in v) ? v : undefined;
+        return { ok: holds(s), ...(s.rows ? { rows: s.rows, base: split ? union([split.kept, split.lost]) : s.rows } : {}) };
+      });
       const pass = each.filter((e) => e.ok).length;
       const passed = type === 'or' ? pass > 0 : pass === each.length;
       const parts = each.flatMap((e) => (e.rows ? [e.rows] : []));
       const kept = type === 'or' ? union(each.flatMap((e) => (e.ok && e.rows ? [e.rows] : []))) : passed ? common(parts) : [];
       const keeps = new Set(kept);
-      return { kept, lost: union(parts).filter((row) => !keeps.has(row)), passed };
+      return { kept, lost: union(each.flatMap((e) => (e.base ? [e.base] : []))).filter((row) => !keeps.has(row)), passed };
     }
     return test(node);
   };

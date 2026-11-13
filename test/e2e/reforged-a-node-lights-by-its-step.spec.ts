@@ -125,7 +125,7 @@ const FLOW = `async () => {
     { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
     { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'active' } },
     { id: 'end', kind: 'result', x: 900, y: 0 },
-  ], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
+  ], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/pass', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'] });
   await window.__settled();
 }`;

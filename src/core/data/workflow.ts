@@ -381,8 +381,9 @@ export function workflowFaults(given: WorkflowDefinition, shipped: Kinds = nodeK
     const there = fed.get(to) ?? [];
     if (!leaves) problems.push(`a connection leaves "${from}", which is no output socket`);
     else if (!out) problems.push(`a connection leaves "${from}", which sends any type: an output says the one it sends`);
-    // A Rows row only sends: a connection into it says so.
-    if (!into && socketOf(to).row === ROWS.name && byId.has(socketOf(to).node)) problems.push(`a connection enters "${to}", a Rows row, which only sends: a node's rows come in on its header`);
+    // A property only sends (Results, a test's Pass and Fail, a Branch's Yes and No): a connection into it says so.
+    const sends = into ? undefined : rowOf(byId.get(socketOf(to).node)?.rows ?? [], socketOf(to).row ?? '');
+    if (sends?.property) problems.push(`a connection enters "${to}", its ${sends.label} row, which only sends: what a node takes comes in on its header or an input row`);
     else if (!into) problems.push(`a connection enters "${to}", which is no input socket`);
     if (there.includes(from)) problems.push(`the connection "${from}" → "${to}" is there twice`);
     else if (there.length && !into?.many) problems.push(`two connections enter "${to}", which takes one`);
@@ -544,7 +545,7 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
     const node = held.get(id);
     const kind = kindOfNode(kinds, node);
     const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
-    // A Check's Yes and No send what reaches its Data, else its test (plan 944).
+    // A Branch's Yes and No send what reaches its Data, else its test (plan 944).
     if (out?.passes && !busy.has(id)) {
       const into = connections.find((r) => r.to === `${id}/${out.passes}`) ?? connections.find((r) => r.to === id);
       busy.add(id);
@@ -567,7 +568,7 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
         return { from: r.from, got: got && need && readInput({ label: kind.heading, needs: need }, got).warning ? null : got };
       });
       if (passes) {
-        // Results carry rows where rows, a column or an object come in; a test of one value has none.
+        // Rows (Results, a test's Pass and Fail) are carried where rows, a column or an object come in; a test of one value has none.
         const carries = heard.some(({ got }) => !!got && ['rows', 'field', 'object'].includes(got.kind));
         return carries ? { kind: 'rows' } : undefined;
       }
@@ -725,7 +726,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     }
     const types = family.types ? typeChoices(family)!.filter((c) => !fits || fits.has(c.value) || c.value === at?.id) : undefined;
     let sources: MessageSource[] | undefined;
-    // Its Results and Count say ROWS: where only a value, or a test of one, reaches its header, they have nothing to say.
+    // The rows it sends (Results, a test's Pass and Fail): where only a value, or a test of one, reaches its header, they have nothing to say.
     // Nothing usable joined: they show (TODO 924).
     const rowless = !!kind.input && kind.rows.some(saysRows) && rowsHeard(node.id) === false;
     // A Condition's Count also says the counts that pass: it shows where a number comes in (TODO 939; Will, 2026-11-11: a
@@ -765,7 +766,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {
         warnings.push({ row: row.name, words: `${row.label} has no rows: a value comes in` });
       }
-      // A Check's Yes and No are drawn as what they send: what reaches its Data (plan 944).
+      // A Branch's Yes and No are drawn as what they send: what reaches its Data (plan 944).
       const through = row.passes ? { output: socketOfGiven(sent(`${node.id}/${row.name}`)?.kind) } : {};
       // A Field's Values with none picked sends nothing, and says so.
       const silent = row.valuesOf && (has == null || (Array.isArray(has) && !has.length)) ? { hint: 'None picked: it sends nothing' } : {};
@@ -867,8 +868,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   return { nodes, connections, ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) };
 }
 
-/** A row that says rows: Results, or a test's Pass and Fail (plan 971 A). */
-const saysRows = (row: RowKind): boolean => !!row.property && row.gives === 'rows';
+/** A row that says rows: Results, or a test's Pass and Fail (plan 971 A); an AI node's Answer is no such row. */
+const saysRows = (row: RowKind): boolean => row.name === ROWS.name || (!!row.fork && row.gives === 'rows');
 
 /** A node's width on the plane, in px: its output socket is at its x plus this. */
 export const NODE_WIDTH = 240;

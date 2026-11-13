@@ -6417,9 +6417,10 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
   empty. A pick no input fits stays listed and warns (D1 A). In a mixture, an input the pick does not
   fit is IGNORED (`GraphNode.ignored`, D2 A): not read, no warning, its line dashed with a `<title>`
   tip; Simulate's `into` and `leafOf` skip it. An unknown field type is text, as `opWarning` reads it.
-- **Every type leads with Rows**: the rows it lets through, for a node that needs rows. It sends rows
-  only where rows reached its header — rows, a column, an object, or a test's Results (`sender`); a
-  True is a number, 1 or 0 (plan 944). A test of two values sends none.
+- **Every type leads with Pass and Fail** (plan 971 A): the rows that hold, and the rows that do not,
+  so none is lost. They send rows only where rows reached its header — rows, a column, an object, or
+  a test's Pass or Fail (`sender`); a True is a number, 1 or 0 (plan 944). A test of two values sends
+  none.
 - **In the last and In the next are Time › Duration's**, not Logic's: two nodes would do one check.
 - **The header's input is the type's.** And and Or take many of anything (TODO 939), and Not one
   boolean; Is empty takes any value; a comparison any. Each one has a True property, 1 or 0 (plan 944). Nothing
@@ -6492,7 +6493,7 @@ types allow is drawn; no family fences what a graph places.
 - **Any connection joins any input** (Will, TODO 770, B): a type mismatch is no fault and no refusal,
   only this warning — "Value A takes a number; it was given rows". Grouping makes one socket of
   what its source sends. What stays refused is the graph's shape: a loop, the same connection twice,
-  two into an input that takes one, a socket that is not there, a Rows row (it only sends), an
+  two into an input that takes one, a socket that is not there, a property row (it only sends), an
   output that says it sends any type, and a preset's header (read only). And and Or take any
   boolean (TODO 780, `T-a-condition-is-a-tree-of-nodes`): a boolean input reads true or false, 1 or
   0, and the words, by `truthOf`.
@@ -6635,7 +6636,7 @@ connections between their sockets — checked by `schemas/workflow.v3.json` and 
   tree's leaf, never a shape of its own. An `op` row holds an operator, a `number`
   row a number: `editWorkflow` types a value as its row takes it.
 - **A v2 workflow** (Will, plan 713 D8): a node's data comes IN on its header, of any
-  type (D1), and leaves from its Rows row, `node/rows`, which only sends. No v1 ships,
+  type (D1), and leaves from its property rows (`node/rows`, a test's `node/pass` and `node/fail`), which only send. No v1 ships,
   so none is read (Will, 2026-11-10): `readWorkflow` takes a v2, and anything else is
   the one fault "it is not a workflow definition: a v2". An entity's graph is made a v2
   by `entity-check`.
@@ -6853,13 +6854,15 @@ sockets only, never types.
   `editWorkflow` puts a new connection beside the ones there; anywhere else it replaces
   the one there. The same connection twice is a fault. Two TYPES into an `any` that takes
   many are not (770): each is read by what the input needs.
-- **Only a Check branches** (Will, plan 944: "we're making nodes harder to work with by having
-  True and False sockets on nodes"). No kind forks; `branches` and `#false` are gone. A test (a
-  Condition's every type, an AI node that expects True/false) has a True PROPERTY, `node/true`: 1
-  where it holds, 0 where not, beside its Results. The Check node takes its test on its header —
-  true where rows came, a boolean is true, a number is above zero, else not empty — and its Data
-  on a row; Yes (`check/yes`) sends the Data where the test holds, No where it does not, each
-  drawn as the type that reaches its Data. The other way sends `notTaken`; a node whose header
+- **A test splits, only a Branch branches** (Will, plan 944: "we're making nodes harder to work with
+  by having True and False sockets on nodes"; plan 971 A). No kind forks; `branches` and `#false` are
+  gone. A test (a Condition's every type, Time, Tag, And, Or, Not, Is empty) gives Pass and Fail, its
+  rows split (`TEST_KINDS`), and a True PROPERTY, `node/true`: 1 where it holds, 0 where not; an AI
+  node that expects True/false has the True. The Branch node takes its test on its header and its
+  Data on a row; its When says what is Yes: Any, a Pass row; All, no Fail row; None, no Pass row; At
+  least N Pass rows; a plain value is true where a boolean is true, a number above zero, else not
+  empty. Yes (`branch/yes`) sends ALL the Data where When holds, No where it does not, each drawn as
+  the type that reaches its Data. The other way sends `notTaken`; a node whose header
   (with none, its rows) hears only that does not run (Simulate: Not taken). A check that is no
   Condition (Time, Tag, a Preset, a Saved filter, a Custom Node's use) says `output: 'boolean'`:
   one boolean from its header, `Out`. A line from a Condition's header is a fault, in words.
@@ -6909,7 +6912,9 @@ its choices".
   `where` may be `true` or `false`; one only a run gives is named by where it comes from,
   `{ boolean: "Source › True" }`. Since TODO 939 anything else joins too, with no warning — rows, a
   count, a value, each true where it is above zero, true, or not empty — and says nothing in the tree;
-  a test's Results bring its tree, as its True does. No connection into it is a fault. A Filter's
+  a test's Pass brings its tree, as its True does, and its Fail the opposite one (`notCondition`: each
+  operator's opposite, And and Or swapped; an operator with none is a fault, in words; plan 971 A). No
+  connection into it is a fault. A Filter's
   use brings its tree too, read inside (plan 776 D5, `T-a-filter-is-a-preset-of-its-store`).
 - **The Query holds no constant.** A page's `where` cannot say one, and the Query editor takes no
   connection into an And or an Or (`connectionRequest`), so it draws none. Folded, a constant compiles as no
@@ -6920,9 +6925,9 @@ its choices".
   row's fault.
 - **A status, a preset and a saved filter draw the same shapes, read only** (M5): the definition or
   the store owns them, so no `ref.scope` and no edit asks the Query. A status field is one row per
-  value (its look); each value's `when` draws a Field per field it names and a Check (plan 944, D2
-  A): the root's True into the Check, the rows into its Data; Yes into the value's row, and No into
-  the next value's Fields and Check, in the order the status takes the first match; the last value,
+  value (its look); each value's `when` draws a Field per field it names and a Branch (plan 944, D2
+  A): the root's True into the Branch, the rows into its Data; Yes into the value's row, and No into
+  the next value's Fields and Branch, in the order the status takes the first match; the last value,
   with no `when`, takes the last No. A load lights each root with the rows
   that took it (`statusTallies`, `traceQuerySteps`). `queryGraphFaults` names a `when` that is no
   condition and a connection that ends in nothing.
@@ -6937,7 +6942,7 @@ its choices".
 - Site: `test/unit/a-status-is-a-chain-of-conditions.test.mjs`
 - Site: `test/unit/and-or-take-any-boolean.test.mjs`
 - Site: `test/e2e/reforged-node-and-or.spec.ts`
-- Site: `test/unit/only-a-condition-forks.test.mjs`
+- Site: `test/unit/only-a-branch-branches.test.mjs`
 
 ### T-an-app-is-its-definition
 
@@ -7971,8 +7976,8 @@ Out row that nothing reaches. Each reader that followed connections itself would
 
 **A property row is output only, one definition, and connects like any output.** Will, TODO 835 ·
 `docs/history/plan-835-organise-and-properties.md`. It is a row a node provides from its own data or logic: no control,
-no input socket, no value to edit. `propertyRow` in node-kinds.ts is the ONE builder: a test's True (1 or 0), And's and
-Or's Pass and Fail, a Check's Yes and No (which send on what reaches its Data, `passes`). Count was its first use and is
+no input socket, no value to edit. `propertyRow` in node-kinds.ts is the ONE builder: a test's True (1 or 0), its Pass and
+Fail (rows, plan 971 A), a Branch's Yes and No (which send on what reaches its Data, `passes`). Count was its first use and is
 gone (plan 944): counting rows is a Math type, Count. Sort and Group are kinds of their own in
 Organise, and the Collection family and its Count type are gone: a saved `collection` reads with the fault "of the kind
 "collection", which is not one", and nothing converts it.
@@ -8152,7 +8157,7 @@ graph must say "two Routes branch at the Condition", not "two routes". `routesOf
 from each Source, and inside a Custom Node from its Group Input, to each Output, and inside to its Group Output, as
 the data flows (a portal hop resolved). A Value or a Field that nothing comes into FEEDS a Route; it starts none
 (D5). `branchesAt` groups the Routes through a node by the node each goes to next: fewer than two, and the node is
-no place where Routes part. A Check node is where its Yes and No Branches start (D3, plan 944).
+no place where Routes part. A Branch node is where its Yes and No Branches start (D3, plan 944).
 `routeRead`, which Fetch and Simulate ask, is whether a Route exists at all. A loop is walked once.
 
 - Site: `src/core/data/node-routes.ts`

@@ -82,9 +82,9 @@ test('it lists each category with its families, twenty-one, never a Query-only o
   // The Preset tab's categories, then the Custom tab's: Custom Nodes, the reader's own (plan 936).
   expect(heads).toEqual(['Triggers', 'Sources', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Custom Nodes']);
   const names = () => page.locator('sherpa-node-list sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
-  // An Output per family, Request none till an app adds a type (plan 917); the AI nodes after Logic (plan 926); Check in
-  // Logic, after Condition (plan 944); the Trigger first, in Triggers (plan 941).
-  expect(await names()).toEqual(['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Check', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  // An Output per family, Request none till an app adds a type (plan 917); the AI nodes after Logic (plan 926); Branch in
+  // Logic, after Condition (plans 944, 971); the Trigger first, in Triggers (plan 941).
+  expect(await names()).toEqual(['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Branch', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // A family's line is its synopsis, never its types (TODO 809).
   expect(await item(page, 'organise').getAttribute('data-description')).toBe('Sort, group, search rows and set axes');
   await page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])').fill('organ');
@@ -256,9 +256,9 @@ test('a connection let go on the bare canvas opens "Add a node": the kinds that 
   await expect(menu).toHaveAttribute('open', '');
   const choices = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // Rows (an object) leave the Store row: the families whose header or a row takes one.
-  // A portal's In takes anything (TODO 779); an AI node's header reads anything (plan 926); a Math Count's Rows and a Check
+  // A portal's In takes anything (TODO 779); an AI node's header reads anything (plan 926); a Math Count's Rows and a Branch
   // take rows (plan 944); an Organise takes them on its header (plan 960 U4.2).
-  expect(choices).toEqual(['field', 'math', 'condition', 'check', 'prompt', 'runbook', 'skill', 'organise', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
+  expect(choices).toEqual(['field', 'math', 'condition', 'branch', 'prompt', 'runbook', 'skill', 'organise', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
   const count = page.locator('sherpa-node-list sherpa-menu.add button[value="condition"]');
   // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
   if (test.info().project.name === 'webkit') {
@@ -280,8 +280,8 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   await expect(menu).toHaveAttribute('open', '');
   const said = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   // Said by its socket alone; what an output gives narrows it (below). A Model takes nothing in (plan 951).
-  // A Check takes anything, on its header and its Data (plan 944).
-  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  // A Branch takes anything, on its header and its Data (plan 944).
+  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Branch', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // What it gives narrows it (plan 783 F6): rows to the kinds that can use rows; a Field's column to those that take one.
   const offered = async (gives: string) => {
     await page.keyboard.press('Escape');
@@ -290,9 +290,9 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
     await expect(menu).toHaveAttribute('open', '');
     return page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   };
-  // Rows into a Math are its Count's, never Floor's list of numbers; a Check takes them too (plan 944), and an Organise, on
+  // Rows into a Math are its Count's, never Floor's list of numbers; a Branch takes them too (plan 944), and an Organise, on
   // its header (plan 960 U4.2).
-  expect(await offered('rows')).toEqual(['Field', 'Math › Count', 'Condition', 'Check', 'Prompt', 'Runbook', 'Skill', 'Organise', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  expect(await offered('rows')).toEqual(['Field', 'Math › Count', 'Condition', 'Branch', 'Prompt', 'Runbook', 'Skill', 'Organise', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   expect(await offered('field')).toEqual(said);
 });
 

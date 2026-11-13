@@ -233,7 +233,7 @@ test('a name or a connection that would make a loop through a row is refused: th
       node('in', 'portal', 1080, 0, { type: 'in', name: 'back' }, 'In back'), node('out', 'portal', 0, 360, { type: 'out', name: 'other' }, 'Out'),
       node('out2', 'portal', 0, 620, { type: 'out', name: 'back' }, 'Out back'), node('count', 'math', 360, 360, { type: 'count' }),
     ],
-    connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'test' }, { from: 'test/rows', to: 'in' }, { from: 'out/@test/rows', to: 'count/rows' }, { from: 'count/result', to: 'test/b' }],
+    connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'test' }, { from: 'test/pass', to: 'in' }, { from: 'out/@test/pass', to: 'count/rows' }, { from: 'count/result', to: 'test/b' }],
   };
   await bind(page, LOOP);
   await name(page, 'Out').locator('select').selectOption('back');
@@ -242,10 +242,10 @@ test('a name or a connection that would make a loop through a row is refused: th
   await expect(name(page, 'Out')).toHaveJSProperty('value', 'other');
   // The other Out's row into the Count's Rows: the same loop, refused.
   const before = await connections(page);
-  expect(await rows(page, 'Out back')).toEqual(['Condition › Results']);
-  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Results'), await socket(page, 'Math', 'input', 'Rows'));
+  expect(await rows(page, 'Out back')).toEqual(['Condition › Pass']);
+  await drag(page, await socket(page, 'Out back', 'output', 'Condition › Pass'), await socket(page, 'Math', 'input', 'Rows'));
   expect(await connections(page)).toEqual(before);
-  expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/rows → in', 'count/result → test/b']);
+  expect(await lines(page)).toEqual(['start/rows → pick', 'pick/field → test', 'test/pass → in', 'count/result → test/b']);
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
 });
 

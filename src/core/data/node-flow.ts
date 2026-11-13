@@ -60,8 +60,8 @@ function said(graph: DrawnGraph, address: string): string {
   return [from?.heading ?? id, part].filter(Boolean).join(' › ');
 }
 
-/** A test's True (1 or 0, plan 944) and its Results say its tree. */
-const SAYS_TREE = new Set(['pass', 'true']);
+/** A test's rows that say its tree: its True (1 or 0, plan 944) and its Pass; its Fail, the opposite (plan 971 A). */
+const SAYS_TREE = new Set(['pass', 'fail', 'true']);
 
 /** No condition, and why. */
 const none = (fault: string): ConditionRead => ({ faults: [fault] });
@@ -110,7 +110,7 @@ function readFrom(graph: Flowing, from: string, facts: ConditionFacts, walk: Wal
   // A test's Pass is the rows that pass it: it says its tree, as its True does; its Fail, the tree's opposite (plan 971 A).
   const test = !!node && TEST_KINDS.has(node.kind);
   const fails = test && at === 'fail';
-  const row = at !== undefined && test && (SAYS_TREE.has(at) || fails) ? undefined : at;
+  const row = at !== undefined && test && SAYS_TREE.has(at) ? undefined : at;
   if (!node) return none(`a connection comes from "${id}", which the graph does not hold`);
   if (walk.seen.has(node.id)) return none(`"${node.heading}" reads itself, in a loop`);
   const read = readNode(graph, node, row, facts, { ...walk, seen: new Set([...walk.seen, node.id]) });
@@ -173,7 +173,7 @@ function carried(graph: Flowing, node: GraphNode, facts: ConditionFacts, walk: W
   }));
 }
 
-/** One part And or Or joins: a test's True, its Results or a use's brings its tree — one that says none is a boolean a run gives, and
+/** One part And or Or joins: a test's True, its Pass, its Fail (the opposite) or a use's brings its tree — one that says none is a boolean a run gives, and
  *  why stays said; a value the graph holds that says true or false is a CONSTANT, which folds; a boolean only a run gives
  *  is named by where it comes from; what the header cannot use (null) says nothing. TODO 780, plan 783 D4 */
 function partFrom(graph: Flowing, via: NodeConnection, facts: ConditionFacts, walk: Walk): ConditionRead {

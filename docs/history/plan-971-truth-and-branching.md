@@ -104,3 +104,10 @@ drawn inline, so this chain goes either way (correction, sherpa-ui-e8).
 - **The Outgoing JSON's reader**: a test's Pass carries its condition on, its Fail the condition's NOT.
 - **The Query graph**: its status chain draws Branch; U4.7b takes the chain out later.
 - **Retrofit**: every library graph, fixture and spec in the same change. Demos': sherpa-demos-67's.
+- **"Any X?" is a Branch, not a split** (sherpa-demos-67, 2026-11-13, a correction to section 4's example): "Any at risk?"
+  has No → "All healthy", a Notification that says no device is at risk. No means NONE, not "the rest": Fail into it
+  would fire it while some device is at risk. So the four "Any X?" Checks become a Branch, When Any, its header the
+  Condition's True, its Data the Condition's PASS: Yes sends the matching rows on; No fires only when none match. A true
+  per-row split (Patch rollout's "Online?", Patch review's "Far behind?") is a Condition's Pass and Fail, no Branch. An
+  agent step's Check and "Attention today?" are a Branch, When Any, on a plain True. The header may join any of a
+  test's rows: When reads the test's Pass and Fail whichever joins.

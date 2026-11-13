@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
         { id: 't', kind: 'condition', x: 500, y: 0, heading: 'T', values: { type: 'empty' } },
         { id: 'o', kind: 'result', x: 1000, y: 0, heading: 'O' },
       ],
-      connections: [{ from: 's/rows', to: 't' }, { from: 't/rows', to: 'o' }],
+      connections: [{ from: 's/rows', to: 't' }, { from: 't/pass', to: 'o' }],
     };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {

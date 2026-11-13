@@ -478,7 +478,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     if (!worn.has(row.name) || row.beside) line.toggleAttribute('data-output-connected', sent.has(address));
     const field = line.firstElementChild as Field | null;
     if (row.beside) continue;
-    // A Results with no rows to say hides, unless a connection still leaves it (TODO 924).
+    // A row of rows with nothing to say hides, unless a connection still leaves it (TODO 924).
     line.toggleAttribute('data-idle', !!row.idle);
     // Each socket's tip names its row and says its value: a collapsed node shows neither.
     put(line, 'data-socket-name', row.label);

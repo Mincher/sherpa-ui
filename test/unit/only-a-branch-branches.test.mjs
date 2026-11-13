@@ -1,10 +1,10 @@
 /**
- * ONLY A CHECK BRANCHES — Will, plan 944 (D1 A): no node has a True or a False socket now. A Condition's True is a
- * property, 1 or 0, in every type, and an AI node's in its True/false type. The Check is the one node with two ways:
- * its Yes and its No send what reaches its Data on the way taken; the other way sends "Not taken". A check that is no
+ * ONLY A BRANCH BRANCHES — Will, plans 944 (D1 A), 971: no node has a True or a False socket now. A Condition's True is a
+ * property, 1 or 0, in every type, and an AI node's in its True/false type. The Branch is the one node with two ways:
+ * its Yes and its No send what reaches its Data on the way taken, by its When; the other way sends "Not taken". A check that is no
  * Condition (Time, Tag, a Preset, a Saved filter, a use of a Custom Node) still sends one boolean from its header, `Out`.
  *
- *   node --test test/unit/only-a-condition-forks.test.mjs
+ *   node --test test/unit/only-a-branch-branches.test.mjs
  *
  * TRAP T-a-condition-is-a-tree-of-nodes
  */
@@ -34,21 +34,21 @@ test('no kind branches, in any type, nor a Custom Node use; a Condition has a Tr
   }
 });
 
-test('a check that is no Condition sends a boolean from its header; a Condition, a Check and the rest send nothing from it; none has a False', () => {
+test('a check that is no Condition sends a boolean from its header; a Condition, a Branch and the rest send nothing from it; none has a False', () => {
   const sends = (id) => socketType(resolveKind(NODE_KINDS[id]), undefined, 'output');
-  assert.deepEqual(Object.fromEntries(['condition', 'check', 'time', 'tag', 'preset', 'saved', 'source', 'value', 'field', 'math', 'organise', 'text'].map((id) => [id, sends(id)])), {
-    condition: undefined, check: undefined, time: 'boolean', tag: 'boolean', preset: 'boolean', saved: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, organise: undefined, text: undefined,
+  assert.deepEqual(Object.fromEntries(['condition', 'branch', 'time', 'tag', 'preset', 'saved', 'source', 'value', 'field', 'math', 'organise', 'text'].map((id) => [id, sends(id)])), {
+    condition: undefined, branch: undefined, time: 'boolean', tag: 'boolean', preset: 'boolean', saved: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, organise: undefined, text: undefined,
   });
   for (const id of Object.keys(NODE_KINDS)) assert.equal(socketType(resolveKind(NODE_KINDS[id]), '#false', 'output'), undefined, `${id}: no False (plan 944)`);
 });
 
 test('a drawn node says it: none has `branches`; a connection from a Condition\'s header or a False is refused in words', () => {
-  const g = workflowGraph(flow([node('s', 'source', { store: 'users' }), node('v', 'value'), node('m', 'math'), node('c', 'condition'), node('k', 'check'), node('t', 'time')], []));
+  const g = workflowGraph(flow([node('s', 'source', { store: 'users' }), node('v', 'value'), node('m', 'math'), node('c', 'condition'), node('k', 'branch'), node('t', 'time')], []));
   assert.deepEqual(g.nodes.filter((n) => 'branches' in n).map((n) => n.id), []);
-  const into = (from) => workflowFaults(flow([node('s', 'source', { store: 'users' }), node('v', 'value'), node('m', 'math'), node('c', 'condition'), node('k', 'check'), node('j', 'condition', { type: 'and' })], [{ from, to: 'j' }]));
+  const into = (from) => workflowFaults(flow([node('s', 'source', { store: 'users' }), node('v', 'value'), node('m', 'math'), node('c', 'condition'), node('k', 'branch'), node('j', 'condition', { type: 'and' })], [{ from, to: 'j' }]));
   for (const from of ['s', 'v/#false', 'm', 'c', 'c/#false', 'k', 'k/#false']) assert.deepEqual(into(from), [`a connection leaves "${from}", which is no output socket`], from);
-  // A Condition's True, a Time's Out and a Check's Yes and No join And.
-  assert.deepEqual(workflowFaults(flow([node('c', 'condition'), node('t', 'time'), node('k', 'check'), node('j', 'condition', { type: 'and' })],
+  // A Condition's True, a Time's Out and a Branch's Yes and No join And.
+  assert.deepEqual(workflowFaults(flow([node('c', 'condition'), node('t', 'time'), node('k', 'branch'), node('j', 'condition', { type: 'and' })],
     [{ from: 'c/true', to: 'j' }, { from: 't', to: 'j' }, { from: 'k/yes', to: 'j' }, { from: 'k/no', to: 'j' }])), []);
 });
 
@@ -58,18 +58,20 @@ test('a kind that still says `branches: true` draws no True and no False: the op
   assert.deepEqual(workflowFaults(w, kinds), ['a connection leaves "g", which is no output socket', 'a connection leaves "g/#false", which is no output socket']);
   assert.equal(kindNode(kinds, 'gate', 'g', []).branches, undefined);
   assert.deepEqual(nodeFlow(workflowGraph(w, {}, kinds), 'g').outgoing, []);
-  assert.deepEqual(nodeFlow(workflowGraph(flow([node('t', 'time')], []), {}, kinds), 't').outgoing.map((o) => o.socket), ['Out']);
+  // A Time sends its truth from its header, Out, and its rows by Pass and Fail (plan 971).
+  assert.deepEqual(nodeFlow(workflowGraph(flow([node('t', 'time')], []), {}, kinds), 't').outgoing.map((o) => o.socket), ['Out', 'Pass', 'Fail']);
 });
 
-test('a Check is the one node with two ways: its test on its header, Yes and No send its Data on the way taken; the other is not taken', () => {
-  const rows = NODE_KINDS.check.rows.map((r) => ({ name: r.name, label: r.label, ...(r.input ? { input: r.input } : {}), ...(r.output ? { output: r.output, passes: r.passes } : {}) }));
+test('a Branch is the one node with two ways: its test on its header, Yes and No send its Data on the way taken; the other is not taken', () => {
+  const rows = resolveKind(NODE_KINDS.branch).rows.map((r) => ({ name: r.name, label: r.label, ...(r.input ? { input: r.input } : {}), ...(r.output ? { output: r.output, passes: r.passes } : {}) }));
   assert.deepEqual(rows, [
+    { name: 'type', label: 'When' },
     { name: 'data', label: 'Data', input: 'any' },
     { name: 'yes', label: 'Yes', output: 'object', passes: 'data' },
     { name: 'no', label: 'No', output: 'object', passes: 'data' },
   ]);
-  assert.deepEqual([NODE_KINDS.check.heading, NODE_KINDS.check.icon, NODE_KINDS.check.category, NODE_KINDS.check.input], ['Check', 'diverging-arrows', 'Logic', 'any']);
-  const ns = [node('s', 'source', { store: 'users' }), node('f', 'field', { field: 'age' }), node('c', 'condition', { type: 'gt', b: 30 }), node('k', 'check'), node('y', 'organise'), node('n', 'organise')];
+  assert.deepEqual([NODE_KINDS.branch.heading, NODE_KINDS.branch.icon, NODE_KINDS.branch.category, NODE_KINDS.branch.input], ['Branch', 'diverging-arrows', 'Logic', 'any']);
+  const ns = [node('s', 'source', { store: 'users' }), node('f', 'field', { field: 'age' }), node('c', 'condition', { type: 'gt', b: 30 }), node('k', 'branch'), node('y', 'organise'), node('n', 'organise')];
   const cs = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/true', to: 'k' }, { from: 's/rows', to: 'k/data' }, { from: 'k/yes', to: 'y' }, { from: 'k/no', to: 'n' }];
   assert.deepEqual(workflowFaults(flow(ns, cs)), []);
   const g = workflowGraph(flow(ns, cs));

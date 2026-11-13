@@ -19,7 +19,7 @@ const STAGES = [{ id: 'plan', label: 'Plan', x: -40 }, { id: 'do', label: 'Do', 
 const BODY = {
   v: 1, label: 'Org permissions', inputs: [{ name: 'users', label: 'Users', type: 'object' }], outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, stage: 'plan', values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 440, y: 0, stage: 'do', values: { type: 'eq' } }],
-  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }],
+  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/pass', to: '#out/allowed' }],
 };
 const library = (definition = BODY) => ({ v: 1, nodes: { org: structuredClone(definition) } });
 const staged = () => editDefinition(library(), 'org', { stages: STAGES });
@@ -64,7 +64,7 @@ test('Save as Custom Node takes the stages its nodes stand in; the use stands in
       { id: 'few', kind: 'condition', x: 760, y: 0, stage: 'do', values: { type: 'lt', b: 5 } },
       { id: 'end', kind: 'result', x: 1300, y: 0, stage: 'check' },
     ],
-    connections: [{ from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'few' }, { from: 'few/rows', to: 'end' }],
+    connections: [{ from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'few' }, { from: 'few/pass', to: 'end' }],
   };
   const facts = { fieldsOf: { customers: { seats: { type: 'number' } } } };
   const made = groupNodes(workflow, ['start', 'seats'], { v: 1, nodes: {} }, { label: 'Seats' }, undefined, facts);

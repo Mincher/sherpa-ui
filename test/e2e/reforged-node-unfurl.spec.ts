@@ -94,7 +94,7 @@ const TANGLE: [string, string, number, number, Record<string, unknown>?][] = [
 const KNOTS = [
   { from: 'store/rows', to: 'c1' }, { from: 'store/rows', to: 'c2' }, { from: 'store/rows', to: 'c3' }, { from: 'store/rows', to: 'c4' },
   { from: 'v1/value', to: 'c2/b' }, { from: 'v2/value', to: 'c3/b' }, { from: 'v3/value', to: 'c1/b' },
-  { from: 'c1/rows', to: 'e2' }, { from: 'c3/rows', to: 'e1' }, { from: 'c2/rows', to: 'c4' }, { from: 'c4/rows', to: 'e1' },
+  { from: 'c1/pass', to: 'e2' }, { from: 'c3/pass', to: 'e1' }, { from: 'c2/pass', to: 'c4' }, { from: 'c4/pass', to: 'e1' },
 ];
 
 test('a press on Unfurl graph: every node moves, none overlaps, every line runs left to right and fewer cross; the view fits; one Undo', async ({ page }) => {
@@ -189,19 +189,19 @@ test('the Query editor unfurls too: every node moves, none overlaps, the places 
   expect(Object.keys(kept).length).toBeGreaterThan(1);
 });
 
-// Two Values into a Math node's rows a and b, and a Check's Yes and No out to two Outputs: each pair stood upside down. The
-// Condition's True is the Check's test: no node has a True or a False socket (plan 944).
+// Two Values into a Math node's rows a and b, and a Branch's Yes and No out to two Outputs: each pair stood upside down. The
+// Condition's True is the Branch's test: no node has a True or a False socket (plan 944).
 const ROWS: [string, string, number, number, Record<string, unknown>?][] = [
   ['two', 'value', 0, 0, { type: 'integer', value: '2' }], ['one', 'value', 0, 700, { type: 'integer', value: '1' }],
-  ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }], ['check', 'check', 1500, 300],
+  ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }], ['branch', 'branch', 1500, 300],
   ['no', 'result', 2000, 0], ['yes', 'result', 2000, 600],
 ];
 const FED = [
-  { from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' }, { from: 'test/true', to: 'check' },
-  { from: 'check/yes', to: 'yes' }, { from: 'check/no', to: 'no' },
+  { from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' }, { from: 'test/true', to: 'branch' },
+  { from: 'branch/yes', to: 'yes' }, { from: 'branch/no', to: 'no' },
 ];
 
-test('the sockets\' order: what feeds rows a and b stands in that order, and what a Check\'s Yes and No send, in theirs (Will, TODO 827; plan 944)', async ({ page }) => {
+test('the sockets\' order: what feeds rows a and b stands in that order, and what a Branch\'s Yes and No send, in theirs (Will, TODO 827; plan 944)', async ({ page }) => {
   await start(page, ROWS, FED);
   // Measured (plan 944): each upside-down pair crosses once, rows a and b and Yes and No, so two crossings and two swaps.
   expect(await atSockets(page)).toEqual({ crossed: 2, swapped: 2 });
@@ -228,7 +228,7 @@ const PORTAL_PAIR: [string, string, number, number, Record<string, unknown>?][] 
   ['end', 'result', 0, 0], ['out', 'portal', 400, 0, { type: 'out', name: 'Hand on' }], ['rows', 'condition', 800, 0, { type: 'eq', b: 'x' }],
   ['in', 'portal', 1200, 0, { type: 'in', name: 'Hand on' }], ['pick', 'field', 1600, 0], ['src', 'source', 2000, 0, { store: 'users' }],
 ];
-const PORTAL_CONNECTIONS = [{ from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'in' }, { from: 'out', to: 'rows' }, { from: 'rows/rows', to: 'end' }];
+const PORTAL_CONNECTIONS = [{ from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'in' }, { from: 'out', to: 'rows' }, { from: 'rows/pass', to: 'end' }];
 
 test('a graph reads left to right: Sources and a Portal In left, a Portal Out and Outputs right; a portal pair never flips it (Will, TODO 839)', async ({ page }) => {
   await start(page, PORTAL_PAIR, PORTAL_CONNECTIONS);
@@ -271,7 +271,7 @@ const STAGED: [string, string, number, number, Record<string, unknown>?][] = [
   ['end1', 'result', 1740, 0], ['end2', 'result', 1740, 300], ['note', 'value', 1740, 600, { type: 'text', value: 'n' }],
 ];
 const STAGED_CONNECTIONS = [
-  { from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'keep' }, { from: 'keep/rows', to: 'sort1' }, { from: 'keep/rows', to: 'sort2' },
+  { from: 'src/rows', to: 'pick' }, { from: 'pick/field', to: 'keep' }, { from: 'keep/pass', to: 'sort1' }, { from: 'keep/pass', to: 'sort2' },
   { from: 'sort1/rows', to: 'end1' }, { from: 'sort2/rows', to: 'end2' },
 ];
 const STAGES: Staged = {
@@ -324,7 +324,7 @@ test('a graph not laid out yet is unfurled and saved the first time it shows, an
     w.ed = bindWorkflow(canvas as never, {
       v: 3, id: 'made', unfurl: true,
       nodes: [at('s', 'source', { store: 'users' }), at('f', 'field', { field: 'status' }), at('c', 'condition', { type: 'eq' }), at('o', 'result')],
-      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'o' }],
+      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'o' }],
     } as never, { session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'], readOnly: ro });
     await window.__settled();
   }, readOnly);

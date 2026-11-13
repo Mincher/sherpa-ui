@@ -1,7 +1,7 @@
 /**
  * A STATUS IS A CHAIN OF CONDITIONS — plan 713 M5, plan 783 D6. A status field draws one row per value and,
- * per `when`, a Field per field it names, a test per rule and an Or, its True into a Check (plan 944): Yes hands its
- * value the rows, No hands the rest to the next value's Fields and Check, in the order the status takes the first
+ * per `when`, a Field per field it names, a test per rule and an Or, its True into a Branch (plans 944, 971): Yes hands
+ * its value the rows, No hands the rest to the next value's Fields and Branch, in the order the status takes the first
  * match; a preset's and a saved filter's conditions draw the same way, read only. The load lights each root with the
  * rows that took it. TRAP T-a-condition-is-a-tree-of-nodes
  *
@@ -30,9 +30,9 @@ const g = queryGraph({ v: 1, scopes: {} }, page, { domains: store.domains });
 const node = (id) => g.nodes.find((n) => n.id === id);
 const into = (to) => g.connections.filter((r) => r.to === to).map((r) => r.from);
 
-test('Health is 3 value rows, and per `when` a Field per field, a test per rule and an Or into a Check, its No into the next value\'s Fields', () => {
+test('Health is 3 value rows, and per `when` a Field per field, a test per rule and an Or into a Branch, its No into the next value\'s Fields', () => {
   const status = node('status-health');
-  // A value row takes what a Check's Yes sends (plan 944).
+  // A value row takes what a Branch's Yes sends (plan 944).
   assert.deepEqual(status.rows.filter((r) => r.name !== ROWS.name).map((r) => [r.name, r.input, r.value]), [
     ['At risk', 'any', 'critical'], ['Watch', 'any', 'warning'], ['Healthy', 'any', 'success'],
   ]);
@@ -40,27 +40,27 @@ test('Health is 3 value rows, and per `when` a Field per field, a test per rule 
   assert.deepEqual(roots.map((n) => [n.id, n.heading, 'branches' in n, n.input, n.rows[0].value]), [
     ['status-health.At risk', 'At risk', false, 'any', 'or'], ['status-health.Watch', 'Watch', false, 'any', 'or'],
   ]);
-  // A Check per value with a `when`, headed by the value (plan 944).
-  assert.deepEqual(g.nodes.filter((n) => n.kind === 'check').map((n) => [n.id, n.heading, n.rows.map((r) => r.name)]), [
-    ['check-status-health.At risk', 'At risk', ['data', 'yes', 'no']], ['check-status-health.Watch', 'Watch', ['data', 'yes', 'no']],
+  // A Branch per value with a `when`, headed by the value, its When first (plans 944, 971).
+  assert.deepEqual(g.nodes.filter((n) => n.kind === 'branch').map((n) => [n.id, n.heading, n.rows.map((r) => r.name)]), [
+    ['branch-status-health.At risk', 'At risk', ['type', 'data', 'yes', 'no']], ['branch-status-health.Watch', 'Watch', ['type', 'data', 'yes', 'no']],
   ]);
   const fields = g.nodes.filter((n) => n.kind === 'field');
   assert.deepEqual(fields.map((n) => [n.id, n.rows[0].value, n.input]), [
     ['field-status-health.At risk-score', 'score', undefined], ['field-status-health.At risk-openTickets', 'openTickets', undefined],
     ['field-status-health.Watch-score', 'score', 'any'], ['field-status-health.Watch-openTickets', 'openTickets', 'any'],
   ]);
-  // Each root's True into its Check; the Source's rows, then each No, into the Check's Data (plan 944).
-  assert.deepEqual(['check-status-health.At risk', 'check-status-health.At risk/data', 'check-status-health.Watch', 'check-status-health.Watch/data'].map(into), [
-    ['status-health.At risk/true'], ['source/rows'], ['status-health.Watch/true'], ['check-status-health.At risk/no'],
+  // Each root's True into its Branch; the Source's rows, then each No, into the Branch's Data (plan 944).
+  assert.deepEqual(['branch-status-health.At risk', 'branch-status-health.At risk/data', 'branch-status-health.Watch', 'branch-status-health.Watch/data'].map(into), [
+    ['status-health.At risk/true'], ['source/rows'], ['status-health.Watch/true'], ['branch-status-health.At risk/no'],
   ]);
-  // Each Yes into its value; At risk's No into each of Watch's Fields and its Check; Watch's No into the value no `when` names.
-  assert.deepEqual(g.connections.filter((r) => r.from.startsWith('check-')), [
-    { from: 'check-status-health.At risk/yes', to: 'status-health/At risk' },
-    { from: 'check-status-health.At risk/no', to: 'field-status-health.Watch-score' },
-    { from: 'check-status-health.At risk/no', to: 'field-status-health.Watch-openTickets' },
-    { from: 'check-status-health.At risk/no', to: 'check-status-health.Watch/data' },
-    { from: 'check-status-health.Watch/yes', to: 'status-health/Watch' },
-    { from: 'check-status-health.Watch/no', to: 'status-health/Healthy' },
+  // Each Yes into its value; At risk's No into each of Watch's Fields and its Branch; Watch's No into the value no `when` names.
+  assert.deepEqual(g.connections.filter((r) => r.from.startsWith('branch-')), [
+    { from: 'branch-status-health.At risk/yes', to: 'status-health/At risk' },
+    { from: 'branch-status-health.At risk/no', to: 'field-status-health.Watch-score' },
+    { from: 'branch-status-health.At risk/no', to: 'field-status-health.Watch-openTickets' },
+    { from: 'branch-status-health.At risk/no', to: 'branch-status-health.Watch/data' },
+    { from: 'branch-status-health.Watch/yes', to: 'status-health/Watch' },
+    { from: 'branch-status-health.Watch/no', to: 'status-health/Healthy' },
   ]);
   assert.deepEqual(into('status-health.At risk.1'), ['field-status-health.At risk-score/field']);
   assert.deepEqual(queryGraphFaults(g, store.domains), []);
@@ -71,7 +71,7 @@ test('each `when` is its value\'s, read only: any of its rules, the store\'s to 
   const tests = ['status-health.At risk.1', 'status-health.At risk.2'].map((id) => node(id).rows.filter((r) => r.control).map((r) => r.value));
   assert.deepEqual(tests, [['lt', 60], ['gte', 5]]);
   const drawn = g.nodes.filter((n) => n.id.includes('At risk') && n.kind !== 'status');
-  // A Check has nothing to pick, so it needs no hint (plan 944).
+  // A Branch's When is a pick too: read only, and said to be the store's, as every pick here is.
   assert.ok(drawn.every((n) => n.rows.every((r) => !r.editable && (!r.control || /store/.test(r.hint)))), 'every row read only');
   assert.ok(drawn.every((n) => n.ref.scope === undefined), 'no scope: no edit asks the Query');
   assert.equal(into('status-health/Watch').length, 1);
@@ -107,12 +107,12 @@ test('planted faults: a `when` that is no condition, a No into nothing, a connec
   const drawn = queryGraph({ v: 1, scopes: {} }, page, { domains: bad });
   assert.deepEqual(drawn.nodes.filter((n) => n.kind === 'condition').map((n) => n.id), ['status-health.Watch', 'status-health.Watch.1', 'status-health.Watch.2'], 'a bad `when` draws no node');
   assert.ok(queryGraphFaults(drawn, bad).some((f) => /"At risk" is not a condition/.test(f)));
-  const dangling = { nodes: g.nodes, connections: [...g.connections, { from: 'check-status-health.Watch/no', to: 'status-health.Ghost' }] };
+  const dangling = { nodes: g.nodes, connections: [...g.connections, { from: 'branch-status-health.Watch/no', to: 'status-health.Ghost' }] };
   assert.ok(queryGraphFaults(dangling).some((f) => /status-health\.Ghost/.test(f)));
   // No node has a False now (plan 944): it is a row the Source does not have.
   const wrong = { nodes: g.nodes, connections: [...g.connections, { from: 'source/#false', to: 'status-health.Watch' }] };
   assert.ok(queryGraphFaults(wrong).includes('A connection from "source/#false" leaves a row "Source" does not have.'));
-  const row = { nodes: g.nodes, connections: [...g.connections, { from: 'check-status-health.Watch/no', to: 'status-health/Nope' }] };
+  const row = { nodes: g.nodes, connections: [...g.connections, { from: 'branch-status-health.Watch/no', to: 'status-health/Nope' }] };
   assert.ok(queryGraphFaults(row).some((f) => /into "status-health\/Nope" ends at a row/.test(f)));
 });
 

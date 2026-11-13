@@ -157,8 +157,8 @@ const seatsFlow = () => ({
   ],
   connections: [
     { from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'a' }, { from: 'seats/field', to: 'b' }, { from: 'seats/field', to: 'c' },
-    // The rows go by Results; a True is 1 or 0 and carries none (TODO 939, plan 944).
-    { from: 'b/rows', to: 'and' }, { from: 'c/rows', to: 'and' }, { from: 'a/rows', to: 'or' }, { from: 'and/rows', to: 'or' }, { from: 'or/rows', to: 'end' },
+    // The rows go by Pass; a True is 1 or 0 and carries none (plans 944, 971).
+    { from: 'b/pass', to: 'and' }, { from: 'c/pass', to: 'and' }, { from: 'a/pass', to: 'or' }, { from: 'and/pass', to: 'or' }, { from: 'or/pass', to: 'end' },
   ],
 });
 const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
@@ -169,9 +169,9 @@ test('in a workflow, A or (B and C) is one Field into three Conditions, an And a
   const w = seatsFlow();
   assert.deepEqual(workflowFaults(w, NODE_KINDS, { fieldsOf }), []);
   const g = workflowGraph(w, { fieldsOf });
-  // Count is gone; each test has a True (plan 944).
-  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'b', 'true'], id);
-  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'true', 'pass', 'fail'], id);
+  // Each test gives Pass and Fail, then its own rows, then True (plans 944, 971).
+  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'b', 'true'], id);
+  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'true'], id);
   assert.ok(g.nodes.every((n) => !n.warnings), 'every connection reads what it needs');
   // Each Condition's operators are the Field's type's; an edit types Value B by it.
   assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, 70);

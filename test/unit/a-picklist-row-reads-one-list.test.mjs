@@ -32,7 +32,7 @@ const flow = (values = {}, extra = {}) => ({
     { id: 'end', kind: 'result', x: 720, y: 0 },
     { id: 'pick', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
   ],
-  connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }],
+  connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'filter/pass', to: 'end' }],
   ...extra,
 });
 const connected = (values) => editWorkflow(flow(values), { connection: { from: 'status/value', to: 'filter/b' } });
@@ -127,7 +127,7 @@ test('a row a connection drives that sends nothing yet, and that holds nothing, 
     ],
     connections: [
       { from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: '#in/status', to: 'match/b' },
-      { from: '#in/way', to: 'order/direction' }, { from: 'match/rows', to: '#out/matching' },
+      { from: '#in/way', to: 'order/direction' }, { from: 'match/pass', to: '#out/matching' },
     ],
   };
   const inside = (d = definition, facts = valued) => {
@@ -228,7 +228,7 @@ test('a Value node is ADDED for a picklist row, holding its own pick, and connec
   assert.deepEqual(again.nodes.filter((n) => n.kind === 'value').map((n) => n.id), ['status', 'value-1', 'value-2']);
   assert.deepEqual(again.connections.filter((r) => r.to === 'filter/b'), [{ from: 'value-2/value', to: 'filter/b' }]);
   // A row with no pick makes an empty node; a row that is no picklist, a header, or no row makes none.
-  assert.deepEqual(addCustomValue(flow(), 'filter/rows', { x: 0, y: 0 }), flow());
+  assert.deepEqual(addCustomValue(flow(), 'filter/pass', { x: 0, y: 0 }), flow());
   assert.deepEqual(addCustomValue(flow(), 'filter', { x: 0, y: 0 }), flow());
   assert.deepEqual(addCustomValue(flow(), 'nope/value', { x: 0, y: 0 }), flow());
   const bare = addCustomValue(flow(), 'pick/field', { x: 0, y: 0 });

@@ -28,7 +28,7 @@ const ORG = {
   // An output made from the test's True property (plan 944).
   connections: [
     { from: '#in/users', to: 'role-field' }, { from: 'role-field/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
-    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
+    { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
   ],
 };
 const library = (nodes = {}) => ({ v: 1, nodes: { 'org-permissions': structuredClone(ORG), ...structuredClone(nodes) } });

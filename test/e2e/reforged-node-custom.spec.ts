@@ -18,7 +18,7 @@ const ORG = {
   nodes: [{ id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
   connections: [
     { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
-    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
+    { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
   ],
 };
 
@@ -493,7 +493,7 @@ test('inside, a picklist row connected from the Group Input, which sends nothing
             { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'pick', kind: 'field', x: 360, y: 0, values: { field: 'status' } },
             { id: 'match', kind: 'condition', x: 720, y: 0, values: { type: 'eq' } },
           ],
-          connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: 'match/rows', to: '#out/matching' }],
+          connections: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: 'match/pass', to: '#out/matching' }],
         },
       },
     };

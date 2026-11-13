@@ -142,13 +142,13 @@ test('an Out no In names warns and has no rows; one of no name, too; a row of an
 });
 
 test('a loop through a row is a loop', () => {
-  // A Condition's rows into an In; its Out's row into a Math Count, whose Result is the Condition's Value B (plan 944).
+  // A Condition's Pass into an In; its Out's row into a Math Count, whose Result is the Condition's Value B (plan 944).
   const round = flow([source(), field('f', 'status'), cond('c', 'eq'), portal('i', 'in', 'back', 1200), portal('o', 'out', 'back', 1500), { id: 'n', kind: 'math', x: 1800, y: 0, values: { type: 'count' } }],
-    [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'i' }, { from: 'o/@c/rows', to: 'n/rows' }, { from: 'n/result', to: 'c/b' }]);
+    [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'i' }, { from: 'o/@c/pass', to: 'n/rows' }, { from: 'n/result', to: 'c/b' }]);
   assert.deepEqual(workflowFaults(round, undefined, facts), ['its connections run in a loop, through the portal "back"']);
   assert.equal(checkWorkflow(round, undefined, facts), false);
   // Without the row's connect the same graph has none.
-  assert.deepEqual(workflowFaults(flow(round.nodes, round.connections.filter((r) => r.from !== 'o/@c/rows')), undefined, facts), []);
+  assert.deepEqual(workflowFaults(flow(round.nodes, round.connections.filter((r) => r.from !== 'o/@c/pass')), undefined, facts), []);
 });
 
 /** Demos' Active customers Filter, its Field sent through a portal row to its Condition. */

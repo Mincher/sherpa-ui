@@ -451,7 +451,7 @@ const BIND_FLOW = `async () => {
     { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
     { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq' } },
     { id: 'end', kind: 'result', x: 900, y: 0 },
-  ], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
+  ], connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/pass', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { session: new SessionStore(), fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'] });
   await window.__settled();
 }`;
@@ -488,7 +488,7 @@ test('a use of a Custom Node draws closed: one node with a row per input and out
       v: 1 as const, label: 'Org permissions',
       inputs: [{ name: 'users', label: 'Users', type: 'object' as const }, { name: 'role', label: 'Role', type: 'value' as const, control: 'text' as const }],
       outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' as const }],
-      nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in/users', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }],
+      nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in/users', to: 'has-role' }, { from: 'has-role/pass', to: '#out/allowed' }],
     } } };
     const canvas = document.querySelector('#root sherpa-layout-canvas') as Parameters<typeof bindWorkflow>[0];
     const flow = { v: 3 as const, id: 'flow', nodes: [

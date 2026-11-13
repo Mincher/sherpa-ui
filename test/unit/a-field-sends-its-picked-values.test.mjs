@@ -50,7 +50,7 @@ test('one value picked joins a Condition\'s Value B; Simulate reads it', () => {
   assert.equal(rowOf(drawn, 'c', 'b').value, 'trial');
   const sim = simulateGraph(drawn, { customers: ROWS });
   assert.equal(sim.nodes.c.incoming.find((s) => s.socket === 'c/b').value, 'trial');
-  assert.equal(sim.nodes.c.outgoing.find((s) => s.socket === 'c/rows').rows.length, 2);
+  assert.deepEqual(['c/pass', 'c/fail'].map((at) => sim.nodes.c.outgoing.find((s) => s.socket === at).rows.length), [2, 2]);
 });
 
 test('several picked send their list: they join a Condition\'s Values (Is one of)', () => {
@@ -58,7 +58,7 @@ test('several picked send their list: they join a Condition\'s Values (Is one of
   const drawn = workflowGraph(joined, { fieldsOf });
   assert.deepEqual(rowOf(drawn, 'c', 'b').value, ['trial', 'At risk']);
   const sim = simulateGraph(drawn, { customers: ROWS });
-  assert.equal(sim.nodes.c.outgoing.find((s) => s.socket === 'c/rows').rows.length, 3);
+  assert.deepEqual(['c/pass', 'c/fail'].map((at) => sim.nodes.c.outgoing.find((s) => s.socket === at).rows.length), [3, 1]);
 });
 
 test('a value picked that its field does not declare is shown, and said: never kept quietly', () => {

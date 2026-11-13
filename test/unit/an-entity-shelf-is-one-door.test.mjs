@@ -41,7 +41,7 @@ const HAS_ROLE = {
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
   // An output made from the test's True property (plan 944).
-  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' }],
+  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' }],
 };
 const heard = async (run) => {
   const reports = [];

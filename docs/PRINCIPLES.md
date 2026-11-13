@@ -161,7 +161,7 @@ only when one is asked for. "View" is kept for saved views — `SavedView` and a
 | **Start** | a top graph's entry point, always there, in its first stage, kept and moved as any node (TODO 955): each Trigger joins it by its header's True; its line to each Source is drawn, never kept; it sends nothing, so it is no Start node (Will, 2026-11-12, plan 949) | `#start`, `withStart` |
 | **Output Trigger** | an Output that starts something when the run gets there: an event a Trigger hears, or an entity an app's type picks (Run Coworker). One in a loop across the shelf is blocked, and warns (plan 949) | `OUTPUT_TRIGGER`, `startLoops` |
 | **End node** | where a Route ends: an Output; inside a Custom Node, its Group Output | `isOutput` |
-| **Branch** | one of the Routes that leave a node with more than one outgoing Connection; a Check node starts two, Yes and No | `branchesAt` |
+| **Branch** | one of the Routes that leave a node with more than one outgoing Connection; a Branch node starts two, Yes and No | `branchesAt` |
 
 The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and keeps its word.
 
@@ -173,9 +173,10 @@ The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and
 | **Lens** | one way to show and edit a definition (its graph, a form, a text), read from it and written back to it through one door; never a second truth | `registerLens` (plan 960 U4) |
 | **Filter** | a filter definition, saved as a Custom Node, and used inside a View definition, as in its filter toolbar. There is no Preset Filter type | the `filter` type, `FILTER`; a use's kind `filter:<id>` |
 
-**A Check branches** (Will, 2026-11-11, plan 944): no node has a True or a False socket. A test has a True property, 1
-or 0, beside its Results, the rows that pass. The Check node sends its Data on Yes where its test holds, on No where it
-does not, and nothing after the other way runs. Counting rows is a Math type, Count.
+**A test splits, a Branch decides** (Will, plan 944; plan 971 A, 2026-11-13): no node has a True or a False socket. A
+test gives Pass, the rows that hold, Fail, the rows that do not, and True, 1 or 0. The Branch node sends ALL its Data on
+Yes or on No, by its When (Any, All, None, At least N), and nothing after the other way runs. Counting rows is a Math
+type, Count.
 
 **20. Tokens.** Read a token as `var(--sherpa-x, <the value it resolves to>)`.
 The fallback is required, and it is the token's own value. A private value is

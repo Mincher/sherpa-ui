@@ -17,7 +17,7 @@ const { LANES_BY_FAMILY } = await import(new URL('node-lanes.js', core));
 const BODY = {
   v: 1, label: 'Org permissions', inputs: [{ name: 'users', label: 'Users', type: 'object' }], outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }],
-  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }],
+  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/pass', to: '#out/allowed' }],
 };
 const BEFORE = { role: { x: 0, y: 0 }, 'has-role': { x: 360, y: 0 } };
 const library = (definition = BODY) => ({ v: 1, nodes: { org: structuredClone(definition) } });

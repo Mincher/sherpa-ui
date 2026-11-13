@@ -19,7 +19,7 @@ const HAS = {
   inputs: [{ name: 'records', label: 'Records', type: 'object', multiple: true }, { name: 'status', label: 'Status', type: 'value' }],
   outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
   nodes: [{ id: 'has-status', kind: 'condition', x: 0, y: 0, values: { type: 'eq' } }],
-  connections: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/rows', to: '#out/matching' }],
+  connections: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/pass', to: '#out/matching' }],
 };
 const hasLib = (preset = false) => ({ v: 1, nodes: { 'has-status': { ...structuredClone(HAS), ...(preset ? { preset: true } : {}) } } });
 /** Two uses of Has status: the first fed and read, the second alone. */
@@ -67,7 +67,7 @@ test('a removed input takes its connections, inside and on every use of this gra
   const made = socketEdit(flow(), 'has', 'inputs', 'status', null, hasLib());
   assert.ok(!made.fault, made.fault);
   assert.deepEqual(made.library.nodes['has-status'].inputs.map((i) => i.name), ['records']);
-  assert.deepEqual(said(made.library.nodes['has-status'].connections), ['#in/records → has-status', 'has-status/rows → #out/matching']);
+  assert.deepEqual(said(made.library.nodes['has-status'].connections), ['#in/records → has-status', 'has-status/pass → #out/matching']);
   assert.deepEqual(said(made.workflow.connections), ['has/matching → end', 'start/rows → has/records']);
   assert.equal(made.workflow.nodes.find((n) => n.id === 'has').values?.status, undefined);
   assert.deepEqual(lib.staleUses(made.workflow, made.library), ['has2']);

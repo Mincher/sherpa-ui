@@ -17,7 +17,7 @@ const ORG = {
   v: 1, label: 'Org permissions', tags: ['permissions'],
   inputs: [{ name: 'rows', type: 'object' }], outputs: [{ name: 'active', type: 'object' }],
   nodes: [{ id: 'active', kind: 'condition', x: 200, y: 0, values: { type: 'eq', b: 'active' } }, { id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
-  connections: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
+  connections: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/pass', to: '#out/active' }],
 };
 const library = () => ({ v: 1, nodes: { org: structuredClone(ORG), shipped: { ...structuredClone(ORG), label: 'Shipped', tags: ['checks'], preset: true } } });
 /** Two uses of one definition, and a preset's. */

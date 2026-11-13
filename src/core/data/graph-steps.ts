@@ -1,12 +1,12 @@
 /**
  * graph-steps.ts — a graph READ AS STEPS, beside `routeRead`: each stage's steps in order, numbered "stage.place", and
- * where each step's flow goes, a Check's Yes and No apart. What an app says of each step is its own; this is the order
+ * where each step's flow goes, each way of a fork apart (a test's Pass and Fail, a Branch's Yes and No). What an app says of each step is its own; this is the order
  * and the numbers (Will, TODO 959). A step's order is its depth along the flow, then its place, top to bottom and left to
- * right. A link into a row that only carries data (a Check's Data, an AI node's Model) is no flow. Pure: no DOM.
+ * right. A link into a row that only carries data (a Branch's Data, an AI node's Model) is no flow. Pure: no DOM.
  *
  * Map:
  * - StepGoes — Where a step's flow goes: a step, by its number; an output of the graph; or nowhere.
- * - GraphStep — One step: its number, its node, and where its flow goes; each branch apart, as a Check's Yes and No.
+ * - GraphStep — One step: its number, its node, and where its flow goes; each way of a fork apart.
  * - StepStage — One stage's steps, in order.
  * - graphSteps — A graph's steps, stage by stage, each numbered "stage.place", and where each one's flow goes.
  */
@@ -22,8 +22,8 @@ type Kinds = Readonly<Record<string, NodeKind>>;
  *  nowhere, so the run stops there. */
 export type StepGoes = { step: string; node: string } | { output: string } | { stop: true };
 
-/** One step: its number ("2.1"), its node, and where its flow goes; each branch apart, by its row, as a Check's `yes` and
- *  `no`: a row that passes on what its node is given (plan 944). */
+/** One step: its number ("2.1"), its node, and where its flow goes; each way of a fork apart, by its row (`fork`): a test's
+ *  `pass` and `fail`, a Branch's `yes` and `no` — where one of them leads on (plans 944, 971). */
 export interface GraphStep {
   number: string;
   node: string;
@@ -54,7 +54,7 @@ export function graphSteps(graph: Graph, kinds: Kinds = nodeKinds()): StepStage[
     const { node, row } = socketOf(address);
     return row === undefined ? undefined : kindOfNode(kinds, held.get(node))?.rows.find((r) => r.name === row);
   };
-  // A row that only carries data: one another row passes on (a Check's Data), or one that needs a model.
+  // A row that only carries data: one another row passes on (a Branch's Data), or one that needs a model.
   const passed = (address: string): boolean => {
     const { node, row } = socketOf(address);
     return row !== undefined && !!kindOfNode(kinds, held.get(node))?.rows.some((r) => r.passes === row);
@@ -91,8 +91,8 @@ export function graphSteps(graph: Graph, kinds: Kinds = nodeKinds()): StepStage[
   };
   for (const stage of read) {
     for (const step of stage.steps) {
-      const forks = kindOfNode(kinds, held.get(step.node))?.rows.filter((r) => r.passes) ?? [];
-      if (forks.length) step.branches = Object.fromEntries(forks.map((r) => [r.name, goes((address) => address === `${step.node}/${r.name}`)]));
+      const forks = (kindOfNode(kinds, held.get(step.node))?.rows.filter((r) => r.fork) ?? []).map((r) => [r.name, goes((address) => address === `${step.node}/${r.name}`)] as const);
+      if (forks.some(([, to]) => !('stop' in to[0]!))) step.branches = Object.fromEntries(forks);
       step.goes = goes((address) => socketOf(address).node === step.node);
     }
   }

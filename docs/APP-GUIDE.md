@@ -529,18 +529,24 @@ Remove (`socketEdit`). Each is one step; that use follows the change, every othe
 Node being edited is a draft in its tab until it is saved, as a workflow is.
 `T-a-node-panel-lists-under-sticky-headings`
 
-### Check, True and Count
+### Pass, Fail, Branch and Count
 
-No node has a True or a False socket (plan 944). A Condition has a True property: 1
-where its test holds, 0 where not. Its Results are the rows that pass. A **Check** node
-is the one that branches: its test on its header, its Data on a row. Yes sends the Data
-where the test holds, No where it does not. The other way is not taken: nothing after
-it runs, and Simulate's light says Not taken. With no Data, a Check sends its test.
+No node has a True or a False socket (plan 944). Every test (a Condition, Time, Tag, And,
+Or, Not, Is empty) gives **Pass**, the rows that hold, and **Fail**, the rows that do not,
+so no row is lost; and **True**, 1 where its test holds, 0 where not (plan 971 A). To send
+the at-risk devices one way and the rest another, connect a Condition's Pass and its Fail.
+
+A **Branch** node sends ALL its Data one way: its test on its header, its Data on a row.
+Its **When** says what makes it Yes: Any (its test has a Pass row), All (no Fail row),
+None (no Pass row), or At least N Pass rows. A plain value on its header (a Prompt's
+True, a Count) is true where it is above zero, true, or not empty. Yes sends the Data
+where When holds, No where it does not. The other way is not taken: nothing after it
+runs, and Simulate's light says Not taken. With no Data, a Branch sends its test.
 
 And and Or take anything, several. An input is true where it is above zero, true, or
-not empty. Results: Or, the rows of every true input; And, the rows in all of them. Pass
-and Fail say how many inputs pass and how many fail. A test's True, or its Results, into
-an And or an Or say its condition, so the Query reads the same tree. A Condition fed one
+not empty. Pass: Or, the rows of every true input; And, the rows in all of them. Fail is
+the rest of their rows. A test's True or Pass into an And or an Or says its condition, so
+the Query reads the same tree; its Fail says the opposite one. A Condition fed one
 value tests that value against Value B (Not and Is empty by its truth). To count rows,
 use a Math node of type Count: rows in, how many out.
 
@@ -671,7 +677,8 @@ on Back, on a crumb and on Escape:
 To write a runbook's steps as text, as its prompt, read its graph as steps:
 `graphSteps(graph)` gives each stage's steps in the flow's order, numbered "stage.place"
 ("2.1"). Each step says where its flow `goes`: a step by its number, an output, or a stop.
-A Check's Yes and No are its `branches`. A Model that only gives a model is no step. The
+Each way of a fork is apart, in its `branches`: a test's Pass and Fail, a Branch's Yes and No, where one of
+them leads on. A step's `kind` is its node's (`branch`, `condition`). A Model that only gives a model is no step. The
 words for each step are your app's.
 
 ### Triggers

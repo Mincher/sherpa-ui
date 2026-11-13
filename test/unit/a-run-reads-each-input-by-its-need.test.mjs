@@ -27,16 +27,16 @@ const toSeats = [C('s/rows', 'f'), C('f/field', 'c')];
 
 test('a Math Result into Value B is what the rows are tested against: Seats > 1 + 2 keeps 36 of 40', () => {
   const sim = run([...seats, N('m', 'math', { type: 'add', a: '1', b: '2' }), N('c', 'condition', { type: 'gt' })], [...toSeats, C('m/result', 'c/b')]);
-  // Its True is 1: some rows pass (plan 944).
-  assert.deepEqual([sim.faults, out(sim, 'c', 'c/rows').rows.length, out(sim, 'c', 'c/true').value], [[], 36, 1]);
+  // Its Pass keeps 36, its Fail the other 4; its True is 1: some rows pass (plans 944, 971).
+  assert.deepEqual([sim.faults, out(sim, 'c', 'c/pass').rows.length, out(sim, 'c', 'c/fail').rows.length, out(sim, 'c', 'c/true').value], [[], 36, 4, 1]);
 });
 
 test('a Count into Start: Seats between 3 and 30, its Start a run gives, keeps 28; a Count into Value B too', () => {
   const sim = run([...seats, N('m', 'math', { type: 'add', a: '1', b: '2' }), N('c', 'condition', { type: 'between', end: '30' })], [...toSeats, C('m/result', 'c/start')]);
-  assert.equal(out(sim, 'c', 'c/rows').rows.length, 28);
+  assert.equal(out(sim, 'c', 'c/pass').rows.length, 28);
   // A Math Count of the Source's rows, as no Count row is left (plan 944).
   const counted = run([...seats, N('k', 'math', { type: 'count' }), N('c', 'condition', { type: 'lt' })], [...toSeats, C('s/rows', 'k/rows'), C('k/result', 'c/b')]);
-  assert.deepEqual([into(counted, 'c', 'c/b').value, out(counted, 'c', 'c/rows').rows.length], [40, 40], 'every seat is under the 40 rows');
+  assert.deepEqual([into(counted, 'c', 'c/b').value, out(counted, 'c', 'c/pass').rows.length], [40, 40], 'every seat is under the 40 rows');
 });
 
 test('a value a row takes is coerced as the drawn graph coerces it: a True into a Math reads 1', () => {

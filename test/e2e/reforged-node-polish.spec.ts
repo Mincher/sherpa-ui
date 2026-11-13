@@ -13,7 +13,7 @@ const ORG = {
   connections: [
     { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
     // The test's True, a property row, as an output of its own: a Condition's header sends nothing (plan 944).
-    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
+    { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
   ],
 };
 

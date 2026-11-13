@@ -2,8 +2,8 @@
  * A LOGIC TYPE IS AN OPERATOR: the Condition is the Logic family, one test each (plan 783 D4). And and Or join the
  * tests that come in; then Figma's six comparisons, Not and Is empty, then Sherpa's operators, each named by the ONE
  * operator list. A comparison tests what comes in on its header (D3): a Field's column, or a value. Every type leads
- * with Rows, and every type ends in its True, 1 or 0 (plan 944). A connection a type change orphans waits in the draft;
- * a Query's Condition reads back the same tree. Plan 749 P5. TRAP T-a-logic-type-is-an-operator
+ * with Pass and Fail (plan 971), and every type ends in its True, 1 or 0 (plan 944). A connection a type change
+ * orphans waits in the draft; a Query's Condition reads back the same tree. Plan 749 P5. TRAP T-a-logic-type-is-an-operator
  *
  *   node --test test/unit/a-logic-type-is-an-operator.test.mjs
  */
@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { NODE_KINDS, LIST_OPS, ROWS, kindIn, paletteMatch, paletteOf, resolveKind, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, LIST_OPS, kindIn, paletteMatch, paletteOf, resolveKind, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
 const { OP_LABELS } = await import(new URL('store.js', core));
 const { editWorkflow, finalGraph, keptConnections, sentFrom, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { nodeFlow } = await import(new URL('node-flow.js', core));
@@ -41,21 +41,25 @@ test('Logic is the Condition: And and Or, Figma\'s six, Not and Is empty, then S
   for (const [id, type] of Object.entries(logic.types)) assert.ok(type.help, `${id} says what it does`);
   assert.equal(logic.types.gt.help, 'True when what comes in is greater than Value B');
   assert.equal(logic.types.in.help, 'True when what comes in is one of the Values');
-  // Each type leads with Rows; a comparison's rows are then what its operator takes. Value A is gone (D3).
-  // Count is gone, and each has a True (plan 944).
+  // Each type leads with Pass and Fail (plan 971); a comparison's rows are then what its operator takes. Value A is gone (D3).
+  // Each ends in its True (plan 944).
   const rows = (t) => resolveKind(logic, t).rows.map((r) => [r.name, r.control, r.input, r.multiple]);
-  assert.deepEqual(rows('eq'), [['type', 'type', undefined, undefined], ['rows', undefined, undefined, undefined], ['b', 'values', 'value', undefined], ['true', undefined, undefined, undefined]]);
-  assert.deepEqual(rows('in'), [['type', 'type', undefined, undefined], ['rows', undefined, undefined, undefined], ['b', 'tags', 'object', true], ['true', undefined, undefined, undefined]]);
-  assert.deepEqual(rows('between').map(([n]) => n), ['type', 'rows', 'start', 'end', 'true']);
-  assert.deepEqual(rows('and').map(([n]) => n), ['type', 'rows', 'true', 'pass', 'fail']);
-  assert.deepEqual([rows('not').map(([n]) => n), rows('empty').map(([n]) => n)], [['type', 'rows', 'true'], ['type', 'rows', 'true']]);
-  for (const t of Object.keys(workflowLogic.types)) assert.equal(resolveKind(logic, t).rows[1], ROWS, `${t} leads with Rows`);
+  const split = [['pass', undefined, undefined, undefined], ['fail', undefined, undefined, undefined]];
+  assert.deepEqual(rows('eq'), [['type', 'type', undefined, undefined], ...split, ['b', 'values', 'value', undefined], ['true', undefined, undefined, undefined]]);
+  assert.deepEqual(rows('in'), [['type', 'type', undefined, undefined], ...split, ['b', 'tags', 'object', true], ['true', undefined, undefined, undefined]]);
+  assert.deepEqual(rows('between').map(([n]) => n), ['type', 'pass', 'fail', 'start', 'end', 'true']);
+  assert.deepEqual(rows('and').map(([n]) => n), ['type', 'pass', 'fail', 'true']);
+  assert.deepEqual([rows('not').map(([n]) => n), rows('empty').map(([n]) => n)], [['type', 'pass', 'fail', 'true'], ['type', 'pass', 'fail', 'true']]);
+  // One Pass and one Fail, each the rows: every type leads with the same two.
+  const [pass, fail] = resolveKind(logic, 'eq').rows.slice(1, 3);
+  assert.deepEqual([pass, fail].map((r) => [r.name, r.label, r.gives, r.property]), [['pass', 'Pass', 'rows', true], ['fail', 'Fail', 'rows', true]]);
+  for (const t of Object.keys(workflowLogic.types)) assert.deepEqual(resolveKind(logic, t).rows.slice(1, 3), [pass, fail], `${t} leads with Pass and Fail`);
   assert.deepEqual(LIST_OPS, ['in', 'notin']);
   // The Operation select lists them all, in order.
   assert.deepEqual(typeChoices(workflowLogic).slice(0, 4).map((c) => c.label), ['And', 'Or', 'Greater than', 'At least']);
 });
 
-test('And joins tests: two Conditions on two Fields, their Results into its header, which takes many of anything; its Rows the rows that hold (939)', () => {
+test('And joins tests: two Conditions on two Fields, their Pass into its header, which takes many of anything; its Pass the rows that hold (939)', () => {
   const w = {
     v: 3, id: 'logic',
     nodes: [
@@ -67,24 +71,24 @@ test('And joins tests: two Conditions on two Fields, their Results into its head
     ],
     connections: [
       { from: 'start/rows', to: 'status' }, { from: 'start/rows', to: 'seats' }, { from: 'status/field', to: 'active' }, { from: 'seats/field', to: 'big' },
-      // The rows go by Results; a True is 1 or 0 and carries none (TODO 939, plan 944).
-      { from: 'active/rows', to: 'both' }, { from: 'big/rows', to: 'both' }, { from: 'both/rows', to: 'end' },
+      // The rows go by Pass; a True is 1 or 0 and carries none (plans 944, 971).
+      { from: 'active/pass', to: 'both' }, { from: 'big/pass', to: 'both' }, { from: 'both/pass', to: 'end' },
     ],
   };
   assert.deepEqual(workflowFaults(w, NODE_KINDS, facts), []);
   const g = workflowGraph(w, facts);
   const both = node(g, 'both');
-  assert.deepEqual(names(both), ['type', 'rows', 'true', 'pass', 'fail']);
+  assert.deepEqual(names(both), ['type', 'pass', 'fail', 'true']);
   assert.deepEqual([both.input, both.many, both.branches, both.warnings], ['any', true, undefined, undefined]);
   // No True or False socket: its True is a row, a number (plan 944).
   assert.deepEqual([socketType(both, undefined, 'output'), socketType(both, '#false', 'output'), socketType(both, 'true', 'output')], [undefined, undefined, 'value']);
   assert.deepEqual(sentFrom(w, 'both/true', facts), { kind: 'number' });
   assert.equal(both.rows[0].hint, 'True when every input is true: above zero, true, or not empty');
-  // Its rows: what the tests' rows carry; with nothing in, none.
-  assert.deepEqual([sentFrom(w, 'both/rows', facts), sentFrom({ ...w, connections: [] }, 'both/rows', facts)], [{ kind: 'rows' }, undefined]);
+  // Its Pass and Fail: what the tests' rows carry; with nothing in, none.
+  for (const at of ['both/pass', 'both/fail']) assert.deepEqual([sentFrom(w, at, facts), sentFrom({ ...w, connections: [] }, at, facts)], [{ kind: 'rows' }, undefined], at);
   const flow = nodeFlow(g, 'both');
-  assert.deepEqual(flow.incoming.find((i) => i.socket === 'In'), { socket: 'In', type: 'any', from: ['Condition › Results', 'Condition › Results'] });
-  assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.type]), [['Results', 'object'], ['True', 'value'], ['Pass', 'value'], ['Fail', 'value']]);
+  assert.deepEqual(flow.incoming.find((i) => i.socket === 'In'), { socket: 'In', type: 'any', from: ['Condition › Pass', 'Condition › Pass'] });
+  assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.type]), [['Pass', 'object'], ['Fail', 'object'], ['True', 'value']]);
   // Or the same; Not takes ONE boolean: a second is a fault, said in words.
   assert.deepEqual(workflowFaults({ ...w, nodes: w.nodes.map((n) => (n.id === 'both' ? { ...n, values: { type: 'or' } } : n)) }), []);
   const not = { ...w, nodes: w.nodes.map((n) => (n.id === 'both' ? { ...n, values: { type: 'not' } } : n)) };
@@ -104,19 +108,19 @@ test('a comparison tests what comes in on its header — a Field\'s column, or a
   };
   assert.deepEqual(workflowFaults(w), []);
   const is = node(workflowGraph(w), 'is');
-  assert.deepEqual(names(is), ['type', 'rows', 'b', 'true']);
+  assert.deepEqual(names(is), ['type', 'pass', 'fail', 'b', 'true']);
   // Its header sends nothing; its True row a number (plan 944).
   assert.deepEqual([is.input, is.branches, is.warnings, socketType(is, undefined, 'output'), socketType(is, 'true', 'output')], ['any', undefined, undefined, undefined, 'value']);
-  // A value came in, no rows: its Rows row sends nothing.
-  assert.equal(sentFrom(w, 'is/rows'), undefined);
+  // A value came in, no rows: its Pass and Fail send nothing.
+  assert.deepEqual([sentFrom(w, 'is/pass'), sentFrom(w, 'is/fail')], [undefined, undefined]);
   // Its True joins a number's row, 1 or 0 (TODO 781, plan 944); rows into its header join (770), and warn.
   const toSum = { ...w, connections: [...w.connections, { from: 'is/true', to: 'sum/a' }] };
   assert.deepEqual([workflowFaults(toSum), node(workflowGraph(toSum), 'sum').warnings, sentFrom(toSum, 'is/true')], [[], undefined, { kind: 'number' }]);
   const rowsIn = { ...w, nodes: [...w.nodes, store], connections: [{ from: 'start/rows', to: 'is' }, { from: 'is/true', to: 'end' }] };
   assert.deepEqual([workflowFaults(rowsIn), node(workflowGraph(rowsIn), 'is').warnings], [[], [{ words: 'Equals takes a field or a value; it was given rows: connect a Field in' }]]);
-  // Source › Field › Condition: the column fits, and its Rows row sends the rows that hold.
-  const chain = { ...rowsIn, nodes: [...rowsIn.nodes, field('f', 'status')], connections: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'is' }, { from: 'is/rows', to: 'end' }] };
-  assert.deepEqual([node(workflowGraph(chain, facts), 'is').warnings, sentFrom(chain, 'is/rows', facts)], [undefined, { kind: 'rows' }]);
+  // Source › Field › Condition: the column fits, and its Pass sends the rows that hold.
+  const chain = { ...rowsIn, nodes: [...rowsIn.nodes, field('f', 'status')], connections: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'is' }, { from: 'is/pass', to: 'end' }] };
+  assert.deepEqual([node(workflowGraph(chain, facts), 'is').warnings, sentFrom(chain, 'is/pass', facts)], [undefined, { kind: 'rows' }]);
   // An operator the field's type does not take warns, never a fault; a Value B of another type is the row's fault.
   const seats = editWorkflow(chain, { node: 'f', row: 'field', value: 'seats' });
   assert.deepEqual(workflowFaults(seats, NODE_KINDS, facts), ['the node "is" holds "Pro" as its Value B, which is no number, as "seats", a number field takes']);
@@ -140,7 +144,7 @@ test('a type change keeps in the draft only what loses its socket: a column into
   assert.deepEqual(finalGraph(w).nodes.find((n) => n.id === 'c').values, { type: 'and' }, 'Value B is the draft\'s');
   // Equals again reads it, its Value B back.
   let e = editWorkflow(w, { node: 'c', row: 'type', value: 'eq' });
-  assert.deepEqual([keptConnections(e), node(workflowGraph(e, facts), 'c').warnings, node(workflowGraph(e, facts), 'c').rows.map((r) => r.value)], [[], undefined, ['eq', undefined, 'active', undefined]]);
+  assert.deepEqual([keptConnections(e), node(workflowGraph(e, facts), 'c').warnings, node(workflowGraph(e, facts), 'c').rows.map((r) => r.value)], [[], undefined, ['eq', undefined, undefined, 'active', undefined]]);
   // A Text connected to B, then Is one of: B's value becomes its list; the Text stays joined, and Values warns.
   e = editWorkflow(e, { connection: { from: 'text/value', to: 'c/b' } });
   assert.deepEqual(workflowFaults(e, NODE_KINDS, facts), []);
@@ -163,7 +167,8 @@ test('the panel: one Condition item naming its types; a search finds a type whol
   // Not, not Does not equal; and the Notification family, by its name (plan 917).
   assert.deepEqual(found('not'), [['condition', 'not'], ['notify', undefined]]);
   assert.deepEqual(found('is empty'), [['condition', 'empty']]);
-  assert.deepEqual(found('at least'), [['condition', 'gte']]);
+  // At least is a comparison's, and a Branch's When.
+  assert.deepEqual(found('at least'), [['condition', 'gte'], ['branch', 'atleast']]);
   assert.deepEqual(found('and'), [['condition', 'and']]);
   assert.deepEqual(found('rows that hold'), [], 'a workflow takes no Rows that hold (plan 783 D4)');
   // The Query draws its trees with the same Condition (plan 783 D6): And, Or and the comparisons; Not and Is empty are a workflow's.

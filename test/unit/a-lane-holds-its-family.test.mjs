@@ -24,7 +24,7 @@ const flow = () => editWorkflow({
     { id: 'cond', kind: 'condition', x: 300, y: 150 }, { id: 'org', kind: 'organise', x: 600, y: 150 },
     { id: 'out', kind: 'result', x: 900, y: 150 }, { id: 'lone', kind: 'condition', x: 0, y: 900 },
   ],
-  connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'org' }, { from: 'org/rows', to: 'out' }],
+  connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/pass', to: 'org' }, { from: 'org/rows', to: 'out' }],
 }, { lanes: LANES_BY_FAMILY });
 
 test('a node stands in its family\'s lane; a logic node in the junction between the lanes it joins; one joined to none, in none', () => {

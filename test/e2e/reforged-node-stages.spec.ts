@@ -33,7 +33,7 @@ test.beforeEach(async ({ page }) => {
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'sort', kind: 'condition', x: 330, y: 0, values: { type: 'empty' } },
       { id: 'end', kind: 'result', x: 660, y: 0 },
-    ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
+    ], connections: [{ from: 'start/rows', to: 'sort' }, { from: 'sort/pass', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'), stageDialog: document.getElementById('stage'),
       toolbar: canvas.querySelector('sherpa-node-toolbar'), stores: ['users'],
       fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } },

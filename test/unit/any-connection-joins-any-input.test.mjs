@@ -86,11 +86,12 @@ test('the graph\'s shape stays refused, in words: a loop, twice, two into one, n
     ],
   };
   const faults = (connections, more = []) => workflowFaults({ ...base, nodes: [...base.nodes, ...more], connections }, kinds);
-  assert.deepEqual(faults([{ from: 'c/rows', to: 'd' }, { from: 'd/rows', to: 'c' }]), ['its connections run in a loop']);
+  assert.deepEqual(faults([{ from: 'c/pass', to: 'd' }, { from: 'd/pass', to: 'c' }]), ['its connections run in a loop']);
   assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 's/rows', to: 'c' }]), ['the connection "s/rows" → "c" is there twice']);
   assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 'v/value', to: 'c' }]), ['two connections enter "c", which takes one']);
   assert.deepEqual(faults([{ from: 's/rows', to: 'c/nowhere' }]), ['a connection enters "c/nowhere", which is no input socket']);
-  assert.deepEqual(faults([{ from: 's/rows', to: 'c/rows' }]), ['a connection enters "c/rows", a Rows row, which only sends: a node\'s rows come in on its header']);
+  assert.deepEqual(faults([{ from: 'v/value', to: 's/rows' }]), ['a connection enters "s/rows", its Results row, which only sends: what a node takes comes in on its header or an input row']);
+  assert.deepEqual(faults([{ from: 'v/value', to: 'c/pass' }]), ['a connection enters "c/pass", its Pass row, which only sends: what a node takes comes in on its header or an input row']);
   // And takes any boolean (TODO 780, plan 783 D4): a Condition's True and another's, each a row now (plan 944).
   const and = { id: 'a', kind: 'condition', x: 900, y: 0, values: { type: 'and' } };
   assert.deepEqual(faults([{ from: 'd/true', to: 'a' }, { from: 'c/true', to: 'a' }], [and]), []);

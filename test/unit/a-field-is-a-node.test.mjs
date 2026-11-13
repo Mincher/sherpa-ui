@@ -120,8 +120,8 @@ test('Tag › Includes takes a Field on its header (D5, plan 835); Organise take
     f: [['field', 'No store\'s rows come in: connect a Source in']],
     tag: [['', 'Tag takes a field; it was given rows: connect a Field in']],
   });
-  // Each passes the rows on from its Rows row.
-  for (const id of ['org', 'tag']) assert.deepEqual(sentFrom(fed, `${id}/rows`, facts), { kind: 'rows' }, id);
+  // Each passes the rows on: the Organise from its Rows row, the Tag from its Pass and Fail.
+  for (const from of ['org/rows', 'tag/pass', 'tag/fail']) assert.deepEqual(sentFrom(fed, from, facts), { kind: 'rows' }, from);
   assert.deepEqual(sentFrom(bare, 'org/rows', facts), { kind: 'rows' });
   // Organise's Sort and Group are its own rows, each a pick of the fields of the rows that come in.
   const org = workflowGraph(bare, facts).nodes.find((n) => n.id === 'org');

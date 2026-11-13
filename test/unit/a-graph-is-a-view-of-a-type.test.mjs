@@ -130,7 +130,7 @@ test('the canvas edits an entity\'s graph as a workflow — its Group Input and 
     assert.deepEqual(kinds(filter('pf')), ['start', 'status', 'field', '#out']);
     const node = {
       v: 2, type: 'node', id: 'has-role', label: 'Has role',
-      graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in/users', to: 'c' }, { from: 'c/rows', to: '#out/allowed' }] },
+      graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], connections: [{ from: '#in/users', to: 'c' }, { from: 'c/pass', to: '#out/allowed' }] },
       settings: { inputs: [{ name: 'users', type: 'object' }], outputs: [{ name: 'allowed', type: 'object' }] },
     };
     assert.deepEqual(kinds(node), ['#in', 'c', '#out']);

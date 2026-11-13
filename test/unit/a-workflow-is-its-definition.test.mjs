@@ -45,7 +45,7 @@ test('a real workflow passes its schema and the check', () => {
 
 test('a v3 is read as itself; anything else is no workflow, and says so: a v2, kept before plan 934, too (plan 960 D4)', () => {
   assert.equal(readWorkflow(good).workflow, good);
-  assert.deepEqual(good.connections.map((r) => r.from), ['start/rows', 'field/field', 'status/value', 'filter/rows']);
+  assert.deepEqual(good.connections.map((r) => r.from), ['start/rows', 'field/field', 'status/value', 'filter/pass']);
   const kept = { v: 2, id: 'old', nodes: good.nodes, routes: good.connections };
   for (const odd of [kept, { v: 1, id: 'x', nodes: [] }, { v: 4, id: 'x', nodes: [] }, { id: 'x' }, null]) {
     assert.deepEqual(workflowFaults(odd), ['it is not a workflow definition: a v3']);
@@ -75,21 +75,21 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  // A Check is drawn in both, beside the Condition (plan 944), and so is Organise (plan 960 U4.2); a Trigger in a workflow
+  // A Branch is drawn in both, beside the Condition (plans 944, 971), and so is Organise (plan 960 U4.2); a Trigger in a workflow
   // alone (plan 941).
-  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'check', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'branch', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
   // Sort and Group are rows of the one Organise kind (plan 960 U4.2); Collection and its Count are gone, a Count a type of
   // Math (plan 944).
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group, NODE_KINDS.organise.category], [undefined, undefined, undefined, undefined, 'Organise']);
   assert.equal(NODE_KINDS.math.types.count.label, 'Count');
-  assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'check', 'preset', 'saved', 'organise', 'presentation', 'component', 'field']);
+  assert.deepEqual(drawnIn('query'), ['source', 'status', 'scope', 'condition', 'branch', 'preset', 'saved', 'organise', 'presentation', 'component', 'field']);
   // One meaning per word: a Source is where rows come from, in both, and the Store kind is gone (TODO 808); a Condition
   // is one test, in both (plan 783 D4).
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone: a Source names its store');
   assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
-  // No True or False socket: a test's True is a row, 1 or 0 (plan 944).
-  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['rows', 'b', 'true']);
+  // No True or False socket: a test's Pass and Fail are rows, and its True, 1 or 0 (plans 944, 971).
+  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['pass', 'fail', 'b', 'true']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -105,10 +105,10 @@ test('each fault is reported by name, and the check says no', () => {
     [{ nodes: [...nodes, { id: 'old', kind: 'condition', x: 0, y: 0, values: { type: 'rows' } }] }, 'the node "old" holds "rows" as its Check, which is none of its choices'],
     [{ connections: [{ from: 'start/rows', to: 'filter/nope' }] }, 'a connection enters "filter/nope", which is no input socket'],
     // A Rows row only sends: the rows come in on the header.
-    [{ connections: [{ from: 'start/rows', to: 'filter/rows' }] }, 'a connection enters "filter/rows", a Rows row, which only sends: a node\'s rows come in on its header'],
+    [{ connections: [{ from: 'status/value', to: 'start/rows' }] }, 'a connection enters "start/rows", its Results row, which only sends: what a node takes comes in on its header or an input row'],
     [{ nodes: [...nodes, { id: 'more', kind: 'source', x: 0, y: 0 }], connections: [{ from: 'start/rows', to: 'filter' }, { from: 'more/rows', to: 'filter' }] }, 'two connections enter "filter", which takes one'],
     [{ connections: [{ from: 'start/rows', to: 'filter' }, { from: 'start/rows', to: 'filter' }] }, 'the connection "start/rows" → "filter" is there twice'],
-    [{ nodes: [...nodes, { id: 'again', kind: 'condition', x: 0, y: 0 }], connections: [{ from: 'filter/rows', to: 'again' }, { from: 'again', to: 'filter' }] }, 'its connections run in a loop'],
+    [{ nodes: [...nodes, { id: 'again', kind: 'condition', x: 0, y: 0 }], connections: [{ from: 'filter/pass', to: 'again' }, { from: 'again', to: 'filter' }] }, 'its connections run in a loop'],
   ];
   for (const [change, said] of cases) {
     const { ok, heard } = check(with_(change));
@@ -124,8 +124,8 @@ test('each fault is reported by name, and the check says no', () => {
 test('an app adds its own kind beside the library\'s', () => {
   const mail = { heading: 'Mail', icon: 'chat', input: 'any', rows: [{ name: 'to', label: 'To', control: 'text' }], model: 'sendMail', graphs: ['workflow'] };
   const kinds = { ...NODE_KINDS, mail };
-  // The rows that match, by its Results (a Condition's header sends nothing, plan 944): a header takes any type.
-  const workflow = with_({ nodes: [...good.nodes, { id: 'send', kind: 'mail', x: 0, y: 0, values: { to: 'ops' } }], connections: [...good.connections, { from: 'filter/rows', to: 'send' }] });
+  // The rows that match, by its Pass (a Condition's header sends nothing, plan 944): a header takes any type.
+  const workflow = with_({ nodes: [...good.nodes, { id: 'send', kind: 'mail', x: 0, y: 0, values: { to: 'ops' } }], connections: [...good.connections, { from: 'filter/pass', to: 'send' }] });
   // Without its kind, the node is not one — and so neither is its socket.
   assert.deepEqual(check(workflow), { ok: false, heard: [
     'the node "send" is of the kind "mail", which is not one.',
@@ -149,9 +149,9 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   ]);
   assert.deepEqual(graph.connections, good.connections);
   // Source › Field › Condition › Output (plan 783): the Condition tests the Field on its header, Value B the Value connected in.
-  // Its True is a row, and it forks no more (plan 944).
-  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['rows', undefined, false], ['b', 'active', true], ['true', undefined, false]]);
-  assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', undefined, 'object', undefined]);
+  // Its Pass, Fail and True are rows, and it forks no more (plans 944, 971).
+  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['pass', undefined, false], ['fail', undefined, false], ['b', 'active', true], ['true', undefined, false]]);
+  assert.deepEqual([node('filter').input, node('filter').branches, ...['pass', 'fail'].flatMap((r) => [row('filter', r).output, row('filter', r).input])], ['any', undefined, 'object', undefined, 'object', undefined]);
   // The Field's list is its Source's store's fields; its row says its field and type.
   assert.deepEqual([row('field', 'field').choices, row('field', 'field').hint], [[{ value: 'status', label: 'Status' }, { value: 'seats', label: 'Seats' }], 'Status: a text field']);
   // A text column in: the types that fit text (TODO 940).

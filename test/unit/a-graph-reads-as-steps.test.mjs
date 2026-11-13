@@ -1,7 +1,7 @@
 /**
  * A GRAPH READS AS STEPS (Will, TODO 959), beside `routeRead`: each stage's steps in order, numbered "stage.place", and
- * where each step's flow goes, a Check's Yes and No apart. The order is the flow's depth, then the place. A link into a
- * row that only carries data (a Check's Data, an AI node's Model) is no flow, and a node that only gives a model is no
+ * where each step's flow goes, each way of a fork apart (a test's Pass and Fail, a Branch's Yes and No). The order is the flow's depth, then the place. A link into a
+ * row that only carries data (a Branch's Data, an AI node's Model) is no flow, and a node that only gives a model is no
  * step; nor are the Start and a Group Input or Output. An app says the words; this is the order and the numbers.
  *
  *   node --test test/unit/a-graph-reads-as-steps.test.mjs
@@ -14,13 +14,13 @@ const { graphSteps } = await import(new URL('graph-steps.js', core));
 const { flowDepths } = await import(new URL('node-routes.js', core));
 
 const N = (id, kind, x, y, stage, values) => ({ id, kind, x, y, ...(stage ? { stage } : {}), ...(values ? { values } : {}) });
-/** Find: a Source, its Field, a Condition. Act: a Check that sends Yes to a Prompt and No to the Run result; a Model for
+/** Find: a Source, its Field, a Condition. Act: a Branch that sends Yes to a Prompt and No to the Run result; a Model for
  *  the Prompt; the Start. */
 const graph = () => ({
   stages: [{ id: 'find', label: 'Find', x: 0 }, { id: 'act', label: 'Act', x: 1000 }],
   nodes: [
     N('#start', '#start', -300, 0, 'find'), N('s', 'source', 0, 0, 'find', { store: 'devices' }), N('f', 'field', 300, 0, 'find', { field: 'status' }),
-    N('cond', 'condition', 600, 0, 'find', { type: 'eq' }), N('c', 'check', 1100, 0, 'act'), N('m', 'model', 1100, 400, 'act', { provider: 'anthropic', model: 'sonnet' }),
+    N('cond', 'condition', 600, 0, 'find', { type: 'eq' }), N('c', 'branch', 1100, 0, 'act'), N('m', 'model', 1100, 400, 'act', { provider: 'anthropic', model: 'sonnet' }),
     N('q', 'prompt', 1400, 0, 'act'), N('o', 'result', 1700, 0, 'act'),
   ],
   connections: [
@@ -34,7 +34,7 @@ test('each stage\'s steps in the flow\'s order, numbered stage.place; the Start 
   assert.deepEqual(brief(graphSteps(graph())), [['Find', ['1.1 s', '1.2 f', '1.3 cond']], ['Act', ['2.1 c', '2.2 q', '2.3 o']]]);
 });
 
-test('where each step goes, by number; a Check\'s Yes and No apart; the end stops', () => {
+test('where each step goes, by number; a Branch\'s Yes and No apart; the end stops', () => {
   const steps = graphSteps(graph()).flatMap((s) => s.steps);
   const at = (id) => steps.find((t) => t.node === id);
   assert.deepEqual(at('c').branches, { yes: [{ step: '2.2', node: 'q' }], no: [{ step: '2.3', node: 'o' }] });
@@ -44,10 +44,31 @@ test('where each step goes, by number; a Check\'s Yes and No apart; the end stop
   assert.equal(at('q').branches, undefined);
 });
 
+test('a test\'s Pass and Fail are a fork too, apart where one leads on; a True alone, or ways that lead nowhere, are none (plan 971)', () => {
+  const read = (connections, more = []) => graphSteps({
+    nodes: [N('s', 'source', 0, 0, undefined, { store: 'devices' }), N('f', 'field', 300, 0, undefined, { field: 'status' }), N('cond', 'condition', 600, 0, undefined, { type: 'eq' }),
+      N('on', 'result', 900, 0), N('off', 'result', 900, 300), ...more],
+    connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'cond' }, ...connections],
+  }).flatMap((st) => st.steps);
+  const at = (steps, id) => steps.find((t) => t.node === id);
+  // A split: the rows that pass go one way, the rest the other.
+  const split = read([{ from: 'cond/pass', to: 'on' }, { from: 'cond/fail', to: 'off' }]);
+  assert.deepEqual(at(split, 'cond').branches, { pass: [{ step: '1.4', node: 'on' }], fail: [{ step: '1.5', node: 'off' }] });
+  // A filter: the rest stop.
+  const filter = read([{ from: 'cond/pass', to: 'on' }]);
+  assert.deepEqual(at(filter, 'cond').branches, { pass: [{ step: at(filter, 'on').number, node: 'on' }], fail: [{ stop: true }] });
+  // Its True alone into an And: no fork at the test; an And whose ways lead nowhere has none either.
+  const anded = read([{ from: 'cond/true', to: 'both' }, { from: 'both/true', to: 'on' }], [N('both', 'condition', 750, 0, undefined, { type: 'and' })]);
+  assert.equal(at(anded, 'cond').branches, undefined);
+  assert.equal(at(anded, 'both').branches, undefined);
+  // A Branch whose Yes and No lead nowhere: no fork.
+  assert.equal(at(read([{ from: 'cond/true', to: 'k' }], [N('k', 'branch', 750, 0)]), 'k').branches, undefined);
+});
+
 test('a body: a step that sends to the Group Output goes to that output; with no stages, every step is in Stage 1', () => {
   const body = {
     nodes: [N('#in', '#in', -300, 0), N('f', 'field', 0, 0, undefined, { field: 'status' }), N('cond', 'condition', 300, 0, undefined, { type: 'eq' }), N('#out', '#out', 600, 0)],
-    connections: [{ from: '#in/rows', to: 'f' }, { from: 'f/field', to: 'cond' }, { from: 'cond/rows', to: '#out/kept' }],
+    connections: [{ from: '#in/rows', to: 'f' }, { from: 'f/field', to: 'cond' }, { from: 'cond/pass', to: '#out/kept' }],
   };
   const read = graphSteps(body);
   assert.deepEqual(brief(read), [['Stage 1', ['1.1 f', '1.2 cond']]]);

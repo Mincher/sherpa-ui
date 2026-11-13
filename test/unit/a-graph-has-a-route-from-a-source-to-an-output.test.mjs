@@ -22,7 +22,7 @@ const COND = N('c', 'condition', { type: 'eq', b: 'active' });
 const OUT = N('o', 'result');
 
 test('a Source joined to an Output is a Route; its Source is named', () => {
-  const g = graphOf([SRC, FIELD, COND, OUT], [R('s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o')]);
+  const g = graphOf([SRC, FIELD, COND, OUT], [R('s/rows', 'f'), R('f/field', 'c'), R('c/pass', 'o')]);
   assert.deepEqual(routeRead(g), { ok: true, sources: ['s'], unjoined: [] });
 });
 
@@ -37,7 +37,7 @@ test('no Source, no Output, or no Route: Fetch and Simulate say which', () => {
 
 test('a connection cut in the middle breaks the Route; a connection that only warns keeps it', () => {
   const nodes = [SRC, FIELD, COND, OUT];
-  assert.equal(routeRead(graphOf(nodes, [R('s/rows', 'f'), R('c/rows', 'o')])).ok, false);
+  assert.equal(routeRead(graphOf(nodes, [R('s/rows', 'f'), R('c/pass', 'o')])).ok, false);
   // A Value into the Field's header reads null and warns, but the connection is kept.
   const warned = graphOf([SRC, N('v', 'value', { type: 'text', value: 'x' }), FIELD, OUT], [R('s/rows', 'f'), R('v/value', 'f'), R('f/field', 'o')]);
   assert.equal(routeRead(warned).ok, true);
@@ -75,14 +75,14 @@ test('a use of a Custom Node is a hop only if its inside joins its Group Input t
 
 test('routesOf lists each Route, Start node to End node; a Value or a Field fed in starts none (plan 934)', () => {
   const VAL = N('v', 'value', { type: 'text', value: 'active' });
-  const g = graphOf([SRC, FIELD, VAL, COND, OUT], [R('s/rows', 'f'), R('f/field', 'c'), R('v/value', 'c/b'), R('c/rows', 'o')]);
+  const g = graphOf([SRC, FIELD, VAL, COND, OUT], [R('s/rows', 'f'), R('f/field', 'c'), R('v/value', 'c/b'), R('c/pass', 'o')]);
   assert.deepEqual(routesOf(g), [['s', 'f', 'c', 'o']]);
   assert.deepEqual(routesOf(graphOf([SRC, FIELD, OUT], [R('s/rows', 'f')])), [], 'no End node reached, no Route');
 });
 
 test('branchesAt names where Routes part: the Routes through a node, by the node each goes to next (plan 934)', () => {
   const OUT2 = N('o2', 'result');
-  const g = graphOf([SRC, FIELD, COND, OUT, OUT2], [R('s/rows', 'f'), R('f/field', 'c'), R('c/rows', 'o'), R('c/rows', 'o2')]);
+  const g = graphOf([SRC, FIELD, COND, OUT, OUT2], [R('s/rows', 'f'), R('f/field', 'c'), R('c/pass', 'o'), R('c/pass', 'o2')]);
   assert.deepEqual(routesOf(g), [['s', 'f', 'c', 'o'], ['s', 'f', 'c', 'o2']]);
   assert.deepEqual(branchesAt(g, 'c'), [{ to: 'o', routes: [['s', 'f', 'c', 'o']] }, { to: 'o2', routes: [['s', 'f', 'c', 'o2']] }]);
   assert.deepEqual(branchesAt(g, 'f'), [], 'one way on: no Branch');

@@ -61,7 +61,7 @@ export const QUERY_NODE = {
   source: 'source',
   status: (field: string): string => `status-${field}`,
   statusWhen: (field: string, value: string): string => `status-${field}.${value}`,
-  statusCheck: (field: string, value: string): string => `check-status-${field}.${value}`,
+  statusBranch: (field: string, value: string): string => `branch-status-${field}.${value}`,
   scope: (scope: string): string => `scope-${scope}`,
   condition: (scope: string, field: string): string => `when-${scope}-${field}`,
   field: (scope: string, field: string): string => `field-${scope}-${field}`,
@@ -514,8 +514,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       hint: whens[i] === undefined ? 'Every row the values before it left. ' + FROM_STORE : !isCondition(whens[i]) ? `Its \`when\` is not a condition. ${FROM_STORE}` : FROM_STORE,
     }));
     connections.push({ from: sent(QUERY_NODE.source), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
-    // Each value's `when` is a tree of tests on a Field per field it names, into a Check (plan 944, D2 A): Yes hands its value
-    // the rows, No hands the rows it left to the next value's Fields and Check, in the order the first match is taken.
+    // Each value's `when` is a tree of tests on a Field per field it names, into a Branch (plan 944, D2 A): Yes hands its value
+    // the rows, No hands the rows it left to the next value's Fields and Branch, in the order the first match is taken.
     let before: string | null = null;
     let at = 0;
     values.forEach((value, i) => {
@@ -529,9 +529,9 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const said = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
         heading: value, description: groupWords(when),
       }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/no`] : [] });
-      const check = add(column + 0.002, QUERY_NODE.statusCheck(field, value), 'branch', resolveKind(NODE_KINDS['branch']!, 'any').rows.map((r): GraphRow => ({ ...r })), { heading: value, ref: { status: field, value } }, 'any');
-      connections.push({ from: said, to: check }, { from: before ? `${before}/no` : sent(QUERY_NODE.source), to: `${check}/data` }, { from: `${check}/yes`, to: `${node}/${value}` });
-      before = check;
+      const branch = add(column + 0.002, QUERY_NODE.statusBranch(field, value), 'branch', resolveKind(NODE_KINDS['branch']!, 'any').rows.map((r): GraphRow => readOnly(FROM_STORE)({ ...r, ...(r.name === 'type' ? { value: 'any' } : {}) })), { heading: value, ref: { status: field, value } }, 'any');
+      connections.push({ from: said, to: branch }, { from: before ? `${before}/no` : sent(QUERY_NODE.source), to: `${branch}/data` }, { from: `${branch}/yes`, to: `${node}/${value}` });
+      before = branch;
     });
   }
   // What the View's rows come from: each status field's, else the Source's.

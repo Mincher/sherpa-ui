@@ -27,7 +27,7 @@ const node = (id, extra = {}) => ({
   v: 2, type: 'node', id, label: 'Org permissions',
   graph: {
     nodes: [{ id: 'active', kind: 'condition', x: 200, y: 0, values: { type: 'eq', b: 'active' } }, { id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
-    connections: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
+    connections: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/pass', to: '#out/active' }],
   },
   settings: { inputs: [{ name: 'rows', type: 'object' }], outputs: [{ name: 'active', type: 'object' }] },
   ...extra,
@@ -92,7 +92,7 @@ test('Save as Custom Node tags the definition it makes', () => {
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'a', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: 'active' } },
     { id: 'b', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'pro' } },
-  ], connections: [{ from: 'start/rows', to: 'a' }, { from: 'a/rows', to: 'b' }] };
+  ], connections: [{ from: 'start/rows', to: 'a' }, { from: 'a/pass', to: 'b' }] };
   const made = groupNodes(flow, ['a', 'b'], { v: 1, nodes: {} }, { label: 'Active pro', tags: ['plans', ' plans', ''] });
   assert.ok(!('fault' in made), made.fault);
   assert.deepEqual(made.library.nodes[made.id].tags, ['plans']);

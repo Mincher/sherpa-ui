@@ -53,7 +53,7 @@
    The socketless rule comes after: a socketless row is unconnected too. */
 :host(:not([data-input-connected], [data-output-connected])) { display: var(--_unconnected-row, block); }
 :host(:not([data-input-socket], [data-output-socket])) { display: var(--_row-bare, block); }
-/* A property with nothing to say (Results or Count, no rows reaching its node) hides; one a connection leaves stays, and
+/* A row of rows with nothing to say (Results, Pass or Fail, no rows reaching its node) hides; one a connection leaves stays, and
    its node says why. TODO 924 */
 :host([data-idle]:not([data-output-connected])) { display: none; }
 :host(:not([data-input-connected])) .socket-in,

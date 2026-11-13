@@ -35,7 +35,7 @@ function coworker() {
     ],
     connections: [
       R('devices/rows', 'customer'), R('customer/field', 'theirs'), R('provider/value', 'model/a'), R('model/value', 'brief/a'),
-      R('theirs/rows', 'brief'), R('theirs/rows', 'run'), R('run/rows', 'count'), R('run/rows', 'done'),
+      R('theirs/pass', 'brief'), R('theirs/pass', 'run'), R('run/rows', 'count'), R('run/rows', 'done'),
       R('brief/result', 'expert-1'), R('expert-1/rows', 'expert-2'), R('expert-2/rows', 'expert-3'), R('expert-3/rows', 'notice'),
     ],
   };

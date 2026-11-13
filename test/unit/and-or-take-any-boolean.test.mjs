@@ -5,7 +5,7 @@
  * 1 or 0 — is a CONSTANT one the graph holds, folded into the group; one only a run gives is named by where it
  * comes from. Since TODO 939 they take ANYTHING else too — rows, a count, a value, each true where it is above zero,
  * true, or not empty — with no warning; it says nothing in a Query's tree. No connection into it is a fault.
- * A test's True is a row now, 1 or 0, and its Results say its tree too (plan 944).
+ * A test's True is a row, 1 or 0, and its Pass says its tree too (plans 944, 971).
  *
  *   node --test test/unit/and-or-take-any-boolean.test.mjs
  *
@@ -48,16 +48,16 @@ test('a boolean says true or false: true and false, the words, a number — 0 Fa
   for (const v of ['yes', 'no', '', null, undefined, [], {}, ['true'], Number.NaN]) assert.equal(truthOf(v), undefined, JSON.stringify(v));
 });
 
-test('every boolean joins And and Or, no fault and no warning: a test\'s True, a Not\'s, a Time\'s Out, a Check\'s Yes and No, a value that says one, 1 or 0', () => {
+test('every boolean joins And and Or, no fault and no warning: a test\'s True, a Not\'s, a Time\'s Out, a Branch\'s Yes and No, a value that says one, 1 or 0', () => {
   const math = { id: 'm', kind: 'math', x: 0, y: 400 };
-  // No False now (plan 944): a Not's True, or a Check's No, says the other way.
+  // No False now (plan 944): a Not's True, or a Branch's No, says the other way.
   const not = { id: 'n', kind: 'condition', x: 500, y: 300, values: { type: 'not' } };
-  const check = { id: 'k', kind: 'check', x: 500, y: 300 };
+  const branch = { id: 'k', kind: 'branch', x: 500, y: 300 };
   const time = [{ id: 'fj', kind: 'field', x: 200, y: 300, values: { field: 'joined' } }, { id: 't', kind: 'time', x: 400, y: 300, values: { type: 'duration', when: 'last', n: 7, unit: 'day' } }];
   const cases = [
-    [plan, 'pro/true', planConnections], [plan, 'pro/rows', planConnections], [[...plan, not], 'n/true', [...planConnections, { from: 'pro/true', to: 'n' }]],
+    [plan, 'pro/true', planConnections], [plan, 'pro/pass', planConnections], [plan, 'pro/fail', planConnections], [[...plan, not], 'n/true', [...planConnections, { from: 'pro/true', to: 'n' }]],
     [time, 't', [{ from: 's/rows', to: 'fj' }, { from: 'fj/field', to: 't' }]],
-    [[...plan, check], 'k/yes', [...planConnections, { from: 'pro/true', to: 'k' }]], [[...plan, check], 'k/no', [...planConnections, { from: 'pro/true', to: 'k' }]],
+    [[...plan, branch], 'k/yes', [...planConnections, { from: 'pro/true', to: 'k' }]], [[...plan, branch], 'k/no', [...planConnections, { from: 'pro/true', to: 'k' }]],
     [[value('true', 'boolean')], 'v/value'], [[value('false', 'boolean')], 'v/value'], [[value('1', 'integer')], 'v/value'], [[value('0', 'integer')], 'v/value'],
     [[value('True')], 'v/value'], [[math], 'm/result'], [[value('2', 'integer')], 'v/value'],
   ];
@@ -72,8 +72,8 @@ test('every boolean joins And and Or, no fault and no warning: a test\'s True, a
 test('a test brings its tree; a constant folds — true drops out of And and ends Or, false the other way', () => {
   assert.deepEqual(read(flow(plan, 'pro/true', 'or', planConnections)).where, { or: [ACTIVE, PRO] });
   assert.deepEqual(read(flow(plan, 'pro/true', 'and', planConnections)).where, { and: [ACTIVE, PRO] });
-  // Its Results say its tree, as its True does (plan 944).
-  assert.deepEqual(read(flow(plan, 'pro/rows', 'and', planConnections)).where, { and: [ACTIVE, PRO] });
+  // Its Pass says its tree, as its True does (plans 944, 971).
+  assert.deepEqual(read(flow(plan, 'pro/pass', 'and', planConnections)).where, { and: [ACTIVE, PRO] });
   assert.deepEqual(read(flow([value('true', 'boolean')], 'v/value')).where, ACTIVE, 'Status and true: Status');
   assert.deepEqual(read(flow([value('0', 'integer')], 'v/value')).where, false, 'Status and 0: never');
   assert.deepEqual(read(flow([value('1', 'integer')], 'v/value', 'or')).where, true, 'Status or 1: always');
@@ -93,10 +93,10 @@ test('a boolean only a run gives is named by where it comes from; a test that sa
   const two = [value('Pro'), { id: 'eq', kind: 'condition', x: 300, y: 600, values: { type: 'eq', b: 'Pro' } }];
   const g = workflowGraph(flow(two, 'eq/true', 'and', [{ from: 'v/value', to: 'eq' }]));
   assert.deepEqual(nodeFlow(g, 'j').definition.where, { and: [ACTIVE, { boolean: 'Condition › True' }] });
-  // No False now (plan 944): a Check's No, named by its row.
-  const check = { id: 'k', kind: 'check', x: 500, y: 600 };
-  const off = workflowGraph(flow([...two, check], 'k/no', 'and', [{ from: 'v/value', to: 'eq' }, { from: 'eq/true', to: 'k' }]));
-  assert.deepEqual(nodeFlow(off, 'j').definition.where, { and: [ACTIVE, { boolean: 'Check › No' }] });
+  // No False now (plan 944): a Branch's No, named by its row.
+  const branch = { id: 'k', kind: 'branch', x: 500, y: 600 };
+  const off = workflowGraph(flow([...two, branch], 'k/no', 'and', [{ from: 'v/value', to: 'eq' }, { from: 'eq/true', to: 'k' }]));
+  assert.deepEqual(nodeFlow(off, 'j').definition.where, { and: [ACTIVE, { boolean: 'Branch › No' }] });
 });
 
 test('anything else joins too (TODO 939): rows, a value, a list — no warning, and nothing in the Query\'s tree; no fault', () => {

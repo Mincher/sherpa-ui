@@ -39,16 +39,16 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
       { id: 's', kind: 'source', x: 0, y: 0, heading: 's', values: { store: 'users' } }, { id: 'f', kind: 'field', x: 360, y: 0, heading: 'f', values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 720, y: 0, heading: 'c', values: { type: 'eq', b: 'active' } }, { id: 'o', kind: 'result', x: 1080, y: 0, heading: 'o' },
     ];
-    const connections = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/rows', to: 'o' }];
+    const connections = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'o' }];
     // A Value into a Math, off the path: a node that sends a number, not rows (P6).
     if (calc) {
       nodes.push({ id: 'v', kind: 'value', x: 0, y: 300, heading: 'v', values: { type: 'integer', value: '21' } }, { id: 'm', kind: 'math', x: 360, y: 300, heading: 'm', values: { type: 'multiply', b: 2 } });
       connections.push({ from: 'v/value', to: 'm/a' });
     }
-    // A Math Count of the Source's rows, and one of the Condition's Results: counting is a Math type (plan 944).
+    // A Math Count of the Source's rows, and one of the Condition's Pass: counting is a Math type (plan 944).
     if (count) {
       nodes.push({ id: 'ns', kind: 'math', x: 360, y: 300, heading: 'ns', values: { type: 'count' } }, { id: 'nc', kind: 'math', x: 1080, y: 300, heading: 'nc', values: { type: 'count' } });
-      connections.push({ from: 's/rows', to: 'ns/rows' }, { from: 'c/rows', to: 'nc/rows' });
+      connections.push({ from: 's/rows', to: 'ns/rows' }, { from: 'c/pass', to: 'nc/rows' });
     }
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, id: 'w', nodes, connections } as never, {
@@ -276,9 +276,10 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   const pane = page.locator('#inspector .data-pane');
   await expect(pane).toBeVisible();
   const lines = await pane.locator('.data-line').allTextContents();
-  // Each socket by its label: True is 1 where a row passes; the rows that pass go by Results. No False, no Count (plan 944).
+  // Each socket by its label: True is 1 where a row passes; the rows that pass go by Pass, the rest by Fail (plan 944, 971).
   expect(lines).toContain('True: 1');
-  expect(lines).toContain(`Results: ${ACTIVE.length} rows`);
+  expect(lines).toContain(`Pass: ${ACTIVE.length} rows`);
+  expect(lines).toContain(`Fail: ${ROWS.length - ACTIVE.length} rows`);
   expect(lines.filter((l) => /^(False|Count):/.test(l))).toEqual([]);
   const code = await pane.locator('sherpa-code-block').evaluateAll((els) => els.map((e) => JSON.parse(e.getAttribute('data-code')!) as { status: string }[]));
   expect(code.some((c) => c.length === ACTIVE.length && c.every((r) => r.status === 'active'))).toBe(true);
@@ -290,8 +291,8 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   })));
   expect(grids.every((g) => g.heads.join() === 'id,status' && g.height <= 280)).toBe(true);
   expect(grids.filter((g) => g.body === ACTIVE.length).every((g) => g.first[1] === 'active')).toBe(true);
-  // In and Results: True, a number, carries no rows (plan 944).
-  expect(grids.map((g) => g.body).sort((a, b) => a - b)).toEqual([ACTIVE.length, 50]);
+  // In, Pass and Fail (the first 50 of each): True, a number, carries no rows (plan 944).
+  expect(grids.map((g) => g.body).sort((a, b) => a - b)).toEqual([ACTIVE.length, 50, 50]);
   expect(await page.locator('#inspector .data-pane sherpa-accordion.data-json[open]').count()).toBe(0);
   // The Source's has 120 rows and writes out 50.
   const source = (await page.locator('#cv > sherpa-node[data-heading="s"]').boundingBox())!;

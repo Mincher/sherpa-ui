@@ -1,6 +1,6 @@
 /**
- * RESULTS NEED ROWS: a node's Results (the rows that pass) say rows, so where only a value, or a test of one, reaches its
- * header, they have nothing to say and hide (`idle`). Rows, or a Field's column, through any chain of tests, and they
+ * RESULTS NEED ROWS: a node's Results, and a test's Pass and Fail (plan 971), say rows, so where only a value, or a test of
+ * one, reaches its header, they have nothing to say and hide (`idle`). Rows, or a Field's column, through any chain of tests, and they
  * show; nothing joined, they show. No node has a Count row now: a Math Count counts rows, and a test's True is 1 or 0
  * (plan 944). One a connection still leaves stays, and its node says why. Every other property always shows.
  * Will, TODO 924 (D1 A)
@@ -22,9 +22,9 @@ const words = (g, id) => (g.nodes.find((n) => n.id === id).warnings ?? []).map((
 const source = [N('s', 'source', { store: 'users' }), N('f', 'field', { field: 'status' }), N('m', 'math', { type: 'count' })];
 const fromSource = [{ from: 's/rows', to: 'f' }, { from: 's/rows', to: 'm/rows' }];
 
-test('Will\'s case: a Count into a Condition\'s header is one test, 1 or 0 — its Results hide (plan 944)', () => {
+test('Will\'s case: a Count into a Condition\'s header is one test, 1 or 0 — its Pass and Fail hide (plans 944, 971)', () => {
   const g = graphOf([...source, N('c', 'condition', { type: 'gt', b: '0' })], [...fromSource, { from: 'm/result', to: 'c' }]);
-  assert.deepEqual(idle(g, 'c'), ['rows']);
+  assert.deepEqual(idle(g, 'c'), ['pass', 'fail']);
   assert.deepEqual(words(g, 'c'), []);
 });
 
@@ -34,7 +34,7 @@ test('a Field\'s column in, and they show; nothing joined, they show', () => {
   assert.deepEqual(idle(g, 'lone'), []);
 });
 
-test('through a chain: an And fed a test\'s Results shows them; an And of Trues alone hides them, as an Or of numbers does (plan 944)', () => {
+test('through a chain: an And fed a test\'s Pass shows its own; an And of Trues alone hides them, as an Or of numbers does (plans 944, 971)', () => {
   const nodes = [
     ...source, N('n', 'value', { type: 'integer', value: 3 }),
     N('byRows', 'condition', { type: 'eq', b: 'active' }), N('byValue', 'condition', { type: 'gt', b: '1' }), N('alsoValue', 'condition', { type: 'lt', b: '9' }),
@@ -42,26 +42,26 @@ test('through a chain: an And fed a test\'s Results shows them; an And of Trues 
   ];
   const g = graphOf(nodes, [
     ...fromSource, { from: 'f/field', to: 'byRows' }, { from: 'n/value', to: 'byValue' }, { from: 'n/value', to: 'alsoValue' },
-    // Rows go by Results; a True is 1 or 0, and carries none (plan 944).
-    { from: 'byRows/rows', to: 'mixed' }, { from: 'byValue/true', to: 'mixed' },
+    // Rows go by Pass; a True is 1 or 0, and carries none (plans 944, 971).
+    { from: 'byRows/pass', to: 'mixed' }, { from: 'byValue/true', to: 'mixed' },
     { from: 'byValue/true', to: 'values' }, { from: 'alsoValue/true', to: 'values' },
     { from: 'm/result', to: 'counts' }, { from: 'n/value', to: 'counts' },
   ]);
-  // A value in: Results hide; no Count to show (plan 944).
-  assert.deepEqual(idle(g, 'byValue'), ['rows']);
+  // A value in: Pass and Fail hide; no Count to show (plan 944).
+  assert.deepEqual(idle(g, 'byValue'), ['pass', 'fail']);
   assert.deepEqual(idle(g, 'mixed'), []);
-  assert.deepEqual(idle(g, 'values'), ['rows']);
-  // Numbers in: Results, with no rows, hide.
-  assert.deepEqual(idle(g, 'counts'), ['rows']);
+  assert.deepEqual(idle(g, 'values'), ['pass', 'fail']);
+  // Numbers in: Pass and Fail, with no rows, hide.
+  assert.deepEqual(idle(g, 'counts'), ['pass', 'fail']);
 });
 
 test('one a connection still leaves stays, and its node says why it sends nothing (D1 A)', () => {
   const g = graphOf(
     [...source, N('c', 'condition', { type: 'gt', b: '0' }), N('sorted', 'organise', { direction: 'asc' })],
-    [...fromSource, { from: 'm/result', to: 'c' }, { from: 'c/rows', to: 'sorted' }],
+    [...fromSource, { from: 'm/result', to: 'c' }, { from: 'c/pass', to: 'sorted' }],
   );
-  assert.deepEqual(idle(g, 'c'), ['rows']);
-  assert.deepEqual(words(g, 'c'), ['rows: Results has no rows: a value comes in']);
+  assert.deepEqual(idle(g, 'c'), ['pass', 'fail']);
+  assert.deepEqual(words(g, 'c'), ['pass: Pass has no rows: a value comes in']);
 });
 
 test('every other property always shows: a Source\'s, a Math Result, an AI Answer, an Output\'s', () => {

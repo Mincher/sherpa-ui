@@ -290,9 +290,9 @@ test('a STATUS FIELD is a node between the Source and the View: each value, and 
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
     ['Results', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
-  // The Source's rows get their status, then reach the View: never the Source's straight. They are the first Check's Data too (plan 944).
+  // The Source's rows get their status, then reach the View: never the Source's straight. They are the first Branch's Data too (plan 944).
   assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.to === 'scope-view').map((r) => `${r.from} → ${r.to}`), [
-    'source/rows → status-health', 'source/rows → check-status-health.at risk/data', 'status-health/rows → scope-view',
+    'source/rows → status-health', 'source/rows → branch-status-health.at risk/data', 'status-health/rows → scope-view',
   ]);
   assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'scope-view').x);
 });

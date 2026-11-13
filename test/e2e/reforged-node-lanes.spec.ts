@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
       { id: 'cond', kind: 'condition', x: 330, y: 20 },
       { id: 'sort', kind: 'organise', x: 660, y: 20 },
       { id: 'end', kind: 'result', x: 990, y: 0 },
-    ], connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
+    ], connections: [{ from: 'src/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/pass', to: 'sort' }, { from: 'sort/rows', to: 'end' }] }, {
       session: new SessionStore(), inspector: document.getElementById('inspector'),
       toolbar: canvas.querySelector('sherpa-node-toolbar'), stores: ['users'],
       fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } },

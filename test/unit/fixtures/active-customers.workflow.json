@@ -14,6 +14,6 @@
     { "from": "start/rows", "to": "field" },
     { "from": "field/field", "to": "filter" },
     { "from": "status/value", "to": "filter/b" },
-    { "from": "filter/rows", "to": "end" }
+    { "from": "filter/pass", "to": "end" }
   ]
 }
