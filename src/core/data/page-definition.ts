@@ -54,7 +54,8 @@ export interface ScopeDefinition {
   /** Its PRESETS: the app's own named conditions, each a boolean chip leading
    *  the scope — `{ "id": "high-risk", "label": "High risk", "where": { … } }`,
    *  `where` in the plain form. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
-  presets?: readonly { id: string; label: string; where: Readonly<Where> }[];
+  /** Each a named condition, a boolean chip; `on`, ticked at the start and again on a Reset. */
+  presets?: readonly { id: string; label: string; where: Readonly<Where>; on?: boolean }[];
   /** What its slot shows until the reader changes it — its `primary`, `secondary`
    *  and `group` — and a default per view, `grid` and `chart`, over it. Will, TODO 548 */
   presentation?: PresentationDefinition;
@@ -204,7 +205,9 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
     if (facts.presentation) source.query.declarePresentation(scope, facts.presentation);
     if (facts.axes) source.query.declareAxes(facts.axes, scope);
     if (facts.presets?.length) {
-      source.declarePresets(scope, facts.presets.map((p) => ({ id: p.id, label: p.label, readings: presetReadings(source, p.where) })));
+      source.declarePresets(scope, facts.presets.map((p) => ({ id: p.id, label: p.label, readings: presetReadings(source, p.where), ...(p.on ? { on: true } : {}) })));
+      // A preset `on` starts ticked, through the preset door, so its marks are there to read it on. Plan 963
+      for (const p of facts.presets) if (p.on) source.query.ask({ scope, preset: p.id, on: true, commit: true });
     }
     if (facts.sets?.length) source.query.declareSets(scope, facts.sets);
   }

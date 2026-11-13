@@ -481,7 +481,7 @@ export class DataSource extends EventTarget {
   /** A scope's PRESETS: the app's own named conditions, each a boolean chip — on,
    *  its rows are written into the fields'. Kept by the Query. Will, TODOs 493, 510
    *  TRAP T-a-preset-is-its-own-part */
-  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[]): void {
+  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>>; on?: boolean }[]): void {
     this.#context.declarePresets(scope, presets);
   }
 

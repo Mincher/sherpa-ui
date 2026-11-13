@@ -111,7 +111,8 @@
       "properties": {
         "id": { "type": "string" },
         "label": { "type": "string" },
-        "where": { "$ref": "#/$defs/where" }
+        "where": { "$ref": "#/$defs/where" },
+        "on": { "description": "Ticked at the start, and again on a Reset: its rows held from the first load (plan 963).", "type": "boolean" }
       }
     },
 

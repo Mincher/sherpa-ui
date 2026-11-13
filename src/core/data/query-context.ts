@@ -439,7 +439,7 @@ export class QueryContext extends EventTarget {
    * declarePresets(scope, presets) — a scope's PRESETS: the app's own named
    * conditions, each a boolean chip that writes them into the fields. TODO 493, 510
    */
-  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[]): void {
+  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>>; on?: boolean }[]): void {
     this.#decl.setPresets(scope, presets);
     this.#tell([{ kind: 'preset', scope }]);
   }

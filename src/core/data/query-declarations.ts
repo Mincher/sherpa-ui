@@ -58,6 +58,8 @@ export interface QueryPart {
 export interface Preset {
   label: string;
   readings: Record<string, FieldReading>;
+  /** On at the start, and again on a Reset. Plan 963 */
+  on?: boolean;
 }
 
 /** What a page declares about its Query, by scope. */
@@ -155,8 +157,8 @@ export class QueryDeclarations {
   readonly #presets = new Map<string, Map<string, Preset>>();
 
   /** A scope's presets: the app's own named conditions, each a boolean chip. TODOs 493, 510 */
-  setPresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[]): void {
-    this.#presets.set(scope, new Map(presets.map((p) => [p.id, { label: p.label, readings: structuredClone(p.readings) as Record<string, FieldReading> }])));
+  setPresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>>; on?: boolean }[]): void {
+    this.#presets.set(scope, new Map(presets.map((p) => [p.id, { label: p.label, readings: structuredClone(p.readings) as Record<string, FieldReading>, ...(p.on ? { on: true } : {}) }])));
   }
 
   /** A scope's presets, by id, in order. Live. */

@@ -128,6 +128,8 @@ library `app.v1`, `views.v1` and `workflow.v3` use too.
   risk", "where": { "health": { "lt": 60 }, "openTickets": { "gt": 0 } } }]`.
   A condition nests as deep as it says (`{ "or": [{ "lt": 10 }, { "and": [...] }] }`),
   here and in a scope's `where`: parsed once into its tree (`T-one-condition-tree`).
+  `"on": true` ticks it at the start and again on a Reset, its rows held from the
+  first load; the reader may untick it (plan 963: hide the Organisation's users).
   On, it writes its conditions into those fields' answers — ANDed with what each
   holds, at the field's home — so their chips show them; off takes them out; it
   reads on while all its conditions are still there. The panel heads them
