@@ -16,6 +16,14 @@
       "label": "Teammates",
       "template": "templates/teammates.html",
       "definition": "pages/teammates.json"
+    },
+    "all-devices": {
+      "label": "All devices",
+      "type": "device"
+    },
+    "all-teammates": {
+      "label": "All teammates",
+      "type": "teammate"
     }
   }
 }

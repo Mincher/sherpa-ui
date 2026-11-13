@@ -305,14 +305,16 @@
     },
 
     "context": {
-      "description": "One Context: its row's name and icon, its files, and what it changes in the chrome.",
+      "description": "One Context: its row's name and icon, its files (or the type whose own page it is), and what it changes in the chrome.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["label", "template"],
+      "required": ["label"],
+      "anyOf": [{ "required": ["template"] }, { "required": ["type"] }],
       "properties": {
         "label": { "description": "Its row's name, which the header shows too.", "type": "string" },
         "icon": { "type": "string" },
-        "template": { "description": "Its markup.", "type": "string" },
+        "template": { "description": "Its markup. None, with a type: the type's own page.", "type": "string" },
+        "type": { "description": "A type's id (app.json types): with no template, the Context is the type's own page — its filter toolbar, a grid of its fields and a pager (plan 960 U3).", "$ref": "#/$defs/id" },
         "definition": { "description": "Its page definition (page.v1.json). Absent, it has no data.", "type": "string" },
         "views": { "description": "Its Views (views.v1.json).", "type": "string" },
         "module": { "description": "Its module, which exports init(root, ctx).", "type": "string" },

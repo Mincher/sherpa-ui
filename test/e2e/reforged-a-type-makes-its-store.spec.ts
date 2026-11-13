@@ -51,3 +51,25 @@ test('a graph type\'s entities are rows of its type: its data file\'s entities s
   expect(r.rows.join(' | ')).toMatch(/Bo.*active.*day/);
   expect(r.origin).toBe('mine');
 });
+
+test('a Context that names a type and no template is the type\'s own page: its toolbar, a grid of its fields, a pager', async ({ page }) => {
+  for (const [context, heads, rows] of [['all-devices', ['Device name', 'Status', 'Risk'], 3], ['all-teammates', ['Name', 'Status', 'Runs'], 2]] as const) {
+    await page.goto(`/test/reforged/outlet.html?context=${context}`);
+    await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+    const r = await page.evaluate(async (want) => {
+      const { SessionStore } = await import('/dist/index.js');
+      const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
+      const base = new URL('/test/reforged/typed/app.json', location.href);
+      await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+      const grid = () => document.querySelector('sherpa-outlet sherpa-data-grid') as HTMLElement & { shadowRoot: ShadowRoot } | null;
+      for (let i = 0; i < 100 && grid()?.shadowRoot?.querySelectorAll('.row').length !== want; i++) await new Promise((done) => setTimeout(done, 50));
+      return {
+        rows: grid()?.shadowRoot.querySelectorAll('.row').length ?? 0,
+        heads: [...grid()?.shadowRoot.querySelectorAll('.head-cell .head-label') ?? []].map((l) => l.textContent),
+        toolbar: !!document.querySelector('sherpa-outlet sherpa-quick-filter-toolbar'),
+        pager: !!document.querySelector('sherpa-outlet sherpa-pagination'),
+      };
+    }, rows);
+    expect(r, context).toEqual({ rows, heads: [...heads], toolbar: true, pager: true });
+  }
+});

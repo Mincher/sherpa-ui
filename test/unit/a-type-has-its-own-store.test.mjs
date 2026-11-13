@@ -79,3 +79,28 @@ test('a page that names its type may leave out its store: it reads its type\'s, 
   }
   assert.match(said.join('\n'), /its source names no store and no type/);
 });
+
+test('a Context may name a type and no template: it is the type\'s own page; one with neither, or a type the app lacks, is a fault', async () => {
+  const { checkApp } = await import('../../dist/data.js');
+  const { typePage } = await import('../../dist/core/ui/type-page.js');
+  const { schemaCheck } = await import('../../scripts/lib/schema-check.mjs');
+  const app = (contexts) => ({ v: 1, default: 'devices', types: { device: 'types/device.json' }, contexts });
+  const sound = app({ devices: { label: 'Devices', type: 'device' } });
+  assert.deepEqual(schemaCheck('app.v1.json')(sound), []);
+  const said = [];
+  const stop = onReport((r) => said.push(r.message));
+  try {
+    assert.equal(checkApp(sound), true);
+    assert.equal(checkApp(app({ devices: { label: 'Devices' } })), false);
+    assert.equal(checkApp(app({ devices: { label: 'Devices', type: 'record' } })), false);
+  } finally {
+    stop();
+  }
+  assert.match(said.join('\n'), /the context "devices" has no template, and no type whose page it is/);
+  assert.match(said.join('\n'), /the context "devices" names the type "record", which app\.json `types` does not list/);
+  const { markup, definition } = typePage(DEVICE, 'devices');
+  assert.match(markup, /<sherpa-quick-filter-toolbar data-scope="data">[\s\S]*<sherpa-data-grid id="grid" data-scope="data"[\s\S]*<sherpa-pagination slot="footer">/);
+  assert.deepEqual(definition.source, { type: 'device', pageSize: 50, scopes: { data: { label: 'Device', offers: 'all', holds: ['health'] } } });
+  assert.deepEqual(definition.ui.grid.columns.map((c) => c.field), ['name', 'risk', 'health']);
+  assert.deepEqual(schemaCheck('page.v1.json')(definition), []);
+});

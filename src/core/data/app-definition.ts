@@ -45,8 +45,11 @@ export interface ContextDefinition {
   /** Its row's name, which the header shows too. */
   label: string;
   icon?: string;
-  /** Its markup. */
-  template: string;
+  /** Its markup. None, with a `type`: the type's own page (plan 960 U3). */
+  template?: string;
+  /** A type's id (app.json `types`): with no template, the Context is the type's own page — its filter toolbar, a grid of
+   *  its fields and a pager. Plan 960 U3 */
+  type?: string;
   /** Its page definition: the source its components ask. Absent, it has no data. */
   definition?: string;
   /** Its Views, as JSON. */
@@ -129,7 +132,8 @@ export function checkApp(app: AppDefinition): boolean {
     if (!names.includes(app.default)) problems.push(`its default, "${app.default}", is not one of its contexts`);
     for (const [name, context] of Object.entries(app.contexts)) {
       if (!context.label) problems.push(`the context "${name}" has no label`);
-      if (!context.template) problems.push(`the context "${name}" has no template`);
+      if (!context.template && !context.type) problems.push(`the context "${name}" has no template, and no type whose page it is`);
+      if (context.type && !app.types?.[context.type]) problems.push(`the context "${name}" names the type "${context.type}", which app.json \`types\` does not list`);
       if (context.chrome?.filters === 'views' && context.definition) problems.push(`the context "${name}" has a definition, so its filter row is its page's: "views" is for a Context with none`);
     }
     for (const section of app.sections ?? []) {

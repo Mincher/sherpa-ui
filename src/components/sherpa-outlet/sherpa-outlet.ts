@@ -12,7 +12,7 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { bindSettings } from '../../core/ui/bind-settings.js';
-import { checkApp, type AppDefinition, type ContextInit, type ContextModule, type OpenPage } from '../../core/data/app-definition.js';
+import { checkApp, type AppDefinition, type ContextDefinition, type ContextInit, type ContextModule, type OpenPage } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
 import type { Entity } from '../../core/data/entity.js';
@@ -562,11 +562,8 @@ export class SherpaOutlet extends SherpaElement {
     const provider = this.#provider;
     this.#page = null;
     if (was) provider?.close();
-    if (!id || !options || !context?.definition || !provider) return;
-    const [read, template, files] = await Promise.all([
-      this.#file(context.definition, 'json') as Promise<PageDefinition | null>, this.#file(context.template, 'text'),
-      import('../../core/ui/page-components.js'),
-    ]);
+    if (!id || !options || !(context?.definition || context?.type) || !provider) return;
+    const [[template, read], files] = await Promise.all([this.#contextFiles(id, context), import('../../core/ui/page-components.js')]);
     if (token !== this.#pageToken || !read) return;
     const definition = options.definition ? options.definition(id, structuredClone(read)) : read;
     const views = this.#views[id] ?? {};
@@ -629,6 +626,25 @@ export class SherpaOutlet extends SherpaElement {
     if (id) await this.openGraph(id);
   }
 
+  /** A Context's markup and page definition: its files; or, one that names a `type` and no template, the type's own
+   *  page (plan 960 U3, D2 A). */
+  async #contextFiles(name: string, context: ContextDefinition): Promise<[unknown, PageDefinition | null]> {
+    if (!context.template && context.type) {
+      const [{ entityTypes }, { typePage }] = await Promise.all([import('../../core/data/entity-types.js'), import('../../core/ui/type-page.js')]);
+      const type = entityTypes()[context.type];
+      if (!type) {
+        report({ code: 'context-file-unread', message: `sherpa-outlet: the Context "${name}" names the type "${context.type}", which app.json \`types\` does not give, so it has no page.`, at: { context: name } });
+        return [null, null];
+      }
+      const page = typePage({ v: 1, ...type }, name);
+      return [page.markup, page.definition];
+    }
+    return Promise.all([
+      context.template ? this.#file(context.template, 'text') : null,
+      context.definition ? this.#file(context.definition, 'json') as Promise<PageDefinition | null> : null,
+    ]);
+  }
+
   /** The stores a page may name: each app.json type's, then the app's own, which wins by name. */
   #stores(options: OutletOptions): Record<string, Store> {
     return { ...this.#typeStores, ...options.stores() };
@@ -648,10 +664,7 @@ export class SherpaOutlet extends SherpaElement {
     this.emit('context-change', { context: name, view });
     this.#nav?.changed();
     await Promise.all([this.#viewsReady, this.#nodesReady]);
-    const [markup, read] = await Promise.all([
-      this.#file(context.template, 'text'),
-      context.definition ? this.#file(context.definition, 'json') as Promise<PageDefinition | null> : null,
-    ]);
+    const [markup, read] = await this.#contextFiles(name, context);
     const definition = read && options.definition ? options.definition(name, structuredClone(read)) : read;
     if (token !== this.#token) return;
     this.#syncHeader(name);

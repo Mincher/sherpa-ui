@@ -22,6 +22,8 @@ import { wrapStore } from './wrap-store.js';
 
 /** The fields every entity has, from its envelope: a row says them, and a write of one changes the envelope. */
 const ENVELOPE = ['label', 'description', 'tags'] as const;
+/** The envelope fields' words, as a page over the store reads them. */
+const ENVELOPE_WORDS = { label: { label: 'Name' }, description: { label: 'Description' }, tags: { label: 'Tags' } } as const;
 /** How long the shelf's changes wait to be taken as one: a seed of twelve saves is one reload (TODO 948). */
 const SETTLE_MS = 30;
 
@@ -60,8 +62,8 @@ export function entityStore(shelf: EntityShelf, type: TypeDefinition, { row, sig
     throw new ValidationError([{ message, ...(field ? { path: [field] } : {}) }]);
   };
   const store = wrapStore(rows, {
-    // Each field's words, as its type says them; a row is not dropped for a rule, as a store's schema would.
-    domains: schema.domains,
+    // Each field's words, as its type says them, the envelope's too; a row is not dropped for a rule, as a schema would.
+    domains: { ...ENVELOPE_WORDS, ...schema.domains },
     async insert() {
       return refuse(`A ${type.label} is made in its editor, not as a row.`);
     },
