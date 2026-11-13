@@ -20,6 +20,8 @@
     openGraph(id)       open an entity in it (none: its type's first); the URL follows
                         on a `query` graph View the graphs are the app's pages, each
                         opened for its Query alone; a toolbar's node-editor-open goes there
+    act(id, { keys, input })  run an act over the outlet's stores and shelf, as a press does;
+                        its answer { done, undo } or { refused }, said by the caller; fires act-run
 
   Slots:
     (default)   the Context's markup, put there by the outlet
@@ -37,7 +39,7 @@
     settings-close — detail: { }
     graph-change — the graph View's entity moved. detail: { graph, page? }, page on a `query` graph
     graph-new — New graph… was picked, a request: prevented, the app makes it. detail: { type }
-    act-run — a pressed act ran, or was refused, or was undone: a page draws its change. detail: { id, keys, done?, refused?, undone? }
+    act-run — an act ran (pressed, or through act()), or was refused, or was undone: a page draws its change. detail: { id, keys, done?, refused?, undone? }
 -->
 <template id="default">
   <!-- UNABLE TO REACH DATA, floating over the top of the content: no height, so
@@ -77,5 +79,6 @@
     <!-- A pressed act's toast: its Undo, and what it says once undone. -->
     <span data-word="undo">Undo</span>
     <span data-word="undone">Undone.</span>
+    <span data-word="not-started">The app has not started, so it cannot do that yet.</span>
   </template>
 </template>

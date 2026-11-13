@@ -15,6 +15,7 @@ import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextDefinition, type ContextInit, type ContextModule, type OpenPage } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
+import type { ActAnswer, ActCall } from '../../core/data/acts.js';
 import type { Entity } from '../../core/data/entity.js';
 import type { EntityShelf } from '../../core/data/entity-shelf.js';
 import type { SeedMarks } from '../../core/data/entity-store.js';
@@ -159,6 +160,25 @@ export class SherpaOutlet extends SherpaElement {
   /** Draw the nav again — after a View is saved or deleted, say. */
   async refreshNav(): Promise<void> {
     await this.#nav?.refresh();
+  }
+
+  /** Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does;
+   *  its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3 */
+  async act(id: string, call: ActCall = {}): Promise<ActAnswer> {
+    const options = this.#options;
+    if (!options) return { refused: this.word('not-started') };
+    const { runAct } = await import('../../core/data/acts.js');
+    const shelf = this.#nodes.entities;
+    const answer = await runAct(id, call, { stores: this.#stores(options), ...(shelf ? { entities: shelf } : {}), signal: this.signal });
+    const keys = call.keys ?? [];
+    // ONE event per answer, and one per undo, so a page draws a change no store tells it (a Coworker's new Run).
+    if ('refused' in answer) {
+      this.emit('act-run', { id, keys, refused: answer.refused });
+      return answer;
+    }
+    this.emit('act-run', { id, keys, done: answer.done });
+    const { undo } = answer;
+    return undo ? { ...answer, undo: async () => { await undo(); this.emit('act-run', { id, keys, undone: true }); } } : answer;
   }
 
   /** Read app.json, load each Context's Views, then open the route's Context.
@@ -612,35 +632,24 @@ export class SherpaOutlet extends SherpaElement {
     void this.#runPressed(id, records, true);
   };
 
-  /** Run an act a press named, over the stores a page may name, and say what it did in a toast, with Undo where it
-   *  changed data; a refusal in its words. A press is the reader's own act, so it runs at once (plan 964 N1b, pick A). */
+  /** Run an act a press named, through `act`, and say what it did in a toast, with Undo where it changed data; a
+   *  refusal in its words. A press is the reader's own act, so it runs at once (plan 964 N1b, pick A). */
   async #runPressed(id: string, given: readonly unknown[], rows = false): Promise<void> {
     const options = this.#options;
     if (!options) return;
-    const { actsOf, runAct } = await import('../../core/data/acts.js');
+    const { actsOf } = await import('../../core/data/acts.js');
     const act = actsOf().find((a) => a.id === id);
     if (!act) return;
-    const stores = this.#stores(options);
-    const key = act.type ? stores[act.type]?.key ?? 'id' : 'id';
-    const keys = rows ? given.map((r) => (r as Record<string, unknown>)[key]) : given;
-    const shelf = this.#nodes.entities;
-    const answer = await runAct(id, { keys }, { stores, ...(shelf ? { entities: shelf } : {}), signal: this.signal });
+    const key = act.type ? this.#stores(options)[act.type]?.key ?? 'id' : 'id';
+    const answer = await this.act(id, { keys: rows ? given.map((r) => (r as Record<string, unknown>)[key]) : given });
     const { SherpaToast } = await import('../sherpa-toast/sherpa-toast.js');
-    // ONE event per answer, and one per Undo, so a page draws a change no store tells it (a Coworker's new Run).
     if ('refused' in answer) {
       SherpaToast.critical(answer.refused);
-      this.emit('act-run', { id, keys, refused: answer.refused });
       return;
     }
     const { undo } = answer;
     const toast = SherpaToast.success(answer.done, undo ? { action: this.word('undo') } : {});
-    this.emit('act-run', { id, keys, done: answer.done });
-    if (undo) {
-      toast.addEventListener('toast-action', () => void undo().then(() => {
-        SherpaToast.info(this.word('undone'));
-        this.emit('act-run', { id, keys, undone: true });
-      }), { once: true });
-    }
+    if (undo) toast.addEventListener('toast-action', () => void undo().then(() => SherpaToast.info(this.word('undone'))), { once: true });
   }
 
   /** Open in Node Editor, from a page's toolbar: the app's `query` graph View, on this page. A push, so Back

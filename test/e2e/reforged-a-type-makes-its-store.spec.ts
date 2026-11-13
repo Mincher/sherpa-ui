@@ -117,3 +117,39 @@ test('a press that names an act runs it through the one door, says it in a toast
   await expect.poll(rows).toBe(3);
   await expect.poll(heard).toEqual([{ id: 'device.remove', keys: ['d2'], done: 'Removed Device "Bravo".' }, { id: 'device.remove', keys: ['d2'], undone: true }]);
 });
+
+test('outlet.act runs an act with its input through the same door as a press, fires act-run, and toasts nothing', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=devices');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const r = await page.evaluate(async () => {
+    type Answer = { done?: string; refused?: string; undo?: () => Promise<void> };
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet') as unknown as HTMLElement & {
+      start(o: unknown): Promise<void>; act(id: string, call?: unknown): Promise<Answer>;
+    };
+    const early = (await outlet.act('device.change', { keys: ['d1'], input: { status: 'offline' } })).refused;
+    const heard: unknown[] = [];
+    outlet.addEventListener('act-run', (e) => heard.push((e as CustomEvent).detail));
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+    const refused = (await outlet.act('device.change', { keys: ['d1'], input: { status: 'gone' } })).refused;
+    const changed = await outlet.act('device.change', { keys: ['d1'], input: { status: 'offline' } });
+    const status = async () => ((await outlet.act('device.read', { keys: ['d1'] })) as { result?: { status?: string } }).result?.status;
+    const after = await status();
+    await changed.undo?.();
+    const undone = await status();
+    return { early, refused, done: changed.done, after, undone, heard, toasts: document.querySelectorAll('sherpa-toast').length };
+  });
+  expect(r.early).toBe('The app has not started, so it cannot do that yet.');
+  expect(r.refused).toMatch(/Status: Must be one of/);
+  expect(r.done).toBe('Changed Device "Alpha".');
+  expect([r.after, r.undone]).toEqual(['offline', 'online']);
+  expect(r.toasts).toBe(0);
+  expect(r.heard).toEqual([
+    { id: 'device.change', keys: ['d1'], refused: r.refused },
+    { id: 'device.change', keys: ['d1'], done: 'Changed Device "Alpha".' },
+    { id: 'device.read', keys: ['d1'], done: 'Read Device "Alpha".' },
+    { id: 'device.change', keys: ['d1'], undone: true },
+    { id: 'device.read', keys: ['d1'], done: 'Read Device "Alpha".' },
+  ]);
+});

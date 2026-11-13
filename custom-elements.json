@@ -9292,6 +9292,26 @@
             },
             {
               "kind": "method",
+              "name": "act",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "call",
+                  "type": {
+                    "text": "ActCall"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does; its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3"
+            },
+            {
+              "kind": "method",
               "name": "start",
               "parameters": [
                 {
@@ -9351,7 +9371,7 @@
             },
             {
               "name": "act-run",
-              "description": "A pressed act ran, or was refused, or was undone: a page draws its change.",
+              "description": "An act ran (pressed, or through act()), or was refused, or was undone: a page draws its change.",
               "type": {
                 "text": "CustomEvent<{ done: string; id: string; keys: readonly unknown[]; refused: string; undone: true }>"
               }
