@@ -162,7 +162,7 @@
   "src/core/data/detail-rows.ts": 26,
   "src/core/data/entity-check.ts": 130,
   "src/core/data/entity-shelf.ts": 198,
-  "src/core/data/entity-store.ts": 140,
+  "src/core/data/entity-store.ts": 156,
   "src/core/data/entity-types.ts": 199,
   "src/core/data/entity-versions.ts": 94,
   "src/core/data/entity.ts": 222,

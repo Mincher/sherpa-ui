@@ -10,7 +10,8 @@
  * - SeedMarks — Where the seed's marks are kept between runs: what was put, per entity.
  * - seedEntities — A type's seed entities on the shelf as the reader's own, once per seed version, a reader's change left.
  */
-import { entityGraph, type Entity } from './entity.js';
+import { definitionPart, entityGraph, type Entity } from './entity.js';
+import { draftChanged, newestOf, nextVersion, versionsOf } from './entity-versions.js';
 import type { EntityShelf } from './entity-shelf.js';
 import { seedVersionOf } from './seed-version.js';
 import { statusFields } from './status-field.js';
@@ -22,8 +23,13 @@ import { wrapStore } from './wrap-store.js';
 
 /** The fields every entity has, from its envelope: a row says them, and a write of one changes the envelope. */
 const ENVELOPE = ['label', 'description', 'tags'] as const;
-/** The envelope fields' words, as a page over the store reads them. */
-const ENVELOPE_WORDS = { label: { label: 'Name' }, description: { label: 'Description' }, tags: { label: 'Tags' } } as const;
+/** What a row says of its published versions (plan 972): worked out, so never written. */
+const VERSION = ['version', 'changed'] as const;
+/** The envelope's and the versions' words, as a page over the store reads them. */
+const ENVELOPE_WORDS = {
+  label: { label: 'Name' }, description: { label: 'Description' }, tags: { label: 'Tags' },
+  version: { label: 'Version', type: 'number' }, changed: { label: 'Draft changed' },
+} as const;
 /** How long the shelf's changes wait to be taken as one: a seed of twelve saves is one reload (TODO 948). */
 const SETTLE_MS = 30;
 
@@ -32,17 +38,21 @@ const SETTLE_MS = 30;
 export type EntityRowOf = (entity: Entity, row: Row) => Row;
 
 /**
- * A store over the shelf's entities of a type: each a row — `id`, `label`, `description`, `tags`, each settings field
- * the type names, each `from` field read from the graph, and what `row` adds — taken at once, then kept in step with
- * the shelf, its changes taken as one. A write of a settings field or the envelope saves the entity through the shelf,
- * so it is checked; a field its graph holds, or a status, is never written; a remove is the shelf's, refused while
- * another entity uses it; a row is never inserted: an entity is made in its editor.
+ * A store over the shelf's entities of a type: each a row — `id`, `label`, `description`, `tags`, its newest published
+ * `version` and whether its draft `changed` since, each settings field the type names, each `from` field read from the
+ * graph, and what `row` adds — taken at once, then kept in step with the shelf, its changes taken as one. A write of a
+ * settings field or the envelope saves the entity's draft through the shelf, so it is checked; a field its graph holds,
+ * a status or a version is never written; a remove is the shelf's, refused while another entity uses it; a row is never
+ * inserted: an entity is made in its editor.
  */
 export function entityStore(shelf: EntityShelf, type: TypeDefinition, { row, signal }: { row?: EntityRowOf; signal?: AbortSignal } = {}): Store {
   const fields = Object.entries(type.fields ?? {}).filter((e): e is [string, StoredField] => e[1].type !== 'status');
   const schema = typeSchema(type);
   const rowOf = (entity: Entity): Row => {
-    const own: Row = { id: entity.id, label: entity.label, description: entity.description ?? '', tags: [...(entity.tags ?? [])] };
+    const own: Row = {
+      id: entity.id, label: entity.label, description: entity.description ?? '', tags: [...(entity.tags ?? [])],
+      version: newestOf(entity)?.number, changed: draftChanged(entity),
+    };
     for (const [name, field] of fields) {
       if (name in own) continue;
       own[name] = field.from ? readFrom(entityGraph(entity), field.from) : entity.settings?.[name];
@@ -76,6 +86,7 @@ export function entityStore(shelf: EntityShelf, type: TypeDefinition, { row, sig
         if (name === 'id') continue;
         const field = type.fields?.[name];
         if ((ENVELOPE as readonly string[]).includes(name)) Object.assign(envelope, { [name]: value });
+        else if ((VERSION as readonly string[]).includes(name)) refuse(`${name} is worked out from its published versions, so it is never written: Publish makes one.`, name);
         else if (!field || field.type === 'status' || field.from) refuse(`${name} is ${!field ? 'no field a ' + type.label + ' keeps' : field.type === 'status' ? 'worked out from other fields' : 'read from its graph'}, so it is never written.`, name);
         else {
           const wrong = schema.rules[name] ? await validateField(schema.rules[name]!, value) : undefined;
@@ -115,7 +126,8 @@ const markOf = (entity: Entity): number => {
 /**
  * A type's seed entities on the shelf as the reader's own (editable, as a Coworker's Schedule saves): one is put the
  * first time, unless one of its id is there, and put again when its seed moves (its version, a hash of it) over a copy
- * the reader has not changed since, or has removed; a reader's change is left as it is. `marks` keeps what was put.
+ * the reader has not changed since, or has removed, published as the copy's next version; a reader's change is left as
+ * it is. `marks` keeps what was put.
  * Each save is the shelf's, so it is checked. The ids it put.
  */
 export async function seedEntities(shelf: EntityShelf, seeds: readonly Entity[], marks: SeedMarks): Promise<string[]> {
@@ -130,7 +142,11 @@ export async function seedEntities(shelf: EntityShelf, seeds: readonly Entity[],
     const untouched = !!kept && kept.origin === 'mine' && !!mark && markOf(kept) === mark.put;
     if (!(mark ? mark.seed !== version && (!kept || untouched) : !kept)) continue;
     const { origin: _origin, ...own } = structuredClone(seed) as Entity;
-    if (!(await shelf.save(own))) continue;
+    // A seed is the app's, published: one with no versions publishes its change over the copy, as its first put does.
+    // One with versions must extend the copy's, or the shelf refuses it in words and the copy stays (plan 972).
+    const published = kept && !own.versions && draftChanged({ ...own, versions: versionsOf(kept) })
+      ? { ...own, versions: [nextVersion(kept, definitionPart(own)), ...versionsOf(kept)] } : own;
+    if (!(await shelf.save(published))) continue;
     was[seed.id] = { seed: version, put: markOf(shelf.get(seed.id)!) };
     put.push(seed.id);
   }

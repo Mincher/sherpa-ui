@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { entityStore, makeShelf, onReport, registerEntityType, seedEntities } from '../../dist/data.js';
+import { entityStore, makeShelf, onReport, publish, registerEntityType, seedEntities, versionsOf } from '../../dist/data.js';
 const { START } = await import('../../dist/core/data/node-start.js');
 
 const TEAMMATE = {
@@ -46,7 +46,7 @@ test('each entity of the type is a row at once; a save on the shelf is a row soo
     const shelf = shelfOf();
     assert.equal(await shelf.save(mate('ana', 'Ana')), true);
     const store = entityStore(shelf, TEAMMATE, { row: (entity, row) => ({ ...row, runs: entity.id.length }) });
-    assert.deepEqual((await store.load({})).rows, [{ id: 'ana', label: 'Ana', description: '', tags: [], status: 'active', every: 'week', minutes: 30, runs: 3 }]);
+    assert.deepEqual((await store.load({})).rows, [{ id: 'ana', label: 'Ana', description: '', tags: [], version: 1, changed: false, status: 'active', every: 'week', minutes: 30, runs: 3 }]);
     assert.equal(store.domains.minutes.label, 'Minutes saved', 'a page over it knows each field\'s words');
     let changes = 0;
     store.addEventListener('change', () => changes++);
@@ -79,6 +79,59 @@ test('a write goes back through the shelf; a field its graph holds, a status or 
     await store.remove('ana');
     assert.equal(shelf.get('ana'), undefined);
     assert.equal((await store.load({})).total, 0);
+  } finally {
+    stop();
+    off();
+  }
+});
+
+test('a row says its newest published version and whether its draft changed since; neither is written', async () => {
+  const off = registerEntityType(TEAMMATE);
+  const stop = quiet();
+  try {
+    const shelf = shelfOf();
+    await shelf.save(mate('ana', 'Ana'));
+    const store = entityStore(shelf, TEAMMATE);
+    const ana = async () => { const { version, changed } = (await store.load({})).rows[0]; return { version, changed }; };
+    assert.deepEqual(await ana(), { version: 1, changed: false }, 'a first save publishes version 1');
+    assert.deepEqual([store.domains.version, store.domains.changed], [{ label: 'Version', type: 'number' }, { label: 'Draft changed' }]);
+    await store.update('ana', { status: 'paused' });
+    assert.deepEqual(await ana(), { version: 1, changed: true }, 'a write is the draft\'s');
+    assert.equal((await publish(shelf, 'ana')).number, 2);
+    await settle();
+    assert.deepEqual(await ana(), { version: 2, changed: false });
+    await assert.rejects(store.update('ana', { version: 9 }), /version is worked out from its published versions, so it is never written: Publish makes one/);
+    await assert.rejects(store.update('ana', { changed: false }), /changed is worked out/);
+  } finally {
+    stop();
+    off();
+  }
+});
+
+test('a seed that moves is published over the copy: as its next version, or its own versions where they extend the copy\'s', async () => {
+  const off = registerEntityType(TEAMMATE);
+  const said = [];
+  const stop = onReport((r) => said.push(r.message));
+  try {
+    const shelf = shelfOf();
+    let kept;
+    const marks = { get: () => kept, set: (next) => { kept = next; } };
+    await seedEntities(shelf, [mate('ana', 'Ana'), mate('bo', 'Bo')], marks);
+    const v1 = versionsOf(shelf.get('bo'));
+    assert.deepEqual(v1.map((v) => v.number), [1]);
+    // No versions in the seed: its move is published as the copy's version 2, so its uses take it.
+    await seedEntities(shelf, [mate('ana', 'Ana', undefined, 'day'), mate('bo', 'Bo')], marks);
+    assert.deepEqual(versionsOf(shelf.get('ana')).map((v) => v.number), [2, 1]);
+    assert.equal(versionsOf(shelf.get('ana'))[0].definition.graph.nodes[0].values.every, 'day');
+    // Its own versions, extending the copy's: kept as the file says them.
+    const v2 = { number: 2, at: '2026-11-13T00:00:00.000Z', hash: 'h2', definition: { label: 'Bo' } };
+    await seedEntities(shelf, [mate('ana', 'Ana', undefined, 'day'), { ...mate('bo', 'Bo', undefined, 'day'), versions: [v2, ...v1] }], marks);
+    assert.deepEqual(versionsOf(shelf.get('bo')).map((v) => v.hash), ['h2', v1[0].hash]);
+    // Versions that drop the copy's: refused in words, and the copy stays.
+    const put = await seedEntities(shelf, [mate('ana', 'Ana', undefined, 'day'), { ...mate('bo', 'Bo', undefined, 'month'), versions: [{ ...v2, number: 1 }] }], marks);
+    assert.deepEqual(put, []);
+    assert.equal(shelf.get('bo').graph.nodes[0].values.every, 'day');
+    assert.match(said.join('\n'), /"bo"'s versions must keep the ones it has \(2, 1\)/);
   } finally {
     stop();
     off();
