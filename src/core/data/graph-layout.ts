@@ -4,7 +4,7 @@
  * TODO 947
  *
  * Map:
- * - LayoutParts — How a graph is drawn: its ties, frames, stages and lanes, and each node's place before the lanes.
+ * - LayoutParts — How a graph is drawn: its ties, frames, stages and lanes, and whether it is laid out yet.
  * - layoutParts — A graph's layout, each part only where it holds something.
  * - isGroupEnd — Whether a node is a body's Group Input or Output: placed from its body, never kept or moved.
  */
@@ -19,6 +19,8 @@ export interface LayoutParts {
   stages?: NonNullable<WorkflowDefinition['stages']>;
   lanes?: NonNullable<WorkflowDefinition['lanes']>;
   beforeLanes?: NonNullable<WorkflowDefinition['beforeLanes']>;
+  /** Not laid out yet: it travels with the layout, wherever a graph goes, until the editor unfurls it (TODO 958). */
+  unfurl?: true;
 }
 
 /** A graph's layout, each part only where it holds something: no empty list is kept, nor places with no lanes to put back. */
@@ -26,6 +28,7 @@ export function layoutParts(g: { readonly [K in keyof LayoutParts]?: LayoutParts
   return {
     ...(g.ties?.length ? { ties: g.ties } : {}), ...(g.frames?.length ? { frames: g.frames } : {}), ...(g.stages?.length ? { stages: g.stages } : {}),
     ...(g.lanes?.length ? { lanes: g.lanes, ...(g.beforeLanes ? { beforeLanes: g.beforeLanes } : {}) } : {}),
+    ...(g.unfurl ? { unfurl: true as const } : {}),
   };
 }
 

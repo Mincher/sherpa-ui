@@ -97,6 +97,8 @@ export interface NodeDefinition extends NodeSnapshot {
   beforeLanes?: WorkflowDefinition['beforeLanes'];
   /** An entity's own settings, where it is not a `node` (plan 746 E5): no part of its version; a copy keeps them. */
   settings?: Readonly<Record<string, unknown>>;
+  /** Not laid out yet, as its entity's graph says: no part of its version (TODO 958). */
+  unfurl?: true;
 }
 
 /** Every Custom Node of an app, by id (D13). */
