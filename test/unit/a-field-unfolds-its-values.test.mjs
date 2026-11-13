@@ -69,3 +69,17 @@ test('one door for a node\'s outputs: its own rows, else a value row where a row
   assert.equal(outputRow(nodeKinds().condition, 'v-anything'), undefined, 'a kind with no unfolding row has no value rows');
   assert.deepEqual(unfoldedRows(['At risk', 'at-risk', '']).map((r) => r.name), ['v-at-risk', 'v-at-risk-2', 'v-value']);
 });
+
+test('a Value B held that is not one of its field\'s values is shown, and says so: never kept quietly', () => {
+  // The Field was on another field once; the Condition kept its old value.
+  const stale = { ...flow('status', [{ from: 'f/field', to: 'c' }]) };
+  stale.nodes = stale.nodes.map((n) => (n.id === 'c' ? { ...n, values: { type: 'eq', b: 'Contoso' } } : n));
+  const b = rowsOf(workflowGraph(stale, { fieldsOf }), 'c').find((r) => r.name === 'b');
+  assert.equal(b.value, 'Contoso');
+  assert.ok(b.choices.some((c) => c.value === 'Contoso'), 'still shown, so the reader sees what it holds');
+  assert.match(b.fault ?? '', /"Contoso" is not a value of/);
+  assert.ok(workflowFaults(stale, nodeKinds(), { fieldsOf }).some((f) => /"Contoso" is not a value of/.test(f)));
+  // One of its values: no fault.
+  stale.nodes = stale.nodes.map((n) => (n.id === 'c' ? { ...n, values: { type: 'eq', b: 'trial' } } : n));
+  assert.equal(rowsOf(workflowGraph(stale, { fieldsOf }), 'c').find((r) => r.name === 'b').fault, undefined);
+});

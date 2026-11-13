@@ -1022,7 +1022,7 @@ export function drivenSwitch(given: readonly boolean[]): Pick<GraphRow, 'value' 
  *  None, it holds. A value of the wrong kind (text in a number row) is `workflowFaults`' own. TRAP T-a-row-says-its-own-fault */
 export function rowFault(row: Pick<GraphRow, 'control' | 'closed' | 'choices' | 'min' | 'step'>, value: unknown, of = 'its list'): string | undefined {
   if (value == null || value === '') return undefined;
-  if (row.control === 'tags' && row.closed) {
+  if ((row.control === 'tags' || row.control === 'values') && row.closed) {
     const strangers = [...new Set([value].flat().map(String))].filter((v) => !row.choices?.some((c) => c.value === v));
     const said = new Intl.ListFormat('en', { type: 'conjunction' }).format(strangers.map((v) => `"${v}"`));
     return strangers.length ? `${said} ${strangers.length > 1 ? 'are not values' : 'is not a value'} of ${of}` : undefined;

@@ -276,9 +276,12 @@ function opWarning(op: unknown, read: ReadField | undefined): string | undefined
   return `${OP_LABELS[op as FilterOp]} takes a ${said} field; it was given the ${read.of} column`;
 }
 
-/** A row as its node's field shapes it: a tags row is CLOSED to the field's values, where they are known. */
+/** A row as its node's field shapes it: a tags row, or a pick of its values, is CLOSED to the field's values where they are
+ *  known; a value held that is not one of them is its fault (Will: a value it cannot use is said, never kept quietly). */
 function shapedRow<R extends RowKind>(row: R, known: readonly string[] | undefined): R & Pick<GraphRow, 'closed' | 'choices'> {
-  const choices = row.control === 'tags' ? rowChoices(row, known ? { values: known } : {}) : undefined;
+  const closes = row.control === 'tags' || (row.control === 'values' && !!known?.length);
+  // Its choices are the field's alone: a value it holds is no choice of its own here.
+  const choices = closes ? rowChoices({ ...(row as RowKind), value: undefined }, known ? { values: known } : {}) : undefined;
   return choices ? { ...row, closed: true, choices } : row;
 }
 
@@ -758,7 +761,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         const value = shown.control === 'number' ? typedValue('number', shown.value) : shown.value;
         const wants = kind.model === 'typedValue' && row.name === 'value' ? typedWants(at?.id, value) : undefined;
         const text = !connected && shown.control === 'number' && typeof value === 'string' && value.trim() !== '';
-        const fault = wants ? `"${String(value)}" is not ${wants}` : text ? `"${String(value)}" is not a number` : rowFault(shown, value, of);
+        const fault = wants ? `"${String(value)}" is not ${wants}` : text ? `"${String(value)}" is not a number` : rowFault(shapedRow(shown, known), value, of);
         return fault ? { ...shown, fault } : shown;
       };
       const address = `${node.id}/${row.name}`;

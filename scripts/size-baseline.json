@@ -246,7 +246,7 @@
   "src/core/data/validate.ts": 350,
   "src/core/data/walk.ts": 395,
   "src/core/data/where.ts": 195,
-  "src/core/data/workflow.ts": 1255,
+  "src/core/data/workflow.ts": 1258,
   "src/core/data/wrap-store.ts": 72,
   "src/core/server/node-host.ts": 115,
   "src/core/server/worker-script.ts": 82,
