@@ -93,10 +93,10 @@ import {
 } from '../data/node-library.js';
 import { aiWords } from '../data/ai-catalog.js';
 import { tidyTags } from '../data/tags.js';
-import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
+import { groupNodes, headerInput, heldInputs, socketEdit, ungroupUse } from '../data/node-group.js';
 import { entityKind, type EntityRef, inNewWords } from '../data/entity.js';
 import { offeredKinds, savedCategories } from '../data/entity-types.js';
-import { dataPane, flowPane, instancePane, updatePane } from './node-group-panel.js';
+import { dataPane, flowPane, instancePane, socketsPane, updatePane, type SocketAsk } from './node-group-panel.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
 import { valuesAt, valuesIn } from '../data/node-messages.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
@@ -3234,7 +3234,17 @@ export function bindWorkflow(
         ...(confirm ? { onGraph: () => void updateGraph(at.kind), onAll: () => void updateEverywhere(at.kind) } : {}),
       })] : []),
       ...(at ? [instancePane({ onOpen: () => open(at.id), onUngroup: () => ungroup(at.id) })] : []),
+      ...(at && !readOnly() && !lib.nodes[at.kind]?.preset ? [socketsPane(lib.nodes[at.kind]!, editSocket(at.id), openSockets(at.kind))] : []),
     ];
+  };
+  // The socket sections a reader opened, per Custom Node: a pane drawn again keeps them open.
+  const socketsOpen = new Map<string, Set<string>>();
+  const openSockets = (kind: string): Set<string> => socketsOpen.get(kind) ?? socketsOpen.set(kind, new Set()).get(kind)!;
+  // A socket renamed, retyped or removed: one step, as a new input on the header is (plan 942 D4 A).
+  const editSocket = (id: string): SocketAsk => (side, name, change) => {
+    const made = socketEdit(shown(), id, side, name, change, lib, K());
+    if ('fault' in made) report({ code: 'node-socket', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
+    else take(made.workflow, made);
   };
   const ungroup = (id: string): void => {
     if (readOnly()) return;

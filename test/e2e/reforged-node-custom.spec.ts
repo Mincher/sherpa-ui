@@ -642,3 +642,46 @@ test('one picked node shows no tabs; two show a tab each, the active ringed; a t
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
   expect(JSON.parse((await json('Incoming JSON'))!)[0].from).toEqual(['Org permissions']);
 });
+
+test('a Custom Node\'s sockets in its inspector: renamed, retyped and removed, each one step; this use follows, the other says Update available; a preset shows none (942 D4)', async ({ page }) => {
+  await bind(page);
+  await header(page, 'Org permissions').first().click();
+  await settle(page);
+  await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { minimise(m: boolean): void }).minimise(false));
+  const section = (key: string) => page.locator(`#inspector sherpa-accordion[data-socket="${key}"]`);
+  expect(await page.locator('#inspector sherpa-accordion[data-socket]').evaluateAll((els) => els.map((e) => [e.getAttribute('data-socket'), e.getAttribute('data-heading'), e.getAttribute('data-description')]))).toEqual([
+    ['inputs/users', 'Users', 'Input · Object'], ['inputs/role', 'Role', 'Input · Value'], ['outputs/allowed', 'Allowed', 'Output · Object'],
+  ]);
+  const rowsOf = (n: number) => page.locator('#cv > sherpa-node[data-heading="Org permissions"]').nth(n).locator('sherpa-node-row:not([data-label="Parameters"])')
+    .evaluateAll((els) => els.map((e) => e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label')));
+  // Rename: the label, on the use's row; the section stays open as the pane is drawn again.
+  await section('inputs/role').locator('summary').click();
+  await section('inputs/role').locator('sherpa-input-text[name="label"] input').fill('Wanted role');
+  await section('inputs/role').locator('sherpa-input-text[name="label"] input').press('Enter');
+  await settle(page);
+  expect((await rowsOf(0)).slice(0, 2)).toEqual(['Users', 'Wanted role']);
+  expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual([null, 'Update available']);
+  expect(await section('inputs/role').getAttribute('data-heading')).toBe('Wanted role');
+  expect(await section('inputs/role').evaluate((el) => el.hasAttribute('open'))).toBe(true);
+  // Retype, by the select: the use's row takes the new type; its connection stays.
+  await section('inputs/users').locator('summary').click();
+  await section('inputs/users').locator('sherpa-input-text[name="type"] select').selectOption('value');
+  await settle(page);
+  expect(await ed(page, "ed.library().nodes['org-permissions'].inputs.map((i) => [i.name, i.type])")).toEqual([['users', 'value'], ['role', 'value']]);
+  expect(await connectionsOf(page)).toContain('start/rows → perm/users');
+  // Remove: the input goes, with its connections inside and on each use of this graph.
+  await section('inputs/users').locator('sherpa-button[data-label="Remove input"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect(await connectionsOf(page)).toEqual(['perm → end']);
+  expect(await connectionsOf(page, "ed.library().nodes['org-permissions'].connections")).not.toContain('#in/users → role');
+  expect(await page.locator('#inspector sherpa-accordion[data-socket]').evaluateAll((els) => els.map((e) => e.getAttribute('data-socket')))).toEqual(['inputs/role', 'outputs/allowed']);
+  // Each was one step: three undos put the definition back as it was.
+  for (let i = 0; i < 3; i++) await press(page, 'undo');
+  await settle(page);
+  expect(await ed(page, "ed.library().nodes['org-permissions'].inputs.map((i) => [i.name, i.label, i.type])")).toEqual([['users', 'Users', 'object'], ['role', 'Role', 'value']]);
+  expect(await connectionsOf(page)).toEqual(['perm → end', 'start/rows → perm/users', 'start/rows → perm2/users']);
+  // A preset's sockets are read only: its inspector offers none.
+  await header(page, 'Owner check').click();
+  await settle(page);
+  expect(await page.locator('#inspector sherpa-accordion[data-socket]').count()).toBe(0);
+});

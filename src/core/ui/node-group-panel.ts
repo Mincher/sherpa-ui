@@ -1,6 +1,6 @@
 /**
  * node-group-panel.ts — the parts of a node's inspector that belong to a Custom Node: what to do
- * with an instance (Open, Ungroup), the update's diff and its split button, and a
+ * with an instance (Open, Ungroup), its sockets (rename, retype, remove), the update's diff and its split button, and a
  * node's incoming and outgoing JSON, and the rows it heard and said in a simulation. Each is composed of Sherpa's own components and
  * only ASKS: the editor acts. Will, TODO 719 · plan 713 §9.2, M10, M11, D9, D11
  *
@@ -10,10 +10,13 @@
  * - updatePane — The diff of an instance's definition, and the split button whose primary is "Update instance".
  * - InstanceActions — What a Custom Node's instance may ask: open it, ungroup it, copy a preset.
  * - instancePane — The buttons for one instance: Open, Ungroup.
+ * - SocketAsk — What a Custom Node's sockets may ask: a new name, a new type, or to go.
+ * - socketsPane — A Custom Node's inputs, then its outputs, each a section: its Name, its Type, and Remove.
  * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
  * - dataPane — What a node heard and said in a simulation: each socket's rows, in the data grid and as JSON.
  */
-import type { DefinitionDiff } from '../data/node-library.js';
+import type { DefinitionDiff, NodeDefinition, NodeSocket } from '../data/node-library.js';
+import type { SocketChange } from '../data/node-group.js';
 import type { NodeFlow } from '../data/node-flow.js';
 import type { SimulatedNode, Slot } from '../data/node-simulate.js';
 import '../../components/sherpa-data-grid/sherpa-data-grid.js';
@@ -107,6 +110,48 @@ export interface InstanceActions {
 export function instancePane(actions: InstanceActions): HTMLElement {
   const pane = make('sherpa-stack', { 'data-gap': 'sm', 'data-direction': 'inline' });
   pane.append(button('Open', actions.onOpen, { 'data-icon-start': 'fullscreen' }), button('Ungroup', actions.onUngroup));
+  return pane;
+}
+
+/** Each socket type a reader picks, in words. */
+const SOCKET_TYPES = [{ value: 'value', label: 'Value' }, { value: 'object', label: 'Object' }, { value: 'boolean', label: 'Boolean' }] as const;
+
+/** What a Custom Node's sockets may ask: a new name, a new type, or to go (plan 942 D4 A). */
+export type SocketAsk = (side: 'inputs' | 'outputs', name: string, change: SocketChange) => void;
+
+/** A Custom Node's inputs, then its outputs, each a section: its Name, its Type, and Remove. Each asks once it changes.
+ *  `open` holds the sections the reader opened, by `<side>/<name>`, so a pane drawn again keeps them open. */
+export function socketsPane(sockets: Pick<NodeDefinition, 'inputs' | 'outputs'>, ask: SocketAsk, open: Set<string> = new Set()): HTMLElement {
+  const pane = make('sherpa-stack', { 'data-gap': 'sm', class: 'sockets-pane' });
+  // The Group Input's and Group Output's own icons say which side a socket is on.
+  for (const [side, icon, word] of [['inputs', 'login', 'input'], ['outputs', 'logout', 'output']] as const) {
+    for (const socket of sockets[side]) {
+      const label = socket.label ?? socket.name;
+      const type = SOCKET_TYPES.find((t) => t.value === socket.type)?.label ?? socket.type;
+      const key = `${side}/${socket.name}`;
+      const section = make('sherpa-accordion', {
+        'data-heading': label, 'data-description': `${word === 'input' ? 'Input' : 'Output'} · ${type}`, 'data-icon': icon, 'data-socket': key, ...(open.has(key) ? { open: '' } : {}),
+      });
+      section.addEventListener('accordion-open', () => open.add(key));
+      section.addEventListener('accordion-close', () => open.delete(key));
+      // A section asked from is open, though its own event, which comes a task later, has not come yet.
+      const asks = (change: SocketChange): void => { open.add(key); ask(side, socket.name, change); };
+      const fields = make('sherpa-stack', { 'data-gap': 'sm' });
+      const name = make('sherpa-input-text', { name: 'label', 'data-label': 'Name', value: label }) as HTMLElement & { value: string };
+      name.addEventListener('change', () => {
+        const next = String(name.value ?? '').trim();
+        if (next && next !== label) asks({ label: next });
+      });
+      const pick = make('sherpa-input-text', { name: 'type', 'data-label': 'Type', 'data-type': 'select', value: socket.type }) as HTMLElement & { value: string };
+      for (const t of SOCKET_TYPES) pick.append(Object.assign(document.createElement('option'), { value: t.value, textContent: t.label, selected: t.value === socket.type }));
+      pick.addEventListener('change', () => {
+        if (pick.value !== socket.type) asks({ type: pick.value as NodeSocket['type'] });
+      });
+      fields.append(name, pick, button(`Remove ${word}`, () => ask(side, socket.name, null), { 'data-icon-start': 'trash', 'data-size': 'sm' }));
+      section.append(fields);
+      pane.append(section);
+    }
+  }
   return pane;
 }
 

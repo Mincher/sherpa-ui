@@ -1,5 +1,5 @@
 /**
- * node-group.ts — "Save as Custom Node" and its inverse "Ungroup", as two pure edits: several
+ * node-group.ts — "Save as Custom Node" and its inverse "Ungroup", as two pure edits, and a use's sockets changed: several
  * nodes of a workflow become one definition and ONE use in their place, each connection over the edge
  * a typed socket (a Group Input or Output row); Ungroup puts the nodes and the connections back. Both
  * check what they make, and refuse in words. A portal's name is local to its graph: a pick that cuts one in two is
@@ -12,6 +12,8 @@
  * - groupNodes — Several nodes as one Custom Node: a definition, and one use in their place.
  * - ungroupUse — A use as its nodes again, in place: the inverse of groupNodes.
  * - headerInput — A connection let go on a use's header: a new input of its definition, joined to the use's new row.
+ * - SocketChange — One change to a socket of a Custom Node: its new name, its new type, or none, so it goes.
+ * - socketEdit — A socket of a use's definition renamed, retyped or removed: one edit, this use following it.
  * - heldInputs — Each connection a use's header holds from before, read once as its own new input; a preset's stays.
  */
 import { NODE_KINDS, nodeKinds, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeConnection, type SocketType } from './node-kinds.js';
@@ -273,6 +275,11 @@ export function ungroupUse(
   return { workflow: { ...flat, nodes: [...rest.slice(0, at), ...nodes, ...rest.slice(at)], connections: all, ...(kept.length ? { ties: kept } : {}), ...(frames.length ? { frames } : {}) } };
 }
 
+/** A workflow whose use takes its definition's change where it followed the definition before; else as it was (D11). */
+function follows(workflow: WorkflowDefinition, use: WorkflowNode, was: NodeDefinition, library: NodeLibrary, kinds: Kinds): WorkflowDefinition {
+  return use.version === versionOf(was) ? updateInstance(workflow, use.id, library, kinds) : workflow;
+}
+
 /**
  * A connection let go on a use's header (Will, 2026-11-05): the header takes ANYTHING, and matches it to
  * no row. Its definition gains a new input — a Group Input row inside, a row on every use — named
@@ -303,7 +310,62 @@ export function headerInput(
     connections: connections.some(same) ? connections.map(onRow) : [...connections, onRow(connection)],
     ...(workflow.ties ? { ties: workflow.ties.map((t) => ({ ...t, connections: t.connections.map(onRow) })) } : {}),
   };
-  return { workflow: use.version === versionOf(definition) ? updateInstance(next, useId, made, kinds) : next, library: made, id: use.kind };
+  return { workflow: follows(next, use, definition, made, kinds), library: made, id: use.kind };
+}
+
+/** One change to a socket of a Custom Node: its new name, its new type, or none, so it goes. */
+export type SocketChange = { label: string } | { type: NodeSocket['type'] } | null;
+
+const SOCKET_TYPES: readonly string[] = ['value', 'object', 'boolean'];
+
+/**
+ * A socket of a use's definition renamed, retyped or removed (plan 942 D4 A), ONE edit as headerInput is: the
+ * definition changed, and this use follows it where it followed the old; every other use says Update available. A
+ * removed socket takes its connections with it, inside the body and on each use of this graph. A new type keeps each connection:
+ * one that no longer fits warns, as any does. Refused, in words: a preset, a socket it has not, a name that is none.
+ */
+export function socketEdit(
+  workflow: WorkflowDefinition, useId: string, side: 'inputs' | 'outputs', name: string, change: SocketChange,
+  library: NodeLibrary, kinds: Kinds = nodeKinds(),
+): { workflow: WorkflowDefinition; library: NodeLibrary; id: string } | { fault: string } {
+  const use = workflow.nodes.find((n) => n.id === useId);
+  const definition = use && library?.nodes?.[use.kind];
+  if (!use || !definition || ({ ...kindsOf(library), ...kinds })[use.kind]?.model !== 'graph') return { fault: 'only a Custom Node has sockets to change' };
+  if (definition.preset) return { fault: 'a preset is read only: Copy to my nodes to change its sockets' };
+  const word = side === 'inputs' ? 'input' : 'output';
+  const sockets: readonly (NodeSocket | NodeOutput)[] = definition[side];
+  const was = sockets.find((s) => s.name === name);
+  if (!was) return { fault: `it has no ${word} "${name}"` };
+  let next: (NodeSocket | NodeOutput)[];
+  if (change === null) next = sockets.filter((s) => s !== was);
+  else if ('label' in change) {
+    const label = String(change.label ?? '').trim();
+    if (!label) return { fault: `an ${word} needs a name` };
+    next = sockets.map((s) => (s === was ? { ...s, label } : s));
+  } else {
+    if (!SOCKET_TYPES.includes(change.type)) return { fault: `"${String(change.type)}" is no socket type: value, object or boolean` };
+    // Only an object's list picks several (D17).
+    next = sockets.map((s) => {
+      if (s !== was) return s;
+      const { multiple: _multiple, ...rest } = s as NodeSocket;
+      return change.type === 'object' && (s as NodeSocket).multiple ? { ...rest, type: change.type, multiple: true } : { ...rest, type: change.type };
+    });
+  }
+  // A removed socket's connections go: inside, from `#in/<name>` or into `#out/<name>`; outside, at the row of EVERY use on
+  // this graph, as each is drawn from the definition now, and one left would be a fault.
+  const inner = side === 'inputs' ? `#in/${name}` : `#out/${name}`;
+  const rows = new Set(workflow.nodes.filter((n) => n.kind === use.kind).map((n) => `${n.id}/${name}`));
+  const body = change === null ? (definition.connections ?? []).filter((r) => (side === 'inputs' ? r.from : r.to) !== inner) : definition.connections;
+  const outside = change === null ? (workflow.connections ?? []).filter((r) => !rows.has(side === 'inputs' ? r.to : r.from)) : workflow.connections;
+  const changed: NodeDefinition = {
+    ...definition, [side]: next,
+    ...(body ? { connections: body } : {}), ...(definition.ties && body ? { ties: tiesAmong(definition.ties, body) } : {}),
+  };
+  const made: NodeLibrary = { ...library, nodes: { ...library.nodes, [use.kind]: changed } };
+  const after: WorkflowDefinition = {
+    ...workflow, ...(outside ? { connections: outside } : {}), ...(workflow.ties && outside ? { ties: tiesAmong(workflow.ties, outside) } : {}),
+  };
+  return { workflow: follows(after, use, definition, made, kinds), library: made, id: use.kind };
 }
 
 /** Each connection a use's header holds from a file saved before, read ONCE as its own new input, as

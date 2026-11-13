@@ -7563,8 +7563,8 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   `copyToMine` makes a custom copy.
 - **The editor OPENS it** (M10): `bindWorkflow`'s `open(use)` shows `innerOf(use).workflow` under
   a `sherpa-breadcrumbs` trail, and an edit there is an `editDefinition` of the library DRAFT
-  (kept for the tab beside the workflow's, handed over by the same Save through `onSaveNode`,
-  put back by `discard()`). A use whose recorded version is old says "Update available", shows
+  (kept for the tab beside the workflow's; at Save the app keeps each one `edits()` names, through
+  `keepNode`, and `discard()` puts it back). A use whose recorded version is old says "Update available", shows
   `definitionDiff` and a split button: "Update instance", and in its menu the two bulk updates,
   each behind a critical `sherpa-dialog`. A preset's inside is locked, with "Copy to my nodes".
 - **"Save as Custom Node" is `groupNodes`, "Ungroup" is `ungroupUse`** (M11): each connection over
@@ -7655,8 +7655,8 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
 - **One shelf** (`entity-shelf.ts`, E2): `list/get/save/remove/duplicate/export/import/watch`
   over a port, so the rules are one set. The reader's own are ONE named part of the keeper
   (`entities`, app-wide); the presets are `entities.json` (app.v1 `entities`) and the Custom Node
-  presets read as type `node`. `nodes` is a VIEW (`nodesView`) of every entity, as the node it
-  offers (E5); the old `nodes` part is gone, and the database drops a leftover `nodes`
+  presets read as type `node`. Its `library()` is every entity of a reusable type, as the node it
+  offers (E5, built in memory by `libraryOf`); the old `nodes` part is gone, and the database drops a leftover `nodes`
   store unread (TODO 816).
   A remove is refused while another entity `uses` it, naming who.
 
@@ -7747,7 +7747,7 @@ of that type the canvas shows.
 follows it.** Will, 2026-11-05 (plan-746 E5; D1 "any graph type can have custom nodes", D8, and
 plan-713 D11 with its update flow).
 
-- **One library.** The editor's library is `nodesView` of the entity shelf: EVERY entity, as the
+- **One library.** The editor's library is the entity shelf's `library()`: EVERY entity of a reusable type, as the
   node `asNode` makes of it, keyed by its use's kind (`<type>:<id>`; a `node`'s plain id). So the
   one Custom Node path serves them all: the panel lists them under Custom Nodes, a place is
   `useOf` (the version and `was` recorded), Enter opens the inside (a preset read only, with

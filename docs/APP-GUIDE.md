@@ -496,8 +496,11 @@ search finds it by one: give Save as Custom Node's dialog a tags field,
 `<sherpa-input-text name="tags" data-type="tags">`, and pass `tags` to `newGraph`
 and `saveGraphAs`. A saved one is retagged in the inspector: a use's Tags field, and
 inside it the Group Input's and Output's, edit its definition's tags
-(`tagDefinition`), so every use shares them; a preset's are read only. A Custom Node
-being edited is a draft in its tab until it is saved, as a workflow is.
+(`tagDefinition`), so every use shares them; a preset's are read only. A use's
+inspector also lists each input and output of its Custom Node: its Name, its Type, and
+Remove (`socketEdit`). Each is one step; that use follows the change, every other use says
+"Update available", and a removed socket's connections go, inside and on this graph. A Custom
+Node being edited is a draft in its tab until it is saved, as a workflow is.
 `T-a-node-panel-lists-under-sticky-headings`
 
 ### Check, True and Count

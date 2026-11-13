@@ -254,7 +254,7 @@ export {
   NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs,
   type GraphChoice, type GraphOf, type GraphPage, type GraphWords, type OpenGraph,
 } from './core/data/graph-views.js';
-export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
+export { groupNodes, socketEdit, ungroupUse, type GroupAsk, type Grouped, type SocketChange } from './core/data/node-group.js';
 export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
 export { branchesAt, isOutput, isSource, isStart, routeRead, routesOf, type RouteFacts, type RouteRead } from './core/data/node-routes.js';
 export { lightOf, SimulationControl, simulateGraph, simulation, stepSimulation, type SteppingOptions, type SimulateFacts, type Simulated, type SimulatedNode, type SimulationRun, type Slot } from './core/data/node-simulate.js';
