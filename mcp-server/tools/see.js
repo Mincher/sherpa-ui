@@ -10,7 +10,7 @@
  *   watch_trace     the spans of the last act, the MCP's own and the preview's, by Query graph node
  *   preview_close   the preview ended: its page, its browser and its server
  *   review_page     validate_page → check_usage → preview_page's reports: skills/review-page/SKILL.md
- *   explain_page    query_graph → a query_source act → watch_trace: skills/explain-page/SKILL.md
+ *   explain_page    definition_graph → a query_source act → watch_trace: skills/explain-page/SKILL.md
  *
  * Map:
  * - register — register the see tools and prompts on an MCP server
@@ -255,9 +255,9 @@ export function register(server) {
 
   server.registerTool('watch_trace', {
     title: 'Watch the trace',
-    description: 'The spans of the last act, by the Query graph node each lights (`queryStepNode`) — node ids as query_graph draws them: the MCP\'s own, each load of the last query_source, query_graph or edit_query_graph call; and the preview\'s, since it opened or since the last call_component — its page\'s and its Node host\'s, joined by their trace. Each step with its host, state, time and rows; what each load\'s walk counted is said under it (`traceQuerySteps`), each condition and preset with the rows it left.',
+    description: 'The spans of the last act, by the Query graph node each lights (`queryStepNode`) — node ids as definition_graph draws a page\'s Query: the MCP\'s own, each load of the last query_source, definition_graph or edit_definition_graph call; and the preview\'s, since it opened or since the last call_component — its page\'s and its Node host\'s, joined by their trace. Each step with its host, state, time and rows; what each load\'s walk counted is said under it (`traceQuerySteps`), each condition and preset with the rows it left.',
     inputSchema: {
-      node: z.string().optional().describe('Only this node, by its query_graph id: `when-data-status`, `source`, `store`'),
+      node: z.string().optional().describe('Only this node, by its id as definition_graph draws it: `when-data-status`, `source`, `store`'),
     },
   }, tool(async ({ node }) => {
     const dl = await imported('sherpa-ui/data');
@@ -304,7 +304,7 @@ export function register(server) {
 
   server.registerPrompt('explain_page', {
     title: 'Explain a page',
-    description: 'Explain how one Context\'s Query reaches its rows: drawn as nodes (query_graph), one act a reader would make run (query_source), then the spans of that act by node (watch_trace) — each condition with the rows it left — said in the graph\'s terms. The steps are skills/explain-page/SKILL.md, the skill this package ships.',
+    description: 'Explain how one Context\'s Query reaches its rows: drawn as nodes (definition_graph), one act a reader would make run (query_source), then the spans of that act by node (watch_trace) — each condition with the rows it left — said in the graph\'s terms. The steps are skills/explain-page/SKILL.md, the skill this package ships.',
     argsSchema: { context: CONTEXT, path: PATH, field: z.string().optional().describe('A field to act on, by its name in the page\'s `source.fields`') },
   }, ({ context, path, field }) => prompted('explain-page', [...where(context, path), field && `The field to act on: ${field}.`]));
 }

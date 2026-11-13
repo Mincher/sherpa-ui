@@ -7,7 +7,7 @@ beside it — its specs, schemas, docs and tokens — and runs its own checks, i
 data layer and its usage check, never a copy of them. Each tool, resource and
 prompt below is written from the code that registers it.
 
-**22 tools · 10 resources · 3 prompts.**
+**20 tools · 10 resources · 3 prompts.**
 
 ## Setup
 
@@ -108,7 +108,7 @@ A new app's files, as `npm create sherpa-ui <folder>` writes them: one folder wi
 
 - `name` (optional) — The app's name: its package.json takes it, lower case with hyphens. Default: sherpa-app
 
-### The query tier's tools: a page's Query run, drawn and edited; a workflow's too · `tools/query.js`
+### The query tier's tools: a page's Query run; any definition drawn as a graph and edited, through its lens · `tools/query.js`
 
 #### `query_source` — Run a page's Query
 
@@ -122,47 +122,38 @@ Open a page as its provider does — `checkPage`, then `openSource` over the row
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
 - `limit` (optional) — The most rows of the page to show; default 25
 
-#### `query_graph` — Draw a page's Query as nodes
+#### `definition_graph` — Draw a definition as a graph
 
-A page's Query as the Node Editor draws it (`queryGraph`): its store, status fields, source, each scope with its presets, saved filters and conditions, its arrangement, presentation and components — each node's id, kind, rows (a row's `editable`, `choices` and `hint`), sockets and place, and the connections between them, as JSON. Opened as query_source opens it, after each command, which it takes as query_source does. Edit it with edit_query_graph. Each kind is in `sherpa://node-kinds`.
+A definition as the one Node Editor draws it, through its type's lens (`lensOf(type).toGraph`, plan 960 U4): a page's Query, opened over its rows as query_source opens it, or an entity, as its canvas edits it. Each node its kind's header, sockets and rows with their values, choices and `editable`, at its place; the connections; every fault its check reports; the graph as the definition the editor edits; and the kinds a graph may place
 
-- `definition` — The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`
+- `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Preset Filter, an app's own type
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
 - `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
 - `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
-- `components` (optional) — The components the page binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
-
-#### `edit_query_graph` — Edit a page's Query by its nodes
-
-Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-region", "row": "b", "value": ["EMEA"] }`, asks its command (`graphRequest`); a new connection, `{ "from": "when-data-status", "to": "scope-view/status" }`, asks its move (`connectionRequest`). Each command goes through `ask()`, the graph drawn again before the next edit. It gives each command asked, the new Query, and the page definition Save would write (`pageWithQuery`), checked by `checkPage`. A node or row the graph has not got, a row no command takes and a connection the Query refuses are refused, in the data layer's words. Node ids are query_graph's.
-
-- `definition` — The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`
-- `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
-- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
-- `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
-- `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
-- `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
-- `components` (optional) — The components the page binds, as query_graph takes them
-- `edits` — Each `{ "node", "row", "value" }` or `{ "from", "to" }`, in turn
-
-#### `workflow_graph` — Draw a workflow as nodes
-
-A workflow definition (workflow.v3) as nodes and connections (`workflowGraph`) — each node its kind's header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a connection that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.
-
-- `workflow` — The workflow definition, as its JSON: `{ "v": 3, "id", "nodes", "connections" }`
+- `of` (optional) — What the definition is: `query`, a page's Query; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`
+- `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
 - `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
 - `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
 - `entities` (optional) — The app's entities file (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)
 
-#### `edit_workflow` — Edit a workflow
+#### `edit_definition_graph` — Edit a definition by its graph
 
-A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v3. An edit is a row's value, `{ "node": "status", "row": "value", "value": "trial" }`; a node's own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a connection made into an input, in place of the one there (beside it, where the input takes `many`), `{ "connection": { "from": "status/value", "to": "filter/value" } }`; or connections cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.
+Each edit made on the graph a definition's lens draws (`editWorkflow`, as the one Node Editor makes it): a row's value, `{ "node", "row", "value" }`; a node's own name, line or place, `{ "node", "set": { … } }`; a new connection, `{ "connection": { "from", "to" } }`. Then the graph is written back through the lens (`fromGraph`): the definition it says now, checked, or the faults that refuse it, in words. A page's Query asks each change as a chip asks it, and its page is saved as the Query holds it then (`pageWithQuery`)
 
-- `workflow` — The workflow definition, as its JSON
-- `edits` — Each a WorkflowEdit, in turn
+- `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Preset Filter, an app's own type
+- `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
+- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
+- `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
+- `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
+- `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
+- `of` (optional) — What the definition is: `query`, a page's Query; else an entity's type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`
+- `components` (optional) — For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
+- `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
+- `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
 - `entities` (optional) — The app's entities file (entities.v3: `{ "v": 3, "types", "entities" }`, each type a type.v1 by its id) or a list of entities: each is a Custom Node a node may place by its use's kind, so a use of one is no fault (plan 942 D3 A)
+- `edits` — Each a WorkflowEdit, in turn
 
 ### The compose tier: a need → a pattern → a page, each page checked · `tools/compose.js`
 
@@ -229,9 +220,9 @@ An element of the preview, or of a page on this machine, as it stands once drawn
 
 #### `watch_trace` — Watch the trace
 
-The spans of the last act, by the Query graph node each lights (`queryStepNode`) — node ids as query_graph draws them: the MCP's own, each load of the last query_source, query_graph or edit_query_graph call; and the preview's, since it opened or since the last call_component — its page's and its Node host's, joined by their trace. Each step with its host, state, time and rows; what each load's walk counted is said under it (`traceQuerySteps`), each condition and preset with the rows it left.
+The spans of the last act, by the Query graph node each lights (`queryStepNode`) — node ids as definition_graph draws a page's Query: the MCP's own, each load of the last query_source, definition_graph or edit_definition_graph call; and the preview's, since it opened or since the last call_component — its page's and its Node host's, joined by their trace. Each step with its host, state, time and rows; what each load's walk counted is said under it (`traceQuerySteps`), each condition and preset with the rows it left.
 
-- `node` (optional) — Only this node, by its query_graph id: `when-data-status`, `source`, `store`
+- `node` (optional) — Only this node, by its id as definition_graph draws it: `when-data-status`, `source`, `store`
 
 #### `preview_close` — Close the preview
 
@@ -272,7 +263,7 @@ End the preview: its pages, its browser and its Node host, so nothing of it list
 ### The see tier's tools: a page drawn, acted on and read, and its acts traced · `tools/see.js`
 
 - `review_page` — Review one Context: its files checked (validate_page), its markup against the specs (check_usage), then the page drawn over real rows (preview_page) — the data layer's reports, the usage problems and a screenshot — each problem fixed where it is named. The steps are skills/review-page/SKILL.md, the skill this package ships.
-- `explain_page` — Explain how one Context's Query reaches its rows: drawn as nodes (query_graph), one act a reader would make run (query_source), then the spans of that act by node (watch_trace) — each condition with the rows it left — said in the graph's terms. The steps are skills/explain-page/SKILL.md, the skill this package ships.
+- `explain_page` — Explain how one Context's Query reaches its rows: drawn as nodes (definition_graph), one act a reader would make run (query_source), then the spans of that act by node (watch_trace) — each condition with the rows it left — said in the graph's terms. The steps are skills/explain-page/SKILL.md, the skill this package ships.
 
 ## Adding to it
 

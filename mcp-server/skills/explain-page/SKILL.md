@@ -11,7 +11,7 @@ one sherpa-ui MCP tool.
 
 1. **Read its page definition** — the file app.json's Context names in
    `definition` — and a real page of its store's rows.
-2. **`query_graph`** — that definition and those rows. It gives the Query as
+2. **`definition_graph`** — that definition and those rows. It gives the Query as
    nodes and connections: its store, its source, each scope with its conditions and
    presets, its arrangement and its components. Its node ids are the ones the
    next steps name.

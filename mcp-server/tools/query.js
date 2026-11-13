@@ -1,13 +1,11 @@
 /**
- * query.js — the query tier's tools: a page's Query run, drawn and edited; a workflow's too.
+ * query.js — the query tier's tools: a page's Query run; any definition drawn as a graph and edited, through its lens.
  * An act is a `QueryRequest` through `ask()`, the one a chip sends, and a problem
  * is the data layer's own report. TRAP T-one-command-one-door
  *
  *   query_source      a page definition over rows or a localhost data path, each command asked: rows, total, groups, field state
- *   query_graph       a page's Query as nodes and connections, as the Node Editor draws it
- *   edit_query_graph  a node's edit or a new connection, as the command it asks: the new Query and its saved definition
- *   workflow_graph    a workflow as nodes and connections, its faults, and the kinds a workflow runs
- *   edit_workflow     a workflow after each edit, checked
+ *   definition_graph       a definition as a graph, through its type's lens: a page's Query, or an entity
+ *   edit_definition_graph  edits on that graph, written back through the lens: the definition now, or its faults
  *
  * Map:
  * - register — register the query tools on an MCP server
@@ -245,62 +243,6 @@ export function register(server) {
     return shown(lines, out);
   })));
 
-  server.registerTool('query_graph', {
-    title: 'Draw a page\'s Query as nodes',
-    description: `A page's Query as the Node Editor draws it (\`queryGraph\`): its store, status fields, source, each scope with its presets, saved filters and conditions, its arrangement, presentation and components — each node's id, kind, rows (a row's \`editable\`, \`choices\` and \`hint\`), sockets and place, and the connections between them, as JSON. Opened as query_source opens it, after each command, which it takes as query_source does. Edit it with edit_query_graph. Each kind is in \`sherpa://node-kinds\`.`,
-    inputSchema: {
-      ...PAGE,
-      components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The components the page binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own'),
-    },
-  }, act((dl, args, heard) => overPage(dl, args, heard, async (page) => {
-    const graph = dl.queryGraph(page.source.query.draft, page.definition, graphFacts(dl, page, args.components));
-    const lines = [`${graph.nodes.length} nodes, ${graph.connections.length} connections. A row a reader may change is \`editable\`; edit_query_graph asks its command.`];
-    if (heard.length) lines.push('', `The data layer said (${heard.length}):`, ...heard.map(said));
-    return shown(lines, { ...graph, asked: page.asked, reports: heard });
-  })));
-
-  server.registerTool('edit_query_graph', {
-    title: 'Edit a page\'s Query by its nodes',
-    description: 'Each edit as the Node Editor makes it: a row\'s new value, `{ "node": "when-view-region", "row": "b", "value": ["EMEA"] }`, asks its command (`graphRequest`); a new connection, `{ "from": "when-data-status", "to": "scope-view/status" }`, asks its move (`connectionRequest`). Each command goes through `ask()`, the graph drawn again before the next edit. It gives each command asked, the new Query, and the page definition Save would write (`pageWithQuery`), checked by `checkPage`. A node or row the graph has not got, a row no command takes and a connection the Query refuses are refused, in the data layer\'s words. Node ids are query_graph\'s.',
-    inputSchema: {
-      ...PAGE,
-      components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The components the page binds, as query_graph takes them'),
-      edits: z.union([z.string(), z.array(z.record(z.unknown()))]).describe('Each `{ "node", "row", "value" }` or `{ "from", "to" }`, in turn'),
-    },
-  }, act((dl, args, heard) => overPage(dl, args, heard, async (page) => {
-    const { source, definition } = page;
-    const type = typeIn(definition);
-    const facts = graphFacts(dl, page, args.components);
-    const edited = [];
-    for (const edit of objects(args.edits, 'edits')) {
-      const graph = dl.queryGraph(source.query.draft, definition, facts);
-      let request;
-      if ('from' in edit || 'to' in edit) {
-        const connection = dl.connectionRequest(graph, { from: String(edit.from), to: String(edit.to) }, facts);
-        if (connection && 'refused' in connection) throw new Error(connection.refused);
-        if (!connection) {
-          edited.push({ edit, asked: null });
-          continue;
-        }
-        request = connection.request;
-      } else {
-        const node = graph.nodes.find((n) => n.id === edit.node);
-        if (!node) throw new Error(`The Query graph has no node "${edit.node}". Its nodes: ${graph.nodes.map((n) => n.id).join(', ')}.`);
-        const row = node.rows.find((r) => r.name === edit.row);
-        if (!row) throw new Error(`The node "${node.id}" has no row "${edit.row}". Its rows: ${node.rows.map((r) => r.name).join(', ')}.`);
-        request = dl.graphRequest({ node, row, value: edit.value }, { type });
-        if (!request) throw new Error(`No command takes "${row.label}" on "${node.heading}"${row.hint ? `: ${row.hint}` : '.'}`);
-      }
-      const { asked: _, ...result } = await ask(source, request, heard);
-      edited.push({ edit, asked: request, ...result });
-    }
-    const saved = dl.pageWithQuery(definition, source.query.draft, { pageSize: source.state.pageSize ?? null, type });
-    const sound = dl.checkPage(saved);
-    const lines = [`${edited.length} edit(s); ${source.total} row(s) match. The definition Save writes ${sound ? 'passes' : 'fails'} checkPage.`];
-    if (heard.length) lines.push('', `The data layer said (${heard.length}):`, ...heard.map(said));
-    return shown(lines, { edited, total: source.total, query: source.query.draft, definition: saved, reports: heard });
-  })));
-
   const FACTS = {
     fieldsOf: z.union([z.string(), z.record(z.unknown())]).optional().describe('Each store\'s fields, by the store\'s name — a page definition\'s `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from'),
     stores: z.union([z.string(), z.array(z.string())]).optional().describe('The stores a Source\'s Store row picks, by the names the app gives them'),
@@ -311,57 +253,83 @@ export function register(server) {
   });
   /** The kinds a workflow may place: the shipped, and each entity's Custom Node. */
   const kindsWith = (dl, library) => ({ ...dl.nodeKinds(), ...dl.kindsOf(library) });
-  /** A workflow, given: a v3; anything else is refused, in checkWorkflow's words. */
-  const workflowOf = (dl, value) => {
-    const workflow = given(value, 'workflow');
-    if (!dl.readWorkflow(workflow).workflow) {
-      dl.checkWorkflow(workflow);
-      throw new Error('The workflow is not a workflow definition: { "v": 3, "id", "nodes", "connections" }.');
-    }
-    return workflow;
+  /** What a definition is: `query` for a page (page.v1), else the type an entity says. */
+  const whatOf = (args, definition) => args.of ?? (definition?.source ? 'query' : definition?.type);
+  /** The lens that draws it (plan 960 U4), or why there is none. */
+  const lensFor = (dl, of) => {
+    const lens = typeof of === 'string' ? dl.lensOf(of) : undefined;
+    if (!lens) throw new Error(`No lens draws "${of ?? 'it'}": give a page (page.v1) for its Query, or an entity (entity.v2) of a type the app has, with its entities file for an app's types.`);
+    return lens;
   };
-  const workflowKinds = (dl) => Object.fromEntries(Object.entries(dl.NODE_KINDS).filter(([, k]) => k.graphs.includes('workflow')));
-
-  server.registerTool('workflow_graph', {
-    title: 'Draw a workflow as nodes',
-    description: 'A workflow definition (workflow.v3) as nodes and connections (`workflowGraph`) — each node its kind\'s header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a connection that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.',
-    inputSchema: {
-      workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON: `{ "v": 3, "id", "nodes", "connections" }`'),
-      ...FACTS,
-    },
-  }, act(async (dl, args, heard) => withEntities(dl, given(args.entities, 'entities'), (_entities, library) => {
-    const workflow = workflowOf(dl, args.workflow);
+  /**
+   * A definition through its lens. A page's Query is opened over its rows, as query_source opens it; an entity is drawn
+   * as its canvas edits it, over the app's entities. `then` is handed the lens, the facts it reads, the definition, the
+   * graph drawn now, the kinds a graph may place, and the page where it is one.
+   */
+  const throughLens = async (dl, args, heard, list, library, then) => {
+    const definition = given(args.definition, 'definition');
+    const of = whatOf(args, definition);
+    const lens = lensFor(dl, of);
+    if (of === 'query') {
+      return overPage(dl, args, heard, (page) => {
+        const facts = { ...graphFacts(dl, page, args.components), query: page.source.query };
+        return then({ lens, facts, definition: page.definition, drawn: () => dl.queryDrawn(page.definition, facts), kinds: dl.NODE_KINDS, page });
+      });
+    }
     const kinds = kindsWith(dl, library);
-    const sound = dl.checkWorkflow(workflow, kinds, factsOf(args));
-    const graph = dl.workflowGraph(workflow, factsOf(args), kinds);
-    const lines = [`${graph.nodes.length} nodes, ${graph.connections.length} connections; ${sound ? 'no fault' : `${heard.length} fault(s)`}.`];
-    if (heard.length) lines.push('', 'The data layer said:', ...heard.map(said));
-    return shown(lines, { ...graph, kinds: { ...workflowKinds(dl), ...dl.kindsOf(library) }, reports: heard });
-  })));
+    // Its check reads the app's other entities, so a use of one is no fault.
+    const facts = { kinds, ...factsOf(args), entities: list.filter((e) => e.id !== definition?.id) };
+    const drawn = () => {
+      const { workflow, kinds: own } = lens.toGraph(definition, facts);
+      return dl.workflowGraph(workflow, factsOf(args), { ...kinds, ...own });
+    };
+    return then({ lens, facts, definition, drawn, kinds });
+  };
+  const DEFINITION = {
+    ...PAGE,
+    definition: z.union([z.string(), z.record(z.unknown())]).describe('The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Preset Filter, an app\'s own type'),
+    of: z.string().optional().describe('What the definition is: `query`, a page\'s Query; else an entity\'s type. Left out, it is read from the definition: a page has a `source`, an entity says its `type`'),
+    components: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('For a page: the components it binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own'),
+    ...FACTS,
+  };
 
-  server.registerTool('edit_workflow', {
-    title: 'Edit a workflow',
-    description: 'A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v3. An edit is a row\'s value, `{ "node": "status", "row": "value", "value": "trial" }`; a node\'s own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a connection made into an input, in place of the one there (beside it, where the input takes `many`), `{ "connection": { "from": "status/value", "to": "filter/value" } }`; or connections cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.',
-    inputSchema: {
-      workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON'),
-      edits: z.union([z.string(), z.array(z.record(z.unknown()))]).describe('Each a WorkflowEdit, in turn'),
-      entities: FACTS.entities,
-    },
-  }, act(async (dl, args, heard) => withEntities(dl, given(args.entities, 'entities'), (_entities, library) => {
-    const kinds = kindsWith(dl, library);
-    let workflow = workflowOf(dl, args.workflow);
+  server.registerTool('definition_graph', {
+    title: 'Draw a definition as a graph',
+    description: 'A definition as the one Node Editor draws it, through its type\'s lens (`lensOf(type).toGraph`, plan 960 U4): a page\'s Query, opened over its rows as query_source opens it, or an entity, as its canvas edits it. Each node its kind\'s header, sockets and rows with their values, choices and `editable`, at its place; the connections; every fault its check reports; the graph as the definition the editor edits; and the kinds a graph may place',
+    inputSchema: DEFINITION,
+  }, act(async (dl, args, heard) => withEntities(dl, given(args.entities, 'entities'), (list, library) => throughLens(dl, args, heard, list, library, ({ lens, facts, definition, drawn, kinds, page }) => {
+    const shownNow = drawn();
+    const faults = page ? dl.queryGraphFaults(shownNow, facts.domains ?? {}) : dl.entityFaults(definition, facts);
+    const lines = [`${shownNow.nodes.length} nodes, ${shownNow.connections.length} connections; ${faults.length ? `${faults.length} fault(s)` : 'no fault'}. A row a reader may change is \`editable\`: edit_definition_graph changes it.`];
+    if (faults.length) lines.push('', ...faults.map((f) => `- ${f}`));
+    if (heard.length) lines.push('', `The data layer said (${heard.length}):`, ...heard.map(said));
+    return shown(lines, { nodes: shownNow.nodes, connections: shownNow.connections, graph: lens.toGraph(definition, facts).workflow, kinds: page ? undefined : kinds, faults, reports: heard });
+  }))));
+
+  server.registerTool('edit_definition_graph', {
+    title: 'Edit a definition by its graph',
+    description: 'Each edit made on the graph a definition\'s lens draws (`editWorkflow`, as the one Node Editor makes it): a row\'s value, `{ "node", "row", "value" }`; a node\'s own name, line or place, `{ "node", "set": { … } }`; a new connection, `{ "connection": { "from", "to" } }`. Then the graph is written back through the lens (`fromGraph`): the definition it says now, checked, or the faults that refuse it, in words. A page\'s Query asks each change as a chip asks it, and its page is saved as the Query holds it then (`pageWithQuery`)',
+    inputSchema: { ...DEFINITION, edits: z.union([z.string(), z.array(z.record(z.unknown()))]).describe('Each a WorkflowEdit, in turn') },
+  }, act(async (dl, args, heard) => withEntities(dl, given(args.entities, 'entities'), (list, library) => throughLens(dl, args, heard, list, library, async ({ lens, facts, definition, kinds, page }) => {
+    let graph = lens.toGraph(definition, facts).workflow;
+    const all = { ...kinds, ...lens.toGraph(definition, facts).kinds };
     const edited = [];
     for (const edit of objects(args.edits, 'edits')) {
-      if ('node' in edit && !workflow.nodes.some((n) => n.id === edit.node)) {
-        throw new Error(`The workflow has no node "${edit.node}", so no edit was made. Its nodes: ${workflow.nodes.map((n) => n.id).join(', ')}.`);
+      if ('node' in edit && !graph.nodes.some((n) => n.id === edit.node)) {
+        throw new Error(`The graph has no node "${edit.node}", so no edit was made. Its nodes: ${graph.nodes.map((n) => n.id).join(', ')}.`);
       }
-      const next = dl.editWorkflow(workflow, edit, kinds);
-      edited.push({ edit, ...(JSON.stringify(next) === JSON.stringify(workflow) ? { changed: false } : {}) });
-      workflow = next;
+      const next = dl.editWorkflow(graph, edit, all);
+      edited.push({ edit, ...(JSON.stringify(next) === JSON.stringify(graph) ? { changed: false } : {}) });
+      graph = next;
     }
-    const sound = dl.checkWorkflow(workflow, kinds);
-    const lines = [`${edited.length} edit(s); the workflow has ${sound ? 'no fault' : `${heard.length} fault(s)`}.`];
-    if (heard.length) lines.push('', 'The data layer said:', ...heard.map(said));
-    return shown(lines, { workflow, edited, reports: heard });
-  })));
+    // A page's Query asks each change live: its rows load after, so the total says them.
+    const answer = lens.fromGraph(definition, graph, facts);
+    if (page) await page.source.load();
+    const faults = 'faults' in answer ? answer.faults : [];
+    const lines = [`${edited.length} edit(s); ${faults.length ? `refused: ${faults.length} fault(s)` : 'written back'}${page ? `; ${page.source.total} row(s) match` : ''}.`];
+    if (faults.length) lines.push('', ...faults.map((f) => `- ${f}`));
+    if (heard.length) lines.push('', `The data layer said (${heard.length}):`, ...heard.map(said));
+    return shown(lines, { definition: 'definition' in answer ? answer.definition : undefined, faults, edited, ...(page ? { total: page.source.total, query: page.source.query.draft } : {}), reports: heard });
+  }))));
+
 }

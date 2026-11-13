@@ -242,7 +242,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](traps/data-layer.md#t-the-field-type-decides-the-clause) — data, data-source, field-catalogue, filter-state
 - [T-the-filter-switch-keeps-what-it-turned-off](traps/data-layer.md#t-the-filter-switch-keeps-what-it-turned-off) — data-source-types, query, query-context, query-edits
 - [T-the-last-band-includes-its-top](traps/data-layer.md#t-the-last-band-includes-its-top) — aggregate
-- [T-the-node-editor-asks-the-query](traps/data-layer.md#t-the-node-editor-asks-the-query) — data, query-document, query-graph
+- [T-the-node-editor-asks-the-query](traps/data-layer.md#t-the-node-editor-asks-the-query) — data, query-document, query-graph, query-lens
 - [T-the-top-gridline-rounds-to-its-magnitude](traps/data-layer.md#t-the-top-gridline-rounds-to-its-magnitude) — format-tick
 - [T-three-things-called-scope](traps/data-layer.md#t-three-things-called-scope) — bind-selection
 - [T-two-bars-over-one-scope](traps/data-layer.md#t-two-bars-over-one-scope) — source-binding

@@ -128,7 +128,7 @@ const NODES_READ = 'The Query\'s nodes are its readings: turn a condition off, o
 /**
  * What changed between two definitions of a Query, as the Query's own requests: a row's new value (`graphRequest`, or a
  * kept Source's Store); a new connection (`connectionRequest`); a new node (`placeRequest`, in the scope of the node it joins, else
- * the View). A connection cut, or a reading removed, is refused; a kept Source removed goes. The layout is the written one's.
+ * the View). A read-only row changed, a connection cut, or a reading removed, is refused; a kept Source removed goes. The layout is the written one's.
  * `graph` is the Query's graph as `before` was drawn from it. A kind that belongs in one scope (`scopeOf`) is placed there.
  */
 export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefinition, graph: DrawnGraph, facts: ReconcileFacts): Reconciled {
@@ -148,7 +148,11 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
     const names = [...new Set([...Object.keys(old.values ?? {}), ...Object.keys(node.values ?? {})])]
       .filter((name) => JSON.stringify(old.values?.[name]) !== JSON.stringify(node.values?.[name]) && live.rows.some((r) => r.name === name))
       .sort((a, b) => Number(b === 'type') - Number(a === 'type'));
-    for (const name of names) edits.push({ node: node.id, row: name, value: node.values?.[name] });
+    for (const name of names) {
+      const row = live.rows.find((r) => r.name === name)!;
+      if (row.editable) edits.push({ node: node.id, row: name, value: node.values?.[name] });
+      else refuse('query-row', `No command takes "${row.label}" on "${live.heading}"${row.hint ? `: ${row.hint}` : '.'}`);
+    }
   }
   // A new node: placed in the scope of the node it joins, else the View. Its own connections are the Query's to draw.
   const added = after.nodes.filter((n) => !was.has(n.id) && !drawn.has(n.id));

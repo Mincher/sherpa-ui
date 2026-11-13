@@ -6725,8 +6725,10 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 - **Save writes the definition** (`pageWithQuery`): each scope's holds, its own
   answers as its `where`, its slot's presentation over the definition's, and the
   page size. `checkPage` checks it; the editor hands it to the app as
-  `definition-save`. A sort, a group and a search have no place in a page (a View
-  keeps them), and neither do the places yet.
+  `definition-save`. A scope's sort, group and search are the page's too (plan 960
+  U4.3); the places are not. The MCP writes back through the same door, the
+  Query's lens (`QUERY_LENS`, plan 960 U4.5): what the Query cannot take — a
+  read-only row, a cut connection — refuses the whole graph, in words.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/data.ts`
@@ -6735,6 +6737,7 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 - Site: `test/e2e/reforged-node-graph.spec.ts`
 - Site: `src/core/data/query-document.ts`
 - Site: `src/core/ui/query-editor.ts`
+- Site: `src/core/data/query-lens.ts`
 
 ### T-one-node-registry
 

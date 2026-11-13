@@ -23,14 +23,18 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const STARTER = resolve(ROOT, '..', 'Sherpa Starter');
 
-/** A page and a workflow the query tier is called over. */
+/** The pages the query tier is called over: one asked a command, and one whose scope arranges, drawn as a graph. */
 const PAGE = {
   definition: { v: 1, id: 'people', source: { store: 'people', fields: { plan: { label: 'Plan' } }, scopes: { data: { holds: ['plan'] } } } },
   rows: [{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }],
   key: 'id',
   commands: [{ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } }],
 };
-const WORKFLOW = { v: 3, id: 'pro', nodes: [{ id: 'in', kind: 'source', x: 0, y: 0, values: { store: 'people' } }, { id: 'out', kind: 'output', x: 360, y: 0 }], connections: [{ from: 'in/rows', to: 'out' }] };
+const ARRANGED = {
+  definition: { v: 1, id: 'p', source: { store: 's', fields: { name: {}, plan: {} }, scopes: { list: { label: 'List', arranges: true, holds: ['plan'], sort: [{ field: 'name', direction: 'asc' }] } } } },
+  rows: [{ id: 1, name: 'Ann', plan: 'Pro' }],
+  key: 'id',
+};
 
 /** The arguments each tool or prompt is called with, where it is installed; one with none is a failure. */
 export const SAMPLES = {
@@ -46,10 +50,8 @@ export const SAMPLES = {
   validate_rows: { type: '{"v":1,"id":"seat","label":"Seat","fields":{"id":{},"seats":{"type":"number"}}}', rows: '[{"id":1,"seats":3}]' },
   scaffold_app: { name: 'probe-app' },
   query_source: PAGE,
-  query_graph: PAGE,
-  edit_query_graph: { ...PAGE, edits: [{ node: 'when-data-plan', row: 'type', value: 'notin' }] },
-  workflow_graph: { workflow: WORKFLOW },
-  edit_workflow: { workflow: WORKFLOW, edits: [{ node: 'out', set: { heading: 'Pro people' } }] },
+  definition_graph: ARRANGED,
+  edit_definition_graph: { ...ARRANGED, edits: [{ node: 'organise-list', row: 'sort', value: 'plan' }] },
   pick_pattern: { need: { task: 'triage', rows: 120, fields: 3, dateFields: 0, numberFields: 1, writes: true } },
   generate_page: { pattern: 'records-list', id: 'people', type: { v: 1, id: 'person', label: 'Person', fields: { id: {}, name: { label: 'Name' }, seats: { label: 'Seats', type: 'number' } } }, source: { search: ['name'] }, task: 'triage', writes: true },
   build_page: { task: 'triage' },

@@ -20,8 +20,9 @@ import type { FieldType } from '../data/filter-state.js';
 import { NODE_KINDS, paletteOf, type DrawnGraph, type GraphNode, type NodeKind } from '../data/node-kinds.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { VIEW } from '../data/query.js';
-import { QUERY_DRAWN_ONLY, queryGraph, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
-import { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, rowRequest, type GraphLayout } from '../data/query-document.js';
+import { QUERY_DRAWN_ONLY, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
+import { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, type GraphLayout } from '../data/query-document.js';
+import { applyReconciled, queryDrawn, queryScopes, reconcileFacts, type QueryLensFacts } from '../data/query-lens.js';
 import { report } from '../data/report.js';
 import { valueKey } from '../data/store.js';
 import { bindWorkflow, watchQuery, type GraphDocument, type Inspector, type WorkflowEditor, type WorkflowEditorOptions } from './node-graph.js';
@@ -42,7 +43,7 @@ export interface QueryEditorOptions extends QueryGraphFacts, Pick<WorkflowEditor
   markup?: NonElementParentNode;
 }
 
-type QuerySource = Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state' | 'results' | 'addEventListener' | 'removeEventListener'>>;
+type QuerySource = Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'filterDef' | 'store' | 'state' | 'results' | 'addEventListener' | 'removeEventListener'>>;
 
 /** Whether a value is a list of kept Sources: each an id and a store. */
 function isKept(v: unknown): v is KeptSource[] {
@@ -52,7 +53,9 @@ function isKept(v: unknown): v is KeptSource[] {
 /** A page's Query as a document the one node editor reads and writes. */
 export function queryDocument(source: QuerySource, { definition, session, markup = document, ...facts }: QueryEditorOptions): GraphDocument {
   const query = source.query;
-  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
+  // A field's type and words: the facts', the page's, else the source's, which holds its type's words too (plan 960 U2).
+  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type ?? source.filterDef?.(field).kind;
+  const labelOf = (field: string): string | undefined => facts.label?.(field) ?? definition.source?.fields?.[field]?.label ?? source.filterDef?.(field).label;
   const values = facts.values ?? ((field: string) => source.valuesFor?.(field)?.map((v) => valueKey(v)));
   // The layout a reader gave the graph: kept for the tab, beside the Query, which holds none of it.
   const layoutAt = `/node-layout/${definition.id}`;
@@ -66,16 +69,17 @@ export function queryDocument(source: QuerySource, { definition, session, markup
     kept = next;
     session?.set(keptAt, kept);
   };
-  const derived = (): DrawnGraph => queryGraph(query.draft, definition, {
-    ...facts, type: typeOf, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null, kept,
+  // What the Query's lens reads beside the page now: the one statement the draw and the write-back both use (plan 960 U4.5).
+  const lensFacts = (given: readonly KeptSource[] = kept): QueryLensFacts => ({
+    ...facts, query, layout, type: typeOf, label: labelOf, values, domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null, kept: given,
   });
+  const derived = (given: readonly KeptSource[] = kept): DrawnGraph => queryDrawn(definition, { ...lensFacts(given), layout: {} });
   // The graph `read` last gave, and the definition made from it: a reconcile reads its nodes' rows and refs, and a draw of
   // that definition is that graph. The Query has not moved since: each change is read again first.
   let drawn: DrawnGraph | null = null;
   let lastRead: ReturnType<typeof queryDefinition> | null = null;
   // The page's Preset Filters, as its Query declares them: placed as Custom Nodes. TODO 776
-  const scopesOf = (): string[] => [...new Set([VIEW, ...Object.keys(definition.source?.scopes ?? {}), ...Object.keys(query.draft.scopes)])];
-  const customs = (): Record<string, NodeKind> => Object.fromEntries(scopesOf().flatMap((scope) => query.presets(scope)
+  const customs = (): Record<string, NodeKind> => Object.fromEntries(queryScopes(definition, query).flatMap((scope) => query.presets(scope)
     .filter((p) => entityRefOf(p.id).type === PRESET_FILTER)
     .map((p) => [p.id, { heading: p.label, icon: 'filter', description: 'This page\'s Preset Filter.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes' } as NodeKind])));
   // A component's live copy, kept while the same component is shown: it asks the provider as the page's does.
@@ -98,29 +102,15 @@ export function queryDocument(source: QuerySource, { definition, session, markup
     write(next) {
       const was = drawn ?? laidOut(derived(), layout);
       const before = lastRead && drawn ? lastRead : queryDefinition(definition.id, was, layout);
-      const done = reconcileQuery(before, next, was, {
-        type: typeOf, values, kept,
-        // A Preset Filter is placed in the scope that declares it. TODO 776
-        scopeOf: (kind) => scopesOf().find((scope) => query.presets(scope).some((p) => p.id === kind)),
-        place: {
-          holds: (scope) => query.scope(scope), fields: (scope) => query.fields(scope),
-          presets: (scope) => query.presets(scope), on: (scope, id) => query.presetOn(scope, id), kept,
-          ...(definition.source?.store ? { store: definition.source.store } : {}), ...(facts.stores ? { stores: facts.stores } : {}),
-        },
-      });
+      const done = reconcileQuery(before, next, was, reconcileFacts(definition, lensFacts()));
       for (const { code, message } of done.refused) report({ code, message });
       if (done.kept) keep(done.kept);
       layout = done.layout;
       session?.set(layoutAt, layout);
       quiet++;
       try {
-        // Each row against the Query as the last one left it: a type changed first may reshape the rest. The first, as read.
-        for (const [i, row] of done.edits.entries()) {
-          const asked = rowRequest(i || done.kept ? derived() : was, row, { type: typeOf, kept });
-          if (asked && 'kept' in asked) keep(asked.kept);
-          else if (asked) query.ask(asked.request);
-        }
-        for (const request of done.requests) query.ask(request);
+        const after = applyReconciled(query, done, was, derived, { type: typeOf, kept });
+        if (after !== kept) keep(after);
       } finally {
         quiet--;
       }
