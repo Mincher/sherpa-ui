@@ -273,6 +273,9 @@ for example in its filter toolbar. The other rows wait on his yes.
 
 957 and 958 are small and go in any free slot. 951 lands before the Expert clear-out.
 
+**First real types (Will, 2026-11-13, TODO 963):** Users, Accounts, Roles, Permissions and Groups are U2's and U3's first
+real user: [plan 963](plan-963-users-accounts-roles-groups.md).
+
 ```mermaid
 flowchart LR
   U0a --> U1 --> U2 --> U3
