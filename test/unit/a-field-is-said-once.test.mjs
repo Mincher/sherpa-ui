@@ -117,15 +117,15 @@ test('a reader with no source open reads each field as the type and the page say
   assert.deepEqual(fields.site, { label: 'Site', select: 'single' }, 'a field only the page names is the page\'s');
 });
 
-test('a grid\'s columns are made from the fields, in their order, but the key', () => {
+test('a grid\'s columns are made from the fields, in their order, but the key; the grid heads each with its label', () => {
   assert.deepEqual(typeColumns(DEVICE), [
-    { field: 'name', header: 'Name', sortable: true },
-    { field: 'status', header: 'Status', sortable: true },
-    { field: 'risk', header: 'Risk', sortable: true, type: 'number' },
-    { field: 'owner', header: 'Owner', sortable: true },
-    { field: 'enrolled', header: 'Enrolled', sortable: true, type: 'date' },
-    { field: 'antivirus', header: 'Antivirus', sortable: true },
-    { field: 'health', header: 'Health', sortable: true },
+    { field: 'name', sortable: true },
+    { field: 'status', sortable: true },
+    { field: 'risk', sortable: true, type: 'number' },
+    { field: 'owner', sortable: true },
+    { field: 'enrolled', sortable: true, type: 'date' },
+    { field: 'antivirus', sortable: true },
+    { field: 'health', sortable: true },
   ]);
 });
 

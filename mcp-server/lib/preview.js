@@ -21,6 +21,7 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { imported, served } from './sherpa.js';
+import { typedStore, typeProblems } from './describe.js';
 
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 /** Never these, should the system pick one: an app's own servers listen there. */
@@ -146,12 +147,15 @@ const leave = () => void closePreview();
  * Serve a Context and open it, closing any preview before: `context` is its name
  * in the app it is served as; `template`, `definition` and `views` its three files,
  * as text; `viewFiles` each file a View names, `[path from the Views, text]`; the
- * store the page names holds `rows`. Resolves once the page has settled.
+ * store the page names holds `rows`, made from their `type` when one is given. Resolves once the page has settled.
  */
-export async function openPreview({ context, label, chrome, template, definition, views, viewFiles = [], store, rows = [], key },
+export async function openPreview({ context, label, chrome, template, definition, views, viewFiles = [], store, rows = [], key, type },
   { width = 1280, height = 800, mode = 'light', view } = {}) {
-  await closePreview();
   const [dl, host] = await Promise.all([imported('sherpa-ui/data'), imported('sherpa-ui/server')]);
+  // Refused before anything opens, or closes.
+  const wrong = type ? typeProblems(dl, type) : [];
+  if (wrong.length) throw new Error(`The type is not one (type.v1):\n${wrong.map((w) => `- ${w}`).join('\n')}`);
+  await closePreview();
   if (!served('bundle/index.js')) throw new Error('sherpa-ui\'s build has no bundle/index.js, which the page loads: run `npm run build` in sherpa-ui.');
   const now = (open = { browser: await launch(), spans: [], act: 'open' });
   process.stdin.once('end', leave);
@@ -177,7 +181,7 @@ export async function openPreview({ context, label, chrome, template, definition
       ...viewFiles.map(([rel, text]) => [new URL(rel, 'http://preview/context/views.json').pathname, text]),
     ]);
     const handlers = [
-      ...(store ? [host.createDataHandler({ stores: dl.defineStores(() => ({ [store]: new dl.ArrayStore(rows, key ? { key } : {}) })), host: 'server' })] : []),
+      ...(store ? [host.createDataHandler({ stores: dl.defineStores(() => ({ [store]: typedStore(dl, rows, { key, type }) })), host: 'server' })] : []),
       filesOf(paths),
     ];
     now.server = await listen(host.nodeHandler(handlers));

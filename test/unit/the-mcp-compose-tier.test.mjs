@@ -50,6 +50,13 @@ const ROWS = Array.from({ length: 64 }, (_, i) => ({
   seats: (i * 13) % 200, score: (i * 17) % 100, created: day(i * 5),
 }));
 const HEALTH = { health: { type: 'status', label: 'Health', values: [{ value: 'At risk', status: 'critical', when: [{ score: { lt: 40 } }] }, { value: 'Healthy' }] } };
+/** Their type, as describe_data gives it with the lists closed: each field's words said once (plan 960 U2). */
+const CUSTOMER = { v: 1, id: 'customer', label: 'Customer', fields: {
+  id: { label: 'Id', type: 'number' }, name: { label: 'Name' },
+  plan: { label: 'Plan', values: ['Free', 'Pro', 'Enterprise'] }, owner: { label: 'Owner', values: ['Ravi', 'Ana'] },
+  seats: { label: 'Seats', type: 'number' }, score: { label: 'Score', type: 'number' }, created: { label: 'Created', type: 'date' },
+} };
+const WITH_HEALTH = { ...CUSTOMER, fields: { ...CUSTOMER.fields, ...HEALTH } };
 
 test('each of Sherpa\'s patterns is a pattern by pattern.v1.json and passes checkPattern', async () => {
   for (const id of PATTERNS) {
@@ -64,7 +71,7 @@ test('each of Sherpa\'s patterns is a pattern by pattern.v1.json and passes chec
 async function refused(id, plant, said) {
   const broken = pattern(id);
   plant(broken);
-  const { bad, text } = await call('generate_page', { pattern: broken, id: 'probe', rows: ROWS, task: 'triage', writes: true });
+  const { bad, text } = await call('generate_page', { pattern: broken, id: 'probe', type: CUSTOMER, task: 'triage', writes: true });
   assert.equal(bad, true, text);
   assert.match(text, /cannot make this page: 1 problem\(s\)/);
   assert.match(text, said);
@@ -134,23 +141,25 @@ test('an app\'s own patterns: beside its app.json, picked with Sherpa\'s, and on
   assert.match(text, /\*\*records-list\*\* — Our records \(rank 5; the app's patterns\/records-list\.json, in place of Sherpa's patterns\/records-list\.json\)/);
   assert.match(text, /### Refused: not a pattern by pattern\.v1\.json\n\n- the app's patterns\/broken\.json\n {2}- patterns\/broken\.json is not JSON/);
   // generate_page reads the same patterns.
-  const board = await call('generate_page', { pattern: 'board', id: 'board', rows: ROWS, app });
+  const board = await call('generate_page', { pattern: 'board', id: 'board', type: CUSTOMER, app });
   assert.equal(board.bad, false, board.text);
   assert.match(board.text, /from the pattern "board" \(the app's patterns\/board\.json\)/);
 });
 
 test('generate_page: the records list\'s files pass validate_page and validate_app, and query_source counts the rows given', async () => {
-  const { bad, text } = await call('generate_page', { pattern: 'records-list', id: 'customers', rows: JSON.stringify(ROWS), task: 'triage', writes: true });
+  const { bad, text } = await call('generate_page', { pattern: 'records-list', id: 'customers', type: JSON.stringify(CUSTOMER), source: { search: ['name'] }, task: 'triage', writes: true });
   assert.equal(bad, false, text);
   const made = files(text);
   assert.deepEqual(Object.keys(made), ['templates/customers.html', 'view-schemas/customers.json', 'views/customers-views.json']);
   const definition = JSON.parse(made['view-schemas/customers.json']);
-  // The data's fields, the pattern's ui and a grid's columns and key from the data.
-  assert.deepEqual(Object.keys(definition.source.fields), ['plan', 'owner', 'seats', 'score', 'created']);
+  // No field's words, which are the type's; the page's own search; a grid's columns and key from the type, each headed by its label.
+  assert.equal(definition.source.fields, undefined);
   assert.deepEqual(definition.source.search, ['name']);
   assert.equal(definition.ui.grid.key, 'id');
+  assert.deepEqual(definition.ui.grid.columns.map((c) => c.field), ['name', 'plan', 'owner', 'seats', 'score', 'created']);
+  assert.ok(definition.ui.grid.columns.every((c) => !('header' in c)));
   assert.deepEqual(definition.ui.grid.actions.map((a) => a.id), ['edit', 'delete']);
-  // One summary metric per number field, and one input per field a reader writes.
+  // One summary metric per number field, never the key, and one input per field a reader writes.
   const html = made['templates/customers.html'];
   assert.equal([...html.matchAll(/<sherpa-metric [^>]*data-aggregate="sum" data-field="(\w+)"/g)].map((m) => m[1]).join(), 'seats,score');
   assert.equal([...html.matchAll(/<sherpa-input-text name="(\w+)"/g)].map((m) => m[1]).join(), 'name,plan,owner,seats,score,created');
@@ -168,24 +177,26 @@ test('generate_page: the records list\'s files pass validate_page and validate_a
   writeFileSync(join(app, 'app.json'), JSON.stringify({ v: 1, product: { name: 'Made' }, default: 'customers', contexts }));
   assert.match((await call('validate_app', { path: app })).text, /^## App "Made" \([^)]+\): sound/);
 
-  const run = await call('query_source', { definition: made['view-schemas/customers.json'], rows: ROWS, key: 'id' });
+  const run = await call('query_source', { definition: made['view-schemas/customers.json'], rows: ROWS, type: CUSTOMER });
   assert.equal(JSON.parse(run.text.split('```json\n')[1].split('\n```')[0]).total, ROWS.length);
+  assert.match((await call('query_source', { definition: made['view-schemas/customers.json'], rows: ROWS, type: { v: 1 } })).text, /The type is not one/);
 });
 
 test('generate_page: the filter scopes hold their kinds in the View, draw one chart per status field, and take the header\'s bar away', async () => {
-  const { bad, text } = await call('generate_page', { pattern: 'filter-scopes', id: 'accounts', rows: ROWS, status: HEALTH });
+  const { bad, text } = await call('generate_page', { pattern: 'filter-scopes', id: 'accounts', type: WITH_HEALTH });
   assert.equal(bad, false, text);
   const made = files(text);
   const definition = JSON.parse(made['view-schemas/accounts.json']);
   assert.deepEqual(definition.source.scopes.view.holds, ['created', 'health']);
-  assert.deepEqual(definition.source.fields.health, { label: 'Health', select: 'multiple' });
+  assert.equal(definition.source.fields, undefined, 'a status field\'s words are its type\'s');
   assert.match(made['templates/accounts.html'], /<sherpa-container-header slot="header" data-heading="Health"><\/sherpa-container-header>\n {4}<sherpa-radial-chart data-grow data-segment-field="health">/);
   assert.match(text, /"chrome": \{\n\s+"filters": false\n/);
   assert.match(text, /- \*\*Markup\*\* — check_usage.*: sound/);
 });
 
 test('generate_page: a Settings page is its template alone, under settings.pages; data it cannot draw is refused', async () => {
-  const { bad, text } = await call('generate_page', { pattern: 'settings-form', id: 'profile', rows: [{ name: 'Will', email: 'w@example.com', bio: '' }] });
+  const profile = { v: 1, id: 'profile', label: 'Profile', key: 'email', fields: { name: { label: 'Name' }, email: { label: 'Email', format: 'email' }, bio: { label: 'Bio' } } };
+  const { bad, text } = await call('generate_page', { pattern: 'settings-form', id: 'profile', type: profile });
   assert.equal(bad, false, text);
   const made = files(text);
   assert.deepEqual(Object.keys(made), ['templates/profile.html']);
@@ -193,11 +204,12 @@ test('generate_page: a Settings page is its template alone, under settings.pages
   assert.match(made['templates/profile.html'], /<sherpa-section-header id="section-profile" data-heading="Details">/);
   assert.match(text, /add to its `settings\.pages`\n\n````json\n\{\n {2}"settings": \{\n {4}"pages": \{\n {6}"profile": \{/);
   assert.match((await call('validate_page', { template: made['templates/profile.html'] })).text, /sound/);
-  assert.equal((await call('generate_page', { pattern: 'nope', id: 'x', rows: ROWS })).bad, true);
-  assert.match((await call('generate_page', { pattern: 'records-list', id: 'x' })).text, /Give the data as `rows` or as a page's `fields`/);
+  assert.equal((await call('generate_page', { pattern: 'nope', id: 'x', type: CUSTOMER })).bad, true);
+  assert.match((await call('generate_page', { pattern: 'records-list', id: 'x' })).text, /Give the data's `type` \(type\.v1\)/);
+  assert.match((await call('generate_page', { pattern: 'records-list', id: 'x', type: { ...CUSTOMER, key: 'serial' } })).text, /its key, "serial", is no field/);
 });
 
-test('describe_data fills the need: status fields from the store\'s, children from the page\'s fields, and neither from a sample', async () => {
+test('describe_data fills the need: status fields from the type\'s, children from the page\'s fields, and neither from a sample', async () => {
   const need = async (args) => {
     const { text } = await call('describe_data', args);
     return JSON.parse(text.split('### The need')[1].split('````json\n')[1].split('\n````')[0]);
@@ -207,8 +219,14 @@ test('describe_data fills the need: status fields from the store\'s, children fr
   const status = await need({ rows: JSON.stringify(ROWS), status: JSON.stringify(HEALTH) });
   assert.equal(status.statusFields, 1);
   assert.equal(status.fields, Object.keys(ROWS[0]).length + 1);
-  const page = await need({ fields: JSON.stringify({ customer: { label: 'Customer', select: 'multiple', child: 'site' }, site: { label: 'Site', select: 'multiple' }, seats: { type: 'number' } }) });
-  assert.deepEqual(page, { fields: 3, dateFields: 0, numberFields: 1, childFields: 1 });
+  const fields = { id: { label: 'Asset', advanced: 'only', op: 'contains' }, customer: { label: 'Customer', select: 'multiple', child: 'site' }, site: { label: 'Site', select: 'multiple' }, seats: { type: 'number' } };
+  const page = await need({ fields: JSON.stringify(fields) });
+  assert.deepEqual(page, { fields: 4, dateFields: 0, numberFields: 1, childFields: 1 });
+  // A page's fields split: the words are the type's, the controls the page's own.
+  const { text: split } = await call('describe_data', { fields: JSON.stringify(fields), id: 'device' });
+  const [type, own] = [...split.matchAll(/````json\n([\s\S]*?)\n````/g)].map((m) => JSON.parse(m[1]));
+  assert.deepEqual(type.fields, { id: { label: 'Asset' }, customer: { label: 'Customer' }, site: { label: 'Site' }, seats: { label: 'Seats', type: 'number' } });
+  assert.deepEqual(own, { fields: { id: { advanced: 'only', op: 'contains' }, customer: { select: 'multiple', child: 'site' }, site: { select: 'multiple' } } });
   for (const n of [status, page]) assert.deepEqual(schemaCheck('pattern.v1.json#/$defs/need')(n), []);
   const wrong = await call('describe_data', { rows: JSON.stringify(ROWS), status: '{"health":{"type":"status"}}' });
   assert.equal(wrong.bad, true);

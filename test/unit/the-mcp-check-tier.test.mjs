@@ -16,7 +16,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 import { markupProblems } from '../../scripts/check-usage.mjs';
-import { ArrayStore, checkApp, checkPage, email, number, onReport, required, rules, validate } from '../../dist/data.js';
+import { ArrayStore, checkApp, checkPage, onReport, typeFaults, typeSchema, typeStoreOptions, validate } from '../../dist/data.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const client = new Client({ name: 'the-mcp-check-tier', version: '1' });
@@ -179,33 +179,32 @@ test('check_usage: markup matches its specs, or each line says why, as check-usa
   assert.equal((await call('check_usage', { markup, own: '[1]' })).bad, true);
 });
 
-test('describe_data: rows → rules a store takes, fields a page takes and the need, each checked against its contract', async () => {
+test('describe_data: rows → a type a store is made from, the page\'s own and the need, each checked against its contract', async () => {
   const rows = [
     { id: 1, name: 'Acme', email: 'a@acme.io', status: 'active', seats: 10, created: '2025-01-02', tags: ['a'] },
     { id: 2, name: 'Bolt', email: 'b@bolt.io', status: 'trial', seats: 3, created: '2025-02-03T10:00:00Z', tags: [] },
     { id: 3, name: 'Core', email: 'c@core.io', status: 'active', seats: 55, created: '2025-03-04', tags: ['b'] },
   ];
-  const { bad, text: out } = await call('describe_data', { rows: JSON.stringify(rows), task: 'triage', writes: true });
+  const { bad, text: out } = await call('describe_data', { rows: JSON.stringify(rows), task: 'triage', writes: true, id: 'customer' });
   assert.equal(bad, false);
-  const [named, fields, need] = blocks(out);
-  // Conservative: the key is required; no min, max or oneOf from a sample.
-  assert.deepEqual(named, { id: ['required', 'number'], email: ['email'], seats: ['number'] });
-  assert.deepEqual(fields, {
-    status: { label: 'Status', select: 'multiple' },
-    seats: { label: 'Seats', type: 'number' },
-    created: { label: 'Created', type: 'date', time: true },
+  const [type, own, need] = blocks(out);
+  // Conservative: the key; no required, min, max or values from a sample; a list is no field.
+  assert.deepEqual(type.fields, {
+    id: { label: 'Id', type: 'number' }, name: { label: 'Name' }, email: { label: 'Email', format: 'email' },
+    status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' }, created: { label: 'Created', type: 'date', time: true },
   });
-  for (const f of Object.values(fields)) assert.deepEqual(schemaCheck('defs.v1.json#/$defs/field')(f), []);
-  assert.deepEqual(need, { task: 'triage', rows: 3, fields: 7, dateFields: 1, numberFields: 1, writes: true });
+  assert.deepEqual(schemaCheck('type.v1.json')(type), []);
+  assert.deepEqual(typeFaults(type), []);
+  assert.deepEqual(own, { search: ['name', 'email'] }, 'a page searches what every value differs in');
+  assert.deepEqual(need, { task: 'triage', rows: 3, fields: 6, dateFields: 1, numberFields: 1, writes: true });
   assert.deepEqual(schemaCheck('pattern.v1.json#/$defs/need')(need), []);
-  assert.match(out, /`name` → no rule; no page field \(every value differs: a field to search/);
-  assert.match(out, /`tags` → no rule; no page field \(a list/);
-  // The rules it gives are rules the store runs.
-  const schema = rules({ id: [required(), number()], email: [email()], seats: [number()] });
-  for (const row of rows) assert.equal((await validate(schema, row)).issues, undefined);
+  assert.match(out, /`name` → text; every value differs: a field to search/);
+  assert.match(out, /`tags` → left out \(a list/);
+  // The store made from it takes every row it was drawn from.
+  for (const row of rows) assert.equal((await validate(typeSchema(type), row)).issues, undefined);
 });
 
-test('describe_data: a schema\'s promises become rules, and what nothing carries is listed; a bad ask is refused', async () => {
+test('describe_data: a schema\'s promises become the type\'s, and what nothing carries is listed; a bad ask is refused', async () => {
   const doc = {
     openapi: '3.0.0',
     paths: { '/customers': { get: { responses: { 200: { content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Customer' } } } } } } } } },
@@ -219,39 +218,42 @@ test('describe_data: a schema\'s promises become rules, and what nothing carries
       },
     } } },
   };
-  const { text: out } = await call('describe_data', { schema: JSON.stringify(doc) });
+  const { text: out } = await call('describe_data', { schema: JSON.stringify(doc), id: 'customer' });
   assert.match(out, /from GET \/customers → 200 → items → #\/components\/schemas\/Customer/);
-  const [named, fields] = blocks(out);
-  assert.deepEqual(named, { id: ['required', 'number'], email: ['required', 'email'], tier: [{ oneOf: ['gold', 'silver'] }], seats: ['number', { min: 0 }, { max: 500 }] });
-  assert.deepEqual(fields.since, { label: 'Since', type: 'date', time: true });
-  assert.deepEqual(fields.tier, { label: 'Tier', select: 'multiple' });
-  assert.match(out, /- seats: exclusiveMaximum has no rule/);
-  assert.match(out, /- phone: format phone has no rule/);
+  const [type] = blocks(out);
+  assert.deepEqual(type.fields, {
+    id: { label: 'Id', type: 'number' }, email: { label: 'Email', required: true, format: 'email' },
+    tier: { label: 'Tier', values: ['gold', 'silver'] }, seats: { label: 'Seats', type: 'number', min: 0, max: 500 },
+    since: { label: 'Since', type: 'date', time: true }, phone: { label: 'Phone' },
+  });
+  assert.match(out, /- seats: exclusiveMaximum is said by no type field/);
+  assert.match(out, /- phone: format phone is said by no type field/);
   assert.equal((await call('describe_data', {})).bad, true);
   assert.equal((await call('describe_data', { rows: '[1]' })).bad, true);
   assert.equal((await call('describe_data', { schema: '{"type":"string"}' })).bad, true);
+  assert.match((await call('describe_data', { rows: '[{"name":"a"}]' })).text, /The key, "id", is no field of the data/);
 });
 
-test('validate_rows: rows against rules by name, as the data layer\'s own validate and store say it', async () => {
-  const given = { email: ['required', 'email'], seats: ['number', { min: 0 }] };
+test('validate_rows: rows against a type, as the data layer\'s own validate and a store made from it say it', async () => {
+  const type = { v: 1, id: 'seat', label: 'Seat', fields: { id: {}, email: { required: true, format: 'email' }, seats: { type: 'number', min: 0 } } };
   const rows = [{ id: 1, email: 'a@b.co', seats: 3 }, { id: 2, email: 'nope', seats: 'x' }, { id: 3, seats: -1, extra: 1 }];
-  const { bad, text: out } = await call('validate_rows', { rules: JSON.stringify(given), rows: JSON.stringify(rows) });
+  const { bad, text: out } = await call('validate_rows', { type: JSON.stringify(type), rows: JSON.stringify(rows) });
   assert.equal(bad, false);
   assert.match(out, /^## 2 of 3 row\(s\) refused/);
-  const schema = rules({ email: [required(), email()], seats: [number(), (await import('../../dist/data.js')).min(0)] });
   for (const row of rows.slice(1)) {
-    for (const issue of (await validate(schema, row)).issues) assert.ok(out.includes(`\`${issue.path[0]}\`: ${issue.message}`), issue.message);
+    for (const issue of (await validate(typeSchema(type), row)).issues) assert.ok(out.includes(`\`${issue.path[0]}\`: ${issue.message}`), issue.message);
   }
-  const read = await new ArrayStore(rows, { key: 'id', schema }).load({});
+  const read = await new ArrayStore(rows, typeStoreOptions(type)).load({});
   assert.ok(out.includes(`${read.dropped} row(s) are dropped and ${read.total} reach a component`));
-  assert.match(out, /in the rows, checked by no rule: `id`, `extra`/);
-  const good = await call('validate_rows', { rules: '{"seats":"number"}', rows: '[{"id":1,"seats":2}]' });
+  assert.match(out, /in the rows, not in the type: `extra`/);
+  const good = await call('validate_rows', { type: JSON.stringify({ v: 1, id: 's', label: 'S', fields: { id: {}, seats: { type: 'number' } } }), rows: '[{"id":1,"seats":2}]' });
   assert.match(good.text, /^## All 1 row\(s\) pass/);
-  const wrong = await call('validate_rows', { rules: '{"email":["emial",{"min":"3"}],"x":{"custom":1}}', rows: '[{"id":1}]' });
-  assert.equal(wrong.bad, true);
-  assert.match(wrong.text, /email: "emial" is no rule/);
-  assert.match(wrong.text, /email: min takes a number/);
-  assert.match(wrong.text, /custom\(\) is code/);
+  // A type is checked first: its schema's words, then the data layer's.
+  const shape = await call('validate_rows', { type: JSON.stringify({ v: 1, id: 'x', label: 'X', fields: { id: {}, email: { format: 'emial' } } }), rows: '[{"id":1}]' });
+  assert.equal(shape.bad, true);
+  assert.match(shape.text, /\/fields\/email\/format must be equal to one of the allowed values/);
+  const ends = await call('validate_rows', { type: JSON.stringify({ v: 1, id: 'x', label: 'X', fields: { id: {}, seats: { type: 'number', min: 5, max: 1 } } }), rows: '[{"id":1}]' });
+  assert.match(ends.text, /seats: its min is more than its max/);
 });
 
 const STARTER = existsSync(`${ROOT}../Sherpa Starter/index.mjs`);

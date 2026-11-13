@@ -100,6 +100,13 @@ test('preview_page draws a grid over sample rows on this machine: a screenshot, 
   assert.equal(children().length, 1, 'one browser');
 });
 
+test('preview_page refuses a type that is none, in its schema\'s words, and the preview open stays open', { skip }, async () => {
+  const { bad, text } = await call('preview_page', { definition, template, rows, type: { v: 1 } });
+  assert.equal(bad, true);
+  assert.match(text, /The type is not one \(type\.v1\)/);
+  assert.equal(children().length, 1, 'the first preview\'s browser');
+});
+
 test('call_component pages the pager as a reader would; watch_trace says that act by node, the page\'s spans and its host\'s joined', { skip }, async () => {
   const { bad, text, json } = await call('call_component', { selector: '#pager', method: 'goToPage', args: [2], readBack: ['page'] });
   assert.equal(bad, false, text);

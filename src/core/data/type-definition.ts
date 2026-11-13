@@ -14,7 +14,7 @@
  * - typeFields — Each field as a type and a page say it together, for a reader with no source open.
  * - typeStoreOptions — What a store made from a type is given: its key, its time and its schema.
  * - TypeColumn — One grid column made from a field.
- * - typeColumns — A grid's columns made from a type: one per field but its key, in its order.
+ * - typeColumns — A grid's columns made from a type: one per field but its key, in its order; each headed by its label.
  * - readFrom — A value read from an entity's graph, by a field's `from`.
  */
 import type { StoreOptions } from './base-store.js';
@@ -249,19 +249,19 @@ export function typeStoreOptions(type: TypeDefinition): StoreOptions & { key: st
   return { key: type.key ?? 'id', ...(type.time ? { time: type.time } : {}), schema: typeSchema(type) };
 }
 
-/** One grid column made from a field. */
+/** One grid column made from a field: no `header`, as the grid heads it with its source's label. */
 export interface TypeColumn {
   field: string;
-  header: string;
   sortable: true;
   type?: 'number' | 'date';
 }
 
-/** A grid's columns made from a type: one per field but its key, in its order. */
+/** A grid's columns made from a type: one per field but its key, in its order; each headed by its label, which the
+ *  grid reads from its source, so no column says it again. */
 export function typeColumns(type: TypeDefinition): TypeColumn[] {
   const key = type.key ?? 'id';
   return Object.entries(type.fields).filter(([name]) => name !== key).map(([field, f]) => ({
-    field, header: f.label ?? field, sortable: true,
+    field, sortable: true,
     ...(f.type === 'number' || f.type === 'date' ? { type: f.type } : {}),
   }));
 }

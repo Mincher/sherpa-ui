@@ -145,6 +145,7 @@ export function register(server) {
       folder: z.string().optional().describe('With the files: the folder the Views\' file sits in, so each file a View names, file.html#id, is read from it and served'),
       rows: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The rows the page\'s store holds, as a JSON list: a real page of a real answer. Default none'),
       key: z.string().optional().describe('The field each row is keyed by. Default: id'),
+      type: z.union([z.string(), z.record(z.unknown())]).optional().describe('The rows\' type (type.v1), as describe_data gives it: the store is made from it, as the app makes it, so the page shows each field\'s words and status fields'),
       view: z.string().optional().describe('The View it opens on, by its id in the Views. Default: the first'),
       width: z.number().int().min(320).max(3840).optional().describe('The window\'s width in px. Default 1280'),
       height: z.number().int().min(240).max(2160).optional().describe('The window\'s height in px. Default 800'),
@@ -164,7 +165,7 @@ export function register(server) {
       .flatMap(([where, html]) => markupProblems(html, where, files.own).problems);
     const opened = await openPreview({
       context: files.name, label: files.label, chrome: files.chrome, template: files.template, definition: files.definition.text, views: files.views.text,
-      viewFiles: viewFiles.filter(([, text]) => text != null), store, rows, key: args.key,
+      viewFiles: viewFiles.filter(([, text]) => text != null), store, rows, key: args.key, ...(args.type != null ? { type: given(args.type, 'type') } : {}),
     }, { width: args.width, height: args.height, mode: args.mode, view: args.view });
     const { facts: page, heard } = opened;
     const unread = viewFiles.filter(([, text]) => text == null).map(([rel, text]) => `${rel}, which a View names, was not read: ${text === null ? 'it is not beside the Views' : 'give the `folder` the Views sit in'}`);

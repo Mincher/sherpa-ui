@@ -82,12 +82,14 @@ A Custom Node's JSON, an entity (entity.v2) of the type node or any other type, 
 
 #### `describe_data` — Describe data
 
-Rows, a JSON Schema or an OpenAPI document, or a page's own fields, said in Sherpa's terms: the store's rules, by name, with the evidence for each and as code; a page's `fields`, each a field declaration (defs.v1.json); and the need a pattern is picked by (pattern.v1.json), which pick_pattern takes. From rows nothing is drawn from a field's name, and nothing a sample cannot show is proposed; from a schema, what it promises may be a rule, and what no rule carries is listed. A status field is the store's, so the need counts one only when `status` gives it, and a child is the page's, so only when `fields` are given. Each output is checked against its contract before it is given. validate_rows checks the rules against rows.
+Rows, a JSON Schema or an OpenAPI document, or a page's own fields, said in Sherpa's terms: a TYPE (type.v1), which says each field's data once, with the evidence for each field; the controls a page keeps, where a page's fields were given; and the need a pattern is picked by (pattern.v1.json), which pick_pattern takes. The data layer makes the store's rules, what a page knows of each field and a grid's columns from the type. From rows nothing is drawn from a field's name, and nothing a sample cannot show is proposed; from a schema, what it promises may be said, and what no type field carries is listed. A status field is the type's, so the need counts one only when `status` gives it, and a child is the page's, so only when `fields` are given. Each output is checked against its contract before it is given. validate_rows checks the type against rows; generate_page takes it.
 
 - `rows` (optional) — The rows, as a JSON array of plain objects: a real page of a real answer
 - `schema` (optional) — Instead of rows: a JSON Schema of one row or of an array of rows, or an OpenAPI document, as JSON
-- `fields` (optional) — Instead of rows: a page's own fields, as JSON — its definition's `source.fields` — so the need counts each child a field names (`child`)
-- `status` (optional) — The status fields its store works out, as JSON, as `statusFields(store, { … })` takes them (defs.v1.json statusField): {"health":{"type":"status","values":[{"value":"At risk","status":"critical","when":[{"score":{"lt":60}}]},{"value":"Healthy"}]}}. With rows, each row is given its value by the data layer's own statusFields()
+- `fields` (optional) — Instead of rows: a page's own fields, as JSON — its definition's `source.fields` — split into its type's words and the controls the page keeps
+- `status` (optional) — The status fields its store works out, as JSON (defs.v1.json statusField), each a field of the type: {"health":{"type":"status","values":[{"value":"At risk","status":"critical","when":[{"score":{"lt":60}}]},{"value":"Healthy"}]}}
+- `id` (optional) — The type's id: what one row is, e.g. customer. Default: record
+- `label` (optional) — The type's name, as a reader reads it. Default: from its id
 - `path` (optional) — For an OpenAPI document: the path whose GET answers with the rows, e.g. /customers. Default: its first
 - `key` (optional) — The field each row is known by. Default: id
 - `task` (optional) — The agent's word for the work, for the need: browse, find, triage, edit, settings…
@@ -95,11 +97,10 @@ Rows, a JSON Schema or an OpenAPI document, or a page's own fields, said in Sher
 
 #### `validate_rows` — Validate rows
 
-Rows against store rules, as sherpa-ui/data checks them: the rules made by its own rules(), each row run through its own validate(), and the rows read through an ArrayStore that holds the schema, which drops each row it refuses. Says how many pass, why each refused row was refused, and which fields no rule checks. Rules are by name, as describe_data gives them: {"email":["required","email"],"seats":["number",{"min":0}]}.
+Rows against a type (type.v1), as sherpa-ui/data checks them: the rules its typeSchema() makes, each row run through its own validate(), and the rows read through a store made from the type (typeStoreOptions, with its status fields), which drops each row it refuses. Says how many pass, why each refused row was refused, and which fields the type does not name. The type is checked first: its schema, then typeFaults().
 
-- `rules` — The rules, as JSON: field → a rule or a list of them. A rule is a name, "required", or { name: argument }, {"min": 0}. The rules: required, number, email, url, min, max, pattern, oneOf
+- `type` — The type, as JSON (type.v1), as describe_data gives it: { "v": 1, "id", "label", "fields": { "seats": { "type": "number", "min": 0 } } }
 - `rows` — The rows, as a JSON array of plain objects
-- `key` (optional) — The field each row is known by. Default: id
 
 #### `scaffold_app` — Scaffold an app
 
@@ -117,6 +118,7 @@ Open a page as its provider does — `checkPage`, then `openSource` over the row
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
 - `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
+- `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
 - `limit` (optional) — The most rows of the page to show; default 25
 
@@ -128,6 +130,7 @@ A page's Query as the Node Editor draws it (`queryGraph`): its store, status fie
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
 - `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
+- `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
 - `components` (optional) — The components the page binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
 
@@ -139,6 +142,7 @@ Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
 - `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
+- `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
 - `components` (optional) — The components the page binds, as query_graph takes them
 - `edits` — Each `{ "node", "row", "value" }` or `{ "from", "to" }`, in turn
@@ -171,14 +175,12 @@ The patterns that fit a need, as describe_data gives it: each pattern's `when` r
 
 #### `generate_page` — Generate a page
 
-A pattern and the data → a page: its template (the layout written as HTML, each `each` once per field of its kind), its page definition (the data's fields, the pattern's scopes with each `{kind}` the fields of that kind, its `ui`, and a grid's columns and key from the data) and its first View; or, for a pattern with no data source, a Settings page's template. With the paths to write them at and the app.json entry; a page that draws its own View bar takes the header's away (`chrome.filters: false`). The pattern is checked against the need first (checkPattern), and every file by validate_page's own check before it is given: one that fails is refused, with what failed.
+A pattern and the data's type → a page: its template (the layout written as HTML, each `each` once per field of its kind), its page definition (the pattern's scopes with each `{kind}` the fields of that kind, its `ui`, and a grid's columns and key from the type; no field's words, which are the type's) and its first View; or, for a pattern with no data source, a Settings page's template. With the paths to write them at and the app.json entry; a page that draws its own View bar takes the header's away (`chrome.filters: false`). The pattern is checked against the need first (checkPattern), and every file by validate_page's own check before it is given: one that fails is refused, with what failed.
 
 - `pattern` — A pattern's id, as pick_pattern gives it, or a pattern as JSON (pattern.v1.json), to try one of the app's own
 - `id` — The page's id: its Context's name in app.json, and its files', e.g. customers
-- `rows` (optional) — The rows, as a JSON array: what describe_data was given
-- `fields` (optional) — Instead of rows: a page's own fields, as JSON (its definition's `source.fields`)
-- `status` (optional) — The status fields the store works out, as statusFields(store, { … }) takes them, as describe_data takes them
-- `key` (optional) — The field each row is known by. Default: id
+- `type` (optional) — The data's type, as JSON (type.v1), as describe_data gives it. Every page needs one
+- `source` (optional) — The page's own part of its source, as JSON, as describe_data's "The page's own" gives it: what it searches and each field's control (select, advanced, op, child…), `{ "search": ["name"], "fields": { "customer": { "child": "site" } } }`. The words are the type's
 - `store` (optional) — The name the app registers its store under. Default: the page's id
 - `label` (optional) — Its row's name in the nav. Default: from its id
 - `task` (optional) — The agent's word for the work, for the need, as pick_pattern was given it
@@ -199,6 +201,7 @@ A Context drawn as a reader sees it: its page definition, template and Views ser
 - `folder` (optional) — With the files: the folder the Views' file sits in, so each file a View names, file.html#id, is read from it and served
 - `rows` (optional) — The rows the page's store holds, as a JSON list: a real page of a real answer. Default none
 - `key` (optional) — The field each row is keyed by. Default: id
+- `type` (optional) — The rows' type (type.v1), as describe_data gives it: the store is made from it, as the app makes it, so the page shows each field's words and status fields
 - `view` (optional) — The View it opens on, by its id in the Views. Default: the first
 - `width` (optional) — The window's width in px. Default 1280
 - `height` (optional) — The window's height in px. Default 800

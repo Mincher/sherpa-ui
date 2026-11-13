@@ -17,6 +17,7 @@ import { imported } from '../lib/sherpa.js';
 import { traced } from '../lib/trace.js';
 import { answer, refuse } from '../lib/reply.js';
 import { withEntities } from '../lib/check.js';
+import { typedStore, typeProblems } from '../lib/describe.js';
 
 /** Hosts a data path may name: this machine, never another. */
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
@@ -83,10 +84,15 @@ const act = (run) => async (args) => {
 /** Words, then the JSON. */
 const shown = (lines, data) => answer([...lines, '', '```json', JSON.stringify(data, null, 2), '```'].join('\n'));
 
-/** The page's store: the rows given, or the app's data path on this machine. */
-async function storeOf(dl, source, { rows, data, key }) {
-  if (data === undefined) return new dl.ArrayStore(listOf(rows, 'rows'), key ? { key } : {});
-  if (rows !== undefined) throw new Error('Give `rows` or `data`, not both.');
+/** The page's store: the rows given, made from their type when one is given, or the app's data path on this machine. */
+async function storeOf(dl, source, { rows, data, key, type: givenType }) {
+  if (data === undefined) {
+    const type = givenType == null ? undefined : given(givenType, 'type');
+    const wrong = type ? typeProblems(dl, type) : [];
+    if (wrong.length) throw new Error(`The type is not one (type.v1):\n${wrong.map((w) => `- ${w}`).join('\n')}`);
+    return typedStore(dl, listOf(rows, 'rows'), { key, type });
+  }
+  if (rows !== undefined || givenType !== undefined) throw new Error('Give `rows` (and their `type`) or `data`, not both.');
   let url;
   try {
     url = new URL(data);
@@ -200,6 +206,7 @@ const PAGE = {
   rows: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The rows its store holds, as a JSON list. Left out with `data` left out, it has none'),
   data: z.string().optional().describe('In place of rows: the app\'s data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page\'s `source.store`. Any other host is refused'),
   key: z.string().optional().describe('With `rows`: the field each row is keyed by, e.g. id'),
+  type: z.union([z.string(), z.record(z.unknown())]).optional().describe('With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field\'s words and status fields'),
   commands: z.union([z.string(), z.array(z.unknown())]).optional().describe('Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change'),
 };
 

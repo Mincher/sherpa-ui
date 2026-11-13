@@ -1,89 +1,26 @@
 /**
- * describe.js — data, said in sherpa-ui's terms: rows or a JSON Schema → the
- * store's rules, a page's `fields` and the need a pattern is picked by; and
- * rules by name made into sherpa-ui/data's own. Rules cannot cross a tool's
- * boundary as functions, so they cross by name: `{ "seats": ["number", { "min": 0 }] }`.
+ * describe.js — data, said in sherpa-ui's terms: rows, a JSON Schema or a page's
+ * own fields → a TYPE (type.v1), which the data layer makes the store's rules, a
+ * page's fields and a grid's columns from (plan 960 U2); and the need a pattern
+ * is picked by.
  *
  * Map:
- * - RULES — the rules that cross by name: sherpa-ui/data's own, less `custom`
- * - RULE_FORM — what a rule by name is, said once for an agent
- * - ruleMap — rules by name made into sherpa-ui/data's own rule functions, and each that could not be made
- * - ruleCode — rules by name as the code a store is given
  * - labelOf — a field's name as a reader reads it: `openTickets` → "Open tickets"
- * - fromRows — rows → each field's rules, its page field and the evidence for both
+ * - fromRows — rows → each field as its type says it, and the evidence
  * - fromSchema — a JSON Schema or an OpenAPI document → the same, and what it says that nothing carries
- * - fromFields — a page's own fields → the same: what it declares, and no rule
+ * - CONTROLS — the keys of a page's field that say what its control does: a page keeps them, a type never
+ * - splitFields — a page's own fields → each field as its type says it, and the controls its page keeps
+ * - typeOf — fields as fromRows says them, and the status fields → a type (type.v1)
+ * - fromType — a type, and a page's own fields over it → each field as fromRows says one
+ * - typeProblems — what is wrong with a type an agent gives: its schema's words, then the data layer's
+ * - typedStore — rows as a store made from their type: its key, time, rules, words and status fields
  * - statusProblems — the status fields an agent gives, against what statusFields() takes: each problem, none when sound
- * - withStatus — the fields, and each status field the data does not show, as a list a page filters by
- * - statusRows — rows as a store that works out status fields gives them: each with its status values
  * - fieldKinds — the fields of each kind a pattern's `each` stands for, each with its label
  * - needOf — the need a pattern is picked by: what the data says, and the task and writes as the agent says them
  */
 import { schemaCheck } from './check.js';
 
-/** The rules that cross by name, and what each takes: sherpa-ui/data's own, less `custom`, which is code. */
-export const RULES = {
-  required: 'an optional message', number: 'an optional message', email: 'an optional message', url: 'an optional message',
-  min: 'a number: a number\'s least, or a text\'s fewest characters', max: 'a number: a number\'s most, or a text\'s most characters',
-  pattern: 'a regular expression, as text', oneOf: 'a list of the values allowed',
-};
-
-/** What a rule by name is, said once for an agent. */
-export const RULE_FORM = `A rule is a name, "required", or { name: argument }, {"min": 0}: ${Object.entries(RULES).map(([n, a]) => `${n} takes ${a}`).join('; ')}.`;
-
 const isObject = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
-/** One rule by name: its name and argument, or null when it is not one. */
-const named = (entry) => {
-  if (typeof entry === 'string') return [entry, undefined];
-  return isObject(entry) && Object.keys(entry).length === 1 ? Object.entries(entry)[0] : null;
-};
-const ARG_OK = {
-  min: (a) => typeof a === 'number', max: (a) => typeof a === 'number',
-  pattern: (a) => typeof a === 'string', oneOf: (a) => Array.isArray(a),
-};
-
-/** Rules by name made into sherpa-ui/data's own rule functions — a field's list, as `rules()` takes it — and each that could not be made. */
-export function ruleMap(dl, given) {
-  const map = {};
-  const problems = [];
-  if (!isObject(given)) return { map, problems: ['the rules are not an object of field → its rules'] };
-  for (const [field, list] of Object.entries(given)) {
-    map[field] = [];
-    for (const entry of [list].flat()) {
-      const [name, arg] = named(entry) ?? [];
-      if (!(name in RULES)) {
-        problems.push(`${field}: ${JSON.stringify(entry)} is no rule${name === 'custom' ? ': custom() is code, which cannot cross a tool\'s boundary' : ''}`);
-        continue;
-      }
-      const ok = ARG_OK[name] ?? ((a) => a === undefined || typeof a === 'string');
-      if (!ok(arg)) {
-        problems.push(`${field}: ${name} takes ${RULES[name]}, not ${JSON.stringify(arg)}`);
-        continue;
-      }
-      try {
-        map[field].push(name === 'pattern' ? dl.pattern(new RegExp(arg)) : dl[name](arg));
-      } catch (error) {
-        problems.push(`${field}: ${name}: ${error.message}`);
-      }
-    }
-  }
-  return { map, problems };
-}
-
-/** Rules by name as the code a store is given: its import, and `rules({ … })`. */
-export function ruleCode(given) {
-  const used = new Set(['rules']);
-  const call = (entry) => {
-    const [name, arg] = named(entry);
-    used.add(name);
-    if (name === 'pattern') return `pattern(/${String(arg).replace(/\//g, '\\/')}/)`;
-    return `${name}(${arg === undefined ? '' : JSON.stringify(arg)})`;
-  };
-  const key = (f) => (/^[A-Za-z_$][\w$]*$/.test(f) ? f : JSON.stringify(f));
-  const body = Object.entries(given).map(([field, list]) => `  ${key(field)}: [${[list].flat().map(call).join(', ')}],`);
-  return `import { ${[...used].join(', ')} } from 'sherpa-ui/data';\n\nconst schema = rules({\n${body.join('\n')}\n});`;
-}
-
 const absent = (v) => v === undefined || v === null || v === '';
 /** An ISO day, with a time of day or not: what a date field holds. */
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}(?<time>[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
@@ -94,20 +31,20 @@ export const labelOf = (field) => {
 };
 
 /**
- * Rows → each field's rules, its page field, and the evidence for both.
+ * Rows → each field as its type says it (type.v1's field), and the evidence.
  * Nothing is drawn from a field's NAME, and nothing a sample cannot show is
- * proposed: no `required` but the key's, no `min`, `max` or `oneOf`.
+ * proposed: no `required` but the key's, no `min`, `max` or `values`.
  */
 export function fromRows(dl, rows, key = 'id') {
-  const names = [...new Set(rows.flatMap((r) => (isObject(r) ? Object.keys(r) : [])))];
   const passes = (rule, values) => values.every((v) => rule(v) === undefined);
+  const names = [...new Set(rows.flatMap((r) => (isObject(r) ? Object.keys(r) : [])))];
   return names.map((name) => {
     const values = rows.map((r) => r?.[name]);
     const present = values.filter((v) => !absent(v));
-    const out = { name, rules: [], field: null, why: [], left: null };
+    const field = { label: labelOf(name) };
+    const out = { name, field, why: [], left: null };
     if (name === key) {
-      out.rules.push('required');
-      out.why.push('how byKey, update and remove find a row');
+      out.why.push('the key: how byKey, update and remove find a row, so required');
       if (present.length < rows.length) out.why.push(`${rows.length - present.length} row(s) have none`);
       out.left = 'the key';
     }
@@ -117,46 +54,40 @@ export function fromRows(dl, rows, key = 'id') {
     }
     const kinds = [...new Set(present.map((v) => (Array.isArray(v) ? 'array' : typeof v)))];
     if (kinds.length > 1) out.why.push(`its values are of ${kinds.length} kinds: ${kinds.join(', ')}`);
-    if (kinds.includes('array')) {
-      out.left ??= 'a list: a filter compares one value, never one of a list\'s';
+    if (kinds.includes('array') || kinds.includes('object')) {
+      out.left = kinds.includes('array') ? 'a list: a filter compares one value, never one of a list\'s' : `an object: a page reaches a part of it by a dotted path, ${name}.part`;
       out.nested = true;
+      out.field = null;
       return out;
     }
-    if (kinds.includes('object')) {
-      out.left ??= `an object: a page reaches a part of it by a dotted path, ${name}.part`;
-      out.nested = true;
-      return out;
-    }
-    const label = labelOf(name);
     if (kinds.length === 1 && kinds[0] === 'number' && passes(dl.number(), present)) {
-      out.rules.push('number');
+      field.type = 'number';
       const [low, high] = present.reduce(([lo, hi], v) => [Math.min(lo, v), Math.max(hi, v)], [Infinity, -Infinity]);
       out.why.push(`every value is a number, from ${low} to ${high}: no min or max, as a sample cannot bound its store`);
-      out.field = { label, type: 'number' };
+    } else if (kinds.length === 1 && kinds[0] === 'boolean') {
+      field.type = 'boolean';
+      out.why.push('every value is true or false');
     } else if (kinds.length === 1 && kinds[0] === 'string' && present.every((v) => ISO_DAY.test(v))) {
       const timed = present.some((v) => ISO_DAY.exec(v).groups.time);
+      field.type = 'date';
+      if (timed) field.time = true;
       out.why.push(`every value is an ISO day${timed ? ', some with a time of day' : ''}`);
-      out.field = { label, type: 'date', ...(timed ? { time: true } : {}) };
     } else {
       if (kinds.length === 1 && kinds[0] === 'string') {
         if (passes(dl.email(), present)) {
-          out.rules.push('email');
-          out.why.push(`every value passes email()`);
+          field.format = 'email';
+          out.why.push('every value passes email()');
         } else if (present.every((v) => /^https?:\/\//i.test(v)) && passes(dl.url(), present)) {
-          out.rules.push('url');
-          out.why.push(`every value is an http(s) URL that url() accepts`);
+          field.format = 'url';
+          out.why.push('every value is an http(s) URL that url() accepts');
         }
       }
       const distinct = new Set(present.map((v) => dl.valueKey(v))).size;
       if (distinct === present.length && present.length > 1 && kinds[0] === 'string') {
-        out.left ??= `every value differs: a field to search (source.search), not a list to filter by`;
+        out.left ??= 'every value differs: a field to search (source.search), not a list to filter by';
         out.search = name !== key;
-      } else {
-        out.why.push(`${distinct} distinct value(s) in ${present.length}: a list to filter by`);
-        out.field = { label, select: 'multiple' };
-      }
+      } else out.why.push(`${distinct} distinct value(s) in ${present.length}: a list to filter by, its values not closed, as a sample cannot close a set`);
     }
-    if (out.left) out.field = null;
     return out;
   });
 }
@@ -185,9 +116,9 @@ function rowSchema(doc, pathHint) {
 }
 
 /**
- * A JSON Schema or an OpenAPI document → each field's rules, its page field and
- * the evidence, and what the schema says that no rule or field carries. What a
- * spec PROMISES may be a rule, as a sample's evidence may not.
+ * A JSON Schema or an OpenAPI document → each field as its type says it, the
+ * evidence, and what the schema says that no type field carries. What a spec
+ * PROMISES may be said, as a sample's evidence may not.
  */
 export function fromSchema(doc, { path: pathHint, key = 'id' } = {}) {
   const { schema: row, via, paths } = rowSchema(doc, pathHint);
@@ -198,59 +129,62 @@ export function fromSchema(doc, { path: pathHint, key = 'id' } = {}) {
   const required = new Set(Array.isArray(row.required) ? row.required : []);
   const uncarried = [];
   const fields = Object.entries(row.properties).map(([name, given]) => {
-    const out = { name, rules: [], field: null, why: [], left: null };
+    const out = { name, field: null, why: [], left: null };
     const s = given?.$ref ? resolveRef(doc, given.$ref) : given;
     if (!isObject(s)) {
       uncarried.push(`${name}: ${given?.$ref ? `${given.$ref} is not in this document` : 'not a schema'}`);
       return out;
     }
-    if (required.has(name)) {
-      out.rules.push('required');
+    const field = { label: typeof s.title === 'string' ? s.title : labelOf(name) };
+    if (typeof s.description === 'string') field.description = s.description;
+    out.field = field;
+    if (required.has(name) && name !== key) {
+      field.required = true;
       out.why.push('the schema requires it');
     }
-    for (const kw of ['allOf', 'anyOf', 'oneOf', 'not']) if (s[kw]) uncarried.push(`${name}: ${kw} has no rule`);
+    for (const kw of ['allOf', 'anyOf', 'oneOf', 'not']) if (s[kw]) uncarried.push(`${name}: ${kw} is said by no type field`);
     const types = [s.type].flat().filter(Boolean);
     if (types.includes('null')) out.why.push('it may be null: every rule but required passes an empty value');
     const type = types.find((t) => t !== 'null');
-    const label = typeof s.title === 'string' ? s.title : labelOf(name);
-    const described = typeof s.description === 'string' ? { description: s.description } : {};
     if (type === 'number' || type === 'integer') {
-      out.rules.push('number');
-      out.field = { label, type: 'number', ...described };
-      if (typeof s.minimum === 'number') out.rules.push({ min: s.minimum });
-      if (typeof s.maximum === 'number') out.rules.push({ max: s.maximum });
+      field.type = 'number';
+      if (typeof s.minimum === 'number') field.min = s.minimum;
+      if (typeof s.maximum === 'number') field.max = s.maximum;
       out.why.push(`type: ${type}${typeof s.minimum === 'number' ? `, minimum ${s.minimum}` : ''}${typeof s.maximum === 'number' ? `, maximum ${s.maximum}` : ''}`);
-      for (const kw of ['exclusiveMinimum', 'exclusiveMaximum', 'multipleOf']) if (s[kw] !== undefined) uncarried.push(`${name}: ${kw} has no rule (min and max hold their ends)`);
+      for (const kw of ['exclusiveMinimum', 'exclusiveMaximum', 'multipleOf']) if (s[kw] !== undefined) uncarried.push(`${name}: ${kw} is said by no type field (min and max hold their ends)`);
+    } else if (type === 'boolean') {
+      field.type = 'boolean';
+      out.why.push('type: boolean');
     } else if (type === 'object' || type === 'array') {
       out.left = type === 'array' ? 'a list: a filter compares one value, never one of a list\'s' : `an object: a page reaches a part of it by a dotted path, ${name}.part`;
       out.nested = true;
-      uncarried.push(`${name}: ${type === 'array' ? 'a rule checks one value, not each item' : 'its own properties have no rules here'}`);
+      out.field = null;
+      uncarried.push(`${name}: ${type === 'array' ? 'a type field holds one value, not a list' : 'its own properties are no fields here'}`);
     } else {
       const format = s.format;
       if (format === 'date' || format === 'date-time') {
-        out.field = { label, type: 'date', ...(format === 'date-time' ? { time: true } : {}), ...described };
+        field.type = 'date';
+        if (format === 'date-time') field.time = true;
         out.why.push(`format: ${format}`);
-      } else {
-        if (format === 'email') out.rules.push('email');
-        else if (format === 'uri' || format === 'url') out.rules.push('url');
-        else if (format) uncarried.push(`${name}: format ${format} has no rule`);
-        if (format === 'email' || format === 'uri' || format === 'url') out.why.push(`format: ${format}`);
-        out.field = { label, ...(Array.isArray(s.enum) ? { select: 'multiple' } : {}), ...described };
+      } else if (format === 'email' || format === 'uri' || format === 'url') {
+        field.format = format === 'email' ? 'email' : 'url';
+        out.why.push(`format: ${format}`);
+      } else if (format) uncarried.push(`${name}: format ${format} is said by no type field`);
+      if (field.type !== 'date') {
+        if (typeof s.pattern === 'string') field.pattern = s.pattern;
+        if (typeof s.minLength === 'number') field.min = s.minLength;
+        if (typeof s.maxLength === 'number') field.max = s.maxLength;
+        if (s.minLength !== undefined || s.maxLength !== undefined) out.why.push('minLength and maxLength are min and max: on text they count its characters');
       }
-      if (typeof s.pattern === 'string') out.rules.push({ pattern: s.pattern });
-      if (typeof s.minLength === 'number') out.rules.push({ min: s.minLength });
-      if (typeof s.maxLength === 'number') out.rules.push({ max: s.maxLength });
-      if (s.minLength !== undefined || s.maxLength !== undefined) out.why.push('minLength and maxLength are min and max: on text they count its characters');
     }
-    if (Array.isArray(s.enum) && s.enum.length) {
-      out.rules.push({ oneOf: s.enum });
+    if (Array.isArray(s.enum) && s.enum.length && out.field) {
+      field.values = s.enum;
       out.why.push(`enum of ${s.enum.length}: the schema closes the set`);
     }
-    if (s.default !== undefined) uncarried.push(`${name}: default has no rule: a store does not fill one in`);
+    if (s.default !== undefined) uncarried.push(`${name}: default is said by no type field: a store does not fill one in`);
     if (name === key) {
       out.left = 'the key';
-      out.field = null;
-      if (!required.has(name)) out.why.push('the key, which the schema does not require');
+      out.why.push(required.has(name) ? 'the key, so required' : 'the key, which the schema does not require: a type\'s key is');
     }
     return out;
   });
@@ -258,9 +192,50 @@ export function fromSchema(doc, { path: pathHint, key = 'id' } = {}) {
   return { fields, via, uncarried };
 }
 
-/** A page's own fields (its definition's `source.fields`) → each field as fromRows says one: what the page declares, and no rule. */
-export function fromFields(declared) {
-  return Object.entries(declared).map(([name, field]) => ({ name, rules: [], field, why: ['the page declares it'], left: null }));
+/** The keys of a page's field that say what its control does: a page keeps them, a type never. */
+export const CONTROLS = ['select', 'advanced', 'op', 'range', 'step', 'icon', 'section', 'carryOver', 'child', 'fetch', 'start'];
+
+/** A page's own fields (its definition's `source.fields`) → each field as its type says it, and the controls its page keeps. */
+export function splitFields(declared) {
+  const page = {};
+  const fields = Object.entries(declared).map(([name, decl]) => {
+    const field = { label: decl.label ?? labelOf(name) };
+    for (const k of ['description', 'labels', 'statuses', 'time', 'min', 'max']) if (decl[k] !== undefined) field[k] = decl[k];
+    if (decl.type === 'number' || decl.type === 'date') field.type = decl.type;
+    const own = Object.fromEntries(CONTROLS.filter((k) => decl[k] !== undefined).map((k) => [k, decl[k]]));
+    if (Object.keys(own).length) page[name] = own;
+    return { name, field, ...(own.child ? { page: own } : {}), why: ['the page declares it'], left: null };
+  });
+  return { fields, page };
+}
+
+/** Fields as fromRows says them, and the status fields → a type (type.v1): its id, name and key, each field in order. */
+export function typeOf(fields, { id = 'record', label, key = 'id', status } = {}) {
+  const out = Object.fromEntries(fields.filter((f) => f.field).map((f) => [f.name, f.field]));
+  for (const [name, def] of Object.entries(status ?? {})) out[name] = def;
+  return { $schema: 'https://sherpa-ui.dev/schemas/type.v1.json', v: 1, id, label: label ?? labelOf(id), ...(key !== 'id' ? { key } : {}), fields: out };
+}
+
+/** A type, and a page's own fields over it → each field as fromRows says one: for a pattern's kinds and need. */
+export function fromType(type, own = {}) {
+  const key = type.key ?? 'id';
+  return Object.entries(type.fields).map(([name, field]) => ({
+    name, field, ...(own[name] ? { page: own[name] } : {}), why: ['the type says it'], left: name === key ? 'the key' : null,
+  }));
+}
+
+/** What is wrong with a type an agent gives: its schema's words, then the data layer's (typeFaults); none when sound. */
+export function typeProblems(dl, type) {
+  const shape = schemaCheck('type.v1.json')(type);
+  return shape.length ? shape.map((e) => `type${e}`) : dl.typeFaults(type);
+}
+
+/** Rows as a store made from their type — its key, time, rules, words and status fields, as an app makes it; no type, the rows alone. */
+export function typedStore(dl, rows, { key, type } = {}) {
+  if (!type) return new dl.ArrayStore(rows, key ? { key } : {});
+  const store = new dl.ArrayStore(rows, dl.typeStoreOptions(type));
+  const status = dl.typeStatusFields(type);
+  return Object.keys(status).length ? dl.statusFields(store, status) : store;
 }
 
 /** The status fields an agent gives, against what statusFields() takes (defs.v1.json statusField): each problem, none when sound. */
@@ -269,55 +244,43 @@ export function statusProblems(status) {
   return Object.entries(status).flatMap(([f, d]) => schemaCheck('defs.v1.json#/$defs/statusField')(d).map((e) => `status.${f}${e}`));
 }
 
-/** The fields, and each status field the data does not show (a schema's, a page's), as a list a page filters by: its store works its values out. */
-export function withStatus(fields, status) {
-  for (const [name, def] of Object.entries(status ?? {})) {
-    if (!fields.some((f) => f.name === name)) fields.push({ name, rules: [], field: { label: def.label ?? labelOf(name), select: 'multiple' }, why: ['a status field: its store works it out'], left: null });
-  }
-  return fields;
-}
-
-/** Rows as a store that works out these status fields gives them (statusFields, as the app wraps its store): each row with its status values. It throws, in the data layer's words, on a condition it cannot work out. */
-export async function statusRows(dl, rows, status, key = 'id') {
-  return (await dl.statusFields(new dl.ArrayStore(rows.map((r) => ({ ...r })), { key }), status).load({})).rows;
-}
-
 /**
  * The fields of each kind a pattern's `each` stands for (pattern.v1.json), each
  * `{ name, label }`: `field` is every field a reader may write — not the key, a
  * list or an object, which no one input holds, nor a status, which its store
- * works out; `statusField` each one `status` names; `childField` each field
- * another names as its `child`.
+ * works out; `statusField` each status field; `childField` each field another
+ * names as its `child`.
  */
-export function fieldKinds(fields, { key = 'id', status = [] } = {}) {
+export function fieldKinds(fields, { key = 'id' } = {}) {
   const one = (f) => ({ name: f.name, label: f.field?.label ?? labelOf(f.name) });
-  const typed = (t) => fields.filter((f) => f.field?.type === t).map(one);
-  const children = new Set(fields.map((f) => f.field?.child).filter(Boolean));
+  // Never the key: a sum of ids is no metric.
+  const typed = (t) => fields.filter((f) => f.name !== key && f.left !== 'the key' && f.field?.type === t).map(one);
+  const children = new Set(fields.map((f) => f.page?.child).filter(Boolean));
   return {
-    field: fields.filter((f) => f.name !== key && !f.nested && !status.includes(f.name)).map(one),
+    field: fields.filter((f) => f.name !== key && f.field && f.field.type !== 'status' && !f.field.from).map(one),
     dateField: typed('date'),
     numberField: typed('number'),
-    statusField: fields.filter((f) => status.includes(f.name)).map(one),
+    statusField: typed('status'),
     childField: fields.filter((f) => children.has(f.name)).map(one),
   };
 }
 
 /**
  * The need a pattern is picked by (pattern.v1.json `need`): what the data says,
- * and the task and writes as the agent says them. A status field is its
- * store's, so it is counted only when `status` names them; a child is its
- * page's, so only when the fields are the page's own (`declared`). A sample
- * shows neither: left out, each is unknown, not none.
+ * and the task and writes as the agent says them. A status field is its type's,
+ * so it is counted only when the type is known (`status`); a child is its page's,
+ * so only when the page's fields are (`declared`). A sample shows neither: left
+ * out, each is unknown, not none.
  */
-export function needOf(fields, { rows, task, writes, status, declared = false } = {}) {
-  const typed = (t) => fields.filter((f) => f.field?.type === t).length;
+export function needOf(fields, { rows, task, writes, status = false, declared = false } = {}) {
+  const typed = (t) => fields.filter((f) => f.left !== 'the key' && f.field?.type === t).length;
   return {
     ...(task ? { task } : {}),
     ...(rows != null ? { rows } : {}),
     fields: fields.length,
     dateFields: typed('date'),
     numberFields: typed('number'),
-    ...(status ? { statusFields: status.length } : {}),
+    ...(status ? { statusFields: typed('status') } : {}),
     ...(declared ? { childFields: fieldKinds(fields).childField.length } : {}),
     ...(writes != null ? { writes } : {}),
   };

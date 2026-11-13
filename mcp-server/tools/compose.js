@@ -18,7 +18,7 @@ import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { spec } from '../lib/sherpa.js';
 import { checkPageFiles, dataLayer, findings, schemaCheck } from '../lib/check.js';
-import { fieldKinds, fromFields, fromRows, labelOf, needOf, statusProblems, statusRows, withStatus } from '../lib/describe.js';
+import { fieldKinds, fromType, labelOf, needOf, typeProblems } from '../lib/describe.js';
 import { KINDS, checkPattern, drawsViewBar, expandScopes, patternsFor, pickPattern, writeLayout } from '../lib/pattern.js';
 import { answer, refuse } from '../lib/reply.js';
 import { prompted } from '../lib/skills.js';
@@ -51,15 +51,6 @@ const part = (p) => `\`${p.field}\` ${JSON.stringify(p.condition)}: ${p.value ==
 
 const APP = z.string().optional().describe('The app\'s folder, or its app.json, whose patterns/ folder adds the app\'s own patterns; relative paths start where the MCP runs. Default: the folder the MCP runs in');
 
-/** The status fields, checked as statusFields() takes them; null when none is given. */
-function statusOf(value) {
-  if (value == null) return null;
-  const status = given(value, 'status');
-  const wrong = statusProblems(status);
-  if (wrong.length) throw new Error(`The status fields are not what statusFields() takes (defs.v1.json statusField):\n${wrong.map((w) => `- ${w}`).join('\n')}`);
-  return status;
-}
-
 /** A pattern by id, from Sherpa's and the app's, or one given whole; it throws, naming those there are. */
 function patternOf(value, app) {
   const { patterns, refused } = patternsFor(app);
@@ -72,25 +63,19 @@ function patternOf(value, app) {
   return { pattern: given(value, 'pattern'), from: 'given', file: null };
 }
 
-/** The grid's columns, one per field a page declares or searches, as its `columns` takes them. */
-const columnsOf = (fields) => fields.filter((f) => f.field || f.search).map((f) => ({
-  field: f.name, header: f.field?.label ?? labelOf(f.name), sortable: true,
-  ...(f.field?.type === 'number' || f.field?.type === 'date' ? { type: f.field.type } : {}),
-}));
-
 /**
  * Each element's `ui`: the pattern's, and for an element that asks for a page of
- * rows and takes `columns` and `key` (its spec's jsProps), those of the data —
- * the pattern's own keys win.
+ * rows and takes `columns` and `key` (its spec's jsProps), the type's (typeColumns)
+ * — the pattern's own keys win.
  */
-function uiOf(pattern, fields, key) {
+function uiOf(pattern, columns, key) {
   const ui = structuredClone(pattern.page?.ui ?? {});
   const visit = (node) => {
     const id = node.attrs?.id;
     const s = typeof node.el === 'string' && node.el.includes('-') ? spec(node.el) : null;
     const props = new Set((s?.$extensions?.sherpa?.jsProps ?? []).map((p) => p.name));
     if (typeof id === 'string' && !id.includes('{') && s?.asks?.shape === 'rows' && props.has('columns') && props.has('key')) {
-      ui[id] = { key, columns: columnsOf(fields), ...ui[id] };
+      ui[id] = { key, columns, ...ui[id] };
     }
     for (const child of node.children ?? []) visit(child);
   };
@@ -116,17 +101,20 @@ async function generate(args) {
   const dl = await dataLayer();
   const entry = patternOf(args.pattern, args.app ?? '.');
   const { pattern } = entry;
-  const key = args.key ?? 'id';
   const id = args.id;
-  const status = statusOf(args.status);
-  if ((args.rows == null) === (args.fields == null)) throw new Error('Give the data as `rows` or as a page\'s `fields`, one of them.');
-  const rows = args.rows == null ? null : given(args.rows, 'rows');
-  if (rows && (!Array.isArray(rows) || rows.some((r) => !isObject(r)))) throw new Error('`rows` is a JSON array of rows, each a plain object.');
-  const read = rows && status ? await statusRows(dl, rows, status, key) : rows;
-  const fields = withStatus(read ? fromRows(dl, read, key) : fromFields(given(args.fields, 'fields')), status);
-  const named = status ? Object.keys(status) : [];
-  const kinds = fieldKinds(fields, { key, status: named });
-  const need = needOf(fields, { rows: rows?.length, task: args.task, writes: args.writes, status: status ? named : undefined, declared: args.fields != null });
+  if (args.type == null) throw new Error('Give the data\'s `type` (type.v1), as describe_data gives it.');
+  const type = given(args.type, 'type');
+  const wrongType = typeProblems(dl, type);
+  if (wrongType.length) throw new Error(`The type is not one (type.v1):\n${wrongType.map((w) => `- ${w}`).join('\n')}`);
+  const key = type.key ?? 'id';
+  const part = args.source == null ? {} : given(args.source, 'source');
+  if (!isObject(part) || (part.search != null && !(Array.isArray(part.search) && part.search.every((f) => typeof f === 'string'))) || (part.fields != null && !isObject(part.fields))) {
+    throw new Error('`source` is the page\'s own part of its source: { "search": [field…], "fields": { field: its control } }.');
+  }
+  const own = part.fields ?? null;
+  const fields = fromType(type, own ?? {});
+  const kinds = fieldKinds(fields, { key });
+  const need = needOf(fields, { task: args.task, writes: args.writes, status: true, declared: own != null });
   const checked = await checkPattern(pattern, { need });
   if (checked.problems.length) {
     throw new Error([`The pattern "${pattern?.id ?? '(no id)'}" (${whose(entry)}) cannot make this page: ${checked.problems.length} problem(s).`, '', ...checked.problems.map((p) => `- ${p}`)].join('\n'));
@@ -135,14 +123,15 @@ async function generate(args) {
   const asks = checked.roles.some((r) => r.shape);
   const label = args.label ?? labelOf(id);
   const paths = { template: `templates/${id}.html`, definition: `view-schemas/${id}.json`, views: `views/${id}-views.json` };
-  const search = fields.filter((f) => f.search).map((f) => f.name);
-  const ui = uiOf(pattern, fields, key);
+  const search = part.search ?? [];
+  const ui = uiOf(pattern, dl.typeColumns(type), key);
+  // The words are the type's, said once; the page keeps only what its controls do.
   const definition = pattern.page || asks ? {
     $schema: '../node_modules/sherpa-ui/schemas/page.v1.json', v: 1, id,
     source: {
       store: args.store ?? id,
       ...(search.length ? { search } : {}),
-      fields: Object.fromEntries(fields.filter((f) => f.field).map((f) => [f.name, f.field])),
+      ...(own && Object.keys(own).length ? { fields: own } : {}),
       ...(pattern.page?.scopes ? { scopes: expandScopes(pattern.page.scopes, kinds) } : {}),
     },
     ...(Object.keys(ui).length ? { ui } : {}),
@@ -165,7 +154,7 @@ async function generate(args) {
   const [where, value] = definition ? ['context', place.contexts[id]] : ['settingsPage', place.settings.pages[id]];
   const parts = [...page.parts, { name: 'app.json entry', checked: `defs.v1.json ${where}`, problems: schemaCheck(`defs.v1.json#/$defs/${where}`)(value), notes: [] }];
   const found = findings({ title: `${what}`, parts });
-  return { entry, pattern, need, kinds, checked, definition, views, template, place, paths, found };
+  return { entry, pattern, need, kinds, checked, definition, views, template, place, paths, found, type };
 }
 
 export function register(server) {
@@ -204,14 +193,12 @@ export function register(server) {
 
   server.registerTool('generate_page', {
     title: 'Generate a page',
-    description: 'A pattern and the data → a page: its template (the layout written as HTML, each `each` once per field of its kind), its page definition (the data\'s fields, the pattern\'s scopes with each `{kind}` the fields of that kind, its `ui`, and a grid\'s columns and key from the data) and its first View; or, for a pattern with no data source, a Settings page\'s template. With the paths to write them at and the app.json entry; a page that draws its own View bar takes the header\'s away (`chrome.filters: false`). The pattern is checked against the need first (checkPattern), and every file by validate_page\'s own check before it is given: one that fails is refused, with what failed.',
+    description: 'A pattern and the data\'s type → a page: its template (the layout written as HTML, each `each` once per field of its kind), its page definition (the pattern\'s scopes with each `{kind}` the fields of that kind, its `ui`, and a grid\'s columns and key from the type; no field\'s words, which are the type\'s) and its first View; or, for a pattern with no data source, a Settings page\'s template. With the paths to write them at and the app.json entry; a page that draws its own View bar takes the header\'s away (`chrome.filters: false`). The pattern is checked against the need first (checkPattern), and every file by validate_page\'s own check before it is given: one that fails is refused, with what failed.',
     inputSchema: {
       pattern: z.union([z.string(), z.record(z.unknown())]).describe('A pattern\'s id, as pick_pattern gives it, or a pattern as JSON (pattern.v1.json), to try one of the app\'s own'),
       id: z.string().regex(/^[a-z][a-z0-9-]*$/).describe('The page\'s id: its Context\'s name in app.json, and its files\', e.g. customers'),
-      rows: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The rows, as a JSON array: what describe_data was given'),
-      fields: z.union([z.string(), z.record(z.unknown())]).optional().describe('Instead of rows: a page\'s own fields, as JSON (its definition\'s `source.fields`)'),
-      status: z.union([z.string(), z.record(z.unknown())]).optional().describe('The status fields the store works out, as statusFields(store, { … }) takes them, as describe_data takes them'),
-      key: z.string().optional().describe('The field each row is known by. Default: id'),
+      type: z.union([z.string(), z.record(z.unknown())]).optional().describe('The data\'s type, as JSON (type.v1), as describe_data gives it. Every page needs one'),
+      source: z.union([z.string(), z.record(z.unknown())]).optional().describe('The page\'s own part of its source, as JSON, as describe_data\'s "The page\'s own" gives it: what it searches and each field\'s control (select, advanced, op, child…), `{ "search": ["name"], "fields": { "customer": { "child": "site" } } }`. The words are the type\'s'),
       store: z.string().optional().describe('The name the app registers its store under. Default: the page\'s id'),
       label: z.string().optional().describe('Its row\'s name in the nav. Default: from its id'),
       task: z.string().optional().describe('The agent\'s word for the work, for the need, as pick_pattern was given it'),
@@ -237,10 +224,10 @@ export function register(server) {
       `### \`app.json\`: add to its \`${g.definition ? 'contexts' : 'settings.pages'}\``, '', fenced(JSON.stringify(g.place, null, 2), 'json'), '',
       '### Checked by validate_page', '', g.found.text, '',
       '### Next', '',
-      '1. Write each file at its path, in the app\'s folder, and add the entry to app.json; `validate_app` checks them there.',
+      `1. Write each file at its path, in the app\'s folder, and add the entry to app.json; \`validate_app\` checks them there. The store \`${g.definition?.source.store ?? args.id}\` is made from the type (\`types/${g.type.id}.json\`): \`statusFields(new ArrayStore(rows, typeStoreOptions(type)), typeStatusFields(type))\`.`,
       `2. ${g.definition ? `Its module (app.json \`module\`, \`contexts/${args.id}.js\`)` : 'Its module (app.json `settings.module`)'} does what the pattern's use says, above. What it hears:`,
       ...heardBy(g.pattern.layout).map((l) => `   ${l}`),
-      `3. \`preview_page\` draws it over the rows (the see tier). Change only what the pattern's agent.may names (${(g.pattern.agent?.may ?? []).join(', ') || 'nothing'}); keep ${(g.pattern.agent?.keeps ?? []).join(', ') || 'every role'}.`,
+      `3. \`preview_page\` draws it over the rows and the type (the see tier). Change only what the pattern's agent.may names (${(g.pattern.agent?.may ?? []).join(', ') || 'nothing'}); keep ${(g.pattern.agent?.keeps ?? []).join(', ') || 'every role'}.`,
     ];
     return answer(out.join('\n'));
   }));

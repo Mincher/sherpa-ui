@@ -43,7 +43,7 @@ export const SAMPLES = {
   check_usage: { markup: '<sherpa-button data-size="sm">Go</sherpa-button>' },
   check_custom_node: { node: '{"v":2,"type":"node","id":"one","label":"One","graph":{"nodes":[]},"settings":{"inputs":[],"outputs":[]}}' },
   describe_data: { rows: '[{"id":1,"status":"open","seats":3},{"id":2,"status":"open","seats":5}]' },
-  validate_rows: { rules: '{"seats":["number"]}', rows: '[{"id":1,"seats":3}]' },
+  validate_rows: { type: '{"v":1,"id":"seat","label":"Seat","fields":{"id":{},"seats":{"type":"number"}}}', rows: '[{"id":1,"seats":3}]' },
   scaffold_app: { name: 'probe-app' },
   query_source: PAGE,
   query_graph: PAGE,
@@ -51,7 +51,7 @@ export const SAMPLES = {
   workflow_graph: { workflow: WORKFLOW },
   edit_workflow: { workflow: WORKFLOW, edits: [{ node: 'out', set: { heading: 'Pro people' } }] },
   pick_pattern: { need: { task: 'triage', rows: 120, fields: 3, dateFields: 0, numberFields: 1, writes: true } },
-  generate_page: { pattern: 'records-list', id: 'people', rows: PAGE.rows.map((r, i) => ({ ...r, name: `Person ${i}`, seats: i * 3 })), task: 'triage', writes: true },
+  generate_page: { pattern: 'records-list', id: 'people', type: { v: 1, id: 'person', label: 'Person', fields: { id: {}, name: { label: 'Name' }, seats: { label: 'Seats', type: 'number' } } }, source: { search: ['name'] }, task: 'triage', writes: true },
   build_page: { task: 'triage' },
   // In this order: the preview opens, is acted on and read, then closes.
   preview_page: { definition: PAGE.definition, rows: PAGE.rows, key: 'id', template: '<sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>' },
