@@ -30,6 +30,8 @@ export interface GridDetail {
   /** Where its rows come from, for its provider to read: this type's rows whose `by` field holds a row's key. TODO 963 */
   type?: string;
   by?: string;
+  /** Each field's label, as its type says it: the sub-grid's headings. TODO 963 */
+  headings?: Record<string, string>;
 }
 
 /** What a row's sub-grid is told of its grid: its filters' look and limits, its
@@ -99,7 +101,8 @@ export class GridDetails {
     this.#tell(sub);
     const offer = this.#host.groupOffer();
     void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows?.[key] ?? [],
-      groups: detail.groups?.[key] ?? null, filters: this.#host.filters(), ...(offer ? { groupOffer: offer } : {}) })
+      groups: detail.groups?.[key] ?? null, filters: this.#host.filters(), ...(offer ? { groupOffer: offer } : {}),
+      ...(detail.headings ? { headings: detail.headings } : {}) })
       .then(() => {
         this.#tell(sub);
         this.stick();

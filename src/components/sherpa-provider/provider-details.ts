@@ -10,6 +10,8 @@
  * - .leave — A grid let go: its read stops.
  */
 import { detailRows } from '../../core/data/detail-rows.js';
+import { entityTypes } from '../../core/data/entity-types.js';
+import { typeFields } from '../../core/data/type-definition.js';
 import { report } from '../../core/data/report.js';
 import type { Row, Store } from '../../core/data/store.js';
 
@@ -20,7 +22,16 @@ export interface DetailsHost {
 }
 
 /** A grid as its detail is read: the field that names its rows, and what its rows open on. */
-type DetailGrid = Element & { key?: string | null; detail?: ({ key?: string; rows?: Record<string, Row[]> } & Record<string, unknown>) | null };
+type DetailGrid = Element & {
+  key?: string | null;
+  detail?: ({ key?: string; rows?: Record<string, Row[]>; headings?: Record<string, string> } & Record<string, unknown>) | null;
+};
+
+/** Each field's label, as its type says it: a sub-grid's headings say the type's words. None for a type not registered. */
+function headingsOf(type: string): Record<string, string> {
+  const known = entityTypes()[type];
+  return known ? Object.fromEntries(Object.entries(typeFields(known)).flatMap(([field, d]) => (d.label ? [[field, d.label]] : []))) : {};
+}
 
 /** The grids whose rows open on another type's rows, and each one's read. */
 export class ProviderDetails {
@@ -34,7 +45,7 @@ export class ProviderDetails {
   }
 
   /** A page of rows was given to a grid: the rows of `type` whose `by` holds each row's key, read in one go and given as
-   *  its detail's rows, its sub-grid's key the type's own unless its detail names one. */
+   *  its detail's rows, its sub-grid's key the type's own unless its detail names one, its headings the type's labels. */
   fill(el: Element, { type, by }: { type: string; by: string }, payload: unknown): void {
     const grid = el as DetailGrid;
     const rows = (payload as { rows?: unknown } | null | undefined)?.rows;
@@ -56,7 +67,7 @@ export class ProviderDetails {
     detailRows(store, by, (rows as Row[]).map((row) => row[key]), read.signal).then((byKey) => {
       const detail = grid.detail;
       if (read.signal.aborted || !detail) return;
-      grid.detail = { ...detail, key: detail.key ?? store.key, rows: byKey };
+      grid.detail = { ...detail, key: detail.key ?? store.key, rows: byKey, headings: { ...headingsOf(type), ...detail.headings } };
     }, (error: unknown) => {
       if (read.signal.aborted) return;
       report({ code: 'detail-read-failed', message: `sherpa-provider: the rows of "${type}" a grid's rows open on could not be read (${error instanceof Error ? error.message : String(error)}).`, at: { type } });
