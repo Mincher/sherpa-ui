@@ -65,6 +65,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     'data-no-minimap': { type: 'boolean', kind: 'style' },
     'data-select-box': { type: 'boolean', kind: 'style' },
     'data-editing': { type: 'boolean', kind: 'style' },
+    'data-trail': { type: 'boolean', kind: 'style' },
     'data-zoom': { type: 'number', kind: 'behaviour' },
     'data-min-zoom': { type: 'number', kind: 'behaviour' },
     'data-max-zoom': { type: 'number', kind: 'behaviour' },

@@ -19,8 +19,7 @@ const filter = (id: string, label: string, value: string) => ({
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async (entities) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
-      <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-stack id="trail" slot="trail" data-direction="inline" data-gap="sm"><sherpa-button data-action="back" data-type="icon" data-look="transparent" data-icon-start="arrow-left" aria-label="Back" data-tip="Back (Esc)"></sherpa-button><sherpa-breadcrumbs></sherpa-breadcrumbs></sherpa-stack><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="confirm" data-status="critical" data-heading="Update">
         <p style="margin: 0"></p>
@@ -50,7 +49,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, workflow, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
-    header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, kinds, library, entity: outer,
+    confirm: document.getElementById('confirm') as never, kinds, library, entity: outer,
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'lead'] } } }, stores: ['customers'],
   });
   // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).

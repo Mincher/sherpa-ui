@@ -13,6 +13,7 @@
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps it.
 import '../sherpa-container-header/sherpa-container-header.js';
+import '../sherpa-button/sherpa-button.js';
 import { primaryKey, primaryLabel } from '../../core/ui/modifier-key.js';
 import { SOCKETS, socketRect, type SocketSide } from './node-sockets.js';
 import { nodeTitle } from '../../core/data/node-title.js';
@@ -67,6 +68,7 @@ export class SherpaNode extends SherpaElement {
     'data-outputs-connected': { type: 'number', kind: 'behaviour' },
     'data-hide-unconnected': { type: 'boolean', kind: 'style' },
     'data-reveal': { type: 'boolean', kind: 'style' },
+    'data-sub-graph': { type: 'boolean', kind: 'style' },
   } as const;
   // The app's settings: the handle and Alt+Arrow exist only while one is on, a saved size drawn either way (TODO 748);
   // ⌘ or Ctrl on a move asks to pull the nodes it joins only while the other is (plan 918).
@@ -97,6 +99,10 @@ export class SherpaNode extends SherpaElement {
     for (const type of ['pointermove', 'pointerup', 'pointercancel']) handle?.addEventListener(type, this.#onGrow as EventListener);
     handle?.addEventListener('dragstart', (event) => event.preventDefault());
     this.addEventListener('click', this.#onClick);
+    this.$('.open')?.addEventListener('button-click', (event) => {
+      event.stopPropagation();
+      this.emit('node-open');
+    });
     this.#place();
     this.#fit();
     this.#sync();
@@ -282,8 +288,10 @@ export class SherpaNode extends SherpaElement {
     event.preventDefault();
   };
 
-  /** A press anywhere on it asks to select it; the click a drag ends with does not. */
-  #onClick = (): void => {
+  /** A press anywhere on it asks to select it; the click a drag ends with does not, nor a press of its drill-down. */
+  #onClick = (event: MouseEvent): void => {
+    const open = this.$('.open');
+    if (open && event.composedPath().includes(open)) return;
     if (this.#dragged) {
       this.#dragged = false;
       return;

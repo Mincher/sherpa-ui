@@ -191,6 +191,19 @@
           ]
         },
         {
+          "el": "sherpa-button",
+          "class": "open",
+          "part": "open",
+          "attrs": {
+            "data-type": "icon",
+            "data-look": "transparent",
+            "data-size": "sm",
+            "data-icon-start": "folder-open",
+            "aria-label": "Open graph",
+            "data-tip": "Open graph"
+          }
+        },
+        {
           "el": "span",
           "class": "tip tip-warning sherpa-tip",
           "part": "tip",
@@ -496,6 +509,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-sub-graph",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "it holds a sub-graph, as a Custom Node's use: a drill-down button on its header's end opens it (node-open). Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-summary",
       "type": "string",
       "observed": true,
@@ -544,7 +566,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, caption?, category?, chainDrag?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }",
+    "shape": "{ active?, caption?, category?, chainDrag?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, subGraph?, summary?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
@@ -576,6 +598,11 @@
       "$type": "state",
       "name": "joined",
       "selector": ":host([data-joined])"
+    },
+    {
+      "$type": "state",
+      "name": "sub-graph",
+      "selector": ":host([data-sub-graph])"
     },
     {
       "$type": "state",
@@ -652,6 +679,13 @@
       "$type": "event",
       "name": "node-select",
       "description": "It was pressed: a click on it, or Enter or Space on its header.",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "node-open",
+      "description": "Its drill-down button was pressed: open its sub-graph.",
       "bubbles": true,
       "composed": true
     }

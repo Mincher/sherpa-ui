@@ -36,6 +36,7 @@
     data-summary      what its first field holds, in words: a collapsed node's name ends with it ("Condition: Equals"). Its host writes it
     data-hide-unconnected  collapsed, a socket no connection joins hides; a hover shows them. Its host writes it
     data-reveal       the hidden sockets show, as on a hover: a line is being dragged. Its host writes it
+    data-sub-graph    it holds a sub-graph, as a Custom Node's use: a drill-down button on its header's end opens it (node-open). Its host writes it
 
   Slots:
     (default)   the node's rows: each a sherpa-node-row
@@ -44,6 +45,7 @@
     node-move — it moved, or was asked to: a drag on its header, or an arrow key there. detail: { x, y, chain? }: chain, with ⌘ or Ctrl held and data-chain-drag on
     node-resize — its resize handle was dragged, or Alt and an arrow pressed on its header. detail: { w, h }, in times its natural size
     node-select — it was pressed: a click on it, or Enter or Space on its header. The click a drag ends with is no press.
+    node-open — its drill-down button was pressed: open its sub-graph. It is no press of the node
 -->
 <template id="default">
   <div class="root" part="root">
@@ -64,6 +66,8 @@
       <span class="socket-tab socket-tab-out sherpa-anchor" part="socket-tab-out" aria-hidden="true"><span class="socket socket-out" part="socket-out"><i class="core"></i></span></span>
       <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name name-out">Output:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
     </div>
+    <!-- A sub-graph's DRILL-DOWN, over the header's end: beside the header, so no control sits inside another. -->
+    <sherpa-button class="open" part="open" data-type="icon" data-look="transparent" data-size="sm" data-icon-start="folder-open" aria-label="Open graph" data-tip="Open graph"></sherpa-button>
     <!-- The header's tip: the warning's words, the first tip after it. -->
     <span id="warning" class="tip tip-warning sherpa-tip" popover="manual" part="tip" role="tooltip" data-text="data-warning"></span>
     <div class="body" part="body"><slot data-accepts="item"></slot></div>

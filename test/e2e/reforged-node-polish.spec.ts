@@ -21,8 +21,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (org) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" style="display: none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-stack id="trail" slot="trail" data-direction="inline" data-gap="sm"><sherpa-button data-action="back" data-type="icon" data-look="transparent" data-icon-start="arrow-left" aria-label="Back" data-tip="Back (Esc)"></sherpa-button><sherpa-breadcrumbs></sherpa-breadcrumbs></sherpa-stack><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" style="display: none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="confirm" data-status="critical" data-heading="Update">
         <p style="margin: 0"></p>
@@ -63,7 +62,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, flow as never, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
-    header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
+    confirm: document.getElementById('confirm') as never, library: library as never,
     fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],
   });
   // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
@@ -107,6 +106,8 @@ test('a Condition shows no False, word or socket, and no footer; its True is a p
 
 test('a socket tip sits beside its socket on hover, after a pan and a zoom, never at the viewport corner', async ({ page }) => {
   await bind(page);
+  // The canvas's own box: a socket under its top edge or past its end is out of view.
+  const cv = (await page.locator('#cv').boundingBox())!;
   for (const [zoom, px, py] of [[0.6, 0, 0], [0.5, 40, 150], [0.7, -100, 20]] as const) {
     await page.evaluate(([z, x, y]) => {
       const cv = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
@@ -118,7 +119,7 @@ test('a socket tip sits beside its socket on hover, after a pan and a zoom, neve
     for (const side of ['out', 'in']) {
       const node = side === 'out' ? '#cv > sherpa-node[data-heading="Source"]' : '#cv > sherpa-node[data-heading="Run result"]';
       const sock = await rectOf(page, node, `.header .socket-${side}`);
-      if (sock.x < 0 || sock.y < 90 || sock.x > 880 || sock.y > 680) continue;
+      if (sock.x < cv.x || sock.y < cv.y + 30 || sock.x > cv.x + cv.width - 20 || sock.y > cv.y + cv.height - 20) continue;
       tested++;
       await page.mouse.move(sock.x + sock.w / 2, sock.y + sock.h / 2);
       const tip = `.header .tip-${side}`;

@@ -26,8 +26,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (org) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" style="display: none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-stack id="trail" slot="trail" data-direction="inline" data-gap="sm"><sherpa-button data-action="back" data-type="icon" data-look="transparent" data-icon-start="arrow-left" aria-label="Back" data-tip="Back (Esc)"></sherpa-button><sherpa-breadcrumbs></sherpa-breadcrumbs></sherpa-stack><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-searchable data-search-placeholder="Search nodes" data-padding="none" style="display: none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="custom" data-heading="Save as Custom Node">
         <sherpa-stack data-gap="md">
@@ -80,7 +79,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, flow as never, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
-    toolbar: canvas.querySelector('sherpa-node-toolbar') as never, customDialog: document.getElementById('custom') as never, header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
+    toolbar: canvas.querySelector('sherpa-node-toolbar') as never, customDialog: document.getElementById('custom') as never, confirm: document.getElementById('confirm') as never, library: library as never,
     // The app's rule for who may change a node of their own (plan 936 D2): a test sets it, else any may.
     ...(w['canEdit'] ? { canEdit: w['canEdit'] as (d: unknown) => boolean } : {}),
     fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],
@@ -500,7 +499,7 @@ test('inside, a picklist row connected from the Group Input, which sends nothing
     };
     const flow = { v: 3, id: 'g774', nodes: [useOf(library as never, 'has-status', { id: 'has', x: 200, y: 100 })], connections: [] };
     (window as unknown as Record<string, unknown>)['ed'] = bindWorkflow(document.getElementById('cv') as never, flow as never, {
-      session: new SessionStore(), inspector: document.getElementById('inspector') as never, header: document.getElementById('trail') as never, library: library as never,
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, library: library as never,
       fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['users'],
     });
     await window.__settled();
@@ -684,4 +683,34 @@ test('a Custom Node\'s sockets in its inspector: renamed, retyped and removed, e
   await header(page, 'Owner check').click();
   await settle(page);
   expect(await page.locator('#inspector sherpa-accordion[data-socket]').count()).toBe(0);
+});
+
+test('a Custom Node\'s use has a drill-down on its header that opens it; the way back is at the canvas\'s top left: Back and the crumbs (Will, TODO 954)', async ({ page }) => {
+  await bind(page);
+  // Only a use holds a sub-graph: its header shows the button, in the header's height, at its end.
+  expect(await page.locator('#cv > sherpa-node').evaluateAll((els) => els.filter((e) => e.hasAttribute('data-sub-graph')).map((e) => e.getAttribute('data-heading')))).toEqual(['Org permissions', 'Org permissions', 'Owner check']);
+  const perm = page.locator('#cv > sherpa-node[data-heading="Org permissions"]').first();
+  const [head, open] = await Promise.all([perm.evaluate((el) => el.shadowRoot!.querySelector('.header')!.getBoundingClientRect().toJSON()), perm.evaluate((el) => el.shadowRoot!.querySelector('.open')!.getBoundingClientRect().toJSON())]);
+  expect(open.right).toBeLessThanOrEqual(head.right);
+  expect(open.right).toBeGreaterThan(head.right - 40);
+  expect(Math.abs((open.top + open.bottom) / 2 - (head.top + head.bottom) / 2)).toBeLessThan(2);
+  expect(await page.locator('#cv > sherpa-node[data-heading="Source"]').evaluate((el) => getComputedStyle(el.shadowRoot!.querySelector('.open')!).display)).toBe('none');
+  // The way back is hidden at the top graph.
+  await expect(page.locator('#cv')).not.toHaveAttribute('data-trail');
+  // A press on it opens the use, and picks nothing.
+  await perm.locator('.open').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect(await ed(page, 'ed.path()')).toEqual(['perm']);
+  await expect(page.locator('#cv')).toHaveAttribute('data-trail', '');
+  const trail = await page.locator('#trail').boundingBox();
+  const canvas = await page.locator('#cv').boundingBox();
+  expect(trail!.x - canvas!.x).toBeLessThan(canvas!.width / 2);
+  expect(trail!.y - canvas!.y).toBeLessThan(120);
+  await page.locator('#trail > sherpa-breadcrumbs .crumb .link').first().waitFor();
+  expect(await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.crumb')].map((c) => c.textContent?.trim()))).toEqual(['Workflow', 'Org permissions']);
+  // Back leaves it, and the way back hides.
+  await page.locator('#trail sherpa-button[data-action="back"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect(await ed(page, 'ed.path()')).toEqual([]);
+  await expect(page.locator('#cv')).not.toHaveAttribute('data-trail');
 });

@@ -603,13 +603,29 @@ The Nodes panel's two tabs split by WHO made a node: **Preset Nodes** holds the 
 Sherpa and your app ship and every preset Custom Node; **Custom Nodes** holds the
 reader's own. In each tab the nodes stand under their category, so **Runbooks** can
 stand in both. A runbook is a Custom Node of the Runbooks category: its steps are its
-sub-graph, and a double click opens them, read only for a preset. Give an entity type
+sub-graph, and a double click, or the drill-down button on its header's end, opens them,
+read only for a preset. Give an entity type
 a `category` (`registerEntityType({ …, category: 'Runbooks' })`) and its entities stand
 there; an entity's own `category` wins. Save as Custom Node asks a Category when its
 dialog has a `[name=category]` select (`data-type="select"`): Custom Nodes, Runbooks,
 and each category your entity types name (`savedCategories()`). Who may change a
 node of their own is your rule: give `bindWorkflow` a `canEdit(definition)`, and a no
 opens its inside read only, as a preset's does.
+
+The way back from a sub-graph is at the canvas's top left, not in the app header: put a
+trail in the canvas's `trail` slot, a Back button and the breadcrumbs. The editor fills the
+crumbs, shows the trail only inside a sub-graph (the canvas's `data-trail`), and goes back
+on Back, on a crumb and on Escape:
+
+```html
+<sherpa-layout-canvas>
+  <sherpa-stack slot="trail" data-direction="inline" data-gap="sm">
+    <sherpa-button data-action="back" data-type="icon" data-look="transparent" data-icon-start="arrow-left" aria-label="Back" data-tip="Back (Esc)"></sherpa-button>
+    <sherpa-breadcrumbs></sherpa-breadcrumbs>
+  </sherpa-stack>
+  …
+</sherpa-layout-canvas>
+```
 
 To write a runbook's steps as text, as its prompt, read its graph as steps:
 `graphSteps(graph)` gives each stage's steps in the flow's order, numbered "stage.place"
@@ -706,7 +722,9 @@ data-viz colour no stage wears (`nextStageColour`); an app that makes stages giv
 them colours the same way, `colourStages(stages, DATA_VIZ_SWATCHES.map((s) => s.value))`,
 so stage 1 wears colour 1. A graph an app or an agent makes without laying it out
 sets `unfurl: true` on its graph: the editor unfurls it the first time it shows it,
-as the toolbar's Unfurl would, and saves it without the flag. Give `bindWorkflow` a
+as the toolbar's Unfurl would, and saves it without the flag. That save is the editor's own
+`definition-save`: an app that keeps graphs on its own Save keeps them on that event too, or
+the layout is never stored. Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:
 
 ```html

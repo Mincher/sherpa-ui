@@ -1866,7 +1866,12 @@
         },
         {
           "name": "data-select-box",
-          "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas",
+          "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-trail",
+          "description": "a way back is shown: the trail slot, at the top left (the graph on the canvas is inside another) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas",
           "valueSet": "v"
         },
         {
@@ -3384,6 +3389,11 @@
               "name": "skipped"
             }
           ]
+        },
+        {
+          "name": "data-sub-graph",
+          "description": "it holds a sub-graph, as a Custom Node's use: a drill-down button on its header's end opens it (node-open). Its host writes it",
+          "valueSet": "v"
         },
         {
           "name": "data-summary",

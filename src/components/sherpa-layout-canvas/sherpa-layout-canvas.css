@@ -187,6 +187,20 @@ slot[name="panel-start"]::slotted(*), slot[name="panel-end"]::slotted(*) { --_wi
 :host(:state(has-columns)) .stage { margin-block-start: var(--_columns-head); }
 :host(:state(has-columns)) .banner { margin-block-start: calc(var(--_float) + var(--_columns-head)); }
 
+/* ── The trail ────────────────────────────────────────────────────────── */
+/* A way back at the top left, beside the card and under the column heads; shown with data-trail. */
+.trail {
+  position: absolute;
+  inset-block-start: var(--_inset);
+  inset-inline-start: calc(var(--_seen-start, 0px) + var(--_inset));
+  z-index: var(--sherpa-layer-content, 1);
+  display: none;
+  pointer-events: none;
+}
+:host([data-trail]) .trail { display: flex; }
+:host(:state(has-columns)) .trail { inset-block-start: calc(var(--_inset) + var(--_columns-head)); }
+::slotted([slot="trail"]) { pointer-events: auto; }
+
 /* ── The edit mode ────────────────────────────────────────────────────── */
 /* The panels and the toolbar hide; the footer shows along the bottom, and what the view shows (the minimap and the
    controls with it) stops above it. */

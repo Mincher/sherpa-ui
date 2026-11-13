@@ -30,7 +30,8 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 | `data-no-minimap` | boolean |  | no minimap |
 | `data-panel-end-width` | number |  |  |
 | `data-panel-start-width` | number |  |  |
-| `data-select-box` | boolean |  | a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas |
+| `data-select-box` | boolean |  | a plain left drag on blank canvas draws a box and reports it (canvas-box) |
+| `data-trail` | boolean |  | a way back is shown: the trail slot, at the top left (the graph on the canvas is inside another) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas |
 | `data-zoom` | number |  | the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it |
 
 ## Properties
@@ -68,6 +69,7 @@ Each one bubbles.
 | `panel-end` | panel |  |
 | `panel-float` | panel | the floating cards, off their areas: they float in the canvas |
 | `banner` | content | notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
+| `trail` | nav | a way back FLOATING at the top left, beside the start panel and under the column heads, shown with data-trail: they do not pan or zoom (a sub-graph's Back and breadcrumbs) |
 | `rows` | item | a strip of ROWS behind the view, the whole width: each stands at its `--y` down the plane, `--height` tall (plane px); it pans and zooms down, never across. |
 | `columns` | item | a strip of COLUMNS over the view, from its top: each stands at its `--x` across the plane, `--width` wide (plane px, as `--x` and `--y` are); it pans and zooms across, never down. |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
@@ -78,7 +80,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`banner`, `columns`, `controls`, `footer`, `grid`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `rows`, `stage`, `toolbar`, `viewport`
+`banner`, `columns`, `controls`, `footer`, `grid`, `inset`, `marquee`, `minimap`, `panels`, `plane`, `rows`, `stage`, `toolbar`, `trail`, `viewport`
 
 ## CSS custom properties it reads
 
@@ -91,6 +93,7 @@ What each class's base rule reads:
 | `--sherpa-layer-content` | `.banner` | `z-index` |
 | `--sherpa-display-mode-space-xs` | `.banner` | `gap` |
 | `--sherpa-style-border-base` | `.grid` | `background-color` |
+| `--sherpa-layer-content` | `.trail` | `z-index` |
 | `--sherpa-layer-content` | `.footer` | `z-index` |
 | `--sherpa-style-surface-shadow` | `.inset` | `box-shadow` |
 | `--sherpa-display-mode-border-width-base` | `.marquee` | `border-width` |
@@ -108,6 +111,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, zoom? }`
+`{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, trail?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

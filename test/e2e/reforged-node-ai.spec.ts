@@ -18,8 +18,7 @@ const RUNBOOK = {
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async (runbook) => {
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
-      <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 640px"><sherpa-stack id="trail" slot="trail" data-direction="inline" data-gap="sm"><sherpa-button data-action="back" data-type="icon" data-look="transparent" data-icon-start="arrow-left" aria-label="Back" data-tip="Back (Esc)"></sherpa-button><sherpa-breadcrumbs></sherpa-breadcrumbs></sherpa-stack><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-overlay-panel data-side="start" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
     await customElements.whenDefined('sherpa-node-list');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
@@ -46,7 +45,7 @@ test.beforeEach(async ({ page }) => {
       connections: [{ from: 'main/model', to: '#start/model' }, { from: 'm/model', to: 'q/model' }, { from: 'm/model', to: 'r/model' }],
     } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
-      toolbar: canvas.querySelector('sherpa-node-toolbar') as never, header: document.getElementById('trail') as never,
+      toolbar: canvas.querySelector('sherpa-node-toolbar') as never,
       library: library as never,
     });
     await window.__settled();

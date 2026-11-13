@@ -50,6 +50,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
 | `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |
 | `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it. Running, the node wears the active border |
+| `data-sub-graph` | boolean |  | it holds a sub-graph, as a Custom Node's use: a drill-down button on its header's end opens it (node-open). Its host writes it |
 | `data-summary` | text |  | what its first field holds, in words: a collapsed node's name ends with it ("Condition: Equals"). Its host writes it |
 | `data-warning` | text |  | what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
@@ -70,6 +71,7 @@ Each one bubbles.
 | `node-move` | `{ x: number; y: number }` | It moved, or was asked to: a drag on its header, or an arrow key there. |
 | `node-resize` | `{ h: number; w: number }` | Its resize handle was dragged, or Alt and an arrow pressed on its header. |
 | `node-select` |  | It was pressed: a click on it, or Enter or Space on its header. |
+| `node-open` |  | Its drill-down button was pressed: open its sub-graph. |
 
 ## Slots
 
@@ -81,7 +83,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `caption-icon`, `caption-text`, `caption-warn`, `header`, `heading`, `resize`, `root`, `socket-in`, `socket-out`, `socket-tab-in`, `socket-tab-out`, `stack-in`, `stack-out`, `tip`
+`body`, `caption`, `caption-icon`, `caption-text`, `caption-warn`, `header`, `heading`, `open`, `resize`, `root`, `socket-in`, `socket-out`, `socket-tab-in`, `socket-tab-out`, `stack-in`, `stack-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -127,6 +129,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, caption?, category?, chainDrag?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, summary?, warning?, x?, y? }`
+`{ active?, caption?, category?, chainDrag?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, subGraph?, summary?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

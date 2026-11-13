@@ -4948,7 +4948,14 @@
             },
             {
               "name": "data-select-box",
-              "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas",
+              "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box)",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-trail",
+              "description": "a way back is shown: the trail slot, at the top left (the graph on the canvas is inside another) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width  a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas",
               "type": {
                 "text": "boolean"
               }
@@ -5105,6 +5112,10 @@
               "description": "notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) (accepts: content)"
             },
             {
+              "name": "trail",
+              "description": "a way back FLOATING at the top left, beside the start panel and under the column heads, shown with data-trail: they do not pan or zoom (a sub-graph's Back and breadcrumbs) (accepts: nav)"
+            },
+            {
               "name": "rows",
               "description": "a strip of ROWS behind the view, the whole width: each stands at its `--y` down the plane, `--height` tall (plane px); it pans and zooms down, never across. (accepts: item)"
             },
@@ -5164,6 +5175,9 @@
             },
             {
               "name": "toolbar"
+            },
+            {
+              "name": "trail"
             },
             {
               "name": "viewport"
@@ -8879,6 +8893,13 @@
               }
             },
             {
+              "name": "data-sub-graph",
+              "description": "it holds a sub-graph, as a Custom Node's use: a drill-down button on its header's end opens it (node-open). Its host writes it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-summary",
               "description": "what its first field holds, in words: a collapsed node's name ends with it (\"Condition: Equals\"). Its host writes it",
               "type": {
@@ -8945,6 +8966,13 @@
               "type": {
                 "text": "CustomEvent"
               }
+            },
+            {
+              "name": "node-open",
+              "description": "Its drill-down button was pressed: open its sub-graph.",
+              "type": {
+                "text": "CustomEvent"
+              }
             }
           ],
           "slots": [
@@ -8974,6 +9002,9 @@
             },
             {
               "name": "heading"
+            },
+            {
+              "name": "open"
             },
             {
               "name": "resize"

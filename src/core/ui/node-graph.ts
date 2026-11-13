@@ -175,11 +175,14 @@ export interface DrawOptions {
   notes?: ReadonlyMap<string, string>;
   /** A node whose place the host owns: a drag reports and moves nothing (the Group Input, a preset's inside). */
   locked?: (node: GraphNode) => boolean;
+  /** A node's drill-down was pressed: open its sub-graph (TODO 954). */
+  onOpen?: (node: GraphNode) => void;
   /** A frame's header pressed, or Enter or Space there: the drawing marks it picked (TODO 778). */
   onFrameSelect?: (frame: NodeFrame) => void;
   /** A frame's Release, or Delete on its header: the frame goes, its nodes stay. Unset, the frames are read only. */
   onRelease?: (id: string) => void;
-  /** A node a double click on its header OPENS (a Custom Node's use): it does not collapse. */
+  /** A node that OPENS (a Custom Node's use): a double click on its header opens it, and does not collapse it; its header
+   *  shows a drill-down button (TODO 954). */
   opens?: (node: GraphNode) => boolean;
   /** Nodes were collapsed or expanded: their heights changed. */
   onCollapse?: () => void;
@@ -1496,6 +1499,11 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     made.focusRow = null;
     markJoined(made);
   });
+  // A node's drill-down: its host opens its sub-graph (TODO 954).
+  canvas.addEventListener('node-open', (event) => {
+    const node = nodeOf(made, event.target);
+    if (node) made.options.onOpen?.(node);
+  });
   // A node ASKS to be picked: the drawing marks it, one of many, and tells its host.
   canvas.addEventListener('node-select', (event) => {
     const node = nodeOf(made, event.target);
@@ -1545,6 +1553,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     put(el, 'data-icon', node.icon);
     put(el, 'data-description', node.description);
     el.toggleAttribute('data-locked', !!options.locked?.(node));
+    el.toggleAttribute('data-sub-graph', !!options.opens?.(node));
     // A run's caption wins; else the host's note.
     if (!el.hasAttribute('data-step')) put(el, 'data-caption', options.notes?.get(node.id));
     // What reached it that it cannot use: the warning look, and its words in the header's tip. TRAP T-a-node-reads-null-from-what-it-cannot-use
@@ -2472,8 +2481,10 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   kinds?: Readonly<Record<string, NodeKind>>;
   /** The app's Custom Nodes (D13). The editor keeps its edits to them as a draft beside the workflow's. */
   library?: NodeLibrary;
-  /** The page's `sherpa-app-header`: its trail shows the Custom Nodes opened, and is empty at the workflow. */
-  header?: HTMLElement & { populate(data: { breadcrumb: { label: string }[] }): unknown };
+  /** The page's `sherpa-app-header`: its View chip's reset asks for the graph as it was saved (`graph-reset`). The way back from a
+   *  Custom Node opened is the CANVAS's: its `[slot="trail"]`, a Back `[data-action="back"]` and a `sherpa-breadcrumbs`
+   *  (TODO 954). */
+  header?: HTMLElement;
   /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`; a tags input `[name=tags]` if it is to be tagged, and a select `[name=category]` if it may be a Runbook or another category (plan 936). Without it Save as Custom Node is not offered. */
   customDialog?: HTMLElement & { show(): void; hide(): void };
   /** A `sherpa-dialog` that asks a stage's name, line and colour: fields `[name=label]`, `[name=description]` and
@@ -3147,8 +3158,14 @@ export function bindWorkflow(
     const at = shown().nodes.find((n) => n.id === id);
     return at && K()[at.kind]?.model === 'graph' && lib.nodes[at.kind] ? at : undefined;
   };
+  // The way back, at the canvas's top left (Will, TODO 954): the app's trail, shown inside a Custom Node, its crumbs the path.
+  const trailOf = (): HTMLElement | null => canvas.querySelector<HTMLElement>(':scope > [slot="trail"]');
   const trail = (): void => {
-    void header?.populate({ breadcrumb: path.length ? [{ label: draft.label ?? 'Workflow' }, ...path.map((s) => ({ label: s.label }))] : [] });
+    canvas.toggleAttribute('data-trail', path.length > 0);
+    const at = trailOf();
+    const crumbs = at?.matches('sherpa-breadcrumbs') ? at : at?.querySelector('sherpa-breadcrumbs');
+    const items = path.length ? [{ label: draft.label ?? 'Workflow' }, ...path.map((s) => ({ label: s.label }))] : [];
+    if (crumbs) void customElements.whenDefined('sherpa-breadcrumbs').then(() => (crumbs as HTMLElement & { populate(i: unknown): void }).populate(items));
   };
   /** The canvas shows another graph: nothing is picked, the view fits it, and the panel lists what it may place. */
   const enter = (focus: string | null): void => {
@@ -3176,7 +3193,10 @@ export function bindWorkflow(
     enter(from);
   };
   const onCrumb = (event: Event): void => back((event as CustomEvent<{ index: number }>).detail.index);
-  header?.addEventListener('breadcrumb-select', onCrumb);
+  const onTrail = (event: Event): void => { if ((event.target as Element).closest('[data-action="back"]')) back(); };
+  const trailAt = trailOf();
+  trailAt?.addEventListener('breadcrumb-select', onCrumb);
+  trailAt?.addEventListener('button-click', onTrail);
   header?.addEventListener('graph-reset', reset);
   resetBar()?.setAttribute('data-reset-graph', '');
   /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
@@ -3919,6 +3939,8 @@ export function bindWorkflow(
       },
       notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
       locked: (node) => ro || isGroupEnd(node.id),
+      // A Custom Node's use opens on its drill-down, as on a double click (TODO 954).
+      onOpen: (node) => open(node.id),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
       // A collapsed or expanded node changes height: its lane fits again.
       onCollapse: () => { if (shown().lanes?.length) write(shown()); },
@@ -4077,7 +4099,9 @@ export function bindWorkflow(
       canvas.removeEventListener('pointerdown', onLift, { capture: true });
       canvas.removeEventListener('click', onClick, { capture: true });
       canvas.removeEventListener('dblclick', onDouble);
-      header?.removeEventListener('breadcrumb-select', onCrumb);
+      trailAt?.removeEventListener('breadcrumb-select', onCrumb);
+      trailAt?.removeEventListener('button-click', onTrail);
+      canvas.removeAttribute('data-trail');
       header?.removeEventListener('graph-reset', reset);
       resetBar()?.removeAttribute('data-reset-graph');
       resetBar()?.removeAttribute('data-graph-unchanged');

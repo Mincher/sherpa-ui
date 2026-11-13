@@ -229,6 +229,17 @@
     var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #35353d4c);
 }
 .heading { flex: 1 1 auto; min-inline-size: 0; }
+/* A sub-graph's drill-down: over the header's end, in the header's height; its name stops short of it. */
+.open { display: none; }
+:host([data-sub-graph]) .open {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: var(--sherpa-display-mode-size-2xs, 8px);
+  block-size: var(--_head-h, 40px);
+  display: flex;
+  align-items: center;
+}
+:host([data-sub-graph]) .heading { padding-inline-end: var(--sherpa-display-mode-size-2xl, 32px); }
 .header:focus-visible {
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);
