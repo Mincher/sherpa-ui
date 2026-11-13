@@ -192,6 +192,18 @@
             "attrs": {
               "data-word": "page"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "undo"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "undone"
+            }
           }
         ]
       }

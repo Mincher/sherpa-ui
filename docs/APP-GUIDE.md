@@ -306,6 +306,10 @@ export async function init(root, { source, query, session, view, signal, header,
   changed data) or `refused`, in words. Ask the reader before an act that `changes`. Every app.json type gives
   `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; `actsOf({ context, view, type })` lists a page's,
   `actsOf()` every act, and `actSchema(act)` is a call's JSON Schema, for a tool.
+- **A press names its act in markup**: `<sherpa-button commandfor="<the outlet's id>" command="--user.suspend"
+  value="u1">Suspend</sherpa-button>` — its keys its `value` (a key, or a JSON list), else the selected rows of the
+  page's grid; a grid row action whose `id` is an act's runs on its rows. The outlet runs it through `runAct` at once
+  and says it in a toast, with Undo where it changed data; a refusal in its words.
 
 ## 8. Views
 

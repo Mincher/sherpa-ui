@@ -73,5 +73,5 @@ so N-zo works with a User the day the User type exists.
 |---|---|---|---|
 | N1a | `registerAct`, `actsOf`, `runAct`, `actSchema` (acts.ts) | unit: an act registered once runs through the one door; a bad call is refused in words; its schema | a9 |
 | N2 | `typeActs`; the outlet registers each app.json type's acts | unit: find, read, add, change, remove on a row type and a graph type, each refused in the type's words, each undone | a9 |
-| N1b | a button runs an act (`data-act`), asked first when it changes data | e2e: a press and a direct `runAct` do the same | a9 |
+| N1b | a button runs an act: the native `command="--<act id>"` with the outlet its `commandfor`, its keys its `value` or the grid's selection; a grid row action whose id is an act's; the toast says it, with Undo (pick A: a press runs at once; Will may say B, ask first) | e2e: a press removes a row, its toast's Undo puts it back, in 3 engines | a9 |
 | N1c | Demos' Coworkers' and Users' acts said once; their buttons name them | Demos specs | demos-67 |

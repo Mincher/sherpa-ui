@@ -185,6 +185,10 @@ export class SherpaOutlet extends SherpaElement {
     if (header) this.on(header, 'quick-filter-change', this.#onViewPick);
     // A toolbar's Open in Node Editor: the page's Query, in the app's `query` graph View.
     this.on(this.#shell ?? this, 'node-editor-open', this.#onOpenEditor);
+    // A press that names an act runs it, through the one door (plan 964 N1b): a button's `command` ("--user.suspend")
+    // with this outlet its `commandfor`, and a grid's row action whose id is an act's.
+    this.on(this, 'command', this.#onCommand);
+    this.on(this, 'row-action', this.#onRowAction);
     /* Settings' back arrow and ESC are INTENTS: each asks the router, and the
        screen follows its route-change. */
     const settings = options.settings;
@@ -588,6 +592,47 @@ export class SherpaOutlet extends SherpaElement {
       components: files.pageComponents(markup, definition),
       href: this.#router?.href({ ...this.#router.route, context: id, view: shown, [GRAPH_CHIP]: null, settings: null }) ?? `?context=${id}`,
     };
+  }
+
+  /** A button's command that names an act runs it: its keys its `value` (a key, or a JSON list), else the selected rows
+   *  of the page's grid. A command that names no act is not the outlet's. */
+  #onCommand = (event: Event): void => {
+    const { command, source } = event as Event & { command?: string; source?: Element | null };
+    const id = command?.startsWith('--') ? command.slice(2) : '';
+    if (!id) return;
+    const value = source?.getAttribute('value');
+    const keys = value ? (value.startsWith('[') ? JSON.parse(value) as unknown[] : [value])
+      : [...this.querySelectorAll<HTMLElement & { selectedKeys?: readonly string[] }>('sherpa-data-grid')].flatMap((grid) => [...grid.selectedKeys ?? []]);
+    void this.#runPressed(id, keys);
+  };
+
+  /** A grid's row action whose id is an act's runs it on the rows it names, by its type's key. */
+  #onRowAction = (event: Event): void => {
+    const { id, records } = (event as CustomEvent<{ id: string; records: readonly Record<string, unknown>[] }>).detail;
+    void this.#runPressed(id, records, true);
+  };
+
+  /** Run an act a press named, over the stores a page may name, and say what it did in a toast, with Undo where it
+   *  changed data; a refusal in its words. A press is the reader's own act, so it runs at once (plan 964 N1b, pick A). */
+  async #runPressed(id: string, given: readonly unknown[], rows = false): Promise<void> {
+    const options = this.#options;
+    if (!options) return;
+    const { actsOf, runAct } = await import('../../core/data/acts.js');
+    const act = actsOf().find((a) => a.id === id);
+    if (!act) return;
+    const stores = this.#stores(options);
+    const key = act.type ? stores[act.type]?.key ?? 'id' : 'id';
+    const keys = rows ? given.map((r) => (r as Record<string, unknown>)[key]) : given;
+    const shelf = this.#nodes.entities;
+    const answer = await runAct(id, { keys }, { stores, ...(shelf ? { entities: shelf } : {}), signal: this.signal });
+    const { SherpaToast } = await import('../sherpa-toast/sherpa-toast.js');
+    if ('refused' in answer) {
+      SherpaToast.critical(answer.refused);
+      return;
+    }
+    const { undo } = answer;
+    const toast = SherpaToast.success(answer.done, undo ? { action: this.word('undo') } : {});
+    if (undo) toast.addEventListener('toast-action', () => void undo().then(() => SherpaToast.info(this.word('undone'))), { once: true });
   }
 
   /** Open in Node Editor, from a page's toolbar: the app's `query` graph View, on this page. A push, so Back

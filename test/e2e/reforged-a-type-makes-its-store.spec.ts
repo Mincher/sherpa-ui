@@ -91,3 +91,23 @@ test('a page\'s module reads another type\'s rows through ctx.stores, the stores
   });
   expect(r).toEqual({ stores: ['alerts', 'device', 'teammate'], teammates: 2, acts: ['device.find', 'device.read', 'device.add', 'device.change', 'device.remove'] });
 });
+
+test('a press that names an act runs it through the one door, says it in a toast, and its Undo puts it back', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=devices');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const rows = () => page.evaluate(() => (document.querySelector('#grid') as HTMLElement & { shadowRoot: ShadowRoot } | null)?.shadowRoot?.querySelectorAll('.row').length ?? 0);
+  await page.evaluate(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+  });
+  await expect.poll(rows).toBe(3);
+  // The button says its act and its row in markup: command="--device.remove" value="d2", commandfor the outlet.
+  await page.locator('#remove-bravo').click();
+  await expect.poll(rows).toBe(2);
+  const toast = page.locator('sherpa-toast').filter({ hasText: 'Removed Device "Bravo".' });
+  await expect(toast).toHaveCount(1);
+  await toast.locator('[part="action"], .action').first().click();
+  await expect.poll(rows).toBe(3);
+});

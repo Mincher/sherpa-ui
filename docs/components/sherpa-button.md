@@ -29,7 +29,7 @@ For an action on this page: save, add, delete, open a dialog with `commandfor`, 
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
-| `command` | text |  | native: what it is told — `--show`, `--hide` |
+| `command` | text |  | native: what it is told — `--show`, `--hide`, or an act — `--user.suspend` |
 | `commandfor` | text |  | native: the id of the element a press commands (a dialog, a panel) |
 | `data-badge` | text |  | the text of the trailing [sherpa-badge](sherpa-badge.md) (or slot a node into "badge") |
 | `data-description` | text |  |  |

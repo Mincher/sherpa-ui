@@ -155,7 +155,7 @@
       "name": "command",
       "type": "string",
       "observed": false,
-      "description": "native: what it is told — `--show`, `--hide`"
+      "description": "native: what it is told — `--show`, `--hide`, or an act — `--user.suspend`"
     },
     {
       "$type": "prop",
