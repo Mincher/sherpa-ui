@@ -8,6 +8,8 @@
 export {
   absoluteDates,
   applyOptions,
+  // A cell with many values is many values: each listed, counted, filtered and grouped alone. Will, 2026-11-13
+  cellValues,
   compareValues,
   durationSpan,
   filterRows,

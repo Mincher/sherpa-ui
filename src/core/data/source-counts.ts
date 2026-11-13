@@ -12,7 +12,7 @@
  * - planWalk — Each scope's steps and taps, in order, from the applied Query.
  * - walkStepwise — The same walk asked of a store, step by step, for a set not held.
  */
-import { absoluteDates, andFilter, readField, valueKey, type Filter, type Store } from './store.js';
+import { absoluteDates, andFilter, cellValues, readField, valueKey, type Filter, type Store } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import {
   appliesIn, heldInView, narrowsOne, presetClause, scopeClauses, VIEW, withoutDropped,
@@ -34,7 +34,7 @@ export async function presentUnder(
   }
   // Only its fields, where the store can send just them. TRAP T-a-page-turn-is-a-slice
   const { rows } = await store.load({ ...options, ...(store.capabilities.projects ? { fields } : {}) });
-  return Object.fromEntries(fields.map((f) => [f, keys(rows.map((r) => readField(r, f)))]));
+  return Object.fromEntries(fields.map((f) => [f, keys(rows.flatMap((r) => cellValues(readField(r, f))))]));
 }
 
 /** One answer in a scope's order: a field. `above`: the View holds it; `chain`:

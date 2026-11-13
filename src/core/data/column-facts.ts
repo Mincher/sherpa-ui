@@ -16,7 +16,7 @@
  * - .range — A number field's ends, over its finite values; none, undefined.
  */
 import { reduceRows } from './aggregate.js';
-import { compareValues, distinctOf, readField, sortRows, valueKey, type GroupSummary, type Row, type SortSpec } from './store.js';
+import { cellValues, compareValues, distinctOf, readField, sortRows, valueKey, type GroupSummary, type Row, type SortSpec } from './store.js';
 
 /** What a grid asks of its rows: their order, and its page of them. */
 export interface PageAsk {
@@ -123,8 +123,10 @@ export class ColumnFacts {
     if (!tally) {
       tally = new Map();
       for (const row of this.rows) {
-        const at = valueKey(readField(row, field));
-        tally.set(at, (tally.get(at) ?? 0) + 1);
+        for (const v of cellValues(readField(row, field))) {
+          const at = valueKey(v);
+          tally.set(at, (tally.get(at) ?? 0) + 1);
+        }
       }
       this.#tallies.set(field, tally);
     }

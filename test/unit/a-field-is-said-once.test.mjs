@@ -227,3 +227,11 @@ test('an app\'s types load from their files and register by id; an entity of a r
   const entity = { v: 2, type: 'type-a', id: 'one', label: 'One', graph: { nodes: [] } };
   assert.match((await entityFaults(entity)).join('\n'), /is of the type "Device", which keeps no graph/);
 });
+
+test('a type may say its rows can receive a message (recipient), true or false', () => {
+  const people = { v: 1, id: 'person', label: 'Person', recipient: true, fields: { id: {}, name: { label: 'Name' } } };
+  assert.deepEqual([ofSchema(people), typeFaults(people)], [[], []]);
+  const wrong = { ...people, recipient: 'yes' };
+  assert.ok(ofSchema(wrong).length);
+  assert.match(typeFaults(wrong).join('\n'), /its recipient is not true or false/);
+});

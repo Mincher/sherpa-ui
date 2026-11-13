@@ -55,13 +55,13 @@ const assignRole = {
   },
 };
 
-test('a type may name a row of another type: ref, many with ref alone, and a title that names a row', () => {
+test('a type may name a row of another type: ref, many with ref or values, and a title that names a row', () => {
   assert.deepEqual(typeFaults(USER), []);
   assert.deepEqual(typeFaults(ROLE), []);
   const bad = (field) => typeFaults({ v: 1, id: 'x', label: 'X', fields: { id: {}, f: field } }).join('\n');
   assert.match(bad({ ref: 'Role X' }), /its ref is a type's id/);
   assert.match(bad({ ref: 'role', type: 'number' }), /a reference is text/);
-  assert.match(bad({ many: true }), /only a reference holds many/);
+  assert.match(bad({ many: true }), /only a reference or a set of values holds many/);
   assert.match(typeFaults({ ...ROLE, title: 'nope' }).join('\n'), /its title, "nope", is no field/);
 });
 
@@ -87,7 +87,7 @@ test('an act is registered once, refused in words when it is none or its id is t
   const words = said.map((r) => r.message).join('\n');
   assert.match(words, /its id, "user.assign-role", is another act's/);
   assert.match(words, /its id is `<type>.<verb>`/);
-  assert.match(words, /its input f: only a reference holds many/);
+  assert.match(words, /its input f: only a reference or a set of values holds many/);
 });
 
 test('one door: a call is checked by its type\'s rules and its references, run, answered in words, and undone', async () => {

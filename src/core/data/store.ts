@@ -38,6 +38,7 @@
  * - StoreChangeDetail — Fired after an insert, update or remove.
  * - projectRow — One row as a projection sends it: its key, and each named field's whole top field.
  * - readField — Read a field, following dots (`'customer.name'`) into nested objects.
+ * - cellValues — A cell's values: each item of a list, else the one value. A cell with many values is many values.
  * - distinctOf — Each field's values among rows, one per value key: the last raw, in first-seen order.
  * - setCollation — Name the language values sort in.
  * - compareValues — Compare two field values.
@@ -430,14 +431,17 @@ export function readField(row: Row, field: string): unknown {
   return cur;
 }
 
-/** Each field's values among rows, one per value key: the last raw, in first-seen order. */
+/** A cell's values: each item of a list, else the one value. A cell with many values (a Coworker's customers) is many
+ *  values: each is listed, counted and filtered alone, never the list as one. Will, 2026-11-13 */
+export function cellValues(value: unknown): readonly unknown[] {
+  return Array.isArray(value) ? value : [value];
+}
+
+/** Each field's values among rows, one per value key — each item of a list cell alone: the last raw, in first-seen order. */
 export function distinctOf(rows: readonly Row[], fields: readonly string[]): Record<string, unknown[]> {
   return Object.fromEntries(fields.map((f) => {
     const seen = new Map<string, unknown>();
-    for (const row of rows) {
-      const v = readField(row, f);
-      seen.set(valueKey(v), v);
-    }
+    for (const row of rows) for (const v of cellValues(readField(row, f))) seen.set(valueKey(v), v);
     return [f, [...seen.values()]];
   }));
 }
@@ -572,41 +576,52 @@ export function filterTest(filter: Filter | undefined, now: Date = new Date()): 
     return head === 'and' ? (row) => tests.every((t) => t(row)) : (row) => tests.some((t) => t(row));
   }
   const [field, op, value] = filter as FilterClause;
-  const read = (row: Row): unknown => readField(row, field);
+  /* A list cell is many values: a test holds when ANY of them holds it, and its opposite (ne, notin, notcontains,
+     notbetween) when NONE does. One value is a list of one. Will, 2026-11-13 */
+  const any = (test: (a: unknown) => boolean) => (row: Row): boolean => {
+    const v = readField(row, field);
+    return Array.isArray(v) ? v.some(test) : test(v);
+  };
   const typed = (): string => text(value);
   switch (op) {
     case 'eq':
-      return (row) => looseEqual(read(row), value);
-    case 'ne':
-      return (row) => !looseEqual(read(row), value);
+      return any((a) => looseEqual(a, value));
+    case 'ne': {
+      const is = any((a) => looseEqual(a, value));
+      return (row) => !is(row);
+    }
     case 'lt':
-      return (row) => { const a = read(row); return a != null && compareValues(a, value) < 0; };
+      return any((a) => a != null && compareValues(a, value) < 0);
     case 'lte':
-      return (row) => { const a = read(row); return a != null && compareValues(a, value) <= 0; };
+      return any((a) => a != null && compareValues(a, value) <= 0);
     case 'gt':
-      return (row) => { const a = read(row); return a != null && compareValues(a, value) > 0; };
+      return any((a) => a != null && compareValues(a, value) > 0);
     case 'gte':
-      return (row) => { const a = read(row); return a != null && compareValues(a, value) >= 0; };
+      return any((a) => a != null && compareValues(a, value) >= 0);
     case 'contains': {
       const v = typed();
-      return (row) => text(read(row)).includes(v);
+      return any((a) => text(a).includes(v));
     }
     case 'notcontains': {
       const v = typed();
-      return (row) => !text(read(row)).includes(v);
+      const has = any((a) => text(a).includes(v));
+      return (row) => !has(row);
     }
     case 'startswith': {
       const v = typed();
-      return (row) => text(read(row)).startsWith(v);
+      return any((a) => text(a).startsWith(v));
     }
     case 'endswith': {
       const v = typed();
-      return (row) => text(read(row)).endsWith(v);
+      return any((a) => text(a).endsWith(v));
     }
     case 'in':
-      return Array.isArray(value) ? (row) => inList(read(row), value) : () => false;
-    case 'notin':
-      return Array.isArray(value) ? (row) => !inList(read(row), value) : () => true;
+      return Array.isArray(value) ? any((a) => inList(a, value)) : () => false;
+    case 'notin': {
+      if (!Array.isArray(value)) return () => true;
+      const has = any((a) => inList(a, value));
+      return (row) => !has(row);
+    }
     case 'last':
     case 'next':
       return filterTest(absoluteDates(filter, now), now);
@@ -619,7 +634,7 @@ export function filterTest(filter: Filter | undefined, now: Date = new Date()): 
       if (!Array.isArray(value) || value.length !== 2) return () => false;
       // A backwards pair is still a range — order the bounds, do not reject.
       const [lo, hi] = compareValues(value[0], value[1]) <= 0 ? [value[0], value[1]] : [value[1], value[0]];
-      return (row) => { const a = read(row); return a != null && compareValues(a, lo) >= 0 && compareValues(a, hi) <= 0; };
+      return any((a) => a != null && compareValues(a, lo) >= 0 && compareValues(a, hi) <= 0);
     }
   }
   return () => false;
@@ -811,7 +826,17 @@ export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
      object field put every row in ONE group and a chart drew one meaningless
      bar. `valueKey` is the same key the rest of the layer uses.
      TRAP T-a-value-can-be-an-object */
-  const grouped = Map.groupBy(rows, (row) => valueKey(readField(row, field)));
+  // A list cell's row is in each of its values' groups (an empty list, no value's). Will, 2026-11-13
+  const grouped = new Map<string, Row[]>();
+  for (const row of rows) {
+    const values = cellValues(readField(row, field));
+    for (const v of values.length ? values : [undefined]) {
+      const key = valueKey(v);
+      const into = grouped.get(key);
+      if (into) into.push(row);
+      else grouped.set(key, [row]);
+    }
+  }
   return [...grouped].map(([key, groupRowsIn]) => ({ key, rows: groupRowsIn }));
 }
 

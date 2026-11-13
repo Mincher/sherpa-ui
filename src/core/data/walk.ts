@@ -171,20 +171,22 @@ export interface Scan {
   start: Map<string, Set<string>>;
 }
 
-/** A value as its key — none for an empty one, as `presentUnder` reads it. */
-function keyOf(row: Row, field: string): string | null {
+/** A row's value keys for a field — each item of a list cell alone (`cellValues`), none for an empty one, as
+ *  `presentUnder` reads them — each handed to `take`, with no list made for a single value. */
+function eachKey(row: Row, field: string, take: (key: string) => void): void {
   const v = readField(row, field);
-  return v == null || v === '' ? null : valueKey(v);
+  if (Array.isArray(v)) {
+    for (const item of v) if (item != null && item !== '') take(valueKey(item));
+  } else if (v != null && v !== '') take(valueKey(v));
 }
 
-/** A row's keys for a field: its value's, and a tiered field's path's — as
+/** A row's keys for a field: its values', and a tiered field's path's — as
  *  `valueKey` writes the pair, its names sorted, with no object made per row. */
 function addKeys(keys: Set<string>, row: Row, field: string, child: string | undefined): void {
-  const key = keyOf(row, field);
-  if (key === null) return;
-  keys.add(key);
-  const c = child ? keyOf(row, child) : null;
-  if (c !== null) keys.add(child! < field ? `{${child}:${c},${field}:${key}}` : `{${field}:${key},${child}:${c}}`);
+  eachKey(row, field, (key) => {
+    keys.add(key);
+    if (child) eachKey(row, child, (c) => keys.add(child < field ? `{${child}:${c},${field}:${key}}` : `{${field}:${key},${child}:${c}}`));
+  });
 }
 
 function add(into: Map<string, Set<string>>, row: Row, field: string, child: string | undefined): void {
@@ -209,11 +211,10 @@ function countAt(scan: Scan, at: number, row: Row): void {
   let counts = scan.tapCounts.get(at);
   if (!counts) scan.tapCounts.set(at, (counts = new Map()));
   for (const f of fields) {
-    const key = keyOf(row, f);
-    if (key === null) continue;
     let by = counts.get(f);
     if (!by) counts.set(f, (by = new Map()));
-    by.set(key, (by.get(key) ?? 0) + 1);
+    const tally = by;
+    eachKey(row, f, (key) => tally.set(key, (tally.get(key) ?? 0) + 1));
   }
 }
 
@@ -237,10 +238,7 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
       const step = steps[i]!;
       if (scan.tallied[i]) addKeys(scan.tally[i]!, row, step.field!, step.tier?.child);
       const all = scan.all[i];
-      if (all) {
-        const key = keyOf(row, step.field!);
-        if (key !== null) all.set(key, (all.get(key) ?? 0) + 1);
-      }
+      if (all) eachKey(row, step.field!, (key) => all.set(key, (all.get(key) ?? 0) + 1));
       const each = eachTests[i];
       if (each) for (let k = 0; k < each.length; k++) if (each[k]!(row)) scan.each[i]![k]!++;
       const test = tests[i];

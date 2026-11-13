@@ -67,7 +67,7 @@
  * - .boundElements — Every component currently bound.
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
-import { andFilter, DEFAULT_OP, filterRows, filterTest, readField, valueKey } from './store.js';
+import { andFilter, cellValues, DEFAULT_OP, filterRows, filterTest, readField, valueKey } from './store.js';
 import { readingClause, ruleOut } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding } from './source-binding.js';
@@ -553,7 +553,7 @@ export class DataSource extends EventTarget {
     }
     if (distinct) return distinct(open, {});
     const rows = await this.#reads.loadAll();
-    return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
+    return Object.fromEntries(open.map((f) => [f, rows.flatMap((r) => cellValues(readField(r, f)))]));
   }
 
   /** Fields whose OWN read failed — their values, or the keys a server field

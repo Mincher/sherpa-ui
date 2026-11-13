@@ -24,6 +24,7 @@ import type { FieldDeclaration } from './data-source-types.js';
 import { entityTypes } from './entity-types.js';
 import type { NodeOutput, NodeSocket } from './node-library.js';
 import type { StatusField } from './status-field.js';
+import { cellValues } from './store.js';
 import { email, max, min, number, oneOf, pattern, required, rules, url, type FieldDomain, type Rule } from './validate.js';
 
 /** A field a row holds, or reads from its graph: what its data is, never how a control asks for it. */
@@ -50,7 +51,7 @@ export interface StoredField {
   from?: string;
   /** A row of another type, by its id: the value is that row's key, its choices that type's rows (plan 964). */
   ref?: string;
-  /** With `ref`: a list of that type's keys. */
+  /** With `ref` or `values`: a list of that type's keys, or of those values, each checked alone. */
   many?: boolean;
 }
 
@@ -87,6 +88,8 @@ export interface TypeDefinition {
   time?: string;
   /** The field that names a row as a reader reads it (`titleOf`). */
   title?: string;
+  /** Its rows are people or agents a message can go to: a Notification's To takes them. Plan 960 U4.9 */
+  recipient?: boolean;
   /** None for a graph thing whose rows are its entities' id, label, description and tags alone. */
   fields?: Readonly<Record<string, TypeField>>;
   /** Its seed rows: a JSON file or a URL. */
@@ -96,6 +99,15 @@ export interface TypeDefinition {
 
 const isStatus = (f: TypeField): f is StatusField => f.type === 'status';
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+/** A rule run on each value of a list cell alone, as a cell with many values is many values. */
+const eachOf = (rule: Rule): Rule => async (value) => {
+  for (const item of cellValues(value)) {
+    const wrong = await rule(item);
+    if (wrong) return wrong;
+  }
+  return undefined;
+};
 
 /** A stored field's rules, in the order they run: a key is required. A field read from its graph is never written, so has none. */
 function rulesFor(field: StoredField, isKey: boolean): Rule[] {
@@ -107,7 +119,8 @@ function rulesFor(field: StoredField, isKey: boolean): Rule[] {
   if (field.pattern) list.push(pattern(new RegExp(field.pattern)));
   if (field.min !== undefined) list.push(min(field.min));
   if (field.max !== undefined) list.push(max(field.max));
-  if (field.values) list.push(oneOf(field.values));
+  // A list's values are each checked alone. Will, 2026-11-13
+  if (field.values) list.push(field.many ? eachOf(oneOf(field.values)) : oneOf(field.values));
   else if (field.type === 'boolean') list.push(oneOf([true, false]));
   return list;
 }
@@ -138,7 +151,7 @@ export function typeSchema(type: Pick<TypeDefinition, 'key' | 'fields'>): Return
   const schema = rules(map);
   const domains: Record<string, FieldDomain> = {};
   for (const [name, field] of stored) {
-    const domain = { ...schema.domains[name], ...wordsOf(field), ...(field.from && field.values ? { values: [...field.values] } : {}) };
+    const domain = { ...schema.domains[name], ...wordsOf(field), ...((field.from || field.many) && field.values ? { values: [...field.values] } : {}) };
     if (Object.keys(domain).length) domains[name] = domain;
   }
   return { ...schema, domains };

@@ -170,6 +170,7 @@ async function fieldSchema(field: StoredField, name: string, ctx?: ActContext): 
     return field.many ? { type: 'array', items: one, uniqueItems: true, description } : { ...one, description };
   }
   const kind = field.type ?? 'text';
+  if (field.many && field.values) return { type: 'array', items: { enum: [...field.values] }, uniqueItems: true, description };
   if (kind === 'number') return { type: 'number', description, ...(field.min !== undefined ? { minimum: field.min } : {}), ...(field.max !== undefined ? { maximum: field.max } : {}) };
   if (kind === 'boolean') return { type: 'boolean', description };
   if (kind === 'date') return { type: 'string', format: field.time ? 'date-time' : 'date', description };

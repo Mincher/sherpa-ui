@@ -10,7 +10,7 @@
 import { parseWhere, type Where } from './where.js';
 
 const ID = /^[a-z][a-z0-9-]*$/;
-const TOP = ['$schema', 'v', 'id', 'label', 'description', 'tags', 'icon', 'category', 'key', 'time', 'title', 'fields', 'data', 'graph'];
+const TOP = ['$schema', 'v', 'id', 'label', 'description', 'tags', 'icon', 'category', 'key', 'time', 'title', 'recipient', 'fields', 'data', 'graph'];
 const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'many'];
 const STATUS = ['type', 'label', 'description', 'values'];
 const KINDS = ['text', 'number', 'date', 'boolean'];
@@ -88,7 +88,7 @@ function storedFaults(f: Loose): string[] {
     if (kind !== 'text' || 'values' in f) out.push('a reference is text, its choices the other type\'s rows: no type, no values');
   }
   if ('many' in f && typeof f['many'] !== 'boolean') out.push('its many is not true or false');
-  else if (f['many'] && !('ref' in f)) out.push('only a reference holds many: { "ref": "role", "many": true }');
+  else if (f['many'] && !('ref' in f) && !('values' in f)) out.push('only a reference or a set of values holds many: { "ref": "role", "many": true }');
   return out;
 }
 
@@ -127,6 +127,7 @@ export function typeFaults(given: unknown): string[] {
   if (!isText(given['label'])) out.push('it has no label');
   for (const k of ['description', 'icon', 'category', 'data']) if (k in given && !isText(given[k])) out.push(`its ${k} is not text`);
   if ('tags' in given && (!Array.isArray(given['tags']) || given['tags'].some((t) => !isText(t)))) out.push('its tags are not a list of words');
+  if ('recipient' in given && typeof given['recipient'] !== 'boolean') out.push('its recipient is not true or false');
   if ('graph' in given) out.push(...graphFaults(given['graph']));
   const fields = given['fields'];
   if (fields === undefined && 'graph' in given) return out;
