@@ -16,7 +16,9 @@ and definitions. I'm not 100% sure though so let's investigate and plan."
 It continues [vision-entities](vision-entities.md) (2026-11-05) and [plan 746](plan-746-entities-and-graph-views.md),
 whose E1 to E5 are built. It takes in 956 to 959 (Demos parts that move into the library).
 
-**Status: PLAN, 2026-11-13.** Nothing is built until Will answers section 7. Facts from five reads, each read only:
+**Will, 2026-11-13: D1 A, D2 A, D3 A, D4 A, D5 A, D6 A ("your picks"); "go U0a!".**
+
+**Status: PLAN, 2026-11-13; U0a and U0b building.** Facts from five reads, each read only:
 sherpa-ui-e8 (nodes, graphs, entities), sherpa-ui-a9 (the data layer), sherpa-ui-bd (component, page and View
 definitions), acp-module-91 (how Harness keeps its definitions), and a check of every graph in Demos (sherpa-demos-67).
 Paths are sherpa-ui's unless they say Demos.
