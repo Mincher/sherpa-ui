@@ -239,3 +239,33 @@ test('a keystroke is heard once outside the field', async ({ page }) => {
   await page.keyboard.type('a');
   expect(await page.evaluate(() => (window as unknown as { __n: number }).__n)).toBe(1);
 });
+
+test('a read-only select takes no pick: no press reaches it, no key steps it, Tab moves on (TODO 962)', async ({ page }) => {
+  const make = (readonly: boolean) => page.evaluate(async (ro) => {
+    const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered?: Promise<void>; populate?(o: unknown): Promise<void> | void };
+    el.setAttribute('data-type', 'select');
+    el.setAttribute('value', 'a');
+    if (ro) el.setAttribute('readonly', '');
+    el.id = ro ? 'locked' : 'open';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await el.populate?.(['a', 'b', 'c'].map((v) => ({ value: v, label: v.toUpperCase() })));
+  }, readonly);
+  await make(true);
+  await make(false);
+  const value = (id: string) => page.locator(`#${id}`).evaluate((el) => el.shadowRoot!.querySelector('select')!.value);
+  expect(await page.locator('#locked').evaluate((el) => getComputedStyle(el.shadowRoot!.querySelector('select')!).pointerEvents)).toBe('none');
+  for (const id of ['locked', 'open']) {
+    await page.locator(`#${id}`).evaluate((el) => el.shadowRoot!.querySelector('select')!.focus());
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('End');
+    await page.keyboard.type('c');
+  }
+  expect(await value('locked')).toBe('a');
+  // The same keys on one that is not read only do step it: the test can fail.
+  expect(await value('open')).not.toBe('a');
+  // Tab still leaves it.
+  await page.locator('#locked').evaluate((el) => el.shadowRoot!.querySelector('select')!.focus());
+  await page.keyboard.press('Tab');
+  expect(await page.locator('#locked').evaluate((el) => el.shadowRoot!.activeElement?.tagName ?? null)).toBe(null);
+});

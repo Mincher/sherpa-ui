@@ -394,6 +394,7 @@ export class SherpaInputText extends SherpaElement {
     this.#syncHasValue();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
+    this.#control?.addEventListener('keydown', this.#onReadOnlyKey);
     // Blur, not per keystroke — TRAP T-validate-on-blur-then-every-keystroke.
     this.#control?.addEventListener('blur', this.#onBlur);
     this.#syncValue();
@@ -646,6 +647,11 @@ export class SherpaInputText extends SherpaElement {
     this.#held = null;
     this.#syncValue();
     this.emit('change', { value: this.value });
+  };
+
+  /** A select has no readonly of its own: read only, a key that would open it or step its value does nothing; Tab moves on. TODO 962 */
+  #onReadOnlyKey = (event: Event): void => {
+    if (this.#control instanceof HTMLSelectElement && this.hasAttribute('readonly') && (event as KeyboardEvent).key !== 'Tab') event.preventDefault();
   };
 }
 

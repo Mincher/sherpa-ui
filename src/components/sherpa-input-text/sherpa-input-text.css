@@ -251,6 +251,8 @@ select.control {
 }
 
 select.control::-ms-expand { display: none; }
+/* A select has no readonly of its own: read only, it takes no press, and its keys are stopped (`#onKey`). TODO 962 */
+:host([readonly][data-type="select"]) .control { pointer-events: none; }
 
 :host([data-type="select"]) .control-row { position: relative; }
 
