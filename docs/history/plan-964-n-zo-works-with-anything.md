@@ -4,7 +4,9 @@ Will, 2026-11-13: "the AI chat in the app (N-zo w Claude for now) should let use
 prompting. This goes for manipulating entities, performing actions, and steering UX workflows, on the current view, or
 silently performing both of those things in other views by resurfacing UX workflow steps as chat interactions."
 
-**Status: PLAN, 2026-11-13.** Nothing is built until Will answers section 6. Owner: sherpa-demos-67 (Demos and N-zo);
+**Will, 2026-11-13: "your picks" — D1 A (acts said once, in the library), D2 A (a change elsewhere asked first, with Undo), D3 A (the first UX workflow: Invite a user), D4 A (after plan 960 U3, beside 963).**
+
+**Status: PLAN, 2026-11-13; waits on plan 960 U3.** Owner: sherpa-demos-67 (Demos and N-zo);
 the acts registry is a library part (owner to agree with sherpa-ui-e8, -a9, -bd). It builds on plan 960 (types,
 definitions, lenses) and 946 (N-zo everywhere).
 
