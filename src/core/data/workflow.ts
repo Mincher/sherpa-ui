@@ -727,7 +727,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     let sources: MessageSource[] | undefined;
     // Its Results and Count say ROWS: where only a value, or a test of one, reaches its header, they have nothing to say.
     // Nothing usable joined: they show (TODO 924).
-    const rowless = !!kind.input && kind.rows.some((r) => r.name === ROWS.name) && rowsHeard(node.id) === false;
+    const rowless = !!kind.input && kind.rows.some(saysRows) && rowsHeard(node.id) === false;
     // A Condition's Count also says the counts that pass: it shows where a number comes in (TODO 939; Will, 2026-11-11: a
     // Count into Between passes through).
     const rows = kind.rows.map((row): GraphRow => {
@@ -761,7 +761,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       // Closed to its values where they are known: tags, or the dropdown of ticks they draw as (TRAP T-a-multi-select-is-one-row).
       const closed = (plain.control === 'tags' || (plain.control === 'values' && plain.multiple && !!here?.length)) && list ? { closed: true as const } : {};
       // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A).
-      const idle = !!row.property && row.name === ROWS.name && rowless;
+      const idle = saysRows(row) && rowless;
       if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {
         warnings.push({ row: row.name, words: `${row.label} has no rows: a value comes in` });
       }
@@ -866,6 +866,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
   return { nodes, connections, ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) };
 }
+
+/** A row that says rows: Results, or a test's Pass and Fail (plan 971 A). */
+const saysRows = (row: RowKind): boolean => !!row.property && row.gives === 'rows';
 
 /** A node's width on the plane, in px: its output socket is at its x plus this. */
 export const NODE_WIDTH = 240;

@@ -15,10 +15,10 @@
  * - leafOf — One test as its node says it: the Field on its header, a comparison, Time's or a Tag's; or why it says none.
  * - nodeFlow — A node's flow, read from its graph; a fault in words for a node it does not hold.
  */
-import { ROWS, socketOf, type DrawnGraph, type GraphNode, type GraphRow, type NodeConnection } from './node-kinds.js';
+import { ROWS, socketOf, TEST_KINDS, type DrawnGraph, type GraphNode, type GraphRow, type NodeConnection } from './node-kinds.js';
 import { coerce, readInput, truthOf } from './node-input.js';
 import { portalFlow } from './node-portals.js';
-import { OP_LABELS, OP_TAKES, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
+import { OP_LABELS, OP_TAKES, notCondition, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
 
 /** A row's value as JSON writes it: a boolean as true or false, never 1 or 0, nor the words (COERCIONS, TODO 781). */
 const inJson = (row: GraphRow): unknown => (row.gives ? coerce('json', { kind: row.gives, value: row.value })?.value ?? row.value : row.value);
@@ -61,7 +61,7 @@ function said(graph: DrawnGraph, address: string): string {
 }
 
 /** A test's True (1 or 0, plan 944) and its Results say its tree. */
-const SAYS_TREE = new Set([ROWS.name, 'true']);
+const SAYS_TREE = new Set(['pass', 'true']);
 
 /** No condition, and why. */
 const none = (fault: string): ConditionRead => ({ faults: [fault] });
@@ -107,15 +107,24 @@ function readAt(graph: Flowing, address: string, facts: ConditionFacts, walk: Wa
 function readFrom(graph: Flowing, from: string, facts: ConditionFacts, walk: Walk): ConditionRead {
   const { node: id, row: at } = socketOf(from);
   const node = graph.nodes.find((n) => n.id === id);
-  // A test's Results are the rows that pass it: they say its tree, as its True does (TODO 939).
-  const row = at !== undefined && SAYS_TREE.has(at) && node && TESTS.has(node.kind) ? undefined : at;
+  // A test's Pass is the rows that pass it: it says its tree, as its True does; its Fail, the tree's opposite (plan 971 A).
+  const test = !!node && TEST_KINDS.has(node.kind);
+  const fails = test && at === 'fail';
+  const row = at !== undefined && test && (SAYS_TREE.has(at) || fails) ? undefined : at;
   if (!node) return none(`a connection comes from "${id}", which the graph does not hold`);
   if (walk.seen.has(node.id)) return none(`"${node.heading}" reads itself, in a loop`);
-  return readNode(graph, node, row, facts, { ...walk, seen: new Set([...walk.seen, node.id]) });
+  const read = readNode(graph, node, row, facts, { ...walk, seen: new Set([...walk.seen, node.id]) });
+  return fails ? opposite(node, read) : read;
 }
 
-/** The kinds whose True is a test of a field. */
-const TESTS = new Set(['condition', 'time', 'tag']);
+/** A test's Fail, as a condition: the opposite of what its Pass says; none where a test in it has no opposite. */
+function opposite(node: GraphNode, read: ConditionRead): ConditionRead {
+  const tree = read.tree;
+  if (tree === undefined) return read;
+  if (typeof tree === 'boolean') return { tree: !tree, faults: read.faults };
+  const flipped = 'boolean' in tree ? undefined : notCondition(tree);
+  return flipped ? { tree: flipped, faults: read.faults } : { faults: [...read.faults, `"${node.heading}" › Fail cannot be said as a condition: a test in it has no opposite`] };
+}
 
 /** One test as its node says it: its field the Field on its header; a Condition's operator its Operation and its value
  *  Value B, the Values, or Start and End; Time's Between or Duration; a Tag's Includes. The ONE place a leaf is read
@@ -130,7 +139,7 @@ export function leafOf(drawn: DrawnGraph, node: GraphNode): { leaf: ConditionLea
     const out = from?.rows.find((x) => x.name === row);
     return from && out?.gives === 'field' ? [{ from, out }] : [];
   })[0];
-  if (!TESTS.has(node.kind)) return { fault: `"${node.heading}" says no condition: connect a Condition` };
+  if (!TEST_KINDS.has(node.kind)) return { fault: `"${node.heading}" says no condition: connect a Condition` };
   if (!via || typeof via.out.value !== 'string' || !via.out.value) return { fault: `"${node.heading}" tests no Field: connect one in` };
   // A Field that reads null sends nothing, and says why.
   const silent = (via.from.warnings ?? []).find((w) => w.row === undefined || w.row === via.out.name);
@@ -154,9 +163,13 @@ function carried(graph: Flowing, node: GraphNode, facts: ConditionFacts, walk: W
   return joined('and', graph.connections.filter((r) => r.to === node.id).map((r): ConditionRead => {
     const { node: id, row } = socketOf(r.from);
     const from = graph.nodes.find((n) => n.id === id);
-    if (!from || walk.seen.has(from.id) || row !== ROWS.name) return { faults: [] };
+    // A test's Pass carries its tree on, its Fail the opposite; a node that passes rows on, what its own rows carry.
+    const passes = row === ROWS.name || (TEST_KINDS.has(from?.kind ?? '') && (row === 'pass' || row === 'fail'));
+    if (!from || walk.seen.has(from.id) || !passes) return { faults: [] };
     const on = { ...walk, seen: new Set([...walk.seen, from.id]) };
-    return TESTS.has(from.kind) ? readNode(graph, from, undefined, facts, on) : carried(graph, from, facts, on);
+    if (!TEST_KINDS.has(from.kind)) return carried(graph, from, facts, on);
+    const read = readNode(graph, from, undefined, facts, on);
+    return row === 'fail' ? opposite(from, read) : read;
   }));
 }
 
@@ -167,7 +180,7 @@ function partFrom(graph: Flowing, via: NodeConnection, facts: ConditionFacts, wa
   const { node: id, row } = socketOf(via.from);
   const from = graph.nodes.find((n) => n.id === id);
   const run: ConditionRead = { tree: { boolean: said(graph, via.from) }, faults: [] };
-  if (!from || (row === undefined && (TESTS.has(from.kind) || facts.inner?.(from))) || (row !== undefined && SAYS_TREE.has(row) && TESTS.has(from.kind))) {
+  if (!from || (row === undefined && (TEST_KINDS.has(from.kind) || facts.inner?.(from))) || (row !== undefined && SAYS_TREE.has(row) && TEST_KINDS.has(from.kind))) {
     const nested = readFrom(graph, via.from, facts, walk);
     return nested.tree !== undefined || !from ? nested : { ...run, faults: nested.faults };
   }

@@ -25,6 +25,7 @@
  * - ConditionLeaf — One comparison: a clause as an object.
  * - ConditionGroup — Parts that all hold, or any one.
  * - groupOf — A group's join and its parts; undefined for a leaf.
+ * - notCondition — The opposite of a condition: each test its operator's opposite, And and Or swapped; none where it has none.
  * - conditionLeaves — Every leaf of a tree, in order.
  * - joinConditions — Parts joined as one tree: a group's own join flattens into it; one part is itself.
  * - filterCondition — A wire filter as the tree it is — for a door that is handed a `Filter`.
@@ -226,6 +227,25 @@ export function groupOf(tree: Condition): ['and' | 'or', readonly Condition[]] |
   if ('and' in tree && tree.and) return ['and', tree.and];
   if ('or' in tree && tree.or) return ['or', tree.or];
   return undefined;
+}
+
+/** Each operator's opposite, where it has one: a test's Fail says the opposite of its Pass (plan 971 A). */
+const OPPOSITE: Partial<Record<FilterOp, FilterOp>> = {
+  eq: 'ne', ne: 'eq', in: 'notin', notin: 'in', contains: 'notcontains', notcontains: 'contains',
+  between: 'notbetween', notbetween: 'between', gt: 'lte', lte: 'gt', gte: 'lt', lt: 'gte',
+};
+
+/** The opposite of a condition: each test its operator's opposite, And and Or swapped (De Morgan). None where a test has
+ *  no opposite (Starts with, In the last…): it cannot be said as a condition. */
+export function notCondition(tree: Condition): Condition | undefined {
+  const parts = groupOf(tree);
+  if (parts) {
+    const flipped = parts[1].map(notCondition);
+    return flipped.every(Boolean) ? (parts[0] === 'and' ? { or: flipped as Condition[] } : { and: flipped as Condition[] }) : undefined;
+  }
+  const leaf = tree as ConditionLeaf;
+  const op = OPPOSITE[leaf.op];
+  return op ? { ...leaf, op } : undefined;
 }
 
 /** Every leaf of a tree, in order. */

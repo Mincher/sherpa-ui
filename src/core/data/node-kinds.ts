@@ -22,6 +22,7 @@
  * - registerNodeTypes — An app adds its own types to a shipped family, from its own file: an Output's Ticket.
  * - nodeKinds — Every kind the library ships, with the types apps added: what a check and an editor read.
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
+ * - TEST_KINDS — The kinds that test: each gives Pass, Fail and its truth (plan 971 A).
  * - ConditionInput — One input into a Condition, for what fits it: a value or a column, by its type; or data.
  * - CONDITION_INPUT_WORDS — Each input in words, as a warning says it.
  * - fitsCondition — Whether a Logic type fits an input.
@@ -437,7 +438,7 @@ function compareType(op: FilterOp): NodeType {
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows, TRUE] };
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, ...rows, TRUE] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -448,16 +449,24 @@ const compareTypes = (ops: readonly FilterOp[]): Record<string, NodeType> => Obj
 /** Logic's types, one test each (plan 783 D4): And and Or join the tests that come in, booleans on the header, read as
  *  `truthOf` reads them; then the comparisons. Each leads with Rows: the rows it lets through. A Query draws its tree
  *  with these: Not and Is empty are a workflow's alone. Plan 749 P5 */
-/** How many of a joiner's inputs pass its check, and how many fail it (Will, TODO 939). */
-const [PASS, FAIL] = [propertyRow('pass', 'Pass'), propertyRow('fail', 'Fail')];
+/** A test's Pass: the rows that hold it; its Fail: the rows that do not, so neither route is lost (Will, plan 971 A). */
+const [PASS, FAIL] = [propertyRow('pass', 'Pass', 'rows'), propertyRow('fail', 'Fail', 'rows')];
+/** The kinds that test: each gives Pass, Fail and its truth (plan 971 A). */
+export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time', 'tag']);
+/** A Branch's Data in, and its Yes and No, each sending ALL of it. */
+const BRANCH: readonly RowKind[] = [
+  { name: 'data', label: 'Data', input: 'any' },
+  { name: 'yes', label: 'Yes', output: 'object', property: true, passes: 'data' },
+  { name: 'no', label: 'No', output: 'object', property: true, passes: 'data' },
+];
 const LOGIC: Readonly<Record<string, NodeType>> = {
   // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
-  // empty; Results are the rows of the true inputs, Count their rows and the sum of the true counts (TODO 939).
-  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, TRUE, PASS, FAIL] },
-  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [ROWS, TRUE, PASS, FAIL] },
+  // empty; Pass is the rows in all of the inputs (And) or in any true one (Or), Fail the rest (plan 971 A).
+  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, TRUE] },
+  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, TRUE] },
   ...compareTypes(FIGMA_OPS),
-  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [ROWS, TRUE], graphs: ['workflow'] },
-  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [ROWS, TRUE], graphs: ['workflow'] },
+  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [PASS, FAIL, TRUE], graphs: ['workflow'] },
+  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [PASS, FAIL, TRUE], graphs: ['workflow'] },
   ...compareTypes(SHERPA_OPS),
 };
 
@@ -521,16 +530,18 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition',
     typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
-  // The ONE node that branches (Will, plan 944, D1 A): its test on its header, true where it is above zero, true, or not
-  // empty; its Data goes on by Yes where the test holds, by No where not, and the other sends nothing.
-  check: {
-    heading: 'Check', icon: 'diverging-arrows', description: 'Send the data on by Yes or No', input: 'any',
-    rows: [
-      { name: 'data', label: 'Data', input: 'any' },
-      { name: 'yes', label: 'Yes', output: 'object', property: true, passes: 'data' },
-      { name: 'no', label: 'No', output: 'object', property: true, passes: 'data' },
-    ],
-    model: 'check', graphs: ['query', 'workflow'], category: 'Logic',
+  // The ONE node that branches (plan 944; Branch, plan 971 A): its test on its header, its truth said on it, its When; ALL its
+  // Data goes on by Yes where it holds, by No where not, and the other sends nothing. It filters no rows: a test does.
+  branch: {
+    heading: 'Branch', icon: 'diverging-arrows', description: 'Send all the data one way, by its When', input: 'any',
+    typeLabel: 'When', defaultType: 'any',
+    types: {
+      any: { label: 'Any', help: 'Yes when any row passes, or the value is true', rows: BRANCH },
+      all: { label: 'All', help: 'Yes when every row passes', rows: BRANCH },
+      none: { label: 'None', help: 'Yes when no row passes, or the value is false', rows: BRANCH },
+      atleast: { label: 'At least', help: 'Yes when at least N rows pass, or the value is N or more', rows: [countRow('n', 'N', 1), ...BRANCH] },
+    },
+    rows: [], model: 'branch', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
@@ -614,10 +625,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   time: {
     heading: 'Time', icon: 'time', description: 'Check a date against a time', input: 'any', needs: 'date', output: 'boolean', typeLabel: 'Check', defaultType: 'between',
     types: {
-      between: { label: 'Between', help: 'True when the date is from Start to End', rows: [dateRow('start', 'Start'), dateRow('end', 'End')] },
+      between: { label: 'Between', help: 'True when the date is from Start to End', rows: [PASS, FAIL, dateRow('start', 'Start'), dateRow('end', 'End')] },
       duration: {
         label: 'Duration', help: 'True when the date is within a span of today',
-        rows: [{ name: 'when', label: 'When', control: 'span', input: 'value' }, countRow('n', 'Value', 1), { name: 'unit', label: 'Unit', control: 'unit', input: 'value' }],
+        rows: [PASS, FAIL, { name: 'when', label: 'When', control: 'span', input: 'value' }, countRow('n', 'Value', 1), { name: 'unit', label: 'Unit', control: 'unit', input: 'value' }],
       },
     },
     rows: [], model: 'timeCheck', graphs: ['workflow'], category: 'Time',
@@ -636,7 +647,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // A rows check by the Field of tags that comes in: closed to its values, where they are known (plan 783 D5).
   tag: {
     heading: 'Tag', icon: 'price-tag', description: 'Keep rows with chosen tags', input: 'any', needs: 'field', output: 'boolean',
-    types: { includes: { label: 'Includes', rows: [ROWS, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
+    types: { includes: { label: 'Includes', rows: [PASS, FAIL, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
   // An In and an Out joined by a name, no line between them. An In takes many connections; an Out draws a row for each connection

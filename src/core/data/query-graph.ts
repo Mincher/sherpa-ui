@@ -529,7 +529,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const said = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
         heading: value, description: groupWords(when),
       }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: before ? [`${before}/no`] : [] });
-      const check = add(column + 0.002, QUERY_NODE.statusCheck(field, value), 'check', rowsOf('check', {}), { heading: value, ref: { status: field, value } });
+      const check = add(column + 0.002, QUERY_NODE.statusCheck(field, value), 'branch', resolveKind(NODE_KINDS['branch']!, 'any').rows.map((r): GraphRow => ({ ...r })), { heading: value, ref: { status: field, value } }, 'any');
       connections.push({ from: said, to: check }, { from: before ? `${before}/no` : sent(QUERY_NODE.source), to: `${check}/data` }, { from: `${check}/yes`, to: `${node}/${value}` });
       before = check;
     });
@@ -786,7 +786,7 @@ export type PlaceAnswer = { request: QueryRequest } | { refused: string } | { ke
 
 /** The kinds a Query draws and never places: a Field's tests are its chip's, and a status field the app's. Its node panel
  *  offers neither; `placeRequest` still says why, to one that asks. Will, 2026-11-10 */
-export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'check', 'organise'];
+export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'branch', 'organise'];
 
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the
