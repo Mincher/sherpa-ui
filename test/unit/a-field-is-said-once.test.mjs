@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 import {
-  ArrayStore, openSource, readFrom, statusFields, typeColumns, typeFaults, typeSchema, typeStatusFields, typeStoreOptions, validate,
+  ArrayStore, openSource, readFrom, statusFields, typeColumns, typeFaults, typeFields, typeSchema, typeStatusFields, typeStoreOptions, validate,
 } from '../../dist/data.js';
 
 const DEVICE = {
@@ -102,6 +102,19 @@ test('a page knows each field from its type, and says only what its controls do'
   assert.equal(def('health').description, 'Worked out from its risk.');
   assert.deepEqual(def('health').options.map((o) => [o.value, o.swatch]), [['At risk', 'critical'], ['Healthy', 'success']]);
   source.dispose?.();
+});
+
+test('a reader with no source open reads each field as the type and the page say it together', () => {
+  const page = { name: { advanced: 'only', op: 'contains' }, status: { label: 'State' }, site: { label: 'Site', select: 'single' } };
+  const fields = typeFields(DEVICE, page);
+  assert.deepEqual(Object.keys(fields), ['id', 'name', 'status', 'risk', 'owner', 'enrolled', 'antivirus', 'health', 'site']);
+  assert.deepEqual(fields.name, { label: 'Name', advanced: 'only', op: 'contains' });
+  assert.deepEqual(fields.status, { values: ['online', 'offline'], label: 'State', statuses: { online: 'success', offline: 'critical' } });
+  assert.deepEqual(fields.risk, { type: 'number', min: 0, max: 100, label: 'Risk' });
+  assert.deepEqual(fields.health, {
+    label: 'Health', description: 'Worked out from its risk.', values: ['At risk', 'Healthy'], statuses: { 'At risk': 'critical', Healthy: 'success' },
+  });
+  assert.deepEqual(fields.site, { label: 'Site', select: 'single' }, 'a field only the page names is the page\'s');
 });
 
 test('a grid\'s columns are made from the fields, in their order, but the key', () => {

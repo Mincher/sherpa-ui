@@ -142,7 +142,7 @@ export class GridCells {
     const value = day ?? raw;
     // A multi-field cell's text is its own: its tags are not.
     const text = (td.hasAttribute('data-tags') ? '' : td.textContent?.trim()) || this.words(col, value, new Map());
-    return { field, kind, value, key: valueKey(value), header: col.header ?? field, text, held: filters.filter.holds(field) };
+    return { field, kind, value, key: valueKey(value), header: filters.fieldLabel(field), text, held: filters.filter.holds(field) };
   }
 
   /** Is this cell's value in force on its field: picked in Simple, or an "Is" row in Advanced? */

@@ -11,12 +11,14 @@
  * - typeFaults — What is wrong with a type, in words; none when it is sound.
  * - typeSchema — The store's schema made from a type: each stored field's rules, and what each field is.
  * - typeStatusFields — A type's status fields, as statusFields() takes them.
+ * - typeFields — Each field as a type and a page say it together, for a reader with no source open.
  * - typeStoreOptions — What a store made from a type is given: its key, its time and its schema.
  * - TypeColumn — One grid column made from a field.
  * - typeColumns — A grid's columns made from a type: one per field but its key, in its order.
  * - readFrom — A value read from an entity's graph, by a field's `from`.
  */
 import type { StoreOptions } from './base-store.js';
+import type { FieldDeclaration } from './data-source-types.js';
 import type { StatusField } from './status-field.js';
 import { email, max, min, number, oneOf, pattern, required, rules, url, type FieldDomain, type Rule } from './validate.js';
 import { parseWhere, type Where } from './where.js';
@@ -218,6 +220,28 @@ export function typeSchema(type: TypeDefinition): ReturnType<typeof rules> {
 /** A type's status fields, as statusFields() takes them. */
 export function typeStatusFields(type: TypeDefinition): Record<string, StatusField> {
   return Object.fromEntries(Object.entries(type.fields).filter((e): e is [string, StatusField] => isStatus(e[1])));
+}
+
+/**
+ * Each field as a type and a page say it together — the type's words and domain, the page's own over them, as a
+ * source declares them — for a reader with no source open (a graph's Field row, a prompt's reference). The type's
+ * order, then the page's own.
+ */
+export function typeFields(
+  type: TypeDefinition, own: Readonly<Record<string, FieldDeclaration>> = {},
+): Record<string, FieldDeclaration & { values?: unknown[] }> {
+  const domains = typeSchema(type).domains;
+  const out: Record<string, FieldDeclaration & { values?: unknown[] }> = {};
+  for (const [name, field] of Object.entries(type.fields)) {
+    const words: FieldDomain = !isStatus(field) ? domains[name] ?? {} : {
+      ...(field.label ? { label: field.label } : {}), ...(field.description ? { description: field.description } : {}),
+      values: field.values.map((v) => v.value),
+      statuses: Object.fromEntries(field.values.flatMap((v) => (v.status ? [[v.value, v.status]] : []))),
+    };
+    out[name] = { ...words, ...own[name] };
+  }
+  for (const [name, facts] of Object.entries(own)) out[name] ??= { ...facts };
+  return out;
 }
 
 /** What a store made from a type is given: its key, its time and its schema. */

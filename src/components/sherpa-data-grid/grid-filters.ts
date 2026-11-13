@@ -179,7 +179,7 @@ export class GridFilters {
     // A NUMBER's slider spans the values it HAS: the 0..100 default crushes a spend column.
     const ends = kind === 'number' && own.min == null ? facts.range(col.field) : undefined;
     return {
-      ...own, ...ends, id: col.field, label: col.header ?? own.label ?? col.field, commit: true,
+      ...own, ...ends, id: col.field, label: this.fieldLabel(col.field), commit: true,
       ...(kind === 'text' && !own.select ? { select: 'multiple' as const } : {}),
       // A HELD shape wins. TRAP T-a-default-is-not-an-override
       // A date's range is its own shape; a number's is an Advanced row. TODO 375
@@ -402,7 +402,7 @@ export class GridFilters {
   report(field: string, held: FieldReading | null): void {
     this.#host.reported({
       field,
-      header: this.#column(field)?.header ?? field,
+      header: this.fieldLabel(field),
       // TRAP T-grid-number-clause-must-coerce — the clause is the data layer's.
       clause: held ? this.#clause(field, held) : null,
       // …and as a READING, which the data layer keeps. TRAP T-one-query-one-owner
@@ -565,7 +565,7 @@ export class GridFilters {
     const picked = fields.flatMap((f) => this.picksOf(f, true).map((v) => joinKey(f, valueKey(v))));
     return {
       // Every value of every field is no answer: no Select all.
-      def: { id: col.field, label: col.header ?? col.field, options, select: 'multiple', advanced: false, selectAll: false, commit: true },
+      def: { id: col.field, label: this.fieldLabel(col.field), options, select: 'multiple', advanced: false, selectAll: false, commit: true },
       held: picked.length ? { picked } : undefined,
     };
   }

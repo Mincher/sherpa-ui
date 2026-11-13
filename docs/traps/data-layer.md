@@ -5781,8 +5781,10 @@ looks, and its bounds. `typeSchema(type)` makes the store's rules and its
 own fields, so a page says only what its controls do (`select`, `op`,
 `advanced`, `section`, `range`), and its own word wins. A status field's name
 and line ride its `statusFields` domain the same way. `typeColumns` makes a
-grid's columns. A field the graph holds says `from`, and `readFrom` reads it;
-nothing writes it, so it has no rule.
+grid's columns, and a column with no `header` is headed by its source's
+label. `typeFields(type, page.source.fields)` answers both together for a
+reader with no source open. A field the graph holds says `from`, and
+`readFrom` reads it; nothing writes it, so it has no rule.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
@@ -5790,6 +5792,7 @@ nothing writes it, so it has no rule.
 - Site: `src/core/data/source-view.ts`
 - Site: `src/core/data/type-definition.ts`
 - Site: `src/data.ts`
+- Site: `test/e2e/reforged-a-heading-says-its-field-label.spec.ts`
 
 ### T-configuration-is-not-data
 

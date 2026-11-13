@@ -48,6 +48,7 @@ import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filt
 
 export interface GridColumn extends OffersAdvanced {
   field: string;
+  /** None: its source's label for the field, else the field. */
   header?: string;
   /** `server`: its filter is asked of the store; its provider tells the source. 345 phase 6 */
   fetch?: 'server';
@@ -714,8 +715,10 @@ export class SherpaDataGrid extends SherpaElement {
     this.#filters.light(th, col.field);
     const sortable = col.sortable !== false;
     th.dataset['sortable'] = String(sortable);
+    // Its column's word, else its source's: a field's label is said once. Plan 960 U2
+    const name = this.#filters.fieldLabel(col.field);
     const label = th.querySelector('.head-label');
-    if (label && label.textContent !== (col.header ?? col.field)) label.textContent = col.header ?? col.field;
+    if (label && label.textContent !== name) label.textContent = name;
     // SORTED means APPLIED, not remembered — a suspended column keeps its
     // field and an empty direction. TRAP T-a-suspended-sort-is-one-owners-job.
     const sorted = sortable && col.field === sortField && sortDir !== '';
@@ -734,7 +737,7 @@ export class SherpaDataGrid extends SherpaElement {
         && offerAxis([col], this.#groupOffer).length > 0;
       group.toggleAttribute('data-unsupported', !list);
       this.#press(group, this.dataset['groupField'] === col.field);
-      group.setAttribute('aria-label', `${this.word('group-by')} ${col.header ?? col.field}`);
+      group.setAttribute('aria-label', `${this.word('group-by')} ${name}`);
     }
 
     // Pressed while it sorts. TRAP T-grid-sort-glyph-needs-a-third-state.
@@ -746,7 +749,6 @@ export class SherpaDataGrid extends SherpaElement {
         : (sortDir === 'desc' ? sortDesc : sortAsc);
       this.#press(sort, sorted);
       sort.toggleAttribute('data-unsupported', !sortable);
-      const name = col.header ?? col.field;
       sort.setAttribute('aria-label', sorted
         ? `${this.word('sorted-by')} ${name}, ${this.word(sortDir === 'desc' ? 'desc' : 'asc')}`
         : `${this.word('sort-by')} ${name}`);
