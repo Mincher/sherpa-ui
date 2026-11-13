@@ -13,7 +13,7 @@
  * - applyReconciled — Ask the live Query what a reconcile gives; it answers the Sources kept after it.
  * - QUERY_LENS — The Query's lens: drawn from the live Query; written back as its requests, then the page saved.
  */
-import { pageWithQuery, type PageDefinition } from './page-definition.js';
+import { pageWithQuery, storeOf, type PageDefinition } from './page-definition.js';
 import type { QueryContext } from './query-context.js';
 import { laidOut, queryDefinition, reconcileQuery, rowRequest, type GraphLayout, type ReconcileFacts, type Reconciled } from './query-document.js';
 import { queryGraph, type KeptSource, type QueryGraphFacts } from './query-graph.js';
@@ -21,6 +21,7 @@ import { VIEW } from './query.js';
 import { registerLens, type GraphLens } from './lens.js';
 import type { DrawnGraph } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
+import { pageFields } from './type-definition.js';
 
 /** What the Query's lens reads beside a page: the live Query, how its graph is drawn, and the layout a reader gave it. */
 export interface QueryLensFacts extends Omit<QueryGraphFacts, 'presets'> {
@@ -28,8 +29,11 @@ export interface QueryLensFacts extends Omit<QueryGraphFacts, 'presets'> {
   layout?: GraphLayout;
 }
 
-/** A field's type: the facts', else the page's. */
-const typeIn = (page: PageDefinition, facts: QueryLensFacts) => (field: string): string | undefined => facts.type?.(field) ?? page.source?.fields?.[field]?.type;
+/** A field's type: the facts', else as the page declares it, or its type does. */
+const typeIn = (page: PageDefinition, facts: QueryLensFacts): ((field: string) => string | undefined) => {
+  const declared = pageFields(page.source);
+  return (field) => facts.type?.(field) ?? declared[field]?.type;
+};
 
 /** The graph a page's Query draws now, at the places its layout gives. */
 export function queryDrawn(page: PageDefinition, facts: QueryLensFacts): DrawnGraph {
@@ -47,13 +51,14 @@ export function reconcileFacts(page: PageDefinition, facts: QueryLensFacts): Rec
   const { query } = facts;
   const kept = facts.kept ?? [];
   const scopes = queryScopes(page, query);
+  const store = page.source && storeOf(page.source);
   return {
     type: typeIn(page, facts), ...(facts.values ? { values: facts.values } : {}), kept,
     scopeOf: (kind) => scopes.find((scope) => query.presets(scope).some((p) => p.id === kind)),
     place: {
       holds: (scope) => query.scope(scope), fields: (scope) => query.fields(scope),
       presets: (scope) => query.presets(scope), on: (scope, id) => query.presetOn(scope, id), kept,
-      ...(page.source?.store ? { store: page.source.store } : {}), ...(facts.stores ? { stores: facts.stores } : {}),
+      ...(store ? { store } : {}), ...(facts.stores ? { stores: facts.stores } : {}),
     },
   };
 }

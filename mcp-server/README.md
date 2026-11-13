@@ -116,7 +116,7 @@ Open a page as its provider does — `checkPage`, then `openSource` over the row
 
 - `definition` — The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
-- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
+- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's: its `source.store`, else its `type`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
 - `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
@@ -128,7 +128,7 @@ A definition as the one Node Editor draws it, through its type's lens (`lensOf(t
 
 - `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Preset Filter, an app's own type
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
-- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
+- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's: its `source.store`, else its `type`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
 - `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
@@ -144,7 +144,7 @@ Each edit made on the graph a definition's lens draws (`editWorkflow`, as the on
 
 - `definition` — The definition: a page (page.v1), for its Query, as `{ "v": 1, "id", "source" }`; or an entity (entity.v2): a workflow, a Custom Node, a Preset Filter, an app's own type
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
-- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
+- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's: its `source.store`, else its `type`. Any other host is refused
 - `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
 - `type` (optional) — With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field's words and status fields
 - `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change

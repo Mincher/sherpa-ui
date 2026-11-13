@@ -103,9 +103,9 @@ async function storeOf(dl, source, { rows, data, key, type: givenType }) {
   const base = url.pathname === '/' ? dl.DATA_BASE : url.pathname.replace(/\/?$/, '/');
   try {
     // A redirect could leave this machine.
-    return await dl.openRequestStore({ name: source.store, base, origin: url.origin, send: (request) => fetch(request, { redirect: 'error' }) });
+    return await dl.openRequestStore({ name: dl.storeOf(source), base, origin: url.origin, send: (request) => fetch(request, { redirect: 'error' }) });
   } catch (error) {
-    throw new Error(`The store "${source.store}" at ${url.origin}${base} could not be opened: ${error.message}`);
+    throw new Error(`The store "${dl.storeOf(source)}" at ${url.origin}${base} could not be opened: ${error.message}`);
   }
 }
 
@@ -163,18 +163,14 @@ async function overPage(dl, args, heard, run) {
   }
 }
 
-/** A field's type, as the page declares it: what types a value entered. */
-const typeIn = (definition) => (field) => definition.source?.fields?.[field]?.type;
-
 /** The facts the Node Editor draws a page's Query with. */
-function graphFacts(dl, { definition, source }, components) {
+function graphFacts(dl, { source }, components) {
   return {
     values: (field) => source.valuesFor(field).map((v) => dl.valueKey(v)),
     presets: (scope) => source.query.presets(scope),
     domains: source.store.domains ?? {},
     pageSize: source.state.pageSize ?? null,
     ...(components ? { components: listOf(components, 'components') } : {}),
-    type: typeIn(definition),
   };
 }
 
@@ -202,7 +198,7 @@ async function fieldsOf(dl, source) {
 const PAGE = {
   definition: z.union([z.string(), z.record(z.unknown())]).describe('The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`'),
   rows: z.union([z.string(), z.array(z.record(z.unknown()))]).optional().describe('The rows its store holds, as a JSON list. Left out with `data` left out, it has none'),
-  data: z.string().optional().describe('In place of rows: the app\'s data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page\'s `source.store`. Any other host is refused'),
+  data: z.string().optional().describe('In place of rows: the app\'s data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page\'s: its `source.store`, else its `type`. Any other host is refused'),
   key: z.string().optional().describe('With `rows`: the field each row is keyed by, e.g. id'),
   type: z.union([z.string(), z.record(z.unknown())]).optional().describe('With `rows`: their type (type.v1), as describe_data gives it — the store is made from it, as the app makes it, so the page knows each field\'s words and status fields'),
   commands: z.union([z.string(), z.array(z.unknown())]).optional().describe('Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change'),

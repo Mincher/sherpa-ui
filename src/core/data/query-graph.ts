@@ -31,7 +31,8 @@
  * - ConnectionAnswer — What a new connection asks: a command, or why it is refused; null, nothing to do.
  * - connectionRequest — The command a new connection asks: a condition into a field of a scope, moved or retargeted.
  */
-import { SAVED_PRESET, type PageDefinition } from './page-definition.js';
+import { SAVED_PRESET, storeOf, type PageDefinition } from './page-definition.js';
+import { pageFields } from './type-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
@@ -366,14 +367,16 @@ export function queryGraphFaults(graph: DrawnGraph, domains: Readonly<Record<str
 
 /** A page's Query as nodes and connections, laid out in columns by depth. */
 export function queryGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
-  const label = (field: string): string => facts.label?.(field) ?? definition.source?.fields?.[field]?.label ?? field;
-  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
+  // The fields the page declares: its own, else its type's.
+  const declared = pageFields(definition.source);
+  const label = (field: string): string => facts.label?.(field) ?? declared[field]?.label ?? field;
+  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? declared[field]?.type;
   const typed = (field: string): { type?: FieldType } => {
     const type = typeOf(field) as FieldType | undefined;
     return type ? { type } : {};
   };
   // Every field a Sort or Group may pick: the declared ones, then any a scope holds.
-  const known = [...new Set([...Object.keys(definition.source?.fields ?? {}), ...Object.values(query.scopes).flatMap((s) => s.holds)])];
+  const known = [...new Set([...Object.keys(declared), ...Object.values(query.scopes).flatMap((s) => s.holds)])];
   const keys = [{ value: '', label: 'None' }, ...known.map((f) => ({ value: f, label: label(f) }))];
   const components = facts.components ?? [];
   const scopeOf = (c: GraphComponent): string => c.scope ?? (c.id in query.scopes ? c.id : VIEW);
@@ -431,9 +434,10 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   // The Source ─▶ each status field its store works out ─▶ the View: the rows go Rows row to header. Its store and how
   // the page reads it are the definition's, until Save; its page size changes live. It forks nowhere in a Query.
   const source = definition.source;
+  const store = source && storeOf(source);
   const stores = (value: unknown): RowChoice[] => rowChoices({ control: 'store', value }, { stores: facts.stores ?? [] })!;
   add(0, QUERY_NODE.source, 'source', [
-    ...rowsOf('source', { store: source?.store }).map((row) => (row.name === ROWS.name ? row : owned(row, stores(source?.store)))),
+    ...rowsOf('source', { store }).map((row) => (row.name === ROWS.name ? row : owned(row, stores(store)))),
     ...PAGE_ROWS.map((row): GraphRow => {
       const value = row.name === 'pageSize' ? facts.pageSize ?? source?.pageSize : row.name === 'search' ? source?.search ?? [] : source?.applyOn ?? 'change';
       return row.name === 'pageSize' ? { ...row, value, editable: true } : owned({ ...row, value }, row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row));
@@ -442,7 +446,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   // Each Source the reader placed, under it: its Store theirs to pick, and nothing the Query reads. TODO 808
   for (const kept of facts.kept ?? []) {
     add(0, kept.id, 'source', rowsOf('source', { store: kept.store }).map((row) => (row.name === ROWS.name ? row
-      : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(source?.store) }] });
+      : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(store) }] });
   }
   // A worked-out status field: one with `when`. A stored field may carry looks per value (`statuses`) and is no status node.
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when);

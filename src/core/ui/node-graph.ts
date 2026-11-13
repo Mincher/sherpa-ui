@@ -83,7 +83,7 @@ import { dragTo, startDrag, type ChainDrag, type ChainLink, type ChainNode } fro
 import { drawLanes } from './node-lanes-ui.js';
 import { clearOfNodes, placeBeside, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
-import { type PageDefinition } from '../data/page-definition.js';
+import { storeOf, type PageDefinition } from '../data/page-definition.js';
 import { queryStepNode, statusTallies, traceQuerySteps } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { report } from '../data/report.js';
@@ -2400,7 +2400,7 @@ export function watchQuery(
   source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'results' | 'store' | 'addEventListener' | 'removeEventListener'>>,
   definition: PageDefinition,
 ): () => void {
-  const store = definition.source?.store;
+  const store = definition.source && storeOf(definition.source);
   let next = false;
   let run: string | null = null;
   const loading = (event: Event): void => {

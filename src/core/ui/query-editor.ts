@@ -24,6 +24,7 @@ import { QUERY_DRAWN_ONLY, type KeptSource, type QueryGraphFacts } from '../data
 import { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, type GraphLayout } from '../data/query-document.js';
 import { applyReconciled, queryDrawn, queryScopes, reconcileFacts, type QueryLensFacts } from '../data/query-lens.js';
 import { report } from '../data/report.js';
+import { pageFields } from '../data/type-definition.js';
 import { valueKey } from '../data/store.js';
 import { bindWorkflow, watchQuery, type GraphDocument, type Inspector, type WorkflowEditor, type WorkflowEditorOptions } from './node-graph.js';
 
@@ -53,9 +54,10 @@ function isKept(v: unknown): v is KeptSource[] {
 /** A page's Query as a document the one node editor reads and writes. */
 export function queryDocument(source: QuerySource, { definition, session, markup = document, ...facts }: QueryEditorOptions): GraphDocument {
   const query = source.query;
-  // A field's type and words: the facts', the page's, else the source's, which holds its type's words too (plan 960 U2).
-  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type ?? source.filterDef?.(field).kind;
-  const labelOf = (field: string): string | undefined => facts.label?.(field) ?? definition.source?.fields?.[field]?.label ?? source.filterDef?.(field).label;
+  // A field's type and words: the facts', as the page or its type declares it, else the source's (plan 960 U2).
+  const declared = pageFields(definition.source);
+  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? declared[field]?.type ?? source.filterDef?.(field).kind;
+  const labelOf = (field: string): string | undefined => facts.label?.(field) ?? declared[field]?.label ?? source.filterDef?.(field).label;
   const values = facts.values ?? ((field: string) => source.valuesFor?.(field)?.map((v) => valueKey(v)));
   // The layout a reader gave the graph: kept for the tab, beside the Query, which holds none of it.
   const layoutAt = `/node-layout/${definition.id}`;
