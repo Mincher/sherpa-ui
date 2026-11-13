@@ -30,6 +30,22 @@ prompt as well as Sherpa capabilities. We'll need to plan for this to ensure it 
   with its own roles on each Customer, is new. Vertesia's Organisation and Project mapping is still open in Harness
   (09-harness-ontology.md:121); Will's words are the newest: a Customer is a Project.
 
+**Vertesia, as Harness's notes say it** (acp-module-82, from .working-notes/04-vertesia.md; the middleware is not on this
+machine):
+- An Organization (an account) holds Projects (04:16-18). A Harness Customer is mapped to nothing yet; a Project is one
+  option, attributes (ABAC) another (02-entities-and-relationships.md:16, 04:136).
+- Access is an entry of three parts: a principal (a user, a group or an API key), a role, and a resource (the
+  organisation, a project, an environment or an interaction) (04:112). So a role is given at the organisation, at a
+  project, or both; a group is a principal too. **Will's model fits it:** an Account is a user's place (the
+  organisation or a project) with its roles there; a Group's roles are entries with the group as principal.
+- Its roles are fixed: owner, admin, manager, developer, executor, reader, consumer, member, billing, auditor (04:76).
+  **No custom roles.** Harness's design wants an organisation's own copies of default roles (18:16). Demos may show
+  roles a reader made (UI/X), but that is past what Vertesia does today: a risk to say on the Roles page.
+- Sign-in is SSO (Entra OIDC) set up by Vertesia; SCIM users arrive as "member" (04:113).
+- A service account: Vertesia connects OAuth per user, per project, or by client credentials (04:106). Harness has no
+  model of a user's M365 account; its notes show M365 as a customer's Connection, admin consented (guess: per customer,
+  not per user). Will's Service Account is new: kept shallow, its service and status only.
+
 ## 2. The model, on plan 960
 
 Five types, each a `type.v1` file with its data (plan 960 U2: fields once, rows of a type, one store door). None has a
