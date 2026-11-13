@@ -21,6 +21,7 @@
  * - Inner — What a use runs: its definition, its body as a workflow, the kinds it needs, its parameters.
  * - innerOf — The graph inside one use: the body with Group Input and Output, and its parameters.
  * - useOf — A use of a definition, placed: it records the version and the definition it was made from.
+ * - followUses — Each use in nodes a writer gave follows a version: the one it held, else the one it is placed at now.
  * - nodeLibraryFaults — Every fault in a library, in words, each named by its path.
  * - checkNodeLibrary — Check a library; each fault reports. True when none is.
  * - workflowFaultsDeep — A workflow's faults, and the faults inside each use, named by path.
@@ -231,6 +232,20 @@ export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, libra
 export function useOf(library: NodeLibrary, kind: string, at: Pick<WorkflowNode, 'id' | 'x' | 'y'> & Partial<WorkflowNode>): WorkflowNode {
   const definition = library.nodes[kind];
   return { ...at, kind, ...(definition ? { version: numberOf(definition), was: snapshotOf(structuredClone(definition)) } : {}) };
+}
+
+/** Each use of a Custom Node in nodes a writer gave (an act, the MCP) follows a version, as one the editor places does: one
+ *  that names none keeps the one the graph held it at, else takes the one it is placed at now (`useOf`). Every use
+ *  following one already: the same array. Plan 972 */
+export function followUses<N extends WorkflowNode>(nodes: readonly N[], held: readonly WorkflowNode[] | undefined, library: NodeLibrary): readonly WorkflowNode[] {
+  const was = new Map((held ?? []).map((n) => [n.id, n]));
+  const loose = (n: N): boolean => !!library.nodes[n.kind] && n.version === undefined;
+  if (!nodes.some(loose)) return nodes;
+  return nodes.map((n) => {
+    if (!loose(n)) return n;
+    const old = was.get(n.id);
+    return old?.kind === n.kind && old.version !== undefined ? { ...n, version: old.version, ...(old.was ? { was: old.was } : {}) } : useOf(library, n.kind, n);
+  });
 }
 
 /** A fault inside a body, named by its path: "Org permissions › Condition: the node …". */

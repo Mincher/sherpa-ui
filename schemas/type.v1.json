@@ -48,7 +48,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "type": { "description": "What its values are. None: text.", "enum": ["text", "number", "date", "boolean"] },
+        "type": { "description": "What its values are. None: text. An object is a JSON object, as a definition's body or settings is (plan 964 N3c): no page filters or lists it, and a flow does not ask it.", "enum": ["text", "number", "date", "boolean", "object"] },
         "label": { "type": "string", "minLength": 1 },
         "description": { "type": "string" },
         "required": { "type": "boolean" },

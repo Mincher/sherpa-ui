@@ -148,3 +148,17 @@ test('an act with no flow has one made from its input; one that changes nothing 
     assert.deepEqual(await nextStep({ v: 1, act: 'user.gone', steps: [{ field: 'x' }] }, {}, ctx()), { refused: 'There is no act "user.gone".' });
   }, { flow: null, acts: [note, suspend] });
 });
+
+test('an object is no step: a made flow leaves it out, and a flow that asks one is refused', async () => {
+  const save = {
+    id: 'user.save-view', label: 'Save view', type: 'user', changes: true,
+    input: { name: { label: 'Name', required: true }, layout: { type: 'object', label: 'Layout', required: true } },
+    async run() { return { done: 'Saved.' }; },
+  };
+  await withInvite(async () => {
+    assert.deepEqual(flowOf('user.save-view').steps, [{ field: 'name' }]);
+    const asked = { v: 1, act: 'user.save-view', steps: [{ field: 'name' }, { field: 'layout' }] };
+    assert.match(flowFaults(asked).join('\n'), /its step "layout" is an object, which no step asks/);
+    assert.deepEqual(await nextStep(asked, {}, ctx()), { refused: 'Save view: layout is an object, which no step asks.' });
+  }, { flow: null, acts: [save] });
+});

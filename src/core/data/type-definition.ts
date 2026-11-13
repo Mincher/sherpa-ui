@@ -32,7 +32,7 @@ import { email, max, min, number, oneOf, pattern, required, rules, url, type Fie
 /** A field a row holds, or reads from its graph: what its data is, never how a control asks for it. */
 export interface StoredField {
   /** None: text. */
-  type?: 'text' | 'number' | 'date' | 'boolean';
+  type?: 'text' | 'number' | 'date' | 'boolean' | 'object';
   label?: string;
   description?: string;
   required?: boolean;
@@ -124,8 +124,12 @@ function rulesFor(field: StoredField, isKey: boolean): Rule[] {
   // A list's values are each checked alone. Will, 2026-11-13
   if (field.values) list.push(field.many ? eachOf(oneOf(field.values)) : oneOf(field.values));
   else if (field.type === 'boolean') list.push(oneOf([true, false]));
+  else if (field.type === 'object') list.push(anObject);
   return list;
 }
+
+/** A JSON object, as a definition's body is: never a list or a word. None given is no fault: `required` says that. */
+const anObject: Rule = (value) => (value == null || (typeof value === 'object' && !Array.isArray(value)) ? undefined : 'Must be an object');
 
 /** What a page knows of a stored field beside what its rules say: its kind, its name and its values' names and looks. */
 function wordsOf(field: StoredField): FieldDomain {
@@ -226,7 +230,7 @@ export interface TypeColumn {
  *  grid reads from its source, so no column says it again. */
 export function typeColumns(type: TypeDefinition): TypeColumn[] {
   const key = type.key ?? 'id';
-  return Object.entries(type.fields ?? {}).filter(([name]) => name !== key).map(([field, f]) => ({
+  return Object.entries(type.fields ?? {}).filter(([name, f]) => name !== key && f.type !== 'object').map(([field, f]) => ({
     field, sortable: true,
     ...(f.type === 'number' || f.type === 'date' ? { type: f.type } : {}),
   }));

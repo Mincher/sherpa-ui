@@ -16,6 +16,7 @@
  * - stageOf — The stage a node is in, or none.
  * - stageBands — Each stage's band, and the moves that keep each clear of the one before.
  * - heldBands — Each stage's band as it stands, its left edge where it was last laid out, not laid out again; nodes `moving`…
+ * - stageNodes — Each node in a stage before there is a layout, a writer's: named, else its nearest named, else by column.
  * - fitStages — The workflow with every node in a stage, each stage's edge, and the nodes a push moved.
  * - stageAt — The stage whose band holds a place across the canvas, or none.
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
@@ -28,6 +29,7 @@
  * - colourStages — Each stage its colour: its own, else the next; made from nothing, stage i wears colour i.
  */
 import { packBands, type BandGroup } from './node-bands.js';
+import { START } from './node-start.js';
 
 /** One stage: its id, its name, line and colour, and where its left edge stands (plane px). */
 export interface NodeStage {
@@ -121,10 +123,35 @@ export function heldBands(workflow: Staged, widthOf: WidthOf, moving: ReadonlySe
   });
 }
 
+/**
+ * Each node in a stage BEFORE there is a layout, a writer's (an act, the MCP): no widths, only x. The stage it names; else
+ * its nearest named neighbour's, by x; with none named, the columns cut at their k − 1 widest gaps, a group to a stage, left
+ * to right. The Start stands in the first; a Group Input or Output in none. Every node in its stage already: the same array.
+ */
+export function stageNodes<N extends Staged['nodes'][number]>(stages: readonly NodeStage[] | undefined, given: readonly N[]): readonly N[] {
+  if (!stages?.length) return given;
+  const ids = new Set(stages.map((s) => s.id));
+  const first = stages[0]!.id;
+  const named = (n: N): boolean => ids.has(n.stage ?? '');
+  const nodes = given.map((n) => (n.id === START && n.stage !== first ? { ...n, stage: first } : n));
+  const staged = nodes.filter((n) => !apart(n));
+  if (staged.every(named)) return nodes.every((n, i) => n === given[i]) ? given : nodes;
+  const held = staged.filter(named);
+  if (held.length) {
+    const nearest = (n: N): string => held.reduce((best, m) => (Math.abs(m.x - n.x) < Math.abs(best.x - n.x) ? m : best)).stage!;
+    return nodes.map((n) => (apart(n) || named(n) ? n : { ...n, stage: nearest(n) }));
+  }
+  const xs = [...new Set(staged.map((n) => n.x))].sort((a, b) => a - b);
+  const cuts = xs.slice(1).map((x, i) => ({ at: x, gap: x - xs[i]! })).sort((a, b) => b.gap - a.gap)
+    .slice(0, stages.length - 1).map((c) => c.at).sort((a, b) => a - b);
+  return nodes.map((n) => (apart(n) ? n : { ...n, stage: stages[Math.min(cuts.filter((c) => n.x >= c).length, stages.length - 1)]!.id }));
+}
+
 /** The workflow with every node in a stage — one in none joins the nearest — each stage's left edge, and every node a
  *  push moved, as its bands say. Unchanged, the same one. */
 export function fitStages<W extends Staged>(given: W, widthOf: WidthOf): W {
   if (!given.stages?.length) return given;
+  // By where a placed node stands, its band; before any layout, by x alone, is `stageNodes`.
   const loose = given.nodes.filter((n) => !n.id.startsWith('#') && !stageOf(given, n)).map((n) => n.id);
   const workflow = loose.length ? restage(given, loose, widthOf) : given;
   const stages = given.stages;

@@ -151,7 +151,7 @@ test('a row type\'s own acts: find, read, add, change and remove through its sto
   });
 });
 
-test('a graph type\'s own acts go through the shelf: an entity is never added as a row, and a removed one comes back', async () => {
+test('a graph type\'s own acts go through the shelf: its entity is changed as a draft, and a removed one comes back', async () => {
   const TEAMMATE = { v: 1, id: 'teammate', label: 'Teammate', fields: { status: { label: 'Status', values: ['active', 'paused'] } }, graph: { runs: true, reusable: false } };
   const stop = quiet();
   const off = registerEntityType(TEAMMATE);
@@ -162,8 +162,8 @@ test('a graph type\'s own acts go through the shelf: an entity is never added as
     await shelf.save({ v: 3, type: 'teammate', id: 'ana', label: 'Ana', graph: { nodes: [{ id: 'when', kind: 'trigger', x: 0, y: 0, values: { type: 'schedule' } }], connections: [{ from: 'when', to: START }] }, settings: { status: 'active' } });
     const ctx = { stores: { teammate: entityStore(shelf, TEAMMATE) }, entities: shelf };
     await withActs(typeActs(TEAMMATE), async () => {
-      assert.match((await runAct('teammate.add', { input: { status: 'active' } }, ctx)).refused, /A Teammate is made in its editor, not as a row/);
-      const changed = await runAct('teammate.change', { keys: ['ana'], input: { status: 'paused' } }, ctx);
+      assert.match((await runAct('teammate.change', { keys: ['ana'], input: { status: 'paused' } }, ctx)).refused, /it takes no "status"/, 'its settings are given whole');
+      const changed = await runAct('teammate.change', { keys: ['ana'], input: { settings: { status: 'paused' } } }, ctx);
       assert.equal(shelf.get('ana').settings.status, 'paused');
       await changed.undo();
       assert.equal(shelf.get('ana').settings.status, 'active');

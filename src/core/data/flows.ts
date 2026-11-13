@@ -108,6 +108,7 @@ export function flowFaults(flow: unknown, act: Act | undefined = isObject(flow) 
     if (Object.keys(step).some((k) => k !== 'field' && k !== 'when')) out.push(`${at} says more than its field and when`);
     if (before.has(field)) out.push(`${at} is asked twice`);
     if (act && !act.input?.[field]) out.push(`${at} is no input of ${act.id}`);
+    else if (act?.input?.[field]?.type === 'object') out.push(`${at} is an object, which no step asks`);
     const when = step['when'];
     if (when !== undefined) {
       if (!isObject(when) || !Object.values(when).every(isObject) || !parseWhere(when as Where)) out.push(`${at}: its when is not a where`);
@@ -116,7 +117,7 @@ export function flowFaults(flow: unknown, act: Act | undefined = isObject(flow) 
     before.add(field);
   }
   for (const [name, field] of Object.entries(act?.input ?? {})) {
-    if (field.required && !before.has(name)) out.push(`it does not ask "${name}", which ${act!.id} needs`);
+    if (field.required && field.type !== 'object' && !before.has(name)) out.push(`it does not ask "${name}", which ${act!.id} needs`);
   }
   return out;
 }
@@ -135,12 +136,14 @@ export function registerFlow(flow: Flow): (() => void) | undefined {
 }
 
 /** The flow of an act: its own, else one made from its input — a step per field, in order, and a confirm where it
- *  changes data. None for an act that is not there. */
+ *  changes data; an object field is none. None for an act that is not there. */
 export function flowOf(act: string): Flow | undefined {
   const own = flows.get(act);
   if (own) return own;
   const made = actOf(act);
-  return made && { v: 1, act, steps: Object.keys(made.input ?? {}).map((field) => ({ field })), confirm: made.changes };
+  // An object (a definition's body) is no step: a caller gives it whole, as the chat does.
+  const steps = Object.entries(made?.input ?? {}).filter(([, f]) => f.type !== 'object').map(([field]) => ({ field }));
+  return made && { v: 1, act, steps, confirm: made.changes };
 }
 
 /** The flows of the acts that apply on a page (`actsOf`): each its own. */
@@ -171,7 +174,8 @@ async function askOf(field: string, def: StoredField, ctx: FlowContext): Promise
     return choices ? { ...base, kind: many, choices } : { ...base, kind: 'text' };
   }
   if (def.values) return { ...base, kind: many, choices: def.values.map((value) => ({ value, label: def.labels?.[String(value)] ?? String(value) })) };
-  return { ...base, kind: def.type ?? 'text' };
+  // `partsOf` refuses a flow that asks an object, so none reaches here.
+  return { ...base, kind: (def.type ?? 'text') as Exclude<StoredField['type'], 'object' | undefined> };
 }
 
 /** The flow's act, and each step's field as it says it; or why not. */
@@ -179,7 +183,9 @@ function partsOf(flow: Flow): { act: Act; input: Readonly<Record<string, StoredF
   const act = actOf(flow.act);
   if (!act) return { refused: `There is no act "${flow.act}".` };
   const gone = flow.steps.find((s) => !act.input?.[s.field]);
-  return gone ? { refused: `${act.label} takes no "${gone.field}".` } : { act, input: act.input ?? {} };
+  if (gone) return { refused: `${act.label} takes no "${gone.field}".` };
+  const whole = flow.steps.find((s) => act.input?.[s.field]?.type === 'object');
+  return whole ? { refused: `${act.label}: ${whole.field} is an object, which no step asks.` } : { act, input: act.input ?? {} };
 }
 
 /** Every step whose `when` holds now, as Asks: the dialog's form, a step hidden when its `when` stops holding. None for

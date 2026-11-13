@@ -36,6 +36,8 @@ export interface EntityShelf {
   /** The whole entity, with its `origin`. */
   get(id: string): Entity | undefined;
   save(entity: Entity): Promise<boolean>;
+  /** Why `save` would refuse an entity, each fault in words; none when it would keep it. The same check, said to no one. */
+  faults(entity: Entity): Promise<string[]>;
   /** The reader's own only, and refused while another entity uses it. */
   remove(id: string): boolean;
   /** Why `remove` would keep an entity, in words: a preset, or another entity uses it; none when it would go. */
@@ -104,31 +106,45 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     return false;
   };
 
+  /** An entity as Save would keep it, and the facts its check reads; or why Save refuses it before the check. */
+  const prepared = async (entity: Entity): Promise<{ next: Entity; facts: EntityFacts } | { fault: string }> => {
+    if (!isEntity(entity)) return { fault: 'it is not an entity: a v3 with a type, an id, a name and a graph' };
+    const here = all();
+    const held = here.find((e) => e.id === entity.id);
+    if (held?.origin === 'preset') return { fault: `"${entity.id}" is a preset, which is read only: use "Copy to my entities"` };
+    if (held && held.type !== entity.type) return { fault: `"${entity.id}" is already a ${held.type}: an id names one entity` };
+    const { finalGraph } = await import('./workflow.js');
+    // Its graph as Save writes it: what a node keeps for its other types stays behind. A query body is kept as it is.
+    const draft = kept(entity.graph ? { ...entity, graph: finalGraph(entity.graph, facts().kinds) } : entity, here);
+    /* Its versions (plan 972): none given keeps the stored ones; given, they may only ADD newer ones at the front, so a
+       save never edits or drops a version. A new id's first save publishes version 1. */
+    const stored = held ? versionsOf(held) : [];
+    const given = entity.versions;
+    if (given && !extendsVersions(given, stored)) {
+      return { fault: `"${entity.id}"'s versions must keep the ones it has (${stored.map((v) => v.number).join(', ')}) and only add newer ones in front` };
+    }
+    const versions = given?.length ? given : stored.length ? stored : [nextVersion({}, definitionPart(draft))];
+    return { next: { ...draft, versions }, facts: { ...facts(), entities: here.filter((e) => e.id !== entity.id) } };
+  };
+
   const shelf: EntityShelf = {
     list: (type) => all().filter((e) => !type || e.type === type).map(summary),
     get: (id) => all().find((e) => e.id === id),
 
     async save(entity) {
-      if (!isEntity(entity)) return refuse('entity', 'save: it is not an entity: a v3 with a type, an id, a name and a graph.', String((entity as { id?: unknown })?.id ?? ''));
-      const here = all();
-      const held = here.find((e) => e.id === entity.id);
-      if (held?.origin === 'preset') return refuse(entity.type, `save: "${entity.id}" is a preset, which is read only: use "Copy to my entities".`, entity.id);
-      if (held && held.type !== entity.type) return refuse(entity.type, `save: "${entity.id}" is already a ${held.type}: an id names one entity.`, entity.id);
-      const [{ checkEntity }, { finalGraph }] = await Promise.all([import('./entity-check.js'), import('./workflow.js')]);
-      // Its graph as Save writes it: what a node keeps for its other types stays behind. A query body is kept as it is.
-      const draft = kept(entity.graph ? { ...entity, graph: finalGraph(entity.graph, facts().kinds) } : entity, here);
-      /* Its versions (plan 972): none given keeps the stored ones; given, they may only ADD newer ones at the front, so a
-         save never edits or drops a version. A new id's first save publishes version 1. */
-      const stored = held ? versionsOf(held) : [];
-      const given = entity.versions;
-      if (given && !extendsVersions(given, stored)) {
-        return refuse(entity.type, `save: "${entity.id}"'s versions must keep the ones it has (${stored.map((v) => v.number).join(', ')}) and only add newer ones in front.`, entity.id);
-      }
-      const versions = given?.length ? given : stored.length ? stored : [nextVersion({}, definitionPart(draft))];
-      const next = { ...draft, versions };
-      if (!checkEntity(next, { ...facts(), entities: here.filter((e) => e.id !== next.id) })) return false;
-      port.keep({ ...port.mine(), [next.id]: next });
+      const ready = await prepared(entity);
+      if ('fault' in ready) return refuse(isEntity(entity) ? entity.type : 'entity', `save: ${ready.fault}.`, String((entity as { id?: unknown })?.id ?? ''));
+      const { checkEntity } = await import('./entity-check.js');
+      if (!checkEntity(ready.next, ready.facts)) return false;
+      port.keep({ ...port.mine(), [ready.next.id]: ready.next });
       return true;
+    },
+
+    async faults(entity) {
+      const ready = await prepared(entity);
+      if ('fault' in ready) return [ready.fault];
+      const { entityFaults } = await import('./entity-check.js');
+      return entityFaults(ready.next, ready.facts);
     },
 
     remove(id) {

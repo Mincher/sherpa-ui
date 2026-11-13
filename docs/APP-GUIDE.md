@@ -304,7 +304,10 @@ export async function init(root, { source, query, session, view, signal, header,
   changes data, where a press offers it, and its `run`. A press, the AI chat and the MCP all call `runAct(id, { keys,
   input }, { stores: ctx.stores })`: it checks the call by the type's rules and answers `done` (with an `undo` where it
   changed data) or `refused`, in words. A type's store is found by its type (`storeOfType`), whatever the app names
-  it. Ask the reader before an act that `changes`; `outlet.act(id, { keys, input })` runs one over the outlet's stores. Every app.json type gives
+  it. A type with a graph part (a Coworker, a Runbook, a Custom Node, a Filter) has its acts through the shelf instead
+  (`graphActs`, plan 964 N3c): `find`, `read` (its JSON), `add` and `change` (each a draft, checked by the shelf's own
+  check; a graph given has each use following a version and each node in a stage, and is laid out when first shown),
+  `remove`, `publish` and `roll-back`. Its graph, query and settings are `object` fields. Ask the reader before an act that `changes`; `outlet.act(id, { keys, input })` runs one over the outlet's stores. Every app.json type gives
   `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; `actsOf({ context, view, type })` lists a page's,
   `actsOf()` every act, and `actSchema(act)` is a call's JSON Schema, for a tool.
 - **A flow asks an act's input step by step** (`registerFlow`, `sherpa-ui/data`; plan 964 N4): JSON

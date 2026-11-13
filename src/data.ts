@@ -196,7 +196,7 @@ export {
 /* A FRAME: nodes under one header; only which nodes is kept. TRAP T-a-frame-is-drawn-round-its-nodes */
 export { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './core/data/node-frames.js';
 export {
-  DEFAULT_STAGE, STAGE_GAP, STAGE_LEAST, STAGE_MIN, STAGE_PAD, colourStages, fitStages, heldBands, nextStageColour, orderStages, resizeStage, restage, stageAt, stageBands, stageFaults, stageOf, stageWidthRange,
+  DEFAULT_STAGE, STAGE_GAP, STAGE_LEAST, STAGE_MIN, STAGE_PAD, colourStages, fitStages, heldBands, nextStageColour, orderStages, resizeStage, restage, stageAt, stageBands, stageFaults, stageNodes, stageOf, stageWidthRange,
   stagesHeld, stagesOf,
   type NodeStage, type StageBand,
 } from './core/data/node-stages.js';
@@ -223,6 +223,7 @@ export {
   copyToMine,
   definitionDiff,
   editDefinition,
+  followUses,
   innerOf,
   kindsOf,
   nodeKindOf,
@@ -264,6 +265,7 @@ export {
   draftChanged, hashOfDefinition, newestOf, nextVersion, publish, publishedOf, rollBack, versionsOf, type VersionAnswer, type VersionFacts,
 } from './core/data/entity-versions.js';
 // Every act an app can do, said once, through one door; and each type's own acts. Plan 964 N1, N2
+export { graphActs } from './core/data/entity-acts.js';
 export { actSchema, actsOf, refChoices, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext, type Choice } from './core/data/acts.js';
 /* A UX flow: one act's input asked step by step, then a confirm; a dialog and the chat draw it. Plan 964 N4 */
 export {

@@ -16,11 +16,11 @@
  * - Choice — One value a field offers, by its words.
  * - refChoices — A reference's choices: its type's rows by key and title, through the store door; none past 200.
  * - actSchema — An act's call as a JSON Schema, a reference's choices read from its type's store: a tool is made from it.
- * - typeActs — A type's own acts, through its store: find, read, add, change and remove.
+ * - typeActs — A type's own acts: a row type's through its store; a graph type's through the shelf (graphActs).
  */
 import type { EntityShelf } from './entity-shelf.js';
 import { entityTypes } from './entity-types.js';
-import { publish, rollBack, type VersionAnswer } from './entity-versions.js';
+import { graphActs } from './entity-acts.js';
 import { report } from './report.js';
 import type { Filter, Row, Store } from './store.js';
 import { storeOfType, titleOf, typeSchema, type StoredField, type TypeDefinition } from './type-definition.js';
@@ -69,9 +69,9 @@ const ID = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)?$/;
 const NAME = /^[a-z][a-z0-9-]*$/;
 const acts = new Map<string, Act>();
 
-/** Every graph type's version acts, the library's and the app's, made as they are asked: a type registered later has them
- *  too, and none is registered twice. A row type (no graph part) keeps no versions. Plan 972 */
-const entityActs = (): Act[] => Object.values(entityTypes()).filter((t) => t.graph).flatMap((t) => versionActs({ id: t.id, label: t.label ?? t.id }));
+/** Every graph type's own acts, the library's and the app's, made as they are asked: a type registered later has them
+ *  too, and none is registered twice. A row type's are the app's to register (`typeActs`). Plans 964 N3c, 972 */
+const entityActs = (): Act[] => Object.values(entityTypes()).filter((t) => t.graph).flatMap((t) => graphActs({ ...t, label: t.label ?? t.id }));
 const isText = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 /** A type's name as a reader reads it. */
 const labelOf = (type: string): string => entityTypes()[type]?.label ?? type;
@@ -201,6 +201,7 @@ async function fieldSchema(field: StoredField, name: string, ctx?: ActContext): 
   if (field.many && field.values) return { type: 'array', items: { enum: [...field.values] }, uniqueItems: true, description };
   if (kind === 'number') return { type: 'number', description, ...(field.min !== undefined ? { minimum: field.min } : {}), ...(field.max !== undefined ? { maximum: field.max } : {}) };
   if (kind === 'boolean') return { type: 'boolean', description };
+  if (kind === 'object') return { type: 'object', description };
   if (kind === 'date') return { type: 'string', format: field.time ? 'date-time' : 'date', description };
   return {
     type: 'string', description,
@@ -246,11 +247,14 @@ function givenFields(type: TypeDefinition, withKey: boolean, required: boolean):
 }
 
 /**
- * A type's own acts, through its store (`storeOfType`, whatever the app names it), each refused in the store's words: find (rows whose
- * fields equal those given, a search), read (one row), add (a row; its undo removes it), change (rows' fields; its undo
- * puts each back) and remove (rows; its undo puts each back, a graph thing through its shelf).
+ * A type's own acts. A row type's go through its store (`storeOfType`, whatever the app names it), each refused in the
+ * store's words: find (rows whose fields equal those given, a search), read (one row), add (a row; its undo removes it),
+ * change (rows' fields; its undo puts each back) and remove (rows; its undo puts each back). A graph type's go through the
+ * shelf (`graphActs`).
  */
 export function typeActs(type: TypeDefinition): Act[] {
+  // A graph type's entities are definitions, not rows: its acts go through the shelf (plan 964 N3c).
+  if (type.graph) return graphActs(type);
   const id = type.id;
   const key = type.key ?? 'id';
   const title = titleOf(type);
@@ -311,54 +315,15 @@ export function typeActs(type: TypeDefinition): Act[] {
       id: `${id}.remove`, label: 'Remove', type: id, many: true, changes: true, description: `Remove one or more ${type.label} rows.`,
       async run(call, ctx) {
         const store = storeOf(ctx);
-        const gone: { row: Row; entity: ReturnType<EntityShelf['get']> }[] = [];
+        const gone: Row[] = [];
         for (const k of keysOf(call)) {
-          gone.push({ row: (await store.byKey(k))!, entity: ctx.entities?.get(String(k)) });
+          gone.push((await store.byKey(k))!);
           await store.remove(k);
         }
         return {
-          done: `Removed ${gone.length === 1 ? named(gone[0]!.row) : many(gone.length)}.`,
-          undo: async () => {
-            for (const { row, entity } of gone) {
-              if (entity) {
-                const { origin: _origin, ...own } = entity;
-                await ctx.entities!.save(own);
-              } else await store.insert(row);
-            }
-          },
+          done: `Removed ${gone.length === 1 ? named(gone[0]) : many(gone.length)}.`,
+          undo: async () => { for (const row of gone) await store.insert(row); },
         };
-      },
-    },
-  ];
-}
-
-/** An entity type's version acts: Publish its draft as the next number; Roll back to an earlier one. Neither has an undo: a
- *  version is never taken away, so a Roll back is how one goes back. Plan 972 */
-function versionActs(type: { id: string; label: string }): Act[] {
-  const keysOf = (call: ActCall): unknown[] => [...(call.keys ?? [])];
-  const shelfOf = (ctx: ActContext): EntityShelf | undefined => ctx.entities;
-  const answered = (a: VersionAnswer, done: (n: number) => string): ActAnswer => ('refused' in a ? { refused: a.refused } : { done: done(a.number), result: a });
-  return [
-    {
-      id: `${type.id}.publish`, label: 'Publish', type: type.id, changes: true,
-      description: `Publish a ${type.label}'s draft as its next version: only then do its uses see it.`,
-      input: { note: { label: 'Note' } },
-      async run(call, ctx) {
-        const shelf = shelfOf(ctx);
-        if (!shelf) return { refused: 'Publish: the app has no entities here.' };
-        const note = call.input?.['note'];
-        return answered(await publish(shelf, String(keysOf(call)[0]), { ...(note ? { note: String(note) } : {}) }), (n) => `Published version ${n}.`);
-      },
-    },
-    {
-      id: `${type.id}.roll-back`, label: 'Roll back', type: type.id, changes: true,
-      description: `Roll a ${type.label} back to an earlier version: it is published again as the next one, so nothing is lost.`,
-      input: { version: { type: 'number', label: 'Version', min: 1, required: true } },
-      async run(call, ctx) {
-        const shelf = shelfOf(ctx);
-        if (!shelf) return { refused: 'Roll back: the app has no entities here.' };
-        const number = Number(call.input?.['version']);
-        return answered(await rollBack(shelf, String(keysOf(call)[0]), number), (n) => `Rolled back to version ${number}, published as version ${n}.`);
       },
     },
   ];

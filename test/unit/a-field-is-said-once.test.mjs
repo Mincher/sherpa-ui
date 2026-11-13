@@ -256,3 +256,14 @@ test('a type may say its rows can receive a message (recipient), true or false',
   assert.ok(ofSchema(wrong).length);
   assert.match(typeFaults(wrong).join('\n'), /its recipient is not true or false/);
 });
+
+test('a field may hold a JSON object, as a definition\'s body does: its rule refuses a list or a word; no column lists it', async () => {
+  const { validateField } = await import('../../dist/data.js');
+  const kept = { v: 1, id: 'kept', label: 'Kept', fields: { id: {}, body: { type: 'object', label: 'Body' } } };
+  assert.deepEqual([ofSchema(kept), typeFaults(kept)], [[], []]);
+  const rule = typeSchema(kept).rules.body;
+  assert.deepEqual([await validateField(rule, { a: 1 }), await validateField(rule, undefined)], [undefined, undefined]);
+  assert.equal(await validateField(rule, [1]), 'Must be an object');
+  assert.equal(await validateField(rule, 'x'), 'Must be an object');
+  assert.deepEqual(typeColumns(kept), []);
+});
