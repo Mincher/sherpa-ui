@@ -110,8 +110,8 @@ test('no node has a True or a False socket: a Condition\'s True is a property ro
 test('a Source\'s Rows leave from its Store row, beside its input socket: no Rows line, the pointer joins a Field there', async ({ page }) => {
   const rows = await card(page, 'Source').locator('sherpa-node-row').evaluateAll((els) => els.filter((e) => e.checkVisibility()).map((e) => [e.getAttribute('data-label'), e.getAttribute('data-input-socket'), e.getAttribute('data-output-socket')]));
   // The Store row under "Parameters", and no Properties box: its Count is gone (plan 944), and its Rows are the Store row's.
-  // Soft, so the rest is still measured.
-  expect.soft(rows).toEqual([['Parameters', null, null], [null, 'value', 'object']]);
+  // Then its Rows pick, no socket (plan 960 U4.9b). Soft, so the rest is still measured.
+  expect.soft(rows).toEqual([['Parameters', null, null], [null, 'value', 'object'], [null, null, null]]);
   const [out, inn] = [(await socket(page, 'Source', 'output', STORE))!, (await socket(page, 'Source', 'input', STORE))!];
   // One row: both sockets on its line, the Rows on its right.
   expect([Math.abs(out.y - inn.y) <= 1, out.x > inn.x]).toEqual([true, true]);
