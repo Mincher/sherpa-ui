@@ -235,7 +235,7 @@
   "src/core/data/tie-place.ts": 80,
   "src/core/data/timing.ts": 55,
   "src/core/data/trace.ts": 243,
-  "src/core/data/type-definition.ts": 209,
+  "src/core/data/type-definition.ts": 211,
   "src/core/data/type-faults.ts": 142,
   "src/core/data/updates-feed.ts": 99,
   "src/core/data/updates.ts": 87,

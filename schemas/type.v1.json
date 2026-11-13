@@ -30,7 +30,8 @@
         "inputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeInput" } },
         "outputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeOutput" } },
         "runs": { "description": "It needs the runner to be of use; none, false: only defined.", "type": "boolean" },
-        "reusable": { "description": "Its entities are Custom Nodes a graph may place; none, true. False (a Coworker): the Nodes panel leaves them out, and an Output Trigger starts one (plan 949).", "type": "boolean" }
+        "reusable": { "description": "Its entities are Custom Nodes a graph may place; none, true. False (a Coworker): the Nodes panel leaves them out, and an Output Trigger starts one (plan 949).", "type": "boolean" },
+        "query": { "description": "Its entity may keep a query body (a Filter's where) in place of its graph, drawn by its lens; none, false (plan 960 U4.4b).", "type": "boolean" }
       }
     }
   },

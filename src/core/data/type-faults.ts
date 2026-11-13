@@ -14,7 +14,7 @@ const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 
 const STATUS = ['type', 'label', 'description', 'values'];
 const KINDS = ['text', 'number', 'date', 'boolean'];
 const PATH = /^[^/]+(\/[^/]+)*$/;
-const GRAPH = ['families', 'inputs', 'outputs', 'runs', 'reusable'];
+const GRAPH = ['families', 'inputs', 'outputs', 'runs', 'reusable', 'query'];
 const SOCKET = ['name', 'label', 'type', 'many', 'multiple', 'control', 'default'];
 const SOCKET_TYPES = ['value', 'object', 'boolean'];
 
@@ -107,7 +107,7 @@ function graphFaults(graph: unknown): string[] {
     ...extra(graph, GRAPH, 'a graph part'),
     ...('families' in graph && (!Array.isArray(graph['families']) || graph['families'].some((f) => !isText(f))) ? ['its families are a list of names'] : []),
     ...(['inputs', 'outputs'] as const).flatMap((side) => (side in graph ? socketFaults(graph[side], side) : [])),
-    ...(['runs', 'reusable'] as const).filter((k) => k in graph && typeof graph[k] !== 'boolean').map((k) => `its ${k} is not true or false`),
+    ...(['runs', 'reusable', 'query'] as const).filter((k) => k in graph && typeof graph[k] !== 'boolean').map((k) => `its ${k} is not true or false`),
   ].map((f) => `graph: ${f}`);
 }
 

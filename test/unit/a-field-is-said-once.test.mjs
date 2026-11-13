@@ -156,8 +156,11 @@ test('a graph thing says its graph part in the same type file; node-type.v1 is f
   assert.deepEqual(typeFaults(COWORKER), [], 'its key is its entity\'s id, so need not be a field');
   const bare = { v: 1, id: 'flow', label: 'Flow', graph: {} };
   assert.deepEqual([ofSchema(bare), typeFaults(bare)], [[], []], 'a graph part alone is a type');
+  const filter = { v: 1, id: 'rule', label: 'Rule', graph: { query: true, runs: false } };
+  assert.deepEqual([ofSchema(filter), typeFaults(filter)], [[], []], 'its entities may keep a query body');
   const broken = [
     [{ ...bare, graph: { reusable: 'no' } }, /graph: its reusable is not true or false/],
+    [{ ...bare, graph: { query: 'yes' } }, /graph: its query is not true or false/],
     [{ ...bare, graph: { inputs: [{ name: 'rows', type: 'rows' }] } }, /graph: its input "rows": its type is one of value, object, boolean/],
     [{ ...bare, graph: { outputs: [{ type: 'object' }] } }, /graph: its outputs 1 has no name/],
     [{ ...bare, graph: { families: 'Sources' } }, /graph: its families are a list of names/],

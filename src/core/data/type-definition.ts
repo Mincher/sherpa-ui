@@ -63,6 +63,8 @@ export interface TypeGraph {
   runs?: boolean;
   /** Its entities are Custom Nodes a graph may place; none, true. False (a Coworker): the Nodes panel leaves them out. */
   reusable?: boolean;
+  /** Its entity may keep a `query` body (a Filter's Where) in place of its graph, drawn by its lens; none, false. Plan 960 U4.4b */
+  query?: boolean;
 }
 
 /** A type, as type.v1 says it: its fields, its graph part, or both. */
