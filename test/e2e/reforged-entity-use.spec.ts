@@ -41,6 +41,12 @@ const bind = (page: Page) => page.evaluate(async () => {
   const outer = { v: 3, type: 'filter', id: 'outer', label: 'Outer', origin: 'mine', graph: { nodes: [use], connections: [{ from: 'trials-1', to: '#out/where' }] } };
   const top = { v: 3, type: 'filter', id: 'top', label: 'Top', origin: 'mine', graph: { nodes: [{ id: 'o', kind: 'filter:outer', x: 0, y: 0 }], connections: [{ from: 'o', to: '#out/where' }] } };
   w['all'] = (more: unknown[] = []) => libraryOf([trials, active, outer, top, ...more] as never);
+  // Published: the library with these kinds at their next number, as a Publish hands it over (plan 972).
+  w['published'] = (more: unknown[], ...kinds: string[]) => {
+    const l = libraryOf([trials, active, outer, top, ...more] as never) as { nodes: Record<string, { version?: number }> };
+    for (const k of kinds) l.nodes[k] = { ...l.nodes[k], version: (l.nodes[k]!.version ?? 1) + 1 };
+    return l;
+  };
   const library = (w['all'] as () => never)();
   const { workflow, kinds } = graphWorkflow(outer as never, { ...NODE_KINDS, ...kindsOf(library) });
   w['saved'] = [];
@@ -113,10 +119,10 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   expect(await ed(page, "ed.library().nodes['filter:active-copy'].settings")).toEqual({ source: 'customers' });
 });
 
-test('saved again elsewhere: the use says "Update available" with its diff; Update instance stays in the draft until Save, and discard gives it back', async ({ page }) => {
+test('published again elsewhere: the use says "Update available" with its diff; Update instance stays in the draft until Save, and discard gives it back', async ({ page }) => {
   await bind(page);
   expect(await caption(page, 'Trials')).toBeNull();
-  await ed(page, "ed.refresh(window.all([{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { type: 'eq', b: 'lead' } }, window.ENTITIES.trials.graph.nodes[1]] } }]))");
+  await ed(page, "ed.refresh(window.published([{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { type: 'eq', b: 'lead' } }, window.ENTITIES.trials.graph.nodes[1]] } }], 'filter:trials'))");
   await settle(page);
   expect(await caption(page, 'Trials')).toBe('Update available');
   await header(page, 'Trials').click();
@@ -136,9 +142,9 @@ test('saved again elsewhere: the use says "Update available" with its diff; Upda
 test('"Update all instances" updates every other graph that uses it, and never the entity open on the canvas', async ({ page }) => {
   await bind(page);
   // Top holds Outer only; a second graph, Other, uses Trials too.
-  const other = { v: 3, type: 'filter', id: 'other', label: 'Other', origin: 'mine', graph: { nodes: [{ id: 't', kind: 'filter:trials', x: 0, y: 0, version: 'old' }], connections: [{ from: 't', to: '#out/where' }] } };
+  const other = { v: 3, type: 'filter', id: 'other', label: 'Other', origin: 'mine', graph: { nodes: [{ id: 't', kind: 'filter:trials', x: 0, y: 0, version: 0 }], connections: [{ from: 't', to: '#out/where' }] } };
   const lead = "{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { type: 'eq', b: 'lead' } }, window.ENTITIES.trials.graph.nodes[1]] } }";
-  await ed(page, `ed.refresh(window.all([${JSON.stringify(other)}, ${lead}]))`);
+  await ed(page, `ed.refresh(window.published([${JSON.stringify(other)}, ${lead}], 'filter:trials'))`);
   await settle(page);
   await header(page, 'Trials').click();
   await settle(page);

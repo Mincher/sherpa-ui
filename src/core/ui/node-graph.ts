@@ -89,7 +89,7 @@ import '../data/filter.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { report } from '../data/report.js';
 import {
-  checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
+  checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, numberOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
 import { aiWords } from '../data/ai-catalog.js';
@@ -2851,10 +2851,18 @@ export function bindWorkflow(
       const laid = settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K());
       // `#in` and `#out` are placed from the body each time, so a definition keeps neither, nor their places before lanes.
       const before = laid.beforeLanes && Object.fromEntries(Object.entries(laid.beforeLanes).filter(([at]) => !at.startsWith('#')));
-      setLib(editDefinition(lib, id, {
+      const nextLib = editDefinition(lib, id, {
         nodes: laid.nodes.filter((n) => !n.id.startsWith('#')), connections: laid.connections ?? [], ties: laid.ties ?? [], frames: laid.frames ?? [],
         stages: laid.stages ?? [], lanes: laid.lanes ?? [], ...(before ? { beforeLanes: before } : {}),
-      }), [id]);
+      });
+      // The use it was opened through, from the top graph, takes the draft as it is edited where it followed it: a publish
+      // then finds it current, and only the other uses say Update available (plan 972 D2 A).
+      const through = path.length === 1 ? draft.nodes.find((n) => n.id === path[0]!.use) : undefined;
+      if (through && lib.nodes[id] && through.version === numberOf(lib.nodes[id]!)) {
+        draft = updateInstance(draft, through.id, nextLib, K());
+        session?.set(pointer, draft);
+      }
+      setLib(nextLib, [id]);
     }
     // Mid-drag, only what moves is drawn: a whole draw a pointer move cost 220ms on 45 nodes (2026-11-10). The drag's end draws all.
     if (dragging && linesOnly) relayConnections(canvas, lineGraph());

@@ -149,7 +149,11 @@ test('a double click, and the inspector\'s Open, open it; a crumb goes back', as
   expect(await ed(page, 'ed.path()')).toEqual(['perm2']);
 });
 
-test('an edit inside is an edit to the definition: each use says an update is available, with the diff', async ({ page }) => {
+/** The app saves the draft and PUBLISHES it: the library handed back has the definition at the next number (plan 972). */
+const publish = (page: Page, id: string) => ed(page, `(ed.save(), ed.refresh({ ...ed.library(), nodes: { ...ed.library().nodes, '${id}': { ...ed.library().nodes['${id}'], version: (ed.library().nodes['${id}'].version ?? 1) + 1 } } }))`);
+const captionsOf = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')));
+
+test('an edit inside is an edit to the definition\'s DRAFT, which no use sees; PUBLISHED, the use edited through has it and the other says Update available, with the diff (plan 972)', async ({ page }) => {
   await bind(page);
   expect(await page.locator('#cv > sherpa-node[data-caption]').count()).toBe(0);
   await ed(page, "ed.open('perm')");
@@ -159,10 +163,14 @@ test('an edit inside is an edit to the definition: each use says an update is av
   expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.type")).toBe('ne');
   await ed(page, 'ed.back()');
   await settle(page);
-  const captions = await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')));
-  expect(captions).toEqual(['Update available', 'Update available']);
+  // A draft (D1 A): no use says anything yet.
+  expect(await captionsOf(page, 'Org permissions')).toEqual([null, null]);
+  await publish(page, 'org-permissions');
+  await settle(page);
+  // Published: the use it was edited through takes it at once (D2 A); the other says Update available.
+  expect(await captionsOf(page, 'Org permissions')).toEqual([null, 'Update available']);
   expect(await page.locator('#cv > sherpa-node[data-heading="Owner check"]').getAttribute('data-caption')).toBeNull();
-  await header(page, 'Org permissions').first().click();
+  await header(page, 'Org permissions').nth(1).click();
   await settle(page);
   const diff = await page.locator('#inspector .update-pane sherpa-key-value-list').evaluate((el) => el.shadowRoot!.textContent!.replace(/\s+/g, ' '));
   expect(diff).toContain('Nodes changed');
@@ -229,12 +237,12 @@ test('stages inside a Custom Node: drawn, added, kept by its definition, its nod
 });
 
 /** An edit inside, so both uses are stale; the first use picked. */
+/** Both uses stale: a change PUBLISHED from outside (another tab, or N-zo) as version 2, its Condition's Operation `ne`. An
+ *  edit made through a use is that use's at once (plan 972 D2 A), so it would leave one current. */
 async function stale(page: Page): Promise<void> {
   await bind(page);
-  await ed(page, "ed.open('perm')");
-  await settle(page);
-  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
-  await ed(page, 'ed.back()');
+  await ed(page, `ed.refresh({ ...ed.library(), nodes: { ...ed.library().nodes, 'org-permissions': { ...ed.library().nodes['org-permissions'], version: 2,
+    nodes: ed.library().nodes['org-permissions'].nodes.map((n, i) => (i === 0 ? { ...n, values: { ...n.values, type: 'ne' } } : n)) } } })`);
   await settle(page);
   await header(page, 'Org permissions').first().click();
   await settle(page);
@@ -248,10 +256,11 @@ test('the split button: "Update instance" updates one; the draft keeps it until 
   await split.first().evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
   expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual([null, 'Update available']);
-  // The pane is gone with the update, and the draft holds it: Save hands it over, with the changed definition.
+  // The pane is gone with the update, and the draft holds it: Save hands the workflow over. The definition came published, so
+  // no draft of it is handed over (plan 972).
   expect(await page.locator('#inspector .update-pane').count()).toBe(0);
   await ed(page, 'ed.save()');
-  expect(await page.evaluate(() => (window as unknown as { savedNodes: [string, { nodes: { values: { type: string } }[] }][] }).savedNodes.map(([id, d]) => [id, d.nodes[0]!.values.type]))).toEqual([['org-permissions', 'ne']]);
+  expect(await page.evaluate(() => (window as unknown as { savedNodes: unknown[] }).savedNodes)).toEqual([]);
   const saved = await page.evaluate(() => (window as unknown as { saved: { nodes: { id: string; version?: string }[] }[] }).saved.at(-1)!.nodes.filter((n) => n.id.startsWith('perm')).map((n) => n.version));
   expect(saved[0]).not.toBe(saved[1]);
 });
@@ -283,10 +292,11 @@ test('the split button\'s menu: both bulk items ask in a critical dialog; cancel
   await settle(page);
 
   expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual([null, null]);
+  // Discard drops the draft's updates: the published change stays handed over, so both uses are behind it again.
   await ed(page, 'ed.discard()');
   await settle(page);
-  expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual([null, null]);
-  expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.type")).toBe('eq');
+  expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual(['Update available', 'Update available']);
+  expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.type")).toBe('ne');
 });
 
 test('a preset opens read only; "Copy to my nodes" makes an editable copy that takes its place', async ({ page }) => {
@@ -428,8 +438,8 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   expect(await page.locator(perm2).locator('sherpa-node-row:not([data-label="Parameters"])').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label'), e.getAttribute('data-input-socket')]))).toEqual([
     ['Users', 'object'], ['Role', 'value'], ['Source › Results', 'object'], ['Org permissions', 'boolean'], ['Allowed', null],
   ]);
-  // The inside is shared: the other use says it can update; this one follows it.
-  expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')))).toEqual(['Update available', null]);
+  // The inside is shared, as a DRAFT no use sees until it is published (plan 972 D1 A); this one follows it already.
+  expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')))).toEqual([null, null]);
   // Inside, a Group Input row each, an output socket of the source's type, connected to nothing yet.
   await ed(page, "ed.open('perm2')");
   await settle(page);
@@ -558,7 +568,7 @@ test('a connection a file kept on a use\'s header reads once as its own new inpu
   expect(read).toEqual({ was: form, kept: form, discarded: form });
 });
 
-test('a saved edit reaches a saved edit reaches a second tab: its uses show the update indicator once the save arrives (refresh)', async ({ page }) => {
+test('a saved edit is a draft that reaches no other tab; PUBLISHED, it does: the use edited through has it, the other shows the update indicator (refresh; plan 972)', async ({ page }) => {
   await bind(page);
   await ed(page, "ed.open('perm')");
   await settle(page);
@@ -582,12 +592,20 @@ test('a saved edit reaches a saved edit reaches a second tab: its uses show the 
   });
   const caps = () => page.locator('#cv2 > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')));
   expect(await caps()).toEqual([null, null]);
+  // The save arrives as a draft: no use sees it (D1 A).
   await page.evaluate(() => {
     const w = window as unknown as { ed2: { refresh(l: unknown): void }; savedNodes: [string, unknown][] };
     w.ed2.refresh({ v: 1, nodes: Object.fromEntries(w.savedNodes) });
   });
   await settle(page);
-  expect(await caps()).toEqual(['Update available', 'Update available']);
+  expect(await caps()).toEqual([null, null]);
+  // Published as version 2: the use it was edited through has it already (D2 A); the other says Update available.
+  await page.evaluate(() => {
+    const w = window as unknown as { ed2: { refresh(l: unknown): void }; savedNodes: [string, Record<string, unknown>][] };
+    w.ed2.refresh({ v: 1, nodes: Object.fromEntries(w.savedNodes.map(([id, d]) => [id, { ...d, version: 2 }])) });
+  });
+  await settle(page);
+  expect(await caps()).toEqual([null, 'Update available']);
 });
 
 test('the toolbar\'s Save as Custom Node is off with none or one picked, on with two; an empty name is refused; Cancel and Escape change nothing', async ({ page }) => {
@@ -642,7 +660,7 @@ test('one picked node shows no tabs; two show a tab each, the active ringed; a t
   expect(JSON.parse((await json('Incoming JSON'))!)[0].from).toEqual(['Org permissions']);
 });
 
-test('a Custom Node\'s sockets in its inspector: renamed, retyped and removed, each one step; this use follows, the other says Update available; a preset shows none (942 D4)', async ({ page }) => {
+test('a Custom Node\'s sockets in its inspector: renamed, retyped and removed, each one step; this use follows, the other says Update available once PUBLISHED; a preset shows none (942 D4, plan 972)', async ({ page }) => {
   await bind(page);
   await header(page, 'Org permissions').first().click();
   await settle(page);
@@ -659,6 +677,10 @@ test('a Custom Node\'s sockets in its inspector: renamed, retyped and removed, e
   await section('inputs/role').locator('sherpa-input-text[name="label"] input').press('Enter');
   await settle(page);
   expect((await rowsOf(0)).slice(0, 2)).toEqual(['Users', 'Wanted role']);
+  // A draft no use sees (plan 972 D1 A); published, the other says Update available, and this one has it (D2 A).
+  expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual([null, null]);
+  await publish(page, 'org-permissions');
+  await settle(page);
   expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual([null, 'Update available']);
   expect(await section('inputs/role').getAttribute('data-heading')).toBe('Wanted role');
   expect(await section('inputs/role').evaluate((el) => el.hasAttribute('open'))).toBe(true);
