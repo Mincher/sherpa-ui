@@ -91,3 +91,16 @@ drawn inline, so this chain goes either way (correction, sherpa-ui-e8).
   *All*: Fail has none; *None*: Pass has none; *At least N*: Pass has N. A plain value (a Prompt's True, a Count) is read
   as today (`truthOf`): true above zero, true, not empty.
 - **No third way.** B puts two meanings back in one node, picked by a row: the fault 2 it means to fix.
+
+## 8. 971a, as built (sherpa-ui-e8)
+
+- **Every test gives Pass and Fail.** A comparison, Time, Tag, And, Or, Not and Is empty lead with **Pass** (`pass`: the
+  rows that hold) and **Fail** (`fail`: the rows that do not), then their own rows, then **True** (1 where any row
+  holds). A comparison's Results (`rows`) is Pass now; And's and Or's input counts go.
+- **Branch** (kind `branch`, was `check`): a family whose Type is its **When**: *Any*, *All*, *None*, *At least* (with
+  its **N**). Its header takes a test's True, or a plain value; Data in; Yes and No send ALL the Data. When reads the
+  joined test's Pass and Fail: Any, Pass has a row; All, Fail has none; None, Pass has none; At least, Pass has N. A
+  plain value reads by `truthOf` (At least: a number of N or more).
+- **The Outgoing JSON's reader**: a test's Pass carries its condition on, its Fail the condition's NOT.
+- **The Query graph**: its status chain draws Branch; U4.7b takes the chain out later.
+- **Retrofit**: every library graph, fixture and spec in the same change. Demos': sherpa-demos-67's.
