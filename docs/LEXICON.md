@@ -188,6 +188,21 @@ a full path from a Start node to an End node, a **Branch** one of the Routes lea
 Condition's `branches` stays (D3). Demos' Ticket output row `connection` → **`integration`** (D4). The URL router's
 route stays. Every move is in `docs/history/plan-934-graph-terms.md`.
 
+## 13. The definitions' words — Will, 2026-11-13 (plan 960)
+
+**Today.** "Entity" names a saved graph of a type only. A definition's graph, form and text forms have no one word
+("graph form", "codec", "Query view"). A Preset Filter is its own entity type, beside a page's presets and a reader's
+saved filters.
+
+**Rule.** PRINCIPLES 19's definitions' words: an **entity** is any one thing of a type, a row or a graph thing; a
+**lens** is one way to show and edit a definition, written back through one door; a **Filter** is a filter
+definition, saved as a Custom Node and used inside a View definition.
+
+**Moves.** None yet: each lands with the code that gives it a meaning. Entity widens with `type.v1` and the one store
+door (U2, U3). Lens arrives with `registerLens` (U4). Preset Filter → **Filter** in U4: the type `preset-filter` →
+`filter`, `PRESET_FILTER` → `FILTER`, `preset-filter.ts` and its schema, the use kind `preset-filter:<id>` →
+`filter:<id>`, and Demos' presets, in one change. The other rows of plan 960 section 3 wait on Will.
+
 ---
 
 ## What a yes does
