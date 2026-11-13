@@ -257,6 +257,8 @@ export {
   NEW_GRAPH, PAGE_QUERY, graphOfWorkflow, graphRows, newGraph, openOf, pageRows, pagesOf, saveGraph, saveGraphAs,
   type GraphChoice, type GraphOf, type GraphPage, type GraphWords, type OpenGraph,
 } from './core/data/graph-views.js';
+// The lens door: a definition drawn as a graph and written back, by its type (plan 960 U4).
+export { lensOf, registerLens, type GraphLens, type LensAnswer } from './core/data/lens.js';
 export { groupNodes, socketEdit, ungroupUse, type GroupAsk, type Grouped, type SocketChange } from './core/data/node-group.js';
 export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
 export { branchesAt, flowDepths, isOutput, isSource, isStart, routeRead, routesOf, type RouteFacts, type RouteRead } from './core/data/node-routes.js';
