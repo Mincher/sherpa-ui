@@ -205,7 +205,7 @@
   "src/core/data/node-portals.ts": 185,
   "src/core/data/node-routes.ts": 149,
   "src/core/data/node-simulate.ts": 631,
-  "src/core/data/node-stages.ts": 336,
+  "src/core/data/node-stages.ts": 337,
   "src/core/data/node-start.ts": 111,
   "src/core/data/node-title.ts": 17,
   "src/core/data/node-unfurl.ts": 494,

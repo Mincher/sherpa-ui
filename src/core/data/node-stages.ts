@@ -136,15 +136,16 @@ export function stageNodes<N extends Staged['nodes'][number]>(stages: readonly N
   const nodes = given.map((n) => (n.id === START && n.stage !== first ? { ...n, stage: first } : n));
   const staged = nodes.filter((n) => !apart(n));
   if (staged.every(named)) return nodes.every((n, i) => n === given[i]) ? given : nodes;
-  const held = staged.filter(named);
+  // The Start is placed by rule, never named by the writer: it leads no node to its stage, and takes no cut.
+  const held = staged.filter((n) => named(n) && n.id !== START);
   if (held.length) {
     const nearest = (n: N): string => held.reduce((best, m) => (Math.abs(m.x - n.x) < Math.abs(best.x - n.x) ? m : best)).stage!;
     return nodes.map((n) => (apart(n) || named(n) ? n : { ...n, stage: nearest(n) }));
   }
-  const xs = [...new Set(staged.map((n) => n.x))].sort((a, b) => a - b);
+  const xs = [...new Set(staged.filter((n) => n.id !== START).map((n) => n.x))].sort((a, b) => a - b);
   const cuts = xs.slice(1).map((x, i) => ({ at: x, gap: x - xs[i]! })).sort((a, b) => b.gap - a.gap)
     .slice(0, stages.length - 1).map((c) => c.at).sort((a, b) => a - b);
-  return nodes.map((n) => (apart(n) ? n : { ...n, stage: stages[Math.min(cuts.filter((c) => n.x >= c).length, stages.length - 1)]!.id }));
+  return nodes.map((n) => (apart(n) || n.id === START ? n : { ...n, stage: stages[Math.min(cuts.filter((c) => n.x >= c).length, stages.length - 1)]!.id }));
 }
 
 /** The workflow with every node in a stage — one in none joins the nearest — each stage's left edge, and every node a

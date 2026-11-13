@@ -36,3 +36,10 @@ test('with none named, the columns are cut at their widest gaps, a group to a st
   const staged = stageNodes(STAGES, [node('a', 0), node('b', 200), node('c', 900), node('d', 1000), node('e', 2000)]);
   assert.deepEqual(staged.map((n) => n.stage), ['gather', 'gather', 'decide', 'decide', 'act']);
 });
+
+test('the Start is placed by rule, never named: on a top graph it leads no node to its stage and takes no cut (e8)', () => {
+  const staged = stageNodes(STAGES, [node('#start', -300), node('a', 0), node('b', 200), node('c', 900), node('d', 1000), node('e', 2000)]);
+  assert.deepEqual(staged.map((n) => n.stage), ['gather', 'gather', 'gather', 'decide', 'decide', 'act']);
+  const near = stageNodes(STAGES, [node('#start', 0, 'gather'), node('a', 1300, 'act'), node('b', 100)]);
+  assert.equal(near[2].stage, 'act', 'its nearest named is a node the writer staged, not the Start');
+});
