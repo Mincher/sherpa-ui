@@ -186,6 +186,11 @@ registerLens(type, {
   only). No Axes node exists: a View's axes are in defs.v1 `$defs/axes`, `axisOffer` and a card's `data-*` (e8). The
   plan (my pick, as a system): ONE set of Organise nodes, Sort, Group, Axes and Search, in every graph; Arrange goes; the
   Query lens reads and writes them. U4.
+  **Will, 2026-11-13:** "Decision: A. Perhaps just a single 'Organise' node that lets you set Axes, Grouping, and Sorting
+  parameters. Saves on bloating the graph with lots of smaller nodes." So ONE Organise kind in every graph, Axes in a
+  workflow too; its rows Sort, Direction, Group, Search, Primary, Secondary and Segments (a chart's axes and segments);
+  the workflow's Sort and Group and the Query graph's Arrange go into it (sherpa-ui-e8's U4.2, in two parts: the Query
+  graph, then the workflow).
 - A text lens is the same door with `toText` and `fromText`: a Runbook's prompt (959, with 956's references). Its
   `fromText` is an agent's, so an app gives it (Demos: Claude, or the app's own writer). The stored prompt is a copy
   that the lens makes again on each Save.
