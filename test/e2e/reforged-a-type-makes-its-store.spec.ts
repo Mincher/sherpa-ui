@@ -101,13 +101,19 @@ test('a press that names an act runs it through the one door, says it in a toast
     const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
     const base = new URL('/test/reforged/typed/app.json', location.href);
     await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+    // A page hears each answer, and each Undo, so it draws a change no store tells it.
+    (window as unknown as { __acts: unknown[] }).__acts = [];
+    document.querySelector('sherpa-outlet')!.addEventListener('act-run', (e) => (window as unknown as { __acts: unknown[] }).__acts.push((e as CustomEvent).detail));
   });
+  const heard = () => page.evaluate(() => (window as unknown as { __acts: unknown[] }).__acts);
   await expect.poll(rows).toBe(3);
   // The button says its act and its row in markup: command="--device.remove" value="d2", commandfor the outlet.
   await page.locator('#remove-bravo').click();
   await expect.poll(rows).toBe(2);
   const toast = page.locator('sherpa-toast').filter({ hasText: 'Removed Device "Bravo".' });
   await expect(toast).toHaveCount(1);
+  await expect.poll(heard).toEqual([{ id: 'device.remove', keys: ['d2'], done: 'Removed Device "Bravo".' }]);
   await toast.locator('[part="action"], .action').first().click();
   await expect.poll(rows).toBe(3);
+  await expect.poll(heard).toEqual([{ id: 'device.remove', keys: ['d2'], done: 'Removed Device "Bravo".' }, { id: 'device.remove', keys: ['d2'], undone: true }]);
 });

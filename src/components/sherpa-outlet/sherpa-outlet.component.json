@@ -300,6 +300,20 @@
       "detail": {
         "type": "string"
       }
+    },
+    {
+      "$type": "event",
+      "name": "act-run",
+      "description": "A pressed act ran, or was refused, or was undone: a page draws its change.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "done": "string",
+        "id": "string",
+        "keys": "readonly unknown[]",
+        "refused": "string",
+        "undone": "true"
+      }
     }
   ],
   "tokens": {

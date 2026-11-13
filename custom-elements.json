@@ -9341,6 +9341,13 @@
               "type": {
                 "text": "CustomEvent<{ type: string }>"
               }
+            },
+            {
+              "name": "act-run",
+              "description": "A pressed act ran, or was refused, or was undone: a page draws its change.",
+              "type": {
+                "text": "CustomEvent<{ done: string; id: string; keys: readonly unknown[]; refused: string; undone: true }>"
+              }
             }
           ],
           "slots": [

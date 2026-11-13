@@ -626,13 +626,21 @@ export class SherpaOutlet extends SherpaElement {
     const shelf = this.#nodes.entities;
     const answer = await runAct(id, { keys }, { stores, ...(shelf ? { entities: shelf } : {}), signal: this.signal });
     const { SherpaToast } = await import('../sherpa-toast/sherpa-toast.js');
+    // ONE event per answer, and one per Undo, so a page draws a change no store tells it (a Coworker's new Run).
     if ('refused' in answer) {
       SherpaToast.critical(answer.refused);
+      this.emit('act-run', { id, keys, refused: answer.refused });
       return;
     }
     const { undo } = answer;
     const toast = SherpaToast.success(answer.done, undo ? { action: this.word('undo') } : {});
-    if (undo) toast.addEventListener('toast-action', () => void undo().then(() => SherpaToast.info(this.word('undone'))), { once: true });
+    this.emit('act-run', { id, keys, done: answer.done });
+    if (undo) {
+      toast.addEventListener('toast-action', () => void undo().then(() => {
+        SherpaToast.info(this.word('undone'));
+        this.emit('act-run', { id, keys, undone: true });
+      }), { once: true });
+    }
   }
 
   /** Open in Node Editor, from a page's toolbar: the app's `query` graph View, on this page. A push, so Back

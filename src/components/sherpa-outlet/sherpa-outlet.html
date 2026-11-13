@@ -37,6 +37,7 @@
     settings-close — detail: { }
     graph-change — the graph View's entity moved. detail: { graph, page? }, page on a `query` graph
     graph-new — New graph… was picked, a request: prevented, the app makes it. detail: { type }
+    act-run — a pressed act ran, or was refused, or was undone: a page draws its change. detail: { id, keys, done?, refused?, undone? }
 -->
 <template id="default">
   <!-- UNABLE TO REACH DATA, floating over the top of the content: no height, so
