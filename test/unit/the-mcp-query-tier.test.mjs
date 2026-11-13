@@ -33,7 +33,8 @@ const records = demos ? fromDemos('view-schemas/records.json') : null;
 // The page names its type (plan 960 U3): the rows are given with it, as the app makes its store, and it is registered
 // here too, so what is read directly reads the type's words and kinds as the MCP's call does.
 const RECORD = demos ? fromDemos('types/record.json') : null;
-const typed = () => ({ rows, type: RECORD });
+const given = RECORD ? { type: RECORD } : { key: 'id' };
+const typed = () => ({ rows, ...given });
 // Since 760 a workflow is an ENTITY, drawn through its type's lens. Demos registers its Workflow type in
 // app/entity-types.js, not in entities.json, so the entities file is given with that type in it.
 const WORKFLOW = { v: 1, id: 'workflow', label: 'Workflow', icon: 'circle-nodes', graph: { runs: true } };
@@ -87,7 +88,7 @@ async function call(name, args) {
 }
 
 /** The page opened on the data layer directly, each command asked as a chip asks it. */
-async function direct(definition, commands, store = typedStore(data, rows, { type: RECORD })) {
+async function direct(definition, commands, store = typedStore(data, rows, given)) {
   const source = await openSource(definition.source, store);
   await source.load();
   for (const request of commands) {
