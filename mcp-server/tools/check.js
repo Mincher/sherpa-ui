@@ -6,6 +6,7 @@
  *   validate_page  a Context's definition, Views and template, and each `ui`
  *   validate_app   an app.json, then every Context and Settings page it names
  *   check_usage    markup against the component specs
+ *   check_custom_node  a Custom Node's JSON, checked as Save checks it: each fault in words, or the node it offers
  *   describe_data  rows, a JSON Schema or a page's fields → store rules, a page's fields and the need
  *   validate_rows  rows against store rules, as the store reads them
  *   scaffold_app   a new app's files: the Starter's, which validate_app checks
@@ -15,7 +16,7 @@
  */
 import { z } from 'zod/v3';
 import { appFile, load, starterFiles } from '../lib/sherpa.js';
-import { checkAppFolder, checkPageFiles, dataLayer, findings, schemaCheck } from '../lib/check.js';
+import { checkAppFolder, checkPageFiles, dataLayer, findings, schemaCheck, withEntities } from '../lib/check.js';
 import { RULE_FORM, fromFields, fromRows, fromSchema, needOf, ruleCode, ruleMap, statusProblems, statusRows, withStatus } from '../lib/describe.js';
 import { answer, refuse } from '../lib/reply.js';
 
@@ -103,6 +104,34 @@ export function register(server) {
     if (!problems.length) return answer(`${tags} tag(s) in ${name} match their specs.${tags ? '' : ' It has no sherpa-* tag and no native button wearing sherpa-button.'}`);
     return answer([`${problems.length} problem(s) in ${tags} tag(s):`, '', ...problems.map((p) => `- ${p}`),
       '', 'Fix the markup, or list a project\'s own hook in `own`, as its sherpa-usage.json does.'].join('\n'));
+  }));
+
+  server.registerTool('check_custom_node', {
+    title: 'Check a Custom Node',
+    description: 'A Custom Node\'s JSON, an entity (entity.v2) of the type node or any other type, checked as the shelf\'s Save checks it (plan 942 D3 A): against entity.v2.json, then `entityFaults`, over the app\'s other entities and its types. Each fault is said in words; with none, the node it offers: its use\'s kind, its category, its inputs and outputs, and how many nodes its graph holds. It writes nothing: an agent writes the JSON into the app\'s entities file itself',
+    inputSchema: {
+      node: z.string().describe('The Custom Node, as JSON: `{ "v": 2, "type": "node", "id", "label", "graph": { "nodes", "connections" }, "settings": { "inputs", "outputs" } }`'),
+      entities: z.string().optional().describe('The app\'s entities file, as JSON (entities.v2: `{ "v": 2, "types", "entities" }`), or a list of entities: its types are known, and a use of one of its entities is no fault'),
+    },
+  }, tool(async ({ node: text, entities }) => {
+    let entity;
+    try {
+      entity = JSON.parse(text);
+    } catch (error) {
+      return refuse(`The node is not JSON: ${error.message}`);
+    }
+    const shape = schemaCheck('entity.v2.json')(entity).map((e) => `entity.v2: ${e}`);
+    const dl = await dataLayer();
+    return withEntities(dl, entities, (list) => {
+      const faults = [...shape, ...(dl.isEntity(entity) ? dl.entityFaults(entity, { entities: list.filter((e) => e.id !== entity.id) }) : [])];
+      if (faults.length) return answer([`${faults.length} fault(s) in "${entity?.label ?? entity?.id ?? 'the node'}":`, '', ...faults.map((f) => `- ${f}`)].join('\n'));
+      const offered = dl.asNode(entity);
+      const sockets = (list) => list.map((s) => `${s.label ?? s.name} (${s.type})`).join(', ') || 'none';
+      return answer([
+        `No fault. "${offered.label}" is a Custom Node of ${offered.category ?? 'Custom Nodes'}, placed as the kind "${dl.entityKind(entity)}".`,
+        `Inputs: ${sockets(offered.inputs)}. Outputs: ${sockets(offered.outputs)}. Its graph holds ${offered.nodes.length} node(s).`,
+      ].join('\n'));
+    });
   }));
 
   server.registerTool('describe_data', {

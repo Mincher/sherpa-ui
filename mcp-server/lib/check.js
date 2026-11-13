@@ -8,6 +8,7 @@
  * - schemaCheck — a contract in schemas/, or a shape in it, as a check: a value → its errors, [] when valid
  * - dataLayer — sherpa-ui/data as it ships; it throws, saying why, when it is not built
  * - heard — what the data layer reports while a check runs, each in its own words and code
+ * - withEntities — an app's entities (an entities.v2 file, or a list), its types registered while `run` runs, then taken back
  * - checkPageFiles — a Context's files: its definition, its Views, its template and each View's, and each `ui`
  * - checkAppFolder — an app.json and every file it names; each Context as checkPageFiles checks it
  * - usageOwn — a project's own hooks, from the sherpa-usage.json nearest an app's folder
@@ -53,6 +54,20 @@ export function heard(dl, run) {
     undo();
   }
   return said;
+}
+
+/** An app's entities, given as an entities.v2 file (`{ v, types, entities }`) or a list of them: its types registered while
+ *  `run` runs, then taken back, so one call's types never reach the next. `run` is handed the entities and the node
+ *  library they make, each a Custom Node by its use's kind. */
+export async function withEntities(dl, given, run) {
+  const file = typeof given === 'string' ? JSON.parse(given) : given ?? [];
+  const list = Array.isArray(file) ? file : Object.values(file?.entities ?? {});
+  const undo = Object.entries(Array.isArray(file) ? {} : file?.types ?? {}).flatMap(([id, type]) => dl.registerEntityType({ ...type, id }) ?? []);
+  try {
+    return await run(list, dl.libraryOf(list));
+  } finally {
+    for (const back of undo) back();
+  }
 }
 
 /** JSON text as a value, or why it is not JSON. */

@@ -257,3 +257,26 @@ test('sherpa://node-kinds is NODE_KINDS as the registry says it', async () => {
   assert.equal(contents[0].mimeType, 'application/json');
   assert.deepEqual(JSON.parse(contents[0].text), JSON.parse(JSON.stringify(NODE_KINDS)));
 });
+
+test('workflow_graph and edit_workflow take the app\'s entities: a use of one is a Custom Node, no fault (plan 942 D3 A)', async () => {
+  const HAS_ROLE = {
+    v: 2, type: 'node', id: 'has-role', label: 'Has role',
+    graph: { nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'role' } }], connections: [{ from: '#in/rows', to: 'f' }, { from: 'f/field', to: '#out/role' }] },
+    settings: { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'role', label: 'Role', type: 'value' }] },
+  };
+  const placed = {
+    v: 3, id: 'w',
+    nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'u', kind: 'has-role', x: 360, y: 0 }],
+    connections: [{ from: 's/rows', to: 'u/rows' }],
+  };
+  const entities = JSON.stringify({ v: 2, entities: { 'has-role': HAS_ROLE } });
+  const alone = await call('workflow_graph', { workflow: placed });
+  assert.ok(alone.json.reports.some((r) => /has-role/.test(r.message)), 'alone, its kind is unknown');
+  const known = await call('workflow_graph', { workflow: placed, entities });
+  assert.deepEqual(known.json.reports, []);
+  assert.equal(known.json.kinds['has-role'].heading, 'Has role');
+  assert.deepEqual(known.json.nodes.find((n) => n.id === 'u').rows.map((r) => r.name), ['rows', 'role']);
+  const edited = await call('edit_workflow', { workflow: placed, entities, edits: [{ node: 'u', set: { heading: 'Role of each' } }] });
+  assert.deepEqual(edited.json.reports, []);
+  assert.equal(edited.json.workflow.nodes.find((n) => n.id === 'u').heading, 'Role of each');
+});

@@ -270,3 +270,33 @@ test('scaffold_app gives the Starter\'s files, named, and validate_app finds the
   assert.match(checked.text, /^## App .*: sound/, checked.text);
   assert.deepEqual(JSON.parse(readFileSync(join(dir, 'app.json'), 'utf8')), JSON.parse(readFileSync(`${ROOT}../Sherpa Starter/template/app.json`, 'utf8')));
 });
+
+/** A Custom Node, as an entity: Rows in, the rows' Role out. */
+const HAS_ROLE = {
+  v: 2, type: 'node', id: 'has-role', label: 'Has role',
+  graph: { nodes: [{ id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'role' } }], connections: [{ from: '#in/rows', to: 'f' }, { from: 'f/field', to: '#out/role' }] },
+  settings: { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'role', label: 'Role', type: 'value' }] },
+};
+
+test('check_custom_node: checked as Save checks it; each fault in words; with none, the node it offers; a use of another entity is no fault with the app\'s entities (plan 942 D3 A)', async () => {
+  const ok = await call('check_custom_node', { node: JSON.stringify(HAS_ROLE) });
+  assert.equal(ok.bad, false);
+  assert.match(ok.text, /No fault\. "Has role" is a Custom Node of Custom Nodes, placed as the kind "has-role"\./);
+  assert.match(ok.text, /Inputs: Rows \(object\)\. Outputs: Role \(value\)\. Its graph holds 1 node\(s\)\./);
+  // A node of no kind: the data layer's words.
+  const odd = await call('check_custom_node', { node: JSON.stringify({ ...HAS_ROLE, graph: { ...HAS_ROLE.graph, nodes: [...HAS_ROLE.graph.nodes, { id: 'x', kind: 'nope', x: 0, y: 0 }] } }) });
+  assert.match(odd.text, /fault\(s\) in "Has role"/);
+  assert.match(odd.text, /"nope"/);
+  // A use of another entity: a fault alone; no fault beside the app's entities file.
+  const outer = { ...HAS_ROLE, id: 'outer', label: 'Outer', graph: { nodes: [{ id: 'u', kind: 'has-role', x: 0, y: 0 }], connections: [] }, settings: { inputs: [], outputs: [] } };
+  assert.match((await call('check_custom_node', { node: JSON.stringify(outer) })).text, /fault\(s\) in "Outer"/);
+  const known = await call('check_custom_node', { node: JSON.stringify(outer), entities: JSON.stringify({ v: 2, entities: { 'has-role': HAS_ROLE } }) });
+  assert.match(known.text, /No fault\. "Outer"/);
+  // A type the file says is known for that call alone.
+  const typed = { v: 2, type: 'playbook', id: 'p', label: 'P', graph: { nodes: [] } };
+  assert.match((await call('check_custom_node', { node: JSON.stringify(typed), entities: JSON.stringify({ v: 2, types: { playbook: { label: 'Playbook', category: 'Runbooks' } }, entities: {} }) })).text, /No fault\. "P" is a Custom Node of Runbooks, placed as the kind "playbook:p"\./);
+  assert.match((await call('check_custom_node', { node: JSON.stringify(typed) })).text, /fault\(s\) in "P"/);
+  // The schema's words; not JSON is refused.
+  assert.match((await call('check_custom_node', { node: JSON.stringify({ ...HAS_ROLE, routes: [] }) })).text, /entity\.v2: /);
+  assert.equal((await call('check_custom_node', { node: '{' })).bad, true);
+});

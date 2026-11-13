@@ -16,6 +16,7 @@ import { z } from 'zod/v3';
 import { imported } from '../lib/sherpa.js';
 import { traced } from '../lib/trace.js';
 import { answer, refuse } from '../lib/reply.js';
+import { withEntities } from '../lib/check.js';
 
 /** Hosts a data path may name: this machine, never another. */
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
@@ -296,11 +297,14 @@ export function register(server) {
   const FACTS = {
     fieldsOf: z.union([z.string(), z.record(z.unknown())]).optional().describe('Each store\'s fields, by the store\'s name — a page definition\'s `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from'),
     stores: z.union([z.string(), z.array(z.string())]).optional().describe('The stores a Source\'s Store row picks, by the names the app gives them'),
+    entities: z.union([z.string(), z.record(z.unknown()), z.array(z.unknown())]).optional().describe('The app\'s entities file (entities.v2: `{ "v": 2, "types", "entities" }`) or a list of entities: each is a Custom Node a node may place by its use\'s kind, so a use of one is no fault (plan 942 D3 A)'),
   };
   const factsOf = (args) => ({
     ...(args.fieldsOf ? { fieldsOf: given(args.fieldsOf, 'fieldsOf') } : {}), ...(args.stores ? { stores: listOf(args.stores, 'stores') } : {}),
   });
-  /** A workflow, given: a v2; anything else is refused, in checkWorkflow's words. */
+  /** The kinds a workflow may place: the shipped, and each entity's Custom Node. */
+  const kindsWith = (dl, library) => ({ ...dl.nodeKinds(), ...dl.kindsOf(library) });
+  /** A workflow, given: a v3; anything else is refused, in checkWorkflow's words. */
   const workflowOf = (dl, value) => {
     const workflow = given(value, 'workflow');
     if (!dl.readWorkflow(workflow).workflow) {
@@ -318,14 +322,15 @@ export function register(server) {
       workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON: `{ "v": 3, "id", "nodes", "connections" }`'),
       ...FACTS,
     },
-  }, act(async (dl, args, heard) => {
+  }, act(async (dl, args, heard) => withEntities(dl, given(args.entities, 'entities'), (_entities, library) => {
     const workflow = workflowOf(dl, args.workflow);
-    const sound = dl.checkWorkflow(workflow);
-    const graph = dl.workflowGraph(workflow, factsOf(args));
+    const kinds = kindsWith(dl, library);
+    const sound = dl.checkWorkflow(workflow, kinds, factsOf(args));
+    const graph = dl.workflowGraph(workflow, factsOf(args), kinds);
     const lines = [`${graph.nodes.length} nodes, ${graph.connections.length} connections; ${sound ? 'no fault' : `${heard.length} fault(s)`}.`];
     if (heard.length) lines.push('', 'The data layer said:', ...heard.map(said));
-    return shown(lines, { ...graph, kinds: workflowKinds(dl), reports: heard });
-  }));
+    return shown(lines, { ...graph, kinds: { ...workflowKinds(dl), ...dl.kindsOf(library) }, reports: heard });
+  })));
 
   server.registerTool('edit_workflow', {
     title: 'Edit a workflow',
@@ -333,21 +338,23 @@ export function register(server) {
     inputSchema: {
       workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON'),
       edits: z.union([z.string(), z.array(z.record(z.unknown()))]).describe('Each a WorkflowEdit, in turn'),
+      entities: FACTS.entities,
     },
-  }, act(async (dl, args, heard) => {
+  }, act(async (dl, args, heard) => withEntities(dl, given(args.entities, 'entities'), (_entities, library) => {
+    const kinds = kindsWith(dl, library);
     let workflow = workflowOf(dl, args.workflow);
     const edited = [];
     for (const edit of objects(args.edits, 'edits')) {
       if ('node' in edit && !workflow.nodes.some((n) => n.id === edit.node)) {
         throw new Error(`The workflow has no node "${edit.node}", so no edit was made. Its nodes: ${workflow.nodes.map((n) => n.id).join(', ')}.`);
       }
-      const next = dl.editWorkflow(workflow, edit);
+      const next = dl.editWorkflow(workflow, edit, kinds);
       edited.push({ edit, ...(JSON.stringify(next) === JSON.stringify(workflow) ? { changed: false } : {}) });
       workflow = next;
     }
-    const sound = dl.checkWorkflow(workflow);
+    const sound = dl.checkWorkflow(workflow, kinds);
     const lines = [`${edited.length} edit(s); the workflow has ${sound ? 'no fault' : `${heard.length} fault(s)`}.`];
     if (heard.length) lines.push('', 'The data layer said:', ...heard.map(said));
     return shown(lines, { workflow, edited, reports: heard });
-  }));
+  })));
 }

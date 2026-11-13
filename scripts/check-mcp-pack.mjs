@@ -41,6 +41,7 @@ export const SAMPLES = {
   // The Starter's own app, installed beside the MCP. TRAP T-a-starter-is-one-folder
   validate_app: { path: 'node_modules/create-sherpa-ui/template' },
   check_usage: { markup: '<sherpa-button data-size="sm">Go</sherpa-button>' },
+  check_custom_node: { node: '{"v":2,"type":"node","id":"one","label":"One","graph":{"nodes":[]},"settings":{"inputs":[],"outputs":[]}}' },
   describe_data: { rows: '[{"id":1,"status":"open","seats":3},{"id":2,"status":"open","seats":5}]' },
   validate_rows: { rules: '{"seats":["number"]}', rows: '[{"id":1,"seats":3}]' },
   scaffold_app: { name: 'probe-app' },
