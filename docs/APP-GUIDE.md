@@ -550,11 +550,11 @@ object list And, Or and Is empty: a comparison needs a Field. A mixture lists ev
 operation one of them takes. An input the pick does not take is ignored: its line is
 dashed, and its tip says why. Where no input fits, the pick stays and the node warns.
 
-A Field node's field row UNFOLDS a row per value its field declares (its type's or page's
-`values`), each giving that value: join one to a Condition's Value B. Only the field picked on
-that node unfolds; a field with no values (a name) unfolds none, and one with more than
-`UNFOLD_MOST` none, its hint saying how many. A value row is named by its words (`v-at-risk`).
-Filtering stays the Condition's (plan 960 U4.7a; Will, D1 and E1 A).
+A Field node has ONE Values row: a dropdown whose menu ticks the values its own field declares
+(its type's or page's `values`), drawn only where it declares some. It sends what is picked, one
+value or the list: join it to a Condition's Value B, or its Values for Is one of. Filtering stays
+the Condition's. A node's multi-select is always this one row, the same dropdown a single pick
+uses, opening a menu of ticks (plan 960 U4.7a; Will: `T-a-multi-select-is-one-row`).
 
 ### Outputs
 

@@ -14,6 +14,7 @@
  * - InputNeeds — An input as a warning names it: its label, what it needs, and its choices.
  * - needOf — What an input needs, by its kind's own description: its `needs`, its control, its field, else its type.
  * - givenAt — What one output socket sends; none, where its source holds no value to send, or it is no output.
+ * - pickSent — What a pick of several sends: its one value, or its list.
  * - columnOf — What a Field row sends, by what reaches its header: the column of rows, the value of one record.
  * - fieldWords — A field in words, as a column's tip says it: "Seats: a number field".
  * - truthOf — A value as the boolean it says: true or false, the words, a number; none, it says no boolean.
@@ -25,7 +26,7 @@
  */
 import { typedValue } from './filter-state.js';
 import { isDateTime } from './format-date.js';
-import { SOCKET_WORDS, fixedChoices, kindOfNode, outputRow, resolveKind, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
+import { SOCKET_WORDS, fixedChoices, kindOfNode, resolveKind, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
 
 /** What reaches an input, as finely as its source says: its socket's type, or rows, a list, a number or a Field's
  *  column, `{ rows, field }` (an object, plan 783 D2). */
@@ -86,12 +87,17 @@ export function givenAt(node: { kind: string; values?: Readonly<Record<string, u
     const type = socketType(kind, row, 'output');
     return type && type !== 'any' ? { kind: type } : undefined;
   }
-  const out = outputRow(kind, row);
+  const out = rowOf(kind.rows, row);
   if (!out?.output || out.output === 'any') return undefined;
   const value = node!.values?.[row];
-  if (out.control && (value === undefined || value === '')) return undefined;
-  return { kind: out.gives ?? out.output, ...(out.control ? { value } : {}) };
+  if (out.control && (value === undefined || value === '' || (Array.isArray(value) && !value.length))) return undefined;
+  // A pick of several sends its one value, or its list. TRAP T-a-multi-select-is-one-row
+  const sent = pickSent(value);
+  return { kind: Array.isArray(sent) ? 'list' : out.gives ?? out.output, ...(out.control ? { value: sent } : {}) };
 }
+
+/** What a pick of several sends: its one value, or its list; a value that is no list, itself. TRAP T-a-multi-select-is-one-row */
+export const pickSent = (value: unknown): unknown => (Array.isArray(value) && value.length === 1 ? value[0] : value);
 
 /** What a Field row sends, by what reaches its node's header: of rows, a column or a list, its column; of one record (an
  *  object), that field's value; nothing, its column. None where the header read null. Plan 783 D2 */

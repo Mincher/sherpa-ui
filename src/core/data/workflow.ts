@@ -34,11 +34,11 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, outputRow, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, unfoldedRows, UNFOLDED, UNFOLD_MOST, type GraphRow, type RowChoice, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type RowChoice, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
-import { columnOf, fieldWords, givenAt, INPUT_WORDS, needOf, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
+import { columnOf, fieldWords, givenAt, INPUT_WORDS, needOf, pickSent, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 import { laneFaults, type NodeLane } from './node-lanes.js';
 import { orderStages, resizeStage, restage, stageFaults, stagesHeld, stageBands, STAGE_GAP, type NodeStage } from './node-stages.js';
@@ -197,7 +197,7 @@ function rowsOf(held: ReadonlyMap<string, WorkflowNode>, flow: PortalFlow, kinds
     const { node: id, row } = socketOf(source);
     const from = held.get(id);
     const kind = kindOf(from);
-    const part = row === undefined ? undefined : outputRow(kind ?? { rows: [] }, row)?.label;
+    const part = row === undefined ? undefined : rowOf(kind?.rows ?? [], row)?.label;
     const output = (kind && socketType(kind, row, 'output')) || 'object';
     return { name: addressRow(source), label: [from?.heading ? nodeTitle(kind?.heading ?? id, from.heading) : kind?.heading ?? id, part].filter(Boolean).join(' › '), output: output === 'any' ? 'object' : output };
   };
@@ -543,7 +543,7 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
     const { node: id, row } = socketOf(from);
     const node = held.get(id);
     const kind = kindOfNode(kinds, node);
-    const out = kind && row !== undefined ? outputRow(kind, row) : undefined;
+    const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
     // A Check's Yes and No send what reaches its Data, else its test (plan 944).
     if (out?.passes && !busy.has(id)) {
       const into = connections.find((r) => r.to === `${id}/${out.passes}`) ?? connections.find((r) => r.to === id);
@@ -621,27 +621,21 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const own = row && shownAt(held, flows, `${id}/${row.name}`);
     return typeof own === 'string' && own ? own : reach(id).store;
   };
-  // A row a node's pick unfolds, as drawn: its value and words (a Field's value row, Will E1 A).
-  const unfoldedAt = (id: string, row: string): GraphRow | undefined => {
-    const kind = kindOfNode(kinds, held.get(id));
-    const from = row.startsWith(UNFOLDED) ? kind?.rows.find((r) => r.unfolds) : undefined;
-    const values = from && pickedField(held, flows, reach(id), `${id}/${from.name}`)?.field.values;
-    return values && values.length <= UNFOLD_MOST ? unfoldedRows(values).find((r) => r.name === row) : undefined;
-  };
   // Where a connection comes from, in words: "Group Input › Status".
   const whence = (from: string): string => {
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
-    const out = row === undefined ? undefined : unfoldedAt(id, row) ?? outputRow(kindOfNode(kinds, at) ?? { rows: [] }, row);
+    const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
     return [at?.heading ? nodeTitle(kinds[at.kind]?.heading ?? id, at.heading) : kinds[at?.kind ?? '']?.heading ?? id, out?.label].filter(Boolean).join(' › ');
   };
   // What a connection brings: its output row's value, where its node holds one; and where from, in words.
   const brings = (from: string): { value: unknown; said: string } | undefined => {
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
-    const unfolded = row === undefined ? undefined : unfoldedAt(id, row);
-    const out = row === undefined ? undefined : unfolded ?? outputRow(kindOfNode(kinds, at) ?? { rows: [] }, row);
-    const value = row === undefined ? undefined : unfolded ? unfolded.value : at?.values?.[row];
+    const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
+    // A pick of several sends its one value, or its list; none picked, nothing. TRAP T-a-multi-select-is-one-row
+    const raw = row === undefined ? undefined : at?.values?.[row];
+    const value = Array.isArray(raw) && !raw.length ? undefined : pickSent(raw);
     return at && out && value !== undefined ? { value, said: whence(from) } : undefined;
   };
   const reach = fieldsReach(held, flows, kinds, facts);
@@ -743,8 +737,12 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         sources ??= valuesAt(workflow.nodes, flows, node.id, kinds, facts.fieldsOf);
         for (const words of unreachedValues(has, sources, workflow.nodes, kinds, !!facts.fieldsOf)) warnings.push({ row: row.name, words });
       }
-      // A Value row with no values to pick from is typed, as it was.
-      const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
+      // The values it picks from: its node's own field's (a Field's Values), else the field reaching its node.
+      const here = row.valuesOf ? pickedField(held, flows, reach(node.id), `${node.id}/${row.valuesOf}`)?.field.values : known;
+      // A Value row with no values to pick from is typed, as it was. Tags with values to pick from are one dropdown with a
+      // menu of ticks: a node's multi-select is one row (Will, 2026-11-13). TRAP T-a-multi-select-is-one-row
+      const plain = row.control === 'values' && !here?.length ? { ...row, control: 'text' as const }
+        : row.control === 'tags' && here?.length ? { ...row, control: 'values' as const, multiple: true as const } : row;
       // A Unit says its words for the count beside it: "1 day", "7 days".
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};
       // A Field row picks from the fields of the Source its rows come from (TODO 817).
@@ -753,7 +751,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const provider = row.control === 'model' ? values['provider'] : undefined;
       const list = rowChoices({ ...plain, value: has }, {
         ...(provider ? { provider } : {}),
-        ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(types ? { types } : {}), ...(known ? { values: known } : {}), ...count,
+        ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(types ? { types } : {}), ...(here ? { values: here } : {}), ...count,
         ...(row.control === 'portal' ? { portals: names } : {}),
         ...(row.control === 'entity' ? { entities: shelf.filter((e) => e.type === row.of).map((e) => ({ value: e.id, label: e.label })) } : {}),
         ...(row.control === 'rows' ? { rows: facts.storeRows?.(String(values['store'] ?? '')) ?? [] } : {}),
@@ -768,13 +766,15 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       }
       // A Check's Yes and No are drawn as what they send: what reaches its Data (plan 944).
       const through = row.passes ? { output: socketOfGiven(sent(`${node.id}/${row.name}`)?.kind) } : {};
-      const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed, ...(idle ? { idle: true as const } : {}), ...through };
+      // A Field's Values with none picked sends nothing, and says so.
+      const silent = row.valuesOf && (has == null || (Array.isArray(has) && !has.length)) ? { hint: 'None picked: it sends nothing' } : {};
+      const own: GraphRow = { ...plain, value: has, ...silent, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...closed, ...typed, ...(idle ? { idle: true as const } : {}), ...through };
       // A fault of the value it shows, in words, as `workflowFaults` finds it: its own, or what a connection brings.
       const said = (shown: GraphRow, connected = false): GraphRow => {
         const value = shown.control === 'number' ? typedValue('number', shown.value) : shown.value;
         const wants = kind.model === 'typedValue' && row.name === 'value' ? typedWants(at?.id, value) : undefined;
         const text = !connected && shown.control === 'number' && typeof value === 'string' && value.trim() !== '';
-        const fault = wants ? `"${String(value)}" is not ${wants}` : text ? `"${String(value)}" is not a number` : rowFault(shapedRow(shown, known), value, of);
+        const fault = wants ? `"${String(value)}" is not ${wants}` : text ? `"${String(value)}" is not a number` : rowFault(shapedRow(shown, here), value, of);
         return fault ? { ...shown, fault } : shown;
       };
       const address = `${node.id}/${row.name}`;
@@ -836,21 +836,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         ? { ...own, ...shown, hint: `Custom ${row.multiple ? 'values' : 'value'}, from ${from}${told.hint ? `. ${told.hint}` : ''}` }
         : { ...own, value: shown.value }, true);
     });
-    // A row that unfolds draws a row per value its pick declares, right after it (Will, 2026-11-13, D1 and E1 A): only the
-    // field picked on THIS node. Past UNFOLD_MOST values it unfolds none, and says how many.
-    const unfold = (row: GraphRow): GraphRow[] => {
-      if (!row.unfolds) return [row];
-      const values = pickedField(held, flows, reach(node.id), `${node.id}/${row.name}`)?.field.values ?? [];
-      if (values.length > UNFOLD_MOST) return [{ ...row, hint: `${row.hint ? `${row.hint}. ` : ''}${values.length} values: too many to show each` }];
-      return [row, ...unfoldedRows(values)];
-    };
-    const shownRows = rows.flatMap(unfold);
-    // A connection from a value its field does not declare sends nothing, and says so, where the fields are known.
-    for (const c of flows) {
-      const { node: from, row } = socketOf(c.from);
-      if (from !== node.id || !row?.startsWith(UNFOLDED) || !reach(node.id).fields || shownRows.some((r) => r.name === row)) continue;
-      warnings.push({ words: `"${row.slice(UNFOLDED.length)}" is no value of its field: it sends nothing` });
-    }
+    // A row whose choices are its field's values (a Field's Values) is drawn only where that field declares some.
+    const shownRows = rows.filter((r) => !r.valuesOf || !!r.choices?.length);
     // A value kept on a row that takes none, an input of rows (a To once typed): unused, and said so, never kept quietly.
     for (const row of kind.rows) {
       const kept = values[row.name];

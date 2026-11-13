@@ -6332,6 +6332,28 @@ sees the shape; nothing else learns of operators.
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`
 
+### T-a-multi-select-is-one-row
+
+**A multi-select in a node is ONE row: the node's own dropdown input, opening a menu of ticks.** Never a row per
+choice, never a chip. Will, 2026-11-13: *"It should be just 1 dropdown with a mulit-select menu on a single node row."*
+*"In nodes this is the preferred approach for multi select scenarios."* *"In Source nodes, the Field selection is being
+shown as a chip. Again, it should be a dropdown input. Same goes for Notification channel selection. I've no idea why
+you decided to use chips instead of following precedent."*
+
+- **The precedent is the single pick.** Every row with `multiple` (a Field's Values, a Source's Rows, a Notification's
+  Channels, a Condition's Is one of where its values are known) draws with the SAME dropdown a single pick uses:
+  sherpa-input-text's select, with `multiple`, its menu the tags field's menu of ticks. One input, one door.
+- **The Field's Values** (`valuesOf: 'field'`) offers only the values its OWN field declares, and draws only where it
+  declares some. It sends what is picked: one value, or the list (`pickSent`, the one rule for a pick of several);
+  none picked, nothing, and its hint says so. A pick its field no longer declares is a fault, shown (`rowFault`).
+- It replaced U4.7a's row per value (`unfold`, the `v-` rows) and the node's multi-select chip (sherpa-quick-filter):
+  both are gone.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/node-input.ts`
+- Site: `src/core/data/node-simulate.ts`
+- Site: `src/core/data/workflow.ts`
+
 ### T-a-row-says-its-own-fault
 
 **A value its row cannot hold is a fault of the ROW, said in words in the row, red.** Plan 749

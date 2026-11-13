@@ -27,7 +27,7 @@
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
 import { filterTest, OP_LABELS, OP_TAKES, type Filter, type FilterOp, type Row } from './store.js';
-import { needOf, readInput, truthOf, type Given } from './node-input.js';
+import { needOf, pickSent, readInput, truthOf, type Given } from './node-input.js';
 import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
 import { isOutput } from './node-routes.js';
@@ -513,9 +513,9 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       if ('note' in read) return { kind: 'value', note: read.note };
       return { kind: 'value', value: (read.passed ?? read.kept.length > 0) ? 1 : 0 };
     }
-    // A row unfolded from a pick gives its value (a Field's value row, Will E1 A).
-    const unfolded = row === undefined ? undefined : node.rows.find((r) => r.name === row && r.unfolded);
-    if (unfolded) return { kind: 'value', value: unfolded.value };
+    // A pick of several (a Field's Values) sends its one value, or its list. TRAP T-a-multi-select-is-one-row
+    const picks = row === undefined ? undefined : node.rows.find((r) => r.name === row && r.multiple && r.output && r.control);
+    if (picks) return { kind: 'value', value: pickSent(picks.value) };
     if (node.kind === 'source') {
       const store = node.rows.find((r) => r.control === 'store')?.value;
       const rows = typeof store === 'string' ? rowsByStore[store] : undefined;
