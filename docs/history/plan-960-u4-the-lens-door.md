@@ -54,6 +54,20 @@ Presentation's rows: its bar (Q3 A): its Switch, each chip it holds in order, wi
   own): `connectionRequest`, as today's send to View and Return.
 - Chip order is the order of a bar's rows; the Switch, its first row; a chip with no pick, a row with nothing joined.
 
+**Three points (sherpa-demos-67, 2026-11-13), answered:**
+
+- **(a) Which Source a View filter's Field reads.** A page has ONE source (its `store` or `type`; every Demos page so),
+  and every card of a page is a scope of it: a page's graph has one Source, and every Field reads it. A Source a reader
+  places beside it (TODO 808) is no part of the Query. A field the Source has not got warns as a Field does today.
+- **(b) A Check takes several tests (YES, the one door for every Check, workflows too).** A Check's header (its test)
+  takes several connections, and holds where EVERY one holds, as an And; an Or is still its own node. So a card with two
+  filters of its own is one Check, not a Check and an And. Simulate, the Outgoing JSON's reader and the reconcile read a
+  Check's tests as an And.
+- **(c) A chip and the filter it shows, said once.** Both are drawn from ONE reading of the Query, the one truth, so they
+  cannot disagree. A filter's True joins where it FILTERS: a View filter into its chip's row on View Filters; a card's
+  own filter into the card's Check. A card's chip on its Presentation names its field and says its pick in words (its
+  hint), from that same reading, and takes no line.
+
 ## Will's decisions
 
 - **U4.2, 2026-11-13:** "Decision: A. Perhaps just a single 'Organise' node that lets you set Axes, Grouping, and
