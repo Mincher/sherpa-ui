@@ -9,6 +9,7 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
 import { InputTags, splitTags } from './input-tags.js';
+import { InputPicks } from './input-picks.js';
 import { validateField, type FieldRules } from '../../core/data/validate.js';
 // The number type's steppers. Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
@@ -125,6 +126,37 @@ export class SherpaInputText extends SherpaElement {
 
   get #isTags(): boolean {
     return this.dataset['type'] === 'tags';
+  }
+
+  /** A select that picks several (`multiple`, HTML's own name): its face, and the tags menu of ticks. Never mirrored onto
+   *  the native select, which would draw a list box. TRAP T-a-multi-select-is-one-row */
+  readonly #picks = new InputPicks({
+    $: (sel) => this.$(sel),
+    on: (target, type, handler) => this.on(target, type, handler),
+    options: () => this.#options,
+    option: () => this.clone<HTMLOptionElement>(this.$<HTMLTemplateElement>('template.option-tpl')),
+    readOnly: () => this.hasAttribute('readonly'),
+    off: () => this.matches(':disabled'),
+    changed: () => {
+      this.#syncHasValue();
+      this.#syncValue();
+      this.emit('input', { value: this.value });
+      this.emit('change', { value: this.value });
+    },
+  });
+
+  get #isPicks(): boolean {
+    return this.dataset['type'] === 'select' && this.hasAttribute('multiple');
+  }
+
+  /** A select with `multiple`: the values ticked. A write says nothing, as `value` does not. */
+  get values(): string[] {
+    return this.#picks.values;
+  }
+  set values(values: readonly string[]) {
+    this.#picks.set(values);
+    this.#syncHasValue();
+    this.#syncValue();
   }
 
   /** The tags of a `data-type="tags"` field. A write says nothing, as `value` does not. */
@@ -344,6 +376,8 @@ export class SherpaInputText extends SherpaElement {
   #syncOptions(): void {
     const select = this.#control;
     if (!(select instanceof HTMLSelectElement)) return;
+    // A pick of several shows ONE option, its picks; its choices are its menu's.
+    if (this.#isPicks) return this.#picks.face();
     const wanted = this.#held ?? this.getAttribute('value') ?? select.value;
     this.#held = null;
     const tpl = this.$<HTMLTemplateElement>('template.option-tpl');
@@ -391,6 +425,8 @@ export class SherpaInputText extends SherpaElement {
     this.$('.steppers')?.addEventListener('button-click', this.#onStep);
     this.#wireFind();
     if (this.#isTags) this.#tagger.wire();
+    // A pick of several stamps its menu of ticks once, from its prototype.
+    if (this.#isPicks && this.stampOnce('template.picks-menu-tpl', true)) this.#picks.wire();
     this.#syncHasValue();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
@@ -590,9 +626,14 @@ export class SherpaInputText extends SherpaElement {
 
   get value(): string {
     if (this.#isTags) return this.#tagger.text;
+    if (this.#isPicks) return this.#picks.values.join(',');
     return this.#held ?? this.#control?.value ?? this.getAttribute('value') ?? '';
   }
   set value(v: string) {
+    if (this.#isPicks) {
+      this.values = splitTags(v);
+      return;
+    }
     if (this.#isTags) {
       this.#tagger.set(splitTags(v));
       this.#syncHasValue();

@@ -513,8 +513,8 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       if ('note' in read) return { kind: 'value', note: read.note };
       return { kind: 'value', value: (read.passed ?? read.kept.length > 0) ? 1 : 0 };
     }
-    // A pick of several (a Field's Values) sends its one value, or its list. TRAP T-a-multi-select-is-one-row
-    const picks = row === undefined ? undefined : node.rows.find((r) => r.name === row && r.multiple && r.output && r.control);
+    // A Field's Values sends its one value, or its list. TRAP T-a-multi-select-is-one-row
+    const picks = row === undefined ? undefined : node.rows.find((r) => r.name === row && r.valuesOf);
     if (picks) return { kind: 'value', value: pickSent(picks.value) };
     if (node.kind === 'source') {
       const store = node.rows.find((r) => r.control === 'store')?.value;

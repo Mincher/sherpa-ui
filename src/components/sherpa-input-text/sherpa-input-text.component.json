@@ -312,6 +312,22 @@
         },
         {
           "el": "template",
+          "class": "picks-menu-tpl",
+          "children": [
+            {
+              "el": "sherpa-menu",
+              "class": "picks-menu",
+              "part": "menu",
+              "attrs": {
+                "data-select": "multiple",
+                "data-no-select-all": "",
+                "data-align": "start"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
           "class": "option-tpl",
           "children": [
             {
@@ -1324,7 +1340,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (tags, suggestions, value, disabled). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (values, tags, suggestions, value, disabled). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1543,6 +1559,11 @@
         }
       },
       "jsProps": [
+        {
+          "name": "values",
+          "type": "string[]",
+          "access": "read-write"
+        },
         {
           "name": "tags",
           "type": "string[]",

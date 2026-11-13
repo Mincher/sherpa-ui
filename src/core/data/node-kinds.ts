@@ -588,7 +588,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     rows: [
       { name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' },
       // The values it sends, picked from its field's own: one dropdown, a menu of ticks (Will, D1, E1 A).
-      { name: 'values', label: 'Values', control: 'values', multiple: true, output: 'value', valuesOf: 'field', optional: true },
+      { name: 'values', label: 'Values', control: 'values', multiple: true, output: 'object', valuesOf: 'field', optional: true },
     ], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).

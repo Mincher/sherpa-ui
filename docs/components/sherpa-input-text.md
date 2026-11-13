@@ -80,6 +80,7 @@ For a typed value with a label, help text and an error message. Set `data-type` 
 
 | Property | Type | Access | What it is |
 |---|---|---|---|
+| `values` | `string[]` | read and write |  |
 | `tags` | `string[]` | read and write |  |
 | `suggestions` | `{ value: string; label?: string }[]` | read and write |  |
 | `value` | `string` | read and write |  |

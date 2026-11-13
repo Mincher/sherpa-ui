@@ -56,21 +56,27 @@ const draft = (page: Page) => page.evaluate(`(() => { window.editor.save(); cons
 const TAGS = '#root sherpa-node[data-heading="Tags"]';
 const GATE = '#root sherpa-node[data-heading="Gate"]';
 
-test('a multi-select row is ONE select: a chip that opens a menu of ticks, never a list of checkboxes', async ({ page }) => {
+test('a multi-select row is ONE select: the dropdown a single pick uses, opening a menu of ticks — never a chip (Will)', async ({ page }) => {
   await bind(page);
   const seen = await page.evaluate((sel) => {
-    const row = document.querySelector(`${sel} sherpa-node-row:has(sherpa-quick-filter)`)!;
+    const row = document.querySelector(`${sel} sherpa-node-row:has(sherpa-input-text[multiple])`)!;
+    const field = row.querySelector('sherpa-input-text') as HTMLElement & { values: string[] };
+    const face = field.shadowRoot!.querySelector('select')!;
     return {
       chips: row.querySelectorAll('sherpa-quick-filter').length,
+      select: [field.getAttribute('data-type'), field.hasAttribute('multiple'), face.multiple],
       groups: row.querySelectorAll('sherpa-select-group, sherpa-select-checkbox').length,
       // The ticks are inside the menu, which is shut: none is on screen.
-      shown: [...row.querySelectorAll('input[type=checkbox]')].filter((i) => (i as HTMLElement).checkVisibility?.() && i.getBoundingClientRect().height > 0).length,
-      picks: (row.querySelector('sherpa-quick-filter') as HTMLElement & { values: string[] }).values,
+      shown: [...field.shadowRoot!.querySelectorAll('input[type=checkbox]')].filter((i) => (i as HTMLElement).checkVisibility?.() && i.getBoundingClientRect().height > 0).length,
+      picks: field.values,
+      says: face.selectedOptions[0]?.textContent,
     };
   }, TAGS);
-  expect(seen).toEqual({ chips: 1, groups: 0, shown: 0, picks: ['status'] });
-  // Open it by its caret, as a reader does, and tick another.
-  await page.locator(`${TAGS} sherpa-quick-filter .caret`).click();
+  // The native select is the face, never a list box: `multiple` is the field's, not its select's.
+  expect(seen).toEqual({ chips: 0, select: ['select', true, false], groups: 0, shown: 0, picks: ['status'], says: 'Status' });
+  // Open it as a reader does, on its face, and tick another.
+  // Its face is the first select: the menu it opens holds selects of its own.
+  await page.locator(`${TAGS} sherpa-node-row > sherpa-input-text[multiple]`).locator('select.control').first().click();
   await expect(page.locator(`${TAGS} sherpa-menu label`, { hasText: 'Plan' })).toBeVisible();
   await page.locator(`${TAGS} sherpa-menu label`, { hasText: 'Plan' }).click();
   await settle(page);

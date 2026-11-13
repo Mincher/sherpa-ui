@@ -112,6 +112,10 @@
     </span>
     <span class="message" part="message" data-text="data-error"></span>
   </label>
+  <!-- With `multiple`: the same face opens the menu of ticks a tags field has (Will, 2026-11-13). A prototype, stamped
+       only then: a menu holds a select itself, so one in every select would build without end.
+       TRAP T-a-multi-select-is-one-row -->
+  <template class="picks-menu-tpl"><sherpa-menu class="picks-menu" part="menu" data-select="multiple" data-no-select-all data-align="start"></sherpa-menu></template>
   <template class="option-tpl"><option></option></template>
   <template class="optgroup-tpl"><optgroup></optgroup></template>
 </template>

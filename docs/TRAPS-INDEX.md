@@ -882,7 +882,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (153)
+## SherpaElement and the shared sheets (154)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -914,6 +914,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-kind-is-registered-never-a-tag](traps/join-and-app.md#t-a-kind-is-registered-never-a-tag) — components
 - [T-a-layout-read-belongs-in-a-frame](traps/menus-tips-overlays.md#t-a-layout-read-belongs-in-a-frame) — sherpa-element
 - [T-a-list-takes-its-children-as-data](traps/element-and-sheets.md#t-a-list-takes-its-children-as-data) — sherpa-element
+- [T-a-multi-select-is-one-row](traps/data-layer.md#t-a-multi-select-is-one-row) — node-graph
 - [T-a-native-control-brings-its-own-margin](traps/element-and-sheets.md#t-a-native-control-brings-its-own-margin) — sherpa-base
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — sherpa-button-look
 - [T-a-node-is-three-columns](traps/element-and-sheets.md#t-a-node-is-three-columns) — sherpa-node-sockets
@@ -1038,7 +1039,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (154)
+## Other components (155)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1081,6 +1082,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-menu-is-reached-by-keys-from-its-trigger](traps/menus-tips-overlays.md#t-a-menu-is-reached-by-keys-from-its-trigger) — nav
 - [T-a-metric-group-knows-it-is-stuck](traps/charts.md#t-a-metric-group-knows-it-is-stuck) — metric-group
 - [T-a-minimised-panel-is-a-tab](traps/menus-tips-overlays.md#t-a-minimised-panel-is-a-tab) — layout-panels
+- [T-a-multi-select-is-one-row](traps/data-layer.md#t-a-multi-select-is-one-row) — input-text
 - [T-a-native-name-where-a-native-element-does-the-job](traps/other-components.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — button
 - [T-a-node-is-three-columns](traps/element-and-sheets.md#t-a-node-is-three-columns) — node, node-row

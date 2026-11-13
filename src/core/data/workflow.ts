@@ -633,9 +633,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
     const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
-    // A pick of several sends its one value, or its list; none picked, nothing. TRAP T-a-multi-select-is-one-row
+    // A Field's Values sends its one value, or its list; none picked, nothing. TRAP T-a-multi-select-is-one-row
     const raw = row === undefined ? undefined : at?.values?.[row];
-    const value = Array.isArray(raw) && !raw.length ? undefined : pickSent(raw);
+    const value = !out?.valuesOf ? raw : Array.isArray(raw) && !raw.length ? undefined : pickSent(raw);
     return at && out && value !== undefined ? { value, said: whence(from) } : undefined;
   };
   const reach = fieldsReach(held, flows, kinds, facts);
@@ -758,7 +758,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       });
       // A Type row says the type's own value, and the line the type gives.
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
-      const closed = plain.control === 'tags' && list ? { closed: true as const } : {};
+      // Closed to its values where they are known: tags, or the dropdown of ticks they draw as (TRAP T-a-multi-select-is-one-row).
+      const closed = (plain.control === 'tags' || (plain.control === 'values' && plain.multiple && !!here?.length)) && list ? { closed: true as const } : {};
       // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A).
       const idle = !!row.property && row.name === ROWS.name && rowless;
       if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {

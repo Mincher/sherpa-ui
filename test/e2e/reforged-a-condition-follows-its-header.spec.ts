@@ -70,7 +70,7 @@ test('a Field joined to a Condition\'s header makes Value B a pick of its values
   const after = await valueB(page);
   expect(after, JSON.stringify({ before, after })).not.toEqual(before);
   expect(after).toEqual({ tag: 'sherpa-input-text', type: 'select', options: ['active', 'trial', 'churned'] });
-  // Its Operation changed to Is one of: its Values take only the same values, as closed tags, at once.
+  // Its Operation changed to Is one of: its Values pick from the same values, in ONE dropdown of ticks, at once.
   await page.evaluate((sel) => {
     const op = document.querySelector(`${sel} sherpa-node-row[data-socket-name="Check"]`)?.firstElementChild as HTMLElement & { value: string };
     op.value = 'in';
@@ -78,5 +78,6 @@ test('a Field joined to a Condition\'s header makes Value B a pick of its values
   }, TEST);
   await settle(page);
   const list = await valueB(page, 'Values');
-  expect({ tag: list.tag, type: list.type }).toEqual({ tag: 'sherpa-input-text', type: 'tags' });
+  expect({ tag: list.tag, type: list.type }).toEqual({ tag: 'sherpa-input-text', type: 'select' });
+  expect(await page.locator(`${TEST} sherpa-node-row[data-socket-name="Values"] > sherpa-input-text`).getAttribute('multiple')).toBe('');
 });

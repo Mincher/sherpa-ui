@@ -91,9 +91,12 @@ export function givenAt(node: { kind: string; values?: Readonly<Record<string, u
   if (!out?.output || out.output === 'any') return undefined;
   const value = node!.values?.[row];
   if (out.control && (value === undefined || value === '' || (Array.isArray(value) && !value.length))) return undefined;
-  // A pick of several sends its one value, or its list. TRAP T-a-multi-select-is-one-row
-  const sent = pickSent(value);
-  return { kind: Array.isArray(sent) ? 'list' : out.gives ?? out.output, ...(out.control ? { value: sent } : {}) };
+  // A Field's Values sends its one value, or its list. TRAP T-a-multi-select-is-one-row
+  if (out.valuesOf) {
+    const sent = pickSent(value);
+    return { kind: Array.isArray(sent) ? 'list' : 'value', value: sent };
+  }
+  return { kind: out.gives ?? out.output, ...(out.control ? { value } : {}) };
 }
 
 /** What a pick of several sends: its one value, or its list; a value that is no list, itself. TRAP T-a-multi-select-is-one-row */

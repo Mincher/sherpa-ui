@@ -150,7 +150,8 @@ test('a type change keeps in the draft only what loses its socket: a column into
   assert.deepEqual(node(workflowGraph(e, facts), 'c').warnings, [{ row: 'b', words: 'Values takes a list; it was given "trial"' }]);
   // The Field on its header closes Values to Status's values: a stranger is the row's fault.
   const values = node(workflowGraph(e, facts), 'c').rows.find((r) => r.name === 'b');
-  assert.deepEqual([values.control, values.closed], ['tags', true]);
+  // Its values known: ONE dropdown of ticks, closed to them (TRAP T-a-multi-select-is-one-row).
+  assert.deepEqual([values.control, values.closed], ['values', true]);
   assert.deepEqual(workflowFaults(editWorkflow({ ...e, connections: e.connections.slice(0, 2) }, { node: 'c', row: 'b', value: ['stranger'] }), NODE_KINDS, facts), ['the node "c"\'s Values: "stranger" is not a value of Status']);
 });
 

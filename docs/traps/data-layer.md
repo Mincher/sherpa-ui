@@ -6353,6 +6353,13 @@ you decided to use chips instead of following precedent."*
 - Site: `src/core/data/node-input.ts`
 - Site: `src/core/data/node-simulate.ts`
 - Site: `src/core/data/workflow.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-input-text/input-picks.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.html`
+- Site: `test/unit/a-field-is-a-node.test.mjs`
+- Site: `test/unit/a-logic-type-is-an-operator.test.mjs`
+- Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`
 
 ### T-a-row-says-its-own-fault
 

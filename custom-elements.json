@@ -4640,6 +4640,13 @@
           "members": [
             {
               "kind": "field",
+              "name": "values",
+              "type": {
+                "text": "string[]"
+              }
+            },
+            {
+              "kind": "field",
               "name": "tags",
               "type": {
                 "text": "string[]"

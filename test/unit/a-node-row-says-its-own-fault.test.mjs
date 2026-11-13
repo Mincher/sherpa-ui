@@ -34,7 +34,8 @@ test('Is one of takes tags: an object in, free where the Field\'s values are not
   const free = row(workflowGraph(flow('plan', { type: 'in', b: ['Pro', 'Free'] }), facts), 'c', 'b');
   assert.deepEqual([free.control, free.multiple, free.input, free.value, free.closed, free.fault], ['tags', true, 'object', ['Pro', 'Free'], undefined, undefined]);
   const closed = row(workflowGraph(flow('status', { type: 'notin', b: ['trial'] }), facts), 'c', 'b');
-  assert.deepEqual([closed.control, closed.closed, closed.choices.map((c) => c.value)], ['tags', true, ['active', 'trial']]);
+  // Known: ONE dropdown of ticks, closed to them (TRAP T-a-multi-select-is-one-row).
+  assert.deepEqual([closed.control, closed.closed, closed.choices.map((c) => c.value)], ['values', true, ['active', 'trial']]);
   // Equals stays one value, picked where the values are known, typed where not.
   assert.deepEqual([row(workflowGraph(flow('status', { type: 'eq', b: 'trial' }), facts), 'c', 'b').control], ['values']);
   assert.deepEqual([row(workflowGraph(flow('plan', { type: 'eq', b: 'Pro' }), facts), 'c', 'b').control], ['text']);
@@ -106,7 +107,7 @@ test('PLANTED: a stranger in a closed list is a fault, held or brought, and the 
     connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'g' }],
   };
   assert.deepEqual(workflowFaults(tag, NODE_KINDS, facts), ['the node "g"\'s Tags: "x" is not a value of Status']);
-  assert.deepEqual([row(workflowGraph(tag, facts), 'g', 'value').control, row(workflowGraph(tag, facts), 'g', 'value').closed], ['tags', true]);
+  assert.deepEqual([row(workflowGraph(tag, facts), 'g', 'value').control, row(workflowGraph(tag, facts), 'g', 'value').closed], ['values', true]);
   assert.equal(rowFault({ control: 'tags', closed: true, choices: [{ value: 'a', label: 'a' }] }, ['a']), undefined);
 });
 

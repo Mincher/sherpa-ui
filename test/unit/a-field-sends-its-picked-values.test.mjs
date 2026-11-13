@@ -33,7 +33,7 @@ const ROWS = [{ status: 'active' }, { status: 'trial' }, { status: 'trial' }, { 
 
 test('a Field\'s Values is ONE row, a dropdown of ticks of the values its own field declares; a new pick, its values', () => {
   const values = rowOf(workflowGraph(flow('status'), { fieldsOf }), 'f', 'values');
-  assert.deepEqual([values.control, values.multiple, values.output, values.choices.map((c) => c.value)], ['values', true, 'value', ['active', 'trial', 'At risk']]);
+  assert.deepEqual([values.control, values.multiple, values.output, values.choices.map((c) => c.value)], ['values', true, 'object', ['active', 'trial', 'At risk']]);
   assert.equal(values.hint, 'None picked: it sends nothing');
   assert.deepEqual(rowOf(workflowGraph(flow('plan'), { fieldsOf }), 'f', 'values').choices.map((c) => c.value), ['Free', 'Pro']);
   assert.equal(workflowGraph(flow('status'), { fieldsOf }).nodes.find((n) => n.id === 'f').rows.filter((r) => r.name !== 'field').length, 1, 'never a row per value');

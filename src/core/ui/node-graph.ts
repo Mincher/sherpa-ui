@@ -58,7 +58,6 @@ import '../../components/sherpa-node/sherpa-node.js';
 import '../../components/sherpa-node-row/sherpa-node-row.js';
 import '../../components/sherpa-node-frame/sherpa-node-frame.js';
 import '../../components/sherpa-menu/sherpa-menu.js';
-import '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
 import '../../components/sherpa-group/sherpa-group.js';
 import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
@@ -193,7 +192,7 @@ export interface DrawOptions {
 /** A field a row draws: a text field, a select or tags, a menu of ticks (a quick-filter chip), or a switch. */
 type Field = HTMLElement & {
   value: unknown; values?: string[]; tags?: readonly string[]; suggestions?: readonly { value: string; label?: string }[];
-  menu?: HTMLElement & { populate(items: unknown): void }; checked?: boolean; populate?(items: unknown): void;
+  checked?: boolean; populate?(items: unknown): void;
 };
 
 /** The events a field says its change by: its own `change`, or a chip's pick. */
@@ -336,19 +335,6 @@ function fieldFor(row: GraphRow, locked: boolean, inNode = false): Field {
     if (locked) lock(field, true);
     return field;
   }
-  if (row.multiple) {
-    // The panel's own multi-value field: a chip that opens a menu of ticks.
-    const chip = document.createElement('sherpa-quick-filter') as Field;
-    chip.setAttribute('data-persistent', '');
-    chip.setAttribute('data-menu', '');
-    const menu = document.createElement('sherpa-menu');
-    menu.setAttribute('slot', 'menu');
-    menu.setAttribute('data-select', 'multiple');
-    menu.setAttribute('data-no-select-all', '');
-    chip.append(menu);
-    if (locked) lock(chip);
-    return chip;
-  }
   if (row.control === 'switch') {
     const field = document.createElement('sherpa-switch') as Field;
     if (locked) lock(field);
@@ -370,8 +356,10 @@ function fieldFor(row: GraphRow, locked: boolean, inNode = false): Field {
   }
   const field = document.createElement('sherpa-input-text') as Field;
   field.setAttribute('name', row.name);
-  if (row.choices) field.setAttribute('data-type', 'select');
+  // A pick of several is the SAME dropdown, opening a menu of ticks. TRAP T-a-multi-select-is-one-row
+  if (row.choices || row.multiple) field.setAttribute('data-type', 'select');
   else if (row.control === 'number') field.setAttribute('data-type', 'number');
+  if (row.multiple) field.setAttribute('multiple', '');
   // A count's bounds are the platform's own: its steppers stop there. With no step, any number: the platform's is 1.
   if (row.control === 'number') {
     if (row.min !== undefined) field.setAttribute('min', String(row.min));
@@ -413,12 +401,7 @@ function fill(field: Field, row: GraphRow, note?: string): void {
     const calendar = field.querySelector('sherpa-calendar');
     if (calendar) put(calendar, 'value', isDateTime(String(row.value ?? '')) ? String(row.value) : undefined);
   } else if (row.control === 'switch') field.checked = !!row.value;
-  else if (row.multiple) {
-    const picks = Array.isArray(row.value) ? row.value.map(String) : [];
-    const menu = field.menu ?? field.querySelector<NonNullable<Field['menu']>>('sherpa-menu');
-    menu?.populate((row.choices ?? []).map((c) => ({ value: c.value, label: c.label, selected: picks.includes(c.value) })));
-    field.values = picks;
-  }
+  else if (row.multiple) field.values = Array.isArray(row.value) ? row.value.map(String) : [];
   // A select holds its value's KEY, and shows its label itself.
   else field.value = row.choices ? String(row.value ?? '') : shown(row);
 }
