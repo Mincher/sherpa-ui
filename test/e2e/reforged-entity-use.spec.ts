@@ -121,7 +121,8 @@ test('saved again elsewhere: the use says "Update available" with its diff; Upda
   expect(await caption(page, 'Trials')).toBe('Update available');
   await header(page, 'Trials').click();
   await settle(page);
-  expect(await page.locator('#inspector .update-pane sherpa-key-value-list').evaluate((el) => el.shadowRoot!.textContent)).toContain('Nodes changed');
+  // A Filter's change is said as its Where's, in words, not as the nodes its drawing gave ids (plan 960 U4.4b).
+  expect(await page.locator('#inspector .update-pane sherpa-key-value-list').evaluate((el) => el.shadowRoot!.textContent)).toContain('equals trial to equals lead');
   const split = page.locator('#inspector .update-split > sherpa-button');
   expect(await split.first().getAttribute('data-label')).toBe('Update instance');
   await press(split.first());

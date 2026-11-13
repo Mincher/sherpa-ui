@@ -53,11 +53,15 @@ export function diffRows(diff: DefinitionDiff): { key: string; value: string }[]
     for (const r of sockets.retyped) rows.push({ key: `${side} ${r.name}`, value: `${r.from} to ${r.to}` });
     if (sockets.changed.length) rows.push({ key: `${side}s changed`, value: list(sockets.changed) });
   }
-  if (diff.nodes.added.length) rows.push({ key: 'Nodes added', value: list(diff.nodes.added) });
-  if (diff.nodes.removed.length) rows.push({ key: 'Nodes removed', value: list(diff.nodes.removed) });
-  if (diff.nodes.changed.length) rows.push({ key: 'Nodes changed', value: list(diff.nodes.changed) });
-  const connections = diff.connections.added.length + diff.connections.removed.length;
-  if (connections) rows.push({ key: 'Connections', value: `${diff.connections.added.length} added, ${diff.connections.removed.length} removed` });
+  // What it says, where its lens says it, in place of its nodes: their ids are a drawing's.
+  if (diff.said) rows.push(...diff.said);
+  else {
+    if (diff.nodes.added.length) rows.push({ key: 'Nodes added', value: list(diff.nodes.added) });
+    if (diff.nodes.removed.length) rows.push({ key: 'Nodes removed', value: list(diff.nodes.removed) });
+    if (diff.nodes.changed.length) rows.push({ key: 'Nodes changed', value: list(diff.nodes.changed) });
+    const connections = diff.connections.added.length + diff.connections.removed.length;
+    if (connections) rows.push({ key: 'Connections', value: `${diff.connections.added.length} added, ${diff.connections.removed.length} removed` });
+  }
   return rows.length ? rows : [{ key: 'Change', value: 'The definition was saved again.' }];
 }
 

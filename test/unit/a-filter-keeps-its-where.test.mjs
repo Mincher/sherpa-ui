@@ -9,8 +9,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  NODE_KINDS, bodyOf, editWorkflow, entityFaults, entityGraph, filterOf, isEntity, lensOf, presetOfEntity, saveGraph,
-  saveGraphAs, whereGraph,
+  NODE_KINDS, bodyOf, definitionDiff, editWorkflow, entityFaults, entityGraph, filterOf, isEntity, lensOf, libraryOf,
+  presetOfEntity, saveGraph, saveGraphAs, whereGraph,
 } from '../../dist/data.js';
 
 const { PageKeeper, memoryTier } = await import(new URL('../../dist/core/browser/page-state.js', import.meta.url));
@@ -119,4 +119,18 @@ test('a save takes the body its lens wrote back, in place of the one it had: one
   const copy = await saveGraphAs(k.entities, 'big', { graph: asGraph.graph }, { label: 'Big copy' });
   assert.deepEqual(k.entities.get(copy).graph, asGraph.graph);
   assert.equal(k.entities.get(copy).query, undefined);
+});
+
+test('a use\'s Update says what the Filter says now, field by field, not the nodes its drawing gave ids', () => {
+  // Placed while it kept its own graph: a Field "status" and a test "trial".
+  const graph = {
+    nodes: [{ id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }, { id: 'trial', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } }],
+    connections: [{ from: 'status/field', to: 'trial' }, { from: 'trial/true', to: '#out/where' }],
+  };
+  const before = { v: 2, type: 'filter', id: 'trials', label: 'Trials', graph, settings: { source: 'customers' } };
+  const was = libraryOf([before]).nodes['filter:trials'];
+  // Saved again as its Where, one value changed: its drawing's ids are new.
+  const after = keeping({ status: { eq: 'suspended' } }, 'trials');
+  const diff = definitionDiff({ kind: 'filter:trials', version: 'old', was }, libraryOf([{ ...after, label: 'Trials' }]));
+  assert.deepEqual(diff.said, [{ key: 'status', value: 'equals trial to equals suspended' }]);
 });

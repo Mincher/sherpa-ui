@@ -825,7 +825,9 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   in place of a graph. Its lens draws the graph from it, and Save writes a graph back as a Where
   while it holds only a Source, Fields, tests, And and Or. `filterOf(preset, source)` makes a
   Filter of a page's preset, or of a saved filter in one scope. Read an entity's graph with
-  `entityGraph(entity)`; keep what a lens writes back WHOLE (`answer.definition`), as it may have no graph.
+  `entityGraph(entity)`; save what a lens writes back as its body (`saveGraph(shelf, id, bodyOf(answer.definition))`),
+  as it may have no graph. A use's Update says what its Filter's Where changed, field by field
+  ("status: equals trial to equals suspended"), not the nodes its drawing gave ids (a lens's `changes`).
 
 ## 10. Questions and saved filters
 

@@ -40,6 +40,7 @@ import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFac
 import type { NodeFrame } from './node-frames.js';
 import { layoutParts } from './graph-layout.js';
 import { START } from './node-start.js';
+import { registeredLens } from './lens-registry.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -353,6 +354,8 @@ export interface DefinitionDiff {
   outputs: SocketDiff;
   nodes: { added: string[]; removed: string[]; changed: string[] };
   connections: { added: NodeConnection[]; removed: NodeConnection[] };
+  /** What it says that changed, in words, where its type's lens says so (a Filter's Where): shown in place of its nodes. */
+  said?: { key: string; value: string }[];
 }
 
 /** Sockets added, removed, retyped, or changed in what they say. */
@@ -393,8 +396,12 @@ export function definitionDiff(use: Pick<WorkflowNode, 'kind' | 'version' | 'was
   const key = (r: NodeConnection): string => `${r.from}→${r.to}`;
   const oldConnections = new Map((was.connections ?? []).map((r) => [key(r), r]));
   const newConnections = new Map((now.connections ?? []).map((r) => [key(r), r]));
+  // Its type's lens may say what changed in words: a Filter's Where, field by field (plan 960 U4.4b).
+  const at = use.kind.indexOf(':');
+  const said = at > 0 ? registeredLens(use.kind.slice(0, at))?.changes?.(was, now) : undefined;
   return {
     ...diff,
+    ...(said ? { said } : {}),
     ...(was.label !== now.label ? { label: { from: was.label, to: now.label } } : {}),
     inputs: socketDiff(was.inputs, now.inputs), outputs: socketDiff(was.outputs, now.outputs),
     nodes: {

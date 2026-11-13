@@ -26,6 +26,9 @@ export interface GraphLens<D = unknown, F = unknown> {
   fromGraph(before: D, graph: WorkflowDefinition, facts?: F): LensAnswer<D>;
   /** For an entity that keeps a query body: the graph it says, as a graph body is kept (`entityGraph` reads it). */
   graphOf?(definition: D): EntityGraph;
+  /** How two of its graphs differ in what they SAY, as rows of words; none: they are compared node by node. A use's
+   *  Update pane shows these. */
+  changes?(was: EntityGraph, now: EntityGraph): { key: string; value: string }[] | undefined;
 }
 
 const lenses = new Map<string, GraphLens>();

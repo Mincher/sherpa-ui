@@ -13,16 +13,17 @@
  * - presetOfEntity — A Filter as a page's preset, or why it is none, in words.
  * - presetsOver — The Filters over one store as its pages' presets, the app's then the reader's, and each fault.
  * - filterOf — A page's preset or a saved filter as the Filter it is, keeping its Where; or why not, in words.
+ * - whereChanges — What changed between two Wheres, field by field, in words.
  * - FILTER_LENS — A Filter's lens: drawn from its Where, else its graph; written back as a Where where one says it all.
  */
-import { entityGraph, entityKind, withBody, type Entity } from './entity.js';
+import { entityGraph, entityKind, withBody, type Entity, type EntityGraph } from './entity.js';
 import { FILTER, entityTypes, libraryOf, type EntityType } from './entity-types.js';
 import { graphWorkflow } from './entity-check.js';
 import { innerOf, kindsOf } from './node-library.js';
 import { conditionAt, leafOf, type Said } from './node-flow.js';
 import { nodeKinds, type DrawnGraph, type GraphNode, type NodeKind } from './node-kinds.js';
-import { groupOf, type Condition, type ConditionLeaf } from './store.js';
-import { whereOfTree, type Where } from './where.js';
+import { OP_LABELS, groupOf, type Condition, type ConditionLeaf } from './store.js';
+import { parseWhere, whereOfTree, type Where } from './where.js';
 import { editedCondition, whereGraph } from './query-graph.js';
 import { workflowGraph, type WorkflowFacts } from './workflow.js';
 import { ENTITY_LENS } from './lens.js';
@@ -140,6 +141,34 @@ export function filterOf(given: PagePreset | (SavedFilter & { id: string }), sou
   return { filter: { v: 2, type: FILTER, id: given.id, label: given.label, query: { where: where! }, settings: { source } } };
 }
 
+/** One field's condition in a reader's words: "equals trial", "is one of Pro, Enterprise", "in the last 3 months". */
+function conditionWords(given: Where[string] | undefined): string {
+  const tree = given === undefined ? undefined : parseWhere({ f: given });
+  const words = (t: Condition): string => {
+    const parts = groupOf(t);
+    if (parts) return parts[1].map(words).join(parts[0] === 'and' ? ' and ' : ' or ');
+    const { op, value } = t as ConditionLeaf;
+    const span = value as { n?: number; unit?: string } | null;
+    const said = Array.isArray(value) ? value.join(', ')
+      : span && typeof span === 'object' && span.unit ? `${span.n} ${span.unit}${span.n === 1 ? '' : 's'}` : String(value);
+    return `${(OP_LABELS[op as keyof typeof OP_LABELS] ?? op).toLowerCase()} ${said}`;
+  };
+  return tree ? words(tree) : 'no filter';
+}
+
+/** A graph read as the Where it says, where it says one. */
+const whereOfGraph = (graph: EntityGraph): Where | undefined => {
+  const read = presetOfEntity({ v: 2, type: FILTER, id: 'f', label: 'F', graph });
+  return 'preset' in read ? read.preset.where : undefined;
+};
+
+/** What changed between two Wheres, field by field, in words: "Status", "equals trial to equals suspended". */
+export function whereChanges(was: Where, now: Where): { key: string; value: string }[] {
+  const fields = [...new Set([...Object.keys(was), ...Object.keys(now)])];
+  return fields.filter((f) => JSON.stringify(was[f]) !== JSON.stringify(now[f]))
+    .map((f) => ({ key: f, value: `${conditionWords(was[f])} to ${conditionWords(now[f])}` }));
+}
+
 /** The kinds a Where can say: a graph of only these is kept as its Where. */
 const SAID_BY_A_WHERE = new Set(['source', 'field', 'condition', 'time']);
 
@@ -148,6 +177,10 @@ const SAID_BY_A_WHERE = new Set(['source', 'field', 'condition', 'time']);
  *  are not kept: it unfurls when shown. */
 export const FILTER_LENS: GraphLens<Entity, EntityFacts> = {
   graphOf: (entity) => whereGraph(entity.query?.where ?? {}, { ...(sourceOf(entity) ? { source: sourceOf(entity)! } : {}) }),
+  changes: (was, now) => {
+    const [a, b] = [whereOfGraph(was), whereOfGraph(now)];
+    return a && b ? whereChanges(a, b) : undefined;
+  },
   toGraph: (entity, facts) => ENTITY_LENS.toGraph(entity.query ? withBody(entity, { graph: FILTER_LENS.graphOf!(entity) }) : entity, facts),
   fromGraph: (before, graph, facts) => {
     const answer = ENTITY_LENS.fromGraph(withBody(before, { graph: entityGraph(before) }), graph, facts);
