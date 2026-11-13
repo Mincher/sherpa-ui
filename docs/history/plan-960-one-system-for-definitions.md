@@ -211,6 +211,7 @@ registerLens(type, {
 | preset: a scope's chips, a shipped entity, the Preset Filter type, the Preset Nodes tab | a shipped thing is **shipped** (`origin`); Preset Filter, savedFilter and preset become one **Filter** type (D6) |
 | template: a Context's file, a View's `file.html#id`, a component's `<template>` | a View's `template` and `content` become one field |
 | `definitionOf` twice | `nodeDefinitionOf` and `queryOf` |
+| a Route runs "from a Start node to an End node" (PRINCIPLES 19, plan 934), and the Start (`#start`, 949) is another node | a Route runs from its **first node** to its **last node**; "Start" names only `#start` |
 | Demos `app/view-schemas/` (holds page.v1) | `app/pages/` |
 
 ## 4. What we will not do
