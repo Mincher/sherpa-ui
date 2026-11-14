@@ -83,6 +83,7 @@ import { dragTo, startDrag, type ChainDrag, type ChainFalloff, type ChainLink, t
 import { drawLanes } from './node-lanes-ui.js';
 import { clearOfNodes, placeBeside, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
+import { withStoreValues } from '../data/field-catalogue.js';
 import { storeOf, type PageDefinition } from '../data/page-definition.js';
 import { queryStepNode, statusTallies, traceQuerySteps } from '../data/query-graph.js';
 // A Filter may keep a Where: the Filter's lens, registered there, draws its graph (plan 960 U4.4b).
@@ -260,6 +261,8 @@ interface Drawn {
 }
 
 const drawnOn = new WeakMap<HTMLElement, Drawn>();
+/** The editor each canvas is bound to now: one bound before draws nothing late on it. */
+const boundOn = new WeakMap<HTMLElement, object>();
 /** What each watch on a canvas has lit, by node: kept for a node not drawn now (inside a node, or out of one), and given
  *  it when it is drawn. TRAP T-a-status-opens-its-rule */
 const litOn = new WeakMap<HTMLElement, Set<ReadonlyMap<string, ReadonlyMap<string, Lit>>>>();
@@ -4172,7 +4175,19 @@ export function bindWorkflow(
   const shownBefore = drawnOn.get(canvas);
   if (shownBefore) shownBefore.fitted = false;
   const viewAtBind = JSON.stringify(canvas.view);
+  const me = {};
+  boundOn.set(canvas, me);
   draw();
+  // A field that declares no values offers the values its store holds, read once as the graph opens (Will, plan 986 D1 A).
+  // TRAP T-a-row-offers-its-stores-values
+  if (facts.fieldsOf && facts.storeOf) {
+    const asked = facts.fieldsOf;
+    void withStoreValues(asked, facts.storeOf).then((filled) => {
+      if (boundOn.get(canvas) !== me || facts.fieldsOf !== asked) return;
+      facts.fieldsOf = filled;
+      draw();
+    });
+  }
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const made = drawnOn.get(canvas);
     // Not where its host has set the view since.

@@ -6278,6 +6278,25 @@ Split and Join stay, as they make and join lists.
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/node-simulate.ts`
 
+### T-a-row-offers-its-stores-values
+
+**A field that declares no values offers the values its store holds** (Will, plan 986 D1 A: "as soon as the graph is
+drawn (no Fetch needed)"; "a source node isn't directly a Data Source. It's the Data Source via the Data Store in the
+Data Layer"). `withStoreValues` (field-catalogue.ts) fills each undeclared field of each store through the catalogue's
+one read, `fromRows`: the store's own `distinct` where it has one, else its rows, each value once, sorted, at most
+`MOST_OFFERED` (500), the menu's search finding among them. Declared values lead, as declared. A number or a date is a
+range and takes none. Every row that reads a field's values (`here`) has them then, in a workflow as in a Query.
+
+- **The editor reads them once, as a graph opens**, then draws again. A store that changes is read again at the next
+  open. An editor a canvas has since been bound to again draws nothing late (`boundOn`).
+- **A multi-select's choices are in its menu of ticks**, not its native `<select>`: a spec opens the menu as a reader
+  does (`select.control`, then `.picks-menu`) and reads its inputs.
+
+- Site: `src/core/data/field-catalogue.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-row-offers-its-stores-values.test.mjs`
+- Site: `test/e2e/reforged-a-row-offers-its-stores-values.spec.ts`
+
 ### T-a-row-takes-its-values-type
 
 **A node row takes its value in its type's control** (Will, plan 986, 2026-11-14: "check all node input rows across

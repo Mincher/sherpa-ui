@@ -26,8 +26,10 @@
  * - .zonesOf — A number's zones, from the status field whose values are ranges of it.
  * - .unlisted — A field with more values than a filter lists: Advanced alone.
  * - .fromRows — Declare each field its schema says nothing of from the values the rows hold.
+ * - MOST_OFFERED — The most values a node row offers from a field's store.
+ * - withStoreValues — Each store's fields with the values each can take: declared first, else its store's, through `fromRows`.
  */
-import { compareValues, groupOf, valueKey, type Condition, type ConditionLeaf } from './store.js';
+import { cellValues, compareValues, groupOf, readField, valueKey, type Condition, type ConditionLeaf, type Store } from './store.js';
 import { fieldState, type FieldFacts, type FieldReading, type FilterState } from './filter-state.js';
 import { report } from './report.js';
 import type { FieldDeclaration, FieldFilter } from './data-source-types.js';
@@ -300,4 +302,40 @@ export class FieldCatalogue {
       this.declare(field, { min, max, step: facts.step ?? niceStep(max - min) });
     }
   }
+}
+
+/** The most values a node row offers from a field's store; its menu's search finds among them (Will, plan 986 D1 A). */
+export const MOST_OFFERED = 500;
+/** A field a node reads, as an app gives it: what kind it is, its words, and the values it declares. */
+type GivenField = { readonly type?: string; readonly values?: readonly string[] };
+/** A range, not a list of values: a number or a date. */
+const RANGED = new Set(['number', 'integer', 'decimal', 'date', 'datetime']);
+
+/** Each store's fields, each with the values it can take: its own declared values first, else the values its store holds,
+ *  read through the catalogue's one read (`fromRows`: the store's distinct, else its rows), at most MOST_OFFERED. A
+ *  number or a date is a range and takes none. Will, plan 986 D1 A: "It's the Data Source via the Data Store in the Data
+ *  Layer". TRAP T-a-row-offers-its-stores-values */
+export async function withStoreValues<F extends GivenField>(
+  fieldsOf: Readonly<Record<string, Readonly<Record<string, F>>>>, storeOf: (id: string) => Store | undefined | Promise<Store | undefined>,
+): Promise<Record<string, Record<string, F>>> {
+  const filled: Record<string, Record<string, F>> = {};
+  for (const [id, fields] of Object.entries(fieldsOf)) {
+    const open = Object.entries(fields).filter(([, f]) => !f.values?.length && !RANGED.has(f.type ?? '')).map(([name]) => name);
+    const store = open.length ? await storeOf(id) : undefined;
+    if (!store) {
+      filled[id] = { ...fields };
+      continue;
+    }
+    const catalogue = new FieldCatalogue();
+    await catalogue.fromRows(open, async (names) => {
+      if (store.distinct) return store.distinct(names);
+      const { rows } = await store.load();
+      return Object.fromEntries(names.map((f) => [f, rows.flatMap((r) => cellValues(readField(r, f)))]));
+    });
+    filled[id] = Object.fromEntries(Object.entries(fields).map(([name, f]) => {
+      const values = open.includes(name) ? catalogue.valuesFor(name).slice(0, MOST_OFFERED).map(String) : [];
+      return [name, values.length ? { ...f, values } : f];
+    }));
+  }
+  return filled;
 }
