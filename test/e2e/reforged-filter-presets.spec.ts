@@ -34,7 +34,13 @@ const SETUP = `
   const page = { v: 1, id: 'customers', source: { store: 'customers', fields: { status: { label: 'Status' }, plan: { label: 'Plan' } },
     scopes: { data: { label: 'Rows', holds: ['status', 'plan'], presets: [{ id: 'pro', label: 'Pro', where: { plan: { eq: 'Pro' } } }] } } } };
   const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
-  const source = await provider.open(page, { stores: { customers: new ArrayStore(rows, { key: 'id' }) }, views: {} });
+  const stores = { customers: new ArrayStore(rows, { key: 'id' }) };
+  const source = await provider.open(page, { stores, views: {} });
+  window.reopen = async (views, view) => {
+    const again = await provider.open(page, { stores, views, ...(view ? { view } : {}) });
+    await again.load();
+    await settle();
+  };
   await source.load();
   await settle();
   window.source = source;
@@ -89,3 +95,17 @@ test('a Filter the reader saves while the page is open joins the bar, after the 
   await page.locator('sherpa-quick-filter-toolbar').locator('.chips > .chip[data-id="preset:filter:trials"] .body').click();
   await expect.poll(() => total(page)).toBe(1);
 });
+
+test('a View may name its Filters: named, its bar offers those alone; none named, every one over its store (Will, plan 960 U4.4d)', async ({ page }) => {
+  await page.evaluate(() => (window as unknown as W).provider.keeper.entities.save((window as unknown as W).filter('free', 'Free plan', 'plan', 'Free')));
+  const views = { all: { label: 'All' }, mine: { label: 'Mine', filters: ['filter:free'] }, none: { label: 'None', filters: [] } };
+  const on = (view: string) => page.evaluate(([v, vs]) => (window as unknown as { reopen(views: unknown, view: string): Promise<void> }).reopen(vs, v as string), [view, views] as const);
+  await on('all');
+  expect(await chips(page)).toEqual(['preset:pro Pro', 'preset:filter:active Active', 'preset:filter:free Free plan']);
+  await on('mine');
+  expect(await chips(page)).toEqual(['preset:pro Pro', 'preset:filter:free Free plan']);
+  // An empty list offers none of them; the page's own presets stay.
+  await on('none');
+  expect(await chips(page)).toEqual(['preset:pro Pro']);
+});
+

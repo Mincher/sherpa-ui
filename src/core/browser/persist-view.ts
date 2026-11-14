@@ -156,6 +156,8 @@ export interface SavedView {
   /** A GRAPH View: its body is a canvas, bound to one entity of this type, picked in the graph chip.
    *  It has no template. TRAP T-a-graph-is-a-view-of-a-type */
   graph?: GraphOf;
+  /** The Filters its toolbar offers, each `filter:<id>`; none named, every Filter over its store (Will, plan 960 U4.4d). */
+  filters?: readonly string[];
 }
 
 /** A page's saved views, keyed by the id its chip option carries. */

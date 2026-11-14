@@ -887,7 +887,8 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   draft keeps it. `T-an-entity-is-used-as-a-node`
 - **A Filter is a preset** of every page over its store (TODO 776): the provider
   reads the shelf as the page opens, and each one's chip follows the page's own presets,
-  the app's then the reader's. A press is `query.ask({ scope, preset: 'filter:<id>', on })`.
+  the app's then the reader's. A View may name the ones it offers, `"filters": ["filter:<id>"]`;
+  none named, every one. A press is `query.ask({ scope, preset: 'filter:<id>', on })`.
   Its graph is read by the one reader the Outgoing JSON shows (`conditionAt`), each field's
   own (`presetOfEntity`): Store › Field › Condition, a test per Condition on the Field on its
   header, And and Or joining tests (plan 783); a use's True into And or Or joins the outer

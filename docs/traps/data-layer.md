@@ -7880,12 +7880,14 @@ graphs. Let's keep them but also make sure they work in the new architecture for
   The chip is `preset:filter:<id>`; a press is `query.ask({ scope, preset, on })`.
 - **Which pages.** Those whose store is its source: `settings.source`, else the store its graph's Source
   names (a new graph has no settings). The app's first, read only, then the reader's, in the shelf's
-  order. Its bar is the one scope that holds every field it names, else the View.
+  order. Its bar is the one scope that holds every field it names, else the View. A View may name the Filters it
+  offers (`filters: ["filter:<id>"]`, Will, plan 960 U4.4d): named, those alone; an empty list, none; none named,
+  every one. They are laid again when the View changes, before its Query, which may turn one on (`#offered`).
 - **Loaded only where needed.** The provider reads the shelf as the page opens: no Filter, no
   import. The compile (filter.ts) loads on first use. The provider hears the shelf, so one
   saved in another tab joins the bar. The outlet hands the keeper its entities BEFORE `open`: a first
   page read none when they came after.
-- **Composing.** A Filter's use, its True into And or Or, brings its tree, read inside: its
+- **Composing.** A Filter's use, its output into And or Or, brings its tree, read inside: its
   condition joins the outer one. A constant into And or Or folds (TODO 780); a condition a constant
   decides, always or never, has no preset form, nor has a boolean only a run gives: each is said in
   words. A graph that folds to never is Any of nothing, `{ or: [] }`, on each field its tests name:

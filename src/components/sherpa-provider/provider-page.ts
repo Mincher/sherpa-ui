@@ -134,6 +134,17 @@ export class ProviderPage {
   /** The page's Filters, each with the scope whose bar it leads. TODO 776 */
   #filterPresets: { preset: PagePreset; scope: string }[] = [];
 
+  /** The Filters the View on screen offers: those it names, else every one over its store (Will, plan 960 U4.4d). */
+  #offered(): { preset: PagePreset; scope: string }[] {
+    const named = this.#view ? this.#opened?.library?.()[this.#view]?.filters : undefined;
+    return named ? this.#filterPresets.filter((f) => named.includes(f.preset.id)) : this.#filterPresets;
+  }
+
+  /** Lay the Filters again: another View may offer others. */
+  #relayFilters(): void {
+    this.#layPresets(this.#filterPresets.map((f) => f.scope));
+  }
+
   /** Each Filter's scope: the one that holds every field it names, else the View. Plan 776 D3 */
   #homed(presets: readonly PagePreset[]): { preset: PagePreset; scope: string }[] {
     const query = this.#opened?.query;
@@ -252,6 +263,7 @@ export class ProviderPage {
     }
     const first = Object.keys(opened.library())[0];
     this.#view = first;
+    this.#relayFilters();
     await this.drawBars(first);
     await this.resetView();
     this.#viewBar()?.report?.();
@@ -418,9 +430,10 @@ export class ProviderPage {
     const opened = this.#opened;
     if (!opened) return;
     const library = this.#library();
+    const offered = this.#offered();
     for (const scope of new Set(scopes)) {
       const app = opened.query.presets(scope).filter((preset) => !preset.id.startsWith(SAVED_PRESET) && entityRefOf(preset.id).type !== FILTER);
-      const filters = this.#filterPresets.filter((f) => f.scope === scope)
+      const filters = offered.filter((f) => f.scope === scope)
         .map(({ preset }) => ({ id: preset.id, label: preset.label, readings: presetReadings(opened.source, preset.where) }));
       const mine = [...this.#added].filter(([, at]) => at === scope).flatMap(([id]) => {
         const set = library[id];
@@ -640,6 +653,8 @@ export class ProviderPage {
     const library = (): ViewLibrary => (typeof views === 'function' ? views() : views ?? {});
     const first = Object.keys(library())[0];
     this.#view = options.view ?? first;
+    // Its Filters, before its Query, which may turn one on.
+    this.#relayFilters();
     const kept = key ? this.#host.keeper().read(key) : undefined;
     const start = this.#view ? library()[this.#view] : undefined;
     this.#keyed = key ? { key, source, library } : null;
@@ -844,6 +859,7 @@ export class ProviderPage {
         // Another View: its filters are its own, and its bars hold none of these.
         if (id !== this.#view) this.#clearAdded();
         this.#view = id;
+        this.#relayFilters();
         this.#settle?.();
         this.#host.viewChanged(id, rendered?.elements);
       },
@@ -856,6 +872,7 @@ export class ProviderPage {
     const was = this.#view;
     this.#clearAdded();
     this.#view = id;
+    this.#relayFilters();
     this.#showView(was, id);
     this.#hear?.();
     this.#host.viewChanged(id);

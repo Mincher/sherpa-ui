@@ -150,6 +150,15 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
 
 ## Will's decisions
 
+- **U4.4c, U4.4d, U4.7b, 2026-11-14** (asked by sherpa-demos-67 with sherpa-ui-e8's options): **U4.4c A**, Save filters
+  writes a Filter entity to the shelf and the keeper's `filters` go, with one change: the reader's old saved filters are
+  MOVED OVER ONCE, not dropped (retrofit on change, no legacy support at run time): the library gives the one-off reader
+  (a saved filter → a Filter, by `filterOf`), Demos runs it once and deletes it; a filter not saved stays the tab's draft.
+  **U4.4d A**, a View may name its Filters; named, its toolbar offers those alone; none named, every one, as now (BUILT
+  2026-11-14, lane 960-u44d). **U4.7b**, a status field in the Query graph is ONE Field node, a row per value, each saying
+  its rule in words; Enter opens the rule's chain inside it, read only, as a Custom Node's inside opens; the Status kind
+  and the chain on the top canvas go.
+
 - **U4.2, 2026-11-13:** "Decision: A. Perhaps just a single 'Organise' node that lets you set Axes, Grouping, and
   Sorting parameters. Saves on bloating the graph with lots of smaller nodes." So: axes in a workflow too (A), and ONE
   Organise node, not four. Its rows: Sort and Direction, Group, Search, and Primary, Secondary and Segments (a chart's

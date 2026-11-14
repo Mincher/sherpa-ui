@@ -295,6 +295,10 @@
         "template": { "description": "Its markup: file.html#id, beside the Views' JSON.", "type": "string", "pattern": "^[^#]+#[^#]+$" },
         "content": { "description": "A reader's saved View's markup. A shipped View names a template instead.", "type": "string" },
         "settings": { "description": "The app's own settings it lays, by pointer: the app reads them.", "type": "object", "propertyNames": { "pattern": "^/" } },
+        "filters": {
+          "description": "The Filters its filter toolbar offers, each `filter:<id>` (plan 960 U4.4d). None named, every Filter over its store.",
+          "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^filter:[a-z][a-z0-9-]*$" }
+        },
         "graph": {
           "description": "A GRAPH View: its body is a canvas bound to one entity of this type (entity.v3), picked in the graph chip beside the View chip. It has no template or content.",
           "type": "object", "additionalProperties": false, "required": ["type"],
