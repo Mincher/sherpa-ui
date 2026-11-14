@@ -45,15 +45,16 @@ const lanes = (page: Page) => page.locator('#cv > sherpa-node-lane').evaluateAll
 /** A node's top and bottom, in plane px, as drawn. */
 const span = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluate((n) => ({ top: Number(n.getAttribute('data-y')), bottom: Number(n.getAttribute('data-y')) + (n as HTMLElement).offsetHeight }));
 
-test('Swimlanes on: a band for each family that has a node, the logic node in a junction, no band over the next; off, they go and each node goes back', async ({ page }) => {
+test('Swimlanes on: a band for each family that has a node, the logic node in a junction, no band over the next; off, they go and each node goes back', async ({ page }, info) => {
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(0);
   const before = await Promise.all(['Source', 'Value', 'Condition', 'Organise', 'Run result'].map((h) => span(page, h)));
-  // Each node moves by a transition, as Unfurl's do: the plane says so while they go (TODO 929).
+  // Each node moves by a transition, as Unfurl's do: the plane says so while they go (TODO 929). A plane drawn into a real
+  // canvas (the chrome project's) paints them at once.
   const easing = await page.locator('sherpa-node-toolbar sherpa-button.lanes').evaluate((el) => {
     (el.shadowRoot!.querySelector('button') as HTMLElement).click();
     return document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!.hasAttribute('data-settling');
   });
-  expect(easing).toBe(true);
+  expect(easing).toBe(info.project.name !== 'chrome');
   await settle(page);
   await expect(page.locator('sherpa-node-toolbar sherpa-button.lanes')).toHaveAttribute('aria-pressed', 'true');
   const bands = await lanes(page);
