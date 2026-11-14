@@ -148,7 +148,6 @@ export function leafOf(drawn: DrawnGraph, node: GraphNode): { leaf: ConditionLea
   const type = String(at('type') ?? '');
   const ends = [at('start'), at('end')].filter((v) => v != null && v !== '');
   const leaf = (op: FilterOp, value: unknown): { leaf: ConditionLeaf; field: GraphNode } => ({ leaf: { field, op, value } as ConditionLeaf, field: via.from });
-  if (node.kind === 'tag') return leaf('in', [at('value') ?? []].flat());
   if (node.kind === 'time') {
     const n = at('n');
     return type === 'duration' ? leaf((at('when') ?? 'last') as FilterOp, typeof n === 'number' ? { n, unit: (at('unit') ?? 'day') as Duration['unit'] } : undefined) : leaf('between', ends);

@@ -483,7 +483,7 @@ const [PASS, FAIL]: readonly [RowKind, RowKind] = [
 /** What a Condition on one value sends on by Pass or Fail, all of it (Will, plan 971 §9: "Fold it into Condition"). */
 const DATA: RowKind = { name: 'data', label: 'Data', input: 'any', optional: true };
 /** The kinds that test: each gives Pass, Fail and its truth (plan 971 A). */
-export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time', 'tag']);
+export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time']);
 const LOGIC: Readonly<Record<string, NodeType>> = {
   // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
   // empty; Pass is the rows in all of the inputs (And) or in any true one (Or), Fail the rest (plan 971 A).
@@ -667,26 +667,18 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Text from text, given from its Result row: a list, where Split by makes one.
   text: {
-    heading: 'Text', icon: 'pencil', description: 'Change and combine text values', typeLabel: 'Operation', defaultType: 'append',
+    heading: 'Text', icon: 'pencil', description: 'Change and combine text values', typeLabel: 'Operation', defaultType: 'format',
     types: {
-      append: { label: 'Append', help: 'Add Value B to the end of Value A', rows: [textRow('a', 'Value A'), textRow('b', 'Value B'), RESULT] },
-      prepend: { label: 'Prepend', help: 'Add Value B to the start of Value A', rows: [textRow('a', 'Value A'), textRow('b', 'Value B'), RESULT] },
+      // A Template filled from what reaches its Data: one text per row, else one text. It is Append and Prepend too (Will,
+      // plan 992 O2): "{{value:a.value}} and more". TRAP T-format-is-the-one-text-door
+      format: {
+        label: 'Format', help: 'The Template filled from its Data: one text per row, else one text',
+        rows: [{ name: 'data', label: 'Data', input: 'any', many: true }, { name: 'template', label: 'Template', control: 'message', input: 'value' }, RESULT],
+      },
       split: { label: 'Split by', help: 'Value as a list, split at each Separator', rows: [textRow('a', 'Value'), SEPARATOR, { ...RESULT, output: 'object', gives: 'list' }] },
       join: { label: 'Join', help: 'The list as one text, Separator between each', rows: [LIST, SEPARATOR, RESULT] },
-      // A template filled from each row, its values named as a message names them (plan 991a).
-      format: {
-        label: 'Format', help: 'The Template filled from each row: one text per row',
-        rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, { name: 'template', label: 'Template', control: 'message', input: 'value' },
-          { ...RESULT, output: 'object', gives: 'list' }],
-      },
     },
     rows: [], model: 'modifyText', graphs: ['workflow'], category: 'Utils',
-  },
-  // A rows check by the Field of tags that comes in: closed to its values, where they are known (plan 783 D5).
-  tag: {
-    heading: 'Tag', icon: 'price-tag', description: 'Keep rows with chosen tags', input: 'any', needs: 'field', output: 'boolean',
-    types: { includes: { label: 'Includes', rows: [PASS, FAIL, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
-    rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
   // An In and an Out joined by a name, no line between them. An In takes many connections; an Out draws a row for each connection
   // into an In of its name, once drawn, and sends from those rows alone (TODOs 779, 826). TRAP T-a-portal-hop-is-resolved-once

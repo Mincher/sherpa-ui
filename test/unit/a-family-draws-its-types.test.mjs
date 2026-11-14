@@ -30,15 +30,14 @@ test('each family: its types in order, the Type row first, and the rows, sockets
     },
     // A test leads with Pass and Fail (plan 971).
     time: { between: ['pass', 'fail', 'start', 'end'], duration: ['pass', 'fail', 'when', 'n', 'unit'] },
-    text: { append: ['a', 'b', 'result'], prepend: ['a', 'b', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'], format: ['rows', 'template', 'result'] },
-    tag: { includes: ['pass', 'fail', 'value'] },
+    // Append and Prepend are a Format (plan 992 O2).
+    text: { format: ['data', 'template', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'] },
   };
   for (const [id, types] of Object.entries(rows)) {
     assert.deepEqual(Object.keys(NODE_KINDS[id].types), Object.keys(types), id);
     for (const [type, names] of Object.entries(types)) {
       const kind = resolveKind(NODE_KINDS[id], type);
-      // A family of one type, the Tag, draws no select.
-      assert.deepEqual(kind.rows.map((r) => r.name), [...(id === 'tag' ? [] : ['type']), ...names], `${id} › ${type}`);
+      assert.deepEqual(kind.rows.map((r) => r.name), ['type', ...names], `${id} › ${type}`);
     }
   }
   assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Min', 'Max', 'Average', 'Sum', 'Median', 'Range', 'Count', 'Count unique', 'Band']);
@@ -106,7 +105,7 @@ test('PLANTED FAULTS: a connection into a row no Math type has; a Duration of no
     'the node "t" holds "fortnight" as its Unit, which is none of its choices',
   ]);
   // Split by gives a list: a Text's Value A cannot use it, and warns.
-  const split = { v: 3, id: 's', nodes: [{ id: 'cut', kind: 'text', x: 0, y: 0, values: { type: 'split' } }, { id: 'add', kind: 'text', x: 300, y: 0 }], connections: [{ from: 'cut/result', to: 'add/a' }] };
-  assert.deepEqual(warned(split), [[], ['Value A takes a value; it was given a list']]);
+  const split = { v: 3, id: 's', nodes: [{ id: 'cut', kind: 'text', x: 0, y: 0, values: { type: 'split' } }, { id: 'add', kind: 'text', x: 300, y: 0, values: { type: 'split' } }], connections: [{ from: 'cut/result', to: 'add/a' }] };
+  assert.deepEqual(warned(split), [[], ['Value takes a value; it was given a list']]);
   assert.deepEqual(workflowFaults({ ...split, nodes: [split.nodes[0], { ...split.nodes[1], values: { type: 'join' } }], connections: [{ from: 'cut/result', to: 'add/values' }] }), []);
 });

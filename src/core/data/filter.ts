@@ -22,7 +22,7 @@ import { FILTER, entityTypes, libraryOf, type EntityType } from './entity-types.
 import { graphWorkflow } from './entity-check.js';
 import { innerOf, kindsOf } from './node-library.js';
 import { conditionAt, leafOf, type Said } from './node-flow.js';
-import { nodeKinds, type DrawnGraph, type GraphNode, type NodeKind } from './node-kinds.js';
+import { nodeKinds, TEST_KINDS, type DrawnGraph, type GraphNode, type NodeKind } from './node-kinds.js';
 import { OP_LABELS, groupOf, type Condition, type ConditionLeaf } from './store.js';
 import { parseWhere, whereOfTree, type Where } from './where.js';
 import { editedCondition, whereGraph } from './query-graph.js';
@@ -106,7 +106,7 @@ export function presetOfEntity(entity: Entity, facts: FilterFacts = {}): { prese
   // Never: Any of nothing on each field its tests name, so the preset is on the bar and, on, holds no row.
   if (tree === false) {
     const fields = [...new Set(graph.nodes.flatMap((n) => {
-      const leaf = ['condition', 'time', 'tag'].includes(n.kind) ? leafOf(graph, n) : undefined;
+      const leaf = TEST_KINDS.has(n.kind) ? leafOf(graph, n) : undefined;
       return leaf && 'leaf' in leaf && leaf.leaf.field ? [leaf.leaf.field] : [];
     }))];
     if (!fields.length) return { fault: `${at}: it never holds, and tests no Field to say so on` };

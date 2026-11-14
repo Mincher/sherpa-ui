@@ -117,15 +117,15 @@ test('a property row connects like any output: the Source\'s Results into a Math
   await expect(card(page, 'How many')).not.toHaveAttribute('data-warning');
   await expect(card(page, 'Math')).not.toHaveAttribute('data-warning');
   await expect(card(page, 'Math').locator('sherpa-input-text[name="a"]')).toHaveAttribute('data-description', /How many › Result/);
-  // A count into a Tag's header, which takes a field, warns as any number does: the graph stays open.
+  // A count into a Time's header, which takes a date, warns as any number does: the graph stays open.
   const box = (await page.locator('#root sherpa-layout-canvas').boundingBox())!;
-  await place(page, 'tag', [box.x + 560, box.y + 460]);
-  await drag(page, await socket(page, 'How many', 'output', 'Result'), await socket(page, 'Tag', 'input'));
-  await expect(card(page, 'Tag')).toHaveAttribute('data-warning', 'Tag takes a field; it was given a number');
+  await place(page, 'time', [box.x + 560, box.y + 460]);
+  await drag(page, await socket(page, 'How many', 'output', 'Result'), await socket(page, 'Time', 'input'));
+  await expect(card(page, 'Time')).toHaveAttribute('data-warning', 'Between takes a date; it was given a number');
   // Save hands the graph over, the Count's connections among its rows.
   expect(await page.evaluate(() => (window as never as { ed: Ed }).ed.save())).toBe(true);
   const saved = await page.evaluate(() => JSON.parse(JSON.stringify((window as never as { saved: Flow[] }).saved.at(-1))) as Flow);
-  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/rows → count/rows', 'count/result → add/a', 'count/result → tag-1']);
+  expect(saved.connections.map((r) => `${r.from} → ${r.to}`)).toEqual(['start/rows → count/rows', 'count/result → add/a', 'count/result → time-1']);
 });
 
 test('a saved Collection draws nothing and says why: nothing converts it', async ({ page }) => {

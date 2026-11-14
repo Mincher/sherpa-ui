@@ -449,14 +449,20 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   const text = (node: GraphNode): Sent => {
     const type = String(node.rows.find((r) => r.name === 'type')?.value ?? 'append');
     const word = (name: string): string | Sent => { const h = heard(node, name); return h.note ? h : String(h.value ?? ''); };
-    // Format: its Template filled from each row, each value it names that row's field (the one fill, `filled`).
+    // Format: its Template filled, through the one fill (`filled`): each value it names a row's field where rows reach its
+    // Data (one text per row), else the value its node sends (one text). Append and Prepend are a Format (plan 992 O2).
+    // TRAP T-format-is-the-one-text-door
     if (type === 'format') {
-      const rows = rowsInto(`${node.id}/rows`);
       const template = word('template');
       if (typeof template !== 'string') return template;
-      if (!rows) return { kind: 'value', note: into(`${node.id}/rows`).find((p) => p.sent.note)?.sent.note ?? 'No rows reach it' };
-      const names = new Map(valuesIn(template).map((p) => [p.key, p.name]));
-      return { kind: 'value', value: rows.map((row) => filled(template, (key) => row[names.get(key) ?? ''])) };
+      const rows = rowsInto(`${node.id}/data`);
+      const parts = new Map(valuesIn(template).map((p) => [p.key, p]));
+      const sentBy = (key: string): unknown => {
+        const part = parts.get(key);
+        return part ? sends(`${part.node}/${part.name}`).value : undefined;
+      };
+      if (!rows) return { kind: 'value', value: filled(template, sentBy) };
+      return { kind: 'value', value: rows.map((row) => filled(template, (key) => (parts.get(key)!.name in row ? row[parts.get(key)!.name] : sentBy(key)))) };
     }
     if (type === 'join') {
       const list = listOf(heard(node, 'values'));
@@ -464,15 +470,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       if (typeof list === 'string') return { kind: 'value', note: list };
       return typeof sep === 'string' ? { kind: 'value', value: list.join(sep) } : sep;
     }
-    const a = word(type === 'split' ? 'a' : 'a');
+    // Split by: the Value as a list, cut at each Separator.
+    const a = word('a');
     if (typeof a !== 'string') return a;
-    if (type === 'split') {
-      const sep = word('separator');
-      return typeof sep === 'string' ? { kind: 'value', value: sep === '' ? [a] : a.split(sep) } : sep;
-    }
-    const b = word('b');
-    if (typeof b !== 'string') return b;
-    return { kind: 'value', value: type === 'prepend' ? b + a : a + b };
+    const sep = word('separator');
+    return typeof sep === 'string' ? { kind: 'value', value: sep === '' ? [a] : a.split(sep) } : sep;
   };
 
   /** A Value node's value, read as its type says. */

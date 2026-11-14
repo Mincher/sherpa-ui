@@ -103,14 +103,14 @@ test('no Source upstream: a Field offers nothing, warns "connect a Source in", a
   assert.deepEqual(said(workflowGraph(unknown, facts)), { s: [['fields', 'No fields are known for "orders"']] });
 });
 
-test('a Condition\'s Value B values, its operator warning and a Tag\'s tags are its Field\'s store\'s', () => {
-  const tests = flow([...both().nodes, cond('cc', 'eq'), cond('cd', 'eq', 300), { id: 'tag', kind: 'tag', x: 600, y: 600 }], [...both().connections, ...connection('fc/field → cc', 'fd/field → cd', 'fd/field → tag')]);
+test('a Condition\'s Value B and Values, and its operator warning, are its Field\'s store\'s (the Tag\'s tags too, now Is one of: plan 992 O4)', () => {
+  const tests = flow([...both().nodes, cond('cc', 'eq'), cond('cd', 'eq', 300), cond('ci', 'in', 600)], [...both().connections, ...connection('fc/field → cc', 'fd/field → cd', 'fd/field → ci')]);
   const g = workflowGraph(tests, facts);
   assert.deepEqual([listed(g, 'cc', 'b'), listed(g, 'cd', 'b')], [['Good', 'Poor'], ['Healthy', 'Critical']]);
-  assert.deepEqual([row(g, 'tag', 'value').closed, listed(g, 'tag', 'value')], [true, ['Healthy', 'Critical']]);
-  // A tag its store's field never holds is a fault, in its store's words.
-  const gold = { ...tests, nodes: tests.nodes.map((n) => (n.id === 'tag' ? { ...n, values: { value: ['Good'] } } : n)) };
-  assert.deepEqual(workflowFaults(gold, NODE_KINDS, facts), ['the node "tag"\'s Tags: "Good" is not a value of Device health']);
+  assert.deepEqual([row(g, 'ci', 'b').closed, listed(g, 'ci', 'b')], [true, ['Healthy', 'Critical']]);
+  // A value its store's field never holds is a fault, in its store's words.
+  const gold = { ...tests, nodes: tests.nodes.map((n) => (n.id === 'ci' ? { ...n, values: { type: 'in', b: ['Good'] } } : n)) };
+  assert.deepEqual(workflowFaults(gold, NODE_KINDS, facts), ['the node "ci"\'s Values: "Good" is not a value of Device health']);
   // Seats: a number in Customers, text in Devices. "many" is no number only after Customers; Greater than warns only after Devices.
   const seats = (type, b) => flow([...both('seats', 'seats').nodes, cond('cc', type, 0, b), cond('cd', type, 300, b)], [...both().connections, ...connection('fc/field → cc', 'fd/field → cd')]);
   assert.deepEqual(workflowFaults(seats('eq', 'many'), NODE_KINDS, facts), ['the node "cc" holds "many" as its Value B, which is no number, as "seats", a number field takes']);

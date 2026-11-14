@@ -60,13 +60,15 @@ test('Math: no number says why, in words: a divide by zero, text, an empty row, 
   assert.match(calc('math', { type: 'average' }).note, /is empty/);
 });
 
-test('Text: append, prepend, split and join', () => {
-  assert.equal(calc('text', { type: 'append', a: 'Acme', b: ' Ltd' }).value, 'Acme Ltd');
-  assert.equal(calc('text', { type: 'prepend', a: 'Acme', b: 'The ' }).value, 'The Acme');
+test('Text: Format (Append and Prepend are a Format, plan 992 O2), split and join', () => {
+  // A Template that names a value its node sends: one text.
+  const who = [N('v', 'value', { type: 'text', value: 'Acme' })];
+  assert.equal(calc('text', { type: 'format', template: '{{value:v.value}} Ltd' }, [R('v/value', 'x/data')], who).value, 'Acme Ltd');
+  assert.equal(calc('text', { type: 'format', template: 'The {{value:v.value}}' }, [R('v/value', 'x/data')], who).value, 'The Acme');
   assert.deepEqual(calc('text', { type: 'split', a: 'a,b,c', separator: ',' }).value, ['a', 'b', 'c']);
   const joined = calc('text', { type: 'join', separator: '-' }, [R('l/value', 'x/values')], [N('l', 'value', { type: 'list', value: ['x', 'y'] })]);
   assert.equal(joined.value, 'x-y');
-  assert.match(calc('text', { type: 'append', b: 'z' }).note, /is empty/);
+  assert.match(calc('text', { type: 'format' }).note, /is empty/);
 });
 
 test('a Value reads as its type says: an integer drops its decimals, a boolean is true or false', () => {
@@ -86,11 +88,11 @@ const organise = (values) => graphOf(
 const organised = (values) => out(simulateGraph(organise(values), { customers: ROWS }), 'x', 'x/rows');
 
 test('Format: its Template filled from each row that comes in, each value it names that row\'s field (plan 991a)', () => {
-  const g = (template) => graphOf([N('s', 'source', { store: 'customers' }), N('x', 'text', { type: 'format', template })], [R('s/rows', 'x/rows')]);
+  const g = (template) => graphOf([N('s', 'source', { store: 'customers' }), N('x', 'text', { type: 'format', template })], [R('s/rows', 'x/data')]);
   const said = out(simulateGraph(g('{{value:s.plan}}: {{value:s.seats}} seats'), { customers: ROWS }), 'x', 'x/result');
   assert.deepEqual(said.value, ['Pro: 30 seats', 'Free: 5 seats', 'Pro: 12 seats', 'Team: 12 seats', 'Free: 70 seats']);
-  // No rows reach it: it says so, and sends nothing.
-  assert.match(out(simulateGraph(graphOf([N('x', 'text', { type: 'format', template: 'x' })], []), {}), 'x', 'x/result').note, /rows|empty/i);
+  // No rows reach it: one text, the Template as it is.
+  assert.equal(out(simulateGraph(graphOf([N('x', 'text', { type: 'format', template: 'x' })], []), {}), 'x', 'x/result').value, 'x');
 });
 
 test('Organise puts the rows in its Sort field\'s order, each way; the same rows, none lost', () => {
@@ -129,8 +131,8 @@ test('Organise passes on the rows a Field on its header carries; with no rows in
   assert.match(alone.note, /No rows reach it/);
 });
 
-test('Time and Tag keep rows as a Condition does: a Tag\'s Pass the rows that include a value, its Fail the rest', () => {
-  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'tags' }), N('x', 'tag', { type: 'includes', value: ['a'] }), N('o', 'result')],
+test('a Condition on a tags field keeps rows as the Tag did (plan 992 O4): its Pass the rows that include a value, its Fail the rest', () => {
+  const g = graphOf([N('s', 'source', { store: 'customers' }), N('f', 'field', { field: 'tags' }), N('x', 'condition', { type: 'in', b: ['a'] }), N('o', 'result')],
     [R('s/rows', 'f'), R('f/field', 'x'), R('x', 'o')]);
   const sim = simulateGraph(g, { customers: ROWS });
   assert.equal(sim.faults.some((f) => /not simulated/.test(f)), false, JSON.stringify(sim.faults));
@@ -163,7 +165,7 @@ test('a Custom Node runs its body: its Group Input is fed what the use hears, an
 
 test('a node that sends a value says it on its light: "= 42"; a long one is cut', () => {
   const { lightOf } = lightMod;
-  const sim = simulateGraph(graphOf([N('x', 'math', { type: 'add', a: 40, b: 2 }), N('t', 'text', { type: 'append', a: 'x'.repeat(40), b: 'y' })], []), {});
+  const sim = simulateGraph(graphOf([N('x', 'math', { type: 'add', a: 40, b: 2 }), N('t', 'text', { type: 'format', template: `${'x'.repeat(40)}y` })], []), {});
   assert.equal(lightOf(sim.nodes.x, 3), '= 42 · 3 ms');
   assert.match(lightOf(sim.nodes.t, 0), /^= x{23}… · <1 ms$/);
 });

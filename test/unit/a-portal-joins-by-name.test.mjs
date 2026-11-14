@@ -42,7 +42,7 @@ test('Portal is ONE family in Utils, a workflow\'s alone: an In takes MANY conne
   assert.deepEqual([kind.types.in.input, kind.types.in.many, kind.types.in.output, kind.types.out.input, kind.types.out.output], ['any', true, undefined, undefined, undefined]);
   assert.deepEqual(kind.types.out.rows.map((r) => [r.name, r.control]), [['name', 'portal']]);
   assert.equal(kindIn(kind, 'query'), undefined);
-  assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Utils').items.map((i) => i.id), ['text', 'tag', 'portal']);
+  assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Utils').items.map((i) => i.id), ['text', 'portal']);
   assert.deepEqual(paletteMatch(kind, 'out'), { type: 'out' });
   // "Add a node" from an output offers an In; an input has nothing an Out could send it before a connection reaches its In.
   assert.deepEqual([fitOf(kind, 'object', 'out'), fitOf(kind, 'boolean', 'in')], [{}, undefined]);

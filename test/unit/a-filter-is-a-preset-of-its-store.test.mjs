@@ -101,7 +101,7 @@ test('A or (B and C) on Seats is ONE reading: one Field into three Conditions, a
   assert.deepEqual(presetOfEntity(weeks).preset.where, { joined: { next: 2, unit: 'week' } });
   const between = { ...dated, graph: { ...dated.graph, nodes: [dated.graph.nodes[0], { ...dated.graph.nodes[1], values: { type: 'between', start: '2024-01-01', end: '2024-01-31' } }] } };
   assert.deepEqual(presetOfEntity(between).preset.where, { joined: { between: ['2024-01-01', '2024-01-31'] } });
-  const tagged = filter('tagged', [fieldNode('f', 'plan'), { id: 'g', kind: 'tag', x: 400, y: 0, values: { value: ['Pro', 'Team'] } }], [{ from: 'f/field', to: 'g' }, { from: 'g', to: '#out/where' }]);
+  const tagged = filter('tagged', [fieldNode('f', 'plan'), { id: 'g', kind: 'condition', x: 400, y: 0, values: { type: 'in', b: ['Pro', 'Team'] } }], [{ from: 'f/field', to: 'g' }, { from: 'g/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(tagged).preset.where, { plan: { in: ['Pro', 'Team'] } });
 });
 

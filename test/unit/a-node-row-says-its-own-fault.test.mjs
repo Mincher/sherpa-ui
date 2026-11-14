@@ -101,13 +101,6 @@ test('PLANTED: a stranger in a closed list is a fault, held or brought, and the 
   assert.deepEqual(workflowFaults({ ...held, connections: [] }, NODE_KINDS, facts), []);
   // A number field's Value B is a number: the row's own fault.
   assert.deepEqual(workflowFaults(flow('seats', { type: 'gt', b: 'many' }), NODE_KINDS, facts), ['the node "c" holds "many" as its Value B, which is no number, as "seats", a number field takes']);
-  // A Tag's Tags are the same: closed to the values of the Field on its header (plan 783 D5).
-  const tag = {
-    v: 3, id: 'w', nodes: [{ id: 'g', kind: 'tag', x: 0, y: 0, values: { value: ['trial', 'x'] } }, { id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'status' } }, { id: 's', kind: 'source', x: -300, y: 0, values: { store: 'customers' } }],
-    connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'g' }],
-  };
-  assert.deepEqual(workflowFaults(tag, NODE_KINDS, facts), ['the node "g"\'s Tags: "x" is not a value of Status']);
-  assert.deepEqual([row(workflowGraph(tag, facts), 'g', 'value').control, row(workflowGraph(tag, facts), 'g', 'value').closed], ['values', true]);
   assert.equal(rowFault({ control: 'tags', closed: true, choices: [{ value: 'a', label: 'a' }] }, ['a']), undefined);
 });
 

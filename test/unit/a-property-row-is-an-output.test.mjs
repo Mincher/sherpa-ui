@@ -81,9 +81,9 @@ test('a property row sends a number before a run, as a Result does: it connects 
   // The drawn row is an output socket and no field.
   const row = at(g, 'q').rows.find((r) => r.name === 'true');
   assert.deepEqual([row.output, row.control, row.input, !!row.property], ['value', undefined, undefined, true]);
-  // A True into a field-needing header warns, as any number does.
-  const bad = flow([source, field, asked, { id: 'k', kind: 'tag', x: 900, y: 0 }], [...testing, { from: 'q/true', to: 'k' }]);
-  assert.deepEqual(said(workflowGraph(bad)), { ...unjoined, k: [['', 'Tag takes a field; it was given a number']] });
+  // A True into a date-needing header warns, as any number does.
+  const bad = flow([source, field, asked, { id: 'k', kind: 'time', x: 900, y: 0 }], [...testing, { from: 'q/true', to: 'k' }]);
+  assert.deepEqual(said(workflowGraph(bad)), { ...unjoined, k: [['', 'Between takes a date; it was given a number']] });
   // The Outgoing JSON lists it among a node's outputs.
   assert.deepEqual(nodeFlow(g, 'q').outgoing.map((o) => [o.socket, o.type]), [['True', 'value']]);
 });

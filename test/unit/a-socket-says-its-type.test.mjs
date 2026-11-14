@@ -103,7 +103,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   const split = typed.filter(([, rows]) => rows.some((r) => r.name === 'pass'));
   for (const [name, rows] of split) assert.deepEqual(rows.slice(0, 2).map((r) => [r.name, r.gives]), [['pass', 'rows'], ['fail', 'rows']], `${name}: Pass and Fail, first`);
   assert.deepEqual(split.map(([name]) => name), [
-    ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'time › between', 'time › duration', 'tag › includes',
+    ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'time › between', 'time › duration',
   ]);
   assert.deepEqual([...new Set(split.map(([name]) => name.split(' › ')[0]))], [...TEST_KINDS]);
   // No kind forks (plan 944): only a test branches, by Pass and Fail rows that, on one value, pass on its Data. A check that sends
@@ -111,7 +111,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   // and a Tag.
   assert.deepEqual(named((k) => k.branches), []);
   assert.deepEqual(named((k) => [k, ...Object.values(k.types ?? {})].some((t) => (t.rows ?? []).some((r) => r.passes))), [...TEST_KINDS]);
-  assert.deepEqual(named((k) => k.output === 'boolean'), ['trigger', 'preset', 'time', 'tag']);
+  assert.deepEqual(named((k) => k.output === 'boolean'), ['trigger', 'preset', 'time']);
   // No type forks, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
   // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
   for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], `${name} › ${id}`);
@@ -123,7 +123,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   // Every kind a workflow runs, the Trigger (plan 941), the Branch, the end and a portal, which passes on what reaches it (TODO 779), among them.
-  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'boolean', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'boolean', 'organise', 'value', 'field', 'math', 'time', 'text', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
 });
 
 test('every shipped kind says its types once: no output sends any; none forks; a multi-select row is an object, one connection in', () => {

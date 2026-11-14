@@ -64,7 +64,7 @@ test('in a graph: True into Math › Value A reads 1, False 0, no warning; a run
 });
 
 test('in a graph: True into a text row reads the word, never 1; written into JSON it is true, never 1 or "true"', () => {
-  const w = flow([yes, { id: 't', kind: 'text', x: 360, y: 0 }], [{ from: 'yes/value', to: 't/a' }]);
+  const w = flow([yes, { id: 't', kind: 'text', x: 360, y: 0, values: { type: 'split' } }], [{ from: 'yes/value', to: 't/a' }]);
   const g = workflowGraph(w);
   assert.deepEqual([at(g, 't').warnings, row(g, 't', 'a').value], [undefined, 'true']);
   const out = nodeFlow(g, 'yes').outgoing.find((s) => s.socket === 'Value');

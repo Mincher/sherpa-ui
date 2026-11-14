@@ -35,8 +35,8 @@ test('no kind branches, in any type, nor a Custom Node use; a Condition has no T
 
 test('a check that is no Condition sends a boolean from its header; a Condition and the rest send nothing from it; none has a False', () => {
   const sends = (id) => socketType(resolveKind(NODE_KINDS[id]), undefined, 'output');
-  assert.deepEqual(Object.fromEntries(['condition', 'time', 'tag', 'preset', 'source', 'value', 'field', 'math', 'organise', 'text'].map((id) => [id, sends(id)])), {
-    condition: undefined, time: 'boolean', tag: 'boolean', preset: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, organise: undefined, text: undefined,
+  assert.deepEqual(Object.fromEntries(['condition', 'time', 'preset', 'source', 'value', 'field', 'math', 'organise', 'text'].map((id) => [id, sends(id)])), {
+    condition: undefined, time: 'boolean', preset: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, organise: undefined, text: undefined,
   });
   for (const id of Object.keys(NODE_KINDS)) assert.equal(socketType(resolveKind(NODE_KINDS[id]), '#false', 'output'), undefined, `${id}: no False (plan 944)`);
 });

@@ -6249,6 +6249,17 @@ and a page that named a missing scope opened, and showed less, with nothing said
 - Site: `src/core/data/page-definition.ts`
 - Site: `test/unit/page-definition.test.mjs`
 
+### T-format-is-the-one-text-door
+
+**Text from values and rows is ONE type, Format** (Will, plan 992 O2: Append and Prepend went; plan 991a). Its
+Template is a message, its values named as an Output's message names them (`{{value:<node>.<name>}}`), filled through
+the one fill (`filled`). Rows that reach its Data: one text per row, each named value that row's field. Values only: one
+text, each named value what its node sends. So Append is `"{{value:a.value}} Ltd"`, Prepend `"The {{value:a.value}}"`;
+Split and Join stay, as they make and join lists.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/node-simulate.ts`
+
 ### T-a-row-takes-its-values-type
 
 **A node row takes its value in its type's control** (Will, plan 986, 2026-11-14: "check all node input rows across
@@ -6440,8 +6451,8 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
   Value B switched away from is kept for its type, and Save leaves it out (`finalGraph`).
 - **The Query draws its trees with it** (plan 783 D6): And, Or and the comparisons; Not and Is empty
   are a workflow's alone (`graphs`).
-- **Tag › Includes says the same grammar.** Its `where` (`nodeFlow`) is `{ field, op: 'in', value }`:
-  a Condition's Is one of.
+- **A tags field is tested by Is one of** (the Tag node went, plan 992 O4): its `where` (`nodeFlow`) is
+  `{ field, op: 'in', value }`.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`
@@ -6457,7 +6468,7 @@ style the node as a warning with tooltip message." Graphs stay open (E5): a conn
 types allow is drawn; no family fences what a graph places.
 
 - **What it needs is the kind's own description** (`needs`): a header that takes any type says
-  it (a comparison a field or a value; a Tag a field, on the header, and a Count rows or a field
+  it (a comparison a field or a value; a Count rows or a field
   (plan 783 D5); an Organise its rows, its fields in its own rows (plan 960 U4.2); a Field an object,
   Time a date; Is empty anything); a
   row says it by its
@@ -6840,7 +6851,7 @@ its type and the values it takes; `fields` and the graph-wide `values` are gone.
   portals (`flowOf`'s connections, `T-a-portal-hop-is-resolved-once`). The Source's Store row says the
   store: a Value connected in, else its own. Rows of two stores into one And: the first connection's.
 - **What reads it**: the Field row's list and its tip words, the stranger warning, what the column
-  carries (`ColumnField.values`), so a Condition's Value B list, a Tag's closed tags, the type that
+  carries (`ColumnField.values`), so a Condition's Value B and Values lists, the type that
   types Value B and warns an operator (`fieldAt`), in the drawing, the faults and an edit alike.
 - **No Source's rows**: the list is only its own pick, it warns "No store's rows come in: connect a
   Source in" (the kind's heading), unless its header warns already, and it sends nothing, so what
@@ -7948,7 +7959,7 @@ graphs. Let's keep them but also make sure they work in the new architecture for
 
 - **One reader.** `conditionAt(graph, '#out/where')` (node-flow.ts) reads what reaches the Where as
   ONE tree (plan 783 D7): Logic And and Or joining what comes in; a TEST — a Condition's comparison,
-  Time's Between or Duration, a Tag's Includes — a leaf on the Field on its header, ANDed with what
+  Time's Between or Duration — a leaf on the Field on its header, ANDed with what
   the rows into that Field carry (Source › Field › A › Rows › Field › B is A and B); a USE of another
   entity read inside, at its Group Output (`inner`), so it flattens. The Outgoing JSON shows what it
   reads, so the canvas and the data cannot disagree. A test with no Field, a Field that sends

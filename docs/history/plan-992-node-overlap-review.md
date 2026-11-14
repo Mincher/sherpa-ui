@@ -59,6 +59,6 @@ data).
 
 | Phase | Does |
 |---|---|
-| 992a | The refactors of what we have: Tag into Condition (O4), Append and Prepend into Format (O2); every library and Demos graph retrofitted, no alias |
+| 992a | The refactors of what we have: Tag into Condition (O4), Append and Prepend into Format (O2); every library and Demos graph retrofitted, no alias **BUILT 2026-11-14 (sherpa-ui-e8)**: Format's first row is Data (rows or values); Tag's tests are Conditions; no alias |
 | 992b | The words: each node's description and help say its one job, and where the other job lives (rows 1, 3, 4, 10–14) |
 | 992c | Plan 991 goes on, as the picks say: Route; Merge (O3); Classify as a Prompt type (O6); the Presentation's Data grid type (O5); Retry and the Runbooks' retrofit (O7) |
