@@ -2944,6 +2944,10 @@
       "description": "one row of a sherpa-node: the node's three columns, an input socket's cell, its content (a label or a field) and an output socket's cell. Any of the three may be empty. Each socket stands in its SOCKET TAB, outside the card. Will, TODOs 78, 887.",
       "attributes": [
         {
+          "name": "data-caption",
+          "description": "what a run says of the row, at the end of its label's line (\"43 rows\"). Its host writes it"
+        },
+        {
           "name": "data-collapsed",
           "description": "its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at  its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-connected, data-output-at-connected  the same, among the connected only; unset, the socket is not connected",
           "valueSet": "v"

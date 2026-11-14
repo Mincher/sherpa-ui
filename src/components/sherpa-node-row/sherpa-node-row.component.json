@@ -25,11 +25,26 @@
           "children": [
             {
               "el": "span",
-              "class": "label",
-              "part": "label",
-              "attrs": {
-                "data-text": "data-label"
-              }
+              "class": "head",
+              "part": "head",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "label",
+                  "part": "label",
+                  "attrs": {
+                    "data-text": "data-label"
+                  }
+                },
+                {
+                  "el": "span",
+                  "class": "caption",
+                  "part": "caption",
+                  "attrs": {
+                    "data-text": "data-caption"
+                  }
+                }
+              ]
             },
             {
               "slot": "",
@@ -203,6 +218,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-caption",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "what a run says of the row, at the end of its label's line (\"43 rows\"). Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-collapsed",
       "type": "boolean",
       "observed": true,
@@ -355,10 +379,15 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, idle?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }",
+    "shape": "{ caption?, collapsed?, idle?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "caption",
+      "selector": ":host([data-caption])"
+    },
     {
       "$type": "state",
       "name": "label",
@@ -415,6 +444,11 @@
   "tokens": {
     "content.gap": "{sherpa.theme-gap-sm}",
     "tip-socket.font-weight": "{sherpa.font-weight-medium}",
+    "head.gap": "{sherpa.theme-gap-sm}",
+    "caption.color": "{sherpa.style-content-secondary}",
+    "caption.font-family": "{sherpa.font-family-mono}",
+    "caption.font-size": "{sherpa.font-size-body-xs}",
+    "caption.line-height": "{sherpa.theme-content-line-height-small}",
     "label.font-size": "{sherpa.font-size-body-small}",
     "label.font-weight": "{sherpa.font-weight-medium}",
     "label.line-height": "{sherpa.theme-content-line-height-small}",

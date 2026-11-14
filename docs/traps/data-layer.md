@@ -6963,6 +6963,11 @@ order the store takes the first match.
   watch keeps what it lit for every node a span names, drawn or not (`litOn`), and a
   node is lit as it is drawn: inside, when the load spoke on the top canvas, and on
   top again after Back. Measured by sherpa-demos-67: before this, nothing inside was lit.
+- **Each value's row ends with its count** (Will, TODO 983, A), so the split shows
+  without opening it. A load names the row by its address (`QUERY_NODE.statusValue`,
+  `status-health/At risk`); a row lit wears only its caption (`lightRow`, the words a
+  node's tab would say). Every value is counted, the last too: the store works it out
+  for every row, so `statusTallies` asks it of each.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/core/ui/query-editor.ts`

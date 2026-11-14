@@ -14,6 +14,7 @@ export class SherpaNodeRow extends SherpaElement {
 
   static override props = {
     'data-label': { type: 'string', kind: 'content' },
+    'data-caption': { type: 'string', kind: 'content' },
     'data-input-socket': SHARED_PROPS['data-input-socket'],
     'data-output-socket': SHARED_PROPS['data-output-socket'],
     'data-input-connected': SHARED_PROPS['data-input-connected'],

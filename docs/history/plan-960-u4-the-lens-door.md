@@ -203,10 +203,10 @@ c1 and c3, and c2a: the provider, the page keeper, page.v1 and the Query graph. 
   (critical, success) is no longer shown on its row, since a row has no look of its own (a colour dot would be a new
   door); a page's Query graph is named "Query" in the trail.
 - A load lights the rule's roots inside, drawn later than the load spoke (`litOn` in `watchSteps`; found by
-  sherpa-demos-67). ❓ **Each value row's count on the top node** (sherpa-demos-67 asks; before U4.7b each root showed it
-  on the top canvas). A row has no caption, so this is a new part. **A**: a caption at the row's end, "43 rows", lit as a
-  node's tab is (a new `data-caption` on `sherpa-node-row`, and in Figma). **B**: the counts stay inside, one Enter away;
-  the node's tab says the total. My pick: A, so the counts stay in sight. Not built until Will says.
+  sherpa-demos-67). **Each value row's count on the top node: Will, 2026-11-14, A** ("so the split shows without opening
+  Health"), built as TODO 983: `data-caption` on `sherpa-node-row`, at the end of its label's line, lit by the row's
+  address; every value counted, Healthy too. Figma: `sherpa-node-row` has no Figma component yet (plan 883 §2.1), and
+  its row there names the caption.
 
 ## Will's decisions
 

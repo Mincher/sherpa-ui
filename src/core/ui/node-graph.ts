@@ -454,6 +454,8 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
       const line = document.createElement('sherpa-node-row');
       drawn.rows.set(`${node.id}/${row.name}`, line);
       drawn.addresses.set(line, [node.id, row.name]);
+      const spans = litFor(drawn.canvas, `${node.id}/${row.name}`);
+      if (spans) lightRow(line, spans);
       if (row.control) line.append(fieldFor(row, locked(row), true));
       return line;
     });
@@ -1543,10 +1545,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
       drawn.nodes.set(node.id, el);
       canvas.append(el);
       drawn.sizes.observe(el);
-      for (const lit of litOn.get(canvas) ?? []) {
-        const spans = lit.get(node.id);
-        if (spans) light(el, spans);
-      }
+      const spans = litFor(canvas, node.id);
+      if (spans) light(el, spans);
     }
     const at = `${node.x},${node.y}`;
     if (drawn.placedAt.get(node.id) !== at) {
@@ -1959,6 +1959,18 @@ function stateOf(span: Span): StepState {
  *  failed, skipped or done; the time and rows the latest said, and where each ran. The Source's load ends after its
  *  store's reads, so it says the page's rows (TODO 808). */
 function light(el: HTMLElement, spans: ReadonlyMap<string, Lit>): void {
+  const { state, words } = litSaid(spans);
+  el.setAttribute('data-step', state);
+  put(el, 'data-caption', words);
+}
+
+/** A row lit: its caption alone, in the words its node's tab would say (plan 960 U4.7b, TODO 983). */
+function lightRow(el: HTMLElement, spans: ReadonlyMap<string, Lit>): void {
+  put(el, 'data-caption', litSaid(spans).words);
+}
+
+/** What a step's spans say: its state, and its words — its time, its rows, where it ran away from the page. */
+function litSaid(spans: ReadonlyMap<string, Lit>): { state: StepState | 'running'; words: string } {
   const all = [...spans.values()];
   const state = all.some((s) => s.state === 'start') ? 'running'
     : all.some((s) => s.state === 'failed') ? 'failed'
@@ -1972,8 +1984,16 @@ function light(el: HTMLElement, spans: ReadonlyMap<string, Lit>): void {
     ...(rows === undefined ? [] : [`${COUNT.format(rows)} ${rows === 1 ? 'row' : 'rows'}`]),
     ...away,
   ];
-  el.setAttribute('data-step', state);
-  put(el, 'data-caption', words.join(' · '));
+  return { state, words: words.join(' · ') };
+}
+
+/** What a canvas's watches have lit for a node or a row (`node/row`), if any. */
+function litFor(canvas: HTMLElement, id: string): ReadonlyMap<string, Lit> | undefined {
+  for (const lit of litOn.get(canvas) ?? []) {
+    const spans = lit.get(id);
+    if (spans) return spans;
+  }
+  return undefined;
 }
 
 /**
@@ -1991,10 +2011,12 @@ export function watchSteps(canvas: SherpaLayoutCanvas, { claims, nodeOf = (span)
   if (!litOn.has(canvas)) litOn.set(canvas, new Set());
   litOn.get(canvas)!.add(lit);
   const clear = (): void => {
+    const drawn = drawnOn.get(canvas);
     for (const id of lit.keys()) {
-      const el = drawnOn.get(canvas)?.nodes.get(id);
+      const el = drawn?.nodes.get(id);
       el?.removeAttribute('data-step');
       el?.removeAttribute('data-caption');
+      drawn?.rows.get(id)?.removeAttribute('data-caption');
     }
     lit.clear();
   };
@@ -2019,9 +2041,12 @@ export function watchSteps(canvas: SherpaLayoutCanvas, { claims, nodeOf = (span)
     // Last to speak, last in the list: a span that ends moves after those that ended before it.
     spans.delete(span.id);
     spans.set(span.id, { host: span.host, state: stateOf(span), ...(span.ms !== undefined ? { ms: span.ms } : {}), ...(typeof total === 'number' ? { rows: total } : {}) });
-    // A node not drawn now keeps it: it is lit as it is drawn.
-    const el = drawnOn.get(canvas)?.nodes.get(node);
+    // A node or a row (`node/row`) not drawn now keeps it: it is lit as it is drawn.
+    const drawn = drawnOn.get(canvas);
+    const el = drawn?.nodes.get(node);
+    const row = el ? undefined : drawn?.rows.get(node);
     if (el) light(el, spans);
+    else if (row) lightRow(row, spans);
     onLit?.(span, node);
   });
   return () => {

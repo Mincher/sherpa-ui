@@ -78,9 +78,10 @@ test('its rule is a preset inside: per `when` a Field per field and an Or, its P
   assert.equal(innerOf({ id: 'status-health', kind: 'field' }, { v: 1, nodes: {} }), undefined, 'a Field holds no inside of its own');
 });
 
-test('the load lights At risk with its 43 rows, Watch with its 20, from the store\'s own counts', async () => {
+test('the load lights each value\'s row with its rows, and its root inside: At risk 43, Watch 20, Healthy 37 (TODO 983)', async () => {
   const tally = await statusTallies(store, store.domains);
-  assert.deepEqual(tally, { health: { 'At risk': 43, Watch: 20 } });
+  // Every value, the last too: the rows the rest left.
+  assert.deepEqual(tally, { health: { 'At risk': 43, Watch: 20, Healthy: 37 } });
   const spans = [];
   const off = onTrace((s) => spans.push(s));
   try {
@@ -88,8 +89,11 @@ test('the load lights At risk with its 43 rows, Watch with its 20, from the stor
     traceQuerySteps({ v: 1, scopes: {} }, { walk: { results: {} }, statuses: tally }, load);
   } finally { off(); }
   const lit = spans.filter((s) => s.detail?.node?.startsWith('status-health') && s.detail.state === 'done').map((s) => [s.detail.node, s.detail.rows]);
-  // The Field node with them all; each root, inside, with its own.
-  assert.deepEqual(lit, [['status-health', 63], ['status-health.At risk', 43], ['status-health.Watch', 20]]);
+  // The Field node with them all; each value's row (`node/row`), and its root inside, with its own.
+  assert.deepEqual(lit, [
+    ['status-health', 100], ['status-health/At risk', 43], ['status-health.At risk', 43],
+    ['status-health/Watch', 20], ['status-health.Watch', 20], ['status-health/Healthy', 37], ['status-health.Healthy', 37],
+  ]);
 });
 
 test('a PRESET\'s conditions are Condition nodes, read only, connected to their row', () => {

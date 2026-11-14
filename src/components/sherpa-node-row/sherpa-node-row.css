@@ -63,8 +63,28 @@
 .tip-socket { font-weight: var(--sherpa-font-weight-medium, 500); }
 :host(:not([data-socket-value])) .tip-value { display: none; }
 
+/* The label's line, and at its end what a run says of the row. */
+.head {
+  display: var(--_row-content, flex);
+  align-items: baseline;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  min-inline-size: 0;
+}
+:host(:not([data-label], [data-caption])) .head { display: none; }
+.caption {
+  display: none;
+  flex: none;
+  margin-inline-start: auto;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-size: var(--sherpa-font-size-body-xs, 10px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+}
+:host([data-caption]) .caption { display: inline; }
+
 .label {
   display: none;
+  min-inline-size: 0;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);

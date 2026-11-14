@@ -22,6 +22,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-caption` | text |  | what a run says of the row, at the end of its label's line ("43 rows"). Its host writes it |
 | `data-collapsed` | boolean |  | its node is collapsed: its sockets stand in the node's stacks. Its host writes it data-input-at, data-output-at its sockets' places in the node's stacks, from 0, collapsed. Its host writes them data-input-at-connected, data-output-at-connected the same, among the connected only; unset, the socket is not connected |
 | `data-idle` | boolean |  | a property with nothing to say (no rows reach its node): hidden, unless a connection leaves it |
 | `data-input-at` | number |  |  |
@@ -54,7 +55,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 
 Style these from outside with `::part()`:
 
-`content`, `label`, `row`, `socket-in`, `socket-out`, `socket-tab-in`, `socket-tab-out`, `tip`
+`caption`, `content`, `head`, `label`, `row`, `socket-in`, `socket-out`, `socket-tab-in`, `socket-tab-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -64,6 +65,11 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-theme-gap-sm` | `.content` | `gap` |
 | `--sherpa-font-weight-medium` | `.tip-socket` | `font-weight` |
+| `--sherpa-theme-gap-sm` | `.head` | `gap` |
+| `--sherpa-style-content-secondary` | `.caption` | `color` |
+| `--sherpa-font-family-mono` | `.caption` | `font-family` |
+| `--sherpa-font-size-body-xs` | `.caption` | `font-size` |
+| `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
 | `--sherpa-font-size-body-small` | `.label` | `font-size` |
 | `--sherpa-font-weight-medium` | `.label` | `font-weight` |
 | `--sherpa-theme-content-line-height-small` | `.label` | `line-height` |
@@ -73,6 +79,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, idle?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }`
+`{ caption?, collapsed?, idle?, inputAt?, inputAtConnected?, inputConnected?, inputMany?, inputSocket?, label?, outputAt?, outputAtConnected?, outputConnected?, outputSocket?, property?, socketName?, socketValue? }`
 
 Its declared props by name: `label` sets data-label.

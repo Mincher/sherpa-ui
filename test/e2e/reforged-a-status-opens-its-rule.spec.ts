@@ -86,6 +86,13 @@ test('a load lights the node on top and each root inside, drawn now or later; Ba
   await settle(page);
   const lit = (heading: string) => node(page, heading).evaluate((el) => [el.getAttribute('data-step'), el.getAttribute('data-caption')]);
   expect(await lit('Health')).toEqual(['done', '1 row']);
+  // Its value's row ends with its count, on the label's line (Will, TODO 983).
+  const row = node(page, 'Health').locator('sherpa-node-row[data-label^="At risk:"]');
+  await expect(row).toHaveAttribute('data-caption', '1 row');
+  const [label, caption] = await row.evaluate((el) => ['.label', '.caption'].map((s) => el.shadowRoot!.querySelector(s)!.getBoundingClientRect()).map((r) => ({ left: r.left, right: r.right, top: r.top, w: r.width })));
+  expect(caption!.w).toBeGreaterThan(0);
+  expect(caption!.left).toBeGreaterThanOrEqual(label!.right);
+  expect(Math.abs(caption!.top - label!.top)).toBeLessThanOrEqual(4);
   // Not drawn when the load spoke, and lit as it is drawn.
   await node(page, 'Health').locator('.header[role="button"]').focus();
   await page.keyboard.press('Enter');
@@ -94,4 +101,5 @@ test('a load lights the node on top and each root inside, drawn now or later; Ba
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await lit('Health')).toEqual(['done', '1 row']);
+  await expect(row).toHaveAttribute('data-caption', '1 row');
 });

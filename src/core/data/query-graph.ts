@@ -21,7 +21,7 @@
  * - whereGraph — A Where as the graph a Filter keeps it as: a Source, a Field and a test per field, each group joined.
  * - statusRule — A status field's rule as a Custom Node's inside, read only: each value's tree, its Pass out at its value.
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
- * - statusTallies — Each status field's rows per value, over the whole store: how many each Condition of its chain took.
+ * - statusTallies — Each status field's rows per value, over the whole store: how many rows each value takes.
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a `when` that is no condition, a stray connection.
  * - queryGraph — A page's Query as nodes and connections, laid out in columns by depth.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
@@ -70,6 +70,8 @@ export const QUERY_NODE = {
   source: 'source',
   status: (field: string): string => `status-${field}`,
   statusWhen: (field: string, value: string): string => `status-${field}.${value}`,
+  /** A value's row on its status field's node: a step lights a row by its address. TODO 983 */
+  statusValue: (field: string, value: string): string => `status-${field}/${value}`,
   scope: (scope: string): string => `scope-${scope}`,
   condition: (scope: string, field: string): string => `when-${scope}-${field}`,
   field: (scope: string, field: string): string => `field-${scope}-${field}`,
@@ -128,10 +130,13 @@ export interface LoadSteps {
  * skipped: it narrows nothing. TRAP T-a-step-names-its-node
  */
 export function traceQuerySteps(applied: Query, { walk, total, statuses }: LoadSteps, parent: TraceContext): void {
-  // A status field's step: each value's Condition lit with the rows that took it, the field with them all.
+  // A status field's step: the field with them all; each value's row and its Condition inside with the rows that took it.
   for (const [field, tally] of Object.entries(statuses ?? {})) {
     traceStep(QUERY_NODE.status(field), { parent, state: 'done', rows: Object.values(tally).reduce((a, b) => a + b, 0) });
-    for (const [value, rows] of Object.entries(tally)) traceStep(QUERY_NODE.statusWhen(field, value), { parent, state: 'done', rows });
+    for (const [value, rows] of Object.entries(tally)) {
+      traceStep(QUERY_NODE.statusValue(field, value), { parent, state: 'done', rows });
+      traceStep(QUERY_NODE.statusWhen(field, value), { parent, state: 'done', rows });
+    }
   }
   for (const [scope, results] of Object.entries(walk.results)) {
     const q = applied.scopes[scope];
@@ -464,15 +469,16 @@ function isCondition(when: unknown): when is Condition {
   return parts !== undefined ? Array.isArray(parts) && parts.length > 0 && parts.every(isCondition) : typeof t['op'] === 'string' && 'value' in t;
 }
 
-/** Each status field's rows per value, over the whole store: how many each Condition of its chain took.
- *  A value with no `when` has no Condition, so none is counted. */
+/** Each status field's rows per value, over the whole store: how many rows each value takes, the last too. */
 export async function statusTallies(
   store: Pick<Store, 'totalCount'>, domains: Readonly<Record<string, FieldDomain>>,
 ): Promise<Record<string, Record<string, number>>> {
   const done: Record<string, Record<string, number>> = {};
   for (const [field, domain] of Object.entries(domains)) {
-    const named = Object.keys(domain.when ?? {});
-    if (!named.length) continue;
+    const ruled = Object.keys(domain.when ?? {});
+    if (!ruled.length) continue;
+    // Every value, the last too: it is the rows the rest left, and the store says which those are.
+    const named = (domain.values ?? ruled).map(String);
     done[field] = Object.fromEntries(await Promise.all(named.map(async (value) => [value, await store.totalCount({ filter: [field, 'eq', value] })] as const)));
   }
   return done;
