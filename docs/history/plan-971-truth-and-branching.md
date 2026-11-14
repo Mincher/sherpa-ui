@@ -111,3 +111,18 @@ drawn inline, so this chain goes either way (correction, sherpa-ui-e8).
   per-row split (Patch rollout's "Online?", Patch review's "Far behind?") is a Condition's Pass and Fail, no Branch. An
   agent step's Check and "Attention today?" are a Branch, When Any, on a plain True. The header may join any of a
   test's rows: When reads the test's Pass and Fail whichever joins.
+
+## 9. Will, 2026-11-14: Branch folds into Condition
+
+Will: "if all condition nodes have Pass and Fail result outputs then we don't need the Check node at all." Asked about
+the two jobs only Branch did (a one-time decision, "Any at risk?" whose No fires once when none match; and routing on
+one answer, an agent's "Fixed?"), Will picked **"Fold it into Condition"**:
+
+- **Branch goes** (no alias). A Condition gets an optional **Data** input.
+- Testing a **column** (a Field joined to its header): Pass and Fail split the rows, as now.
+- Testing **one value** (a True, a number, "Is empty" on rows): Pass or Fail sends ALL its Data one way, by that one
+  truth. With no Data joined, it sends the value tested.
+- So "Any at risk?" is Condition (Risk > 50) › Pass to Fix, and Condition (Is empty, on that Pass) › Pass to "All
+  healthy"; "Fixed?" is Condition (Is true, on the agent's True, Data the rows) › Pass and Fail.
+- Retrofit every shipped Branch (Will's rule), the Runbook prompt form (BRANCH lines become the split's PASS and FAIL),
+  N-zo's words, and the page filter graph's status chain.
