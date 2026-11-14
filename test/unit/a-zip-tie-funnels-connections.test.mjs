@@ -1,7 +1,7 @@
 /**
  * A ZIP TIE funnels connections through one place, and changes no data. It is a part of the workflow
  * (`ties`: id, place, the connections it ties in order), made, moved and removed by pure edits, and it
- * leaves with its last connection. Its x never goes past the nodes its SHORTEST tied connection joins. It is
+ * leaves with its last connection. Its x stays in 20% to 80% of its own section of its connector set (TODO 973). It is
  * kept in v2, in a Custom Node's body too, and in no version or diff. Will, TODO 562 · plan 562.
  *
  *   node --test test/unit/a-zip-tie-funnels-connections.test.mjs
@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { editWorkflow, readWorkflow, workflowFaults, workflowGraph, tieLimit, tiesAmong, NODE_WIDTH } = await import(new URL('workflow.js', core));
+const { editWorkflow, holdTies, readWorkflow, workflowFaults, workflowGraph, tieLimit, tiesAmong } = await import(new URL('workflow.js', core));
 const { versionOf: definitionVersion, innerOf } = await import(new URL('node-library.js', core));
 
 const R = (n) => ({ from: `s${n}/rows`, to: `e${n}` });
@@ -26,25 +26,45 @@ const flow = {
 };
 const tied = editWorkflow(flow, { tie: { connections: [R(1), R(2), R(3)], x: 520, y: 120 } });
 
-test('the limit is the range of the SHORTEST tied connection, in numbers', () => {
-  // spans: (240..400) = 160, (340..700) = 360, (240..900) = 660
-  assert.deepEqual(tieLimit(flow, { connections: [R(1), R(2), R(3)] }), { min: NODE_WIDTH, max: 400 });
-  assert.deepEqual(tieLimit(flow, { connections: [R(2), R(3)] }), { min: 340, max: 700 });
-  assert.equal(tieLimit(flow, { connections: [{ from: 'zz/rows', to: 'e9' }] }), undefined);
+test('the limit is 20% to 80% of the span ALL its lines share, from the rightmost from-node to the leftmost to-node (TODO 973)', () => {
+  // s1 0→e1 400, s2 100→e2 700, s3 0→e3 900: every line runs from 340 (s2's right edge) to 400 (e1's left edge).
+  assert.deepEqual(tieLimit(flow, { connections: [R(1), R(2), R(3)], x: 0 }), { min: 352, max: 388 });
+  assert.deepEqual(tieLimit(flow, { connections: [R(2), R(3)], x: 0 }), { min: 340 + 0.2 * 360, max: 340 + 0.8 * 360 });
+  assert.equal(tieLimit(flow, { connections: [{ from: 'zz/rows', to: 'e9' }], x: 0 }), undefined);
+  // A node grown wider: its own width, not 240.
+  const wide = { ...flow, nodes: flow.nodes.map((n) => (n.id === 's2' ? { ...n, size: { w: 1.5, h: 1 } } : n)) };
+  assert.deepEqual(tieLimit(wide, { connections: [R(2)], x: 0 }), { min: 460 + 0.2 * 240, max: 460 + 0.8 * 240 });
   // The target left of its source: the one point halfway.
   const back = { nodes: [{ id: 'a', x: 300 }, { id: 'b', x: 500 }] };
-  assert.deepEqual(tieLimit(back, { connections: [{ from: 'a/rows', to: 'b' }] }), { min: 520, max: 520 });
+  assert.deepEqual(tieLimit(back, { connections: [{ from: 'a/rows', to: 'b' }], x: 0 }), { min: 520, max: 520 });
+});
+
+test('a connector set of N ties is cut into N sections, in their order across: each tie stays in 20% to 80% of its own (Will, TODO 973)', () => {
+  // s2 → e2 runs 340 to 700: three ties on it, each 120 wide, so 364–436, 484–556 and 604–676.
+  const three = { ...flow, ties: [{ id: 'b', x: 500, y: 0, connections: [R(2)] }, { id: 'a', x: 500, y: 0, connections: [R(2)] }, { id: 'c', x: 9000, y: 0, connections: [R(2)] }] };
+  const held = holdTies(three);
+  assert.deepEqual(held.ties.map((t) => [t.id, t.x]), [['b', 500], ['a', 436], ['c', 676]], 'two at one x: by id, a first; past the end: the last');
+  assert.equal(holdTies(held), held, 'held, nothing moves');
+  // A tie that shares one line with another is in its set; a tie on other lines is not.
+  // p and q: 340 to 400, two sections, 346–364 and 376–394; r alone on s3 → e3, 372–768.
+  const linked = { ...flow, ties: [{ id: 'p', x: 300, y: 0, connections: [R(1), R(2)] }, { id: 'q', x: 399, y: 0, connections: [R(2)] }, { id: 'r', x: 10, y: 0, connections: [R(3)] }] };
+  assert.deepEqual(holdTies(linked).ties.map((t) => t.x), [346, 394, 372]);
+  // Dragged, a tie stays in its own section: it never passes the next.
+  assert.equal(editWorkflow({ ...held, connections: [R(1), R(2), R(3)] }, { moveTie: { id: 'a', x: 690 } }).ties.find((t) => t.id === 'a').x, 436);
+  // A new tie on the set takes its place in the order, and the others move to their new sections.
+  const more = editWorkflow({ ...flow, ties: [{ id: 'a', x: 520, y: 0, connections: [R(2)] }] }, { tie: { connections: [R(2)], x: 360, y: 0 } });
+  assert.deepEqual(more.ties.map((t) => [t.id, t.x]), [['a', 556], ['tie-1', 376]]);
 });
 
 test('a tie added past the limit is clamped; moved, it is clamped again', () => {
   assert.equal(tied.ties.length, 1);
   assert.equal(tied.ties[0].id, 'tie-1');
-  assert.equal(tied.ties[0].x, 400);
-  assert.equal(editWorkflow(tied, { moveTie: { id: 'tie-1', x: 100 } }).ties[0].x, 240);
-  const moved = editWorkflow(tied, { moveTie: { id: 'tie-1', x: 300, y: 50 } }).ties[0];
-  assert.deepEqual([moved.x, moved.y], [300, 50]);
+  assert.equal(tied.ties[0].x, 388);
+  assert.equal(editWorkflow(tied, { moveTie: { id: 'tie-1', x: 100 } }).ties[0].x, 352);
+  const moved = editWorkflow(tied, { moveTie: { id: 'tie-1', x: 370, y: 50 } }).ties[0];
+  assert.deepEqual([moved.x, moved.y], [370, 50]);
   assert.deepEqual(tied.ties[0].connections, [R(1), R(2), R(3)]);
-  assert.equal(tied.ties[0].x, 400, 'the one given is untouched');
+  assert.equal(tied.ties[0].x, 388, 'the one given is untouched');
 });
 
 test('a tie of a missing connection is a fault in words; edits keep what is given', () => {

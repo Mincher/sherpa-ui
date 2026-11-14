@@ -20,7 +20,12 @@
  * - workflowGraph — A workflow as nodes and connections: each node its kind's, at its own place, with its values.
  * - NODE_WIDTH — A node's width on the plane, in px: where its output socket is from its x.
  * - TIE_GAP — The gap between two connections in a zip tie, in px.
- * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied connection joins.
+ * - TIE_SECTION — Where a tie may stand in its own section of its connector set: 20% to 80%.
+ * - TieAsk — A tie as the rule reads it: its connections and x, and its id where it is one of the workflow's.
+ * - TieGround — What the tie rule reads of a workflow: each node's place and size, and its ties.
+ * - tieLimit — The range a zip tie's x may take: 20% to 80% of its own section of its connector set.
+ * - tieAt — An x held inside a tie's range, in whole px.
+ * - holdTies — Every tie held inside its own section: after an edit, a layout or a fit.
  * - tiesAmong — The ties left when only some connections remain: a tie keeps its connections still there, and none, it goes.
  * - WorkflowEdit — One edit: a row, a node, a size, a connection, a bend, a tie, nodes placed together, a node added or removed.
  * - nodeWidth — A node's width on the canvas, in plane px: what a stage holds.
@@ -886,22 +891,85 @@ export const NODE_WIDTH = 240;
 /** The gap between two connections in a zip tie, in px. */
 export const TIE_GAP = 12;
 
-/**
- * The range a tie's x may take. Each tied connection spans from its source's right edge
- * (`x + NODE_WIDTH`) to its target's `x`; the SHORTEST one's span is the range. A span
- * with the target left of its source is the one point halfway. None, no tied connection is there.
- */
-export function tieLimit(workflow: { nodes: readonly { id: string; x: number }[] }, tie: Pick<NodeTie, 'connections'>): { min: number; max: number } | undefined {
-  const x = new Map(workflow.nodes.map((n) => [n.id, n.x]));
-  const spans = tie.connections.flatMap((r) => {
-    const [a, b] = [x.get(socketOf(r.from).node), x.get(socketOf(r.to).node)];
-    return a === undefined || b === undefined ? [] : [{ min: a + NODE_WIDTH, max: b }];
+/** Where a tie may stand in its own section of its connector set, as parts of it (Will, TODO 973). */
+export const TIE_SECTION = { from: 0.2, to: 0.8 } as const;
+
+/** A tie as the rule reads it: its connections and x, and its id where it is one of the workflow's. */
+export type TieAsk = Pick<NodeTie, 'connections' | 'x'> & { id?: string };
+
+/** What the tie rule reads of a workflow: each node's place and size, and its ties. */
+export interface TieGround {
+  nodes: readonly { id: string; x: number; size?: NodeSize }[];
+  ties?: readonly NodeTie[];
+}
+
+/** A node's width, as the tie rule reads it. */
+type WidthOf = (node: { size?: NodeSize }) => number;
+
+/** The connector set a tie is in: it, and every tie that shares a connection with it or with one that does. */
+function connectorSet<T extends TieAsk>(ties: readonly T[], tie: T): T[] {
+  const key = (r: NodeConnection): string => `${r.from}>${r.to}`;
+  const set = [tie];
+  const held = new Set(tie.connections.map(key));
+  const rest = ties.filter((t) => t !== tie && (tie.id === undefined || t.id !== tie.id));
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const t of rest) {
+      if (set.includes(t) || !t.connections.some((r) => held.has(key(r)))) continue;
+      set.push(t);
+      for (const r of t.connections) held.add(key(r));
+      grew = true;
+    }
+  }
+  return set;
+}
+
+/** Each tie of a connector set, and the range its x may take. */
+function sectionsOf<T extends TieAsk>(ground: TieGround, set: readonly T[], widthOf: WidthOf): Map<T, { min: number; max: number }> {
+  const at = new Map(ground.nodes.map((n) => [n.id, n]));
+  const ends = set.flatMap((t) => t.connections).flatMap((r) => {
+    const [a, b] = [at.get(socketOf(r.from).node), at.get(socketOf(r.to).node)];
+    return a && b ? [[a, b] as const] : [];
   });
-  if (!spans.length) return undefined;
-  const short = spans.reduce((best, s) => (s.max - s.min < best.max - best.min ? s : best));
-  if (short.max >= short.min) return short;
-  const mid = (short.min + short.max) / 2;
-  return { min: mid, max: mid };
+  const out = new Map<T, { min: number; max: number }>();
+  if (!ends.length) return out;
+  const left = Math.max(...ends.map(([a]) => a.x + widthOf(a)));
+  const right = Math.min(...ends.map(([, b]) => b.x));
+  const order = [...set].sort((p, q) => p.x - q.x || ((p.id ?? '\uffff') < (q.id ?? '\uffff') ? -1 : 1));
+  const step = (right - left) / order.length;
+  order.forEach((t, i) => out.set(t, right < left ? { min: (left + right) / 2, max: (left + right) / 2 }
+    : { min: left + step * (i + TIE_SECTION.from), max: left + step * (i + TIE_SECTION.to) }));
+  return out;
+}
+
+/**
+ * The range a tie's x may take (Will, TODO 973). Its connector set spans from its from-nodes' rightmost edge to its
+ * to-nodes' leftmost, and is cut into one section per tie, in their order across; a tie stands between 20% and 80% of its
+ * own, so ties never stack, pass each other or stand behind a node. No room (a to-node left of a from-node's edge): the
+ * one point halfway. None, no tied connection is there.
+ */
+export function tieLimit(ground: TieGround, tie: TieAsk, widthOf: WidthOf = nodeWidth): { min: number; max: number } | undefined {
+  return sectionsOf(ground, connectorSet<TieAsk>(ground.ties ?? [], tie), widthOf).get(tie);
+}
+
+/** An x held inside a tie's range, in whole px. */
+export const tieAt = (limit: { min: number; max: number }, x: number): number => Math.min(Math.floor(limit.max), Math.max(Math.ceil(limit.min), Math.round(x)));
+
+/** Every tie held inside its own section (TODO 973): after an edit, a layout or a fit. Unchanged, the same one. */
+export function holdTies<W extends TieGround>(workflow: W, widthOf: WidthOf = nodeWidth): W {
+  const ties = workflow.ties;
+  if (!ties?.length) return workflow;
+  const ranges = new Map<NodeTie, { min: number; max: number }>();
+  for (const t of ties) if (!ranges.has(t)) for (const [u, r] of sectionsOf(workflow, connectorSet(ties, t), widthOf)) ranges.set(u, r);
+  let changed = false;
+  const held = ties.map((t) => {
+    const r = ranges.get(t);
+    const x = r ? tieAt(r, t.x) : t.x;
+    if (x === t.x) return t;
+    changed = true;
+    return { ...t, x };
+  });
+  return changed ? { ...workflow, ties: held } : workflow;
 }
 
 /** The ties left when only these connections remain: a tie keeps its connections still there; with none, it goes. */
@@ -1026,9 +1094,16 @@ function staged(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { addS
 }
 
 /** The workflow after one edit, a v2; the one given untouched. A
- *  value is typed as its row takes it. */
+ *  value is typed as its row takes it. Its ties are held in their sections after it (TODO 973). */
 export function editWorkflow(
   given: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
+): WorkflowDefinition {
+  const next = editOnce(given, edit, kinds, facts);
+  return next === given ? next : holdTies(next);
+}
+
+function editOnce(
+  given: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>,
 ): WorkflowDefinition {
   const workflow = readWorkflow(given).workflow;
   if (!workflow) return given as WorkflowDefinition;
@@ -1056,17 +1131,16 @@ export function editWorkflow(
     const id = edit.tie.id ?? free(1);
     if ((workflow.ties ?? []).some((t) => t.id === id)) return workflow;
     const connections = edit.tie.connections.filter((r, i, all) => all.findIndex((q) => same(q, r)) === i).map(({ from, to }) => ({ from, to }));
-    const limit = tieLimit(workflow, { connections });
-    const x = limit ? Math.min(limit.max, Math.max(limit.min, edit.tie.x)) : edit.tie.x;
-    return { ...workflow, ...unbent(connections), ties: [...(workflow.ties ?? []), { id, x, y: edit.tie.y, connections }] };
+    return { ...workflow, ...unbent(connections), ties: [...(workflow.ties ?? []), { id, x: edit.tie.x, y: edit.tie.y, connections }] };
   }
   if ('untie' in edit) return untied({ ...workflow, ties: (workflow.ties ?? []).filter((t) => t.id !== edit.untie) });
   if ('moveTie' in edit) {
     const { id, x, y } = edit.moveTie;
     return { ...workflow, ties: (workflow.ties ?? []).map((t) => {
       if (t.id !== id) return t;
+      // Held in its own section as it stands: a tie never passes another of its set.
       const limit = tieLimit(workflow, t);
-      const to = x === undefined ? t.x : limit ? Math.min(limit.max, Math.max(limit.min, x)) : x;
+      const to = x === undefined ? t.x : limit ? tieAt(limit, x) : x;
       return { ...t, x: to, y: y ?? t.y };
     }) };
   }
@@ -1078,9 +1152,9 @@ export function editWorkflow(
     if (!(workflow.connections ?? []).some((r) => same(r, connection))) return refuse(`the connection ${name} is not there`), workflow;
     if (tie.connections.some((r) => same(r, connection))) return refuse(`the connection ${name} is in the tie "${id}" already`), workflow;
     const connections = [...tie.connections, { from: connection.from, to: connection.to }];
-    // Its nodes must leave the tie where it stands: the tie moves only by the reader's hand.
-    const limit = tieLimit(workflow, { connections });
-    if (limit && (tie.x < limit.min || tie.x > limit.max)) return refuse(`the tie "${id}" cannot take ${name}: its nodes leave no room for the tie where it stands`), workflow;
+    // Its nodes must leave the set room: a line that runs back would stack its ties at one point.
+    const limit = tieLimit(workflow, { ...tie, connections });
+    if (limit && limit.min === limit.max) return refuse(`the tie "${id}" cannot take ${name}: its nodes leave its ties no room`), workflow;
     return { ...workflow, ...unbent([connection]), ties: (workflow.ties ?? []).map((t) => (t.id === id ? { ...t, connections } : t)) };
   }
   if ('bend' in edit || 'unbend' in edit) {
@@ -1146,17 +1220,7 @@ export function editWorkflow(
         return { ...bare, via: r.via.map((p) => ({ x: p.x + (ax + bx) / 2, y: p.y + (ay + by) / 2 })) };
       });
     }
-    if (workflow.ties) {
-      // A tie touching a moved node stays inside the range its nodes now leave it.
-      result.ties = workflow.ties.map((t) => {
-        const to = ties?.[t.id];
-        const limit = tieLimit(moved, t);
-        const touches = t.connections.some((r) => has(r, false));
-        const x = to ? to.x : t.x;
-        const held = limit && (to || touches) ? Math.min(limit.max, Math.max(limit.min, x)) : x;
-        return to || held !== t.x ? { ...t, x: held, y: to ? to.y : t.y } : t;
-      });
-    }
+    if (workflow.ties && ties) result.ties = workflow.ties.map((t) => { const to = ties[t.id]; return to ? { ...t, x: to.x, y: to.y } : t; });
     return result;
   }
   if ('resize' in edit) {

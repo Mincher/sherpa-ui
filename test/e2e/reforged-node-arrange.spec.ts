@@ -83,7 +83,8 @@ test('dragging one of several picked nodes moves them all, relative places kept;
 test('a tie whose connections all join picked nodes goes along, bends of a connection between picked ends too; others stay', async ({ page }) => {
   await start(page, [['s1', 'source', 0, 0], ['e1', 'result', 700, 0], ['s2', 'source', 0, 240], ['e2', 'result', 700, 240], ['s3', 'source', 0, 480], ['e3', 'result', 700, 480]],
     [{ ...R(1), via: [{ x: 400, y: 40 }] }, R(2), { ...R(3), via: [{ x: 400, y: 520 }] }],
-    [{ id: 't', x: 480, y: 130, connections: [R(1), R(2)] }, { id: 'u', x: 480, y: 330, connections: [R(2), R(3)] }]);
+    // u on its own line: a tie sharing one with t would be of t's connector set, held in a section of it (TODO 973).
+    [{ id: 't', x: 480, y: 130, connections: [R(1), R(2)] }, { id: 'u', x: 480, y: 330, connections: [R(3)] }]);
   const before = await flow(page);
   await pick(page, ['s1', 'e1', 's2', 'e2']);
   // Across, clear of e3: a move onto it would push it (plan 918).

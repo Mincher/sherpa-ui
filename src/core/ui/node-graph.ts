@@ -117,7 +117,7 @@ import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import { nodeKinds, kindOfNode, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, rowOf, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type RecentUse, type SocketType } from '../data/node-kinds.js';
-import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, nodeWidth, readWorkflow, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
+import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, holdTies, nodeWidth, readWorkflow, tieAt, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -556,8 +556,8 @@ function onPlane(canvas: SherpaLayoutCanvas, rect: DOMRect): [number, number] {
 
 /** A tie's place as drawn: its x kept within the limit of its connections' nodes. Drawing never writes. */
 function tieX(drawn: Drawn, tie: NodeTie): number {
-  const limit = tieLimit(drawn.graph, tie);
-  return limit ? Math.min(limit.max, Math.max(limit.min, tie.x)) : tie.x;
+  const limit = tieLimit({ nodes: drawn.graph.nodes, ties: drawn.ties }, tie);
+  return limit ? tieAt(limit, tie.x) : tie.x;
 }
 
 /** The place a tie funnels its nth connection through. */
@@ -2881,14 +2881,14 @@ export function bindWorkflow(
     } else if (!path.length) {
       // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
       // The Start stays in the first stage, if the stages change (Will).
-      draft = settling ? next : fitLanes(fitStages(opened(next), nodeWidth), heightOf, K());
+      draft = settling ? next : holdTies(fitLanes(fitStages(opened(next), nodeWidth), heightOf, K()));
       // Kept for the tab as the drag ends, not each pointer move: each is the whole workflow as JSON.
       if (!dragging) session?.set(pointer, draft);
     } else if (readOnly()) {
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Clone it, and change the clone.', at: { workflow: workflow.id } });
     } else {
       const id = path.at(-1)!.kind;
-      const laid = settling ? next : fitLanes(fitStages(next, nodeWidth), heightOf, K());
+      const laid = settling ? next : holdTies(fitLanes(fitStages(next, nodeWidth), heightOf, K()));
       // `#in` and `#out` are placed from the body each time, so a definition keeps neither, nor their places before lanes.
       const before = laid.beforeLanes && Object.fromEntries(Object.entries(laid.beforeLanes).filter(([at]) => !at.startsWith('#')));
       const nextLib = editDefinition(lib, id, {
@@ -3048,7 +3048,7 @@ export function bindWorkflow(
   });
   // A new tie that would stand behind a node stands beside it, on the side with the most room. TODO 882
   const onTie = (connections: NodeConnection[], at: { x: number; y: number }): void => {
-    const clear = clearOfNodes(at, (connections.length - 1) * TIE_GAP + 16, nodeBoxes(), tieLimit(shown(), { connections }));
+    const clear = clearOfNodes(at, (connections.length - 1) * TIE_GAP + 16, nodeBoxes(), tieLimit(shown(), { connections, x: at.x }));
     take(editWorkflow(shown(), { tie: { connections, ...clear } }, K()));
   };
   const onTieMove = (id: string, x: number, y: number): void => {

@@ -13,7 +13,7 @@ import { crossings, type Arranged, type SocketHeights } from './node-arrange.js'
 import { socketOf, type NodeConnection, type NodeTie } from './node-kinds.js';
 import type { NodeFrame } from './node-frames.js';
 import { STAGE_PAD, restage, stageBands, stageOf, type NodeStage } from './node-stages.js';
-import { TIE_GAP, tieLimit } from './workflow.js';
+import { TIE_GAP, holdTies } from './workflow.js';
 
 /** What an unfurl reads: the nodes' places and stages, the connections, the ties, the frames and the stages. */
 export interface UnfurlGraph {
@@ -474,10 +474,9 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     out.stages = Object.fromEntries(bands.map((b) => [b.id, b.left]));
   }
   const across = (c: number): number => moveX.get(scopeOf.get(c) ?? '') ?? 0;
-  // Ties: one held as a cell where its cell stands; else, its connections all joining moved nodes, at their middle. Each held
-  // inside its limit.
+  // Ties: one held as a cell where its cell stands; else, its connections all joining moved nodes, at their middle. Then each
+  // held in its own section of its connector set (TODO 973).
   const final = { ...Object.fromEntries(graph.nodes.map((nd) => [nd.id, { x: nd.x, y: nd.y }])), ...out.nodes };
-  const moved = { nodes: graph.nodes.map((nd) => ({ id: nd.id, x: final[nd.id]!.x })) };
   for (const tie of graph.ties ?? []) {
     const c = tieCell.get(tie.id);
     const ends = tie.connections.map((r) => [socketOf(r.from).node, socketOf(r.to).node] as const);
@@ -486,8 +485,10 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     const spot = c !== undefined && (!staged || scopeOf.has(c))
       ? { x: corner.get(c)!.x + shift.x + cells[c]!.w / 2 + across(c), y: corner.get(c)!.y + shift.y + cells[c]!.h / 2 }
       : { x: mids.reduce((s, p) => s + p.x, 0) / mids.length, y: mids.reduce((s, p) => s + p.y, 0) / mids.length };
-    const limit = tieLimit(moved, tie);
-    out.ties[tie.id] = { x: Math.round(limit ? Math.min(limit.max, Math.max(limit.min, spot.x)) : spot.x), y: near(spot.y) };
+    out.ties[tie.id] = { x: Math.round(spot.x), y: near(spot.y) };
   }
+  const held = holdTies({ nodes: graph.nodes.map((nd) => ({ id: nd.id, x: final[nd.id]!.x, w: box(nd.id).w })),
+    ties: (graph.ties ?? []).map((t) => (out.ties[t.id] ? { ...t, ...out.ties[t.id] } : t)) }, (nd) => (nd as { w: number }).w);
+  for (const tie of held.ties ?? []) if (out.ties[tie.id]) out.ties[tie.id]!.x = tie.x;
   return out;
 }

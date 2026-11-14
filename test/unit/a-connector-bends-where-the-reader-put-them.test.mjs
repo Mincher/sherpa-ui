@@ -128,7 +128,7 @@ test('a tie takes a connection by an edit, and refuses in words', () => {
   assert.equal(editWorkflow(add, { tieAdd: { id: 'tie-1', connection: { from: 's2/rows', to: 'e2' } } }), add);
   assert.equal(editWorkflow(w, { tieAdd: { id: 'nope', connection: connection } }), w);
   assert.equal(editWorkflow(w, { tieAdd: { id: 'tie-1', connection: { from: 'a', to: 'b' } } }), w);
-  // A connection whose nodes leave the tie no room where it stands is refused.
+  // A connection whose nodes leave its ties no room is refused (TODO 973).
   const tight = { ...w, nodes: w.nodes.map((n) => (n.id === 'e2' ? { ...n, x: 100 } : n)) };
   assert.equal(editWorkflow(tight, { tieAdd: { id: 'tie-1', connection: { from: 's2/rows', to: 'e2' } } }), tight);
 });

@@ -3,7 +3,7 @@ import { test, expect, type Page } from './harness';
 /**
  * The ZIP TIE tool — Will, TODO 562. With the tool on, a line dragged across connectors ties them
  * at right angles: each passes through the tie in order, a gap between each. A dragged tie moves
- * and its connectors follow; it stops at the nodes its SHORTEST tied connection joins. Undo takes it
+ * and its connectors follow; it stops at 20% and 80% of its section (TODO 973). Undo takes it
  * away. With no pointer: T on picked nodes ties (and unties) their connections; Delete on a picked
  * tie removes it. Real pointer and keys; the drawn path's points are read, not its style.
  */
@@ -85,7 +85,7 @@ test('the tool toggles; a line across three connectors ties them, each through i
   expect(await page.locator('#cv > svg.graph-connectors rect.graph-tie').count()).toBe(1);
 });
 
-test('a dragged tie moves and its connectors follow; it stops at the nodes of its shortest connector', async ({ page }) => {
+test('a dragged tie moves and its connectors follow; it stops at 20% and 80% of the way between its nodes (TODO 973)', async ({ page }) => {
   await press(page, 'tie');
   await across(page);
   const before = (await ties(page))[0]!;
@@ -96,13 +96,14 @@ test('a dragged tie moves and its connectors follow; it stops at the nodes of it
   expect(moved.x).toBeLessThan(before.x);
   expect(moved.y).toBeGreaterThan(before.y);
   expect((await lines(page)).every((l) => Math.abs(l.pts[1]![0]! - moved.x) < 1)).toBe(true);
-  // Far right: stopped at the left edge of the output nodes (x 700); far left: at the stores' right edge (0 + 240).
+  // The lines run from the stores' right edge (240) to the outputs' left edge (700): far right, it stops at 80% of that;
+  // far left, at 20%.
   const bar2 = await box(page, '#cv > svg.graph-connectors rect.graph-tie');
   await drag(page, [(bar2.left + bar2.right) / 2, (bar2.top + bar2.bottom) / 2], [1090, 300]);
-  expect((await ties(page))[0]!.x).toBe(700);
+  expect((await ties(page))[0]!.x).toBe(608);
   const bar3 = await box(page, '#cv > svg.graph-connectors rect.graph-tie');
   await drag(page, [(bar3.left + bar3.right) / 2, (bar3.top + bar3.bottom) / 2], [10, 300]);
-  expect((await ties(page))[0]!.x).toBe(240);
+  expect((await ties(page))[0]!.x).toBe(332);
 });
 
 test('Undo takes a tie away and Redo puts it back; a cut connection leaves the tie', async ({ page }) => {

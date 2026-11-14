@@ -7,10 +7,10 @@
  * - Arranged — Where each picked node and each tie goes; in stages, each stage's edge, and a node's new stage.
  * - SocketHeights — Each socket's height in its node's box, as drawn: inputs by a connection's `to`, outputs by its `from`.
  * - crossings — How many pairs of straight lines, edge to edge at mid height or socket to socket, cross in a layout.
- * - arrangeNodes — The picked nodes on a grid, by their connections, rows crossing least, ties in the gaps.
+ * - arrangeNodes — The picked nodes on a grid, by their connections, rows crossing least, ties in the gaps, each in its section.
  */
 import { socketOf, type NodeConnection, type NodeTie } from './node-kinds.js';
-import { tieLimit } from './workflow.js';
+import { holdTies } from './workflow.js';
 import { flowDepths } from './node-routes.js';
 
 /** What a layout reads: the nodes' places, the connections, the ties. */
@@ -73,7 +73,7 @@ export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonl
  * its widest node and each row as tall as its tallest, `gapX` and `gapY` between, every node at its cell's
  * top left (756), every place on the 4px grid, the block's top-left where the picked nodes' was. A tie whose connections all
  * join picked nodes stands in the gap before its shortest connection's target, equally spaced with its
- * neighbours there, at the mean height of its connections, held inside `tieLimit`. A cycle: its closing
+ * neighbours there, then held in its own section (`holdTies`, TODO 973), at its lines' mean height there. A cycle: its closing
  * connection is left out of the depth, so the walk ends. Fewer than two picked: nothing.
  */
 export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], options: ArrangeOptions): Arranged {
@@ -169,16 +169,14 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
     });
     return ys.reduce((s, v) => s + v, 0) / ys.length;
   };
-  const moved = { nodes: graph.nodes.map((n) => ({ id: n.id, x: final[n.id]!.x })) };
   for (const [col, ties] of sits) {
     const gap = chosen.gaps[col - 1]!;
     const sorted = [...ties].sort((a, b) => mean(a) - mean(b) || (a.id < b.id ? -1 : 1));
-    sorted.forEach((tie, i) => {
-      const limit = tieLimit(moved, tie);
-      const spot = gap.left + ((i + 1) * (gap.right - gap.left)) / (sorted.length + 1);
-      const x = Math.round(limit ? Math.min(limit.max, Math.max(limit.min, spot)) : spot);
-      out.ties[tie.id] = { x, y: near(mean(tie, x)) };
-    });
+    sorted.forEach((tie, i) => { out.ties[tie.id] = { x: Math.round(gap.left + ((i + 1) * (gap.right - gap.left)) / (sorted.length + 1)), y: 0 }; });
   }
+  // Each held in its own section of its connector set (TODO 973), and at its lines' height there.
+  const held = holdTies({ nodes: graph.nodes.map((n) => ({ id: n.id, x: final[n.id]!.x, w: box(n.id).w })),
+    ties: (graph.ties ?? []).map((t) => (out.ties[t.id] ? { ...t, ...out.ties[t.id] } : t)) }, (n) => (n as { w: number }).w);
+  for (const tie of held.ties ?? []) if (out.ties[tie.id]) out.ties[tie.id] = { x: tie.x, y: near(mean(tie, tie.x)) };
   return out;
 }
