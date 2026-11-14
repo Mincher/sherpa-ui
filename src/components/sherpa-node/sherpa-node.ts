@@ -60,6 +60,7 @@ export class SherpaNode extends SherpaElement {
     'data-locked': DATA_PROPS['data-locked'],
     'data-resizable': { type: 'boolean', kind: 'style' },
     'data-chain-drag': { type: 'boolean', kind: 'behaviour' },
+    'data-chain-falloff': { type: 'enum', kind: 'behaviour', values: ['distance', 'connections'] },
     'data-collapsed': { type: 'boolean', kind: 'style' },
     'data-summary': { type: 'string', kind: 'content' },
     'data-inputs': { type: 'number', kind: 'behaviour' },
@@ -71,8 +72,9 @@ export class SherpaNode extends SherpaElement {
     'data-sub-graph': { type: 'boolean', kind: 'style' },
   } as const;
   // The app's settings: the handle and Alt+Arrow exist only while one is on, a saved size drawn either way (TODO 748);
-  // ⌘ or Ctrl on a move asks to pull the nodes it joins only while the other is (plan 918).
-  static override settings = { 'data-resizable': 'resizeNodes', 'data-chain-drag': 'chainDrag' };
+  // ⌘ or Ctrl on a move asks to pull the nodes it joins only while the other is (plan 918), the pull falling off as a
+  // third says (TODO 975).
+  static override settings = { 'data-resizable': 'resizeNodes', 'data-chain-drag': 'chainDrag', 'data-chain-falloff': 'chainFalloff' };
   static override observed = ['data-x', 'data-y', 'data-scale-w', 'data-scale-h', 'data-inputs', 'data-outputs', 'data-inputs-connected', 'data-outputs-connected'];
 
   /** The drag in progress: the pointer, where it took hold, the place then, and the canvas's zoom. */
@@ -223,7 +225,7 @@ export class SherpaNode extends SherpaElement {
   }
 
   /** Move to (x, y) on the plane, in whole px — unless the host owns the place — and report; with ⌘ or Ctrl held and
-   *  chain dragging on, it asks to pull the nodes it joins (`chain`). */
+   *  chain dragging on, it asks to pull the nodes it joins (`chain`), by connections where its falloff says so. */
   #move(x: number, y: number, held: { metaKey: boolean; ctrlKey: boolean }): void {
     const to = { x: Math.round(x), y: Math.round(y) };
     if (to.x === this.num('data-x', 0) && to.y === this.num('data-y', 0)) return;
@@ -231,7 +233,8 @@ export class SherpaNode extends SherpaElement {
       this.set('data-x', to.x);
       this.set('data-y', to.y);
     }
-    this.emit('node-move', this.hasAttribute('data-chain-drag') && primaryKey(held) ? { ...to, chain: true } : to);
+    const by = this.getAttribute('data-chain-falloff') === 'connections' ? { falloff: 'connections' } : {};
+    this.emit('node-move', this.hasAttribute('data-chain-drag') && primaryKey(held) ? { ...to, chain: true, ...by } : to);
   }
 
   /** A drag on the header takes hold. */

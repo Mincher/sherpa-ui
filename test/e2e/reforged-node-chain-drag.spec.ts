@@ -2,8 +2,9 @@ import { test, expect, type Page } from './harness';
 
 /**
  * CHAIN DRAG and NODE RADII — Will, plan 918. With Enable node chain dragging on (`data-chain-drag`), ⌘ or Ctrl held on
- * a node's drag pulls the nodes it joins along behind it, and theirs behind them: each connector a rope as long as it
- * was (D1 A). ⌘ or Ctrl and an arrow on its header does too. A ⌘ or Ctrl drag pushes a node it meets away, no nearer
+ * a node's drag pulls the nodes it joins, and theirs, each by the drag times 1 / (1 + d / 240), d its way along the
+ * connectors in px; or, as `data-chain-falloff` says, 1 / (1 + connectors) (Will, TODO 975). ⌘ or Ctrl and an arrow on
+ * its header does too. A ⌘ or Ctrl drag pushes a node it meets away, no nearer
  * than their radii (D2 A); a plain drag pushes none (Will, TODO 974). One Undo puts every node back. Real pointer and keys.
  */
 type Flow = { nodes: { id: string; x: number; y: number }[] };
@@ -59,18 +60,37 @@ async function dragNode(page: Page, heading: string, by: [number, number], key?:
   await settle(page);
 }
 
-test('⌘ or Ctrl on a drag pulls the nodes it joins, and theirs, each connector as long as it was; one Undo puts all back', async ({ page }) => {
+/** Each node's centre on the plane, as drawn. */
+const centres = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelectorAll<HTMLElement>('#cv > sherpa-node')].map((n) =>
+  [n.dataset['heading']!.toLowerCase(), [Number(n.getAttribute('data-x')) + n.offsetWidth / 2, Number(n.getAttribute('data-y')) + n.offsetHeight / 2]]))) as Promise<Record<string, [number, number]>>;
+const apart = (c: Record<string, [number, number]>, a: string, b: string) => Math.hypot(c[b]![0] - c[a]![0], c[b]![1] - c[a]![1]);
+
+test('⌘ or Ctrl on a drag pulls the nodes it joins, and theirs, each less the farther it is along the connectors (TODO 975); one Undo puts all back', async ({ page }) => {
   const key = await primary(page);
   const before = await places(page);
-  // 150 screen px at 0.5 is 300 on the plane, away from T: it and the Source come along.
+  const c = await centres(page);
+  // 150 screen px at 0.5 is 300 on the plane, away from T: T comes along by 1 / (1 + d / 240) of it, the Source by less.
   await dragNode(page, 'O', [150, 0], key);
   const after = await places(page);
-  expect(after['o']![0]).toBeGreaterThan(before['o']![0] + 250);
-  expect(after['t']![0] - before['t']![0]).toBeGreaterThan(200);
-  expect(after['s']![0] - before['s']![0]).toBeGreaterThan(150);
+  const moved = (id: string) => after[id]![0] - before[id]![0];
+  expect(moved('o')).toBeGreaterThan(250);
+  const [dt, ds] = [apart(c, 'o', 't'), apart(c, 'o', 't') + apart(c, 't', 's')];
+  expect(Math.abs(moved('t') - moved('o') / (1 + dt / 240))).toBeLessThanOrEqual(1);
+  expect(Math.abs(moved('s') - moved('o') / (1 + ds / 240))).toBeLessThanOrEqual(1);
+  expect(moved('s')).toBeLessThan(moved('t'));
   await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
   await settle(page);
   expect(await places(page)).toEqual(before);
+});
+
+test('the app\'s setting says Number of connections: the next node comes half the drag, the one after a third (TODO 975)', async ({ page }) => {
+  await page.evaluate(() => { for (const node of document.querySelectorAll('#cv > sherpa-node')) node.setAttribute('data-chain-falloff', 'connections'); });
+  const before = await places(page);
+  await dragNode(page, 'O', [150, 0], await primary(page));
+  const after = await places(page);
+  const moved = (id: string) => after[id]![0] - before[id]![0];
+  expect(Math.abs(moved('t') - moved('o') / 2)).toBeLessThanOrEqual(1);
+  expect(Math.abs(moved('s') - moved('o') / 3)).toBeLessThanOrEqual(1);
 });
 
 test('a plain drag pulls none; the setting off, ⌘ or Ctrl pulls none either', async ({ page }) => {
@@ -110,7 +130,7 @@ test('⌘ or Ctrl and an arrow on a node\'s header pulls the nodes it joins, as 
   await settle(page);
   const after = await places(page);
   expect(after['o']![0] - before['o']![0]).toBeGreaterThan(0);
-  // A rope pulls along its line: T's Rows row sits lower than the Output's header, so it comes right and up.
+  // Each joined node comes along by its weight: right, less the farther it is.
   expect(after['t']![0]).toBeGreaterThan(before['t']![0]);
   expect(after['s']![0]).toBeGreaterThan(before['s']![0]);
 });

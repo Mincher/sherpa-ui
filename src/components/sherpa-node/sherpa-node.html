@@ -29,6 +29,7 @@
     data-locked       the host owns the place: a drag or a key reports, and moves nothing
     data-resizable    the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way
     data-chain-drag   ⌘ or Ctrl held on a drag or an arrow asks to pull the nodes it joins: the app's Enable node chain dragging setting writes it
+    data-chain-falloff  distance | connections: what that pull falls off by, the distance along the connectors (none: it) or how many: the app's setting writes it
     data-collapsed    collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its
                       name reads "Heading: summary". Its host writes it
     data-inputs, data-outputs  how many sockets each side's stack holds, collapsed: the header's and the rows'. Its host writes them
@@ -42,7 +43,7 @@
     (default)   the node's rows: each a sherpa-node-row
 
   Fires:
-    node-move — it moved, or was asked to: a drag on its header, or an arrow key there. detail: { x, y, chain? }: chain, with ⌘ or Ctrl held and data-chain-drag on
+    node-move — it moved, or was asked to: a drag on its header, or an arrow key there. detail: { x, y, chain?, falloff? }: chain, with ⌘ or Ctrl held and data-chain-drag on; falloff 'connections', where data-chain-falloff says so
     node-resize — its resize handle was dragged, or Alt and an arrow pressed on its header. detail: { w, h }, in times its natural size
     node-select — it was pressed: a click on it, or Enter or Space on its header. The click a drag ends with is no press.
     node-open — its drill-down button was pressed: open its sub-graph. It is no press of the node

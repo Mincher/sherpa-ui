@@ -106,6 +106,8 @@ export const SETTINGS = {
   resizeStagesMoveNodes: on('/nodes/resizeStagesMoveNodes', 'app'),
   // ⌘ or Ctrl held on a node's drag pulls the nodes it joins along behind it. Will, plan 918
   chainDrag: on('/nodes/chainDrag', 'app'),
+  // What that pull falls off by: the distance along the connectors, or how many there are. Will, TODO 975
+  chainFalloff: { type: 'string', default: 'distance', values: ['distance', 'connections'], scope: 'app', at: '/nodes/chainFalloff' },
   // Every Sherpa motion token is instant: transitions and travels land at once. Will, TODO 896
   reduceMotion: { ...off('/a11y/reduceMotion', 'app'), look: { props: { true: { '--sherpa-motion-scale': '0' } } } },
   // A toggle shows its state by a shape too. Will, TODO 497

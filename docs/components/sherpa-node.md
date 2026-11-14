@@ -26,6 +26,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-caption` | text |  | the TAB on its top edge: what its step does or did, its time and rows ("Simulating… 1s"). A running tab leads with a play icon. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
 | `data-chain-drag` | boolean |  | ⌘ or Ctrl held on a drag or an arrow asks to pull the nodes it joins: the app's Enable node chain dragging setting writes it |
+| `data-chain-falloff` | `distance` `connections` |  | distance \| connections: what that pull falls off by, the distance along the connectors (none: it) or how many: the app's setting writes it |
 | `data-collapsed` | boolean |  | collapsed: its rows show only their sockets, no label or field; a socket's tip names its row and says its value, and its name reads "Heading: summary". Its host writes it data-inputs, data-outputs how many sockets each side's stack holds, collapsed: the header's and the rows'. Its host writes them data-inputs-connected, data-outputs-connected the same, of the connected ones only: hiding the unconnected, the stacks hold these. Its host writes them |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
@@ -126,9 +127,10 @@ Each of the app's settings, onto one of its attributes:
 |---|---|
 | `resizeNodes` | `data-resizable` |
 | `chainDrag` | `data-chain-drag` |
+| `chainFalloff` | `data-chain-falloff` |
 
 ## populate()
 
-`{ active?, caption?, category?, chainDrag?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, subGraph?, summary?, warning?, x?, y? }`
+`{ active?, caption?, category?, chainDrag?, chainFalloff?, collapsed?, current?, description?, heading?, hideUnconnected?, icon?, inputConnected?, inputMany?, inputSocket?, inputs?, inputsConnected?, joined?, kind?, linked?, locked?, outputConnected?, outputSocket?, outputs?, outputsConnected?, resizable?, reveal?, scaleH?, scaleW?, step?, subGraph?, summary?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

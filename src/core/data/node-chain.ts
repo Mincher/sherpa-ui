@@ -1,12 +1,15 @@
 /**
- * node-chain.ts — A CHAIN DRAG'S PULL AND PUSH (⌘ or Ctrl held): the dragged node pulls the nodes it joins along behind it,
- * and theirs behind them, each connector a rope as long as it was (follow-the-leader, Will D1 A), and no two nodes come
- * closer, centre to centre, than their two radii, half each one's largest side (D2 A). A plain drag moves only the nodes
- * held, and pushes none (Will, TODO 974). It changes no data. Pure: no DOM. Plan 918.
+ * node-chain.ts — A CHAIN DRAG'S PULL AND PUSH (⌘ or Ctrl held): each node joined to a dragged one, through any number of
+ * connectors, moves by the drag times a weight that falls off with its distance along them, 1 / (1 + d / 240) by px or
+ * 1 / (1 + d) by connectors (Will, TODO 975), and no two nodes come closer, centre to centre, than their two radii, half
+ * each one's largest side (plan 918 D2 A). A plain drag moves only the nodes held, and pushes none (Will, TODO 974). It
+ * changes no data. Pure: no DOM.
  *
  * Map:
  * - ChainNode — One node as a drag reads it: its place and its size, on the plane.
  * - ChainLink — One connector: the two nodes it joins, and where on each its socket is.
+ * - ChainFalloff — What a chain drag's pull falls off by: the distance along the connectors, or how many there are.
+ * - CHAIN_REACH — The distance, in plane px, at which a chain drag pulls a node half as far as the drag.
  * - ChainDrag — One drag: each node's place now, its connectors, the nodes the reader holds, the nodes it has moved.
  * - radiusOf — A node's radius: half its largest side.
  * - startDrag — A drag begun: the places and sizes, the connectors, the held nodes.
@@ -30,10 +33,16 @@ export interface ChainLink {
   toAt: readonly [number, number];
 }
 
+/** What a chain drag's pull falls off by: the distance along the connectors, in px, or how many there are (TODO 975). */
+export type ChainFalloff = 'distance' | 'connections';
+
+/** The distance, in plane px, at which a chain drag pulls a node half as far as the drag: a node's width. */
+export const CHAIN_REACH = 240;
+
 /** A node as the drag moves it: its top left, its half size, its radius. */
 interface Placed { x: number; y: number; readonly hw: number; readonly hh: number; readonly r: number }
-/** A connector as a rope: its leader is nearer the held nodes, and pulls its follower. */
-interface Rope { lead: string; follow: string; leadAt: readonly [number, number]; followAt: readonly [number, number]; length: number; even: boolean }
+/** A chain's pull, measured as it comes on: each pulled node's place then, its weight, and the held node it follows. */
+interface Pull { readonly from: ReadonlyMap<string, [number, number]>; readonly weight: ReadonlyMap<string, number>; readonly lead: ReadonlyMap<string, string> }
 
 /** One drag: each node's place now, its connectors, the nodes the reader holds, and the nodes it has moved. */
 export interface ChainDrag {
@@ -42,13 +51,13 @@ export interface ChainDrag {
   readonly began: ReadonlyMap<string, readonly [number, number]>;
   readonly links: readonly ChainLink[];
   readonly held: ReadonlySet<string>;
-  /** Each node the drag has moved, by its steps from a held node: the farther of two gives way, so a push goes outward. */
+  /** Each node the drag has moved, by its connectors from a held node: the farther of two gives way, so a push goes outward. */
   readonly moved: Map<string, number>;
-  /** The ropes, measured as the chain comes on; none while it is off. */
-  ropes: Rope[] | null;
+  /** The pull, measured as the chain comes on; none while it is off. */
+  pull: Pull | null;
 }
 
-/** Passes a step takes at most: each pull and push can undo a little of the last. */
+/** Passes a step's push takes at most: each push can undo a little of the last. */
 const PASSES = 4;
 const EPSILON = 0.5;
 
@@ -63,54 +72,60 @@ export function startDrag(nodes: readonly ChainNode[], links: readonly ChainLink
   return {
     at, began: new Map(nodes.map((n) => [n.id, [n.x + n.w / 2, n.y + n.h / 2] as const])),
     links: links.filter((l) => l.from !== l.to && at.has(l.from) && at.has(l.to)),
-    held: new Set([...held].filter((id) => at.has(id))), moved: new Map(), ropes: null,
+    held: new Set([...held].filter((id) => at.has(id))), moved: new Map(), pull: null,
   };
 }
 
-/** Each connector as a rope, as long as it is now: led from the end nearer a held node. */
-function ropesOf(drag: ChainDrag): Rope[] {
-  const depth = new Map([...drag.held].map((id) => [id, 0]));
+/** The pull as it stands now: each node joined to a held one, by its shortest way along the connectors (centre to centre,
+ *  or one a connector), its weight, and the held node nearest it. */
+function pullOf(drag: ChainDrag, by: ChainFalloff): Pull {
   const next = new Map<string, string[]>();
   for (const l of drag.links) {
     next.set(l.from, [...(next.get(l.from) ?? []), l.to]);
     next.set(l.to, [...(next.get(l.to) ?? []), l.from]);
   }
-  for (let queue = [...drag.held]; queue.length;) {
-    const id = queue.shift()!;
-    for (const on of next.get(id) ?? []) if (!depth.has(on)) { depth.set(on, depth.get(id)! + 1); queue.push(on); }
+  const length = (a: string, b: string): number => {
+    if (by === 'connections') return 1;
+    const [p, q] = [centre(drag.at.get(a)!), centre(drag.at.get(b)!)];
+    return Math.hypot(q[0] - p[0], q[1] - p[1]);
+  };
+  // The shortest way from any held node: the nearest node not yet settled, each round.
+  const far = new Map([...drag.held].map((id) => [id, 0]));
+  const lead = new Map([...drag.held].map((id) => [id, id]));
+  const hops = new Map([...drag.held].map((id) => [id, 0]));
+  const settled = new Set<string>();
+  for (;;) {
+    let id: string | undefined;
+    for (const [k, d] of far) if (!settled.has(k) && (id === undefined || d < far.get(id)!)) id = k;
+    if (id === undefined) break;
+    settled.add(id);
+    for (const on of next.get(id) ?? []) {
+      const d = far.get(id)! + length(id, on);
+      if (drag.held.has(on) || d >= (far.get(on) ?? Infinity)) continue;
+      far.set(on, d);
+      lead.set(on, lead.get(id)!);
+      hops.set(on, hops.get(id)! + 1);
+    }
   }
-  const ropes: Rope[] = [];
-  for (const l of drag.links) {
-    const [df, dt] = [depth.get(l.from), depth.get(l.to)];
-    if (df === undefined || dt === undefined || (drag.held.has(l.from) && drag.held.has(l.to))) continue;
-    const forward = df <= dt;
-    const [lead, follow, leadAt, followAt] = forward ? [l.from, l.to, l.fromAt, l.toAt] : [l.to, l.from, l.toAt, l.fromAt];
-    const [a, b] = [drag.at.get(lead)!, drag.at.get(follow)!];
-    const length = Math.hypot(b.x + followAt[0] - a.x - leadAt[0], b.y + followAt[1] - a.y - leadAt[1]);
-    ropes.push({ lead, follow, leadAt, followAt, length, even: df === dt });
-  }
-  return ropes.sort((p, q) => (depth.get(p.lead)! - depth.get(q.lead)!));
+  const reach = by === 'connections' ? 1 : CHAIN_REACH;
+  const pulled = [...far.keys()].filter((id) => !drag.held.has(id));
+  for (const id of pulled) drag.moved.set(id, Math.min(drag.moved.get(id) ?? Infinity, hops.get(id)!));
+  return {
+    from: new Map([...far.keys()].map((id) => { const n = drag.at.get(id)!; return [id, [n.x, n.y]]; })),
+    weight: new Map(pulled.map((id) => [id, 1 / (1 + far.get(id)! / reach)])),
+    lead: new Map(pulled.map((id) => [id, lead.get(id)!])),
+  };
 }
 
-/** A stretched rope pulls its follower back to its length; a slack one does nothing. True if it moved one. */
-function pull(drag: ChainDrag, rope: Rope): boolean {
-  const [a, b] = [drag.at.get(rope.lead) as Placed, drag.at.get(rope.follow) as Placed];
-  const [gx, gy] = [b.x + rope.followAt[0] - a.x - rope.leadAt[0], b.y + rope.followAt[1] - a.y - rope.leadAt[1]];
-  const d = Math.hypot(gx, gy);
-  if (d <= rope.length + EPSILON) return false;
-  const k = (d - rope.length) / d;
-  // Two at one depth, neither held: each goes half way.
-  const share = rope.even && !drag.held.has(rope.lead) ? 0.5 : 1;
-  b.x -= gx * k * share;
-  b.y -= gy * k * share;
-  const step = (drag.moved.get(rope.lead) ?? 0) + 1;
-  if (!drag.moved.has(rope.follow)) drag.moved.set(rope.follow, step);
-  if (share < 1) {
-    a.x += gx * k * share;
-    a.y += gy * k * share;
-    if (!drag.moved.has(rope.lead)) drag.moved.set(rope.lead, step);
+/** Each pulled node at its place when the chain came on, plus its held node's move since, times its weight. */
+function pullAll(drag: ChainDrag, pull: Pull): void {
+  for (const [id, w] of pull.weight) {
+    const lead = pull.lead.get(id)!;
+    const [[bx, by], [lx, ly]] = [pull.from.get(id)!, pull.from.get(lead)!];
+    const [held, n] = [drag.at.get(lead)!, drag.at.get(id) as Placed];
+    n.x = bx + (held.x - lx) * w;
+    n.y = by + (held.y - ly) * w;
   }
-  return true;
 }
 
 /** Every moved node pushes any node nearer than their radii away, and that one pushes on. True if it moved one. */
@@ -155,13 +170,13 @@ function push(drag: ChainDrag): boolean {
   return changed;
 }
 
-/** The drag a step on: each held node where the reader put it; on a chain drag (`chain`), the rest pulled and pushed, and
- *  on a plain one, none (TODO 974). Every node the drag has moved, where it is now, in whole px: one put back where it
- *  began is still named. */
-export function dragTo(drag: ChainDrag, to: Readonly<Record<string, { x: number; y: number }>>, chain: boolean): Record<string, { x: number; y: number }> {
-  // The ropes are as long as the connectors are when the chain comes on; off, they go, and are measured again.
-  if (!chain) drag.ropes = null;
-  else drag.ropes ??= ropesOf(drag);
+/** The drag a step on: each held node where the reader put it; on a chain drag (`chain`), the rest pulled, by `falloff`,
+ *  and pushed, and on a plain one, none (TODO 974). The pull is measured as the chain comes on, so a drag's way there does
+ *  not change where it ends. Every node the drag has moved, where it is now, in whole px: one put back where it began is
+ *  still named. */
+export function dragTo(drag: ChainDrag, to: Readonly<Record<string, { x: number; y: number }>>, chain: boolean, falloff: ChainFalloff = 'distance'): Record<string, { x: number; y: number }> {
+  if (!chain) drag.pull = null;
+  else drag.pull ??= pullOf(drag, falloff);
   for (const [id, p] of Object.entries(to)) {
     const n = drag.at.get(id) as Placed | undefined;
     if (!n || !drag.held.has(id)) continue;
@@ -169,12 +184,8 @@ export function dragTo(drag: ChainDrag, to: Readonly<Record<string, { x: number;
     n.y = p.y;
     drag.moved.set(id, 0);
   }
-  for (let pass = 0; chain && pass < PASSES; pass++) {
-    let changed = false;
-    for (const rope of drag.ropes ?? []) changed = pull(drag, rope) || changed;
-    changed = push(drag) || changed;
-    if (!changed) break;
-  }
+  if (drag.pull) pullAll(drag, drag.pull);
+  for (let pass = 0; chain && pass < PASSES; pass++) if (!push(drag)) break;
   return Object.fromEntries([...drag.moved.keys()].map((id) => {
     const n = drag.at.get(id)!;
     return [id, { x: Math.round(n.x), y: Math.round(n.y) }];

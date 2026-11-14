@@ -78,7 +78,7 @@ import { fitStages } from '../data/node-stages.js';
 import { START, primaryOf, withStart, withStartKind } from '../data/node-start.js';
 import { isGroupEnd } from '../data/graph-layout.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
-import { dragTo, startDrag, type ChainDrag, type ChainLink, type ChainNode } from '../data/node-chain.js';
+import { dragTo, startDrag, type ChainDrag, type ChainFalloff, type ChainLink, type ChainNode } from '../data/node-chain.js';
 import { drawLanes } from './node-lanes-ui.js';
 import { clearOfNodes, placeBeside, type Box } from '../data/tie-place.js';
 import { bindStages, type Stages } from './node-stages-ui.js';
@@ -1196,11 +1196,11 @@ function chainLinks(made: Drawn): ChainLink[] {
 /** Nodes the reader moved (`held`, each where it is now), and the nodes that move pulls (`chain`) and pushes, drawn and
  *  told as ONE move. A drag lasts while the pointer is down; a key's move is a drag of its own. Read only, none is
  *  pulled or pushed. Plan 918 */
-function moveNodes(made: Drawn, held: readonly { id: string; x: number; y: number }[], chain: boolean): void {
+function moveNodes(made: Drawn, held: readonly { id: string; x: number; y: number }[], chain: boolean, falloff?: ChainFalloff): void {
   if (!held.length) return;
   const free = made.options.onMoveMany && held.every((m) => !isGroupEnd(m.id));
   if (free) made.chain ??= startDrag(chainNodes(made), chainLinks(made), held.map((m) => m.id));
-  const placed = free && made.chain ? dragTo(made.chain, Object.fromEntries(held.map((m) => [m.id, m])), chain) : {};
+  const placed = free && made.chain ? dragTo(made.chain, Object.fromEntries(held.map((m) => [m.id, m])), chain, falloff) : {};
   const moves = free && made.chain ? Object.entries(placed).map(([id, p]) => ({ id, ...p })) : held;
   if (!made.pressing) made.chain = null;
   for (const m of moves) {
@@ -1248,7 +1248,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   }
   canvas.addEventListener('node-move', (event) => {
     const node = nodeOf(made, event.target);
-    const { x, y, chain } = (event as CustomEvent<{ x: number; y: number; chain?: true }>).detail;
+    const { x, y, chain, falloff } = (event as CustomEvent<{ x: number; y: number; chain?: true; falloff?: ChainFalloff }>).detail;
     if (!node) return drawConnections(made);
     const group = pickedNodes(canvas);
     // A drag on a node outside the pick picks only it, as a click would.
@@ -1267,7 +1267,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
         held.push({ id, x: at[0] + dx, y: at[1] + dy });
       }
     }
-    moveNodes(made, held, !!chain);
+    moveNodes(made, held, !!chain, falloff);
   });
   // A double click on a node's header collapses or expands it, unless it opens (a Custom Node's use).
   canvas.addEventListener('dblclick', (event) => {
