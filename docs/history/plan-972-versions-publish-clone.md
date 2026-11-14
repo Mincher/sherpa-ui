@@ -62,4 +62,4 @@ for saving."
 | 972a | numbered versions kept on every entity; Save and Publish (D1) | a Runbook published twice holds 2 versions; a use takes the second |
 | 972b | Roll back; the use edited through (D2) | a roll back is version 3 with version 1's definition |
 | 972c | one Clone act for every type, with its `from` (BUILT 2026-11-13, sherpa-ui-bd) | a preset Runbook cloned is the reader's, and says when its source moves |
-| 972d | Permissions checked before each act; a current User in Demos | a Read only User cannot Save or Publish, said in words |
+| 972d | Permissions checked before each act; a current User in Demos (sherpa-ui part BUILT 2026-11-14: `may`, `readOnly` words) | a Read only User cannot Save or Publish, said in words |
