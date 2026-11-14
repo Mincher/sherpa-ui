@@ -210,6 +210,32 @@ test('prompt() resolves the field\'s value, keeps an empty one open, and null fo
   });
 });
 
+test('the Enter that answers a prompt is spent: a confirm opened on its answer stays open (979)', async ({ page }) => {
+  await page.evaluate(async () => {
+    type Asking = DialogEl & { prompt(v?: string): Promise<string | null>; confirm(a?: Record<string, unknown>): Promise<boolean> };
+    const footer = '<sherpa-container-footer slot="footer"><sherpa-button>Cancel</sherpa-button><sherpa-button>Save</sherpa-button></sherpa-container-footer>';
+    const name = document.createElement('sherpa-dialog') as Asking;
+    name.innerHTML = `<sherpa-input-text data-label="Name"></sherpa-input-text>${footer}`;
+    const over = document.createElement('sherpa-dialog') as Asking;
+    over.id = 'over';
+    over.innerHTML = `<p></p>${footer}`;
+    document.getElementById('root')!.append(name, over);
+    await Promise.all([name.rendered, over.rendered]);
+    await (name.querySelector('sherpa-input-text') as HTMLElement & { rendered: Promise<void> }).rendered;
+    const said: Record<string, unknown> = {};
+    (window as unknown as { said: unknown }).said = said;
+    // As an app does: the answer opens the next question.
+    void name.prompt('').then((v) => { said['name'] = v; return over.confirm({ heading: `Save over “${v}”?` }); }).then((v) => { said['over'] = v; });
+  });
+  await page.keyboard.type('Q3');
+  await page.keyboard.press('Enter');
+  await page.evaluate(() => window.__settled());
+  const asked = await page.evaluate(() => ({ said: { ...(window as unknown as { said: object }).said }, open: (document.getElementById('over') as DialogEl).open }));
+  expect(asked).toEqual({ said: { name: 'Q3' }, open: true });
+  await page.evaluate(() => (document.querySelectorAll('#over sherpa-button')[1] as HTMLElement).shadowRoot!.querySelector('button')!.click());
+  await expect.poll(() => page.evaluate(() => (window as unknown as { said: object }).said)).toEqual({ name: 'Q3', over: true });
+});
+
 test('confirm() writes what it is given, keeps what it is not, and resolves true only for the action', async ({ page }) => {
   const r = await page.evaluate(async () => {
     type Asking = DialogEl & { confirm(a?: Record<string, unknown>): Promise<boolean> };

@@ -2016,6 +2016,11 @@ is a press too. It SHUTS before it resolves, so what the answer starts — a
 delete that reloads the grid — never runs under an open dialog. A second
 question answers the first with its "no".
 
+Enter in its field answers too, and that Enter is SPENT (`preventDefault`).
+Unspent, its keypress clicks whatever focus moved to: Demos' "Save over …?"
+confirm, opened on the name, shut at once, its first button Cancel pressed by
+the same key (TODO 979). An Enter that ends an IME composition answers nothing.
+
 - Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `test/e2e/reforged-dialog.spec.ts`
 

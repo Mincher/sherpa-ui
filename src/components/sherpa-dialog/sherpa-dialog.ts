@@ -98,7 +98,8 @@ export class SherpaDialog extends SherpaElement {
         if (said) done(said);
         else field?.focus();
       };
-      field?.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); }, { signal });
+      // Spent, else its keypress clicks what focus moved to. TRAP T-a-dialog-answers-its-question
+      field?.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); commit(); } }, { signal });
       return commit;
     });
     field?.focus();

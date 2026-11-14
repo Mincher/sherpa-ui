@@ -30,7 +30,7 @@
   "src/components/sherpa-data-grid/grid-widths.ts": 192,
   "src/components/sherpa-data-grid/sherpa-data-grid.ts": 1187,
   "src/components/sherpa-data-viz-header/sherpa-data-viz-header.ts": 45,
-  "src/components/sherpa-dialog/sherpa-dialog.ts": 167,
+  "src/components/sherpa-dialog/sherpa-dialog.ts": 168,
   "src/components/sherpa-empty-state/sherpa-empty-state.ts": 24,
   "src/components/sherpa-file-upload/sherpa-file-upload.ts": 213,
   "src/components/sherpa-filter-panel/panel-column.ts": 162,
