@@ -35,8 +35,8 @@ headings below are older than the index: most entries are under the last one.
 | [Menus, tips and overlays](traps/menus-tips-overlays.md) | 92 |
 | [The data grid](traps/data-grid.md) | 58 |
 | [Charts](traps/charts.md) | 44 |
-| [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 82 |
+| [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 83 |
 | [Other components](traps/other-components.md) | 73 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 38 |
 | [Tests only](traps/tests-only.md) | 13 |
-| **All** | **827** |
+| **All** | **828** |

@@ -1,7 +1,7 @@
 # Traps — SherpaElement and the shared sheets
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 73 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 83 entries.
 
 ### T-tokens-css-never-reaches-shadow
 
