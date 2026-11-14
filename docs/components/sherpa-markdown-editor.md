@@ -2,7 +2,7 @@
 
 # sherpa-markdown-editor
 
-A Markdown text, edited as it reads: bold reads bold, a heading large, a list draws its bullets, and a mark shows while the caret is in its span. Its toolbar: Undo and Redo, the text style, Bold and Italic, the lists, Outdent and Indent, a link, a comment, code, an image and a table; and the switch to the Markdown itself. A value `{node.name}` reads as a purple chip of its words (`.valueLabels`), and `insertValue(key)` puts one at the caret. Figma "Markdown Editor" (ACP file, 2306:17891). Will, plan 892
+A Markdown text, edited as it reads: bold reads bold, a heading large, a list draws its bullets, and a mark shows while the caret is in its span. Its toolbar: Undo and Redo, the text style, Bold and Italic, the lists, Outdent and Indent, a link, a comment, code, an image and a table; and the switch to the Markdown itself. A value `{{value:node.name}}` reads as a purple chip of its words (`.valueLabels`), and `insertValue(key)` puts one at the caret. Figma "Markdown Editor" (ACP file, 2306:17891). Will, plan 892
 
 |  |  |
 |---|---|
@@ -10,12 +10,12 @@ A Markdown text, edited as it reads: bold reads bold, a heading large, a list dr
 
 ## When to use it
 
-For a long text a reader formats — a message, a note, a runbook's steps — written in Markdown and shown as it reads as they type, with a switch to the Markdown itself. Its `value` is the Markdown; `{node.name}` values read as purple chips (`.valueLabels` gives their words), and `insertValue(key)` puts one at the caret. For one line of plain text, use `sherpa-input-text`; for a chat prompt, `sherpa-prompt-composer`.
+For a long text a reader formats — a message, a note, a runbook's steps — written in Markdown and shown as it reads as they type, with a switch to the Markdown itself. Its `value` is the Markdown; `{{value:node.name}}` values read as purple chips (`.valueLabels` gives their words), and `insertValue(key)` puts one at the caret. For one line of plain text, use `sherpa-input-text`; for a chat prompt, `sherpa-prompt-composer`.
 
 ## Example
 
 ```html
-<sherpa-markdown-editor name="message" data-label="Message" data-description="What the reader gets: Markdown, with values" placeholder="Write the message" value="## Patch plan&#10;Hi {recipient.first_name},&#10;**{runs.planned} Runs** are planned for {customer.name}:&#10;- Servers: an *MSP admin* approves first&#10;- Workstations: tonight"></sherpa-markdown-editor>
+<sherpa-markdown-editor name="message" data-label="Message" data-description="What the reader gets: Markdown, with values" placeholder="Write the message" value="## Patch plan&#10;Hi {{value:recipient.first_name}},&#10;**{{value:runs.planned}} Runs** are planned for {{value:customer.name}}:&#10;- Servers: an *MSP admin* approves first&#10;- Workstations: tonight"></sherpa-markdown-editor>
 ```
 
 ## Attributes

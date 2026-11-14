@@ -35,8 +35,8 @@ const toLine = async (page: Page, end: boolean): Promise<void> => {
   await page.keyboard.press(key === 'Meta' ? `Meta+${end ? 'ArrowRight' : 'ArrowLeft'}` : end ? 'End' : 'Home');
 };
 test('it draws the Markdown as it reads: a heading, a bold span with its marks hidden, a list, a value in purple', async ({ page }) => {
-  await mount(page, { value: '# Title\nHi **there** {s.name}\n- one\n1. first', 'data-label': 'Message' });
-  await page.locator(editor).evaluate((el) => { (el as Editor).valueLabels = { '{s.name}': 'Customers › Name' }; });
+  await mount(page, { value: '# Title\nHi **there** {{value:s.name}}\n- one\n1. first', 'data-label': 'Message' });
+  await page.locator(editor).evaluate((el) => { (el as Editor).valueLabels = { '{{value:s.name}}': 'Customers › Name' }; });
   const r = await page.locator(editor).evaluate((el) => {
     const root = el.shadowRoot!;
     const lines = [...root.querySelectorAll('.content > .line')] as HTMLElement[];
@@ -58,11 +58,11 @@ test('it draws the Markdown as it reads: a heading, a bold span with its marks h
   expect(r.lead).toBe('none');
   expect(Number(r.weight)).toBeGreaterThanOrEqual(700);
   expect(r.marks).toEqual(['none', 'none']);
-  expect(r.chip).toEqual(['Customers › Name', '{s.name}', 'rgb(131, 0, 182)']);
+  expect(r.chip).toEqual(['Customers › Name', '{{value:s.name}}', 'rgb(131, 0, 182)']);
   expect(r.bullet).toBe('"•"');
   expect(r.number).toContain('1');
   expect(r.name).toBe('label');
-  expect(await value(page)).toBe('# Title\nHi **there** {s.name}\n- one\n1. first');
+  expect(await value(page)).toBe('# Title\nHi **there** {{value:s.name}}\n- one\n1. first');
 });
 
 test('typing writes Markdown, and a span reads formatted as it is closed', async ({ page }) => {
@@ -169,8 +169,8 @@ test('insertValue puts a value at the caret, a space before it after a word; Bac
   await page.locator(content).click();
   await toLine(page, true);
   for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowLeft');
-  await page.locator(editor).evaluate((el) => (el as Editor).insertValue('{s.name}'));
-  expect(await value(page)).toBe('Hi {s.name} there');
+  await page.locator(editor).evaluate((el) => (el as Editor).insertValue('{{value:s.name}}'));
+  expect(await value(page)).toBe('Hi {{value:s.name}} there');
   await expect(page.locator(`${content} .value`)).toHaveText('s.name');
   await page.keyboard.press('Backspace');
   expect(await value(page)).toBe('Hi  there');

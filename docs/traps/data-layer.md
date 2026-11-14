@@ -8211,3 +8211,22 @@ row, where a value comes from) says both; a node's own warning names it by its o
 - Site: `src/components/sherpa-node/sherpa-node.ts`
 - Site: `test/unit/a-custom-title-follows-its-kind.test.mjs`
 - Site: `test/e2e/reforged-node-title-follows-its-kind.spec.ts`
+
+### T-a-text-names-what-it-means
+
+**A text names what it means one way, `{{kind:id}}`: a node's message and an agent's prompt alike** (Will, TODO 956:
+"A"; plan 956). A node's value is `{{value:<node>.<name>}}`; the old `{node.name}` is not read, and stays plain text.
+
+- **One reader**, `references.ts`: `refsIn` (each where it stands), `refsOf` (each once), `readRefs` (each read: its name,
+  or why it names nothing, in words, never refused). `node-messages.ts` reads a message's values through it, and the
+  Markdown model draws any reference as one atom, a chip.
+- **The kinds are registered, read live** (`registerRefKinds`): the library's own, then each entity type (one call in
+  `entity-types.ts`, read through the caller's `entity(type, id)`), then the app's. The module imports nothing, so a
+  display component that reads the form carries no registry.
+- **A kind reads its id from the facts' `<kind>s`** (a list, or labels by id). A field is read by its LAST part
+  (`location.building`); a step's words are the caller's, read from its prompt.
+
+- Site: `src/core/data/references.ts`
+- Site: `src/core/data/node-messages.ts`
+- Site: `test/unit/a-text-names-what-it-means.test.mjs`
+

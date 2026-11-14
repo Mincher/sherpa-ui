@@ -16,7 +16,7 @@ always made from it. Where the definition is not a graph (a Query, a View), the 
 | **U4.2** The Organise node | ONE **Organise** node in every graph (Will, below): rows for sorting (Sort, Direction), grouping (Group), Search, and the axes (Primary, Secondary, Segments). The workflow's Sort and Group kinds and the Query graph's Arrange go into it, and the Query's Presentation node keeps only how the rows are shown (a chart's kind, its segments' order, Secondary off). In a Query graph it is one per scope, edited by the requests a chip sends (arrangement and presentation alike); in a workflow it arranges the rows Simulate sends on and names the axes a chart reads | unit and e2e: a page's sort, group, search and axes drawn on its Organise node, edited there, read back the same; a workflow sorts, groups and searches its rows by it; no Sort, Group or Arrange kind left | U4.1 |
 | **U4.3** The Query lens (BUILT 2026-11-13, in part: a scope's `sort`, `group` and `search` are a page's, opened and saved; the lens registration moves to U4.5, where a live Query is open, as only sort, group, search and presentation replay purely today) | The data layer registers the `query` lens: `toGraph` is `queryDefinition`; `fromGraph` runs the reconciled requests on a copy of the Query, then `pageWithQuery`, now WITH sort, group and search; a View's `query` is written back the same way. The editor's `GraphDocument` for a Query becomes a thin use of it | e2e: a page's filters edited in the graph and saved come back the same from the JSON; a View saved from the graph keeps its sort, group and search | U4.2 |
 | **U4.4** The Filter type | `preset-filter` → `filter` (LEXICON §13), one change with Demos' presets. D6: a Filter keeps a Where where a Where can say it, else its graph. A Filter is a Custom Node used in a View definition, as in its filter toolbar (Will). An entity may be temporary: the tab's or the session's, on the shelf only when saved | unit: the four shapes (a View's `query`, a savedFilter, a preset, a Preset Filter) are one type; e2e: a Filter placed in a View's toolbar | **U2** (it renames inside entity-types.ts) |
-| U4.4a The rename | LEXICON §13's moves, one change with Demos: the type `preset-filter` → `filter`, `PRESET_FILTER` → `FILTER`, `preset-filter.ts` → `filter.ts`, `entity-preset-filter.v1.json` → `entity-filter.v1.json`, a use's kind `preset-filter:<id>` → `filter:<id>`, Demos' presets. A reader's old saved one is not converted (clean system): the shelf reports it | `git grep preset-filter` finds only history; every spec green, Demos' too | U4.5 |
+| U4.4a The rename (BUILT: 0a7ff85ca) | LEXICON §13's moves, one change with Demos: the type `preset-filter` → `filter`, `PRESET_FILTER` → `FILTER`, `preset-filter.ts` → `filter.ts`, `entity-preset-filter.v1.json` → `entity-filter.v1.json`, a use's kind `preset-filter:<id>` → `filter:<id>`, Demos' presets. A reader's old saved one is not converted (clean system): the shelf reports it | `git grep preset-filter` finds only history; every spec green, Demos' too | U4.5 |
 | U4.4b A Filter keeps a Where (D6) | `entity-filter.v1`: a `where` or a `graph`. Its lens draws a Where as its graph, and writes back a Where when the graph says one (`presetOfEntity`'s reader), else keeps the graph. A page's `presets` and a reader's saved filters are Filters in the Where form, read through one door | unit: each of the four shapes is one Filter, drawn and written back the same; a graph a Where cannot say stays a graph | U4.4a |
 | U4.4c A temporary Filter | The shelf door takes a tier: a Filter made on a page is the tab's or the session's, and goes on the shelf only when saved (plan 960 2.3) | unit: a temporary Filter is used, then dropped, never on the shelf; e2e: Save puts it there | U4.4b |
 | U4.4d A Filter in a View's toolbar | A View definition names the Filters its filter toolbar offers; the toolbar draws each as a chip a reader turns on | e2e: a Filter placed in a View's toolbar filters its rows | U4.4b |
@@ -136,6 +136,17 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
 - ❓ No confirm on Save: a graph's Save writes as an entity's does. Other: "Save over X?", as the page's own Save asks.
 - ❓ A View opened from the graph is kept as the View the page was left on, as the provider keeps any opened View.
   Other: the graph opens it and the page's own stays.
+
+### U4.4c and U4.4d, the questions (2026-11-13, sherpa-ui-e8; for Will)
+
+- **U4.4c, a Filter made on a page.** Today a reader's Save filters writes the keeper's `filters` (a saved filter), not
+  a Filter on the shelf; `filterOf` reads one as a Filter. **A (my pick):** Save filters writes a Filter entity to the
+  shelf, the one type (D6); the keeper's `filters` go, and an old saved filter is not converted (D4, clean system). A
+  filter not saved stays the tab's draft, as now. **B:** keep the keeper's `filters`; a Filter is only what the app ships
+  or an agent makes.
+- **U4.4d, a Filter in a View's toolbar.** Today every Filter over a page's store is a preset of every page over it.
+  **A (my pick):** a View may name its Filters (`filters: ["filter:<id>", …]`); named, its toolbar offers those alone;
+  none named, every Filter over its store, as now. **B:** the names add chips, turned on, beside every Filter.
 
 ## Will's decisions
 

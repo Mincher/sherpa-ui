@@ -8,7 +8,6 @@
  * - MdPart — One inline part: text, a mark, a value, or a span of parts. Its range is the text's, end excluded.
  * - MdLine — One line read: its range, its block, its block mark, its depth, its number and its parts.
  * - HIDDEN_MARKS — The blocks whose mark the formatted view hides: their look says it.
- * - VALUE_KEY — A value a text names: `{node.name}`.
  * - readMarkdown — Each line of a text, read.
  * - lineAt — The line that holds an offset.
  * - MdEdit — A text after an edit, and the selection in it.
@@ -30,6 +29,7 @@
  * - typeText — Text typed over the selection, the caret after it: a value the selection cuts into goes whole.
  * - insertValue — A value at the selection, a space before it after a word.
  */
+import { REF_FORM } from './references.js';
 
 /** What a line is. A `fence` opens or shuts `code`; a `table-rule` is a table's `| --- |` row. */
 export type MdBlock = 'paragraph' | 'heading' | 'bullet' | 'number' | 'quote' | 'fence' | 'code' | 'table' | 'table-rule' | 'rule' | 'blank';
@@ -61,10 +61,8 @@ export interface MdLine {
 /** The blocks whose mark the formatted view hides: their look says it. */
 export const HIDDEN_MARKS: ReadonlySet<MdBlock> = new Set(['heading', 'bullet', 'number', 'quote']);
 
-/** A value a text names: `{node.name}`. */
-export const VALUE_KEY = /\{[\w-]+\.[\w.-]+\}/;
-
-const VALUE_AT = new RegExp(VALUE_KEY.source, 'y');
+// A reference a text names, `{{kind:id}}`, is one atom, drawn as a chip of its words (plan 956).
+const VALUE_AT = new RegExp(REF_FORM.source, 'y');
 const PUNCT = /[!-/:-@[-`{-~]/;
 const SPACE = /\s/;
 const WORD = /[\p{L}\p{N}_]/u;

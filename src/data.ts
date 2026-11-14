@@ -170,8 +170,9 @@ export {
 } from './core/data/node-kinds.js';
 /* The AI nodes' lists: the app's providers and models, and skills (plan 926); the Triggers' (plan 941). */
 export { NEW_CHOICE, aiCatalog, catalogChoices, registerAiCatalog, registerTriggerCatalog, type AiCatalog, type TriggerCatalog } from './core/data/ai-catalog.js';
-/* A message field's values, `{node.name}` (plan 891). */
+/* A message field's values, `{{value:node.name}}` (plan 891). */
 export { filled, unreachedValues, valuesAt, valuesIn, type MessagePart, type MessageSource, type MessageValue } from './core/data/node-messages.js';
+export { REF_FORM, readRefs, ref, refKinds, refsIn, refsOf, registerRefKinds, type RefFacts, type RefKind, type RefRead, type Reference } from './core/data/references.js';
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
 export {
   NODE_WIDTH,

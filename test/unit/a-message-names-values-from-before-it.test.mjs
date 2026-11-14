@@ -1,5 +1,5 @@
 /**
- * A MESSAGE NAMES VALUES FROM BEFORE IT: `{node.name}` in a message field is a value of a node its connections come from — a
+ * A MESSAGE NAMES VALUES FROM BEFORE IT: `{{value:node.name}}` in a message field is a value of a node its connections come from — a
  * row or property it sends, or a field of the rows a Source sends. One no connection gives is a warning on its row; the Preview
  * puts each value in. Plan 891, step 2.
  *
@@ -18,7 +18,7 @@ const nodes = [
   { id: 's', kind: 'source', x: 0, y: 0, heading: 'Customers', values: { store: 'users' } },
   { id: 'n', kind: 'math', x: 300, y: 0, values: { type: 'add', a: 1, b: 2 } },
   { id: 'f', kind: 'content', x: 600, y: 0, values: { type: 'file' } },
-  { id: 'o', kind: 'notify', x: 900, y: 0, values: { type: 'notification', message: 'Hi {s.name}, {n.result} seats; see {f.link}' } },
+  { id: 'o', kind: 'notify', x: 900, y: 0, values: { type: 'notification', message: 'Hi {{value:s.name}}, {{value:n.result}} seats; see {{value:f.link}}' } },
   { id: 'lone', kind: 'value', x: 0, y: 400, values: { value: 'x' } },
 ];
 const connections = [{ from: 's/rows', to: 'n' }, { from: 'n/result', to: 'f/data' }, { from: 'f/file', to: 'o' }];
@@ -26,7 +26,7 @@ const flow = (message, more = {}) => ({ v: 3, id: 'w', nodes: nodes.map((n) => (
 const warningsOf = (g) => g.nodes.find((n) => n.id === 'o').warnings ?? [];
 
 test('a text names its values in order, each a node and a name', () => {
-  assert.deepEqual(valuesIn('Hi {s.name}, {n.result}').map((p) => [p.key, p.node, p.name, p.at]), [['{s.name}', 's', 'name', 3], ['{n.result}', 'n', 'result', 13]]);
+  assert.deepEqual(valuesIn('Hi {{value:s.name}}, {{value:n.result}}').map((p) => [p.key, p.node, p.name, p.at]), [['{{value:s.name}}', 's', 'name', 3], ['{{value:n.result}}', 'n', 'result', 21]]);
   assert.deepEqual(valuesIn('no values, {not one}, {}'), []);
   assert.deepEqual(valuesIn(42), []);
 });
@@ -34,27 +34,27 @@ test('a text names its values in order, each a node and a name', () => {
 test('the values a node can name: each node before it, nearest first; its rows and properties, a Source\'s fields', () => {
   const at = valuesAt(nodes, connections, 'o', NODE_KINDS, fieldsOf);
   assert.deepEqual(at.map((s) => s.node), ['f', 'n', 's'], 'nearest first; the lone Value is no connection\'s');
-  assert.deepEqual(at.find((s) => s.node === 'f').values.map((v) => v.key), ['{f.file}', '{f.link}']);
-  assert.deepEqual(at.find((s) => s.node === 'n').values.map((v) => [v.key, v.label]), [['{n.result}', 'Result']]);
+  assert.deepEqual(at.find((s) => s.node === 'f').values.map((v) => v.key), ['{{value:f.file}}', '{{value:f.link}}']);
+  assert.deepEqual(at.find((s) => s.node === 'n').values.map((v) => [v.key, v.label]), [['{{value:n.result}}', 'Result']]);
   // A Source: its store's fields; it has no Count (plan 944), and Results, a set of rows, is no value a message can say.
-  assert.deepEqual(at.find((s) => s.node === 's').values.map((v) => [v.key, v.of]), [['{s.name}', 'string'], ['{s.seats}', 'number']]);
+  assert.deepEqual(at.find((s) => s.node === 's').values.map((v) => [v.key, v.of]), [['{{value:s.name}}', 'string'], ['{{value:s.seats}}', 'number']]);
   assert.equal(at.find((s) => s.node === 's').heading, 'Customers');
 });
 
 test('a value no connection gives warns on its row; one that is given does not', () => {
-  assert.deepEqual(warningsOf(workflowGraph(flow('Hi {s.name}, {n.result} seats; see {f.link}'), { fieldsOf })), []);
-  const words = warningsOf(workflowGraph(flow('{lone.value} and {s.nope} and {gone.x}'), { fieldsOf })).map((w) => [w.row, w.words]);
+  assert.deepEqual(warningsOf(workflowGraph(flow('Hi {{value:s.name}}, {{value:n.result}} seats; see {{value:f.link}}'), { fieldsOf })), []);
+  const words = warningsOf(workflowGraph(flow('{{value:lone.value}} and {{value:s.nope}} and {{value:gone.x}}'), { fieldsOf })).map((w) => [w.row, w.words]);
   assert.deepEqual(words, [
-    ['message', '"{lone.value}" has no value here: no connection brings Value to this node'],
-    ['message', '"{s.nope}" has no value here: Customers sends no "nope"'],
-    ['message', '"{gone.x}" names no node'],
+    ['message', '"{{value:lone.value}}" has no value here: no connection brings Value to this node'],
+    ['message', '"{{value:s.nope}}" has no value here: Customers sends no "nope"'],
+    ['message', '"{{value:gone.x}}" names no node'],
   ]);
   // With no fields known, a Source takes any field.
-  assert.deepEqual(unreachedValues('{s.nope}', valuesAt(nodes, connections, 'o', NODE_KINDS), nodes, NODE_KINDS, false), []);
+  assert.deepEqual(unreachedValues('{{value:s.nope}}', valuesAt(nodes, connections, 'o', NODE_KINDS), nodes, NODE_KINDS, false), []);
 });
 
 test('the Preview puts each value in; one it does not know stays as written', () => {
-  const sample = { '{s.name}': 'Acme', '{n.result}': 3, '{f.link}': undefined, '{s.tags}': ['a', 'b'] };
-  assert.equal(filled('Hi {s.name}, {n.result} seats; see {f.link}; {s.tags}', (k) => sample[k]), 'Hi Acme, 3 seats; see {f.link}; a, b');
+  const sample = { '{{value:s.name}}': 'Acme', '{{value:n.result}}': 3, '{{value:f.link}}': undefined, '{{value:s.tags}}': ['a', 'b'] };
+  assert.equal(filled('Hi {{value:s.name}}, {{value:n.result}} seats; see {{value:f.link}}; {{value:s.tags}}', (k) => sample[k]), 'Hi Acme, 3 seats; see {{value:f.link}}; a, b');
   assert.equal(filled(undefined, () => 'x'), '');
 });

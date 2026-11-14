@@ -620,12 +620,16 @@ registerNodeTypes('request', { ticket });
 `addTypes(NODE_KINDS.request, { ticket })` gives the family with them, for one
 editor's `kinds` alone; its graphs then save only where you check them yourself.
 
-- A `message` row takes text with values, `{node.name}`: a row or property of a node
+- A `message` row takes text with values, `{{value:node.name}}`: a row or property of a node
   before it, or a field of the rows a Source sends. Its Insert value menu lists
   them; one no connection gives is a warning on its row. In the node it is a text
   area; the Details panel edits it as Markdown, each value a purple chip.
   `singleLine: true` makes it one line, as a title: a text box in the node, no
   toolbar in the Details panel, and no line break goes in.
+- Any text names what it means one way, `{{kind:id}}` (plan 956): a node's value, a store, a field, a model, an
+  Output's action, an input, an output, a step, or an entity by its type (`{{coworker:ada}}`). `readRefs(text, facts)`
+  reads each once, its name or why it names nothing; `registerRefKinds(() => ({ customer: { what: 'a customer' } }))`
+  adds your own kinds, read from `facts.customers`.
 - A `pick` row picks from its own `choices`.
 - Simulate never fires an Output: its light says its `would`, and each property
   sends a stand-in. Send a test, in its Details, fires `output-test`

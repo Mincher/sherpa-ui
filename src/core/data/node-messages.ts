@@ -1,6 +1,7 @@
 /**
- * node-messages.ts — a MESSAGE field's values: each `{node.name}` in its text names a value of a node its connections come from,
- * a row or property it sends, or a field of the rows a Source sends. DOM-free. Will, plan 891.
+ * node-messages.ts — a MESSAGE field's values: each `{{value:node.name}}` in its text names a value of a node its connections
+ * come from, a row or property it sends, or a field of the rows a Source sends. DOM-free. Will, plan 891; the one reference
+ * form, plan 956. TRAP T-a-text-names-what-it-means
  *
  * Map:
  * - MessagePart — One value a text names: its key, its node and name, and where it stands in the text.
@@ -12,8 +13,9 @@
  * - filled — A text with each value it names put in; one with no value, kept as it was.
  */
 import { fieldsSent, kindOfNode, socketOf, type NodeKind, type NodeConnection } from './node-kinds.js';
+import { ref, refsIn } from './references.js';
 
-/** One value a text names: `{node.name}`, its node and name, and where it stands. */
+/** One value a text names: `{{value:node.name}}`, its node and name, and where it stands. */
 export interface MessagePart {
   key: string;
   node: string;
@@ -22,12 +24,15 @@ export interface MessagePart {
   end: number;
 }
 
-const VALUE = /\{([\w-]+)\.([\w.-]+)\}/g;
+/** A node's value, as a text names it. */
+const VALUE = 'value';
 
-/** Each value a text names, in order: `{s1.name}` is the field `name` of the rows Source `s1` sends. */
+/** Each value a text names, in order: `{{value:s1.name}}` is the field `name` of the rows Source `s1` sends. */
 export function valuesIn(text: unknown): MessagePart[] {
-  if (typeof text !== 'string') return [];
-  return [...text.matchAll(VALUE)].map((m) => ({ key: m[0], node: m[1]!, name: m[2]!, at: m.index, end: m.index + m[0].length }));
+  return refsIn(text).flatMap(({ kind, id, written, at, end }) => {
+    const dot = id.indexOf('.');
+    return kind === VALUE && dot > 0 && dot < id.length - 1 ? [{ key: written, node: id.slice(0, dot), name: id.slice(dot + 1), at, end }] : [];
+  });
 }
 
 /** One value a message can name: its key, its row's or field's name, its words and what it is. */
@@ -70,7 +75,7 @@ export function valuesAt(nodes: readonly Node[], connections: readonly NodeConne
     const node = held.get(nodeId);
     const kind = kindOfNode(kinds, node);
     if (!node || !kind) return [];
-    const value = (name: string, label: string, of?: string): MessageValue => ({ key: `{${nodeId}.${name}}`, name, label, ...(of ? { of } : {}) });
+    const value = (name: string, label: string, of?: string): MessageValue => ({ key: ref(VALUE, `${nodeId}.${name}`), name, label, ...(of ? { of } : {}) });
     const rows = kind.rows.filter((r) => r.output && r.gives !== 'rows').map((r) => value(r.name, r.label, r.gives ?? r.output));
     const store = kind.rows.some((r) => r.control === 'store') ? node.values?.['store'] : undefined;
     // The fields it sends: its Fields pick, none kept every one (TODO 969).
@@ -98,8 +103,12 @@ export function unreachedValues(text: unknown, sources: readonly MessageSource[]
 /** A text with each value it names put in, by its key; one `value` does not know is kept as it was. */
 export function filled(text: unknown, value: (key: string) => unknown): string {
   if (typeof text !== 'string') return '';
-  return text.replace(VALUE, (key) => {
-    const v = value(key);
-    return v == null ? key : Array.isArray(v) ? v.join(', ') : String(v);
-  });
+  let out = '';
+  let from = 0;
+  for (const part of valuesIn(text)) {
+    const v = value(part.key);
+    out += text.slice(from, part.at) + (v == null ? part.key : Array.isArray(v) ? v.join(', ') : String(v));
+    from = part.end;
+  }
+  return out + text.slice(from);
 }

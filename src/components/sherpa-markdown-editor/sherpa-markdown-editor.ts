@@ -6,6 +6,7 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { primaryKey, primaryLabel } from '../../core/ui/modifier-key.js';
+import { refsIn } from '../../core/data/references.js';
 import {
   HIDDEN_MARKS, breakLine, deleteBack, deleteForward, formatAt, indentItems, insertComment, insertImage, insertTable,
   insertValue, readMarkdown, setStyle, toggleLink, toggleList, toggleSpan, typeText,
@@ -234,7 +235,8 @@ export class SherpaMarkdownEditor extends SherpaElement {
       if (part.type === 'value') {
         const el = this.clone(value)!;
         el.dataset['key'] = part.key;
-        el.textContent = this.#labels[part.key] ?? part.key.slice(1, -1);
+        // With no words of its own, a reference says its id: `{{value:s.name}}` reads "s.name" (plan 956).
+        el.textContent = this.#labels[part.key] ?? refsIn(part.key)[0]?.id ?? part.key;
         el.title = part.key;
         return el;
       }

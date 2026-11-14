@@ -68,10 +68,10 @@ test('a pick row holds one of its own choices; none picked is no fault', () => {
 });
 
 test('a type change in a family keeps the rows the types share, and the values of the rest for the way back', () => {
-  const values = { type: 'toast', message: 'Patched {customer.name}', tone: 'success' };
-  assert.equal(row(node(workflowGraph(flow('response', values)), 'o'), 'message').value, 'Patched {customer.name}');
+  const values = { type: 'toast', message: 'Patched {{value:customer.name}}', tone: 'success' };
+  assert.equal(row(node(workflowGraph(flow('response', values)), 'o'), 'message').value, 'Patched {{value:customer.name}}');
   const back = node(workflowGraph(flow('response', { ...values, type: 'alert' })), 'o');
-  assert.equal(row(back, 'message').value, 'Patched {customer.name}');
+  assert.equal(row(back, 'message').value, 'Patched {{value:customer.name}}');
   assert.equal(row(back, 'tone'), undefined);
   assert.deepEqual(workflowFaults(flow('response', { ...values, type: 'alert' })), [], 'the Toast\'s Tone is kept, not a fault');
 });

@@ -104,7 +104,7 @@ export function truthy(value: unknown): boolean {
   return (proto !== Object.prototype && proto !== null) || Object.keys(value).length > 0;
 }
 
-/** The control a row draws: text, a message (text with values, `{node.name}`; plan 891), a number, a switch, tags (a
+/** The control a row draws: text, a message (text with values, `{{value:node.name}}`; plan 891), a number, a switch, tags (a
  *  list, D17) or a date and time; else the list a picklist reads — the row's own (`pick`), the fields, the field's values,
  *  units, a span's way (last or next), directions, presentations, Apply on, stores, scopes, a family's types, a graph's
  *  portal names, or the app's AI providers, a provider's models or its skills (`rowChoices`; plan 926), or the shelf's

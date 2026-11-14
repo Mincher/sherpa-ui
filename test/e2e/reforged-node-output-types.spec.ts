@@ -25,7 +25,7 @@ test.beforeEach(async ({ page }) => {
       v: 3, id: 'g',
       nodes: [
         { id: 's', kind: 'source', heading: 'Customers', x: 340, y: 40, values: { store: 'customers' } },
-        { id: 'o', kind: 'notify', x: 700, y: 40, values: { type: 'notification', message: 'Hi {s.name}' } },
+        { id: 'o', kind: 'notify', x: 700, y: 40, values: { type: 'notification', message: 'Hi {{value:s.name}}' } },
       ],
       connections: [{ from: 's/rows', to: 'o' }],
     };
@@ -58,19 +58,19 @@ test('a message row is a text area in the node, a title one line; typed there, i
   const node = (name: string) => page.locator(`${output} sherpa-input-text[name="${name}"]`);
   await expect(node('message')).toHaveAttribute('data-multiline', '');
   await expect(node('title')).not.toHaveAttribute('data-multiline');
-  expect(await node('message').evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {s.name}');
+  expect(await node('message').evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {{value:s.name}}');
   // Typed in the node, the message changes.
-  await node('message').locator('textarea').fill('Hi {s.name}, thanks');
+  await node('message').locator('textarea').fill('Hi {{value:s.name}}, thanks');
   await node('message').locator('textarea').blur();
   await settle(page);
-  expect(await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { kind: string; values?: Record<string, unknown> }[] } } }).editor.workflow().nodes.find((n) => n.kind === 'notify')?.values?.['message'])).toBe('Hi {s.name}, thanks');
+  expect(await page.evaluate(() => (window as never as { editor: { workflow(): { nodes: { kind: string; values?: Record<string, unknown> }[] } } }).editor.workflow().nodes.find((n) => n.kind === 'notify')?.values?.['message'])).toBe('Hi {{value:s.name}}, thanks');
   // Picked, its Details panel edits the message in the Markdown editor: its value a chip of its node and label.
   const head = (await page.locator(output).boundingBox())!;
   await page.mouse.click(head.x + head.width / 2, head.y + 10);
   await settle(page);
   const field = page.locator('#inspector sherpa-markdown-editor[name="message"]');
   await expect(field).toHaveCount(1);
-  expect(await field.evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {s.name}, thanks');
+  expect(await field.evaluate((f) => (f as HTMLElement & { value: string }).value)).toBe('Hi {{value:s.name}}, thanks');
   expect(await field.evaluate((f) => f.shadowRoot!.querySelector('.value')?.textContent)).toBe('Customers › Name');
   // Its Title is one line, with no toolbar; its Message is many (TODO 913).
   await expect(page.locator('#inspector sherpa-markdown-editor[name="title"]')).toHaveAttribute('data-single-line', '');
@@ -112,20 +112,20 @@ test('Insert value lists the values from before it, by node; a pick puts the val
   await insert.click();
   const values = await insert.locator('sherpa-menu button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // The Source's fields alone: it has no Count (plan 944).
-  expect(values).toEqual(['{s.name}', '{s.email}']);
-  await insert.locator('sherpa-menu button[value="{s.name}"]').click();
+  expect(values).toEqual(['{{value:s.name}}', '{{value:s.email}}']);
+  await insert.locator('sherpa-menu button[value="{{value:s.name}}"]').click();
   await settle(page);
   const inNode = () => page.locator(`${output} sherpa-input-text[name="message"]`).evaluate((f) => (f as HTMLElement & { value: string }).value);
-  expect(await inNode()).toBe('Hi {s.name} {s.name}');
+  expect(await inNode()).toBe('Hi {{value:s.name}} {{value:s.name}}');
   // At the caret: after "Hi", a value goes before the one there.
   const message = page.locator('#inspector sherpa-markdown-editor[name="message"]');
   await message.locator('.content').click();
   await page.keyboard.press(await page.evaluate(() => (/mac/i.test(navigator.platform) ? 'Meta+ArrowLeft' : 'Home')));
   for (let i = 0; i < 2; i++) await page.keyboard.press('ArrowRight');
   await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"]').click();
-  await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"] sherpa-menu button[value="{s.email}"]').click();
+  await page.locator('#inspector sherpa-button.insert-value[aria-label="Insert value in Message"] sherpa-menu button[value="{{value:s.email}}"]').click();
   await settle(page);
-  expect(await inNode()).toBe('Hi {s.email} {s.name} {s.name}');
+  expect(await inNode()).toBe('Hi {{value:s.email}} {{value:s.name}} {{value:s.name}}');
 });
 
 test('Send a test asks the host, with the node, its type and its values; Sherpa sends nothing', async ({ page, browserName }) => {
@@ -134,7 +134,7 @@ test('Send a test asks the host, with the node, its type and its values; Sherpa 
   await page.evaluate(() => document.addEventListener('output-test', (e) => { (window as never as { asked: unknown }).asked = (e as CustomEvent).detail; }));
   await page.locator('#inspector sherpa-button.send-test').click();
   const asked = await page.evaluate(() => (window as never as { asked: unknown }).asked);
-  expect(asked).toEqual({ node: 'o', kind: 'notify', type: 'notification', values: { type: 'notification', message: 'Hi {s.name}' } });
+  expect(asked).toEqual({ node: 'o', kind: 'notify', type: 'notification', values: { type: 'notification', message: 'Hi {{value:s.name}}' } });
 });
 
 test('the Output tab: the Preview of each message as it reads, and where each property is connected', async ({ page }) => {
@@ -154,7 +154,7 @@ test('the Output tab: the Preview of each message as it reads, and where each pr
   const tabs = await page.locator('#inspector sherpa-tabs').first().evaluate((t) => [...t.querySelectorAll(':scope > [data-tab]')].map((p) => (p as HTMLElement).dataset['tab']));
   expect(tabs.slice(0, 2)).toEqual(['details', 'output']);
   // Not simulated: each message as written, read only, its value by its node and label; the panel says how to see them put in.
-  expect(r.previews).toEqual([['Title', '', true], ['Message', 'Hi {s.name}', true]]);
+  expect(r.previews).toEqual([['Title', '', true], ['Message', 'Hi {{value:s.name}}', true]]);
   expect(r.chip).toBe('Customers › Name');
   expect(r.properties).toEqual([['Sent', 'Not used'], ['Delivered', 'Not used'], ['Message ID', 'Not used']]);
   await expect(page.locator('#inspector [data-tab="output"] .output-note')).toHaveText('Press Simulate to see the values put in.');

@@ -15,7 +15,7 @@ const said = (t, parts) => parts.map((p) => ('parts' in p ? `${p.type}(${said(t,
 const leaves = (parts) => parts.flatMap((p) => ('parts' in p ? leaves(p.parts) : [p]));
 
 const SAMPLE = [
-  '# Title', 'Hi **bold** and *it* and ***both*** {s.name} `co*de` [a **link**](https://x.io) ![pic](u.png) <!-- note -->',
+  '# Title', 'Hi **bold** and *it* and ***both*** {{value:s.name}} `co*de` [a **link**](https://x.io) ![pic](u.png) <!-- note -->',
   '- one', '  - two', '1. first', '7. second', '   1. inner', '> quoted', '```', 'code *as is*', '```',
   '| a | b |', '| --- | --- |', '| `|` | **y** |', '---', 'snake_case _em_ a*b*c \\*not\\*', '',
 ].join('\n');
@@ -47,7 +47,7 @@ test('inline: strong, em, both, a value, code, a link with its words read, an im
   const lines = md.readMarkdown(SAMPLE);
   assert.equal(said(SAMPLE, lines[1].parts), [
     'Hi ', 'strong(mark:** | bold | mark:**)', ' and ', 'em(mark:* | it | mark:*)', ' and ',
-    'strong(mark:** | em(mark:* | both | mark:*) | mark:**)', ' ', 'value:{s.name}', ' ', 'code(mark:` | co*de | mark:`)', ' ',
+    'strong(mark:** | em(mark:* | both | mark:*) | mark:**)', ' ', 'value:{{value:s.name}}', ' ', 'code(mark:` | co*de | mark:`)', ' ',
     'link(mark:[ | a  | strong(mark:** | link | mark:**) | mark:](https://x.io))', ' ', 'image(mark:![ | pic | mark:](u.png))', ' ',
     'comment(mark:<!-- |  note  | mark:-->)',
   ].join(' | '));
@@ -109,14 +109,14 @@ test('Enter goes on with a list or a quote, an empty item ends it or steps out; 
 test('Backspace takes a block mark at its line\'s start, a value whole, a grapheme whole; Delete joins the next line\'s words', () => {
   assert.deepEqual(md.deleteBack('- a', 2, 2), { text: 'a', start: 0, end: 0 });
   assert.equal(md.deleteBack('- a\n  - b', 8, 8).text, '- a\n- b');
-  assert.deepEqual(md.deleteBack('Hi {s.name}', 11, 11), { text: 'Hi ', start: 3, end: 3 });
+  assert.deepEqual(md.deleteBack('Hi {{value:s.name}}', 19, 19), { text: 'Hi ', start: 3, end: 3 });
   assert.deepEqual(md.deleteBack('ok 👍🏽', 7, 7), { text: 'ok ', start: 3, end: 3 });
   assert.deepEqual(md.deleteBack('a\nb', 2, 2), { text: 'ab', start: 1, end: 1 });
   assert.equal(md.deleteBack('one two', 7, 7, 'word').text, 'one ');
   assert.deepEqual(md.deleteForward('a\n- b', 1, 1), { text: 'ab', start: 1, end: 1 });
-  assert.deepEqual(md.deleteForward('{s.name} hi', 0, 0), { text: ' hi', start: 0, end: 0 });
+  assert.deepEqual(md.deleteForward('{{value:s.name}} hi', 0, 0), { text: ' hi', start: 0, end: 0 });
   // A selection that cuts into a value takes the value whole.
-  assert.equal(md.deleteBack('Hi {s.name}!', 5, 12).text, 'Hi ');
+  assert.equal(md.deleteBack('Hi {{value:s.name}}!', 5, 20).text, 'Hi ');
 });
 
 test('a link, an image and a comment select what is left to type; a table goes after its line; a value takes a space', () => {
@@ -125,11 +125,11 @@ test('a link, an image and a comment select what is left to type; a table goes a
   assert.deepEqual(md.insertImage('', 0, 0, 'description'), { text: '![description](https://)', start: 15, end: 23 });
   assert.deepEqual(md.insertComment('a', 1, 1, 'comment'), { text: 'a<!-- comment -->', start: 6, end: 13 });
   assert.deepEqual(md.insertTable('Hello', 5, 5, 'Column'), { text: 'Hello\n\n| Column | Column |\n| --- | --- |\n|  |  |', start: 9, end: 15 });
-  assert.deepEqual(md.insertValue('Hi', 2, 2, '{s.name}'), { text: 'Hi {s.name}', start: 11, end: 11 });
-  assert.deepEqual(md.insertValue('Hi ', 3, 3, '{s.name}'), { text: 'Hi {s.name}', start: 11, end: 11 });
+  assert.deepEqual(md.insertValue('Hi', 2, 2, '{{value:s.name}}'), { text: 'Hi {{value:s.name}}', start: 19, end: 19 });
+  assert.deepEqual(md.insertValue('Hi ', 3, 3, '{{value:s.name}}'), { text: 'Hi {{value:s.name}}', start: 19, end: 19 });
   // Typed over a selection that cuts into a value, the value goes whole.
-  assert.deepEqual(md.typeText('Hi {s.name}!', 5, 12, 'you'), { text: 'Hi you', start: 6, end: 6 });
-  assert.deepEqual(md.insertValue('Hi {s.name}', 3, 11, '{s.count}'), { text: 'Hi {s.count}', start: 12, end: 12 });
+  assert.deepEqual(md.typeText('Hi {{value:s.name}}!', 5, 20, 'you'), { text: 'Hi you', start: 6, end: 6 });
+  assert.deepEqual(md.insertValue('Hi {{value:s.name}}', 3, 19, '{{value:s.count}}'), { text: 'Hi {{value:s.count}}', start: 20, end: 20 });
 });
 
 test('what the selection stands in: its style, its list, its spans, and whether its items can move', () => {

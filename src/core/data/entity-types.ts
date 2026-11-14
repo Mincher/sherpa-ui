@@ -25,6 +25,7 @@
  */
 import { newestOf, publishedOf } from './entity-versions.js';
 import { report } from './report.js';
+import { registerRefKinds, type RefFacts } from './references.js';
 import type { NodeKind, RowChoice } from './node-kinds.js';
 import type { NodeDefinition, NodeLibrary, NodeOutput, NodeSocket } from './node-library.js';
 import type { TypeDefinition } from './type-definition.js';
@@ -196,3 +197,8 @@ export function entityOf(workflow: Pick<WorkflowDefinition, 'id' | 'label' | 'no
     ...(settings ? { settings } : {}),
   };
 }
+
+// Every entity type is a kind a reference names, `{{coworker:ada}}`, read through the shelf's `entity` (plan 956).
+registerRefKinds(() => Object.fromEntries(Object.values(entityTypes()).map((t) => [t.id, {
+  what: `${/^[aeiou]/i.test(t.label) ? 'an' : 'a'} ${t.label}`, read: (id: string, facts: RefFacts) => facts.entity?.(t.id, id),
+}])));
