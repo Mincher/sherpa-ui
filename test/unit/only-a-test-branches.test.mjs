@@ -73,7 +73,7 @@ test('a test of one value has two ways: its value on its header, Pass and Fail s
   const cs = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'm/rows' }, { from: 'm/result', to: 'k' }, { from: 's/rows', to: 'k/data' }, { from: 'k/pass', to: 'y' }, { from: 'k/fail', to: 'n' }];
   assert.deepEqual(workflowFaults(flow(ns, cs)), []);
   const g = workflowGraph(flow(ns, cs));
-  assert.deepEqual(nodeFlow(g, 'k').incoming.filter((i) => i.from.length).map((i) => [i.socket, i.from]), [['In', ['Math › Result']], ['Data', ['Source › Results']]]);
+  assert.deepEqual(nodeFlow(g, 'k').incoming.filter((i) => i.from.length).map((i) => [i.socket, i.from]), [['In', ['Math › Result']], ['Data (Optional)', ['Source › Results']]]);
   assert.deepEqual(nodeFlow(g, 'k').outgoing.filter((o) => o.to.length).map((o) => [o.socket, o.to]), [['Pass', ['Organise']], ['Fail', ['Organise']]]);
   const users = [{ id: 1, age: 40 }, { id: 2, age: 20 }];
   const sim = simulateGraph(g, { users });

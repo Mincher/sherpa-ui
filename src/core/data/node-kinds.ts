@@ -50,6 +50,7 @@
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
  * - rowOf — The row of a kind a name says.
+ * - rowTitle — A row's title as a reader sees it: an optional one says so, "Values (Optional)".
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several connections.
  * - NodeConnection — One connection: an output socket to an input socket.
@@ -900,6 +901,12 @@ type Sockets = Pick<NodeKind, 'input' | 'output' | 'many'> & { rows: readonly Ro
 /** The row of a kind a name says. */
 export function rowOf<R extends Pick<RowKind, 'name'>>(rows: readonly R[], name: string): R | undefined {
   return rows.find((r) => r.name === name);
+}
+
+/** A row's title as a reader sees it: one the node can do without says so, "Values (Optional)". Its name, its
+ *  connections and its warnings keep its label. Will, 2026-11-14, TODO 984 */
+export function rowTitle(row: Pick<RowKind, 'label' | 'optional'>): string {
+  return row.optional ? `${row.label} (Optional)` : row.label;
 }
 
 /** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row) or a row's — on one side;

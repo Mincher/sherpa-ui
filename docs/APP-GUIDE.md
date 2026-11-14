@@ -648,6 +648,9 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
   reads each once, its name or why it names nothing; `registerRefKinds(() => ({ customer: { what: 'a customer' } }))`
   adds your own kinds, read from `facts.customers`.
 - A `pick` row picks from its own `choices`.
+- An `optional: true` row is one the node can do without: with nothing joined it does not warn, and it is titled
+  "Summary (Optional)" wherever a reader sees it — the node, its socket's tip, its Incoming and Outgoing JSON. Its
+  `name` and connections keep its own (Will, TODO 984).
 - Simulate never fires an Output: its light says its `would`, and each property
   sends a stand-in. Send a test, in its Details, fires `output-test`
   `{ node, kind, type, values }` on the canvas: send the test to the reader there.

@@ -15,7 +15,7 @@
  * - leafOf — One test as its node says it: the Field on its header, a comparison, Time's or a Tag's; or why it says none.
  * - nodeFlow — A node's flow, read from its graph; a fault in words for a node it does not hold.
  */
-import { ROWS, socketOf, TEST_KINDS, type DrawnGraph, type GraphNode, type GraphRow, type NodeConnection } from './node-kinds.js';
+import { ROWS, rowTitle, socketOf, TEST_KINDS, type DrawnGraph, type GraphNode, type GraphRow, type NodeConnection } from './node-kinds.js';
 import { coerce, readInput, truthOf } from './node-input.js';
 import { portalFlow } from './node-portals.js';
 import { OP_LABELS, OP_TAKES, notCondition, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
@@ -230,13 +230,13 @@ export function nodeFlow(graph: DrawnGraph, id: string, facts: ConditionFacts = 
     ...(node.input ? [{ socket: 'In', type: node.input, from: into(node.id), ...('warning' in warned() ? { value: null } : {}), ...warned(),
       ...(node.ignored ? { ignored: node.ignored.from.map((f) => said(graph, f)), why: node.ignored.words } : {}) }] : []),
     ...node.rows.filter((r) => r.input).map((r) => ({
-      socket: r.label, type: r.input, from: into(`${node.id}/${r.name}`), ...(r.value !== undefined && r.value !== '' ? { value: r.value } : {}), ...warned(r.name),
+      socket: rowTitle(r), type: r.input, from: into(`${node.id}/${r.name}`), ...(r.value !== undefined && r.value !== '' ? { value: r.value } : {}), ...warned(r.name),
     })),
   ];
   const outgoing: Record<string, unknown>[] = [
     ...(node.output ? [{ socket: 'Out', type: node.output, to: onward(node.id) }] : []),
     ...node.rows.filter((r) => r.output).map((r) => ({
-      socket: r.label, type: r.output, to: onward(`${node.id}/${r.name}`), ...(r.control && r.value !== undefined ? { carries: inJson(r) } : {}),
+      socket: rowTitle(r), type: r.output, to: onward(`${node.id}/${r.name}`), ...(r.control && r.value !== undefined ? { carries: inJson(r) } : {}),
     })),
   ];
   const values = Object.fromEntries(node.rows.filter((r) => r.control && r.value !== undefined && r.value !== '').map((r) => [r.name, r.value]));

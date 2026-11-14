@@ -109,7 +109,7 @@ test('one model for the graph: an AI node with none of its own uses the Start\'s
   const model = node(page, 'Skill').locator('sherpa-node-row[data-socket-name="Model"]');
   await expect(model).toHaveAttribute('data-label', 'Model: Claude Sonnet 5.5');
   await expect(node(page, 'Skill')).not.toHaveAttribute('data-warning');
-  await expect(node(page, 'Start').locator('sherpa-node-row[data-socket-name="Model"]')).toHaveCount(1);
+  await expect(node(page, 'Start').locator('sherpa-node-row[data-socket-name="Model (Optional)"]')).toHaveCount(1);
   // Nothing picked: Graph details is the only tab.
   const tabs = () => page.locator('#inspector sherpa-tabs.content-tabs').evaluate((el) => [...el.children].map((c) => (c as HTMLElement).dataset['tab']));
   expect(await tabs()).toEqual(['graph']);

@@ -117,7 +117,7 @@ import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { portalFlow, portalLinks, portalOf } from '../data/node-portals.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
-import { nodeKinds, kindOfNode, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, rowOf, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type RecentUse, type SocketType } from '../data/node-kinds.js';
+import { nodeKinds, kindOfNode, categorySlug, downstreamOf, fitOf, paletteOf, rowChoices, rowOf, rowTitle, socketOf, socketType, typeOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodeSize, type NodeConnection, type NodeTie, type RecentUse, type SocketType } from '../data/node-kinds.js';
 import { TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, holdTies, nodeWidth, readWorkflow, tieAt, tieLimit, workflowFaults, workflowGraph, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -401,7 +401,7 @@ function fill(field: Field, row: GraphRow, note?: string): void {
   const said = JSON.stringify([row.label, note ?? row.hint, row.fault, row.control, row.multiple, row.value, row.choices]);
   if (filled.get(field) === said && shows(field, row)) return;
   filled.set(field, said);
-  field.setAttribute('data-label', row.label);
+  field.setAttribute('data-label', rowTitle(row));
   put(field, 'data-description', note ?? row.hint);
   put(field, 'data-error', row.fault);
   if (row.control === 'tags') {
@@ -500,12 +500,12 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     // A row of rows with nothing to say hides, unless a connection still leaves it (TODO 924).
     line.toggleAttribute('data-idle', !!row.idle);
     // Each socket's tip names its row and says its value: a collapsed node shows neither.
-    put(line, 'data-socket-name', row.label);
+    put(line, 'data-socket-name', rowTitle(row));
     put(line, 'data-socket-value', connected.has(address) ? undefined : valueWords(row));
     if (field) fill(field, row);
     // A row with no field says what it reads; one that reads null, only its name.
     else {
-      line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
+      line.setAttribute('data-label', row.control === undefined && row.value != null ? `${rowTitle(row)}: ${shown(row)}` : rowTitle(row));
       line.toggleAttribute('data-property', !!row.property);
     }
   }
