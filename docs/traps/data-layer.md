@@ -6300,6 +6300,24 @@ their own. The workflow (`here`) and a page's Query graph (`leafRows`) both call
 - Site: `test/unit/a-row-takes-its-values-type.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
+### T-the-data-comes-in-at-the-header
+
+**A test's data comes in at its header, always** (Will, TODO 994: "Condition nodes have an optional data input but the
+data should always come in via the header socket"; pick A). A comparison, Not and Is empty have Value A (`a`, optional),
+above Value B: the value to test when it is not the data (an AI step's True, a Count). With no Value A, the test tests
+its header, as before. On one value, Pass and Fail send what came into the header, whole (`passes: true`, `sender`,
+Simulate's `make`). And and Or join what comes in at the header, so they have no Value A. There is no Data row and no
+alias: `R → c/data` with `T → c` was retrofitted to `R → c` with `T → c/a`.
+
+- **With Value A joined, the header is data**: it is read as it comes, never as the tested value, so rows there do not
+  warn "connect a Field in".
+- **A column is tested on the header**, where its rows split: a column into Value A warns, and its Query leaf is none
+  (`leafOf`).
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `test/unit/a-test-of-one-value-decides.test.mjs`
+
 ### T-a-value-is-typed-once
 
 **A condition's value is typed ONCE, by its field's type, where it comes in** —
@@ -6456,7 +6474,7 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
 - **Every type leads with Pass and Fail** (plan 971 A): the rows that hold, and the rows that do not,
   so none is lost. They send rows only where rows reached its header — rows, a column, an object, or
   a test's Pass or Fail (`sender`). A test has no True row (plan 971 §9): on one value its Pass and Fail
-  send its Data, else the value.
+  send what came into its header, else the value (`T-the-data-comes-in-at-the-header`).
 - **In the last and In the next are Time › Duration's**, not Logic's: two nodes would do one check.
 - **The header's input is the type's.** And and Or take many of anything (TODO 939), and Not one
   boolean; Is empty takes any value; a comparison any. Each one has a True property, 1 or 0 (plan 944). Nothing
@@ -6717,7 +6735,7 @@ chip's is (`graphRequest`).
   Filters, where a filter's Pass joins its chip. A card's is on its
   Presentation, and its chips take no line: a card's own filter is ON ITS ROWS'
   PATH, its Pass into the Presentation (two or more through ONE And), then its
-  Organise. A test of one value is no filter: it sends all its Data one way. Moving a field
+  Organise. A test of one value is no filter: it sends all its header's data one way. Moving a field
   between scopes is moving its tree, its root's Pass into a chip of
   View Filters or onto a card's path (`connectionRequest`), as Send to View is.
   A field the View answers but no bar holds still gets a chip, so its condition
@@ -6911,9 +6929,9 @@ sockets only, never types.
   (`TEST_KINDS`), and no True row (Will: "This removes the need for the 'True' property in Condition nodes");
   an AI node that expects True/false has a True. On a COLUMN (a Field's on its header, or tests' rows into And, Or, Not) Pass and Fail
   split the rows. On ONE value (`testsOneValue`: no column and no rows, or rows into Is empty, one set) the way
-  its truth takes sends ALL of its Data row (`passes: 'data'`), else the value tested, drawn as that type; the
+  its truth takes sends ALL that came into its header (`passes`), else the value tested, drawn as that type; the
   other sends `notTaken`, and a node whose header (with none, its rows) hears only that does not run (Simulate:
-  Not taken). Data joined to a column test is not used, and warns. "None" is Is empty on a Pass; "At least N",
+  Not taken). The value tested, where it is not the data, comes in on Value A (`T-the-data-comes-in-at-the-header`). "None" is Is empty on a Pass; "At least N",
   a Math Count into Greater or equal. The Boolean (`passes` on its kind) has no rows: its header sends on what
   reaches its header, drawn as that type, where it is true, else Not taken (Will: "if true then"). A check that is no
   Condition (Time, Tag, a Preset, a Custom Node's use) says `output: 'boolean'`:
@@ -8123,7 +8141,7 @@ Out row that nothing reaches. Each reader that followed connections itself would
 **A property row is output only, one definition, and connects like any output.** Will, TODO 835 ·
 `docs/history/plan-835-organise-and-properties.md`. It is a row a node provides from its own data or logic: no control,
 no input socket, no value to edit. `propertyRow` in node-kinds.ts is the ONE builder: an AI node's True (1 or 0), a test's
-Pass and Fail (rows, plan 971 A; on one value, what reaches its Data, `passes`, 971 §9). Count was its first use and is
+Pass and Fail (rows, plan 971 A; on one value, what reaches its header, `passes`, 971 §9). Count was its first use and is
 gone (plan 944): counting rows is a Math type, Count. Sort and Group are kinds of their own in
 Organise, and the Collection family and its Count type are gone: a saved `collection` reads with the fault "of the kind
 "collection", which is not one", and nothing converts it.

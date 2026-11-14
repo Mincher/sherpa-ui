@@ -29,5 +29,5 @@ test('every optional row of every kind says so, and no other row does', () => {
   assert.deepEqual(said.filter(([, , says, optional]) => says !== optional), []);
   assert.ok(said.some(([id, name, says]) => id === 'source' && name === 'fields' && says), 'a Source\'s Fields');
   assert.ok(said.some(([id, name, says]) => id === START && name === 'model' && says), 'the Start\'s Model');
-  assert.ok(said.some(([id, name, says]) => id === 'condition' && name === 'data' && says), 'a Condition\'s Data');
+  assert.ok(said.some(([id, name, says]) => id === 'condition' && name === 'a' && says), 'a Condition\'s Value A');
 });

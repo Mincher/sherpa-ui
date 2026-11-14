@@ -583,12 +583,14 @@ row (§9). To send the at-risk devices one way and the rest another, connect a C
 Pass and its Fail.
 
 A test of ONE value decides the flow: no Field's column on its header, but a Prompt's True,
-a Count, or rows into Is empty (empty or not, once). A Condition has a **Data** row: its Pass
-sends ALL of it where the value passes, its Fail where it does not, and the other way is not
-taken: nothing after it runs, and Simulate's light says Not taken. With no Data, it sends the
-value tested. "Any at risk?" is a Condition (Risk > 50) whose Pass goes to Fix, and Is empty
-on that Pass, whose Pass fires "All healthy" once, only when none is at risk. "Fixed?" is
-Equals true on an agent's True, its Data the rows. On a column, Data is not used, and says so.
+a Count, or rows into Is empty (empty or not, once). The data comes in at the header, always.
+The value to test, where it is not the data, goes into **Value A**: its Pass sends ALL that
+came into the header where the value passes, its Fail where it does not, and the other way is
+not taken: nothing after it runs, and Simulate's light says Not taken. With no Value A, it tests
+its header and sends the value tested. "Any at risk?" is a Condition (Risk > 50) whose Pass
+goes to Fix, and Is empty on that Pass, whose Pass fires "All healthy" once, only when none is
+at risk. "Fixed?" is Equals true, the rows on its header and the agent's True on its Value A.
+A column is tested on the header: on Value A it warns.
 
 The **Boolean** node is "if true then", with no rows: what comes in on its header goes out of its
 header, of the same type, where it is true (a number above 0, true, rows with a row, an object

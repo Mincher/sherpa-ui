@@ -140,6 +140,8 @@ export function leafOf(drawn: DrawnGraph, node: GraphNode): { leaf: ConditionLea
     return from && out?.gives === 'field' ? [{ from, out }] : [];
   })[0];
   if (!TEST_KINDS.has(node.kind)) return { fault: `"${node.heading}" says no condition: connect a Condition` };
+  // Value A joined: it tests one value, not a column, so it says no condition on rows (TODO 994).
+  if (graph.connections.some((r) => r.to === `${node.id}/a`)) return { fault: `"${node.heading}" tests its Value A, one value: no condition on rows` };
   if (!via || typeof via.out.value !== 'string' || !via.out.value) return { fault: `"${node.heading}" tests no Field: connect one in` };
   // A Field that reads null sends nothing, and says why.
   const silent = (via.from.warnings ?? []).find((w) => w.row === undefined || w.row === via.out.name);

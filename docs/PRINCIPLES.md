@@ -177,8 +177,9 @@ The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and
 and Fail result outputs then we don't need the Check node at all"; "This removes the need for the 'True' property in
 Condition nodes, too"): no test has a True row, no node a True or a False socket, and there is no Branch node. A test of a
 column gives Pass, the rows that hold, and Fail, the rows that do not; its Pass says its tree. A test of ONE value (an agent's
-True, a number, Is empty on rows) sends ALL its Data, else the value, by Pass or by Fail, and nothing after the other way
-runs. The **Boolean** is "if true then": what comes in goes on where it is true (above 0, true, not empty), else the route
+True, a number, Is empty on rows) sends ALL that came into its header, else the value, by Pass or by Fail, and nothing
+after the other way runs. The data comes in at the header, always; the value tested, where it is not the data, on Value A
+(Will, TODO 994). The **Boolean** is "if true then": what comes in goes on where it is true (above 0, true, not empty), else the route
 stops. Counting rows is a Math type, Count.
 
 **20. Tokens.** Read a token as `var(--sherpa-x, <the value it resolves to>)`.

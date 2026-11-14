@@ -72,8 +72,9 @@ test('the registry says each socket: a row\'s and the header\'s; no node has a T
   // A Condition's header sends nothing, and it has no True row (plan 971 §9).
   assert.equal(socketType(NODE_KINDS.condition, undefined, 'output'), undefined, 'a Condition\'s header sends nothing');
   assert.equal(socketType(resolveKind(NODE_KINDS.condition), 'true', 'output'), undefined, 'a Condition has no True');
-  // A test of one value: its value on its header, its Data on a row, and its Pass and Fail rows (plan 971 §9).
-  assert.deepEqual([[undefined, 'input'], ['data', 'input'], ['pass', 'output'], ['fail', 'output'], [undefined, 'output']].map(([row, side]) => socketType(resolveKind(NODE_KINDS.condition), row, side)), ['any', 'any', 'object', 'object', undefined]);
+  // A test: its data on its header, the value it tests when that is not the data on Value A, and its Pass and Fail rows
+  // (plan 971 §9; TODO 994).
+  assert.deepEqual([[undefined, 'input'], ['a', 'input'], ['pass', 'output'], ['fail', 'output'], [undefined, 'output']].map(([row, side]) => socketType(resolveKind(NODE_KINDS.condition), row, side)), ['any', 'any', 'object', 'object', undefined]);
   assert.equal(takesMany(kinds.gate), true);
   assert.equal(takesMany(kinds.gate, 'tags'), false);
   assert.equal(takesMany(NODE_KINDS.result), false);
@@ -106,7 +107,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
     ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'time › between', 'time › duration',
   ]);
   assert.deepEqual([...new Set(split.map(([name]) => name.split(' › ')[0]))], [...TEST_KINDS]);
-  // No kind forks (plan 944): only a test branches, by Pass and Fail rows that, on one value, pass on its Data. A check that sends
+  // No kind forks (plan 944): only a test branches, by Pass and Fail rows that, on one value, pass on its header's data. A check that sends
   // a boolean on its header says `output`: a Trigger (its True, to the Start: plan 949), a Preset (a scope's row), a Time
   // and a Tag.
   assert.deepEqual(named((k) => k.branches), []);
@@ -119,8 +120,8 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   assert.deepEqual(typed.filter(([, rows]) => rows.some((r) => r.name === 'true')).map(([name]) => name), ['prompt › boolean', 'runbook › boolean', 'skill › boolean']);
   assert.deepEqual(all.filter(([, k]) => Object.values(k.types ?? {}).some((t) => t.input)).map(([n]) => n), ['condition', 'portal']);
   // A comparison tests what comes in on its header (plan 783 D3): a Field's column, or a value.
-  // And and Or take anything, several (TODO 939); Not one boolean.
-  assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
+  // And and Or take anything, several (TODO 939); Not and Is empty one of anything, its data (TODO 994).
+  assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['any', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   // Every kind a workflow runs, the Trigger (plan 941), the Branch, the end and a portal, which passes on what reaches it (TODO 779), among them.
   assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'fork', 'boolean', 'organise', 'value', 'field', 'math', 'time', 'text', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);

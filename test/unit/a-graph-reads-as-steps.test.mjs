@@ -24,7 +24,7 @@ const graph = () => ({
     N('q', 'prompt', 1400, 0, 'act'), N('o', 'result', 1700, 0, 'act'),
   ],
   connections: [
-    { from: 's/rows', to: 'f' }, { from: 'f/field', to: 'cond' }, { from: 'cond/pass', to: 'c' }, { from: 's/rows', to: 'c/data' },
+    { from: 's/rows', to: 'f' }, { from: 'f/field', to: 'cond' }, { from: 'cond/pass', to: 'c/a' }, { from: 's/rows', to: 'c' },
     { from: 'c/pass', to: 'q' }, { from: 'c/fail', to: 'o' }, { from: 'm/model', to: 'q/model' }, { from: 'q/answer', to: 'o' },
   ],
 });

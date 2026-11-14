@@ -61,19 +61,19 @@ test('a kind that still says `branches: true` draws no True and no False: the op
   assert.deepEqual(nodeFlow(workflowGraph(flow([node('t', 'time')], []), {}, kinds), 't').outgoing.map((o) => o.socket), ['Out', 'Pass', 'Fail']);
 });
 
-test('a test of one value has two ways: its value on its header, Pass and Fail send its Data on the way taken; the other is not taken', () => {
-  const rows = resolveKind(NODE_KINDS.condition, 'gt').rows.filter((r) => ['pass', 'fail', 'data'].includes(r.name)).map((r) => ({ name: r.name, ...(r.input ? { input: r.input } : {}), ...(r.output ? { output: r.output, passes: r.passes } : {}) }));
+test('a test of one value has two ways: its value on Value A, Pass and Fail send its header\'s data on the way taken; the other is not taken', () => {
+  const rows = resolveKind(NODE_KINDS.condition, 'gt').rows.filter((r) => ['pass', 'fail', 'a'].includes(r.name)).map((r) => ({ name: r.name, ...(r.input ? { input: r.input } : {}), ...(r.output ? { output: r.output, passes: r.passes } : {}) }));
   assert.deepEqual(rows, [
-    { name: 'pass', output: 'object', passes: 'data' },
-    { name: 'fail', output: 'object', passes: 'data' },
-    { name: 'data', input: 'any' },
+    { name: 'pass', output: 'object', passes: true },
+    { name: 'fail', output: 'object', passes: true },
+    { name: 'a', input: 'any' },
   ]);
   const ns = [node('s', 'source', { store: 'users' }), node('f', 'field', { field: 'age' }), node('c', 'condition', { type: 'gt', b: 30 }), node('m', 'math', { type: 'count' }), node('k', 'condition', { type: 'gt', b: 0 }), node('y', 'organise'), node('n', 'organise')];
-  // The rows over 30 counted: ONE value on k's header (plan 971 §9).
-  const cs = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'm/rows' }, { from: 'm/result', to: 'k' }, { from: 's/rows', to: 'k/data' }, { from: 'k/pass', to: 'y' }, { from: 'k/fail', to: 'n' }];
+  // The rows over 30 counted: ONE value on k's Value A; the users on its header (plan 971 §9; TODO 994).
+  const cs = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'm/rows' }, { from: 'm/result', to: 'k/a' }, { from: 's/rows', to: 'k' }, { from: 'k/pass', to: 'y' }, { from: 'k/fail', to: 'n' }];
   assert.deepEqual(workflowFaults(flow(ns, cs)), []);
   const g = workflowGraph(flow(ns, cs));
-  assert.deepEqual(nodeFlow(g, 'k').incoming.filter((i) => i.from.length).map((i) => [i.socket, i.from]), [['In', ['Math › Result']], ['Data (Optional)', ['Source › Results']]]);
+  assert.deepEqual(nodeFlow(g, 'k').incoming.filter((i) => i.from.length).map((i) => [i.socket, i.from]), [['In', ['Source › Results']], ['Value A (Optional)', ['Math › Result']]]);
   assert.deepEqual(nodeFlow(g, 'k').outgoing.filter((o) => o.to.length).map((o) => [o.socket, o.to]), [['Pass', ['Organise']], ['Fail', ['Organise']]]);
   const users = [{ id: 1, age: 40 }, { id: 2, age: 20 }];
   const sim = simulateGraph(g, { users });

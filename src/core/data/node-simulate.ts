@@ -91,7 +91,7 @@ export interface Simulated {
 export type Sent = { kind: 'rows' | 'field' | 'value'; rows?: readonly Row[]; value?: unknown; note?: string; notTaken?: true };
 
 /** A test's verdict: the rows it keeps (its Pass) and those it does not (its Fail); whether it passed, where it tests a value;
- *  `one`, a test of ONE value, whose Pass or Fail sends all its Data (plan 971 §9). */
+ *  `one`, a test of ONE value, whose Pass or Fail sends all that came into its header (plan 971 §9). */
 interface Verdict {
   kept: Row[];
   lost: Row[];
@@ -297,6 +297,8 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   /** What a test says: the rows of its Field that its leaf keeps, and those it does not; of one value, whether it passes; a
    *  fault in words; or, where no rows reach it, why: that was said upstream. */
   const test = (node: GraphNode): Verdict | string | { note: string } => {
+    // Value A joined: it tests that one value, and the header is the data (TODO 994).
+    if (into(`${node.id}/a`).length) return valueTest(node) ?? { note: 'Value A sends no one value to test' };
     const read = leafOf(graph, node);
     if ('fault' in read) return valueTest(node) ?? read.fault;
     const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
@@ -325,7 +327,8 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
    *  or Start and End; Not and Is empty read its truth, and Is empty rows by whether any came. It passes or fails, and keeps
    *  no rows. None where nothing it can test comes in. */
   const valueTest = (node: GraphNode): Verdict | { note: string } | undefined => {
-    const came = into(node.id).map((p) => p.sent);
+    // What it tests: its Value A where joined, else its header (TODO 994).
+    const came = into(into(`${node.id}/a`).length ? `${node.id}/a` : node.id).map((p) => p.sent);
     if (came.some((s) => s.kind === 'field')) return undefined;
     const type = String(node.rows.find((r) => r.name === 'type')?.value ?? '');
     const rows = came.find((s) => s.rows)?.rows;
@@ -366,7 +369,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       const parts = each.flatMap((e) => (e.rows ? [e.rows] : []));
       const kept = type === 'or' ? union(each.flatMap((e) => (e.ok && e.rows ? [e.rows] : []))) : passed ? common(parts) : [];
       const keeps = new Set(kept);
-      // Values alone, no rows: one truth, its Pass or Fail sending all its Data (plan 971 §9).
+      // Values alone, no rows: one truth, its Pass or Fail sending all that came into its header (plan 971 §9).
       const one = !each.some((e) => e.rows);
       return { kept, lost: union(each.flatMap((e) => (e.base ? [e.base] : []))).filter((row) => !keeps.has(row)), passed, ...(one ? { one: true as const } : {}) };
     }
@@ -580,10 +583,10 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
         return { kind: 'rows', note: read };
       }
       if ('note' in read) return { kind: 'rows', note: read.note };
-      // One value: the way its truth takes sends ALL its Data, else the value tested; the other is not taken (plan 971 §9).
+      // One value: the way its truth takes sends ALL that came into its header, else the value tested (TODO 994); the other is not taken (plan 971 §9).
       if (read.one && (row === 'pass' || row === 'fail')) {
         if ((row === 'pass') !== !!read.passed) return { kind: 'value', note: 'Not taken', notTaken: true };
-        return into(`${node.id}/data`)[0]?.sent ?? into(node.id)[0]?.sent ?? { kind: 'value', value: 1 };
+        return into(node.id)[0]?.sent ?? into(`${node.id}/a`)[0]?.sent ?? { kind: 'value', value: 1 };
       }
       // Its Pass, the rows that hold; its Fail, the rest (plan 971 A).
       return { kind: 'rows', rows: row === 'fail' ? read.lost : read.kept };

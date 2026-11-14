@@ -41,15 +41,15 @@ test('Logic is the Condition: And and Or, Figma\'s six, Not and Is empty, then S
   for (const [id, type] of Object.entries(logic.types)) assert.ok(type.help, `${id} says what it does`);
   assert.equal(logic.types.gt.help, 'True when what comes in is greater than Value B');
   assert.equal(logic.types.in.help, 'True when what comes in is one of the Values');
-  // Each type leads with Pass and Fail (plan 971); a comparison's rows are then what its operator takes. Value A is gone (D3).
-  // No True: its Pass says the test (plan 971 §9).
+  // Each type leads with Pass and Fail (plan 971), then Value A, the value it tests when that is not the data that comes in
+  // at its header (TODO 994); then what its operator takes. No True: its Pass says the test (plan 971 §9).
   const rows = (t) => resolveKind(logic, t).rows.map((r) => [r.name, r.control, r.input, r.multiple]);
-  const split = [['pass', undefined, undefined, undefined], ['fail', undefined, undefined, undefined], ['data', undefined, 'any', undefined]];
+  const split = [['pass', undefined, undefined, undefined], ['fail', undefined, undefined, undefined], ['a', undefined, 'any', undefined]];
   assert.deepEqual(rows('eq'), [['type', 'type', undefined, undefined], ...split, ['b', 'values', 'value', undefined]]);
   assert.deepEqual(rows('in'), [['type', 'type', undefined, undefined], ...split, ['b', 'tags', 'object', true]]);
-  assert.deepEqual(rows('between').map(([n]) => n), ['type', 'pass', 'fail', 'data', 'start', 'end']);
-  assert.deepEqual(rows('and').map(([n]) => n), ['type', 'pass', 'fail', 'data']);
-  assert.deepEqual([rows('not').map(([n]) => n), rows('empty').map(([n]) => n)], [['type', 'pass', 'fail', 'data'], ['type', 'pass', 'fail', 'data']]);
+  assert.deepEqual(rows('between').map(([n]) => n), ['type', 'pass', 'fail', 'a', 'start', 'end']);
+  assert.deepEqual(rows('and').map(([n]) => n), ['type', 'pass', 'fail']);
+  assert.deepEqual([rows('not').map(([n]) => n), rows('empty').map(([n]) => n)], [['type', 'pass', 'fail', 'a'], ['type', 'pass', 'fail', 'a']]);
   // One Pass and one Fail, each the rows: every type leads with the same two.
   const [pass, fail] = resolveKind(logic, 'eq').rows.slice(1, 3);
   assert.deepEqual([pass, fail].map((r) => [r.name, r.label, r.gives, r.property]), [['pass', 'Pass', 'rows', true], ['fail', 'Fail', 'rows', true]]);
@@ -78,7 +78,7 @@ test('And joins tests: two Conditions on two Fields, their Pass into its header,
   assert.deepEqual(workflowFaults(w, NODE_KINDS, facts), []);
   const g = workflowGraph(w, facts);
   const both = node(g, 'both');
-  assert.deepEqual(names(both), ['type', 'pass', 'fail', 'data']);
+  assert.deepEqual(names(both), ['type', 'pass', 'fail']);
   assert.deepEqual([both.input, both.many, both.branches, both.warnings], ['any', true, undefined, undefined]);
   // No True or False socket, and no True row (plan 971 §9).
   assert.deepEqual([socketType(both, undefined, 'output'), socketType(both, '#false', 'output'), socketType(both, 'true', 'output')], [undefined, undefined, undefined]);
@@ -107,10 +107,10 @@ test('a comparison tests what comes in on its header — a Field\'s column, or a
   };
   assert.deepEqual(workflowFaults(w), []);
   const is = node(workflowGraph(w), 'is');
-  assert.deepEqual(names(is), ['type', 'pass', 'fail', 'data', 'b']);
+  assert.deepEqual(names(is), ['type', 'pass', 'fail', 'a', 'b']);
   // Its header sends nothing, and it has no True row (plan 971 §9).
   assert.deepEqual([is.input, is.branches, is.warnings, socketType(is, undefined, 'output'), socketType(is, 'true', 'output')], ['any', undefined, undefined, undefined, undefined]);
-  // A value came in, no rows: a test of ONE value, its Pass and Fail send the value tested, with no Data joined (plan 971 §9).
+  // A value came in, no rows: a test of ONE value, its Pass and Fail send the value tested, what came into its header (plan 971 §9; TODO 994).
   assert.deepEqual([sentFrom(w, 'is/pass'), sentFrom(w, 'is/fail')], [{ kind: 'value', value: 'Pro' }, { kind: 'value', value: 'Pro' }]);
   // Its Pass joins a number's row, no fault: "Pro" is no number, so the row warns (TODO 781, plan 971 §9); rows into its
   // header join (770), and warn.

@@ -87,12 +87,13 @@ test('no node has a True or a False socket: a Condition has no True row; a test 
   expect(await socket(page, 'Condition', 'output')).toBeNull();
   const tests = await rowsOf(page, 'Condition');
   expect(tests.filter((r) => r[3])).toEqual([['Pass', null, 'object', true, 'Properties'], ['Fail', null, 'object', true, 'Properties']]);
-  // A test of one value: its value on its header, its Data on a row, Pass and Fail as properties; with nothing in, each an object.
+  // A test: its data on its header, the value it tests when that is not the data on Value A, Pass and Fail as properties; with
+  // nothing in, each an object (TODO 994).
   expect(await card(page, 'Fixed?').getAttribute('data-input-socket')).toBe('any');
   expect(await socket(page, 'Fixed?', 'output')).toBeNull();
   const fixed = await rowsOf(page, 'Fixed?');
-  expect(fixed.filter((r) => r[0] === 'Data (Optional)' || r[3])).toEqual([
-    ['Data (Optional)', 'any', null, false, 'Parameters'], ['Pass', null, 'object', true, 'Properties'], ['Fail', null, 'object', true, 'Properties'],
+  expect(fixed.filter((r) => r[0] === 'Value A (Optional)' || r[3])).toEqual([
+    ['Value A (Optional)', 'any', null, false, 'Parameters'], ['Pass', null, 'object', true, 'Properties'], ['Fail', null, 'object', true, 'Properties'],
   ]);
   // The others: a Field, a Math and a Value send from a row; none has a header output.
   for (const heading of ['Source', 'Field', 'Value', 'Math', 'Run result']) {
@@ -135,8 +136,8 @@ test('only a test branches: a Condition\'s Pass joins a test of one value, and t
   await drag(page, middle((await socket(page, 'Fixed?', 'output', named('Pass')))!), middle((await socket(page, 'Run result', 'input'))!));
   await drag(page, middle((await socket(page, 'Fixed?', 'output', named('Fail')))!), middle((await socket(page, 'Run result', 'input', undefined, 1))!));
   expect(await connections(page)).toEqual(['c/pass → k', 'k/fail → o2', 'k/pass → o']);
-  // A value into its Data: Pass and Fail are drawn as what they send, a value each.
-  await drag(page, middle((await socket(page, 'Value', 'output', named('Value')))!), middle((await socket(page, 'Fixed?', 'input', named('Data (Optional)')))!));
-  expect(await connections(page)).toEqual(['c/pass → k', 'k/fail → o2', 'k/pass → o', 'v/value → k/data']);
-  expect((await rowsOf(page, 'Fixed?')).filter((r) => r[0] === 'Pass' || r[0] === 'Fail').map((r) => [r[0], r[2]])).toEqual([['Pass', 'value'], ['Fail', 'value']]);
+  // A value into its Value A: it tests the value, and Pass and Fail send what came into its header, the rows (TODO 994).
+  await drag(page, middle((await socket(page, 'Value', 'output', named('Value')))!), middle((await socket(page, 'Fixed?', 'input', named('Value A (Optional)')))!));
+  expect(await connections(page)).toEqual(['c/pass → k', 'k/fail → o2', 'k/pass → o', 'v/value → k/a']);
+  expect((await rowsOf(page, 'Fixed?')).filter((r) => r[0] === 'Pass' || r[0] === 'Fail').map((r) => [r[0], r[2]])).toEqual([['Pass', 'object'], ['Fail', 'object']]);
 });

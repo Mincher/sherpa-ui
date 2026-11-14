@@ -561,13 +561,13 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
         busy.delete(id);
       }
     }
-    // A test of ONE value: its Pass and Fail send what reaches its Data, else the value tested (plan 971 §9). Busy while it
-    // reads its header, so a loop back to it ends.
+    // A test of ONE value: its Pass and Fail send what reaches its header, else the value tested (plan 971 §9; TODO 994: the
+    // data comes in at the header, always). Busy while it reads its header, so a loop back to it ends.
     if (out?.passes && node && !busy.has(id)) {
       busy.add(id);
       try {
         if (testsOneValue(node, connections, sends, held, kinds)) {
-          const into = connections.find((r) => r.to === `${id}/${out.passes}`) ?? connections.find((r) => r.to === id);
+          const into = connections.find((r) => r.to === id) ?? connections.find((r) => r.to === `${id}/a`);
           return into ? sends(into.from) : undefined;
         }
       } finally {
@@ -604,6 +604,8 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
  *  rows: a column's, or the tests' rows And, Or and Not join. */
 function testsOneValue(node: WorkflowNode, connections: readonly NodeConnection[], sends: (from: string) => Reached | undefined, held: ReadonlyMap<string, WorkflowNode>, kinds: Kinds): boolean {
   if (!TEST_KINDS.has(node.kind)) return false;
+  // Value A joined: it tests that one value, and what came into its header goes by Pass or Fail, whole (TODO 994).
+  if (connections.some((r) => r.to === `${node.id}/a`)) return true;
   const into = connections.filter((r) => r.to === node.id);
   if (into.some((r) => givenAt(held.get(socketOf(r.from).node), socketOf(r.from).row, kinds)?.kind === 'field')) return false;
   const came = into.map((r) => sends(r.from)?.kind);
@@ -714,9 +716,12 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const family = kinds[node.kind]!;
     const kind = kindOf(node)!;
     const at = typeOf(family, values['type']);
-    // What comes in on a Condition's header picks the types that fit (TODO 940). One its pick does not fit is IGNORED where
-    // another fits (D2); where none does, the pick stays and the node warns (D1).
-    const inputs = kind.model === 'Condition' ? flows.filter((c) => c.to === node.id).flatMap((c) => {
+    // What a Condition tests picks the types that fit (TODO 940): its Value A where joined, else its header (TODO 994). One its
+    // pick does not fit is IGNORED where another fits (D2); where none does, the pick stays and the node warns (D1).
+    // TRAP T-the-data-comes-in-at-the-header
+    const valueA = flows.some((c) => c.to === `${node.id}/a`);
+    const tested = valueA ? `${node.id}/a` : node.id;
+    const inputs = kind.model === 'Condition' ? flows.filter((c) => c.to === tested).flatMap((c) => {
       const is = inputOf(c.from);
       // Data in its own words: rows, an object, a list.
       const said = is === 'data' ? INPUT_WORDS[sent(c.from)!.kind] : is && CONDITION_INPUT_WORDS[is];
@@ -731,6 +736,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const warnings: { row?: string; words: string }[] = [
       ...(unstarted(workflow, node) ? [{ words: 'Connect it to the Start' }] : []), ...(ring ? [{ words: `Blocked: it would start a loop, ${ring}` }] : []),
     ];
+    // Value A tests one value: a column is tested on the header, where its rows split (TODO 994).
+    if (valueA && TEST_KINDS.has(node.kind) && flows.some((c) => c.to === tested && sent(c.from)?.kind === 'field')) warnings.push({ row: 'a', words: 'Value A tests one value: connect a column to the header' });
     const readsAt = (to: string, input: InputNeeds): Map<NodeConnection, ReturnType<typeof readInput>> => new Map(flows.flatMap((r) => {
       // A steer into the header gates the node: it is no data, so it is not read, and nothing warns (TODO 939).
       // What its type ignores is not read, and warns nothing (TODO 940 D2).
@@ -743,7 +750,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // A header's words name the node, or a family's type: "Sort takes a field".
     const head = needOf(kind);
     const headed = node.heading ?? (Object.keys(family.types ?? {}).length > 1 ? at?.type.label : undefined) ?? kind.heading;
-    if (head) readsAt(node.id, { label: headed, needs: head });
+    // With Value A joined, the header is data: any of it, read as it comes (TODO 994).
+    if (head && !(valueA && TEST_KINDS.has(node.kind))) readsAt(node.id, { label: headed, needs: head });
     // A portal says its own: an Out of no name, or one no In names.
     for (const w of flow.warnings) if (w.node === node.id) warnings.push({ words: w.words });
     // The field its rows read: the Field reaching its header. Its operator warns where the field's type does not take it.
@@ -795,17 +803,13 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       // Closed to its values where they are known: tags, or the dropdown of ticks they draw as (TRAP T-a-multi-select-is-one-row).
       const closed = (plain.control === 'tags' || (plain.control === 'values' && plain.multiple && !!here?.length)) && list ? { closed: true as const } : {};
       // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A). A test's Pass and
-      // Fail never: on one value they send its Data, or the value (plan 971 §9).
+      // Fail never: on one value they send what came into its header, or the value (plan 971 §9; TODO 994).
       const idle = saysRows(row) && rowless && !row.fork;
       if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {
         warnings.push({ row: row.name, words: `${row.label} has no rows: a value comes in` });
       }
-      // A test's Pass and Fail are drawn as what they send: rows, or, on one value, what reaches its Data (plan 971 §9).
+      // A test's Pass and Fail are drawn as what they send: rows, or, on one value, what reaches its header (plan 971 §9).
       const through = row.passes ? { output: socketOfGiven(sent(`${node.id}/${row.name}`)?.kind) } : {};
-      // Data on a test of a column is not used: its Pass and Fail split the column's rows.
-      if (row.name === 'data' && row.input && TEST_KINDS.has(node.kind) && flows.some((c) => c.to === `${node.id}/data`) && !testsOneValue(node, flows, sent, held, kinds)) {
-        warnings.push({ row: row.name, words: 'Data is not used: a column is tested, so Pass and Fail split its rows' });
-      }
       // A Field's Values with none picked sends nothing, and says so.
       const silent = row.valuesOf && (has == null || (Array.isArray(has) && !has.length)) ? { hint: 'None picked: it sends nothing' } : {};
       // A Source's Fields with no fields to pick says why: no store yet, or one the app knows no fields of, which warns (TODO 969).

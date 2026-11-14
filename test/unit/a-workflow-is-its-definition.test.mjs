@@ -90,7 +90,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone: a Source names its store');
   assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
   // No True or False socket, and no True row: a test's Pass and Fail are rows (plans 944, 971 §9).
-  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['pass', 'fail', 'data', 'b']);
+  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['pass', 'fail', 'a', 'b']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -150,8 +150,8 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   ]);
   assert.deepEqual(graph.connections, good.connections);
   // Source › Field › Condition › Output (plan 783): the Condition tests the Field on its header, Value B the Value connected in.
-  // Its Pass and Fail are rows, and it forks no more (plans 944, 971); its Data a row of its own, and no True (971 §9).
-  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['pass', undefined, false], ['fail', undefined, false], ['data', undefined, false], ['b', 'active', true]]);
+  // Its Pass and Fail are rows, and it forks no more (plans 944, 971); its Value A a row of its own, and no True (971 §9).
+  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['pass', undefined, false], ['fail', undefined, false], ['a', undefined, false], ['b', 'active', true]]);
   assert.deepEqual([node('filter').input, node('filter').branches, ...['pass', 'fail'].flatMap((r) => [row('filter', r).output, row('filter', r).input])], ['any', undefined, 'object', undefined, 'object', undefined]);
   // The Field's list is its Source's store's fields; its row says its field and type.
   assert.deepEqual([row('field', 'field').choices, row('field', 'field').hint], [[{ value: 'status', label: 'Status' }, { value: 'seats', label: 'Seats' }], 'Status: a text field']);

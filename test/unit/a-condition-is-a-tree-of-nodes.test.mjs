@@ -169,9 +169,10 @@ test('in a workflow, A or (B and C) is one Field into three Conditions, an And a
   const w = seatsFlow();
   assert.deepEqual(workflowFaults(w, NODE_KINDS, { fieldsOf }), []);
   const g = workflowGraph(w, { fieldsOf });
-  // Each test gives Pass and Fail, then its Data, then its own rows; no True (plans 971, 971 §9).
-  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'data', 'b'], id);
-  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'data'], id);
+  // Each test gives Pass and Fail, then its Value A, then its own rows; no True (plans 971, 971 §9; TODO 994). And and Or
+  // have no Value A: what they join comes in at the header.
+  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'a', 'b'], id);
+  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail'], id);
   assert.ok(g.nodes.every((n) => !n.warnings), 'every connection reads what it needs');
   // Each Condition's operators are the Field's type's; an edit types Value B by it.
   assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, 70);

@@ -61,8 +61,8 @@ const line = (page: Page, from: string, to: string) => page.locator(`#root svg.g
 
 test('the Operation select picks a Logic type: And takes many of anything, has no True and no True or False socket (plans 944, 971 §9); a comparison tests its header against Value B', async ({ page }) => {
   const both = page.locator(NODE('Both'));
-  // Its Data, Pass and Fail; no True (TODO 939; plans 971, 971 §9).
-  expect(await rows(page, 'Both')).toEqual(['type', 'Data (Optional)', 'Pass', 'Fail']);
+  // Its Pass and Fail; no True (TODO 939; plans 971, 971 §9), and no Value A: what it joins comes in at its header (TODO 994).
+  expect(await rows(page, 'Both')).toEqual(['type', 'Pass', 'Fail']);
   // No output on its header and no False footer: its Pass row sends (plan 971 §9).
   expect(await both.evaluate((el) => [
     el.getAttribute('data-input-socket'), el.hasAttribute('data-input-many'), el.getAttribute('data-output-socket'), !!el.shadowRoot!.querySelector('.footer'),
@@ -70,8 +70,8 @@ test('the Operation select picks a Logic type: And takes many of anything, has n
   ])).toEqual(['any', true, null, false, true]);
   await expect(line(page, 'e1/pass', 'both')).toHaveCount(1);
   await expect(line(page, 'e2/pass', 'both')).toHaveCount(1);
-  // A comparison: what comes in on its header is tested against Value B; it has its Data, Pass and Fail (plans 971, 971 §9).
-  expect(await rows(page, 'Is active')).toEqual(['type', 'Data (Optional)', 'b', 'Pass', 'Fail']);
+  // A comparison: what comes in on its header is tested against Value B; it has its Value A, Pass and Fail (plans 971, 971 §9; TODO 994).
+  expect(await rows(page, 'Is active')).toEqual(['type', 'Value A (Optional)', 'b', 'Pass', 'Fail']);
   expect(await page.locator(NODE('Is active')).evaluate((el) => [el.getAttribute('data-input-socket'), el.getAttribute('data-output-socket')])).toEqual(['any', null]);
   expect(await page.locator(`${NODE('Is big')} sherpa-input-text[name="b"]`).getAttribute('data-label')).toBe('Value B');
   // The select names each type by the one operator list, And and Or first: two tests' Pass in, each the value it tests,
@@ -81,7 +81,7 @@ test('the Operation select picks a Logic type: And takes many of anything, has n
   expect(await page.locator(`${NODE('Both')} sherpa-input-text[name="type"]`).getAttribute('data-description')).toBe('True when every input is true: above zero, true, or not empty');
   // Is one of: Value B becomes a tag list of Values.
   await pick(page, 'Is active', 'in');
-  expect(await rows(page, 'Is active')).toEqual(['type', 'Data (Optional)', 'b', 'Pass', 'Fail']);
+  expect(await rows(page, 'Is active')).toEqual(['type', 'Value A (Optional)', 'b', 'Pass', 'Fail']);
   expect(await page.locator(`${NODE('Is active')} sherpa-input-text[name="b"]`).evaluate((el) => [el.getAttribute('data-type'), el.getAttribute('data-label'), (el as HTMLElement & { tags: string[] }).tags])).toEqual(['tags', 'Values', ['active']]);
 });
 
@@ -90,17 +90,17 @@ test('a Field\'s column into a Condition switched to And stays joined, read as r
   page.on('console', (m) => { if (/workflow|fault/i.test(m.text())) reports.push(m.text()); });
   const warning = () => page.locator(NODE('Check')).evaluate((el) => el.getAttribute('data-warning'));
   await expect(line(page, 'f/field', 'c')).toHaveCount(1);
-  expect(await rows(page, 'Check')).toEqual(['type', 'Data (Optional)', 'b', 'Pass', 'Fail']);
+  expect(await rows(page, 'Check')).toEqual(['type', 'Value A (Optional)', 'b', 'Pass', 'Fail']);
   expect(await warning()).toBeNull();
   // And: its header takes anything (TODO 939). The column stays joined, the line drawn, and nothing warns.
   await pick(page, 'Check', 'and');
-  expect(await rows(page, 'Check')).toEqual(['type', 'Data (Optional)', 'Pass', 'Fail']);
+  expect(await rows(page, 'Check')).toEqual(['type', 'Pass', 'Fail']);
   await expect(line(page, 'f/field', 'c')).toHaveCount(1);
   expect(await warning()).toBeNull();
   // Back to Equals: no warning, and its Value B kept in the draft.
   await pick(page, 'Check', 'eq');
   expect(await warning()).toBeNull();
-  expect(await rows(page, 'Check')).toEqual(['type', 'Data (Optional)', 'b', 'Pass', 'Fail']);
+  expect(await rows(page, 'Check')).toEqual(['type', 'Value A (Optional)', 'b', 'Pass', 'Fail']);
   expect(await page.locator(`${NODE('Check')} sherpa-input-text[name="b"]`).evaluate((el) => (el as HTMLElement & { value: string }).value)).toBe('active');
   // A text field: its select lists no Greater than (TODO 940).
   const options = await page.locator(`${NODE('Check')} sherpa-input-text[name="type"] option`).evaluateAll((els) => els.map((o) => (o as HTMLOptionElement).value));
