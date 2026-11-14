@@ -720,8 +720,12 @@ To write a runbook's steps as text, as its prompt, read its graph as steps:
 `graphSteps(graph)` gives each stage's steps in the flow's order, numbered "stage.place"
 ("2.1"). Each step says where its flow `goes`: a step by its number, an output, or a stop.
 Each way of a fork is apart, in its `branches`: a test's Pass and Fail, where one of them leads on. A step's `kind` is
-its node's (`condition`, `notify`). A Model that only gives a model is no step. The
-words for each step are your app's.
+its node's (`condition`, `notify`). A Model that only gives a model is no step. `graphText(graph)` says those steps in
+words (plan 960 U5, the text lens): each stage's numbered lines, a test of one value's PASS and FAIL, a column split's
+rows, and the errors and retries; `graphKey(graph)` changes with what the graph does, not where its nodes stand. Each
+kind has its words (`stepWords`); say your own kinds, or a use of your type, with `registerStepWords(kind, (node,
+graph) => words)`, and reuse an Output's line with `outputWords(node, [yourWords])`. A text form round it, your prompt's
+sections, is your app's.
 
 ### Triggers
 

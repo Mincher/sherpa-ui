@@ -8230,7 +8230,13 @@ row, where a value comes from) says both; a node's own warning names it by its o
 - **A kind reads its id from the facts' `<kind>s`** (a list, or labels by id). A field is read by its LAST part
   (`location.building`); a step's words are the caller's, read from its prompt.
 
+- **A graph reads as text the same way** (`graph-text.ts`, plan 960 U5): `graphText` says its steps, `graphSteps`'
+  order and numbers, each kind in its own words (`stepWords`; an app's by `registerStepWords`), naming what it means
+  `{{kind:id}}`. A text form round it, as a Runbook's prompt, is the app's.
+
 - Site: `src/core/data/references.ts`
 - Site: `src/core/data/node-messages.ts`
+- Site: `src/core/data/graph-text.ts`
 - Site: `test/unit/a-text-names-what-it-means.test.mjs`
+- Site: `test/unit/a-graph-reads-as-text.test.mjs`
 

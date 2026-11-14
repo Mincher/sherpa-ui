@@ -1,8 +1,8 @@
 /**
  * graph-steps.ts — a graph READ AS STEPS, beside `routeRead`: each stage's steps in order, numbered "stage.place", and
- * where each step's flow goes, each way of a fork apart (a test's Pass and Fail, a Branch's Yes and No). What an app says of each step is its own; this is the order
+ * where each step's flow goes, each way of a fork apart (a test's Pass and Fail). What an app says of each step is its own; this is the order
  * and the numbers (Will, TODO 959). A step's order is its depth along the flow, then its place, top to bottom and left to
- * right. A link into a row that only carries data (a Branch's Data, an AI node's Model) is no flow. Pure: no DOM.
+ * right. A link into a row that only carries data (a test's Data, an AI node's Model) is no flow. Pure: no DOM.
  *
  * Map:
  * - StepGoes — Where a step's flow goes: a step, by its number; an output of the graph; or nowhere.
@@ -23,7 +23,7 @@ type Kinds = Readonly<Record<string, NodeKind>>;
 export type StepGoes = { step: string; node: string } | { output: string } | { stop: true };
 
 /** One step: its number ("2.1"), its node, and where its flow goes; each way of a fork apart, by its row (`fork`): a test's
- *  `pass` and `fail`, a Branch's `yes` and `no` — where one of them leads on (plans 944, 971). */
+ *  `pass` and `fail` — where one of them leads on (plans 944, 971). */
 export interface GraphStep {
   number: string;
   node: string;

@@ -125,7 +125,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-suspended-answer-is-drawn-as-off](traps/data-layer.md#t-a-suspended-answer-is-drawn-as-off) — source-view
 - [T-a-suspended-sort-is-one-owners-job](traps/data-layer.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source-types, query, query-edits, source-view
 - [T-a-task-queue-knows-nothing-of-what-it-runs](traps/data-layer.md#t-a-task-queue-knows-nothing-of-what-it-runs) — task-queue
-- [T-a-text-names-what-it-means](traps/data-layer.md#t-a-text-names-what-it-means) — node-messages, references
+- [T-a-text-names-what-it-means](traps/data-layer.md#t-a-text-names-what-it-means) — graph-text, node-messages, references
 - [T-a-tooltip-is-not-an-axis](traps/data-layer.md#t-a-tooltip-is-not-an-axis) — format-tick
 - [T-a-value-can-be-an-object](traps/data-layer.md#t-a-value-can-be-an-object) — aggregate, data, field-catalogue, filter-state, query-edits, query-members, store, validate
 - [T-a-value-holds-child-values](traps/data-layer.md#t-a-value-holds-child-values) — field-catalogue, filter-state

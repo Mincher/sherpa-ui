@@ -37,4 +37,4 @@ Two forms, two readers, one job: a text names a thing, the app reads it, and a n
 |---|---|---|---|
 | 956a | `references.ts`; the kinds registered; `node-messages.ts` on `{{value:…}}`; the library's retrofit | unit: each kind read, a name that names nothing said; a message's values as today in the new form | — |
 | 956b | Demos: `prompt-refs.js` deleted, its users on the library's; `customer` registered; its graphs and words retrofitted | Demos' prompt and Coworker specs pass | 956a |
-| U5b | The Runbook prompt (959): `runbook-prompt.js` into the library as the text lens of a graph | Demos' `runbook-prompt.js` deleted | 956b |
+| U5b (BUILT 2026-11-14, sherpa-ui-e8; sherpa-demos-67 picked A, the split) | The text lens in the library, `graph-text.ts`: `graphKey`, `graphText`, `stepWords` and `registerStepWords`, `outputWords`. The Runbook form (its sections, risk, guardrails, where its prompt is kept) stays Demos' | Demos' `runbook-prompt.js` keeps only its form | 956b |

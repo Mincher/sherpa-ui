@@ -560,16 +560,16 @@
     }
   },
   "data.js": {
-    "files": 116,
+    "files": 117,
     "brotli": {
-      "js": 175529,
+      "js": 177188,
       "fetched": 0
     }
   },
   "index.js": {
-    "files": 301,
+    "files": 302,
     "brotli": {
-      "js": 539037,
+      "js": 540696,
       "fetched": 8607
     }
   }
