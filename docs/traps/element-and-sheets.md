@@ -1,7 +1,7 @@
 # Traps — SherpaElement and the shared sheets
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 72 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 73 entries.
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -2262,3 +2262,18 @@ bleed besides, as an element's outline paints above its children.
 - Site: `src/core/sherpa-node-sockets.css`
 - Site: `src/components/sherpa-node/sherpa-node.css`
 - Site: `src/components/sherpa-node-row/sherpa-node-row.css`
+
+### T-webkit-drops-an-unheld-state-set
+
+**WebKit collects an element's `internals.states` when no script holds it, and the next read is a NEW, EMPTY set; the
+element still matches every `:state()` the old one had** (measured 2026-11-14, WebKit 26.6, for sherpa-demos-67: a panel
+opened by `minimise(false)` kept `:state(minimised)`, so its body had `display: none`). `toggleState` writes only a change
+(`T-a-redraw-keeps-what-it-can`), so it asked the new set, found no `minimised`, and never deleted it: the stale state
+stayed matched for good. In a page of garbage, a bare custom element shows it: `[...states]` is empty while
+`matches(':state(a)')` is true; one whose set a field holds keeps both. Chromium and Firefox keep the set with its element.
+
+`SherpaElement` holds the set in `#states` from its first write, and `hasState` reads that one. Never read `states` fresh
+off `internals` to test or change a state.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-a-state-outlives-a-collection.spec.ts`

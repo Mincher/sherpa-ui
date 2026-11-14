@@ -884,7 +884,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (154)
+## SherpaElement and the shared sheets (155)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -1039,6 +1039,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-tokens-css-never-reaches-shadow](traps/element-and-sheets.md#t-tokens-css-never-reaches-shadow) — sherpa-element, sherpa-style-modes
 - [T-unfurl-keeps-the-flow](traps/data-layer.md#t-unfurl-keeps-the-flow) — node-graph
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
+- [T-webkit-drops-an-unheld-state-set](traps/element-and-sheets.md#t-webkit-drops-an-unheld-state-set) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
 ## Other components (155)

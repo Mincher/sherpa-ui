@@ -674,7 +674,7 @@ export abstract class SherpaElement extends Base {
   /** Set or clear a CUSTOM STATE, read as `:host(:state(name))` — private state
    *  is never a public `data-*`. As `toggleAttribute`. TRAP T-private-state-is-a-custom-state */
   protected toggleState(name: string, on?: boolean): boolean {
-    const { states } = this.internals;
+    const states = (this.#states ??= this.internals.states);
     const want = on ?? !states.has(name);
     // A state set again is a restyle of the whole subtree in Chromium: only a change is written. TRAP T-a-redraw-keeps-what-it-can
     if (want === states.has(name)) return want;
@@ -683,9 +683,12 @@ export abstract class SherpaElement extends Base {
     return want;
   }
 
+  /** Held, or WebKit collects it and hands back an empty set the host still matches. TRAP T-webkit-drops-an-unheld-state-set */
+  #states: CustomStateSet | undefined;
+
   /** Is this custom state set? */
   protected hasState(name: string): boolean {
-    return this.#internals?.states.has(name) ?? false;
+    return this.#states?.has(name) ?? false;
   }
 
   /* ── Events ──────────────────────────────────────────────────────────── */
