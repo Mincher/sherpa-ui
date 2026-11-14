@@ -121,6 +121,36 @@ test('an edge dragged makes a stage wider and the next as much narrower, no node
   assert.equal(checkWorkflow(wide), true);
 });
 
+test('with Cmd/Ctrl the edge moves the stages after it on, each width kept, their nodes with them; the first stage\'s start edge, plain or moving all (985)', () => {
+  let w = editWorkflow(flow(), { addStage: {} });
+  w = fitStages(editWorkflow(editWorkflow(w, { node: 'b', set: { x: stageBands(w, nodeWidth).bands[1].left + 40 } }), { restage: ['b'] }), nodeWidth);
+  const [one, two] = stageBands(w, nodeWidth).bands;
+  const at = (wf, id) => wf.nodes.find((n) => n.id === id).x;
+  const edges = (wf) => stageBands(fitStages(wf, nodeWidth), nodeWidth).bands.map((b) => [b.left, b.right]);
+  // Stage 2 has no room before b, so a plain edge stays; moving on, it needs none: stage 2 and b go 40 on.
+  const on = editWorkflow(w, { resizeStage: { id: 'stage-1', w: one.right - one.left + 40, moves: true } });
+  assert.deepEqual(edges(on), [[one.left, one.right + 40], [two.left + 40, two.right + 40]]);
+  assert.deepEqual([at(on, 'a'), at(on, 'b')], [at(w, 'a'), at(w, 'b') + 40]);
+  // Back past its own node: it stops at the room a needs.
+  const least = stageWidthRange(w, 'stage-1', nodeWidth).least;
+  const back = editWorkflow(w, { resizeStage: { id: 'stage-1', w: 10, moves: true } });
+  assert.deepEqual(edges(back), [[one.left, one.left + least], [two.left - (one.right - one.left - least), two.right - (one.right - one.left - least)]]);
+  // The last stage has no end edge; any but the first has no start edge of its own.
+  assert.equal(editWorkflow(w, { resizeStage: { id: 'stage-2', w: 900, moves: true } }), w);
+  assert.equal(editWorkflow(w, { resizeStage: { id: 'stage-2', w: 900, start: true } }), w);
+  // The first stage's start edge: plain, 60 wider to the left, its right edge kept, no node moved; no further in than a.
+  const out = editWorkflow(w, { resizeStage: { id: 'stage-1', w: one.right - one.left + 60, start: true } });
+  assert.deepEqual(edges(out), [[one.left - 60, one.right], [two.left, two.right]]);
+  assert.deepEqual(out.nodes.map((n) => n.x), w.nodes.map((n) => n.x));
+  const inside = editWorkflow(w, { resizeStage: { id: 'stage-1', w: 10, start: true } });
+  assert.equal(edges(inside)[0][0], at(w, 'a') - STAGE_PAD);
+  // Moving all: every stage and node 60 on.
+  const all = editWorkflow(w, { resizeStage: { id: 'stage-1', w: one.right - one.left - 60, start: true, moves: true } });
+  assert.deepEqual(edges(all), [[one.left + 60, one.right + 60], [two.left + 60, two.right + 60]]);
+  assert.deepEqual(all.nodes.map((n) => n.x), w.nodes.map((n) => n.x + 60));
+  assert.equal(checkWorkflow(all), true);
+});
+
 test('given the nodes\' heights, the edge goes past them: the stage it narrows pushes its nodes in, in order, the gap kept, to its widest node (901)', () => {
   // Stage 1 holds a Source at 48 and two Organise nodes at 400, side by side down; stage 2 one at its start.
   let w = editWorkflow({ ...flow(), nodes: [...flow().nodes, { id: 'c', kind: 'organise', x: 400, y: 300 }] }, { addStage: {} });

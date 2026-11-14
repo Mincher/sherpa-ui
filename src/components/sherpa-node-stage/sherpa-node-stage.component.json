@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-stage",
-  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge, in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900). Will, 2026-11-10 · TODO 893",
+  "$description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge, in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900); it is the next stage's left edge too. The first stage has a START edge of its own. Held with Cmd/Ctrl, an edge asks the stages after it to move on, each width kept (TODO 985). Will, 2026-11-10 · TODO 893",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -189,6 +189,26 @@
           "popover": "manual",
           "aria-hidden": "true"
         }
+      },
+      {
+        "el": "div",
+        "class": "edge-start sherpa-anchor",
+        "part": "edge-start",
+        "attrs": {
+          "role": "separator",
+          "aria-orientation": "vertical",
+          "aria-label": "Resize stage",
+          "tabindex": "0"
+        }
+      },
+      {
+        "el": "span",
+        "class": "tip sherpa-tip edge-start-tip",
+        "part": "edge-start-tip",
+        "attrs": {
+          "popover": "manual",
+          "aria-hidden": "true"
+        }
       }
     ]
   },
@@ -218,7 +238,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "it is the first stage: Move left is off. The HOST writes it"
+      "description": "it is the first stage: Move left is off, and it has a start edge. The HOST writes it"
     },
     {
       "$type": "prop",
@@ -350,6 +370,11 @@
     },
     {
       "$type": "state",
+      "name": "not-first",
+      "selector": ":host(:not([data-first]))"
+    },
+    {
+      "$type": "state",
       "name": "focus-visible",
       "selector": ".bar:focus-visible"
     }
@@ -383,6 +408,8 @@
       "composed": true,
       "detail": {
         "done": "boolean",
+        "moves": "true | undefined",
+        "start": "boolean",
         "width": "number"
       }
     }
@@ -401,8 +428,6 @@
     "tip-name.font-weight": "{sherpa.font-weight-medium}",
     "swatch.inline-size": "{sherpa.display-mode-size-2xs}",
     "swatch.block-size": "{sherpa.display-mode-size-2xs}",
-    "band.border-inline": "{sherpa.display-mode-border-width-base}",
-    "edge.z-index": "{sherpa.layer-content}",
-    "edge.inline-size": "{sherpa.display-mode-space-xs}"
+    "band.border-inline": "{sherpa.display-mode-border-width-base}"
   }
 }

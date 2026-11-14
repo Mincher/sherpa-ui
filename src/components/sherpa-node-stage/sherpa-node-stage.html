@@ -3,7 +3,9 @@
   along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands
   and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end,
   Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge,
-  in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900). Will, 2026-11-10 · TODO 893
+  in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900); it is the next stage's left
+  edge too. The first stage has a START edge of its own. Held with Cmd/Ctrl, an edge asks the stages after it to move on,
+  each width kept (TODO 985). Will, 2026-11-10 · TODO 893
 
   Public API:
     data-heading      its name, on its bar (default Stage)
@@ -16,7 +18,7 @@
     data-fixed        its edge takes no drag: the setting Allow stage resizing is off
     data-pushes       its edge goes past the nodes and pushes them in: the setting Allow stage resizes to move nodes is on
     data-removable    More offers Remove: it is not the only stage. The HOST writes it
-    data-first        it is the first stage: Move left is off. The HOST writes it
+    data-first        it is the first stage: Move left is off, and it has a start edge. The HOST writes it
     data-last         it is the last stage: Move right is off, and it has no edge to drag. The HOST writes it
     data-locked       the host is read only: no Move, no More and no edge
 
@@ -26,8 +28,9 @@
   Fires:
     stage-menu-select — More's Edit, Add stage before, Add stage after or Remove was picked. detail: { action: 'edit' | 'add-before' | 'add-after' | 'remove' }
     stage-move — Move left or Move right was pressed. detail: { by } — -1 left, 1 right
-    stage-resize — its end edge was dragged, or moved by a key. detail: { width, done } — the width asked, in plane px;
-                   `done` on the release or the key
+    stage-resize — its end edge was dragged, or moved by a key. detail: { width, done, start, moves } — the width asked,
+                   in plane px; `done` on the release or the key; `start`, by its start edge; `moves`, Cmd/Ctrl held at
+                   the press: the stages after it move on, each width kept
 -->
 <template id="default">
   <div class="column" part="column">
@@ -59,4 +62,7 @@
   <!-- Its END edge, in the gap after it: drag it, or the arrow keys, Home and End. TRAP T-an-edge-resizes-its-box -->
   <div class="edge sherpa-anchor" part="edge" role="separator" aria-orientation="vertical" aria-label="Resize stage" tabindex="0"></div>
   <span class="tip sherpa-tip edge-tip" popover="manual" part="edge-tip" aria-hidden="true">Resize stage</span>
+  <!-- The first stage's START edge, astride the gap before it: every other stage's is the end edge of the one before. -->
+  <div class="edge-start sherpa-anchor" part="edge-start" role="separator" aria-orientation="vertical" aria-label="Resize stage" tabindex="0"></div>
+  <span class="tip sherpa-tip edge-start-tip" popover="manual" part="edge-start-tip" aria-hidden="true">Resize stage</span>
 </template>

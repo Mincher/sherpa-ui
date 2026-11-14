@@ -5,6 +5,7 @@
  */
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
+import { primaryKey } from '../../core/ui/modifier-key.js';
 // Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -40,16 +41,20 @@ export class SherpaNodeStage extends SherpaElement {
     for (const [cls, by] of [['.move-left', -1], ['.move-right', 1]] as const) {
       this.$(cls)?.addEventListener('button-click', () => this.emit('stage-move', { by }));
     }
-    const edge = this.$('.edge');
-    if (edge) {
-      // The helper works in screen px; the stage asks in plane px.
+    for (const [cls, grows] of [['.edge', 1], ['.edge-start', -1]] as const) {
+      const edge = this.$(cls);
+      if (!edge) continue;
+      // Cmd/Ctrl at the press or the key: the stages after it move on, each width kept (TODO 985). Heard before the helper.
+      for (const type of ['pointerdown', 'keydown'] as const) edge.addEventListener(type, (e) => { this.#moves = primaryKey(e); });
+      const start = grows < 0 ? { start: true } : {};
+      // The helper works in screen px; the stage asks in plane px. The host clamps the start edge.
       resizeByEdge(edge, {
         measure: () => this.num('data-w', 320) * this.#zoom(),
-        apply: (px, done) => this.emit('stage-resize', { width: Math.round(px / this.#zoom()), done }),
-        grows: 1,
-        min: () => this.num('data-min-w', 0) * this.#zoom(),
-        max: () => this.num('data-max-w', this.num('data-w', 320)) * this.#zoom(),
-        describe: () => ({ now: this.num('data-w', 320), min: this.num('data-min-w', 0), max: this.num('data-max-w', this.num('data-w', 320)) }),
+        apply: (px, done) => this.emit('stage-resize', { width: Math.round(px / this.#zoom()), done, ...start, ...(this.#moves ? { moves: true } : {}) }),
+        grows,
+        min: () => (grows > 0 ? this.num('data-min-w', 0) : 0) * this.#zoom(),
+        ...(grows > 0 ? { max: () => this.num('data-max-w', this.num('data-w', 320)) * this.#zoom() } : {}),
+        describe: () => (grows > 0 ? { now: this.num('data-w', 320), min: this.num('data-min-w', 0), max: this.num('data-max-w', this.num('data-w', 320)) } : { now: this.num('data-w', 320) }),
       });
     }
     this.#sync();
@@ -69,6 +74,9 @@ export class SherpaNodeStage extends SherpaElement {
     this.$('.move-left')?.toggleAttribute('disabled', this.hasAttribute('data-first'));
     this.$('.move-right')?.toggleAttribute('disabled', this.hasAttribute('data-last'));
   }
+
+  /** Cmd/Ctrl was held at the edge's last press or key. */
+  #moves = false;
 
   /** The canvas's zoom, as its columns are drawn at it. */
   #zoom(): number {

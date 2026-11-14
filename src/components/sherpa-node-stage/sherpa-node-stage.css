@@ -88,8 +88,9 @@
 /* ── The edge ─────────────────────────────────────────────────────────── */
 /* Its END edge: a strip astride the gap after it (STAGE_GAP, 16 plane px, scaled as the plane is), never narrower than 8px,
    with a line down its middle while it is pointed at, focused or held. It rises over the plane, as the bar does. The last
-   stage has none, nor a locked or a fixed one. TRAP T-an-edge-resizes-its-box */
-.edge {
+   stage has none, nor a locked or a fixed one. The first stage has a START edge too, astride the gap before it (TODO 985).
+   TRAP T-an-edge-resizes-its-box */
+:is(.edge, .edge-start) {
   --_anchor: --sherpa-stage-edge;
   --_gap: calc(16px * var(--_zoom, 1));
   position: absolute;
@@ -103,9 +104,12 @@
   pointer-events: auto;
 }
 .edge-tip { --_anchor: --sherpa-stage-edge; --_area: block-end; }
+.edge-start { --_anchor: --sherpa-stage-edge-start; inset-inline-start: calc(var(--_gap) / -2); }
+.edge-start-tip { --_anchor: --sherpa-stage-edge-start; --_area: block-end; }
 :host(:is([data-last], [data-locked], [data-fixed])) :is(.edge, .edge-tip) { display: none; }
-.edge:focus-visible { outline: none; }
-.edge::before {
+:host(:is(:not([data-first]), [data-locked], [data-fixed])) :is(.edge-start, .edge-start-tip) { display: none; }
+:is(.edge, .edge-start):focus-visible { outline: none; }
+:is(.edge, .edge-start)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -113,12 +117,12 @@
   inline-size: 0;
   border-inline-start: var(--sherpa-display-mode-border-width-lg, 2px) solid transparent;
 }
-.edge:is(:hover, :focus-visible, [data-dragging])::before {
+:is(.edge, .edge-start):is(:hover, :focus-visible, [data-dragging])::before {
   border-color: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
 
 @media (forced-colors: active) {
-  .edge:is(:hover, :focus-visible, [data-dragging])::before { border-color: Highlight; }
+  :is(.edge, .edge-start):is(:hover, :focus-visible, [data-dragging])::before { border-color: Highlight; }
   .bar { border-block-end-color: CanvasText; }
   .swatch { forced-color-adjust: none; background: CanvasText; }
   .band { border-inline-color: CanvasText; }

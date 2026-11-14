@@ -16,14 +16,15 @@
  * - stageOf — The stage a node is in, or none.
  * - stageBands — Each stage's band, and the moves that keep each clear of the one before.
  * - heldBands — Each stage's band as it stands, its left edge where it was last laid out, not laid out again; nodes `moving`…
- * - stageNodes — Each node in a stage before there is a layout, a writer's: named, else its nearest named, else by column.
  * - placeStages — Each stage a writer gave with no place, put at the left of its nodes, and coloured in turn.
+ * - stageNodes — Each node in a stage before there is a layout, a writer's: named, else its nearest named, else by column.
  * - fitStages — The workflow with every node in a stage, each stage's edge, and the nodes a push moved.
  * - stageAt — The stage whose band holds a place across the canvas, or none.
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
  * - restage — The workflow with these nodes in the stage their middle stands in, or the point given does; else the nearest.
  * - orderStages — The workflow with its stages in a new order, each packed after the one before, its nodes with it.
  * - stageWidthRange — The widths a stage's end edge can give it: room for its nodes, and the next one's; or, pushing, their widest.
+ * - StageDrag — How a stage's edge is dragged: by its start, or moving the stages after it on (Cmd/Ctrl).
  * - resizeStage — The workflow with a stage this wide and the next as much narrower, by the edge between them; given the
  * - stageFaults — Every fault in a workflow's stages, in words.
  * - nextStageColour — The colour a new stage takes: the first of the palette no stage wears; all worn, the next in turn.
@@ -66,6 +67,8 @@ export const DEFAULT_STAGE: NodeStage = { id: 'stage-1', label: 'Stage 1', x: 0 
 interface Staged {
   nodes: readonly { id: string; x: number; y: number; stage?: string; size?: { w: number } }[];
   stages?: readonly NodeStage[];
+  /** Its zip ties: a stage moved on takes those whose every line runs between its nodes (TODO 985). */
+  ties?: readonly { x: number; connections: readonly { from: string; to: string }[] }[];
 }
 
 /** A node's width, in plane px: its kind's natural width, times how far a reader grew it. */
@@ -301,17 +304,27 @@ function pushIn(nodes: Staged['nodes'], widthOf: WidthOf, heights: Heights, limi
   return moves;
 }
 
+/** How a stage's edge is dragged: by its START (the first stage's own left edge), or `moves`, with Cmd/Ctrl, the stages
+ *  after it keeping their widths and moving on, their nodes with them (TODO 985). */
+export interface StageDrag {
+  start?: boolean;
+  moves?: boolean;
+}
+
 /**
  * The workflow with the stage `id` `w` wide, by its END edge, and the stage after it starting as far on, as much
  * narrower: its right edge stays (TODO 900). Each keeps room for its nodes and STAGE_LEAST; the edge stops there, and no
  * node moves. Given the nodes' `heights` (TODO 901), the edge goes past them: the stage it narrows pushes its nodes in, as
- * `pushIn` says, and stops at its widest node. The last stage has no edge to drag: the same one.
+ * `pushIn` says, and stops at its widest node. The last stage has no end edge to drag: the same one. `how` drags it by its
+ * start, or moves the stages after it on (`StageDrag`).
  */
-export function resizeStage<W extends Staged>(workflow: W, id: string, w: number, widthOf: WidthOf, heights?: Heights): W {
+export function resizeStage<W extends Staged>(workflow: W, id: string, w: number, widthOf: WidthOf, heights?: Heights, how: StageDrag = {}): W {
+  const stages = workflow.stages ?? [];
+  const at = stages.findIndex((s) => s.id === id);
+  if (how.start) return at === 0 ? byStart(workflow, w, widthOf, heights, !!how.moves) : workflow;
+  if (how.moves) return at >= 0 && at < stages.length - 1 ? movedOn(workflow, at, w, widthOf, heights) : workflow;
   const range = stageWidthRange(workflow, id, widthOf, !!heights);
   if (!range) return workflow;
-  const stages = workflow.stages!;
-  const at = stages.findIndex((s) => s.id === id);
   const { bands } = stageBands(workflow, widthOf);
   const [a, b] = [bands[at]!, bands[at + 1]!];
   const edge = a.left + Math.round(Math.min(Math.max(w, range.least), range.most));
@@ -326,6 +339,54 @@ export function resizeStage<W extends Staged>(workflow: W, id: string, w: number
     stages: stages.map((s, i) => (i === at ? { ...s, x: a.left, w: edge - a.left } : i === at + 1 ? { ...s, x: start, w: b.right - start } : s)),
     ...(Object.keys(moves).length ? { nodes: workflow.nodes.map((n) => (n.id in moves ? { ...n, x: moves[n.id]! } : n)) } : {}),
   };
+}
+
+/** The stage at `at` `w` wide by its end edge, and every stage after it moved on as far, each width kept, its nodes and the
+ *  ties between them with it (TODO 985). It keeps room for its own nodes; pushing, it pushes them in. */
+function movedOn<W extends Staged>(workflow: W, at: number, w: number, widthOf: WidthOf, heights?: Heights): W {
+  const stages = workflow.stages!;
+  const { bands } = stageBands(workflow, widthOf);
+  const a = bands[at]!;
+  const range = stageWidthRange(workflow, stages[at]!.id, widthOf, !!heights)!;
+  const edge = a.left + Math.round(Math.max(w, range.least));
+  const by = edge - a.right;
+  if (!by) return workflow;
+  const own = workflow.nodes.filter((n) => stageOf(workflow, n) === a.id);
+  const pushed = heights && by < 0 ? pushIn(own, widthOf, heights, edge - STAGE_PAD, -1, a.left + STAGE_PAD) : {};
+  const after = new Set(stages.slice(at + 1).map((s) => s.id));
+  const moved = shifted(workflow, (n) => after.has(stageOf(workflow, n) ?? ''), by, pushed);
+  return { ...moved, stages: stages.map((s, i) => (i === at ? { ...s, x: a.left, w: edge - a.left } : i > at ? { ...s, x: bands[i]!.left + by } : s)) };
+}
+
+/** The first stage `w` wide by its START edge, its right edge kept: it stops at its nodes, or, pushing, pushes them in.
+ *  `moves`: every stage moved as far, each width kept, its nodes and ties with it (TODO 985). */
+function byStart<W extends Staged>(workflow: W, w: number, widthOf: WidthOf, heights: Heights | undefined, moves: boolean): W {
+  const stages = workflow.stages!;
+  const { bands } = stageBands(workflow, widthOf);
+  const a = bands[0]!;
+  if (moves) {
+    const by = Math.round(a.right - w - a.left);
+    if (!by) return workflow;
+    const staged = new Set(stages.map((s) => s.id));
+    return { ...shifted(workflow, (n) => staged.has(stageOf(workflow, n) ?? ''), by), stages: stages.map((s, i) => ({ ...s, x: bands[i]!.left + by })) };
+  }
+  const own = workflow.nodes.filter((n) => stageOf(workflow, n) === a.id);
+  const widest = Math.max(STAGE_LEAST, ...own.map((n) => widthOf(n) + 2 * STAGE_PAD));
+  const most = heights ? a.right - widest : Math.min(a.right - STAGE_LEAST, ...own.map((n) => n.x - STAGE_PAD));
+  const left = Math.round(Math.min(a.right - w, most));
+  if (left === a.left) return workflow;
+  const pushed = heights && left > a.left ? pushIn(own, widthOf, heights, left + STAGE_PAD, 1, a.right - STAGE_PAD) : {};
+  return { ...shifted(workflow, () => false, 0, pushed), stages: stages.map((s, i) => (i === 0 ? { ...s, x: left, w: a.right - left } : s)) };
+}
+
+/** The workflow with the nodes `takes` picks moved `by` along the row, each tie whose every line runs between them with
+ *  them; and the nodes in `to` at their new x. */
+function shifted<W extends Staged>(workflow: W, takes: (n: Staged['nodes'][number]) => boolean, by: number, to: Readonly<Record<string, number>> = {}): W {
+  const moved = new Set(by ? workflow.nodes.filter(takes).map((n) => n.id) : []);
+  const nodes = workflow.nodes.map((n) => (n.id in to ? { ...n, x: to[n.id]! } : moved.has(n.id) ? { ...n, x: n.x + by } : n));
+  const inside = (ref: string): boolean => moved.has(ref.split('/')[0]!);
+  const ties = workflow.ties?.map((t) => (t.connections.length && t.connections.every((c) => inside(c.from) && inside(c.to)) ? { ...t, x: t.x + by } : t));
+  return { ...workflow, nodes, ...(ties ? { ties } : {}) };
 }
 
 /** Every fault in a workflow's stages, in words: two of one id, one with no name, a node in a stage not there. */

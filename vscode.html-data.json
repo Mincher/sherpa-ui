@@ -3038,7 +3038,7 @@
     },
     {
       "name": "sherpa-node-stage",
-      "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge, in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900). Will, 2026-11-10 · TODO 893",
+      "description": "one STAGE of a workflow: a column across a sherpa-layout-canvas, in its `columns` slot. Its BAR runs along the canvas's top with its name; its BAND, faint in its colour, runs down the view. Its host writes where it stands and how wide (data-x, data-w, plane px): it pans and zooms across, never down. On a hover its bar shows, at its end, Move left, Move right and More: Edit, Add stage before, Add stage after and Remove. Its host acts on each. Its END edge, in the gap after it, is a separator: a drag or the arrow keys ask a new width (TODO 900); it is the next stage's left edge too. The first stage has a START edge of its own. Held with Cmd/Ctrl, an edge asks the stages after it to move on, each width kept (TODO 985). Will, 2026-11-10 · TODO 893",
       "attributes": [
         {
           "name": "data-colour",
@@ -3050,7 +3050,7 @@
         },
         {
           "name": "data-first",
-          "description": "it is the first stage: Move left is off. The HOST writes it",
+          "description": "it is the first stage: Move left is off, and it has a start edge. The HOST writes it",
           "valueSet": "v"
         },
         {

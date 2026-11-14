@@ -161,16 +161,17 @@ export function bindStages(canvas: HTMLElement, host: StageHost): Stages {
     });
   };
 
-  /** An edge dragged or keyed: the stage this wide, the next as much narrower; pushing, the nodes it meets moved in.
+  /** An edge dragged or keyed: the stage this wide, the next as much narrower; pushing, the nodes it meets moved in. By the
+   *  first stage's start edge, its right edge kept; with Cmd/Ctrl, the stages after it move on, each width kept (TODO 985).
    *  Drawn as it goes; written on the release, ONE step. */
   const onResize = (event: Event): void => {
     const id = stageOfEvent(event);
-    const { width, done } = (event as CustomEvent<{ width: number; done: boolean }>).detail;
+    const { width, done, start, moves } = (event as CustomEvent<{ width: number; done: boolean; start?: boolean; moves?: boolean }>).detail;
     const from = resizing?.from ?? host.workflow();
     if (!id || !from || host.readOnly()) return;
     const pushes = (event.target as HTMLElement).hasAttribute('data-pushes') && host.heightOf;
     const heights = pushes ? Object.fromEntries(from.nodes.map((n) => [n.id, host.heightOf!(n)])) : undefined;
-    const now = editWorkflow(from, { resizeStage: { id, w: width, ...(heights ? { heights } : {}) } });
+    const now = editWorkflow(from, { resizeStage: { id, w: width, ...(heights ? { heights } : {}), ...(start ? { start } : {}), ...(moves ? { moves } : {}) } });
     resizing = done ? null : { from, now };
     if (done && now !== from) host.write(now);
     else {

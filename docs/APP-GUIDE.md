@@ -826,7 +826,11 @@ before grows as the one after shrinks, no node moving (a stage keeps `w`, its wi
 The setting `resizeStages` (on) turns it off. With `resizeStagesMoveNodes` (on) too,
 the edge goes past the nodes: the stage it narrows pushes them in, across only, in
 order, a node pushing the one it meets with their gap kept, down to its widest node;
-there they may overlap. The push is drawn as it goes and is one Undo. Each stage bar has Move left and Move right, and More: Edit, Add
+there they may overlap. The push is drawn as it goes and is one Undo. That gap is the
+left edge of the stage after it, and the first stage has a left edge of its own (plain,
+its right edge stays). Held with Cmd/Ctrl, a left edge moves its stage and every stage
+after it, each width kept, their nodes and the zip ties between them with them: one
+Undo (`resizeStage`'s `moves`; TODO 985). Each stage bar has Move left and Move right, and More: Edit, Add
 stage before, Add stage after and Remove. A default name is its place (Stage 1,
 Stage 2): one added or moved before Stage 1 is Stage 1. A new stage takes the next
 data-viz colour no stage wears (`nextStageColour`); an app that makes stages gives
