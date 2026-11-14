@@ -295,6 +295,10 @@ const INSTRUCTIONS = messageRow('instructions', 'Instructions');
 /** How many more times a step that can fail is tried, when it fails (Will, plan 992 O7 A): a setting, so a Runbook no longer
  *  wires a "Try again" step after it. None: once. TRAP T-a-retry-is-a-setting */
 const RETRIES: RowKind = { name: 'retries', label: 'Retries', control: 'number', min: 0, step: 1, optional: true, setting: true };
+/** How long it waits before each try again, in minutes (plan 991: "Try N times with a wait"). None: at once. */
+const RETRY_WAIT: RowKind = { name: 'retry-wait', label: 'Wait (minutes)', control: 'number', min: 0, step: 1, optional: true, setting: true };
+/** The settings of a step that can fail: how many more tries, and the wait before each. */
+const RETRY: readonly RowKind[] = [RETRIES, RETRY_WAIT];
 /** What an AI node EXPECTS, its Type picker, the same for each (D2 A): True/false gives a True, 1 or 0, as a Condition does
  *  (plan 944); the rest an Answer, a property. An AI answer is fuzzy, so the reader says what shape it takes, and the sockets
  *  follow. */
@@ -426,7 +430,7 @@ const OUTPUT_TRIGGER_TYPES: Readonly<Record<string, NodeType>> = {
 
 /** One Output family as a kind: its types, the Output's look, lane and place (plan 917). It may sit mid-graph: its properties
  *  connection on. */
-const outputFamily = (heading: string, icon: string, description: string, types: Readonly<Record<string, NodeType>>, rows: readonly RowKind[] = [RETRIES]): NodeKind => ({
+const outputFamily = (heading: string, icon: string, description: string, types: Readonly<Record<string, NodeType>>, rows: readonly RowKind[] = RETRY): NodeKind => ({
   heading, icon, description, input: 'any', typeLabel: 'Type', types, rows, model: 'LoadResult', graphs: ['workflow'], category: 'Output',
 });
 
@@ -751,18 +755,18 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   prompt: {
     heading: 'Prompt', icon: 'chat', description: 'Ask the joined model, in your words', input: 'any', typeLabel: 'Expects', defaultType: 'text',
-    types: expects([MODEL_IN, messageRow('prompt', 'Prompt')], 'Would ask the model'), rows: [RETRIES], model: 'aiPrompt', graphs: ['workflow'], category: 'AI',
+    types: expects([MODEL_IN, messageRow('prompt', 'Prompt')], 'Would ask the model'), rows: RETRY, model: 'aiPrompt', graphs: ['workflow'], category: 'AI',
   },
   runbook: {
     // A runbook of its own words: the app's runbooks are nodes of the Runbooks category (Will, plan 936 D1 B).
     heading: 'Runbook', icon: 'book-open-lines', description: 'Write a runbook for the model to run', input: 'any', typeLabel: 'Expects', defaultType: 'text',
     types: expects([MODEL_IN, INSTRUCTIONS], 'Would run the runbook'),
-    rows: [RETRIES], model: 'aiRunbook', graphs: ['workflow'], category: 'AI',
+    rows: RETRY, model: 'aiRunbook', graphs: ['workflow'], category: 'AI',
   },
   skill: {
     heading: 'Skill', icon: 'wand-magic-sparkles', description: 'Use a skill, or write a new one', input: 'any', typeLabel: 'Expects', defaultType: 'text',
     types: expects([MODEL_IN, { name: 'skill', label: 'Skill', control: 'skill', input: 'value' }, INSTRUCTIONS], 'Would use the skill'),
-    rows: [RETRIES], model: 'aiSkill', graphs: ['workflow'], category: 'AI',
+    rows: RETRY, model: 'aiSkill', graphs: ['workflow'], category: 'AI',
   },
   // The Output families, each a kind (Will, plan 917). Request ships no type: a host adds its own, and it is listed then.
   notify: outputFamily('Notification', 'notifications', 'Send a message by app, email or phone', NOTIFY_TYPES),

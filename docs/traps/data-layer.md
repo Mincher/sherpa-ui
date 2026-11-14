@@ -6358,9 +6358,9 @@ on it picks its Ways from the Categories (`sender` sends the column, values and 
 
 **A retry is a setting of the step that fails, never a step of its own** (Will, plan 992 O7 A: where a Runbook retries the
 same step, it becomes that step's Retry setting; its prompt's RETRIES AND ERRORS reads it; a different step on failure
-stays wired). Each kind that can fail (the AI steps, the Outputs) has Retries: a number from 0, optional, with no socket.
-A row's `setting` keeps it in the node's Settings tab, right after Details; the canvas never draws it (`drawRows`).
-`graphText` says each step's Retries in its errors: "A retry: step 2.1 Install patches, up to 2 more times".
+stays wired). Each kind that can fail (the AI steps, the Outputs but the Run result) has Retries and a Wait (minutes, `retry-wait`; plan 991: "Try N times with a wait"): numbers from 0, optional, with no socket.
+A row's `setting` keeps it in the node's Settings tab, after Details (and an Output's Output tab); the canvas never draws it (`drawRows`).
+`graphText` says each step's Retries in its errors: "A retry: step 2.1 Install patches, up to 1 more time, after a 10 minute wait".
 
 - **Words are no setting**: a step named "Try again" was read as a retry from its words; that guess is gone with the
   wired retry steps, which the shipped Runbooks moved to the setting.

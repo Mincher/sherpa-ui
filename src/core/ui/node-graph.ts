@@ -2108,7 +2108,7 @@ function detailsOf(panel: HTMLElement): HTMLElement | undefined {
   return details;
 }
 
-/** A node's body: Details, and a Settings, an Output, a JSON, a Data and a Definition tab when it has them, and Graph details
+/** A node's body: Details, and an Output, a Settings, a JSON, a Data and a Definition tab when it has them, and Graph details
  *  LAST (plan 951 D1 A). With no node, Graph details alone. The reader's tab is kept per inspector. */
 function contentTabs(
   panel: HTMLElement, details: HTMLElement | undefined, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement, definition?: HTMLElement, settings?: HTMLElement,
@@ -2116,8 +2116,8 @@ function contentTabs(
   const graph = detailsOf(panel);
   if (!json && !data && !output && !definition && !settings && !graph && details) return details;
   const pages = [
-    ...(details ? [{ id: 'details', label: 'Details', el: details }] : []), ...(settings ? [{ id: 'settings', label: 'Settings', el: settings }] : []),
-    ...(output ? [{ id: 'output', label: 'Output', el: output }] : []),
+    ...(details ? [{ id: 'details', label: 'Details', el: details }] : []), ...(output ? [{ id: 'output', label: 'Output', el: output }] : []),
+    ...(settings ? [{ id: 'settings', label: 'Settings', el: settings }] : []),
     ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : []),
     ...(definition ? [{ id: 'definition', label: 'Definition', el: definition }] : []),
     ...(graph ? [{ id: 'graph', label: 'Graph details', el: graph }] : []),

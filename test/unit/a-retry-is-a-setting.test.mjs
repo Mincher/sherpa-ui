@@ -14,11 +14,11 @@ import { NODE_KINDS, resolveKind, socketType } from '../../dist/core/data/node-k
 // The Run result ends the run: it acts on nothing outside it.
 const CAN_FAIL = ['prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'request', 'output-trigger'];
 
-test('each step that can fail has Retries, a setting: a number from 0, optional, with no socket', () => {
-  for (const id of CAN_FAIL) {
-    const row = resolveKind(NODE_KINDS[id]).rows.find((r) => r.name === 'retries');
-    assert.deepEqual([row?.label, row?.control, row?.min, row?.step, row?.optional, row?.setting], ['Retries', 'number', 0, 1, true, true], id);
-    assert.deepEqual([socketType(resolveKind(NODE_KINDS[id]), 'retries', 'input'), socketType(resolveKind(NODE_KINDS[id]), 'retries', 'output')], [undefined, undefined], id);
+test('each step that can fail has Retries and a Wait, settings: numbers from 0, optional, with no socket', () => {
+  for (const id of CAN_FAIL) for (const [name, label] of [['retries', 'Retries'], ['retry-wait', 'Wait (minutes)']]) {
+    const row = resolveKind(NODE_KINDS[id]).rows.find((r) => r.name === name);
+    assert.deepEqual([row?.label, row?.control, row?.min, row?.step, row?.optional, row?.setting], [label, 'number', 0, 1, true, true], `${id} ${name}`);
+    assert.deepEqual([socketType(resolveKind(NODE_KINDS[id]), name, 'input'), socketType(resolveKind(NODE_KINDS[id]), name, 'output')], [undefined, undefined], `${id} ${name}`);
   }
   // Only those: no other kind has a setting.
   const others = Object.entries(NODE_KINDS).filter(([id]) => !CAN_FAIL.includes(id));
@@ -26,11 +26,11 @@ test('each step that can fail has Retries, a setting: a number from 0, optional,
 });
 
 /** A Runbook step that installs, Retries `times`, then a Run result. */
-const flow = (times) => ({
+const flow = (times, wait) => ({
   v: 3, id: 'patch',
   nodes: [
     { id: 'm', kind: 'model', x: 0, y: 200, values: { provider: 'anthropic', model: 'sonnet' } },
-    { id: 'r', kind: 'runbook', x: 300, y: 0, heading: 'Install patches', values: { instructions: 'Install the patches.', ...(times === undefined ? {} : { retries: times }) } },
+    { id: 'r', kind: 'runbook', x: 300, y: 0, heading: 'Install patches', values: { instructions: 'Install the patches.', ...(times === undefined ? {} : { retries: times }), ...(wait === undefined ? {} : { 'retry-wait': wait }) } },
     { id: 'o', kind: 'result', x: 600, y: 0 },
   ],
   connections: [{ from: 'm/model', to: 'r/model' }, { from: 'r/answer', to: 'o' }],
@@ -45,5 +45,7 @@ test('a drawn step carries its Retries as a setting; empty, nothing warns; an ed
 test('the prompt\'s RETRIES AND ERRORS reads each step\'s Retries; none, no retry', () => {
   assert.deepEqual(graphText(flow(2)).errors.filter((e) => e.startsWith('- A retry')), [`- A retry: {{step:1.2}} Install patches, up to 2 more times.`].map((e) => e.replace('{{step:1.2}}', graphText(flow(2)).errors[0].match(/\{\{step:[^}]+\}\}/)?.[0] ?? '')));
   assert.match(graphText(flow(1)).errors[0], /^- A retry: .* Install patches, up to 1 more time\.$/);
+  // Its Wait says how long before each try (plan 991: "Try N times with a wait").
+  assert.match(graphText(flow(1, 10)).errors[0], /^- A retry: .* Install patches, up to 1 more time, after a 10 minute wait\.$/);
   assert.deepEqual([graphText(flow()).errors, graphText(flow(0)).errors], [[], []]);
 });

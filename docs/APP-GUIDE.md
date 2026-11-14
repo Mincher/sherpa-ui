@@ -695,8 +695,8 @@ Text, Number, Data and List give an Answer, a property. **Category** is Classify
 O6): its **Categories** row names them, and its Answer is a column the model makes, one of
 them on each row; a **Fork** after it picks its Ways from them and sends each row on.
 Each AI node and each Output but the Run result has **Retries** (plan 992 O7): how many more times it is tried
-when it fails. It is a setting, in the node's **Settings** tab, never a row on the canvas, and
-a Runbook's prompt says it under RETRIES AND ERRORS. A different step on failure stays wired. A Model with a pick left blank
+when it fails, and **Wait (minutes)** before each try. They are settings, in the node's **Settings** tab, after Details and Output, never a row on the canvas, and
+a Runbook's prompt says them under RETRIES AND ERRORS. A different step on failure stays wired. A Model with a pick left blank
 warns "Pick a provider" or "Pick a model".
 
 **One model for the whole graph** (plan 951). A Model joined to the Start's Model row

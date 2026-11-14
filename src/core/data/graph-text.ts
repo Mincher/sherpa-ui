@@ -175,7 +175,9 @@ export function graphText(graph: TextGraph): GraphText {
   for (const st of [...steps].reverse()) {
     const n = nodeIn(graph, st.node);
     const times = Number(n?.values?.['retries'] ?? 0);
-    if (times > 0) errors.unshift(`- A retry: ${ref('step', st.number)} ${n?.heading ?? st.kind}, up to ${times} more ${times === 1 ? 'time' : 'times'}.`);
+    const wait = Number(n?.values?.['retry-wait'] ?? 0);
+    const after = wait > 0 ? `, after a ${wait} minute wait` : '';
+    if (times > 0) errors.unshift(`- A retry: ${ref('step', st.number)} ${n?.heading ?? st.kind}, up to ${times} more ${times === 1 ? 'time' : 'times'}${after}.`);
   }
   return { stages: lines, errors, steps };
 }
