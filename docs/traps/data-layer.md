@@ -6349,6 +6349,10 @@ you decided to use chips instead of following precedent."*
   none picked, nothing, and its hint says so. A pick its field no longer declares is a fault, shown (`rowFault`).
 - It replaced U4.7a's row per value (`unfold`, the `v-` rows) and the node's multi-select chip (sherpa-quick-filter):
   both are gone.
+- **Select all leads the menu**, as a filter chip's (Will, 2026-11-14: "'Select all' needs to be an option in the Fields
+  input on Source nodes and the Values input on Field nodes"): the menu's own row, all, some (mixed) or none. It ticks
+  the boxes; the row keeps its meaning: a Source's Fields all ticked keeps none (All); a Field's Values all ticked
+  keeps every value, an answer (TODO 965).
 - **A row where none means every choice** says `every` (a Source's Fields, TODO 969: "defaults to All"). Nothing is
   kept, so a field the store gains later is in it too; the editor DRAWS every choice ticked (`ticks`), and every choice
   ticked again keeps none (`read`). The data layer's drawn value stays what is kept, so Simulate and the reach read the

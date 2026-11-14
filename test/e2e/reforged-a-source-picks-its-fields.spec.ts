@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
     ], connections: [{ from: 's/rows', to: 'f' }] };
     (window as unknown as { editor: unknown }).editor = bindWorkflow(el as never, flow as never, {
       session: new SessionStore(), inspector: panel as never, stores: ['customers'],
-      fieldsOf: { customers: { name: { label: 'Name' }, status: { label: 'Status' }, region: { label: 'Region' } } },
+      fieldsOf: { customers: { name: { label: 'Name' }, status: { label: 'Status', values: ['trial', 'paid'] }, region: { label: 'Region' } } },
     });
     await window.__settled();
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
@@ -60,3 +60,35 @@ test('a Source\'s Fields is All at the start: every field ticked, none kept; an 
   await settle(page);
   expect(await look(page)).toEqual({ ticked: ['name', 'status', 'region'], says: 'All', kept: null, offered: ['name', 'status', 'region'] });
 });
+
+/** Press a menu's Select all row. */
+const selectAll = async (page: Page, field: string): Promise<void> => {
+  await page.locator(field).locator('select.control').first().click();
+  const menu = page.locator(`${field} .picks-menu`).first();
+  await expect(menu).toHaveAttribute('open', '');
+  await menu.locator('.qf-all input').click();
+  await page.keyboard.press('Escape');
+  await settle(page);
+};
+
+test('Select all leads the menu (Will, 2026-11-14): on a Source\'s Fields it is All, none kept; on a Field\'s Values, every value picked', async ({ page }) => {
+  // Fields: some ticked, Select all is mixed; pressed, every one, and none kept.
+  await page.locator(FIELDS).locator('select.control').first().click();
+  const menu = page.locator(`${FIELDS} .picks-menu`).first();
+  await menu.locator('input[value="region"]').click();
+  const all = () => menu.locator('.qf-all input').evaluate((i: HTMLInputElement) => [i.checked, i.indeterminate]);
+  expect(await all()).toEqual([false, true]);
+  await page.keyboard.press('Escape');
+  await settle(page);
+  expect((await look(page)).kept).toEqual(['name', 'status']);
+  await selectAll(page, FIELDS);
+  expect(await look(page)).toEqual({ ticked: ['name', 'status', 'region'], says: 'All', kept: null, offered: ['name', 'status', 'region'] });
+  // A Field on Status: its Values' Select all picks every value, kept as an answer (TODO 965).
+  await page.locator('#root sherpa-node[data-heading="Field"] sherpa-input-text[name="field"] select').selectOption('status');
+  await settle(page);
+  const VALUES = '#root sherpa-node[data-heading="Field"] sherpa-input-text[name="values"]';
+  await selectAll(page, VALUES);
+  expect(await page.evaluate(() => (window as unknown as { editor: { workflow(): { nodes: { id: string; values?: Record<string, unknown> }[] } } }).editor.workflow().nodes.find((n) => n.id === 'f')?.values?.['values'])).toEqual(['trial', 'paid']);
+  expect(await page.locator(VALUES).evaluate((el) => el.shadowRoot!.querySelector('select')!.selectedOptions[0]?.textContent)).toBe('All');
+});
+

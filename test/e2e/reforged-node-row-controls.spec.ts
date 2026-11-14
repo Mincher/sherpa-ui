@@ -85,8 +85,10 @@ test('a list of known values is ONE dropdown of ticks: its menu ticks the field\
   await page.locator(field('By status', 'b')).locator('select.control').first().click();
   const menu = page.locator(`${field('By status', 'b')} .picks-menu`).first();
   await expect(menu).toHaveAttribute('open', '');
-  const rows = () => page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll<HTMLInputElement>('.picks-menu input[type="checkbox"]')].filter((i) => i.value).map((i) => [i.value, i.checked]), field('By status', 'b'));
+  const rows = () => page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll<HTMLInputElement>('.picks-menu .menu-row:not(.qf-all) input[type="checkbox"]')].map((i) => [i.value, i.checked]), field('By status', 'b'));
   expect(await rows()).toEqual([['active', true], ['trial', false]]);
+  // Select all leads it, as a filter chip's does (Will, 2026-11-14): some ticked, it is mixed.
+  expect(await menu.locator('.menu-row').first().evaluate((r) => [r.classList.contains('qf-all'), (r.querySelector('input') as HTMLInputElement).indeterminate])).toEqual([true, true]);
   await menu.locator('input[value="trial"]').click();
   await settle(page);
   expect((await values(page))['s']!['b']).toEqual(['active', 'trial']);

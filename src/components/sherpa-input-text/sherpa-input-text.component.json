@@ -320,7 +320,6 @@
               "part": "menu",
               "attrs": {
                 "data-select": "multiple",
-                "data-no-select-all": "",
                 "data-align": "start"
               }
             }
