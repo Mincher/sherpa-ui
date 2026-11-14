@@ -4,7 +4,7 @@ Will, 2026-11-14: "Co-ordinate with another agent to look at the docs for apps l
 candidates for other types of nodes we should have. Also look at Blender's Geometry Nodes for ideas for other useful
 nodes for the types of graphs we will create in Sherpa Demos." He read the merged list and picked **"Write a plan"**.
 
-**Status: a plan; nothing built. Owner: sherpa-ui-e8 (node kinds), after 986 and 990. Demos' side: sherpa-demos-67.**
+**Status: Will picked D1 A, D2 A, D3 A (2026-11-14). Nothing built. Owner: sherpa-ui-e8 (node kinds), after 986 and 990. Demos' side: sherpa-demos-67.**
 Research by two agents of sherpa-demos-67, from public docs only (sources in section 5).
 
 ## 1. Rules every new node keeps
@@ -72,12 +72,12 @@ option), Closure (a step passed as a value).
 - **Pinned data**: keep a node's output to test the rest again (n8n; Simulate's run could keep it).
 - A Wait always has a time limit (n8n); a For each always has a "how many at a time" (Rewst).
 
-## 4. Questions for Will (❓), with my picks
+## 4. Will's picks (2026-11-14: A, A, A)
 
-- ❓ **D1 For each:** A (my pick) a node that runs a Custom Node once per row: one system, a sub-graph is a Custom Node.
+- **D1 For each: A** (picked) — a node that runs a Custom Node once per row: one system, a sub-graph is a Custom Node.
   B a framed zone on the canvas (Blender), its steps inside it.
-- ❓ **D2 Approval:** A (my pick) a Request type with three outputs. B a kind of its own.
-- ❓ **D3 Retry / on error:** A (my pick) a Settings tab on a node that can fail (AI steps, Requests, Outputs), and an
+- **D2 Approval: A** (picked) — a Request type with three outputs. B a kind of its own.
+- **D3 Retry / on error: A** (picked) — a Settings tab on a node that can fail (AI steps, Requests, Outputs), and an
   Error socket that shows when "on error" is "go to Error". B a Retry node placed before the step.
 
 ## 5. Phases (after Will's picks)
