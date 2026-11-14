@@ -8242,3 +8242,27 @@ row, where a value comes from) says both; a node's own warning names it by its o
 - Site: `test/unit/a-text-names-what-it-means.test.mjs`
 - Site: `test/unit/a-graph-reads-as-text.test.mjs`
 
+
+### T-a-draft-hides-a-save
+
+**A write under the reader's unsaved draft of a graph is refused, in words** (Will met it on "Contoso patching",
+2026-11-14; plan 964 N3c). The editor keeps a draft of each graph for the tab, at `/workflows/<id>` in the session
+(`shared: false`, so it outlives a reload), and the draft WINS over the kept copy when the editor draws it. So a
+change, remove, publish or roll back made under it would be hidden: the reader sees the draft, and their next Save
+writes the draft over it.
+
+- **One owner of the pointer**, `graph-drafts.ts`: `keepDraft` is what `bindWorkflow` persists; `draftOf` reads it,
+  and restores one kept before a reload when nothing holds it yet this load, as the editor would.
+- **The acts ask `ctx.draftOf`**, which the outlet fills from its session. `graphActs` wraps each act that writes the
+  entity its key names (change, remove, publish, roll back) so that its check AND its run refuse:
+  `The reader has unsaved changes to "<label>" in the Node Editor (<n> nodes), and they hide any save. Ask the reader
+  to Save or discard them first.` Find, read, add and clone write no kept copy under it, and run.
+- **Read says the draft** beside the kept copy, `unsavedInTheEditor: { nodes, connections, text }`, so an agent knows
+  what the reader sees.
+- A Custom Node's definition edited INSIDE an open graph is drafted at `/node-edits/<graph>`, by the graph: this does
+  not see it.
+
+- Site: `src/core/data/entity-acts.ts`
+- Site: `src/core/data/acts.ts`
+- Site: `src/core/browser/graph-drafts.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`

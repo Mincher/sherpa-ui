@@ -25,7 +25,7 @@ import type { WorkflowNode } from './workflow.js';
 export interface TextGraph {
   nodes?: readonly WorkflowNode[];
   connections?: readonly NodeConnection[];
-  stages?: readonly NodeStage[];
+  stages?: readonly NodeStage[] | undefined;
 }
 
 /** An app's words for a node of its kind, or none to leave it to the library's. */

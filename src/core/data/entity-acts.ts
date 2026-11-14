@@ -13,6 +13,7 @@ import { createNode, deleteNode, updateNode, type NodeAnswer, type NodeChange } 
 import { categoryOf, type Entity, type EntityGraph } from './entity.js';
 import type { EntityShelf } from './entity-shelf.js';
 import { clone, draftChanged, newestOf, publish, rollBack, type VersionAnswer } from './entity-versions.js';
+import { graphText } from './graph-text.js';
 import { followUses } from './node-library.js';
 import { stageNodes } from './node-stages.js';
 import type { Row } from './store.js';
@@ -51,6 +52,33 @@ function graphGiven(graph: EntityGraph, held: EntityGraph | undefined, shelf: En
   return { ...graph, nodes: [...nodes], ...(gains ? { unfurl: true } : {}) };
 }
 
+/** A call's keys, as entity ids. */
+const keysOf = (call: ActCall): string[] => (call.keys ?? []).map(String);
+
+/** Why a write to these is refused: the reader holds an unsaved draft of one, which the editor shows over the kept copy,
+ *  so the write would be hidden. TRAP T-a-draft-hides-a-save */
+function drafted(ctx: ActContext, keys: readonly string[]): string | undefined {
+  for (const key of keys) {
+    const draft = ctx.draftOf?.(key);
+    if (draft) return `The reader has unsaved changes to "${ctx.entities?.get(key)?.label ?? key}" in the Node Editor (${draft.nodes.length} nodes), and they hide any save. Ask the reader to Save or discard them first.`;
+  }
+  return undefined;
+}
+
+/** The verbs that write the entity a key names. */
+const WRITES = new Set(['change', 'remove', 'publish', 'roll-back']);
+/** An act that writes its key's entity, refused while the reader holds a draft of it: in its check, and in its run. */
+const heldBack = (act: Act): Act => ({
+  ...act,
+  async check(call, ctx) {
+    return drafted(ctx, keysOf(call)) ?? act.check?.(call, ctx);
+  },
+  async run(call, ctx) {
+    const why = drafted(ctx, keysOf(call));
+    return why ? { refused: why } : act.run(call, ctx);
+  },
+});
+
 /** What a door answered, as an act says it: refused in its faults' words. */
 const refusal = (verb: string, answer: NodeAnswer): { refused: string } | undefined =>
   ('faults' in answer ? { refused: `${verb}: ${answer.faults.join('; ')}.` } : undefined);
@@ -66,7 +94,6 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
   const shelfOf = (ctx: ActContext): EntityShelf | undefined => ctx.entities;
   const none = { refused: `The app has no ${label} entities here.` };
   const named = (e: Pick<Entity, 'label'>): string => `${label} "${e.label}"`;
-  const keysOf = (call: ActCall): string[] => (call.keys ?? []).map(String);
   const given: Record<string, StoredField> = { ...ENVELOPE, ...(type.graph?.query ? { query: QUERY } : {}) };
   /** What a call gives, as the doors take it: each field given; tags as a list; a graph laid out and following its uses. */
   const changeOf = (input: Row, held: EntityGraph | undefined, shelf: EntityShelf): NodeChange & Row => {
@@ -88,7 +115,7 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
     const kept = keys.map((k) => shelf.whyKept(k)).filter(Boolean);
     return kept.length ? `Remove: ${kept.join(' ')}` : undefined;
   };
-  return [
+  const own: Act[] = [
     {
       id: `${id}.find`, label: 'Find', type: id, changes: false,
       description: `The ${label} entities whose name or description holds the search, of a tag where one is given.`,
@@ -105,12 +132,21 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
     },
     {
       id: `${id}.read`, label: 'Read', type: id, changes: false,
-      description: `One ${label} as JSON: its body as it keeps it, its settings, and its versions' numbers.`,
+      description: `One ${label} as JSON: its body as it keeps it, and as text; its settings; its versions' numbers; and the reader's unsaved draft of it in the Node Editor, which they see in its place.`,
       async run(call, ctx) {
         const e = shelfOf(ctx)?.get(keysOf(call)[0] ?? '');
         if (!e) return none;
-        const { versions, ...own } = e;
-        return { done: `Read ${named(e)}.`, result: { ...own, versions: (versions ?? []).map(({ number, at, by, note }) => ({ number, at, ...(by ? { by } : {}), ...(note ? { note } : {}) })) } };
+        const { versions, ...kept } = e;
+        const draft = ctx.draftOf?.(e.id);
+        return {
+          done: `Read ${named(e)}.`,
+          result: {
+            ...kept,
+            ...(e.graph ? { text: graphText(e.graph).stages } : {}),
+            versions: (versions ?? []).map(({ number, at, by, note }) => ({ number, at, ...(by ? { by } : {}), ...(note ? { note } : {}) })),
+            ...(draft ? { unsavedInTheEditor: { nodes: draft.nodes.length, connections: draft.connections?.length ?? 0, text: graphText(draft).stages } } : {}),
+          },
+        };
       },
     },
     {
@@ -179,13 +215,13 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
     },
     ...versionActs({ id, label }),
   ];
+  return own.map((a) => (WRITES.has(a.id.slice(id.length + 1)) ? heldBack(a) : a));
 }
 
 /** An entity type's version acts: Publish its draft as the next number; Roll back to an earlier one; Clone it as the
  *  reader's own. Publish and Roll back have no undo: a version is never taken away, so a Roll back is how one goes back.
  *  A Clone's undo removes the copy. Plans 972, 972c */
 function versionActs(type: { id: string; label: string }): Act[] {
-  const keysOf = (call: ActCall): unknown[] => [...(call.keys ?? [])];
   const shelfOf = (ctx: ActContext): EntityShelf | undefined => ctx.entities;
   const answered = (a: VersionAnswer, done: (n: number) => string): ActAnswer => ('refused' in a ? { refused: a.refused } : { done: done(a.number), result: a });
   return [

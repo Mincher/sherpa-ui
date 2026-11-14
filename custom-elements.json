@@ -9334,7 +9334,7 @@
               "kind": "method",
               "name": "actContext",
               "parameters": [],
-              "description": "What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through `act`, so the page hears it. None before `start`. Plan 964 N4"
+              "description": "What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), the shelf, and the tab's unsaved graph drafts — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through `act`, so the page hears it. None before `start`. Plan 964 N4"
             },
             {
               "kind": "method",

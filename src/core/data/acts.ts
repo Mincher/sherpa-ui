@@ -27,6 +27,7 @@ import type { Filter, Row, Store } from './store.js';
 import { storeOfType, titleOf, typeSchema, type StoredField, type TypeDefinition } from './type-definition.js';
 import { fieldsFaults } from './type-faults.js';
 import { validateField } from './validate.js';
+import type { WorkflowDefinition } from './workflow.js';
 
 /** What a call gives an act: the keys of the rows it acts on (its type's), and its input, by field. */
 export interface ActCall {
@@ -42,6 +43,9 @@ export interface ActContext {
   /** May the reader run this act on these? A reason they may not, in words; none, they may. Checked before any act runs:
    *  the app's Permissions fill it (plan 972d). */
   may?: (act: Act, call: ActCall) => string | undefined;
+  /** The reader's unsaved draft of a graph, by its entity's id: the editor shows it over the kept copy, so it hides a
+   *  write under it. The outlet reads the tab's. TRAP T-a-draft-hides-a-save */
+  draftOf?: (id: string) => WorkflowDefinition | undefined;
 }
 
 /** What an act answers, in words: done — with its result, and an undo where it changed data — or refused. */

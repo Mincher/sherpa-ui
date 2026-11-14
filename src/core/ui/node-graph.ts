@@ -71,6 +71,7 @@ import { dotsThrough, handlesOf, pathThrough, waypointsOf, type Pt } from './con
 import { clampedVia } from '../data/connector-bends.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import { SessionList, type SessionStore } from '../browser/session.js';
+import { keepDraft } from '../browser/graph-drafts.js';
 import type { DataSource } from '../data/data-source.js';
 import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
@@ -2597,12 +2598,7 @@ export function bindWorkflow(
   const lockedWhy = typeof locked === 'string' ? locked : undefined;
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;
-  const pointer = `/workflows/${workflow.id}`;
-  const isDraft = (v: unknown): v is WorkflowDefinition => {
-    const d = v as { v?: unknown; id?: unknown; nodes?: unknown } | null;
-    return !!d && typeof d === 'object' && d.v === 3 && d.id === workflow.id && Array.isArray(d.nodes);
-  };
-  session?.persist(pointer, { shared: false, guard: isDraft });
+  const pointer = keepDraft(session, workflow.id);
   // The definitions this tab edited: kept beside the draft, over the app's library.
   const editsAt = `/node-edits/${workflow.id}`;
   session?.persist(editsAt, { shared: false, guard: isEdits });

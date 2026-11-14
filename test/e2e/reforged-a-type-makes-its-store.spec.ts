@@ -265,3 +265,47 @@ test('a pressed act that needs input opens its flow: a field per step that holds
   await toast.locator('[part="action"], .action').first().click();
   await expect.poll(status).toBe('online');
 });
+
+test('a write under the reader\'s unsaved draft of a graph is refused, from before a reload too; read says the draft', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=teammates');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const r = await page.evaluate(async () => {
+    type Outlet = {
+      start(o: unknown): Promise<void>;
+      act(id: string, call?: unknown): Promise<{ done?: string; refused?: string; result?: Record<string, unknown> }>;
+      checkAct(id: string, call?: unknown): Promise<{ refused?: string }>;
+    };
+    const { SessionStore } = await import('/dist/index.js');
+    // The editor kept a draft of Ana in this tab, before a reload: nothing holds it in memory yet.
+    const key = 'sherpa:session:/workflows/ana';
+    sessionStorage.setItem(key, JSON.stringify({ v: 3, id: 'ana', nodes: [{ id: 'when', kind: 'trigger', x: 0, y: 0 }, { id: 'more', kind: 'trigger', x: 0, y: 200 }], connections: [] }));
+    const outlet = document.querySelector('sherpa-outlet') as unknown as Outlet;
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    const session = new SessionStore({});
+    await outlet.start({ app: await (await fetch(base)).json(), base, session, stores: () => ({}) });
+    const change = { keys: ['ana'], input: { description: 'Weekly.' } };
+    const checked = await outlet.checkAct('teammate.change', change);
+    const ran = await outlet.act('teammate.change', change);
+    const published = await outlet.act('teammate.publish', { keys: ['ana'] });
+    const read = (await outlet.act('teammate.read', { keys: ['ana'] })).result;
+    const other = await outlet.checkAct('teammate.change', { keys: ['bo'], input: { description: 'Daily.' } });
+    // The reader saves or discards: the draft goes, from storage too, and the write may run.
+    session.set('/workflows/ana', undefined);
+    return {
+      checked, ran, published, other, stored: sessionStorage.getItem(key),
+      read: { unsaved: read?.['unsavedInTheEditor'], text: Array.isArray(read?.['text']) },
+      after: await outlet.checkAct('teammate.change', change),
+      done: (await outlet.act('teammate.change', change)).done,
+    };
+  });
+  const words = 'The reader has unsaved changes to "Ana" in the Node Editor (2 nodes), and they hide any save. Ask the reader to Save or discard them first.';
+  expect(r.checked).toEqual({ refused: words });
+  expect(r.ran.refused).toBe(words);
+  expect(r.published.refused).toBe(words);
+  expect(r.read.unsaved).toMatchObject({ nodes: 2, connections: 0 });
+  expect(r.read.text).toBe(true);
+  expect(r.other).toEqual({});
+  expect(r.stored).toBeNull();
+  expect(r.after).toEqual({});
+  expect(r.done).toBe('Changed Teammate "Ana".');
+});

@@ -23,6 +23,7 @@ import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { GRAPH_CHIP, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { NEW_GRAPH, PAGE_QUERY, graphRows, newGraph, openOf, pageRows, pageViewOf, pagesOf, type GraphPage, type OpenGraph } from '../../core/data/graph-views.js';
 import type { SessionStore } from '../../core/browser/session.js';
+import { draftOf } from '../../core/browser/graph-drafts.js';
 import { SETTINGS, Settings } from '../../core/data/settings.js';
 import type { PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource } from '../../core/data/data-source.js';
@@ -195,15 +196,17 @@ export class SherpaOutlet extends SherpaElement {
     return checkAct(id, call, ctx);
   }
 
-  /** What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), and the
-   *  shelf — for a reader outside a page: the chat's flow reads a reference's choices from it. Run an act through
-   *  `act`, so the page hears it. None before `start`. Plan 964 N4 */
+  /** What an act runs over here — the stores a page may name, each found by its type too (`storeOfType`), the shelf,
+   *  and the tab's unsaved graph drafts — for a reader outside a page: the chat's flow reads a reference's choices from
+   *  it. Run an act through `act`, so the page hears it. None before `start`. Plan 964 N4 */
   actContext(): ActContext | null {
     const options = this.#options;
     if (!options) return null;
     const shelf = this.#nodes.entities;
     const may = options.may?.bind(options);
-    return { stores: this.#stores(options), ...(shelf ? { entities: shelf } : {}), ...(may ? { may } : {}), signal: this.signal };
+    // The tab's unsaved drafts: a write under one is refused, as the editor would hide it. TRAP T-a-draft-hides-a-save
+    const drafts = (id: string): ReturnType<typeof draftOf> => draftOf(options.session, id);
+    return { stores: this.#stores(options), ...(shelf ? { entities: shelf } : {}), ...(may ? { may } : {}), draftOf: drafts, signal: this.signal };
   }
 
   /** Read app.json, load each Context's Views, then open the route's Context.

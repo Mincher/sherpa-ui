@@ -2,7 +2,8 @@
  * A GRAPH TYPE HAS ITS OWN ACTS — plan 964 N3c: every type with a graph part, the library's and the app's, has find,
  * read, add, change and remove through the shelf, beside publish and roll back (972). A write is a Save: checked by the
  * shelf's own check, refused in its words, kept as a DRAFT. A use in a graph it is given follows a version, each node
- * stands in a stage, and a graph that gains nodes is laid out by the editor the first time it shows it.
+ * stands in a stage, and a graph that gains nodes is laid out by the editor the first time it shows it. A write under the
+ * reader's unsaved draft in the editor is refused, as the draft would hide it; read says the draft beside the kept copy.
  *
  *   node --test test/unit/a-graph-type-has-its-own-acts.test.mjs
  */
@@ -10,6 +11,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { actSchema, actsOf, checkAct, makeShelf, onReport, publish, registerEntityType, runAct, typeActs } from '../../dist/data.js';
+import { SessionStore } from '../../dist/app.js';
+import { draftOf } from '../../dist/core/browser/graph-drafts.js';
 
 const sockets = { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'found', label: 'Found', type: 'object' }] };
 const PLAYBOOK = { v: 1, id: 'playbook', label: 'Playbook', category: 'Runbooks', graph: sockets };
@@ -136,5 +139,39 @@ test('checkAct: why an act would be refused, before the reader is asked, in the 
     assert.deepEqual(await checkAct('playbook.remove', { keys: ['uses'] }, { ...ctx, may: () => 'Not yours to remove.' }), { refused: 'Not yours to remove.' });
     assert.match((await checkAct('playbook.find', { input: { take: 0 } }, ctx)).refused, /How many/);
     assert.deepEqual(await checkAct('playbook.remove', { keys: ['uses'] }, ctx), {});
+  });
+});
+
+test('a write under the reader\'s unsaved draft is refused, in check and run; read says the draft; other acts run', async () => {
+  await withPlaybook(async () => {
+    const shelf = shelfOf();
+    const session = new SessionStore({});
+    const ctx = { stores: {}, entities: shelf, draftOf: (id) => draftOf(session, id) };
+    await runAct('playbook.add', { input: { id: 'triage', label: 'Triage', graph: body } }, ctx);
+    await publish(shelf, 'triage');
+    // The editor drafts it: the draft wins over the kept copy, so a write under it would be hidden.
+    session.set('/workflows/triage', { v: 3, id: 'triage', nodes: [...body.nodes, { id: 'more', kind: 'organise', x: 300, y: 0 }], connections: body.connections });
+    const words = 'The reader has unsaved changes to "Triage" in the Node Editor (2 nodes), and they hide any save. Ask the reader to Save or discard them first.';
+    const calls = {
+      'playbook.change': { keys: ['triage'], input: { description: 'New.' } },
+      'playbook.remove': { keys: ['triage'] },
+      'playbook.publish': { keys: ['triage'] },
+      'playbook.roll-back': { keys: ['triage'], input: { version: 1 } },
+    };
+    for (const [id, call] of Object.entries(calls)) {
+      assert.deepEqual(await checkAct(id, call, ctx), { refused: words }, id);
+      assert.deepEqual(await runAct(id, call, ctx), { refused: words }, id);
+    }
+    assert.equal(shelf.get('triage').description, undefined, 'nothing written');
+    // Read says what the reader sees, beside the kept copy, each as text too; find, add and clone run.
+    const read = (await runAct('playbook.read', { keys: ['triage'] }, ctx)).result;
+    assert.deepEqual([read.graph.nodes.length, read.unsavedInTheEditor.nodes, read.unsavedInTheEditor.connections], [1, 2, 2]);
+    assert.ok(read.text.length && read.unsavedInTheEditor.text.length > 0, JSON.stringify(read.text));
+    assert.equal((await runAct('playbook.find', {}, ctx)).result.total, 1);
+    assert.match((await runAct('playbook.clone', { keys: ['triage'] }, ctx)).done, /your own copy/);
+    // Saved or discarded, the draft goes, and the write runs.
+    session.set('/workflows/triage', undefined);
+    assert.equal((await runAct('playbook.change', calls['playbook.change'], ctx)).done, 'Changed Playbook "Triage".');
+    assert.equal('unsavedInTheEditor' in (await runAct('playbook.read', { keys: ['triage'] }, ctx)).result, false);
   });
 });

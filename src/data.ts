@@ -254,7 +254,7 @@ export {
 export { createNode, deleteNode, keepNode, readNode, updateNode, type NodeAnswer, type NodeChange } from './core/data/custom-nodes.js';
 /* Any entity is a node in any graph: the panel offers it, a use is an instance of it. Plan 746 E5 · TRAP T-an-entity-is-used-as-a-node */
 export {
-  ENTITY_TYPES, FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, recipientTypes, registerEntityType, savedCategories, socketsOf, takes, type EntityType,
+  ENTITY_TYPES, FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, recipientTypes, registerEntityType, registerTypeCode, savedCategories, socketsOf, takes, type EntityType, type TypeCode,
 } from './core/data/entity-types.js';
 /* A Filter is a preset of its store's pages: its graph read as ONE condition, each field's own. TODO 776 · TRAP T-a-filter-is-a-preset-of-its-store */
 export { FILTER_LENS, filterOf, presetOfEntity, presetsOver, sourceOf, type PagePreset, type FilterFacts } from './core/data/filter.js';

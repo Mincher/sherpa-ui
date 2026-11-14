@@ -15,6 +15,8 @@
  * - entityTypes — Every type now: the shipped, and those an app registered.
  * - recipientTypes — The app's types whose rows a message may go to (`recipient: true`): the library names none.
  * - registerEntityType — An app adds a type; a clash with a shipped one is refused. It answers how to take it back.
+ * - TypeCode — The code JSON cannot say, which an app adds to a type it declares: its settings check and defaults.
+ * - registerTypeCode — An app adds code to a type it declares in JSON, whichever comes first. It answers how to take it back.
  * - takes — Whether a type's graph may place a kind: a family it takes, or any entity's node.
  * - socketsOf — The inputs and outputs an entity has: its type's, or for a `node` its own settings'.
  * - asNode — An entity as the Custom Node it offers: any entity can be placed in any graph (D1).
@@ -91,10 +93,14 @@ export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
 };
 
 const added = new Map<string, EntityType>();
+/** The code an app added to its types, by id: merged into the type, whichever came first. */
+const coded = new Map<string, TypeCode>();
+/** Every type now, made again when a type or its code is added or taken back: one object for each, as a check reads it. */
+let now: Readonly<Record<string, EntityType>> | undefined;
 
-/** Every type now: the shipped, and those an app registered. */
+/** Every type now: the shipped, and those an app registered, each with the code an app added to it. */
 export function entityTypes(): Readonly<Record<string, EntityType>> {
-  return { ...Object.fromEntries(added), ...ENTITY_TYPES };
+  return now ??= { ...Object.fromEntries([...added].map(([id, t]) => [id, coded.has(id) ? { ...t, ...coded.get(id) } : t])), ...ENTITY_TYPES };
 }
 
 /** The app's types whose rows a message may go to (`recipient: true`): the library names none. Plan 960 U4.9 */
@@ -115,7 +121,36 @@ export function registerEntityType(type: EntityType): (() => void) | undefined {
     return undefined;
   }
   added.set(type.id, type);
-  return () => { if (added.get(type.id) === type) added.delete(type.id); };
+  now = undefined;
+  return () => {
+    if (added.get(type.id) !== type) return;
+    added.delete(type.id);
+    now = undefined;
+  };
+}
+
+/** The code JSON cannot say, which an app adds to a type it declares: its settings check and the settings a new one
+ *  starts with. */
+export type TypeCode = Pick<EntityType, 'settingsFaults' | 'defaults'>;
+
+/** An app adds code to a type it declares in JSON (an entities file's `types`), before or after the type comes: merged
+ *  into `entityTypes()`, so the shelf's check runs it on every Save, from any door. Its code wins over the type's own. A
+ *  shipped type, or a second code for one type, is refused and reported. It answers how to take it back, or none. */
+export function registerTypeCode(id: string, code: TypeCode): (() => void) | undefined {
+  const refuse = (why: string): undefined => {
+    report({ code: 'entity-type', message: `registerTypeCode: ${why}.`, at: { type: String(id) } });
+    return undefined;
+  };
+  if (typeof id !== 'string' || !id) return refuse('give it the id of a type');
+  if (id in ENTITY_TYPES) return refuse(`"${id}" is a type the library ships, whose code is its own`);
+  if (coded.has(id)) return refuse(`"${id}" has its code already: take that back first`);
+  coded.set(id, code);
+  now = undefined;
+  return () => {
+    if (coded.get(id) !== code) return;
+    coded.delete(id);
+    now = undefined;
+  };
 }
 
 /** Whether a type's graph may place a kind: one of a family it takes (none given, any), or a node any
