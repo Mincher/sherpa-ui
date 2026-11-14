@@ -22,11 +22,10 @@
  */
 import { actsOf, inputFaults, listed, refChoices, type Act, type Choice } from './acts.js';
 import { entityTypes } from './entity-types.js';
-import { conditionClause } from './filter-state.js';
 import { report } from './report.js';
 import { filterTest, type Row, type Store } from './store.js';
 import { storeOfType, titleOf, type StoredField } from './type-definition.js';
-import { parseWhere, type Where } from './where.js';
+import { parseWhere, whereFilter, type Where } from './where.js';
 
 /** One step: a field of the act's input, asked only when `when` holds over the answers of the steps before it. */
 export interface FlowStep {
@@ -82,7 +81,7 @@ const empty = (v: unknown): boolean => v === undefined || v === null || v === ''
 const tests = new WeakMap<Where, (row: Row) => boolean>();
 const holds = (when: Where, answers: Row): boolean => {
   let test = tests.get(when);
-  if (!test) tests.set(when, test = filterTest(conditionClause(parseWhere(when))));
+  if (!test) tests.set(when, test = filterTest(whereFilter(when)));
   return test(answers);
 };
 
@@ -169,7 +168,7 @@ async function askOf(field: string, def: StoredField, ctx: FlowContext): Promise
   };
   const many = def.many ? 'many' : 'one';
   if (def.ref) {
-    const choices = await refChoices(def.ref, ctx);
+    const choices = await refChoices(def.ref, ctx, def.refWhere);
     return choices ? { ...base, kind: many, choices } : { ...base, kind: 'text' };
   }
   if (def.values) return { ...base, kind: many, choices: def.values.map((value) => ({ value, label: def.labels?.[String(value)] ?? String(value) })) };

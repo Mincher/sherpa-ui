@@ -11,7 +11,7 @@ import { parseWhere, type Where } from './where.js';
 
 const ID = /^[a-z][a-z0-9-]*$/;
 const TOP = ['$schema', 'v', 'id', 'label', 'description', 'tags', 'icon', 'category', 'key', 'time', 'title', 'recipient', 'fields', 'data', 'graph'];
-const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'many', 'owned', 'make'];
+const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'refWhere', 'many', 'owned', 'make'];
 const STATUS = ['type', 'label', 'description', 'values'];
 const KINDS = ['text', 'number', 'date', 'boolean', 'object'];
 const PATH = /^[^/]+(\/[^/]+)*$/;
@@ -86,6 +86,12 @@ function storedFaults(f: Loose): string[] {
   if ('ref' in f) {
     if (!isText(f['ref']) || !ID.test(f['ref'])) out.push('its ref is a type\'s id (lowercase letters, digits, hyphens)');
     if (kind !== 'text' || 'values' in f) out.push('a reference is text, its choices the other type\'s rows: no type, no values');
+  }
+  if ('refWhere' in f) {
+    if (!('ref' in f)) out.push('only a reference narrows its rows: { "ref": "customer", "refWhere": { "organisation": { "ne": true } } }');
+    else if (!isObject(f['refWhere']) || !Object.values(f['refWhere']).every(isObject) || !parseWhere(f['refWhere'] as Where)) {
+      out.push('its refWhere is a condition on the other type\'s rows, as { "organisation": { "ne": true } }');
+    }
   }
   if ('many' in f && typeof f['many'] !== 'boolean') out.push('its many is not true or false');
   else if (f['many'] && !('ref' in f) && !('values' in f)) out.push('only a reference or a set of values holds many: { "ref": "role", "many": true }');

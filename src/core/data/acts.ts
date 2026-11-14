@@ -11,11 +11,11 @@
  * - Act — One act: its id, words, target, input, whether it changes data, where a press offers it, and its run.
  * - registerAct — An app adds an act; one that is not one, or whose id is taken, is refused in words. How to take it back.
  * - actsOf — The acts that apply on a page (a Context, a View, its type); asked with nothing, every act.
- * - inputFaults — Why a call's input is refused, in words: each field by its rules, each reference a row.
+ * - inputFaults — Why a call's input is refused, in words: each field by its rules, each reference a row its refWhere allows.
  * - runAct — The ONE door: the act found, its call checked by its type's rules, run; done or refused, in words.
  * - checkAct — Why an act would be refused, before the reader is asked: the door's checks, then its own; nothing written.
  * - Choice — One value a field offers, by its words.
- * - refChoices — A reference's choices: its type's rows by key and title, through the store door; none past 200.
+ * - refChoices — A reference's choices: the rows its refWhere allows, by key and title, from its store; none past 200.
  * - actSchema — An act's call as a JSON Schema, a reference's choices read from its type's store: a tool is made from it.
  * - typeActs — A type's own acts: a row type's through its store; a graph type's through the shelf (graphActs).
  * - listed — Words as a list reads them: "A", "A and B", "A, B and C".
@@ -24,10 +24,11 @@ import type { EntityShelf } from './entity-shelf.js';
 import { entityTypes } from './entity-types.js';
 import { graphActs } from './entity-acts.js';
 import { report } from './report.js';
-import type { Filter, Row, Store } from './store.js';
+import { filterTest, type Filter, type Row, type Store } from './store.js';
 import { storeOfType, titleOf, typeSchema, type StoredField, type TypeDefinition } from './type-definition.js';
 import { fieldsFaults } from './type-faults.js';
 import { validateField } from './validate.js';
+import { whereFilter, type Where } from './where.js';
 import type { WorkflowDefinition } from './workflow.js';
 
 /** What a call gives an act: the keys of the rows it acts on (its type's), and its input, by field. */
@@ -129,7 +130,8 @@ export function actsOf(at: { context?: string; view?: string; type?: string } = 
     : !a.type || a.type === at.type));
 }
 
-/** Why a call's input is refused, in words; none when it is sound: each field by its rules, each reference a row. */
+/** Why a call's input is refused, in words; none when it is sound: each field by its rules, each reference a row of its
+ *  type that its `refWhere` allows. */
 export async function inputFaults(input: Readonly<Record<string, StoredField>>, given: Readonly<Row>, ctx: Pick<ActContext, 'stores'>): Promise<string[]> {
   const out = Object.keys(given).filter((name) => !(name in input)).map((name) => `it takes no "${name}"`);
   const rules = typeSchema({ key: '#', fields: input }).rules;
@@ -147,7 +149,12 @@ export async function inputFaults(input: Readonly<Record<string, StoredField>>, 
         continue;
       }
       const keys = field.many ? (Array.isArray(value) ? value : [value]) : [value];
-      for (const key of keys) if (!(await store.byKey(key))) out.push(`"${String(key)}" is no ${labelOf(field.ref)}`);
+      const allows = filterTest(whereFilter(field.refWhere));
+      for (const key of keys) {
+        const row = await store.byKey(key);
+        if (!row) out.push(`"${String(key)}" is no ${labelOf(field.ref)}`);
+        else if (!allows(row)) out.push(`"${titleOfRow(field.ref, store, row)}" is no ${labelOf(field.ref)} here`);
+      }
       continue;
     }
     const wrong = rules[name] ? await validateField(rules[name]!, value) : undefined;
@@ -217,22 +224,28 @@ export interface Choice {
   label: string;
 }
 
-/** A reference's choices: its type's rows, each by its key and its title, read through the store door. None where its
- *  type has no store, or past 200 rows: a caller then takes its key in words. */
-export async function refChoices(ref: string, ctx?: Pick<ActContext, 'stores'>): Promise<Choice[] | undefined> {
+/** A row's title as a reader reads it: its type's title field, else its key. */
+function titleOfRow(ref: string, store: Store, row: Row): string {
+  const type = entityTypes()[ref];
+  return String(row[type ? titleOf(type) : store.key] ?? row[store.key]);
+}
+
+/** A reference's choices: its type's rows that `where` allows (a field's `refWhere`), each by its key and its title, read
+ *  through the store door, which narrows them. None where its type has no store, or past 200 rows: a caller then takes
+ *  its key in words. */
+export async function refChoices(ref: string, ctx?: Pick<ActContext, 'stores'>, where?: Where): Promise<Choice[] | undefined> {
   const store = ctx ? storeOfType(ctx.stores, ref) : undefined;
   if (!store) return undefined;
-  const type = entityTypes()[ref];
-  const title = type ? titleOf(type) : store.key;
-  const { rows } = await store.load({ take: 201 });
-  return rows.length <= 200 ? rows.map((r) => ({ value: r[store.key] as Choice['value'], label: String(r[title] ?? r[store.key]) })) : undefined;
+  const filter = whereFilter(where);
+  const { rows } = await store.load({ take: 201, ...(filter ? { filter } : {}) });
+  return rows.length <= 200 ? rows.map((r) => ({ value: r[store.key] as Choice['value'], label: titleOfRow(ref, store, r) })) : undefined;
 }
 
 /** A field as JSON Schema, a reference's choices read from its type's store (at most 200: past that, its key in words). */
 async function fieldSchema(field: StoredField, name: string, ctx?: ActContext): Promise<Record<string, unknown>> {
   const description = field.description ?? field.label ?? name;
   if (field.ref) {
-    const choices = await refChoices(field.ref, ctx);
+    const choices = await refChoices(field.ref, ctx, field.refWhere);
     const one = choices
       ? { oneOf: choices.map((c) => ({ const: c.value, title: c.label })) }
       : { type: ['string', 'number'], description: `The key of a ${labelOf(field.ref)}.` };

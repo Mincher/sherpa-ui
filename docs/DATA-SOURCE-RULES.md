@@ -513,8 +513,10 @@ tenant in `name`, bump `version` when the rows' shape changes, and call
 Nothing reads a data file, an API or a feed but the store made over it (Will, 2026-11-14). A page, a node, an act, a
 check and a `{{kind:id}}` reference read rows through the store; none imports the file the store reads, nor the
 generator that wrote it. A field whose values are another type's rows says `"ref": "<type>"` (`"many": true` for a
-list): its choices are read from that type's store, so the list is said once, as rows. A field's `values` is for a
-list that is no type's rows, such as a status's words.
+list): its choices are read from that type's store, so the list is said once, as rows. A ref that may name only some of
+them says which with `refWhere`, a condition on those rows in the plain form (`{ "organisation": { "ne": true } }`): the
+store narrows its choices, and a key outside it is refused. `ne: true` keeps a row that says nothing of it; `eq: false`
+would not. A field's `values` is for a list that is no type's rows, such as a status's words.
 
 ### The filter is ONE Query, in scopes
 

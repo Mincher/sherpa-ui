@@ -8,13 +8,14 @@
  * - WhereCondition — One field's condition, as a definition or a View writes it.
  * - Where — Each field's condition, by field.
  * - parseWhere — The plain form as ONE tree, each leaf naming its field: every field's condition holds.
+ * - whereFilter — The plain form as the filter it says, for a store's load or `filterTest`; none where it says nothing.
  * - treeReading — One field's tree as the reading a control holds: Simple's where a Simple control says it, else Advanced's.
  * - whereOf — Readings in the plain form: what each field filters by, nothing a control keeps for itself.
  * - readingsOf — The plain form as readings, each value typed by its field.
  * - whereOfTree — A tree whose leaves name their fields, in the plain form: each field's own part; or why it has none.
  */
-import { fieldState, isRanged, typedTree, type FieldFacts, type FieldReading, type FieldType } from './filter-state.js';
-import { OP_TAKES, groupOf, joinConditions, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
+import { conditionClause, fieldState, isRanged, typedTree, type FieldFacts, type FieldReading, type FieldType } from './filter-state.js';
+import { OP_TAKES, groupOf, joinConditions, type Condition, type ConditionLeaf, type Duration, type Filter, type FilterOp } from './store.js';
 import { report } from './report.js';
 
 /** One field's condition, as a definition or a View writes it. Several ops
@@ -70,6 +71,11 @@ function fieldTree(given: WhereCondition, field?: string): Condition | undefined
  *  condition holds. Parsed once — a status value's `when`. */
 export function parseWhere(where: Readonly<Where>): Condition | undefined {
   return joinConditions('and', Object.entries(where).map(([field, given]) => fieldTree(given, field)));
+}
+
+/** The plain form as the filter it says, for a store's load or `filterTest`; none where it says nothing. */
+export function whereFilter(where: Readonly<Where> | undefined): Filter | undefined {
+  return where ? conditionClause(parseWhere(where)) : undefined;
 }
 
 /** A tree whose leaves name no field: one field's own answer. */

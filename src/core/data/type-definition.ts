@@ -28,6 +28,7 @@ import type { StatusField } from './status-field.js';
 import { report } from './report.js';
 import { cellValues, type Store } from './store.js';
 import { email, max, min, number, oneOf, pattern, required, rules, url, type FieldDomain, type Rule } from './validate.js';
+import type { Where } from './where.js';
 
 /** A field a row holds, or reads from its graph: what its data is, never how a control asks for it. */
 export interface StoredField {
@@ -53,6 +54,8 @@ export interface StoredField {
   from?: string;
   /** A row of another type, by its id: the value is that row's key, its choices that type's rows (plan 964). */
   ref?: string;
+  /** With `ref`: the rows it may name, a condition on that type's rows: `{ organisation: { ne: true } }`. None: all. */
+  refWhere?: Where;
   /** With `ref` or `values`: a list of that type's keys, or of those values, each checked alone. */
   many?: boolean;
   /** With one `ref`: the row belongs to the row it names, so that row's Remove takes it away too (plan 963). */

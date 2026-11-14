@@ -47,6 +47,7 @@
       "description": "A field a row holds, or reads from its graph (from): what its data is, never how a control asks for it.",
       "type": "object",
       "additionalProperties": false,
+      "dependentRequired": { "refWhere": ["ref"] },
       "properties": {
         "type": { "description": "What its values are. None: text. An object is a JSON object, as a definition's body or settings is (plan 964 N3c): no page filters or lists it, and a flow does not ask it.", "enum": ["text", "number", "date", "boolean", "object"] },
         "label": { "type": "string", "minLength": 1 },
@@ -68,6 +69,7 @@
           "type": "string", "pattern": "^[^/]+(/[^/]+)*$"
         },
         "ref": { "description": "A row of another type: its value is that row's key, its choices that type's rows, each by its title (plan 964).", "$ref": "defs.v1.json#/$defs/id" },
+        "refWhere": { "description": "With ref: the rows it may name, a condition on that type's rows: { \"organisation\": { \"ne\": true } }. Its choices are only those rows, and a key outside it is refused. None: every row.", "$ref": "defs.v1.json#/$defs/where" },
         "many": { "description": "With ref or values: a list of that type's keys, or of those values, each checked alone.", "type": "boolean" },
         "owned": { "description": "With one ref: the row belongs to the row it names, so that row's Remove takes it away too, in the same act and its one Undo (plan 963).", "type": "boolean" },
         "make": { "description": "On the type's key, a text: Add makes it, never asks it. Its prefix, then the next free number among the keys with that prefix, a # for each digit: \"a-###\" makes a-075 after a-074 (plan 963).", "type": "string", "pattern": "^[^#]*#+$" }
