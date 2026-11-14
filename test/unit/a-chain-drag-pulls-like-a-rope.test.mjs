@@ -1,8 +1,8 @@
 /**
  * A CHAIN DRAG PULLS LIKE A ROPE: ⌘ or Ctrl held, a dragged node pulls the nodes it joins along behind it, and theirs
- * behind them; each connector is a rope as long as it was, slack when pushed (Will, plan 918 D1 A). Every drag: no two
- * nodes come closer than their radii, half each one's largest side, and one pushed pushes on (D2 A). A held node is
- * never pulled or pushed; two that began nearer stay as near; 2,000 nodes stay fast.
+ * behind them; each connector is a rope as long as it was, slack when pushed (Will, plan 918 D1 A), and no two nodes come
+ * closer than their radii, half each one's largest side, one pushed pushing on (D2 A). A plain drag pushes none (Will,
+ * TODO 974). A held node is never pulled or pushed; two that began nearer stay as near; 2,000 nodes stay fast.
  *
  *   node --test test/unit/a-chain-drag-pulls-like-a-rope.test.mjs
  */
@@ -72,20 +72,21 @@ test('a loop settles: each rope as long as it was, or near', () => {
   assert.ok(p.b.x < 400 && p.c.x < 400, JSON.stringify(p));
 });
 
-test('every drag: a node dragged onto another pushes it, and that one pushes on; none goes through a held one', () => {
+test('a plain drag pushes none, onto another or not (TODO 974); a chain drag pushes it, and that one pushes on; none goes through a held one', () => {
   const nodes = [node('a', 0, 0), node('b', 400, 0), node('c', 700, 0)];
-  const p = dragTo(startDrag(nodes, [], ['a']), { a: { x: 380, y: 0 } }, false);
+  assert.deepEqual(dragTo(startDrag(nodes, [], ['a']), { a: { x: 380, y: 0 } }, false), { a: { x: 380, y: 0 } });
+  const p = dragTo(startDrag(nodes, [], ['a']), { a: { x: 380, y: 0 } }, true);
   assert.ok(centres(p, 'a', 'b') >= 199.5 && centres(p, 'b', 'c') >= 199.5, JSON.stringify(p));
-  const both = dragTo(startDrag(nodes, [], ['a', 'b']), { a: { x: 350, y: 0 }, b: { x: 400, y: 0 } }, false);
+  const both = dragTo(startDrag(nodes, [], ['a', 'b']), { a: { x: 350, y: 0 }, b: { x: 400, y: 0 } }, true);
   assert.deepEqual(both.b, { x: 400, y: 0 }, 'two held nodes may come as near as the reader puts them');
 });
 
-test('two that began nearer than their radii stay as near: a drag pushes no one apart for being close', () => {
+test('two that began nearer than their radii stay as near: a chain drag pushes no one apart for being close', () => {
   const drag = startDrag([node('a', 0, 0), node('b', 0, 120), node('c', 0, 240)], [], ['a']);
-  assert.deepEqual(Object.keys(dragTo(drag, { a: { x: 10, y: 0 } }, false)), ['a']);
+  assert.deepEqual(Object.keys(dragTo(drag, { a: { x: 10, y: 0 } }, true)), ['a']);
   // Moved nearer, step by step as a drag goes: each pushes on, no nearer than they began.
   let nearer;
-  for (let y = 4; y <= 60; y += 4) nearer = dragTo(drag, { a: { x: 0, y } }, false);
+  for (let y = 4; y <= 60; y += 4) nearer = dragTo(drag, { a: { x: 0, y } }, true);
   assert.deepEqual([centres(nearer, 'a', 'b'), centres(nearer, 'b', 'c')], [120, 120]);
 });
 

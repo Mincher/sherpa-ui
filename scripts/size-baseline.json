@@ -192,7 +192,7 @@
   "src/core/data/markdown-text.ts": 726,
   "src/core/data/node-arrange.ts": 183,
   "src/core/data/node-bands.ts": 81,
-  "src/core/data/node-chain.ts": 182,
+  "src/core/data/node-chain.ts": 183,
   "src/core/data/node-clipboard.ts": 68,
   "src/core/data/node-flow.ts": 250,
   "src/core/data/node-frames.ts": 66,

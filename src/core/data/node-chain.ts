@@ -1,8 +1,8 @@
 /**
- * node-chain.ts — A DRAG'S PULL AND PUSH. A chain drag (⌘ or Ctrl held): the dragged node pulls the nodes it joins along
- * behind it, and theirs behind them, each connector a rope as long as it was (follow-the-leader, Will D1 A). Every drag:
- * no two nodes come closer, centre to centre, than their two radii, half each one's largest side (D2 A). It changes no
- * data. Pure: no DOM. Plan 918.
+ * node-chain.ts — A CHAIN DRAG'S PULL AND PUSH (⌘ or Ctrl held): the dragged node pulls the nodes it joins along behind it,
+ * and theirs behind them, each connector a rope as long as it was (follow-the-leader, Will D1 A), and no two nodes come
+ * closer, centre to centre, than their two radii, half each one's largest side (D2 A). A plain drag moves only the nodes
+ * held, and pushes none (Will, TODO 974). It changes no data. Pure: no DOM. Plan 918.
  *
  * Map:
  * - ChainNode — One node as a drag reads it: its place and its size, on the plane.
@@ -10,7 +10,7 @@
  * - ChainDrag — One drag: each node's place now, its connectors, the nodes the reader holds, the nodes it has moved.
  * - radiusOf — A node's radius: half its largest side.
  * - startDrag — A drag begun: the places and sizes, the connectors, the held nodes.
- * - dragTo — The drag a step on: the held nodes where the reader put them, the rest pulled and pushed. Every node moved.
+ * - dragTo — The drag a step on: the held nodes where the reader put them; on a chain drag, the rest pulled and pushed.
  */
 
 /** One node as a drag reads it: its place (its top left) and its size, on the plane. */
@@ -155,8 +155,9 @@ function push(drag: ChainDrag): boolean {
   return changed;
 }
 
-/** The drag a step on: each held node where the reader put it, the rest pulled (`chain`) and pushed. Every node the
- *  drag has moved, where it is now, in whole px: one put back where it began is still named. */
+/** The drag a step on: each held node where the reader put it; on a chain drag (`chain`), the rest pulled and pushed, and
+ *  on a plain one, none (TODO 974). Every node the drag has moved, where it is now, in whole px: one put back where it
+ *  began is still named. */
 export function dragTo(drag: ChainDrag, to: Readonly<Record<string, { x: number; y: number }>>, chain: boolean): Record<string, { x: number; y: number }> {
   // The ropes are as long as the connectors are when the chain comes on; off, they go, and are measured again.
   if (!chain) drag.ropes = null;
@@ -168,7 +169,7 @@ export function dragTo(drag: ChainDrag, to: Readonly<Record<string, { x: number;
     n.y = p.y;
     drag.moved.set(id, 0);
   }
-  for (let pass = 0; pass < PASSES; pass++) {
+  for (let pass = 0; chain && pass < PASSES; pass++) {
     let changed = false;
     for (const rope of drag.ropes ?? []) changed = pull(drag, rope) || changed;
     changed = push(drag) || changed;

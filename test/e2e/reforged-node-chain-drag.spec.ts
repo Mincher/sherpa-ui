@@ -3,8 +3,8 @@ import { test, expect, type Page } from './harness';
 /**
  * CHAIN DRAG and NODE RADII — Will, plan 918. With Enable node chain dragging on (`data-chain-drag`), ⌘ or Ctrl held on
  * a node's drag pulls the nodes it joins along behind it, and theirs behind them: each connector a rope as long as it
- * was (D1 A). ⌘ or Ctrl and an arrow on its header does too. Every drag: a node dragged onto another pushes it away, no
- * nearer than their radii (D2 A). One Undo puts every node back. Real pointer and keys.
+ * was (D1 A). ⌘ or Ctrl and an arrow on its header does too. A ⌘ or Ctrl drag pushes a node it meets away, no nearer
+ * than their radii (D2 A); a plain drag pushes none (Will, TODO 974). One Undo puts every node back. Real pointer and keys.
  */
 type Flow = { nodes: { id: string; x: number; y: number }[] };
 type Ed = { workflow(): Flow; undo(): boolean };
@@ -84,11 +84,17 @@ test('a plain drag pulls none; the setting off, ⌘ or Ctrl pulls none either', 
   expect([off['t'], off['s']]).toEqual([before['t'], before['s']]);
 });
 
-test('every drag: a node dragged onto another pushes it away, no nearer than their radii', async ({ page }) => {
+test('a plain drag onto another node pushes none (TODO 974); with ⌘ or Ctrl it pushes it away, no nearer than their radii', async ({ page }) => {
   const radius = (heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluate((n) => Math.max((n as HTMLElement).offsetWidth, (n as HTMLElement).offsetHeight) / 2);
   const before = await places(page);
-  // The Source onto T: 500 plane px is 250 on the screen.
+  // The Source onto T: 500 plane px is 250 on the screen. Plain, only the Source moves; one Undo, and with the key.
   await dragNode(page, 'S', [250, 0]);
+  const plain = await places(page);
+  expect(plain['s']![0]).toBeGreaterThan(before['s']![0] + 400);
+  expect([plain['t'], plain['o']]).toEqual([before['t'], before['o']]);
+  await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await settle(page);
+  await dragNode(page, 'S', [250, 0], await primary(page));
   const after = await places(page);
   expect(after['s']![0]).toBeGreaterThan(before['s']![0] + 400);
   expect(after['t']![0]).toBeGreaterThan(before['t']![0]);
