@@ -70,6 +70,16 @@
     },
     {
       "$type": "prop",
+      "name": "data-follow",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "default": false,
+      "description": "with data-scroll: the run keeps its end in view. It opens there, and goes there again each time an item is added or grows, as a chat thread does"
+    },
+    {
+      "$type": "prop",
       "name": "data-gap",
       "type": "enum",
       "observed": false,
@@ -160,7 +170,7 @@
     }
   ],
   "populate": {
-    "shape": "{ align?, direction?, fill?, gap?, measure?, minItem?, scroll?, scrollShadow?, wrap? }",
+    "shape": "{ align?, direction?, fill?, follow?, gap?, measure?, minItem?, scroll?, scrollShadow?, wrap? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

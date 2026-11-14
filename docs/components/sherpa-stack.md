@@ -27,6 +27,7 @@ To lay items out in a column or a row with a token gap, with no box, fill, borde
 | `data-align` | `between` `center` `end` `start` `stretch` | `stretch` | start \| center \| end \| stretch \| between — how items sit ACROSS the run (the cross axis), except `between`, which spreads them ALONG it |
 | `data-direction` | `block` `inline` | `block` | block \| inline (a row) |
 | `data-fill` | boolean |  | take the parent's height and hand the spare space to the child marked data-grow. Without it the stack is content-height and there is no spare space to give. |
+| `data-follow` | boolean | `false` | with data-scroll: the run keeps its end in view. It opens there, and goes there again each time an item is added or grows, as a chat thread does |
 | `data-gap` | `2xl` `lg` `md` `none` `sm` `xl` | `lg` | sm (4) \| md (8) \| lg (12, default) \| xl (16) \| 2xl (24) |
 | `data-grow` | text |  | with data-fill on the stack, this item takes the spare space and the others keep their natural size. Two attributes, not one: a stack cannot see its own children from CSS — `:host(:has(…))` does not parse, and `:host:has(…)` matches every host. |
 | `data-measure` | boolean |  | cap the run's width at a reading measure (90ch) and centre it On a CHILD (not on the stack): |
@@ -49,6 +50,6 @@ Style these from outside with `::part()`:
 
 ## populate()
 
-`{ align?, direction?, fill?, gap?, measure?, minItem?, scroll?, scrollShadow?, wrap? }`
+`{ align?, direction?, fill?, follow?, gap?, measure?, minItem?, scroll?, scrollShadow?, wrap? }`
 
 Its declared props by name: `label` sets data-label.

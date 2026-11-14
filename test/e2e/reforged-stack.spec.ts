@@ -236,3 +236,54 @@ test('without data-fill the stack is content-height — data-grow alone does not
   // which is what makes data-fill an opt-in rather than a surprise.
   expect(r.hostH).toBe(40);
 });
+
+test('data-follow keeps the run\'s end in view: open, an item added, an item grown, after a move (978)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const outer = document.createElement('div');
+    outer.style.cssText = 'block-size:200px;inline-size:300px;display:flex;flex-direction:column';
+    const el = document.createElement('sherpa-stack') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-gap', 'none');
+    el.setAttribute('data-scroll', '');
+    el.setAttribute('data-follow', '');
+    el.innerHTML = Array.from({ length: 10 }, () => '<div style="block-size:40px;flex:none"></div>').join('');
+    outer.appendChild(el);
+    root.appendChild(outer);
+    await el.rendered;
+    await window.__settled();
+    const frames = () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    const run = el.shadowRoot!.querySelector('.run') as HTMLElement;
+    const gap = () => Math.round(run.scrollHeight - run.clientHeight - run.scrollTop);
+    const item = (h: number) => Object.assign(document.createElement('div'), { style: `block-size:${h}px;flex:none` });
+    await frames();
+    const opened = { gap: gap(), scrolls: run.scrollHeight > run.clientHeight };
+    run.scrollTop = 0;
+    el.append(item(40));
+    await frames();
+    const added = gap();
+    run.scrollTop = 0;
+    (el.lastElementChild as HTMLElement).style.blockSize = '160px';
+    await frames();
+    const grown = gap();
+    const other = outer.cloneNode() as HTMLElement;
+    root.appendChild(other);
+    other.appendChild(el);
+    await frames();
+    run.scrollTop = 0;
+    el.append(item(40));
+    await frames();
+    const moved = gap();
+    el.removeAttribute('data-follow');
+    run.scrollTop = 0;
+    el.append(item(40));
+    await frames();
+    return { opened, added, grown, moved, off: Math.round(run.scrollTop) };
+  });
+  expect(r.opened).toEqual({ gap: 0, scrolls: true });
+  expect(r.added).toBe(0);
+  expect(r.grown).toBe(0);
+  expect(r.moved).toBe(0);
+  // Without it, the reader's place is kept.
+  expect(r.off).toBe(0);
+});
