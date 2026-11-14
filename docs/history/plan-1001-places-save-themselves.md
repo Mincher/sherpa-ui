@@ -7,8 +7,8 @@ Will, 2026-11-14:
 - "Node position edits, unfurls, swimlane toggles don't count as edits requiring a save. They apply and save
   automatically." (row 1001)
 
-**Status: written by sherpa-demos-67, with sherpa-ui-a9's traps (2026-11-14). Four picks for Will (section 4). Nothing
-built. Owners: sherpa-ui-e8 (the canvas), sherpa-ui-a9 (the draft and the version hash), sherpa-demos-67 (Demos' specs).
+**Status: written by sherpa-demos-67, with sherpa-ui-a9's traps (2026-11-14). Will picked D1 A, D2 A, D3 B (in his words:
+section 4), D4 A (2026-11-14). Nothing built. Owners: sherpa-ui-e8 (the canvas), sherpa-ui-a9 (the draft and the version hash), sherpa-demos-67 (Demos' specs).
 After the node work of plans 991 and 992.**
 
 ## 1. The rule
@@ -39,7 +39,18 @@ toolbar's, on opening a graph, and on leaving Swimlane mode.
 Good: with no tab draft on a move, an agent's change, publish and roll back are no longer refused after a move alone
 (T-a-draft-hides-a-save), if a drag makes no draft when it starts.
 
-## 4. Picks for Will
+## 4. Will's picks (2026-11-14: D1 A, D2 A, D3 B, D4 A)
+
+- **D1 A:** a place is no part of a published version; a roll back keeps today's places.
+- **D2 A:** a move into another stage is an edit: its place saves itself, its stage waits for Save.
+- **D3 B, in Will's words: "Position edits are only kept for the session and are discarded when the session ends."** A
+  preset's places are never written to the shelf: a move, an Unfurl or a Swimlane toggle on a preset is kept in the tab's
+  session alone (`sessionStorage`), and a new session draws it as shipped, then unfurls it by D4.
+- **D4 A:** a graph is unfurled on opening only if nobody laid it out by hand; a move marks it so, the toolbar's Unfurl
+  clears the mark, and leaving Swimlane mode always unfurls. A preset's mark is the session's too (D3).
+
+The questions, as they were asked:
+
 
 - **D1: Is a place part of a published version?** A (my pick): no. A version holds what the graph does; the places are
   the entity's alone, the last ones kept. A roll back keeps today's places for each node still there (T6). B: yes, a
