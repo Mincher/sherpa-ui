@@ -1,5 +1,5 @@
 /**
- * A SWITCH ROW HAS A BOOLEAN INPUT: a Scope's Filters, a Preset's and a Saved filter's On.
+ * A SWITCH ROW HAS A BOOLEAN INPUT: a Scope's Filters and a Preset's On.
  * A connection into it DRIVES it — on from a true value, off from a false one; a number reads as
  * 1 or 0; a test's Pass drives it too (plans 944, 971 §9: no True or False socket) — read
  * only and marked Custom; cut the connection and the row's own state is back, for the draft kept
@@ -20,7 +20,7 @@ const { readingsOf } = await import(new URL('where.js', core));
 test('every switch row of every kind takes a boolean, and no other row is changed to', () => {
   const switches = Object.entries(NODE_KINDS).flatMap(([id, k]) => k.rows.filter((r) => r.control === 'switch').map((r) => `${id}/${r.name}`));
   // A bar's Switch is View Filters' and a card's Presentation's (plan 960 U4.8).
-  assert.deepEqual(switches, ['view-filters/#filters', 'preset/on', 'saved/on', 'presentation/#filters']);
+  assert.deepEqual(switches, ['view-filters/#filters', 'preset/on', 'presentation/#filters']);
   for (const s of switches) {
     const [kind, row] = s.split('/');
     assert.equal(socketType(NODE_KINDS[kind], row, 'input'), 'boolean', s);

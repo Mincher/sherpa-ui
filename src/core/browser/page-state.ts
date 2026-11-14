@@ -5,7 +5,7 @@
  * Map:
  * - PageState — One page's state, as one JSON document.
  * - LeftView — A View as the reader left it, unsaved: its JSON, and the definition it was made over.
- * - Named — The parts a reader names: their own Views, saved filters and entities.
+ * - Named — The parts a reader names: their own Views and entities.
  * - NODES_PAGE — The page name the app-wide entities are kept under.
  * - PageChange — Parts of a page's state to change: `undefined` forgets one.
  * - Tier — Where a part is kept: read now, written now.
@@ -26,8 +26,7 @@
  * - .flush — Push every page's named parts now.
  * - .keepUi — Keep each element's own state in the page's `ui`: put back now, kept after each load.
  */
-import type { Query, QueryDefaults, SavedFilter } from '../data/query.js';
-import { isSavedFilter } from '../data/query.js';
+import type { Query, QueryDefaults } from '../data/query.js';
 import type { SharedView } from '../data/query-edits.js';
 import { isEntity, type Entity } from '../data/entity.js';
 import { makeShelf, type EntityShelf } from '../data/entity-shelf.js';
@@ -49,14 +48,10 @@ export interface PageState {
   ui?: Record<string, Record<string, unknown>>;
   /** Each View the reader changed and left, by id. TRAP T-a-view-keeps-what-the-reader-left */
   left?: Record<string, LeftView>;
-  /** The saved filters on a bar in this tab, each with the scope its chip is on. */
-  added?: Record<string, string>;
   /** Each card's filter toolbar, shown or shut, by its slot. */
   toolbars?: Record<string, boolean>;
   /** NAMED: the reader's own Views, by id. */
   views?: Record<string, SavedView>;
-  /** NAMED: the reader's saved filters, by id. */
-  filters?: Record<string, SavedFilter>;
   /** NAMED: the reader's own entities, of every type, by id. App-wide: kept under `NODES_PAGE`. */
   entities?: Record<string, Entity>;
 }
@@ -67,8 +62,8 @@ export interface LeftView {
   sig: string;
 }
 
-/** The parts a reader names: their own Views, saved filters and entities. */
-export type Named = Pick<PageState, 'views' | 'filters' | 'entities'>;
+/** The parts a reader names: their own Views and entities. */
+export type Named = Pick<PageState, 'views' | 'entities'>;
 
 /** The page name the app-wide entities are kept under (D13): no page id can be it. */
 export const NODES_PAGE = '#app';
@@ -81,8 +76,8 @@ export type PageChange = { [P in Part]?: PageState[P] | undefined };
 /** The tier of each part. Only what the reader names crosses tabs, and a card's
  *  toolbar, which is chrome as the nav's pin is. TRAP T-only-a-named-part-crosses-tabs */
 const TIER_OF = {
-  view: 'tab', query: 'tab', draft: 'tab', ui: 'tab', left: 'tab', added: 'tab',
-  toolbars: 'local', views: 'local', filters: 'local', entities: 'local',
+  view: 'tab', query: 'tab', draft: 'tab', ui: 'tab', left: 'tab',
+  toolbars: 'local', views: 'local', entities: 'local',
 } as const satisfies Record<Part, 'tab' | 'local'>;
 
 const PARTS = Object.keys(TIER_OF) as Part[];
@@ -95,14 +90,12 @@ const WHOLE: Partial<Record<Part, (v: unknown) => boolean>> = {
   query: isQuery,
   draft: isQuery,
   ui: each(isPlainObject),
-  added: each((v) => typeof v === 'string'),
   toolbars: each((v) => typeof v === 'boolean'),
 };
 /** …but a part made of the reader's own entries loses only the broken ones. */
 const ENTRY: Partial<Record<Part, (v: unknown) => boolean>> = {
   left: (v) => isPlainObject(v) && isQuery(v['query']) && typeof v['sig'] === 'string',
   views: (v) => isPlainObject(v) && typeof v['label'] === 'string',
-  filters: isSavedFilter,
   // A preset is a file's, never the reader's.
   entities: (v) => isEntity(v) && v.origin !== 'preset',
 };
@@ -174,9 +167,8 @@ export interface KeeperOptions {
 
 const PREFIX = 'sherpa:page:';
 const APP_CONTEXT = 'sherpa:app-context';
-/** Where a reader's saved Views and saved filters were kept before v3: read once. */
+/** Where a reader's saved Views were kept before v3: read once. */
 const OLD_VIEWS = 'sherpa:views:';
-const OLD_FILTERS = 'sherpa:filter-sets:';
 
 /** What a View defines, as a string: a View left over another definition is stale. */
 export function viewSig(view: { query?: unknown } | undefined): string {
@@ -249,7 +241,7 @@ export class PageKeeper {
 
   /** `onward`: the reader's own Views go on to the database and the server. */
   #put(page: string, parts: PageChange, onward: boolean): void {
-    const named = onward && ('views' in parts || 'filters' in parts || 'entities' in parts);
+    const named = onward && ('views' in parts || 'entities' in parts);
     const held = (): string[] => Object.keys((page === NODES_PAGE ? this.read(page).entities : this.read(page).views) ?? {});
     const was = named ? held() : [];
     for (const tier of ['tab', 'local'] as const) {
@@ -320,12 +312,11 @@ export class PageKeeper {
     }
     const here = this.read(page);
     const views = { ...cleaned('views', remote.views ?? {}) as object, ...await this.#fromDatabase(page), ...here.views };
-    const filters = { ...cleaned('filters', remote.filters ?? {}) as object, ...here.filters };
     const entities = { ...cleaned('entities', remote.entities ?? {}) as object, ...await this.#entitiesFromDatabase(page), ...here.entities } as Record<string, Entity>;
     // Kept here and in the database; nothing new to push.
-    this.#put(page, { views, filters, entities }, false);
+    this.#put(page, { views, entities }, false);
     this.#onward(page, [], false);
-    return { views, filters, ...(Object.keys(entities).length ? { entities } : {}) };
+    return { views, ...(Object.keys(entities).length ? { entities } : {}) };
   }
 
   /** Push every page's named parts now, rather than at the next tick. */
@@ -378,20 +369,17 @@ export class PageKeeper {
     return doc;
   }
 
-  /** A reader's saved Views and saved filters as an older build kept them: read
-   *  ONCE into this page's document, and the old keys gone. Decision B. */
+  /** A reader's saved Views as an older build kept them: read ONCE into this page's document, and the old key
+   *  gone. Decision B. */
   #carried(page: string): Record<string, unknown> | undefined {
     if (!this.#web) return undefined;
     const views = cleaned('views', readJson<unknown>('local', OLD_VIEWS + page, undefined));
-    const filters = cleaned('filters', readJson<unknown>('local', OLD_FILTERS + page, undefined));
-    const has = (part: unknown): part is object => isPlainObject(part) && Object.keys(part).length > 0;
-    if (!has(views) && !has(filters)) return undefined;
-    const doc = { v: 3, ...(has(views) ? { views } : {}), ...(has(filters) ? { filters } : {}) };
+    if (!isPlainObject(views) || !Object.keys(views).length) return undefined;
+    const doc = { v: 3, views };
     this.#local.write(PREFIX + page, doc);
-    // The old keys go only once the new one holds them: a full store keeps both.
+    // The old key goes only once the new one holds it: a full store keeps both.
     if (this.#local.read(PREFIX + page) === undefined) return doc;
     removeKey('local', OLD_VIEWS + page);
-    removeKey('local', OLD_FILTERS + page);
     return doc;
   }
 
@@ -430,9 +418,9 @@ export class PageKeeper {
     await this.#written;
     if (!remote) return;
     for (const page of pages) {
-      const { views, filters, entities } = this.read(page);
+      const { views, entities } = this.read(page);
       try {
-        await remote.push(page, { ...(views ? { views } : {}), ...(filters ? { filters } : {}), ...(entities ? { entities } : {}) });
+        await remote.push(page, { ...(views ? { views } : {}), ...(entities ? { entities } : {}) });
       } catch (error) {
         this.#say(error, 'push');
       }

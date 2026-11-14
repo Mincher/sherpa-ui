@@ -1,19 +1,17 @@
 /**
  * page-definition.ts — a page's data, set up from ONE JSON document: its
- * store, its fields, its scopes and its saved filters; and the one check of its
- * names. Its shapes are schemas/defs.v1.json's. docs/PAGE-DEFINITION.md
+ * store, its fields and its scopes; and the one check of its names. Its shapes
+ * are schemas/defs.v1.json's. docs/PAGE-DEFINITION.md
  * TRAP T-a-page-is-its-definition
  *
  * Map:
  * - ScopeDefinition — One scope: its name, and the fields it offers and holds at the start.
  * - SourceDefinition — A page's source: which store, how it pages and searches, its fields and scopes.
- * - PageDefinition — One page, as JSON — its source, its saved filters, and its components' configuration.
+ * - PageDefinition — One page, as JSON — its source and its components' configuration.
  * - storeOf — The store a page's source reads, by name: its own `store`, else its type's.
  * - checkPage — Check every name a page definition uses, as it opens; each broken one reports.
  * - openSource — Build a page's source from its definition, over the app's store. It checks nothing.
  * - presetReadings — A preset's conditions as readings, each field's its tree, typed once by its field.
- * - savedFiltersOf — A page's own saved filters: each that is a name and a query.
- * - SAVED_PRESET — The id a saved filter goes by as a preset on a bar: this, then its own.
  * - pageWithQuery — The page definition with a Query written in: what an editor's Save hands its app.
  * - viewWithQuery — A View with its `query` written from a Query: what the graph's Save writes for a View.
  * - checkTiers — A page's child fields, each reported where it cannot be one.
@@ -23,7 +21,7 @@ import { answerTree, type FieldReading, type FieldType } from './filter-state.js
 import { report, type Report } from './report.js';
 import type { SortSpec, Store } from './store.js';
 import type { QueryContext } from './query-context.js';
-import { VIEW, isSavedFilter, statedQuery, type AxesDefinition, type PresentationDefinition, type Query, type QueryDefaults, type SavedFilter } from './query.js';
+import { statedQuery, type AxesDefinition, type PresentationDefinition, type Query, type QueryDefaults } from './query.js';
 import { pageFields } from './type-definition.js';
 import { whereOf, type Where } from './where.js';
 
@@ -87,15 +85,12 @@ export interface SourceDefinition {
   axes?: AxesDefinition;
 }
 
-/** One page, as JSON — its source, its saved filters, and its components'
- *  configuration. Its markup is its Context's, in the app definition. */
+/** One page, as JSON — its source and its components' configuration. Its markup is its Context's, in the app
+ *  definition. */
 export interface PageDefinition {
   v: 1;
   id: string;
   source?: SourceDefinition;
-  /** The page's OWN saved filters, by id: query definitions, listed beside a
-   *  reader's and applied as theirs are. Will, 366. TRAP T-saved-filters-are-every-scope */
-  savedFilters?: Readonly<Record<string, SavedFilter>>;
   /** Each component's CONFIGURATION, by id — set before it is answered.
    *  TRAP T-configuration-is-not-data */
   ui?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
@@ -103,8 +98,7 @@ export interface PageDefinition {
 
 /**
  * Check every name a page definition uses: its shape, its child fields, each
- * set's, fixed and always-on fields, its presets' ids and each saved filter's
- * scopes. Each broken one reports; true when none is. DOM-free and one pass, so a
+ * set's, fixed and always-on fields and its presets' ids. Each broken one reports; true when none is. DOM-free and one pass, so a
  * page opening calls it first, and a server or a tool the same.
  * TRAP T-a-page-is-checked-as-it-opens
  */
@@ -142,17 +136,6 @@ export function checkPage(page: PageDefinition): boolean {
     for (const { id } of facts.presets ?? []) {
       if (ids.has(id)) at('preset-twice', `scope "${scope}" has two presets "${id}"; the second wins.`, { scope, preset: id });
       ids.add(id);
-    }
-  }
-  // The View is every page's, declared or not.
-  const scopes = new Set([VIEW, ...Object.keys(source?.scopes ?? {})]);
-  for (const [id, set] of Object.entries(page.savedFilters ?? {})) {
-    if (!isSavedFilter(set)) {
-      at('saved-filter-invalid', `the saved filter "${id}" is not { label, query: { v: 1, scopes } }, so it is left out.`, { savedFilter: id });
-      continue;
-    }
-    for (const scope of Object.keys(set.query.scopes)) {
-      if (!scopes.has(scope)) at('saved-filter-unknown-scope', `the saved filter "${id}" fills scope "${scope}", which source.scopes does not have.`, { savedFilter: id, scope });
     }
   }
   for (const problem of problems) report(problem);
@@ -233,15 +216,6 @@ export function presetReadings(source: DataSource, where: Readonly<Where>): Reco
     return [field, tree ? { tree } : reading];
   }));
 }
-
-/** A page's own saved filters: each that is a name and a query definition.
- *  `checkPage` reports one that is not. Will, 366 */
-export function savedFiltersOf(page: PageDefinition): Record<string, SavedFilter> {
-  return Object.fromEntries(Object.entries(page.savedFilters ?? {}).filter(([, set]) => isSavedFilter(set)));
-}
-
-/** The id a saved filter goes by as a preset on a bar: this, then its own. TODO 605 */
-export const SAVED_PRESET = 'saved:';
 
 /**
  * The page definition with a Query written in — what an editor's Save hands its app:

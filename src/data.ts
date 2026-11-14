@@ -112,12 +112,10 @@ export { bindId, bindSource, type BindOptions } from './core/ui/bind-source.js';
 export {
   checkPage,
   checkTiers,
-  savedFiltersOf,
   openSource,
   pageWithQuery,
   viewWithQuery,
   presetReadings,
-  SAVED_PRESET,
   storeOf,
   type PageDefinition,
   type ScopeDefinition,

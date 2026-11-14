@@ -141,11 +141,15 @@ test('a reader\'s old saved sets move over as Filters, once: one per scope that 
     trials: { label: 'Trials', query: { v: 1, scopes: { data: { where: { status: { in: ['trial'] } } } } } },
     both: { label: 'Big trials', query: { v: 1, scopes: { view: { where: { status: { in: ['trial'] } } }, data: { where: { seats: { gt: 100 } } }, empty: {} } } },
     none: { label: 'Nothing', query: { v: 1, scopes: { data: {} } } },
+    off: { label: 'Off', query: { v: 1, scopes: { data: { where: { seats: { gt: 5, off: true } } } } } },
+    some: { label: 'Some off', query: { v: 1, scopes: { data: { where: { seats: { gt: 5, off: true }, plan: { eq: 'Pro' } } } } } },
   };
   const made = filtersOfSaved(sets, 'customers', { view: { label: 'View' }, data: { label: 'Rows' } }, ['trials']);
   assert.deepEqual(made.map((f) => [f.id, f.label, f.type, f.settings.source, f.query.where]), [
     ['trials-2', 'Trials', 'filter', 'customers', { status: { in: ['trial'] } }],
     ['big-trials-view', 'Big trials · View', 'filter', 'customers', { status: { in: ['trial'] } }],
     ['big-trials-rows', 'Big trials · Rows', 'filter', 'customers', { seats: { gt: 100 } }],
+    // A filter the reader had off asks nothing: a scope with only those holds no answer.
+    ['some-off', 'Some off', 'filter', 'customers', { plan: { eq: 'Pro' } }],
   ]);
 });

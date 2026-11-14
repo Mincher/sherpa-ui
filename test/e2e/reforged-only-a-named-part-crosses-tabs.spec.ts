@@ -5,9 +5,9 @@ import { gotoHarness } from './harness';
  * ONE PAGE, ONE DOCUMENT, across two tabs — Will, 2026-10-20: "The only way to
  * share filter configurations across tabs, windows, or sessions is if they are
  * saved by the user." The reader's own Views and saved filters cross; the kept
- * Query, what was left on a View and a saved filter on a bar are the tab's. A
- * saved filter is a preset of the reader's, never a chip's answer (605). State
- * first: a reload's first load already asks the kept Query.
+ * Query and what was left on a View are the tab's. A saved filter is a Filter on
+ * the app-wide shelf, a preset of its store's pages, never a chip's answer (605,
+ * plan 960 U4.4c). State first: a reload's first load already asks the kept Query.
  * TRAP T-only-a-named-part-crosses-tabs · TRAP T-one-page-one-document
  */
 const OPEN = `
@@ -53,38 +53,40 @@ test('only what the reader names crosses tabs; the rest is the tab\'s, and comes
     source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
     await source.load();
     await settle();
-    const id = provider.saveFilters('Pro rows');
-    provider.applyFilters(id);
+    // The data scope's alone: the View's Tier reads All, an answer too.
+    provider.settings.set('saveAnyScope', false);
+    const ids = await provider.saveFilters('Pro rows', 'data');
     await provider.saveView('Mine', { stay: true });
     await source.load();
     await settle();
     const tab = JSON.parse(sessionStorage.getItem('sherpa:page:plans') ?? '{}');
     const shared = JSON.parse(localStorage.getItem('sherpa:page:plans') ?? '{}');
-    return { id, tab: Object.keys(tab).sort(), shared: Object.keys(shared).sort(), total: source.debugState().total };
+    const app = JSON.parse(localStorage.getItem('sherpa:page:#app') ?? '{}');
+    return { ids, tab: Object.keys(tab).sort(), shared: Object.keys(shared).sort(), shelf: Object.keys(app.entities ?? {}),
+      total: source.debugState().total };
   `);
-  expect(a['id']).toBe('pro-rows');
-  // The tab's own: the View, its Query, the set on a bar. The shared: the named parts.
-  expect(a['tab']).toEqual(['added', 'query', 'v', 'view']);
-  expect(a['shared']).toEqual(['filters', 'v', 'views']);
+  expect(a['ids']).toEqual(['pro-rows']);
+  // The tab's own: the View and its Query. The shared: the named parts, the page's Views and the app's shelf.
+  expect(a['tab']).toEqual(['query', 'v', 'view']);
+  expect(a['shared']).toEqual(['v', 'views']);
+  expect(a['shelf']).toEqual(['pro-rows']);
   expect(a['total']).toBe(2);
 
   // ANOTHER TAB: the same localStorage, its own sessionStorage.
   const second = parkThePointer(await context.newPage());
   await gotoHarness(second);
   const b = await open(second, `
-    const before = { plan: plan(), total: source.debugState().total, sets: provider.savedFilterSets,
+    const before = { plan: plan(), total: source.debugState().total, presets: source.query.presets('data').map((p) => p.id),
       views: Object.keys(provider.keeper.read('plans').views ?? {}) };
-    // Its saved filter, ticked: a preset of the reader's, on — the reader's own answer stays empty.
-    provider.applyFilters('pro-rows');
+    // Its Filter, pressed: a preset of the reader's, on — the reader's own answer stays empty.
+    source.query.ask({ scope: 'data', preset: 'filter:pro-rows', on: true, commit: true });
     await source.load();
     await settle();
     const reading = plan();
     return { before, presets: Object.keys(reading?.byPreset ?? {}), own: reading?.picked ?? [], total: source.debugState().total };
   `);
-  expect(b['before']).toEqual({
-    plan: null, total: 3, sets: [{ id: 'pro-rows', label: 'Pro rows', added: false, own: true }], views: ['mine'],
-  });
-  expect(b['presets']).toEqual(['saved:pro-rows']);
+  expect(b['before']).toEqual({ plan: null, total: 3, presets: ['filter:pro-rows'], views: ['mine'] });
+  expect(b['presets']).toEqual(['filter:pro-rows']);
   expect(b['own']).toEqual([]);
   expect(b['total']).toBe(2);
 
@@ -92,7 +94,7 @@ test('only what the reader names crosses tabs; the rest is the tab\'s, and comes
   await first.reload();
   await first.waitForFunction(() => window.__reforgedReady === true);
   const again = await open(first, `
-    return { first: loads[0], picked: plan()?.picked ?? [], total: source.debugState().total, added: provider.savedFilterSets.map((s) => s.added) };
+    return { first: loads[0], picked: plan()?.picked ?? [], total: source.debugState().total, presets: source.query.presets('data').map((p) => p.id) };
   `);
-  expect(again).toEqual({ first: true, picked: ['Pro'], total: 2, added: [true] });
+  expect(again).toEqual({ first: true, picked: ['Pro'], total: 2, presets: ['filter:pro-rows'] });
 });

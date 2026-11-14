@@ -88,11 +88,9 @@ in three shapes, where "draft" meant two things:
 | `draft` | what waits for Apply — the ONE meaning of draft | the tab |
 | `ui` | each element's own state, by id | the tab |
 | `left` | each View the reader changed and left | the tab |
-| `added` | the saved filters on a bar, with their scope | the tab |
 | `toolbars` | each card's filter toolbar, shown or shut | every tab |
 | `views` | NAMED: the reader's own Views | every tab; the database, a server |
-| `filters` | NAMED: the reader's saved filters | every tab; a server |
-| `nodes` | NAMED: the reader's Custom Nodes, app-wide, under the page name `#app` | every tab; the database, a server |
+| `entities` | NAMED: the reader's own entities of every type, their saved Filters too, app-wide, under the page name `#app` | every tab; the database, a server |
 
 `PageKeeper` keeps it: `read(page)` reads through each tier, so another tab's
 named parts are seen at once; `write(page, parts)` sends each part to its tier,
@@ -104,7 +102,7 @@ Context's one answer is the keeper's too, for the tab (`appContext`).
 
 The provider holds one: `provider.keeper`, the app's set before a page opens.
 Every keeper of old goes through it — the kept Query, what was left on each View,
-the saved Views and filters, the sets on a bar, a card's toolbar, the App Context,
+the saved Views, the entity shelf, a card's toolbar, the App Context,
 the outlet's Views (`viewsOf`) and a Context's element state (`keepUi`); and
 `provider.export()` hands out the same shape. The URL's `?view` stays the
 router's (`T-the-router-owns-the-url`): the outlet hands it to `open()`, and the
@@ -112,10 +110,12 @@ document's `view` follows each pick.
 
 **A stored part this version cannot read is dropped, never half-applied**; a part
 made of the reader's own entries loses only the broken ones, and a document of
-another `v` is not read. A reader's saved Views and saved filters as v2 kept them
-(`sherpa:views:<page>`, `sherpa:filter-sets:<page>`) are read ONCE into the page's
-document, and the old keys go only once the new one holds them. What else v2
-kept was the tab's, and is not carried.
+another `v` is not read. A key this version has no part for (an old `filters`,
+`added`) is not read and costs nothing else: it is kept as it is, for an app's
+one-off move (plan 960 U4.4c). A reader's saved Views as v2 kept them
+(`sherpa:views:<page>`) are read ONCE into the page's document, and the old key
+goes only once the new one holds them. What else v2 kept was the tab's, and is not
+carried.
 
 - Site: `src/core/browser/page-state.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
@@ -124,16 +124,15 @@ kept was the tab's, and is not carried.
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `test/e2e/reforged-a-page-keeps-one-key.spec.ts`
 - Site: `test/e2e/reforged-only-a-named-part-crosses-tabs.spec.ts`
-- Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 
 ### T-only-a-named-part-crosses-tabs
 
 **Only what the reader NAMES crosses tabs** — Will, 2026-10-20 (TODO 370): *"The
 only way to share filter configurations across tabs, windows, or sessions is if
 they are saved by the user to a custom definition."* Each part's tier is declared
-ONCE, in `TIER_OF`: the reader's own Views and saved filters are every tab's
-(localStorage); the View on screen, its Query, what was left on each View, the
-sets on a bar and each element's state are the TAB's (sessionStorage). Two tabs on
+ONCE, in `TIER_OF`: the reader's own Views and entities, their saved Filters too,
+are every tab's (localStorage); the View on screen, its Query, what was left on each
+View and each element's state are the TAB's (sessionStorage). Two tabs on
 one screen filtered differently is a feature; a shared tier would make them fight.
 A card's toolbar is every tab's, as chrome, like the nav's pin. A store's History
 is per tab too (345 D2 B), outside the keeper.
@@ -374,11 +373,12 @@ showed the Fleet cards under a chip that said Capacity planning (TODO 198).
 
 ### T-derived-id-makes-resave-an-update
 
-A saved View's and a saved filter's id is DERIVED from its label — lowercase,
-words joined by a hyphen — rather than generated. That is what makes saving over
-one an **UPDATE** in its place: `saveView()` with no name keeps the id of the View
-on screen, and a renamed set moves to its new name's id where it stood. A random
-id would leave a reader with two "Q3 capacity" rows and no way to tell them apart.
+A saved View's id is DERIVED from its label — lowercase, words joined by a
+hyphen — rather than generated. That is what makes saving over one an **UPDATE**
+in its place: `saveView()` with no name keeps the id of the View on screen. A
+random id would leave a reader with two "Q3 capacity" rows and no way to tell them
+apart. (A reader's saved Filter takes a free id from its name once, and a rename
+keeps it: its uses name it.)
 
 A label of pure punctuation still needs an id, so the slug falls back to the RAW
 label; that keeps it addressable rather than colliding on an empty key.
@@ -389,7 +389,6 @@ prototype key through — and this object came from storage, which a person can
 edit (`T-storage-access-throws`).
 
 - Site: `src/core/browser/web-storage.ts`
-- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-attributes-are-the-state-channel
 

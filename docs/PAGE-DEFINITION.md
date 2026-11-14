@@ -30,7 +30,7 @@ session, so its filters were lost on a trip away and back (G2).
 One JSON document per page. The same rule as a View: **a definition is data**
 (`T-a-view-is-json`), so a service or an agent can read and write it. Its schema
 is `schemas/page.v1.json`, and every shape in it — a field, a scope, a condition,
-a saved filter, a component's config — is `schemas/defs.v1.json`'s, the one
+a preset, a component's config — is `schemas/defs.v1.json`'s, the one
 library `app.v1`, `views.v1` and `workflow.v3` use too.
 
 ```json
@@ -51,12 +51,9 @@ library `app.v1`, `views.v1` and `workflow.v3` use too.
     "scopes": {
       "view": { "label": "View filters", "holds": ["customer", "region", "created"] },
       "data": { "label": "Customer records", "offers": "all",
-                "holds": ["status", "plan", "tier", "owner"] }
+                "holds": ["status", "plan", "tier", "owner"],
+                "presets": [{ "id": "has-tickets", "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } }] }
     }
-  },
-  "savedFilters": {
-    "has-tickets": { "label": "Has open tickets",
-                     "query": { "v": 1, "scopes": { "data": { "where": { "openTickets": { "gt": 0 } } } } } }
   },
   "ui": {
     "grid": { "key": "email", "columns": ["…"], "actions": ["…"] }
@@ -67,13 +64,10 @@ library `app.v1`, `views.v1` and `workflow.v3` use too.
 - **`source`** — which store, how it pages and searches, every field as
   `declareField` takes it, and each scope's name and what it holds at the
   start. **No field lists its values** — see §3.
-- **`savedFilters`** — the saved filters the page ships: each a name and a
-  query definition, every scope's `where` (DATA-SOURCE-RULES §2) and `holds`,
-  as a reader's saved filter is. Listed beside the reader's on every bar, and
-  added as theirs are — as a preset chip; never saved over or deleted.
-  One that is not `{ label, query: { v: 1, scopes } }` is reported
-  (`saved-filter-invalid`) and left out; so is a scope it fills that the page
-  does not have (`saved-filter-unknown-scope`). `T-saved-filters-are-every-scope`
+- **A scope's `presets`** are the page's own named filters: each `{ id, label,
+  where }`, a chip on the scope's bar (`T-a-preset-is-its-own-part`). A
+  reader's saved filters are Filters on the entity shelf, not the page's
+  (`T-saved-filters-are-every-scope`).
 - **A scope's `sets`** draw fields as one group:
   `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
   A `serial` set chains them — Region offers only the regions of the picked
@@ -205,7 +199,7 @@ range will be between the min and max values."*
 The ROUTER hands the definition to the PROVIDER on every navigation. The
 provider's `open()` checks its names first, with `checkPage(definition)` — one
 DOM-free pass that reports each broken one: a child field, a set's field its
-scope does not hold, two presets of one id, a saved filter. The builders after it
+scope does not hold, two presets of one id. The builders after it
 are quiet (`T-a-page-is-checked-as-it-opens`).
 
 ```js
@@ -234,7 +228,7 @@ the panel as it does now (G1).
 
 | goes | stays |
 |---|---|
-| each Context's source, declarations, holds, saved filters, Add lists, header chips, `provide()`, teardown | the Context's own business: add, edit, delete, its dialogs and toasts |
+| each Context's source, declarations, holds, presets, Add lists, header chips, `provide()`, teardown | the Context's own business: add, edit, delete, its dialogs and toasts |
 | the "forgot to pass the session" gap | a bespoke summary a page binds itself (the risk gauge) |
 | `globalFilters()` — the header's chips come from the View scope | `DataSource`, the Query, `provide()` for a page that wants it by hand |
 

@@ -107,11 +107,11 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   ]);
   assert.deepEqual([...new Set(split.map(([name]) => name.split(' › ')[0]))], [...TEST_KINDS]);
   // No kind forks (plan 944): only a test branches, by Pass and Fail rows that, on one value, pass on its Data. A check that sends
-  // a boolean on its header says `output`: a Trigger (its True, to the Start: plan 949), a Preset and a Saved filter (a
-  // scope's row), a Time and a Tag.
+  // a boolean on its header says `output`: a Trigger (its True, to the Start: plan 949), a Preset (a scope's row), a Time
+  // and a Tag.
   assert.deepEqual(named((k) => k.branches), []);
   assert.deepEqual(named((k) => [k, ...Object.values(k.types ?? {})].some((t) => (t.rows ?? []).some((r) => r.passes))), [...TEST_KINDS]);
-  assert.deepEqual(named((k) => k.output === 'boolean'), ['trigger', 'preset', 'saved', 'time', 'tag']);
+  assert.deepEqual(named((k) => k.output === 'boolean'), ['trigger', 'preset', 'time', 'tag']);
   // No type forks, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
   // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
   for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], `${name} › ${id}`);

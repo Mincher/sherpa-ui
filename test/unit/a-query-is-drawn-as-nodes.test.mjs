@@ -3,7 +3,7 @@
  * each held field a chip its filter's Pass joins; each card's Presentation, its
  * own filters' Pass and its Organise on its rows' path, its bar its rows; and the
  * View they go into (plan 960 U4.8) — derived from the live Query, never kept;
- * presets, saved filters, status fields and superseded answers too. Each edit is
+ * presets, a store's Filters, status fields and superseded answers too. Each edit is
  * the command a chip asks, and Save writes the page definition. Will, TODO 555 ·
  * plan 695 N1 · plan 713 M3. TRAP T-the-node-editor-asks-the-query
  *
@@ -22,7 +22,7 @@ const { checkPage, openSource, pageWithQuery } = await import(new URL('page-defi
 const { editQuery, isPureEdit } = await import(new URL('query-edits.js', core));
 const { statusFields } = await import(new URL('status-field.js', core));
 const { onReport } = await import(new URL('report.js', core));
-const { ROWS, accepts, socketOf, socketType } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, ROWS, accepts, socketOf, socketType } = await import(new URL('node-kinds.js', core));
 
 const definition = {
   v: 1, id: 'records',
@@ -222,7 +222,7 @@ test('a field whose values are known is PICKED, as its chip picks: Is one of or 
 });
 
 
-/* ── Presets, saved filters, status fields, superseded answers — plan 695 N1 ── */
+/* ── Presets, Filters, status fields, superseded answers — plan 695 N1 ── */
 
 const page = {
   v: 1, id: 'records',
@@ -234,7 +234,6 @@ const page = {
       data: { label: 'Customers', holds: ['plan', 'seats'], presets: [{ id: 'big', label: 'Big accounts', where: { seats: { gt: 100 } } }] },
     },
   },
-  savedFilters: { trials: { label: 'Trials', query: { v: 1, scopes: { view: { where: { status: { in: ['trial'] } } } } } } },
 };
 const rows = [
   { id: 1, status: 'active', plan: 'Pro', seats: 120 },
@@ -275,22 +274,16 @@ test('a PRESET is a node into its bar\'s row: its on, from the Query, and what i
   assert.deepEqual(valuesIn(queryGraph(source.query.draft, page), 'preset-data-big'), valuesIn(on, 'preset-data-big'));
 });
 
-test('a SAVED FILTER is a node: on no bar it says what it would add, and no connection; on a bar it is a preset', async () => {
+test('a reader\'s saved filters are FILTERS: each a preset of its bar, its own graph to change it; no Saved filter kind (plan 960 U4.4c)', async () => {
   const { draw } = await opened();
-  const g = draw();
-  const saved = nodeIn(g, 'saved-trials');
-  assert.equal(saved.kind, 'saved');
-  assert.deepEqual(saved.rows.map((r) => [r.name, r.value, !!r.editable]), [['on', false, false], ['view:status', undefined, false]]);
-  assert.ok(!g.connections.some((r) => r.from.startsWith('saved-trials/') || r.from === 'saved-trials' || r.to === 'saved-trials'), 'no connection out, none into the node itself');
-  const wrote = nodeIn(g, 'when-saved-trials-view:status');
-  assert.ok(wrote.kind === 'condition' && wrote.rows.every((r) => !r.editable), 'its condition is a Condition node, read only');
-  assert.ok(g.connections.some((r) => r.from === 'field-saved-trials-view:status/field' && r.to === wrote.id), 'on its Field');
-  assert.ok(g.connections.some((r) => r.from === `${wrote.id}/pass` && r.to === 'saved-trials/view:status'), 'from its Pass (plan 971 §9)');
-  // Added to a bar, it is a preset `saved:<id>`: drawn as the saved kind, connected to its scope.
-  const onBar = draw({ presets: (s) => (s === 'view' ? [{ id: 'saved:trials', label: 'Trials', readings: readingsOf({ status: { in: ['trial'] } }) }] : []) });
-  assert.equal(nodeIn(onBar, 'saved-trials'), undefined);
-  assert.equal(nodeIn(onBar, 'preset-view-saved:trials').kind, 'saved');
-  assert.ok(onBar.connections.some((r) => r.to === 'view-filters/@saved:trials'));
+  const g = draw({ presets: (s) => (s === 'view' ? [{ id: 'filter:trials', label: 'Trials', readings: readingsOf({ status: { in: ['trial'] } }) }] : []) });
+  const filter = nodeIn(g, 'preset-view-filter:trials');
+  assert.deepEqual([filter.kind, filter.icon, filter.description], ['preset', 'filter', 'A Filter: its own graph changes it, in the Node Editor.']);
+  assert.ok(g.connections.some((r) => r.from === 'preset-view-filter:trials' && r.to === 'view-filters/@filter:trials'), 'its True into its row');
+  const wrote = nodeIn(g, 'when-preset-view-filter:trials-status');
+  assert.ok(wrote.kind === 'condition' && wrote.rows.every((r) => !r.editable), 'what it writes is a Condition node, read only');
+  assert.equal(NODE_KINDS.saved, undefined);
+  assert.ok(!g.nodes.some((n) => n.id.startsWith('saved-')));
 });
 
 test('a STATUS FIELD is a node between the Source and the cards: each value, and when a row has it', () => {
@@ -305,8 +298,8 @@ test('a STATUS FIELD is a node between the Source and the cards: each value, and
   assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.from === 'status-health/rows').map((r) => `${r.from} → ${r.to}`), [
     // The first value's Fields read them too, as every Query Field does.
     'source/rows → status-health', 'source/rows → field-status-health.at risk-seats',
-    // Every Field reads them, a preset's and a saved filter's too.
-    'status-health/rows → field-preset-data-big-seats', 'status-health/rows → presentation-data', 'status-health/rows → field-saved-trials-view:status',
+    // Every Field reads them, a preset's too.
+    'status-health/rows → field-preset-data-big-seats', 'status-health/rows → presentation-data',
   ]);
   assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'presentation-data').x);
   // A Field reads the rows labelled.
@@ -422,7 +415,6 @@ test('SAVE round-trips a page definition: definition → graph → edit → defi
   // The preset's rows are its own: the definition keeps it declared, and writes none of them as a start.
   assert.deepEqual(saved.source.scopes.data, { ...page.source.scopes.data, presentation: { primary: 'plan' } });
   assert.equal(saved.source.pageSize, 50);
-  assert.deepEqual(saved.savedFilters, page.savedFilters);
   assert.equal(page.source.pageSize, 25, 'the definition given is untouched');
   // Opened again, it draws the edit.
   const again = await openSource(saved.source, new ArrayStore(rows, { key: 'id' }));

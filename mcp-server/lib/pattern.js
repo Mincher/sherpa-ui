@@ -149,7 +149,7 @@ const STAND_IN = {
 };
 const SCOPE_LISTS = ['holds', 'fixed', 'alwaysOn', 'offers'];
 /** A part of a page `agent.may` may name, beside a role. */
-const PAGE_PARTS = new Set(['columns', 'actions', 'presets', 'fields', 'scopes', 'search', 'saved-filters', 'views']);
+const PAGE_PARTS = new Set(['columns', 'actions', 'presets', 'fields', 'scopes', 'search', 'views']);
 
 /** A pattern's scopes, each `{kind}` in a field list (`holds`, `fixed`, `alwaysOn`, `offers`) the names of the fields of that kind. */
 export function expandScopes(scopes, kinds) {

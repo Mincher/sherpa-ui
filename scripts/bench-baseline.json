@@ -251,7 +251,7 @@
     "clones": 1,
     "scans": 3
   },
-  "records/apply-saved": {
+  "records/apply-filter": {
     "loads": 2,
     "counts": 0,
     "distinct": 0,
@@ -515,7 +515,7 @@
     "clones": 1,
     "scans": 6
   },
-  "remote/apply-saved": {
+  "remote/apply-filter": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,
@@ -815,7 +815,7 @@
     "clones": 1,
     "scans": 6
   },
-  "rest/apply-saved": {
+  "rest/apply-filter": {
     "loads": 0,
     "counts": 0,
     "distinct": 0,

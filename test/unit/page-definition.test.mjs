@@ -24,6 +24,8 @@ const json = async (path) => JSON.parse(await readFile(new URL(path, ROOT), 'utf
 test('a real page definition passes the page schema', async () => {
   const check = schemaCheck('page.v1.json');
   assert.deepEqual(check(await json('test/unit/fixtures/records.page.json')), []);
+  // A page's own saved filters are its scopes' presets now (plan 960 U4.4c): page.v1 has no `savedFilters`.
+  assert.notDeepEqual(check({ v: 1, id: 'p', savedFilters: {} }), []);
   // A condition nests, and All is an answer: the schema says what the parser reads.
   const nested = { v: 1, id: 'p', source: { store: 'rows', scopes: { view: { where: {
     seats: { or: [{ lt: 10 }, { and: [{ gt: 50 }, { lt: 60 }] }] }, region: { all: true },
@@ -72,17 +74,8 @@ test('checkPage says each broken name in a page, and nothing of a sound one', as
         },
       },
     },
-    savedFilters: {
-      old: { label: 'Old', where: { seats: { gt: 1 } } },
-      lost: { label: 'Lost', query: { v: 1, scopes: { rows: { where: { seats: { gt: 1 } } } } } },
-      // The View is every page's, declared or not.
-      view: { label: 'View', query: { v: 1, scopes: { view: { where: { seats: { gt: 1 } } } } } },
-    },
   };
-  assert.deepEqual(heard(broken), {
-    ok: false,
-    said: ['child-not-declared', 'set-field-not-held', 'preset-twice', 'saved-filter-invalid', 'saved-filter-unknown-scope'],
-  });
+  assert.deepEqual(heard(broken), { ok: false, said: ['child-not-declared', 'set-field-not-held', 'preset-twice'] });
 });
 
 test('a schema says each field\'s domain; a min on text is a length, not an end', () => {

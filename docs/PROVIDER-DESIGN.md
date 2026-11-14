@@ -117,7 +117,7 @@ in `src/components/sherpa-provider/`, given what it needs by its provider:
 | `provider-highlight.ts` | what the pointer rests on, and each component that draws its matches |
 | `provider-legends.ts` | a legend that picks its chart's values: its part, its chips, its rest on a row |
 | `provider-show-as.ts` | Show as: a slot's chart swapped, a pivot, a grid made from a chart, the card's title |
-| `provider-mode.ts`, `provider-page.ts` | the panel or the bars; the open page's Views, saved sets and what the reader left on each View, through the keeper |
+| `provider-mode.ts`, `provider-page.ts` | the panel or the bars; the open page's Views, its Filters and what the reader left on each View, through the keeper |
 | `provider-declared.ts` | what a component declares, read in one place |
 | `provider-look.ts` | the look settings on the page's root |
 
@@ -149,8 +149,9 @@ keeps the reader's changes: a whole Query the provider puts on says who put it
 **A page's state is ONE document with ONE keeper** (695 U3): `provider.keeper`, a
 `PageKeeper` (`core/browser/page-state.ts`). Per page, under its name: the View on
 screen, its Query and what waits for Apply, each element's `ui`, what the reader
-left on each View, the saved filters on a bar, each card's toolbar, and the
-reader's own Views and saved filters — NAMED, the only parts that cross tabs. Each
+left on each View, each card's toolbar, and the reader's own Views — NAMED, the
+only parts that cross tabs, with the app-wide entity shelf, where a reader's saved
+filters are Filters (plan 960 U4.4c). Each
 part has one tier; the app may plug in its own, the browser database and a
 server. `export()` and `import()` carry the same document.
 `T-one-page-one-document`

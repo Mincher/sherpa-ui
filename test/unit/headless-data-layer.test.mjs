@@ -572,7 +572,7 @@ test('the page keeper works with no IndexedDB, no storage and no remote', async 
 
   // No storage, no IndexedDB, no remote — so nothing is known, and nothing threw.
   assert.deepEqual(keeper.read('records'), { v: 3 });
-  assert.deepEqual(await keeper.restore('records'), { views: {}, filters: {} });
+  assert.deepEqual(await keeper.restore('records'), { views: {} });
   keeper.write('records', { views: { mine: { label: 'Mine' } } });
   await keeper.flush();
   assert.deepEqual(errors, [], 'an absent tier is not an error — it is the design');
@@ -586,7 +586,7 @@ test('the keeper pushes the named parts to a remote, debounced, and a failed pus
   const pushes = [];
   let failNext = false;
   const remote = {
-    pull: () => Promise.resolve({ views: { shared: { label: 'Shared', ui: {} } }, filters: { broken: { label: 1 } } }),
+    pull: () => Promise.resolve({ views: { shared: { label: 'Shared', ui: {} }, broken: { label: 1 } } }),
     push: (page, named) => {
       pushes.push({ page, named });
       return failNext ? Promise.reject(new Error('503')) : Promise.resolve();
@@ -600,7 +600,7 @@ test('the keeper pushes the named parts to a remote, debounced, and a failed pus
   });
 
   // The remote's Views come back, under this browser's — and a broken entry is dropped.
-  assert.deepEqual(await keeper.restore('records'), { views: { shared: { label: 'Shared', ui: {} } }, filters: {} });
+  assert.deepEqual(await keeper.restore('records'), { views: { shared: { label: 'Shared', ui: {} } } });
   assert.deepEqual(Object.keys(keeper.read('records').views), ['shared'], 'kept here, so the page shows it');
   await new Promise((r) => setTimeout(r, 40));
   assert.equal(pushes.length, 0, 'a restore pushes nothing back');
@@ -616,10 +616,10 @@ test('the keeper pushes the named parts to a remote, debounced, and a failed pus
 
   // A REJECTING server is reported, and does not throw out of flush().
   failNext = true;
-  keeper.write('records', { filters: { gold: { label: 'Gold', query: { v: 1, scopes: {} } } } });
+  keeper.write('records', { views: { ...keeper.read('records').views, D: { label: 'D' } } });
   await keeper.flush();
   assert.equal(pushes.length, 2);
-  assert.deepEqual(pushes[1].named.filters, { gold: { label: 'Gold', query: { v: 1, scopes: {} } } });
+  assert.deepEqual(Object.keys(pushes[1].named.views), ['shared', 'A', 'B', 'C', 'D']);
   assert.deepEqual(errors, ['push'], 'the failure was reported, not thrown');
 });
 
@@ -631,23 +631,31 @@ test('one page, one document: each part in its tier, and a part it cannot read i
   const keeper = new PageKeeper({ tab, local });
   const query = { v: 1, scopes: { view: { holds: [], readings: {} } } };
   keeper.write('records', {
-    view: 'risk', query, ui: { grid: { select: [[1]] } }, added: { gold: 'data' },
+    view: 'risk', query, ui: { grid: { select: [[1]] } },
     left: { risk: { query: { v: 1, scopes: {} }, sig: 'null' } },
-    toolbars: { data: false }, views: { mine: { label: 'Mine' } }, filters: { gold: { label: 'Gold', query: { v: 1, scopes: {} } } },
+    toolbars: { data: false }, views: { mine: { label: 'Mine' } },
   });
-  // The reader's own Views and saved filters cross tabs; what they did in this tab does not.
-  assert.deepEqual(Object.keys(tab.read('sherpa:page:records')).sort(), ['added', 'left', 'query', 'ui', 'v', 'view']);
-  assert.deepEqual(Object.keys(local.read('sherpa:page:records')).sort(), ['filters', 'toolbars', 'v', 'views']);
+  // The reader's own Views cross tabs; what they did in this tab does not.
+  assert.deepEqual(Object.keys(tab.read('sherpa:page:records')).sort(), ['left', 'query', 'ui', 'v', 'view']);
+  assert.deepEqual(Object.keys(local.read('sherpa:page:records')).sort(), ['toolbars', 'v', 'views']);
   // A new tab: the same shared tier, a new tab tier.
   const next = new PageKeeper({ tab: memoryTier(), local });
-  assert.deepEqual(Object.keys(next.read('records')).sort(), ['filters', 'toolbars', 'v', 'views']);
+  assert.deepEqual(Object.keys(next.read('records')).sort(), ['toolbars', 'v', 'views']);
   // `undefined` forgets a part; the last part gone forgets the key.
-  for (const part of ['view', 'query', 'ui', 'added', 'left']) keeper.write('records', { [part]: undefined });
+  for (const part of ['view', 'query', 'ui', 'left']) keeper.write('records', { [part]: undefined });
   assert.equal(tab.read('sherpa:page:records'), undefined);
   // A stored part of another shape is not read; a broken saved View alone is dropped.
-  tab.write('sherpa:page:records', { v: 3, view: 7, query: { v: 9 }, added: { gold: 'data' } });
+  tab.write('sherpa:page:records', { v: 3, view: 7, query: { v: 9 } });
   local.write('sherpa:page:records', { v: 3, views: { mine: { label: 'Mine' }, bad: { label: 3 } } });
-  assert.deepEqual(keeper.read('records'), { v: 3, added: { gold: 'data' }, views: { mine: { label: 'Mine' } } });
+  assert.deepEqual(keeper.read('records'), { v: 3, views: { mine: { label: 'Mine' } } });
+  // A key this version has no part for (an older build's `filters`, `added`) is not read, and costs nothing else:
+  // the reader's Views are still theirs, and a write keeps the key for the app's one-off move (plan 960 U4.4c).
+  tab.write('sherpa:page:records', { v: 3, view: 'risk', added: { gold: 'data' } });
+  local.write('sherpa:page:records', { v: 3, views: { mine: { label: 'Mine' } }, filters: { gold: { label: 'Gold', query: { v: 1, scopes: {} } } } });
+  assert.deepEqual(keeper.read('records'), { v: 3, view: 'risk', views: { mine: { label: 'Mine' } } });
+  keeper.write('records', { toolbars: { data: true } });
+  assert.deepEqual(keeper.read('records'), { v: 3, view: 'risk', toolbars: { data: true }, views: { mine: { label: 'Mine' } } });
+  assert.deepEqual(local.read('sherpa:page:records').filters, { gold: { label: 'Gold', query: { v: 1, scopes: {} } } });
   // A document of another version is not read at all.
   tab.write('sherpa:page:records', { v: 2, view: 'risk' });
   assert.equal(keeper.read('records').view, undefined);

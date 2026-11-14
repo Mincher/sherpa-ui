@@ -17,11 +17,6 @@
       "description": "Each component's configuration, by id, set before it is answered, as a View's ui is.",
       "$ref": "defs.v1.json#/$defs/ui"
     },
-    "source": { "$ref": "defs.v1.json#/$defs/source" },
-    "savedFilters": {
-      "description": "The page's own saved filters, by id: listed beside a reader's, and applied as theirs are.",
-      "type": "object",
-      "additionalProperties": { "$ref": "defs.v1.json#/$defs/savedFilter" }
-    }
+    "source": { "$ref": "defs.v1.json#/$defs/source" }
   }
 }

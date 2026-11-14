@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DataSource, checkPage, onReport, readingsOf, savedFiltersOf, whereOf,
+  ArrayStore, DataSource, onReport, readingsOf, whereOf,
 } from '../../dist/data.js';
 
 const TYPES = { openTickets: 'number', health: 'number', created: 'date' };
@@ -138,24 +138,3 @@ test('a source reads a View\'s `where` by its field types, and says its Query ba
   assert.deepEqual(rows.map((r) => r.id), [2]);
 });
 
-test('a page\'s saved filter is a query definition, its `where` in the plain form; one that is not reports', () => {
-  const seen = [];
-  const undo = onReport((r) => seen.push(r.code));
-  const page = {
-    v: 1, id: 'p',
-    savedFilters: {
-      'at-risk': { label: 'At risk', query: { v: 1, scopes: { view: { where: { health: { lt: 60 } } } } } },
-      old: { label: 'Old', where: { health: { lt: 60 } } },
-    },
-  };
-  let kept;
-  try {
-    kept = savedFiltersOf(page);
-    assert.deepEqual(seen, [], 'the reader leaves it out; checkPage says it');
-    assert.equal(checkPage(page), false);
-  } finally {
-    undo();
-  }
-  assert.deepEqual(Object.keys(kept), ['at-risk']);
-  assert.deepEqual(seen, ['saved-filter-invalid']);
-});

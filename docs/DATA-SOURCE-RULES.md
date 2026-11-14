@@ -123,8 +123,8 @@ write a condition, with numbers as numbers:
 | kept, not applied | `{ "eq": "trial", "off": true }` |
 | every value, on purpose | `{ "all": true }` — Select all on: no filter |
 
-It goes under `where` — a page definition's saved filter, a View's scope, a
-preset — in a status value's `when`, and in a component's `data-where`. It is
+It goes under `where` — a View's scope, a preset, a Filter's `query` — in a
+status value's `when`, and in a component's `data-where`. It is
 the plain form of ONE condition tree, parsed once — `{ "or": [...] }`,
 `{ "and": [...] }`, `{ "field", "op", "value" }` — which the source compiles
 into the clause above. `T-one-way-to-write-a-condition`, `T-one-condition-tree`

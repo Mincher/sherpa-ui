@@ -38,8 +38,7 @@
 :host([data-category="output"]) { --_category-ink: var(--sherpa-data-viz-series-border-9, #00ac43); /* theme-direct */ }
 :host([data-category="math"]),
 :host([data-category="status"]) { --_category-ink: var(--sherpa-theme-border-urgent-2, #ff7300); /* theme-direct */ }
-:host([data-category="organise"]),
-:host([data-category="saved-filters"]) { --_category-ink: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */ }
+:host([data-category="organise"]) { --_category-ink: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */ }
 :host([data-category="custom-nodes"]) { --_category-ink: var(--sherpa-data-viz-series-border-3, #00a790); /* theme-direct */ }
 :host([data-category="ai"]),
 :host([data-category="presets"]) { --_category-ink: var(--sherpa-theme-border-active-2, #c046ff); /* theme-direct */ }

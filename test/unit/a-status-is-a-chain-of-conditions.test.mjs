@@ -85,15 +85,13 @@ test('the load lights At risk with its 43 rows, Watch with its 20, from the stor
   assert.deepEqual(lit, [['status-health', 63], ['status-health.At risk', 43], ['status-health.Watch', 20]]);
 });
 
-test('a PRESET\'s and a SAVED FILTER\'s conditions are Condition nodes, read only, connected to their row', () => {
-  const def = { ...page, source: { ...page.source, scopes: { data: { presets: [{ id: 'big', label: 'Big', where: { score: { gt: 90 } } }] } } }, savedFilters: { low: { label: 'Low', query: { v: 1, scopes: { view: { where: { score: { lt: 50 } } } } } } } };
+test('a PRESET\'s conditions are Condition nodes, read only, connected to their row', () => {
+  const def = { ...page, source: { ...page.source, scopes: { data: { presets: [{ id: 'big', label: 'Big', where: { score: { gt: 90 } } }] } } } };
   const d = queryGraph({ v: 1, scopes: { data: { holds: [], readings: {} } } }, def);
   const big = d.nodes.find((n) => n.id === 'when-preset-data-big-score');
-  const low = d.nodes.find((n) => n.id === 'when-saved-low-view:score');
-  for (const n of [big, low]) assert.ok(n.kind === 'condition' && n.rows.filter((r) => r.name !== ROWS.name).every((r) => !r.editable), n.id);
-  // From each one's Pass (plan 971 §9).
+  assert.ok(big.kind === 'condition' && big.rows.filter((r) => r.name !== ROWS.name).every((r) => !r.editable), big.id);
+  // From its Pass (plan 971 §9).
   assert.ok(d.connections.some((r) => r.from === `${big.id}/pass` && r.to === 'preset-data-big/score'));
-  assert.ok(d.connections.some((r) => r.from === `${low.id}/pass` && r.to === 'saved-low/view:score'));
   assert.deepEqual(queryGraphFaults(d), []);
 });
 

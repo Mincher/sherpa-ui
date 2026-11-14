@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The Query editor's node panel — Will, TODO 734: "the query editor is a node editor". The panel
- * lists the kinds a reader may place in a Query (Sources, Variables, Presets, Saved filters), and the
+ * lists the kinds a reader may place in a Query (Sources, Variables, Presets), and the
  * page's Filters as its Custom Nodes (TODO 776); a kind the Query only draws — a Condition, a
  * Status, a Check (plan 944) — is not offered (Will, 2026-11-10). Placing one, by a click or a drag,
  * is a request through the Query's one door: a Field holds the scope's next field, a Preset switches
@@ -26,7 +26,8 @@ test.beforeEach(async ({ page }) => {
       draft: { v: 1, scopes: { view: { holds: ['region'], readings: {} } } },
       ask: (request: unknown) => w.asked.push(request),
       presets: () => [{ id: 'big', label: 'Big', readings: {} }, { id: 'filter:active', label: 'Active', readings: {} }],
-      presetOn: () => false,
+      // On once asked on: a second Preset finds none left.
+      presetOn: (_scope: string, id: string) => w.asked.some((a) => (a as { preset?: string; on?: boolean }).preset === id && (a as { on?: boolean }).on),
       scope: () => ['region'],
       fields: () => ['region', 'plan'],
       waiting: () => false,
@@ -47,7 +48,7 @@ const said = (page: Page) => page.evaluate(() => (window as unknown as { said: s
 test('it lists the Query\'s kinds by category, 8px in from the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   // The Preset tab's, the page's preset Filters under Custom Nodes; then the Custom tab's, the reader's own (plan 936).
-  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Presets', 'Saved filters', 'Custom Nodes']);
+  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Presets', 'Custom Nodes']);
   // The Query draws a Condition and a Status, and places neither: they are not offered (plans 944, 971).
   await expect(item(page, 'condition')).toHaveCount(0);
   await expect(item(page, 'status')).toHaveCount(0);
@@ -89,8 +90,10 @@ test('a drag of Field onto the canvas asks the same; a kind the Query cannot tak
   // A loaded WebKit can answer the drop a frame after the release: wait for it.
   await expect.poll(() => asked(page)).toEqual([{ scope: 'view', hold: ['region', 'plan'] }]);
   // The drag's window listeners are gone, so these clicks place. TRAP T-abort-signal-any-is-collected
-  await item(page, 'saved').click();
+  await item(page, 'preset').click();
+  expect(await asked(page)).toHaveLength(2);
+  await item(page, 'preset').click();
   await expect.poll(async () => (await said(page)).length).toBeGreaterThanOrEqual(1);
-  expect(await asked(page)).toHaveLength(1);
-  expect((await said(page))[0]).toContain('saved filter');
+  expect(await asked(page)).toHaveLength(2);
+  expect((await said(page))[0]).toContain('no preset left to switch on');
 });

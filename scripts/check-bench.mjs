@@ -45,7 +45,6 @@ export { ArrayStore } from './src/core/data/stores.ts';
 export { fakeRemote } from './src/core/data/fake-remote.ts';
 export { onReport } from './src/core/data/report.ts';
 export { bindSource } from './src/core/ui/bind-source.ts';
-export { conditionsOf } from './src/core/browser/saved-filters.ts';
 `;
 
 /** Each pass over a set of rows — a filter, a sort and page, a tally — wherever it runs; one
@@ -226,7 +225,7 @@ async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tier
   const seen = fake || store;
   // The fields its grid shows, as the provider names them. 345 phase 8
   const columns = (whole.ui?.grid?.columns ?? []).map((c) => c.field);
-  return { L, def, columns, deaf, inner: store, saved: whole.savedFilters ?? {}, store: seen, ...await page(L, def, seen, columns) };
+  return { L, def, columns, deaf, inner: store, store: seen, ...await page(L, def, seen, columns) };
 }
 
 /** One page over a store: its source, and its controls bound as the provider binds them. */
@@ -290,11 +289,10 @@ const ACTS = {
   narrow: (p) => p.view.answer({ customer: { picked: ['Customer 01'] } }),
   aside: (p) => p.data.answer({ status: { picked: ['paused'] }, plan: { picked: ['free'] }, tier: { picked: ['gold'] },
     owner: { picked: ['Owner 03', 'Owner 01'] } }),
-  // A page's own saved filter ADDED, as the provider adds it: a preset declared, then on. TODO 605
-  'apply-saved': (p) => {
-    const readings = p.source.readingsOf(p.L.conditionsOf(p.saved['at-risk']));
-    p.source.declarePresets('view', [{ id: 'saved:at-risk', label: p.saved['at-risk'].label, readings }]);
-    p.source.query.ask({ scope: 'view', preset: 'saved:at-risk', on: true, commit: true });
+  // A Filter over the store ON, as the provider lays it: a preset of the View, which holds none of its fields, then on. TODO 776
+  'apply-filter': (p) => {
+    p.source.declarePresets('view', [{ id: 'filter:at-risk', label: 'At risk', readings: p.source.readingsOf({ health: { in: ['At risk'] } }) }]);
+    p.source.query.ask({ scope: 'view', preset: 'filter:at-risk', on: true, commit: true });
   },
   // The tiered page: a Site pick is a PATH; one beside a whole customer; a row edit that moves only a site walks again.
   'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
@@ -325,7 +323,7 @@ const ACTS = {
   },
 };
 const MAIN = ['pick', 'repick', 'page', 'report', 'switch-off', 'switch-on', 'sort', 'heading', 'search', 'raise',
-  'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside', 'apply-saved'];
+  'clear', 'reset', 'add', 'save', 'save-same', 'save-unread', 'delete', 'reopen', 'narrow', 'aside', 'apply-filter'];
 const PAGES = {
   records: { remote: false, acts: MAIN },
   remote: { remote: true, acts: [...MAIN, 'apply-fetch', 'fetch-off', 'fetch-on'], fetch: ['seats'] },

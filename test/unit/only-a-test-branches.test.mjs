@@ -2,7 +2,7 @@
  * ONLY A TEST BRANCHES — Will, plans 944 (D1 A), 971 (§9: "Fold it into Condition"): no node has a True or a False socket,
  * and there is no Branch node. A Condition has no True (Will: "This removes the need for the 'True' property"); an AI node
  * has one in its True/false type. A test's Pass and Fail are its two ways: on ONE value, the way taken sends what reaches its Data, the other "Not
- * taken". A check that is no Condition (Time, Tag, a Preset, a Saved filter, a use of a Custom Node) still sends one boolean
+ * taken". A check that is no Condition (Time, Tag, a Preset, a use of a Custom Node) still sends one boolean
  * from its header, `Out`.
  *
  *   node --test test/unit/only-a-test-branches.test.mjs
@@ -35,8 +35,8 @@ test('no kind branches, in any type, nor a Custom Node use; a Condition has no T
 
 test('a check that is no Condition sends a boolean from its header; a Condition and the rest send nothing from it; none has a False', () => {
   const sends = (id) => socketType(resolveKind(NODE_KINDS[id]), undefined, 'output');
-  assert.deepEqual(Object.fromEntries(['condition', 'time', 'tag', 'preset', 'saved', 'source', 'value', 'field', 'math', 'organise', 'text'].map((id) => [id, sends(id)])), {
-    condition: undefined, time: 'boolean', tag: 'boolean', preset: 'boolean', saved: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, organise: undefined, text: undefined,
+  assert.deepEqual(Object.fromEntries(['condition', 'time', 'tag', 'preset', 'source', 'value', 'field', 'math', 'organise', 'text'].map((id) => [id, sends(id)])), {
+    condition: undefined, time: 'boolean', tag: 'boolean', preset: 'boolean', source: undefined, value: undefined, field: undefined, math: undefined, organise: undefined, text: undefined,
   });
   for (const id of Object.keys(NODE_KINDS)) assert.equal(socketType(resolveKind(NODE_KINDS[id]), '#false', 'output'), undefined, `${id}: no False (plan 944)`);
 });

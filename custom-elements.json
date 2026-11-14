@@ -10530,14 +10530,6 @@
             },
             {
               "kind": "field",
-              "name": "savedFilterSets",
-              "type": {
-                "text": "{ id: string; label: string; added: boolean; own: boolean }[]"
-              },
-              "readonly": true
-            },
-            {
-              "kind": "field",
               "name": "customView",
               "type": {
                 "text": "boolean"
@@ -10700,53 +10692,7 @@
                   "optional": true
                 }
               ],
-              "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel. TODO 485"
-            },
-            {
-              "kind": "method",
-              "name": "applyFilters",
-              "parameters": [
-                {
-                  "name": "id",
-                  "type": {
-                    "text": "string"
-                  }
-                },
-                {
-                  "name": "from",
-                  "type": {
-                    "text": "string"
-                  },
-                  "optional": true
-                }
-              ],
-              "description": "ADD a saved set to a bar: a preset of the reader's, on. `from`, the local scope of the bar it goes on where the set names several. Will, TODO 605"
-            },
-            {
-              "kind": "method",
-              "name": "dismissFilters",
-              "parameters": [
-                {
-                  "name": "id",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ],
-              "description": "TAKE a saved set off its bar: its chip goes, and what it held."
-            },
-            {
-              "kind": "method",
-              "name": "deleteFilters",
-              "parameters": [
-                {
-                  "name": "id",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ],
-              "description": "DELETE a reader's saved set, never a page's own: its chip goes, and what it held."
+              "description": "SAVE FILTERS — the filters on screen under a name, as Filters of the reader's on the entity shelf: one per scope that holds an answer, \"<name>\", or \"<name> · <scope's label>\" for each of several. Each is a preset of the page's store, so its chip joins its bar, off. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel (TODO 485). The ids kept; none, nothing was saved. Will, plan 960 U4.4c"
             },
             {
               "kind": "method",
@@ -10765,7 +10711,20 @@
                   }
                 }
               ],
-              "description": "RENAME a reader's saved set — never a page's own. Its id follows its name, and a name another set has gains a copy's. Its new id. Will, TODO 427"
+              "description": "RENAME a reader's own Filter, and publish it: its id stays. The id; none, it is not the reader's own or the name is empty. Plan 960 U4.4c"
+            },
+            {
+              "kind": "method",
+              "name": "deleteFilters",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "DELETE a reader's own Filter: off on its bar, then off the shelf. Refused while another entity uses it: the keeper's `entities.whyKept(id)` says why. Did it go? Plan 960 U4.4c"
             },
             {
               "kind": "method",

@@ -165,6 +165,21 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
 - **The one-off**: Demos' page reads the old `sherpa:page:<key>.filters`, saves `filtersOfSaved(…)` to the shelf, and
   deletes the old key; then the page goes.
 
+### U4.4c c1 to c2a, as built (2026-11-14, sherpa-ui-e8)
+
+c1 and c3, and c2a: the provider, the page keeper, page.v1 and the Query graph. c2b, the controls, is next.
+
+- `saveFilters(name, scope?)` is async and returns the ids it kept: `filtersOfSaved` over what the bars hold, each saved
+  to the shelf. `renameFilters` saves the label and publishes (a label is part of a version), its id kept.
+  `deleteFilters` turns the chip off, then `shelf.remove`, refused while another entity uses it.
+- Gone: `applyFilters`, `dismissFilters`, `savedFilterSets`, `savesChanged`, the keeper's `filters` and `added`, page.v1
+  `savedFilters`, `savedFiltersOf`, `SAVED_PRESET`, `isSavedFilter`, `conditionsOf`, the Query graph's Saved filter kind,
+  its category and its colour. The Starter's Big accounts is a Records preset (Starter 2558638).
+- ❓ Picks, each the plain reading: a name saved again makes a new Filter with a free id (nothing is saved over); Rename
+  publishes the whole draft, so another unpublished change goes with it; a stored `filters` or `added` key is ignored on
+  read and kept on write, so the one-off can still read it; a View scope that reads Select all is an answer (TODO 965),
+  so it is a Filter of its own.
+
 ## Will's decisions
 
 - **U4.4c, U4.4d, U4.7b, 2026-11-14** (asked by sherpa-demos-67 with sherpa-ui-e8's options): **U4.4c A**, Save filters
@@ -180,6 +195,9 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
   each of several; (2) the Saved section goes: a reader's Filter is a chip like any Filter, with Rename and Delete in that
   chip's menu; (3) the library exports `filtersOfSaved(sets, store, scopes)` and the keeper's `filters` reader is deleted;
   Demos' one-off page moves the old `sherpa:page:<key>.filters` to the shelf and deletes the old key.
+- **U4.4c c3, 2026-11-14: A** (by sherpa-demos-67). A page's own `savedFilters` become its scopes' presets
+  (`source.scopes.<id>.presets`); `savedFilters` goes from page.v1, and the "add a set to a bar" machinery with it (the
+  sets, `added`, the `saved:` presets).
 
 - **U4.2, 2026-11-13:** "Decision: A. Perhaps just a single 'Organise' node that lets you set Axes, Grouping, and
   Sorting parameters. Saves on bloating the graph with lots of smaller nodes." So: axes in a workflow too (A), and ONE

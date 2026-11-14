@@ -220,11 +220,11 @@ export const { store: customerStore, ready: customersReady } = localRecords({
     },
     "scopes": {
       "view": { "label": "View filters", "holds": ["region"] },
-      "data": { "label": "Records", "offers": "all", "holds": ["status"] }
+      "data": {
+        "label": "Records", "offers": "all", "holds": ["status"],
+        "presets": [{ "id": "has-tickets", "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } }]
+      }
     }
-  },
-  "savedFilters": {
-    "has-tickets": { "label": "Has open tickets", "query": { "v": 1, "scopes": { "data": { "where": { "openTickets": { "gt": 0 } } } } } }
   },
   "ui": { "grid": { "key": "email", "columns": [{ "field": "name", "header": "Name" }] } }
 }
@@ -353,10 +353,8 @@ export async function init(root, { source, query, session, view, signal, header,
 ```
 
 - A View is JSON: each scope's `where`, `holds`, `sort`, `group`.
-- A page's own **saved filters** are query definitions — each scope's `where`
-  and `holds`, under a name. The Filters menu lists them beside the reader's;
-  ticked, one is a preset chip on the bar. It is never saved over or deleted.
-  `T-saved-filters-are-every-scope`
+- A page's own named filters are its scopes' **presets**: `{ id, label, where }`,
+  each a chip on its scope's bar. `T-a-preset-is-its-own-part`
   The first View is the Context's own; the URL leaves it out.
   `T-a-view-is-json`
 - A View's own cards are markup, in a template beside the JSON.
@@ -497,9 +495,9 @@ provider.keeper = new PageKeeper({ eachView: () => settings.get('eachView') === 
 
 - A page's state is ONE document, kept under its name (an outlet's Context): the
   View on screen, its Query, what waits for Apply (`draft`), each element's
-  `ui`, what the reader left on each View, the saved filters on a bar, each
-  card's toolbar, and — NAMED — the reader's own Views and saved filters.
-  `T-one-page-one-document`
+  `ui`, what the reader left on each View, each card's toolbar, and — NAMED —
+  the reader's own Views. Their saved filters are Filters on the keeper's entity
+  shelf, app-wide. `T-one-page-one-document`
 - Each part has ONE tier. Only what the reader names crosses tabs; the rest is
   the tab's, and a reload keeps it. `T-only-a-named-part-crosses-tabs`
 - Give the keeper before a page opens. Its tiers are the app's: `tab`, `local`,
@@ -907,7 +905,8 @@ against the entity's own graph (a prompt's `{{step:2.3}}`).
   "label", "query": { "where": { "status": { "eq": "active" } } }, "settings": { "source" } }`,
   in place of a graph. Its lens draws the graph from it, and Save writes a graph back as a Where
   while it holds only a Source, Fields, tests, And and Or. `filterOf(preset, source)` makes a
-  Filter of a page's preset, or of a saved filter in one scope. Read an entity's graph with
+  Filter of a page's preset, or of a saved filter in one scope; `filtersOfSaved(sets, store, scopes, taken)`, one per
+  scope of each old saved set, what an app's one-off move puts on the shelf. Read an entity's graph with
   `entityGraph(entity)`; save what a lens writes back as its body (`saveGraph(shelf, id, bodyOf(answer.definition))`),
   as it may have no graph. A use's Update says what its Filter's Where changed, field by field
   ("status: equals trial to equals suspended"), not the nodes its drawing gave ids (a lens's `changes`).
@@ -928,7 +927,7 @@ against the entity's own graph (a prompt's `{{step:2.3}}`).
 const named = document.getElementById('save-filters');
 const saveAs = async () => {
   const label = await named.prompt('');
-  if (label) provider.saveFilters(label);
+  if (label) await provider.saveFilters(label);
 };
 provider.addEventListener('filters-save', saveAs);
 provider.addEventListener('filters-save-as', saveAs);
@@ -958,11 +957,13 @@ provider.addEventListener('filters-save-as', saveAs);
 - From a script, call `dialog.show()`, never the native `showModal()`: the
   component owns modality and `open`. An add or edit flow is that dialog, its
   fields read on save, and a `sherpa-toast` to say it is done.
-- **Save filters** keeps EVERY scope's filters under one name, with the page
-  beside its Views. A saved filter is a preset the reader made: ticked in the
-  Filters menu's Saved section, its chip joins the bar's presets, on; unticked, it
-  goes, with what it held. Several may be on. Ask before you save over a name that
-  exists. `T-saved-filters-are-every-scope`
+- **Save filters** makes the filters on screen Filters of the reader's, on the
+  keeper's entity shelf: one per scope that holds an answer, "<name>", or
+  "<name> · <scope's label>" for each of several. Each is a preset of its store, so
+  its chip joins its bar, off. `provider.renameFilters(id, name)` renames one and
+  publishes it, its id kept; `provider.deleteFilters(id)` removes it, refused while
+  another entity uses it (`keeper.entities.whyKept(id)` says why).
+  `T-saved-filters-are-every-scope`
 
 ## 11. Start
 

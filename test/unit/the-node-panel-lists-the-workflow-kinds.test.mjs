@@ -34,7 +34,7 @@ test('no Query-only kind is in it, and each workflow kind is', () => {
     assert.equal(all.includes(id), kind.graphs.includes('workflow') && !typeless, id);
     if (kind.graphs.includes('workflow')) assert.ok(kind.category, `${id} has a category`);
   }
-  for (const query of ['status', 'scope', 'preset', 'saved', 'arrange', 'presentation', 'component']) assert.ok(!all.includes(query), query);
+  for (const query of ['status', 'scope', 'preset', 'arrange', 'presentation', 'component']) assert.ok(!all.includes(query), query);
 });
 
 test('a search finds a family by its name, or by a type\'s: "round" finds Math, as Round', () => {

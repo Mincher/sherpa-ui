@@ -1,11 +1,10 @@
 /**
- * A SAVED FILTER IS A QUERY — 366 S3. A saved set is a query definition that
- * LOADS into the field chips (S1, S2). A preset's conditions are in its fields'
- * answers now (Will, TODO 510 A), so a stored `presets` is a key a scope does not
- * have: left out, and said ONCE, as any other (Will, D4: no shim for old data).
- * TRAP T-saved-filters-are-every-scope · TRAP T-a-preset-is-its-own-part
+ * A KEY A SCOPE DOES NOT HAVE GOES, said once. A preset's conditions are in its
+ * fields' answers (Will, TODO 510 A), so a stored `presets` is a key a scope does
+ * not have: left out, and said ONCE, as any other (Will, D4: no shim for old data).
+ * TRAP T-a-preset-is-its-own-part
  *
- *   node --test test/unit/a-saved-filter-is-a-query.test.mjs
+ *   node --test test/unit/a-key-a-scope-lacks-goes.test.mjs
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

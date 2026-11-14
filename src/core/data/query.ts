@@ -28,8 +28,7 @@
  * - namedArrangement — The Query naming how it arranges its rows, none too, in place.
  * - statedQuery — A Query as a View states it: the one writer of a View's `query`.
  * - QueryRequest — One edit to the Query, as anyone asks it through `QueryContext.ask()`; a list is one change.
- * - SavedFilter — A saved filter: a name, and each scope's filters as a View writes them.
- * - isSavedFilter — Is this a saved filter — a name, and a query definition?
+ * - SavedFilter — A reader's old saved filter: a name, and each scope's filters as a View writes them.
  * - ViewScope — One scope as a View writes it: each field's condition in the plain form.
  * - CompileFacts — What compiling needs to know that the Query does not say.
  * - withoutDropped — A reading without the picks set aside.
@@ -273,18 +272,11 @@ export type QueryRequest =
   | { scope?: string; field?: string; discard: true }
   | readonly QueryRequest[];
 
-/** A saved filter: a name, and each scope's filters as a View writes them —
- *  a query definition, a page's own or a reader's. Will, 366. TRAP T-saved-filters-are-every-scope */
+/** A reader's old saved filter: a name, and each scope's filters as a View writes them. What `filtersOfSaved` makes
+ *  Filters of, once, and what Save filters reads from the bars (plan 960 U4.4c). TRAP T-saved-filters-are-every-scope */
 export interface SavedFilter {
   label: string;
   query: QueryDefaults;
-}
-
-/** Is this a saved filter — a name, and a query definition? */
-export function isSavedFilter(v: unknown): v is SavedFilter {
-  const plain = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x);
-  return plain(v) && typeof v['label'] === 'string' && plain(v['query'])
-    && v['query']['v'] === 1 && plain(v['query']['scopes']);
 }
 
 /** One scope as a View writes it: each field's condition in the plain form.

@@ -32,7 +32,7 @@
       }
     },
     "where": {
-      "description": "Conditions field by field, all of which hold: { \"openTickets\": { \"gt\": 0 } }. A scope's start, a preset, a saved filter, a View and a status value each say theirs so.",
+      "description": "Conditions field by field, all of which hold: { \"openTickets\": { \"gt\": 0 } }. A scope's start, a preset, a Filter, a View and a status value each say theirs so.",
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/condition" }
     },
@@ -44,15 +44,6 @@
       "properties": { "field": { "type": "string" }, "direction": { "enum": ["asc", "desc"] } }
     },
 
-    "filterScope": {
-      "description": "One scope's filters: the fields it holds, and its conditions.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "holds": { "description": "The fields it holds.", "$ref": "#/$defs/fieldNames" },
-        "where": { "$ref": "#/$defs/where" }
-      }
-    },
     "viewScope": {
       "description": "One scope as a View writes it: its filters, and how it arranges the rows. A scope with no holds keeps what it holds now; a field it answers is held there.",
       "type": "object",
@@ -83,24 +74,6 @@
       "properties": {
         "v": { "const": 1 },
         "scopes": { "type": "object", "additionalProperties": { "$ref": "#/$defs/viewScope" } }
-      }
-    },
-    "savedFilter": {
-      "description": "A saved filter: a name, and each scope's filters. Applied, it fills the field chips; a scope it does not name has no filters.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["label", "query"],
-      "properties": {
-        "label": { "type": "string", "minLength": 1 },
-        "query": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["v", "scopes"],
-          "properties": {
-            "v": { "const": 1 },
-            "scopes": { "type": "object", "additionalProperties": { "$ref": "#/$defs/filterScope" } }
-          }
-        }
       }
     },
     "preset": {

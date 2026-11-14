@@ -2,7 +2,7 @@
  * query-graph.ts — a page's Query drawn as nodes, for the Node Editor, and each edit made in
  * them as the command it asks. DERIVED each time the Query changes: the Source and its store's
  * status fields; the View Filters, the View's bar; each card's Presentation, its own filters and
- * Organise on its rows' path; the View they go into; presets, saved filters and superseded answers
+ * Organise on its rows' path; the View they go into; presets, a store's Filters and superseded answers
  * — and which node each step of a load lights; and each Source a reader placed that the page does
  * not read. Kinds are the one registry's. DOM-free. Will, TODO 555 · plan 960 U4.8
  * docs/history/plan-78-query-editor.md · TRAP T-the-node-editor-asks-the-query
@@ -34,9 +34,9 @@
  * - ConnectionAnswer — What a new connection asks: a command, or why it is refused; null, nothing to do.
  * - connectionRequest — The command a new connection asks: a filter moved into a chip of View Filters, or onto a card's rows.
  */
-import { SAVED_PRESET, storeOf, type PageDefinition } from './page-definition.js';
+import { storeOf, type PageDefinition } from './page-definition.js';
 import { pageFields } from './type-definition.js';
-import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
+import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
 import { ALL, spellConditions } from './filter-face.js';
@@ -71,8 +71,6 @@ export const QUERY_NODE = {
   field: (scope: string, field: string): string => `field-${scope}-${field}`,
   preset: (scope: string, preset: string): string => `preset-${scope}-${preset}`,
   presetWhen: (scope: string, preset: string, field: string): string => `when-preset-${scope}-${preset}-${field}`,
-  saved: (id: string): string => `saved-${id}`,
-  savedWhen: (id: string, field: string): string => `when-saved-${id}-${field}`,
   organise: (scope: string): string => `organise-${scope}`,
   viewFilters: 'view-filters',
   view: 'view',
@@ -178,7 +176,7 @@ export interface QueryGraphFacts {
   type?: (field: string) => string | undefined;
   /** Every value a field may take, for a condition to pick from rather than type. */
   values?: (field: string) => readonly string[] | undefined;
-  /** A scope's presets as declared now — the app's, and each saved filter on its bar. Absent, the definition's. */
+  /** A scope's presets as declared now — the app's, and each Filter over its store. Absent, the definition's. */
   presets?: (scope: string) => readonly ScopePreset[];
   /** The store's domains: a status field's values, their looks and when a row has each. */
   domains?: Readonly<Record<string, FieldDomain>>;
@@ -212,9 +210,7 @@ const notThePage = (store: string | undefined): string => `The page reads ${stor
 /** Why a row is read only: nothing outside the editor takes its change. */
 const FROM_DEFINITION = 'The page definition sets it: Save writes the definition.';
 const FROM_STORE = 'The app\'s store works it out: statusFields().';
-const SAVED_WORDS = 'A saved filter: Manage Saved Filters changes it.';
 const FROM_ENTITY = 'A Filter: its own graph changes it, in the Node Editor.';
-const NOT_ADDED = 'Not on a bar: add it from the Saved menu, and it joins as a preset.';
 const SUPERSEDED = 'The View holds this field: kept, not in force. It comes back when the View lets it go.';
 const CHIP = 'Its Condition changes it.';
 const EVERY_FILTER = 'Rows in every filter of the card.';
@@ -571,7 +567,6 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     if (declared.presets?.length && !query.scopes[id]) scopes.push([id, { holds: [], readings: {} }]);
   }
   const ordered: [string, ScopeQuery][] = [[VIEW, query.scopes[VIEW] ?? { holds: [], readings: {} }], ...scopes.filter(([id]) => id !== VIEW)];
-  const onBars = new Set<string>();
   const view = QUERY_NODE.view;
   for (const [id, scope] of ordered) {
     const top = id === VIEW;
@@ -606,10 +601,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'boolean' })),
     ];
     const description = `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`;
-    // Each preset, and each saved filter on its bar: on or off, and what it writes.
+    // Each preset, the app's or a Filter: on or off, and what it writes.
     for (const p of presets) {
-      const saved = p.id.startsWith(SAVED_PRESET);
-      if (saved) onBars.add(p.id.slice(SAVED_PRESET.length));
       const wrote = Object.entries(p.readings).flatMap(([f, reading]) => {
         const tree = answerTree(reading, typed(f));
         return tree ? [[f, tree] as const] : [];
@@ -617,14 +610,14 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const on = presetHeld(query, id, p.id, p.readings);
       // A Filter is a preset too: its own graph says what it writes. TODO 776
       const entity = entityRefOf(p.id).type === FILTER;
-      const from = add(into, QUERY_NODE.preset(id, p.id), saved ? 'saved' : 'preset', [
-        ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })),
+      const from = add(into, QUERY_NODE.preset(id, p.id), 'preset', [
+        ...rowsOf('preset', { on }).map((row) => ({ ...row, editable: true })),
         ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'any' })),
       ], { heading: p.label, ref: { scope: id, preset: p.id }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
       connections.push({ from, to: `${bar}/@${p.id}` });
       // What it writes: each field a Condition, the definition's to change.
       for (const [f, tree] of wrote) {
-        const hint = saved ? SAVED_WORDS : entity ? FROM_ENTITY : FROM_DEFINITION;
+        const hint = entity ? FROM_ENTITY : FROM_DEFINITION;
         connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)).says, to: `${from}/${f}` });
       }
     }
@@ -686,22 +679,6 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   }
   // The View: the View Filters over every Content (Will, D4).
   add(9, view, 'view', rowsOf('view', {}));
-  // The page's own saved filters on no bar: what each would add, and no connection.
-  for (const [id, set] of Object.entries(definition.savedFilters ?? {})) {
-    if (!isSavedFilter(set) || onBars.has(id)) continue;
-    const wrote = Object.entries(set.query.scopes).flatMap(([scope, s]) => Object.entries(readingsOf(s.where ?? {}, typed)).flatMap(([f, reading]) => {
-      const tree = answerTree(reading, typed(f));
-      return tree ? [{ name: `${scope}:${f}`, field: f, scope, tree }] : [];
-    }));
-    const from = add(3, QUERY_NODE.saved(id), 'saved', [
-      ...rowsOf('saved', { on: false }).map((row) => ({ ...row, hint: NOT_ADDED })),
-      ...wrote.map(({ name, field, scope }): GraphRow => ({ name, label: scope === VIEW ? label(field) : `${label(field)} (${scope})`, input: 'any' })),
-    ], { heading: set.label, ref: { saved: id } });
-    // What it would add: each field a Condition the saved filter owns, and no connection out.
-    for (const { name, field, tree } of wrote) {
-      connections.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)).says, to: `${from}/${name}` });
-    }
-  }
 
   // Columns with nothing in them close up; each column stacks its nodes.
   const used = [...new Set(nodes.map((n) => n.column))].sort((a, b) => a - b);
@@ -770,7 +747,7 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
   const was = Object.fromEntries(node.rows.map((r) => [r.name, r.value]));
   // A bar's Switch: on View Filters, or on a card's Presentation.
   if (row.name === SWITCH) return { scope, suspended: !value };
-  if (node.kind === 'preset' || node.kind === 'saved') {
+  if (node.kind === 'preset') {
     const preset = node.ref?.['preset'];
     return preset && row.name === 'on' ? { scope, preset, on: !!value } : undefined;
   }
@@ -849,7 +826,7 @@ export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'orga
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the
  * scope's next field (its chip appears); a Condition tests a Field, so it is refused in words;
- * a Preset or a Saved filter switches on the next one the scope's bar has; a preset named by
+ * a Preset switches on the next of the app's own the scope's bar has; a preset named by
  * its own id — a Filter, a Custom Node of the Query's panel (TODO 776) — switches that
  * one on. A Status field is the app's own, so it is refused. A Source is KEPT: the page reads
  * one store, so it asks the Query nothing, and names the first store the page does not read
@@ -866,11 +843,11 @@ export function placeRequest(kind: string, scope: string, facts: PlaceFacts): Pl
       : { refused: `Scope "${scope}" holds every field it may, so it takes no new ${name}: take one from another scope, or free a field first.` };
   }
   if (kind === 'condition') return { refused: 'A Condition tests a Field: connect one in. In a Query, a Field\'s tests are its chip\'s: place a Field, then add them there.' };
-  if (kind === 'preset' || kind === 'saved') {
-    // The app's own, or the saved; a Filter is its own Custom Node.
-    const next = facts.presets(scope).find((p) => p.id.startsWith(SAVED_PRESET) === (kind === 'saved') && entityRefOf(p.id).type !== FILTER && !facts.on(scope, p.id));
+  if (kind === 'preset') {
+    // The app's own; a Filter is its own Custom Node.
+    const next = facts.presets(scope).find((p) => entityRefOf(p.id).type !== FILTER && !facts.on(scope, p.id));
     return next ? { request: { scope, preset: next.id, on: true } }
-      : { refused: `Scope "${scope}" has no ${name.toLowerCase()} left to switch on${kind === 'saved' ? ': a saved filter joins from the bar\'s Saved menu' : ''}.` };
+      : { refused: `Scope "${scope}" has no ${name.toLowerCase()} left to switch on.` };
   }
   if (kind === 'status') return { refused: `A ${name.toLowerCase()} is the app's own: the store's statusFields() works it out, and a Query cannot add one.` };
   if (kind === 'source') {

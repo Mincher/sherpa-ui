@@ -5179,48 +5179,26 @@ The public attributes speak these words since 2026-09-25; the old ones went on
 
 ### T-saved-filters-are-every-scope
 
-**A saved filter is a preset the reader made** — Will, TODO 605: *"Adding a Saved
-filter definition should add it as a Preset filter chip in the Preset section of the
-toolbar. Saved filter configurations are essentially user created presets rather than
-definition created presets."* That replaces 366, where a set loaded into the ordinary
-chips and one was taken at a time; the "Save <name>" button that went with it is gone.
+**A reader's saved filters are FILTERS on the entity shelf** — Will, plan 960 U4.4c (A, 2026-11-14): Save filters writes
+Filter entities, the one type (D6); the keeper's `filters`, the bars' `added`, the `saved:` presets and the page's own
+`savedFilters` are gone. A page's own named filters are its scopes' `presets`.
 
-Save filters keeps EVERY scope's filters under one name (Will, TODO 105). A set is
-`{ label, query }`, the query in a View's own JSON form with no arrangement, kept with
-the PAGE beside its Views: a NAMED part of its one document, `filters`, in every tab's
-tier (`T-one-page-one-document`). A page may ship
-its own (`savedFilters`), which are never saved over or deleted.
-
-- **Adding**: a set's row in the Filters menu's Saved section asks `filters-apply`
-  (`provider.applyFilters`). The provider declares it as a preset of one scope,
-  `saved:<id>` (`#layPresets`, `conditionsOf`), and turns it on. From there it IS a
-  preset (`T-a-preset-is-its-own-part`): its chip leads the bar, a chip already there
-  goes blue, its values are held, and it adds no chip. Its scope is the one scope the
-  set asks anything of, else the bar that asked, else the View.
-- **Several at once**: each row ticked adds its chip, and each unticked
-  (`filters-dismiss`) takes the chip off and what it held. The chip's own press turns it
-  off and leaves it there. The chips added are kept in the tab (the document's
-  `added`), and declared BEFORE the Query is restored, which
-  holds their rows. Another View or Reset to view defaults takes them off: they are one
-  View's chips, as its other chips are.
-- **Saving**: `filters-save` and `filters-save-as` ask the HOST for a name, which
-  confirms an overwrite by name and calls `saveFilters(label)`. The new chip joins the
-  bar that saved it, OFF, because the bar's own filters still say the same.
-- **The Saved menu** (Will, TODO 436; ALWAYS since 11-06 — `provider.savedMenu` and
-  `data-saved-menu` are deleted): a split beside Edit, as the App Header's
-  Save (TODO 446). "Save", a filter icon, asks `filters-save-as`; the icon-only ▾ holds
-  the sets, a tick adding one AT ONCE (no Apply), then the save row, then Manage. Alone,
-  the ▾ is solo; beside Save it joins the group (`data-when-data-group="data-saveable:
-  end"`). The Edit menu and the ⋮ hold none of
-  them. It stays when the bar folds its actions, as Edit does.
-- **Managing** (Will, TODO 427): where the host saves and the reader has sets of their
-  own, the Saved section leads with Manage Saved Filters — a menu ACTION row
-  (`MenuItem.action`), no tick box — which asks `filters-manage`. The HOST's dialog
-  renames and removes, and keeps nothing until its Apply. A rename keeps the chip, on or
-  off; a delete takes it off, and what it held.
+- **Saving**: `filters-save` and `filters-save-as` ask the HOST for a name, which calls `provider.saveFilters(label)`.
+  The filters on screen (`filtersOf(viewQueryOf(source))`, no arrangement) become one Filter per scope that holds an
+  answer (`filtersOfSaved`): "<name>" for one scope, "<name> · <scope's label>" for each of several; each id free on
+  the shelf. A filter the reader had off asks nothing, so it is no part of one; All is an answer
+  (`T-all-is-an-answer`). Off `saveAnyScope`, ONE local scope's: the one named, or the bar's that asked (TODO 485).
+- **A chip like any Filter**: each is a preset of its store's pages (`T-a-filter-is-a-preset-of-its-store`), so the
+  shelf's watch lays it on the bar of the scope that holds its fields, off, as the bar's own filters still say the same.
+  It is app-wide and crosses tabs, as every entity does.
+- **Rename** (`renameFilters`) saves the new name, then publishes (a name is part of a version, plan 972): its id stays,
+  so its chip and its uses keep it. **Delete** (`deleteFilters`) turns it off, then removes it; the shelf refuses while
+  another entity uses it, and `whyKept` says why. Each is the reader's own Filter only.
+- **The old ones move once**: an app's one-off page reads the old `sherpa:page:<key>.filters`, saves
+  `filtersOfSaved(...)` to the shelf and deletes the key. The keeper ignores a key it has no part for, so an old one costs
+  nothing else.
 
 - Site: `src/core/browser/saved-filters.ts`
-- Site: `src/core/data/page-definition.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/ui/filters-button.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
@@ -5228,7 +5206,6 @@ its own (`savedFilters`), which are never saved over or deleted.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
-- Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
 - Site: `src/components/sherpa-filter-panel/panel-column.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
@@ -6255,20 +6232,15 @@ shipped ones by that name, so `saveView(label)` needs nothing from the page.
 ### T-a-page-is-checked-as-it-opens
 
 **A page definition's names are checked ONCE, by `checkPage`, as it opens** —
-plan 695 D1. Before it, the names were checked in three places at three times:
-`openSource` said a child field or a set's field it could not use, `savedFiltersOf`
-a saved filter of the old shape, and only the MCP said a saved filter that fills a
-scope the page does not have. A page that named a missing scope opened, and showed
-less, with nothing said.
+plan 695 D1. Before it, the names were checked in several places at several times,
+and a page that named a missing scope opened, and showed less, with nothing said.
 
 - `checkPage(page)` is DOM-free and one pass over the JSON: a server, a test and the
   MCP call the same function. It reports each broken name and answers true when
   there is none. The provider calls it first in `open()`.
-- The builders after it are QUIET: `openSource` and `savedFiltersOf` leave out what
-  they cannot use and say nothing, so a page is never reported twice. Calling
-  `openSource` by hand checks nothing: call `checkPage` first.
-- The View scope is every page's: a saved filter may fill `view` though the page
-  declares no `view` scope.
+- The builders after it are QUIET: `openSource` leaves out what it cannot use and
+  says nothing, so a page is never reported twice. Calling `openSource` by hand
+  checks nothing: call `checkPage` first.
 - What a schema says (a type, an op) is `schemas/page.v1.json`'s, run in tests and
   tools. `checkPage` checks the NAMES, which no schema can.
 
@@ -6702,9 +6674,9 @@ chip's is (`graphRequest`).
   by, never what a control keeps for itself; an `off` one is kept, not applied.
   A condition node is the READER's answer: a preset's rows in it are the preset's.
 - **A preset is a node into its bar's row** (`@<id>`): its On, read from the
-  Query (`presetHeld`), and what it writes, read only. A saved filter on a bar is a
-  preset `saved:<id>` (`SAVED_PRESET`), drawn as the saved kind; one on no bar says
-  what it would add, with no connection. A status field sits between the Source and the
+  Query (`presetHeld`), and what it writes, read only. A Filter over the store, a
+  reader's saved one too, is a preset `filter:<id>`: its own graph changes it (plan
+  960 U4.4c: there is no Saved filter kind). A status field sits between the Source and the
   cards, a row per value and when a row has it, from the store's `domains`. A
   component scope's own answer the View holds over it (`superseded`) is a read-only
   condition into its chip, the one card chip with a line: it moves nowhere.
@@ -6890,7 +6862,7 @@ sockets only, never types.
   Not taken). Data joined to a column test is not used, and warns. "None" is Is empty on a Pass; "At least N",
   a Math Count into Greater or equal. The Boolean (`passes` on its kind) has no rows: its header sends on what
   reaches its header, drawn as that type, where it is true, else Not taken (Will: "if true then"). A check that is no
-  Condition (Time, Tag, a Preset, a Saved filter, a Custom Node's use) says `output: 'boolean'`:
+  Condition (Time, Tag, a Preset, a Custom Node's use) says `output: 'boolean'`:
   one boolean from its header, `Out`. A line from a Condition's header is a fault, in words.
 - **A row's output may be DRAWN on another's** (`beside`, TODO 830): a Source's Rows leave from
   its Store row, as a Field's column does from its Field row, not from a Rows line of their own.
@@ -6949,7 +6921,7 @@ its choices".
 - **A test is shaped by its Field's type** where the facts give it (`T-a-logic-type-is-an-operator`):
   an operator its type does not take warns; a Value B that is no number for a number field is the
   row's fault.
-- **A status, a preset and a saved filter draw the same shapes, read only** (M5): the definition or
+- **A status and a preset draw the same shapes, read only** (M5): the definition or
   the store owns them, so no `ref.scope` and no edit asks the Query. A status field is one row per
   value (its look); each value's `when` draws a Field per field it names and its tests (plan 944, D2
   A; 971 §9): the root's Pass into the value's row, and its Fail into the next value's Fields, in the
@@ -7268,7 +7240,7 @@ View and said off while the rows were filtered, and a heading wore the amber
 - Site: `src/core/data/source-counts.ts`
 - Site: `src/core/ui/filter-def.ts`
 - Site: `test/unit/a-preset-is-its-own-part.test.mjs`
-- Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
+- Site: `test/unit/a-key-a-scope-lacks-goes.test.mjs`
 
 ### T-one-field-one-status
 
@@ -7876,7 +7848,7 @@ graphs. Let's keep them but also make sure they work in the new architecture for
   field's own condition (`byPreset`); it is said in words and left off the bar (plan 776 D6).
 - **One door.** The preset is `{ id: filter:<id>, label, where }`, the shape a page's own preset
   has. `ProviderPage.#layPresets` declares each scope's presets in one list: the page's own, then its
-  Filters, then the saved sets on its bar, all through `presetReadings` and `declarePresets`.
+  Filters (a reader's saved ones among them), all through `presetReadings` and `declarePresets`.
   The chip is `preset:filter:<id>`; a press is `query.ask({ scope, preset, on })`.
 - **Which pages.** Those whose store is its source: `settings.source`, else the store its graph's Source
   names (a new graph has no settings). The app's first, read only, then the reader's, in the shelf's

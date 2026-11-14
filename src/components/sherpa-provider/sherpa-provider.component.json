@@ -128,12 +128,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (settings, hovered, keeper, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (settings, hovered, keeper, reach, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (hover, provide, open, prepare, recheck, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, renameFilters, resetView, export, import). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (hover, provide, open, prepare, recheck, close, saveView, deleteView, saveFilters, renameFilters, deleteFilters, resetView, export, import). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -226,31 +226,19 @@
           "$type": "method",
           "name": "saveFilters",
           "args": "label: string, scope?: string",
-          "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel. TODO 485"
-        },
-        {
-          "$type": "method",
-          "name": "applyFilters",
-          "args": "id: string, from?: string",
-          "description": "ADD a saved set to a bar: a preset of the reader's, on. `from`, the local scope of the bar it goes on where the set names several. Will, TODO 605"
-        },
-        {
-          "$type": "method",
-          "name": "dismissFilters",
-          "args": "id: string",
-          "description": "TAKE a saved set off its bar: its chip goes, and what it held."
-        },
-        {
-          "$type": "method",
-          "name": "deleteFilters",
-          "args": "id: string",
-          "description": "DELETE a reader's saved set, never a page's own: its chip goes, and what it held."
+          "description": "SAVE FILTERS — the filters on screen under a name, as Filters of the reader's on the entity shelf: one per scope that holds an answer, \"<name>\", or \"<name> · <scope's label>\" for each of several. Each is a preset of the page's store, so its chip joins its bar, off. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel (TODO 485). The ids kept; none, nothing was saved. Will, plan 960 U4.4c"
         },
         {
           "$type": "method",
           "name": "renameFilters",
           "args": "id: string, label: string",
-          "description": "RENAME a reader's saved set — never a page's own. Its id follows its name, and a name another set has gains a copy's. Its new id. Will, TODO 427"
+          "description": "RENAME a reader's own Filter, and publish it: its id stays. The id; none, it is not the reader's own or the name is empty. Plan 960 U4.4c"
+        },
+        {
+          "$type": "method",
+          "name": "deleteFilters",
+          "args": "id: string",
+          "description": "DELETE a reader's own Filter: off on its bar, then off the shelf. Refused while another entity uses it: the keeper's `entities.whyKept(id)` says why. Did it go? Plan 960 U4.4c"
         },
         {
           "$type": "method",
@@ -290,11 +278,6 @@
         {
           "name": "reach",
           "type": "{ reach: 'ok' | 'unreached' | 'down'; failure?: Failure }",
-          "access": "read"
-        },
-        {
-          "name": "savedFilterSets",
-          "type": "{ id: string; label: string; added: boolean; own: boolean }[]",
           "access": "read"
         },
         {

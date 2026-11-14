@@ -1,6 +1,6 @@
 /**
- * provider-page.ts — the page a provider has open: its Views, saved filter
- * sets, what the reader left on each View, its kept state and Reset — kept
+ * provider-page.ts — the page a provider has open: its Views, its store's
+ * Filters, what the reader left on each View, its kept state and Reset — kept
  * through the page keeper. A provider holds one, and is its host.
  * TRAP T-a-provider-keeps-the-views
  *
@@ -8,20 +8,16 @@
  * - Bar — A filter bar, as the provider draws it.
  * - OpenedPage — The page `open()` set up: its id, store, source, Views and first Query.
  * - PageHost — What the open page asks of its provider.
- * - ProviderPage — The open page's Views, saved sets, what each View was left with, its kept state and Reset.
+ * - ProviderPage — The open page's Views, its Filters, what each View was left with, its kept state and Reset.
  * - .opened — The page `open()` set up, or null.
  * - .begin — Take a page `open()` set up.
  * - .end — The page has gone, with its source.
- * - .listen — The open page's own listeners: Resets, saved sets, and what the bars offer.
+ * - .listen — The open page's own listeners: Resets, the shelf's Filters, and what the bars offer.
  * - .saveView — Save what is on screen as a View of the open page.
  * - .deleteView — Delete the reader's own View, and go to the first.
- * - .saveFilters — Save the filters under a name: a preset of the reader's, its chip on the bar that saved it.
- * - .applyFilters — Add a saved set to a bar as a preset, on.
- * - .dismissFilters — Take a saved set off its bar: its chip goes, and what it held.
- * - .deleteFilters — Delete a reader's saved set, and its chip and what it held.
- * - .renameFilters — Rename a reader's saved set; its id follows its name.
- * - .savedFilterSets — The page's saved sets, and which are on a bar.
- * - .savesChanged — The app changed where filters are saved: every control told again.
+ * - .saveFilters — Save the filters under a name: a Filter of the reader's per scope that holds an answer, each a chip.
+ * - .renameFilters — Rename a reader's own Filter and publish it; its id stays.
+ * - .deleteFilters — Delete a reader's own Filter, unless another entity uses it.
  * - .customView — Is the View on screen the reader's own?
  * - .resetView — Put the filters back as the View on screen defines them.
  * - .drawBars — Draw every bar from its scope, as the source describes it.
@@ -39,15 +35,15 @@ import {
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
 import { viewSig, type PageChange, type PageKeeper, type PageState } from '../../core/browser/page-state.js';
-import { conditionsOf, filtersOf } from '../../core/browser/saved-filters.js';
-import type { SavedSet } from '../../core/ui/filters-button.js';
+import { filtersOf } from '../../core/browser/saved-filters.js';
 import type { DataSource } from '../../core/data/data-source.js';
-import { SAVED_PRESET, presetReadings } from '../../core/data/page-definition.js';
-import { entityRefOf } from '../../core/data/entity.js';
+import { presetReadings } from '../../core/data/page-definition.js';
+import { entityKind, entityRefOf, type Entity } from '../../core/data/entity.js';
 import { FILTER } from '../../core/data/entity-types.js';
+import { publish } from '../../core/data/entity-versions.js';
 import type { PagePreset } from '../../core/data/filter.js';
 import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
-import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery, type ViewScope } from '../../core/data/query.js';
+import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type ScopeQuery } from '../../core/data/query.js';
 import { layShared, sharedOf } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { organiseOf } from '../../core/ui/filter-host.js';
@@ -74,8 +70,6 @@ export interface OpenedPage {
   query: QueryContext;
   library: (() => ViewLibrary) | null;
   initial: Query;
-  /** The page's own saved filters, as its definition ships them. Will, 366 */
-  savedFilters: Readonly<Record<string, SavedFilter>>;
   /** Its store's Filters, each a preset of its bar, and how to read them again. TODO 776 */
   filterPresets?: readonly PagePreset[];
   readFilterPresets?: () => Promise<readonly PagePreset[]>;
@@ -91,7 +85,7 @@ export interface PageHost {
   panels(): Element[];
   /** The scope a control sits in. */
   scopeOf(el: Element): string | null;
-  /** May a set be saved and taken at any scope? Off, one local scope's. TODO 485 */
+  /** May filters be saved from any scope? Off, one local scope's. TODO 485 */
   saveAnyScope(): boolean;
   /** The View on screen changed. */
   viewChanged(id: string | undefined, elements?: Record<string, HTMLElement>): void;
@@ -101,7 +95,7 @@ export interface PageHost {
   keeper(): PageKeeper;
 }
 
-/** The open page's Views, saved sets, what each View was left with, its kept state and Reset. */
+/** The open page's Views, its Filters, what each View was left with, its kept state and Reset. */
 export class ProviderPage {
   /** The provider it serves. */
   readonly #host: PageHost;
@@ -123,12 +117,9 @@ export class ProviderPage {
     this.#opened = page;
     this.#barsDrawn = false;
     this.#drawn = new WeakSet();
-    this.#sentSets = '';
-    // The sets on a bar before a reload, while they are still saved: BEFORE the Query, which holds their rows.
-    this.#added = new Map(Object.entries(this.#state().added ?? {}).filter(([id]) => this.#library()[id]));
-    // …and its store's Filters, each on the bar of the scope that holds its fields. TODO 776
+    // Its store's Filters, each on the bar of the scope that holds its fields: BEFORE the Query, which may hold their rows. TODO 776
     this.#filterPresets = this.#homed(page.filterPresets ?? []);
-    this.#layPresets([...this.#added.values(), ...this.#filterPresets.map((f) => f.scope)]);
+    this.#layPresets(this.#filterPresets.map((f) => f.scope));
   }
 
   /** The page's Filters, each with the scope whose bar it leads. TODO 776 */
@@ -173,7 +164,7 @@ export class ProviderPage {
     this.#opened = null;
   }
 
-  /** The open page's own listeners: Resets, saved sets, and what the bars offer. */
+  /** The open page's own listeners: Resets, the shelf's Filters, and what the bars offer. */
   listen(signal: AbortSignal): void {
     const opened = this.#opened;
     if (!opened) return;
@@ -189,7 +180,6 @@ export class ProviderPage {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         this.#sayResets();
-        this.#saySaved();
         this.#sayApplied();
       });
     };
@@ -200,21 +190,9 @@ export class ProviderPage {
     el.addEventListener('view-reset', (event) => {
       if (!event.defaultPrevented) void this.resetView();
     }, { signal });
-    /* REQUESTS, as Reset to default is: a saved set's row ticked adds its chip to
-       the bar that asked, and unticked takes it off. TRAP T-saved-filters-are-every-scope */
-    for (const type of ['filters-apply', 'filters-dismiss']) {
-      el.addEventListener(type, (event) => {
-        const id = (event as CustomEvent<{ id?: string }>).detail?.id;
-        if (event.defaultPrevented || !id) return;
-        if (type === 'filters-dismiss') return void this.dismissFilters(id);
-        const path = event.composedPath();
-        const from = [...this.#host.bars(), ...this.#host.panels()].find((c) => path.includes(c));
-        this.applyFilters(id, from ? this.#localOf(from) : null);
-      }, { signal });
-    }
     // A Filter saved or removed, here or in another tab. TODO 776
     this.#host.keeper().entities.watch(() => void this.#refilter(), signal);
-    // Which control asked to save, before the host names the set: off, it is that scope's. TODO 485
+    // Which control asked to save, before the host names the filters: off, they are that scope's. TODO 485
     for (const type of ['filters-save', 'filters-save-as']) {
       el.addEventListener(type, (event) => {
         const path = event.composedPath();
@@ -271,137 +249,62 @@ export class ProviderPage {
     return true;
   }
 
-  /** Save the filters under a NAME, beside the page's Views — a set of that name is
-   *  saved over, so a host asks first. It is a preset of the reader's: its chip goes on
-   *  the bar that saved it, off, as that bar's own filters still say the same. Will, TODO 605.
-   *  TRAP T-saved-filters-are-every-scope */
-  saveFilters(label: string, scope?: string): string | undefined {
+  /** Save the filters under a NAME, as Filters of the reader's on the shelf: one per scope that holds an answer, "<name>",
+   *  or "<name> · <scope's label>" for each of several (`filtersOfSaved`). Each is a preset of its store, so its chip joins
+   *  its bar, off: the bars' own filters still say the same. Off `saveAnyScope`, ONE local scope's: the one named, or the
+   *  bar's that asked (TODO 485). The ids kept; none, nothing saved. Will, plan 960 U4.4c · TRAP T-saved-filters-are-every-scope */
+  async saveFilters(label: string, scope?: string): Promise<string[]> {
     const opened = this.#opened;
-    // Off, ONE local scope's: the one named, or the bar's that asked. TODO 485
-    const local = this.#host.saveAnyScope() ? null : scope ?? this.#savingAt;
-    if (local === undefined || (!this.#host.saveAnyScope() && (!local || local === VIEW))) return undefined;
-    // A new name never takes one of the page's names.
-    const name = label.trim() && opened && uniqueViewLabel(label, Object.values(opened.savedFilters).map((set) => set.label));
-    if (!opened || !name) return undefined;
+    const any = this.#host.saveAnyScope();
+    const local = any ? null : scope ?? this.#savingAt;
+    const name = label.trim();
+    if (!opened || !name || (!any && (!local || local === VIEW))) return [];
     this.#flush?.();
-    const id = labelId(name);
-    // Saved over: what it held was the old set's.
-    this.dismissFilters(id);
     const all = filtersOf(viewQueryOf(opened.source));
     const query: QueryDefaults = local ? { v: 1, scopes: { [local]: all.scopes[local] ?? emptyScope() } } : all;
-    this.#keep({ filters: { ...this.#filters(), [id]: { label: name, query } } });
-    this.#add(id, this.#homeOf(id, local ?? this.#savingAt ?? null));
+    const shelf = this.#host.keeper().entities;
+    const labels = Object.fromEntries(Object.keys(query.scopes).map((s) => [s, { label: opened.query.scopeLabel(s) }]));
+    const { filtersOfSaved } = await import('../../core/data/filter.js');
+    const kept: string[] = [];
+    for (const filter of filtersOfSaved({ [labelId(name)]: { label: name, query } }, opened.store, labels, shelf.list().map((e) => e.id))) {
+      if (await shelf.save(filter)) kept.push(filter.id);
+    }
+    return kept;
+  }
+
+  /** The reader's own Filter by id, or none: a preset or another type is not theirs to change. */
+  #ownFilter(id: string): Entity | undefined {
+    const filter = this.#host.keeper().entities.get(id);
+    return filter?.type === FILTER && filter.origin === 'mine' ? filter : undefined;
+  }
+
+  /** RENAME a reader's own Filter: saved with the new name, then published, as a name is part of a version. Its id stays,
+   *  so its chip and its uses keep it. The id; none, it is not the reader's own or the name is empty. Plan 960 U4.4c */
+  async renameFilters(id: string, label: string): Promise<string | undefined> {
+    const filter = this.#ownFilter(id);
+    const name = label.trim();
+    if (!filter || !name) return undefined;
+    if (name === filter.label) return id;
+    const shelf = this.#host.keeper().entities;
+    if (!await shelf.save({ ...filter, label: name })) return undefined;
+    await publish(shelf, id);
     return id;
   }
 
-  /** ADD a saved set to a bar: a preset of the reader's, on, as the app's own are.
-   *  `from`, the local scope of the bar that asked. Will, TODO 605.
-   *  TRAP T-saved-filters-are-every-scope */
-  applyFilters(id: string, from: string | null = null): boolean {
-    const opened = this.#opened;
-    if (!opened || !this.#library()[id]) return false;
-    this.#flush?.();
-    const scope = this.#added.get(id) ?? this.#homeOf(id, from);
-    this.#add(id, scope);
-    opened.query.ask({ scope, preset: SAVED_PRESET + id, on: true, commit: true });
-    return true;
-  }
-
-  /** TAKE a saved set off its bar: its chip goes, and what it held. Will, TODO 605 */
-  dismissFilters(id: string): boolean {
-    const opened = this.#opened;
-    const scope = this.#added.get(id);
-    if (!opened || scope === undefined) return false;
-    this.#flush?.();
-    opened.query.ask({ scope, preset: SAVED_PRESET + id, on: false, commit: true });
-    this.#added.delete(id);
-    this.#layPresets([scope]);
-    this.#keepAdded();
-    return true;
-  }
-
-  /** DELETE a reader's saved set, never a page's own: its chip goes, and what it held. */
+  /** DELETE a reader's own Filter: turned off on its bar, then removed from the shelf. Refused while another entity uses
+   *  it (`whyKept` says why, in words). Did it go? Plan 960 U4.4c */
   deleteFilters(id: string): boolean {
-    const opened = this.#opened;
-    if (!opened || !this.#filters()[id]) return false;
-    this.dismissFilters(id);
-    const { [id]: _gone, ...rest } = this.#filters();
-    this.#keep({ filters: rest });
-    this.#saySaved();
-    return true;
-  }
-
-  /** RENAME a reader's saved set — never a page's own. Its id follows its name,
-   *  and a name another set has gains a copy's. Its chip stays, on or off. Its new id. Will, TODO 427 */
-  renameFilters(id: string, label: string): string | undefined {
-    const opened = this.#opened;
-    const set = opened ? this.#filters()[id] : undefined;
-    if (!opened || !set || !label.trim()) return undefined;
-    if (label.trim() === set.label) return id;
-    const name = uniqueViewLabel(label, Object.entries(this.#library()).filter(([key]) => key !== id).map(([, s]) => s.label));
-    const scope = this.#added.get(id);
-    const on = scope !== undefined && opened.query.presetOn(scope, SAVED_PRESET + id);
-    this.dismissFilters(id);
-    const next = labelId(name);
-    // In its place: its id follows its name. TRAP T-derived-id-makes-resave-an-update
-    this.#keep({ filters: Object.fromEntries(Object.entries(this.#filters())
-      .map(([key, kept]) => (key === id ? [next, { ...kept, label: name }] : [key, kept]))) });
-    if (scope !== undefined) this.#add(next, scope);
-    if (on) opened.query.ask({ scope, preset: SAVED_PRESET + next, on: true, commit: true });
-    this.#saySaved();
-    return next;
-  }
-
-  /** The page's saved sets — its own, then the reader's (`own`) — and those on a bar (`added`). */
-  get savedFilterSets(): { id: string; label: string; added: boolean; own: boolean }[] {
-    return Object.entries(this.#library())
-      .map(([id, { label, own }]) => ({ id, label, added: this.#added.has(id), own }));
-  }
-
-  /** The page's own sets, then the reader's: one of theirs under a page id is theirs. */
-  #library(): Record<string, SavedFilter & { own: boolean }> {
-    const opened = this.#opened;
-    if (!opened) return {};
-    const own = this.#filters();
-    return {
-      ...Object.fromEntries(Object.entries(opened.savedFilters).map(([id, set]) => [id, { ...set, own: false }])),
-      ...Object.fromEntries(Object.entries(own).map(([id, set]) => [id, { ...set, own: true }])),
-    };
-  }
-
-  /** The saved sets on a bar in this tab, each with the scope its chip is on. Will, TODO 605 */
-  #added = new Map<string, string>();
-
-  /** Where a set's chip goes: the one scope it asks anything of, else the bar that asked, else the View. */
-  #homeOf(id: string, from: string | null): string {
-    const opened = this.#opened;
-    const named = Object.entries(this.#library()[id]?.query.scopes ?? {})
-      .filter(([, scope]) => Object.keys((scope as ViewScope).where ?? {}).length).map(([scope]) => scope);
-    return named.length === 1 && opened && named[0]! in opened.query.applied.scopes ? named[0]! : from ?? VIEW;
-  }
-
-  /** A set goes on a bar: a preset of its scope, off. */
-  #add(id: string, scope: string): void {
-    this.#added.set(id, scope);
-    this.#layPresets([scope]);
-    this.#keepAdded();
-  }
-
-  /** Every set comes off its bar, with what it held: the filters are another View's now. */
-  #clearAdded(): void {
-    const opened = this.#opened;
-    if (!opened || !this.#added.size) return;
-    const added = [...this.#added];
-    for (const [id, scope] of added) opened.query.ask({ scope, preset: SAVED_PRESET + id, on: false, commit: true });
-    this.#added.clear();
-    this.#layPresets(added.map(([, scope]) => scope));
-    this.#keepAdded();
-  }
-
-  /** Remembered in this tab, and every saving control told. */
-  #keepAdded(): void {
-    this.#keep({ added: Object.fromEntries(this.#added) });
-    this.#saySaved();
+    const filter = this.#ownFilter(id);
+    if (!filter) return false;
+    const shelf = this.#host.keeper().entities;
+    // Off first, where it may go: what it held goes with it.
+    const preset = entityKind(filter);
+    const at = this.#filterPresets.find((f) => f.preset.id === preset)?.scope;
+    if (!shelf.whyKept(id) && at && this.#opened?.query.presetOn(at, preset)) {
+      this.#flush?.();
+      this.#opened.query.ask({ scope: at, preset, on: false, commit: true });
+    }
+    return shelf.remove(id);
   }
 
   /** The open page's state, as its keeper holds it now. */
@@ -419,63 +322,18 @@ export class ProviderPage {
     return this.#state().views ?? {};
   }
 
-  /** The reader's own saved sets of the open page. */
-  #filters(): Record<string, SavedFilter> {
-    return this.#state().filters ?? {};
-  }
-
-  /** Each of these scopes' presets: the app's own, its Filters, then the sets on its bar: one door,
-   *  `presetReadings` over the plain form. Will, TODOs 605, 776 · TRAP T-a-filter-is-a-preset-of-its-store */
+  /** Each of these scopes' presets: the app's own, then its Filters: one door, `presetReadings` over the plain form.
+   *  Will, TODO 776 · TRAP T-a-filter-is-a-preset-of-its-store */
   #layPresets(scopes: Iterable<string>): void {
     const opened = this.#opened;
     if (!opened) return;
-    const library = this.#library();
     const offered = this.#offered();
     for (const scope of new Set(scopes)) {
-      const app = opened.query.presets(scope).filter((preset) => !preset.id.startsWith(SAVED_PRESET) && entityRefOf(preset.id).type !== FILTER);
+      const app = opened.query.presets(scope).filter((preset) => entityRefOf(preset.id).type !== FILTER);
       const filters = offered.filter((f) => f.scope === scope)
         .map(({ preset }) => ({ id: preset.id, label: preset.label, readings: presetReadings(opened.source, preset.where) }));
-      const mine = [...this.#added].filter(([, at]) => at === scope).flatMap(([id]) => {
-        const set = library[id];
-        return set ? [{ id: SAVED_PRESET + id, label: set.label, readings: presetReadings(opened.source, conditionsOf(set)) }] : [];
-      });
-      opened.source.declarePresets(scope, [...app, ...filters, ...mine]);
+      opened.source.declarePresets(scope, [...app, ...filters]);
     }
-  }
-
-  /** What the saving controls were last told, so a frame with no change tells nothing. */
-  #sentSets = '';
-
-  /** Each saving control is told the page's sets, and the one taken. TODO 105 */
-  #saySaved(): void {
-    if (!this.#opened) return;
-    const sets = this.#sets();
-    const sent = JSON.stringify(sets);
-    if (sent === this.#sentSets) return;
-    this.#sentSets = sent;
-    this.#tellSets([...this.#host.bars(), ...this.#host.panels()], sets);
-  }
-
-  /** The page's sets, as a saving control is told them. */
-  #sets(): SavedSet[] {
-    return this.savedFilterSets
-      .map(({ id, label, added, own }) => ({ id, label, ...(added ? { added } : {}), ...(own ? { own } : {}) }));
-  }
-
-  /** These controls are told the sets — off, each local bar its own scope's
-   *  alone, and the View's bar and the panel none. TODO 485 */
-  #tellSets(els: readonly Element[], sets: SavedSet[]): void {
-    const any = this.#host.saveAnyScope();
-    for (const el of els as Array<Element & { savedSets: SavedSet[] }>) {
-      const local = any ? null : this.#localOf(el);
-      el.savedSets = any ? sets : local ? sets.filter((set) => this.#namesOnly(set.id, local)) : [];
-    }
-  }
-
-  /** The app changed where filters are saved: every control told again. */
-  savesChanged(): void {
-    this.#sentSets = '';
-    this.#saySaved();
   }
 
   /** The control that last asked to save: its local scope, or null for the View's
@@ -487,12 +345,6 @@ export class ProviderPage {
     if (!this.#host.bars().includes(el as Bar)) return null;
     const scope = this.#host.scopeOf(el);
     return scope && scope !== VIEW ? scope : null;
-  }
-
-  /** Does a set name this scope and no other? */
-  #namesOnly(id: string, scope: string): boolean {
-    const named = Object.keys(this.#library()[id]?.query.scopes ?? {});
-    return named.length === 1 && named[0] === scope;
   }
 
   /** The bar over one scope. */
@@ -521,7 +373,6 @@ export class ProviderPage {
     if (view?.query) await opened.query.setQuery(view.query, { holds: 'keep', by: 'provider' });
     // The View's own filters are on: nothing of the reader's is left to keep.
     this.#forget([this.#view]);
-    this.#clearAdded();
     // …and they are the App Context's now, and this page's own. TODO 453
     if (this.#sharing) {
       this.#ownView = structuredClone(opened.query.applied.scopes[VIEW] ?? emptyScope());
@@ -602,7 +453,7 @@ export class ProviderPage {
   /** Each bar's Add list — or only these bars': a late one joining tells no
    *  other again (TRAP T-the-local-context-waits-for-the-view) — what its scope may still add, by the chips it
    *  HAS, so a restore can draw a held field's chip, each noting where it
-   *  lives. And the page's saved sets. TRAP T-saved-filters-are-every-scope */
+   *  lives. */
   #offer(only?: readonly Bar[]): void {
     const opened = this.#opened;
     if (!opened) return;
@@ -611,9 +462,6 @@ export class ProviderPage {
       if (!scope) continue;
       bar.available?.(opened.source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })));
     }
-    // A late bar is told the sets the others already have.
-    if (only) this.#tellSets(only, this.#sets());
-    else this.#saySaved();
   }
 
   /** The View on screen. */
@@ -856,8 +704,6 @@ export class ProviderPage {
       before: () => this.#flush?.(),
       left: (id) => this.#leftOf(id),
       after: ({ id, rendered }) => {
-        // Another View: its filters are its own, and its bars hold none of these.
-        if (id !== this.#view) this.#clearAdded();
         this.#view = id;
         this.#relayFilters();
         this.#settle?.();
@@ -870,7 +716,6 @@ export class ProviderPage {
   takeView(id: string): void {
     if (id === this.#view) return;
     const was = this.#view;
-    this.#clearAdded();
     this.#view = id;
     this.#relayFilters();
     this.#showView(was, id);

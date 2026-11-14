@@ -225,7 +225,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-rest-update-is-patch-not-put](traps/data-layer.md#t-rest-update-is-patch-not-put) — stores
 - [T-result-is-the-hosts-half](traps/data-layer.md#t-result-is-the-hosts-half) — data-source, source-reads
 - [T-ring-segment-needs-two-radius-clamps](traps/data-layer.md#t-ring-segment-needs-two-radius-clamps) — format-tick
-- [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — page-definition, query
+- [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — query
 - [T-schema-guard-belongs-at-the-store](traps/data-layer.md#t-schema-guard-belongs-at-the-store) — base-store, stores
 - [T-schema-sample-cost](traps/data-layer.md#t-schema-sample-cost) — base-store
 - [T-select-all-is-the-visible-rows](traps/data-layer.md#t-select-all-is-the-visible-rows) — data-source
@@ -319,7 +319,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — persist-view
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (99)
+## The join and the app layer (98)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](traps/join-and-app.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -381,7 +381,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-apply-and-discard-wait-for-a-change](traps/data-layer.md#t-apply-and-discard-wait-for-a-change) — bind-source, provider
 - [T-bind-locks-what-it-owns](traps/join-and-app.md#t-bind-locks-what-it-owns) — bind-source
 - [T-configuration-is-not-data](traps/data-layer.md#t-configuration-is-not-data) — provider
-- [T-derived-id-makes-resave-an-update](traps/storage.md#t-derived-id-makes-resave-an-update) — provider
 - [T-every-close-reports-or-the-toolbars-stay-hidden](traps/join-and-app.md#t-every-close-reports-or-the-toolbars-stay-hidden) — provider
 - [T-group-and-sort-are-component-scope](traps/data-layer.md#t-group-and-sort-are-component-scope) — bind-source
 - [T-grouped-paging-belongs-to-the-view](traps/data-layer.md#t-grouped-paging-belongs-to-the-view) — bind-source

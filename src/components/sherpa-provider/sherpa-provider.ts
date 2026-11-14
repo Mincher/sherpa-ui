@@ -25,7 +25,7 @@ import type { Row, Store } from '../../core/data/store.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { PageKeeper, type PageState } from '../../core/browser/page-state.js';
 import { Updates } from '../../core/data/updates.js';
-import { checkPage, openSource, savedFiltersOf, storeOf, type PageDefinition, type SourceDefinition } from '../../core/data/page-definition.js';
+import { checkPage, openSource, storeOf, type PageDefinition, type SourceDefinition } from '../../core/data/page-definition.js';
 import { QueryContext } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
 import { FILTER } from '../../core/data/entity-types.js';
@@ -270,7 +270,6 @@ export class SherpaProvider extends SherpaElement {
           if (mode !== this.#modes.mode) this.#modes.want(mode);
           break;
         }
-        case 'saveAnyScope': this.#pages.savesChanged(); break;
         case 'highlightOnHover': this.#legends.hoverable(this.#on(key)); break;
         case 'legendChips': this.#legends.lay(); break;
         case 'highlightAcross': this.#highlight.light(); break;
@@ -346,8 +345,8 @@ export class SherpaProvider extends SherpaElement {
 
   /**
    * Where every page's state is kept: ONE keeper, its tiers the app's — the
-   * View on screen, its Query, what the reader left on each View, and the
-   * reader's own Views and saved filters. Set it before a page opens.
+   * View on screen, its Query, what the reader left on each View, the reader's
+   * own Views, and the entity shelf, where their Filters are. Set it before a page opens.
    * TRAP T-one-page-one-document
    */
   get keeper(): PageKeeper {
@@ -498,7 +497,7 @@ export class SherpaProvider extends SherpaElement {
       // The page as DEFINED, before a kept Query: what Reset to view defaults starts from.
       this.#pages.begin({
         id: key, store: named, source, query: source.query, library, initial: source.query.applied,
-        savedFilters: savedFiltersOf(definition), filterPresets: filters, readFilterPresets: filterPresets,
+        filterPresets: filters, readFilterPresets: filterPresets,
       });
       this.#pages.sharing = this.#on('appContext');
       // A View this page does not have is the first.
@@ -605,44 +604,26 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * SAVE FILTERS — every scope's filters under a name, kept with the page beside
-   * its Views. A set of the same name is saved over, so a host asks first; a
-   * page's own name gets a copy's. With none, over the reader's set last taken
-   * ("Save <name>"); none answers undefined. The set's id. Will, TODO 105, 366.
-   * Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked
-   * to save — and nothing from the View's bar or the panel. TODO 485
+   * SAVE FILTERS — the filters on screen under a name, as Filters of the reader's on the entity shelf: one per scope that
+   * holds an answer, "<name>", or "<name> · <scope's label>" for each of several. Each is a preset of the page's store, so
+   * its chip joins its bar, off. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and
+   * nothing from the View's bar or the panel (TODO 485). The ids kept; none, nothing was saved. Will, plan 960 U4.4c
    * TRAP T-saved-filters-are-every-scope
    */
-  saveFilters(label: string, scope?: string): string | undefined {
+  saveFilters(label: string, scope?: string): Promise<string[]> {
     return this.#pages.saveFilters(label, scope);
   }
 
-  /** ADD a saved set to a bar: a preset of the reader's, on. `from`, the local scope
-   *  of the bar it goes on where the set names several. Will, TODO 605 · TRAP T-saved-filters-are-every-scope */
-  applyFilters(id: string, from?: string): boolean {
-    return this.#pages.applyFilters(id, from ?? null);
-  }
-
-  /** TAKE a saved set off its bar: its chip goes, and what it held. */
-  dismissFilters(id: string): boolean {
-    return this.#pages.dismissFilters(id);
-  }
-
-  /** DELETE a reader's saved set, never a page's own: its chip goes, and what it held. */
-  deleteFilters(id: string): boolean {
-    return this.#pages.deleteFilters(id);
-  }
-
-  /** RENAME a reader's saved set — never a page's own. Its id follows its name,
-   *  and a name another set has gains a copy's. Its new id. Will, TODO 427 */
-  renameFilters(id: string, label: string): string | undefined {
+  /** RENAME a reader's own Filter, and publish it: its id stays. The id; none, it is not the reader's own or the name
+   *  is empty. Plan 960 U4.4c */
+  renameFilters(id: string, label: string): Promise<string | undefined> {
     return this.#pages.renameFilters(id, label);
   }
 
-  /** The page's saved sets — its own, then the reader's (`own`) — and those on a bar
-   *  (`added`): what a host asks before it saves over a name. */
-  get savedFilterSets(): { id: string; label: string; added: boolean; own: boolean }[] {
-    return this.#pages.savedFilterSets;
+  /** DELETE a reader's own Filter: off on its bar, then off the shelf. Refused while another entity uses it: the keeper's
+   *  `entities.whyKept(id)` says why. Did it go? Plan 960 U4.4c */
+  deleteFilters(id: string): boolean {
+    return this.#pages.deleteFilters(id);
   }
 
   /** Is the View on screen the reader's own — saved, so it can be saved over or deleted? */
@@ -659,7 +640,7 @@ export class SherpaProvider extends SherpaElement {
     return this.#pages.resetView();
   }
 
-  /** The open page: its Views, saved sets, what each View was left with, its kept state and Reset. */
+  /** The open page: its Views, its Filters, what each View was left with, its kept state and Reset. */
   readonly #pages = new ProviderPage({
     el: this,
     bars: () => this.#bars() as Bar[],

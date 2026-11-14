@@ -557,10 +557,6 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Preset', icon: 'star', description: 'Apply a filter the app named', output: 'boolean',
     rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Presets',
   },
-  saved: {
-    heading: 'Saved filter', icon: 'floppy-disk', description: 'Apply a filter the reader saved', output: 'boolean',
-    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'SavedFilter', graphs: ['query'], category: 'Saved filters',
-  },
   // ONE node for how rows are organised (Will, plan 960 U4.2): sorting, grouping, search, and the axes a chart reads —
   // its Primary (X), its Secondary (Y) and its Segments' parts. An empty row does nothing.
   organise: {
@@ -770,11 +766,11 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
+export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Status'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
  *  its Custom Nodes, its page's Filters (TODO 776). */
-const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status'];
+const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Status'];
 
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {

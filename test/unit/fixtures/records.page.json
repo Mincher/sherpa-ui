@@ -34,11 +34,6 @@
       }
     }
   },
-  "savedFilters": {
-    "has-tickets": { "label": "Has open tickets", "query": { "v": 1, "scopes": { "data": { "where": { "openTickets": { "gt": 0 } } } } } },
-    "at-risk": { "label": "At risk", "query": { "v": 1, "scopes": { "data": { "where": { "health": { "in": ["At risk"] } } } } } },
-    "unassigned": { "label": "Unassigned", "query": { "v": 1, "scopes": { "data": { "where": { "owner": { "eq": "Unassigned" } } } } } }
-  },
   "ui": {
     "grid": {
       "key": "email",

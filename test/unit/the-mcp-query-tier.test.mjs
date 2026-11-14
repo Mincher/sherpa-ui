@@ -196,7 +196,7 @@ test('definition_graph draws a page\'s Query as queryGraph draws it over the ope
   const graph = queryGraph(source.query.draft, records, facts);
   assert.deepEqual({ nodes: json.nodes, connections: json.connections }, JSON.parse(JSON.stringify(graph)));
   const ids = json.nodes.map((n) => n.id);
-  for (const id of ['source', 'view-filters', 'presentation-data', 'view', 'when-data-status', 'preset-data-high-risk', 'saved-at-risk']) assert.ok(ids.includes(id), id);
+  for (const id of ['source', 'view-filters', 'presentation-data', 'view', 'when-data-status', 'preset-data-high-risk']) assert.ok(ids.includes(id), id);
   // The graph the editor edits is the lens's, and its faults are the Query graph's own.
   assert.deepEqual(json.graph, JSON.parse(JSON.stringify(lensOf('query').toGraph(records, { ...facts, query: source.query }).workflow)));
   assert.deepEqual(json.graph.nodes.map((n) => n.id), ids);
