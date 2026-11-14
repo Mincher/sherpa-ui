@@ -48,6 +48,7 @@
  * - filterKey — A filter as one string, its AND and OR children in one order.
  * - sameFilter — Two filters, or two filters by id, the same in any clause order.
  * - appliesIn — Does a scope's reading of a field apply?
+ * - ownBelow — Does a scope below the View answer a field the View holds fixed again, under the View's?
  * - scopeClauses — One scope's clauses: each reading that applies, each saved filter on.
  * - presetClause — A preset's own conditions as one clause — its chip's count.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
@@ -302,6 +303,8 @@ export interface CompileFacts {
   /** The picked values the filters BEFORE them rule out, as value keys: they
    *  leave the filter, and then the reading (`letGo`). TRAP T-a-ruled-out-value-is-greyed */
   drop?: (scope: string, field: string) => readonly string[] | undefined;
+  /** The fields the View holds FIXED: a scope below that holds one too answers it again, under the View's. TODO 554 */
+  viewFixed?: readonly string[];
   /** Is a scope this source's — no other source shows rows in it? Absent, every
    *  one is. The View's answers reach every source. TRAP T-a-source-compiles-only-what-it-has */
   mine?: (scope: string) => boolean;
@@ -478,10 +481,16 @@ export function sameFilter(a: Filter | Record<string, Filter> | undefined, b: Fi
 }
 
 /** Does a scope's reading of a field apply? One field, one scope: in a component
- *  scope the View's answer wins, unless the scope is a component's own (`fixed`).
- *  TRAP T-a-view-held-heading-shows-and-refuses */
-export function appliesIn(viewHolds: ReadonlySet<string>, scope: string, field: string, fixed?: ReadonlySet<string>): boolean {
-  return scope === VIEW || !viewHolds.has(field) || !!fixed?.has(scope);
+ *  scope the View's answer wins, unless the scope is a component's own (`fixed`),
+ *  or answers a fixed View field again (`own`). TRAP T-a-view-held-heading-shows-and-refuses */
+export function appliesIn(viewHolds: ReadonlySet<string>, scope: string, field: string, fixed?: ReadonlySet<string>, own = false): boolean {
+  return scope === VIEW || !viewHolds.has(field) || !!fixed?.has(scope) || own;
+}
+
+/** Does a scope below the View answer a field the View holds FIXED again, ANDed under the View's? It holds the field
+ *  too, and narrows no one component. Will, TODO 554 · TRAP T-a-scope-below-narrows-within-a-fixed-field */
+export function ownBelow(id: string, scope: ScopeQuery | undefined, field: string, viewFixed: readonly string[] = []): boolean {
+  return id !== VIEW && viewFixed.includes(field) && !!scope?.holds.includes(field) && !scope.narrows?.length;
 }
 
 /** One scope's clauses: each reading that applies and is not suspended, while
@@ -489,7 +498,8 @@ export function appliesIn(viewHolds: ReadonlySet<string>, scope: string, field: 
 export function scopeClauses(id: string, scope: ScopeQuery, viewHolds: ReadonlySet<string>, facts: CompileFacts = {}): Filter[] {
   const clauses: Filter[] = [];
   for (const [field, reading] of Object.entries(scope.readings)) {
-    if (!appliesIn(viewHolds, id, field, facts.fixed) || reading.suspended || (facts.has && !facts.has(field))) continue;
+    const own = ownBelow(id, scope, field, facts.viewFixed);
+    if (!appliesIn(viewHolds, id, field, facts.fixed, own) || reading.suspended || (facts.has && !facts.has(field))) continue;
     const clause = facts.fetched?.(field, reading)
       ?? readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
     if (clause) clauses.push(clause);
@@ -515,7 +525,7 @@ export function presetClause(readings: Readonly<Record<string, FieldReading>>, f
  *
  * - Every reading applies, held or not — except that a field the VIEW holds
  *   is answered there alone: a component scope's reading of it applies nothing,
- *   unless the scope is a component's own (`fixed`).
+ *   unless the scope is a component's own (`fixed`), or holds a field the View fixes.
  * - A SUSPENDED reading keeps its answer and applies none of it.
  * - A scope with `narrows` reaches only those components.
  *

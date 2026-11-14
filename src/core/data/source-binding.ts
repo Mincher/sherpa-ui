@@ -342,9 +342,9 @@ export class SourceBinding {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    * TRAP T-an-inactive-chip-says-where-its-filter-went
    */
-  supersede(held: Readonly<Record<string, FieldReading>>): void {
+  supersede(held: (scope: string) => Readonly<Record<string, FieldReading>>): void {
     for (const { control: el, scope } of this.#bound.values()) {
-      if (typeof scope === 'string' && scope !== VIEW) el.supersede?.(held, this.#host.scopeLabel(VIEW));
+      if (typeof scope === 'string' && scope !== VIEW) el.supersede?.(held(scope), this.#host.scopeLabel(VIEW));
     }
   }
 

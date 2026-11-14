@@ -9,7 +9,7 @@
  */
 import type { FieldReading, FilterState } from './filter-state.js';
 import { VIEW, type Query } from './query.js';
-import { holdsField, homeOf, readingOf } from './query-edits.js';
+import { holdsField, homeOf, ownIn, readingOf } from './query-edits.js';
 
 /** What one field is now, as seen from one scope. */
 export interface FieldStatus {
@@ -40,16 +40,20 @@ export interface StatusFacts {
   pending: (field: string) => boolean;
   failed: (field: string) => boolean;
   label: (scope: string) => string;
+  /** The fields the View holds fixed, which a scope below may answer again. TODO 554 */
+  viewFixed?: readonly string[];
 }
 
 /** One field's status, as seen from one scope. */
 export function fieldStatus(facts: StatusFacts, field: string, scope: string): FieldStatus {
-  const reading = readingOf(facts.draft, field) ?? null;
-  const applied = readingOf(facts.applied, field) ?? null;
-  const above = scope !== VIEW && holdsField(facts.draft, VIEW, field);
+  // A scope's own answer of a fixed View field is its, here. TODO 554
+  const own = ownIn(facts.draft, scope, field, facts.viewFixed);
+  const reading = (own ? facts.draft.scopes[scope]?.readings[field] : readingOf(facts.draft, field)) ?? null;
+  const applied = (own ? facts.applied.scopes[scope]?.readings[field] : readingOf(facts.applied, field)) ?? null;
+  const above = !own && scope !== VIEW && holdsField(facts.draft, VIEW, field);
   return {
     field,
-    home: homeOf(facts.draft, field),
+    home: own ? scope : homeOf(facts.draft, field),
     above: above ? { scope: VIEW, label: facts.label(VIEW) } : null,
     reading,
     applied,

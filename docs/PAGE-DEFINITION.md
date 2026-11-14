@@ -84,7 +84,9 @@ library `app.v1`, `views.v1` and `workflow.v3` use too.
   refuses the same, and says so: no Remove, Move or Edit-list row, no toggle;
   the Query will not let one go or switch one off, and a restore puts them back.
   Its values still change, a clear too (Will, TODO 703;
-  `T-a-fixed-field-stays-held`).
+  `T-a-fixed-field-stays-held`). A field the View fixes, a scope below may add
+  again as its own chip, narrowing within the View's answer (Will, TODO 554;
+  `T-a-scope-below-narrows-within-a-fixed-field`).
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
   out, a scope a page of rows is drawn in does, and the View does not
   (`T-group-and-sort-are-component-scope`).

@@ -70,7 +70,7 @@ import {
 import { QueryDeclarations, type DeclaredPreset, type QueryPart } from './query-declarations.js';
 import { QueryMembers, type QueryChange, type QueryHandle, type QueryLive, type QueryMember } from './query-members.js';
 import {
-  answerIn, commitScope, definitionOf, editCopies, holderOf, holdsField, keepOff, presetIn, rehome, writeScope,
+  answerIn, commitScope, definitionOf, editCopies, holderOf, holdsField, keepOff, ownIn, presetIn, rehome, writeScope,
   type Copies, type CopyFacts, type Edited, type Solo,
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
@@ -333,7 +333,14 @@ export class QueryContext extends EventTarget {
   /** Has this field been changed and not yet applied? Never, where nothing waits. */
   pending(field: string): boolean {
     if (!this.waiting()) return false;
-    return !sameAnswer(answerIn(this.#live.applied, field), answerIn(this.#live.draft, field));
+    const { applied, draft } = this.#live;
+    // A fixed View field: the View's answer, and each scope's own below it. TODO 554
+    const fixed = this.#decl.fixed(VIEW);
+    if (fixed.includes(field)) {
+      const at = [VIEW, ...Object.keys(draft.scopes).filter((id) => ownIn(draft, id, field, fixed))];
+      return at.some((id) => !sameAnswer(applied.scopes[id]?.readings[field], draft.scopes[id]?.readings[field]));
+    }
+    return !sameAnswer(answerIn(applied, field), answerIn(draft, field));
   }
 
   /** Has anything in this scope — or in any scope — been changed and not applied?
@@ -549,11 +556,12 @@ export class QueryContext extends EventTarget {
       starts: this.#decl.starts,
       readingsOf: (where) => this.#readingsOf(where),
       carriesOver: (f) => this.#members.knows(f)?.carriesOver(f) ?? false,
+      viewFixed: this.#decl.fixed(VIEW),
     });
     lay?.(next);
     this.#decl.keepFixed(next);
     this.#decl.fillOpens(next);
-    rehome(next);
+    rehome(next, this.#decl.fixed(VIEW));
     keepOff(next, (scope) => this.#decl.alwaysOn(scope));
     frozen(next);
     return next;

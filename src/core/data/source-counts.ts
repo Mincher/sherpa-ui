@@ -15,7 +15,7 @@
 import { absoluteDates, andFilter, cellValues, readField, valueKey, type Filter, type Store } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import {
-  appliesIn, heldInView, narrowsOne, presetClause, scopeClauses, VIEW, withoutDropped,
+  appliesIn, heldInView, narrowsOne, ownBelow, presetClause, scopeClauses, VIEW, withoutDropped,
   type CompileFacts, type Query,
 } from './query.js';
 import { emptyWalk, holdsKey, type Walk, type WalkPlan, type WalkScope, type WalkStep, type WalkTap, type WalkTier } from './walk.js';
@@ -53,10 +53,11 @@ export interface OrderEntry {
  * set gathered where its first held field stands, in the set's order; then a
  * reading no chip holds. TRAP T-one-walk-counts-and-limits-in-order
  */
-export function answerOrder(applied: Query, sets: readonly FilterSet[], scope: string): OrderEntry[] {
+export function answerOrder(applied: Query, sets: readonly FilterSet[], scope: string, viewFixed: readonly string[] = []): OrderEntry[] {
   const q = applied.scopes[scope];
   if (!q) return [];
-  const above = scope === VIEW ? new Set<string>() : heldInView(applied);
+  // A fixed View field a scope below answers again is its own here. TODO 554
+  const above = new Set(scope === VIEW ? [] : [...heldInView(applied)].filter((f) => !ownBelow(scope, q, f, viewFixed)));
   const out: OrderEntry[] = [];
   const setOf = (f: string): FilterSet | undefined => sets.find((set) => set.fields.includes(f));
   const placed = new Set<string>();
@@ -97,6 +98,8 @@ export interface WalkFacts {
   components: ReadonlySet<string>;
   /** A component's own scopes (`data-where`). */
   fixed: ReadonlySet<string>;
+  /** The fields the View holds fixed, which a scope below may answer again. TODO 554 */
+  viewFixed?: readonly string[];
   /** Each chart part's scope: its legend field, and the component scope it is bound into. */
   narrowing: ReadonlyMap<string, { field: string; host?: string }>;
   /** Limit to matching filters. */
@@ -126,6 +129,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   // An unknown saved filter is compile's to report; here it applies nothing.
   const compiling: CompileFacts = {
     field: facts.field, components: facts.components, fixed: facts.fixed, ...(facts.has ? { has: facts.has } : {}),
+    ...(facts.viewFixed ? { viewFixed: facts.viewFixed } : {}),
   };
   const page: Filter[] = [];
   const others: string[] = [];
@@ -152,10 +156,10 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
         if (clause) steps.push({ id: `preset:${p.id}`, clause, on: false, counts: true });
       }
     }
-    for (const e of answerOrder(applied, facts.sets(scope), scope)) {
+    for (const e of answerOrder(applied, facts.sets(scope), scope, facts.viewFixed)) {
       const f = e.id;
       if (facts.has && !facts.has(f)) continue;
-      if (!appliesIn(viewHolds, scope, f, facts.fixed)) continue;
+      if (!appliesIn(viewHolds, scope, f, facts.fixed, ownBelow(scope, q, f, facts.viewFixed))) continue;
       const reading = q?.readings[f];
       const { suspended, ...answer } = reading ?? {};
       const fieldFacts = facts.field(f);
@@ -197,7 +201,9 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
     const sets = facts.sets(scope);
     const taps: WalkTap[] = [];
     for (const f of new Set([...facts.fields(scope), ...extra])) {
-      if (stepped.has(f) || !facts.isList(f) || (scope !== VIEW && viewHolds.has(f)) || (facts.has && !facts.has(f))) continue;
+      // A field the View fixes, a scope below may add: what the View leaves it is told, as any it may add. TODO 554
+      const above = scope !== VIEW && viewHolds.has(f) && !facts.viewFixed?.includes(f);
+      if (stepped.has(f) || !facts.isList(f) || above || (facts.has && !facts.has(f))) continue;
       // Where it would stand: after its set's last step here, else at the end.
       const set = sets.find((x) => x.fields.includes(f));
       const last = set ? steps.findLastIndex((s) => !!s.field && set.fields.includes(s.field)) : -1;

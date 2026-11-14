@@ -5426,9 +5426,10 @@ field one scope, and a superseded chip. It is a data-layer rule, so it belongs
 with the other data-layer rules rather than in a trap.
 
 What belongs HERE is why there is no module for it. Up is open and down is
-closed — below the View, what the View holds is not offered — and that is one
-skip list in the source's `addable()`; a component scope's answer is ANDed under
-the View's in the one Query.
+closed — below the View, what the View holds is not offered, but what it fixes
+(`T-a-scope-below-narrows-within-a-fixed-field`) — and that is one skip list in
+the source's `addable()`; a component scope's answer is ANDed under the View's
+in the one Query.
 
 Guessing an API before its caller costs more than waiting for it: a module
 written in advance once dropped a promoted field's op and typed text — "Starts
@@ -7553,6 +7554,42 @@ while a chip follows — the preset divider's rule, with a second selector.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-fixed-field-stays-held.test.mjs`
 - Site: `test/e2e/reforged-a-fixed-field-stays-held.spec.ts`
+
+### T-a-scope-below-narrows-within-a-fixed-field
+
+**A field the View holds FIXED can never move down, so a scope below may add it
+again, as its own chip** — Will, TODO 554: "A local scope may still add these
+fields and their filters, but its options come from what the View scope's filter
+on that field allows." The one exception to "a field lives in exactly one scope"
+(`docs/DATA-SOURCE-RULES.md` §6). A field the View holds and does not fix is as
+before: down is closed, and a reader moves it instead.
+
+**Both scopes hold it, and each keeps its own answer.** The View's reading stays
+the field's HOME (`homeOf`, `readingOf`); the card's sits in the card's scope
+beside it (`ownIn`). Every edit that writes by home learns to leave it there:
+`setReading` (else a View answer wipes the card's), `rehome` (else a hold moves
+the card's onto the View's), `homes` (else a move reads the card's as the field's
+home), and `definitionOf` (else a View that loads marks it superseded). A request
+asked IN the card's scope — an answer, a Switch, a Solo, a Reset, a Remove —
+writes the card's (`w.at(field, scope)`). `pending` reads both: else a remote
+card's change to Customer, under a View whose Customer did not move, has no Apply.
+
+**It ANDs under the View's** (`appliesIn`'s `own`), and the walk counts it as any
+of the card's fields: it offers what the View leaves (347), and a pick the View
+then rules out LEAVES the card's answer (512 A), so no card shows no rows with no
+chip that says why. The walk taps it before it is added, as any field a card may
+add. Its chip is never drawn held above: `describe` sets no `appliedAt`, and
+`syncHeld` tells each scope below the View's fields less those it answers again.
+
+**It is decided by the page's `fixed`, never kept in the Query**: no fixed field
+at the View, and every door is exactly as it was. A date answers a range, not
+picks: its card chip ANDs, and is not yet bounded to the View's range.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/source-view.ts`
+- Site: `test/unit/a-scope-below-narrows-within-a-fixed-field.test.mjs`
+- Site: `test/e2e/reforged-a-scope-below-narrows-within-a-fixed-field.spec.ts`
 
 ### T-a-range-is-counted-from-its-own-start
 

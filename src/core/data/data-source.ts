@@ -821,6 +821,7 @@ export class DataSource extends EventTarget {
       field: (f) => this.#catalogue.facts(f),
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
+      viewFixed: this.#context.fixed(VIEW),
       drop: (scope, field) => this.#walk.aside.get(scope)?.[field],
       mine: this.#mine,
       has: this.#has,
@@ -952,7 +953,8 @@ export class DataSource extends EventTarget {
         // A field just held needs its values. 345 phase 5
         this.readValues(this.#context.scope(change.scope));
         for (const field of change.moved) this.#view.draw(field);
-        if (change.scope === VIEW) this.#view.syncHeld();
+        // Below, a fixed View field held or let go is free there, or held above again. TODO 554
+        if (change.scope === VIEW || this.#context.fixed(VIEW).length) this.#view.syncHeld();
         if (!barred.has(change.scope)) this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
         return;
@@ -1116,6 +1118,7 @@ export class DataSource extends EventTarget {
       fields: (scope) => this.#context.fields(scope),
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
+      viewFixed: this.#context.fixed(VIEW),
       narrowing,
       now: this.#now(),
       fetched: this.#fetched,

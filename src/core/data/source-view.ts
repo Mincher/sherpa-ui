@@ -25,7 +25,7 @@
 import { DEFAULT_OP, filterFields, filterNeedles, valueKey, type Filter } from './store.js';
 import { modeOf, type FieldReading, type FilterState } from './filter-state.js';
 import { answerOf, emptyScope, offerAxis, VIEW, type Arrangement, type Query } from './query.js';
-import { cameFrom, homeOf, readingOf, viewHeldReadings } from './query-edits.js';
+import { cameFrom, homeOf, ownIn, readingOf, viewHeldReadings } from './query-edits.js';
 import { answerOrder } from './source-counts.js';
 import { fieldStatus, type FieldStatus } from './field-status.js';
 import type { SourceBinding } from './source-binding.js';
@@ -110,6 +110,7 @@ export class SourceView {
     // What its page fixes: no Remove, and always on, no off. Will, TODO 703
     const fixed = context.fixed(scope);
     const on = context.alwaysOn(scope);
+    const viewFixed = context.fixed(VIEW);
     const fields: HeldFilter[] = held.map((f) => {
       // Held above, its state is its own kept answer. D2 A
       const kept = q.superseded?.[f];
@@ -121,7 +122,8 @@ export class SourceView {
         ...(fixed.includes(f) ? { fixed: true } : {}), ...(on.includes(f) ? { alwaysOn: true } : {}),
         ...(this.#own.get(scope)?.has(f) ? { own: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
-        ...(above.includes(f) ? { appliedAt: context.scopeLabel(VIEW) } : {}),
+        // A fixed View field it answers again is its own here, under the View's. TODO 554
+        ...(above.includes(f) && !ownIn(draft, scope, f, viewFixed) ? { appliedAt: context.scopeLabel(VIEW) } : {}),
         ...(down ? { sendTo: {
           scope: down, label: this.#host.parts().get(down)?.label ?? context.scopeLabel(down), ...(down === from ? { origin: true } : {}),
         } } : {}),
@@ -267,12 +269,14 @@ export class SourceView {
    */
   addable(scope: string, taken: Iterable<string> = this.#host.context.scope(scope)): FieldFilter[] {
     const { context, catalogue } = this.#host;
-    // UP IS OPEN, DOWN IS CLOSED: below the View, what it holds is not offered.
-    // TRAP T-component-extends-view-never-alters-it
-    const skip = new Set([...taken, ...(scope === VIEW ? [] : context.scope(VIEW))]);
+    /* UP IS OPEN, DOWN IS CLOSED: below the View, what it holds is not offered — but a field it FIXES is, to answer
+       again under the View's: added, it stays the View's too, so it moves nothing. Will, TODO 554
+       TRAP T-component-extends-view-never-alters-it · TRAP T-a-scope-below-narrows-within-a-fixed-field */
+    const again = scope === VIEW ? [] : context.fixed(VIEW);
+    const skip = new Set([...taken, ...(scope === VIEW ? [] : context.scope(VIEW).filter((f) => !again.includes(f)))]);
     return context.fields(scope).filter((f) => !skip.has(f) && catalogue.has(f)).map((f) => {
       const at = context.scopeOf(f);
-      return at && at !== scope ? { ...this.filterDef(f), note: context.scopeLabel(at) } : this.filterDef(f);
+      return at && at !== scope && !again.includes(f) ? { ...this.filterDef(f), note: context.scopeLabel(at) } : this.filterDef(f);
     });
   }
 
@@ -287,8 +291,15 @@ export class SourceView {
    * One field's whole state — picked, unpicked, the condition — ready for a
    * chip, a column menu, a legend row or anything else that draws it.
    */
-  selection(field: string, label?: string): FilterState {
-    return this.#host.catalogue.stateFor(field, readingOf(this.#host.draft(), field) ?? {}, label);
+  selection(field: string, label?: string, scope?: string): FilterState {
+    return this.#host.catalogue.stateFor(field, this.#readingAt(field, scope) ?? {}, label);
+  }
+
+  /** A field's reading as a scope answers it: a scope below's own answer of a fixed View field, or none; else its home's. */
+  #readingAt(field: string, scope?: string): FieldReading | undefined {
+    const draft = this.#host.draft();
+    const again = !!scope && scope !== VIEW && this.#host.context.fixed(VIEW).includes(field);
+    return again ? draft.scopes[scope]?.readings[field] : readingOf(draft, field);
   }
 
   /** What a field is now, seen from a scope: the one answer for every control. TRAP T-one-field-one-status */
@@ -302,6 +313,7 @@ export class SourceView {
       pending: (f) => context.pending(f),
       failed: (f) => failed.has(f),
       label: (s) => context.scopeLabel(s),
+      viewFixed: context.fixed(VIEW),
     }, field, scope);
   }
 
@@ -333,19 +345,20 @@ export class SourceView {
    * TRAP T-a-suspended-answer-is-drawn-as-off
    */
   draw(field: string, home: string = homeOf(this.#host.draft(), field)): void {
-    const draft = this.#host.draft();
     // A View answer shows in every grid's heading too.
     if (home === VIEW) this.syncHeld();
-    const state = this.selection(field);
+    // Told a scope below, a fixed View field is drawn that scope's own answer, or none. TODO 554
+    const at = this.#readingAt(field, home);
+    const state = this.selection(field, undefined, home);
     const off = state.fieldState === 'suspended';
     // Suspended, its values are not "picked" in the state: they are the reading's own.
-    const picked = off ? (readingOf(draft, field)?.picked ?? []).map(valueKey)
+    const picked = off ? (at?.picked ?? []).map(valueKey)
       : state.values.filter((v) => v.state === 'picked').map((v) => v.value);
     /* The WHOLE answer — its operator and its typed text too: "is not churned"
        drawn as "churned" is the opposite answer, and "contains an" drawn
        without its text is none. */
     // Its tree as the STATE reads it — an empty condition is none.
-    const { tree: _raw, ...held } = answerOf(readingOf(draft, field) ?? {});
+    const { tree: _raw, ...held } = answerOf(at ?? {});
     const reading = { ...held, picked, ...(state.tree ? { tree: state.tree } : {}) };
     this.#host.binding.drawReading(field, reading, home);
     // A preset's field no scope holds has no home once it goes: where it sat hears that. TODO 611
@@ -360,7 +373,14 @@ export class SourceView {
   /** Each control below the View is told what the View holds: from the draft, as a
    *  raise shows at once, each with its answer in force. TRAP T-one-field-one-status */
   syncHeld(): void {
-    this.#host.binding.supersede(viewHeldReadings(this.#host.draft(), this.#host.applied()));
+    const draft = this.#host.draft();
+    const held = viewHeldReadings(draft, this.#host.applied());
+    const viewFixed = this.#host.context.fixed(VIEW);
+    // A fixed View field a scope below answers again is free there. TODO 554
+    this.#host.binding.supersede((scope) => {
+      const own = Object.keys(held).filter((f) => ownIn(draft, scope, f, viewFixed));
+      return own.length ? Object.fromEntries(Object.entries(held).filter(([f]) => !own.includes(f))) : held;
+    });
   }
 
   /** Tell each bound control over a scope its PENDING fields, whether its scope

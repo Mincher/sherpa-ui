@@ -12,6 +12,7 @@
  * - homeOf — Where a field's reading lives: its holder, else a preset's scope, else the View.
  * - presetHeld — Is a preset ON in this copy: its rows held on every field it names, in force?
  * - readingOf — One field's reading, or undefined.
+ * - ownIn — Does this scope hold a field the View holds fixed too, and answer it again, under the View's?
  * - setReading — Write one field's reading at its home, or remove it.
  * - rehome — Move each reading to its home after a hold moved fields.
  * - homes — Which scope each answered field's reading sits in.
@@ -45,8 +46,8 @@
  * - commitScope — An Apply of one scope, as `wait(scope, false)` sends what waits.
  */
 import {
-  ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyQuery, copyReading, eachScope, emptyScope, readingAnswered, sameReading,
-  stripArrangement, VIEW, type Presentation, type Query, type QueryDefaults, type QueryRequest, type ScopeQuery, type ViewScope,
+  ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyQuery, copyReading, eachScope, emptyScope, ownBelow, readingAnswered,
+  sameReading, stripArrangement, VIEW, type Presentation, type Query, type QueryDefaults, type QueryRequest, type ScopeQuery, type ViewScope,
 } from './query.js';
 import { valueKey, type SortSpec } from './store.js';
 import { answerTree, modeOf, withPreset, type FieldReading } from './filter-state.js';
@@ -151,21 +152,27 @@ export function readingOf(query: Query, field: string): FieldReading | undefined
   return query.scopes[homeOf(query, field)]?.readings[field];
 }
 
-/** Write one field's reading at its home, or remove it. */
-export function setReading(query: Query, field: string, reading: FieldReading | undefined): void {
+/** Does this scope hold a field the View holds FIXED too, and answer it again, ANDed under the View's? Will, TODO 554
+ *  TRAP T-a-scope-below-narrows-within-a-fixed-field */
+export function ownIn(query: Query, scope: string, field: string, viewFixed: readonly string[] = []): boolean {
+  return ownBelow(scope, query.scopes[scope], field, viewFixed) && holdsField(query, VIEW, field);
+}
+
+/** Write one field's reading at its home, or remove it — leaving each scope's own answer of a fixed View field. */
+export function setReading(query: Query, field: string, reading: FieldReading | undefined, viewFixed: readonly string[] = []): void {
   const home = homeOf(query, field);
-  for (const [, scope] of eachScope(query)) Reflect.deleteProperty(scope.readings, field);
+  for (const [id, scope] of eachScope(query)) if (!ownIn(query, id, field, viewFixed)) Reflect.deleteProperty(scope.readings, field);
   if (reading) scopeEntry(query, home).readings[field] = reading;
   prune(query);
 }
 
 /** A hold MOVED fields, so move each reading to its new home. Every reading
- *  still applies once, so the filter does not change. */
-export function rehome(query: Query): void {
+ *  still applies once, so the filter does not change. A scope's own answer of a fixed View field stays. */
+export function rehome(query: Query, viewFixed: readonly string[] = []): void {
   for (const [id, scope] of eachScope(query)) {
     for (const [field, reading] of Object.entries(scope.readings)) {
       const home = homeOf(query, field);
-      if (home === id) continue;
+      if (home === id || ownIn(query, id, field, viewFixed)) continue;
       // A preset's rows on a field no scope holds stay in its scope: no chip. Will, TODO 590
       if (reading.byPreset && !holderOf(query, field)) continue;
       Reflect.deleteProperty(scope.readings, field);
@@ -175,11 +182,11 @@ export function rehome(query: Query): void {
   prune(query);
 }
 
-/** Which scope each answered field's reading sits in. */
-export function homes(query: Query): Map<string, string> {
+/** Which scope each answered field's reading sits in: its home's, not a scope's own answer of a fixed View field. */
+export function homes(query: Query, viewFixed: readonly string[] = []): Map<string, string> {
   const out = new Map<string, string>();
   for (const [id, scope] of eachScope(query)) {
-    for (const field of Object.keys(scope.readings)) out.set(field, id);
+    for (const field of Object.keys(scope.readings)) if (!ownIn(query, id, field, viewFixed)) out.set(field, id);
   }
   return out;
 }
@@ -320,6 +327,8 @@ export interface DefinitionFacts {
   readingsOf: (where: Where) => Record<string, FieldReading>;
   /** Does this field keep its answer across Views? */
   carriesOver: (field: string) => boolean;
+  /** The fields the View holds fixed: a scope below that holds one answers it again, never superseded. TODO 554 */
+  viewFixed?: readonly string[];
 }
 
 /** The keys a scope keeps, beside its readings. */
@@ -413,7 +422,7 @@ export function definitionOf(
     const was = base.scopes[id];
     for (const field of scope.holds) {
       const kept = was?.superseded?.[field];
-      if (viewHolds.includes(field)) {
+      if (viewHolds.includes(field) && !facts.viewFixed?.includes(field)) {
         (scope.superseded ??= {})[field] = { ...(kept ?? was?.readings[field] ?? {}) };
       } else if (kept && Object.keys(kept).length && !scope.readings[field]) {
         scope.readings[field] = { ...kept };
@@ -442,6 +451,8 @@ export interface EditFacts {
   applied?: Query;
   /** The draft, whose holds an order places; absent, the copy edited. */
   draft?: Query;
+  /** The fields the View holds fixed, each a scope below may answer again. TODO 554 */
+  viewFixed?: readonly string[];
 }
 
 /** The edits `editQuery` makes: each writes one copy as plain data, and tells no one. */
@@ -483,7 +494,7 @@ export function editQuery(query: Query, given: PureEdit, facts: EditFacts = {}):
   }
   if ('move' in edit) {
     moveHold(out, edit.move, edit.from, scope ?? VIEW);
-    rehome(out);
+    rehome(out, facts.viewFixed);
     return out;
   }
   // Both copies follow the applied arrangement. TRAP T-group-and-sort-are-component-scope
@@ -686,6 +697,26 @@ class Work {
     for (const field of fields) copyField(this.draft, this.applied, field);
   }
 
+  /** The fields the View holds fixed. Will, TODO 703 */
+  get viewFixed(): readonly string[] {
+    return this.facts.fixed(VIEW);
+  }
+
+  /** Does this scope answer a fixed View field again, its own, under the View's? TODO 554 */
+  own(scope: string | undefined, field: string): boolean {
+    return !!scope && ownIn(this.draft, scope, field, this.viewFixed);
+  }
+
+  /** Where a scope's answer of a field lives: that scope, for its own; else the field's home. */
+  at(field: string, scope?: string): string {
+    return this.own(scope, field) ? scope! : homeOf(this.draft, field);
+  }
+
+  /** A scope's answer of a field in the draft: its own, else the one at the field's home. */
+  reading(field: string, scope?: string): FieldReading | undefined {
+    return this.draft.scopes[this.at(field, scope)]?.readings[field];
+  }
+
   /** May this scope hold this field? Up is open; down is closed. */
   canHold(scope: string, field: string): boolean {
     return scope === VIEW || (this.facts.offers.get(scope) ?? []).includes(field);
@@ -758,13 +789,21 @@ function raw(w: Work, field: string, picked: readonly unknown[], reading: FieldR
   return { ...answerOf(reading), picked: raws(picked), ...(reading.off ? { off: raws(reading.off) } : {}) };
 }
 
-/** Write a field's answer at its home, telling no one. */
-function put(w: Work, field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
+/** Write a field's answer at its home — or, a scope's own answer of a fixed View field, in that scope — telling no one. */
+function put(w: Work, field: string, picked: readonly unknown[], reading: FieldReading = {}, scope?: string): void {
+  if (w.own(scope, field)) {
+    // Its own: what presets hold of the field is the View's. TODO 554
+    const next = copyReading(raw(w, field, picked, reading));
+    const entry = scopeEntry(w.draft, scope!);
+    if (readingAnswered(next)) entry.readings[field] = next;
+    else Reflect.deleteProperty(entry.readings, field);
+    return;
+  }
   // Its OWN copy: a caller that edits its object after changes nothing here.
   const next: FieldReading = copyReading(keepPresets(w, field, raw(w, field, picked, reading)));
   /* CONDITIONS count. A field answered only by rows has no picked values and
      no typed text. TRAP T-many-conditions-are-one-reading */
-  setReading(w.draft, field, readingAnswered(next) ? next : undefined);
+  setReading(w.draft, field, readingAnswered(next) ? next : undefined, w.viewFixed);
 }
 
 /**
@@ -772,9 +811,9 @@ function put(w: Work, field: string, picked: readonly unknown[], reading: FieldR
  * field reads the same answer back; an empty list clears it. It is drawn at the
  * home it has as it is said. TRAP T-a-filter-applies-down-its-scope
  */
-function select(w: Work, field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
-  put(w, field, picked, reading);
-  w.say({ kind: 'select', field, at: homeOf(w.draft, field) });
+function select(w: Work, field: string, picked: readonly unknown[], reading: FieldReading = {}, scope?: string): void {
+  put(w, field, picked, reading, scope);
+  w.say({ kind: 'select', field, at: w.at(field, scope) });
 }
 
 /** A field's picks less those the filters before it rule out: going OFF, they go —
@@ -785,9 +824,9 @@ function standing(w: Work, scope: string, field: string, reading: FieldReading):
   return out ? picked.filter((v) => out(valueKey(v)) === null) : [...picked];
 }
 
-/** Is this field ALWAYS ON where it lives? Will, TODO 703 · TRAP T-a-fixed-field-stays-held */
-function alwaysOn(w: Work, field: string): boolean {
-  return w.facts.alwaysOn(homeOf(w.draft, field)).includes(field);
+/** Is this field ALWAYS ON where it lives — where this scope answers it? Will, TODO 703 · TRAP T-a-fixed-field-stays-held */
+function alwaysOn(w: Work, field: string, scope?: string): boolean {
+  return w.facts.alwaysOn(w.at(field, scope)).includes(field);
 }
 
 /** Refuse what would let a FIXED field go, or switch one ALWAYS ON off, and say so. */
@@ -811,7 +850,7 @@ function suspendScope(w: Work, scope: string, suspended = true): void {
     for (const [field, reading] of Object.entries(entry.readings)) {
       const kept = reading.suspended || w.facts.alwaysOn(scope).includes(field) ? null : standing(w, scope, field, reading);
       if (!kept || kept.length >= (reading.picked?.length ?? 0)) continue;
-      put(w, field, kept, kept.length ? reading : {});
+      put(w, field, kept, kept.length ? reading : {}, scope);
       dropped.push(field);
     }
     entry.suspended = { fields: [] };
@@ -847,15 +886,15 @@ function suspend(w: Work, scope: string, field: string | null, off: boolean): vo
     suspendScope(w, scope, off);
     return;
   }
-  const held = readingOf(w.draft, field);
+  const held = w.reading(field, scope);
   if (!held || !!held.suspended === off) return;
-  if (off && alwaysOn(w, field)) return refuse('field-always-on', 'suspend', { scope: homeOf(w.draft, field), field });
+  if (off && alwaysOn(w, field, scope)) return refuse('field-always-on', 'suspend', { scope: w.at(field, scope), field });
   const { suspended: _was, ...on } = held;
-  if (!off) return select(w, field, held.picked ?? [], on);
-  const kept = standing(w, homes(w.draft).get(field) ?? scope, field, held);
+  if (!off) return select(w, field, held.picked ?? [], on, scope);
+  const kept = standing(w, w.own(scope, field) ? scope : homes(w.draft, w.viewFixed).get(field) ?? scope, field, held);
   // None left, the field clears.
-  if (held.picked?.length && !kept.length) select(w, field, []);
-  else select(w, field, kept, { ...on, suspended: true });
+  if (held.picked?.length && !kept.length) select(w, field, [], {}, scope);
+  else select(w, field, kept, { ...on, suspended: true }, scope);
 }
 
 /**
@@ -878,14 +917,14 @@ function solo(w: Work, scope: string, field: string, options: { across?: boolean
         // …but one always on. Will, TODO 703
         if (other === field || reading.suspended || !readingAnswered(reading) || w.facts.alwaysOn(id).includes(other)) continue;
         // Raw: going off here prunes nothing, so it comes back as it was.
-        select(w, other, reading.picked ?? [], { ...reading, suspended: true });
+        select(w, other, reading.picked ?? [], { ...reading, suspended: true }, id);
         off.push({ scope: id, field: other });
       }
     }
-    const own = readingOf(draft, field);
+    const own = w.reading(field, scope);
     if (own?.suspended) {
       const { suspended: _off, ...on } = own;
-      select(w, field, own.picked ?? [], on);
+      select(w, field, own.picked ?? [], on, scope);
     }
     w.solo = { scope, field, off };
     soloSaid(w, w.solo);
@@ -898,11 +937,11 @@ function unsolo(w: Work): void {
   const was = w.solo;
   if (!was) return;
   w.solo = null;
-  for (const { field } of was.off) {
-    const held = readingOf(w.draft, field);
+  for (const { scope, field } of was.off) {
+    const held = w.reading(field, scope);
     if (!held?.suspended) continue;
     const { suspended: _off, ...on } = held;
-    select(w, field, held.picked ?? [], on);
+    select(w, field, held.picked ?? [], on, scope);
   }
   soloSaid(w, was);
 }
@@ -930,7 +969,10 @@ function hold(w: Work, name: string, fields: readonly string[]): void {
   const elsewhere = (field: string): boolean => eachScope(w.draft)
     .some(([id, s]) => id !== name && s.holds.includes(field));
   for (const field of before) {
-    if (!next.includes(field) && !elsewhere(field) && readingOf(w.draft, field)) select(w, field, []);
+    if (next.includes(field)) continue;
+    if (!elsewhere(field) && readingOf(w.draft, field)) select(w, field, []);
+    // Its own answer of a fixed View field goes with its chip; the View's stays. TODO 554
+    else if (w.own(name, field) && w.reading(field, name)) select(w, field, [], {}, name);
   }
   const draft = w.draft;
   const entry = scopeEntry(draft, name);
@@ -945,15 +987,15 @@ function hold(w: Work, name: string, fields: readonly string[]): void {
       for (const f of added) if (s.holds.includes(f)) (s.superseded ??= {})[f] = copyReading(s.readings[f] ?? {});
     }
   } else for (const f of dropped) forget(entry, f);
-  const was = homes(draft);
+  const was = homes(draft, w.viewFixed);
   entry.holds = next;
-  rehome(draft);
+  rehome(draft, w.viewFixed);
   // …and LETS GO: its home below gets back the answer it kept, or clears.
   if (name === VIEW) for (const f of dropped) giveBack(w, f);
   /* RAISING CARRIES THE ANSWER, and lowering brings it back: an answer that
      moved scope narrows from where it lives now, at once, and is drawn there.
      TRAP T-up-is-open-down-is-closed */
-  const now = homes(draft);
+  const now = homes(draft, w.viewFixed);
   const moved = [...now].filter(([field, home]) => was.get(field) !== home).map(([field]) => field);
   w.carry(moved);
   w.say({ kind: 'hold', scope: name, moved });
@@ -1058,8 +1100,8 @@ function answer(w: Work, scope: string, field: string, reading: FieldReading | n
     return;
   }
   // ALWAYS ON: its answer comes in on. Will, TODO 703
-  if (reading?.suspended && alwaysOn(w, field)) {
-    refuse('field-always-on', 'answer', { scope: homeOf(w.draft, field), field });
+  if (reading?.suspended && alwaysOn(w, field, scope)) {
+    refuse('field-always-on', 'answer', { scope: w.at(field, scope), field });
     const { suspended: _off, ...on } = reading;
     return answer(w, scope, field, on, at);
   }
@@ -1067,8 +1109,10 @@ function answer(w: Work, scope: string, field: string, reading: FieldReading | n
   const fresh = !!reading && scope !== VIEW && !holderOf(w.draft, field) && w.canHold(scope, field);
   if (fresh) hold(w, scope, [...w.scope(scope), field]);
   const picked = reading?.picked ?? [];
-  const next = keepPresets(w, field, raw(w, field, picked, reading ?? {}));
-  if (!sameReading(readingOf(w.draft, field), readingAnswered(next) ? next : undefined)) select(w, field, picked, reading ?? {});
+  // A scope's own answer of a fixed View field is ITS, in it, under the View's. TODO 554 · TRAP T-a-scope-below-narrows-within-a-fixed-field
+  const raws = raw(w, field, picked, reading ?? {});
+  const next = w.own(scope, field) ? raws : keepPresets(w, field, raws);
+  if (!sameReading(w.reading(field, scope), readingAnswered(next) ? next : undefined)) select(w, field, picked, reading ?? {}, scope);
   if (fresh) w.say({ kind: 'bars', scope });
 }
 
@@ -1151,8 +1195,8 @@ function reset(w: Work, scopes: readonly string[], options: { carry?: boolean; o
         const start = w.facts.opens(id)?.get(field);
         if (s.narrows?.length || w.facts.parts.has(id)) write(w, id, field, undefined);
         // A field with a start goes back to it, never to every row. TODO 403
-        else if (start) select(w, field, [...start.picked ?? []], start);
-        else select(w, field, []);
+        else if (start) select(w, field, [...start.picked ?? []], start, id);
+        else select(w, field, [], {}, id);
       }
       // A preset that starts on goes back on, as a start does. Plan 963
       for (const [pid, given] of w.facts.presets(id)) if (given.on) preset(w, id, pid, true);
@@ -1191,7 +1235,9 @@ function discard(w: Work, at: At = {}): void {
  */
 function edit(w: Work, given: PureEdit, slots = true): void {
   const { applied, draft } = w;
-  const facts: EditFacts = { ...(slots ? { presents: w.facts.presents } : {}), theirs: w.facts.theirs(given.scope), applied, draft };
+  const facts: EditFacts = {
+    ...(slots ? { presents: w.facts.presents } : {}), theirs: w.facts.theirs(given.scope), applied, draft, viewFixed: w.viewFixed,
+  };
   const routed = slotted(given, facts.presents);
   if ('move' in routed) return move(w, routed, facts);
   const next = editQuery(draft, routed, facts);
@@ -1226,13 +1272,13 @@ function move(w: Work, given: Extract<PureEdit, { move: unknown }>, facts: EditF
     return;
   }
   const { draft, applied } = w;
-  const was = homes(draft);
+  const was = homes(draft, w.viewFixed);
   const next = editQuery(draft, given, facts);
   const scopes = [...new Set([to, ...Object.keys({ ...draft.scopes, ...next.scopes }).filter((id) =>
     (draft.scopes[id]?.holds ?? []).join() !== (next.scopes[id]?.holds ?? []).join())])];
   w.draft = next;
   if (draft === applied) w.applied = next;
-  const now = homes(next);
+  const now = homes(next, w.viewFixed);
   const moved = [...now].filter(([f, home]) => was.get(f) !== home).map(([f]) => f);
   w.carry(moved);
   w.say({ kind: 'move', scopes, moved: moved.length > 0 });

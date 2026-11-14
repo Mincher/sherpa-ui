@@ -564,6 +564,11 @@ Adding a component's field to the view SUPERSEDES the component's chip: it is
 not removed, it goes inactive holding what the reader picked, and comes back
 when the view lets the field go. Off is not gone.
 
+**A field the view FIXES is the one exception** (`"fixed"` in its scope). It can
+never move down, so a component may add it again as its own chip: both hold it,
+the component's answer ANDs under the view's, it offers only what the view
+leaves, and a pick the view then rules out leaves it (TODO 554).
+
 Nothing here needs to know what a "view" or a "component" is. They are two
 scopes, one narrowing within the other — a card extending a dashboard, or a
 panel extending a card, is the same relationship with different words.
