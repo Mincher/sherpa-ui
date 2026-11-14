@@ -372,7 +372,7 @@
       }
     },
     "connection": {
-      "description": "Joins an output socket to any input socket. NODE_KINDS says each socket's type: an input reads what it needs of what comes, and one of another type reads null, and its node warns (TODO 770). A node's data comes in on its header, which takes any, and leaves from its Rows row (\"node/rows\"), which only sends; a test's True is its row \"node/true\", and only a Check node branches, by \"node/yes\" and \"node/no\". An input takes one connection, unless it takes many.",
+      "description": "Joins an output socket to any input socket. NODE_KINDS says each socket's type: an input reads what it needs of what comes, and one of another type reads null, and its node warns (TODO 770). A node's data comes in on its header, which takes any, and leaves from its Rows row (\"node/rows\"), which only sends; a test branches by its Pass and Fail, \"node/pass\" and \"node/fail\": on a column, the rows that hold and the rest; on one value, all its Data one way (plan 971 §9). An input takes one connection, unless it takes many.",
       "type": "object",
       "additionalProperties": false,
       "required": ["from", "to"],
@@ -448,7 +448,7 @@
       }
     },
     "socket": {
-      "description": "A node's header socket, \"node\" (its input is its data); a row's, \"node/row\" (\"node/rows\" sends its data rows, \"node/true\" a test's 1 or 0); a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826); or the Start, \"#start\", which each Trigger's header joins in a top graph (plan 949), and \"#start/model\", the graph's primary model (plan 951).",
+      "description": "A node's header socket, \"node\" (its input is its data); a row's, \"node/row\" (\"node/rows\" sends its data rows, \"node/pass\" a test's rows that hold, or on one value its Data); a portal Out's row, \"node/@<source>\", one per connection into an In of its name, named by that connection's source (TODO 826); or the Start, \"#start\", which each Trigger's header joins in a top graph (plan 949), and \"#start/model\", the graph's primary model (plan 951).",
       "type": "string", "pattern": "^(#start(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|@[a-z#][a-z0-9#/@-]*))?)$"
     },
     "innerSocket": {

@@ -148,6 +148,23 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
   **A (my pick):** a View may name its Filters (`filters: ["filter:<id>", …]`); named, its toolbar offers those alone;
   none named, every Filter over its store, as now. **B:** the names add chips, turned on, beside every Filter.
 
+### U4.4c, to build (2026-11-14, sherpa-ui-e8; Will's picks below)
+
+- **c1, the data and the provider.** `filtersOfSaved(sets, store, scopes)` (filter.ts): a reader's old saved sets as
+  Filter entities, one per scope that holds an answer, named "<name>" or "<name> · <scope's label>" (`filterOf` each). The
+  provider's `saveFilters` writes the same Filters to the shelf, the reader's own; `renameFilters` and `deleteFilters` are
+  the shelf's label and remove (refused in words while used). The keeper's `filters`, the bars' `added` and the reader's
+  `saved:` presets go: a reader's Filter is a Filter preset, a chip on its scope's bar, as every Filter is (TODO 776).
+- **c2, the controls.** The Saved section goes from sherpa-quick-filter-toolbar's header, sherpa-filter-panel's column and
+  `filters-button.ts` (its Saved button and menu, Manage Saved Filters, `savedSets`, `filters-apply`, `filters-dismiss`,
+  `filters-manage`). A preset chip that is a reader's own Filter has a menu: Rename and Delete, each a request
+  (`filter-rename`, `filter-delete`, `{ id }`) the host answers through the provider.
+- **c3, the page's own saved filters.** A page definition's `savedFilters` (an app's) used the Saved menu too. ❓ Pick A:
+  they are its scopes' presets (`scopes.<id>.presets`), which every bar already draws as chips; `savedFilters` goes from
+  page.v1 (Demos' records.json and learn-filtering.json moved by sherpa-demos-67). Other B: keep them as a list somewhere.
+- **The one-off**: Demos' page reads the old `sherpa:page:<key>.filters`, saves `filtersOfSaved(…)` to the shelf, and
+  deletes the old key; then the page goes.
+
 ## Will's decisions
 
 - **U4.4c, U4.4d, U4.7b, 2026-11-14** (asked by sherpa-demos-67 with sherpa-ui-e8's options): **U4.4c A**, Save filters
@@ -158,6 +175,11 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
   2026-11-14, lane 960-u44d). **U4.7b**, a status field in the Query graph is ONE Field node, a row per value, each saying
   its rule in words; Enter opens the rule's chain inside it, read only, as a Custom Node's inside opens; the Status kind
   and the chain on the top canvas go.
+- **U4.4c's details, 2026-11-14** (asked by sherpa-demos-67 with sherpa-ui-e8's picks, all A): (1) a save that holds more
+  than one scope makes one Filter per scope that holds an answer, "<name>" for one scope, "<name> · <scope's label>" for
+  each of several; (2) the Saved section goes: a reader's Filter is a chip like any Filter, with Rename and Delete in that
+  chip's menu; (3) the library exports `filtersOfSaved(sets, store, scopes)` and the keeper's `filters` reader is deleted;
+  Demos' one-off page moves the old `sherpa:page:<key>.filters` to the shelf and deletes the old key.
 
 - **U4.2, 2026-11-13:** "Decision: A. Perhaps just a single 'Organise' node that lets you set Axes, Grouping, and
   Sorting parameters. Saves on bloating the graph with lots of smaller nodes." So: axes in a workflow too (A), and ONE
