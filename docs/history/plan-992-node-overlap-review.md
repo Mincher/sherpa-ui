@@ -3,7 +3,7 @@
 Will, 2026-11-14, on plan 991's new nodes: "Make sure there's no overlap between these new nodes' purpose and existing
 nodes. We may need to review and refactor existing nodes in places. We will plan for that, though."
 
-**Status: a review; Will's picks open (section 3). Until they are in, no further new kind of plan 991 is built (991a's
+**Status: Will's picks are in (section 3, 2026-11-14). Plan 991 goes on as they say; before them, no further new kind of plan 991 was built (991a's
 Statistic types, Band and Format are built; D4's rename of Floor and Ceiling to Min and Max is a rename, not a kind).
 Owner: sherpa-demos-67 (the review), sherpa-ui-e8 (the node kinds), with each phase's Demos retrofit.**
 
@@ -37,19 +37,23 @@ data).
 | 17 | **Guardrail** (finds PII or secrets: Pass or Fail, or masks them) | a **Condition** (Contains); a **Prompt**'s True/false answer (sherpa-ui-e8) | Guardrail checks by NAMED detectors (an email, a card number, a secret key) and can mask them, which neither a Contains (one text) nor a model's answer (no promise) can. | none | — |
 | 18 | **Min** and **Max** (D4: Floor and Ceiling renamed) | **Round** | Once renamed, no overlap; the old words ("floor", "ceiling") leave the help texts too (sherpa-ui-e8). | the rename, every graph | — |
 
-## 3. Picks for Will (my pick first)
+## 3. Will's picks (2026-11-14)
 
-- **O1 Band and Set field vs a status field.** A: keep both, for a value inside one graph only; a label every page
-  shows stays the type's status field. B: drop both; any named or worked-out column is a status field on the type.
-- **O2 Format vs Append and Prepend.** A: Append and Prepend go; Format does both, every graph retrofitted. B: keep all
-  three.
-- **O3 Merge and Compare.** A: one Merge, with Matched, Only in A and Only in B (and Changed); no Compare. B: two nodes.
-- **O4 Tag.** A: Tag goes; a Condition on the tags field does it. B: keep Tag.
-- **O5 Viewer.** A: no Viewer node; the details panel's Rows tab and a socket's last value. B: a Viewer node too.
-- **O6 Classify.** A: a Prompt answer type, Category, then a Route. B: a Classify node with an output per category.
-- **O7 Retry.** A: the shipped Runbooks' retry-the-same-step routes become the Retry setting. B: keep them wired.
-- **O8 Grouping.** A: one grouping door, Organise › Group; a Statistic reads the groups it made. B: a Statistic has its
-  own Group by (991a's D5).
+- **O1 A:** Band and Set field are kept, for a value worked out inside one graph only; a label or column every page
+  shows stays the type's status field.
+- **O2 A:** Append and Prepend go; Format does both; every graph retrofitted. Split and Join stay.
+- **O3 A:** one Merge (Matched, Only in A, Only in B, and Changed); no Compare. A value every page reads from a related
+  type stays the type's `from` field.
+- **O4 A:** Tag goes; a Field (tags) and a Condition do it; every graph retrofitted.
+- **O5 (Will's own words): "Viewer sounds like a type of presentation node. View as a sherpa-data-grid".** So no
+  Viewer kind: the **Presentation** kind (a page's card's, today the Query graph's) gains a type, **Data grid**, that
+  shows the rows reaching it as a `sherpa-data-grid`, in a workflow too. One kind says how rows are shown, on a page
+  and in a graph. (Where the grid is drawn in a workflow — in the node's body, or the details panel — is the build's
+  first question; my pick: the node's body, resizable, as a card's is.)
+- **O6 A:** Classify is a Prompt answer type, Category; a Route sends the rows on by it.
+- **O7 A:** where a shipped Runbook retries the same step, it becomes that step's Retry setting; its prompt's
+  RETRIES AND ERRORS reads it. A different step on failure stays wired.
+- **O8 A:** one grouping door, Organise › Group; a Statistic reads the groups it made. No Group by on Math.
 
 ## 4. Phases (after the picks)
 
@@ -57,4 +61,4 @@ data).
 |---|---|
 | 992a | The refactors of what we have: Tag into Condition (O4), Append and Prepend into Format (O2); every library and Demos graph retrofitted, no alias |
 | 992b | The words: each node's description and help say its one job, and where the other job lives (rows 1, 3, 4, 10–14) |
-| 992c | Plan 991 goes on, as the picks say: Route; Merge (O3); Classify (O6); the Rows tab (O5); Retry and the Runbooks' retrofit (O7) |
+| 992c | Plan 991 goes on, as the picks say: Route; Merge (O3); Classify as a Prompt type (O6); the Presentation's Data grid type (O5); Retry and the Runbooks' retrofit (O7) |
