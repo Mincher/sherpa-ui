@@ -718,7 +718,8 @@ export class SherpaOutlet extends SherpaElement {
    *  refusal in its words. A press is the reader's own act, so it runs at once (plan 964 N1b, pick A) — unless it still
    *  needs input: then its flow asks it, in the outlet's dialog, where the page does not ask it itself (`act-input`). An
    *  act whose input is all optional runs at once, unless the app registered a flow for it (plan 964 N4). The input a
-   *  press gives is answered already: its flow asks only the rest (plan 963). */
+   *  press gives is answered already: its flow asks only the rest; an app's flow that says `confirm` asks first, all
+   *  answered or no input at all (plan 963). */
   async #runPressed(id: string, given: readonly unknown[], rows = false, input: Record<string, unknown> = {}): Promise<void> {
     const options = this.#options;
     if (!options) return;
@@ -727,11 +728,12 @@ export class SherpaOutlet extends SherpaElement {
     if (!act) return;
     const key = act.type ? storeOfType(this.#stores(options), act.type)?.key ?? 'id' : 'id';
     const keys = rows ? given.map((r) => (r as Record<string, unknown>)[key]) : given;
-    if (act.input && Object.keys(act.input).length) {
-      const { flowOf, flowsOf, nextStep } = await import('../../core/data/flows.js');
-      const own = flowsOf().find((f) => f.act === id);
-      const flow = Object.values(act.input).some((f) => f.required) || own ? own ?? flowOf(id) : undefined;
-      if (flow && 'step' in await nextStep(flow, input, { ...this.actContext()!, keys })) {
+    const { flowOf, flowsOf, nextStep } = await import('../../core/data/flows.js');
+    const own = flowsOf().find((f) => f.act === id);
+    const flow = own ?? (Object.values(act.input ?? {}).some((f) => f.required) ? flowOf(id) : undefined);
+    if (flow) {
+      const next = await nextStep(flow, input, { ...this.actContext()!, keys });
+      if ('step' in next || ('confirm' in next && own?.confirm === true)) {
         if (!this.emit('act-input', { id, keys, input }, { cancelable: true })) return;
         const { OutletFlow } = await import('./outlet-flow.js');
         this.#flow ??= new OutletFlow({

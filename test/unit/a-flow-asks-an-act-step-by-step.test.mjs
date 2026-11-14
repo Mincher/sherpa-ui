@@ -151,6 +151,24 @@ test('an act with no flow has one made from its input; one that changes nothing 
   }, { flow: null, acts: [note, suspend] });
 });
 
+test('a flow with no steps and confirm only asks first: its confirm names what goes with its rows; with no confirm it is refused (plan 963)', async () => {
+  const remove = {
+    id: 'user.remove', label: 'Remove', type: 'user', many: true, changes: true,
+    async run() { return { done: 'Removed.' }; },
+    async also(call) { return call.keys.includes('u1') ? ['2 of Account'] : []; },
+  };
+  const ASK = { v: 1, act: 'user.remove', steps: [], confirm: true };
+  await withInvite(async () => {
+    assert.deepEqual([ofSchema(ASK), flowFaults(ASK)], [[], []]);
+    assert.equal(flowOf('user.remove'), ASK);
+    assert.deepEqual(await nextStep(ASK, {}, { ...ctx(), keys: ['u1'] }), { confirm: 'Remove: User "Ana" and 2 of Account.', input: {} });
+    assert.deepEqual(await nextStep(ASK, {}, { ...ctx(), keys: ['u2'] }), { confirm: 'Remove: User "Bo".', input: {} });
+    const none = { v: 1, act: 'user.remove', steps: [] };
+    assert.notDeepEqual(ofSchema(none), []);
+    assert.deepEqual(flowFaults(none), ['it has no steps, and no confirm']);
+  }, { flow: ASK, acts: [remove] });
+});
+
 test('an object is no step: a made flow leaves it out, and a flow that asks one is refused', async () => {
   const save = {
     id: 'user.save-view', label: 'Save view', type: 'user', changes: true,

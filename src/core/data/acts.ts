@@ -75,6 +75,9 @@ export interface Act {
   /** Why it would be refused, known before it runs — a use that keeps it, a read-only preset, a body its check refuses —
    *  so a caller asks the reader only for what can run (`checkAct`). It writes nothing. None: the call's own checks. */
   check?(call: ActCall, ctx: ActContext): Promise<string | undefined>;
+  /** What goes with the rows it acts on, in words, for its confirm to say: a row type's Remove, the rows they own
+   *  (`2 of Account`). None: nothing. Plan 963 */
+  also?(call: ActCall, ctx: ActContext): Promise<readonly string[]>;
 }
 
 const ID = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)?$/;
@@ -278,7 +281,8 @@ export async function actSchema(act: Act, ctx?: ActContext): Promise<Record<stri
 function givenFields(type: TypeDefinition, withKey: boolean, required: boolean): Record<string, StoredField> {
   const key = type.key ?? 'id';
   return Object.fromEntries(Object.entries(type.fields ?? {}).flatMap(([name, field]) => {
-    if (field.type === 'status' || (field as StoredField).from || (!withKey && name === key)) return [];
+    // A key the type makes is never given: Add makes it.
+    if (field.type === 'status' || (field as StoredField).from || (name === key && (!withKey || (field as StoredField).make))) return [];
     const { required: was, ...rest } = field as StoredField;
     return [[name, required && (was || name === key) ? { ...rest, required: true } : rest]];
   }));
@@ -325,7 +329,8 @@ export function typeActs(type: TypeDefinition): Act[] {
       input: givenFields(type, true, true),
       async run(call, ctx) {
         const store = storeOf(ctx);
-        const row = await store.insert({ ...call.input });
+        const make = (type.fields?.[key] as StoredField | undefined)?.make;
+        const row = await store.insert({ ...call.input, ...(make ? { [key]: await madeKey(store, make) } : {}) });
         return { done: `Added ${named(row)}.`, result: row, undo: async () => { await store.remove(row[key]); } };
       },
     },
@@ -352,6 +357,7 @@ export function typeActs(type: TypeDefinition): Act[] {
     {
       id: `${id}.remove`, label: 'Remove', type: id, many: true, changes: true,
       description: `Remove one or more ${type.label} rows, and the rows each owns.`,
+      also: async (call, ctx) => ownedWords(await ownedBy(id, keysOf(call), ctx)),
       async run(call, ctx) {
         const store = storeOf(ctx);
         const gone: Row[] = [];
@@ -360,9 +366,8 @@ export function typeActs(type: TypeDefinition): Act[] {
         // The rows owned go first, the deepest first; Undo puts the owners back before them.
         for (const { store: at, rows } of [...owned].reverse()) for (const row of rows) await at.remove(row[at.key]);
         for (const row of gone) await store.remove(row[key]);
-        const also = owned.map((o) => countOf(o.label, o.rows.length));
         return {
-          done: `Removed ${listed([gone.length === 1 ? named(gone[0]) : many(gone.length), ...also])}.`,
+          done: `Removed ${listed([gone.length === 1 ? named(gone[0]) : many(gone.length), ...ownedWords(owned)])}.`,
           undo: async () => {
             for (const row of gone) await store.insert(row);
             for (const { store: at, rows } of owned) for (const row of rows) await at.insert(row);
@@ -375,6 +380,23 @@ export function typeActs(type: TypeDefinition): Act[] {
 
 /** A count of a type's rows in its words: `1 Account`, `2 of Account`. */
 const countOf = (label: string, n: number): string => (n === 1 ? `1 ${label}` : `${n} of ${label}`);
+
+/** The rows owned, in words, a type at a time: `2 of Account`. */
+function ownedWords(owned: readonly { label: string; rows: readonly Row[] }[]): string[] {
+  const counts = new Map<string, number>();
+  for (const { label, rows } of owned) counts.set(label, (counts.get(label) ?? 0) + rows.length);
+  return [...counts].map(([label, n]) => countOf(label, n));
+}
+
+/** A key a type makes (`a-###`): its prefix, then one more than the most among the store's keys with that prefix. */
+async function madeKey(store: Store, make: string): Promise<string> {
+  const prefix = make.replace(/#+$/, '');
+  const most = Math.max(0, ...(await store.load()).rows.map((row) => {
+    const at = String(row[store.key] ?? '');
+    return at.startsWith(prefix) && /^\d+$/.test(at.slice(prefix.length)) ? Number(at.slice(prefix.length)) : 0;
+  }));
+  return `${prefix}${String(most + 1).padStart(make.length - prefix.length, '0')}`;
+}
 
 /** Words as a list reads them: "A", "A and B", "A, B and C". */
 export const listed = (words: readonly string[]): string => (words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`);

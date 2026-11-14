@@ -316,14 +316,18 @@ export async function init(root, { source, query, session, view, signal, header,
   drafts; elsewhere, give `draftOf` in the context. Ask the reader before an act that `changes`, and only for what can run: `checkAct(id, call, ctx)` (or `outlet.checkAct`) says first why it would be refused — the door's checks, then the act's own `check` (a use that keeps it, a read-only preset, a body its check refuses) — and writes nothing; `outlet.act(id, { keys, input })` runs one over the outlet's stores. Every app.json type gives
   `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; a `ref` field that is `owned` (`"user": { "ref":
   "user", "owned": true }`) belongs to the row it names, so that row's `remove` takes it away too, and the rows it owns
-  in turn, in the same act and its one Undo ("Removed User "Ada", 2 of Account."; plan 963); `actsOf({ context, view, type })` lists a page's,
+  in turn, in the same act and its one Undo ("Removed User "Ada" and 2 of Account."; plan 963), and its confirm names
+  them (`act.also`); a key with `make` (`"id": { "label": "Account", "make": "a-###" }`) is made by `add`, its prefix
+  and the next free number (a-075 after a-074), and never asked; `actsOf({ context, view, type })` lists a page's,
   `actsOf()` every act, and `actSchema(act)` is a call's JSON Schema, for a tool.
 - **A flow asks an act's input step by step** (`registerFlow`, `sherpa-ui/data`; plan 964 N4): JSON
   (`schemas/flow.v1.json`), keyed by its act and said in its words: `{ "v": 1, "act": "user.invite", "steps": [{ "field":
   "scope" }, { "field": "customer", "when": { "scope": { "eq": "customer" } } }], "confirm": true }`. A step is asked
   only when its `when` holds over the answers before it. A dialog draws every step that holds (`stepsOf`); the chat asks
   one at a time (`nextStep`, `answerStep`, each answer checked as the act checks it), then says the confirm, then runs
-  `outlet.act(act, { keys, input })`. An act with no flow has one made from its input (`flowOf`). A reader outside a
+  `outlet.act(act, { keys, input })`. An act with no flow has one made from its input (`flowOf`). A flow with no steps
+  and `confirm: true` only asks first (`{ "v": 1, "act": "user.remove", "steps": [], "confirm": true }`), and an app's
+  flow that says `confirm` asks before a press runs, even with every step answered. A reader outside a
   page reads the stores from `outlet.actContext()`.
 - **A press names its act in markup**: `<sherpa-button commandfor="<the outlet's id>" command="--user.suspend"
   value="u1">Suspend</sherpa-button>` — its keys its `value` (a key, or a JSON list), else the selected rows of the

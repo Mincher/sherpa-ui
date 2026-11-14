@@ -9430,7 +9430,7 @@
             },
             {
               "name": "act-input",
-              "description": "A pressed act needs input, a request: prevented, the page asks it; else the outlet's dialog does.",
+              "description": "A pressed act needs input, or its flow asks first, a request: prevented, the page asks it; else the outlet's dialog does.",
               "type": {
                 "text": "CustomEvent<{ id: string; input: Record<string, unknown>; keys: readonly unknown[] }>"
               }

@@ -94,7 +94,8 @@ export function flowFaults(flow: unknown, act: Act | undefined = isObject(flow) 
   if (!isText(flow['act'])) out.push('it names no act');
   if (flow['confirm'] !== undefined && typeof flow['confirm'] !== 'boolean') out.push('its confirm is not true or false');
   const steps = flow['steps'];
-  if (!Array.isArray(steps) || !steps.length) return [...out, 'it has no steps'];
+  // No steps asks only first: a confirm and its button (plan 963).
+  if (!Array.isArray(steps) || (!steps.length && flow['confirm'] !== true)) return [...out, 'it has no steps, and no confirm'];
   const before = new Set<string>();
   for (const step of steps as unknown[]) {
     if (!isObject(step) || !isText(step['field'])) {
@@ -231,7 +232,8 @@ export async function nextStep(flow: Flow, answers: FlowAnswers, ctx: FlowContex
     const ask = await askOf(s.field, parts.input[s.field]!, ctx);
     return `${ask.label} ${said(input[s.field], ask)}`;
   }));
-  const targets = await targetsOf(parts.act, ctx);
+  // What goes with them is named with them: `User "Ana" and 2 of Account`.
+  const targets = listed([...[await targetsOf(parts.act, ctx)].filter((t) => t !== undefined), ...await parts.act.also?.({ keys: ctx.keys ?? [], input }, ctx) ?? []]);
   return { confirm: `${parts.act.label}: ${[...(targets ? [targets] : []), ...words].join(', ')}.`, input };
 }
 

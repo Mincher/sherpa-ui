@@ -311,6 +311,33 @@ test('a press gives its act input in data-input: its flow asks only the rest, an
   expect(await open()).toBe(false);
 });
 
+test('a flow with no steps and confirm only asks first: a press opens its confirm, and its button runs the act (plan 963)', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=devices');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const rows = () => page.evaluate(() => (document.querySelector('#grid') as HTMLElement & { shadowRoot: ShadowRoot } | null)?.shadowRoot?.querySelectorAll('.row').length ?? 0);
+  await page.evaluate(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const { registerFlow } = await import('/dist/data.js');
+    registerFlow({ v: 1, act: 'device.remove', steps: [], confirm: true });
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+  });
+  const dialog = page.locator('sherpa-outlet .flow');
+  const open = () => dialog.evaluate((d) => (d as HTMLElement & { open: boolean }).open);
+  await expect.poll(rows).toBe(3);
+  await page.locator('#remove-bravo').click();
+  await expect.poll(open).toBe(true);
+  expect(await rows()).toBe(3);
+  await expect(page.locator('sherpa-outlet .flow-step')).toHaveCount(0);
+  await expect(page.locator('sherpa-outlet .flow-said')).toHaveText('Remove: Device "Bravo".');
+  await expect(page.locator('sherpa-outlet .flow-run')).not.toHaveAttribute('disabled');
+  await page.locator('sherpa-outlet .flow-run').click();
+  await expect.poll(open).toBe(false);
+  await expect.poll(rows).toBe(2);
+  await expect(page.locator('sherpa-toast').filter({ hasText: 'Removed Device "Bravo".' })).toHaveCount(1);
+});
+
 test('a write under the reader\'s unsaved draft of a graph is refused, from before a reload too; read says the draft', async ({ page }) => {
   await page.goto('/test/reforged/outlet.html?context=teammates');
   await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);

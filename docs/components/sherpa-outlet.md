@@ -57,7 +57,7 @@ Each one bubbles.
 | `graph-change` | `{ graph: OpenGraph \| null; page: OpenPage \| undefined }` | The graph View's entity moved. |
 | `graph-new` | `{ type: string }` | New graph… was picked, a request: prevented, the app makes it. A host may call `preventDefault()` to take it over. |
 | `act-run` | `{ done: string; id: string; keys: readonly unknown[]; refused: string; undone: true }` | An act ran (pressed, or through act()), or was refused, or was undone: a page draws its change. |
-| `act-input` | `{ id: string; input: Record<string, unknown>; keys: readonly unknown[] }` | A pressed act needs input, a request: prevented, the page asks it; else the outlet's dialog does. A host may call `preventDefault()` to take it over. |
+| `act-input` | `{ id: string; input: Record<string, unknown>; keys: readonly unknown[] }` | A pressed act needs input, or its flow asks first, a request: prevented, the page asks it; else the outlet's dialog does. A host may call `preventDefault()` to take it over. |
 
 ## Slots
 

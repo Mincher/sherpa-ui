@@ -165,6 +165,8 @@ test('a row owns rows: a Remove takes away each row whose owned ref names it, an
         note: new ArrayStore([{ id: 'n1', about: 'u1' }], typeStoreOptions(NOTE)),
       } };
       const ids = async (name) => (await ctx.stores[name].load()).rows.map((r) => r.id);
+      // Its confirm names what goes with it, before anything goes.
+      assert.deepEqual(await actsOf({ type: 'user' }).find((a) => a.id === 'user.remove').also({ keys: ['u1'] }, ctx), ['2 of Account', '1 Key']);
       const removed = await runAct('user.remove', { keys: ['u1'] }, ctx);
       assert.equal(removed.done, 'Removed User "Ana", 2 of Account and 1 Key.');
       assert.deepEqual([await ids('user'), await ids('account'), await ids('key'), await ids('note')], [['u2'], ['a3'], ['k2'], ['n1']]);
@@ -179,6 +181,34 @@ test('a row owns rows: a Remove takes away each row whose owned ref names it, an
     'a: only a reference to one row is owned: { "ref": "user", "owned": true }',
     'b: only a reference to one row is owned: { "ref": "user", "owned": true }',
     'c: its owned is not true or false',
+  ]);
+});
+
+test('a type that makes its key: Add makes it, its prefix and the next free number, and never asks it (plan 963)', async () => {
+  const ACCOUNT = { v: 1, id: 'account', label: 'Account', fields: { id: { label: 'Account', make: 'a-###' }, user: { label: 'User', ref: 'user' } } };
+  await withActs(typeActs(ACCOUNT), async () => {
+    const off = registerEntityType(ACCOUNT);
+    try {
+      const accounts = new ArrayStore([{ id: 'a-074', user: 'u1' }, { id: 'a-9', user: 'u2' }, { id: 'legacy', user: 'u2' }], typeStoreOptions(ACCOUNT));
+      const ctx = { stores: { user: usersStore(), role: rolesStore(), account: accounts } };
+      const add = actsOf({ type: 'account' }).find((a) => a.id === 'account.add');
+      assert.deepEqual(Object.keys(add.input), ['user']);
+      const added = await runAct('account.add', { input: { user: 'u2' } }, ctx);
+      assert.deepEqual([added.done, added.result.id], ['Added Account "a-075".', 'a-075']);
+      assert.equal((await runAct('account.add', { input: { user: 'u1' } }, ctx)).result.id, 'a-076');
+      assert.match((await runAct('account.add', { input: { id: 'a-500', user: 'u1' } }, ctx)).refused, /it takes no "id"/);
+      // An empty store starts at 1.
+      const fresh = await runAct('account.add', { input: { user: 'u1' } }, { ...ctx, stores: { ...ctx.stores, account: new ArrayStore([], typeStoreOptions(ACCOUNT)) } });
+      assert.equal(fresh.result.id, 'a-001');
+    } finally {
+      off?.();
+    }
+  });
+  assert.deepEqual(typeFaults({ v: 1, id: 'x', label: 'X', fields: { id: { make: 'a-#-#' }, n: { make: 'n-##' }, m: { type: 'number', make: '###' } } }), [
+    'id: its make is a text key\'s prefix, then a # for each digit: "a-###"',
+    'n: only the type\'s key is made',
+    'm: its make is a text key\'s prefix, then a # for each digit: "a-###"',
+    'm: only the type\'s key is made',
   ]);
 });
 

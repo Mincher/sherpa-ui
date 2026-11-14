@@ -11,7 +11,7 @@ import { parseWhere, type Where } from './where.js';
 
 const ID = /^[a-z][a-z0-9-]*$/;
 const TOP = ['$schema', 'v', 'id', 'label', 'description', 'tags', 'icon', 'category', 'key', 'time', 'title', 'recipient', 'fields', 'data', 'graph'];
-const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'many', 'owned'];
+const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'many', 'owned', 'make'];
 const STATUS = ['type', 'label', 'description', 'values'];
 const KINDS = ['text', 'number', 'date', 'boolean', 'object'];
 const PATH = /^[^/]+(\/[^/]+)*$/;
@@ -91,6 +91,7 @@ function storedFaults(f: Loose): string[] {
   else if (f['many'] && !('ref' in f) && !('values' in f)) out.push('only a reference or a set of values holds many: { "ref": "role", "many": true }');
   if ('owned' in f && typeof f['owned'] !== 'boolean') out.push('its owned is not true or false');
   else if (f['owned'] && (!('ref' in f) || f['many'])) out.push('only a reference to one row is owned: { "ref": "user", "owned": true }');
+  if ('make' in f && (typeof f['make'] !== 'string' || !/^[^#]*#+$/.test(f['make']) || kind !== 'text')) out.push('its make is a text key\'s prefix, then a # for each digit: "a-###"');
   return out;
 }
 
@@ -148,6 +149,7 @@ export function typeFaults(given: unknown): string[] {
   }
   for (const [name, f] of Object.entries(fields)) {
     const faults = !isObject(f) ? ['it is not an object'] : f['type'] === 'status' ? statusFaults(f) : storedFaults(f);
+    if (isObject(f) && 'make' in f && name !== key) faults.push('only the type\'s key is made');
     out.push(...faults.map((w) => `${name}: ${w}`));
   }
   return out;
@@ -157,5 +159,5 @@ export function typeFaults(given: unknown): string[] {
 export function fieldsFaults(fields: unknown): string[] {
   if (!isObject(fields)) return ['its fields are an object of name → field'];
   return Object.entries(fields).flatMap(([name, f]) => (!isObject(f) ? ['it is not an object']
-    : f['type'] === 'status' ? ['a status is worked out, never asked'] : storedFaults(f)).map((w) => `${name}: ${w}`));
+    : f['type'] === 'status' ? ['a status is worked out, never asked'] : 'make' in f ? ['only a type\'s key is made, never asked'] : storedFaults(f)).map((w) => `${name}: ${w}`));
 }

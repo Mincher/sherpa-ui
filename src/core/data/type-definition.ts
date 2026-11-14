@@ -57,6 +57,8 @@ export interface StoredField {
   many?: boolean;
   /** With one `ref`: the row belongs to the row it names, so that row's Remove takes it away too (plan 963). */
   owned?: boolean;
+  /** On the type's key: Add makes it, never asks it — its prefix, then the next free number, a `#` a digit: `a-###`. */
+  make?: string;
 }
 
 /** One field of a type: stored, or a status worked out from the row's other fields. */

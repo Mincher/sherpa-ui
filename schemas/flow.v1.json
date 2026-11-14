@@ -6,13 +6,15 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["v", "act", "steps"],
+  "if": { "not": { "required": ["confirm"], "properties": { "confirm": { "const": true } } } },
+  "then": { "properties": { "steps": { "minItems": 1 } } },
   "properties": {
     "$schema": { "type": "string" },
     "v": { "const": 1 },
     "act": { "description": "The act it asks for, by id: `<type>.<verb>`.", "type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)?$" },
     "steps": {
       "description": "Its steps, in order: each a field of the act's input, said in that field's words. Every field the act needs is asked.",
-      "type": "array", "minItems": 1,
+      "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -23,6 +25,6 @@
         }
       }
     },
-    "confirm": { "description": "It asks the reader before it runs, its words naming each answer. None: when its act changes data.", "type": "boolean" }
+    "confirm": { "description": "It asks the reader before it runs, its words naming each answer and what goes with its rows. None: when its act changes data. True, and a press asks first too: with no steps, a flow only asks first (plan 963).", "type": "boolean" }
   }
 }
