@@ -74,6 +74,16 @@ type ViewBar = HTMLElement & {
 /** The header's bar that holds the View chip. */
 const VIEW_BAR = 'sherpa-quick-filter-toolbar[data-type="view"]';
 
+/** Text read as a JSON object; none, where it is not one. */
+function jsonObject(text: string): Record<string, unknown> | null {
+  try {
+    const read: unknown = JSON.parse(text);
+    return read && typeof read === 'object' && !Array.isArray(read) ? read as Record<string, unknown> : null;
+  } catch {
+    return null;
+  }
+}
+
 export class SherpaOutlet extends SherpaElement {
   static override css = new URL('./sherpa-outlet.css', import.meta.url);
   static override html = new URL('./sherpa-outlet.html', import.meta.url);
@@ -681,7 +691,7 @@ export class SherpaOutlet extends SherpaElement {
   }
 
   /** A button's command that names an act runs it: its keys its `value` (a key, or a JSON list), else the selected rows
-   *  of the page's grid. A command that names no act is not the outlet's. */
+   *  of the page's grid; its given input its `data-input`, a JSON object. A command that names no act is not the outlet's. */
   #onCommand = (event: Event): void => {
     const { command, source } = event as Event & { command?: string; source?: Element | null };
     const id = command?.startsWith('--') ? command.slice(2) : '';
@@ -689,7 +699,13 @@ export class SherpaOutlet extends SherpaElement {
     const value = source?.getAttribute('value');
     const keys = value ? (value.startsWith('[') ? JSON.parse(value) as unknown[] : [value])
       : [...this.querySelectorAll<HTMLElement & { selectedKeys?: readonly string[] }>('sherpa-data-grid')].flatMap((grid) => [...grid.selectedKeys ?? []]);
-    void this.#runPressed(id, keys);
+    const given = source?.getAttribute('data-input');
+    const input = given ? jsonObject(given) : {};
+    if (!input) {
+      void this.#said({ refused: `${id} is refused: its data-input is not a JSON object.` });
+      return;
+    }
+    void this.#runPressed(id, keys, false, input);
   };
 
   /** A grid's row action whose id is an act's runs it on the rows it names, by its type's key. */
@@ -701,8 +717,9 @@ export class SherpaOutlet extends SherpaElement {
   /** Run an act a press named, through `act`, and say what it did in a toast, with Undo where it changed data; a
    *  refusal in its words. A press is the reader's own act, so it runs at once (plan 964 N1b, pick A) — unless it still
    *  needs input: then its flow asks it, in the outlet's dialog, where the page does not ask it itself (`act-input`). An
-   *  act whose input is all optional runs at once, unless the app registered a flow for it (plan 964 N4). */
-  async #runPressed(id: string, given: readonly unknown[], rows = false): Promise<void> {
+   *  act whose input is all optional runs at once, unless the app registered a flow for it (plan 964 N4). The input a
+   *  press gives is answered already: its flow asks only the rest (plan 963). */
+  async #runPressed(id: string, given: readonly unknown[], rows = false, input: Record<string, unknown> = {}): Promise<void> {
     const options = this.#options;
     if (!options) return;
     const [{ actsOf }, { storeOfType }] = await Promise.all([import('../../core/data/acts.js'), import('../../core/data/type-definition.js')]);
@@ -714,19 +731,19 @@ export class SherpaOutlet extends SherpaElement {
       const { flowOf, flowsOf, nextStep } = await import('../../core/data/flows.js');
       const own = flowsOf().find((f) => f.act === id);
       const flow = Object.values(act.input).some((f) => f.required) || own ? own ?? flowOf(id) : undefined;
-      if (flow && 'step' in await nextStep(flow, {}, { ...this.actContext()!, keys })) {
-        if (!this.emit('act-input', { id, keys }, { cancelable: true })) return;
+      if (flow && 'step' in await nextStep(flow, input, { ...this.actContext()!, keys })) {
+        if (!this.emit('act-input', { id, keys, input }, { cancelable: true })) return;
         const { OutletFlow } = await import('./outlet-flow.js');
         this.#flow ??= new OutletFlow({
           $: (sel) => this.$(sel), cloneItem: (from, item) => this.cloneItem(from, item), on: (t, type, h) => this.on(t, type, h),
           actContext: () => this.actContext(), act: (actId, call) => this.act(actId, call), check: (actId, call) => this.checkAct(actId, call),
           said: (answer) => this.#said(answer),
         });
-        await this.#flow.open(flow, act, keys);
+        await this.#flow.open(flow, act, keys, input);
         return;
       }
     }
-    await this.#said(await this.act(id, { keys }));
+    await this.#said(await this.act(id, { keys, ...(Object.keys(input).length ? { input } : {}) }));
   }
 
   /** The dialog a pressed act opens to ask its input: made the first time one does. */

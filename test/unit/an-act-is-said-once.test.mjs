@@ -151,6 +151,37 @@ test('a row type\'s own acts: find, read, add, change and remove through its sto
   });
 });
 
+test('a row owns rows: a Remove takes away each row whose owned ref names it, and theirs, in one act; its one Undo puts all back (plan 963)', async () => {
+  const ACCOUNT = { v: 1, id: 'account', label: 'Account', fields: { id: {}, user: { label: 'User', ref: 'user', owned: true } } };
+  const KEY = { v: 1, id: 'key', label: 'Key', fields: { id: {}, account: { label: 'Account', ref: 'account', owned: true } } };
+  const NOTE = { v: 1, id: 'note', label: 'Note', fields: { id: {}, about: { label: 'About', ref: 'user' } } };
+  const offs = [ACCOUNT, KEY, NOTE].map(registerEntityType);
+  try {
+    await withActs(typeActs(USER), async () => {
+      const ctx = { stores: {
+        user: usersStore(), role: rolesStore(),
+        account: new ArrayStore([{ id: 'a1', user: 'u1' }, { id: 'a2', user: 'u1' }, { id: 'a3', user: 'u2' }], typeStoreOptions(ACCOUNT)),
+        key: new ArrayStore([{ id: 'k1', account: 'a2' }, { id: 'k2', account: 'a3' }], typeStoreOptions(KEY)),
+        note: new ArrayStore([{ id: 'n1', about: 'u1' }], typeStoreOptions(NOTE)),
+      } };
+      const ids = async (name) => (await ctx.stores[name].load()).rows.map((r) => r.id);
+      const removed = await runAct('user.remove', { keys: ['u1'] }, ctx);
+      assert.equal(removed.done, 'Removed User "Ana", 2 of Account and 1 Key.');
+      assert.deepEqual([await ids('user'), await ids('account'), await ids('key'), await ids('note')], [['u2'], ['a3'], ['k2'], ['n1']]);
+      await removed.undo();
+      assert.deepEqual([await ids('user'), (await ids('account')).sort(), (await ids('key')).sort()], [['u2', 'u1'], ['a1', 'a2', 'a3'], ['k1', 'k2']]);
+      assert.equal((await runAct('user.remove', { keys: ['u2'] }, { stores: { user: ctx.stores.user, role: ctx.stores.role } })).done, 'Removed User "Bo".');
+    });
+  } finally {
+    for (const off of offs) off?.();
+  }
+  assert.deepEqual(typeFaults({ v: 1, id: 'x', label: 'X', fields: { id: {}, a: { owned: true }, b: { ref: 'user', many: true, owned: true }, c: { ref: 'user', owned: 'yes' } } }), [
+    'a: only a reference to one row is owned: { "ref": "user", "owned": true }',
+    'b: only a reference to one row is owned: { "ref": "user", "owned": true }',
+    'c: its owned is not true or false',
+  ]);
+});
+
 test('a graph type\'s own acts go through the shelf: its entity is changed as a draft, and a removed one comes back', async () => {
   const TEAMMATE = { v: 1, id: 'teammate', label: 'Teammate', fields: { status: { label: 'Status', values: ['active', 'paused'] } }, graph: { runs: true, reusable: false } };
   const stop = quiet();

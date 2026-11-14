@@ -344,6 +344,10 @@
           "description": "icon glyph value"
         },
         {
+          "name": "data-input",
+          "description": "the input a press gives its act, as JSON — `{\"user\":\"u-07\"}`; its flow asks the rest"
+        },
+        {
           "name": "data-label",
           "description": "label text (or use the default slot)"
         },

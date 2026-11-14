@@ -230,7 +230,7 @@ test('a pressed act that needs input opens its flow: a field per step that holds
     (window as unknown as { __asked: unknown }).__asked = (e as CustomEvent).detail;
   }, { once: true }));
   await page.locator('#tag-alpha').click();
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __asked?: unknown }).__asked)).toEqual({ id: 'device.tag', keys: ['d1'] });
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __asked?: unknown }).__asked)).toEqual({ id: 'device.tag', keys: ['d1'], input: {} });
   expect(await open()).toBe(false);
 
   await page.locator('#tag-alpha').click();
@@ -264,6 +264,51 @@ test('a pressed act that needs input opens its flow: a field per step that holds
   await expect(toast).toHaveCount(1);
   await toast.locator('[part="action"], .action').first().click();
   await expect.poll(status).toBe('online');
+});
+
+test('a press gives its act input in data-input: its flow asks only the rest, and it runs with both; one that is no JSON object is refused (plan 963)', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=devices');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  await page.evaluate(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const { registerAct, registerFlow, storeOfType } = await import('/dist/data.js');
+    registerAct({
+      id: 'device.tag', label: 'Tag', type: 'device', changes: true,
+      input: { status: { label: 'Status', required: true, values: ['online', 'offline'], labels: { online: 'Online', offline: 'Offline' } }, reason: { label: 'Reason', min: 3 } },
+      async run(call, ctx) {
+        const store = storeOfType(ctx.stores, 'device')!;
+        await store.update(call.keys?.[0], { status: call.input?.['status'] });
+        (window as unknown as { __input: unknown }).__input = call.input;
+        return { done: 'Tagged.' };
+      },
+    });
+    registerFlow({ v: 1, act: 'device.tag', steps: [{ field: 'status' }, { field: 'reason', when: { status: { eq: 'offline' } } }] });
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { start(o: unknown): Promise<void> };
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
+  });
+  const dialog = page.locator('sherpa-outlet .flow');
+  const open = () => dialog.evaluate((d) => (d as HTMLElement & { open: boolean }).open);
+  const shown = () => page.locator('sherpa-outlet .flow-step:not([data-off])').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset['field']));
+  await expect(page.locator('#offline-alpha')).toBeVisible();
+  await page.evaluate(() => document.querySelector('sherpa-outlet')!.addEventListener('act-input', (e) => {
+    (window as unknown as { __asked: unknown }).__asked = (e as CustomEvent).detail;
+  }, { once: true }));
+  await page.locator('#offline-alpha').click();
+  await expect.poll(open).toBe(true);
+  expect(await page.evaluate(() => (window as unknown as { __asked?: unknown }).__asked)).toEqual({ id: 'device.tag', keys: ['d1'], input: { status: 'offline' } });
+  // The Status given is answered: not drawn, and the Reason its answer opens is asked.
+  await expect.poll(shown).toEqual(['reason']);
+  await expect(page.locator('sherpa-outlet .flow-said')).toHaveText('Tag: Device "Alpha", Status Offline.');
+  await page.locator('sherpa-outlet .flow-step[data-field="reason"] input').fill('Broken');
+  await expect(page.locator('sherpa-outlet .flow-said')).toHaveText('Tag: Device "Alpha", Status Offline, Reason Broken.');
+  await page.locator('sherpa-outlet .flow-run').click();
+  await expect.poll(open).toBe(false);
+  expect(await page.evaluate(() => (window as unknown as { __input?: unknown }).__input)).toEqual({ status: 'offline', reason: 'Broken' });
+
+  await page.locator('#tag-garbled').click();
+  await expect(page.locator('sherpa-toast').filter({ hasText: 'device.tag is refused: its data-input is not a JSON object.' })).toHaveCount(1);
+  expect(await open()).toBe(false);
 });
 
 test('a write under the reader\'s unsaved draft of a graph is refused, from before a reload too; read says the draft', async ({ page }) => {

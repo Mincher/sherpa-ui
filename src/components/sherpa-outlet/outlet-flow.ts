@@ -35,6 +35,8 @@ interface Open {
   flow: Flow;
   act: Act;
   keys: readonly unknown[];
+  /** The input the press gave: answered already, so never drawn. */
+  given: FlowAnswers;
   answers: FlowAnswers;
   fields: Map<string, { el: Field; ask: Ask }>;
   /** The fields whose value was refused: each holds the button back until it is answered well. */
@@ -71,12 +73,13 @@ export class OutletFlow {
     return this.#host.$('.flow');
   }
 
-  /** Ask a flow's steps for these keys: a field per step that holds, the act's words heading it. */
-  async open(flow: Flow, act: Act, keys: readonly unknown[]): Promise<void> {
+  /** Ask a flow's steps for these keys: a field per step that holds, the act's words heading it. The input given is
+   *  answered already, and its fields not drawn. */
+  async open(flow: Flow, act: Act, keys: readonly unknown[], given: FlowAnswers = {}): Promise<void> {
     const dialog = this.#dialog;
     if (!dialog) return;
     this.#close();
-    this.#open = { flow, act, keys, answers: {}, fields: new Map(), refused: new Set() };
+    this.#open = { flow, act, keys, given, answers: { ...given }, fields: new Map(), refused: new Set() };
     dialog.setAttribute('data-heading', act.label);
     this.#text('.flow-about', act.description ?? '');
     this.#host.$('.flow-run')?.setAttribute('data-label', act.label);
@@ -106,7 +109,7 @@ export class OutletFlow {
     const order = open.flow.steps.map((s) => s.field);
     let defaulted = false;
     for (const ask of asks) {
-      if (open.fields.has(ask.field)) continue;
+      if (open.fields.has(ask.field) || ask.field in open.given) continue;
       const el = this.#host.cloneItem<Field>(PROTOTYPE[ask.kind], ask);
       if (!el) continue;
       if (ask.choices) void el.populate(ask.choices.map((c) => ({ value: String(c.value), label: c.label })));
@@ -124,7 +127,7 @@ export class OutletFlow {
     for (const [field, { el }] of open.fields) el.toggleAttribute('data-off', !holding.has(field));
     const next = await this.#next(open, asks);
     // Every step answered: why the act would be refused is said now, before Run, and Run waits.
-    const input = 'confirm' in next ? next.input : 'run' in next ? next.run : undefined;
+    const input = this.#input(open, next);
     const why = input ? (await this.#host.check(open.act.id, { keys: open.keys, input })).refused : undefined;
     if (open !== this.#open) return;
     this.#text('.flow-said', 'confirm' in next ? next.confirm : '');
@@ -137,6 +140,14 @@ export class OutletFlow {
   #next(open: Open, asks: readonly Ask[]): Promise<NextStep> {
     const skipped = asks.filter((a) => !a.required && !(a.field in open.answers) && !open.refused.has(a.field));
     return nextStep(open.flow, { ...open.answers, ...Object.fromEntries(skipped.map((a) => [a.field, null])) }, this.#ctx);
+  }
+
+  /** The act's input once every step is answered: the answers, and what the press gave that no step asks. */
+  #input(open: Open, next: NextStep): FlowAnswers | undefined {
+    const answered = 'confirm' in next ? next.input : 'run' in next ? next.run : undefined;
+    if (!answered) return undefined;
+    const asked = new Set(open.flow.steps.map((s) => s.field));
+    return { ...Object.fromEntries(Object.entries(open.given).filter(([field]) => !asked.has(field))), ...answered };
   }
 
   /** A field's value as its step's answer: a pick by its choice's own value, a number as a number, none as null. */
@@ -187,8 +198,9 @@ export class OutletFlow {
     const open = this.#open;
     if (!open) return;
     const next = await this.#next(open, await stepsOf(open.flow, open.answers, this.#ctx));
-    if (!('confirm' in next || 'run' in next)) return;
-    const answer = await this.#host.act(open.act.id, { keys: open.keys, input: 'confirm' in next ? next.input : next.run });
+    const input = this.#input(open, next);
+    if (!input) return;
+    const answer = await this.#host.act(open.act.id, { keys: open.keys, input });
     if (open !== this.#open) return;
     if ('refused' in answer) {
       this.#text('.flow-refused-words', answer.refused);

@@ -11,7 +11,7 @@ import { parseWhere, type Where } from './where.js';
 
 const ID = /^[a-z][a-z0-9-]*$/;
 const TOP = ['$schema', 'v', 'id', 'label', 'description', 'tags', 'icon', 'category', 'key', 'time', 'title', 'recipient', 'fields', 'data', 'graph'];
-const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'many'];
+const STORED = ['type', 'label', 'description', 'required', 'values', 'labels', 'statuses', 'min', 'max', 'format', 'pattern', 'time', 'from', 'ref', 'many', 'owned'];
 const STATUS = ['type', 'label', 'description', 'values'];
 const KINDS = ['text', 'number', 'date', 'boolean', 'object'];
 const PATH = /^[^/]+(\/[^/]+)*$/;
@@ -89,6 +89,8 @@ function storedFaults(f: Loose): string[] {
   }
   if ('many' in f && typeof f['many'] !== 'boolean') out.push('its many is not true or false');
   else if (f['many'] && !('ref' in f) && !('values' in f)) out.push('only a reference or a set of values holds many: { "ref": "role", "many": true }');
+  if ('owned' in f && typeof f['owned'] !== 'boolean') out.push('its owned is not true or false');
+  else if (f['owned'] && (!('ref' in f) || f['many'])) out.push('only a reference to one row is owned: { "ref": "user", "owned": true }');
   return out;
 }
 

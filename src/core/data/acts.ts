@@ -18,6 +18,7 @@
  * - refChoices — A reference's choices: its type's rows by key and title, through the store door; none past 200.
  * - actSchema — An act's call as a JSON Schema, a reference's choices read from its type's store: a tool is made from it.
  * - typeActs — A type's own acts: a row type's through its store; a graph type's through the shelf (graphActs).
+ * - listed — Words as a list reads them: "A", "A and B", "A, B and C".
  */
 import type { EntityShelf } from './entity-shelf.js';
 import { entityTypes } from './entity-types.js';
@@ -298,7 +299,7 @@ export function typeActs(type: TypeDefinition): Act[] {
   const named = (row: Row | undefined): string => `${type.label} "${String(row?.[title] ?? row?.[key] ?? '')}"`;
   const storeOf = (ctx: ActContext): Store => storeOfType(ctx.stores, id)!;
   const keysOf = (call: ActCall): unknown[] => [...(call.keys ?? [])];
-  const many = (n: number): string => (n === 1 ? `1 ${type.label}` : `${n} of ${type.label}`);
+  const many = (n: number): string => countOf(type.label, n);
   return [
     {
       id: `${id}.find`, label: 'Find', type: id, changes: false,
@@ -349,19 +350,49 @@ export function typeActs(type: TypeDefinition): Act[] {
       },
     },
     {
-      id: `${id}.remove`, label: 'Remove', type: id, many: true, changes: true, description: `Remove one or more ${type.label} rows.`,
+      id: `${id}.remove`, label: 'Remove', type: id, many: true, changes: true,
+      description: `Remove one or more ${type.label} rows, and the rows each owns.`,
       async run(call, ctx) {
         const store = storeOf(ctx);
         const gone: Row[] = [];
-        for (const k of keysOf(call)) {
-          gone.push((await store.byKey(k))!);
-          await store.remove(k);
-        }
+        for (const k of keysOf(call)) gone.push((await store.byKey(k))!);
+        const owned = await ownedBy(id, gone.map((row) => row[key]), ctx);
+        // The rows owned go first, the deepest first; Undo puts the owners back before them.
+        for (const { store: at, rows } of [...owned].reverse()) for (const row of rows) await at.remove(row[at.key]);
+        for (const row of gone) await store.remove(row[key]);
+        const also = owned.map((o) => countOf(o.label, o.rows.length));
         return {
-          done: `Removed ${gone.length === 1 ? named(gone[0]) : many(gone.length)}.`,
-          undo: async () => { for (const row of gone) await store.insert(row); },
+          done: `Removed ${listed([gone.length === 1 ? named(gone[0]) : many(gone.length), ...also])}.`,
+          undo: async () => {
+            for (const row of gone) await store.insert(row);
+            for (const { store: at, rows } of owned) for (const row of rows) await at.insert(row);
+          },
         };
       },
     },
   ];
+}
+
+/** A count of a type's rows in its words: `1 Account`, `2 of Account`. */
+const countOf = (label: string, n: number): string => (n === 1 ? `1 ${label}` : `${n} of ${label}`);
+
+/** Words as a list reads them: "A", "A and B", "A, B and C". */
+export const listed = (words: readonly string[]): string => (words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`);
+
+/** The rows a type's rows own, owners first: each row type with an owned `ref` to it, the rows naming one of these keys;
+ *  then the rows those own, in turn. A row is taken once, so a type that owns its own kind ends. Plan 963 */
+async function ownedBy(typeId: string, keys: readonly unknown[], ctx: ActContext, seen = new Set<string>(keys.map((k) => `${typeId}:${String(k)}`))): Promise<{ label: string; store: Store; rows: Row[] }[]> {
+  const out: { label: string; store: Store; rows: Row[] }[] = [];
+  for (const t of Object.values(entityTypes())) {
+    const fields = t.graph ? [] : Object.entries(t.fields ?? {}).filter(([, f]) => (f as StoredField).ref === typeId && (f as StoredField).owned).map(([name]) => name);
+    const store = fields.length && keys.length ? storeOfType(ctx.stores, t.id) : undefined;
+    if (!store) continue;
+    const clauses = fields.map((field): Filter => [field, 'in', [...keys]]);
+    const { rows } = await store.load({ filter: clauses.length === 1 ? clauses[0]! : ['or', ...clauses] });
+    const fresh = rows.filter((row) => !seen.has(`${t.id}:${String(row[store.key])}`));
+    if (!fresh.length) continue;
+    for (const row of fresh) seen.add(`${t.id}:${String(row[store.key])}`);
+    out.push({ label: t.label, store, rows: fresh }, ...await ownedBy(t.id, fresh.map((row) => row[store.key]), ctx, seen));
+  }
+  return out;
 }

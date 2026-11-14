@@ -466,6 +466,7 @@
       "composed": true,
       "detail": {
         "id": "string",
+        "input": "Record<string, unknown>",
         "keys": "readonly unknown[]"
       }
     }

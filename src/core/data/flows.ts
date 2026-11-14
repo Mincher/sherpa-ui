@@ -20,7 +20,7 @@
  * - StepRefusal — Why an answer is refused: the whole sentence, and its field's own words.
  * - answerStep — One answer, checked as the act checks it: the answers with it, or why not.
  */
-import { actsOf, inputFaults, refChoices, type Act, type Choice } from './acts.js';
+import { actsOf, inputFaults, listed, refChoices, type Act, type Choice } from './acts.js';
 import { entityTypes } from './entity-types.js';
 import { conditionClause } from './filter-state.js';
 import { report } from './report.js';
@@ -77,8 +77,6 @@ const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
 const isText = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 const actOf = (id: string): Act | undefined => actsOf().find((a) => a.id === id);
 const empty = (v: unknown): boolean => v === undefined || v === null || v === '';
-/** Words as a list reads them: "A", "A and B", "A, B and C". */
-const listed = (words: readonly string[]): string => (words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`);
 
 /** Each `when` as its test, made once. */
 const tests = new WeakMap<Where, (row: Row) => boolean>();

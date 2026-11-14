@@ -314,7 +314,9 @@ export async function init(root, { source, query, session, view, signal, header,
   `roll-back` on one are refused while the tab holds it ("Ask the reader to Save or discard them first"), and `read`
   says it beside the kept copy, as `unsavedInTheEditor` (TRAP T-a-draft-hides-a-save). The outlet's acts read the tab's
   drafts; elsewhere, give `draftOf` in the context. Ask the reader before an act that `changes`, and only for what can run: `checkAct(id, call, ctx)` (or `outlet.checkAct`) says first why it would be refused — the door's checks, then the act's own `check` (a use that keeps it, a read-only preset, a body its check refuses) — and writes nothing; `outlet.act(id, { keys, input })` runs one over the outlet's stores. Every app.json type gives
-  `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; `actsOf({ context, view, type })` lists a page's,
+  `<type>.find`, `.read`, `.add`, `.change` and `.remove` by itself; a `ref` field that is `owned` (`"user": { "ref":
+  "user", "owned": true }`) belongs to the row it names, so that row's `remove` takes it away too, and the rows it owns
+  in turn, in the same act and its one Undo ("Removed User "Ada", 2 of Account."; plan 963); `actsOf({ context, view, type })` lists a page's,
   `actsOf()` every act, and `actSchema(act)` is a call's JSON Schema, for a tool.
 - **A flow asks an act's input step by step** (`registerFlow`, `sherpa-ui/data`; plan 964 N4): JSON
   (`schemas/flow.v1.json`), keyed by its act and said in its words: `{ "v": 1, "act": "user.invite", "steps": [{ "field":
@@ -325,7 +327,8 @@ export async function init(root, { source, query, session, view, signal, header,
   page reads the stores from `outlet.actContext()`.
 - **A press names its act in markup**: `<sherpa-button commandfor="<the outlet's id>" command="--user.suspend"
   value="u1">Suspend</sherpa-button>` — its keys its `value` (a key, or a JSON list), else the selected rows of the
-  page's grid; a grid row action whose `id` is an act's runs on its rows. The outlet runs it through `runAct` at once
+  page's grid; its given input its `data-input`, a JSON object (`data-input='{"user":"u-07"}'`), which its flow counts
+  as answered and does not ask (plan 963); a grid row action whose `id` is an act's runs on its rows. The outlet runs it through `runAct` at once
   and says it in a toast, with Undo where it changed data; a refusal in its words. An act that still needs input (a
   required field, or any field where the app registered a flow) opens its flow in the outlet's dialog first: a field per
   step that holds, each answer checked, the confirm's words, and its button runs it. A page that asks it itself prevents
@@ -334,8 +337,8 @@ export async function init(root, { source, query, session, view, signal, header,
   words, or nothing. The outlet asks it before every act it runs and in `checkAct`, each time, so a User picked later
   counts at once: `may: (act) => (act.changes && !userHas('runbooks-edit') ? 'Needs "Runbooks · Edit".' : undefined)`.
   sherpa-ui knows no User and no Permission: the app maps an act (its `type` and verb) to what it needs. Give the same
-  words to `bindWorkflow` as `readOnly` (a string is read only and why): Graph details says them, and no Publish or Roll
-  back is offered.
+  words to `bindWorkflow` as `readOnly` (a string is read only and why): Graph details says them; its Publish and
+  Roll back stay, and a press says why, in `may`'s words (972d P3 A).
 
 ## 8. Views
 

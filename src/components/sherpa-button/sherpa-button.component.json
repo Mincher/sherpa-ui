@@ -201,6 +201,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-input",
+      "type": "string",
+      "observed": false,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the input a press gives its act, as JSON — `{\"user\":\"u-07\"}`; its flow asks the rest"
+    },
+    {
+      "$type": "prop",
       "name": "data-label",
       "type": "string",
       "observed": true,
@@ -337,7 +346,7 @@
     }
   ],
   "populate": {
-    "shape": "{ badge?, description?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }",
+    "shape": "{ badge?, description?, iconEnd?, iconStart?, input?, label?, noTab?, noTip?, open?, size?, tip?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

@@ -1043,6 +1043,13 @@
               }
             },
             {
+              "name": "data-input",
+              "description": "the input a press gives its act, as JSON — `{\"user\":\"u-07\"}`; its flow asks the rest",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-label",
               "description": "label text (or use the default slot)",
               "type": {
@@ -9412,7 +9419,7 @@
               "name": "act-input",
               "description": "A pressed act needs input, a request: prevented, the page asks it; else the outlet's dialog does.",
               "type": {
-                "text": "CustomEvent<{ id: string; keys: readonly unknown[] }>"
+                "text": "CustomEvent<{ id: string; input: Record<string, unknown>; keys: readonly unknown[] }>"
               }
             }
           ],

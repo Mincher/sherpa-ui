@@ -35,6 +35,7 @@ For an action on this page: save, add, delete, open a dialog with `commandfor`, 
 | `data-description` | text |  |  |
 | `data-icon-end` | text |  | icon glyph value |
 | `data-icon-start` | text |  | icon glyph value |
+| `data-input` | text |  | the input a press gives its act, as JSON — `{"user":"u-07"}`; its flow asks the rest |
 | `data-label` | text |  | label text (or use the default slot) |
 | `data-look` | `saturated` `transparent` |  | saturated (primary) \| transparent (tertiary) (omitted = default / "secondary": white surface, grey border, dark ink) |
 | `data-no-tab` | boolean |  | out of the tab order — for a host whose own keys do the same (a stepper) |
@@ -97,6 +98,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ badge?, description?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }`
+`{ badge?, description?, iconEnd?, iconStart?, input?, label?, noTab?, noTip?, open?, size?, tip?, type? }`
 
 Its declared props by name: `label` sets data-label.

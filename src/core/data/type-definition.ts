@@ -55,6 +55,8 @@ export interface StoredField {
   ref?: string;
   /** With `ref` or `values`: a list of that type's keys, or of those values, each checked alone. */
   many?: boolean;
+  /** With one `ref`: the row belongs to the row it names, so that row's Remove takes it away too (plan 963). */
+  owned?: boolean;
 }
 
 /** One field of a type: stored, or a status worked out from the row's other fields. */

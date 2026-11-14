@@ -33,6 +33,8 @@ export class SherpaButton extends SherpaElement {
     'data-icon-end': { type: 'string', kind: 'content' },
     'data-badge': { type: 'string', kind: 'content' },
     'data-no-tab': { type: 'boolean', kind: 'behaviour' },
+    /* Read by the element its command reaches, never by the button: an outlet's act. Plan 963 */
+    'data-input': { type: 'string', kind: 'behaviour' },
   } as const;
 
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
