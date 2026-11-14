@@ -642,11 +642,12 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       median: { label: 'Median', help: 'The middle value of the list, in order', rows: [NUMBERS, NUMBER] },
       range: { label: 'Range', help: 'The highest value of the list less the lowest', rows: [NUMBERS, NUMBER] },
       // Rows in, how many out: Count is no property (Will, plan 944, D3 A).
-      count: { label: 'Count', help: 'How many rows come in', rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, NUMBER] },
-      unique: { label: 'Count unique', help: 'How many different values the list holds', rows: [LIST, NUMBER] },
+      count: { label: 'Count', help: 'How many rows come in. How many differ is Count unique', rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, NUMBER] },
+      unique: { label: 'Count unique', help: 'How many different values the list holds. How many rows is Count', rows: [LIST, NUMBER] },
       // A number into named steps: the label of the first band it is up to, else the last (plan 991a).
       band: {
-        label: 'Band', help: 'The label of the first band the value is up to',
+        // One job (Will, plan 992 O1): a value worked out in this graph; a label every page shows is a type's status field.
+        label: 'Band', help: 'The label of the first band a value worked out here is up to. A column every page shows is a status field',
         rows: [numberRow('a', 'Value'), { name: 'bands', label: 'Up to', control: 'tags', multiple: true, input: 'object', needs: 'numbers' },
           { name: 'labels', label: 'Labels', control: 'tags', multiple: true, input: 'object' }, RESULT],
       },
@@ -672,7 +673,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       // A Template filled from what reaches its Data: one text per row, else one text. It is Append and Prepend too (Will,
       // plan 992 O2): "{{value:a.value}} and more". TRAP T-format-is-the-one-text-door
       format: {
-        label: 'Format', help: 'The Template filled from its Data: one text per row, else one text',
+        label: 'Format', help: 'The Template filled from its Data: one text per row, else one text. An Output fills its own message',
         rows: [{ name: 'data', label: 'Data', input: 'any', many: true }, { name: 'template', label: 'Template', control: 'message', input: 'value' }, RESULT],
       },
       split: { label: 'Split by', help: 'Value as a list, split at each Separator', rows: [textRow('a', 'Value'), SEPARATOR, { ...RESULT, output: 'object', gives: 'list' }] },
