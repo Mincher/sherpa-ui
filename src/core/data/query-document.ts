@@ -71,8 +71,9 @@ export function queryDefinition(id: string, graph: DrawnGraph, layout: GraphLayo
   const ids = nodes.map((n) => n.id);
   const ties = tiesAmong(layout.ties as NodeTie[] | undefined, graph.connections);
   const frames = framesAmong(layout.frames, ids);
+  // Its name, where a trail names it: a page's Query (plan 960 U4.7b).
   return {
-    v: 3, id, nodes, connections: graph.connections,
+    v: 3, id, label: 'Query', nodes, connections: graph.connections,
     ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}),
     ...(layout.stages?.length ? { stages: layout.stages } : {}), ...(layout.lanes?.length ? { lanes: layout.lanes } : {}),
   };

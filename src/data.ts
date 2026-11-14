@@ -203,7 +203,7 @@ export {
 export { START, START_KIND, hasStart, modelInto, primaryOf, startFaults, unstarted, withStart, withStartKind, type ModelPick } from './core/data/node-start.js';
 export { graphModels, type GraphModel } from './core/data/graph-models.js';
 export { graphSteps, type GraphStep, type StepGoes, type StepStage } from './core/data/graph-steps.js';
-export { graphKey, graphText, outputWords, registerStepWords, stepWords, type GraphText, type StepWords, type TextGraph } from './core/data/graph-text.js';
+export { conditionWords, graphKey, graphText, outputWords, registerStepWords, stepWords, type GraphText, type StepWords, type TextGraph } from './core/data/graph-text.js';
 // The way out: what a graph's Output Triggers start, and the loops among them across the shelf (plan 949).
 export { OUTPUT_TRIGGER } from './core/data/node-kinds.js';
 export { startLoops, startsOf, type Graphed } from './core/data/output-triggers.js';
@@ -334,7 +334,7 @@ export {
 } from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export {
-  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryStepNode, connectionRequest, statusTallies, traceQuerySteps, whereGraph,
+  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryStepNode, connectionRequest, statusRule, statusTallies, traceQuerySteps, whereGraph,
   type GraphComponent, type LoadSteps, type QueryGraphFacts, type ConnectionAnswer, type ScopePreset,
 } from './core/data/query-graph.js';
 /* A pure edit: the Query after a Sort, Group, Search, presentation, order or move. TRAP T-one-command-one-door */

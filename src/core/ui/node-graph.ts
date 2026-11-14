@@ -2483,6 +2483,9 @@ export interface GraphDocument {
   palette(): ReturnType<typeof paletteOf>;
   /** What a picked node's inspector shows beside its rows: a component's live copy. */
   visual?(node: GraphNode): HTMLElement | null;
+  /** What a node holds inside, read only, opened as a preset Custom Node's inside is: a status field's rule (plan 960
+   *  U4.7b). TRAP T-a-status-opens-its-rule */
+  inside?(node: WorkflowNode): NodeDefinition | undefined;
   /** Save: what to hand over, or false where it may not be saved. */
   save(): unknown;
   /** Why Fetch and Play do not run it; none, they do. */
@@ -2569,6 +2572,8 @@ interface Opened {
   kind: string;
   use: string;
   label: string;
+  /** Its inside is the document's, not its kind's (`GraphDocument.inside`). */
+  held?: true;
 }
 
 /** Whether a value is a library's edits: definitions by id. */
@@ -2656,8 +2661,9 @@ export function bindWorkflow(
     let inner: Inner | undefined;
     for (const step of path) {
       const use = at.nodes.find((n) => n.id === step.use);
+      const given = step.held && use ? doc?.inside?.(use) : undefined;
       // Drawn laid out as an edit leaves it: each stage round its nodes (TODO 976).
-      inner = use && innerOf(use, lib, topKinds(), { fit: true });
+      inner = use && innerOf(use, lib, topKinds(), { fit: true, ...(given ? { held: given } : {}) });
       if (!inner) return undefined;
       at = inner.workflow;
     }
@@ -2667,7 +2673,7 @@ export function bindWorkflow(
   const K = (): Readonly<Record<string, NodeKind>> => (path.length ? innerNow()?.kinds ?? topKinds() : topKinds());
   /** A preset's inside is read only (D15), at any depth, and one the app says the reader may not change (plan 936 D2); a
    *  preset workflow, everywhere. */
-  const insidePreset = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset || (canEdit && !canEdit(lib.nodes[s.kind]!)));
+  const insidePreset = (): boolean => path.some((s) => s.held || lib.nodes[s.kind]?.preset || (canEdit && !canEdit(lib.nodes[s.kind]!)));
   const readOnly = (): boolean => preset || insidePreset();
   // A graph's own Group Input and Output are drawn, never placed; the rest are what the graph shown may place.
   const refreshPanel = (): void => {
@@ -2913,9 +2919,11 @@ export function bindWorkflow(
   /** What a draw reads beside the graph: inside a Custom Node, the top graph's primary model too, or `null` where it has none
    *  (plan 951). */
   const factsAt = (inside: boolean): typeof facts => (inside && !doc ? { ...facts, primary: primaryOf(draft) ?? null } : facts);
+  /** The graph shown, drawn: the document's own, else a workflow's; inside a node, always the inside's. */
+  const bodyOf = (): FramedGraph => (doc && !path.length ? doc.graph(shown()) : workflowGraph(shown(), factsAt(!!path.length), K()));
   /** Mid-drag of a tie or a bend: the connections and ties as the draft has them, the nodes as drawn. */
   const lineGraph = (): FramedGraph => {
-    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), factsAt(!!path.length), K());
+    const body = bodyOf();
     return lanesOn() ? { ...body, ties: [] } : body;
   };
   /** Mid-drag: each node where the draft says (a stage that grew pushes others), the lines, the stages and lanes. */
@@ -3222,8 +3230,10 @@ export function bindWorkflow(
   let active: string | null = null;
   const use = (id: string): WorkflowNode | undefined => {
     const at = shown().nodes.find((n) => n.id === id);
-    return at && K()[at.kind]?.model === 'graph' && lib.nodes[at.kind] ? at : undefined;
+    return at && ((K()[at.kind]?.model === 'graph' && lib.nodes[at.kind]) || held(at)) ? at : undefined;
   };
+  /** The inside a document gives a node of its own graph, not a Custom Node's. */
+  const held = (node: WorkflowNode): NodeDefinition | undefined => (path.length ? undefined : doc?.inside?.(node));
   // The way back, at the canvas's top left (Will, TODO 954): the app's trail, shown inside a Custom Node, its crumbs the path.
   const trailOf = (): HTMLElement | null => canvas.querySelector<HTMLElement>(':scope > [slot="trail"]');
   const trail = (): void => {
@@ -3247,7 +3257,8 @@ export function bindWorkflow(
   const open = (id: string): void => {
     const at = use(id);
     if (!at) return;
-    path = [...path, { kind: at.kind, use: id, label: at.heading ?? lib.nodes[at.kind]!.label }];
+    const inside = held(at);
+    path = [...path, { kind: at.kind, use: id, label: at.heading ?? (inside ?? lib.nodes[at.kind]!).label, ...(inside ? { held: true as const } : {}) }];
     enter(null);
     // A preset says it is read only, and where its copy is: the panel opens beside it.
     if (insidePreset() && inspector) showScope();
@@ -3311,10 +3322,13 @@ export function bindWorkflow(
     note.setAttribute('data-gap', 'md');
     const words = document.createElement('p');
     words.style.margin = '0';
-    words.textContent = act ? 'This Custom Node is a preset: its inside is read only. Clone it to change your own copy.' : 'This Custom Node is a preset: its inside is read only.';
+    // An inside the document holds is the app's own (a status field's rule): it has no copy to make.
+    const held = path.some((s) => s.held) ? innerNow()?.definition : undefined;
+    words.textContent = held ? `Read only. ${held.description ?? ''}`.trim()
+      : act ? 'This Custom Node is a preset: its inside is read only. Clone it to change your own copy.' : 'This Custom Node is a preset: its inside is read only.';
     note.append(words);
     // A copy is the app's Clone: with no acts given, none is offered.
-    if (act) {
+    if (act && !held) {
       const button = document.createElement('sherpa-button');
       button.setAttribute('data-label', 'Clone');
       button.setAttribute('data-size', 'sm');
@@ -4039,7 +4053,7 @@ export function bindWorkflow(
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
-    const body = doc ? doc.graph(shown()) : workflowGraph(shown(), factsAt(!!path.length), K());
+    const body = bodyOf();
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     refreshGraphDetails(inspector);
     // Swimlanes on: the tie tool goes off, and the ties are hidden, not gone.

@@ -7,18 +7,20 @@
  *
  * Map:
  * - TextGraph — What a graph read as text needs: its nodes, connections and stages.
- * - graphKey — A short key of what a graph does: its nodes, values, connections and stages; not their places.
  * - StepWords — An app's words for a node of its kind, or none to leave it to the library's.
+ * - graphKey — A short key of what a graph does: its nodes, values, connections and stages; not their places.
  * - registerStepWords — Say an app's kind, or a use of its entity type, in words; the call that takes it back.
  * - outputWords — An Output's line: its action, the app's own words after it, who it goes to, and what it says.
  * - stepWords — A node in words: its own line, else what its kind and values say.
  * - GraphText — A graph read as text: the stages' lines, the errors and retries, and its steps.
  * - graphText — A graph read as text, by its steps.
+ * - conditionWords — A condition tree in words, each field by its label: "Score is less than 60 or Open tickets is at least 5".
  */
 import { graphSteps, type GraphStep, type StepGoes } from './graph-steps.js';
 import type { NodeConnection } from './node-kinds.js';
 import type { NodeStage } from './node-stages.js';
 import { ref } from './references.js';
+import { groupOf, type Condition, type ConditionLeaf, type Duration } from './store.js';
 import type { WorkflowNode } from './workflow.js';
 
 /** What a graph read as text needs: its nodes, connections and stages. */
@@ -48,6 +50,7 @@ const OPS: Readonly<Record<string, string>> = {
   eq: 'is', ne: 'is not', gt: 'is more than', gte: 'is at least', lt: 'is less than', lte: 'is at most',
   contains: 'contains', notcontains: 'does not contain', startswith: 'starts with', endswith: 'ends with',
   in: 'is one of', notin: 'is not one of', empty: 'is empty', not: 'is not',
+  between: 'is between', notbetween: 'is not between', last: 'is in the last', next: 'is in the next',
 };
 const OUTPUTS: ReadonlySet<string> = new Set(['request', 'notify', 'response', 'result', 'content']);
 const added = new Map<string, StepWords>();
@@ -157,4 +160,20 @@ export function graphText(graph: TextGraph): GraphText {
     errors.unshift(`- A retry: ${ref('step', st.number)} ${nodeOf(st)?.heading ?? st.kind}.`);
   }
   return { stages: lines, errors, steps };
+}
+
+/** A condition tree in words, each field by its label: "Score is less than 60 or Open tickets is at least 5". */
+export function conditionWords(tree: Condition, label: (field: string) => string = (f) => f): string {
+  const said = (part: Condition, inner: boolean): string => {
+    const parts = groupOf(part);
+    if (parts) {
+      const words = parts[1].map((p) => said(p, true)).join(parts[0] === 'and' ? ' and ' : ' or ');
+      return inner && parts[1].length > 1 ? `(${words})` : words;
+    }
+    const { field = '', op, value } = part as ConditionLeaf;
+    const span = op === 'last' || op === 'next' ? (value as Duration) : undefined;
+    const v = span ? `${span.n} ${span.unit}${span.n === 1 ? '' : 's'}` : Array.isArray(value) ? value.join(op.endsWith('between') ? ' and ' : ', ') : text(value);
+    return `${label(field)} ${OPS[op] ?? op} ${v}`.trim();
+  };
+  return said(tree, false);
 }

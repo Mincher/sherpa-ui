@@ -531,10 +531,6 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     ], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
-  status: {
-    heading: 'Status field', icon: 'status-ok', description: 'Label each row by conditions',
-    input: 'any', rows: [ROWS], model: 'StatusField', graphs: ['query'], category: 'Status',
-  },
   // The View's bar (plan 960 U4.8): its Switch, then a chip per held field (its tree's True joins it) and a row per preset.
   // Its header takes the View's Organise; it goes into the View.
   'view-filters': {
@@ -766,11 +762,11 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets', 'Status'];
+export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
  *  its Custom Nodes, its page's Filters (TODO 776). */
-const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Status'];
+const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets'];
 
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {

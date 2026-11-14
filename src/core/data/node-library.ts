@@ -224,11 +224,11 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
 
 /** The graph inside one use, for the checks, the drawing and a runner: the definition's body with
  *  its Group Input and Output, and this instance's parameters over the defaults. `fit`, for a drawing: laid out as an edit
- *  leaves it, though a writer left it otherwise; the checks read it as written. None, the use is of no definition in the
- *  library. */
-export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, library: NodeLibrary, kinds: Kinds = nodeKinds(), { fit = false }: { fit?: boolean } = {}): Inner | undefined {
-  const definition = library?.nodes?.[use.kind];
-  return definition && !shipped(kinds, use.kind) ? inside(use.id, definition, { ...kindsOf(library), ...kinds }, use.values, fit) : undefined;
+ *  leaves it, though a writer left it otherwise; the checks read it as written. `held`: a definition the node holds itself,
+ *  not its kind's (a status field's rule, plan 960 U4.7b). None, the use is of no definition in the library. */
+export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, library: NodeLibrary, kinds: Kinds = nodeKinds(), { fit = false, held }: { fit?: boolean; held?: NodeDefinition } = {}): Inner | undefined {
+  const definition = held ?? library?.nodes?.[use.kind];
+  return definition && (held || !shipped(kinds, use.kind)) ? inside(use.id, definition, { ...kindsOf(library), ...kinds }, use.values, fit) : undefined;
 }
 
 /** A use of a definition, placed: it records the version and the definition it was made from, so a

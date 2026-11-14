@@ -83,7 +83,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group, NODE_KINDS.organise.category], [undefined, undefined, undefined, undefined, 'Organise']);
   assert.equal(NODE_KINDS.math.types.count.label, 'Count');
   // A page's Query draws View Filters, each card's Presentation and the View (plan 960 U4.8).
-  assert.deepEqual(drawnIn('query'), ['source', 'status', 'view-filters', 'condition', 'preset', 'organise', 'presentation', 'view', 'field']);
+  assert.deepEqual(drawnIn('query'), ['source', 'view-filters', 'condition', 'preset', 'organise', 'presentation', 'view', 'field']);
   // One meaning per word: a Source is where rows come from, in both, and the Store kind is gone (TODO 808); a Condition
   // is one test, in both (plan 783 D4).
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');

@@ -6678,8 +6678,9 @@ chip's is (`graphRequest`).
 - **A preset is a node into its bar's row** (`@<id>`): its On, read from the
   Query (`presetHeld`), and what it writes, read only. A Filter over the store, a
   reader's saved one too, is a preset `filter:<id>`: its own graph changes it (plan
-  960 U4.4c: there is no Saved filter kind). A status field sits between the Source and the
-  cards, a row per value and when a row has it, from the store's `domains`. A
+  960 U4.4c: there is no Saved filter kind). A status field is ONE Field node on the
+  Source's rows, a row per value saying its rule, the rule its inside
+  (`T-a-status-opens-its-rule`). A
   component scope's own answer the View holds over it (`superseded`) is a read-only
   condition into its chip, the one card chip with a line: it moves nowhere.
 - **Laid out by depth**, in columns: Fields and Conditions, then each card's And
@@ -6923,13 +6924,10 @@ its choices".
 - **A test is shaped by its Field's type** where the facts give it (`T-a-logic-type-is-an-operator`):
   an operator its type does not take warns; a Value B that is no number for a number field is the
   row's fault.
-- **A status and a preset draw the same shapes, read only** (M5): the definition or
-  the store owns them, so no `ref.scope` and no edit asks the Query. A status field is one row per
-  value (its look); each value's `when` draws a Field per field it names and its tests (plan 944, D2
-  A; 971 §9): the root's Pass into the value's row, and its Fail into the next value's Fields, in the
-  order the status takes the first match; the last value, with no `when`, takes the last Fail. A load lights each root with the rows
-  that took it (`statusTallies`, `traceQuerySteps`). `queryGraphFaults` names a `when` that is no
-  condition and a connection that ends in nothing.
+- **A preset draws read only** (M5): the definition owns it, so no `ref.scope` and no edit asks
+  the Query. A status field's rule draws the same shapes, inside its Field node
+  (`T-a-status-opens-its-rule`). `queryGraphFaults` names a `when` that is no condition and a
+  connection that ends in nothing.
 - **Left for later**: a new leaf made in the Query editor (a connection from a Field to a new
   Condition); an Or across two fields (plan 783 D7: said in words, left off the bar).
 
@@ -6938,10 +6936,36 @@ its choices".
 - Site: `src/core/data/node-flow.ts`
 - Site: `src/core/data/node-kinds.ts`
 - Site: `test/unit/a-condition-is-a-tree-of-nodes.test.mjs`
-- Site: `test/unit/a-status-is-a-chain-of-conditions.test.mjs`
+- Site: `test/unit/a-status-opens-its-rule.test.mjs`
 - Site: `test/unit/and-or-take-any-boolean.test.mjs`
 - Site: `test/e2e/reforged-node-and-or.spec.ts`
 - Site: `test/unit/only-a-test-branches.test.mjs`
+
+### T-a-status-opens-its-rule
+
+**A status field is ONE Field node, and its rule is its inside** (Will, plan 960 U4.7b,
+2026-11-14). In a page's Query graph the field's node (`status-<field>`) stands on the
+Source's rows: its field, read only, then a row per value saying its rule in words
+(`conditionWords`; the last value "Every row the values before it left"). The rows
+show: no socket, as the Query takes no connection from them. The rule itself is
+`statusRule(field, domain)`, a preset Custom Node's definition: the rows in at its Group
+Input; each value's `when` a tree (the one walk `whereGraph` uses), its Pass out at
+that value's row of the Group Output, its Fail into the next value's Fields, in the
+order the store takes the first match.
+
+- **One door to open it.** The editor opens a node whose kind is a Custom Node, or one
+  its document holds an inside for (`GraphDocument.inside`, `innerOf`'s `held`): ⛶ and
+  Enter alike, the same trail and Back. Inside, it is read only as a preset's is, says
+  why, and offers no Clone: the rule is the app's store's.
+- **It is drawn as a workflow**, inside: the document draws only its own top graph.
+- **A load still lights it**: the Field node with every row that took a value, each
+  root inside with its own (`statusTallies`, `traceQuerySteps`), by the same ids.
+
+- Site: `src/core/data/query-graph.ts`
+- Site: `src/core/ui/query-editor.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-status-opens-its-rule.test.mjs`
+- Site: `test/e2e/reforged-a-status-opens-its-rule.spec.ts`
 
 ### T-an-app-is-its-definition
 

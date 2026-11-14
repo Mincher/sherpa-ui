@@ -19,6 +19,7 @@
  * - ScopePreset — One preset of a scope, as declared: its id, its name and the readings it writes.
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say, and the Sources a reader keeps.
  * - whereGraph — A Where as the graph a Filter keeps it as: a Source, a Field and a test per field, each group joined.
+ * - statusRule — A status field's rule as a Custom Node's inside, read only: each value's tree, its Pass out at its value.
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
  * - statusTallies — Each status field's rows per value, over the whole store: how many each Condition of its chain took.
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a `when` that is no condition, a stray connection.
@@ -51,6 +52,9 @@ import {
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
+import type { WorkflowNode } from './workflow.js';
+import type { NodeDefinition } from './node-library.js';
+import { conditionWords } from './graph-text.js';
 
 /** A test's properties, as its kind gives them (plan 971 A): Pass and Fail. */
 const TEST_ROWS: Readonly<Record<'condition' | 'time', readonly GraphRow[]>> = {
@@ -210,6 +214,7 @@ const notThePage = (store: string | undefined): string => `The page reads ${stor
 /** Why a row is read only: nothing outside the editor takes its change. */
 const FROM_DEFINITION = 'The page definition sets it: Save writes the definition.';
 const FROM_STORE = 'The app\'s store works it out: statusFields().';
+const OPENS_RULE = 'The app\'s store works it out. Open the node to see its rule.';
 const FROM_ENTITY = 'A Filter: its own graph changes it, in the Node Editor.';
 const SUPERSEDED = 'The View holds this field: kept, not in force. It comes back when the View lets it go.';
 const CHIP = 'Its Condition changes it.';
@@ -279,49 +284,103 @@ function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }
   return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Value B', control: 'text', value: value ?? '', editable: true }] };
 }
 
-/**
- * A Where as the graph a Filter keeps it as (plan 960 U4.4b, D6): a Source over its store; a Field per field it tests;
- * a test per leaf, drawn as the Query graph draws one (`leafRows`); an And or an Or per group, each part's Pass into its
- * header; the root's Pass into `#out/where` (a Time's, its header). Its places are a first layout: it unfurls the first time it is shown.
- */
-export function whereGraph(where: Readonly<Where>, { source, type = () => undefined }: { source?: string; type?: (field: string) => string | undefined } = {}): EntityGraph {
-  const nodes: EntityGraph['nodes'][number][] = [{ id: 'source', kind: 'source', x: 0, y: 0, ...(source ? { values: { store: source } } : {}) }];
-  const connections: NodeConnection[] = [];
+/** What a tree's nodes need: the ids its root starts, the rows its Fields take, a Field's id, its first column, the field a
+ *  leaf that names none reads, and each field's type. */
+interface TreeAt {
+  root: string;
+  into: readonly string[];
+  fieldId: (field: string) => string;
+  x: number;
+  field: string;
+  type: (field: string) => string | undefined;
+  own?: Pick<WorkflowNode, 'heading' | 'description'>;
+}
+
+/** A condition tree as a Filter keeps it: a Field per field it tests, each taking the rows `into` sends; a test per leaf,
+ *  drawn as the Query graph draws one (`leafRows`); an And or an Or per group, each part's Pass into its header. Where the
+ *  root says its tree: its Pass (a Time's, its header). */
+function treeGraph(tree: Condition, at: TreeAt, nodes: WorkflowNode[], connections: NodeConnection[]): string {
   const fields = new Map<string, string>();
   const fieldOf = (field: string): string => {
     if (!fields.has(field)) {
-      const id = `field-${field}`;
-      nodes.push({ id, kind: 'field', x: 360, y: fields.size * 200, values: { field } });
-      connections.push({ from: `source/${ROWS.name}`, to: id });
+      const id = at.fieldId(field);
+      nodes.push({ id, kind: 'field', x: at.x, y: fields.size * 200, values: { field } });
+      for (const from of at.into) connections.push({ from, to: id });
       fields.set(field, id);
     }
     return fields.get(field)!;
   };
   let tests = 0;
   const walk = (part: Condition, path: readonly number[]): string => {
-    const id = treeNodeId('when', path);
+    const id = treeNodeId(at.root, path);
+    const own = path.length ? {} : at.own ?? {};
     const parts = groupOf(part);
     if (parts) {
       const ends = parts[1].map((p, i) => walk(p, [...path, i + 1]));
-      nodes.push({ id, kind: 'condition', x: 1080 + path.length * 120, y: 0, values: { type: parts[0] } });
+      nodes.push({ id, kind: 'condition', x: at.x + 720 + path.length * 120, y: 0, values: { type: parts[0] }, ...own });
       for (const from of ends) connections.push({ from, to: id });
       return `${id}/pass`;
     }
     const leaf = part as ConditionLeaf;
-    const field = leaf.field ?? '';
-    const drawn = leafRows(leaf, { field, type, fields: [], values: () => undefined, label: (f) => f });
+    const field = leaf.field ?? at.field;
+    const drawn = leafRows(leaf, { field, type: at.type, fields: [], values: () => undefined, label: (f) => f });
     // A list's values as the Where gives them, typed: the rows show them as text.
     const values = storedValues(drawn.rows);
     const list = Array.isArray(leaf.value) ? [...leaf.value as unknown[]] : undefined;
     if (list && 'start' in values) Object.assign(values, { start: list[0], end: list[1] });
     else if (list && Array.isArray(values['b'])) values['b'] = list;
-    nodes.push({ id, kind: drawn.kind, x: 720, y: tests++ * 200, values });
+    nodes.push({ id, kind: drawn.kind, x: at.x + 360, y: tests++ * 200, values, ...own });
     connections.push({ from: `${fieldOf(field)}/field`, to: id });
     return drawn.kind === 'condition' ? `${id}/pass` : id;
   };
+  return walk(tree, []);
+}
+
+/**
+ * A Where as the graph a Filter keeps it as (plan 960 U4.4b, D6): a Source over its store, then its tree (`treeGraph`), the
+ * root's Pass into `#out/where`. Its places are a first layout: it unfurls the first time it is shown.
+ */
+export function whereGraph(where: Readonly<Where>, { source, type = () => undefined }: { source?: string; type?: (field: string) => string | undefined } = {}): EntityGraph {
+  const nodes: WorkflowNode[] = [{ id: 'source', kind: 'source', x: 0, y: 0, ...(source ? { values: { store: source } } : {}) }];
+  const connections: NodeConnection[] = [];
   const tree = parseWhere(where);
-  if (tree) connections.push({ from: walk(tree, []), to: '#out/where' });
+  if (tree) {
+    const says = treeGraph(tree, { root: 'when', into: [`source/${ROWS.name}`], fieldId: (f) => `field-${f}`, x: 360, field: '', type }, nodes, connections);
+    connections.push({ from: says, to: '#out/where' });
+  }
   return { nodes, connections, unfurl: true };
+}
+
+/**
+ * A status field's rule as a Custom Node's inside, read only (plan 960 U4.7b): the rows in at its Group Input; each value's
+ * `when` a tree (`treeGraph`), its Pass out at that value's row of the Group Output, its Fail into the next value's Fields,
+ * in the order the first match is taken; the last value, with no `when`, the rows the rest left. A load lights each root.
+ */
+export function statusRule(field: string, domain: FieldDomain, { label = (f) => f, type = () => undefined }: { label?: (field: string) => string; type?: (field: string) => string | undefined } = {}): NodeDefinition {
+  const values = (domain.values ?? []).map(String);
+  const nodes: WorkflowNode[] = [];
+  const connections: NodeConnection[] = [];
+  const rows = `#in/${ROWS.name}`;
+  let before: string | null = null;
+  let at = 0;
+  for (const value of values) {
+    const when = domain.when?.[value];
+    if (!isCondition(when)) {
+      if (before && when === undefined) connections.push({ from: before, to: `#out/${value}` });
+      before = null;
+      continue;
+    }
+    const root = QUERY_NODE.statusWhen(field, value);
+    const own = { heading: value, description: conditionWords(when, label) };
+    connections.push({ from: treeGraph(when, { root, into: [before ?? rows], fieldId: (f) => `field-${root}-${f}`, x: at++ * 1080, field, type, own }, nodes, connections), to: `#out/${value}` });
+    before = `${treeNodeId(root, [])}/fail`;
+  }
+  return {
+    v: 1, label: label(field), preset: true, unfurl: true, description: FROM_STORE,
+    inputs: [{ name: ROWS.name, label: ROWS.label, type: 'object' }],
+    outputs: values.map((v) => ({ name: v, label: v, type: 'object' })),
+    nodes, connections,
+  };
 }
 
 /** A condition node's rows, edited, as the condition they say: the other half of drawing one —
@@ -461,16 +520,16 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     nodes.push({ ...made, column });
     return id;
   };
-  // The page's rows: each status field's, else the Source's (set once the status fields are drawn). Every Field reads them.
-  let fed: readonly string[] = [sent(QUERY_NODE.source)];
+  // The page's rows: the Source's. Every Field reads them.
+  const fed: readonly string[] = [sent(QUERY_NODE.source)];
   // A field's whole tree (plan 783 D6): a Field node per field it reads, a test per leaf on its Field, an And or an Or per
-  // group, a part's Pass into its group's header. `into`: the connections into its Fields, the page's rows unless a status
-  // chain hands its own on. It returns where the root says its tree (a Condition's Pass, a Time's header), and its Pass and
-  // Fail (plan 971 §9).
+  // group, a part's Pass into its group's header; each Field takes the page's rows. It returns where the root says its tree
+  // (a Condition's Pass, a Time's header), and its Pass and Fail (plan 971 §9).
   const treeNodes = (
     column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
-    apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, into = fed }: { back?: number; into?: readonly string[] } = {},
+    apply: (row: GraphRow) => GraphRow = (r) => r,
   ): { says: string; pass: string; fail: string } => {
+    const back = 0.25;
     const whole = JSON.stringify(tree);
     const depth = (t: Condition): number => 1 + Math.max(0, ...(groupOf(t)?.[1] ?? []).map(depth));
     const fields = fieldsOf(tree, ctx.field);
@@ -479,10 +538,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const id = `field-${base}${fields.length > 1 || !root.startsWith('when-') ? `-${f}` : ''}`;
       const row: GraphRow = { name: 'field', label: 'Field', control: 'field', output: 'object', gives: 'field', value: f, editable: true, choices: ctx.fields };
       add(column - depth(tree) * back, id, 'field', [apply(row)], { heading: ctx.label(f), ref: { ...ref, field: f, tree: whole } });
-      // Its header takes the rows it reads: none where a chain hands it none.
-      const made = nodes.at(-1)!;
-      if (!into.length) delete made.input;
-      for (const from of into) connections.push({ from, to: id });
+      for (const from of fed) connections.push({ from, to: id });
       return [f, id] as const;
     }));
     const walk = (part: Condition, path: readonly number[]): string => {
@@ -530,36 +586,19 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const everyField = known.map((f) => ({ value: f, label: label(f) }));
   const readOnly = (hint: string) => (row: GraphRow): GraphRow => ({ ...row, editable: false, hint });
   const ctxOf = (field: string, fields: TreeFacts['fields']): TreeFacts => ({ field, type: typeOf, fields, values: (f) => facts.values?.(f), label });
+  // A worked-out status field is ONE Field node on the page's rows, a row per value saying its rule (plan 960 U4.7b): the
+  // rule itself is its inside, `statusRule`, opened read only. TRAP T-a-status-opens-its-rule
   for (const [field, domain] of statuses) {
-    const node = QUERY_NODE.status(field);
-    const values = (domain.values ?? []).map(String);
-    const whens = values.map((v) => domain.when?.[v]);
-    const rows = values.map((value, i): GraphRow => ({
-      name: value, label: value, input: 'any', value: domain.statuses?.[value] ?? '',
-      hint: whens[i] === undefined ? 'Every row the values before it left. ' + FROM_STORE : !isCondition(whens[i]) ? `Its \`when\` is not a condition. ${FROM_STORE}` : FROM_STORE,
-    }));
-    connections.push({ from: sent(QUERY_NODE.source), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
-    // Each value's `when` is a tree of tests on a Field per field it names (plan 971 §9): its Pass hands its value the rows,
-    // its Fail hands the rows it left to the next value's Fields, in the order the first match is taken.
-    let before: string | null = null;
-    let at = 0;
-    values.forEach((value, i) => {
-      const when = whens[i];
-      if (!isCondition(when)) {
-        if (before && when === undefined) connections.push({ from: before, to: `${node}/${value}` });
-        before = null;
-        return;
-      }
-      const column = 0.5 + at++ * 0.01;
-      const tree = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
-        heading: value, description: groupWords(when),
-      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: [before ?? sent(QUERY_NODE.source)] });
-      connections.push({ from: tree.pass, to: `${node}/${value}` });
-      before = tree.fail;
-    });
+    const said = (value: string): string => {
+      const when = domain.when?.[value];
+      return when === undefined ? 'Every row the values before it left.' : isCondition(when) ? conditionWords(when, label) : 'Its `when` is not a condition.';
+    };
+    const rows: GraphRow[] = [
+      { name: 'field', label: 'Field', control: 'field', value: field, editable: false, hint: FROM_STORE, choices: [{ value: field, label: label(field) }] },
+      ...(domain.values ?? []).map(String).map((value): GraphRow => ({ name: value, label: value, value: said(value), hint: OPENS_RULE })),
+    ];
+    connections.push({ from: sent(QUERY_NODE.source), to: add(1, QUERY_NODE.status(field), 'field', rows, { heading: label(field), ref: { field, status: field } }) });
   }
-  // The page's rows: each status field's, else the Source's.
-  if (statuses.length) fed = statuses.map(([field]) => sent(QUERY_NODE.status(field)));
 
   // Each scope, the View first — and one its definition gives presets, held or not. Every page has its View.
   const scopes = Object.entries(query.scopes);
@@ -819,16 +858,16 @@ export interface KeptSource {
 /** What placing a node asks: a command through the Query's door, a Source the editor keeps, or why it cannot. */
 export type PlaceAnswer = { request: QueryRequest } | { refused: string } | { keep: KeptSource };
 
-/** The kinds a Query draws and never places: a Field's tests are its chip's, and a status field the app's. Its node panel
- *  offers neither; `placeRequest` still says why, to one that asks. Will, 2026-11-10 */
-export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'organise'];
+/** The kinds a Query draws and never places: a Field's tests are its chip's, and a scope has its one Organise. Its node
+ *  panel offers neither; `placeRequest` still says why, to one that asks. Will, 2026-11-10 */
+export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'organise'];
 
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the
  * scope's next field (its chip appears); a Condition tests a Field, so it is refused in words;
  * a Preset switches on the next of the app's own the scope's bar has; a preset named by
  * its own id — a Filter, a Custom Node of the Query's panel (TODO 776) — switches that
- * one on. A Status field is the app's own, so it is refused. A Source is KEPT: the page reads
+ * one on. A Source is KEPT: the page reads
  * one store, so it asks the Query nothing, and names the first store the page does not read
  * (TODO 808). Plan 783 D6 · TRAP T-one-command-one-door · TRAP T-a-second-source-is-kept
  */
@@ -849,7 +888,6 @@ export function placeRequest(kind: string, scope: string, facts: PlaceFacts): Pl
     return next ? { request: { scope, preset: next.id, on: true } }
       : { refused: `Scope "${scope}" has no ${name.toLowerCase()} left to switch on.` };
   }
-  if (kind === 'status') return { refused: `A ${name.toLowerCase()} is the app's own: the store's statusFields() works it out, and a Query cannot add one.` };
   if (kind === 'source') {
     const ids = new Set((facts.kept ?? []).map((k) => k.id));
     const free = (n: number): string => (ids.has(`source-${n}`) ? free(n + 1) : `source-${n}`);

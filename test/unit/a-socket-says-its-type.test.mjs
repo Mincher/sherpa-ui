@@ -96,7 +96,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
     if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, name === 'source' ? { ...ROWS, beside: 'store' } : ROWS], `${name}: its Rows row, first`);
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
-  assert.deepEqual(named((k) => k.rows.some((r) => r.name === ROWS.name)), ['source', 'status', 'organise']);
+  assert.deepEqual(named((k) => k.rows.some((r) => r.name === ROWS.name)), ['source', 'organise']);
   // A family's types say their own rows: every type of a test sends its rows from Pass and Fail, first (plan 971); none from Results.
   const typed = all.flatMap(([n, k]) => Object.entries(k.types ?? {}).map(([t, type]) => [`${n} › ${t}`, type.rows ?? []]));
   assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)), []);

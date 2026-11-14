@@ -3,8 +3,8 @@ import { test, expect, type Page } from './harness';
 /**
  * The Query editor's node panel — Will, TODO 734: "the query editor is a node editor". The panel
  * lists the kinds a reader may place in a Query (Sources, Variables, Presets), and the
- * page's Filters as its Custom Nodes (TODO 776); a kind the Query only draws — a Condition, a
- * Status, a Check (plan 944) — is not offered (Will, 2026-11-10). Placing one, by a click or a drag,
+ * page's Filters as its Custom Nodes (TODO 776); a kind the Query only draws — a Condition, an
+ * Organise — is not offered (Will, 2026-11-10). Placing one, by a click or a drag,
  * is a request through the Query's one door: a Field holds the scope's next field, a Preset switches
  * on, a Filter switches itself on. One the Query cannot take now is refused in words, and asks nothing. Real pointer. TRAP T-one-command-one-door · TRAP T-a-filter-is-a-preset-of-its-store
  */
@@ -49,9 +49,9 @@ test('it lists the Query\'s kinds by category, 8px in from the top, bottom and l
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   // The Preset tab's, the page's preset Filters under Custom Nodes; then the Custom tab's, the reader's own (plan 936).
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Presets', 'Custom Nodes']);
-  // The Query draws a Condition and a Status, and places neither: they are not offered (plans 944, 971).
+  // The Query draws a Condition and an Organise, and places neither: they are not offered (plans 944, 971).
   await expect(item(page, 'condition')).toHaveCount(0);
-  await expect(item(page, 'status')).toHaveCount(0);
+  await expect(item(page, 'organise')).toHaveCount(0);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('#cv > sherpa-overlay-panel')!].map((e) => {
     const r = (e.id === 'cv' ? e : e.shadowRoot!.querySelector('.root')!).getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };

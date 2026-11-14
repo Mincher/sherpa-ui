@@ -187,6 +187,22 @@ c1 and c3, and c2a: the provider, the page keeper, page.v1 and the Query graph. 
   read and kept on write, so the one-off can still read it; a View scope that reads Select all is an answer (TODO 965),
   so it is a Filter of its own.
 
+### U4.7b, as built (2026-11-14, lane 960-u47b, sherpa-ui-e8; Demos' side sherpa-demos-67's)
+
+- In a page's Query graph a status field is ONE Field node, `status-<field>`, on the Source's rows: its field, read only
+  (it offers only itself), then a row per value saying its rule in words (`conditionWords`: "Score is less than 60 or
+  Open tickets is at least 5"; the last value "Every row the values before it left."). Every Field and card now reads
+  the Source's rows straight: no status node sits between them.
+- Its rule is its inside: `statusRule(field, domain)`, a preset Custom Node's definition (Group Input Rows; each value's
+  tree by the one walk `whereGraph` uses, `treeGraph`; its Pass at its value's Group Output row, its Fail into the next
+  value's Fields). Enter or ⛶ opens it through the one door: the editor opens a node its document holds an inside for
+  (`GraphDocument.inside`, `innerOf`'s `held`) as it opens a Custom Node: the same trail ("Query › Health"), Back and
+  Escape. Inside it is read only, says why, and offers no Clone. A load lights its roots inside by the same ids.
+- Gone: the Status field kind, its Status category and family, its colour, and its refusal in `placeRequest`.
+- ❓ Picks, each the plain reading: a value row has no socket, as the Query takes no connection from it; a value's look
+  (critical, success) is no longer shown on its row, since a row has no look of its own (a colour dot would be a new
+  door); a page's Query graph is named "Query" in the trail.
+
 ## Will's decisions
 
 - **U4.4c, U4.4d, U4.7b, 2026-11-14** (asked by sherpa-demos-67 with sherpa-ui-e8's options): **U4.4c A**, Save filters

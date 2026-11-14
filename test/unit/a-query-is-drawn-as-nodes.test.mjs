@@ -286,25 +286,21 @@ test('a reader\'s saved filters are FILTERS: each a preset of its bar, its own g
   assert.ok(!g.nodes.some((n) => n.id.startsWith('saved-')));
 });
 
-test('a STATUS FIELD is a node between the Source and the cards: each value, and when a row has it', () => {
+test('a STATUS FIELD is ONE Field node on the Source\'s rows, each value saying its rule; the rows reach each card from the Source (plan 960 U4.7b)', () => {
   const store = statusFields(new ArrayStore(rows, { key: 'id' }), {
     health: { type: 'status', label: 'Health', values: [{ value: 'at risk', status: 'critical', when: [{ seats: { lt: 10 } }] }, { value: 'healthy', status: 'success' }] },
   });
   const g = queryGraph({ v: 1, scopes: { view: { holds: [], readings: {} } } }, page, { domains: store.domains });
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
-    ['Results', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
+    ['Field', 'health', false], ['at risk', 'Seats is less than 10', false], ['healthy', 'Every row the values before it left.', false],
   ]);
-  // The Source's rows get their status, then reach each card: never the Source's straight.
-  assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.from === 'status-health/rows').map((r) => `${r.from} → ${r.to}`), [
-    // The first value's Fields read them too, as every Query Field does.
-    'source/rows → status-health', 'source/rows → field-status-health.at risk-seats',
-    // Every Field reads them, a preset's too.
-    'status-health/rows → field-preset-data-big-seats', 'status-health/rows → presentation-data',
+  // Its rule is its inside: nothing of it on the top canvas. Every Field, a preset's too, and each card read the Source's rows.
+  assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows').map((r) => `${r.from} → ${r.to}`), [
+    'source/rows → status-health', 'source/rows → field-preset-data-big-seats', 'source/rows → presentation-data',
   ]);
-  assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'presentation-data').x);
-  // A Field reads the rows labelled.
+  assert.ok(nodeIn(g, 'source').x < nodeIn(g, 'status-health').x);
   const held = queryGraph({ v: 1, scopes: { view: { holds: ['health'], readings: readingsOf({ health: { in: ['at risk'] } }) } } }, page, { domains: store.domains });
-  assert.ok(held.connections.some((r) => r.from === 'status-health/rows' && r.to === 'field-view-health'));
+  assert.ok(held.connections.some((r) => r.from === 'source/rows' && r.to === 'field-view-health'));
 });
 
 test('a SUPERSEDED answer is drawn kept, not in force: read only, into its chip on the card\'s bar', () => {

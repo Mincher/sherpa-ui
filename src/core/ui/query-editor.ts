@@ -20,7 +20,7 @@ import type { FieldType } from '../data/filter-state.js';
 import { NODE_KINDS, paletteOf, type DrawnGraph, type GraphNode, type NodeKind } from '../data/node-kinds.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { VIEW } from '../data/query.js';
-import { QUERY_DRAWN_ONLY, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
+import { QUERY_DRAWN_ONLY, statusRule, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
 import { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, type GraphLayout } from '../data/query-document.js';
 import { applyReconciled, queryDrawn, queryScopes, reconcileFacts, type QueryLensFacts } from '../data/query-lens.js';
 import { report } from '../data/report.js';
@@ -151,6 +151,12 @@ export function queryDocument(source: QuerySource, { definition, session, markup
       el.style.blockSize = '18rem';
       visual = { id, el };
       return el;
+    },
+    // A status field's node holds its rule: the store's, opened read only (plan 960 U4.7b). TRAP T-a-status-opens-its-rule
+    inside(node) {
+      const field = (drawn ?? derived()).nodes.find((n) => n.id === node.id)?.ref?.['status'];
+      const domain = field ? source.store?.domains?.[field] : undefined;
+      return field && domain ? statusRule(field, domain, { label: (f) => labelOf(f) ?? f, type: typeOf }) : undefined;
     },
     save() {
       const page = pageWithQuery(definition, query.draft, { pageSize: source.state?.pageSize ?? null, type: (f) => typeOf(f) as FieldType | undefined });
