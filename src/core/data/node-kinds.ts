@@ -151,6 +151,9 @@ export interface RowKind {
   passes?: true;
   /** One way of a fork: what it sends goes no other way, as a test's Pass and Fail (plan 971). */
   fork?: true;
+  /** It sends a column its node makes, named by its node, a value on each row: one of those picked on the row of this name
+   *  (a Category answer, plan 992 O6). TRAP T-a-category-is-a-column-the-model-makes */
+  makes?: string;
   /** It draws an output row per value picked on it, right after it, each a fork of that value's rows (Fork, plan 991 D6).
    *  TRAP T-a-fork-unfolds-its-picks */
   unfolds?: true;
@@ -295,6 +298,11 @@ const expects = (rows: readonly RowKind[], would: string): Readonly<Record<strin
   number: { label: 'Number', help: 'A number', rows: [...rows, propertyRow('answer', 'Answer', 'number')], would },
   data: { label: 'Data', help: 'Rows of data', rows: [...rows, propertyRow('answer', 'Answer', 'rows')], would },
   list: { label: 'List', help: 'A list of values', rows: [...rows, propertyRow('answer', 'Answer', 'list')], would },
+  // Classify (Will, plan 992 O6 A): one of the Categories for each row, a column a Fork sends the rows on by.
+  category: {
+    label: 'Category', help: 'One of the Categories for each row', would,
+    rows: [...rows, { name: 'categories', label: 'Categories', control: 'tags', multiple: true, input: 'object' }, { ...propertyRow('answer', 'Answer', 'field'), makes: 'categories' }],
+  },
 });
 
 /** A row a Trigger listens by, which sends on what it heard: its pick, or its words (plan 941). It takes nothing in. */

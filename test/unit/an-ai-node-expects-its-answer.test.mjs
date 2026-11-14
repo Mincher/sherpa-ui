@@ -44,7 +44,7 @@ test('four AI kinds, in the AI category, in workflows only; the panel lists them
 test('Expects is the Type picker of a Prompt, a Runbook and a Skill; its sockets follow the pick', () => {
   for (const id of ['prompt', 'runbook', 'skill']) {
     assert.equal(NODE_KINDS[id].typeLabel, 'Expects', id);
-    assert.deepEqual(Object.keys(NODE_KINDS[id].types), ['boolean', 'text', 'number', 'data', 'list'], id);
+    assert.deepEqual(Object.keys(NODE_KINDS[id].types), ['boolean', 'text', 'number', 'data', 'list', 'category'], id);
   }
   const of = (type) => kindOfNode(NODE_KINDS, { kind: 'prompt', values: { type } });
   // True/false gives a True, 1 or 0; no fork, and no Answer (plan 944).
@@ -56,6 +56,8 @@ test('Expects is the Type picker of a Prompt, a Runbook and a Skill; its sockets
   assert.deepEqual([answer('number').output, answer('number').gives], ['value', 'number']);
   assert.deepEqual([answer('data').output, answer('data').gives], ['object', 'rows']);
   assert.deepEqual([answer('list').output, answer('list').gives], ['object', 'list']);
+  // A Category's Answer is a column it makes, one of its Categories on each row (plan 992 O6).
+  assert.deepEqual([answer('category').output, answer('category').gives, answer('category').makes], ['object', 'field', 'categories']);
   assert.ok(!of('text').rows.some((r) => r.name === 'true'));
   // Text is the default.
   assert.equal(kindOfNode(NODE_KINDS, { kind: 'prompt' }).rows.find((r) => r.name === 'answer').gives, 'value');

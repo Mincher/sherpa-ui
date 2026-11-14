@@ -106,8 +106,10 @@ function libraryWords(n: WorkflowNode, graph: TextGraph): string {
   }
   // The Boolean: what comes in goes on only where it is something (Will, plan 971 §9).
   if (n.kind === 'boolean') return `${heading ?? 'If any'}: go on only when something comes in.`;
-  if (n.kind === 'runbook') return `${heading ?? 'Agent step'}: ${text(v['instructions'] ?? n.description)}`.trim();
-  if (n.kind === 'prompt') return `${heading ?? 'Ask'}: ask ${v['prompt'] ? `"${text(v['prompt'])}"` : text(n.description)}`.trim();
+  // A Category answer: one of its Categories for each row (plan 992 O6).
+  const sorts = (line: string): string => (v['type'] === 'category' ? `${line.replace(/\.$/, '')}; for each row, one of ${[v['categories'] ?? []].flat().map(text).join(', ')}.` : line);
+  if (n.kind === 'runbook') return sorts(`${heading ?? 'Agent step'}: ${text(v['instructions'] ?? n.description)}`.trim());
+  if (n.kind === 'prompt') return sorts(`${heading ?? 'Ask'}: ask ${v['prompt'] ? `"${text(v['prompt'])}"` : text(n.description)}`.trim());
   if (n.kind === 'math' && v['type'] === 'count') return `${heading ?? 'Count'}: count the rows.`;
   if (OUTPUTS.has(n.kind)) return outputWords(n);
   // A use of another entity: run it.

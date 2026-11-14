@@ -691,7 +691,9 @@ reads from a related type (a device's customer's region) stays the type's `from`
 The AI category has four nodes. A **Model** picks a provider and one of its models,
 both; a **Prompt**, a **Runbook** and a **Skill** ask it. Each of the last three has
 **Expects** as its Type picker: True/false gives a True, 1 or 0;
-Text, Number, Data and List give an Answer, a property. A Model with a pick left blank
+Text, Number, Data and List give an Answer, a property. **Category** is Classify (plan 992
+O6): its **Categories** row names them, and its Answer is a column the model makes, one of
+them on each row; a **Fork** after it picks its Ways from them and sends each row on. A Model with a pick left blank
 warns "Pick a provider" or "Pick a model".
 
 **One model for the whole graph** (plan 951). A Model joined to the Start's Model row

@@ -6339,6 +6339,21 @@ both hold but the two fields. An empty value matches none.
 - Site: `test/unit/a-merge-joins-by-a-field-of-each.test.mjs`
 - Site: `test/e2e/reforged-a-merge-joins-two-sets.spec.ts`
 
+### T-a-category-is-a-column-the-model-makes
+
+**Classify is an AI node's answer type, Category** (Will, plan 992 O6 A: no Classify node, and no second router; a Fork
+sends the rows on). A Prompt, a Runbook or a Skill that Expects a Category names its Categories; its Answer `makes` a
+column (a row's `makes`, the row whose picks are its values): named by its node, labelled by its heading, so a Fork
+on it picks its Ways from the Categories (`sender` sends the column, values and all).
+
+- **Simulate never asks the model**: its stand-in gives each row a Category in turn, so each way after it runs. With
+  none picked it says so.
+- **The column is the node's own**: a Field after the Fork does not see it yet; the store's fields reach it, as before.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `test/unit/a-category-is-a-column-the-model-makes.test.mjs`
+- Site: `test/e2e/reforged-a-category-feeds-a-fork.spec.ts`
+
 ### T-a-value-is-typed-once
 
 **A condition's value is typed ONCE, by its field's type, where it comes in** —

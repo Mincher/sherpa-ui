@@ -635,6 +635,12 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       // A True, and a Trigger's header, which sends True when it fires (plan 949).
       if (row === 'true' || row === undefined) return { kind: 'value', value: 1 };
       const out = node.rows.find((r) => r.name === row);
+      // A column it makes: each row a Category in turn, so each way after it runs (plan 992 O6).
+      if (out?.makes) {
+        const picked = [node.rows.find((r) => r.name === out.makes)?.value ?? []].flat().map(String);
+        if (!picked.length) return { kind: 'field', note: `No ${node.rows.find((r) => r.name === out.makes)?.label ?? out.makes} picked` };
+        return { kind: 'field', value: node.id, rows: (rowsInto(node.id) ?? []).map((r, i) => ({ ...r, [node.id]: picked[i % picked.length] })) };
+      }
       // A row the reader set sends what it holds: a Trigger's Endpoint, its own (plan 941).
       if (out?.control && out.value != null && out.value !== '') return { kind: 'value', value: out.value };
       if (out?.gives === 'rows') return { kind: 'rows', rows: [] };

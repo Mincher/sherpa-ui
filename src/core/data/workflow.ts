@@ -589,6 +589,8 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
         busy.delete(id);
       }
     }
+    // A column the node makes, its values those picked on the row it names: a Category answer (plan 992 O6).
+    if (out?.makes && node) return { kind: 'field', field: { name: id, label: node.heading ?? kind!.heading, values: [node.values?.[out.makes] ?? []].flat().map(String) } };
     const passes = out?.gives === 'rows' && !!kind!.input;
     if (!kind || !out || (out.gives !== 'field' && !passes) || busy.has(id)) return givenAt(node, row, kinds);
     const picked = passes ? undefined : pickedField(held, connections, reach(id), from);
