@@ -577,6 +577,10 @@ value tested. "Any at risk?" is a Condition (Risk > 50) whose Pass goes to Fix, 
 on that Pass, whose Pass fires "All healthy" once, only when none is at risk. "Fixed?" is
 Equals true on an agent's True, its Data the rows. On a column, Data is not used, and says so.
 
+The **Boolean** node is "if true then", with no rows: what comes in on its header goes out of its
+header, of the same type, where it is true (a number above 0, true, rows with a row, an object
+with data, text); else nothing goes on, and the route stops (Not taken).
+
 And and Or take anything, several. An input is true where it is above zero, true, or
 not empty. Pass: Or, the rows of every true input; And, the rows in all of them. Fail is
 the rest of their rows. A test's True or Pass into an And or an Or says its condition, so

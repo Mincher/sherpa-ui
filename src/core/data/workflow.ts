@@ -557,6 +557,16 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
     const node = held.get(id);
     const kind = kindOfNode(kinds, node);
     const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
+    // A header that passes on what reaches it, the Boolean (plan 971 §9): that, of its type.
+    if (row === undefined && kind?.passes && !busy.has(id)) {
+      const into = connections.find((r) => r.to === id);
+      busy.add(id);
+      try {
+        return into ? sends(into.from) : undefined;
+      } finally {
+        busy.delete(id);
+      }
+    }
     // A test of ONE value: its Pass and Fail send what reaches its Data, else the value tested (plan 971 §9). Busy while it
     // reads its header, so a loop back to it ends.
     if (out?.passes && node && !busy.has(id)) {
@@ -893,7 +903,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const blocked = ring ? { would: 'Blocked: it would start a loop' } : {};
     // A Source the Start's drawn line reaches (plan 949).
     const started = top && kind.rows.some((r) => r.control === 'store') ? { started: true as const } : {};
-    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, shownRows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores, ...blocked, ...started };
+    // A header that passes on what reaches it is drawn as that type (the Boolean, plan 971 §9).
+    const passing = kind.passes && flows.some((c) => c.to === node.id) ? { output: socketOfGiven(sent(node.id)?.kind) } : {};
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, shownRows, heads), ...passing, x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores, ...blocked, ...started };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, connections) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));

@@ -92,7 +92,8 @@ function holds(s: Sent): boolean {
   if (typeof v === 'boolean') return v;
   const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v)) ? Number(v) : undefined;
   if (n !== undefined) return n > 0;
-  return v != null && v !== '' && !(Array.isArray(v) && !v.length);
+  // Else not empty: an object with data, a list with an item, text (`truthy`).
+  return truthy(v);
 }
 
 /** The kinds whose True is a test of a field. */
@@ -536,6 +537,13 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       }
       // Its Pass, the rows that hold; its Fail, the rest (plan 971 A).
       return { kind: 'rows', rows: row === 'fail' ? read.lost : read.kept };
+    }
+    // The Boolean (plan 971 §9): what comes in goes on where it is true, else the route stops.
+    if (node.kind === 'boolean') {
+      const came = into(node.id)[0]?.sent;
+      if (!came) return { kind: 'value', note: `"${node.heading}" tests nothing: connect what it passes on` };
+      if (came.note && came.value === undefined && !came.rows) return came;
+      return holds(came) ? came : { kind: 'value', note: 'Not taken', notTaken: true };
     }
     if (node.kind === 'value') return valued(node);
     if (node.kind === 'math') return math(node);

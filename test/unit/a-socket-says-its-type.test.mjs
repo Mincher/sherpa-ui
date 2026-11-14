@@ -90,7 +90,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   // A header input takes any; no header sends rows: a Rows row does, first.
   for (const [name, kind] of all) {
     assert.ok([undefined, 'any'].includes(kind.input), `${name}: its header takes any`);
-    assert.ok([undefined, 'boolean'].includes(kind.output), `${name}: no header sends rows`);
+    assert.ok([undefined, 'boolean'].includes(kind.output) || kind.passes, `${name}: no header sends rows, but one that passes on what reaches it`);
     const at = kind.rows.findIndex((r) => r.name === ROWS.name);
     // A Source's Rows leave from its Store row: drawn beside it, not a line of its own (TODO 830).
     if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, name === 'source' ? { ...ROWS, beside: 'store' } : ROWS], `${name}: its Rows row, first`);
@@ -125,14 +125,15 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   // Every kind a workflow runs, the Trigger (plan 941), the Branch, the end and a portal, which passes on what reaches it (TODO 779), among them.
-  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'boolean', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
 });
 
 test('every shipped kind says its types once: no output sends any; none forks; a multi-select row is an object, one connection in', () => {
   for (const [name, kind] of Object.entries(NODE_KINDS)) {
     assert.notEqual(kind.output, 'any', name);
     assert.equal(kind.branches, undefined, `${name}: no kind forks (plan 944)`);
-    if (kind.output) assert.equal(kind.output, 'boolean', `${name}: a header sends a boolean or nothing`);
+    // A header sends a boolean, nothing, or, passing on what reaches it, that: the Boolean (plan 971 §9).
+    if (kind.output) assert.ok(kind.output === 'boolean' || (kind.passes && kind.output === 'object'), `${name}: a header sends a boolean, nothing, or what it passes on`);
     for (const row of kind.rows) {
       assert.notEqual(row.output, 'any', `${name}/${row.name}`);
       if (!row.multiple) continue;

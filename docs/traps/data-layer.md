@@ -6888,7 +6888,8 @@ sockets only, never types.
   its truth takes sends ALL of its Data row (`passes: 'data'`), else the value tested, drawn as that type; the
   other sends `notTaken`, and a node whose header (with none, its rows) hears only that does not run (Simulate:
   Not taken). Data joined to a column test is not used, and warns. "None" is Is empty on a Pass; "At least N",
-  a Math Count into Greater or equal. A check that is no
+  a Math Count into Greater or equal. The Boolean (`passes` on its kind) has no rows: its header sends on what
+  reaches its header, drawn as that type, where it is true, else Not taken (Will: "if true then"). A check that is no
   Condition (Time, Tag, a Preset, a Saved filter, a Custom Node's use) says `output: 'boolean'`:
   one boolean from its header, `Out`. A line from a Condition's header is a fault, in words.
 - **A row's output may be DRAWN on another's** (`beside`, TODO 830): a Source's Rows leave from

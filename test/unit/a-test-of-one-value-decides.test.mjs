@@ -2,7 +2,8 @@
  * A TEST OF ONE VALUE DECIDES (Will, plans 944, 971 A; §9: "Fold it into Condition"): no node has a True or a False socket,
  * and there is no Branch node. A test of a column gives Pass, the rows that hold, and Fail, the rest, and a True property,
  * 1 or 0. A test of ONE value (a number, a True, rows into Is empty) sends ALL its Data, else the value, by Pass where it
- * holds or Fail where not; the other way is not taken, so nothing after it runs. And and Or take anything, several.
+ * holds or Fail where not; the other way is not taken, so nothing after it runs. The Boolean passes on what comes in where
+ * it is true. And and Or take anything, several.
  * Counting rows is a Math type, Count.
  *
  *   node --test test/unit/a-test-of-one-value-decides.test.mjs
@@ -125,4 +126,27 @@ test('a test\'s Fail says the opposite of its tree: carried through a Field, and
   const flow = (connections, id) => nodeFlow(graphOf(nodes, [C('s/rows', 'f'), C('f/field', 'a'), C('f/field', 't'), ...connections]), id).definition.where;
   assert.deepEqual(flow([C('a/fail', 'p'), C('p/field', 'pro')], 'pro'), { and: [ne('active'), { field: 'plan', op: 'eq', value: 'Pro' }] });
   assert.deepEqual(flow([C('a/fail', 'or'), C('t/fail', 'or')], 'or'), { or: [ne('active'), ne('trial')] });
+});
+
+test('the Boolean passes on what comes in where it is true — above 0, true, not empty — else the route stops (Will, plan 971 §9)', () => {
+  const kind = NODE_KINDS.boolean;
+  assert.deepEqual([kind.heading, kind.category, kind.input, kind.output, kind.passes, kind.rows.length], ['Boolean', 'Logic', 'any', 'object', true, 0]);
+  // A Value of each kind in: the same out, or Not taken; what it feeds runs only where it went on.
+  const run = (type, value) => {
+    const sim = simulateGraph(graphOf([N('v', 'value', { type, value }), N('b', 'boolean'), N('o', 'response', { type: 'toast' })], [C('v/value', 'b'), C('b', 'o')]), {});
+    const said = out(sim, 'b', 'b');
+    return [said.notTaken ? 'not taken' : said.value, !!sim.nodes.o.notTaken];
+  };
+  assert.deepEqual(run('integer', '1'), [1, false]);
+  assert.deepEqual(run('integer', '0'), ['not taken', true]);
+  assert.deepEqual(run('integer', '-1'), ['not taken', true]);
+  assert.deepEqual(run('text', 'ok'), ['ok', false]);
+  assert.deepEqual(run('boolean', 'false'), ['not taken', true]);
+  // Rows: some go on, none stop.
+  const rowsIn = (b) => simulateGraph(graphOf([...users, N('c', 'condition', { type: 'eq', b }), N('g', 'boolean')], [...toStatus, C('c/pass', 'g')]), { users: rows });
+  assert.deepEqual(out(rowsIn('active'), 'g', 'g').rows.map((r) => r.id), [1, 2]);
+  assert.equal(out(rowsIn('gone'), 'g', 'g').notTaken, true);
+  // Drawn as what comes in: a value, or rows (an object).
+  const drawn = (from, extra = []) => graphOf([...users, N('v', 'value', { type: 'integer', value: '5' }), N('c', 'condition', { type: 'eq', b: 'active' }), N('g', 'boolean'), ...extra], [...toStatus, C(from, 'g')]).nodes.find((n) => n.id === 'g').output;
+  assert.deepEqual([drawn('v/value'), drawn('c/pass')], ['value', 'object']);
 });

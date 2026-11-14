@@ -177,7 +177,8 @@ The URL router's **route** (`sherpa-router`, the outlet) is another meaning, and
 and Fail result outputs then we don't need the Check node at all"): no node has a True or a False socket, and there is no
 Branch node. A test of a column gives Pass, the rows that hold, and Fail, the rows that do not. A test of ONE value (a True,
 a number, Is empty on rows) sends ALL its Data, else the value, by Pass or by Fail, and nothing after the other way runs.
-True is 1 or 0. Counting rows is a Math type, Count.
+True is 1 or 0. The **Boolean** is "if true then": what comes in goes on where it is true (above 0, true, not empty), else
+the route stops. Counting rows is a Math type, Count.
 
 **20. Tokens.** Read a token as `var(--sherpa-x, <the value it resolves to>)`.
 The fallback is required, and it is the token's own value. A private value is

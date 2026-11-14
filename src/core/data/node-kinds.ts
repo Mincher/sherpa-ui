@@ -205,6 +205,8 @@ export interface NodeKind {
   /** Its header input takes several connections (D4). */
   many?: true;
   output?: SocketType;
+  /** Its header's output sends on what reaches its header, drawn as that type: the Boolean (plan 971 §9). */
+  passes?: true;
   /** Its fixed rows; a Query node adds its own among them (a bar's chips and presets). */
   rows: readonly RowKind[];
   /** The data layer's name for what it stands for: a shape, or the function a workflow runs it by. */
@@ -543,6 +545,12 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   condition: {
     heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition',
     typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
+  },
+  // "If true then" (Will, plan 971 §9): what comes in goes on where it is true (above 0, true, not empty), else the route
+  // stops. No rows: one header in, one out, of what came in.
+  boolean: {
+    heading: 'Boolean', icon: 'tick', description: 'Pass the input on when it is true', input: 'any', output: 'object', passes: true,
+    rows: [], model: 'boolean', graphs: ['workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
