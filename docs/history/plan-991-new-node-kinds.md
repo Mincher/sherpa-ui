@@ -112,7 +112,8 @@ rows and the field it reads).
   ticks, as a Field's Values); out, ONE output row per value picked, and **Otherwise**. Each row goes on at the output of
   its value, the rest at Otherwise. Routes by a rule, not a value, are a Condition each, as today (D6).
 
-**D4 (for Will): Min and Max.** A (my pick): rename Floor to **Min** and Ceiling to **Max** (their help already says
+**D4: Min and Max — Will, 2026-11-14: A** (rename Floor to Min and Ceiling to Max, every graph retrofitted). The
+question was: A (my pick): rename Floor to **Min** and Ceiling to **Max** (their help already says
 lowest and highest; to most readers a floor rounds down), every graph retrofitted. B: keep Floor and Ceiling, and Min
 and Max are not added.
 
@@ -120,9 +121,10 @@ and Max are not added.
 
 **Built first (2026-11-14):** Sum, Median, Range, Count unique and Band as Math types, Format as a Text type, each run
 by Simulate and in the test that runs every kind. A palette search finds a type by the start of a word, so "and" is
-And, never the inside of Band. Next: Group by (D5), then Route (after D6), then Min and Max (after D4).
+And, never the inside of Band. Next: Min and Max (D4) and Route (D6), then Group by (D5).
 
-**D6 (for Will): Route's outputs.** A (my pick): one output row per value picked, drawn on the node, plus Otherwise:
+**D6: Route's outputs — Will, 2026-11-14: A** (one output row per picked value, each its own socket, plus Otherwise;
+its input stays one dropdown of ticks). The question was: A (my pick): one output row per value picked, drawn on the node, plus Otherwise:
 a line from each route shows where it goes. This is a row per value, which a Field's Values is not (Will, 2026-11-13:
 one dropdown of ticks), because each route needs its own socket. B: one output and Otherwise, the route a row's value
 picks said on the line's tip: fewer sockets, but two routes can no longer go to two places.
