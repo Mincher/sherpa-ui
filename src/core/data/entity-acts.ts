@@ -58,10 +58,11 @@ function graphGiven(graph: EntityGraph, held: EntityGraph | undefined, shelf: En
 
 /** A graph as a reader is told it: its steps as text, and each warning the editor draws on a node, soft and never a
  *  refusal (an input it cannot use, a Trigger that would start a loop, blocked). Read over the shelf, as the editor reads it. */
-function toldOf(id: string, graph: TextGraph & Pick<WorkflowDefinition, 'nodes'>, shelf: EntityShelf): { text: string[]; warnings: { node: string; row?: string; words: string }[] } {
+function toldOf({ id, label }: Pick<Entity, 'id' | 'label'>, graph: TextGraph & Pick<WorkflowDefinition, 'nodes'>, shelf: EntityShelf): { text: string[]; warnings: { node: string; row?: string; words: string }[] } {
   const entities = (): Entity[] => shelf.list().flatMap((s) => shelf.get(s.id) ?? []);
   const { stages, ...rest } = graph;
-  const drawn = workflowGraph({ v: 3, id, ...rest, ...(stages ? { stages } : {}) }, { entities }, { ...nodeKinds(), ...kindsOf(shelf.library()) });
+  // By its name too, as the editor draws it: a loop says each graph's name, never its id.
+  const drawn = workflowGraph({ ...rest, v: 3, id, label, ...(stages ? { stages } : {}) }, { entities }, { ...nodeKinds(), ...kindsOf(shelf.library()) });
   return { text: graphText(graph).stages, warnings: drawn.nodes.flatMap((n) => (n.warnings ?? []).map((w) => ({ node: n.id, ...w }))) };
 }
 
@@ -156,9 +157,9 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
           done: `Read ${named(e)}.`,
           result: {
             ...kept,
-            ...(e.graph ? toldOf(e.id, e.graph, shelf) : {}),
+            ...(e.graph ? toldOf(e, e.graph, shelf) : {}),
             versions: (versions ?? []).map(({ number, at, by, note }) => ({ number, at, ...(by ? { by } : {}), ...(note ? { note } : {}) })),
-            ...(draft ? { unsavedInTheEditor: { nodes: draft.nodes.length, connections: draft.connections?.length ?? 0, ...toldOf(e.id, draft, shelf) } } : {}),
+            ...(draft ? { unsavedInTheEditor: { nodes: draft.nodes.length, connections: draft.connections?.length ?? 0, ...toldOf(e, draft, shelf) } } : {}),
           },
         };
       },

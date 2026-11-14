@@ -191,3 +191,31 @@ test('read gives the warnings its nodes show, each by its node and row: soft, ne
     assert.deepEqual((await runAct('playbook.read', { keys: ['calm'] }, ctx)).result.warnings, []);
   });
 });
+
+test('a graph type\'s keys are read on the shelf, the truth, though a store made over it has not heard the change yet', async () => {
+  await withPlaybook(async () => {
+    const shelf = shelfOf();
+    // A store of its type that hears the shelf a moment later: it holds nothing yet.
+    const lagging = { type: 'playbook', byKey: async () => undefined };
+    const ctx = { stores: { playbook: lagging }, entities: shelf };
+    await runAct('playbook.add', { input: { id: 'fresh', label: 'Fresh', graph: body } }, ctx);
+    assert.equal((await runAct('playbook.change', { keys: ['fresh'], input: { description: 'At once.' } }, ctx)).done, 'Changed Playbook "Fresh".');
+    assert.deepEqual(await runAct('playbook.read', { keys: ['gone'] }, ctx), { refused: 'There is no Playbook "gone".' });
+  });
+});
+
+test('read says a loop by each graph\'s name, as the editor draws it, never by its id', async () => {
+  const stop = onReport(() => {});
+  const off = registerEntityType({ v: 1, id: 'coworker', label: 'Coworker', graph: { runs: true } });
+  try {
+    const shelf = shelfOf();
+    const ctx = { stores: {}, entities: shelf };
+    // It makes the event its own Trigger hears: it starts itself.
+    const graph = { nodes: [{ id: 't', kind: 'trigger', x: 0, y: 0, values: { type: 'ui', event: 'again' } }, { id: 'o', kind: 'output-trigger', x: 400, y: 0, values: { type: 'ui', event: 'again' } }], connections: [{ from: 't', to: '#start' }] };
+    assert.equal((await runAct('coworker.add', { input: { id: 'loop', label: 'Loop it', graph } }, ctx)).done, 'Added Coworker "Loop it".', 'a loop still saves');
+    assert.deepEqual((await runAct('coworker.read', { keys: ['loop'] }, ctx)).result.warnings, [{ node: 'o', words: 'Blocked: it would start a loop, Loop it › Loop it' }]);
+  } finally {
+    off?.();
+    stop();
+  }
+});

@@ -161,9 +161,12 @@ async function called(id: string, call: ActCall, ctx: ActContext): Promise<{ act
   if (denied) return { refused: denied };
   const keys = call.keys ?? [];
   if (act.type) {
-    const store = storeOfType(ctx.stores, act.type);
-    // An entity type with no store of its own is read on the shelf (plan 972: every entity type's Publish and Roll back).
-    const shelf = !store && entityTypes()[act.type] ? ctx.entities : undefined;
+    const type = entityTypes()[act.type];
+    // A graph type's entities are the shelf's, the truth: a store made over it hears a change a moment later.
+    const onShelf = !!ctx.entities && !!type?.graph;
+    const store = onShelf ? undefined : storeOfType(ctx.stores, act.type);
+    // An entity type with no store of its own is read on the shelf too (plan 972: every entity type's Publish and Roll back).
+    const shelf = onShelf || (!store && type) ? ctx.entities : undefined;
     if (!store && !shelf) return { refused: `There is no store of ${labelOf(act.type)}.` };
     if (!act.many && keys.length > 1) return { refused: `${act.label} takes one ${labelOf(act.type)}, not ${keys.length}.` };
     for (const key of keys) {
