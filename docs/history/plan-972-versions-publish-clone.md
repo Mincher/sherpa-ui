@@ -63,3 +63,9 @@ for saving."
 | 972b | Roll back; the use edited through (D2) | a roll back is version 3 with version 1's definition |
 | 972c | one Clone act for every type, with its `from` (BUILT 2026-11-13, sherpa-ui-bd) | a preset Runbook cloned is the reader's, and says when its source moves |
 | 972d | Permissions checked before each act; a current User in Demos (sherpa-ui part BUILT 2026-11-14: `may`, `readOnly` words) | a Read only User cannot Save or Publish, said in words |
+
+## 6. Will's picks for 972d (2026-11-14)
+
+- **P1 A:** Publish and Roll back need the same "<Area> · Edit" Permission as a change; no Publish Permission.
+- **P2 A:** for an app-wide entity (a Runbook, an Expert, a Custom Node) only a Permission at the Organisation Account counts.
+- **P3 A:** a button a User may not use stays shown; a press says why in words, and a flow dialog says it before Run.
