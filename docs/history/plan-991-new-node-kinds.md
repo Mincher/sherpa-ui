@@ -121,7 +121,9 @@ and Max are not added.
 
 **Built first (2026-11-14):** Sum, Median, Range, Count unique and Band as Math types, Format as a Text type, each run
 by Simulate and in the test that runs every kind. A palette search finds a type by the start of a word, so "and" is
-And, never the inside of Band. Next: Min and Max (D4) and Route (D6), then Group by (D5).
+And, never the inside of Band. **D4 built (2026-11-14):** the Math types `floor` and `ceiling` are `min` and `max`, Min and Max, every graph and test
+retrofitted. Plan 992 (Will's picks, 2026-11-14) then reshaped the rest: no Group by on Math (O8: one grouping door,
+Organise, and a Statistic reads its groups), so D5 goes; Route (D6) goes on.
 
 **D6: Route's outputs — Will, 2026-11-14: A** (one output row per picked value, each its own socket, plus Otherwise;
 its input stays one dropdown of ticks). The question was: A (my pick): one output row per value picked, drawn on the node, plus Otherwise:

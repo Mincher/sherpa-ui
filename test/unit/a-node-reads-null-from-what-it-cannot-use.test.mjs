@@ -69,7 +69,7 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
 test('a row reads null where what comes cannot be used: text in a number, rows in a list, a stranger in a fixed list', () => {
   const w = flow([
     value('abc', 'abc'), value('five', '5'), value('side', 'sideways'), value('nope', 'nonsense'), value('mixed', ['1', 'x'], 'list'), store,
-    { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 'n', kind: 'math', x: 300, y: 200 }, { id: 'f', kind: 'math', x: 300, y: 400, values: { type: 'floor' } },
+    { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 'n', kind: 'math', x: 300, y: 200 }, { id: 'f', kind: 'math', x: 300, y: 400, values: { type: 'min' } },
     { id: 'j', kind: 'text', x: 300, y: 600, values: { type: 'join' } }, { id: 'tag', kind: 'tag', x: 300, y: 800 },
     { id: 'col', kind: 'organise', x: 600, y: 0 },
   ], [

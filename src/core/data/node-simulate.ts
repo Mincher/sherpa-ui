@@ -37,8 +37,8 @@ import { filled, valuesIn } from './node-messages.js';
 
 /** The Math types that read a list of numbers, each to one number (plan 991a). */
 const LIST_MATH: Readonly<Record<string, (nums: readonly number[]) => number>> = {
-  floor: (n) => Math.min(...n),
-  ceiling: (n) => Math.max(...n),
+  min: (n) => Math.min(...n),
+  max: (n) => Math.max(...n),
   average: (n) => n.reduce((a, b) => a + b, 0) / n.length,
   sum: (n) => n.reduce((a, b) => a + b, 0),
   median: (n) => {

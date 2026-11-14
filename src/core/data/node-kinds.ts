@@ -254,7 +254,7 @@ const textRow = (name: string, label: string): RowKind => ({ name, label, contro
 const dateRow = (name: string, label: string): RowKind => ({ name, label, control: 'datetime', input: 'value' });
 /** A count: a whole number, from `min`. */
 const countRow = (name: string, label: string, min: number): RowKind => ({ ...numberRow(name, label), min, step: 1 });
-/** A list in, an object (D17): what Floor, Ceiling, Average and Join read. It takes several. Will, D9 */
+/** A list in, an object (D17): what Min, Max, Average and Join read. It takes several. Will, D9 */
 const LIST: RowKind = { name: 'values', label: 'Values', input: 'object', many: true, needs: 'list' };
 const NUMBERS: RowKind = { ...LIST, needs: 'numbers' };
 /** What a Math or Text node gives, as a Value gives its own: from a row, its header forking (D2). A PROPERTY, as Count and
@@ -622,7 +622,8 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { name: 'values', label: 'Values', control: 'values', multiple: true, output: 'object', valuesOf: 'field', optional: true },
     ], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
-  // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
+  // One number from numbers, given from its Result row. Min, Max and Average read a list (D9; Will, plan 991 D4: once Floor
+  // and Ceiling).
   math: {
     heading: 'Math', icon: 'function', description: 'Numbers in, one number out', typeLabel: 'Operation', defaultType: 'add',
     types: {
@@ -633,8 +634,8 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       ratio: { label: 'Ratio', help: 'Decimal ratio between 0 and 1', rows: [A, B, NUMBER] },
       round: { label: 'Round', help: 'Rounds a decimal to a set number of places', rows: [countRow('places', 'Places', 0), numberRow('a', 'Value'), NUMBER] },
       increment: { label: 'Increment', help: 'Increment Value A by Value B, in its smallest unit', rows: [A, B, NUMBER] },
-      floor: { label: 'Floor', help: 'Lowest value from the list', rows: [NUMBERS, NUMBER] },
-      ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [NUMBERS, NUMBER] },
+      min: { label: 'Min', help: 'The lowest value of the list', rows: [NUMBERS, NUMBER] },
+      max: { label: 'Max', help: 'The highest value of the list', rows: [NUMBERS, NUMBER] },
       average: { label: 'Average', help: 'Average value of the list', rows: [NUMBERS, NUMBER] },
       // The list's statistics (plan 991a): each a list of numbers in, one number out.
       sum: { label: 'Sum', help: 'Every value of the list added up', rows: [NUMBERS, NUMBER] },
@@ -850,7 +851,7 @@ export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in', gi
   const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : accepts(t, type));
   const first = typeOf(family)?.id;
   const ids = [first, ...Object.keys(family.types ?? {}).filter((t) => t !== first)];
-  // A row that needs just what the line gives comes first: rows into Math are its Count, not its Floor (plan 944).
+  // A row that needs just what the line gives comes first: rows into Math are its Count, not its Min (plan 944).
   if (gives && side === 'out') {
     for (const id of ids) {
       const row = resolveKind(family, id).rows.find((r) => r.input && r.needs === gives);

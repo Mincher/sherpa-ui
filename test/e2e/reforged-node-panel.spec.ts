@@ -305,7 +305,7 @@ test('a field picked on a Field is offered as its own choice next time: Field �
   expect(saved).toEqual({ field: 'status', joined: true });
 });
 
-test('"Add a node" for a list says the type a family takes it as: Math › Floor, Text › Join', async ({ page }) => {
+test('"Add a node" for a list says the type a family takes it as: Math › Min, Text › Join', async ({ page }) => {
   await bind(page);
   await page.evaluate(() => (document.querySelector('sherpa-node-list') as HTMLElement & { askAdd(c: unknown): void })
     .askAdd({ socket: 'start/rows', type: 'object', side: 'out', client: { x: 500, y: 300 }, at: { x: 400, y: 200 } }));
@@ -314,7 +314,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   const said = await page.locator('sherpa-node-list sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   // Said by its socket alone; what an output gives narrows it (below). A Model takes nothing in (plan 951).
   // A Condition takes anything on its Data (plan 971 §9).
-  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Boolean', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  expect(said).toEqual(['Field', 'Math › Min', 'Condition', 'Boolean', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text › Join', 'Tag', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // What it gives narrows it (plan 783 F6): rows to the kinds that can use rows; a Field's column to those that take one.
   const offered = async (gives: string) => {
     await page.keyboard.press('Escape');

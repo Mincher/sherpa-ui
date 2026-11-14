@@ -101,8 +101,8 @@ test('a socket is offered the kinds that could join it, a Value first', () => {
   assert.equal(fitOf(NODE_KINDS['condition'], 'value', 'in'), undefined);
   assert.equal(fitOf(NODE_KINDS['organise'], 'value', 'in'), undefined);
   assert.deepEqual(fitOf(NODE_KINDS['organise'], 'object', 'out'), {}, 'an Organise takes the rows on its header');
-  // A list into a Math's own type: Floor takes it, in its Values row.
-  assert.deepEqual(fitOf(NODE_KINDS['math'], 'object', 'out'), { row: 'values', type: 'floor' });
+  // A list into a Math's own type: Min takes it, in its Values row.
+  assert.deepEqual(fitOf(NODE_KINDS['math'], 'object', 'out'), { row: 'values', type: 'min' });
   assert.deepEqual(fitOf(NODE_KINDS['text'], 'object', 'in'), { row: 'result', type: 'split' });
   // A boolean comes from a header's Out, a Time's or a Tag's (plan 944); a Value gives none.
   assert.ok(!paletteFor(palette, 'boolean', 'in').some((i) => i.id === 'value'));

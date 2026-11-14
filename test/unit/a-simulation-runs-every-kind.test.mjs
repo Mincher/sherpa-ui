@@ -39,7 +39,7 @@ test('Math: add, subtract, multiply, divide, ratio, round, increment and the lis
   const connected = calc('math', { type: 'add', b: 1 }, [R('v/value', 'x/a')], [N('v', 'value', { type: 'integer', value: 41 })]);
   assert.equal(connected.value, 42, 'a Value connected in is Value A');
   const list = (type) => calc('math', { type }, [R('l/value', 'x/values')], [N('l', 'value', { type: 'list', value: ['3', '9', '6'] })]).value;
-  assert.deepEqual([list('floor'), list('ceiling'), list('average')], [3, 9, 6]);
+  assert.deepEqual([list('min'), list('max'), list('average')], [3, 9, 6]);
   // The list's statistics (plan 991a): Sum, Median, Range; Count unique of values of any kind.
   assert.deepEqual([list('sum'), list('median'), list('range')], [18, 6, 6]);
   const words = (type, value) => calc('math', { type }, [R('l/value', 'x/values')], [N('l', 'value', { type: 'list', value })]);

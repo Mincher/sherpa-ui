@@ -22,7 +22,7 @@ test('each family: its types in order, the Type row first, and the rows, sockets
     value: { text: ['value'], integer: ['value'], decimal: ['value'], date: ['value'], boolean: ['value'], list: ['value'] },
     math: {
       add: ['a', 'b', 'result'], subtract: ['a', 'b', 'result'], multiply: ['a', 'b', 'result'], divide: ['a', 'b', 'result'], ratio: ['a', 'b', 'result'],
-      round: ['places', 'a', 'result'], increment: ['a', 'b', 'result'], floor: ['values', 'result'], ceiling: ['values', 'result'], average: ['values', 'result'],
+      round: ['places', 'a', 'result'], increment: ['a', 'b', 'result'], min: ['values', 'result'], max: ['values', 'result'], average: ['values', 'result'],
       // The list's statistics (plan 991a); Count, how many rows come in (plan 944), beside Count unique; then Band.
       sum: ['values', 'result'], median: ['values', 'result'], range: ['values', 'result'],
       count: ['rows', 'result'], unique: ['values', 'result'],
@@ -41,7 +41,7 @@ test('each family: its types in order, the Type row first, and the rows, sockets
       assert.deepEqual(kind.rows.map((r) => r.name), [...(id === 'tag' ? [] : ['type']), ...names], `${id} › ${type}`);
     }
   }
-  assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average', 'Sum', 'Median', 'Range', 'Count', 'Count unique', 'Band']);
+  assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Min', 'Max', 'Average', 'Sum', 'Median', 'Range', 'Count', 'Count unique', 'Band']);
   // Organise is one kind, no types (plan 960 U4.2): rows on its header, its fields in its own rows; no Count row (plan 944).
   const organise = NODE_KINDS.organise;
   assert.deepEqual([organise.types, organise.category, organise.input, organise.needs, organise.rows.map((r) => r.name)],
@@ -50,8 +50,8 @@ test('each family: its types in order, the Type row first, and the rows, sockets
   // Each Math, Time and Text type says what it does, under its select.
   for (const id of ['math', 'time', 'text']) for (const [type, t] of Object.entries(NODE_KINDS[id].types)) assert.ok(t.help, `${id} › ${type} has a hint`);
   assert.equal(NODE_KINDS.math.types.add.help, 'Add Value B to Value A');
-  // Sockets: Floor reads a LIST in, an object, and takes several (D9); a Result row gives a value; Split by gives a list.
-  const floor = resolveKind(NODE_KINDS.math, 'floor').rows;
+  // Sockets: Min reads a LIST in, an object, and takes several (D9); a Result row gives a value; Split by gives a list.
+  const floor = resolveKind(NODE_KINDS.math, 'min').rows;
   assert.deepEqual(floor.map((r) => [r.name, r.input, r.output, r.many]), [['type', undefined, undefined, undefined], ['values', 'object', undefined, true], ['result', undefined, 'value', undefined]]);
   assert.equal(resolveKind(NODE_KINDS.text, 'split').rows.at(-1).output, 'object');
   assert.equal(resolveKind(NODE_KINDS.value, 'list').rows.at(-1).output, 'object');
@@ -86,16 +86,16 @@ test('PLANTED FAULTS: a connection into a row no Math type has; a Duration of no
   });
   // A connection into a row no type has: no input socket. Into a row only another type has: kept, not a fault, and not saved.
   assert.deepEqual(workflowFaults(flow({ type: 'add' }, [{ from: 'one/value', to: 'm/c' }])), ['a connection enters "m/c", which is no input socket']);
-  const other = flow({ type: 'floor' }, [{ from: 'one/value', to: 'm/a' }]);
+  const other = flow({ type: 'min' }, [{ from: 'one/value', to: 'm/a' }]);
   assert.deepEqual([workflowFaults(other), keptConnections(other).length, workflowGraph(other).connections, finalGraph(other).connections], [[], 1, [], []]);
-  // A List is an object: into Add's A it joins and warns (TODO 770); into Floor's Values it is read, several of them too (D4, D9).
+  // A List is an object: into Add's A it joins and warns (TODO 770); into Min's Values it is read, several of them too (D4, D9).
   const warned = (w) => [workflowFaults(w), workflowGraph(w).nodes.find((n) => n.id !== 'list' && n.warnings)?.warnings.map((x) => x.words)];
   assert.deepEqual(warned(flow({ type: 'add' }, [{ from: 'list/value', to: 'm/a' }])), [[], ['Value A takes a number; it was given a list']]);
   const lists = flow({ type: 'average' }, [{ from: 'list/value', to: 'm/values' }, { from: 'list2/value', to: 'm/values' }], [{ id: 'list2', kind: 'value', x: 0, y: 400, values: { type: 'list' } }]);
   assert.deepEqual(workflowFaults(lists), []);
-  assert.deepEqual(warned(flow({ type: 'floor' }, [{ from: 'one/value', to: 'm/values' }])), [[], ['Values takes a list of numbers; it was given "4"']]);
+  assert.deepEqual(warned(flow({ type: 'min' }, [{ from: 'one/value', to: 'm/values' }])), [[], ['Values takes a list of numbers; it was given "4"']]);
   // Picking Text for the List: its row sends a value, so the connection stays and warns, until it is cut or List picked again.
-  const retyped = editWorkflow(flow({ type: 'floor' }, [{ from: 'list/value', to: 'm/values' }]), { node: 'list', row: 'type', value: 'text' });
+  const retyped = editWorkflow(flow({ type: 'min' }, [{ from: 'list/value', to: 'm/values' }]), { node: 'list', row: 'type', value: 'text' });
   assert.deepEqual(warned(retyped), [[], ['Values takes a list of numbers; it was given "1, 2, 3"']]);
   // A number row holds a number; a span or a unit is one of its list.
   assert.deepEqual(workflowFaults(flow({ type: 'round', places: 'two' }, [])), ['the node "m" holds "two" as its Places, which is no number']);
