@@ -34,13 +34,16 @@ A **relax pass** (`node-relax.ts`, DOM-free), from a seed:
 1. **The seed is today's Unfurl.** Its layers and its order, which cross least, are kept as the start.
 2. **Each step**, for a fixed number of rounds:
    - **Flow (hard):** a node a line comes from stands left of where it goes: `x(to) ≥ x(from) + w(from) + gapX`.
-   - **Length (soft):** each connector is pulled toward one rest length, the chain drag's (`node-chain.ts`).
+   - **Length (soft):** each connector is pulled toward one rest length of the relax pass's own: Unfurl's column gap,
+     `gapX`, between the two nodes' facing edges. The chain drag has none since 975, which made its pull a weight by
+     distance (sherpa-ui-bd, 2026-11-14).
    - **Radii (hard):** no two nodes closer than their radii (`radiusOf`, half the largest side). A grid of cells, each
      two of the largest radius across, finds the near pairs, so 2,000 nodes cost about n, not n².
    - **Stages (hard):** each node stays in its stage's band (TODO 950); a frame moves as one, as in Unfurl.
 3. **Then** every place snaps to the 4 px grid, as Unfurl's do.
 
-It reuses the chain drag's radius and rest length, so a drag and an Unfurl agree on what "apart" and "near" mean.
+It reuses the chain drag's radius (`radiusOf`) and its no-overlap push, so a drag and an Unfurl agree on what
+"apart" means.
 
 ## D1 (for Will): with, or in place of?
 
@@ -54,10 +57,10 @@ It reuses the chain drag's radius and rest length, so a drag and an Unfurl agree
 | Step | Builds | Proves |
 |---|---|---|
 | 919a | The measure as a script (`scripts/measure-unfurl.mjs`): the table above, and Demos' graphs in the browser with drawn boxes | the numbers, each run the same |
-| 919b | `node-relax.ts`: flow, length, radii and stages, on a seed | unit: no overlap, no line back, each node in its stage; a line's length within a band of the rest length |
+| 919b | `node-relax.ts`: flow, length (its own rest length, `gapX`), radii and stages, on a seed | unit: no overlap, no line back, each node in its stage; a line's length within a band of the rest length |
 | 919c | Unfurl runs it (A) or a second button does (B) | e2e: one Undo; the table again, side by side |
 
 ## Who
 
-sherpa-ui-e8 writes it; sherpa-ui-bd built 918's chain drag (`node-chain.ts`) and 950's stages, so bd reviews 919b
-before it is merged.
+sherpa-ui-e8 writes it; sherpa-ui-bd built 918's chain drag (`node-chain.ts`, its ropes gone in 975) and 950's
+stages, so bd reviews 919b before it is merged (bd: yes).
