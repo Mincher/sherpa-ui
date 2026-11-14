@@ -39,7 +39,7 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, LIST_OPS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -386,7 +386,7 @@ export function workflowFaults(given: WorkflowDefinition, shipped: Kinds = nodeK
     const there = fed.get(to) ?? [];
     if (!leaves) problems.push(`a connection leaves "${from}", which is no output socket`);
     else if (!out) problems.push(`a connection leaves "${from}", which sends any type: an output says the one it sends`);
-    // A property only sends (Results, a test's Pass and Fail, a Branch's Yes and No): a connection into it says so.
+    // A property only sends (Results, a test's Pass and Fail): a connection into it says so.
     const sends = into ? undefined : rowOf(byId.get(socketOf(to).node)?.rows ?? [], socketOf(to).row ?? '');
     if (sends?.property) problems.push(`a connection enters "${to}", its ${sends.label} row, which only sends: what a node takes comes in on its header or an input row`);
     else if (!into) problems.push(`a connection enters "${to}", which is no input socket`);
@@ -557,12 +557,15 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
     const node = held.get(id);
     const kind = kindOfNode(kinds, node);
     const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
-    // A Branch's Yes and No send what reaches its Data, else its test (plan 944).
-    if (out?.passes && !busy.has(id)) {
-      const into = connections.find((r) => r.to === `${id}/${out.passes}`) ?? connections.find((r) => r.to === id);
+    // A test of ONE value: its Pass and Fail send what reaches its Data, else the value tested (plan 971 §9). Busy while it
+    // reads its header, so a loop back to it ends.
+    if (out?.passes && node && !busy.has(id)) {
       busy.add(id);
       try {
-        return into ? sends(into.from) : undefined;
+        if (testsOneValue(node, connections, sends)) {
+          const into = connections.find((r) => r.to === `${id}/${out.passes}`) ?? connections.find((r) => r.to === id);
+          return into ? sends(into.from) : undefined;
+        }
       } finally {
         busy.delete(id);
       }
@@ -590,6 +593,15 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
     }
   };
   return sends;
+}
+
+/** Whether a test reads ONE value (plan 971 §9): no Field's column reaches its header, and no rows either, but where it is
+ *  Is empty, whose rows are one set, empty or not. Else it splits rows: a column's, or the tests' rows And, Or and Not join. */
+function testsOneValue(node: WorkflowNode, connections: readonly NodeConnection[], sends: (from: string) => Reached | undefined): boolean {
+  if (!TEST_KINDS.has(node.kind)) return false;
+  const came = connections.filter((r) => r.to === node.id).map((r) => sends(r.from)?.kind);
+  if (came.includes('field')) return false;
+  return node.values?.['type'] === 'empty' || !came.some((k) => k === 'rows' || k === 'object');
 }
 
 /** What one output socket of a workflow sends, read through its connections and its portals: a Field's column, `{ rows, field }`,
@@ -772,13 +784,18 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
       // Closed to its values where they are known: tags, or the dropdown of ticks they draw as (TRAP T-a-multi-select-is-one-row).
       const closed = (plain.control === 'tags' || (plain.control === 'values' && plain.multiple && !!here?.length)) && list ? { closed: true as const } : {};
-      // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A).
-      const idle = saysRows(row) && rowless;
+      // Idle, it hides; one a connection still leaves stays, and says why it sends nothing (Will, 924 D1 A). A test's Pass and
+      // Fail never: on one value they send its Data, or the value (plan 971 §9).
+      const idle = saysRows(row) && rowless && !row.fork;
       if (idle && flows.some((c) => c.from === `${node.id}/${row.name}`)) {
         warnings.push({ row: row.name, words: `${row.label} has no rows: a value comes in` });
       }
-      // A Branch's Yes and No are drawn as what they send: what reaches its Data (plan 944).
+      // A test's Pass and Fail are drawn as what they send: rows, or, on one value, what reaches its Data (plan 971 §9).
       const through = row.passes ? { output: socketOfGiven(sent(`${node.id}/${row.name}`)?.kind) } : {};
+      // Data on a test of a column is not used: its Pass and Fail split the column's rows.
+      if (row.name === 'data' && row.input && TEST_KINDS.has(node.kind) && flows.some((c) => c.to === `${node.id}/data`) && !testsOneValue(node, flows, sent)) {
+        warnings.push({ row: row.name, words: 'Data is not used: a column is tested, so Pass and Fail split its rows' });
+      }
       // A Field's Values with none picked sends nothing, and says so.
       const silent = row.valuesOf && (has == null || (Array.isArray(has) && !has.length)) ? { hint: 'None picked: it sends nothing' } : {};
       // A Source's Fields with no fields to pick says why: no store yet, or one the app knows no fields of, which warns (TODO 969).

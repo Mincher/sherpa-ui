@@ -48,10 +48,9 @@ test('it lists the Query\'s kinds by category, 8px in from the top, bottom and l
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   // The Preset tab's, the page's preset Filters under Custom Nodes; then the Custom tab's, the reader's own (plan 936).
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Presets', 'Saved filters', 'Custom Nodes']);
-  // The Query draws a Condition, a Status and a status chain's Branch, and places none: they are not offered (plans 944, 971).
+  // The Query draws a Condition and a Status, and places neither: they are not offered (plans 944, 971).
   await expect(item(page, 'condition')).toHaveCount(0);
   await expect(item(page, 'status')).toHaveCount(0);
-  await expect(item(page, 'branch')).toHaveCount(0);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('#cv > sherpa-overlay-panel')!].map((e) => {
     const r = (e.id === 'cv' ? e : e.shadowRoot!.querySelector('.root')!).getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };

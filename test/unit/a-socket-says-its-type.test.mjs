@@ -72,8 +72,8 @@ test('the registry says each socket: a row\'s and the header\'s; no node has a T
   // A Condition's header sends nothing: its True is a row, 1 or 0 (plan 944).
   assert.equal(socketType(NODE_KINDS.condition, undefined, 'output'), undefined, 'a Condition\'s header sends nothing');
   assert.equal(socketType(resolveKind(NODE_KINDS.condition), 'true', 'output'), 'value', 'a Condition\'s True');
-  // A Branch: its test on its header, its Data on a row, and its Yes and No rows (plans 944, 971).
-  assert.deepEqual([[undefined, 'input'], ['data', 'input'], ['yes', 'output'], ['no', 'output'], [undefined, 'output']].map(([row, side]) => socketType(resolveKind(NODE_KINDS.branch), row, side)), ['any', 'any', 'object', 'object', undefined]);
+  // A test of one value: its value on its header, its Data on a row, and its Pass and Fail rows (plan 971 §9).
+  assert.deepEqual([[undefined, 'input'], ['data', 'input'], ['pass', 'output'], ['fail', 'output'], [undefined, 'output']].map(([row, side]) => socketType(resolveKind(NODE_KINDS.condition), row, side)), ['any', 'any', 'object', 'object', undefined]);
   assert.equal(takesMany(kinds.gate), true);
   assert.equal(takesMany(kinds.gate, 'tags'), false);
   assert.equal(takesMany(NODE_KINDS.result), false);
@@ -84,7 +84,7 @@ test('the registry says each socket: a row\'s and the header\'s; no node has a T
   assert.equal(socketType(kindNode(NODE_KINDS, 'condition', 'x', resolveKind(NODE_KINDS.condition).rows), 'pass', 'output'), 'object');
 });
 
-test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or a test\'s Pass and Fail, that only sends; only Branch branches (plan 944)', () => {
+test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or a test\'s Pass and Fail, that only sends; only a test branches (plan 971 §9)', () => {
   assert.deepEqual(ROWS, { name: 'rows', label: 'Results', output: 'object', gives: 'rows', property: true });
   const all = Object.entries(NODE_KINDS);
   // A header input takes any; no header sends rows: a Rows row does, first.
@@ -106,11 +106,11 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
     ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'time › between', 'time › duration', 'tag › includes',
   ]);
   assert.deepEqual([...new Set(split.map(([name]) => name.split(' › ')[0]))], [...TEST_KINDS]);
-  // No kind forks (plan 944): only a Branch branches, by Yes and No rows that pass on its Data. A check that sends
+  // No kind forks (plan 944): only a test branches, by Pass and Fail rows that, on one value, pass on its Data. A check that sends
   // a boolean on its header says `output`: a Trigger (its True, to the Start: plan 949), a Preset and a Saved filter (a
   // scope's row), a Time and a Tag.
   assert.deepEqual(named((k) => k.branches), []);
-  assert.deepEqual(named((k) => [k, ...Object.values(k.types ?? {})].some((t) => (t.rows ?? []).some((r) => r.passes))), ['branch']);
+  assert.deepEqual(named((k) => [k, ...Object.values(k.types ?? {})].some((t) => (t.rows ?? []).some((r) => r.passes))), [...TEST_KINDS]);
   assert.deepEqual(named((k) => k.output === 'boolean'), ['trigger', 'preset', 'saved', 'time', 'tag']);
   // No type forks, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
   // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
@@ -125,7 +125,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   // Every kind a workflow runs, the Trigger (plan 941), the Branch, the end and a portal, which passes on what reaches it (TODO 779), among them.
-  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'branch', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
 });
 
 test('every shipped kind says its types once: no output sends any; none forks; a multi-select row is an object, one connection in', () => {

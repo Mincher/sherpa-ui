@@ -139,9 +139,9 @@ export interface RowKind {
   beside?: string;
   /** A PROPERTY row: output only, a value the node provides from its own data or logic (`propertyRow`). TODO 835 */
   property?: true;
-  /** A property that sends on what reaches the row of this name: a Branch's Yes and No, its Data (plan 944). */
+  /** A property that sends on what reaches the row of this name: a test's Pass and Fail, on one value, its Data (plan 971 §9). */
   passes?: string;
-  /** One way of a fork: what it sends goes no other way, as a test's Pass and Fail or a Branch's Yes and No (plan 971). */
+  /** One way of a fork: what it sends goes no other way, as a test's Pass and Fail (plan 971). */
   fork?: true;
   /** A pick on it is kept with the kinds placed last, so "Add a node" offers the kind with it picked (TODO 968). */
   recalls?: true;
@@ -451,7 +451,7 @@ function compareType(op: FilterOp): NodeType {
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, ...rows, TRUE] };
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, DATA, ...rows, TRUE] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -462,24 +462,23 @@ const compareTypes = (ops: readonly FilterOp[]): Record<string, NodeType> => Obj
 /** Logic's types, one test each (plan 783 D4): And and Or join the tests that come in, booleans on the header, read as
  *  `truthOf` reads them; then the comparisons. Each leads with Rows: the rows it lets through. A Query draws its tree
  *  with these: Not and Is empty are a workflow's alone. Plan 749 P5 */
-/** A test's Pass: the rows that hold it; its Fail: the rows that do not, so neither route is lost (Will, plan 971 A). */
-const [PASS, FAIL]: readonly [RowKind, RowKind] = [{ ...propertyRow('pass', 'Pass', 'rows'), fork: true }, { ...propertyRow('fail', 'Fail', 'rows'), fork: true }];
+/** A test's Pass: the rows that hold it; its Fail: the rows that do not, so neither route is lost (Will, plan 971 A). On ONE
+ *  value, the way its truth takes sends ALL its Data, else the value tested; the other sends nothing (plan 971 §9). */
+const [PASS, FAIL]: readonly [RowKind, RowKind] = [
+  { ...propertyRow('pass', 'Pass', 'rows'), fork: true, passes: 'data' }, { ...propertyRow('fail', 'Fail', 'rows'), fork: true, passes: 'data' },
+];
+/** What a Condition on one value sends on by Pass or Fail, all of it (Will, plan 971 §9: "Fold it into Condition"). */
+const DATA: RowKind = { name: 'data', label: 'Data', input: 'any', optional: true };
 /** The kinds that test: each gives Pass, Fail and its truth (plan 971 A). */
 export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time', 'tag']);
-/** A Branch's Data in, and its Yes and No, each sending ALL of it. */
-const BRANCH: readonly RowKind[] = [
-  { name: 'data', label: 'Data', input: 'any' },
-  { name: 'yes', label: 'Yes', output: 'object', property: true, passes: 'data', fork: true },
-  { name: 'no', label: 'No', output: 'object', property: true, passes: 'data', fork: true },
-];
 const LOGIC: Readonly<Record<string, NodeType>> = {
   // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
   // empty; Pass is the rows in all of the inputs (And) or in any true one (Or), Fail the rest (plan 971 A).
-  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, TRUE] },
-  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, TRUE] },
+  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, DATA, TRUE] },
+  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, DATA, TRUE] },
   ...compareTypes(FIGMA_OPS),
-  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [PASS, FAIL, TRUE], graphs: ['workflow'] },
-  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [PASS, FAIL, TRUE], graphs: ['workflow'] },
+  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [PASS, FAIL, DATA, TRUE], graphs: ['workflow'] },
+  empty: { label: 'Is empty', help: 'True when what comes in is nothing: none, 0, false, empty text or list, or no rows', input: 'any', rows: [PASS, FAIL, DATA, TRUE], graphs: ['workflow'] },
   ...compareTypes(SHERPA_OPS),
 };
 
@@ -511,7 +510,8 @@ export function conditionFits(inputs: readonly ConditionInput[]): ReadonlySet<st
 }
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
- *  Only the Branch node branches (plans 944, 971): a test gives Pass, Fail and True (1 or 0); no True or False socket. */
+ *  A test branches (plans 944, 971 §9): Pass and Fail split a column's rows, or send all its Data by one value's truth; and
+ *  True (1 or 0). No True or False socket, and no Branch node. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
   // A Start node: nothing comes in; what it heard leaves by its rows. Any one of a graph's Triggers starts it (Will, D2 B). Its
@@ -543,19 +543,6 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   condition: {
     heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition',
     typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
-  },
-  // The ONE node that branches (plan 944; Branch, plan 971 A): its test on its header, its truth said on it, its When; ALL its
-  // Data goes on by Yes where it holds, by No where not, and the other sends nothing. It filters no rows: a test does.
-  branch: {
-    heading: 'Branch', icon: 'diverging-arrows', description: 'Send all data one way, by its When', input: 'any',
-    typeLabel: 'When', defaultType: 'any',
-    types: {
-      any: { label: 'Any', help: 'Yes when any row passes, or the value is true', rows: BRANCH },
-      all: { label: 'All', help: 'Yes when every row passes', rows: BRANCH },
-      none: { label: 'None', help: 'Yes when no row passes, or the value is false', rows: BRANCH },
-      atleast: { label: 'At least', help: 'Yes when at least N rows pass, or the value is N or more', rows: [countRow('n', 'N', 1), ...BRANCH] },
-    },
-    rows: [], model: 'branch', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {

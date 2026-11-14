@@ -75,22 +75,22 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  // A Branch is drawn in both, beside the Condition (plans 944, 971), and so is Organise (plan 960 U4.2); a Trigger in a workflow
+  // The Condition is drawn in both, with no Branch (plan 971 §9), and so is Organise (plan 960 U4.2); a Trigger in a workflow
   // alone (plan 941).
-  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'branch', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'organise', 'value', 'field', 'math', 'time', 'text', 'tag', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
   // Sort and Group are rows of the one Organise kind (plan 960 U4.2); Collection and its Count are gone, a Count a type of
   // Math (plan 944).
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group, NODE_KINDS.organise.category], [undefined, undefined, undefined, undefined, 'Organise']);
   assert.equal(NODE_KINDS.math.types.count.label, 'Count');
   // A page's Query draws View Filters, each card's Presentation and the View (plan 960 U4.8).
-  assert.deepEqual(drawnIn('query'), ['source', 'status', 'view-filters', 'condition', 'branch', 'preset', 'saved', 'organise', 'presentation', 'view', 'field']);
+  assert.deepEqual(drawnIn('query'), ['source', 'status', 'view-filters', 'condition', 'preset', 'saved', 'organise', 'presentation', 'view', 'field']);
   // One meaning per word: a Source is where rows come from, in both, and the Store kind is gone (TODO 808); a Condition
   // is one test, in both (plan 783 D4).
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone: a Source names its store');
   assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
   // No True or False socket: a test's Pass and Fail are rows, and its True, 1 or 0 (plans 944, 971).
-  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['pass', 'fail', 'b', 'true']);
+  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['pass', 'fail', 'data', 'b', 'true']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -150,8 +150,8 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   ]);
   assert.deepEqual(graph.connections, good.connections);
   // Source › Field › Condition › Output (plan 783): the Condition tests the Field on its header, Value B the Value connected in.
-  // Its Pass, Fail and True are rows, and it forks no more (plans 944, 971).
-  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['pass', undefined, false], ['fail', undefined, false], ['b', 'active', true], ['true', undefined, false]]);
+  // Its Pass, Fail and True are rows, and it forks no more (plans 944, 971); its Data a row of its own (971 §9).
+  assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['pass', undefined, false], ['fail', undefined, false], ['data', undefined, false], ['b', 'active', true], ['true', undefined, false]]);
   assert.deepEqual([node('filter').input, node('filter').branches, ...['pass', 'fail'].flatMap((r) => [row('filter', r).output, row('filter', r).input])], ['any', undefined, 'object', undefined, 'object', undefined]);
   // The Field's list is its Source's store's fields; its row says its field and type.
   assert.deepEqual([row('field', 'field').choices, row('field', 'field').hint], [[{ value: 'status', label: 'Status' }, { value: 'seats', label: 'Seats' }], 'Status: a text field']);

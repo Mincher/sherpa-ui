@@ -301,11 +301,10 @@ test('a STATUS FIELD is a node between the Source and the cards: each value, and
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
     ['Results', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
-  // The Source's rows get their status, then reach each card: never the Source's straight. They are the first Branch's Data
-  // too (plan 944).
+  // The Source's rows get their status, then reach each card: never the Source's straight.
   assert.deepEqual(g.connections.filter((r) => r.from === 'source/rows' || r.from === 'status-health/rows').map((r) => `${r.from} → ${r.to}`), [
     // The first value's Fields read them too, as every Query Field does.
-    'source/rows → status-health', 'source/rows → field-status-health.at risk-seats', 'source/rows → branch-status-health.at risk/data',
+    'source/rows → status-health', 'source/rows → field-status-health.at risk-seats',
     // Every Field reads them, a preset's and a saved filter's too.
     'status-health/rows → field-preset-data-big-seats', 'status-health/rows → presentation-data', 'status-health/rows → field-saved-trials-view:status',
   ]);

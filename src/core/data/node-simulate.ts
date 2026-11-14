@@ -53,7 +53,7 @@ export interface Slot {
   value?: unknown;
   from: readonly string[];
   note?: string;
-  /** Down a way a Branch did not take (plan 944). */
+  /** Down a way a test of one value did not take (plan 971 §9). */
   notTaken?: true;
 }
 
@@ -71,18 +71,20 @@ export interface Simulated {
   faults: string[];
 }
 
-/** What an output socket sends: rows, a field (its name, and the rows into it), or nothing and why; down a way a Branch did
- *  not take, `notTaken` (plan 944). */
+/** What an output socket sends: rows, a field (its name, and the rows into it), or nothing and why; down a way a test of one
+ *  value did not take, `notTaken` (plan 971 §9). */
 export type Sent = { kind: 'rows' | 'field' | 'value'; rows?: readonly Row[]; value?: unknown; note?: string; notTaken?: true };
 
-/** A test's verdict: the rows it keeps (its Pass) and those it does not (its Fail); whether it passed, where it tests a value. */
+/** A test's verdict: the rows it keeps (its Pass) and those it does not (its Fail); whether it passed, where it tests a value;
+ *  `one`, a test of ONE value, whose Pass or Fail sends all its Data (plan 971 §9). */
 interface Verdict {
   kept: Row[];
   lost: Row[];
   passed?: boolean;
+  one?: true;
 }
 
-/** What a Branch and a joiner read as true (939): rows where any came, a boolean as itself, a number above zero, else not
+/** What a joiner and a test of one value read as true (939): rows where any came, a boolean as itself, a number above zero, else not
  *  empty. */
 function holds(s: Sent): boolean {
   if (s.rows) return s.rows.length > 0;
@@ -218,9 +220,9 @@ function givenOf(value: unknown): Given {
   return typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : Array.isArray(value) ? 'list' : value && typeof value === 'object' ? 'object' : 'value';
 }
 
-/** What a node that sends a value says on its light, as = 42. */
+/** What a node that sends a value says on its light, as = 42: a test, its True, not the value it passes on (plan 971 §9). */
 function valueWords(slots: readonly Slot[]): string | undefined {
-  const said = slots.find((s) => s.kind === 'value' && s.value !== undefined);
+  const said = slots.find((s) => s.socket.endsWith('/true') && s.value !== undefined) ?? slots.find((s) => s.kind === 'value' && s.value !== undefined);
   if (!said) return undefined;
   const words = typeof said.value === 'string' ? said.value : JSON.stringify(said.value);
   return `= ${words.length > 24 ? `${words.slice(0, 23)}…` : words}`;
@@ -262,34 +264,12 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     const ignored = row === undefined ? held.get(id)?.ignored?.from : undefined;
     return connections.filter((r) => r.to === address && !ignored?.includes(r.from)).map((r) => ({ from: r.from, sent: sends(r.from) }));
   };
-  /** Whether a node runs: not where all that reaches its header — or, with none there, its rows — comes down a way a Branch
-   *  did not take, or from a node that did not run (plan 944). */
+  /** Whether a node runs: not where all that reaches its header — or, with none there, its rows — comes down a way a test did
+   *  not take, or from a node that did not run (plan 971 §9). */
   const taken = (node: GraphNode): boolean => {
     const head = connections.filter((r) => r.to === node.id);
     const came = head.length ? head : connections.filter((r) => socketOf(r.to).node === node.id);
     return !came.length || came.some((r) => !sends(r.from).notTaken);
-  };
-  /** A Branch's Yes or No (plan 971 A): its When, read on the joined test's Pass and Fail (Any: Pass has a row; All: Fail
-   *  has none; None: Pass has none; At least: Pass has N), or on a plain value as `holds` reads it (At least: a number of N
-   *  or more). The way taken sends ALL its Data, else what came in; the other is not taken, so nothing after it runs. */
-  const branched = (node: GraphNode, row: string | undefined): Sent => {
-    const head = into(node.id)[0];
-    if (!head) return { kind: 'value', note: `"${node.heading}" tests nothing: connect a test in` };
-    if (head.sent.note && head.sent.value === undefined && !head.sent.rows) return { kind: 'value', note: head.sent.note };
-    const when = String(node.rows.find((r) => r.name === 'type')?.value ?? 'any');
-    const n = Number(node.rows.find((r) => r.name === 'n')?.value ?? 1);
-    const from = held.get(socketOf(head.from).node);
-    const read = from && TEST_KINDS.has(from.kind) ? verdict(from) : undefined;
-    const split = read && typeof read !== 'string' && !('note' in read) ? read : undefined;
-    // Rows came: When reads them. A value tested, or none: its truth.
-    const yes = split && (split.kept.length || split.lost.length || split.passed === undefined)
-      ? { any: split.kept.length > 0, all: split.kept.length + split.lost.length > 0 && !split.lost.length, none: !split.kept.length, atleast: split.kept.length >= n }[when] ?? false
-      : (() => {
-        const truth = split ? !!split.passed : holds(head.sent);
-        return when === 'none' ? !truth : when === 'atleast' && typeof head.sent.value === 'number' ? head.sent.value >= n : truth;
-      })();
-    if ((row === 'yes') !== yes) return { kind: 'value', note: 'Not taken', notTaken: true };
-    return into(`${node.id}/data`)[0]?.sent ?? head.sent;
   };
   /** The rows that reach a socket, each once; none at all when none of its connections brings rows (not fetched, not simulated). */
   const rowsInto = (address: string): Row[] | undefined => {
@@ -332,12 +312,12 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     if (came.some((s) => s.kind === 'field')) return undefined;
     const type = String(node.rows.find((r) => r.name === 'type')?.value ?? '');
     const rows = came.find((s) => s.rows)?.rows;
-    if (type === 'empty' && rows) return { kept: [], lost: [], passed: !rows.length };
+    if (type === 'empty' && rows) return { kept: [], lost: [], passed: !rows.length, one: true };
     const sent = came.find((s) => s.kind === 'value' && s.value !== undefined);
     // A value that did not come — a Math that could not add — says why, where its rows would.
     const quiet = came.find((s) => s.kind === 'value' && s.note);
     if (!sent) return quiet ? { note: quiet.note! } : undefined;
-    const said = (passed: boolean): Verdict => ({ kept: [], lost: [], passed });
+    const said = (passed: boolean): Verdict => ({ kept: [], lost: [], passed, one: true });
     if (type === 'not') return said(!(truthOf(sent.value) ?? truthy(sent.value)));
     if (type === 'empty') return said(!truthy(sent.value));
     if (!(type in OP_LABELS)) return undefined;
@@ -369,7 +349,9 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       const parts = each.flatMap((e) => (e.rows ? [e.rows] : []));
       const kept = type === 'or' ? union(each.flatMap((e) => (e.ok && e.rows ? [e.rows] : []))) : passed ? common(parts) : [];
       const keeps = new Set(kept);
-      return { kept, lost: union(each.flatMap((e) => (e.base ? [e.base] : []))).filter((row) => !keeps.has(row)), passed };
+      // Values alone, no rows: one truth, its Pass or Fail sending all its Data (plan 971 §9).
+      const one = !each.some((e) => e.rows);
+      return { kept, lost: union(each.flatMap((e) => (e.base ? [e.base] : []))).filter((row) => !keeps.has(row)), passed, ...(one ? { one: true as const } : {}) };
     }
     return test(node);
   };
@@ -506,9 +488,8 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
 
   /** What one output socket of a node sends. */
   function make(node: GraphNode, row: string | undefined): Sent {
-    // Down a way a Branch did not take, it does not run, and nor does what it feeds (plan 944).
+    // Down a way a test did not take, it does not run, and nor does what it feeds (plan 971 §9).
     if (!taken(node)) return { kind: 'value', note: 'Not taken', notTaken: true };
-    if (node.kind === 'branch') return branched(node, row);
     // A test's True: 1 where it holds, 0 where not (plan 944).
     if (TEST_KINDS.has(node.kind) && row === 'true') {
       const read = verdict(node);
@@ -548,6 +529,11 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
         return { kind: 'rows', note: read };
       }
       if ('note' in read) return { kind: 'rows', note: read.note };
+      // One value: the way its truth takes sends ALL its Data, else the value tested; the other is not taken (plan 971 §9).
+      if (read.one && (row === 'pass' || row === 'fail')) {
+        if ((row === 'pass') !== !!read.passed) return { kind: 'value', note: 'Not taken', notTaken: true };
+        return into(`${node.id}/data`)[0]?.sent ?? into(node.id)[0]?.sent ?? { kind: 'value', value: 1 };
+      }
       // Its Pass, the rows that hold; its Fail, the rest (plan 971 A).
       return { kind: 'rows', rows: row === 'fail' ? read.lost : read.kept };
     }
@@ -611,7 +597,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       ...(node.output ? [slot(node.id, 'Out', 'out')] : []),
       ...node.rows.filter((r) => r.output).map((r) => slot(`${node.id}/${r.name}`, r.label, 'out')),
     ];
-    // Down a way a Branch did not take it does nothing, so it would do nothing (plan 944).
+    // Down a way a test did not take it does nothing, so it would do nothing (plan 971 §9).
     const ran = taken(node);
     nodes[node.id] = { incoming, outgoing, ...(node.would && ran ? { would: node.would } : {}), ...(ran ? {} : { notTaken: true as const }) };
   };

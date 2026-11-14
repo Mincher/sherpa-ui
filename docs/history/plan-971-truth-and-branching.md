@@ -145,3 +145,11 @@ existence of input."
 Will: "This removes the need for the 'True' property in Condition nodes, too." A test's True goes; every use moves to its
 Pass, which carries the test's tree for a reader (956a): a Filter's Where, a View filter's row, And/Or, presets, the
 status chain. A route by "is there anything" is the Boolean gate (9.1).
+
+**§9, as built (sherpa-ui-e8, 2026-11-14).** Every Condition type's rows: Pass, Fail, Data (input any, optional), its own
+rows, True. A test reads ONE value (`testsOneValue`) where no Field's column and no rows reach its header, or where it is Is
+empty (rows are one set, empty or not); else Pass and Fail split rows, as before (And, Or and Not join tests' rows). On one
+value the way taken sends ALL of Data, else the value tested (Pass and Fail `passes: 'data'`, drawn as that type); the other
+is "Not taken". Data joined to a column test warns, unused. The Branch kind, its When types and Simulate's `branched` are
+gone; the status chain is each root's Pass into its value and Fail into the next value's Fields. "Is true" is Equals true.
+

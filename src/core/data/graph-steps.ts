@@ -54,7 +54,7 @@ export function graphSteps(graph: Graph, kinds: Kinds = nodeKinds()): StepStage[
     const { node, row } = socketOf(address);
     return row === undefined ? undefined : kindOfNode(kinds, held.get(node))?.rows.find((r) => r.name === row);
   };
-  // A row that only carries data: one another row passes on (a Branch's Data), or one that needs a model.
+  // A row that only carries data: one another row passes on (a test's Data), or one that needs a model.
   const passed = (address: string): boolean => {
     const { node, row } = socketOf(address);
     return row !== undefined && !!kindOfNode(kinds, held.get(node))?.rows.some((r) => r.passes === row);

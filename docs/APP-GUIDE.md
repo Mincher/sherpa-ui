@@ -561,19 +561,21 @@ Remove (`socketEdit`). Each is one step; that use follows the change, every othe
 Node being edited is a draft in its tab until it is saved, as a workflow is.
 `T-a-node-panel-lists-under-sticky-headings`
 
-### Pass, Fail, Branch and Count
+### Pass, Fail and Count
 
-No node has a True or a False socket (plan 944). Every test (a Condition, Time, Tag, And,
-Or, Not, Is empty) gives **Pass**, the rows that hold, and **Fail**, the rows that do not,
-so no row is lost; and **True**, 1 where its test holds, 0 where not (plan 971 A). To send
-the at-risk devices one way and the rest another, connect a Condition's Pass and its Fail.
+No node has a True or a False socket (plan 944), and there is no Branch node (plan 971 §9).
+Every test (a Condition, Time, Tag, And, Or, Not, Is empty) gives **Pass**, the rows that
+hold, and **Fail**, the rows that do not, so no row is lost; and **True**, 1 where its test
+holds, 0 where not (plan 971 A). To send the at-risk devices one way and the rest another,
+connect a Condition's Pass and its Fail.
 
-A **Branch** node sends ALL its Data one way: its test on its header, its Data on a row.
-Its **When** says what makes it Yes: Any (its test has a Pass row), All (no Fail row),
-None (no Pass row), or At least N Pass rows. A plain value on its header (a Prompt's
-True, a Count) is true where it is above zero, true, or not empty. Yes sends the Data
-where When holds, No where it does not. The other way is not taken: nothing after it
-runs, and Simulate's light says Not taken. With no Data, a Branch sends its test.
+A test of ONE value decides the flow: no Field's column on its header, but a Prompt's True,
+a Count, or rows into Is empty (empty or not, once). A Condition has a **Data** row: its Pass
+sends ALL of it where the value passes, its Fail where it does not, and the other way is not
+taken: nothing after it runs, and Simulate's light says Not taken. With no Data, it sends the
+value tested. "Any at risk?" is a Condition (Risk > 50) whose Pass goes to Fix, and Is empty
+on that Pass, whose Pass fires "All healthy" once, only when none is at risk. "Fixed?" is
+Equals true on an agent's True, its Data the rows. On a column, Data is not used, and says so.
 
 And and Or take anything, several. An input is true where it is above zero, true, or
 not empty. Pass: Or, the rows of every true input; And, the rows in all of them. Fail is
@@ -713,8 +715,8 @@ on Back, on a crumb and on Escape:
 To write a runbook's steps as text, as its prompt, read its graph as steps:
 `graphSteps(graph)` gives each stage's steps in the flow's order, numbered "stage.place"
 ("2.1"). Each step says where its flow `goes`: a step by its number, an output, or a stop.
-Each way of a fork is apart, in its `branches`: a test's Pass and Fail, a Branch's Yes and No, where one of
-them leads on. A step's `kind` is its node's (`branch`, `condition`). A Model that only gives a model is no step. The
+Each way of a fork is apart, in its `branches`: a test's Pass and Fail, where one of them leads on. A step's `kind` is
+its node's (`condition`, `notify`). A Model that only gives a model is no step. The
 words for each step are your app's.
 
 ### Triggers

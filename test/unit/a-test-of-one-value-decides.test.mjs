@@ -1,10 +1,11 @@
 /**
- * A BRANCH NODE BRANCHES (Will, plans 944, 971 A): no node has a True or a False socket. A test gives Pass, the rows that
- * hold, and Fail, the rest, and a True property, 1 or 0. The Branch is the ONE node that branches: its test on its header,
- * its Data on a row, its When said on it; Yes sends ALL the Data where When holds, No where it does not, and the other way
- * is not taken, so nothing after it runs. And and Or take anything, several. Counting rows is a Math type, Count.
+ * A TEST OF ONE VALUE DECIDES (Will, plans 944, 971 A; §9: "Fold it into Condition"): no node has a True or a False socket,
+ * and there is no Branch node. A test of a column gives Pass, the rows that hold, and Fail, the rest, and a True property,
+ * 1 or 0. A test of ONE value (a number, a True, rows into Is empty) sends ALL its Data, else the value, by Pass where it
+ * holds or Fail where not; the other way is not taken, so nothing after it runs. And and Or take anything, several.
+ * Counting rows is a Math type, Count.
  *
- *   node --test test/unit/a-branch-node-branches.test.mjs
+ *   node --test test/unit/a-test-of-one-value-decides.test.mjs
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,17 +24,14 @@ const rows = [{ id: 1, status: 'active', plan: 'Free' }, { id: 2, status: 'activ
 const users = [N('s', 'source', { store: 'users' }), N('f', 'field', { field: 'status' })];
 const toStatus = [C('s/rows', 'f'), C('f/field', 'c')];
 
-test('no kind forks: a test\'s Pass, Fail and True are properties; the Branch\'s Yes and No are its only ways; Count is no property', () => {
+test('no kind forks and there is no Branch: a test\'s Pass, Fail and True are properties, then its Data; Count is no property', () => {
   assert.ok(Object.values(NODE_KINDS).every((k) => !('branches' in k)));
+  assert.equal(NODE_KINDS.branch, undefined, 'the Branch folds into Condition (plan 971 §9)');
   for (const type of ['eq', 'gt', 'between', 'and', 'or', 'not', 'empty']) {
     const kind = resolveKind(NODE_KINDS.condition, type);
     assert.deepEqual(kind.rows.filter((r) => r.property).map((r) => [r.name, r.gives]), [['pass', 'rows'], ['fail', 'rows'], ['true', 'number']], type);
-  }
-  // Its Type is its When: Any first; At least adds its N.
-  assert.deepEqual([NODE_KINDS.branch.typeLabel, NODE_KINDS.branch.defaultType, Object.keys(NODE_KINDS.branch.types)], ['When', 'any', ['any', 'all', 'none', 'atleast']]);
-  for (const when of ['any', 'all', 'none', 'atleast']) {
-    const rows = resolveKind(NODE_KINDS.branch, when).rows.filter((r) => r.name !== 'type');
-    assert.deepEqual(rows.map((r) => [r.name, r.input ?? r.output]), [...(when === 'atleast' ? [['n', 'value']] : []), ['data', 'any'], ['yes', 'object'], ['no', 'object']], when);
+    const data = kind.rows.find((r) => r.name === 'data');
+    assert.deepEqual([data.input, data.optional, kind.rows.indexOf(data)], ['any', true, kind.rows.findIndex((r) => r.name === 'fail') + 1], type);
   }
   for (const id of ['source', 'field', 'organise']) assert.ok(!NODE_KINDS[id].rows.some((r) => r.name === 'count'), id);
   assert.deepEqual(resolveKind(NODE_KINDS.math, 'count').rows.map((r) => r.name), ['type', 'rows', 'result']);
@@ -51,36 +49,40 @@ test('a test\'s True is 1 where any row passes, 0 where none does; Pass is the r
   assert.deepEqual([out(gone, 'c', 'c/true').value, ids(gone, 'c/pass'), ids(gone, 'c/fail')], [0, [], [1, 2, 3]]);
 });
 
-test('a Branch sends its Data on Yes where its test holds; No is not taken, and what it feeds does not run; and the other way', () => {
+test('a test of one value sends ALL its Data by Pass where it holds; Fail is not taken, and what it feeds does not run; and the other way', () => {
+  // How many users, more than b? The Count is ONE value: Pass or Fail sends the users, all of them.
   const run = (b) => simulateGraph(graphOf(
-    [...users, N('c', 'condition', { type: 'eq', b }), N('k', 'branch'), N('yes', 'response', { type: 'toast' }), N('no', 'response', { type: 'toast' })],
-    [...toStatus, C('c/true', 'k'), C('s/rows', 'k/data'), C('k/yes', 'yes'), C('k/no', 'no')],
+    [N('s', 'source', { store: 'users' }), N('m', 'math', { type: 'count' }), N('k', 'condition', { type: 'gt', b }), N('yes', 'response', { type: 'toast' }), N('no', 'response', { type: 'toast' })],
+    [C('s/rows', 'm/rows'), C('m/result', 'k'), C('s/rows', 'k/data'), C('k/pass', 'yes'), C('k/fail', 'no')],
   ), { users: rows });
-  const sim = run('active');
+  const sim = run(2);
   assert.deepEqual(sim.faults, []);
-  assert.deepEqual(out(sim, 'k', 'k/yes').rows.map((r) => r.id), [1, 2, 3]);
-  assert.deepEqual([out(sim, 'k', 'k/no').note, out(sim, 'k', 'k/no').notTaken], ['Not taken', true]);
+  assert.deepEqual(out(sim, 'k', 'k/pass').rows.map((r) => r.id), [1, 2, 3]);
+  assert.deepEqual([out(sim, 'k', 'k/fail').note, out(sim, 'k', 'k/fail').notTaken], ['Not taken', true]);
   assert.deepEqual([sim.nodes.yes.notTaken, sim.nodes.no.notTaken, lightOf(sim.nodes.no, 0)], [undefined, true, 'Not taken · <1 ms']);
-  // No row is "gone": No sends the Data, and Yes is not taken.
-  const off = run('gone');
-  assert.deepEqual([out(off, 'k', 'k/no').rows.length, out(off, 'k', 'k/yes').notTaken, off.nodes.yes.notTaken], [3, true, true]);
+  // 3 is not more than 5: Fail sends the users, and Pass is not taken.
+  const off = run(5);
+  assert.deepEqual([out(off, 'k', 'k/fail').rows.length, out(off, 'k', 'k/pass').notTaken, off.nodes.yes.notTaken], [3, true, true]);
 });
 
-test('a Branch with no Data sends its test on the way taken; its Yes and No are drawn as what reaches its Data', () => {
-  const sim = simulateGraph(graphOf([N('v', 'value', { type: 'integer', value: '5' }), N('k', 'branch')], [C('v/value', 'k')]), {});
-  assert.deepEqual([out(sim, 'k', 'k/yes').value, out(sim, 'k', 'k/no').notTaken], [5, true]);
-  const drawn = (data) => graphOf([...users, N('v', 'value', { type: 'integer', value: '5' }), N('k', 'branch')], [C('s/rows', 'f'), C(data, 'k/data')]).nodes.find((n) => n.id === 'k').rows;
-  assert.deepEqual(drawn('v/value').filter((r) => r.passes).map((r) => r.output), ['value', 'value']);
-  assert.deepEqual(drawn('s/rows').filter((r) => r.passes).map((r) => r.output), ['object', 'object']);
+test('a test of one value with no Data sends the value on the way taken; its Pass and Fail are drawn as what they send', () => {
+  const sim = simulateGraph(graphOf([N('v', 'value', { type: 'integer', value: '5' }), N('k', 'condition', { type: 'gt', b: 1 })], [C('v/value', 'k')]), {});
+  assert.deepEqual([out(sim, 'k', 'k/pass').value, out(sim, 'k', 'k/fail').notTaken], [5, true]);
+  const drawn = (data) => graphOf([...users, N('v', 'value', { type: 'integer', value: '5' }), N('k', 'condition', { type: 'gt', b: 1 })], [C('s/rows', 'f'), C('v/value', 'k'), ...(data ? [C(data, 'k/data')] : [])]).nodes.find((n) => n.id === 'k').rows;
+  assert.deepEqual(drawn('s/rows').filter((r) => r.fork).map((r) => r.output), ['object', 'object']);
+  assert.deepEqual(drawn(undefined).filter((r) => r.fork).map((r) => r.output), ['value', 'value']);
+  // On a column the rows split, and Data is not used, and says so.
+  const column = graphOf([...users, N('k', 'condition', { type: 'eq', b: 'active' })], [...toStatus.map((c) => ({ ...c, to: c.to === 'c' ? 'k' : c.to })), C('s/rows', 'k/data')]).nodes.find((n) => n.id === 'k');
+  assert.deepEqual(column.warnings?.filter((w) => w.row === 'data').map((w) => w.words), ['Data is not used: a column is tested, so Pass and Fail split its rows']);
 });
 
 test('And and Or take anything; their True 1 or 0; And\'s Pass is the rows in every input, Or\'s in any, Fail the rest (Will)', () => {
   const counts = [3, 0, 5].map((n, i) => N(`n${i}`, 'value', { type: 'integer', value: n }));
   const joins = [N('or', 'condition', { type: 'or' }), N('and', 'condition', { type: 'and' })];
   const sim = simulateGraph(graphOf([...counts, ...joins], counts.flatMap((n) => [C(`${n.id}/value`, 'or'), C(`${n.id}/value`, 'and')])), {});
-  // An Or of 3, 0 and 5 is True, an And of them is not; values bring no rows to pass or fail.
+  // An Or of 3, 0 and 5 is True, an And of them is not: values alone are ONE truth, so the way taken sends the first value.
   assert.deepEqual([out(sim, 'or', 'or/true').value, out(sim, 'and', 'and/true').value], [1, 0]);
-  assert.deepEqual(['or/pass', 'or/fail', 'and/pass', 'and/fail'].map((s) => out(sim, s.split('/')[0], s).rows), [[], [], [], []]);
+  assert.deepEqual(['or/pass', 'or/fail', 'and/pass', 'and/fail'].map((s) => out(sim, s.split('/')[0], s)).map((o) => o.notTaken ? 'not taken' : o.value), [3, 'not taken', 'not taken', 3]);
   // Two tests' Pass: active is 1 and 2, Free is 1 and 3.
   const tests = [...users, N('p', 'field', { field: 'plan' }), N('a', 'condition', { type: 'eq', b: 'active' }), N('fr', 'condition', { type: 'eq', b: 'Free' }), ...joins];
   const wires = [C('s/rows', 'f'), C('s/rows', 'p'), C('f/field', 'a'), C('p/field', 'fr'), ...['a/pass', 'fr/pass'].flatMap((x) => [C(x, 'and'), C(x, 'or')])];
@@ -89,22 +91,19 @@ test('And and Or take anything; their True 1 or 0; And\'s Pass is the rows in ev
   assert.deepEqual([ids('and', 'pass'), ids('and', 'fail'), ids('or', 'pass'), ids('or', 'fail')], [[1], [2, 3], [1, 2, 3], []]);
 });
 
-test('a Branch\'s When reads its test: Any, a Pass row; All, no Fail row; None, no Pass row; At least, N Pass rows; a value by its truth', () => {
-  const ways = (when, n) => [['ne', 'gone'], ['eq', 'active'], ['eq', 'gone']].map(([type, b]) => {
-    const k = N('k', 'branch', { type: when, ...(n ? { n } : {}) });
-    const sim = simulateGraph(graphOf([...users, N('c', 'condition', { type, b }), k], [...toStatus, C('c/true', 'k'), C('s/rows', 'k/data')]), { users: rows });
-    return out(sim, 'k', 'k/yes').notTaken ? 'no' : 'yes';
-  });
-  // Every row passes; two of three; none.
-  assert.deepEqual(ways('any'), ['yes', 'yes', 'no']);
-  assert.deepEqual(ways('all'), ['yes', 'no', 'no']);
-  assert.deepEqual(ways('none'), ['no', 'no', 'yes']);
-  assert.deepEqual([ways('atleast', 2), ways('atleast', 3)], [['yes', 'yes', 'no'], ['yes', 'no', 'no']]);
-  const plain = (value, when, n) => {
-    const sim = simulateGraph(graphOf([N('v', 'value', { type: 'integer', value }), N('k', 'branch', { type: when, ...(n ? { n } : {}) })], [C('v/value', 'k')]), {});
-    return out(sim, 'k', 'k/yes').notTaken ? 'no' : 'yes';
+test('Branch\'s old jobs, as tests: "Any at risk?" is Is empty on a Pass, once; At least N is a Count into Greater or equal', () => {
+  // Is empty on the rows a test passes is ONE value: its Pass sends all its Data once, only where none passed.
+  const any = (b) => {
+    const sim = simulateGraph(graphOf([...users, N('c', 'condition', { type: 'eq', b }), N('e', 'condition', { type: 'empty' })], [...toStatus, C('c/pass', 'e'), C('s/rows', 'e/data')]), { users: rows });
+    return [out(sim, 'e', 'e/pass').notTaken ? 'not taken' : out(sim, 'e', 'e/pass').rows.length, out(sim, 'e', 'e/fail').notTaken ? 'not taken' : out(sim, 'e', 'e/fail').rows.length];
   };
-  assert.deepEqual([plain(5, 'any'), plain(0, 'any'), plain(5, 'none'), plain(0, 'none'), plain(5, 'atleast', 5), plain(5, 'atleast', 6)], ['yes', 'no', 'no', 'yes', 'yes', 'no']);
+  assert.deepEqual([any('active'), any('gone')], [['not taken', 3], [3, 'not taken']]);
+  const atLeast = (n) => {
+    const sim = simulateGraph(graphOf([...users, N('c', 'condition', { type: 'eq', b: 'active' }), N('m', 'math', { type: 'count' }), N('k', 'condition', { type: 'gte', b: n })],
+      [...toStatus, C('c/pass', 'm/rows'), C('m/result', 'k'), C('s/rows', 'k/data')]), { users: rows });
+    return out(sim, 'k', 'k/pass').notTaken ? 'no' : 'yes';
+  };
+  assert.deepEqual([atLeast(2), atLeast(3)], ['yes', 'no']);
 });
 
 test('Math Count: how many rows come in', () => {

@@ -189,21 +189,21 @@ test('the Query editor unfurls too: every node moves, none overlaps, the places 
   expect(Object.keys(kept).length).toBeGreaterThan(1);
 });
 
-// Two Values into a Math node's rows a and b, and a Branch's Yes and No out to two Outputs: each pair stood upside down. The
-// Condition's True is the Branch's test: no node has a True or a False socket (plan 944).
+// Two Values into a Math node's rows a and b, and a test of one value's Pass and Fail out to two Outputs: each pair stood
+// upside down. No node has a True or a False socket (plan 944), and no Branch (plan 971 §9).
 const ROWS: [string, string, number, number, Record<string, unknown>?][] = [
   ['two', 'value', 0, 0, { type: 'integer', value: '2' }], ['one', 'value', 0, 700, { type: 'integer', value: '1' }],
-  ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }], ['branch', 'branch', 1500, 300],
+  ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }],
   ['no', 'result', 2000, 0], ['yes', 'result', 2000, 600],
 ];
 const FED = [
-  { from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' }, { from: 'test/true', to: 'branch' },
-  { from: 'branch/yes', to: 'yes' }, { from: 'branch/no', to: 'no' },
+  { from: 'one/value', to: 'sum/a' }, { from: 'two/value', to: 'sum/b' }, { from: 'sum/result', to: 'test' },
+  { from: 'test/pass', to: 'yes' }, { from: 'test/fail', to: 'no' },
 ];
 
-test('the sockets\' order: what feeds rows a and b stands in that order, and what a Branch\'s Yes and No send, in theirs (Will, TODO 827; plan 944)', async ({ page }) => {
+test('the sockets\' order: what feeds rows a and b stands in that order, and what a test\'s Pass and Fail send, in theirs (Will, TODO 827; plan 971 §9)', async ({ page }) => {
   await start(page, ROWS, FED);
-  // Measured (plan 944): each upside-down pair crosses once, rows a and b and Yes and No, so two crossings and two swaps.
+  // Measured (plan 944): each upside-down pair crosses once, rows a and b and Pass and Fail, so two crossings and two swaps.
   expect(await atSockets(page)).toEqual({ crossed: 2, swapped: 2 });
   await button(page).click();
   await settle(page);

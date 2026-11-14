@@ -66,7 +66,6 @@ export const QUERY_NODE = {
   source: 'source',
   status: (field: string): string => `status-${field}`,
   statusWhen: (field: string, value: string): string => `status-${field}.${value}`,
-  statusBranch: (field: string, value: string): string => `branch-status-${field}.${value}`,
   scope: (scope: string): string => `scope-${scope}`,
   condition: (scope: string, field: string): string => `when-${scope}-${field}`,
   field: (scope: string, field: string): string => `field-${scope}-${field}`,
@@ -475,7 +474,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const treeNodes = (
     column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
     apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, into = fed }: { back?: number; into?: readonly string[] } = {},
-  ): { truth: string; pass: string } => {
+  ): { truth: string; pass: string; fail: string } => {
     const whole = JSON.stringify(tree);
     const depth = (t: Condition): number => 1 + Math.max(0, ...(groupOf(t)?.[1] ?? []).map(depth));
     const fields = fieldsOf(tree, ctx.field);
@@ -507,7 +506,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
       return drawn.kind === 'condition' ? `${id}/true` : id;
     };
-    return { truth: walk(tree, []), pass: `${treeNodeId(root, [])}/pass` };
+    return { truth: walk(tree, []), pass: `${treeNodeId(root, [])}/pass`, fail: `${treeNodeId(root, [])}/fail` };
   };
   // A scope's presets: as declared now, else as its definition says them.
   const presetsOf = (scope: string): readonly ScopePreset[] => facts.presets?.(scope)
@@ -544,24 +543,23 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       hint: whens[i] === undefined ? 'Every row the values before it left. ' + FROM_STORE : !isCondition(whens[i]) ? `Its \`when\` is not a condition. ${FROM_STORE}` : FROM_STORE,
     }));
     connections.push({ from: sent(QUERY_NODE.source), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
-    // Each value's `when` is a tree of tests on a Field per field it names, into a Branch (plan 944, D2 A): Yes hands its value
-    // the rows, No hands the rows it left to the next value's Fields and Branch, in the order the first match is taken.
+    // Each value's `when` is a tree of tests on a Field per field it names (plan 971 §9): its Pass hands its value the rows,
+    // its Fail hands the rows it left to the next value's Fields, in the order the first match is taken.
     let before: string | null = null;
     let at = 0;
     values.forEach((value, i) => {
       const when = whens[i];
       if (!isCondition(when)) {
-        if (before && when === undefined) connections.push({ from: `${before}/no`, to: `${node}/${value}` });
+        if (before && when === undefined) connections.push({ from: before, to: `${node}/${value}` });
         before = null;
         return;
       }
       const column = 0.5 + at++ * 0.01;
-      const said = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
+      const tree = treeNodes(column, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
         heading: value, description: groupWords(when),
-      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: [before ? `${before}/no` : sent(QUERY_NODE.source)] }).truth;
-      const branch = add(column + 0.002, QUERY_NODE.statusBranch(field, value), 'branch', resolveKind(NODE_KINDS['branch']!, 'any').rows.map((r): GraphRow => readOnly(FROM_STORE)({ ...r, ...(r.name === 'type' ? { value: 'any' } : {}) })), { heading: value, ref: { status: field, value } }, 'any');
-      connections.push({ from: said, to: branch }, { from: before ? `${before}/no` : sent(QUERY_NODE.source), to: `${branch}/data` }, { from: `${branch}/yes`, to: `${node}/${value}` });
-      before = branch;
+      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, into: [before ?? sent(QUERY_NODE.source)] });
+      connections.push({ from: tree.pass, to: `${node}/${value}` });
+      before = tree.fail;
     });
   }
   // The page's rows: each status field's, else the Source's.
@@ -846,7 +844,7 @@ export type PlaceAnswer = { request: QueryRequest } | { refused: string } | { ke
 
 /** The kinds a Query draws and never places: a Field's tests are its chip's, and a status field the app's. Its node panel
  *  offers neither; `placeRequest` still says why, to one that asks. Will, 2026-11-10 */
-export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'branch', 'organise'];
+export const QUERY_DRAWN_ONLY: readonly string[] = ['condition', 'status', 'organise'];
 
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the
