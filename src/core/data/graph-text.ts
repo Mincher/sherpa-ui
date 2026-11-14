@@ -90,6 +90,12 @@ function libraryWords(n: WorkflowNode, graph: TextGraph): string {
     const asks = type === 'empty' ? 'nothing comes in' : `what comes in ${OPS[type] ?? type} ${text(v['b'])}`.trim();
     return `${heading ?? 'Check'}: ${n.description ?? `when ${asks}.`}`;
   }
+  // A Route: each row on by its field's value, the rest at Otherwise (plan 991 D6).
+  if (n.kind === 'route') {
+    const field = (graph.connections ?? []).map((c) => (c.to === n.id ? nodeIn(graph, owner(c.from)) : undefined)).find((f) => f?.kind === 'field')?.values?.['field'];
+    const routes = [v['routes'] ?? []].flat().map(text);
+    return `${heading ?? 'Route'}: send each row on by its ${field ? ref('field', text(field)) : 'field'}${routes.length ? `: ${routes.join(', ')}` : ''}; the rest, Otherwise.`;
+  }
   // The Boolean: what comes in goes on only where it is something (Will, plan 971 §9).
   if (n.kind === 'boolean') return `${heading ?? 'If any'}: go on only when something comes in.`;
   if (n.kind === 'runbook') return `${heading ?? 'Agent step'}: ${text(v['instructions'] ?? n.description)}`.trim();

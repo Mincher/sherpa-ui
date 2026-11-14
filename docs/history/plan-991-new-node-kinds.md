@@ -126,6 +126,10 @@ And, never the inside of Band. **D4 built (2026-11-14):** the Math types `floor`
 retrofitted. Plan 992 (Will's picks, 2026-11-14) then reshaped the rest: no Group by on Math (O8: one grouping door,
 Organise, and a Statistic reads its groups), so D5 goes; Route (D6) goes on.
 
+**Route built (2026-11-14):** a Logic kind, `route`: a Field on its header; Routes (`routes`, one dropdown of ticks of
+the field's values); an output row per value picked (`v-<words>`), then Otherwise. The unfold door is back, for a node
+whose outputs ARE its picks (`unfolds`, `rowsOfNode`, TRAP T-a-route-unfolds-its-picks).
+
 **D6: Route's outputs — Will, 2026-11-14: A** (one output row per picked value, each its own socket, plus Otherwise;
 its input stays one dropdown of ticks). The question was: A (my pick): one output row per value picked, drawn on the node, plus Otherwise:
 a line from each route shows where it goes. This is a row per value, which a Field's Values is not (Will, 2026-11-13:

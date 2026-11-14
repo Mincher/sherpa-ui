@@ -51,6 +51,9 @@
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
  * - rowOf — The row of a kind a name says.
+ * - UNFOLDED — The prefix of a row a pick unfolds: "At risk" unfolds as `v-at-risk` (a socket's name takes no space).
+ * - unfoldedRows — The output rows a pick unfolds, one per value picked: named by its words (`v-at-risk`; a clash, `-2`), each a…
+ * - rowsOfNode — A node's rows: its kind's, each row that unfolds followed by the rows its pick unfolds.
  * - rowTitle — A row's title as a reader sees it: an optional one says so, "Values (Optional)".
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several connections.
@@ -147,6 +150,9 @@ export interface RowKind {
   passes?: string;
   /** One way of a fork: what it sends goes no other way, as a test's Pass and Fail (plan 971). */
   fork?: true;
+  /** It draws an output row per value picked on it, right after it, each a fork of that value's rows (Route, plan 991 D6).
+   *  TRAP T-a-route-unfolds-its-picks */
+  unfolds?: true;
   /** A pick on it is kept with the kinds placed last, so "Add a node" offers the kind with it picked (TODO 968). */
   recalls?: true;
   /** A many pick that keeps none means every choice: drawn all ticked, and all ticked keeps none (TODO 969). */
@@ -553,6 +559,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition',
     typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
+  // Rows on by ONE field's value (Will, plan 991 D6 A; plan 992: a Condition is one test, a Route many places): a Field on its
+  // header; Routes, the values it picks, one dropdown of ticks; an output per value picked, and Otherwise.
+  route: {
+    heading: 'Route', icon: 'link-simple', description: 'Send each row on by a field\'s value', input: 'any', needs: 'field',
+    rows: [{ name: 'routes', label: 'Routes', control: 'tags', multiple: true, input: 'object', unfolds: true },
+      { name: 'otherwise', label: 'Otherwise', output: 'object', gives: 'rows', fork: true }],
+    model: 'route', graphs: ['workflow'], category: 'Logic',
+  },
   // "If true then" (Will, plan 971 §9): what comes in goes on where it is true (above 0, true, not empty), else the route
   // stops. No rows: one header in, one out, of what came in.
   boolean: {
@@ -927,6 +941,28 @@ export function rowOf<R extends Pick<RowKind, 'name'>>(rows: readonly R[], name:
   return rows.find((r) => r.name === name);
 }
 
+/** The prefix of a row a pick unfolds: "At risk" unfolds as `v-at-risk` (a socket's name takes no space). */
+export const UNFOLDED = 'v-';
+
+/** The output rows a pick unfolds, one per value picked: named by its words (`v-at-risk`; a clash, `-2`), each a fork of that
+ *  value's rows (Route, plan 991 D6). TRAP T-a-route-unfolds-its-picks */
+export function unfoldedRows(picked: unknown): RowKind[] {
+  const taken = new Set<string>();
+  return [picked ?? []].flat().filter((v) => v != null && v !== '').map((value): RowKind => {
+    const base = `${UNFOLDED}${String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'value'}`;
+    let name = base;
+    for (let n = 2; taken.has(name); n++) name = `${base}-${n}`;
+    taken.add(name);
+    return { name, label: String(value), output: 'object', gives: 'rows', fork: true };
+  });
+}
+
+/** A node's rows: its kind's, each row that unfolds followed by the rows its pick unfolds. One door, so the drawing, a run and
+ *  the text read the same rows. */
+export function rowsOfNode(kind: Pick<Sockets, 'rows'>, values: Readonly<Record<string, unknown>> = {}): RowKind[] {
+  return kind.rows.flatMap((r) => (r.unfolds ? [r, ...unfoldedRows(values[r.name])] : [r]));
+}
+
 /** A row's title as a reader sees it: one the node can do without says so, "Values (Optional)". Its name, its
  *  connections and its warnings keep its label. Will, 2026-11-14, TODO 984 */
 export function rowTitle(row: Pick<RowKind, 'label' | 'optional'>): string {
@@ -936,7 +972,9 @@ export function rowTitle(row: Pick<RowKind, 'label' | 'optional'>): string {
 /** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row) or a row's — on one side;
  *  none, it has no such socket. */
 export function socketType(kind: Sockets, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
-  return row === undefined ? kind[side] : rowOf(kind.rows, row)?.[side];
+  if (row === undefined) return kind[side];
+  // A row a pick unfolds (`v-…`) is an output of rows, on a kind that unfolds one.
+  return rowOf(kind.rows, row)?.[side] ?? (side === 'output' && row.startsWith(UNFOLDED) && kind.rows.some((r) => r.unfolds) ? 'object' : undefined);
 }
 
 /** Whether an input of a kind, or of a node drawn of it, takes several connections: its header's (no row), or a row's. */

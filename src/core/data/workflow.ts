@@ -39,7 +39,7 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, typedControl, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, typedControl, rowsOfNode, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -762,7 +762,8 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const rowless = !!kind.input && kind.rows.some(saysRows) && rowsHeard(node.id) === false;
     // A Condition's Count also says the counts that pass: it shows where a number comes in (TODO 939; Will, 2026-11-11: a
     // Count into Between passes through).
-    const rows = kind.rows.map((row): GraphRow => {
+    // Its kind's rows, each that unfolds followed by the rows its pick unfolds (a Route's outputs, plan 991 D6).
+    const rows = rowsOfNode(kind, values).map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no connection gives warns, by its row (plan 891).
       if (row.control === 'message' && valuesIn(has).length) {

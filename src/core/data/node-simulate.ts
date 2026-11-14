@@ -430,6 +430,17 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return { kind: 'value', value: type === 'subtract' ? a - b : type === 'multiply' ? a * b : a + b };
   };
 
+  /** A Route's rows at one output: those whose field's value is that output's, the rest at Otherwise; a list cell goes the
+   *  way of the first value it holds that is picked (plan 991 D6). TRAP T-a-route-unfolds-its-picks */
+  const routed = (node: GraphNode, row: string | undefined): Sent => {
+    const fed = into(node.id).find((p) => p.sent.kind === 'field')?.sent;
+    if (!fed?.rows) return { kind: 'rows', note: fed?.note ?? 'No rows reach it: connect a Field in' };
+    const field = String(fed.value ?? '');
+    const outs = new Map(node.rows.filter((r) => r.fork && r.name !== 'otherwise').map((r) => [r.label, r.name]));
+    const goes = (r: Row): string => [r[field]].flat().map(String).map((v) => outs.get(v)).find(Boolean) ?? 'otherwise';
+    return { kind: 'rows', rows: fed.rows.filter((r) => goes(r) === row) };
+  };
+
   /** A Band's label: the first band the value is up to, else the last label; why there is none, in words. */
   const band = (node: GraphNode): Sent => {
     const fail = (note: string): Sent => ({ kind: 'value', note });
@@ -584,6 +595,8 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       if (came.note && came.value === undefined && !came.rows) return came;
       return holds(came) ? came : { kind: 'value', note: 'Not taken', notTaken: true };
     }
+    // A Route (plan 991 D6): each row on at the output of its field's value, the rest at Otherwise.
+    if (node.kind === 'route') return routed(node, row);
     if (node.kind === 'value') return valued(node);
     if (node.kind === 'math') return math(node);
     if (node.kind === 'text') return text(node);

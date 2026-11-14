@@ -10,7 +10,7 @@
  * - StepStage — One stage's steps, in order.
  * - graphSteps — A graph's steps, stage by stage, each numbered "stage.place", and where each one's flow goes.
  */
-import { kindOfNode, nodeKinds, socketOf, type NodeConnection, type NodeKind, type RowKind } from './node-kinds.js';
+import { kindOfNode, nodeKinds, rowsOfNode, socketOf, type NodeConnection, type NodeKind, type RowKind } from './node-kinds.js';
 import { flowDepths } from './node-routes.js';
 import { stageOf, stagesOf, type NodeStage } from './node-stages.js';
 import { START } from './node-start.js';
@@ -91,7 +91,10 @@ export function graphSteps(graph: Graph, kinds: Kinds = nodeKinds()): StepStage[
   };
   for (const stage of read) {
     for (const step of stage.steps) {
-      const forks = (kindOfNode(kinds, held.get(step.node))?.rows.filter((r) => r.fork) ?? []).map((r) => [r.name, goes((address) => address === `${step.node}/${r.name}`)] as const);
+      const at = held.get(step.node);
+      const kind = kindOfNode(kinds, at);
+      // A Route's outputs are forks too, as its pick unfolds them (plan 991 D6).
+      const forks = (kind ? rowsOfNode(kind, at?.values) : []).filter((r) => r.fork).map((r) => [r.name, goes((address) => address === `${step.node}/${r.name}`)] as const);
       if (forks.some(([, to]) => !('stop' in to[0]!))) step.branches = Object.fromEntries(forks);
       step.goes = goes((address) => socketOf(address).node === step.node);
     }
