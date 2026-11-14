@@ -228,6 +228,15 @@ of 10 or more characters IN the directive comment (typescript-eslint strict,
 **24. A tooltip names the act in as few words as carry it** (Will, 2026-11-11, TODO 894): Fetch data, Simulate, Pause
 simulation, Stop simulation. A key it answers to may follow in brackets, `Undo (⌘Z)`; a line of description only when one
 is asked for. Every tip in Sherpa, not only the node editor's.
+
+**25. Nothing reads data but a store** (Will, 2026-11-14: "Nothing should ever read a Data Source directly except a Data
+Store." Of a Source node: "It's the Data Source via the Data Store in the Data Layer."). Will's Data Source is where rows
+LIVE — a file, an API, a feed — not the `DataSource` class, which reads a store. A store is its one door: `ArrayStore`,
+`openRequestStore`, a live store, a type's store, and the shelf for entities. A `DataSource`, a node, an act, a check, a
+reference and an agent read rows through it, never the file a store is made from. A field whose values are another
+type's rows says `ref`, never a copy in `values`. A definition — a page, a View, a template — is no data, and its loader
+reads it. `test/unit/only-a-store-reads-data.test.mjs` holds the mechanical half: only the modules it lists reach outside
+the page, each for its reason (TRAP `T-only-a-store-reads-data`).
 ---
 
 ## The doors on `SherpaElement`

@@ -7587,6 +7587,24 @@ while a chip follows — the preset divider's rule, with a second selector.
 - Site: `test/unit/a-fixed-field-stays-held.test.mjs`
 - Site: `test/e2e/reforged-a-fixed-field-stays-held.spec.ts`
 
+### T-only-a-store-reads-data
+
+**Nothing reads data but a store** — Will, 2026-11-14 (PRINCIPLES 25): "Nothing should ever read a Data Source directly
+except a Data Store." A copy read around the store rots: the same list said in four places (a seed generator, an act's
+choices, two definitions' `values`) drifts, and a check reads names the rows no longer hold.
+
+**The test lists every module that reaches outside the page**, each with what it reads: the stores, and those that read
+no rows — a page, a View, a template, the icon sprite, the app's offline files, a worker's script, the notices that a
+store's rows moved. The shelf reads entity files because it is the entities' store. A new `fetch`, `EventSource`,
+`WebSocket`, `XMLHttpRequest`, file read or JSON import fails it until it is listed, and says why. It reads code, not
+comments, and a method named `fetch` is no read.
+
+What it cannot hold: a module that reads a store's file through a helper with another name. A reviewer holds that, and
+an app holds its own (Demos audits its `app/`).
+
+- Site: `src/core/data/stores.ts`
+- Site: `test/unit/only-a-store-reads-data.test.mjs`
+
 ### T-a-scope-below-narrows-within-a-fixed-field
 
 **A field the View holds FIXED can never move down, so a scope below may add it

@@ -2,7 +2,7 @@
  * stores.ts — the concrete stores: ArrayStore, JsonStore, RestStore, LocalStore.
  *
  * All answer the one interface in store.ts, so a view moves from an in-memory
- * array to an HTTP endpoint without a component knowing.
+ * array to an HTTP endpoint without a component knowing. A store is the one door to rows. TRAP T-only-a-store-reads-data
  *
  * Map:
  * - ArrayStore — Records held in memory.

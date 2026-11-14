@@ -508,6 +508,14 @@ offline too — marked stale, and reads them again behind. Put the user or
 tenant in `name`, bump `version` when the rows' shape changes, and call
 `clearKept()` at sign-out: the rows outlive the session.
 
+### Only a store reads the data
+
+Nothing reads a data file, an API or a feed but the store made over it (Will, 2026-11-14). A page, a node, an act, a
+check and a `{{kind:id}}` reference read rows through the store; none imports the file the store reads, nor the
+generator that wrote it. A field whose values are another type's rows says `"ref": "<type>"` (`"many": true` for a
+list): its choices are read from that type's store, so the list is said once, as rows. A field's `values` is for a
+list that is no type's rows, such as a status's words.
+
 ### The filter is ONE Query, in scopes
 
 Several controls narrow one query at once — a toolbar's chips, a grid's column
