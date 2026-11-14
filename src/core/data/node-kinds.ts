@@ -150,8 +150,8 @@ export interface RowKind {
   passes?: string;
   /** One way of a fork: what it sends goes no other way, as a test's Pass and Fail (plan 971). */
   fork?: true;
-  /** It draws an output row per value picked on it, right after it, each a fork of that value's rows (Route, plan 991 D6).
-   *  TRAP T-a-route-unfolds-its-picks */
+  /** It draws an output row per value picked on it, right after it, each a fork of that value's rows (Fork, plan 991 D6).
+   *  TRAP T-a-fork-unfolds-its-picks */
   unfolds?: true;
   /** A pick on it is kept with the kinds placed last, so "Add a node" offers the kind with it picked (TODO 968). */
   recalls?: true;
@@ -559,13 +559,13 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition',
     typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
-  // Rows on by ONE field's value (Will, plan 991 D6 A; plan 992: a Condition is one test, a Route many places): a Field on its
-  // header; Routes, the values it picks, one dropdown of ticks; an output per value picked, and Otherwise.
-  route: {
-    heading: 'Route', icon: 'link-simple', description: 'Send each row on by a field\'s value', input: 'any', needs: 'field',
-    rows: [{ name: 'routes', label: 'Routes', control: 'tags', multiple: true, input: 'object', unfolds: true },
+  // Rows on by ONE field's value (Will, plan 991 D6 A; plan 992: a Condition is one test, a Fork many places; Will named it Fork, so
+  // a Route stays a full path, PRINCIPLES 19): a Field on its header; Ways, the values it picks, one dropdown of ticks; an output per value picked, and Otherwise.
+  fork: {
+    heading: 'Fork', icon: 'link-simple', description: 'Send each row on by a field\'s value', input: 'any', needs: 'field',
+    rows: [{ name: 'ways', label: 'Ways', control: 'tags', multiple: true, input: 'object', unfolds: true },
       { name: 'otherwise', label: 'Otherwise', output: 'object', gives: 'rows', fork: true }],
-    model: 'route', graphs: ['workflow'], category: 'Logic',
+    model: 'fork', graphs: ['workflow'], category: 'Logic',
   },
   // "If true then" (Will, plan 971 §9): what comes in goes on where it is true (above 0, true, not empty), else the route
   // stops. No rows: one header in, one out, of what came in.
@@ -945,7 +945,7 @@ export function rowOf<R extends Pick<RowKind, 'name'>>(rows: readonly R[], name:
 export const UNFOLDED = 'v-';
 
 /** The output rows a pick unfolds, one per value picked: named by its words (`v-at-risk`; a clash, `-2`), each a fork of that
- *  value's rows (Route, plan 991 D6). TRAP T-a-route-unfolds-its-picks */
+ *  value's rows (Fork, plan 991 D6). TRAP T-a-fork-unfolds-its-picks */
 export function unfoldedRows(picked: unknown): RowKind[] {
   const taken = new Set<string>();
   return [picked ?? []].flat().filter((v) => v != null && v !== '').map((value): RowKind => {

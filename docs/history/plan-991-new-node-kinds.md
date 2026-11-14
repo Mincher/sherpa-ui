@@ -28,7 +28,7 @@ step), tools and MCP (Skill), Mail and SMS (Notification), Starts/Ends with and 
 | Node | New kind or type | What it does | From | Demos example |
 |---|---|---|---|---|
 | **For each** | kind (Flow) | Runs a Custom Node (a Runbook, a Custom Node) once per row, N at a time; Done sends every result on | n8n Loop Over Items; Rewst With Items + concurrency; Blender For Each zone | Run the patch Runbook for each device, 5 at a time |
-| **Route** | kind (Logic) | One output per rule (or per named option), plus Otherwise; the first match, or every match | n8n Switch; Rewst Follow First / Follow All; Blender Menu and Index Switch | High risk → ticket, Medium → notify, Otherwise → stop |
+| **Fork** (asked as Route; Will named it Fork, 2026-11-14, as a Route is a full path) | kind (Logic) | One output per rule (or per named option), plus Otherwise; the first match, or every match | n8n Switch; Rewst Follow First / Follow All; Blender Menu and Index Switch | High risk → ticket, Medium → notify, Otherwise → stop |
 | **Merge** | kind (Data) | Joins two row sets: append, or by a field: matched, unmatched, enriched; or waits for every input | n8n Merge; Rewst Merge lists, criteria sensitivity | Customers and devices, by customer |
 | **Wait** | kind (Flow) | For a time, until a time, or until an event; always with a time limit | n8n Wait; Rewst Delay, Await Webhook Request | Wait for the maintenance window, then reboot |
 | **Approval** | Request type | Asks a person, with buttons; Approved, Declined, Timed out | n8n Send and Wait; Rewst Create Pending Task, Confirmation Email | Ask the account owner before a server reboot |
@@ -84,7 +84,7 @@ option), Closure (a step passed as a value).
 
 | Phase | Builds |
 |---|---|
-| 991a | Route; Statistic (Math types); Band; Format |
+| 991a | Fork; Statistic (Math types); Band; Format |
 | 991b | For each; Wait; Retry / on error (D1, D3) |
 | 991c | Merge; Compare; Unique; Top N per group |
 | 991d | Approval (D2); Viewer; hover to see a socket's last value |
@@ -109,9 +109,9 @@ rows and the field it reads).
   is "above"); out, the label of the first band the number is up to. "Risk 70 → High".
 - **Format** (Text type): a **Template** (a message, its values `{{field:…}}` by Insert value, the one reference form of
   956) and the rows or the record that come in; out, one text per row (a list), or one text for one record.
-- **Route** (a Logic kind): a Field joined to its header; **Routes**, the values of that field it picks (one dropdown of
+- **Fork** (a Logic kind): a Field joined to its header; **Ways**, the values of that field it picks (one dropdown of
   ticks, as a Field's Values); out, ONE output row per value picked, and **Otherwise**. Each row goes on at the output of
-  its value, the rest at Otherwise. Routes by a rule, not a value, are a Condition each, as today (D6).
+  its value, the rest at Otherwise. Ways by a rule, not a value, are a Condition each, as today (D6).
 
 **D4: Min and Max — Will, 2026-11-14: A** (rename Floor to Min and Ceiling to Max, every graph retrofitted). The
 question was: A (my pick): rename Floor to **Min** and Ceiling to **Max** (their help already says
@@ -124,17 +124,18 @@ and Max are not added.
 by Simulate and in the test that runs every kind. A palette search finds a type by the start of a word, so "and" is
 And, never the inside of Band. **D4 built (2026-11-14):** the Math types `floor` and `ceiling` are `min` and `max`, Min and Max, every graph and test
 retrofitted. Plan 992 (Will's picks, 2026-11-14) then reshaped the rest: no Group by on Math (O8: one grouping door,
-Organise, and a Statistic reads its groups), so D5 goes; Route (D6) goes on.
+Organise, and a Statistic reads its groups), so D5 goes; the Fork (D6) goes on.
 
-**Route built (2026-11-14):** a Logic kind, `route`: a Field on its header; Routes (`routes`, one dropdown of ticks of
+**Fork built (2026-11-14; asked as Route, named Fork by Will so a Route stays a full path, PRINCIPLES 19):** a Logic
+kind, `fork`: a Field on its header; Ways (`ways`, one dropdown of ticks of
 the field's values); an output row per value picked (`v-<words>`), then Otherwise. The unfold door is back, for a node
-whose outputs ARE its picks (`unfolds`, `rowsOfNode`, TRAP T-a-route-unfolds-its-picks).
+whose outputs ARE its picks (`unfolds`, `rowsOfNode`, TRAP T-a-fork-unfolds-its-picks).
 
-**D6: Route's outputs — Will, 2026-11-14: A** (one output row per picked value, each its own socket, plus Otherwise;
+**D6: the Fork's outputs (asked as Route's) — Will, 2026-11-14: A** (one output row per picked value, each its own socket, plus Otherwise;
 its input stays one dropdown of ticks). The question was: A (my pick): one output row per value picked, drawn on the node, plus Otherwise:
-a line from each route shows where it goes. This is a row per value, which a Field's Values is not (Will, 2026-11-13:
-one dropdown of ticks), because each route needs its own socket. B: one output and Otherwise, the route a row's value
-picks said on the line's tip: fewer sockets, but two routes can no longer go to two places.
+a line from each way shows where it goes. This is a row per value, which a Field's Values is not (Will, 2026-11-13:
+one dropdown of ticks), because each way needs its own socket. B: one output and Otherwise, the way a row's value
+picks said on the line's tip: fewer sockets, but two ways can no longer go to two places.
 
 ### 991g: the graphs we have, with the new nodes (Will, 2026-11-14)
 
@@ -157,7 +158,7 @@ new nodes would improve the quality, or effectiveness, of the graph."
 | Graph | Today | With the new node | Waits on |
 |---|---|---|---|
 | Runbooks Patch rollout, Device health, Backup check | a "Try again" step and a "Fixed on retry?" Condition after the fix | the fix step's own Retry setting; the prompt's RETRIES AND ERRORS reads it (O7; built with Retry, 992c) | Retry (991b) |
-| Workflow Device triage | a True/false Prompt "Need attention today?", then a Condition: an alert, or All clear | a Prompt with the Category answer (Urgent, Patches behind, Fine), then one Route: the alert, Patch review, All clear (O6) | Route, Classify (992c) |
+| Workflow Device triage | a True/false Prompt "Need attention today?", then a Condition: an alert, or All clear | a Prompt with the Category answer (Urgent, Patches behind, Fine), then one Fork: the alert, Patch review, All clear (O6) | Fork, Classify (992c) |
 | Every Coworker (`app/stores/coworkers-data.js`) | its Runbook runs once, over all the customer's devices | For each: the Runbook once per device, N at a time; Done sends every result to the notice | For each (991b) |
 | The Coworkers that find the best hours | a Prompt finds the hours, and the run goes on at once | a Wait until those hours, then the Runbook | Wait (991b) |
 | Workflow Customers and devices | two Sources, a Count each, an Add: one number | Merge by customer, then Organise › Group and a Count: the devices of each customer. Or it stays, if one number is its job | Merge (991c) |

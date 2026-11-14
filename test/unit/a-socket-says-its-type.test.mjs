@@ -123,7 +123,7 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   // Every kind a workflow runs, the Trigger (plan 941), the Branch, the end and a portal, which passes on what reaches it (TODO 779), among them.
-  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'route', 'boolean', 'organise', 'value', 'field', 'math', 'time', 'text', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(named((k) => k.graphs.includes('workflow')), ['trigger', 'source', 'condition', 'fork', 'boolean', 'organise', 'value', 'field', 'math', 'time', 'text', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
 });
 
 test('every shipped kind says its types once: no output sends any; none forks; a multi-select row is an object, one connection in', () => {

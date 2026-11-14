@@ -52,6 +52,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition, query-context, query-declarations, source-walk
 - [T-a-find-asks-its-host-to-step](traps/data-layer.md#t-a-find-asks-its-host-to-step) — source-view
 - [T-a-fixed-field-stays-held](traps/data-layer.md#t-a-fixed-field-stays-held) — page-definition, query-context, query-declarations, query-edits
+- [T-a-fork-unfolds-its-picks](traps/data-layer.md#t-a-fork-unfolds-its-picks) — node-kinds, node-simulate
 - [T-a-frame-is-drawn-round-its-nodes](traps/data-layer.md#t-a-frame-is-drawn-round-its-nodes) — data, node-frames, workflow
 - [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — app-definition, data, entity-check, graph-views
 - [T-a-group-is-a-data-layer-concept](traps/data-layer.md#t-a-group-is-a-data-layer-concept) — column-facts, data-source, source-reads, store
@@ -101,7 +102,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-remote-store-says-what-changed](traps/data-layer.md#t-a-remote-store-says-what-changed) — data-source, fake-remote, source-reads, store, store-cache, stores
 - [T-a-request-picks-its-stores](traps/data-layer.md#t-a-request-picks-its-stores) — data, data-handler, define-stores, request-store
 - [T-a-route-is-start-to-end](traps/data-layer.md#t-a-route-is-start-to-end) — node-routes
-- [T-a-route-unfolds-its-picks](traps/data-layer.md#t-a-route-unfolds-its-picks) — node-kinds, node-simulate
 - [T-a-row-says-its-own-fault](traps/data-layer.md#t-a-row-says-its-own-fault) — node-kinds, workflow
 - [T-a-row-takes-its-values-type](traps/data-layer.md#t-a-row-takes-its-values-type) — node-kinds, query-graph, workflow
 - [T-a-rule-names-its-clock-and-its-language](traps/data-layer.md#t-a-rule-names-its-clock-and-its-language) — data-source-types, source-counts, source-reads, store

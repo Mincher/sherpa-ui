@@ -6249,13 +6249,14 @@ and a page that named a missing scope opened, and showed less, with nothing said
 - Site: `src/core/data/page-definition.ts`
 - Site: `test/unit/page-definition.test.mjs`
 
-### T-a-route-unfolds-its-picks
+### T-a-fork-unfolds-its-picks
 
-**A Route sends rows on by ONE field's value, an output per value picked** (Will, plan 991 D6 A; plan 992: a Condition
-is one test, Pass and Fail; a Route many places). A Field joins its header; its Routes row is one dropdown of ticks of
-that field's values (as a Condition's Is one of); each value picked UNFOLDS an output row right after it (`v-<words>`, a
+**A Fork sends rows on by ONE field's value, an output per value picked** (Will, plan 991 D6 A; plan 992: a Condition
+is one test, Pass and Fail; a Fork many places. Will named it Fork, 2026-11-14, so a Route stays a full path from a
+Start node to an End node, PRINCIPLES 19). A Field joins its header; its Ways row is one dropdown of ticks of that
+field's values (as a Condition's Is one of); each value picked UNFOLDS an output row right after it (`v-<words>`, a
 clash `-2`), and Otherwise comes last. One door, `rowsOfNode`, gives a node's rows with what its pick unfolds: the
-drawing, a run (`routed`) and the text lens's forks all read it, and `socketType` knows a `v-` row is an output of rows.
+drawing, a run (`forked`) and the text lens's forks all read it, and `socketType` knows a `v-` row is an output of rows.
 A row goes the way of its value, a list cell the way of the first value it holds that is picked; the rest, Otherwise.
 
 - This is the unfold door U4.7a built and 5626a8fcd took away (a Field's values became one dropdown): back for a
@@ -6263,8 +6264,8 @@ A row goes the way of its value, a list cell the way of the first value it holds
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/node-simulate.ts`
-- Site: `test/unit/a-route-sends-rows-by-value.test.mjs`
-- Site: `test/e2e/reforged-a-route-has-an-output-per-route.spec.ts`
+- Site: `test/unit/a-fork-sends-rows-by-value.test.mjs`
+- Site: `test/e2e/reforged-a-fork-has-an-output-per-way.spec.ts`
 
 ### T-format-is-the-one-text-door
 
