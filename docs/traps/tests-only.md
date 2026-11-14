@@ -331,6 +331,18 @@ Two questions, two probes: what is DRAWN, and what is DECLARED.
 
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-drag-ends-in-the-window
+
+**A test's drag must end inside the window** (TODO 977, measured 2026-11-14). Past
+the window's edge, Firefox's driven pointer reads `clientX` 0 and no button, and
+the page hears no `pointerup` and no `mouseup`: the drag never ends, so what its
+let-go does (a Shift drag's restage) never runs. Chromium still reports the pointer
+past the edge, and its up, so the same spec passes there. A frame Shift-dragged to
+the middle of a stage off to the right failed in Firefox 4 of 4 for this alone.
+Pan the canvas first (`panTo`), so the target is on screen.
+
+- Site: `test/e2e/reforged-node-stages.spec.ts`
+
 ### T-the-fold-measures-whatever-font-is-loaded
 
 A component that MEASURES text gets a different answer before the real font

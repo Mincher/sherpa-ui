@@ -1286,10 +1286,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-tokens-css-never-reaches-shadow](traps/element-and-sheets.md#t-tokens-css-never-reaches-shadow) — project-tokens
 - [T-writing-a-child-is-not-owning-yourself](traps/build-tools-mcp.md#t-writing-a-child-is-not-owning-yourself) — check-ownership
 
-## Tests only (13)
+## Tests only (14)
 
 - [T-a-col-element-has-no-computed-width-in-webkit](traps/tests-only.md#t-a-col-element-has-no-computed-width-in-webkit) — reforged-data-grid.spec
 - [T-a-current-row-opens-its-details](traps/tests-only.md#t-a-current-row-opens-its-details) — reforged-records-details.spec
+- [T-a-drag-ends-in-the-window](traps/tests-only.md#t-a-drag-ends-in-the-window) — reforged-node-stages.spec
 - [T-a-hairline-resolves-by-density](traps/tests-only.md#t-a-hairline-resolves-by-density) — reforged-border-edges.spec, reforged-callout.spec
 - [T-a-rename-drops-the-old-name](traps/tests-only.md#t-a-rename-drops-the-old-name) — reforged-advanced-condition-words.spec, reforged-metric.spec, reforged-num-coercion.spec, the-def-speaks-the-new-words.test
 - [T-a-test-must-click-what-the-listener-is-on](traps/tests-only.md#t-a-test-must-click-what-the-listener-is-on) — reforged-data-grid.spec

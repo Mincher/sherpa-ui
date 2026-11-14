@@ -222,9 +222,22 @@ test('a FRAME dragged follows the nodes\' rule: without Shift its nodes stay in 
   expect([await stageOf(page, 'start'), await stageOf(page, 'sort')]).toEqual(['stage-1', 'stage-1']);
   expect((await stage(page, 0).boundingBox())!.width).toBeGreaterThan(width);
   // Shift: out of stage 1, its middle let go over stage 2's middle, past stage 1 now.
-  const next = (await stage(page, 1).boundingBox())!;
-  const [frame, h] = [(await page.locator('#cv > sherpa-node-frame').boundingBox())!, (await frameHeader.boundingBox())!];
-  await dragFrame({ x: next.x + next.width / 2 - frame.width / 2 + (h.x + 30 - frame.x), y: next.y + 200 }, true);
+  const target = async () => {
+    const next = (await stage(page, 1).boundingBox())!;
+    const [frame, h] = [(await page.locator('#cv > sherpa-node-frame').boundingBox())!, (await frameHeader.boundingBox())!];
+    return { x: next.x + next.width / 2 - frame.width / 2 + (h.x + 30 - frame.x), y: next.y + 200 };
+  };
+  // On screen: a pointer past the window's edge reads x 0 and no button in Firefox, so the drag never ends there. TRAP T-a-drag-ends-in-the-window
+  const cv = (await page.locator('#cv').boundingBox())!;
+  const over = (await target()).x - (cv.x + cv.width - 40);
+  if (over > 0) {
+    await page.evaluate((dx) => {
+      const c = document.getElementById('cv') as HTMLElement & { view: { x: number; y: number }; panTo(x: number, y: number): void };
+      c.panTo(c.view.x - dx, c.view.y);
+    }, over);
+    await settle(page);
+  }
+  await dragFrame(await target(), true);
   expect([await stageOf(page, 'start'), await stageOf(page, 'sort')]).toEqual(['stage-2', 'stage-2']);
 });
 

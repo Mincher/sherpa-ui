@@ -38,5 +38,5 @@ headings below are older than the index: most entries are under the last one.
 | [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 83 |
 | [Other components](traps/other-components.md) | 73 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 38 |
-| [Tests only](traps/tests-only.md) | 13 |
-| **All** | **830** |
+| [Tests only](traps/tests-only.md) | 14 |
+| **All** | **831** |
