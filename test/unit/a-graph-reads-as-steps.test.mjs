@@ -40,6 +40,8 @@ test('where each step goes, by number; a test of one value\'s Pass and Fail apar
   assert.deepEqual(at('c').branches, { pass: [{ step: '2.2', node: 'q' }], fail: [{ step: '2.3', node: 'o' }] });
   assert.deepEqual(at('c').goes, [{ step: '2.2', node: 'q' }, { step: '2.3', node: 'o' }]);
   assert.deepEqual(at('cond').goes, [{ step: '2.1', node: 'c' }]);
+  // The rows into c's header are only carried: c tests its Value A, so they are no flow (TODO 994).
+  assert.deepEqual(at('s').goes, [{ step: '1.2', node: 'f' }]);
   assert.deepEqual(at('o').goes, [{ stop: true }]);
   assert.equal(at('q').branches, undefined);
 });

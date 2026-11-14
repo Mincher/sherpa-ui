@@ -2,7 +2,7 @@
  * graph-steps.ts — a graph READ AS STEPS, beside `routeRead`: each stage's steps in order, numbered "stage.place", and
  * where each step's flow goes, each way of a fork apart (a test's Pass and Fail). What an app says of each step is its own; this is the order
  * and the numbers (Will, TODO 959). A step's order is its depth along the flow, then its place, top to bottom and left to
- * right. A link into a row that only carries data (an AI node's Model) is no flow. Pure: no DOM.
+ * right. A link that only carries data is no flow: into an AI node's Model, or a test's header where its Value A is joined. Pure: no DOM.
  *
  * Map:
  * - StepGoes — Where a step's flow goes: a step, by its number; an output of the graph; or nowhere.
@@ -54,8 +54,10 @@ export function graphSteps(graph: Graph, kinds: Kinds = nodeKinds()): StepStage[
     const { node, row } = socketOf(address);
     return row === undefined ? undefined : kindOfNode(kinds, held.get(node))?.rows.find((r) => r.name === row);
   };
-  // A row that only carries data: one that needs a model. A test's data comes in at its header, so it is flow (TODO 994).
-  const flowless = (r: NodeConnection): boolean => rowOf(r.to)?.needs === 'model';
+  // A link that only carries data is no flow: into a row that needs a model, or into a test's header where Value A, the
+  // value it tests, is joined (TODO 994), as its Data was.
+  const carries = (id: string): boolean => (graph.connections ?? []).some((c) => socketOf(c.to).node === id && rowOf(c.to)?.needs === 'tested');
+  const flowless = (r: NodeConnection): boolean => rowOf(r.to)?.needs === 'model' || (socketOf(r.to).row === undefined && carries(r.to));
   const flow = (graph.connections ?? []).filter((r) => !flowless(r));
   const plumbing = (id: string): boolean => {
     const out = (graph.connections ?? []).filter((r) => socketOf(r.from).node === id);

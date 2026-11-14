@@ -6313,6 +6313,8 @@ alias: `R → c/data` with `T → c` was retrofitted to `R → c` with `T → c/
   warn "connect a Field in".
 - **A column is tested on the header**, where its rows split: a column into Value A warns, and its Query leaf is none
   (`leafOf`).
+- **Joined to Value A, the header's data is carried, not flow** (`graphSteps`), as the Data row's was: a step goes where
+  the value it tests comes from, so a Runbook's prompt reads as before.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`

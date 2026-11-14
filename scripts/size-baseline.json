@@ -181,7 +181,7 @@
   "src/core/data/format-value.ts": 51,
   "src/core/data/graph-layout.ts": 38,
   "src/core/data/graph-models.ts": 53,
-  "src/core/data/graph-steps.ts": 100,
+  "src/core/data/graph-steps.ts": 102,
   "src/core/data/graph-text.ts": 186,
   "src/core/data/graph-views.ts": 177,
   "src/core/data/held-reads.ts": 135,
