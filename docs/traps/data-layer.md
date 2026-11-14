@@ -6340,7 +6340,7 @@ choice, never a chip. Will, 2026-11-13: *"It should be just 1 dropdown with a mu
 shown as a chip. Again, it should be a dropdown input. Same goes for Notification channel selection. I've no idea why
 you decided to use chips instead of following precedent."*
 
-- **The precedent is the single pick.** Every row with `multiple` (a Field's Values, a Source's Rows, a Notification's
+- **The precedent is the single pick.** Every row with `multiple` (a Field's Values, a Source's Fields, a Notification's
   Channels, a Condition's Is one of where its values are known, a flow's step of several in the outlet's dialog) draws
   with the SAME dropdown a single pick uses:
   sherpa-input-text's select, with `multiple`, its menu the tags field's menu of ticks. One input, one door.

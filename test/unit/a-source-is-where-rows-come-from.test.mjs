@@ -24,9 +24,9 @@ const inPanel = (palette) => palette.flatMap((g) => g.items.map((i) => `${g.cate
 test('every graph type\'s panel offers a Source, under Sources: a workflow, a Filter, a Custom Node, an app\'s type, the Query', () => {
   assert.equal(NODE_KINDS.store, undefined, 'the Store kind is gone');
   assert.deepEqual([NODE_KINDS.source.heading, NODE_KINDS.source.category, NODE_KINDS.source.graphs], ['Source', 'Sources', ['query', 'workflow']]);
-  // No Count row: Math › Count counts rows (plan 944). Its Fields picks the fields its rows carry (TODO 969); its Rows
-  // picks some of the store's rows (plan 960 U4.9b).
-  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store'], ['fields', 'field'], ['picked', 'rows']]);
+  // No Count row: Math › Count counts rows (plan 944). Its Fields picks the fields its rows carry (TODO 969); no Rows pick:
+  // rows are narrowed one way, a Field's Condition's Pass (Will, 2026-11-14).
+  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store'], ['fields', 'field']]);
   const off = registerEntityType({ id: 'workflow', label: 'Workflow', graph: { runs: true } });
   try {
     for (const host of [undefined, 'filter:trials', 'mine', 'workflow:flow']) {

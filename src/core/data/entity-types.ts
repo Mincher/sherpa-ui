@@ -13,7 +13,6 @@
  * - FILTER — The Filter type's id: a preset of its store's pages, and the first half of its preset's id.
  * - ENTITY_TYPES — The types the library ships: `filter` and `node`.
  * - entityTypes — Every type now: the shipped, and those an app registered.
- * - rowPicks — A type's rows as a Rows pick offers them: each by its key, shown by its title (plan 960 U4.9b).
  * - recipientTypes — The app's types whose rows a message may go to (`recipient: true`): the library names none.
  * - registerEntityType — An app adds a type; a clash with a shipped one is refused. It answers how to take it back.
  * - takes — Whether a type's graph may place a kind: a family it takes, or any entity's node.
@@ -26,7 +25,7 @@
 import { newestOf, publishedOf } from './entity-versions.js';
 import { report } from './report.js';
 import { registerRefKinds, type RefFacts } from './references.js';
-import type { NodeKind, RowChoice } from './node-kinds.js';
+import type { NodeKind } from './node-kinds.js';
 import type { NodeDefinition, NodeLibrary, NodeOutput, NodeSocket } from './node-library.js';
 import type { TypeDefinition } from './type-definition.js';
 import { typeFaults } from './type-faults.js';
@@ -96,12 +95,6 @@ const added = new Map<string, EntityType>();
 /** Every type now: the shipped, and those an app registered. */
 export function entityTypes(): Readonly<Record<string, EntityType>> {
   return { ...Object.fromEntries(added), ...ENTITY_TYPES };
-}
-
-/** A type's rows as a Rows pick offers them: each by its key, shown by its title (plan 960 U4.9b). */
-export function rowPicks(type: Pick<EntityType, 'key' | 'title'>, rows: readonly Readonly<Record<string, unknown>>[]): RowChoice[] {
-  const key = type.key ?? 'id';
-  return rows.map((row) => ({ value: String(row[key]), label: String(row[type.title ?? key] ?? row[key]) }));
 }
 
 /** The app's types whose rows a message may go to (`recipient: true`): the library names none. Plan 960 U4.9 */

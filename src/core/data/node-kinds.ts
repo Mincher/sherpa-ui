@@ -112,7 +112,7 @@ export function truthy(value: unknown): boolean {
 export type RowControl =
   | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
   | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal'
-  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity' | 'rows';
+  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -147,7 +147,7 @@ export interface RowKind {
   recalls?: true;
   /** A many pick that keeps none means every choice: drawn all ticked, and all ticked keeps none (TODO 969). */
   every?: true;
-  /** Where it is drawn, where not every graph of its kind: a Source's Rows and Fields are a workflow's alone. */
+  /** Where it is drawn, where not every graph of its kind: a Source's Fields is a workflow's alone. */
   graphs?: readonly NodeGraph[];
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
@@ -526,8 +526,6 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' },
       // The fields its rows carry, All at the start (Will, 2026-11-13, TODO 969). A page's Query reads every field.
       { name: 'fields', label: 'Fields', control: 'field', multiple: true, optional: true, every: true, graphs: ['workflow'] },
-      // Some of its rows, by title (Will, 2026-11-13: "Source picks rows"); none picked, every row. A page's Query reads all.
-      { name: 'picked', label: 'Rows', control: 'rows', multiple: true, optional: true, graphs: ['workflow'] },
     ], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
@@ -973,8 +971,6 @@ export interface RowFacts {
   provider?: unknown;
   /** The shelf's entities of an `entity` row's type: what it picks (plan 949). */
   entities?: readonly RowChoice[];
-  /** A store's rows, each by its key and title: what a `rows` row picks (plan 960 U4.9b). */
-  rows?: readonly RowChoice[];
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
@@ -1007,7 +1003,6 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (row.control === 'type') return facts.types && [...facts.types];
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
   // The app's catalog (plans 926, 941), or the shelf's entities of a type (949): one with none picked says so, as a pick does.
-  if (row.control === 'rows') return facts.rows && [...facts.rows];
   const listed = row.control === 'entity' ? facts.entities : catalogChoices(row.control, facts.provider);
   if (listed) return [...(row.value != null && row.value !== '' ? [] : [{ value: '', label: 'Pick one' }]), ...listed];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));

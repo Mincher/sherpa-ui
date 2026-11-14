@@ -398,7 +398,7 @@ function owned(row: GraphRow, list: readonly { value: string; label: string }[] 
 
 /** A kind's fixed rows, each with its value. */
 function rowsOf(kind: string, values: Readonly<Record<string, unknown>>): GraphRow[] {
-  // A row a workflow's alone is not drawn: a page reads all its rows and fields, and its Query filters them.
+  // A row a workflow's alone is not drawn: a page reads every field, and its Query filters its rows.
   return NODE_KINDS[kind]!.rows.filter((row) => !row.graphs || row.graphs.includes('query')).map((row) => ({ ...row, value: values[row.name] }));
 }
 
