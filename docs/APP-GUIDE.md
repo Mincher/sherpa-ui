@@ -324,6 +324,12 @@ export async function init(root, { source, query, session, view, signal, header,
   required field, or any field where the app registered a flow) opens its flow in the outlet's dialog first: a field per
   step that holds, each answer checked, the confirm's words, and its button runs it. A page that asks it itself prevents
   `act-input`.
+- **Who may run an act is the app's rule** (plan 972d). Give the outlet `may(act, call)`: why the reader may not, in
+  words, or nothing. The outlet asks it before every act it runs and in `checkAct`, each time, so a User picked later
+  counts at once: `may: (act) => (act.changes && !userHas('runbooks-edit') ? 'Needs "Runbooks · Edit".' : undefined)`.
+  sherpa-ui knows no User and no Permission: the app maps an act (its `type` and verb) to what it needs. Give the same
+  words to `bindWorkflow` as `readOnly` (a string is read only and why): Graph details says them, and no Publish or Roll
+  back is offered.
 
 ## 8. Views
 

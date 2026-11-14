@@ -99,7 +99,7 @@ import { entityKind, entityRefOf, type Entity, type EntityRef } from '../data/en
 import { draftChanged, versionsOf } from '../data/entity-versions.js';
 import type { ActAnswer, ActCall } from '../data/acts.js';
 import { offeredKinds, savedCategories } from '../data/entity-types.js';
-import { dataPane, definitionPane, flowPane, instancePane, modelsPane, socketsPane, updatePane, versionPane, type SocketAsk } from './node-group-panel.js';
+import { dataPane, definitionPane, flowPane, instancePane, modelsPane, readOnlyNote, socketsPane, updatePane, versionPane, type SocketAsk } from './node-group-panel.js';
 import { graphModels } from '../data/graph-models.js';
 import { messageField, outputPane, testButton, valueMenu, type OutputFacts } from './node-output-panel.js';
 import { valuesAt, valuesIn } from '../data/node-messages.js';
@@ -2051,18 +2051,18 @@ const inspecting = new WeakMap<HTMLElement, Inspecting>();
 
 const contentTab = new WeakMap<HTMLElement, string>();
 
-/** What each editor's Graph details tab shows, made fresh at each fill: the open entity's version, and the whole graph's
- *  models (plans 951, 972). */
-const graphDetails = new WeakMap<HTMLElement, { version(): HTMLElement | undefined; models(): HTMLElement }>();
+/** What each editor's Graph details tab shows, made fresh at each fill: why it is read only and the open entity's version
+ *  (its head), and the whole graph's models (plans 951, 972, 972d). */
+const graphDetails = new WeakMap<HTMLElement, { head(): HTMLElement[]; models(): HTMLElement }>();
 
-/** The Graph details tab, made fresh: the version, then the models. None where the editor gives no tab. */
+/** The Graph details tab, made fresh: its head, then the models. None where the editor gives no tab. */
 function detailsOf(panel: HTMLElement): HTMLElement | undefined {
   const parts = graphDetails.get(panel);
   if (!parts) return undefined;
   const details = document.createElement('sherpa-stack');
   details.className = 'graph-details';
   details.setAttribute('data-gap', 'lg');
-  details.append(...[parts.version()].filter((el): el is HTMLElement => !!el), parts.models());
+  details.append(...parts.head(), parts.models());
   return details;
 }
 
@@ -2209,7 +2209,7 @@ export function inspectNone(panel: HTMLElement): void {
 }
 
 /** The Graph details tab drawn again in place, where the inspector shows it: its models, as the graph changes; `all`, its
- *  version too, as what the app keeps changes. */
+ *  head too, as what the app keeps changes. */
 function refreshGraphDetails(panel: HTMLElement | undefined, all = false): void {
   const parts = panel && graphDetails.get(panel);
   const shown = parts && panel.querySelector('.content-tabs > [data-tab="graph"] .graph-details');
@@ -2517,8 +2517,10 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   onUpdateAll?: (kind: string) => void;
   /** A `sherpa-node-toolbar`: its Undo and Redo are this editor's, and it says when they can be pressed. */
   toolbar?: HTMLElement;
-  /** The workflow is a preset: drawn, opened, never edited, as a preset Custom Node's inside is. TRAP T-a-graph-is-a-view-of-a-type */
-  readOnly?: boolean;
+  /** The workflow is read only: drawn, opened, never edited, as a preset Custom Node's inside is. Words say why (the
+   *  app's Permissions, plan 972d: "Needs Runbooks · Edit"): Graph details says them, and so does a refused edit; true
+   *  is a preset. TRAP T-a-graph-is-a-view-of-a-type */
+  readOnly?: boolean | string;
   /** Whether the reader may change a Custom Node of their own: the app's rule, its owner, creator or roles (plan 936 D2).
    *  No, its inside opens read only, as a preset's does. None given: yes. */
   canEdit?: (definition: NodeDefinition) => boolean;
@@ -2588,8 +2590,11 @@ const isUses = (v: unknown): v is RecentUse[] => Array.isArray(v) && v.every((u:
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
-  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: preset = false, canEdit, entity, document: doc, act, kept: keptNow, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: locked = false, canEdit, entity, document: doc, act, kept: keptNow, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
+  // Read only everywhere; and why, where the app says it.
+  const preset = !!locked;
+  const lockedWhy = typeof locked === 'string' ? locked : undefined;
   // A document keeps its own draft and layout: the session keeps none of it here.
   const session = doc ? undefined : kept$;
   const pointer = `/workflows/${workflow.id}`;
@@ -2872,7 +2877,7 @@ export function bindWorkflow(
   };
   const write = (next: WorkflowDefinition, tag?: string): void => edit(() => {
     if (!path.length && preset) {
-      report({ code: 'node-readonly', message: 'bindWorkflow: this workflow is a preset, read only: change a copy of it.', at: { workflow: workflow.id } });
+      report({ code: 'node-readonly', message: `bindWorkflow: ${lockedWhy ?? 'this workflow is a preset, read only: change a copy of it.'}`, at: { workflow: workflow.id } });
     } else if (!path.length) {
       // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
       // The Start stays in the first stage, if the stages change (Will).
@@ -3804,15 +3809,20 @@ export function bindWorkflow(
     refreshGraphDetails(inspector, true);
   };
   /** The open entity's version, at the top graph: Publish and Roll back where the app gives its acts, none on a preset. */
-  const versionPart = (): HTMLElement | undefined => {
+  const versionPart = (): HTMLElement[] => {
     const now = path.length ? undefined : keptNow?.();
-    if (!now) return undefined;
+    if (!now) return [];
     const ask = act && !preset ? { publish: () => void versionAct('publish'), rollBack: (n: number) => void versionAct('roll-back', { version: n }) } : {};
-    return versionPane({ versions: versionsOf(now), changed: draftChanged(now) }, ask, historyShown);
+    return [versionPane({ versions: versionsOf(now), changed: draftChanged(now) }, ask, historyShown)];
   };
   // The Graph details tab: the open entity's version, then the whole graph's models, the primary first, from the top graph
   // at any depth (plans 951, 972).
-  if (inspector && !doc) graphDetails.set(inspector, { version: versionPart, models: () => modelsPane(graphModels(draft, lib, topKinds())) });
+  if (inspector && !doc) {
+    graphDetails.set(inspector, {
+      head: () => [...(lockedWhy ? [readOnlyNote(lockedWhy)] : []), ...versionPart()],
+      models: () => modelsPane(graphModels(draft, lib, topKinds())),
+    });
+  }
   keepOpen(inspector);
   // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
   //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.

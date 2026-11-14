@@ -154,6 +154,33 @@ test('outlet.act runs an act with its input through the same door as a press, fi
   ]);
 });
 
+test('the app\'s may is asked before every act here, and by checkAct, each time: refused in its words, nothing written; a User picked later counts at once (972d)', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html?context=devices');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const r = await page.evaluate(async () => {
+    type Answer = { done?: string; refused?: string; result?: { status?: string } };
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet') as unknown as HTMLElement & {
+      start(o: unknown): Promise<void>; act(id: string, call?: unknown): Promise<Answer>; checkAct(id: string, call?: unknown): Promise<{ refused?: string }>;
+    };
+    // The app's rule: its current User, here a word; a Viewer may read, never change.
+    let user = 'viewer';
+    const may = (act: { changes?: boolean }) => (user === 'viewer' && act.changes ? 'Needs "Devices · Edit", which Viewer does not have.' : undefined);
+    const base = new URL('/test/reforged/typed/app.json', location.href);
+    await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}), may });
+    const status = async () => (await outlet.act('device.read', { keys: ['d1'] })).result?.status;
+    const change = { keys: ['d1'], input: { status: 'offline' } };
+    const checked = (await outlet.checkAct('device.change', change)).refused;
+    const refused = (await outlet.act('device.change', change)).refused;
+    const kept = await status();
+    user = 'admin';
+    const done = (await outlet.act('device.change', change)).done;
+    return { checked, refused, kept, done, after: await status() };
+  });
+  const words = 'Needs "Devices · Edit", which Viewer does not have.';
+  expect(r).toEqual({ checked: words, refused: words, kept: 'online', done: 'Changed Device "Alpha".', after: 'offline' });
+});
+
 test('a pressed act that needs input opens its flow: a field per step that holds, each answer checked, then it runs as a press does', async ({ page }) => {
   await page.goto('/test/reforged/outlet.html?context=devices');
   await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);

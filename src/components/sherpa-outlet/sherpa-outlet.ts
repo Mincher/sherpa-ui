@@ -15,7 +15,7 @@ import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextDefinition, type ContextInit, type ContextModule, type OpenPage } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
-import type { ActAnswer, ActCall, ActContext } from '../../core/data/acts.js';
+import type { Act, ActAnswer, ActCall, ActContext } from '../../core/data/acts.js';
 import type { Entity } from '../../core/data/entity.js';
 import type { EntityShelf } from '../../core/data/entity-shelf.js';
 import type { SeedMarks } from '../../core/data/entity-store.js';
@@ -56,6 +56,10 @@ export interface OutletOptions {
   /** The app's last word on a Context's definition as it opens — a copy, to
    *  change: a field's child values left out, say. Will, TODO 436 */
   definition?(context: string, definition: PageDefinition): PageDefinition;
+  /** May the reader run this act on these? Why not, in words; none, they may. Asked before EVERY act run here — a press,
+   *  the chat's flow, the editor's Clone, Publish and Roll back — and by `check`, each time, so a User picked later counts
+   *  at once. The app's rule: its User, its Permissions (plan 972d). */
+  may?(act: Act, call: ActCall): string | undefined;
 }
 
 /** The header's View chip. */
@@ -198,7 +202,8 @@ export class SherpaOutlet extends SherpaElement {
     const options = this.#options;
     if (!options) return null;
     const shelf = this.#nodes.entities;
-    return { stores: this.#stores(options), ...(shelf ? { entities: shelf } : {}), signal: this.signal };
+    const may = options.may?.bind(options);
+    return { stores: this.#stores(options), ...(shelf ? { entities: shelf } : {}), ...(may ? { may } : {}), signal: this.signal };
   }
 
   /** Read app.json, load each Context's Views, then open the route's Context.

@@ -17,6 +17,7 @@
  * - VersionView — What Graph details says of the open entity's versions: each one published, and whether its draft changed.
  * - VersionAsk — What the version part may ask: Publish the draft, Roll back to a number. None: it only shows.
  * - versionPane — The open entity's version, whether its draft changed, Publish, and its History with Roll back.
+ * - readOnlyNote — Why a graph is read only, in the app's words, as a callout.
  * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
  * - definitionPane — A node's kind as the registry says it, for its type: read-only JSON, for a reader who debugs.
  * - dataPane — What a node heard and said in a simulation: each socket's rows, in the data grid and as JSON.
@@ -31,6 +32,7 @@ import type { NodeFlow } from '../data/node-flow.js';
 import type { SimulatedNode, Slot } from '../data/node-simulate.js';
 import '../../components/sherpa-data-grid/sherpa-data-grid.js';
 import '../../components/sherpa-accordion/sherpa-accordion.js';
+import '../../components/sherpa-callout/sherpa-callout.js';
 
 /** A control made of a Sherpa component, its attributes set. */
 function make(tag: string, attrs: Readonly<Record<string, string>>): HTMLElement {
@@ -244,6 +246,13 @@ export function versionPane(view: VersionView, ask: VersionAsk = {}, shown: { hi
     pane.append(history);
   }
   return pane;
+}
+
+/** Why a graph is read only, in the app's words ("Needs Runbooks · Edit"), as a callout (plan 972d). */
+export function readOnlyNote(words: string): HTMLElement {
+  const note = make('sherpa-callout', { 'data-heading': 'Read only', class: 'graph-read-only' });
+  note.textContent = words;
+  return note;
 }
 
 /** A node's definition view as JSON: Incoming and Outgoing, each a collapsible section holding a code block, shut when long. */

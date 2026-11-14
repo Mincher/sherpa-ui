@@ -33,7 +33,7 @@ test.beforeEach(async ({ page }) => {
 
 /** Bind the Filter "Outer" — a use of Trials on it — with every entity as the library, "Top" holding Outer. Read only: as
  *  a preset is bound. */
-const bind = (page: Page, readOnly = false) => page.evaluate(async (readOnly) => {
+const bind = (page: Page, readOnly: boolean | string = false) => page.evaluate(async (readOnly) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const { NODE_KINDS, graphWorkflow, kindsOf, libraryOf, makeShelf, runAct, useOf } = await import('/dist/data.js');
   const w = window as unknown as Record<string, unknown> & { ENTITIES: Record<string, Record<string, unknown>> };
@@ -208,8 +208,9 @@ test('Graph details says the open entity\'s version: Unpublished changes and Pub
   expect(await page.evaluate(() => (window as unknown as { shelf: { get(id: string): { label: string } } }).shelf.get('outer').label)).toBe('Outer');
 });
 
-test('a read-only graph shows its version and History, with no Publish and no Roll back; inside a use, none', async ({ page }) => {
-  await bind(page, true);
+test('a read-only graph says why, in the app\'s words, and shows its version and History, with no Publish and no Roll back; inside a use, no version (972d)', async ({ page }) => {
+  const why = 'Needs "Filters · Edit", which Viewer does not have.';
+  await bind(page, why);
   await drafted(page);
   await page.evaluate(async () => {
     const shelf = (window as unknown as { shelf: { get(id: string): unknown; save(e: unknown): Promise<boolean> } }).shelf;
@@ -219,6 +220,8 @@ test('a read-only graph shows its version and History, with no Publish and no Ro
   await ed(page, "ed.refresh(window.shelf.library())");
   await settle(page);
   expect(await version(page)).toEqual({ facts: ['Version', '2'], publish: false, history: [['Version 2', null], ['Version 1', null]], open: false });
+  const note = page.locator('#inspector .graph-details > sherpa-callout.graph-read-only');
+  expect([await note.getAttribute('data-heading'), await note.textContent()]).toEqual(['Read only', why]);
   await header(page, 'Trials').focus();
   await page.keyboard.press('Enter');
   await settle(page);
