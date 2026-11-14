@@ -486,24 +486,32 @@ function shownAt(held: ReadonlyMap<string, WorkflowNode>, connections: readonly 
 function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, connections: readonly NodeConnection[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>): (id: string) => Reach {
   const known = facts.fieldsOf;
   if (!known) return () => ({});
-  const up = (id: string, seen: Set<string>): { store: unknown; only?: readonly string[] } | 'inside' | undefined => {
+  type Found = { store: unknown; only?: readonly string[] } | 'inside' | { joined: Found[] };
+  const into = (id: string): NodeConnection[] => {
+    const all = connections.filter((r) => socketOf(r.to).node === id);
+    return [...all.filter((r) => socketOf(r.to).row === undefined), ...all.filter((r) => socketOf(r.to).row !== undefined)];
+  };
+  const up = (id: string, seen: Set<string>): Found | undefined => {
     seen.add(id);
-    const into = connections.filter((r) => socketOf(r.to).node === id);
-    for (const r of [...into.filter((r) => socketOf(r.to).row === undefined), ...into.filter((r) => socketOf(r.to).row !== undefined)]) {
+    for (const r of into(id)) {
       const from = socketOf(r.from).node;
       const kind = kindOfNode(kinds, held.get(from));
       const row = kind?.rows.find((x) => x.control === 'store');
       const only = row && fieldsSent(kind!.rows, held.get(from)?.values);
       if (row) return { store: shownAt(held, connections, `${from}/${row.name}`), ...(only ? { only } : {}) };
       if (kind?.model === 'groupInput') return 'inside';
-      const found = seen.has(from) ? undefined : up(from, seen);
+      if (seen.has(from)) continue;
+      // A join's rows hold the fields of each set that reaches it, the first's first (a Merge, plan 992 O3).
+      const sides = kind?.joins ? into(from).map((c) => up(socketOf(c.from).node, new Set([...seen, from]))).filter((f) => f !== undefined) : [];
+      const found = kind?.joins ? (sides.length ? { joined: sides } : undefined) : up(from, seen);
       if (found) return found;
     }
     return undefined;
   };
-  const any = (): StoreFields => {
+  // Each field once, the first set's first.
+  const union = (sets: readonly StoreFields[]): StoreFields => {
     const all: Record<string, StoreFields[string]> = {};
-    for (const fields of Object.values(known)) for (const [name, field] of Object.entries(fields)) all[name] ??= field;
+    for (const fields of sets) for (const [name, field] of Object.entries(fields)) all[name] ??= field;
     return all;
   };
   const of = (store: unknown, only?: readonly string[]): Reach => {
@@ -512,13 +520,20 @@ function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, connections: reado
     const fields = known[store]!;
     return { fields: only ? Object.fromEntries(Object.entries(fields).filter(([name]) => only.includes(name))) : fields, store };
   };
+  const reached = (found: Found): Reach => {
+    if (found === 'inside') return { fields: union(Object.values(known)) };
+    if (!('joined' in found)) return of(found.store, found.only);
+    const sides = found.joined.map(reached);
+    const store = sides[0]?.store ? { store: sides[0].store } : {};
+    return sides.every((r) => r.fields) ? { fields: union(sides.map((r) => r.fields!)), ...store } : store;
+  };
   const memo = new Map<string, Reach>();
   return (id) => {
     if (memo.has(id)) return memo.get(id)!;
     // A node that names a store picks from its own store's fields, every one: a Source's Fields.
     const named = kindOfNode(kinds, held.get(id))?.rows.find((x) => x.control === 'store');
     const found = named ? { store: shownAt(held, connections, `${id}/${named.name}`) } : up(id, new Set());
-    const reach = found === 'inside' ? { fields: any() } : found ? of(found.store, 'only' in found ? found.only : undefined) : facts.rowsFrom !== undefined ? of(facts.rowsFrom) : { fields: {}, none: true as const };
+    const reach = found ? reached(found) : facts.rowsFrom !== undefined ? of(facts.rowsFrom) : { fields: {}, none: true as const };
     memo.set(id, reach);
     return reach;
   };

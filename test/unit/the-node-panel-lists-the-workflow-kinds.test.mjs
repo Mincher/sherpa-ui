@@ -16,11 +16,11 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
   assert.deepEqual(palette.map((g) => g.category), ['Triggers', 'Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['trigger'], ['source'], [], ['value', 'field'], ['math'], ['condition', 'fork', 'boolean'], ['model', 'prompt', 'runbook', 'skill'], ['time'], ['organise'], ['text', 'portal'], ['notify', 'content', 'response', 'result', 'output-trigger']]);
-  // Twenty-one items, in the plan's order (a Fork after Condition, plan 991 D6): the Trigger first, in Triggers (plan 941 D1 B); the Portal is a Utils (TODO 779); Notify, an
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['trigger'], ['source'], [], ['value', 'field'], ['math'], ['condition', 'fork', 'boolean'], ['model', 'prompt', 'runbook', 'skill'], ['time'], ['organise', 'merge'], ['text', 'portal'], ['notify', 'content', 'response', 'result', 'output-trigger']]);
+  // Twenty-two items, in the plan's order (a Fork after Condition, plan 991 D6; a Merge after Organise, plan 992 O3): the Trigger first, in Triggers (plan 941 D1 B); the Portal is a Utils (TODO 779); Notify, an
   // Output of type Notification (plan 891); the AI nodes after Logic (plan 926); no Branch, a Boolean after Condition (plan 971 §9); one
   // Organise, for sorting and grouping (plan 960 U4.2).
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Fork', 'Boolean', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Text', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.heading ?? i.kind.heading)), ['Trigger', 'Source', 'Value', 'Field', 'Math', 'Condition', 'Fork', 'Boolean', 'Model', 'Prompt', 'Runbook', 'Skill', 'Time', 'Organise', 'Merge', 'Text', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -58,7 +58,9 @@ test('a search finds a family by its name, or by a type\'s: "round" finds Math, 
   // Math's Count counts rows (plan 944).
   assert.deepEqual(found('count'), [['math', 'count']]);
   assert.deepEqual(found('zzz'), []);
-  assert.equal(found('').length, 21, 'nothing typed finds all');
+  assert.equal(found('').length, 22, 'nothing typed finds all');
+  // What a Merge does finds it: "join" and "compare" (plan 992 O3: no Compare node); Text's Join joins a list.
+  assert.deepEqual([found('join'), found('compare')], [[['merge', undefined], ['text', 'join']], [['merge', undefined]]]);
 });
 
 test("an app's own kind goes after the known categories; one with none is Other", () => {
@@ -119,8 +121,8 @@ test('"Add a node" from what an output gives lists only the kinds that can use i
   // A column fits what takes a field, rows, an object or a list; a number's a Math's list, a date's a Time.
   // A portal's In takes anything (TODO 779).
   // An AI node's header reads anything: the data it asks about (plan 926).
-  // A Condition's Data takes anything (plan 971 §9).
-  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'fork', 'boolean', 'prompt', 'runbook', 'skill', 'time', 'organise', 'text', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
+  // A Condition's header takes anything, its data (TODO 994); a Merge's takes a Field's column (plan 992 O3).
+  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'fork', 'boolean', 'prompt', 'runbook', 'skill', 'time', 'organise', 'merge', 'text', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
   // Rows fit no Tag (it takes a Field) and no Time: their inputs never read rows. Math does, as Count (plan 944), and an
   // Organise, on its header (plan 960 U4.2).
   // A Text's Format reads rows too (plan 991a).

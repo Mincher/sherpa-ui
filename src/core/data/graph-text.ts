@@ -96,6 +96,14 @@ function libraryWords(n: WorkflowNode, graph: TextGraph): string {
     const ways = [v['ways'] ?? []].flat().map(text);
     return `${heading ?? 'Fork'}: send each row on by its ${field ? ref('field', text(field)) : 'field'}${ways.length ? `: ${ways.join(', ')}` : ''}; the rest, Otherwise.`;
   }
+  // A Merge: two sets of rows joined by a field of each (plan 992 O3).
+  if (n.kind === 'merge') {
+    const on = (to: string): string => {
+      const f = (graph.connections ?? []).map((c) => (c.to === to ? nodeIn(graph, owner(c.from)) : undefined)).find((x) => x?.kind === 'field')?.values?.['field'];
+      return f ? ref('field', text(f)) : 'a field';
+    };
+    return `${heading ?? 'Merge'}: join the rows by ${on(n.id)} and ${on(`${n.id}/b`)}.`;
+  }
   // The Boolean: what comes in goes on only where it is something (Will, plan 971 §9).
   if (n.kind === 'boolean') return `${heading ?? 'If any'}: go on only when something comes in.`;
   if (n.kind === 'runbook') return `${heading ?? 'Agent step'}: ${text(v['instructions'] ?? n.description)}`.trim();

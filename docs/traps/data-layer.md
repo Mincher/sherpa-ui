@@ -6320,6 +6320,25 @@ alias: `R → c/data` with `T → c` was retrofitted to `R → c` with `T → c/
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-test-of-one-value-decides.test.mjs`
 
+### T-a-merge-joins-by-a-field-of-each
+
+**A Merge joins two sets of rows by a field of each** (Will, plan 992 O3 A: one Merge, its outputs Matched, Only in A,
+Only in B and Changed; no Compare). A Field of the A rows on its header, one of the B rows on its B row (each `needs:
+'field'`), so each set is read by its own Source, through its own store (PRINCIPLES 25). Matched: each A row with each B
+row whose field's value is the same (`valueKey`), the A row's columns over the B row's, a row per pair. Only in A and
+Only in B: the rows that match none. Changed: the matched pairs whose Compare columns differ; none picked, every column
+both hold but the two fields. An empty value matches none.
+
+- **What it sends holds the fields of both sets** (`joins` on the kind): `fieldsReach` unions each side's, A's first, so
+  a Field after it picks a B field and is no stranger. Every other node reads the first Source up its connections.
+- **No join where a type says it**: a value every page reads from a related type is the type's `from` field (plan 960
+  U2); a Merge is a join one graph makes.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/node-simulate.ts`
+- Site: `test/unit/a-merge-joins-by-a-field-of-each.test.mjs`
+- Site: `test/e2e/reforged-a-merge-joins-two-sets.spec.ts`
+
 ### T-a-value-is-typed-once
 
 **A condition's value is typed ONCE, by its field's type, where it comes in** —

@@ -218,6 +218,8 @@ export interface NodeKind {
   output?: SocketType;
   /** Its header's output sends on what reaches its header, drawn as that type: the Boolean (plan 971 §9). */
   passes?: true;
+  /** What it sends holds the fields of every set of rows that reaches it, not only the first: a Merge's (plan 992 O3). */
+  joins?: true;
   /** Its fixed rows; a Query node adds its own among them (a bar's chips and presets). */
   rows: readonly RowKind[];
   /** The data layer's name for what it stands for: a shape, or the function a workflow runs it by. */
@@ -597,6 +599,19 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { name: 'segments', label: 'Segments', control: 'field', input: 'value' },
     ],
     model: 'Arrangement', graphs: ['query', 'workflow'], category: 'Organise',
+  },
+  // Two sets of rows joined by a field of each (Will, plan 992 O3 A; no Compare): a Field of the A rows on its header, one of
+  // the B rows on B. TRAP T-a-merge-joins-by-a-field-of-each
+  merge: {
+    heading: 'Merge', icon: 'table-columns', description: 'Join two sets of rows by matching fields', input: 'any', needs: 'field', joins: true,
+    keywords: ['join', 'compare', 'match'],
+    rows: [
+      { name: 'b', label: 'B', input: 'any', needs: 'field' },
+      { name: 'compare', label: 'Compare', control: 'field', multiple: true, optional: true },
+      propertyRow('matched', 'Matched', 'rows'), propertyRow('only-a', 'Only in A', 'rows'), propertyRow('only-b', 'Only in B', 'rows'),
+      propertyRow('changed', 'Changed', 'rows'),
+    ],
+    model: 'merge', graphs: ['workflow'], category: 'Organise',
   },
   // A card, the Content (plan 960 U4.8): its rows come in on its header; its bar, where it carries one (a Query adds its
   // chips and presets after the Switch), then how its rows are shown. Its axes are the Organise node's.

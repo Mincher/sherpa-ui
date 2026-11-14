@@ -671,6 +671,17 @@ nothing. In a page's Query graph it is each scope's own, and each edit is the re
 chip sends; a chart card's axes are set there. In a workflow, Simulate keeps the rows that
 contain its Search, puts them in its Sort's order, then gathers them by its Group.
 
+### Merge
+
+A **Merge** joins two sets of rows by a field of each (Will, plan 992 O3), in a workflow:
+a Field of the A rows on its header, a Field of the B rows on its **B** row, each set read by
+its own Source. Its properties: **Matched**, each A row with each B row whose field holds the
+same value, the A row's columns over the B row's; **Only in A** and **Only in B**, the rows
+that match none; and **Changed**, the matched pairs whose **Compare** columns differ (none
+picked: every column both hold, but the two fields). An empty value matches none. A Field
+after it picks from the fields of both sets. There is no Compare node. A value every page
+reads from a related type (a device's customer's region) stays the type's `from` field.
+
 ### AI nodes
 
 The AI category has four nodes. A **Model** picks a provider and one of its models,

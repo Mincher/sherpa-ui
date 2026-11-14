@@ -444,6 +444,28 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return { kind: 'rows', rows: fed.rows.filter((r) => goes(r) === row) };
   };
 
+  /** A Merge's rows at one output (plan 992 O3): each A row with each B row whose field holds its field's value, the A row's
+   *  columns over the B row's; the rows of each that match none; and the matched pairs whose Compare columns differ (none
+   *  picked: every column both hold but the two fields). An empty value matches none. TRAP T-a-merge-joins-by-a-field-of-each */
+  const merged = (node: GraphNode, row: string | undefined): Sent => {
+    const side = (address: string): Sent | undefined => into(address).find((p) => p.sent.kind === 'field')?.sent;
+    const [a, b] = [side(node.id), side(`${node.id}/b`)];
+    if (!a?.rows || !b?.rows) return { kind: 'rows', note: (a?.rows ? b : a)?.note ?? `No rows reach ${a?.rows ? 'B' : 'A'}: connect a Field in` };
+    const [fa, fb] = [String(a.value ?? ''), String(b.value ?? '')];
+    const byB = Map.groupBy(b.rows.filter((r) => valueKey(r[fb]) !== ''), (r) => valueKey(r[fb]));
+    if (row === 'only-b') {
+      const inA = new Set(a.rows.map((r) => valueKey(r[fa])).filter(Boolean));
+      return { kind: 'rows', rows: b.rows.filter((r) => !inA.has(valueKey(r[fb]))) };
+    }
+    const matches = (r: Row): Row[] => byB.get(valueKey(r[fa])) ?? [];
+    if (row === 'only-a') return { kind: 'rows', rows: a.rows.filter((r) => !matches(r).length) };
+    const list = listOf(heard(node, 'compare'));
+    const picked = typeof list === 'string' ? [] : list.map(String);
+    const differs = (x: Row, y: Row): boolean => (picked.length ? picked : Object.keys(x).filter((k) => k in y && k !== fa && k !== fb)).some((k) => valueKey(x[k]) !== valueKey(y[k]));
+    const pairs = a.rows.flatMap((r) => matches(r).map((m) => [r, m] as const));
+    return { kind: 'rows', rows: pairs.filter(([r, m]) => row !== 'changed' || differs(r, m)).map(([r, m]) => ({ ...m, ...r })) };
+  };
+
   /** A Band's label: the first band the value is up to, else the last label; why there is none, in words. */
   const band = (node: GraphNode): Sent => {
     const fail = (note: string): Sent => ({ kind: 'value', note });
@@ -600,6 +622,7 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     }
     // A Fork (plan 991 D6): each row on at the output of its field's value, the rest at Otherwise.
     if (node.kind === 'fork') return forked(node, row);
+    if (node.kind === 'merge') return merged(node, row);
     if (node.kind === 'value') return valued(node);
     if (node.kind === 'math') return math(node);
     if (node.kind === 'text') return text(node);

@@ -32,10 +32,10 @@ const unjoined = { q: [['model', 'Join a Model, here or to the Start']] };
 const at = (g, id) => g.nodes.find((n) => n.id === id);
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
 
-test('Organise is the one kind in its category, Sort and Group its rows; the Collection family and its Count type are gone', () => {
+test('Organise and Merge are the kinds in their category, Sort and Group Organise\'s rows; the Collection family and its Count type are gone', () => {
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group], [undefined, undefined, undefined, undefined]);
   assert.ok(!NODE_CATEGORIES.includes('Collections') && NODE_CATEGORIES.indexOf('Organise') === NODE_CATEGORIES.indexOf('Time') + 1);
-  assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Organise').items.map((i) => i.id), ['organise']);
+  assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Organise').items.map((i) => i.id), ['organise', 'merge']);
   // It needs rows on its header, no Field there, has no types, and sends its rows from its Rows row (plan 960 U4.2).
   const kind = resolveKind(NODE_KINDS.organise);
   assert.deepEqual([kind.types, kind.needs, kind.input, kind.branches, kind.rows[0].name], [undefined, 'rows', 'any', undefined, 'rows']);

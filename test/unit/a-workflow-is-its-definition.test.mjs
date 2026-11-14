@@ -77,7 +77,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
   // The Condition is drawn in both, with no Branch (plan 971 §9), and so is Organise (plan 960 U4.2); a Trigger in a workflow
   // alone (plan 941).
-  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'fork', 'boolean', 'organise', 'value', 'field', 'math', 'time', 'text', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
+  assert.deepEqual(drawnIn('workflow'), ['trigger', 'source', 'condition', 'fork', 'boolean', 'organise', 'merge', 'value', 'field', 'math', 'time', 'text', 'portal', 'model', 'prompt', 'runbook', 'skill', 'notify', 'content', 'response', 'result', 'request', 'output-trigger']);
   // Sort and Group are rows of the one Organise kind (plan 960 U4.2); Collection and its Count are gone, a Count a type of
   // Math (plan 944).
   assert.deepEqual([NODE_KINDS.collection, NODE_KINDS.count, NODE_KINDS.sort, NODE_KINDS.group, NODE_KINDS.organise.category], [undefined, undefined, undefined, undefined, 'Organise']);
