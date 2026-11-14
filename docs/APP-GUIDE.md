@@ -345,6 +345,10 @@ export async function init(root, { source, query, session, view, signal, header,
   sherpa-ui knows no User and no Permission: the app maps an act (its `type` and verb) to what it needs. Give the same
   words to `bindWorkflow` as `readOnly` (a string is read only and why): Graph details says them; its Publish and
   Roll back stay, and a press says why, in `may`'s words (972d P3 A).
+- **Where a graph is drawn is no part of a version** (TODO 1001, plan 1001 D1 A): a node's place and size, its bends,
+  ties, stage widths, the swimlanes and the unfurl mark are said once (`placesOf`, `withoutPlaces` and `withPlaces` in
+  graph-layout.ts). A version's hash leaves them out, so a move alone is nothing to publish, and a Roll back leaves each
+  node where it is (TRAP T-a-place-is-no-edit).
 
 ## 8. Views
 

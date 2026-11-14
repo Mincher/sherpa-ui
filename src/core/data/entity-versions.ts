@@ -2,19 +2,20 @@
  * entity-versions.ts — an entity's PUBLISHED versions, each kept with its number and its definition (Will, plan 972 D1 A:
  * "Save is a draft"). A Save writes the draft; Publish makes the next number from it, and only then do its uses see it;
  * a Roll back publishes an earlier version as the next number, so nothing is lost. Every write is a plain shelf save, which
- * may only add versions at the front. DOM-free.
+ * may only add versions at the front. Where a graph is drawn is no part of a version: it is the entity's, the last kept
+ * (plan 1001 D1 A). DOM-free. TRAP T-a-place-is-no-edit
  *
  * Map:
  * - VersionFacts — Who publishes, why, and when.
  * - versionsOf — An entity's published versions, newest first; none before its first save.
  * - newestOf — An entity's newest published version, or none.
- * - hashOfDefinition — A definition's content hash: what tells a draft from its newest version.
- * - draftChanged — Does the draft differ from the newest version? None published, it does.
- * - publishedOf — The entity as its newest version says it: what its uses and the library read.
+ * - hashOfDefinition — A definition's content hash, where it is drawn left out: what tells a draft from its newest version.
+ * - draftChanged — Does the draft differ from the newest version, as today's hash reads both? None published, it does.
+ * - publishedOf — The entity as its newest version says it, drawn where the entity's draft is: what uses and the library read.
  * - nextVersion — The version a publish of this definition would add: the next number, its hash, when and by whom.
  * - VersionAnswer — What Publish and Roll back answer: the number made, or why not, in words.
  * - publish — Publish an entity's draft as its next version, through the shelf.
- * - rollBack — Publish an earlier version as the next one, and put it in the draft.
+ * - rollBack — Publish an earlier version as the next one, and put it in the draft; each node stays where it is.
  * - CloneChange — What a Clone may set: the copy's id and words, and a body in place of its source's.
  * - clone — The ONE Clone: the reader's own editable copy of an entity, at version 1, remembering its source.
  * - sourceNewer — The newer version a clone's source has published since, or none.
@@ -22,6 +23,7 @@
 import { definitionPart, withBody, type Entity, type EntityBody, type EntityDefinition, type EntityVersion } from './entity.js';
 import type { EntityShelf } from './entity-shelf.js';
 import { contentHash } from './content-hash.js';
+import { placesOf, withoutPlaces, withPlaces } from './graph-layout.js';
 
 /** Who publishes, why, and when: free text until the app has a current User (plan 972d). */
 export interface VersionFacts {
@@ -37,25 +39,35 @@ export const versionsOf = (entity: Pick<Entity, 'versions'>): readonly EntityVer
 /** An entity's newest published version, or none. */
 export const newestOf = (entity: Pick<Entity, 'versions'>): EntityVersion | undefined => entity.versions?.[0];
 
-/** A definition's content hash: what tells a draft from its newest version. Where its nodes sit counts: a roll back puts
- *  them back too. */
-export const hashOfDefinition = (definition: EntityDefinition): string => contentHash(definition);
+/** A definition's content hash, where it is drawn left out: what tells a draft from its newest version. A move, an Unfurl
+ *  or Swimlanes on or off saves itself, so it is no change to publish (Will, TODO 1001). */
+export const hashOfDefinition = (definition: EntityDefinition): string =>
+  contentHash(definition.graph ? { ...definition, graph: withoutPlaces(definition.graph) } : definition);
 
-/** Does the draft differ from the newest version? None published, it does. */
+/** Each version's hash as today's `hashOfDefinition` reads it: a hash kept by an older one never flags a draft. */
+const hashes = new WeakMap<EntityVersion, string>();
+const hashNow = (version: EntityVersion): string => {
+  let hash = hashes.get(version);
+  if (hash === undefined) hashes.set(version, hash = hashOfDefinition(version.definition));
+  return hash;
+};
+
+/** Does the draft differ from the newest version, as today's hash reads both? None published, it does. */
 export function draftChanged(entity: Entity): boolean {
   const newest = newestOf(entity);
-  return !newest || newest.hash !== hashOfDefinition(definitionPart(entity));
+  return !newest || hashNow(newest) !== hashOfDefinition(definitionPart(entity));
 }
 
-/** The entity as its newest version says it: its id, type and origin, with the version's definition in place of the draft.
- *  None published, its draft. What its uses and the node library read (D1 A: a draft is the reader's alone). */
+/** The entity as its newest version says it: its id, type and origin, with the version's definition in place of the draft,
+ *  drawn where the draft is: a part the draft no longer has keeps the version's place. None published, its draft. What its
+ *  uses and the node library read (D1 A: a draft is the reader's alone), and a Roll back writes. */
 export function publishedOf(entity: Entity): Entity {
   const newest = newestOf(entity);
   if (!newest) return entity;
   // Its tags and category are its draft's: they file it, and are no part of a version.
   const { label: _label, description: _description, settings: _settings, ...envelope } = entity;
   const { graph, query, ...words } = newest.definition;
-  const body = graph ? { graph } : query ? { query } : { graph: { nodes: [] } };
+  const body = graph ? { graph: entity.graph ? withPlaces(graph, placesOf(entity.graph)) : graph } : query ? { query } : { graph: { nodes: [] } };
   return withBody({ ...envelope, ...words }, body);
 }
 
@@ -82,8 +94,9 @@ export async function publish(shelf: EntityShelf, id: string, facts: VersionFact
   return saveVersion(shelf, { ...entity, versions: [version, ...versionsOf(entity)] }, 'Publish');
 }
 
-/** Publish an earlier version as the next one, and put it in the draft: nothing is lost, and the uses can follow it back.
- *  Refused for a preset, for a number it has not got, and, in words, for a version its checks refuse now. */
+/** Publish an earlier version as the next one, and put it in the draft, each node where it is now (plan 1001 D1 A):
+ *  nothing is lost, and the uses can follow it back. Refused for a preset, for a number it has not got, and, in words,
+ *  for a version its checks refuse now. */
 export async function rollBack(shelf: EntityShelf, id: string, number: number, facts: VersionFacts = {}): Promise<VersionAnswer> {
   const entity = shelf.get(id);
   if (!entity) return { refused: `"${id}" is not there.` };

@@ -17,12 +17,13 @@
  * - reconcileQuery — What changed between two definitions, as row edits, requests, kept Sources, layout and refusals.
  * - rowRequest — What one row's new value asks, against the Query's graph as it is now.
  */
-import { placed, socketOf, storedValues, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeConnection, type NodeTie } from './node-kinds.js';
+import { placed, socketOf, storedValues, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeTie } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import type { NodeStage } from './node-stages.js';
 import type { NodeLane } from './node-lanes.js';
 import { bendFault, type Bend } from './connector-bends.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowNode } from './workflow.js';
+import { connectionKey } from './graph-layout.js';
 import { graphRequest, keptEdit, orderRequest, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryRequest } from './query.js';
 
@@ -53,12 +54,10 @@ export function isGraphLayout(v: unknown): v is GraphLayout {
     && (v['staged'] === undefined || record(v['staged']));
 }
 
-const bendKey = (r: Pick<NodeConnection, 'from' | 'to'>): string => `${r.from}>${r.to}`;
-
 /** A Query's derived graph, at the places, sizes and bends its layout gives. */
 export function laidOut(graph: DrawnGraph, layout: GraphLayout): DrawnGraph {
   const at = placed(graph, layout.places ?? {});
-  return { ...at, connections: at.connections.map((r) => (layout.bends?.[bendKey(r)] ? { ...r, via: layout.bends[bendKey(r)]! } : r)) };
+  return { ...at, connections: at.connections.map((r) => (layout.bends?.[connectionKey(r)] ? { ...r, via: layout.bends[connectionKey(r)]! } : r)) };
 }
 
 /** A Query's drawn graph (laid out), and its layout, as a definition: each node's rows as its values. */
@@ -82,7 +81,7 @@ export function queryDefinition(id: string, graph: DrawnGraph, layout: GraphLayo
 /** The layout a definition holds: every node's place and size, each connection's bends, its ties, frames, stages and lanes. */
 export function layoutOf(definition: WorkflowDefinition): GraphLayout {
   const places = Object.fromEntries(definition.nodes.map((n) => [n.id, { x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}) }]));
-  const bends = Object.fromEntries((definition.connections ?? []).flatMap((r) => (r.via?.length ? [[bendKey(r), r.via]] : [])));
+  const bends = Object.fromEntries((definition.connections ?? []).flatMap((r) => (r.via?.length ? [[connectionKey(r), r.via]] : [])));
   const staged = Object.fromEntries(definition.nodes.flatMap((n) => (n.stage ? [[n.id, n.stage]] : [])));
   return {
     places,
@@ -173,17 +172,16 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
     else requests.push(answer.request);
   }
   // A new connection between nodes the Query draws: the command it asks, or why not. One cut is refused, as is a reading removed.
-  const key = (r: NodeConnection): string => `${r.from}>${r.to}`;
-  const had = new Set((before.connections ?? []).map(key));
-  const has = new Set((after.connections ?? []).map(key));
+  const had = new Set((before.connections ?? []).map(connectionKey));
+  const has = new Set((after.connections ?? []).map(connectionKey));
   for (const connection of after.connections ?? []) {
-    if (had.has(key(connection)) || fresh.has(socketOf(connection.from).node) || fresh.has(socketOf(connection.to).node)) continue;
+    if (had.has(connectionKey(connection)) || fresh.has(socketOf(connection.from).node) || fresh.has(socketOf(connection.to).node)) continue;
     const answer = connectionRequest(graph, connection, facts);
     if (answer && 'refused' in answer) refuse('query-connection', answer.refused);
     else if (answer) requests.push(answer.request);
   }
   for (const connection of before.connections ?? []) {
-    if (!has.has(key(connection)) && now.has(socketOf(connection.from).node) && now.has(socketOf(connection.to).node)) refuse('query-connection', CONNECTIONS_READ);
+    if (!has.has(connectionKey(connection)) && now.has(socketOf(connection.from).node) && now.has(socketOf(connection.to).node)) refuse('query-connection', CONNECTIONS_READ);
   }
   for (const node of before.nodes) {
     if (now.has(node.id)) continue;

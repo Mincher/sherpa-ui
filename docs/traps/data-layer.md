@@ -8419,3 +8419,28 @@ writes the draft over it.
 - Site: `src/core/data/acts.ts`
 - Site: `src/core/browser/graph-drafts.ts`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+
+### T-a-place-is-no-edit
+
+**Where a graph is drawn saves itself, and is no part of a version** — Will, 2026-11-14 (TODO 1001): "Node position
+edits, unfurls, swimlane toggles don't count as edits requiring a save. They apply and save automatically." Plan 1001
+D1 A: Save and Publish are for what a graph DOES. A version still keeps its definition whole, places in it, and that looks
+like a mistake; it is the fallback for a node the draft no longer has.
+
+**The place set is said once**, in `graph-layout.ts`: each node's x, y and size, each tie's x and y, each connection's
+bends (`via`), each stage's x and width, the swimlanes with `beforeLanes`, and the `unfurl` mark. `placesOf` reads it,
+`withoutPlaces` takes it away, `withPlaces` puts it on each part it names; a part it does not name keeps its own. A
+node's `stage` is no place: a move into another stage changes the run, so it waits for Save (D2 A). A frame is words.
+A new layout mark goes into this set, or it lights Save and changes a version's hash.
+
+- **The hash leaves places out**: `hashOfDefinition` hashes `withoutPlaces(graph)`. So a move alone is no change to
+  publish ("Nothing to publish"), and `draftChanged` says no.
+- **A kept hash is never trusted**: `draftChanged` hashes the newest version's definition again with today's function
+  (once per version, in a WeakMap). Each hash kept before this change counted places, so comparing with it would have
+  flagged every entity a reader keeps at once. The kept `hash` still holds the shelf's add-only check.
+- **A published graph is drawn where the draft is**: `publishedOf` puts the draft's places on the version's graph. So the
+  library, a use, and a Roll back (which writes `publishedOf`) leave each node where it is now.
+
+- Site: `src/core/data/graph-layout.ts`
+- Site: `src/core/data/entity-versions.ts`
+- Site: `test/unit/a-place-is-no-edit.test.mjs`

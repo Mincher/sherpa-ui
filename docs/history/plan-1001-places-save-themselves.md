@@ -8,7 +8,8 @@ Will, 2026-11-14:
   automatically." (row 1001)
 
 **Status: written by sherpa-demos-67, with sherpa-ui-a9's traps (2026-11-14). Will picked D1 A, D2 A, D3 B (in his words:
-section 4), D4 A (2026-11-14). Nothing built. Owners: sherpa-ui-e8 (the canvas), sherpa-ui-a9 (the draft and the version hash), sherpa-demos-67 (Demos' specs).
+section 4), D4 A (2026-11-14). 1001a built (sherpa-ui-a9, 2026-11-14): the place set in graph-layout.ts, the hash, draftChanged
+and D1's roll back; a node's size is in the place set too, as `NodePlaces` holds it and graphKey leaves it out. Owners: sherpa-ui-e8 (the canvas), sherpa-ui-a9 (the draft and the version hash), sherpa-demos-67 (Demos' specs).
 After the node work of plans 991 and 992.**
 
 ## 1. The rule
