@@ -90,6 +90,7 @@ option), Closure (a step passed as a value).
 | 991d | Approval (D2); Viewer; hover to see a socket's last value |
 | 991e | Classify; Guardrail; On failure |
 | 991f | The rest of Should, then Could, one by one, each asked |
+| 991g | Every shipped graph reviewed, and refactored where a new node makes it better (Will, below; TODO 993) |
 
 Each phase: the kinds in node-kinds.ts, their words, Simulate, graphText's words, N-zo's rule words, a unit per kind,
 and the Demos graphs that use them (sherpa-demos-67), in three engines.
@@ -130,6 +131,35 @@ its input stays one dropdown of ticks). The question was: A (my pick): one outpu
 a line from each route shows where it goes. This is a row per value, which a Field's Values is not (Will, 2026-11-13:
 one dropdown of ticks), because each route needs its own socket. B: one output and Otherwise, the route a row's value
 picks said on the line's tip: fewer sockets, but two routes can no longer go to two places.
+
+### 991g: the graphs we have, with the new nodes (Will, 2026-11-14)
+
+Will, 2026-11-14: "Once all of the new nodes are in we should review all existing graphs and refactor them where the
+new nodes would improve the quality, or effectiveness, of the graph."
+
+**When:** after 991f, when every kind of this plan is in. **Owner:** sherpa-demos-67 (the Demos graphs), sherpa-ui-e8
+(the library's own graphs: its examples and test graphs).
+
+**How:**
+- Every graph is read: each Runbook, Coworker, Custom Node, Expert, workflow and Query graph, in Demos and the library.
+- A graph changes only where a new node makes it better: fewer nodes for one job, a job it could not do, or words a
+  reader reads faster. A graph that is good as it is stays.
+- Will sees the list first: each graph, what changes, and why. He picks; then it is built.
+- Each change is a retrofit (no legacy): a published graph is a new version; a seeded copy is reset to its seed or keeps
+  its seed mark; a tab's draft of it is cleared; the specs and units that read it change with it.
+
+**The graphs I expect to gain (read 2026-11-14; the review reads them again then):**
+
+| Graph | Today | With the new node | Waits on |
+|---|---|---|---|
+| Runbooks Patch rollout, Device health, Backup check | a "Try again" step and a "Fixed on retry?" Condition after the fix | the fix step's own Retry setting; the prompt's RETRIES AND ERRORS reads it (O7; built with Retry, 992c) | Retry (991b) |
+| Workflow Device triage | a True/false Prompt "Need attention today?", then a Condition: an alert, or All clear | a Prompt with the Category answer (Urgent, Patches behind, Fine), then one Route: the alert, Patch review, All clear (O6) | Route, Classify (992c) |
+| Every Coworker (`app/stores/coworkers-data.js`) | its Runbook runs once, over all the customer's devices | For each: the Runbook once per device, N at a time; Done sends every result to the notice | For each (991b) |
+| The Coworkers that find the best hours | a Prompt finds the hours, and the run goes on at once | a Wait until those hours, then the Runbook | Wait (991b) |
+| Workflow Customers and devices | two Sources, a Count each, an Add: one number | Merge by customer, then Organise › Group and a Count: the devices of each customer. Or it stays, if one number is its job | Merge (991c) |
+| Runbook Patch rollout, workflow Patch deployment | the patch goes out with no person asked | an Approval before a reboot: Approved, Declined, Timed out | Approval (991d) |
+| Device triage and Patch review (models read device rows) | the rows go to the model as they are | a Guardrail masks secrets before the model reads them | Guardrail (991e) |
+| Workflow Devices that need attention | a Count of the devices found | a Presentation › Data grid that shows the devices found, beside the Count | Data grid (992c) |
 
 ## 6. Sources
 
