@@ -6,8 +6,8 @@ import { test, expect, type Bar } from './harness';
  * It reads "Filters", with a pencil (TODOs 445, 681); its menu is headed "Filters".
  *
  * Its menu lists the chips the bar HIDES for want of room first — each still a
- * door into its own menu — then every filter, then the saved sets. No badge
- * (TODO 447); it reads ON when a hidden chip is on, as More did.
+ * door into its own menu — then every filter. No badge (TODO 447); it reads ON
+ * when a hidden chip is on, as More did.
  * TRAP T-one-filters-button
  */
 const SIX = ['Server', 'Region', 'Customer', 'Date', 'Preset', 'Owner'].map((label) => ({
@@ -227,36 +227,6 @@ test('a spent field is greyed in the Filters list, and hidden with Hide unmatchi
     await window.__settled();
   });
   expect((await tier())?.shown).toBe(false);
-});
-
-test('Manage Saved Filters is a ⋮ row of a saveable bar with sets of the reader\'s, and asks its host', async ({ page }) => {
-  await mount(page, 1400);
-  const saved = (own: boolean, saveable: boolean) => page.evaluate(async ({ own, saveable }) => {
-    const el = document.querySelector('sherpa-quick-filter-toolbar') as unknown as Bar & { savedSets: unknown };
-    el.toggleAttribute('data-saveable', saveable);
-    el.savedSets = [{ id: 'page', label: 'Page set' }, ...own ? [{ id: 'mine', label: 'Mine', own: true }] : []];
-    await window.__settled();
-    // The sets are the Saved menu's, never the Filters menu's; Manage is the ⋮'s.
-    const sets = [...el.shadowRoot!.querySelectorAll('.saved-btn sherpa-menu input')].map((i) => (i as HTMLInputElement).value);
-    const inFilters = el.shadowRoot!.querySelectorAll('.add-btn sherpa-menu [value^="set:"]').length;
-    const manage = !!(await window.__moreRow(el, 'filters-manage'));
-    return { sets, inFilters, manage };
-  }, { own, saveable });
-  expect(await saved(true, true)).toEqual({ sets: ['set:page', 'set:mine'], inFilters: 0, manage: true });
-  // None of the reader's to manage, or a bar that saves nothing (it lists none of theirs): no row.
-  expect(await saved(false, true)).toEqual({ sets: ['set:page'], inFilters: 0, manage: false });
-  expect(await saved(true, false)).toEqual({ sets: ['set:page'], inFilters: 0, manage: false });
-
-  await saved(true, true);
-  const asked = await page.evaluate(async () => {
-    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
-    const heard: string[] = [];
-    el.addEventListener('filters-manage', (e) => heard.push(e.type));
-    (await window.__moreRow(el, 'filters-manage'))!.click();
-    await window.__settled();
-    return heard;
-  });
-  expect(asked).toEqual(['filters-manage']);
 });
 
 test('a folded chip\'s row wears its chip\'s icon before its label and its count badge at its end (Will, TODO 677)', async ({ page }) => {

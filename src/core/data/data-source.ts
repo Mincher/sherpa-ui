@@ -82,7 +82,7 @@ import {
 import type { FieldStatus } from './field-status.js';
 import { QueryContext } from './query-context.js';
 import { compiles, type QueryChange, type QueryHandle } from './query-members.js';
-import type { QueryPart } from './query-declarations.js';
+import type { DeclaredPreset, QueryPart } from './query-declarations.js';
 import { readingsOf, whereOf, type Where } from './where.js';
 import { report } from './report.js';
 import type { Failure } from './failure.js';
@@ -480,7 +480,7 @@ export class DataSource extends EventTarget {
   /** A scope's PRESETS: the app's own named conditions, each a boolean chip — on,
    *  its rows are written into the fields'. Kept by the Query. Will, TODOs 493, 510
    *  TRAP T-a-preset-is-its-own-part */
-  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>>; on?: boolean }[]): void {
+  declarePresets(scope: string, presets: readonly DeclaredPreset[]): void {
     this.#context.declarePresets(scope, presets);
   }
 

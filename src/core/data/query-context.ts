@@ -67,7 +67,7 @@ import {
   type AxesDefinition, type AxisOffers, type Presentation, type PresentationDefinition, type Query, type QueryDefaults,
   type QueryRequest,
 } from './query.js';
-import { QueryDeclarations, type QueryPart } from './query-declarations.js';
+import { QueryDeclarations, type DeclaredPreset, type QueryPart } from './query-declarations.js';
 import { QueryMembers, type QueryChange, type QueryHandle, type QueryLive, type QueryMember } from './query-members.js';
 import {
   answerIn, commitScope, definitionOf, editCopies, holderOf, holdsField, keepOff, presetIn, rehome, writeScope,
@@ -440,14 +440,14 @@ export class QueryContext extends EventTarget {
    * declarePresets(scope, presets) — a scope's PRESETS: the app's own named
    * conditions, each a boolean chip that writes them into the fields. TODO 493, 510
    */
-  declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>>; on?: boolean }[]): void {
+  declarePresets(scope: string, presets: readonly DeclaredPreset[]): void {
     this.#decl.setPresets(scope, presets);
     this.#tell([{ kind: 'preset', scope }]);
   }
 
-  /** A scope's presets, in order: each its id, its name and the readings it writes. */
-  presets(scope: string): { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[] {
-    return [...this.#decl.presets(scope)].map(([id, p]) => ({ id, label: p.label, readings: p.readings }));
+  /** A scope's presets, in order: each its id, its name, the readings it writes, and the reader's entity it is. */
+  presets(scope: string): { id: string; label: string; readings: Readonly<Record<string, FieldReading>>; mine?: string }[] {
+    return [...this.#decl.presets(scope)].map(([id, p]) => ({ id, label: p.label, readings: p.readings, ...(p.mine ? { mine: p.mine } : {}) }));
   }
 
   /** Is this preset ON: its rows held on every field it names, in force — the

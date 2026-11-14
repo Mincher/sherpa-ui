@@ -1,6 +1,6 @@
 /**
  * panel-column.ts — what the filter panel does: one portrait toolbar per scope, the View a heading, a rule, then the
- * Local Context; the header's Save, Saved and ⋮, and the panel's search. TODO 425, 435, 847 · TRAP T-the-panel-is-the-bar-in-portrait
+ * Local Context; the header's Save and ⋮, and the panel's search. TODO 425, 435, 847 · TRAP T-the-panel-is-the-bar-in-portrait
  *
  * Map:
  * - ColumnEvent — What the filter panel says.
@@ -9,23 +9,19 @@
  * - .wire — Hear the header's controls, once per stamp.
  * - .draw — One portrait toolbar per scope, in order — once it is open.
  * - .opened — It opened: what it was told while shut is drawn now.
- * - .sets — The sets it was last told.
  * - .drawSave — Save: off while the filters are the View's own.
  * - .drawReading — A chart's own answer, told the column as a panel: its section draws it.
- * - .saved — The reader's saved sets: the Saved menu's.
  * - .moreRows — What its ⋮ holds.
  * - .find — Find text in every section.
  */
 import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
-import { SavedSets, type SavedSet } from '../../core/ui/filters-button.js';
-import { extraRows, manageRows, openMore, pickMore, resetRows, type MoreRow } from '../../core/ui/more-menu.js';
+import { extraRows, openMore, pickMore, resetRows, saveRows, type MoreRow } from '../../core/ui/more-menu.js';
 import { ToolbarHeader } from '../sherpa-quick-filter-toolbar/toolbar-header.js';
 
 /** What the filter panel says. */
-export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-apply' | 'filters-dismiss' | 'filters-manage' | 'ai-filter-request'
-  | 'quick-filter-change' | 'view-reset';
+export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'ai-filter-request' | 'quick-filter-change' | 'view-reset';
 
 /** What the column asks of its filter panel. */
 export interface ColumnHost {
@@ -36,7 +32,6 @@ export interface ColumnHost {
   header?(): ParentNode;
   clone(selector: string): HTMLElement | null;
   emit(name: ColumnEvent, detail?: unknown, options?: { cancelable?: boolean }): void;
-  toggleState(name: string, on: boolean): void;
 }
 
 /** One scope's portrait toolbar. */
@@ -46,17 +41,14 @@ type Section = HTMLElement & { search?: (text: string) => void };
 export class ToolbarColumn {
   /** The toolbar it is. */
   readonly #host: ColumnHost;
-  /** The reader's saved sets, and the one taken. */
-  readonly #saved: SavedSets;
   /** Each scope, as last drawn. */
   #scopes: ScopeDescription[] = [];
 
   constructor(host: ColumnHost) {
     this.#host = host;
-    this.#saved = new SavedSets(host.el);
-    this.#header = new ToolbarHeader(host, this.#saved, { saved: '.column-saved', saveAs: '.column-save-as' });
+    this.#header = new ToolbarHeader(host, '.column-save-as');
   }
-  /** Its header's Saved menu, Save and filter acts — the bar's too. TODO 415 */
+  /** Its header's Save and filter acts — the bar's too. TODO 415 */
   readonly #header: ToolbarHeader;
 
   /** One element of the column's own tree. */
@@ -71,9 +63,6 @@ export class ToolbarColumn {
 
   /** Hear the header's controls, once per stamp. */
   wire(): void {
-    const saved = this.#$('.column-saved');
-    saved?.addEventListener('menu-change', this.#onSavedPick);
-    saved?.addEventListener('menu-select', this.#onSavedAction);
     this.#$('.column-suggest')?.addEventListener('button-click', () => this.#host.emit('ai-filter-request'));
     this.#$('.column-save-as')?.addEventListener('button-click', () => this.#host.emit('filters-save-as'));
     this.#$('.column-more')?.addEventListener('button-click', this.#onMore);
@@ -112,17 +101,11 @@ export class ToolbarColumn {
       i++;
     }
     for (const gone of had.values()) gone.remove();
-    this.#header.drawSaved();
   }
 
   /** It opened: what it was told while shut is drawn now. */
   opened(): void {
     if (this.#scopes.length && !this.#bars().length) this.draw(this.#scopes);
-  }
-
-  /** The sets it was last told. */
-  get sets(): SavedSet[] {
-    return this.#saved.all;
   }
 
   /** Save: off while the filters are the View's own. */
@@ -139,26 +122,6 @@ export class ToolbarColumn {
     bar?.drawReading?.(field, reading);
   }
 
-  /** The reader's saved sets: the Saved menu's. TRAP T-saved-filters-are-every-scope */
-  saved(sets: readonly SavedSet[]): void {
-    this.#saved.set(sets);
-    this.#header.drawSave();
-    this.#header.drawSaved();
-  }
-
-  /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
-  #onSavedPick = (event: Event): void => {
-    this.#header.pick(new Set((event as CustomEvent).detail?.values ?? []));
-  };
-
-  /** A Saved menu row: a save row, or Manage. TODO 436 */
-  #onSavedAction = (event: Event): void => {
-    const act = String((event as CustomEvent).detail?.value ?? '');
-    if (!act.startsWith('filters-')) return;
-    event.stopPropagation();
-    this.#act(act);
-  };
-
   /** A filter action: Reset and Reset to view defaults, from the ⋮; the save rows too (TODO 430). */
   #act(act: string): void {
     if (act === 'reset') {
@@ -169,17 +132,17 @@ export class ToolbarColumn {
     else this.#header.act(act);
   }
 
-  /** ⋮ — Save filters (Will, TODO 430), and Reset and Manage Saved Filters, the page's buttons folded
+  /** ⋮ — Reset, then Save filters (Will, TODO 430), the page's buttons folded
    *  away, then Limit. No Suggest filters or Refresh: those are the App
    *  Header's. Will, TODO 425 G11 */
   #onMore = (event: Event): void => {
     openMore(this.#host.el, this.#host.root(), event.currentTarget as HTMLElement, this.moreRows());
   };
 
-  /** What its ⋮ holds: Reset and Manage Saved Filters lead. Will, TODO 454, 11-06 */
+  /** What its ⋮ holds: Reset and Save filters lead. Will, TODOs 430, 454 */
   moreRows(): MoreRow[][] {
     const el = this.#host.el;
-    return [[...resetRows(el), ...manageRows(el, this.#saved.listed)], extraRows(el)];
+    return [[...resetRows(el), ...saveRows(el)], extraRows(el)];
   }
 
   /** A ⋮ row: a filter action, or a page button folded away. */

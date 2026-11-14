@@ -2183,13 +2183,13 @@ child of the panel, and only the panel's own LIGHT children carry a `slot` into 
 cannot. So `SherpaElement.adoptHeader(template)` clones the elements of a `<template class="…">` of the content's own
 into the panel's light DOM, each with the `slot` it takes there, and removes them as the content leaves; a move
 clones them again (`onConnect`). The filter panel clones its search (`description`), the count of filters applied
-(`badge`), Suggest and the Save group (`actions`) and the ⋮ (`overflow`).
+(`badge`), Suggest and Save (`actions`) and the ⋮ (`overflow`).
 
 - **The panel's own buttons come first.** The `actions` slot is before the panel's Minimise, Float and Pop; the
   `actions-end` slot (the page's Show as toolbar) and `overflow` (the content's ⋮) are after them. Will, 11-06.
 - **The clones sit in the page's DOM, so no shadow CSS reaches them.** Their look is their own components' (a
-  `sherpa-group` for Save and Saved, with `data-group` stated), and what the page offers is the `hidden` attribute
-  the content sets on them (Suggest, the Save group, the count) from its own attributes.
+  `sherpa-button` each), and what the page offers is the `hidden` attribute
+  the content sets on them (Suggest, Save, the count) from its own attributes.
 - **The wiring looks in two places:** a column's own root for its templates and menus, the panel's header for its buttons
   (`header()` on `ColumnHost` and `HeaderHost`).
 

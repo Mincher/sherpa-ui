@@ -13,11 +13,9 @@ import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-kind.js';
 import { FILTER_MENU_HTML, menuFor, type FilterMenuOptions } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
+import { MenuDrill, OneRows, drawFiltersButton, hangFiltersMenu, type AddedFilter } from '../../core/ui/filters-button.js';
 import {
-  MenuDrill, OneRows, SavedSets, drawFiltersButton, hangFiltersMenu, type AddedFilter, type SavedSet,
-} from '../../core/ui/filters-button.js';
-import {
-  askSwitches, offersMore, extraRows, manageRows, resetRows, folded, hidesUnmatched, openMore, pickMore,
+  askSwitches, offersMore, extraRows, resetRows, saveRows, folded, hidesUnmatched, openMore, pickMore,
   syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
@@ -564,7 +562,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // `change` reaches here, being in the CHIP's light DOM.
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
-    this.addEventListener('menu-change', this.#onSavedPick);
     this.addEventListener('menu-open', this.#onEditOpen);
     // A calendar commits through its own events — it has no Apply button.
     this.addEventListener('datetime-change', this.#onDatePicked);
@@ -655,7 +652,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The active TOGGLE chips. TRAP T-toggle-chips-have-no-field — menu chips are in `values`. */
   get active(): string[] {
     return this.#chips()
-      .filter((c) => c.current && !c.hasAttribute('data-menu'))
+      .filter((c) => c.current && !this.#menuAnswers(c))
       .map((c) => c.dataset['id'] ?? '');
   }
 
@@ -664,7 +661,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!this.#chips().length) return this.#heldValues();
     const out: Record<string, string[]> = {};
     for (const chip of this.#chips()) {
-      if (!chip.hasAttribute('data-menu')) continue;
+      if (!this.#menuAnswers(chip)) continue;
       /* The VIEW owns this field now, so the chip must not narrow anything on
          top of it. Its picks SURVIVE in `pickedValues`, which is the whole
          point of suspending rather than removing.
@@ -719,7 +716,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'];
-      if (!id || !chip.hasAttribute('data-menu')) continue;
+      if (!id || !this.#menuAnswers(chip)) continue;
       const wanted = next[id];
       // Never switched off, but it still follows a pick.
       if (chip.hasAttribute('data-persistent')) {
@@ -765,7 +762,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
     for (const chip of this.#chips()) {
-      if (chip.dataset['id'] !== id || !chip.hasAttribute('data-menu')) continue;
+      if (chip.dataset['id'] !== id || !this.#menuAnswers(chip)) continue;
       /* `values = []` unticks every row and re-derives the face — the badge
          and the value label go with it. `current = false` alone would leave a
          chip reading "3 Plan Enterprise…" while claiming to be off. */
@@ -813,7 +810,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
     // The FIELD draws it, as a panel's does; its chip knows what answers it. TRAP T-a-chip-says-its-own-answer
-    const chip = this.#chips().find((c) => c.dataset['id'] === id && c.hasAttribute('data-menu'));
+    const chip = this.#chips().find((c) => c.dataset['id'] === id && this.#menuAnswers(c));
     // A Group or Sort chip is drawn by its arrangement, never a reading.
     if (chip && !arranges(kindOf(this.#defOf(chip) ?? { id, label: id }))) chip.reading = reading;
     this.#keepOffChips();
@@ -982,27 +979,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const chip of this.#chips()) yield { field: this.#fieldOf(chip.dataset['id'] ?? ''), chip };
   }
 
-  /**
-   * savedSets — the reader's saved sets of filters. The Filters menu's Saved
-   * section lists them, each on a bar ticked. Drawn, never reported. Will, TODOs 105, 605.
-   * TRAP T-saved-filters-are-every-scope
-   */
-  set savedSets(sets: readonly SavedSet[]) {
-    this.#saved.set(sets);
-    this.#renderAvailable();
-  }
-  get savedSets(): SavedSet[] {
-    return this.#saved.all;
-  }
-  /** The reader's saved sets. */
-  #saved = new SavedSets(this);
-  /** Its header's Saved menu, Save and filter acts — its column's too. TODO 415 */
+  /** Its header's Save and filter acts — its column's too. TODO 415 */
   readonly #header = new ToolbarHeader({
     el: this,
     root: () => this.root,
     emit: (name, detail, options) => { this.emit(name, detail, options); },
-    toggleState: (name, on) => this.toggleState(name, on),
-  }, this.#saved, { saved: '.saved-btn', saveAs: '.save-as-btn' });
+  }, '.save-as-btn');
 
   /** Steers given before `populate()` drew a chip, for `#render()` to replay in
    *  order. TRAP T-a-value-before-the-first-render-is-held */
@@ -1136,6 +1118,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return this.#defById(chip.dataset['id']);
   }
 
+  /** Does a chip answer by its menu's picks? A boolean's menu — a preset's — holds only its acts. Plan 960 U4.4c */
+  #menuAnswers(chip: HTMLElement): boolean {
+    return chip.hasAttribute('data-menu') && chip.dataset['kind'] !== 'boolean';
+  }
+
   /** Does a chip answer here: no selector, and not held by a scope above? */
   #answering(chip: HTMLElement): boolean {
     return !chip.hasAttribute('data-selector') && !chip.hasAttribute('data-superseded');
@@ -1250,7 +1237,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.toggleAttribute('data-fixed', !!f.fixed);
       // An app's preset leads, apart from the rest; its on is its source's. Will, TODOs 482, 493
       chip.toggleAttribute('data-preset', !!f.preset);
-      if (f.preset) chip.toggleAttribute('data-current', !!f.active);
+      if (f.preset) {
+        chip.toggleAttribute('data-current', !!f.active);
+        // A boolean chip: its on is its answer, whatever its menu holds. Plan 960 U4.4c
+        chip.setAttribute('data-kind', 'boolean');
+      }
       this.#lock(chip);
       /* THE KIND DECIDES. A boolean has nothing to open; everything else does
          — a date or number carries its own body, and so does an Advanced one,
@@ -1263,6 +1254,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('disabled', '');
         chip.setAttribute('data-unused', '');
       } else if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
+      else if (f.mine) this.#addMineMenu(chip, f);
       (f.preset && presets || list).appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
@@ -1407,6 +1399,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
     this.#filter.limit({ field: this.#fieldOf(def.id), chip: chip as SherpaQuickFilter });
+  }
+
+  /** A reader's own Filter's chip: its caret's menu holds Rename… and Delete, each a request its app answers. Plan 960
+   *  U4.4c · TRAP T-saved-filters-are-every-scope */
+  #addMineMenu(chip: HTMLElement, def: FilterDef): void {
+    const menu = this.clone('template.mine-menu-tpl');
+    if (!menu) return;
+    menu.setAttribute('data-heading', def.label);
+    chip.setAttribute('data-menu', '');
+    chip.appendChild(menu);
   }
 
   /** A chip's condition or typed value changed — its field's answer did too. */
@@ -1674,11 +1676,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#move(mover);
       return;
     }
-    // The Saved menu's rows. TODO 436
-    if (String(value).startsWith('filters-') && this.pathFind(event, '.saved-btn')) {
+    // A reader's own Filter: Rename or Delete, each a request its app answers. Plan 960 U4.4c
+    if (value === 'filter-rename' || value === 'filter-delete') {
+      const chip = this.#chipOf(event);
+      const id = chip ? this.#defOf(chip)?.mine : undefined;
+      if (!chip || !id) return;
       event.stopImmediatePropagation();
-      this.$<SherpaMenu>('.add-btn sherpa-menu')?.hide?.();
-      this.#act(value);
+      chip.menu?.hide?.();
+      if (value === 'filter-rename') this.emit('filter-rename', { id });
+      else this.emit('filter-delete', { id });
       return;
     }
     if (value !== 'remove') return;
@@ -1803,10 +1809,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'data-scope' && this.#settingsTold) this.onSettings(this.#settingsTold);
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameSection(chip);
     // The saves are off while the filters are the View's own. Will, TODO 382
-    if (name === 'data-at-default') {
-      this.#header.drawSave();
-      this.#header.drawSaved();
-    }
+    if (name === 'data-at-default') this.#header.drawSave();
     if (name === 'data-applied' || name === 'data-count-applied') this.#drawApplied();
     if (name === 'data-no-results') {
       this.#filter.resultAll();
@@ -1845,12 +1848,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       syncHide(this, this.root);
     }
     this.#syncArrangement();
-    // Saving on or off — its own, or its provider keeping it off: every save row follows. TODO 485, 518
-    if (name === 'data-saveable' || name === 'data-no-saves') {
-      this.#renderAvailable();
-      this.#header.drawSave();
-      this.#header.drawSaved();
-    }
+    // Saving on or off — its own, or its provider keeping it off: Save follows. TODO 485, 518
+    if (name === 'data-saveable' || name === 'data-no-saves') this.#header.drawSave();
   }
 
   /** ONE reader act, as a request — none for an act no field hears. `values`
@@ -2071,7 +2070,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const want = new Set(fields.map((f) => this.#idOf(f.id)));
     // A chip that answers no field here is no scope's to hold, so none takes it off.
     for (const def of [...this.#filters]) {
-      // …and a preset no longer declared, a saved set's taken off. Will, TODO 605
+      // …and a preset no longer declared: a Filter deleted. Will, TODO 605
       if (!want.has(def.id) && (def.removable || def.preset) && def.field !== null) this.#removeFilter(def.id, { silent: true });
     }
     /* A field the scope holds that this bar does not offer — a chart's own,
@@ -2213,7 +2212,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
           id, label: this.#defById(id)?.label ?? c.dataset['label'] ?? id,
           removable: heldIds.has(id), hidden: hidden.has(c),
           // ONE value: the tick is the chip's on/off. TODO 54
-          ...(c.hasAttribute('data-menu') ? {} : { on: c.current }),
+          ...(this.#menuAnswers(c) ? {} : { on: c.current }),
           // …and its row wears what the chip does: its icon, and folded, its count badge. Will, TODO 677
           ...(c.dataset['iconStart'] ? { icon: c.dataset['iconStart'] } : {}),
           ...(hidden.has(c) ? { count: this.#badgeOf(c) } : {}),
@@ -2225,11 +2224,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#oneRows.tell(added);
     // ONE field folded, and nothing else to list: Edit opens its own values. Will, TODO 678
     const [only] = folded;
-    this.#lone = only && added.length === 1 && added[0]!.hidden && !offer.length ? only : null;
+    this.#lone = only && this.#menuAnswers(only) && added.length === 1 && added[0]!.hidden && !offer.length ? only : null;
     const def = drawFiltersButton(add, added, offer);
     if (!def) return;
     this.#drawApplied();
-    this.#header.drawSaved();
     // The ONE Filters menu, as the column makes its own. TODO 523 U13
     hangFiltersMenu(this.root, add, def, hidesUnmatched(this), this.#menuFlags());
     this.#header.drawSave();
@@ -2244,11 +2242,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const shown = this.hasAttribute('data-count-applied') && n ? n : null;
     drawCount(this.stampOnce('template.applied-count-tpl', shown != null), shown, ['filter applied', 'filters applied']);
   }
-
-  /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
-  #onSavedPick = (event: Event): void => {
-    if (this.pathFind(event, '.saved-btn')) this.#header.pick(new Set((event as CustomEvent).detail?.values ?? []));
-  };
 
   /** Is an offered field spent — the source tallied it, and found no value left? */
   #spent(def: FilterDef): boolean {
@@ -2441,7 +2434,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /**
-   * THE ⋮ MENU: Save filters (Will, TODO 430), after Reset and Manage Saved Filters (11-06), then what has FOLDED
+   * THE ⋮ MENU: Reset, then Save filters (Will, TODO 430), then what has FOLDED
    * away at this width — the page's own buttons, then Refresh. A row does what
    * its button does. Suggest filters and the View's ★ and Save are the App
    * Header's (TODO 425). TRAP T-the-more-menu-holds-what-folded
@@ -2450,7 +2443,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     openMore(this, this.root, trigger, this.#moreRows());
   }
 
-  /** What the ⋮ holds at this width: Reset and Manage Saved Filters lead. Will, TODO 454, 11-06 */
+  /** What the ⋮ holds at this width: Reset and Save filters lead. Will, TODOs 430, 454 */
   #moreRows(): MoreRow[][] {
     // A node graph's editor is on it: one row, and it is the graph's. Will, TODO 837
     if (this.hasAttribute('data-reset-graph')) return [[['reset-graph', this.hasAttribute('data-graph-unchanged')]]];
@@ -2458,7 +2451,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const gone = (act: string): boolean => folded(this.$(`.act[data-act="${act}"]`));
     const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),
       ...(gone('refresh') ? [['refresh'] as const] : [])];
-    const resets = [...resetRows(this), ...manageRows(this, this.#saved.listed)];
+    const resets = [...resetRows(this), ...saveRows(this)];
     // Last, apart: the page's Query as nodes, where the host offers it. Will, TODO 555
     const editor: MoreRow[] = this.hasAttribute('data-node-editor') ? [['node-editor']] : [];
     return [resets, extraRows(this), tail, editor];
@@ -2496,8 +2489,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        pick redraws them, and a chip it adds or takes off is no row the reader moved. TODO 597, 702 */
     const ones = new Set(this.#oneRows.ids);
     const held = new Set(this.#filters.filter((f) => f.removable && !ones.has(f.id)).map((f) => f.id));
-    // A saved set's row takes it, or — unticked — takes it off. TODO 105, 366
-    this.#header.pick(want);
     // Only a row the reader CHANGED: a stale tick never undoes a chip. TODO 54
     const flips: QueryRequest[] = [];
     let flipped = false;

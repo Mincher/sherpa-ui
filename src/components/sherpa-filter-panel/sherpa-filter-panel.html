@@ -1,12 +1,12 @@
 <!--
   sherpa-filter-panel — the CONTENT of a panel: every filter scope the page offers, a section each.
   Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab.
-  Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are
+  Its own controls — Suggest, Save, the ⋮ and the count of filters applied — are
   cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header
 
   Public API:
     data-scope      the scopes it answers, in order: `view data`. The View is a heading; the rest are accordions
-    data-saveable   the host SAVES filters: the Save group shows
+    data-saveable   the host SAVES filters: Save shows, and its ⋮ offers Save filters
     data-no-saves   its provider keeps saving off it
     data-suggest    show "Suggest filters"
     data-applied    how many filters are applied in what it answers
@@ -20,11 +20,10 @@
     quick-filter-change   — Reset, for every scope at once. detail: { scope: 'column', request, active, values }
     view-reset            — Reset to view defaults, CANCELABLE. detail: { }
     ai-filter-request     — Suggest filters. detail: { }
-    filters-save          — Save filters: the host asks for a name. detail: { }
-    filters-save-as       — the Save button. detail: { }
-    filters-manage        — Manage Saved Filters. detail: { }
-    filters-apply         — a saved set ticked. detail: { id }
-    filters-dismiss       — a saved set unticked. detail: { id }
+    filters-save          — the ⋮'s Save filters: the host asks for a name. detail: { }
+    filters-save-as       — Save: the host asks for a name. detail: { }
+    filter-rename         — a reader's own Filter chip's Rename…, in a section; `id` is the Filter's entity id, not its chip's. detail: { id }
+    filter-delete         — a reader's own Filter chip's Delete, in a section; `id` is the Filter's entity id, not its chip's. detail: { id }
 -->
 <template id="default">
   <div class="sections" part="sections">
@@ -43,12 +42,7 @@
     <sherpa-badge slot="badge" class="applied-count" role="img" hidden></sherpa-badge>
     <sherpa-button slot="actions" class="column-suggest" data-size="sm" data-type="icon"
                    data-icon-start="wand-magic-sparkles" aria-label="Suggest filters" hidden></sherpa-button>
-    <sherpa-group slot="actions" class="saved-group" hidden>
-      <sherpa-button class="column-save-as" data-size="sm" data-group="start" data-icon-start="filter">Save</sherpa-button>
-      <sherpa-button class="column-saved" data-size="sm" data-type="icon" data-group="solo" data-icon-start="filter"
-                     data-description="Use, save and manage your saved filters."
-                     aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
-    </sherpa-group>
+    <sherpa-button slot="actions" class="column-save-as" data-size="sm" data-icon-start="filter" hidden>Save</sherpa-button>
     <sherpa-button slot="overflow" class="column-more" data-type="icon" data-size="sm"
                    data-icon-start="ellipses-vertical" data-description="Reset, save and refresh these filters."
                    aria-label="More actions" aria-haspopup="dialog"></sherpa-button>

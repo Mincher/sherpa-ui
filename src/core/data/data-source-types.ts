@@ -111,6 +111,8 @@ export interface HeldFilter extends FieldFilter {
   own?: boolean;
   /** An app's PRESET: a boolean chip with its own conditions. Will, TODO 493 */
   preset?: boolean;
+  /** A preset that is the reader's own entity, by its id: its chip offers Rename and Delete. Plan 960 U4.4c */
+  mine?: string;
   /** A preset's on. */
   active?: boolean;
   /** The App Context holds it; this page has no such field. TODO 453 */

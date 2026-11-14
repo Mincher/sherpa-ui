@@ -168,7 +168,7 @@ Four things that are not obvious:
   OLD View's name (its id changes only after the pick's async write). So a
   whole Query put on says who put it — `setQuery(q, { by })` rides on its
   `query-change` — and the keeper keeps only a change with no `by`, or
-  `by: 'reader'` (a saved set taken). A pick is `'view'`, a reset or a save
+  `by: 'reader'`. A pick is `'view'`, a reset or a save
   `'provider'`. 366 step 24 replaced a two-frame "provider is writing" flag,
   which also dropped a reader's change made in those frames.
 - **A pick FLUSHES first**: a change still waiting for its frame is written,

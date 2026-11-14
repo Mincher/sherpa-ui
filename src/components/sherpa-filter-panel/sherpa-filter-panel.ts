@@ -10,12 +10,11 @@ import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { FILTER_MENU_HTML } from '../../core/ui/filter-menu.js';
 import type { Settings } from '../../core/data/settings.js';
-import type { SavedSet } from '../../core/ui/filters-button.js';
 import { drawCount } from '../../core/ui/filter-host.js';
+import { saves } from '../../core/ui/filters-button.js';
 import { ToolbarColumn } from './panel-column.js';
 import '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 import '../sherpa-badge/sherpa-badge.js';
-import '../sherpa-group/sherpa-group.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-section-header/sherpa-section-header.js';
 
@@ -61,7 +60,6 @@ export class SherpaFilterPanel extends SherpaElement {
     header: () => this.parentElement ?? this.root,
     clone: (selector) => this.clone(selector),
     emit: (name, detail, options) => { this.emit(name, detail, options); },
-    toggleState: (name, on) => this.toggleState(name, on),
   });
 
   /** The panel it sits in. */
@@ -74,6 +72,13 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#column.wire();
     this.#syncOpen();
     this.#syncHeader();
+    // A section's own Filter chip asks to rename or delete it: said as the panel's own, for its app. Plan 960 U4.4c
+    for (const type of ['filter-rename', 'filter-delete'] as const) {
+      this.on(this.root, type, (event) => {
+        event.stopPropagation();
+        this.emit(type, (event as CustomEvent<{ id: string }>).detail);
+      });
+    }
     const panel = this.#panel;
     if (panel) {
       this.on(panel, 'panel-search', (event) => this.#column.find((event as CustomEvent<{ value: string }>).detail.value));
@@ -91,7 +96,7 @@ export class SherpaFilterPanel extends SherpaElement {
   override onChange(name?: string): void {
     if (name === 'open' && this.hasAttribute('open')) this.#column.opened();
     // The saves are off while the filters are the View's own. Will, TODO 382
-    if (name === 'data-at-default' || name === 'data-saveable' || name === 'data-no-saves') this.#column.saved(this.#column.sets);
+    if (name === 'data-at-default' || name === 'data-saveable' || name === 'data-no-saves') this.#column.drawSave();
     if (!name || ['data-saveable', 'data-no-saves', 'data-suggest', 'data-applied', 'data-count-applied'].includes(name)) this.#syncHeader();
   }
 
@@ -100,18 +105,11 @@ export class SherpaFilterPanel extends SherpaElement {
     this.toggleAttribute('open', !!this.#panel?.hasAttribute('open'));
   }
 
-  /** The adopted controls say what the page offers: Suggest, the Save group, the count. */
+  /** The adopted controls say what the page offers: Suggest, Save, the count. */
   #syncHeader(): void {
     const at = (selector: string): HTMLElement | null => this.parentElement?.querySelector<HTMLElement>(`:scope > ${selector}`) ?? null;
-    const saves = this.hasAttribute('data-saveable') && !this.hasAttribute('data-no-saves');
-    const sets = this.hasState('has-sets');
     at('.column-suggest')?.toggleAttribute('hidden', !this.hasAttribute('data-suggest'));
-    at('.saved-group')?.toggleAttribute('hidden', !(saves || sets));
-    const save = at('.saved-group > .column-save-as');
-    save?.toggleAttribute('hidden', !saves);
-    const saved = at('.saved-group > .column-saved');
-    saved?.setAttribute('data-group', saves ? 'end' : 'solo');
-    saved?.setAttribute('data-icon-start', saves ? 'triangle-down' : 'filter');
+    at('.column-save-as')?.toggleAttribute('hidden', !saves(this));
     const n = Number(this.dataset['applied']) || 0;
     const shown = this.hasAttribute('data-count-applied') && n ? n : null;
     const badge = at('.applied-count');
@@ -127,15 +125,6 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A chart's own answer, told the column as a panel: its section draws it. */
   drawReading(field: string, reading: FieldReading, scope?: string): void {
     if (scope) this.#column.drawReading(field, reading, scope);
-  }
-
-  /** The reader's saved sets: the Saved menu's. Drawn, never reported. TRAP T-saved-filters-are-every-scope */
-  set savedSets(sets: readonly SavedSet[]) {
-    this.#column.saved(sets);
-    this.#syncHeader();
-  }
-  get savedSets(): SavedSet[] {
-    return this.#column.sets;
   }
 
   /** Its panel is showing. */

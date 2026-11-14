@@ -1,7 +1,7 @@
 import { test, expect } from './harness';
 
 /**
- * THE FILTER PANEL (new) — sherpa-ui 847. Content of an overlay panel: its search, Suggest, Save group, ⋮ and count are
+ * THE FILTER PANEL (new) — sherpa-ui 847. Content of an overlay panel: its search, Suggest, Save, ⋮ and count are
  * cloned into the panel's header slots and leave with it; the panel's own float and Pop come BEFORE the ⋮; it
  * opens and shuts its panel, and `panel-close` says why. Real header, real presses, boxes read.
  * TRAP T-a-content-adopts-its-panels-header
@@ -24,13 +24,13 @@ test('its controls are cloned into the panel header, and the panel\'s own button
     const float = panel.shadowRoot.querySelector('.float');
     return {
       slots: [...panel.children].map((c) => c.localName + (c.slot ? '[' + c.slot + ']' : '')),
-      shown: ['.column-suggest', '.saved-group', '.column-more', '.applied-count'].map((s) => q(s) && q(s).getBoundingClientRect().width > 0),
+      shown: ['.column-suggest', '.column-save-as', '.column-more', '.applied-count'].map((s) => q(s) && q(s).getBoundingClientRect().width > 0),
       badge: q('.applied-count').getAttribute('aria-label'),
       floatBeforeMore: left(float) < left(q('.column-more')),
       moreIsLast: left(q('.column-more')) >= Math.max(...[...panel.shadowRoot.querySelectorAll('.modes sherpa-button')].map(left)),
     };
   })()`) as { slots: string[]; shown: boolean[]; badge: string; floatBeforeMore: boolean; moreIsLast: boolean };
-  expect(r.slots).toEqual(['sherpa-filter-panel', 'sherpa-badge[badge]', 'sherpa-button[actions]', 'sherpa-group[actions]', 'sherpa-button[overflow]']);
+  expect(r.slots).toEqual(['sherpa-filter-panel', 'sherpa-badge[badge]', 'sherpa-button[actions]', 'sherpa-button[actions]', 'sherpa-button[overflow]']);
   expect(r.shown).toEqual([true, true, true, true]);
   expect(r.badge).toBe('3 filters applied');
   expect(r.floatBeforeMore).toBe(true);
@@ -75,12 +75,11 @@ test('its show, hide and open are its panel\'s, and a close says why', async ({ 
   expect(r.heard).toEqual(['width', 'reader']);
 });
 
-test('the Save group, Suggest and the count follow what the page says', async ({ page }) => {
+test('Save, Suggest and the count follow what the page says', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${MOUNT}
     const q = (s) => panel.querySelector(':scope > ' + s);
-    const read = () => ({ suggest: !q('.column-suggest').hidden, group: !q('.saved-group').hidden, save: !panel.querySelector('.column-save-as').hidden,
-      count: !q('.applied-count').hidden });
+    const read = () => ({ suggest: !q('.column-suggest').hidden, save: !q('.column-save-as').hidden, count: !q('.applied-count').hidden });
     const all = read();
     content.removeAttribute('data-saveable');
     content.removeAttribute('data-suggest');
@@ -88,8 +87,8 @@ test('the Save group, Suggest and the count follow what the page says', async ({
     await window.__settled();
     return { all, none: read() };
   })()`) as { all: Record<string, boolean>; none: Record<string, boolean> };
-  expect(r.all).toEqual({ suggest: true, group: true, save: true, count: true });
-  expect(r.none).toEqual({ suggest: false, group: false, save: false, count: false });
+  expect(r.all).toEqual({ suggest: true, save: true, count: true });
+  expect(r.none).toEqual({ suggest: false, save: false, count: false });
 });
 
 test('the panel\'s own search row fills the header, says panel-search, and the content finds by it', async ({ page }) => {

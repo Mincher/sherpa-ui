@@ -201,14 +201,6 @@
       await window.__settled();
       return sr.querySelector(`.more-menu > [value="${value}"]`);
     };
-
-    /** A Saved menu row, by value: the Save group's ▾ pressed, as a reader would. */
-    window.__savedRow = async function savedRow(host, value) {
-      const btn = host.shadowRoot.querySelector('.saved-btn') ?? host.closest('sherpa-overlay-panel')?.querySelector('.column-saved');
-      btn.shadowRoot.querySelector('button').click();
-      await window.__settled();
-      return btn.querySelector(`sherpa-menu > [value="${value}"]`);
-    };
   </script>
 </body>
 </html>

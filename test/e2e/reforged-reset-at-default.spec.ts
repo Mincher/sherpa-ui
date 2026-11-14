@@ -58,18 +58,19 @@ for (const kind of ['bar', 'column']) {
     expect(r).toEqual({ off: true, on: true });
   });
 
-  // Nor is a Save: the filters ARE the View's own. Will, TODO 382
+  // Nor is a Save, the ⋮'s row or the Save button: the filters ARE the View's own. Will, TODO 382
   test(`${kind}: data-at-default makes Save filters inactive`, async ({ page }) => {
     const r = await page.evaluate(`(async () => {
       ${mount(kind, 'data-at-default')}
       el.toggleAttribute('data-saveable', true);
       await window.__settled();
-      const row = async () => (await window.__savedRow(el, 'filters-save')).hasAttribute('disabled');
-      const off = await row();
+      const row = async () => (await window.__moreRow(el, 'filters-save')).hasAttribute('disabled');
+      const button = () => (el.shadowRoot.querySelector('.save-as-btn') ?? el.closest('sherpa-overlay-panel').querySelector('.column-save-as')).hasAttribute('disabled');
+      const off = [await row(), button()];
       el.removeAttribute('data-at-default');
       await window.__settled();
-      return { off, on: !(await row()) };
+      return { off, on: [!(await row()), !button()] };
     })()`);
-    expect(r).toEqual({ off: true, on: true });
+    expect(r).toEqual({ off: [true, true], on: [true, true] });
   });
 }

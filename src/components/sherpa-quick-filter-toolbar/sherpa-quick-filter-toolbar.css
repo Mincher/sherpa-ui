@@ -353,30 +353,20 @@
   display: none;
 }
 
-/* Step 3 — all but Edit and Saved (still needed when collapsed) and the ⋮ itself. */
+/* Step 3 — all but Edit and Save (still needed when collapsed) and the ⋮ itself. */
 @container qf-bar (max-width: 620px) {
   .act-divider,
-  .act:not([data-act="add"], [data-act="saved"], [data-act="filters-save-as"], [data-act="overflow"], [data-act="apply"], [data-act="discard"]) { display: none; }
+  .act:not([data-act="add"], [data-act="filters-save-as"], [data-act="overflow"], [data-act="apply"], [data-act="discard"]) { display: none; }
 }
-:host(:state(collapse-3)) :is(.act-divider, .act:not([data-act="add"], [data-act="saved"], [data-act="filters-save-as"], [data-act="overflow"], [data-act="apply"], [data-act="discard"])) {
+:host(:state(collapse-3)) :is(.act-divider, .act:not([data-act="add"], [data-act="filters-save-as"], [data-act="overflow"], [data-act="apply"], [data-act="discard"])) {
   display: none;
 }
 
 /* The ⋮ always shows: it holds Reset and Save filters. Will, TODO 430 */
 
-/* SAVED, split from Edit where the app asks: while there is a set, or one to save
-   (TODO 436). Save · ▾ sit flush, as the App Header's; Save only where the
-   filters may be saved. TODO 446 */
-.saved-group {
-  display: none;
-  align-items: center;
-  flex: 0 0 auto;
-}
-:host(:is([data-saveable]:not([data-no-saves]), :state(has-sets))) .saved-group { display: inline-flex; }
+/* SAVE, only where the filters may be saved. TODO 446 */
 :host(:is(:not([data-saveable]), [data-no-saves])) .save-as-btn { display: none; }
-.saved-group > :not(:first-child) { margin-inline-start: var(--sherpa-structure-space-snapped, 0px); }
 
-/* The Saved chip, while a set is on. TODO 105 */
 :host([data-no-actions]) .actions-zone { display: none; }
 /* …but chips folded for want of room keep their door: Edit, the Filters menu,
    alone. Will, TODO 675 */

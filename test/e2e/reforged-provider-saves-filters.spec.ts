@@ -153,36 +153,127 @@ test('Rename keeps a Filter\'s id and publishes it, its chip on as it was; Delet
   expect(r['plan']).toBeNull();
 });
 
-test('the Saved menu\'s save row and a set row each ask, and the host answers: several ticked, each added; each unticked, taken off', async ({ page }) => {
+test('Save and the ⋮\'s Save filters each ask; a reader\'s own Filter chip\'s menu asks to rename or delete it, by its id; an app\'s preset has no menu', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    // Mounted with its children drawn: its ⋮ is pressed at once.
-    const bar = await window.__mount<HTMLElement & { savedSets: unknown }>('sherpa-quick-filter-toolbar',
-      [{ id: 'plan', label: 'Plan', removable: true, options: [{ value: 'Pro', label: 'Pro' }] }], { 'data-saveable': true });
+    const bar = await window.__mount<HTMLElement>('sherpa-quick-filter-toolbar', [
+      { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'Pro', label: 'Pro' }] },
+      { id: 'preset:big', label: 'Big accounts', preset: true },
+      { id: 'preset:filter:pro-rows', label: 'Pro rows', preset: true, mine: 'pro-rows' },
+    ], { 'data-saveable': true });
     const sr = bar.shadowRoot!;
-    // The bar's save rows are its Saved menu's (Will, TODO 430; 11-06).
-    const action = async (value: string): Promise<HTMLElement> => (await window.__savedRow(bar, value))!;
-    const actions = async (): Promise<(string | null)[]> => {
-      await window.__savedRow(bar, 'filters-save');
-      return [...sr.querySelectorAll('.saved-btn sherpa-menu > button')].map((l) => (l.textContent ?? '').trim());
-    };
-    bar.savedSets = [{ id: 'a', label: 'A', added: true, own: true }, { id: 'b', label: 'B', own: true }, { id: 'c', label: 'C', own: true }];
-    await window.__settled();
     const heard: string[] = [];
-    for (const type of ['filters-save', 'filters-save-as', 'filters-apply', 'filters-dismiss']) {
-      bar.addEventListener(type, (e) => heard.push(`${type}:${(e as CustomEvent).detail?.id ?? ''}`));
+    for (const type of ['filters-save', 'filters-save-as', 'filter-rename', 'filter-delete', 'quick-filter-change']) {
+      bar.addEventListener(type, (e) => {
+        const detail = (e as CustomEvent).detail;
+        // The bar's own request, not a chip's inner change.
+        if (type === 'quick-filter-change' && !detail?.request) return;
+        heard.push(`${type}:${detail?.id ?? (detail?.request ? JSON.stringify(detail.request) : '')}`);
+      });
     }
-    const rows = await actions();
-    (await action('filters-save')).click();
-    // The Saved menu: B and C ticked add them; A unticked takes it off.
-    const menu = sr.querySelector('.saved-btn sherpa-menu')!;
-    const values = (menu as unknown as { values: string[] }).values;
-    const ticked = values.filter((v: string) => v.startsWith('set:'));
-    menu.dispatchEvent(new CustomEvent('menu-change', { bubbles: true, composed: true, detail: { values: [...values.filter((v: string) => v !== 'set:a'), 'set:b', 'set:c'] } }));
-    return { rows, ticked, heard };
+    // Save, alone: no Saved button beside it.
+    const save = sr.querySelector<HTMLElement>('.save-as-btn')!;
+    const solo = { shown: save.getBoundingClientRect().width > 0, group: save.getAttribute('data-group'), saved: !!sr.querySelector('[data-act="saved"]') };
+    save.shadowRoot!.querySelector('button')!.click();
+    (await window.__moreRow(bar, 'filters-save'))!.click();
+    // The app's preset: no menu. The reader's own: a caret, its menu Rename… and Delete.
+    const chip = (id: string) => sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
+    const app = { menu: chip('preset:big').hasAttribute('data-menu'), rows: chip('preset:big').querySelectorAll('sherpa-menu').length };
+    const mine = chip('preset:filter:pro-rows');
+    const caret = mine.shadowRoot!.querySelector<HTMLElement>('.caret')!;
+    const rows = [...mine.querySelectorAll(':scope > sherpa-menu > button')].map((b) => [b.getAttribute('value'), (b.textContent ?? '').trim()]);
+    const own = { menu: mine.hasAttribute('data-menu'), caret: caret.getBoundingClientRect().width > 0, name: caret.getAttribute('aria-label'), rows };
+    // Its body still turns it on, and opens nothing: its on is its answer.
+    mine.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+    await window.__settled();
+    const pressed = { open: mine.hasAttribute('data-open'), empty: mine.hasAttribute('data-filters-nothing') };
+    // Each row asks, by the Filter's id; the bar changes nothing itself.
+    for (const value of ['filter-rename', 'filter-delete']) {
+      caret.click();
+      await window.__settled();
+      mine.querySelector<HTMLElement>(`:scope > sherpa-menu > button[value="${value}"]`)!.click();
+      await window.__settled();
+    }
+    return { solo, app, own, pressed, heard, label: mine.getAttribute('data-label'), still: !!chip('preset:filter:pro-rows') };
   });
-  expect(r.rows.filter((l) => l?.startsWith('Save') || l?.startsWith('Delete'))).toEqual(['Save filters…']);
-  expect(r.ticked).toEqual(['set:a']);
-  expect(r.heard).toEqual(['filters-save:', 'filters-dismiss:a', 'filters-apply:b', 'filters-apply:c']);
+  expect(r.solo).toEqual({ shown: true, group: null, saved: false });
+  expect(r.app).toEqual({ menu: false, rows: 0 });
+  expect(r.own).toEqual({ menu: true, caret: true, name: 'Filter options', rows: [['filter-rename', 'Rename…'], ['filter-delete', 'Delete']] });
+  expect(r.pressed).toEqual({ open: false, empty: false });
+  expect(r.heard).toEqual([
+    'filters-save-as:', 'filters-save:', 'quick-filter-change:{"preset":"filter:pro-rows","on":true,"commit":true}',
+    'filter-rename:pro-rows', 'filter-delete:pro-rows',
+  ]);
+  expect(r.label).toBe('Pro rows');
+  expect(r.still).toBe(true);
+});
+
+test('end to end: a saved Filter\'s chip asks to rename it, the provider renames it, its id kept; it asks to delete it, and the chip goes', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const source = await open();
+    await settle();
+    source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] }, commit: true });
+    await source.load();
+    provider.settings.set('saveAnyScope', false);
+    const [id] = await provider.saveFilters('Pro only', 'data');
+    await until(() => chip(bar, id) !== null);
+    // The app answers each request through the provider.
+    const heard = [];
+    provider.addEventListener('filter-rename', (e) => { heard.push('rename:' + e.detail.id); void provider.renameFilters(e.detail.id, 'Pro rows'); });
+    provider.addEventListener('filter-delete', (e) => { heard.push('delete:' + e.detail.id); heard.push('gone:' + provider.deleteFilters(e.detail.id)); });
+    const one = () => bar.shadowRoot.querySelector('.chips > .chip[data-id="preset:filter:' + id + '"]');
+    const pick = async (value) => {
+      one().shadowRoot.querySelector('.caret').click();
+      await settle();
+      one().querySelector(':scope > sherpa-menu > button[value="' + value + '"]').click();
+    };
+    const menu = one().hasAttribute('data-menu');
+    await pick('filter-rename');
+    await until(() => label(bar, id) === 'Pro rows');
+    const renamed = { label: label(bar, id), ids: filters().map((f) => f.id), menu: one()?.hasAttribute('data-menu') ?? null };
+    await pick('filter-delete');
+    await until(() => chip(bar, id) === null);
+    return { id, menu, renamed, heard, chip: chip(bar, id), filters: filters() };
+  })()`) as Record<string, any>;
+  expect(r['id']).toBe('pro-only');
+  expect(r['menu']).toBe(true);
+  expect(r['renamed']).toEqual({ label: 'Pro rows', ids: ['pro-only'], menu: true });
+  expect(r['heard']).toEqual(['rename:pro-only', 'delete:pro-only', 'gone:true']);
+  expect(r['chip']).toBeNull();
+  expect(r['filters']).toEqual([]);
+});
+
+test('in the filter panel, a section\'s own Filter chip has the same menu, and its asks leave as the panel\'s own', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const { ArrayStore } = await import('/dist/index.js');
+    const provider = document.createElement('sherpa-provider');
+    provider.innerHTML = '<sherpa-overlay-panel data-heading="Filters"><sherpa-filter-panel data-scope="view data"></sherpa-filter-panel></sherpa-overlay-panel>';
+    document.getElementById('root').replaceChildren(provider);
+    const content = provider.querySelector('sherpa-filter-panel');
+    const rows = [{ id: 1, plan: 'Pro', tier: 'gold' }, { id: 2, plan: 'Free', tier: 'gold' }];
+    const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
+    const source = await provider.open(${PAGE}, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
+    provider.settings.set('filterMode', 'panel');
+    await settle();
+    source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] }, commit: true });
+    await source.load();
+    const [id] = await provider.saveFilters('Pro only', 'data');
+    const one = () => content.shadowRoot.querySelector('sherpa-quick-filter-toolbar[data-scope="data"]')
+      ?.shadowRoot.querySelector('.preset-zone > .chip[data-id="preset:filter:' + id + '"]') ?? null;
+    for (let i = 0; i < 100 && !one(); i++) await new Promise((r) => setTimeout(r, 20));
+    await settle();
+    const heard = [];
+    for (const type of ['filter-rename', 'filter-delete']) provider.addEventListener(type, (e) => heard.push([type, e.detail.id, e.target.localName]));
+    for (const value of ['filter-rename', 'filter-delete']) {
+      one().shadowRoot.querySelector('.caret').click();
+      await settle();
+      one().querySelector(':scope > sherpa-menu > button[value="' + value + '"]').click();
+      await settle();
+    }
+    return { id, heard };
+  })()`) as Record<string, any>;
+  expect(r['id']).toBe('pro-only');
+  expect(r['heard']).toEqual([['filter-rename', 'pro-only', 'sherpa-filter-panel'], ['filter-delete', 'pro-only', 'sherpa-filter-panel']]);
 });
 
 /* OFF — the default (Will, TODO 485): Save filters is ONE local scope's. The bar that asks saves its own scope alone; the

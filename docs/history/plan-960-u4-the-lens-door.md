@@ -167,7 +167,14 @@ A Field placed: `{ scope, hold }`, a chip with nothing joined. The Organise's ro
 
 ### U4.4c c1 to c2a, as built (2026-11-14, sherpa-ui-e8)
 
-c1 and c3, and c2a: the provider, the page keeper, page.v1 and the Query graph. c2b, the controls, is next.
+c1 and c3, and c2a: the provider, the page keeper, page.v1 and the Query graph. c2b: the controls.
+
+- c2b: the Saved ▾ menu, Manage Saved Filters, `savedSets` and `filters-apply`, `filters-dismiss`, `filters-manage` go
+  from the bar and the panel. Save stands alone, and "Save filters…" is in the ⋮ again (TODO 430). A reader's own
+  Filter is declared with `mine: <its id>` (`DeclaredPreset`), so its chip is a boolean chip with a menu, Rename… and
+  Delete, each a request: `filter-rename`, `filter-delete`, `{ id }` the Filter's id. The app answers through the
+  provider (APP-GUIDE §10). ❓ A folded own chip is a row in the Filters menu, so its Rename and Delete wait until it is
+  on the bar again; the provider's methods do the same with no pointer.
 
 - `saveFilters(name, scope?)` is async and returns the ids it kept: `filtersOfSaved` over what the bars hold, each saved
   to the shelf. `renameFilters` saves the label and publishes (a label is part of a version), its id kept.

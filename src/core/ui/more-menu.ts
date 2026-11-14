@@ -9,11 +9,9 @@
  * - resetRows — Reset filters, then Reset to view defaults — off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
  * - saveRows — Save filters; none unless the host saves.
- * - manageRows — Manage Saved Filters: where the host saves and the reader has a set of their own.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - offersMore — Would the ⋮ menu hold anything: these rows, or the host's own switches?
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
- * - drawSaveActions — End a Saved menu with its save rows.
  * - syncHide — Hide invalid filters is inactive while Limit is off.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
  * - askSwitches — The ⋮ menu's two switches: each that MOVED is asked for, Limit first.
@@ -63,11 +61,6 @@ export function saveRows(host: HTMLElement): MoreRow[] {
   return saves(host) ? [['filters-save', host.hasAttribute('data-at-default')]] : [];
 }
 
-/** Manage Saved Filters: where the host saves and the reader has a set of their own. Will, 11-06 */
-export function manageRows(host: HTMLElement, sets: readonly { own?: boolean }[]): MoreRow[] {
-  return saves(host) && sets.some((s) => s.own) ? [['filters-manage']] : [];
-}
-
 /** The page's own buttons in the `actions` slot that have folded away — the panel switch is one. */
 export function extraRows(host: HTMLElement): MoreRow[] {
   return extras(host).flatMap((extra, i): MoreRow[] => (folded(extra) ? [[`${EXTRA}${i}`]] : []));
@@ -109,18 +102,6 @@ function drawRows(host: HTMLElement, root: ParentNode, rows: readonly MoreRow[])
     one?.toggleAttribute('disabled', !!disabled);
     return one ? [one] : [];
   });
-}
-
-/** End a Saved menu — split from Filters — with its save rows, after a divider:
- *  below its sets. Will, TODO 436 */
-export function drawSaveActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined): void {
-  if (!menu) return;
-  for (const old of menu.querySelectorAll(':scope > .save-action')) old.remove();
-  const groups = [drawRows(host, root, saveRows(host))];
-  const rows = groups.filter((g) => g.length).flatMap((g) => [cloneFirst(root, 'template.more-divider-tpl'), ...g])
-    .filter((n): n is HTMLElement => !!n);
-  for (const one of rows) one.classList.add('save-action');
-  menu.append(...rows);
 }
 
 /** Hide invalid filters is inactive — not hidden — while Limit is off. Will, TODO 376 */

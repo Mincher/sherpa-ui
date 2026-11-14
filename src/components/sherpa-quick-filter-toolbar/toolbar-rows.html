@@ -1,5 +1,5 @@
 <!-- toolbar-rows.html — what every filter toolbar template clones: a chip, Group
-     and Sort, Move, a section's ⋮, a bar's ⋮ row and the words. Listed first,
+     and Sort, Move, a section's ⋮, a reader's Filter's menu, a bar's ⋮ row and the words. Listed first,
      so each stamp — landscape, portrait, card or column — holds them.
      TRAP T-a-family-shares-markup -->
 <template id="default">
@@ -22,8 +22,6 @@
     <button class="more-item" type="button" value="refresh"><span class="more-label">Refresh data</span></button>
     <!-- The page's Query as nodes, where the host offers it. Will, TODOs 555, 822 -->
     <button class="more-item" type="button" value="node-editor"><span class="more-label">Open in Node Editor</span></button>
-    <!-- The Saved menu's last row, where the app splits it from Filters. TODO 436 -->
-    <button class="more-item" type="button" value="filters-manage"><span class="more-label">Manage Saved Filters</span></button>
   </template>
 
   <template class="qf-tpl">
@@ -53,6 +51,13 @@
        CSS shows them where the app allows it, and the one that applies. Will, TODO 690 -->
   <template class="solo-tpl"><button slot="actions" class="more-item" type="button" value="solo">Solo this filter</button></template>
   <template class="unsolo-tpl"><button slot="actions" class="more-item" type="button" value="unsolo">Remove soloing</button></template>
+  <!-- A reader's own Filter: its chip's menu renames or deletes it, each a request its app answers. Will, plan 960 U4.4c -->
+  <template class="mine-menu-tpl">
+    <sherpa-menu slot="menu" class="mine-menu">
+      <button class="more-item" type="button" value="filter-rename"><span class="more-label">Rename…</span></button>
+      <button class="more-item" type="button" value="filter-delete"><span class="more-label">Delete</span></button>
+    </sherpa-menu>
+  </template>
   <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
   <template class="words">
     <span data-word="raise">Move to View Context</span>

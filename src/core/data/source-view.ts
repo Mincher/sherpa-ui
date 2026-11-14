@@ -105,7 +105,7 @@ export class SourceView {
     const held = answerOrder(draft, this.#host.sets(scope), scope).flatMap((e) => (e.held ? [e.id] : []));
     // The app's presets lead the scope: a boolean chip each. TODO 493
     const presets: HeldFilter[] = context.presets(scope).map((p) => ({
-      id: `preset:${p.id}`, label: p.label, preset: true, active: context.presetOn(scope, p.id),
+      id: `preset:${p.id}`, label: p.label, preset: true, active: context.presetOn(scope, p.id), ...(p.mine ? { mine: p.mine } : {}),
     }));
     // What its page fixes: no Remove, and always on, no off. Will, TODO 703
     const fixed = context.fixed(scope);

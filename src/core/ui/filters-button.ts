@@ -1,26 +1,18 @@
 /**
  * filters-button.ts — the ONE Filters button, for a bar and a panel: its face, its
- * menu, its saved sets and its one-value rows.
+ * menu and its one-value rows.
  *
- * The filters a view holds, then what it may add, then the saved ones it may
- * add. A held filter the view HIDES — folded off a bar, or in a shut scope —
- * keeps its row, and a caret on it opens its child menu. A ONE-value filter's
- * tick is its on/off instead. TRAP T-one-filters-button
+ * The filters a view holds, then what it may add. A held filter the view HIDES —
+ * folded off a bar, or in a shut scope — keeps its row, and a caret on it opens
+ * its child menu. A ONE-value filter's tick is its on/off instead.
+ * TRAP T-one-filters-button
  *
  * Map:
- * - MANAGE_SETS — The Saved section's lead row: Manage Saved Filters, the host's dialog.
  * - ListedFilter — One filter the menu lists.
- * - SavedSet — One saved set of filters, as the Filters menu lists it.
  * - AddedFilter — One filter the view holds.
  * - drawFiltersButton — The ONE Filters button, redrawn: the old menu gone; never off.
  * - hangFiltersMenu — The ONE Filters menu, made from its def and hung on its button — the bar's and the column's alike: `hide`, Li…
- * - savedMenuDef — The Saved button's menu, split from Filters: the saved sets, a tick taking one.
  * - saves — Does this host save filters: `data-saveable`, and its provider allows it here?
- * - SavedSets — The reader's saved sets, as the host last drew them, and those on a bar.
- * - .set — Keep a copy of the host's sets.
- * - .all — A copy of each set, as kept.
- * - .listed — What the Filters menu lists: nothing unless the host saves.
- * - .pick — A Filters menu's ticks, as saved-set requests: add each newly ticked, take off each unticked.
  * - OneRows — What each ONE-value row was told — on or off.
  * - .tell — Remember what a fresh Filters list tells its one-value rows.
  * - .has — Is this a one-value row?
@@ -40,10 +32,6 @@ import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 const FILTERS_LABEL = 'Filters';
 const ADDED_SECTION = 'Added filters';
 const AVAILABLE_SECTION = 'Available filters';
-const SAVED_SECTION = 'Saved filters';
-
-/** Manage Saved Filters, a ⋮ row — rename and remove the reader's sets, in the host's dialog. Will, TODO 427 */
-export const MANAGE_SETS = 'filters-manage';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
 const DRILL_FLAGS = ['data-commit', 'data-range', 'data-select', 'data-search'] as const;
@@ -58,19 +46,6 @@ export interface ListedFilter {
    *  unmatching is on. TRAP T-the-add-menu-is-the-whole-list */
   spent?: boolean;
 }
-
-/** One saved set of filters, as the menu draws it. TODO 105 */
-export interface SavedSet {
-  id: string;
-  label: string;
-  /** Its chip is on a bar: its row is ticked. Will, TODO 605 */
-  added?: boolean;
-  /** The reader's own: a page's own is never saved over or deleted. */
-  own?: boolean;
-}
-
-/** A saved set's row value: this, then its id. Its tick ADDS its chip. */
-const SET_ROW = 'set:';
 
 /** One filter the view holds. */
 export interface AddedFilter extends ListedFilter {
@@ -89,8 +64,7 @@ export interface AddedFilter extends ListedFilter {
 
 /**
  * ONE section for what the view holds: a hidden filter is a row there with a
- * caret, not a second section. Will, 2026-09-25. A filter is in ONE section —
- * a held saved filter is Added, never Custom too.
+ * caret, not a second section. Will, 2026-09-25. A filter is in ONE section.
  * TRAP T-the-add-menu-is-the-whole-list
  * TRAP T-saved-filters-are-the-last-section
  */
@@ -144,62 +118,11 @@ export function hangFiltersMenu(root: ParentNode, btn: HTMLElement, def: FilterD
   return menu;
 }
 
-/** The SAVED button's menu, where the app splits it from Filters: the saved
- *  sets, a tick adding one — its save rows and Manage are the host's to draw
- *  below them (`drawSaveActions`). Will, TODO 436 */
-export function savedMenuDef(sets: readonly SavedSet[]): FilterDef {
-  return {
-    // A tick adds a set at once: no Apply. TODO 436
-    id: 'saved', label: SAVED_SECTION, select: 'multiple', selectAll: false, commit: false,
-    options: sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, selected: !!s.added })),
-  };
-}
-
-
 /** Does this host save filters: it is `data-saveable`, and its provider does
  *  not keep saving off it (`data-no-saves`: the View's bar and the panel, while
- *  sets are saved at local scopes only). TODO 485 */
+ *  Filters are saved at local scopes only). TODO 485 */
 export function saves(host: Element): boolean {
   return host.hasAttribute('data-saveable') && !host.hasAttribute('data-no-saves');
-}
-
-/** The reader's saved sets, as the host last drew them, and those on a bar: each
- *  a preset of the reader's. Will, TODO 605. TODO 105 · TRAP T-saved-filters-are-every-scope */
-export class SavedSets {
-  /** The sets, copied. */
-  #sets: SavedSet[] = [];
-  /** The bar or panel that draws them. */
-  readonly #host: HTMLElement;
-
-  constructor(host: HTMLElement) {
-    this.#host = host;
-  }
-
-  /** Keep a copy of the host's sets. */
-  set(sets: readonly SavedSet[]): void {
-    this.#sets = sets.map((set) => ({ ...set }));
-  }
-
-  /** A copy of each set, as kept. */
-  get all(): SavedSet[] {
-    return this.#sets.map((set) => ({ ...set }));
-  }
-
-  /** What the Filters menu lists: the page's own always; the reader's while the host saves. */
-  get listed(): readonly SavedSet[] {
-    if (this.#host.hasAttribute('data-no-saves')) return [];
-    return saves(this.#host) ? this.#sets : this.#sets.filter((set) => !set.own);
-  }
-
-  /** A Filters menu's ticks, as saved-set requests: each set newly ticked is added,
-   *  each unticked comes off. The set rows are taken out of `want`, so the rest is
-   *  the held filters' answer. Will, TODO 605 */
-  pick(want: Set<string>): { apply: string[]; dismiss: string[] } {
-    const added = this.listed.filter((set) => set.added).map((set) => set.id);
-    const picked = [...want].filter((v) => v.startsWith(SET_ROW)).map((v) => v.slice(SET_ROW.length));
-    for (const id of picked) want.delete(`${SET_ROW}${id}`);
-    return { apply: picked.filter((id) => !added.includes(id)), dismiss: added.filter((id) => !picked.includes(id)) };
-  }
 }
 
 /** What each ONE-value row was told — on or off. Apply flips only a row the reader

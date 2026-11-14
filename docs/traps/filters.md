@@ -799,7 +799,7 @@ chip as `data-description`.
 `data-description` → `.description`, which the button writes as it opens it), and
 its tooltip reads the same string (S3). A menu code opens — the ⋮ (`openMore`) — takes
 its trigger's. Sherpa's own buttons say theirs in their templates (S2): Filters,
-Saved, ⋮, a section's ⋮, the View's options, Show as, the canvas options, the
+⋮, a section's ⋮, the View's options, Show as, the canvas options, the
 legend's Breakdown. The heading and the line sit in one `.titles`
 box in the header's `heading` area: a grid row of their own would be an empty
 track, and a doubled gap, wherever a menu has no description.
@@ -896,7 +896,7 @@ see it over ITSELF (`T-grid-toolbar-chip-borrows-the-menu`).
 It slots the menu into a `sherpa-button`, or it tracks its own open flag.
 
 **A flag goes stale when its menu is swapped.** A host that rebuilds its menu —
-the Filters button, when a saved set is taken — removes the old one as it
+the Filters button, as its bar redraws — removes the old one as it
 shuts, and that menu's `menu-close` is heard nowhere: the button kept
 `data-open`, so the next press hid a menu already shut, and the reader pressed
 twice. The button's menu slot's `slotchange` sets the flag from the menu now
@@ -1484,7 +1484,7 @@ selector, so it reaches the Query with no page mapping at all.
 ### T-one-filters-button
 
 **ONE "Filters" button holds every filter: the chips folded off the run for want
-of room, every filter a reader may add, and the saved ones.** Will, 2026-09-25:
+of room, and every filter a reader may add.** Will, 2026-09-25:
 *"We should merge the overflow 'More' button and the 'Add filter' button … into
 1 button"* — in the action group. It reads "Filters", with a pencil (Will, TODOs
 445, 681); the menu it opens is headed "Filters" too, and so does a column's own button.
@@ -1495,10 +1495,10 @@ Its menu, top to bottom:
 |---|---|---|
 | Added filters | every filter it holds a reader can take off, ticked — and every chip folded away, with a caret | the tick removes, on Apply; the caret opens its child menu |
 | Available filters | what it may add | adds, on Apply |
-| Saved filters | the saved filters it may add | adds, on Apply |
 
 **A filter is in ONE of them.** Will, 2026-09-25: *"If it's in Added Filters
-then it shouldn't be in Available or Custom filters."* (Custom is "Saved filters" since TODO 105.) A folded chip is an ADDED
+then it shouldn't be in Available or Custom filters."* (There is no third section now: a reader's Filter is a chip, plan
+960 U4.4c.) A folded chip is an ADDED
 filter, so it is a row there, not in a section of its own — there was a "More
 filters" section above, and Will folded it in the same day
 (`T-a-row-opens-its-child-menu`). A folded chip that cannot be taken off has no
@@ -2463,24 +2463,14 @@ leaves it untouched; an empty list clears it.
 
 ### T-saved-filters-are-the-last-section
 
-**Saved filters were offered LAST in the Filters menu; since 11-06 they are the Saved menu's.**
-Will, 11-06: the Filters menu adds and removes only. The sets are rows of the Save
-group's Saved menu, always (`data-saved-menu` is deleted); the history below stands.
-Will, 2026-09-25: *"add them to the add filters menu under a 'Custom' section
-at the bottom"*; renamed "Saved filters" on 2026-09-29 (TODO 105), and this
-trap, `T-saved-filters-are-the-custom-section` until then, on 2026-10-14. A
-saved filter is no chip since 366: each row is a SET, a page's own or a
-reader's (`T-saved-filters-are-every-scope`).
+**There is no Saved section, in any menu** (Will, plan 960 U4.4c): a reader's saved filters are Filters, each a chip on
+its bar, with Rename… and Delete in that chip's menu (`T-saved-filters-are-every-scope`). The Filters menu adds and
+removes only, in two sections, Added and Available. What follows is how a menu heads its sections.
 
 **The heading is the MENU's**, not the bar's: `MenuItem.section` names the
 section an item is in, and the menu draws a heading row where it changes. Its
 search hides a heading when nothing under it matches — a heading is never
-matched on its own name, so "Saved filters" over no rows cannot happen.
-
-**Each set is a row** (TODO 105): its
-tick TAKES it, the ONE taken is ticked, and unticked, the scopes it names lose
-their filters. A set is no chip: picking one asks the host
-(`T-saved-filters-are-every-scope`).
+matched on its own name, so a heading over no rows cannot happen.
 
 The heading row is a `.menu-row`, so a re-stamp removes it with the rows it
 heads.

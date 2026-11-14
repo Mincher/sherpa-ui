@@ -134,37 +134,13 @@
                   }
                 },
                 {
-                  "el": "span",
-                  "class": "saved-group",
-                  "part": "saved-group",
-                  "children": [
-                    {
-                      "el": "sherpa-button",
-                      "class": "act save-as-btn",
-                      "attrs": {
-                        "data-act": "filters-save-as",
-                        "data-size": "sm",
-                        "data-group": "start",
-                        "data-icon-start": "filter"
-                      }
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "act saved-btn",
-                      "attrs": {
-                        "data-act": "saved",
-                        "data-size": "sm",
-                        "data-type": "icon",
-                        "data-group": "solo",
-                        "data-icon-start": "filter",
-                        "data-when-data-group": "data-saveable: end",
-                        "data-when-data-icon-start": "data-saveable: triangle-down",
-                        "data-description": "Use, save and manage your saved filters.",
-                        "aria-label": "Saved filters",
-                        "aria-haspopup": "dialog"
-                      }
-                    }
-                  ]
+                  "el": "sherpa-button",
+                  "class": "act save-as-btn",
+                  "attrs": {
+                    "data-act": "filters-save-as",
+                    "data-size": "sm",
+                    "data-icon-start": "filter"
+                  }
                 },
                 {
                   "el": "sherpa-button",
@@ -780,7 +756,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Saved menu. TRAP T-saved-filters-are-every-scope"
+      "description": "the host SAVES filters: Save shows, and its ⋮ offers Save filters. A reader's own Filter is a chip, its menu Rename and Delete. TRAP T-saved-filters-are-every-scope"
     },
     {
       "$type": "prop",
@@ -1017,7 +993,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (active, values, savedSets, superseded, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (active, values, superseded, readings, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1119,38 +1095,37 @@
     },
     {
       "$type": "event",
-      "name": "filters-apply",
-      "description": "A saved set's row was ticked: add it to this bar as a preset, on.",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "filters-dismiss",
-      "description": "A saved set's row was unticked: its chip goes, and what it held.",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
       "name": "filters-save",
-      "description": "Save filters: under a new name.",
+      "description": "The ⋮'s Save filters: the host asks for a name.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-save-as",
-      "description": "Save filters as: a new set, by name.",
+      "description": "Save: the host asks for a name.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
-      "name": "filters-manage",
-      "description": "Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets.",
+      "name": "filter-rename",
+      "description": "A reader's own Filter chip's Rename…: the host asks for a name, then renames the Filter; `id` is its entity id, not its chip's.",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "id": "string"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "filter-delete",
+      "description": "A reader's own Filter chip's Delete: the host deletes the Filter; `id` is its entity id, not its chip's.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "id": "string"
+      }
     },
     {
       "$type": "event",
@@ -1363,11 +1338,6 @@
         {
           "name": "values",
           "type": "Record<string, string[]>",
-          "access": "read-write"
-        },
-        {
-          "name": "savedSets",
-          "type": "SavedSet[]",
           "access": "read-write"
         },
         {

@@ -493,7 +493,8 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A TYPED condition is an answer, so a chip holding one is not empty —
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
-    const empty = !!menu && this.current && !advanced
+    // A boolean's on IS its answer: never empty, whatever its menu holds. Plan 960 U4.4c
+    const empty = !!menu && this.current && !advanced && this.dataset['kind'] !== 'boolean'
       && (menu.values?.length ?? 0) === 0 && !this.#answer.hasTypedAnswer() && !this.#answer.all;
 
     this.set('data-filters-nothing', empty);

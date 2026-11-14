@@ -70,12 +70,13 @@
                     definition's `persistent` flag. The view chip is the case —
                     you are always in SOME view, so the amber "on but filtering
                     by nothing" state is one it cannot be in.
-    data-kind       WHAT THIS CHIP IS: group | sort | advanced. Group and sort
+    data-kind       WHAT THIS CHIP IS: group | sort | boolean | advanced. Group and sort
                     ARRANGE rows rather than choosing them, so they have no
                     values to be empty of, and both own their gesture — group
                     toggles, sort cycles asc / desc / off — and report it
-                    themselves. "Organise" is not a kind; it is a heading a
-                    panel may draw above the two.
+                    themselves. A boolean's on is its answer: its body toggles,
+                    and a menu holds only its acts. "Organise" is not a kind; it
+                    is a heading a panel may draw above the two.
                     TRAP T-a-chip-knows-what-kind-it-is
     data-column     which column a group or sort chip arranges by, for a host
                     that draws the choice without a menu. A menu, where there is
@@ -114,7 +115,7 @@
     </button>
 
     <button class="caret sherpa-anchor" part="caret" type="button" aria-haspopup="dialog" aria-expanded="false"
-            aria-label="Choose values">
+            aria-label="Choose values" data-when-aria-label="data-kind=boolean: Filter options">
       <!-- The SELECTED value, not the field. Empty when nothing is picked. -->
       <span class="caret-label sherpa-truncate" part="caret-label"></span>
       <!-- Class hook: an icon-only chip overrides the glyph in CSS

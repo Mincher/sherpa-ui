@@ -100,7 +100,8 @@
             "type": "button",
             "aria-haspopup": "dialog",
             "aria-expanded": "false",
-            "aria-label": "Choose values"
+            "aria-label": "Choose values",
+            "data-when-aria-label": "data-kind=boolean: Filter options"
           },
           "children": [
             {
@@ -436,7 +437,7 @@
         "group",
         "sort"
       ],
-      "description": "WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is"
+      "description": "WHAT THIS CHIP IS: group | sort | boolean | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. A boolean's on is its answer: its body toggles, and a menu holds only its acts. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is"
     },
     {
       "$type": "prop",

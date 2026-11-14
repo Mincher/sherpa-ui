@@ -81,6 +81,9 @@ export interface FilterDef extends OffersAdvanced {
   /** An app's PRESET: a boolean chip with its own conditions, first in its
    *  scope, never moved or dragged. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
   preset?: boolean;
+  /** A preset that is the reader's own entity, by its id: its chip's menu offers Rename… and Delete, each a request
+   *  naming that id. Plan 960 U4.4c */
+  mine?: string;
   /** The App Context holds it, and this page has no such field: drawn
    *  inactive, refused, and saying why. Will, TODO 453 */
   unused?: boolean;

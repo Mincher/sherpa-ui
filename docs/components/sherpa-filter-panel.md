@@ -2,7 +2,7 @@
 
 # sherpa-filter-panel
 
-The CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header
+The CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, Save, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header
 
 |  |  |
 |---|---|
@@ -27,7 +27,7 @@ For a page's filters in a panel: every scope the page offers, the View as a head
 | `data-count-applied` | boolean |  | the title counts them |
 | `data-no-saves` | boolean |  | its provider keeps saving off it |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive |
-| `data-saveable` | boolean |  | the host SAVES filters: the Save group shows |
+| `data-saveable` | boolean |  | the host SAVES filters: Save shows, and its ⋮ offers Save filters |
 | `data-scope` | text |  | the scopes it answers, in order: `view data`. The View is a heading; the rest are accordions |
 | `data-suggest` | boolean |  | show "Suggest filters" |
 | `open` | boolean, native | `false` |  |
@@ -36,7 +36,6 @@ For a page's filters in a panel: every scope the page offers, the View as a head
 
 | Property | Type | Access | What it is |
 |---|---|---|---|
-| `savedSets` | `SavedSet[]` | read and write |  |
 | `open` | `boolean` | read and write |  |
 
 ## Methods
@@ -59,11 +58,10 @@ Each one bubbles.
 | `quick-filter-change` |  | Reset, for every scope at once. |
 | `view-reset` |  | Reset to view defaults, CANCELABLE. |
 | `ai-filter-request` |  | Suggest filters. |
-| `filters-save` |  | Save filters: the host asks for a name. |
-| `filters-save-as` |  | The Save button. |
-| `filters-manage` |  | Manage Saved Filters. |
-| `filters-apply` |  | A saved set ticked. |
-| `filters-dismiss` |  | A saved set unticked. |
+| `filters-save` |  | The ⋮'s Save filters: the host asks for a name. |
+| `filters-save-as` |  | Save: the host asks for a name. |
+| `filter-rename` | `{ id: string }` | A reader's own Filter chip's Rename…, in a section; `id` is the Filter's entity id, not its chip's. |
+| `filter-delete` | `{ id: string }` | A reader's own Filter chip's Delete, in a section; `id` is the Filter's entity id, not its chip's. |
 
 ## Parts
 

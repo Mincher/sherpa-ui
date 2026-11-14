@@ -322,16 +322,19 @@ export class ProviderPage {
     return this.#state().views ?? {};
   }
 
-  /** Each of these scopes' presets: the app's own, then its Filters: one door, `presetReadings` over the plain form.
-   *  Will, TODO 776 · TRAP T-a-filter-is-a-preset-of-its-store */
+  /** Each of these scopes' presets: the app's own, then its Filters: one door, `presetReadings` over the plain form. A
+   *  reader's own Filter says its id (`mine`): its chip offers Rename and Delete. Will, TODO 776, plan 960 U4.4c
+   *  · TRAP T-a-filter-is-a-preset-of-its-store */
   #layPresets(scopes: Iterable<string>): void {
     const opened = this.#opened;
     if (!opened) return;
     const offered = this.#offered();
     for (const scope of new Set(scopes)) {
       const app = opened.query.presets(scope).filter((preset) => entityRefOf(preset.id).type !== FILTER);
-      const filters = offered.filter((f) => f.scope === scope)
-        .map(({ preset }) => ({ id: preset.id, label: preset.label, readings: presetReadings(opened.source, preset.where) }));
+      const filters = offered.filter((f) => f.scope === scope).map(({ preset }) => {
+        const mine = this.#ownFilter(entityRefOf(preset.id).id)?.id;
+        return { id: preset.id, label: preset.label, readings: presetReadings(opened.source, preset.where), ...(mine ? { mine } : {}) };
+      });
       opened.source.declarePresets(scope, [...app, ...filters]);
     }
   }

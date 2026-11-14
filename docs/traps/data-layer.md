@@ -581,11 +581,9 @@ saved filter on, the rows arranged. It sets `data-at-default` and
 (a toolbar's ⋮ reads both as it opens). Asking applies nothing: the Query builder no longer arranges the rows
 as it goes — `setQuery` applies what it returns.
 
-**Nor is a Save** (Will, TODO 382): Save filters, "Save <name>" and Save
-filters as are off while `data-at-default` — the filters ARE the View's own,
-so a save would keep nothing new. Delete stays: a set taken can always go.
-The header's Save buttons follow the attribute as it changes; the ⋮ and the
-Saved menu read it as they draw.
+**Nor is a Save** (Will, TODO 382): Save and the ⋮'s Save filters… are off while
+`data-at-default` — the filters ARE the View's own, so a save would keep nothing
+new. Save follows the attribute as it changes; the ⋮ reads it as it draws.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -5194,19 +5192,22 @@ Filter entities, the one type (D6); the keeper's `filters`, the bars' `added`, t
 - **Rename** (`renameFilters`) saves the new name, then publishes (a name is part of a version, plan 972): its id stays,
   so its chip and its uses keep it. **Delete** (`deleteFilters`) turns it off, then removes it; the shelf refuses while
   another entity uses it, and `whyKept` says why. Each is the reader's own Filter only.
+- **Asked from its chip**: the provider declares a reader's own Filter's preset with `mine`, its entity id, which the
+  source's describe carries to the bar. Its chip (a boolean, `data-kind="boolean"`: its body still turns it on) has a
+  caret, and its menu holds Rename… and Delete: requests, `filter-rename` and `filter-delete` with `{ id }`, which the
+  app answers through the provider; a filter panel says its sections' as its own. An app's preset has no menu. There is
+  no Saved menu, and no `savedSets`.
 - **The old ones move once**: an app's one-off page reads the old `sherpa:page:<key>.filters`, saves
   `filtersOfSaved(...)` to the shelf and deletes the key. The keeper ignores a key it has no part for, so an old one costs
   nothing else.
 
 - Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/data/query.ts`
-- Site: `src/core/ui/filters-button.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
-- Site: `src/components/sherpa-filter-panel/panel-column.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-up-is-open-down-is-closed

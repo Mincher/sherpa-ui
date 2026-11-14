@@ -931,6 +931,14 @@ const saveAs = async () => {
 };
 provider.addEventListener('filters-save', saveAs);
 provider.addEventListener('filters-save-as', saveAs);
+// A reader's own Filter chip: Rename… and Delete, each a request with the Filter's id.
+provider.addEventListener('filter-rename', async ({ detail }) => {
+  const label = await named.prompt(provider.keeper.entities.get(detail.id)?.label ?? '');
+  if (label) await provider.renameFilters(detail.id, label);
+});
+provider.addEventListener('filter-delete', ({ detail }) => {
+  if (!provider.deleteFilters(detail.id)) SherpaToast.show(provider.keeper.entities.whyKept(detail.id) ?? 'Not deleted.', 'warning');
+});
 ```
 
 - `dialog.prompt(value)` and `dialog.confirm({ heading, words, action })` ask
@@ -960,9 +968,13 @@ provider.addEventListener('filters-save-as', saveAs);
 - **Save filters** makes the filters on screen Filters of the reader's, on the
   keeper's entity shelf: one per scope that holds an answer, "<name>", or
   "<name> · <scope's label>" for each of several. Each is a preset of its store, so
-  its chip joins its bar, off. `provider.renameFilters(id, name)` renames one and
-  publishes it, its id kept; `provider.deleteFilters(id)` removes it, refused while
-  another entity uses it (`keeper.entities.whyKept(id)` says why).
+  its chip joins its bar, off. A bar's Save and its ⋮'s Save filters… each ask
+  (`filters-save-as`, `filters-save`); the app asks for a name.
+- **A reader's own Filter chip** has a menu: Rename… and Delete. Each is a request,
+  `filter-rename` or `filter-delete`, with `{ id }`, the Filter's entity id; a filter
+  panel says them as its own. The app answers: `provider.renameFilters(id, name)`
+  renames it and publishes it, its id kept; `provider.deleteFilters(id)` removes it,
+  and is false while another entity uses it (`keeper.entities.whyKept(id)` says why).
   `T-saved-filters-are-every-scope`
 
 ## 11. Start

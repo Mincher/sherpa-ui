@@ -56,9 +56,8 @@
     data-group-field     the field the Group chip points at (the standard name)
     data-suggest     show "Suggest filters", left of Edit. Will, TODO 527
     data-node-editor show "Open in Node Editor" in the ⋮ menu: the page's Query opens as nodes. Will, TODOs 555, 822
-    data-saveable    the host SAVES filters: its ⋮ offers Save filters, or "Save
-                  <name>" over the set last taken with Save filters as and
-                  Delete filters. Its `savedSets` fill the Saved menu. TRAP T-saved-filters-are-every-scope
+    data-saveable    the host SAVES filters: Save shows, and its ⋮ offers Save filters. A reader's own
+                  Filter is a chip, its menu Rename and Delete. TRAP T-saved-filters-are-every-scope
     data-remote      its source fetches from outside the data layer: a
                   multi-select or range menu waits for Apply. Without it,
                   every pick applies at once. Set by a bound source.
@@ -89,11 +88,10 @@
     view-reset           — Reset to view defaults: put back the View's own filters, in every scope. Cancelable
     filter-apply         — Apply, where the scope waits: send every change held in it. detail: { }
     filter-discard       — Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. detail: { field? }
-    filters-apply        — a saved set's row was ticked: add it to this bar as a preset, on. detail: { id }
-    filters-dismiss      — a saved set's row was unticked: its chip goes, and what it held. detail: { id }
-    filters-save         — Save filters: under a new name. detail: { }
-    filters-save-as      — Save filters as: a new set, by name. detail: { }
-    filters-manage       — Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. detail: { }
+    filters-save         — the ⋮'s Save filters: the host asks for a name. detail: { }
+    filters-save-as      — Save: the host asks for a name. detail: { }
+    filter-rename        — a reader's own Filter chip's Rename…: the host asks for a name, then renames the Filter; `id` is its entity id, not its chip's. detail: { id }
+    filter-delete        — a reader's own Filter chip's Delete: the host deletes the Filter; `id` is its entity id, not its chip's. detail: { id }
     limit-options-change — the page's View bar's ⋮ "Limit to matching filters"; the provider holds it for every scope. detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
     data-refresh         — Refresh: load the page's data again. detail: {}
@@ -144,8 +142,7 @@
 
       <!--
         FILTERS — ONE button for every filter: the chips folded away for want
-        of room (its badge counts them), every filter to add, and the saved
-        ones. Chips fold in from the END of the run. Figma 150:3688
+        of room, and every filter to add. Chips fold in from the END of the run. Figma 150:3688
         right-actions[0]. TRAP T-one-filters-button
 
         A <sherpa-menu> here must go in the button's `menu` SLOT — in the
@@ -159,18 +156,10 @@
                      data-icon-start="pencil" data-icon-end="triangle-down"
                      data-description="Add filters to this page, or remove them."
                      aria-haspopup="dialog">Filters</sherpa-button>
-      <!-- SAVED, where the app splits it from Edit, as the App Header's Save:
-           Save names the filters; ▾ holds the sets, the save rows, Manage. Alone,
-           it is a solo filter icon. Will, TODOs 436, 443, 446 -->
-      <span class="saved-group" part="saved-group">
-        <sherpa-button class="act save-as-btn" data-act="filters-save-as" data-size="sm"
-                       data-group="start" data-icon-start="filter">Save</sherpa-button>
-        <sherpa-button class="act saved-btn" data-act="saved" data-size="sm" data-type="icon"
-                       data-group="solo" data-icon-start="filter"
-                       data-when-data-group="data-saveable: end" data-when-data-icon-start="data-saveable: triangle-down"
-                       data-description="Use, save and manage your saved filters."
-                       aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
-      </span>
+      <!-- SAVE names the filters, where they may be saved: each scope's a Filter, its chip on its bar.
+           Will, TODOs 443, 446; plan 960 U4.4c -->
+      <sherpa-button class="act save-as-btn" data-act="filters-save-as" data-size="sm"
+                     data-icon-start="filter">Save</sherpa-button>
 
       <!-- REFRESH, left of the ⋮. Will, TODO 428 -->
       <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"

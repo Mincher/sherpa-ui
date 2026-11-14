@@ -92,7 +92,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-reorder` | boolean |  |  |
 | `data-reset-graph` | boolean |  | a node graph's editor is on it: the ⋮ alone is shown, holding "Reset node graph" and nothing else |
 | `data-reset-on-populate` | boolean |  |  |
-| `data-saveable` | boolean |  | the host SAVES filters: its ⋮ offers Save filters, or "Save &lt;name>" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Saved menu. TRAP T-saved-filters-are-every-scope |
+| `data-saveable` | boolean |  | the host SAVES filters: Save shows, and its ⋮ offers Save filters. A reader's own Filter is a chip, its menu Rename and Delete. TRAP T-saved-filters-are-every-scope |
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its column is scrolled past |
 | `data-solo-across` | boolean |  |  |
@@ -112,7 +112,6 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 |---|---|---|---|
 | `active` | `string[]` | read only |  |
 | `values` | `Record<string, string[]>` | read and write |  |
-| `savedSets` | `SavedSet[]` | read and write |  |
 | `superseded` | `string[]` | read only |  |
 | `readings` | `Record<string, FieldReading & { label: string; values: string[] }>` | read only |  |
 | `heldFields` | `string[]` | read only |  |
@@ -162,11 +161,10 @@ Each one bubbles.
 | `view-reset` |  | Reset to view defaults: put back the View's own filters, in every scope. |
 | `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
 | `filter-discard` | `{ field: string }` | Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. |
-| `filters-apply` |  | A saved set's row was ticked: add it to this bar as a preset, on. |
-| `filters-dismiss` |  | A saved set's row was unticked: its chip goes, and what it held. |
-| `filters-save` |  | Save filters: under a new name. |
-| `filters-save-as` |  | Save filters as: a new set, by name. |
-| `filters-manage` |  | Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. |
+| `filters-save` |  | The ⋮'s Save filters: the host asks for a name. |
+| `filters-save-as` |  | Save: the host asks for a name. |
+| `filter-rename` | `{ id: string }` | A reader's own Filter chip's Rename…: the host asks for a name, then renames the Filter; `id` is its entity id, not its chip's. |
+| `filter-delete` | `{ id: string }` | A reader's own Filter chip's Delete: the host deletes the Filter; `id` is its entity id, not its chip's. |
 | `limit-options-change` | `{ on: boolean }` | The page's View bar's ⋮ "Limit to matching filters"; the provider holds it for every scope. |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 | `data-refresh` |  | Refresh: load the page's data again. |
@@ -184,7 +182,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `organise`, `presets`, `saved-group`, `scope`, `switch`, `view-zone`
+`actions`, `bar`, `chips`, `organise`, `presets`, `scope`, `switch`, `view-zone`
 
 ## CSS custom properties it reads
 

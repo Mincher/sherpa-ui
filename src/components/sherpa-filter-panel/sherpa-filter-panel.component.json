@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-filter-panel",
-  "$description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header",
+  "$description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, Save, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -84,36 +84,14 @@
             }
           },
           {
-            "el": "sherpa-group",
-            "class": "saved-group",
+            "el": "sherpa-button",
+            "class": "column-save-as",
             "attrs": {
               "slot": "actions",
+              "data-size": "sm",
+              "data-icon-start": "filter",
               "hidden": ""
-            },
-            "children": [
-              {
-                "el": "sherpa-button",
-                "class": "column-save-as",
-                "attrs": {
-                  "data-size": "sm",
-                  "data-group": "start",
-                  "data-icon-start": "filter"
-                }
-              },
-              {
-                "el": "sherpa-button",
-                "class": "column-saved",
-                "attrs": {
-                  "data-size": "sm",
-                  "data-type": "icon",
-                  "data-group": "solo",
-                  "data-icon-start": "filter",
-                  "data-description": "Use, save and manage your saved filters.",
-                  "aria-label": "Saved filters",
-                  "aria-haspopup": "dialog"
-                }
-              }
-            ]
+            }
           },
           {
             "el": "sherpa-button",
@@ -185,7 +163,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "the host SAVES filters: the Save group shows"
+      "description": "the host SAVES filters: Save shows, and its ⋮ offers Save filters"
     },
     {
       "$type": "prop",
@@ -231,7 +209,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (savedSets, open). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (open). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -264,37 +242,36 @@
     {
       "$type": "event",
       "name": "filters-save",
-      "description": "Save filters: the host asks for a name.",
+      "description": "The ⋮'s Save filters: the host asks for a name.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "filters-save-as",
-      "description": "The Save button.",
+      "description": "Save: the host asks for a name.",
       "bubbles": true,
       "composed": true
     },
     {
       "$type": "event",
-      "name": "filters-manage",
-      "description": "Manage Saved Filters.",
+      "name": "filter-rename",
+      "description": "A reader's own Filter chip's Rename…, in a section; `id` is the Filter's entity id, not its chip's.",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "id": "string"
+      }
     },
     {
       "$type": "event",
-      "name": "filters-apply",
-      "description": "A saved set ticked.",
+      "name": "filter-delete",
+      "description": "A reader's own Filter chip's Delete, in a section; `id` is the Filter's entity id, not its chip's.",
       "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
-      "name": "filters-dismiss",
-      "description": "A saved set unticked.",
-      "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "id": "string"
+      }
     }
   ],
   "tokens": {
@@ -340,11 +317,6 @@
         }
       ],
       "jsProps": [
-        {
-          "name": "savedSets",
-          "type": "SavedSet[]",
-          "access": "read-write"
-        },
         {
           "name": "open",
           "type": "boolean",

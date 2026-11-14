@@ -7,6 +7,7 @@
  * Map:
  * - QueryPart — A part: the one field it answers, the component it narrows, its name, and the bar that draws it.
  * - Preset — One preset: its name, and the readings it writes.
+ * - DeclaredPreset — A preset as a page declares it: its id, and what a Preset keeps.
  * - QueryDeclarations — What a page declares about its Query, by scope.
  * - .defaults — Each component's own default filter, by its scope.
  * - .starts — Each scope's answers at the start, as its page defines them.
@@ -60,7 +61,12 @@ export interface Preset {
   readings: Record<string, FieldReading>;
   /** On at the start, and again on a Reset. Plan 963 */
   on?: boolean;
+  /** The reader's own entity it is, by id: its chip offers Rename and Delete. Plan 960 U4.4c */
+  mine?: string;
 }
+
+/** A preset as a page declares it: its id, and what a Preset keeps. */
+export type DeclaredPreset = { id: string } & Preset;
 
 /** What a page declares about its Query, by scope. */
 export class QueryDeclarations {
@@ -157,8 +163,10 @@ export class QueryDeclarations {
   readonly #presets = new Map<string, Map<string, Preset>>();
 
   /** A scope's presets: the app's own named conditions, each a boolean chip. TODOs 493, 510 */
-  setPresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>>; on?: boolean }[]): void {
-    this.#presets.set(scope, new Map(presets.map((p) => [p.id, { label: p.label, readings: structuredClone(p.readings) as Record<string, FieldReading>, ...(p.on ? { on: true } : {}) }])));
+  setPresets(scope: string, presets: readonly DeclaredPreset[]): void {
+    this.#presets.set(scope, new Map(presets.map((p) => [p.id, {
+      label: p.label, readings: structuredClone(p.readings), ...(p.on ? { on: true } : {}), ...(p.mine ? { mine: p.mine } : {}),
+    }])));
   }
 
   /** A scope's presets, by id, in order. Live. */

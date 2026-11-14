@@ -1419,7 +1419,7 @@
     },
     {
       "name": "sherpa-filter-panel",
-      "description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header",
+      "description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, Save, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header",
       "attributes": [
         {
           "name": "data-applied",
@@ -1447,7 +1447,7 @@
         },
         {
           "name": "data-saveable",
-          "description": "the host SAVES filters: the Save group shows",
+          "description": "the host SAVES filters: Save shows, and its ⋮ offers Save filters",
           "valueSet": "v"
         },
         {
@@ -3902,7 +3902,7 @@
         },
         {
           "name": "data-saveable",
-          "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Saved menu. TRAP T-saved-filters-are-every-scope",
+          "description": "the host SAVES filters: Save shows, and its ⋮ offers Save filters. A reader's own Filter is a chip, its menu Rename and Delete. TRAP T-saved-filters-are-every-scope",
           "valueSet": "v"
         },
         {
@@ -4074,7 +4074,7 @@
         },
         {
           "name": "data-kind",
-          "description": "WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is",
+          "description": "WHAT THIS CHIP IS: group | sort | boolean | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. A boolean's on is its answer: its body toggles, and a menu holds only its acts. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is",
           "values": [
             {
               "name": "boolean"

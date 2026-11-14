@@ -3894,7 +3894,7 @@
           "name": "SherpaFilterPanel",
           "tagName": "sherpa-filter-panel",
           "customElement": true,
-          "description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, the Save group, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header",
+          "description": "the CONTENT of a panel: every filter scope the page offers, a section each. Slot it in a `sherpa-overlay-panel`; the panel gives it its header, float, Pop, minimise and tab. Its own controls — Suggest, Save, the ⋮ and the count of filters applied — are cloned into that panel's header slots, and leave with it. The panel's own search row (`data-searchable`) finds in every section: this hears its `panel-search`. TRAP T-a-content-adopts-its-panels-header",
           "attributes": [
             {
               "name": "data-applied",
@@ -3933,7 +3933,7 @@
             },
             {
               "name": "data-saveable",
-              "description": "the host SAVES filters: the Save group shows",
+              "description": "the host SAVES filters: Save shows, and its ⋮ offers Save filters",
               "type": {
                 "text": "boolean"
               }
@@ -3961,13 +3961,6 @@
             }
           ],
           "members": [
-            {
-              "kind": "field",
-              "name": "savedSets",
-              "type": {
-                "text": "SavedSet[]"
-              }
-            },
             {
               "kind": "field",
               "name": "open",
@@ -4076,37 +4069,30 @@
             },
             {
               "name": "filters-save",
-              "description": "Save filters: the host asks for a name.",
+              "description": "The ⋮'s Save filters: the host asks for a name.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-save-as",
-              "description": "The Save button.",
+              "description": "Save: the host asks for a name.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
-              "name": "filters-manage",
-              "description": "Manage Saved Filters.",
+              "name": "filter-rename",
+              "description": "A reader's own Filter chip's Rename…, in a section; `id` is the Filter's entity id, not its chip's.",
               "type": {
-                "text": "CustomEvent"
+                "text": "CustomEvent<{ id: string }>"
               }
             },
             {
-              "name": "filters-apply",
-              "description": "A saved set ticked.",
+              "name": "filter-delete",
+              "description": "A reader's own Filter chip's Delete, in a section; `id` is the Filter's entity id, not its chip's.",
               "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "filters-dismiss",
-              "description": "A saved set unticked.",
-              "type": {
-                "text": "CustomEvent"
+                "text": "CustomEvent<{ id: string }>"
               }
             }
           ],
@@ -11072,7 +11058,7 @@
             },
             {
               "name": "data-saveable",
-              "description": "the host SAVES filters: its ⋮ offers Save filters, or \"Save <name>\" over the set last taken with Save filters as and Delete filters. Its `savedSets` fill the Saved menu. TRAP T-saved-filters-are-every-scope",
+              "description": "the host SAVES filters: Save shows, and its ⋮ offers Save filters. A reader's own Filter is a chip, its menu Rename and Delete. TRAP T-saved-filters-are-every-scope",
               "type": {
                 "text": "boolean"
               }
@@ -11179,13 +11165,6 @@
               "name": "values",
               "type": {
                 "text": "Record<string, string[]>"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "savedSets",
-              "type": {
-                "text": "SavedSet[]"
               }
             },
             {
@@ -11627,38 +11606,31 @@
               }
             },
             {
-              "name": "filters-apply",
-              "description": "A saved set's row was ticked: add it to this bar as a preset, on.",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "filters-dismiss",
-              "description": "A saved set's row was unticked: its chip goes, and what it held.",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
               "name": "filters-save",
-              "description": "Save filters: under a new name.",
+              "description": "The ⋮'s Save filters: the host asks for a name.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-save-as",
-              "description": "Save filters as: a new set, by name.",
+              "description": "Save: the host asks for a name.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
-              "name": "filters-manage",
-              "description": "Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets.",
+              "name": "filter-rename",
+              "description": "A reader's own Filter chip's Rename…: the host asks for a name, then renames the Filter; `id` is its entity id, not its chip's.",
               "type": {
-                "text": "CustomEvent"
+                "text": "CustomEvent<{ id: string }>"
+              }
+            },
+            {
+              "name": "filter-delete",
+              "description": "A reader's own Filter chip's Delete: the host deletes the Filter; `id` is its entity id, not its chip's.",
+              "type": {
+                "text": "CustomEvent<{ id: string }>"
               }
             },
             {
@@ -11722,9 +11694,6 @@
             },
             {
               "name": "presets"
-            },
-            {
-              "name": "saved-group"
             },
             {
               "name": "scope"
@@ -11891,7 +11860,7 @@
             },
             {
               "name": "data-kind",
-              "description": "WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is",
+              "description": "WHAT THIS CHIP IS: group | sort | boolean | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. A boolean's on is its answer: its body toggles, and a menu holds only its acts. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is",
               "type": {
                 "text": "'boolean' | 'single' | 'multi' | 'advanced' | 'number' | 'date' | 'group' | 'sort'"
               }

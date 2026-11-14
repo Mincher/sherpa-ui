@@ -555,7 +555,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-render-captures-live-state](traps/filters.md#t-render-captures-live-state) — quick-filter-toolbar
 - [T-reset-to-default-is-the-views-own](traps/data-layer.md#t-reset-to-default-is-the-views-own) — quick-filter-toolbar
 - [T-resize-reschedule-never-drop](traps/filters.md#t-resize-reschedule-never-drop) — quick-filter-toolbar
-- [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — filters-button, quick-filter-toolbar
+- [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — quick-filter-toolbar
 - [T-saved-filters-are-the-last-section](traps/filters.md#t-saved-filters-are-the-last-section) — filters-button
 - [T-scope-does-not-stop-inheritance](traps/filters.md#t-scope-does-not-stop-inheritance) — quick-filter
 - [T-send-to-view-filters](traps/data-layer.md#t-send-to-view-filters) — filter-def, quick-filter-toolbar

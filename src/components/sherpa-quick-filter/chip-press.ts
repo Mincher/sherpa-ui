@@ -122,7 +122,9 @@ export class ChipPress {
     // A section's value chip's body is its toggle, its caret its Sites (TODO 425).
     // …unless a preset holds it on: then a press is a toggle off. An icon-only chip has no toggle. TODO 592
     const held = el.hasAttribute('data-by-preset') && !el.hasAttribute('data-icon-only');
-    if (menu && !held && el.values.length === 0 && el.dataset['condition'] !== 'advanced' && el.slot !== 'values') {
+    // A BOOLEAN's answer is its on, so its body toggles: its menu holds only its acts. Plan 960 U4.4c
+    const toggles = el.dataset['kind'] === 'boolean';
+    if (menu && !held && !toggles && el.values.length === 0 && el.dataset['condition'] !== 'advanced' && el.slot !== 'values') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.toggleMenu();
