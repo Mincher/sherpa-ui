@@ -422,7 +422,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — provider
 
-## Filters (153)
+## Filters (154)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -497,6 +497,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-empty-chip-opens-its-menu](traps/filters.md#t-an-empty-chip-opens-its-menu) — quick-filter
 - [T-an-inactive-chip-says-where-its-filter-went](traps/data-layer.md#t-an-inactive-chip-says-where-its-filter-went) — quick-filter, quick-filter-toolbar
 - [T-an-inline-menu-is-the-same-menu](traps/filters.md#t-an-inline-menu-is-the-same-menu) — filter-menu, quick-filter
+- [T-an-on-chip-keeps-its-place](traps/filters.md#t-an-on-chip-keeps-its-place) — quick-filter-toolbar
 - [T-an-operator-decides-pick-or-type](traps/data-layer.md#t-an-operator-decides-pick-or-type) — filter-menu, quick-filter, quick-filter-toolbar
 - [T-an-organise-chip-has-no-values](traps/filters.md#t-an-organise-chip-has-no-values) — quick-filter
 - [T-an-organise-chip-is-named-for-its-job-not-its-field](traps/filters.md#t-an-organise-chip-is-named-for-its-job-not-its-field) — quick-filter

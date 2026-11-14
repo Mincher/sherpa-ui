@@ -1614,10 +1614,32 @@ chip or a menu button keeps them too.
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `test/e2e/reforged-a-toolbar-moves-by-arrow.spec.ts`
 
+### T-an-on-chip-keeps-its-place
+
+**A chip that is on keeps its place on a full bar** (Will, TODO 980 B, 2026-11-14:
+"On chips stay"). The bar folds from its end, but every chip that is OFF folds
+before any that is on, so a reader always sees what is on. Only when the on chips
+alone do not fit does one fold, from the end too; then the Filters button reads
+active (`T-the-filters-button-is-a-door-not-a-filter`).
+
+- **On by any writer.** A chip turns on through its menu, a folded row, a preset,
+  the host's `data-*` or a bound source. The bar does not ask which: it watches
+  every chip's `data-current` (the one observer it keeps for `:state(chips-on)`) and
+  folds again on the next frame. A folded chip that turns on comes back to the bar,
+  and an off one folds in its place.
+- **Measured in the running app** (sherpa-demos-67, Records at 1600 wide): a Filter
+  chip, once on, grew and folded away, its value out of sight.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-one-filters-button.spec.ts`
+
 ### T-the-filters-button-is-a-door-not-a-filter
 
 **The Filters button is a DOOR to filters, not a filter.** It reads active —
 `data-status="active"` — while a chip folded INTO it is on, and off otherwise.
+With on chips folded last (`T-an-on-chip-keeps-its-place`), that is only while
+the on chips alone overflow the bar.
 
 That is the one state on a filter bar that could never be wrong in the reader's
 favour: a bar showing an active filter that is not applied says the rows are

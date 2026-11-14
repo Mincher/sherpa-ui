@@ -229,9 +229,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   static readonly COLLAPSE_STEPS = 3;
 
   /**
-   * Fit the bar — collapse the actions, then fold chips from the end.
+   * Fit the bar — collapse the actions, then fold chips from the end: every chip that is off first, then one on.
    *
-   * TRAP T-reflow-resets-before-measuring — reset first, re-measure after each.
+   * TRAP T-reflow-resets-before-measuring — reset first, re-measure after each. TRAP T-an-on-chip-keeps-its-place
    */
   #reflow(): void {
     const bar = this.$('.bar');
@@ -258,14 +258,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const folded: HTMLElement[] = [];
     if (this.#overflowing()) {
       const run = this.#chips();
-      for (let i = run.length - 1; i >= 0; i--) {
-        const chip = run[i]!;
+      const back = [...run].reverse();
+      const on = (c: HTMLElement): boolean => c.hasAttribute('data-current');
+      for (const chip of [...back.filter((c) => !on(c)), ...back.filter(on)]) {
         chip.toggleAttribute('data-folded-away', true);
-        folded.unshift(chip);
+        folded.push(chip);
         this.set('data-folded', String(folded.length));
         this.toggleState('folded', true);
         if (!this.#overflowing()) break;
       }
+      folded.sort((a, b) => run.indexOf(a as SherpaQuickFilter) - run.indexOf(b as SherpaQuickFilter));
     }
     this.#syncMore();
     // Nothing moved: the open menus stay. TRAP T-a-reflow-that-moves-nothing-keeps-its-menus
@@ -603,8 +605,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
   /** Watches its chips' on-state. */
   #chipsOn: MutationObserver | null = null;
-  /** A chip on or off, by any writer: the fill, and a shut Edit menu's rows. TODO 714 · TRAP T-the-add-menu-is-the-whole-list */
-  #onChipsMoved = (): void => { this.#syncChipsOn(); this.#syncOneRows(); };
+  /** A chip on or off, by any writer: the fill, a shut Edit menu's rows, and the fold, which keeps an on chip on the bar.
+   *  TODO 714 · TRAP T-the-add-menu-is-the-whole-list · TRAP T-an-on-chip-keeps-its-place */
+  #onChipsMoved = (): void => { this.#syncChipsOn(); this.#syncOneRows(); this.#onResize(); };
   /** Say whether a chip is on. */
   #syncChipsOn = (): void => {
     this.toggleState('chips-on', this.#chips().some((c) => c.hasAttribute('data-current') && !c.hasAttribute('data-selector')));

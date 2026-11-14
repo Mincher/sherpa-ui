@@ -92,13 +92,14 @@ test('ONE button: "Filters", a pencil; hidden chips first, then Added, Available
   expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(['§Available filters', 'tier']);
 });
 
-test('the button is ON while a hidden chip is, and a drill inside it adds nothing', async ({ page }) => {
+test('a hidden ON/OFF chip ticked comes back to the bar, the button staying off (TODO 980); a drill inside it adds nothing', async ({ page }) => {
   await mount(page, 560);
   const r = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-quick-filter-toolbar') as unknown as Bar;
     const sr = el.shadowRoot!;
     const btn = sr.querySelector<HTMLElement>('.add-btn')!;
-    const menu = btn.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot; show(t: HTMLElement): void };
+    type Menu = HTMLElement & { shadowRoot: ShadowRoot; show(t: HTMLElement): void };
+    let menu = btn.querySelector('sherpa-menu') as Menu;
     const settle = () => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
     const held = [...el.heldFields];
 
@@ -114,7 +115,11 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
     toggle.dispatchEvent(new Event('change', { bubbles: true }));
     (menu.shadowRoot.querySelector('.apply') as HTMLElement).shadowRoot!.querySelector('button')!.click();
     await settle();
-    const on = btn.getAttribute('data-status');
+    await window.__settled();
+    // On, it keeps a place on the bar, an off chip folding in its place: nothing on is hidden. TRAP T-an-on-chip-keeps-its-place
+    const on = { status: btn.getAttribute('data-status'), onBar: !sr.querySelector('.chips > .chip[data-id="at-risk"]')!.hasAttribute('data-folded-away') };
+    // What folds changed, so the menu is drawn again.
+    menu = btn.querySelector('sherpa-menu') as Menu;
     menu.show(btn);
     await window.__settled();
 
@@ -146,7 +151,7 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
     };
   });
 
-  expect(r.on).toBe('active');
+  expect(r.on).toEqual({ status: null, onBar: true });
   // Not one the reader can take off, so no ×.
   expect(r.shape).toEqual({ drill: false, buttons: 0 });
   expect(r.drilled.drill).toBe(true);

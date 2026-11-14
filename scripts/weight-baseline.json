@@ -9,7 +9,7 @@
   "components.js": {
     "files": 169,
     "brotli": {
-      "js": 314979,
+      "js": 315025,
       "fetched": 8607
     }
   },
@@ -177,7 +177,7 @@
   "components/sherpa-filter-panel/sherpa-filter-panel.js": {
     "files": 70,
     "brotli": {
-      "js": 124980,
+      "js": 125026,
       "fetched": 0
     }
   },
@@ -422,7 +422,7 @@
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
     "files": 67,
     "brotli": {
-      "js": 120930,
+      "js": 120976,
       "fetched": 0
     }
   },
@@ -569,7 +569,7 @@
   "index.js": {
     "files": 304,
     "brotli": {
-      "js": 542182,
+      "js": 542228,
       "fetched": 8607
     }
   }
