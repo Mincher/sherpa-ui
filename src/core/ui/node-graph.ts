@@ -260,6 +260,9 @@ interface Drawn {
 }
 
 const drawnOn = new WeakMap<HTMLElement, Drawn>();
+/** What each watch on a canvas has lit, by node: kept for a node not drawn now (inside a node, or out of one), and given
+ *  it when it is drawn. TRAP T-a-status-opens-its-rule */
+const litOn = new WeakMap<HTMLElement, Set<ReadonlyMap<string, ReadonlyMap<string, Lit>>>>();
 let shadows = 0;
 
 /** How a row's value reads: a direction in full. */
@@ -1540,6 +1543,10 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
       drawn.nodes.set(node.id, el);
       canvas.append(el);
       drawn.sizes.observe(el);
+      for (const lit of litOn.get(canvas) ?? []) {
+        const spans = lit.get(node.id);
+        if (spans) light(el, spans);
+      }
     }
     const at = `${node.x},${node.y}`;
     if (drawn.placedAt.get(node.id) !== at) {
@@ -1981,6 +1988,8 @@ export function watchSteps(canvas: SherpaLayoutCanvas, { claims, nodeOf = (span)
 }, begins, onLit }: WatchOptions): () => void {
   let traces = new Set<string>();
   const lit = new Map<string, Map<string, Lit>>();
+  if (!litOn.has(canvas)) litOn.set(canvas, new Set());
+  litOn.get(canvas)!.add(lit);
   const clear = (): void => {
     for (const id of lit.keys()) {
       const el = drawnOn.get(canvas)?.nodes.get(id);
@@ -1991,7 +2000,7 @@ export function watchSteps(canvas: SherpaLayoutCanvas, { claims, nodeOf = (span)
   };
   // A run's traces, and those of runs gone by: a late span of one lights nothing.
   const retired = new Set<string>();
-  return onTrace((span) => {
+  const stop = onTrace((span) => {
     if (retired.has(span.trace)) return;
     const claimed = traces.has(span.trace);
     if (!claimed && !claims(span)) return;
@@ -2003,17 +2012,22 @@ export function watchSteps(canvas: SherpaLayoutCanvas, { claims, nodeOf = (span)
     }
     traces.add(span.trace);
     const node = nodeOf(span);
-    const el = node ? drawnOn.get(canvas)?.nodes.get(node) : undefined;
-    if (!node || !el) return;
+    if (!node) return;
     let spans = lit.get(node);
     if (!spans) lit.set(node, (spans = new Map()));
     const total = span.detail?.['total'] ?? span.detail?.['rows'];
     // Last to speak, last in the list: a span that ends moves after those that ended before it.
     spans.delete(span.id);
     spans.set(span.id, { host: span.host, state: stateOf(span), ...(span.ms !== undefined ? { ms: span.ms } : {}), ...(typeof total === 'number' ? { rows: total } : {}) });
-    light(el, spans);
+    // A node not drawn now keeps it: it is lit as it is drawn.
+    const el = drawnOn.get(canvas)?.nodes.get(node);
+    if (el) light(el, spans);
     onLit?.(span, node);
   });
+  return () => {
+    stop();
+    litOn.get(canvas)?.delete(lit);
+  };
 }
 
 /** What an inspector shows beside a node's rows, and whom it tells of an edit. */

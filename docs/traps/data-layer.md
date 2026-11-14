@@ -6959,7 +6959,10 @@ order the store takes the first match.
   why, and offers no Clone: the rule is the app's store's.
 - **It is drawn as a workflow**, inside: the document draws only its own top graph.
 - **A load still lights it**: the Field node with every row that took a value, each
-  root inside with its own (`statusTallies`, `traceQuerySteps`), by the same ids.
+  root inside with its own (`statusTallies`, `traceQuerySteps`), by the same ids. A
+  watch keeps what it lit for every node a span names, drawn or not (`litOn`), and a
+  node is lit as it is drawn: inside, when the load spoke on the top canvas, and on
+  top again after Back. Measured by sherpa-demos-67: before this, nothing inside was lit.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/core/ui/query-editor.ts`

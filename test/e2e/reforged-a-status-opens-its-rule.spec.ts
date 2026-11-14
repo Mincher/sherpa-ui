@@ -75,3 +75,23 @@ test('Health is one Field node, its values saying their rules; Enter opens the r
   expect(await headings(page)).not.toContain('Group Input');
   expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual([]);
 });
+
+test('a load lights the node on top and each root inside, drawn now or later; Back keeps the light', async ({ page }) => {
+  // A load of this page, as its source traces one: Health's rows, and At risk's 1.
+  await page.evaluate(async () => {
+    const { traceStep, traceQuerySteps } = await import('/dist/data.js');
+    const load = traceStep('load', { graph: 'records' });
+    traceQuerySteps({ v: 1, scopes: {} }, { walk: { results: {} }, statuses: { health: { 'At risk': 1 } } }, load!);
+  });
+  await settle(page);
+  const lit = (heading: string) => node(page, heading).evaluate((el) => [el.getAttribute('data-step'), el.getAttribute('data-caption')]);
+  expect(await lit('Health')).toEqual(['done', '1 row']);
+  // Not drawn when the load spoke, and lit as it is drawn.
+  await node(page, 'Health').locator('.header[role="button"]').focus();
+  await page.keyboard.press('Enter');
+  await settle(page);
+  expect(await lit('At risk')).toEqual(['done', '1 row']);
+  await page.keyboard.press('Escape');
+  await settle(page);
+  expect(await lit('Health')).toEqual(['done', '1 row']);
+});

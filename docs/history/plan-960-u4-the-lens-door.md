@@ -202,6 +202,11 @@ c1 and c3, and c2a: the provider, the page keeper, page.v1 and the Query graph. 
 - ❓ Picks, each the plain reading: a value row has no socket, as the Query takes no connection from it; a value's look
   (critical, success) is no longer shown on its row, since a row has no look of its own (a colour dot would be a new
   door); a page's Query graph is named "Query" in the trail.
+- A load lights the rule's roots inside, drawn later than the load spoke (`litOn` in `watchSteps`; found by
+  sherpa-demos-67). ❓ **Each value row's count on the top node** (sherpa-demos-67 asks; before U4.7b each root showed it
+  on the top canvas). A row has no caption, so this is a new part. **A**: a caption at the row's end, "43 rows", lit as a
+  node's tab is (a new `data-caption` on `sherpa-node-row`, and in Figma). **B**: the counts stay inside, one Enter away;
+  the node's tab says the total. My pick: A, so the counts stay in sight. Not built until Will says.
 
 ## Will's decisions
 
