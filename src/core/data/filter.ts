@@ -13,6 +13,7 @@
  * - presetOfEntity — A Filter as a page's preset, or why it is none, in words.
  * - presetsOver — The Filters over one store as its pages' presets, the app's then the reader's, and each fault.
  * - filterOf — A page's preset or a saved filter as the Filter it is, keeping its Where; or why not, in words.
+ * - filtersOfSaved — A reader's old saved sets as the Filters they are now: one per scope that holds an answer.
  * - whereChanges — What changed between two Wheres, field by field, in words.
  * - FILTER_LENS — A Filter's lens: drawn from its Where, else its graph; written back as a Where where one says it all.
  */
@@ -25,6 +26,7 @@ import { nodeKinds, type DrawnGraph, type GraphNode, type NodeKind } from './nod
 import { OP_LABELS, groupOf, type Condition, type ConditionLeaf } from './store.js';
 import { parseWhere, whereOfTree, type Where } from './where.js';
 import { editedCondition, whereGraph } from './query-graph.js';
+import { freeId } from './graph-views.js';
 import { workflowGraph, type WorkflowFacts } from './workflow.js';
 import { ENTITY_LENS } from './lens.js';
 import { registerLens, type GraphLens } from './lens-registry.js';
@@ -139,6 +141,23 @@ export function filterOf(given: PagePreset | (SavedFilter & { id: string }), sou
     where = said[0]![1].where!;
   }
   return { filter: { v: 3, type: FILTER, id: given.id, label: given.label, query: { where: where! }, settings: { source } } };
+}
+
+/** A reader's old saved sets as the Filters they are now (Will, plan 960 U4.4c): one per scope that holds an answer, named
+ *  as the set, or "<name> · <scope's label>" for each of several; each id free among those taken and each other. What
+ *  a one-off page moves to the shelf, once. */
+export function filtersOfSaved(sets: Readonly<Record<string, SavedFilter>>, store: string, scopes: Readonly<Record<string, { label?: string }>> = {}, taken: readonly string[] = []): Entity[] {
+  const used = [...taken];
+  return Object.values(sets).flatMap((set) => {
+    const said = Object.entries(set.query.scopes).filter(([, s]) => s.where && Object.keys(s.where).length);
+    return said.flatMap(([scope, at]) => {
+      const label = said.length > 1 ? `${set.label} · ${scopes[scope]?.label ?? scope}` : set.label;
+      const id = freeId(label, used, FILTER);
+      used.push(id);
+      const made = filterOf({ id, label, query: { v: 1, scopes: { [scope]: at } } }, store);
+      return 'filter' in made ? [made.filter] : [];
+    });
+  });
 }
 
 /** One field's condition in a reader's words: "equals trial", "is one of Pro, Enterprise", "in the last 3 months". */

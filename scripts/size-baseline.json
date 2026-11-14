@@ -174,7 +174,7 @@
   "src/core/data/field-status.ts": 62,
   "src/core/data/filter-face.ts": 208,
   "src/core/data/filter-state.ts": 593,
-  "src/core/data/filter.ts": 199,
+  "src/core/data/filter.ts": 218,
   "src/core/data/flows.ts": 269,
   "src/core/data/format-date.ts": 89,
   "src/core/data/format-tick.ts": 370,

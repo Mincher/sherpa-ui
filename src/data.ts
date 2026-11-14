@@ -257,7 +257,7 @@ export {
   ENTITY_TYPES, FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, recipientTypes, registerEntityType, registerTypeCode, savedCategories, socketsOf, takes, type EntityType, type TypeCode,
 } from './core/data/entity-types.js';
 /* A Filter is a preset of its store's pages: its graph read as ONE condition, each field's own. TODO 776 · TRAP T-a-filter-is-a-preset-of-its-store */
-export { FILTER_LENS, filterOf, presetOfEntity, presetsOver, sourceOf, type PagePreset, type FilterFacts } from './core/data/filter.js';
+export { FILTER_LENS, filterOf, filtersOfSaved, presetOfEntity, presetsOver, sourceOf, type PagePreset, type FilterFacts } from './core/data/filter.js';
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';

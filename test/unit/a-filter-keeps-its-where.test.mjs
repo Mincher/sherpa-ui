@@ -134,3 +134,18 @@ test('a use\'s Update says what the Filter says now, field by field, not the nod
   const diff = definitionDiff({ kind: 'filter:trials', version: 'old', was }, libraryOf([{ ...after, label: 'Trials' }]));
   assert.deepEqual(diff.said, [{ key: 'status', value: 'equals trial to equals suspended' }]);
 });
+
+test('a reader\'s old saved sets move over as Filters, once: one per scope that holds an answer, each id free (Will, plan 960 U4.4c)', async () => {
+  const { filtersOfSaved } = await import('../../dist/data.js');
+  const sets = {
+    trials: { label: 'Trials', query: { v: 1, scopes: { data: { where: { status: { in: ['trial'] } } } } } },
+    both: { label: 'Big trials', query: { v: 1, scopes: { view: { where: { status: { in: ['trial'] } } }, data: { where: { seats: { gt: 100 } } }, empty: {} } } },
+    none: { label: 'Nothing', query: { v: 1, scopes: { data: {} } } },
+  };
+  const made = filtersOfSaved(sets, 'customers', { view: { label: 'View' }, data: { label: 'Rows' } }, ['trials']);
+  assert.deepEqual(made.map((f) => [f.id, f.label, f.type, f.settings.source, f.query.where]), [
+    ['trials-2', 'Trials', 'filter', 'customers', { status: { in: ['trial'] } }],
+    ['big-trials-view', 'Big trials · View', 'filter', 'customers', { status: { in: ['trial'] } }],
+    ['big-trials-rows', 'Big trials · Rows', 'filter', 'customers', { seats: { gt: 100 } }],
+  ]);
+});
