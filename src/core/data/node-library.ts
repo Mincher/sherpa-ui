@@ -19,7 +19,7 @@
  * - nodeKindOf — A definition as a NodeKind: a row per input and output, `model: 'graph'`.
  * - kindsOf — Every definition of a library as a kind, by id; one a shipped kind owns is left out.
  * - Inner — What a use runs: its definition, its body as a workflow, the kinds it needs, its parameters.
- * - innerOf — The graph inside one use: the body with Group Input and Output, and its parameters.
+ * - innerOf — The graph inside one use: the body with Group Input and Output, and its parameters; fitted, for a drawing.
  * - useOf — A use of a definition, placed: it records the version and the definition it was made from.
  * - followUses — Each use in nodes a writer gave follows a version: the one it held, else the one it is placed at now.
  * - nodeLibraryFaults — Every fault in a library, in words, each named by its path.
@@ -38,7 +38,8 @@ import { withoutBends } from './connector-bends.js';
 import { tidyTags } from './tags.js';
 import { report } from './report.js';
 import { NODE_KINDS, nodeKinds, rowOf, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
-import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { editWorkflow, holdTies, nodeWidth, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { fitStages } from './node-stages.js';
 import type { NodeFrame } from './node-frames.js';
 import { layoutParts } from './graph-layout.js';
 import { START } from './node-start.js';
@@ -189,8 +190,11 @@ export interface Inner {
 
 /** A definition's body as a workflow, its Group Input and Output laid out either side: each where it has sockets, or a
  *  connection uses it. A body with neither is a top graph's, entered by its Start (plan 949). */
-function inside(id: string, definition: NodeDefinition, base: Kinds, values: Readonly<Record<string, unknown>> = {}): Inner {
-  const xs = definition.nodes.map((n) => n.x);
+function inside(id: string, definition: NodeDefinition, base: Kinds, values: Readonly<Record<string, unknown>> = {}, fit = false): Inner {
+  // Fitted, before the group ends are placed beside it: each stage round its nodes, each tie in its section (TODO 976).
+  const laid = { nodes: definition.nodes, ...(definition.stages ? { stages: definition.stages } : {}), ...(definition.ties ? { ties: definition.ties } : {}) };
+  const body = fit ? holdTies(fitStages(laid, nodeWidth)) : laid;
+  const xs = body.nodes.map((n) => n.x);
   const touched = (end: string): boolean => (definition.connections ?? []).some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
   const input: NodeKind = {
     heading: 'Group Input', icon: 'login', description: 'Where inputs enter the Custom Node', model: 'groupInput', graphs: ['workflow'],
@@ -210,20 +214,21 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
     workflow: {
       v: 3, id, label: definition.label,
       nodes: [
-        ...(definition.inputs.length || touched('#in') ? [{ id: '#in', kind: GROUP_INPUT, x: Math.min(0, ...xs) - 360, y: 0 }] : []), ...definition.nodes,
+        ...(definition.inputs.length || touched('#in') ? [{ id: '#in', kind: GROUP_INPUT, x: Math.min(0, ...xs) - 360, y: 0 }] : []), ...body.nodes,
         ...(definition.outputs.length || touched('#out') ? [{ id: '#out', kind: GROUP_OUTPUT, x: Math.max(0, ...xs) + 360, y: 0 }] : []),
       ],
-      connections: definition.connections ?? [], ...layoutParts(definition),
+      connections: definition.connections ?? [], ...layoutParts({ ...definition, stages: body.stages, ties: body.ties }),
     },
   };
 }
 
 /** The graph inside one use, for the checks, the drawing and a runner: the definition's body with
- *  its Group Input and Output, and this instance's parameters over the defaults. None, the use is
- *  of no definition in the library. */
-export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, library: NodeLibrary, kinds: Kinds = nodeKinds()): Inner | undefined {
+ *  its Group Input and Output, and this instance's parameters over the defaults. `fit`, for a drawing: laid out as an edit
+ *  leaves it, though a writer left it otherwise; the checks read it as written. None, the use is of no definition in the
+ *  library. */
+export function innerOf(use: Pick<WorkflowNode, 'id' | 'kind' | 'values'>, library: NodeLibrary, kinds: Kinds = nodeKinds(), { fit = false }: { fit?: boolean } = {}): Inner | undefined {
   const definition = library?.nodes?.[use.kind];
-  return definition && !shipped(kinds, use.kind) ? inside(use.id, definition, { ...kindsOf(library), ...kinds }, use.values) : undefined;
+  return definition && !shipped(kinds, use.kind) ? inside(use.id, definition, { ...kindsOf(library), ...kinds }, use.values, fit) : undefined;
 }
 
 /** A use of a definition, placed: it records the version and the definition it was made from, so a

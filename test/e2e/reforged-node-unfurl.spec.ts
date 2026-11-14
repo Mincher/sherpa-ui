@@ -293,7 +293,8 @@ test('a graph in stages: each node stays in its own stage, inside its band, none
   const bands = await page.evaluate(() => [...document.querySelectorAll('#cv > sherpa-node-stage')].map((el) => ({
     id: el.getAttribute('data-stage')!, left: Number(el.getAttribute('data-x')), right: Number(el.getAttribute('data-x')) + Number(el.getAttribute('data-w')) })));
   expect(bands.map((b) => b.id)).toEqual(['plan', 'run', 'report']);
-  expect(bands[0]!.left).toBe(-40);
+  // The first where it stood as opened: round its first node, at 0, by the pad (TODO 976).
+  expect(bands[0]!.left).toBe(-48);
   for (let i = 1; i < bands.length; i++) expect(bands[i]!.left - bands[i - 1]!.right).toBe(16);
   // The Start is drawn as "Start": it is in the first stage, as each node is in its own (TODO 955).
   const box = (id: string) => now[id === '#start' ? 'Start' : id]!;

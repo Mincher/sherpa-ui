@@ -2629,8 +2629,11 @@ export function bindWorkflow(
   for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
   // A top graph is opened with its Start, kept from then on as any node (TODO 955); a page's Query has none.
   const opened = (w: WorkflowDefinition): WorkflowDefinition => (doc ? w : withStart(w, nodeWidth));
-  let draft: WorkflowDefinition = opened(read.workflow ?? { v: 3, id: workflow.id, nodes: [] });
-  let original: WorkflowDefinition = opened(readWorkflow(structuredClone(workflow)).workflow ?? draft);
+  // Laid out as an edit leaves it: each stage holds its nodes and each tie its section, though a writer left them otherwise
+  // (TODO 976). The original too, so opening changes nothing.
+  const fitted = (w: WorkflowDefinition): WorkflowDefinition => holdTies(fitStages(opened(w), nodeWidth));
+  let draft: WorkflowDefinition = fitted(read.workflow ?? { v: 3, id: workflow.id, nodes: [] });
+  let original: WorkflowDefinition = fitted(readWorkflow(structuredClone(workflow)).workflow ?? draft);
   /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
   const starting = original;
   /** It never changes: its JSON, once. */
@@ -2657,7 +2660,8 @@ export function bindWorkflow(
     let inner: Inner | undefined;
     for (const step of path) {
       const use = at.nodes.find((n) => n.id === step.use);
-      inner = use && innerOf(use, lib, topKinds());
+      // Drawn laid out as an edit leaves it: each stage round its nodes (TODO 976).
+      inner = use && innerOf(use, lib, topKinds(), { fit: true });
       if (!inner) return undefined;
       at = inner.workflow;
     }
