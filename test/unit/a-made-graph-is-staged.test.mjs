@@ -2,14 +2,14 @@
  * A MADE GRAPH IS STAGED — plan 964 N3c, with sherpa-ui-e8: a graph a writer gives (an act, the MCP) has every node in a
  * stage BEFORE there is a layout: the one it names; else its nearest named neighbour's, by x; with none named, the
  * columns cut at their widest gaps. The Start stands in the first; a Group Input or Output in none. After a layout, by
- * where a node stands, is fitStages's.
+ * where a node stands, is fitStages's. A stage the writer gave no place is put at the left of its nodes, and coloured in turn.
  *
  *   node --test test/unit/a-made-graph-is-staged.test.mjs
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { stageNodes } from '../../dist/data.js';
+import { placeStages, stageNodes } from '../../dist/data.js';
 
 const STAGES = [{ id: 'gather', label: 'Gather', x: 0 }, { id: 'decide', label: 'Decide', x: 600 }, { id: 'act', label: 'Act', x: 1200 }];
 const node = (id, x, stage) => ({ id, kind: 'value', x, y: 0, ...(stage ? { stage } : {}) });
@@ -42,4 +42,15 @@ test('the Start is placed by rule, never named: on a top graph it leads no node 
   assert.deepEqual(staged.map((n) => n.stage), ['gather', 'gather', 'gather', 'decide', 'decide', 'act']);
   const near = stageNodes(STAGES, [node('#start', 0, 'gather'), node('a', 1300, 'act'), node('b', 100)]);
   assert.equal(near[2].stage, 'act', 'its nearest named is a node the writer staged, not the Start');
+});
+
+test('a stage given no place stands at the left of its nodes, an empty one after the one before; each coloured in turn', () => {
+  const colours = ['red', 'green', 'blue'];
+  const nodes = [node('#start', -300, 'gather'), node('a', 100, 'gather'), node('b', 160, 'gather'), node('c', 900, 'act')];
+  const stages = [{ id: 'gather', label: 'Gather' }, { id: 'decide', label: 'Decide' }, { id: 'act', label: 'Act', colour: 'red' }];
+  const placed = placeStages(stages, nodes, colours);
+  // Its nodes' left, less the stage's pad (48); the Start, placed each time, holds no edge. Empty: 320 wide, then a 16 gap.
+  assert.deepEqual(placed.map((s) => [s.id, s.x, s.colour]), [['gather', 52, 'green'], ['decide', 388, 'blue'], ['act', 852, 'red']]);
+  assert.equal(placeStages(placed, nodes, colours), placed, 'every stage placed: the same array');
+  assert.deepEqual(placeStages([{ id: 'one', label: 'One' }], [], colours), [{ id: 'one', label: 'One', x: 0, colour: 'red' }]);
 });

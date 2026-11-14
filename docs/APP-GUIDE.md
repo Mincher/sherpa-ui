@@ -305,9 +305,11 @@ export async function init(root, { source, query, session, view, signal, header,
   input }, { stores: ctx.stores })`: it checks the call by the type's rules and answers `done` (with an `undo` where it
   changed data) or `refused`, in words. A type's store is found by its type (`storeOfType`), whatever the app names
   it. A type with a graph part (a Coworker, a Runbook, a Custom Node, a Filter) has its acts through the shelf instead
-  (`graphActs`, plan 964 N3c): `find`, `read` (its JSON, its graph as text too), `add` and `change` (each a draft,
-  checked by the shelf's own check; a graph given has each use following a version and each node in a stage, and is laid
-  out when first shown), `remove`, `publish` and `roll-back`. Its graph, query and settings are `object` fields. The
+  (`graphActs`, plan 964 N3c): `find`, `read` (its JSON, its graph as `text`, and the `warnings` its nodes show, each
+  `{ node, row, words }`: soft, as a loop a Trigger would start, never a refusal), `add` and `change` (each a draft,
+  checked by the shelf's own check; a graph given has each use following a version, each node in a stage and each stage
+  given no `x` placed at the left of its nodes and coloured in turn (`placeStages`), and is laid out when first shown),
+  `remove`, `publish` and `roll-back`. Its graph, query and settings are `object` fields. The
   reader's unsaved draft of a graph in the editor wins over its kept copy, so `change`, `remove`, `publish` and
   `roll-back` on one are refused while the tab holds it ("Ask the reader to Save or discard them first"), and `read`
   says it beside the kept copy, as `unsavedInTheEditor` (TRAP T-a-draft-hides-a-save). The outlet's acts read the tab's
@@ -865,7 +867,8 @@ settings hold, which node families its graph may place, and which sockets (`#in`
 type that ships: its graph sends a condition to `#out/where`. An app adds its own
 with `registerEntityType(type)` (a clash with a shipped type is refused). A type declared in JSON (an entities file's
 `types`) takes the code JSON cannot say from `registerTypeCode(id, { settingsFaults, defaults })`, before or after the
-type comes: the shelf's check runs its `settingsFaults` on every Save, from any door.
+type comes: the shelf's check runs `settingsFaults(settings, entity)` on every Save, from any door, so a setting is read
+against the entity's own graph (a prompt's `{{step:2.3}}`).
 
 - **One door**, `entities` in every Context's `init` (and `keeper.entities`):
   `list(type?)`, `get(id)`, `await save(entity)`, `remove(id)`, `await duplicate(id, newId)`,

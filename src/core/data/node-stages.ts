@@ -17,6 +17,7 @@
  * - stageBands — Each stage's band, and the moves that keep each clear of the one before.
  * - heldBands — Each stage's band as it stands, its left edge where it was last laid out, not laid out again; nodes `moving`…
  * - stageNodes — Each node in a stage before there is a layout, a writer's: named, else its nearest named, else by column.
+ * - placeStages — Each stage a writer gave with no place, put at the left of its nodes, and coloured in turn.
  * - fitStages — The workflow with every node in a stage, each stage's edge, and the nodes a push moved.
  * - stageAt — The stage whose band holds a place across the canvas, or none.
  * - stagesHeld — The workflow with its stages written out: its one Stage 1, and every node in it.
@@ -121,6 +122,30 @@ export function heldBands(workflow: Staged, widthOf: WidthOf, moving: ReadonlySe
     const right = members.length ? Math.max(...members.map((n) => n.x + widthOf(n))) + STAGE_PAD : stage.x;
     return { id: stage.id, left: stage.x, right: Math.round(Math.max(right, stage.x + (stage.w ?? STAGE_MIN))) };
   });
+}
+
+/**
+ * Each stage a writer gave with no place (an act, the MCP: it says which stage a node is in, never where an edge is), put
+ * at the left of its nodes; with none, after the one before. Each it puts wears the next colour of the palette given, where
+ * it has none. Every stage placed: the same array.
+ */
+export function placeStages(stages: readonly NodeStage[], nodes: Staged['nodes'], colours: readonly string[] = []): readonly NodeStage[] {
+  // A stage with no x lays out at NaN, and moves every node in its band there: drawn nowhere it is kept.
+  if (stages.every((s) => Number.isFinite(s.x))) return stages;
+  const done: NodeStage[] = [];
+  for (const [i, s] of stages.entries()) {
+    if (Number.isFinite(s.x)) {
+      done.push(s);
+      continue;
+    }
+    // The Start is placed each time, never kept: it holds no stage's edge.
+    const xs = nodes.filter((n) => n.stage === s.id && !apart(n) && n.id !== START).map((n) => n.x);
+    const before = done[i - 1];
+    const x = xs.length ? Math.min(...xs) - STAGE_PAD : before ? before.x + STAGE_MIN + STAGE_GAP : 0;
+    const colour = s.colour ?? nextStageColour([...done, ...stages.slice(i + 1)], colours);
+    done.push({ ...s, x, ...(colour ? { colour } : {}) });
+  }
+  return done;
 }
 
 /**

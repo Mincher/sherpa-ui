@@ -13,11 +13,14 @@ import { createNode, deleteNode, updateNode, type NodeAnswer, type NodeChange } 
 import { categoryOf, type Entity, type EntityGraph } from './entity.js';
 import type { EntityShelf } from './entity-shelf.js';
 import { clone, draftChanged, newestOf, publish, rollBack, type VersionAnswer } from './entity-versions.js';
-import { graphText } from './graph-text.js';
-import { followUses } from './node-library.js';
-import { stageNodes } from './node-stages.js';
+import { graphText, type TextGraph } from './graph-text.js';
+import { nodeKinds } from './node-kinds.js';
+import { followUses, kindsOf } from './node-library.js';
+import { placeStages, stageNodes } from './node-stages.js';
+import { SERIES_BORDERS } from './series-colours.js';
 import type { Row } from './store.js';
 import type { StoredField, TypeDefinition } from './type-definition.js';
+import { workflowGraph, type WorkflowDefinition } from './workflow.js';
 
 const ID = /^[a-z][a-z0-9-]*$/;
 /** What an entity's write may give, said once: its envelope, its settings, and one body. */
@@ -43,13 +46,23 @@ const summaryOf = (e: Entity): Row => ({
   origin: e.origin ?? 'mine', version: newestOf(e)?.number, changed: draftChanged(e),
 });
 
-/** A graph a writer gave, as Save should keep it: each use following a version, each node in a stage, and laid out by the
- *  editor the first time it shows it where it gains nodes. */
+/** A graph a writer gave, as Save should keep it: each use following a version, each node in a stage, each stage placed
+ *  and coloured where it was not, and laid out by the editor the first time it shows it where it gains nodes. */
 function graphGiven(graph: EntityGraph, held: EntityGraph | undefined, shelf: EntityShelf): EntityGraph {
   const nodes = followUses(stageNodes(graph.stages, graph.nodes), held?.nodes, shelf.library());
+  const stages = graph.stages && placeStages(graph.stages, nodes, SERIES_BORDERS);
   const had = new Set((held?.nodes ?? []).map((n) => n.id));
   const gains = nodes.some((n) => !had.has(n.id));
-  return { ...graph, nodes: [...nodes], ...(gains ? { unfurl: true } : {}) };
+  return { ...graph, nodes: [...nodes], ...(stages ? { stages } : {}), ...(gains ? { unfurl: true } : {}) };
+}
+
+/** A graph as a reader is told it: its steps as text, and each warning the editor draws on a node, soft and never a
+ *  refusal (an input it cannot use, a Trigger that would start a loop, blocked). Read over the shelf, as the editor reads it. */
+function toldOf(id: string, graph: TextGraph & Pick<WorkflowDefinition, 'nodes'>, shelf: EntityShelf): { text: string[]; warnings: { node: string; row?: string; words: string }[] } {
+  const entities = (): Entity[] => shelf.list().flatMap((s) => shelf.get(s.id) ?? []);
+  const { stages, ...rest } = graph;
+  const drawn = workflowGraph({ v: 3, id, ...rest, ...(stages ? { stages } : {}) }, { entities }, { ...nodeKinds(), ...kindsOf(shelf.library()) });
+  return { text: graphText(graph).stages, warnings: drawn.nodes.flatMap((n) => (n.warnings ?? []).map((w) => ({ node: n.id, ...w }))) };
 }
 
 /** A call's keys, as entity ids. */
@@ -132,19 +145,20 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
     },
     {
       id: `${id}.read`, label: 'Read', type: id, changes: false,
-      description: `One ${label} as JSON: its body as it keeps it, and as text; its settings; its versions' numbers; and the reader's unsaved draft of it in the Node Editor, which they see in its place.`,
+      description: `One ${label} as JSON: its body as it keeps it, and as text; the warnings its nodes show; its settings; its versions' numbers; and the reader's unsaved draft of it in the Node Editor, which they see in its place.`,
       async run(call, ctx) {
-        const e = shelfOf(ctx)?.get(keysOf(call)[0] ?? '');
-        if (!e) return none;
+        const shelf = shelfOf(ctx);
+        const e = shelf?.get(keysOf(call)[0] ?? '');
+        if (!shelf || !e) return none;
         const { versions, ...kept } = e;
         const draft = ctx.draftOf?.(e.id);
         return {
           done: `Read ${named(e)}.`,
           result: {
             ...kept,
-            ...(e.graph ? { text: graphText(e.graph).stages } : {}),
+            ...(e.graph ? toldOf(e.id, e.graph, shelf) : {}),
             versions: (versions ?? []).map(({ number, at, by, note }) => ({ number, at, ...(by ? { by } : {}), ...(note ? { note } : {}) })),
-            ...(draft ? { unsavedInTheEditor: { nodes: draft.nodes.length, connections: draft.connections?.length ?? 0, text: graphText(draft).stages } } : {}),
+            ...(draft ? { unsavedInTheEditor: { nodes: draft.nodes.length, connections: draft.connections?.length ?? 0, ...toldOf(e.id, draft, shelf) } } : {}),
           },
         };
       },

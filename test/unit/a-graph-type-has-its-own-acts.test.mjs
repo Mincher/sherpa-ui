@@ -3,7 +3,8 @@
  * read, add, change and remove through the shelf, beside publish and roll back (972). A write is a Save: checked by the
  * shelf's own check, refused in its words, kept as a DRAFT. A use in a graph it is given follows a version, each node
  * stands in a stage, and a graph that gains nodes is laid out by the editor the first time it shows it. A write under the
- * reader's unsaved draft in the editor is refused, as the draft would hide it; read says the draft beside the kept copy.
+ * reader's unsaved draft in the editor is refused, as the draft would hide it; read says the draft beside the kept copy,
+ * and the warnings its nodes show.
  *
  *   node --test test/unit/a-graph-type-has-its-own-acts.test.mjs
  */
@@ -173,5 +174,20 @@ test('a write under the reader\'s unsaved draft is refused, in check and run; re
     session.set('/workflows/triage', undefined);
     assert.equal((await runAct('playbook.change', calls['playbook.change'], ctx)).done, 'Changed Playbook "Triage".');
     assert.equal('unsavedInTheEditor' in (await runAct('playbook.read', { keys: ['triage'] }, ctx)).result, false);
+  });
+});
+
+test('read gives the warnings its nodes show, each by its node and row: soft, never a refusal; none, none', async () => {
+  await withPlaybook(async () => {
+    const shelf = shelfOf();
+    const ctx = { stores: {}, entities: shelf };
+    const graph = { ...body, nodes: [...body.nodes, { id: 'm', kind: 'model', x: 300, y: 0 }] };
+    assert.equal((await runAct('playbook.add', { input: { id: 'asks', label: 'Asks', graph } }, ctx)).done, 'Added Playbook "Asks".');
+    assert.deepEqual((await runAct('playbook.read', { keys: ['asks'] }, ctx)).result.warnings, [
+      { node: 'm', row: 'provider', words: 'Pick a provider' },
+      { node: 'm', row: 'model', words: 'Pick a model' },
+    ]);
+    await runAct('playbook.add', { input: { id: 'calm', label: 'Calm', graph: body } }, ctx);
+    assert.deepEqual((await runAct('playbook.read', { keys: ['calm'] }, ctx)).result.warnings, []);
   });
 });

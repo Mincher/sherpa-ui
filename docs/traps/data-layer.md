@@ -8257,8 +8257,8 @@ writes the draft over it.
   entity its key names (change, remove, publish, roll back) so that its check AND its run refuse:
   `The reader has unsaved changes to "<label>" in the Node Editor (<n> nodes), and they hide any save. Ask the reader
   to Save or discard them first.` Find, read, add and clone write no kept copy under it, and run.
-- **Read says the draft** beside the kept copy, `unsavedInTheEditor: { nodes, connections, text }`, so an agent knows
-  what the reader sees.
+- **Read says the draft** beside the kept copy, `unsavedInTheEditor: { nodes, connections, text, warnings }`, so an
+  agent knows what the reader sees.
 - A Custom Node's definition edited INSIDE an open graph is drafted at `/node-edits/<graph>`, by the graph: this does
   not see it.
 

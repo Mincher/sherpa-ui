@@ -49,8 +49,9 @@ export interface EntityType extends Omit<TypeDefinition, '$schema' | 'v'> {
   v?: 1;
   /** The schema that says what its settings hold (schemas/), for authors and the tests. */
   schema?: string;
-  /** Faults in its settings, in words; none when they are as the type keeps them. */
-  settingsFaults?(settings: Readonly<Record<string, unknown>>): string[];
+  /** Faults in its settings, in words; none when they are as the type keeps them. The whole entity comes too, so a setting
+   *  is read against its graph (a prompt's `{{step:2.3}}`). */
+  settingsFaults?(settings: Readonly<Record<string, unknown>>, entity: Entity): string[];
   /** The settings a new entity of this type starts with. */
   defaults?: Readonly<Record<string, unknown>>;
 }

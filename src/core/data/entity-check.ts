@@ -81,7 +81,7 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
   const problems: string[] = [];
   const others = (facts.entities ?? []).filter((e) => !(e.type === entity.type && e.id === entity.id));
   const all = [...others, entity];
-  for (const fault of type.settingsFaults?.(entity.settings ?? {}) ?? []) problems.push(`${at}: ${fault}`);
+  for (const fault of type.settingsFaults?.(entity.settings ?? {}, entity) ?? []) problems.push(`${at}: ${fault}`);
   // A query body only where its type keeps one (plan 960 U4.4b); its graph is drawn from it, so the checks below read that.
   if (entity.query && !type.graph.query) problems.push(`${at} keeps a query, which a ${type.label} does not: give it a graph`);
   const graph = entityGraph(entity);

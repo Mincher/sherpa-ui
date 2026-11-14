@@ -14,9 +14,11 @@ const sockets = { inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], out
 /** A type as an entities file declares it: JSON, no code. */
 const PLAYBOOK = { v: 1, id: 'playbook', label: 'Playbook', category: 'Runbooks', graph: sockets };
 const body = { nodes: [{ id: 'sort', kind: 'organise', x: 0, y: 0, values: { sort: 'name' } }], connections: [{ from: '#in/rows', to: 'sort' }, { from: 'sort/rows', to: '#out/found' }] };
-/** The app's code: a prompt's reference must name a field it has. */
+/** The app's code: a prompt's reference names a field it has, or a node of the entity's own graph. */
 const CODE = {
-  settingsFaults: (s) => [...String(s.prompt ?? '').matchAll(/\{\{field:([^}]+)\}\}/g)].filter(([, f]) => f !== 'health').map(([ref]) => `its prompt names ${ref}, which names nothing`),
+  settingsFaults: (s, entity) => [...String(s.prompt ?? '').matchAll(/\{\{(field|node):([^}]+)\}\}/g)]
+    .filter(([, kind, id]) => (kind === 'field' ? id !== 'health' : !entity.graph.nodes.some((n) => n.id === id)))
+    .map(([ref]) => `its prompt names ${ref}, which names nothing`),
   defaults: { prompt: '' },
 };
 
@@ -25,8 +27,8 @@ const shelfOf = () => {
   return makeShelf({ presets: () => [], mine: () => mine, keep: (next) => { mine = next; }, heard: () => {} });
 };
 
-/** An add of a playbook whose prompt names this field. */
-const adding = (field) => ({ input: { label: `Says ${field}`, settings: { prompt: `Check {{field:${field}}}.` }, graph: body } });
+/** An add of a playbook whose prompt names this field, and this node. */
+const adding = (field, node = 'sort') => ({ input: { label: `Says ${field} ${node}`, settings: { prompt: `Check {{field:${field}}} after {{node:${node}}}.` }, graph: body } });
 
 /** Every Save of this type checked by the app's code: one that names nothing refused in its words, one that names a field kept. */
 async function checked() {
@@ -34,8 +36,10 @@ async function checked() {
   const ctx = { stores: {}, entities: shelf };
   const bad = await runAct('playbook.add', adding('helth'), ctx);
   assert.match(bad.refused ?? '', /^Add: .*its prompt names \{\{field:helth\}\}, which names nothing/);
+  // The whole entity comes to the check: a reference is read against its own graph.
+  assert.match((await runAct('playbook.add', adding('health', 'nope'), ctx)).refused ?? '', /its prompt names \{\{node:nope\}\}, which names nothing/);
   assert.deepEqual(shelf.list('playbook'), [], 'nothing kept');
-  assert.equal((await runAct('playbook.add', adding('health'), ctx)).done, 'Added Playbook "Says health".');
+  assert.equal((await runAct('playbook.add', adding('health'), ctx)).done, 'Added Playbook "Says health sort".');
   return shelf;
 }
 
@@ -66,7 +70,7 @@ test('the JSON type first, its code after; taken back, the check goes and the ty
     offCode();
     assert.equal(entityTypes().playbook, PLAYBOOK);
     const shelf = shelfOf();
-    assert.equal((await runAct('playbook.add', adding('helth'), { stores: {}, entities: shelf })).done, 'Added Playbook "Says helth".');
+    assert.equal((await runAct('playbook.add', adding('helth'), { stores: {}, entities: shelf })).done, 'Added Playbook "Says helth sort".');
   } finally {
     offType?.();
     stop();
