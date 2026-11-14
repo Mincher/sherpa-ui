@@ -211,7 +211,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-trace-stream](traps/data-layer.md#t-one-trace-stream) — data, data-handler, request-store, source-reads, store, trace
 - [T-one-walk-counts-and-limits-in-order](traps/data-layer.md#t-one-walk-counts-and-limits-in-order) — data-source, source-counts, source-reads, source-view, source-walk, store, walk
 - [T-one-way-to-write-a-condition](traps/data-layer.md#t-one-way-to-write-a-condition) — data, data-source, query, query-edits, where
-- [T-only-a-store-reads-data](traps/data-layer.md#t-only-a-store-reads-data) — stores
+- [T-only-a-store-reads-data](traps/data-layer.md#t-only-a-store-reads-data) — ref-facts, stores
 - [T-only-five-filter-chips-carry-an-icon](traps/data-layer.md#t-only-five-filter-chips-carry-an-icon) — data-source-types
 - [T-only-the-view-trickles-down](traps/data-layer.md#t-only-the-view-trickles-down) — data-source, query, source-reads
 - [T-ops-follow-the-column-type](traps/data-layer.md#t-ops-follow-the-column-type) — store

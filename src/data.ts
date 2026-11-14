@@ -171,6 +171,7 @@ export { NEW_CHOICE, aiCatalog, catalogChoices, registerAiCatalog, registerTrigg
 /* A message field's values, `{{value:node.name}}` (plan 891). */
 export { filled, unreachedValues, valuesAt, valuesIn, type MessagePart, type MessageSource, type MessageValue } from './core/data/node-messages.js';
 export { REF_FORM, readRefs, ref, refKinds, refsIn, refsOf, registerRefKinds, type RefFacts, type RefKind, type RefRead, type Reference } from './core/data/references.js';
+export { refFacts, type RefPlaces } from './core/data/ref-facts.js';
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
 export {
   NODE_WIDTH,

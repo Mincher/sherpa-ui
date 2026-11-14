@@ -7600,10 +7600,13 @@ store's rows moved. The shelf reads entity files because it is the entities' sto
 comments, and a method named `fetch` is no read.
 
 What it cannot hold: a module that reads a store's file through a helper with another name. A reviewer holds that, and
-an app holds its own (Demos audits its `app/`).
+an app holds its own (Demos audits its `app/`). A `{{customer:…}}` reference is read the same way: `refFacts` asks each
+type's store for the rows a text names, by key, never every row (TODO 988).
 
 - Site: `src/core/data/stores.ts`
+- Site: `src/core/data/ref-facts.ts`
 - Site: `test/unit/only-a-store-reads-data.test.mjs`
+- Site: `test/unit/a-reference-reads-its-store.test.mjs`
 
 ### T-a-scope-below-narrows-within-a-fixed-field
 

@@ -644,9 +644,11 @@ editor's `kinds` alone; its graphs then save only where you check them yourself.
   `singleLine: true` makes it one line, as a title: a text box in the node, no
   toolbar in the Details panel, and no line break goes in.
 - Any text names what it means one way, `{{kind:id}}` (plan 956): a node's value, a store, a field, a model, an
-  Output's action, an input, an output, a step, or an entity by its type (`{{coworker:ada}}`). `readRefs(text, facts)`
-  reads each once, its name or why it names nothing; `registerRefKinds(() => ({ customer: { what: 'a customer' } }))`
-  adds your own kinds, read from `facts.customers`.
+  Output's action, an input, an output, a step, or an entity by its type (`{{coworker:ada}}`, `{{customer:contoso}}`).
+  `readRefs(text, facts)` reads each once, its name or why it names nothing. `await refFacts({ stores, entities }, texts)`
+  gives the facts: each thing the texts name, read once — a row type's row from its store by its key, a graph type's
+  entity from the shelf — so no app keeps a list of names beside its rows (PRINCIPLES 25).
+  `registerRefKinds(() => ({ customer: { what: 'a customer' } }))` adds a kind that is no type, read from `facts.customers`.
 - A `pick` row picks from its own `choices`.
 - An `optional: true` row is one the node can do without: with nothing joined it does not warn, and it is titled
   "Summary (Optional)" wherever a reader sees it — the node, its socket's tip, its Incoming and Outgoing JSON. Its
