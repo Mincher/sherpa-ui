@@ -139,3 +139,9 @@ existence of input."
 - One input and one output, both on its header; no rows, no properties. True (truthOf): its input goes on unchanged;
   false: nothing goes on, the route stops.
 - "Any at risk?" is Condition (Risk > 50) › Pass › Boolean › Fix; the "none" route is Condition Is empty › Pass.
+
+### 9.2 Will, 2026-11-14: no True on a Condition
+
+Will: "This removes the need for the 'True' property in Condition nodes, too." A test's True goes; every use moves to its
+Pass, which carries the test's tree for a reader (956a): a Filter's Where, a View filter's row, And/Or, presets, the
+status chain. A route by "is there anything" is the Boolean gate (9.1).
