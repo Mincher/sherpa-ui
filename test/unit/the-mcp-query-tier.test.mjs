@@ -264,7 +264,7 @@ test('edit_definition_graph refuses a dangling node and a connection the Query r
   const said = connectionRequest(queryGraph(source.query.draft, records, drawnFacts(source, records)), { from: 'source', to: 'view-filters/region' });
   // Its own refusal first; where the row already has its test joined (a chip on All, TODO 965), the cut is refused too.
   assert.equal(connection.json.faults[0], said.refused);
-  assert.match(connection.text, /The Query has no connection from "Source" to "View Filters": a filter's True goes into a chip of View Filters, its Pass onto a card's rows\./);
+  assert.match(connection.text, /The Query has no connection from "Source" to "View Filters": a filter's Pass goes into a chip of View Filters, or onto a card's rows\./);
   assert.equal(connection.json.definition, undefined);
   assert.deepEqual(connection.json.query, source.query.draft);
   source.close();

@@ -48,7 +48,7 @@
             "to": "status"
           },
           {
-            "from": "status/true",
+            "from": "status/pass",
             "to": "#out/where"
           }
         ]
@@ -58,7 +58,7 @@
           "number": 1,
           "at": "2026-11-13T00:00:00.000Z",
           "by": "shipped",
-          "hash": "0212a5e1eb81f7",
+          "hash": "14e4c3094ac257",
           "definition": {
             "label": "Shipped",
             "graph": {
@@ -102,7 +102,7 @@
                   "to": "status"
                 },
                 {
-                  "from": "status/true",
+                  "from": "status/pass",
                   "to": "#out/where"
                 }
               ]

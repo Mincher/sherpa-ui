@@ -33,8 +33,8 @@ const filter = (id, label, value = 'active', extra = {}) => ({
       { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: value } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    // The test's True into the Group Output: no node has a True socket (plan 944).
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
+    // The test's Pass into the Group Output (plan 971 §9).
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/pass', to: '#out/where' }],
   },
   settings: { source: 'customers' }, ...extra,
 });
@@ -167,8 +167,8 @@ test('a Clone of a preset makes the reader\'s own of the same type, under a free
   const taken = {
     v: 1, label: 'Taken', inputs: [{ name: 'rows', type: 'object' }], outputs: [],
     nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: 'x' } }],
-    // An output made from the test's True property (plan 944).
-    connections: [{ from: '#in/rows', to: 'c' }, { from: 'c/true', to: '#out' }],
+    // The header out, made from the test's Pass (plan 971 §9).
+    connections: [{ from: '#in/rows', to: 'c' }, { from: 'c/pass', to: '#out' }],
   };
   assert.deepEqual(await keepNode(k.entities, 'active-copy', taken), { id: 'active-copy' });
   // An id names one entity of any type: a Custom Node holds active-copy.

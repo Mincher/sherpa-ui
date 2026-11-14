@@ -1,7 +1,7 @@
 /**
  * A SWITCH ROW HAS A BOOLEAN INPUT: a Scope's Filters, a Preset's and a Saved filter's On.
  * A connection into it DRIVES it — on from a true value, off from a false one; a number reads as
- * 1 or 0, as a test's True is (plan 944: no True or False socket) — read
+ * 1 or 0; a test's Pass drives it too (plans 944, 971 §9: no True or False socket) — read
  * only and marked Custom; cut the connection and the row's own state is back, for the draft kept
  * it. A page's Query has no way to say "driven by a node", so it refuses the connection by name.
  * Will, 2026-11-04 · plan 713 D7, TODO 732.
@@ -33,7 +33,7 @@ test('a true value drives a switch on, a false one off, marked Custom; cutting t
   assert.deepEqual(drivenSwitch([]), { value: false, custom: true });
   assert.deepEqual(drivenSwitch([false, true]), { value: true, custom: true });
   const kinds = { ...NODE_KINDS, gate: { heading: 'Gate', icon: 'flag', rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'x', graphs: ['workflow'] } };
-  // A boolean Value, true and false, a number 1 and 0, and a Condition, whose True is a row (plan 944).
+  // A boolean Value, true and false, a number 1 and 0, and a Condition, whose Pass is a row (plan 971 §9).
   const w = (from) => ({
     v: 3, id: 'g', nodes: [
       { id: 'f', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: 'a' } },
@@ -51,15 +51,15 @@ test('a true value drives a switch on, a false one off, marked Custom; cutting t
   const f = on(w('no/value'));
   assert.deepEqual([f.value, f.custom], [false, true]);
   assert.deepEqual([on(w('one/value')).value, on(w('zero/value')).value], [true, false], 'a number reads as 1 or 0');
-  // A Condition's True drives it too, and its header and False send nothing (plan 944).
-  assert.deepEqual([workflowFaults(w('f/true'), kinds), on(w('f/true')).custom, on(w('f/true')).hint], [[], true, 'Custom, from Condition']);
+  // A Condition's Pass drives it too, and its header and False send nothing (plans 944, 971 §9).
+  assert.deepEqual([workflowFaults(w('f/pass'), kinds), on(w('f/pass')).custom, on(w('f/pass')).hint], [[], true, 'Custom, from Condition']);
   assert.deepEqual(workflowFaults(w('f/#false'), kinds), ['a connection leaves "f/#false", which is no output socket']);
   // The row's own state was kept: cut, and it is back.
   const cut = editWorkflow(w('yes/value'), { cut: 'gate/on' }, kinds);
   const back = on(cut);
   assert.deepEqual([back.value, back.custom], [false, undefined]);
   // A value is no boolean: it joins (TODO 770), but cannot drive it — the switch reads null, off, and the node warns.
-  const fed = { ...w('f/true'), nodes: [...w('f/true').nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'yes' } }], connections: [{ from: 'v/value', to: 'gate/on' }] };
+  const fed = { ...w('f/pass'), nodes: [...w('f/pass').nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'yes' } }], connections: [{ from: 'v/value', to: 'gate/on' }] };
   assert.deepEqual(workflowFaults(fed, kinds), []);
   const gate = workflowGraph(fed, {}, kinds).nodes[1];
   assert.deepEqual([gate.rows[0].value, gate.rows[0].custom, gate.warnings], [null, undefined, [{ row: 'on', words: 'On takes a boolean; it was given "yes"' }]]);

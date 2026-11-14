@@ -45,11 +45,11 @@ const row = (g, id, name) => node(g, id).rows.find((r) => r.name === name);
 /** The command an edit of a node's row asks. */
 const edit = (g, facts, id, name, value) => graphRequest({ node: node(g, id), row: row(g, id, name), value }, facts);
 
-test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the Field, each True into its group, the root into its scope', async () => {
+test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the Field, each Pass into its group, the root into its scope', async () => {
   const { source, draw } = await opened();
   const g = draw();
   const tree = g.nodes.filter((n) => n.kind === 'condition' || n.kind === 'field');
-  // Each row a reader sets; a Condition's True is a property (plan 944).
+  // Each row a reader sets; a Condition's Pass and Fail are properties (plan 971 §9).
   assert.deepEqual(tree.map((n) => [n.id, n.kind, n.rows.filter((r) => !r.property).map((r) => [r.name, r.value])]), [
     ['field-view-seats', 'field', [['field', 'seats']]],
     ['when-view-seats', 'condition', [['type', 'or']]],
@@ -58,12 +58,12 @@ test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the 
     ['when-view-seats.2.1', 'condition', [['type', 'gt'], ['b', 5]]],
     ['when-view-seats.2.2', 'condition', [['type', 'lt'], ['b', 100]]],
   ]);
-  // Each goes on from its True (plan 944).
+  // Each goes on from its Pass (plan 971 §9).
   assert.deepEqual(g.connections.filter((r) => /seats/.test(r.from)).map((r) => `${r.from} → ${r.to}`), [
-    'field-view-seats/field → when-view-seats.1', 'when-view-seats.1/true → when-view-seats',
-    'field-view-seats/field → when-view-seats.2.1', 'when-view-seats.2.1/true → when-view-seats.2',
-    'field-view-seats/field → when-view-seats.2.2', 'when-view-seats.2.2/true → when-view-seats.2',
-    'when-view-seats.2/true → when-view-seats', 'when-view-seats/true → view-filters/seats',
+    'field-view-seats/field → when-view-seats.1', 'when-view-seats.1/pass → when-view-seats',
+    'field-view-seats/field → when-view-seats.2.1', 'when-view-seats.2.1/pass → when-view-seats.2',
+    'field-view-seats/field → when-view-seats.2.2', 'when-view-seats.2.2/pass → when-view-seats.2',
+    'when-view-seats.2/pass → when-view-seats', 'when-view-seats/pass → view-filters/seats',
   ]);
   // An And or an Or takes many of anything (TODO 939); a leaf the Field's column; the Field the page's rows (plan 960 U4.8).
   assert.deepEqual([node(g, 'when-view-seats').input, node(g, 'when-view-seats').many, node(g, 'when-view-seats.1').input, node(g, 'field-view-seats').input], ['any', true, 'any', 'any']);
@@ -130,7 +130,7 @@ test('the Field picks another field: the whole reading MOVES there, as one chang
   assert.equal(asked.length, 2);
   assert.deepEqual([asked[0].field, asked[0].reading, asked[1].field], ['seats', null, 'plan']);
   assert.deepEqual(edit(g, facts, 'field-view-seats', 'field', 'seats').field, 'seats', 'the same field: the reading as it is');
-  assert.equal(connectionRequest(g, { from: 'when-view-seats.2/true', to: 'view-filters/seats' }, facts).refused !== undefined, true, 'a part\'s True goes into its group, drawn: the Query holds a whole tree');
+  assert.equal(connectionRequest(g, { from: 'when-view-seats.2/pass', to: 'view-filters/seats' }, facts).refused !== undefined, true, 'a part\'s Pass goes into its group, drawn: the Query holds a whole tree');
   assert.equal(connectionRequest(g, { from: 'field-view-seats/field', to: 'view-filters/seats' }, facts).refused !== undefined, true, 'a Field is no condition');
 });
 
@@ -157,7 +157,7 @@ const seatsFlow = () => ({
   ],
   connections: [
     { from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'a' }, { from: 'seats/field', to: 'b' }, { from: 'seats/field', to: 'c' },
-    // The rows go by Pass; a True is 1 or 0 and carries none (plans 944, 971).
+    // The rows go by Pass (plans 971, 971 §9).
     { from: 'b/pass', to: 'and' }, { from: 'c/pass', to: 'and' }, { from: 'a/pass', to: 'or' }, { from: 'and/pass', to: 'or' }, { from: 'or/pass', to: 'end' },
   ],
 });
@@ -169,9 +169,9 @@ test('in a workflow, A or (B and C) is one Field into three Conditions, an And a
   const w = seatsFlow();
   assert.deepEqual(workflowFaults(w, NODE_KINDS, { fieldsOf }), []);
   const g = workflowGraph(w, { fieldsOf });
-  // Each test gives Pass and Fail, then its Data, then its own rows, then True (plans 944, 971, 971 §9).
-  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'data', 'b', 'true'], id);
-  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'data', 'true'], id);
+  // Each test gives Pass and Fail, then its Data, then its own rows; no True (plans 971, 971 §9).
+  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'data', 'b'], id);
+  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'pass', 'fail', 'data'], id);
   assert.ok(g.nodes.every((n) => !n.warnings), 'every connection reads what it needs');
   // Each Condition's operators are the Field's type's; an edit types Value B by it.
   assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, 70);

@@ -57,8 +57,8 @@ test('read: the Query\'s nodes and connections, each node\'s rows as its values'
   const def = read();
   assert.equal(def.v, 3);
   assert.deepEqual(values(def, 'when-view-seats.1'), { type: 'lt', b: 5 });
-  // The root's True goes into its chip on View Filters (plans 944, 960 U4.8).
-  assert.ok(def.connections.some((r) => r.from === 'when-view-seats/true' && r.to === 'view-filters/seats'));
+  // The root's Pass goes into its chip on View Filters (plans 960 U4.8, 971 §9).
+  assert.ok(def.connections.some((r) => r.from === 'when-view-seats/pass' && r.to === 'view-filters/seats'));
 });
 
 test('a row\'s new value is the Query\'s request, and reads back', async () => {
@@ -93,8 +93,8 @@ test('the layout never reaches the Query: a move, a tie, a frame, stages and lan
 test('a cut connection, or a removed reading, is refused in words, and the Query is as it was', async () => {
   const { read, write, q } = await opened();
   const was = JSON.stringify(q.draft);
-  // A part's True into its Or (plan 944).
-  const cut = write(editWorkflow(read(), { cut: { from: 'when-view-seats.1/true', to: 'when-view-seats' } }, NODE_KINDS));
+  // A part's Pass into its Or (plan 971 §9).
+  const cut = write(editWorkflow(read(), { cut: { from: 'when-view-seats.1/pass', to: 'when-view-seats' } }, NODE_KINDS));
   assert.deepEqual(cut.refused.map((r) => r.code), ['query-connection']);
   const gone = write(editWorkflow(read(), { remove: 'when-view-seats.2.1' }, NODE_KINDS));
   assert.deepEqual(gone.refused.map((r) => r.code), ['query-remove']);

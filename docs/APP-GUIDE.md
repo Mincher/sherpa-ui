@@ -408,12 +408,12 @@ A graph View is a View whose body is a canvas, showing one entity of a type
   edit is asked of the Query as a chip asks; the layout (places, ties, frames, stages, lanes) is kept
   for the tab beside it. `T-one-node-editor`
 - **A page's Query is three nodes** (plan 960 U4.8). **View Filters** is the View's bar: its
-  Switch, a chip per held field (its filter's True joins it) and a row per preset; the View's
+  Switch, a chip per held field (its filter's Pass joins it) and a row per preset; the View's
   Organise joins it. Each component is a **Presentation**, a Content: its rows come from the Source
   through its own filters' Pass (two or more through one And) and its Organise, and its card's bar
   is its rows, then Show as. The **View** takes View Filters and every Content. Move a field
-  between the View and a card by its filter: its True into a chip of View Filters, or its Pass
-  onto the card's rows. `T-the-node-editor-asks-the-query`
+  between the View and a card by its filter's Pass: into a chip of View Filters, or onto the
+  card's rows. `T-the-node-editor-asks-the-query`
 - **A page and its Views go through one lens door.** `lensOf('query')` draws a page's Query and
   writes it back as the page (`pageWithQuery`); `lensOf('view')` draws the page with one of its
   Views put on its Query, and writes back the View (`viewWithQuery`), its `query` as the Query holds
@@ -565,9 +565,9 @@ Node being edited is a draft in its tab until it is saved, as a workflow is.
 
 No node has a True or a False socket (plan 944), and there is no Branch node (plan 971 §9).
 Every test (a Condition, Time, Tag, And, Or, Not, Is empty) gives **Pass**, the rows that
-hold, and **Fail**, the rows that do not, so no row is lost; and **True**, 1 where its test
-holds, 0 where not (plan 971 A). To send the at-risk devices one way and the rest another,
-connect a Condition's Pass and its Fail.
+hold, and **Fail**, the rows that do not, so no row is lost (plan 971 A). A test has no True
+row (§9). To send the at-risk devices one way and the rest another, connect a Condition's
+Pass and its Fail.
 
 A test of ONE value decides the flow: no Field's column on its header, but a Prompt's True,
 a Count, or rows into Is empty (empty or not, once). A Condition has a **Data** row: its Pass
@@ -583,8 +583,8 @@ with data, text); else nothing goes on, and the route stops (Not taken).
 
 And and Or take anything, several. An input is true where it is above zero, true, or
 not empty. Pass: Or, the rows of every true input; And, the rows in all of them. Fail is
-the rest of their rows. A test's True or Pass into an And or an Or says its condition, so
-the Query reads the same tree; its Fail says the opposite one. A Condition fed one
+the rest of their rows. A test's Pass into an And or an Or says its condition, so the Query
+reads the same tree; its Fail says the opposite one. A Condition fed one
 value tests that value against Value B (Not and Is empty by its truth). To count rows,
 use a Math node of type Count: rows in, how many out.
 
@@ -655,7 +655,7 @@ contain its Search, puts them in its Sort's order, then gathers them by its Grou
 
 The AI category has four nodes. A **Model** picks a provider and one of its models,
 both; a **Prompt**, a **Runbook** and a **Skill** ask it. Each of the last three has
-**Expects** as its Type picker: True/false gives a True, 1 or 0, as a Condition does;
+**Expects** as its Type picker: True/false gives a True, 1 or 0;
 Text, Number, Data and List give an Answer, a property. A Model with a pick left blank
 warns "Pick a provider" or "Pick a model".
 

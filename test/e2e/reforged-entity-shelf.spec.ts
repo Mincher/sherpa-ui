@@ -17,7 +17,7 @@ const SETUP = `async () => {
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } }, { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } } ],
-      connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter/true', to: '#out/where' }] },
+      connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter/pass', to: '#out/where' }] },
     settings: { source: 'customers' } });
   keeper.entityPresets = [window.filter('shipped', 'Shipped')];
   window.heard = [];

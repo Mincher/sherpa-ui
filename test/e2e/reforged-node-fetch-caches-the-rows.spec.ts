@@ -111,16 +111,15 @@ test('nothing is read until Fetch is pressed: Simulate says "not fetched yet"; F
   expect(record?.total).toBeUndefined();
 });
 
-test('a Math Count is the row count: of the Source\'s rows, and of those the Condition kept; its True is 1 (plan 944)', async ({ page }) => {
+test('a Math Count is the row count: of the Source\'s rows, and of those the Condition kept (plan 944)', async ({ page }) => {
   await start(page, { count: true });
   await press(page, 'fetch');
   await expect.poll(async () => (await sim(page))?.nodes['nc'] !== undefined).toBe(true);
   const s = (await sim(page))!;
   expect(out(s, 'ns', 'ns/result').value).toBe(120);
   expect(out(s, 'nc', 'nc/result').value).toBe(ACTIVE.length);
-  expect(out(s, 'c', 'c/true').value).toBe(1);
-  // No node has a Count property, nor a True or a False socket.
-  expect(Object.values(s.nodes).flatMap((n) => n.outgoing.map((x) => x.socket)).filter((x) => /\/(count|#false)$/.test(x) || x === 'c')).toEqual([]);
+  // No node has a Count property, nor a True or a False socket; a Condition no True row (plan 971 §9).
+  expect(Object.values(s.nodes).flatMap((n) => n.outgoing.map((x) => x.socket)).filter((x) => /\/(count|#false)$/.test(x) || x === 'c' || x === 'c/true')).toEqual([]);
 });
 
 test('an edit and Simulate read no more: the last simulation is stale after the edit, and the store is read once', async ({ page }) => {
@@ -276,11 +275,10 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   const pane = page.locator('#inspector .data-pane');
   await expect(pane).toBeVisible();
   const lines = await pane.locator('.data-line').allTextContents();
-  // Each socket by its label: True is 1 where a row passes; the rows that pass go by Pass, the rest by Fail (plan 944, 971).
-  expect(lines).toContain('True: 1');
+  // Each socket by its label: the rows that pass go by Pass, the rest by Fail; no True (plans 971, 971 §9).
   expect(lines).toContain(`Pass: ${ACTIVE.length} rows`);
   expect(lines).toContain(`Fail: ${ROWS.length - ACTIVE.length} rows`);
-  expect(lines.filter((l) => /^(False|Count):/.test(l))).toEqual([]);
+  expect(lines.filter((l) => /^(True|False|Count):/.test(l))).toEqual([]);
   const code = await pane.locator('sherpa-code-block').evaluateAll((els) => els.map((e) => JSON.parse(e.getAttribute('data-code')!) as { status: string }[]));
   expect(code.some((c) => c.length === ACTIVE.length && c.every((r) => r.status === 'active'))).toBe(true);
   // Each socket's rows are in the grid the pages use: a column for each field, a row for each of the rows (the first 50), the
@@ -291,7 +289,7 @@ test('the Data pane of a node shows its rows per socket as JSON, the first 50, w
   })));
   expect(grids.every((g) => g.heads.join() === 'id,status' && g.height <= 280)).toBe(true);
   expect(grids.filter((g) => g.body === ACTIVE.length).every((g) => g.first[1] === 'active')).toBe(true);
-  // In, Pass and Fail (the first 50 of each): True, a number, carries no rows (plan 944).
+  // In, Pass and Fail (the first 50 of each).
   expect(grids.map((g) => g.body).sort((a, b) => a - b)).toEqual([ACTIVE.length, 50, 50]);
   expect(await page.locator('#inspector .data-pane sherpa-accordion.data-json[open]').count()).toBe(0);
   // The Source's has 120 rows and writes out 50.

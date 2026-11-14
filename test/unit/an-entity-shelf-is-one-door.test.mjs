@@ -29,8 +29,8 @@ const filter = (id, label = id, extra = {}) => ({
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    // The test's True into the Group Output: no node has a True socket (plan 944).
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter/true', to: '#out/where' }],
+    // The test's Pass into the Group Output (plan 971 §9).
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter/pass', to: '#out/where' }],
   },
   settings: { source: 'customers' }, ...extra,
 });
@@ -41,8 +41,8 @@ const HAS_ROLE = {
   inputs: [{ name: 'users', label: 'Users', type: 'object' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
   nodes: [{ id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
-  // An output made from the test's True property (plan 944).
-  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' }],
+  // The header out, made from the test's Pass (plan 971 §9).
+  connections: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/pass', to: '#out' }],
 };
 const heard = async (run) => {
   const reports = [];

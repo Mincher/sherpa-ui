@@ -125,7 +125,7 @@ test('a use\'s Update says what the Filter says now, field by field, not the nod
   // Placed while it kept its own graph: a Field "status" and a test "trial".
   const graph = {
     nodes: [{ id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }, { id: 'trial', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } }],
-    connections: [{ from: 'status/field', to: 'trial' }, { from: 'trial/true', to: '#out/where' }],
+    connections: [{ from: 'status/field', to: 'trial' }, { from: 'trial/pass', to: '#out/where' }],
   };
   const before = { v: 3, type: 'filter', id: 'trials', label: 'Trials', graph, settings: { source: 'customers' } };
   const was = libraryOf([before]).nodes['filter:trials'];

@@ -26,7 +26,7 @@ const filter = (id, label, value) => ({
       { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
       { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter/true', to: '#out/where' }],
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter/pass', to: '#out/where' }],
   },
   settings: { source: 'customers' },
 });

@@ -12,7 +12,7 @@ const filter = (id: string, label: string, value: string) => ({
   v: 3, type: 'filter', id, label, settings: { source: 'customers' },
   graph: {
     nodes: [{ id: 'status', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }, { id: 'field', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
-    connections: [{ from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
+    connections: [{ from: 'field/field', to: 'status' }, { from: 'status/pass', to: '#out/where' }],
   },
 });
 

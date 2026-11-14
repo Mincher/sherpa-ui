@@ -6430,8 +6430,8 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
   tip; Simulate's `into` and `leafOf` skip it. An unknown field type is text, as `opWarning` reads it.
 - **Every type leads with Pass and Fail** (plan 971 A): the rows that hold, and the rows that do not,
   so none is lost. They send rows only where rows reached its header — rows, a column, an object, or
-  a test's Pass or Fail (`sender`); a True is a number, 1 or 0 (plan 944). A test of two values sends
-  none.
+  a test's Pass or Fail (`sender`). A test has no True row (plan 971 §9): on one value its Pass and Fail
+  send its Data, else the value.
 - **In the last and In the next are Time › Duration's**, not Logic's: two nodes would do one check.
 - **The header's input is the type's.** And and Or take many of anything (TODO 939), and Not one
   boolean; Is empty takes any value; a comparison any. Each one has a True property, 1 or 0 (plan 944). Nothing
@@ -6487,7 +6487,7 @@ types allow is drawn; no family fences what a graph places.
   given <what>` — all from `INPUT_WORDS` (a socket type in the words its tip says). The runner
   (N4) reads through the same door, and so does Simulate (`heard`, Will 2026-11-11: "fixed
   generically on how to handle data types"): a connected value is read by the row's need, whatever
-  node sends it — a Math Result, a Count, a True — and a Condition tests against what a connection
+  node sends it — a Math Result, a Count, an agent's True — and a Condition tests against what a connection
   brings to Value B or Start and End, not the row's own. Text that reads as a number is a number,
   as the row reads it (`T-a-value-is-typed-once`).
 - **Drawn**: `workflowGraph` puts each on the node as `warnings` (by row; none, the header), the
@@ -6689,11 +6689,11 @@ chip's is (`graphRequest`).
   of what the first answered caused six filter bugs (the old panel).
 - **A bar is rows** (Will, U4.8 Q3 A): its Switch, a chip per held field in
   order, its pick in words, then a row per preset. The View's is on View
-  Filters, where a filter's True joins its chip. A card's is on its
+  Filters, where a filter's Pass joins its chip. A card's is on its
   Presentation, and its chips take no line: a card's own filter is ON ITS ROWS'
   PATH, its Pass into the Presentation (two or more through ONE And), then its
   Organise. A test of one value is no filter: it sends all its Data one way. Moving a field
-  between scopes is moving its tree, its root's True or Pass into a chip of
+  between scopes is moving its tree, its root's Pass into a chip of
   View Filters or onto a card's path (`connectionRequest`), as Send to View is.
   A field the View answers but no bar holds still gets a chip, so its condition
   has a socket. The chips' order written back is the Query's (`orderRequest`).
@@ -6882,8 +6882,8 @@ sockets only, never types.
 - **A test splits, or decides; there is no Branch** (Will, plan 944: "we're making nodes harder to work with
   by having True and False sockets on nodes"; plan 971 A; §9: "Fold it into Condition"). No kind forks; `branches`
   and `#false` are gone. A test (a Condition's every type, Time, Tag, And, Or, Not, Is empty) gives Pass and Fail
-  (`TEST_KINDS`), and a True PROPERTY, `node/true`: 1 where it holds, 0 where not; an AI node that expects
-  True/false has the True. On a COLUMN (a Field's on its header, or tests' rows into And, Or, Not) Pass and Fail
+  (`TEST_KINDS`), and no True row (Will: "This removes the need for the 'True' property in Condition nodes");
+  an AI node that expects True/false has a True. On a COLUMN (a Field's on its header, or tests' rows into And, Or, Not) Pass and Fail
   split the rows. On ONE value (`testsOneValue`: no column and no rows, or rows into Is empty, one set) the way
   its truth takes sends ALL of its Data row (`passes: 'data'`), else the value tested, drawn as that type; the
   other sends `notTaken`, and a node whose header (with none, its rows) hears only that does not run (Simulate:
@@ -6912,7 +6912,7 @@ sockets only, never types.
 **One test per Condition; And and Or join tests; each test reads the Field on its header** (Will,
 plan 783 D4, D6): "The Graph chain would, at it's simplest, would then be Source>Field>Condition>
 Output." `A or (B and C)` on Seats is six nodes, in a workflow and in the Query editor alike: one
-Field, three Conditions on it, an And and an Or. A test's True (`node/true`, plan 944) goes into its group's header; the
+Field, three Conditions on it, an And and an Or. A test's Pass goes into its group's header (plan 971 §9: no True); the
 root's into its scope's row. Rows that hold, its Join, Field, Operator, Value and Group rows are
 gone, and no file is read as one (D9): a saved one says ""rows" as its Operation, which is none of
 its choices".
@@ -6930,15 +6930,15 @@ its choices".
   Duration. A half-built range is dropped, as a chip's is.
 - **Placing in a Query**: a Field holds the scope's next field (its chip appears); a Condition is
   refused in words, "A Condition tests a Field: connect one in" — a Field's tests are its chip's. A
-  part's True, a Field and a False make no connection a reader may: the Query holds one tree per field.
-- **And and Or take ANY boolean** (Will, TODO 780: "0/1 or True or False is data"). A test's True
+  part's Pass, a Field and a Fail make no connection a reader may: the Query holds one tree per field.
+- **And and Or take ANY boolean** (Will, TODO 780: "0/1 or True or False is data"). A test's Pass
   brings its whole tree. Any other boolean — a True or False, a value that says true or false, 1
   or 0 (`truthOf`) — is a CONSTANT part: true always holds, false never. One the graph holds folds
   into its group in `nodeFlow`'s `where`: true drops out of And and ends Or, false the other way, so
   `where` may be `true` or `false`; one only a run gives is named by where it comes from,
   `{ boolean: "Source › True" }`. Since TODO 939 anything else joins too, with no warning — rows, a
   count, a value, each true where it is above zero, true, or not empty — and says nothing in the tree;
-  a test's Pass brings its tree, as its True does, and its Fail the opposite one (`notCondition`: each
+  a test's Pass brings its tree, and its Fail the opposite one (`notCondition`: each
   operator's opposite, And and Or swapped; an operator with none is a fault, in words; plan 971 A). No
   connection into it is a fault. A Filter's
   use brings its tree too, read inside (plan 776 D5, `T-a-filter-is-a-preset-of-its-store`).
@@ -8006,14 +8006,14 @@ Out row that nothing reaches. Each reader that followed connections itself would
 
 **A property row is output only, one definition, and connects like any output.** Will, TODO 835 ·
 `docs/history/plan-835-organise-and-properties.md`. It is a row a node provides from its own data or logic: no control,
-no input socket, no value to edit. `propertyRow` in node-kinds.ts is the ONE builder: a test's True (1 or 0), its Pass and
-Fail (rows, plan 971 A; on one value, what reaches its Data, `passes`, 971 §9). Count was its first use and is
+no input socket, no value to edit. `propertyRow` in node-kinds.ts is the ONE builder: an AI node's True (1 or 0), a test's
+Pass and Fail (rows, plan 971 A; on one value, what reaches its Data, `passes`, 971 §9). Count was its first use and is
 gone (plan 944): counting rows is a Math type, Count. Sort and Group are kinds of their own in
 Organise, and the Collection family and its Count type are gone: a saved `collection` reads with the fault "of the kind
 "collection", which is not one", and nothing converts it.
 
 - **It needs no reader of its own.** `givenAt` reads any output row; a True sends `{ kind: 'number' }` before a run, as
-  a Result does. Warnings (764), coercion (781), a portal row's label ("Condition › True"), Save as Custom Node's outputs and
+  a Result does. Warnings (764), coercion (781), a portal row's label ("Condition › Pass"), Save as Custom Node's outputs and
   Unfurl's socket heights all read it as an output.
 - **A value or an object.** `propertyRow(name, label, gives)` gives a number (the default), text or a boolean (a circle or
   a triangle), or a row, rows or a record (a diamond); a True is a number, like any other.

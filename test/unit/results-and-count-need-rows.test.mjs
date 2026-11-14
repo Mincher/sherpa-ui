@@ -1,8 +1,8 @@
 /**
  * RESULTS NEED ROWS: a node's Results say rows, so where only a value reaches its header, they have nothing to say and hide
  * (`idle`). A test's Pass and Fail never hide: on a column they split its rows; on ONE value they send its Data, else the
- * value (plan 971 §9). Nothing joined, they show. No node has a Count row now: a Math Count counts rows, and a test's True is
- * 1 or 0 (plan 944). Results a connection still leaves stay, and their node says why. Every other property always shows.
+ * value (plan 971 §9). Nothing joined, they show. No node has a Count row now: a Math Count counts rows (plan 944), and a
+ * test has no True (plan 971 §9). Results a connection still leaves stay, and their node says why. Every other property always shows.
  * Will, TODO 924 (D1 A)
  *
  *   node --test test/unit/results-and-count-need-rows.test.mjs
@@ -35,7 +35,7 @@ test('a Field\'s column in, and they show; nothing joined, they show', () => {
   assert.deepEqual(idle(g, 'lone'), []);
 });
 
-test('through a chain: a test\'s Pass and Fail show, an And of rows or of Trues, an Or of numbers (plan 971 §9)', () => {
+test('through a chain: a test\'s Pass and Fail show, an And of rows or of one value\'s Passes, an Or of numbers (plan 971 §9)', () => {
   const nodes = [
     ...source, N('n', 'value', { type: 'integer', value: 3 }),
     N('byRows', 'condition', { type: 'eq', b: 'active' }), N('byValue', 'condition', { type: 'gt', b: '1' }), N('alsoValue', 'condition', { type: 'lt', b: '9' }),
@@ -43,12 +43,12 @@ test('through a chain: a test\'s Pass and Fail show, an And of rows or of Trues,
   ];
   const g = graphOf(nodes, [
     ...fromSource, { from: 'f/field', to: 'byRows' }, { from: 'n/value', to: 'byValue' }, { from: 'n/value', to: 'alsoValue' },
-    // Rows go by Pass; a True is 1 or 0, and carries none (plans 944, 971).
-    { from: 'byRows/pass', to: 'mixed' }, { from: 'byValue/true', to: 'mixed' },
-    { from: 'byValue/true', to: 'values' }, { from: 'alsoValue/true', to: 'values' },
+    // Rows go by Pass; a test of one value's Pass sends the value (plan 971 §9).
+    { from: 'byRows/pass', to: 'mixed' }, { from: 'byValue/pass', to: 'mixed' },
+    { from: 'byValue/pass', to: 'values' }, { from: 'alsoValue/pass', to: 'values' },
     { from: 'm/result', to: 'counts' }, { from: 'n/value', to: 'counts' },
   ]);
-  // A value in, or numbers, or Trues: one value, so Pass and Fail send it on. Rows in: they split them.
+  // A value in, or numbers, or one value's Passes: one value, so Pass and Fail send it on. Rows in: they split them.
   for (const id of ['byValue', 'mixed', 'values', 'counts']) assert.deepEqual(idle(g, id), [], id);
 });
 

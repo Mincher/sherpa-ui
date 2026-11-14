@@ -26,8 +26,8 @@ test.beforeEach(async ({ page }) => {
         { id: 'c', kind: 'condition', x: 560, y: 20, heading: 'Active', values: { type: 'eq', b: 'active' } },
         { id: 'or', kind: 'condition', x: 820, y: 220, heading: 'Either', values: { type: 'or' } },
       ],
-      // A test joins by its True, 1 or 0 (plan 944).
-      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/true', to: 'or' }, { from: 'one/value', to: 'or' }],
+      // A test joins by its Pass (plan 971 §9).
+      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'or' }, { from: 'one/value', to: 'or' }],
     };
     const w = window as unknown as Record<string, unknown>;
     w['ed'] = bindWorkflow(el as never, flow as never, { session: new SessionStore(), inspector: panel as never, stores: ['users'], fieldsOf: { users: { status: { label: 'Status' } } } });
@@ -69,7 +69,7 @@ test('a Value\'s 1 into Or is a constant part: no warning, and Status or 1 alway
 test('the Source\'s rows dropped on Or\'s header join, no refusal, and Or takes them: no warning (939)', async ({ page }) => {
   const heard: string[] = [];
   page.on('console', (m) => { if (/bindWorkflow/.test(m.text())) heard.push(m.text()); });
-  expect(await page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-connectors path[data-to="or"]')].map((p) => (p as SVGElement).dataset['from']).sort())).toEqual(['c/true', 'one/value']);
+  expect(await page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-connectors path[data-to="or"]')].map((p) => (p as SVGElement).dataset['from']).sort())).toEqual(['c/pass', 'one/value']);
   expect(await page.locator(OR).getAttribute('data-warning')).toBeNull();
   const rows = await page.evaluate(() => {
     const row = [...document.querySelectorAll('#cv > sherpa-node[data-heading="Source"] sherpa-node-row')].find((r) => r.querySelector('sherpa-input-text[name="store"]')) as HTMLElement & { socketRect(side: string): DOMRect };

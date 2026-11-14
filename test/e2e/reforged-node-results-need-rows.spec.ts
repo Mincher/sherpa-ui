@@ -1,8 +1,9 @@
 import { test, expect } from './harness';
 
 /**
- * Rows need rows (Will, TODO 924): a Math Count into a Condition's header leaves it one test, so its Pass and Fail hide;
- * its True shows, 1 or 0 (plan 944). A Field's column in, and both show. One a connection still leaves stays.
+ * Rows need rows (Will, TODO 924): a Math Count into a Condition's header leaves it a test of ONE value, and its Pass and
+ * Fail still show: they send its Data, else the Count (plan 971 §9). A Field's column in, and both show. It has no True
+ * (plan 971 §9). One a connection leaves stays, and what it feeds says why it cannot use it.
  */
 const bind = (page: import('@playwright/test').Page, connections: { from: string; to: string }[]) => page.evaluate(async (wires) => {
   document.getElementById('root')!.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 600px"></sherpa-layout-canvas>');
@@ -19,26 +20,27 @@ const bind = (page: import('@playwright/test').Page, connections: { from: string
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }, connections);
 
-/** The Condition's Pass, Fail and True rows, and its Properties box: shown or not. */
+/** The Condition's Pass and Fail rows, and its Properties box: shown or not; and whether it has a True row. */
 const shown = (page: import('@playwright/test').Page) => page.locator('#cv > sherpa-node[data-heading="Condition"]').evaluate((el) => {
   const row = (name: string) => [...el.querySelectorAll<HTMLElement>('sherpa-node-row')].find((r) => r.getAttribute('data-socket-name') === name);
-  const box = row('True')?.parentElement as HTMLElement | undefined;
+  const box = row('Pass')?.parentElement as HTMLElement | undefined;
   const on = (e: Element | null | undefined) => !!e && (e as HTMLElement).checkVisibility();
-  return { pass: on(row('Pass')), fail: on(row('Fail')), true: on(row('True')), box: on(box) };
+  return { pass: on(row('Pass')), fail: on(row('Fail')), true: !!row('True'), box: on(box) };
 });
 
-test('a Math Count into a Condition\'s header hides its Pass and Fail; its True shows (plan 944, 971)', async ({ page }) => {
+test('a Math Count into a Condition\'s header is one test: its Pass and Fail show, and it has no True (plan 971 §9)', async ({ page }) => {
   await bind(page, [{ from: 'm/result', to: 'c' }]);
-  expect(await shown(page)).toEqual({ pass: false, fail: false, true: true, box: true });
+  expect(await shown(page)).toEqual({ pass: true, fail: true, true: false, box: true });
 });
 
 test('a Field\'s column in, and they show', async ({ page }) => {
   await bind(page, [{ from: 'f/field', to: 'c' }]);
-  expect(await shown(page)).toEqual({ pass: true, fail: true, true: true, box: true });
+  expect(await shown(page)).toEqual({ pass: true, fail: true, true: false, box: true });
 });
 
-test('one a connection still leaves stays, with a warning on its node; the rest of the box hides it not', async ({ page }) => {
+test('one a connection leaves stays; what it feeds says why it cannot use it', async ({ page }) => {
   await bind(page, [{ from: 'm/result', to: 'c' }, { from: 'c/pass', to: 'sorted' }]);
-  expect(await shown(page)).toEqual({ pass: true, fail: false, true: true, box: true });
-  await expect(page.locator('#cv > sherpa-node[data-heading="Condition"]')).toHaveAttribute('data-warning', /Pass has no rows/);
+  expect(await shown(page)).toEqual({ pass: true, fail: true, true: false, box: true });
+  // A test of one value's Pass sends the Count, a number: an Organise takes rows (plan 971 §9).
+  await expect(page.locator('#cv > sherpa-node[data-heading="Organise"]')).toHaveAttribute('data-warning', /Organise takes rows; it was given a number/);
 });

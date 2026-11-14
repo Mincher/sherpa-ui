@@ -3,8 +3,8 @@ import { test, expect, type Page } from './harness';
 /**
  * A node's rows: a MULTI-select row is one select — the quick-filter chip the panel draws,
  * a menu of ticks — never a list of checkboxes (TODO 731); a SWITCH row has a boolean input
- * socket, and a connected true value drives it, a false one clears it, cut restores (TODO 732); a Condition's True,
- * a row now (plan 944), drives it read only. Pixels
+ * socket, and a connected true value drives it, a false one clears it, cut restores (TODO 732); a Condition's Pass,
+ * rows, cannot: it reads null, and the node says why (plan 971 §9). Pixels
  * for the socket; real clicks for the menu. Plan 713 D7, D17.
  */
 type Canvas = HTMLElement & { rendered: Promise<void> };
@@ -126,8 +126,8 @@ test('a switch row has a boolean input socket: hollow until a connection joins i
 });
 
 test('a connected socket is filled: the shape is ink in the middle, not at its far corners', async ({ page }) => {
-  // A Condition's True, a row (plan 944).
-  await bind(page, [{ from: 'filter/true', to: 'gate/on' }]);
+  // A boolean Value's (plan 971 §9: a Condition has no True).
+  await bind(page, [{ from: 'yes/value', to: 'gate/on' }]);
   const purple = await ink(page);
   // Three corners: the fourth, bottom right, is inked or not by the fraction of a pixel the fitted view puts the socket on.
   const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.04, .04], [.04, .96]])).map((p) => (near(p, purple) ? 1 : 0));
@@ -165,7 +165,7 @@ test('a connected false value clears the switch: off, though its own state is on
   expect((await sw(page)).locked).toBe(true);
 });
 
-test('a Condition\'s True, a row, drives the switch read only and marked Custom (plan 944)', async ({ page }) => {
-  await bind(page, [{ from: 'filter/true', to: 'gate/on' }], true);
-  expect(await sw(page)).toMatchObject({ locked: true, note: 'Custom, from Condition' });
+test('a Condition\'s Pass, rows, joins the switch but cannot drive it: it reads null, and the Gate says why (plan 971 §9)', async ({ page }) => {
+  await bind(page, [{ from: 'filter/pass', to: 'gate/on' }], true);
+  await expect(page.locator(GATE)).toHaveAttribute('data-warning', /On takes a boolean; it was given rows/);
 });

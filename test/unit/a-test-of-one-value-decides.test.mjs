@@ -1,9 +1,9 @@
 /**
  * A TEST OF ONE VALUE DECIDES (Will, plans 944, 971 A; §9: "Fold it into Condition"): no node has a True or a False socket,
- * and there is no Branch node. A test of a column gives Pass, the rows that hold, and Fail, the rest, and a True property,
- * 1 or 0. A test of ONE value (a number, a True, rows into Is empty) sends ALL its Data, else the value, by Pass where it
- * holds or Fail where not; the other way is not taken, so nothing after it runs. The Boolean passes on what comes in where
- * it is true. And and Or take anything, several.
+ * and there is no Branch node. A test of a column gives Pass, the rows that hold, and Fail, the rest; it has no True (Will:
+ * "This removes the need for the 'True' property"). A test of ONE value (a number, a boolean, rows into Is empty) sends
+ * ALL its Data, else the value, by Pass where it holds or Fail where not; the other way is not taken, so nothing after it
+ * runs. The Boolean passes on what comes in where it is true. And and Or take anything, several.
  * Counting rows is a Math type, Count.
  *
  *   node --test test/unit/a-test-of-one-value-decides.test.mjs
@@ -25,12 +25,12 @@ const rows = [{ id: 1, status: 'active', plan: 'Free' }, { id: 2, status: 'activ
 const users = [N('s', 'source', { store: 'users' }), N('f', 'field', { field: 'status' })];
 const toStatus = [C('s/rows', 'f'), C('f/field', 'c')];
 
-test('no kind forks and there is no Branch: a test\'s Pass, Fail and True are properties, then its Data; Count is no property', () => {
+test('no kind forks and there is no Branch: a test\'s Pass and Fail are properties, then its Data; Count is no property', () => {
   assert.ok(Object.values(NODE_KINDS).every((k) => !('branches' in k)));
   assert.equal(NODE_KINDS.branch, undefined, 'the Branch folds into Condition (plan 971 §9)');
   for (const type of ['eq', 'gt', 'between', 'and', 'or', 'not', 'empty']) {
     const kind = resolveKind(NODE_KINDS.condition, type);
-    assert.deepEqual(kind.rows.filter((r) => r.property).map((r) => [r.name, r.gives]), [['pass', 'rows'], ['fail', 'rows'], ['true', 'number']], type);
+    assert.deepEqual(kind.rows.filter((r) => r.property).map((r) => [r.name, r.gives]), [['pass', 'rows'], ['fail', 'rows']], type);
     const data = kind.rows.find((r) => r.name === 'data');
     assert.deepEqual([data.input, data.optional, kind.rows.indexOf(data)], ['any', true, kind.rows.findIndex((r) => r.name === 'fail') + 1], type);
   }
@@ -41,13 +41,13 @@ test('no kind forks and there is no Branch: a test\'s Pass, Fail and True are pr
   assert.match(workflowFaults(old).join('; '), /a connection leaves "c", which is no output socket/);
 });
 
-test('a test\'s True is 1 where any row passes, 0 where none does; Pass is the rows that pass, Fail the rest', () => {
+test('a test of a column: Pass is the rows that pass, Fail the rest; where none passes, Pass is no rows', () => {
   const sim = (b) => simulateGraph(graphOf([...users, N('c', 'condition', { type: 'eq', b })], toStatus), { users: rows });
   const ids = (s, socket) => out(s, 'c', socket).rows.map((r) => r.id);
   const yes = sim('active');
-  assert.deepEqual([out(yes, 'c', 'c/true').value, ids(yes, 'c/pass'), ids(yes, 'c/fail')], [1, [1, 2], [3]]);
+  assert.deepEqual([ids(yes, 'c/pass'), ids(yes, 'c/fail')], [[1, 2], [3]]);
   const gone = sim('gone');
-  assert.deepEqual([out(gone, 'c', 'c/true').value, ids(gone, 'c/pass'), ids(gone, 'c/fail')], [0, [], [1, 2, 3]]);
+  assert.deepEqual([ids(gone, 'c/pass'), ids(gone, 'c/fail')], [[], [1, 2, 3]]);
 });
 
 test('a test of one value sends ALL its Data by Pass where it holds; Fail is not taken, and what it feeds does not run; and the other way', () => {
@@ -77,12 +77,11 @@ test('a test of one value with no Data sends the value on the way taken; its Pas
   assert.deepEqual(column.warnings?.filter((w) => w.row === 'data').map((w) => w.words), ['Data is not used: a column is tested, so Pass and Fail split its rows']);
 });
 
-test('And and Or take anything; their True 1 or 0; And\'s Pass is the rows in every input, Or\'s in any, Fail the rest (Will)', () => {
+test('And and Or take anything; And\'s Pass is the rows in every input, Or\'s in any, Fail the rest (Will)', () => {
   const counts = [3, 0, 5].map((n, i) => N(`n${i}`, 'value', { type: 'integer', value: n }));
   const joins = [N('or', 'condition', { type: 'or' }), N('and', 'condition', { type: 'and' })];
   const sim = simulateGraph(graphOf([...counts, ...joins], counts.flatMap((n) => [C(`${n.id}/value`, 'or'), C(`${n.id}/value`, 'and')])), {});
-  // An Or of 3, 0 and 5 is True, an And of them is not: values alone are ONE truth, so the way taken sends the first value.
-  assert.deepEqual([out(sim, 'or', 'or/true').value, out(sim, 'and', 'and/true').value], [1, 0]);
+  // An Or of 3, 0 and 5 holds, an And of them does not: values alone are ONE truth, so the way taken sends the first value.
   assert.deepEqual(['or/pass', 'or/fail', 'and/pass', 'and/fail'].map((s) => out(sim, s.split('/')[0], s)).map((o) => o.notTaken ? 'not taken' : o.value), [3, 'not taken', 'not taken', 3]);
   // Two tests' Pass: active is 1 and 2, Free is 1 and 3.
   const tests = [...users, N('p', 'field', { field: 'plan' }), N('a', 'condition', { type: 'eq', b: 'active' }), N('fr', 'condition', { type: 'eq', b: 'Free' }), ...joins];
@@ -112,12 +111,12 @@ test('Math Count: how many rows come in', () => {
   assert.equal(out(sim, 'm', 'm/result').value, 3);
 });
 
-test('a test\'s True or its Pass into an Or say its tree, as the header did: the Query reads the same where', () => {
+test('a test\'s Pass into an Or says its tree, as the header did: the Query reads the same where', () => {
   const nodes = [...users, N('a', 'condition', { type: 'eq', b: 'active' }), N('t', 'condition', { type: 'eq', b: 'trial' }), N('or', 'condition', { type: 'or' })];
   const base = [C('s/rows', 'f'), C('f/field', 'a'), C('f/field', 't')];
   const where = (from) => nodeFlow(graphOf(nodes, [...base, ...from.map((x) => C(x, 'or'))]), 'or').definition.where;
   const tree = { or: [{ field: 'status', op: 'eq', value: 'active' }, { field: 'status', op: 'eq', value: 'trial' }] };
-  assert.deepEqual([where(['a/true', 't/true']), where(['a/pass', 't/pass'])], [tree, tree]);
+  assert.deepEqual(where(['a/pass', 't/pass']), tree);
 });
 
 test('a test\'s Fail says the opposite of its tree: carried through a Field, and into an Or', () => {

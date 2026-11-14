@@ -24,7 +24,7 @@ const SETUP = `async () => {
   const definition = (label) => ({ v: 1, label, category: 'Custom Nodes',
     inputs: [{ name: 'users', label: 'Users', type: 'object' }], outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
     nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }],
-    connections: [{ from: '#in/users', to: 'c' }, { from: 'c/pass', to: '#out/allowed' }, { from: 'c/true', to: '#out' }] });
+    connections: [{ from: '#in/users', to: 'c' }, { from: 'c/pass', to: '#out/allowed' }, { from: 'c/pass', to: '#out' }] });
   window.definition = definition;
   const keeper = new PageKeeper();
   keeper.entityPresets = [nodeEntityOf('has-role', definition('Has role'))];

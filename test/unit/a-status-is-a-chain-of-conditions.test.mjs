@@ -1,9 +1,9 @@
 /**
  * A STATUS IS A CHAIN OF CONDITIONS — plan 713 M5, plan 783 D6. A status field draws one row per value and,
- * per `when`, a Field per field it names, a test per rule and an Or, its True into a Branch (plans 944, 971): Yes hands
- * its value the rows, No hands the rest to the next value's Fields and Branch, in the order the status takes the first
- * match; a preset's and a saved filter's conditions draw the same way, read only. The load lights each root with the
- * rows that took it. TRAP T-a-condition-is-a-tree-of-nodes
+ * per `when`, a Field per field it names, a test per rule and an Or (plans 944, 971 §9): its Pass hands its value the
+ * rows, its Fail hands the rest to the next value's Fields, in the order the status takes the first match; a preset's
+ * and a saved filter's conditions draw the same way, read only. The load lights each root with the rows that took it.
+ * TRAP T-a-condition-is-a-tree-of-nodes
  *
  *   node --test test/unit/a-status-is-a-chain-of-conditions.test.mjs
  */
@@ -62,7 +62,7 @@ test('Health is 3 value rows, and per `when` a Field per field, a test per rule 
 });
 
 test('each `when` is its value\'s, read only: any of its rules, the store\'s to change', () => {
-  // The rows a rule holds; its True holds none (plan 944).
+  // Each rule says its Operation and its Value B; it has no True (plan 971 §9).
   const tests = ['status-health.At risk.1', 'status-health.At risk.2'].map((id) => node(id).rows.filter((r) => r.control).map((r) => r.value));
   assert.deepEqual(tests, [['lt', 60], ['gte', 5]]);
   const drawn = g.nodes.filter((n) => n.id.includes('At risk') && n.kind !== 'status');
@@ -91,9 +91,9 @@ test('a PRESET\'s and a SAVED FILTER\'s conditions are Condition nodes, read onl
   const big = d.nodes.find((n) => n.id === 'when-preset-data-big-score');
   const low = d.nodes.find((n) => n.id === 'when-saved-low-view:score');
   for (const n of [big, low]) assert.ok(n.kind === 'condition' && n.rows.filter((r) => r.name !== ROWS.name).every((r) => !r.editable), n.id);
-  // From each one's True (plan 944).
-  assert.ok(d.connections.some((r) => r.from === `${big.id}/true` && r.to === 'preset-data-big/score'));
-  assert.ok(d.connections.some((r) => r.from === `${low.id}/true` && r.to === 'saved-low/view:score'));
+  // From each one's Pass (plan 971 §9).
+  assert.ok(d.connections.some((r) => r.from === `${big.id}/pass` && r.to === 'preset-data-big/score'));
+  assert.ok(d.connections.some((r) => r.from === `${low.id}/pass` && r.to === 'saved-low/view:score'));
   assert.deepEqual(queryGraphFaults(d), []);
 });
 

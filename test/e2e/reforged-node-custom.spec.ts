@@ -14,11 +14,11 @@ const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
-  // The users' Role, a Field; Equals the Role given, as Value B (plan 783). Its True property is the output (plan 944).
+  // The users' Role, a Field; Equals the Role given, as Value B (plan 783). Its Pass is the output (plan 971 §9).
   nodes: [{ id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
   connections: [
     { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
-    { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/true', to: '#out' },
+    { from: 'has-role/pass', to: '#out/allowed' }, { from: 'has-role/pass', to: '#out' },
   ],
 };
 

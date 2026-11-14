@@ -153,3 +153,10 @@ value the way taken sends ALL of Data, else the value tested (Pass and Fail `pas
 is "Not taken". Data joined to a column test warns, unused. The Branch kind, its When types and Simulate's `branched` are
 gone; the status chain is each root's Pass into its value and Fail into the next value's Fields. "Is true" is Equals true.
 
+**§9, the Boolean and True, as built (sherpa-ui-e8, 2026-11-14).** Will: "We should have a Boolean node for simple 'if
+true then' checks and routing"; "This removes the need for the 'True' property in Condition nodes, too." The `boolean`
+kind: header in, header out (a kind's `passes`: what reaches its header, drawn as that type), no rows; true where a number
+is above 0, a boolean true, rows have a row, an object has data, text; else Not taken. No test has a True row: a test's
+tree is said by its Pass (the Query graph's chips, presets, saved filters, a Filter's `#out/where`, And and Or). An AI
+node's True stays. A test's light on one value says the way it took, "Pass = 40".
+

@@ -69,8 +69,8 @@ test("an app's own kind goes after the known categories; one with none is Other"
 
 test('the kinds placed last come first, newest first; one that does not fit is left out; then a Value (TODO 968)', () => {
   const palette = paletteOf(NODE_KINDS);
-  const into = paletteFor(palette, 'value', 'in', [{ kind: 'organise' }, { kind: 'math' }, { kind: 'condition' }]).map((i) => i.id);
-  assert.deepEqual(into.slice(0, 3), ['math', 'condition', 'value']);
+  const into = paletteFor(palette, 'value', 'in', [{ kind: 'organise' }, { kind: 'math' }, { kind: 'prompt' }]).map((i) => i.id);
+  assert.deepEqual(into.slice(0, 3), ['math', 'prompt', 'value']);
   assert.ok(!into.includes('organise'));
   assert.deepEqual(paletteFor(palette, 'value', 'in', []).map((i) => i.id), paletteFor(palette, 'value', 'in').map((i) => i.id));
 });
@@ -92,12 +92,13 @@ test('a socket is offered the kinds that could join it, a Value first', () => {
   const fromValue = paletteFor(palette, 'value', 'out').map((i) => i.id);
   assert.ok(fromValue.includes('condition') && fromValue.includes('result') && !fromValue.includes('value'));
   assert.ok(fromValue.includes('math') && fromValue.includes('time'));
-  // An input that takes a value is fed by a kind that gives one: a Value first; a Math its Result, a Condition its True.
-  // No Organise: it has no Count row (plan 944), and sends rows alone.
+  // An input that takes a value is fed by a kind that gives one: a Value first; a Math its Result, an AI node its Answer.
+  // No Organise: it has no Count row (plan 944), and sends rows alone. No Condition: it has no True (plan 971 §9).
   const into = paletteFor(palette, 'value', 'in').map((i) => i.id);
   assert.equal(into[0], 'value');
-  assert.ok(into.includes('condition') && into.includes('math') && !into.includes('organise'));
-  assert.deepEqual(fitOf(NODE_KINDS['condition'], 'value', 'in'), { row: 'true' });
+  assert.ok(into.includes('prompt') && into.includes('math') && !into.includes('organise') && !into.includes('condition'));
+  assert.deepEqual(fitOf(NODE_KINDS['prompt'], 'value', 'in'), { row: 'answer' });
+  assert.equal(fitOf(NODE_KINDS['condition'], 'value', 'in'), undefined);
   assert.equal(fitOf(NODE_KINDS['organise'], 'value', 'in'), undefined);
   assert.deepEqual(fitOf(NODE_KINDS['organise'], 'object', 'out'), {}, 'an Organise takes the rows on its header');
   // A list into a Math's own type: Floor takes it, in its Values row.

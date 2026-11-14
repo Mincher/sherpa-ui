@@ -572,7 +572,7 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
     if (out?.passes && node && !busy.has(id)) {
       busy.add(id);
       try {
-        if (testsOneValue(node, connections, sends)) {
+        if (testsOneValue(node, connections, sends, held, kinds)) {
           const into = connections.find((r) => r.to === `${id}/${out.passes}`) ?? connections.find((r) => r.to === id);
           return into ? sends(into.from) : undefined;
         }
@@ -605,11 +605,14 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, connections: readonly N
   return sends;
 }
 
-/** Whether a test reads ONE value (plan 971 §9): no Field's column reaches its header, and no rows either, but where it is
- *  Is empty, whose rows are one set, empty or not. Else it splits rows: a column's, or the tests' rows And, Or and Not join. */
-function testsOneValue(node: WorkflowNode, connections: readonly NodeConnection[], sends: (from: string) => Reached | undefined): boolean {
+/** Whether a test reads ONE value (plan 971 §9): no Field's column reaches its header (a Field's row, whatever it reads, as
+ *  Simulate reads it), and no rows either, but where it is Is empty, whose rows are one set, empty or not. Else it splits
+ *  rows: a column's, or the tests' rows And, Or and Not join. */
+function testsOneValue(node: WorkflowNode, connections: readonly NodeConnection[], sends: (from: string) => Reached | undefined, held: ReadonlyMap<string, WorkflowNode>, kinds: Kinds): boolean {
   if (!TEST_KINDS.has(node.kind)) return false;
-  const came = connections.filter((r) => r.to === node.id).map((r) => sends(r.from)?.kind);
+  const into = connections.filter((r) => r.to === node.id);
+  if (into.some((r) => givenAt(held.get(socketOf(r.from).node), socketOf(r.from).row, kinds)?.kind === 'field')) return false;
+  const came = into.map((r) => sends(r.from)?.kind);
   if (came.includes('field')) return false;
   return node.values?.['type'] === 'empty' || !came.some((k) => k === 'rows' || k === 'object');
 }
@@ -803,7 +806,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       // A test's Pass and Fail are drawn as what they send: rows, or, on one value, what reaches its Data (plan 971 §9).
       const through = row.passes ? { output: socketOfGiven(sent(`${node.id}/${row.name}`)?.kind) } : {};
       // Data on a test of a column is not used: its Pass and Fail split the column's rows.
-      if (row.name === 'data' && row.input && TEST_KINDS.has(node.kind) && flows.some((c) => c.to === `${node.id}/data`) && !testsOneValue(node, flows, sent)) {
+      if (row.name === 'data' && row.input && TEST_KINDS.has(node.kind) && flows.some((c) => c.to === `${node.id}/data`) && !testsOneValue(node, flows, sent, held, kinds)) {
         warnings.push({ row: row.name, words: 'Data is not used: a column is tested, so Pass and Fail split its rows' });
       }
       // A Field's Values with none picked sends nothing, and says so.

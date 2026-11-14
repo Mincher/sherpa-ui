@@ -34,8 +34,8 @@ test.beforeEach(async ({ page }) => {
         { id: 't', kind: 'time', x: 380, y: 340 },
         { id: 'end', kind: 'result', x: 840, y: 440 },
       ],
-      // A Condition sends by its True property, not its header (plan 944).
-      connections: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c/true', to: 'end' }],
+      // A Condition sends by its Pass, not its header (plan 971 §9).
+      connections: [{ from: 'v/value', to: 'm/a' }, { from: 's/rows', to: 't' }, { from: 'c/pass', to: 'end' }],
     };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     const w = window as unknown as Record<string, unknown>;
@@ -201,8 +201,8 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   expect(await lines(page)).toContain('t>c');
   expect(await warning(page, 'Condition')).toBeNull();
   const before = await lines(page);
-  // Its Pass and Fail hide (a boolean is no rows, TODO 924, 939): its True property back into Time makes the loop (plan 944).
-  await drag(page, await socketAt(page, 'Condition', 'True', 'output'), await socketAt(page, 'Time', null, 'input'));
+  // A test of one value: its Pass sends the value it tests (plan 971 §9), so back into Time it makes the loop.
+  await drag(page, await socketAt(page, 'Condition', 'Pass', 'output'), await socketAt(page, 'Time', null, 'input'));
   expect(await lines(page)).toEqual(before);
   await expect.poll(() => heard.some((m) => m.includes('its connections run in a loop'))).toBe(true);
 });

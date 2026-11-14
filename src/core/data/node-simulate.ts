@@ -221,12 +221,13 @@ function givenOf(value: unknown): Given {
   return typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : Array.isArray(value) ? 'list' : value && typeof value === 'object' ? 'object' : 'value';
 }
 
-/** What a node that sends a value says on its light, as = 42: a test, its True, not the value it passes on (plan 971 §9). */
+/** What a node that sends a value says on its light, as = 42; a test of one value, the way it took, as Pass = 42 (plan 971 §9). */
 function valueWords(slots: readonly Slot[]): string | undefined {
   const said = slots.find((s) => s.socket.endsWith('/true') && s.value !== undefined) ?? slots.find((s) => s.kind === 'value' && s.value !== undefined);
   if (!said) return undefined;
   const words = typeof said.value === 'string' ? said.value : JSON.stringify(said.value);
-  return `= ${words.length > 24 ? `${words.slice(0, 23)}…` : words}`;
+  const way = slots.some((s) => s.notTaken) ? `${said.label} ` : '';
+  return `${way}= ${words.length > 24 ? `${words.slice(0, 23)}…` : words}`;
 }
 
 /** A node's LIGHT after a simulation: the rows it heard and the rows it said, "412 → 87", and the time it took; a Source or an
@@ -491,16 +492,6 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
   function make(node: GraphNode, row: string | undefined): Sent {
     // Down a way a test did not take, it does not run, and nor does what it feeds (plan 971 §9).
     if (!taken(node)) return { kind: 'value', note: 'Not taken', notTaken: true };
-    // A test's True: 1 where it holds, 0 where not (plan 944).
-    if (TEST_KINDS.has(node.kind) && row === 'true') {
-      const read = verdict(node);
-      if (typeof read === 'string') {
-        fault(read);
-        return { kind: 'value', note: read };
-      }
-      if ('note' in read) return { kind: 'value', note: read.note };
-      return { kind: 'value', value: (read.passed ?? read.kept.length > 0) ? 1 : 0 };
-    }
     // A Field's Values sends its one value, or its list. TRAP T-a-multi-select-is-one-row
     const picks = row === undefined ? undefined : node.rows.find((r) => r.name === row && r.valuesOf);
     if (picks) return { kind: 'value', value: pickSent(picks.value) };

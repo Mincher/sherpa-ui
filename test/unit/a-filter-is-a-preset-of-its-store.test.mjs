@@ -40,12 +40,12 @@ const FIELDS = { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { 
 const fieldNode = (id, field, x = 200, y = 0) => ({ id, kind: 'field', x, y, values: { field } });
 /** A Condition of one operator, its Value B given. */
 const test_ = (id, type, b, x = 400, y = 0) => ({ id, kind: 'condition', x, y, values: { type, ...(b === undefined ? {} : { b }) } });
-/** Demos' own, rebuilt (plan 783 D9): Source › Field (Status) › Condition (Equals active) › its True › Where (plan 944). */
+/** Demos' own, rebuilt (plan 783 D9): Source › Field (Status) › Condition (Equals active) › its Pass › Where (plan 971 §9). */
 const active = {
   v: 3, type: 'filter', id: 'active-customers', label: 'Active customers', settings: { source: 'customers' },
   graph: {
     nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('field', 'status'), test_('status', 'eq', 'active')],
-    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/true', to: '#out/where' }],
+    connections: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status/pass', to: '#out/where' }],
   },
 };
 /** A Filter whose nodes and connections are given, over customers. */
@@ -53,7 +53,7 @@ const filter = (id, nodes, connections, extra = {}) => ({ v: 3, type: 'filter', 
 /** Pro, And Active customers placed beside it. */
 const proActive = filter('pro-active', [
   { id: 'use', kind: 'filter:active-customers', x: 0, y: 240 }, fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), test_('and', 'and', undefined, 600),
-], [{ from: 'plan/field', to: 'pro' }, { from: 'pro/true', to: 'and' }, { from: 'use', to: 'and' }, { from: 'and/true', to: '#out/where' }]);
+], [{ from: 'plan/field', to: 'pro' }, { from: 'pro/pass', to: 'and' }, { from: 'use', to: 'and' }, { from: 'and/pass', to: '#out/where' }]);
 
 async function page() {
   const source = await openSource({ store: 'customers', fields: FIELDS, scopes: { data: { label: 'Rows', holds: ['status', 'plan'] } } }, new ArrayStore(ROWS, { key: 'id' }));
@@ -68,14 +68,14 @@ test('its graph is read as the condition its Where says, the shape a page\'s own
   // A Value connected to Value B is read as the canvas draws it: mirrored. So is one connected to the Field's row.
   const connected = filter('connected', [
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'trial' } }, fieldNode('f', 'status'), test_('c', 'eq'),
-  ], [{ from: 'f/field', to: 'c' }, { from: 'val/value', to: 'c/b' }, { from: 'c/true', to: '#out/where' }]);
+  ], [{ from: 'f/field', to: 'c' }, { from: 'val/value', to: 'c/b' }, { from: 'c/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(connected).preset.where, { status: { eq: 'trial' } });
   const named = filter('named', [{ id: 'name', kind: 'value', x: 0, y: 200, values: { value: 'plan' } }, fieldNode('f', 'status'), test_('c', 'eq', 'Pro')],
-    [{ from: 'name/value', to: 'f/field' }, { from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }]);
+    [{ from: 'name/value', to: 'f/field' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(named).preset.where, { plan: { eq: 'Pro' } });
   // And over two fields is two readings: a scope ANDs its readings. Text as a row holds it is read as the Query reads it.
   const list = filter('list', [fieldNode('fs', 'status'), fieldNode('fn', 'seats'), test_('in', 'in', ['active', 'trial']), test_('gt', 'gt', '5'), test_('and', 'and', undefined, 600)],
-    [{ from: 'fs/field', to: 'in' }, { from: 'fn/field', to: 'gt' }, { from: 'in/true', to: 'and' }, { from: 'gt/true', to: 'and' }, { from: 'and/true', to: '#out/where' }]);
+    [{ from: 'fs/field', to: 'in' }, { from: 'fn/field', to: 'gt' }, { from: 'in/pass', to: 'and' }, { from: 'gt/pass', to: 'and' }, { from: 'and/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(list).preset.where, { status: { in: ['active', 'trial'] }, seats: { gt: '5' } });
 });
 
@@ -83,8 +83,8 @@ test('A or (B and C) on Seats is ONE reading: one Field into three Conditions, a
   const seats = filter('seats', [
     fieldNode('f', 'seats'), test_('a', 'lt', 5), test_('b', 'gt', 5, 400, 200), test_('c', 'lt', 100, 400, 400), test_('and', 'and', undefined, 600, 300), test_('or', 'or', undefined, 800),
   ], [
-    { from: 'f/field', to: 'a' }, { from: 'f/field', to: 'b' }, { from: 'f/field', to: 'c' }, { from: 'b/true', to: 'and' }, { from: 'c/true', to: 'and' },
-    { from: 'a/true', to: 'or' }, { from: 'and/true', to: 'or' }, { from: 'or/true', to: '#out/where' },
+    { from: 'f/field', to: 'a' }, { from: 'f/field', to: 'b' }, { from: 'f/field', to: 'c' }, { from: 'b/pass', to: 'and' }, { from: 'c/pass', to: 'and' },
+    { from: 'a/pass', to: 'or' }, { from: 'and/pass', to: 'or' }, { from: 'or/pass', to: '#out/where' },
   ]);
   const { where } = presetOfEntity(seats).preset;
   assert.deepEqual(Object.keys(where), ['seats']);
@@ -92,7 +92,7 @@ test('A or (B and C) on Seats is ONE reading: one Field into three Conditions, a
   // The rows a test lets through carry it: Source › Field › Active › Rows › Field › Pro is Active and Pro.
   const chain = filter('chain', [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } }, fieldNode('fs', 'status'), test_('act', 'eq', 'active'), fieldNode('fp', 'plan', 600), test_('pro', 'eq', 'Pro', 800),
-  ], [{ from: 'start/rows', to: 'fs' }, { from: 'fs/field', to: 'act' }, { from: 'act/rows', to: 'fp' }, { from: 'fp/field', to: 'pro' }, { from: 'pro/true', to: '#out/where' }]);
+  ], [{ from: 'start/rows', to: 'fs' }, { from: 'fs/field', to: 'act' }, { from: 'act/rows', to: 'fp' }, { from: 'fp/field', to: 'pro' }, { from: 'pro/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(chain).preset.where, { status: { eq: 'active' }, plan: { eq: 'Pro' } });
   // Time and a Tag are leaves too, each on the Field on its header.
   const dated = filter('dated', [fieldNode('f', 'joined'), { id: 't', kind: 'time', x: 400, y: 0, values: { type: 'duration', when: 'last', n: 7, unit: 'day' } }], [{ from: 'f/field', to: 't' }, { from: 't', to: '#out/where' }]);
@@ -124,7 +124,7 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
   assert.deepEqual(presetOfEntity(proActive, { entities: [active] }).preset.where, { plan: { eq: 'Pro' }, status: { eq: 'active' } });
   const both = filter('both', [
     { id: 'use', kind: 'filter:pro-active', x: 0, y: 240 }, fieldNode('f', 'seats'), test_('big', 'gte', 5), test_('and', 'and', undefined, 600),
-  ], [{ from: 'f/field', to: 'big' }, { from: 'use', to: 'and' }, { from: 'big/true', to: 'and' }, { from: 'and/true', to: '#out/where' }]);
+  ], [{ from: 'f/field', to: 'big' }, { from: 'use', to: 'and' }, { from: 'big/pass', to: 'and' }, { from: 'and/pass', to: '#out/where' }]);
   // Two deep: pro-active holds active-customers, and each is read inside.
   assert.deepEqual(presetOfEntity(both, { entities: [active, proActive] }).preset.where, { plan: { eq: 'Pro' }, status: { eq: 'active' }, seats: { gte: 5 } });
   // The canvas's Outgoing JSON reads the same: the And says Pro and the use's own.
@@ -141,7 +141,7 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
   // And takes any boolean (TODO 780, plan 783 D4): a constant folds, and one that decides it, or a boolean only a run
   // gives (and-or-take-any-boolean), has no preset form, said in words.
   const withPart = (node, from, join = 'and') => filter('part', [node, fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), test_('j', join, undefined, 600)],
-    [{ from: 'plan/field', to: 'pro' }, { from: 'pro/true', to: 'j' }, { from, to: 'j' }, { from: 'j/true', to: '#out/where' }]);
+    [{ from: 'plan/field', to: 'pro' }, { from: 'pro/pass', to: 'j' }, { from, to: 'j' }, { from: 'j/pass', to: '#out/where' }]);
   const yes = { id: 'v', kind: 'value', x: 0, y: 240, values: { type: 'boolean', value: 'true' } };
   assert.deepEqual(presetOfEntity(withPart(yes, 'v/value')).preset.where, { plan: { eq: 'Pro' } }, 'Pro and true: Pro');
   assert.match(presetOfEntity(withPart(yes, 'v/value', 'or')).fault, /always holds, so it filters nothing/);
@@ -151,26 +151,26 @@ test('one placed inside another flattens: its use\'s True into And; the Outgoing
 
 test('what has no preset form is said in words: Or across two fields, an empty value, no condition, a test with no Field', () => {
   const any = filter('any', [fieldNode('fp', 'plan'), fieldNode('fs', 'status'), test_('pro', 'eq', 'Pro'), test_('trial', 'eq', 'trial'), test_('or', 'or', undefined, 600)],
-    [{ from: 'fp/field', to: 'pro' }, { from: 'fs/field', to: 'trial' }, { from: 'pro/true', to: 'or' }, { from: 'trial/true', to: 'or' }, { from: 'or/true', to: '#out/where' }]);
+    [{ from: 'fp/field', to: 'pro' }, { from: 'fs/field', to: 'trial' }, { from: 'pro/pass', to: 'or' }, { from: 'trial/pass', to: 'or' }, { from: 'or/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(any), { fault: 'the Filter "any": it says Any of "plan" and "status", and each field holds its own condition' });
   // Any of ONE field is that field's own.
   assert.deepEqual(whereOfTree({ or: [{ field: 'plan', op: 'eq', value: 'Pro' }, { field: 'plan', op: 'eq', value: 'Free' }] }), { where: { plan: { or: [{ eq: 'Pro' }, { eq: 'Free' }] } } });
-  const empty = filter('empty', [fieldNode('f', 'plan'), test_('c', 'eq')], [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }]);
+  const empty = filter('empty', [fieldNode('f', 'plan'), test_('c', 'eq')], [{ from: 'f/field', to: 'c' }, { from: 'c/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(empty), { fault: 'the Filter "empty": its comparison of "plan" has no value' });
   assert.deepEqual(presetOfEntity(filter('none', [], [])), { fault: 'the Filter "none" sends no condition to its Where' });
   // A comparison of values, with no Field on its header, says no condition (776 D11).
-  const values = filter('values', [{ id: 'v', kind: 'value', x: 0, y: 0, values: { value: '1' } }, test_('m', 'gt', '2')], [{ from: 'v/value', to: 'm' }, { from: 'm/true', to: '#out/where' }]);
+  const values = filter('values', [{ id: 'v', kind: 'value', x: 0, y: 0, values: { value: '1' } }, test_('m', 'gt', '2')], [{ from: 'v/value', to: 'm' }, { from: 'm/pass', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(values), { fault: 'the Filter "values": "Condition" tests no Field: connect one in' });
   // A Field that sends nothing says why: a field its store lacks. With no Source, its rows are its settings' store's.
-  const stranger = filter('stranger', [fieldNode('f', 'nope'), test_('c', 'eq', 'x')], [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }]);
+  const stranger = filter('stranger', [fieldNode('f', 'nope'), test_('c', 'eq', 'x')], [{ from: 'f/field', to: 'c' }, { from: 'c/pass', to: '#out/where' }]);
   assert.match(presetOfEntity(stranger, { fieldsOf: { customers: FIELDS } }).fault, /"Condition" tests "Field", which sends nothing: "nope" is not a field of the rows that come in/);
-  const not = filter('not', [fieldNode('f', 'plan'), test_('c', 'not')], [{ from: 'f/field', to: 'c' }, { from: 'c/true', to: '#out/where' }]);
+  const not = filter('not', [fieldNode('f', 'plan'), test_('c', 'not')], [{ from: 'f/field', to: 'c' }, { from: 'c/pass', to: '#out/where' }]);
   assert.match(presetOfEntity(not).fault, /"Condition" is Not, which a condition cannot say yet/);
-  // No node has a False now (plan 944): what is no True says so.
+  // No node has a False (plan 944): a row that says no tree says so.
   const falsy = filter('falsy', [fieldNode('f', 'plan'), test_('c', 'eq', 'Pro')], [{ from: 'f/field', to: 'c' }, { from: 'c/#false', to: '#out/where' }]);
-  assert.match(presetOfEntity(falsy).fault ?? '', /"Condition" › #false is not its True/);
+  assert.match(presetOfEntity(falsy).fault ?? '', /"Condition" › #false is not its Pass/);
   // A loop reads nothing, and says so.
-  assert.match(conditionAt({ nodes: [{ id: 'a', kind: 'condition', heading: 'A', rows: [{ name: 'type', value: 'and' }] }], connections: [{ from: 'a/true', to: 'a' }] }, 'a').faults[0], /reads itself, in a loop/);
+  assert.match(conditionAt({ nodes: [{ id: 'a', kind: 'condition', heading: 'A', rows: [{ name: 'type', value: 'and' }] }], connections: [{ from: 'a/pass', to: 'a' }] }, 'a').faults[0], /reads itself, in a loop/);
 });
 
 test('a page lists only its store\'s: settings name the source, else its Store node; the app\'s then the reader\'s', () => {
@@ -213,7 +213,7 @@ test('never is `[\'or\']`: on the bar, and on it holds no row, in the store, a k
   const { conditionClause } = await import(new URL('filter-state.js', data));
   const { filterWithout, matchesFilter } = await import(new URL('store.js', data));
   const never = filter('never', [fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), { id: 'v', kind: 'value', x: 0, y: 240, values: { type: 'boolean', value: 'false' } }, test_('j', 'and', undefined, 600)],
-    [{ from: 'plan/field', to: 'pro' }, { from: 'pro/true', to: 'j' }, { from: 'v/value', to: 'j' }, { from: 'j/true', to: '#out/where' }]);
+    [{ from: 'plan/field', to: 'pro' }, { from: 'pro/pass', to: 'j' }, { from: 'v/value', to: 'j' }, { from: 'j/pass', to: '#out/where' }]);
   const made = presetOfEntity(never).preset;
   assert.deepEqual(made.where, { plan: { or: [] } });
   // Said as a tree it compiles to the filter that matches nothing; an unanswered group still narrows nothing.
@@ -239,6 +239,6 @@ test('never is `[\'or\']`: on the bar, and on it holds no row, in the store, a k
   assert.match(presetOfEntity(withTrue()).fault, /always holds, so it filters nothing/);
   function withTrue() {
     return filter('always', [fieldNode('plan', 'plan'), test_('pro', 'eq', 'Pro'), { id: 'v', kind: 'value', x: 0, y: 240, values: { type: 'boolean', value: 'true' } }, test_('j', 'or', undefined, 600)],
-      [{ from: 'plan/field', to: 'pro' }, { from: 'pro/true', to: 'j' }, { from: 'v/value', to: 'j' }, { from: 'j/true', to: '#out/where' }]);
+      [{ from: 'plan/field', to: 'pro' }, { from: 'pro/pass', to: 'j' }, { from: 'v/value', to: 'j' }, { from: 'j/pass', to: '#out/where' }]);
   }
 });

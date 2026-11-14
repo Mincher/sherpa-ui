@@ -1,7 +1,7 @@
 /**
  * AI NODES: a Model says which provider and model, both (plan 951); a Prompt, a Runbook and a Skill ask it. Each of the three EXPECTS an
  * answer — True/false, Text, Number, Data or List — its Type picker, and its sockets follow: True/false gives a True row,
- * 1 or 0, as a Condition does (plan 944); the rest give an Answer. The app gives the lists (`registerAiCatalog`); Sherpa ships none. With no
+ * 1 or 0 (plan 944); the rest give an Answer. The app gives the lists (`registerAiCatalog`); Sherpa ships none. With no
  * Model joined and no primary, a node says so; a Model with a pick left blank says so. Simulate asks no model. Will, plan 926 (D1 A, D2 A). A Runbook is its own words:
  * the app's runbooks are nodes of the Runbooks category (plan 936 D1 B).
  *
@@ -47,7 +47,7 @@ test('Expects is the Type picker of a Prompt, a Runbook and a Skill; its sockets
     assert.deepEqual(Object.keys(NODE_KINDS[id].types), ['boolean', 'text', 'number', 'data', 'list'], id);
   }
   const of = (type) => kindOfNode(NODE_KINDS, { kind: 'prompt', values: { type } });
-  // True/false gives a True, 1 or 0, as a Condition does; no fork, and no Answer (plan 944).
+  // True/false gives a True, 1 or 0; no fork, and no Answer (plan 944).
   assert.equal(of('boolean').branches, undefined);
   assert.deepEqual(of('boolean').rows.filter((r) => r.property).map((r) => [r.name, r.label, r.output, r.gives]), [['true', 'True', 'value', 'number']]);
   // The rest give an Answer, a property, as finely as the pick says.

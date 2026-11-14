@@ -37,7 +37,7 @@ export interface ConditionFacts {
   inner?: (node: GraphNode) => DrawnGraph | undefined;
 }
 
-/** A part only a run gives: a boolean, named by where it comes from — "Source › True". TODO 780 */
+/** A part only a run gives: a boolean, named by where it comes from — "Prompt › True". TODO 780 */
 export interface RunBoolean {
   boolean: string;
 }
@@ -52,7 +52,7 @@ export interface ConditionRead {
   faults: string[];
 }
 
-/** A socket address in words: "Source › Rows", "Condition › True". */
+/** A socket address in words: "Source › Rows", "Condition › Pass". */
 function said(graph: DrawnGraph, address: string): string {
   const { node: id, row } = socketOf(address);
   const from = graph.nodes.find((n) => n.id === id);
@@ -60,8 +60,8 @@ function said(graph: DrawnGraph, address: string): string {
   return [from?.heading ?? id, part].filter(Boolean).join(' › ');
 }
 
-/** A test's rows that say its tree: its True (1 or 0, plan 944) and its Pass; its Fail, the opposite (plan 971 A). */
-const SAYS_TREE = new Set(['pass', 'fail', 'true']);
+/** A test's rows that say its tree: its Pass; its Fail, the opposite (plan 971 A; no True, §9). */
+const SAYS_TREE = new Set(['pass', 'fail']);
 
 /** No condition, and why. */
 const none = (fault: string): ConditionRead => ({ faults: [fault] });
@@ -103,11 +103,11 @@ function readAt(graph: Flowing, address: string, facts: ConditionFacts, walk: Wa
   return joined('and', graph.connections.filter((r) => r.to === address).map((r) => readFrom(graph, r.from, facts, walk)));
 }
 
-/** The condition an output socket sends: a test's True, a use's, or a fault where it says none. */
+/** The condition an output socket sends: a test's Pass, a use's, or a fault where it says none. */
 function readFrom(graph: Flowing, from: string, facts: ConditionFacts, walk: Walk): ConditionRead {
   const { node: id, row: at } = socketOf(from);
   const node = graph.nodes.find((n) => n.id === id);
-  // A test's Pass is the rows that pass it: it says its tree, as its True does; its Fail, the tree's opposite (plan 971 A).
+  // A test's Pass is the rows that pass it: it says its tree; its Fail, the tree's opposite (plan 971 A).
   const test = !!node && TEST_KINDS.has(node.kind);
   const fails = test && at === 'fail';
   const row = at !== undefined && test && SAYS_TREE.has(at) ? undefined : at;
@@ -173,7 +173,7 @@ function carried(graph: Flowing, node: GraphNode, facts: ConditionFacts, walk: W
   }));
 }
 
-/** One part And or Or joins: a test's True, its Pass, its Fail (the opposite) or a use's brings its tree — one that says none is a boolean a run gives, and
+/** One part And or Or joins: a test's Pass, its Fail (the opposite) or a use's brings its tree — one that says none is a boolean a run gives, and
  *  why stays said; a value the graph holds that says true or false is a CONSTANT, which folds; a boolean only a run gives
  *  is named by where it comes from; what the header cannot use (null) says nothing. TODO 780, plan 783 D4 */
 function partFrom(graph: Flowing, via: NodeConnection, facts: ConditionFacts, walk: Walk): ConditionRead {
@@ -204,7 +204,7 @@ function readNode(graph: Flowing, node: GraphNode, row: string | undefined, fact
     const out = row ?? node.rows.find((r) => r.output)?.name;
     return out ? readAt(flowing(inner), `#out/${out}`, facts, { seen: new Set(), path: [...walk.path, node.kind] }) : none(`"${node.heading}" sends nothing out`);
   }
-  if (row !== undefined) return none(`"${node.heading}" › ${at(row)?.label ?? row} is not its True`);
+  if (row !== undefined) return none(`"${node.heading}" › ${at(row)?.label ?? row} is not its Pass`);
   const type = at('type')?.value;
   if (node.kind === 'condition' && (type === 'and' || type === 'or')) return joined(type, graph.connections.filter((r) => r.to === node.id).map((r) => partFrom(graph, r, facts, walk)));
   const read = leafOf(graph, node);
@@ -240,7 +240,7 @@ export function nodeFlow(graph: DrawnGraph, id: string, facts: ConditionFacts = 
     })),
   ];
   const values = Object.fromEntries(node.rows.filter((r) => r.control && r.value !== undefined && r.value !== '').map((r) => [r.name, r.value]));
-  // What its True says, where it says a condition: a Condition, a Tag, a use read inside.
+  // What it says, where it says a condition: a Condition, a Tag, a use read inside.
   const where = readNode(flowing(graph), node, undefined, facts, { seen: new Set([node.id]), path: [] }).tree;
   const definition = where !== undefined ? { where }
     : node.kind === 'source' ? { store: values['store'] ?? null }

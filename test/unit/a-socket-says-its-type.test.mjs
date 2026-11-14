@@ -2,8 +2,8 @@
  * A SOCKET SAYS ITS TYPE: a value, an object, a boolean, or — an input only — any.
  * One function, accepts(), says which output an input reads as its own; the registry says
  * each socket's type and whether an input takes many connections. No node has a True or a
- * False socket: a test's True is a row, and only a Branch branches, by its Yes and No rows
- * (plans 944, 971). Any connection joins any input (TODO 770): one of another type reads null,
+ * False socket, and a Condition has no True row: a test branches by its Pass and Fail rows
+ * (plans 944, 971 §9). Any connection joins any input (TODO 770): one of another type reads null,
  * and its node warns; workflowFaults refuses only a socket that is not there. One
  * rowChoices() says every list a picklist row reads. A node's data comes in on its header,
  * of any type, and leaves its Rows row, or a test's Pass and Fail. Will, TODO 713 (D1, D2, D4, D17) · plan 713 M1, M3.
@@ -69,9 +69,9 @@ test('the registry says each socket: a row\'s and the header\'s; no node has a T
   assert.deepEqual(['#false', undefined].map((row) => socketType({ ...kinds.fork, branches: true }, row, 'output')), [undefined, undefined]);
   assert.equal(socketType(NODE_KINDS.result, '#false', 'output'), undefined, 'no False');
   assert.equal(socketType(NODE_KINDS.result, undefined, 'output'), undefined, 'the end sends nothing');
-  // A Condition's header sends nothing: its True is a row, 1 or 0 (plan 944).
+  // A Condition's header sends nothing, and it has no True row (plan 971 §9).
   assert.equal(socketType(NODE_KINDS.condition, undefined, 'output'), undefined, 'a Condition\'s header sends nothing');
-  assert.equal(socketType(resolveKind(NODE_KINDS.condition), 'true', 'output'), 'value', 'a Condition\'s True');
+  assert.equal(socketType(resolveKind(NODE_KINDS.condition), 'true', 'output'), undefined, 'a Condition has no True');
   // A test of one value: its value on its header, its Data on a row, and its Pass and Fail rows (plan 971 §9).
   assert.deepEqual([[undefined, 'input'], ['data', 'input'], ['pass', 'output'], ['fail', 'output'], [undefined, 'output']].map(([row, side]) => socketType(resolveKind(NODE_KINDS.condition), row, side)), ['any', 'any', 'object', 'object', undefined]);
   assert.equal(takesMany(kinds.gate), true);
@@ -115,10 +115,8 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row, or
   // No type forks, and a header sends rows from no type: a portal's Out sends from its rows (TODO 826).
   // Only Logic's header takes by its type, rows, booleans, none; and a portal's, an In anything, many.
   for (const [name, kind] of all) for (const [id, type] of Object.entries(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], `${name} › ${id}`);
-  // A True row, 1 or 0: every Condition type, and an AI node that expects True/false (plan 944).
-  assert.deepEqual(typed.filter(([, rows]) => rows.some((r) => r.name === 'true')).map(([name]) => name), [
-    ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'prompt › boolean', 'runbook › boolean', 'skill › boolean',
-  ]);
+  // A True row: an AI node that expects True/false (plan 944); no Condition type (plan 971 §9).
+  assert.deepEqual(typed.filter(([, rows]) => rows.some((r) => r.name === 'true')).map(([name]) => name), ['prompt › boolean', 'runbook › boolean', 'skill › boolean']);
   assert.deepEqual(all.filter(([, k]) => Object.values(k.types ?? {}).some((t) => t.input)).map(([n]) => n), ['condition', 'portal']);
   // A comparison tests what comes in on its header (plan 783 D3): a Field's column, or a value.
   // And and Or take anything, several (TODO 939); Not one boolean.
@@ -159,7 +157,7 @@ test('a sound typed workflow has no fault, and its schema takes it', () => {
   assert.deepEqual(workflowFaults(sound, kinds), []);
   assert.deepEqual(schemaCheck('workflow.v3.json')(sound), []);
   const socket = schemaCheck('defs.v1.json#/$defs/socket');
-  // A test's True and a Branch's Yes are rows (plan 944).
+  // An AI node's True and a fork's Yes are rows (plan 944).
   assert.deepEqual([socket('c/true'), socket('k/yes')], [[], []]);
   assert.notDeepEqual(socket('f/#true'), [], 'a # part is no row');
   assert.notDeepEqual(socket('f/#false/more'), []);
@@ -190,12 +188,13 @@ test('a socket that is not there is refused, in words; so is an output that says
   const cases = [
     [[{ from: 'end/#false', to: 'g' }], 'a connection leaves "end/#false", which is no output socket'],
     [[{ from: 'f/yes', to: 'g/#false' }], 'a connection enters "g/#false", which is no input socket'],
-    // A Condition's header and its old False send nothing (plan 944): its True is a row.
+    // A Condition's header, its old False and its old True send nothing (plans 944, 971 §9): its Pass is a row.
     [[{ from: 't', to: 'g' }], 'a connection leaves "t", which is no output socket'],
     [[{ from: 't/#false', to: 'g' }], 'a connection leaves "t/#false", which is no output socket'],
+    [[{ from: 't/true', to: 'g' }], 'a connection leaves "t/true", which is no output socket'],
   ];
   for (const [connections, said] of cases) assert.ok(planted({ nodes, connections: [...sound.connections, ...connections] }).includes(said), `${said} — heard: ${planted({ nodes, connections: [...sound.connections, ...connections] }).join(' | ')}`);
-  assert.deepEqual(planted({ nodes, connections: [...sound.connections, { from: 't/true', to: 'l' }] }), [], 'its True row sends');
+  assert.deepEqual(planted({ nodes, connections: [...sound.connections, { from: 't/pass', to: 'l' }] }), [], 'its Pass row sends');
   const odd = planted({ nodes: [...nodes, node('o', 'odd')], connections: [...sound.connections, { from: 'o', to: 'l' }] });
   assert.ok(odd.includes('a connection leaves "o", which sends any type: an output says the one it sends'), odd.join(' | '));
 });

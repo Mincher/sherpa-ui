@@ -1,6 +1,6 @@
 /**
  * SIMULATE runs a graph on cached rows: each node's incoming and outgoing slots, a row list on each socket. A Condition keeps
- * what its test holds by the engine a page runs, and its True is 1 or 0 (plan 944); And keeps what every part kept, Or what any part kept;
+ * what its test holds by the engine a page runs, by Pass, and the rest by Fail (plan 971); And keeps what every part kept, Or what any part kept;
  * a Source not fetched says so; a portal's rows flow; nothing is written and the same in gives the same out. Will, TODO 836
  * · docs/history/plan-836-data-through-nodes.md · TRAP T-a-simulation-reads-the-cache-and-writes-nothing
  *
@@ -41,7 +41,7 @@ test('a Source sends the cached rows; a Field sends its name and the rows into i
   assert.deepEqual(sim.faults, []);
 });
 
-test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, in; its Fail the rest; its True is 1 or 0, and carries no rows (plan 944)', () => {
+test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, in; its Fail the rest; no True and no fork (plan 971 §9)', () => {
   const tests = [['status', 'eq', 'active'], ['status', 'ne', 'trial'], ['seats', 'gt', 50], ['seats', 'lt', 10], ['region', 'eq', 'EMEA'], ['status', 'in', ['trial', 'churned']]];
   for (let round = 0; round < 20; round++) {
     const rows = rowsOf(10 + Math.floor(rnd() * 90));
@@ -50,9 +50,8 @@ test('a Condition agrees with the filter engine on random rows: eq, ne, gt, lt, 
     const kept = filterRows(rows, [field, type, b]);
     assert.deepEqual(out(sim, 'c', 'c/pass').rows, kept, `${field} ${type}`);
     assert.deepEqual(out(sim, 'c', 'c/fail').rows, rows.filter((r) => !kept.includes(r)), `${field} ${type} Fail`);
-    // True is 1 where any row passes, 0 where none does: no rows. No True or False socket (plan 944).
-    assert.deepEqual([out(sim, 'c', 'c/true').value, out(sim, 'c', 'c/true').rows], [kept.length > 0 ? 1 : 0, undefined], `${field} ${type} True`);
-    assert.deepEqual([out(sim, 'c', 'c'), out(sim, 'c', 'c/#false')], [undefined, undefined], `${field} ${type}: no fork`);
+    // No True or False socket, and no True row (plans 944, 971 §9).
+    assert.deepEqual([out(sim, 'c', 'c'), out(sim, 'c', 'c/#false'), out(sim, 'c', 'c/true')], [undefined, undefined, undefined], `${field} ${type}: no fork`);
   }
 });
 
@@ -245,15 +244,15 @@ test('a node\'s light: the rows it heard and said, "120 → 30", and its time; t
   assert.equal(lightOf({ incoming: [], outgoing: [] }, 5), '5 ms');
 });
 
-test('the rows true: a test\'s Pass is what passed, its Fail the rest, its True 1; a test nothing passes keeps 0 rows, its True 0 (plan 944)', () => {
-  // trueOf is gone: a test's Pass, Fail and True rows say it (plans 944, 971).
+test('the rows true: a test\'s Pass is what passed, its Fail the rest; a test nothing passes keeps 0 rows (plan 971)', () => {
+  // trueOf is gone: a test's Pass and Fail rows say it (plans 944, 971 §9).
   assert.equal(trueOf, undefined);
   const rows = rowsOf(120);
   const kept = rows.filter((r) => r.status === 'active').length;
-  const said = (sim) => [out(sim, 'c', 'c/pass').rows?.length, out(sim, 'c', 'c/fail').rows?.length, out(sim, 'c', 'c/true').value];
-  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), { customers: rows })), [kept, 120 - kept, 1]);
-  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'no-such-status'), { customers: rows })), [0, 120, 0]);
-  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), {})), [undefined, undefined, undefined]);
+  const said = (sim) => [out(sim, 'c', 'c/pass').rows?.length, out(sim, 'c', 'c/fail').rows?.length];
+  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), { customers: rows })), [kept, 120 - kept]);
+  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'no-such-status'), { customers: rows })), [0, 120]);
+  assert.deepEqual(said(simulateGraph(chain('status', 'eq', 'active'), {})), [undefined, undefined]);
 });
 
 test('Pause lets the node in hand finish and goes no further; Play goes on from the next node; Stop ends the run, keeping the nodes done', async () => {

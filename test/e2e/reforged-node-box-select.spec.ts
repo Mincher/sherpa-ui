@@ -342,8 +342,8 @@ test('the Query editor selects and highlights what the box encloses or crosses; 
   expect(b.length).toBeGreaterThan(1);
   const top = Math.min(...b.map((r) => r.top));
   const bottom = Math.max(...b.map((r) => r.bottom));
-  // A box over the middle of the Trues' lines into View Filters (plan 960 U4.8), from blank canvas below them.
-  const t = await page.evaluate((s) => [...document.querySelectorAll(`${s}[data-from$="/true"]`)].map((p) => { const r = p.getBoundingClientRect(); return (r.left + r.right) / 2; }), sel);
+  // A box over the middle of the Passes' lines into View Filters (plans 960 U4.8, 971 §9), from blank canvas below them.
+  const t = await page.evaluate((s) => [...document.querySelectorAll(`${s}[data-from$="/pass"]`)].map((p) => { const r = p.getBoundingClientRect(); return (r.left + r.right) / 2; }), sel);
   await drag(page, [t[0]! - 5, bottom + 60], [t[0]! + 5, top - 5]);
   const n = await page.evaluate((s) => document.querySelectorAll(`${s}[data-selected]`).length, sel);
   expect(n).toBeGreaterThan(0);

@@ -37,7 +37,7 @@ test('a Condition says its where tree — the Field on its header, its Operation
   assert.deepEqual(flow.definition, { where: { field: 'status', op: 'eq', value: 'active' } });
   assert.deepEqual(flow.incoming.find((i) => i.socket === 'In').from, ['Field › Field']);
   assert.deepEqual(flow.incoming.find((i) => i.socket === 'Value B').from, ['Value › Value']);
-  assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.to]), [['Pass', ['Run result']], ['Fail', []], ['True', []]]);
+  assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.to]), [['Pass', ['Run result']], ['Fail', []]]);
 });
 
 test('a Value carries its value', () => {

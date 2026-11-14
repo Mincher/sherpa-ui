@@ -52,7 +52,7 @@ import {
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
 
-/** A test's properties, as its kind gives them (plan 971 A): Pass and Fail, and a Condition's True. */
+/** A test's properties, as its kind gives them (plan 971 A): Pass and Fail. */
 const TEST_ROWS: Readonly<Record<'condition' | 'time', readonly GraphRow[]>> = {
   condition: resolveKind(NODE_KINDS['condition']!, 'and').rows.filter((r) => r.property),
   time: resolveKind(NODE_KINDS['time']!, 'duration').rows.filter((r) => r.property),
@@ -285,8 +285,8 @@ function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }
 
 /**
  * A Where as the graph a Filter keeps it as (plan 960 U4.4b, D6): a Source over its store; a Field per field it tests;
- * a test per leaf, drawn as the Query graph draws one (`leafRows`); an And or an Or per group, each part's True into its
- * header; the root's True into `#out/where`. Its places are a first layout: it unfurls the first time it is shown.
+ * a test per leaf, drawn as the Query graph draws one (`leafRows`); an And or an Or per group, each part's Pass into its
+ * header; the root's Pass into `#out/where` (a Time's, its header). Its places are a first layout: it unfurls the first time it is shown.
  */
 export function whereGraph(where: Readonly<Where>, { source, type = () => undefined }: { source?: string; type?: (field: string) => string | undefined } = {}): EntityGraph {
   const nodes: EntityGraph['nodes'][number][] = [{ id: 'source', kind: 'source', x: 0, y: 0, ...(source ? { values: { store: source } } : {}) }];
@@ -309,7 +309,7 @@ export function whereGraph(where: Readonly<Where>, { source, type = () => undefi
       const ends = parts[1].map((p, i) => walk(p, [...path, i + 1]));
       nodes.push({ id, kind: 'condition', x: 1080 + path.length * 120, y: 0, values: { type: parts[0] } });
       for (const from of ends) connections.push({ from, to: id });
-      return `${id}/true`;
+      return `${id}/pass`;
     }
     const leaf = part as ConditionLeaf;
     const field = leaf.field ?? '';
@@ -321,7 +321,7 @@ export function whereGraph(where: Readonly<Where>, { source, type = () => undefi
     else if (list && Array.isArray(values['b'])) values['b'] = list;
     nodes.push({ id, kind: drawn.kind, x: 720, y: tests++ * 200, values });
     connections.push({ from: `${fieldOf(field)}/field`, to: id });
-    return drawn.kind === 'condition' ? `${id}/true` : id;
+    return drawn.kind === 'condition' ? `${id}/pass` : id;
   };
   const tree = parseWhere(where);
   if (tree) connections.push({ from: walk(tree, []), to: '#out/where' });
@@ -468,13 +468,13 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   // The page's rows: each status field's, else the Source's (set once the status fields are drawn). Every Field reads them.
   let fed: readonly string[] = [sent(QUERY_NODE.source)];
   // A field's whole tree (plan 783 D6): a Field node per field it reads, a test per leaf on its Field, an And or an Or per
-  // group, a part's True (1 or 0, plan 944) into its group's header. `into`: the connections into its Fields, the page's rows
-  // unless a status chain hands its own on. It returns where the root's True leaves (a Condition's True row, else its
-  // header: Time's Out), and its Pass, the rows that hold (plan 971).
+  // group, a part's Pass into its group's header. `into`: the connections into its Fields, the page's rows unless a status
+  // chain hands its own on. It returns where the root says its tree (a Condition's Pass, a Time's header), and its Pass and
+  // Fail (plan 971 §9).
   const treeNodes = (
     column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
     apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, into = fed }: { back?: number; into?: readonly string[] } = {},
-  ): { truth: string; pass: string; fail: string } => {
+  ): { says: string; pass: string; fail: string } => {
     const whole = JSON.stringify(tree);
     const depth = (t: Condition): number => 1 + Math.max(0, ...(groupOf(t)?.[1] ?? []).map(depth));
     const fields = fieldsOf(tree, ctx.field);
@@ -498,15 +498,15 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       if (parts) {
         add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS }), ...TEST_ROWS.condition], { ...at, ref: nodeRef }, parts[0]);
         parts[1].forEach((p, i) => connections.push({ from: walk(p, [...path, i + 1]), to: id }));
-        return `${id}/true`;
+        return `${id}/pass`;
       }
       const leaf = part as ConditionLeaf;
       const drawn = leafRows(leaf, ctx);
       add(column - path.length * back, id, drawn.kind, [...drawn.rows.map(off), ...TEST_ROWS[drawn.kind]], { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
       connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
-      return drawn.kind === 'condition' ? `${id}/true` : id;
+      return drawn.kind === 'condition' ? `${id}/pass` : id;
     };
-    return { truth: walk(tree, []), pass: `${treeNodeId(root, [])}/pass`, fail: `${treeNodeId(root, [])}/fail` };
+    return { says: walk(tree, []), pass: `${treeNodeId(root, [])}/pass`, fail: `${treeNodeId(root, [])}/fail` };
   };
   // A scope's presets: as declared now, else as its definition says them.
   const presetsOf = (scope: string): readonly ScopePreset[] => facts.presets?.(scope)
@@ -594,7 +594,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     const named = source?.scopes?.[id]?.label
       ?? (components.find((c) => c.id === id) ?? (shows.length === 1 ? shows[0] : undefined))?.label;
     // Its bar (plan 960 U4.8): the Switch, a chip per field it holds in order, saying its pick, then a row per preset. On View
-    // Filters each chip takes its filter's True; a card's chip takes no line, its filter on the rows' path.
+    // Filters each chip takes its filter's Pass; a card's chip takes no line, its filter on the rows' path.
     const bar = QUERY_NODE.bar(id);
     const chip = (f: string): GraphRow => {
       const said = pickWords(scope.readings[f], typeOf(f) as FieldType | undefined);
@@ -625,27 +625,27 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       // What it writes: each field a Condition, the definition's to change.
       for (const [f, tree] of wrote) {
         const hint = saved ? SAVED_WORDS : entity ? FROM_ENTITY : FROM_DEFINITION;
-        connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)).truth, to: `${from}/${f}` });
+        connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)).says, to: `${from}/${f}` });
       }
     }
     const held = fields.map((f) => ({ value: f, label: label(f) }));
     const factsOf = (field: string): TreeFacts => ctxOf(field, held);
-    // Its own filters: a View filter's True into its chip; a card's Pass onto its rows' path.
+    // Its own filters: a View filter's Pass into its chip; a card's onto its rows' path (plan 971 §9: no True).
     const passes: string[] = [];
     for (const [field, condition, off] of where) {
-      const { truth, pass } = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
+      const { says, pass } = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
         heading: label(field),
         description: off ? 'Off: kept, not applied.' : 'Applied.',
       }, { scope: id, field });
-      if (top) connections.push({ from: truth, to: `${bar}/${field}` });
+      if (top) connections.push({ from: says, to: `${bar}/${field}` });
       else passes.push(pass);
     }
     // Its own answers the View holds over it: kept, not in force, into its chip.
     for (const [field, condition] of kept) {
-      const { truth } = treeNodes(into, `kept-${id}-${field}`, condition, factsOf(field), {
+      const { says } = treeNodes(into, `kept-${id}-${field}`, condition, factsOf(field), {
         heading: label(field), description: 'Superseded: kept, not in force.',
       }, { scope: id, field, superseded: 'true' }, (row) => ({ ...row, editable: false, hint: SUPERSEDED }));
-      connections.push({ from: truth, to: `${bar}/${field}` });
+      connections.push({ from: says, to: `${bar}/${field}` });
     }
     // A card's rows on their way: its filters, two or more joined in ONE And; then its Organise.
     let rows: readonly string[] = passes.length ? passes : fed;
@@ -699,7 +699,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     ], { heading: set.label, ref: { saved: id } });
     // What it would add: each field a Condition the saved filter owns, and no connection out.
     for (const { name, field, tree } of wrote) {
-      connections.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)).truth, to: `${from}/${name}` });
+      connections.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)).says, to: `${from}/${name}` });
     }
   }
 
@@ -910,16 +910,16 @@ export function connectionRequest(graph: DrawnGraph, { from, to }: NodeConnectio
   if (rowOf(target?.rows ?? [], row)?.control === 'switch') {
     return { refused: `The Query takes no connection into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], row)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };
   }
-  // A tree's root leaves by its True (a Time's, its header) or its Pass (plan 971); a part, or one kept, moves nowhere.
+  // A tree's root leaves by its Pass (a Time's by its header too, plan 971); a part, or one kept, moves nowhere.
   const via = socketOf(from).row;
   const root = !!was && TEST_KINDS.has(was.kind) && !was.ref?.['path'] && !was.ref?.['superseded']
-    && (via === 'pass' || (was.kind === 'time' ? via === undefined : via === 'true'));
+    && (via === 'pass' || (was.kind === 'time' && via === undefined));
   // Where it lands: a chip that takes a line, its field; a card's rows' path, its own.
   const chip = !!row && !row.startsWith('@') && !!rowOf(target?.rows ?? [], row)?.input;
   const path = !row && !!there && there !== VIEW && !target?.ref?.['field'] && !target?.ref?.['preset'];
   const field = chip ? row : path ? old : undefined;
   if (!root || !scope || !old || !there || !field) {
-    return { refused: `The Query has no connection from "${was?.heading ?? from}" to "${target?.heading ?? to}": a filter's True goes into a chip of View Filters, its Pass onto a card's rows.` };
+    return { refused: `The Query has no connection from "${was?.heading ?? from}" to "${target?.heading ?? to}": a filter's Pass goes into a chip of View Filters, or onto a card's rows.` };
   }
   if (scope === there && old === field) return null;
   const whole = treeOf(was!);

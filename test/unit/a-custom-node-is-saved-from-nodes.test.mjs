@@ -109,8 +109,8 @@ const HAS = {
   inputs: [{ name: 'records', label: 'Records', type: 'object' }, { name: 'status', label: 'Status', type: 'value' }],
   outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
   nodes: [{ id: 'has-status', kind: 'condition', x: 0, y: 0, values: { type: 'eq' } }],
-  // An output made from the test's True property (plan 944).
-  connections: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/pass', to: '#out/matching' }, { from: 'has-status/true', to: '#out' }],
+  // The header out, made from the test's Pass (plan 971 §9).
+  connections: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/pass', to: '#out/matching' }, { from: 'has-status/pass', to: '#out' }],
 };
 const hasLib = (preset = false) => ({ v: 1, nodes: { 'has-status': { ...structuredClone(HAS), ...(preset ? { preset: true } : {}) } } });
 /** A Store, a Value and a Condition beside two uses of Has status, its Matching on to the Output. */
@@ -137,19 +137,19 @@ test('a Custom Node\'s header takes anything: each connection let go on it adds 
   assert.equal(one.id, 'has-status');
   // An object: never matched to Records, a free row of its type; a new row, named by its source.
   assert.deepEqual(said(one.workflow), ['has/matching → end', 'start/rows → c', 'start/rows → has/start-rows']);
-  // A value, then a test's True, a number (plan 944): both taken, each its own row.
+  // A value, then a test's Pass, its rows (plan 971 §9): both taken, each its own row.
   const two = headerInput(one.workflow, { from: 'val/value', to: 'has' }, one.library);
-  const three = headerInput(two.workflow, { from: 'c/true', to: 'has' }, two.library);
+  const three = headerInput(two.workflow, { from: 'c/pass', to: 'has' }, two.library);
   assert.ok(!three.fault, three.fault);
   assert.deepEqual(inputsOf(three.library), [
     ['records', 'Records', 'object'], ['status', 'Status', 'value'],
-    ['start-rows', 'Source › Results', 'object'], ['val-value', 'Value › Value', 'value'], ['c-true', 'Condition › True', 'value'],
+    ['start-rows', 'Source › Results', 'object'], ['val-value', 'Value › Value', 'value'], ['c-pass', 'Condition › Pass', 'object'],
   ]);
-  assert.ok(said(three.workflow).includes('val/value → has/val-value') && said(three.workflow).includes('c/true → has/c-true'));
+  assert.ok(said(three.workflow).includes('val/value → has/val-value') && said(three.workflow).includes('c/pass → has/c-pass'));
   // Inside, a Group Input row each, an output socket of the source's type, feeding nothing yet.
   const inner = lib.innerOf(three.workflow.nodes.find((n) => n.id === 'has'), three.library);
-  assert.deepEqual(inner.kinds[lib.GROUP_INPUT].rows.map((r) => [r.name, r.output]), [['records', 'object'], ['status', 'value'], ['start-rows', 'object'], ['val-value', 'value'], ['c-true', 'value']]);
-  assert.deepEqual(inner.workflow.connections.filter((r) => ['#in/start-rows', '#in/val-value', '#in/c-true'].includes(r.from)), []);
+  assert.deepEqual(inner.kinds[lib.GROUP_INPUT].rows.map((r) => [r.name, r.output]), [['records', 'object'], ['status', 'value'], ['start-rows', 'object'], ['val-value', 'value'], ['c-pass', 'object']]);
+  assert.deepEqual(inner.workflow.connections.filter((r) => ['#in/start-rows', '#in/val-value', '#in/c-pass'].includes(r.from)), []);
   // Nothing about it is a fault: the draft, and the library Save would check.
   assert.deepEqual(lib.workflowFaultsDeep(three.workflow, three.library, undefined, facts), []);
   assert.equal(lib.checkNodeLibrary(three.library, undefined, facts), true);
@@ -158,7 +158,7 @@ test('a Custom Node\'s header takes anything: each connection let go on it adds 
   assert.deepEqual(lib.staleUses(three.workflow, three.library), []);
   const published = { ...three.library, nodes: { ...three.library.nodes, 'has-status': { ...three.library.nodes['has-status'], version: 2 } } };
   assert.deepEqual(lib.staleUses(three.workflow, published), ['has2']);
-  assert.deepEqual(lib.definitionDiff(three.workflow.nodes.find((n) => n.id === 'has2'), published).inputs.added, ['start-rows', 'val-value', 'c-true']);
+  assert.deepEqual(lib.definitionDiff(three.workflow.nodes.find((n) => n.id === 'has2'), published).inputs.added, ['start-rows', 'val-value', 'c-pass']);
 });
 
 test('inside, a new row connections on to any inner socket, and Ungroup joins its source through it; a row that feeds nothing inside is dropped', () => {

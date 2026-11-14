@@ -367,8 +367,8 @@ test('a condition dragged onto a field none of its values fit is REFUSED, and sa
     await window.__settled();
   });
   const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
-  // A condition's tree leaves by its True property (plan 944).
-  const [ax, ay] = await at('#root sherpa-node[data-icon="function"] sherpa-node-row[data-socket-name="True"]', 'output');
+  // A condition's tree leaves by its Pass (plan 971 §9).
+  const [ax, ay] = await at('#root sherpa-node[data-icon="function"] sherpa-node-row[data-socket-name="Pass"]', 'output');
   const [bx, by] = await at('#root sherpa-node[data-heading="View Filters"] sherpa-node-row[data-label="plan"]', 'input');
   await page.mouse.move(ax, ay);
   await page.mouse.down();

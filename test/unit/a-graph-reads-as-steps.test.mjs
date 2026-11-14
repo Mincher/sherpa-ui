@@ -14,17 +14,17 @@ const { graphSteps } = await import(new URL('graph-steps.js', core));
 const { flowDepths } = await import(new URL('node-routes.js', core));
 
 const N = (id, kind, x, y, stage, values) => ({ id, kind, x, y, ...(stage ? { stage } : {}), ...(values ? { values } : {}) });
-/** Find: a Source, its Field, a Condition. Act: a test of its True that sends Pass to a Prompt and Fail to the Run result; a Model for
- *  the Prompt; the Start. */
+/** Find: a Source, its Field, a Condition. Act: Is empty on its Pass, a test of one value, that sends Pass to a Prompt and Fail
+ *  to the Run result; a Model for the Prompt; the Start. */
 const graph = () => ({
   stages: [{ id: 'find', label: 'Find', x: 0 }, { id: 'act', label: 'Act', x: 1000 }],
   nodes: [
     N('#start', '#start', -300, 0, 'find'), N('s', 'source', 0, 0, 'find', { store: 'devices' }), N('f', 'field', 300, 0, 'find', { field: 'status' }),
-    N('cond', 'condition', 600, 0, 'find', { type: 'eq' }), N('c', 'condition', 1100, 0, 'act', { type: 'gt', b: 0 }), N('m', 'model', 1100, 400, 'act', { provider: 'anthropic', model: 'sonnet' }),
+    N('cond', 'condition', 600, 0, 'find', { type: 'eq' }), N('c', 'condition', 1100, 0, 'act', { type: 'empty' }), N('m', 'model', 1100, 400, 'act', { provider: 'anthropic', model: 'sonnet' }),
     N('q', 'prompt', 1400, 0, 'act'), N('o', 'result', 1700, 0, 'act'),
   ],
   connections: [
-    { from: 's/rows', to: 'f' }, { from: 'f/field', to: 'cond' }, { from: 'cond/true', to: 'c' }, { from: 's/rows', to: 'c/data' },
+    { from: 's/rows', to: 'f' }, { from: 'f/field', to: 'cond' }, { from: 'cond/pass', to: 'c' }, { from: 's/rows', to: 'c/data' },
     { from: 'c/pass', to: 'q' }, { from: 'c/fail', to: 'o' }, { from: 'm/model', to: 'q/model' }, { from: 'q/answer', to: 'o' },
   ],
 });
@@ -44,7 +44,7 @@ test('where each step goes, by number; a test of one value\'s Pass and Fail apar
   assert.equal(at('q').branches, undefined);
 });
 
-test('a test\'s Pass and Fail are a fork too, apart where one leads on; a True alone, or ways that lead nowhere, are none (plan 971)', () => {
+test('a test\'s Pass and Fail are a fork too, apart where one leads on; ways that lead nowhere are none (plan 971)', () => {
   const read = (connections, more = []) => graphSteps({
     nodes: [N('s', 'source', 0, 0, undefined, { store: 'devices' }), N('f', 'field', 300, 0, undefined, { field: 'status' }), N('cond', 'condition', 600, 0, undefined, { type: 'eq' }),
       N('on', 'result', 900, 0), N('off', 'result', 900, 300), ...more],
@@ -57,12 +57,11 @@ test('a test\'s Pass and Fail are a fork too, apart where one leads on; a True a
   // A filter: the rest stop.
   const filter = read([{ from: 'cond/pass', to: 'on' }]);
   assert.deepEqual(at(filter, 'cond').branches, { pass: [{ step: at(filter, 'on').number, node: 'on' }], fail: [{ stop: true }] });
-  // Its True alone into an And: no fork at the test; an And whose ways lead nowhere has none either.
-  const anded = read([{ from: 'cond/true', to: 'both' }, { from: 'both/true', to: 'on' }], [N('both', 'condition', 750, 0, undefined, { type: 'and' })]);
-  assert.equal(at(anded, 'cond').branches, undefined);
+  // An And whose ways lead nowhere has no fork (plan 971 §9: no True).
+  const anded = read([{ from: 'cond/pass', to: 'both' }], [N('both', 'condition', 750, 0, undefined, { type: 'and' })]);
   assert.equal(at(anded, 'both').branches, undefined);
   // A Branch whose Yes and No lead nowhere: no fork.
-  assert.equal(at(read([{ from: 'cond/true', to: 'k' }], [N('k', 'branch', 750, 0)]), 'k').branches, undefined);
+  assert.equal(at(read([{ from: 'cond/pass', to: 'k' }], [N('k', 'branch', 750, 0)]), 'k').branches, undefined);
 });
 
 test('a body: a step that sends to the Group Output goes to that output; with no stages, every step is in Stage 1', () => {

@@ -453,7 +453,7 @@ function compareType(op: FilterOp): NodeType {
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, DATA, ...rows, TRUE] };
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, DATA, ...rows] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -476,11 +476,11 @@ export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time', 'ta
 const LOGIC: Readonly<Record<string, NodeType>> = {
   // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
   // empty; Pass is the rows in all of the inputs (And) or in any true one (Or), Fail the rest (plan 971 A).
-  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, DATA, TRUE] },
-  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, DATA, TRUE] },
+  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, DATA] },
+  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL, DATA] },
   ...compareTypes(FIGMA_OPS),
-  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [PASS, FAIL, DATA, TRUE], graphs: ['workflow'] },
-  empty: { label: 'Is empty', help: 'True when what comes in is nothing: none, 0, false, empty text or list, or no rows', input: 'any', rows: [PASS, FAIL, DATA, TRUE], graphs: ['workflow'] },
+  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [PASS, FAIL, DATA], graphs: ['workflow'] },
+  empty: { label: 'Is empty', help: 'True when what comes in is nothing: none, 0, false, empty text or list, or no rows', input: 'any', rows: [PASS, FAIL, DATA], graphs: ['workflow'] },
   ...compareTypes(SHERPA_OPS),
 };
 
@@ -512,8 +512,8 @@ export function conditionFits(inputs: readonly ConditionInput[]): ReadonlySet<st
 }
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
- *  A test branches (plans 944, 971 §9): Pass and Fail split a column's rows, or send all its Data by one value's truth; and
- *  True (1 or 0). No True or False socket, and no Branch node. */
+ *  A test branches (plans 944, 971 §9): Pass and Fail split a column's rows, or send all its Data by one value's truth. No
+ *  True row (Will: "This removes the need for the 'True' property"), no True or False socket, and no Branch node. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
   // A Start node: nothing comes in; what it heard leaves by its rows. Any one of a graph's Triggers starts it (Will, D2 B). Its
