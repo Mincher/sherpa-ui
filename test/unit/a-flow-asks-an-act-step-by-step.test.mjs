@@ -111,6 +111,8 @@ test('the chat: one step at a time, each answer checked as the act checks it, th
     assert.ok(email.error && !email.error.startsWith('Email:'), 'under its field, the field\'s own words');
     await answer('email', 'ana@x.io');
     assert.match((await answer('customer', 'acme')).refused, /Invite does not ask "customer" now/);
+    // A name it never asks says the names it does.
+    assert.deepEqual(await answer('where', 'customer'), { refused: 'Invite asks no "where": it asks "name", "email", "scope", "customer", and "roles".' });
     await answer('scope', 'customer');
     assert.equal((await nextStep(FLOW, answers, c)).step.field, 'customer');
     assert.match((await answer('customer', 'nope')).refused, /"nope" is no Customer/);

@@ -250,7 +250,12 @@ export async function answerStep(flow: Flow, answers: FlowAnswers, field: string
   const parts = partsOf(flow);
   if ('refused' in parts) return parts;
   const def = parts.input[field];
-  if (!def || !holding(flow, answers).some((s) => s.field === field)) return { refused: `${parts.act.label} does not ask "${field}" now.` };
+  // A name it never asks says the names it does, so a caller can try again; one a later answer opens waits for it.
+  if (!def || !flow.steps.some((s) => s.field === field)) {
+    const names = new Intl.ListFormat('en', { type: 'conjunction' }).format(flow.steps.map((s) => `"${s.field}"`));
+    return { refused: `${parts.act.label} asks no "${field}": it asks ${names}.` };
+  }
+  if (!holding(flow, answers).some((s) => s.field === field)) return { refused: `${parts.act.label} does not ask "${field}" now.` };
   const label = def.label ?? field;
   // The field's own words: its label is the field's, so a fault said with it drops it.
   const refuse = (faults: readonly string[]): StepRefusal => {
