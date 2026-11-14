@@ -71,19 +71,19 @@ export function nextVersion(entity: Pick<Entity, 'versions'>, definition: Entity
 /** What Publish and Roll back answer: the number made, or why not, in words. */
 export type VersionAnswer = { number: number } | { refused: string };
 
-/** Publish an entity's draft as its next version, through the shelf: refused for a preset, for one that is not there, and
- *  for a draft no different from its newest version. */
+/** Publish an entity's draft as its next version, through the shelf: refused for a preset, for one that is not there, for
+ *  a draft no different from its newest version, and, in words, for one its checks refuse. */
 export async function publish(shelf: EntityShelf, id: string, facts: VersionFacts = {}): Promise<VersionAnswer> {
   const entity = shelf.get(id);
   if (!entity) return { refused: `"${id}" is not there.` };
   if (entity.origin === 'preset') return { refused: `"${entity.label}" is a preset, which is read only: clone it to make your own.` };
   if (!draftChanged(entity)) return { refused: `Nothing to publish: "${entity.label}" is as version ${newestOf(entity)!.number} says.` };
   const version = nextVersion(entity, definitionPart(entity), facts);
-  return await shelf.save({ ...entity, versions: [version, ...versionsOf(entity)] }) ? { number: version.number } : { refused: `"${entity.label}" was not saved: its checks say why.` };
+  return saveVersion(shelf, { ...entity, versions: [version, ...versionsOf(entity)] }, 'Publish');
 }
 
 /** Publish an earlier version as the next one, and put it in the draft: nothing is lost, and the uses can follow it back.
- *  Refused for a preset, and for a number it has not got. */
+ *  Refused for a preset, for a number it has not got, and, in words, for a version its checks refuse now. */
 export async function rollBack(shelf: EntityShelf, id: string, number: number, facts: VersionFacts = {}): Promise<VersionAnswer> {
   const entity = shelf.get(id);
   if (!entity) return { refused: `"${id}" is not there.` };
@@ -92,7 +92,15 @@ export async function rollBack(shelf: EntityShelf, id: string, number: number, f
   if (!was) return { refused: `"${entity.label}" has no version ${number}.` };
   const version = nextVersion(entity, was.definition, { ...facts, note: facts.note ?? `Roll back to version ${number}` });
   const draft = publishedOf({ ...entity, versions: [version] });
-  return await shelf.save({ ...draft, versions: [version, ...versionsOf(entity)] }) ? { number: version.number } : { refused: `"${entity.label}" was not saved: its checks say why.` };
+  return saveVersion(shelf, { ...draft, versions: [version, ...versionsOf(entity)] }, `Roll back to version ${number}`);
+}
+
+/** Save an entity with its new version in front, or say in words why its checks refuse it, the act named: an old version may
+ *  hold what is no longer allowed (a kind since gone). */
+async function saveVersion(shelf: EntityShelf, next: Entity, act: string): Promise<VersionAnswer> {
+  const [fault] = await shelf.faults(next);
+  if (fault) return { refused: `${act} is refused: ${fault}.` };
+  return await shelf.save(next) ? { number: newestOf(next)!.number } : { refused: `"${next.label}" was not saved: its checks say why.` };
 }
 
 /** What a Clone may set: the copy's id, name, words, tags and category, and a body in place of its source's (Save graph as:

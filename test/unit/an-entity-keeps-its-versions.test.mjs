@@ -98,6 +98,32 @@ test('Roll back publishes an earlier version as the next number, and puts it in 
   assert.deepEqual(await V.rollBack(k.entities, 'trials', 9), { refused: '"Trials" has no version 9.' });
 });
 
+test('a Roll back or a Publish its checks refuse says why, the act named: an old version may hold what is gone (971 §9)', async () => {
+  const k = keeper();
+  await k.entities.save(filter('inner', 'Inner', 'trial'));
+  // Outer's version 1 uses Inner; its version 2 does not, so Inner may go.
+  const use = lib.useOf(k.entities.library(), 'filter:inner', { id: 'in', x: 0, y: 0 });
+  const said = [];
+  const off = onReport((r) => said.push(r.message));
+  try {
+    assert.equal(await k.entities.save({ ...filter('outer', 'Outer', 'lead'), graph: { nodes: [use], connections: [{ from: 'in', to: '#out/where' }] } }), true, said.join(' '));
+    await k.entities.save(filter('outer', 'Outer', 'lead'));
+    assert.deepEqual(await V.publish(k.entities, 'outer'), { number: 2 });
+    assert.equal(await k.entities.remove('inner'), true, said.join(' '));
+    said.length = 0;
+    const answer = await V.rollBack(k.entities, 'outer', 1);
+    assert.match(answer.refused ?? '', /^Roll back to version 1 is refused: .*"filter:inner".*\.$/, JSON.stringify(answer));
+    assert.deepEqual(said, [], 'refused before the save: nothing else said');
+  } finally {
+    off();
+  }
+  assert.deepEqual(k.entities.get('outer').versions.map((v) => v.number), [2, 1]);
+  // Publish the same, with a shelf whose checks refuse the draft.
+  await k.entities.save({ ...k.entities.get('outer'), label: 'Outer, again' });
+  const refusing = { get: (id) => k.entities.get(id), faults: async () => ['the node "k" is of the kind "branch", which is not one'], save: async () => assert.fail('no save') };
+  assert.deepEqual(await V.publish(refusing, 'outer'), { refused: 'Publish is refused: the node "k" is of the kind "branch", which is not one.' });
+});
+
 test('a save may only ADD versions at the front: one that edits or drops a version is refused in words; a copy starts at 1', async () => {
   const k = keeper();
   await k.entities.save(filter('trials', 'Trials', 'trial'));

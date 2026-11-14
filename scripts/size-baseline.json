@@ -165,7 +165,7 @@
   "src/core/data/entity-shelf.ts": 197,
   "src/core/data/entity-store.ts": 156,
   "src/core/data/entity-types.ts": 198,
-  "src/core/data/entity-versions.ts": 138,
+  "src/core/data/entity-versions.ts": 146,
   "src/core/data/entity.ts": 233,
   "src/core/data/failure.ts": 53,
   "src/core/data/fake-remote.ts": 99,
