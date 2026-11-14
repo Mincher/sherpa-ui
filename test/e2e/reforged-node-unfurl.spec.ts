@@ -192,7 +192,7 @@ test('the Query editor unfurls too: every node moves, none overlaps, the places 
 // Two Values into a Math node's rows a and b, and a test of one value's Pass and Fail out to two Outputs: each pair stood
 // upside down. No node has a True or a False socket (plan 944), and no Branch (plan 971 §9).
 const ROWS: [string, string, number, number, Record<string, unknown>?][] = [
-  ['two', 'value', 0, 0, { type: 'integer', value: '2' }], ['one', 'value', 0, 700, { type: 'integer', value: '1' }],
+  ['two', 'value', 0, 0, { type: 'integer', value: 2 }], ['one', 'value', 0, 700, { type: 'integer', value: 1 }],
   ['sum', 'math', 500, 300, { type: 'add' }], ['test', 'condition', 1000, 300, { type: 'gt', b: 3 }],
   ['no', 'result', 2000, 0], ['yes', 'result', 2000, 600],
 ];

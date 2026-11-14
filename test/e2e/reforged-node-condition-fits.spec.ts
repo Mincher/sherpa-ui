@@ -15,7 +15,7 @@ const bind = (page: import('@playwright/test').Page, connections: { from: string
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const flow = { v: 3, id: 'fits', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'n', kind: 'value', x: 0, y: 320, values: { type: 'integer', value: '5' } },
+    { id: 'n', kind: 'value', x: 0, y: 320, values: { type: 'integer', value: 5 } },
     { id: 't', kind: 'value', x: 0, y: 520, values: { type: 'text', value: 'Pro' } },
     { id: 'c', kind: 'condition', x: 400, y: 160, heading: 'Check', values: { type: 'gt', b: '1' } },
   ], connections };

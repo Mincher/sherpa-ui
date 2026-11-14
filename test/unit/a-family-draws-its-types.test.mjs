@@ -77,7 +77,7 @@ test('PLANTED FAULTS: a connection into a row no Math type has; a Duration of no
     v: 3, id: 'p',
     nodes: [
       { id: 'list', kind: 'value', x: 0, y: 0, values: { type: 'list', value: ['1', '2', '3'] } },
-      { id: 'one', kind: 'value', x: 0, y: 200, values: { type: 'integer', value: '4' } },
+      { id: 'one', kind: 'value', x: 0, y: 200, values: { type: 'integer', value: 4 } },
       { id: 'm', kind: 'math', x: 300, y: 0, values: math }, ...more,
     ],
     connections,

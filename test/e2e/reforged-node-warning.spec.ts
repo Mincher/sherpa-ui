@@ -207,16 +207,18 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   await expect.poll(() => heard.some((m) => m.includes('its connections run in a loop'))).toBe(true);
 });
 
-test('a Value made True/false and "true" reads 1 in Math › Value A, and Math no longer warns (TODO 781)', async ({ page }) => {
+test('a Value made True/false and switched on reads 1 in Math › Value A, and Math no longer warns (TODO 781; its switch, plan 986)', async ({ page }) => {
   expect(await warning(page, 'Math')).toBe('Value A takes a number; it was given "abc"');
   await page.locator('#cv > sherpa-node[data-heading="Value"] sherpa-input-text[name="type"] select').selectOption('boolean');
   await settle(page);
-  const field = page.locator('#cv > sherpa-node[data-heading="Value"] sherpa-input-text[name="value"] input');
-  await field.fill('true');
-  await field.press('Enter');
-  await field.blur();
-  await settle(page);
-  const a = await page.locator('#cv > sherpa-node[data-heading="Math"] sherpa-input-text[name="a"]').evaluate((f) => (f as HTMLElement & { value: unknown }).value);
-  expect(String(a)).toBe('1');
+  // A True/false takes its value in a switch (TRAP T-a-row-takes-its-values-type): off reads 0, on reads 1.
+  const flip = async (): Promise<string> => {
+    await page.locator('#cv > sherpa-node[data-heading="Value"] sherpa-switch .track').click();
+    await settle(page);
+    return String(await page.locator('#cv > sherpa-node[data-heading="Math"] sherpa-input-text[name="a"]').evaluate((f) => (f as HTMLElement & { value: unknown }).value));
+  };
+  // "abc" draws as on, so the first press turns it off.
+  expect(await flip()).toBe('0');
+  expect(await flip()).toBe('1');
   expect(await warning(page, 'Math')).toBeNull();
 });

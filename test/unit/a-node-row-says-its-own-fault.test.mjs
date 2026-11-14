@@ -137,7 +137,7 @@ test('PLANTED: Places is a whole number from 0, a span\'s Value from 1; a Unit s
   assert.equal(row(workflowGraph(math(-1)), 'm', 'places').fault, '-1 is less than 0');
   assert.equal(row(workflowGraph(editWorkflow(math(), { node: 'm', row: 'places', value: 'two' })), 'm', 'places').fault, '"two" is not a number');
   // A Value connected to Places is read as its number.
-  const connected = { ...math(), nodes: [...math().nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { type: 'decimal', value: '1.5' } }], connections: [{ from: 'v/value', to: 'm/places' }] };
+  const connected = { ...math(), nodes: [...math().nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { type: 'decimal', value: 1.5 } }], connections: [{ from: 'v/value', to: 'm/places' }] };
   assert.deepEqual(workflowFaults(connected), ['the connection "v/value" → "m/places": 1.5 is not a whole number']);
   const span = (n) => ({ v: 3, id: 'w', nodes: [{ id: 'd', kind: 'time', x: 0, y: 0, values: { type: 'duration', when: 'last', n, unit: 'week' } }] });
   assert.deepEqual(workflowFaults(span(0)), ['the node "d"\'s Value: 0 is less than 1']);

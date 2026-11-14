@@ -1,6 +1,6 @@
 # Plan 986: Every node row offers what makes sense
 
-**Status: a plan (sherpa-ui-e8, 2026-11-14). D1 is Will's; the rest needs no pick.**
+**Status: D1 answered, A (Will, 2026-11-14). 986a BUILT (sherpa-ui-e8, lane 986a); 986b to 986d next.**
 
 Will, 2026-11-14 (by sherpa-demos-67, from a screenshot: Contoso patching, Source `user` › Field `name` › Condition
 "Is one of"): "the values in the condition node should be showing all unique values from the 'user' sources 'name'
@@ -34,7 +34,8 @@ among them. Declared values still lead, with their words and looks. One door in 
 `values` from the stores (`withStoreValues`); the editor calls it as it opens a graph and when a store changes, and
 every row that reads a field's values (`here`) has them, as declared values are today.
 
-**Part 2, the value's type.** A row takes its value in its type's control:
+**Part 2, the value's type.** A row takes its value in its type's control (built in 986a; a stored value is typed once,
+as its control takes it: an Integer's `5`, never `"5"`, so Demos' graphs are retrofitted, TRAP T-a-row-takes-its-values-type):
 
 | Row | Today | After |
 |---|---|---|
@@ -45,7 +46,8 @@ every row that reads a field's values (`here`) has them, as declared values are 
 | … on a date field | text | a date |
 
 The Condition's rows follow the field that reaches them, in the data layer where `here` is read, so the Query graph
-and a workflow agree.
+and a workflow agree. A Schedule's At is a time of day ("02:00"), which the date control refuses: it stays text until a
+time control exists (a later row).
 
 **Part 3, the app's lists.** One door: a row may name a list (`of: 'views'`), and the app gives its lists in the
 editor's facts (`lists: { views: […] }`), as it gives `stores` and `entities` today. The library's Content › On a view
@@ -57,7 +59,14 @@ names `views`; Demos' kinds name theirs (customers, integrations, actions).
 takes: a number row is a number, a date a date, a row that names a list has the list. A new row that breaks the rule
 fails it.
 
-## D1 (for Will): where a field's values come from, when it declares none
+## D1: where a field's values come from, when it declares none — Will, 2026-11-14: A
+
+Will: A, "as soon as the graph is drawn (no Fetch needed)"; and "a source node isn't directly a Data Source. It's the
+Data Source via the Data Store in the Data Layer." So 986b reads them through the data layer's one door, never rows the
+editor reads itself: the Data Store the Source node names, read as the pages read it, the field catalogue's
+(`field-catalogue.ts`: the type's declared values first, then the store's own distinct values, `declareFromRows` over
+`store.distinct`, then `valuesFor`). The question was:
+
 
 - **A (my pick): the whole store's distinct values**, at most 500, searchable. The same list whatever was fetched.
 - **B: only the rows a Fetch read** (the sample Simulate uses). Small and fast, but a value the sample missed is not

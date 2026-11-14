@@ -39,7 +39,7 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, typedControl, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -297,17 +297,11 @@ function faultOf(row: RowKind, value: unknown, read: ReadField | undefined): str
   return rowFault(shapedRow(row, read?.known), row.control === 'number' ? typedValue('number', value) : value, read?.of);
 }
 
-/** What a Value of a type wants that its value is not, in words — "a whole number"; none, it holds. */
+/** What a Value of a type wants that its value is not, in words — "true or false"; none, it holds. A number's and a
+ *  date's are their rows' controls' (plan 986): said once, where a row's value is checked. */
 function typedWants(type: unknown, value: unknown): string | undefined {
-  if (typeof type !== 'string' || value === undefined) return undefined;
-  const text = String(value);
-  const n = typedValue('number', text);
-  const wants: Readonly<Record<string, readonly [boolean, string]>> = {
-    integer: [Number.isInteger(n), 'a whole number'], decimal: [typeof n === 'number', 'a number'],
-    boolean: [/^(true|false)$/i.test(text.trim()), 'true or false'], date: [/^\d{4}-\d{2}-\d{2}/.test(text.trim()), 'a date'],
-  };
-  const [ok, what] = wants[type] ?? [true, ''];
-  return ok ? undefined : what;
+  if (type !== 'boolean' || value === undefined) return undefined;
+  return /^(true|false)$/i.test(String(value).trim()) ? undefined : 'true or false';
 }
 
 /** Every fault in a workflow, in words: a node, a kind, a value or a connection that cannot be.
@@ -777,9 +771,11 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       }
       // The values it picks from: its node's own field's (a Field's Values), else the field reaching its node.
       const here = row.valuesOf ? pickedField(held, flows, reach(node.id), `${node.id}/${row.valuesOf}`)?.field.values : known;
-      // A Value row with no values to pick from is typed, as it was. Tags with values to pick from are one dropdown with a
-      // menu of ticks: a node's multi-select is one row (Will, 2026-11-13). TRAP T-a-multi-select-is-one-row
-      const plain = row.control === 'values' && !here?.length ? { ...row, control: 'text' as const }
+      // A value of the field reaching it, with none to pick from, takes that field's type's control (plan 986). A Value row
+      // with no values to pick from is typed, as it was. Tags with values to pick from are one dropdown with a menu of
+      // ticks: a node's multi-select is one row (Will, 2026-11-13). TRAP T-a-multi-select-is-one-row · TRAP T-a-row-takes-its-values-type
+      const byType = row.ofField && !here?.length ? typedControl(type) : undefined;
+      const plain = byType ? { ...row, control: byType } : row.control === 'values' && !here?.length ? { ...row, control: 'text' as const }
         : row.control === 'tags' && here?.length ? { ...row, control: 'values' as const, multiple: true as const } : row;
       // A Unit says its words for the count beside it: "1 day", "7 days".
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};

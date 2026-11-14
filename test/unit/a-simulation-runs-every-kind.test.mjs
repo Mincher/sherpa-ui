@@ -36,7 +36,7 @@ test('Math: add, subtract, multiply, divide, ratio, round, increment and the lis
   assert.equal(calc('math', { type: 'divide', a: 9, b: 4 }).value, 2.25);
   assert.equal(calc('math', { type: 'ratio', a: 1, b: 4 }).value, 0.25);
   assert.equal(calc('math', { type: 'round', a: 2.3456, places: 2 }).value, 2.35);
-  const connected = calc('math', { type: 'add', b: 1 }, [R('v/value', 'x/a')], [N('v', 'value', { type: 'integer', value: '41' })]);
+  const connected = calc('math', { type: 'add', b: 1 }, [R('v/value', 'x/a')], [N('v', 'value', { type: 'integer', value: 41 })]);
   assert.equal(connected.value, 42, 'a Value connected in is Value A');
   const list = (type) => calc('math', { type }, [R('l/value', 'x/values')], [N('l', 'value', { type: 'list', value: ['3', '9', '6'] })]).value;
   assert.deepEqual([list('floor'), list('ceiling'), list('average')], [3, 9, 6]);

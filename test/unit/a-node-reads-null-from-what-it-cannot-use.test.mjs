@@ -144,7 +144,7 @@ test('a connection of another type joins and warns (TODO 770); a row\'s own faul
   const rows = flow([store, { id: 'm', kind: 'math', x: 300, y: 0 }], [{ from: 's/rows', to: 'm/a' }]);
   assert.deepEqual([workflowFaults(rows), said(drawn(rows))], [[], { m: [['a', 'Value A takes a number; it was given rows']] }]);
   // P4: a number off its step, connected in, is the row's fault; and not also a warning.
-  const half = flow([value('h', '1.5', 'decimal'), { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'round' } }], [{ from: 'h/value', to: 'm/places' }]);
+  const half = flow([value('h', 1.5, 'decimal'), { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'round' } }], [{ from: 'h/value', to: 'm/places' }]);
   assert.deepEqual(workflowFaults(half), ['the connection "h/value" → "m/places": 1.5 is not a whole number']);
   assert.deepEqual([row(drawn(half), 'm', 'places').fault, at(drawn(half), 'm').warnings], ['1.5 is not a whole number', undefined]);
 });

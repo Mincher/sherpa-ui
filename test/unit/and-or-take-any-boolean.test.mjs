@@ -55,11 +55,11 @@ test('every boolean joins And and Or, no fault and no warning: a test\'s Pass an
   const branch = { id: 'k', kind: 'condition', x: 500, y: 300, values: { type: 'gt', b: 0 } };
   const time = [{ id: 'fj', kind: 'field', x: 200, y: 300, values: { field: 'joined' } }, { id: 't', kind: 'time', x: 400, y: 300, values: { type: 'duration', when: 'last', n: 7, unit: 'day' } }];
   const cases = [
-    [plan, 'pro/pass', planConnections], [plan, 'pro/fail', planConnections], [[value('true', 'boolean'), not], 'n/pass', [{ from: 'v/value', to: 'n' }]],
+    [plan, 'pro/pass', planConnections], [plan, 'pro/fail', planConnections], [[value(true, 'boolean'), not], 'n/pass', [{ from: 'v/value', to: 'n' }]],
     [time, 't', [{ from: 's/rows', to: 'fj' }, { from: 'fj/field', to: 't' }]],
-    [[value('1', 'integer'), branch], 'k/pass', [{ from: 'v/value', to: 'k' }]], [[value('1', 'integer'), branch], 'k/fail', [{ from: 'v/value', to: 'k' }]],
-    [[value('true', 'boolean')], 'v/value'], [[value('false', 'boolean')], 'v/value'], [[value('1', 'integer')], 'v/value'], [[value('0', 'integer')], 'v/value'],
-    [[value('True')], 'v/value'], [[math], 'm/result'], [[value('2', 'integer')], 'v/value'],
+    [[value(1, 'integer'), branch], 'k/pass', [{ from: 'v/value', to: 'k' }]], [[value(1, 'integer'), branch], 'k/fail', [{ from: 'v/value', to: 'k' }]],
+    [[value(true, 'boolean')], 'v/value'], [[value(false, 'boolean')], 'v/value'], [[value(1, 'integer')], 'v/value'], [[value(0, 'integer')], 'v/value'],
+    [[value('True')], 'v/value'], [[math], 'm/result'], [[value(2, 'integer')], 'v/value'],
   ];
   for (const join of ['and', 'or']) {
     for (const [nodes, from, connections] of cases) {
@@ -74,13 +74,13 @@ test('a test brings its tree; a constant folds — true drops out of And and end
   assert.deepEqual(read(flow(plan, 'pro/pass', 'and', planConnections)).where, { and: [ACTIVE, PRO] });
   // Its Fail says the opposite (plan 971 A).
   assert.deepEqual(read(flow(plan, 'pro/fail', 'and', planConnections)).where, { and: [ACTIVE, { field: 'plan', op: 'ne', value: 'Pro' }] });
-  assert.deepEqual(read(flow([value('true', 'boolean')], 'v/value')).where, ACTIVE, 'Status and true: Status');
-  assert.deepEqual(read(flow([value('0', 'integer')], 'v/value')).where, false, 'Status and 0: never');
-  assert.deepEqual(read(flow([value('1', 'integer')], 'v/value', 'or')).where, true, 'Status or 1: always');
-  assert.deepEqual(read(flow([value('false', 'boolean')], 'v/value', 'or')).where, ACTIVE, 'Status or false: Status');
+  assert.deepEqual(read(flow([value(true, 'boolean')], 'v/value')).where, ACTIVE, 'Status and true: Status');
+  assert.deepEqual(read(flow([value(0, 'integer')], 'v/value')).where, false, 'Status and 0: never');
+  assert.deepEqual(read(flow([value(1, 'integer')], 'v/value', 'or')).where, true, 'Status or 1: always');
+  assert.deepEqual(read(flow([value(false, 'boolean')], 'v/value', 'or')).where, ACTIVE, 'Status or false: Status');
   // An Or whose own parts fold is a constant in its parent: Status and (Plan or 1) is Status.
   const always = { id: 'any', kind: 'condition', x: 500, y: 300, values: { type: 'or' } };
-  const w = flow([...plan, value('1', 'integer'), always], 'any/pass', 'and', [...planConnections, { from: 'pro/pass', to: 'any' }, { from: 'v/value', to: 'any' }]);
+  const w = flow([...plan, value(1, 'integer'), always], 'any/pass', 'and', [...planConnections, { from: 'pro/pass', to: 'any' }, { from: 'v/value', to: 'any' }]);
   assert.deepEqual(read(w).where, ACTIVE);
   // Only constants: And of true is true; Or of false, false.
   const lone = (v, join) => ({ v: 3, id: 'w', nodes: [value(v, 'integer'), { id: 'j', kind: 'condition', x: 400, y: 0, values: { type: join } }], connections: [{ from: 'v/value', to: 'j' }] });

@@ -82,7 +82,7 @@ test('the graph\'s shape stays refused, in words: a loop, twice, two into one, n
     nodes: [
       { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'v', kind: 'value', x: 0, y: 200, values: { value: 'abc' } },
-      { id: 'h', kind: 'value', x: 0, y: 400, values: { type: 'decimal', value: '1.5' } },
+      { id: 'h', kind: 'value', x: 0, y: 400, values: { type: 'decimal', value: 1.5 } },
       { id: 'c', kind: 'condition', x: 360, y: 0 }, { id: 'd', kind: 'condition', x: 720, y: 0 },
       { id: 'm', kind: 'math', x: 360, y: 400, values: { type: 'round' } },
     ],

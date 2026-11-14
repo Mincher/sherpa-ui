@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
     const flow = {
       v: 3, id: 'group',
       nodes: [
-        { id: 'one', kind: 'value', x: 20, y: 360, heading: 'One', values: { type: 'integer', value: '1' } },
+        { id: 'one', kind: 'value', x: 20, y: 360, heading: 'One', values: { type: 'integer', value: 1 } },
         { id: 's', kind: 'source', x: 20, y: 20, values: { store: 'users' } },
         { id: 'f', kind: 'field', x: 300, y: 20, values: { field: 'status' } },
         { id: 'c', kind: 'condition', x: 560, y: 20, heading: 'Active', values: { type: 'eq', b: 'active' } },

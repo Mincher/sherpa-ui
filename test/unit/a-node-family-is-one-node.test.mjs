@@ -31,7 +31,7 @@ const kinds = { ...NODE_KINDS, math, lone };
 const flow = (type, extra = {}) => ({
   v: 3, id: 'w',
   nodes: [
-    { id: 'v', kind: 'value', x: 0, y: 0, values: { value: '2', type: 'decimal' } },
+    { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 2, type: 'decimal' } },
     { id: 'm', kind: 'math', x: 300, y: 0, values: { ...(type ? { type } : {}), ...extra } },
     { id: 'o', kind: 'result', x: 600, y: 0 },
   ],
@@ -162,11 +162,11 @@ test('planted faults: an unknown type, a type of another family, a row no type h
 
 test('the Value node is a family of six types; a Number is none of them now (TODO 777: no legacy read)', () => {
   assert.deepEqual(typeChoices(NODE_KINDS.value).map((c) => c.value), ['text', 'integer', 'decimal', 'date', 'boolean', 'list']);
-  const w = { v: 3, id: 'w', nodes: [{ id: 'v', kind: 'value', x: 0, y: 0, values: { value: '7', type: 'decimal' } }, { id: 'u', kind: 'value', x: 0, y: 90, values: { value: 'hi' } }] };
+  const w = { v: 3, id: 'w', nodes: [{ id: 'v', kind: 'value', x: 0, y: 0, values: { value: 7, type: 'decimal' } }, { id: 'u', kind: 'value', x: 0, y: 90, values: { value: 'hi' } }] };
   assert.deepEqual(workflowFaults(w), []);
   const g = workflowGraph(w);
-  assert.deepEqual([node(g, 'v').rows.map((r) => [r.name, r.value]), node(g, 'u').rows.map((r) => [r.name, r.value])], [[['type', 'decimal'], ['value', '7']], [['type', 'text'], ['value', 'hi']]]);
+  assert.deepEqual([node(g, 'v').rows.map((r) => [r.name, r.value]), node(g, 'u').rows.map((r) => [r.name, r.value])], [[['type', 'decimal'], ['value', 7]], [['type', 'text'], ['value', 'hi']]]);
   assert.deepEqual(rowChoices(node(g, 'v').rows[0], { types: typeChoices(NODE_KINDS.value) }).map((c) => c.label), ['Text', 'Integer', 'Decimal', 'Date', 'True/false', 'List']);
-  assert.deepEqual(workflowFaults({ ...w, nodes: [{ ...w.nodes[0], values: { value: 'x', type: 'decimal' } }] }), ['the node "v" holds "x" as its Value, which is not a number']);
+  assert.deepEqual(workflowFaults({ ...w, nodes: [{ ...w.nodes[0], values: { value: 'x', type: 'decimal' } }] }), ['the node "v" holds "x" as its Value, which is no number']);
   assert.deepEqual(workflowFaults({ ...w, nodes: [{ ...w.nodes[0], values: { value: '7', type: 'number' } }] }), ['the node "v" holds "number" as its Type, which is none of its choices']);
 });

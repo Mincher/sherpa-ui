@@ -22,6 +22,7 @@
  * - registerNodeTypes — An app adds its own types to a shipped family, from its own file: an Output's Ticket.
  * - nodeKinds — Every kind the library ships, with the types apps added: what a check and an editor read.
  * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
+ * - typedControl — The control a value of a field's type takes: a number, a date; none for text, which keeps the row's own (plan…
  * - TEST_KINDS — The kinds that test: each gives Pass, Fail and its truth (plan 971 A).
  * - ConditionInput — One input into a Condition, for what fits it: a value or a column, by its type; or data.
  * - CONDITION_INPUT_WORDS — Each input in words, as a warning says it.
@@ -128,6 +129,8 @@ export interface RowKind {
   /** Its input takes several connections, each joined as the row says (D4); else a new one replaces it. */
   many?: true;
   output?: SocketType;
+  /** It takes a value of the field reaching its node: its control follows that field's type (`typedControl`, plan 986). */
+  ofField?: true;
   /** A number's least, and its step, HTML's own names: a step of 1 takes only whole numbers. */
   min?: number;
   step?: number;
@@ -444,13 +447,20 @@ export function nodeKinds(): Readonly<Record<string, NodeKind>> {
 /** The operators whose value is a list: Is one of, Is not one of. */
 export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
 
+/** The control a value of a field's type takes: a number, a date; none for text, which keeps the row's own (plan 986).
+ *  TRAP T-a-row-takes-its-values-type */
+export function typedControl(type: string | undefined): RowControl | undefined {
+  return type === 'number' ? 'number' : type === 'date' ? 'datetime' : undefined;
+}
+
 /** A Logic type that is one of the data layer's operators: it tests what comes in on its header — a Field's column, or a
  *  value — against what the operator takes: Value B, a list of Values, or Start and End. Its words the operator's own
  *  (`OP_LABELS`). Plan 783 D3 · TRAP T-a-logic-type-is-an-operator */
 function compareType(op: FilterOp): NodeType {
   const [list, range] = [LIST_OPS.includes(op), OP_TAKES[op] === 'range'];
   const rows: RowKind[] = list ? [{ name: 'b', label: 'Values', control: 'tags', multiple: true, input: 'object' }]
-    : range ? [textRow('start', 'Start'), textRow('end', 'End')] : [{ name: 'b', label: 'Value B', control: 'values', input: 'value' }];
+    : range ? [{ ...textRow('start', 'Start'), ofField: true }, { ...textRow('end', 'End'), ofField: true }]
+      : [{ name: 'b', label: 'Value B', control: 'values', input: 'value', ofField: true }];
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
@@ -594,10 +604,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Value', icon: 'function', description: 'Primitive value variables', typeLabel: 'Type', defaultType: 'text',
     types: {
       text: { label: 'Text', rows: [VALUE] },
-      integer: { label: 'Integer', help: 'A whole number, as 42', rows: [VALUE] },
-      decimal: { label: 'Decimal', help: 'A number with places, as 4.25', rows: [VALUE] },
-      date: { label: 'Date', help: 'A day, written year-month-day: 2024-01-31', rows: [VALUE] },
-      boolean: { label: 'True/false', help: 'True or false', rows: [{ ...VALUE, gives: 'boolean' }] },
+      // Each takes its value in its type's control (Will, plan 986).
+      integer: { label: 'Integer', help: 'A whole number, as 42', rows: [{ ...VALUE, control: 'number', step: 1 }] },
+      decimal: { label: 'Decimal', help: 'A number with places, as 4.25', rows: [{ ...VALUE, control: 'number' }] },
+      date: { label: 'Date', help: 'A day, written year-month-day: 2024-01-31', rows: [{ ...VALUE, control: 'datetime' }] },
+      boolean: { label: 'True/false', help: 'True or false', rows: [{ ...VALUE, control: 'switch', gives: 'boolean' }] },
       list: { label: 'List', help: 'Values, each a tag, sent as a list', rows: [{ ...VALUE, control: 'tags', multiple: true, output: 'object', gives: 'list' }] },
     },
     rows: [], model: 'typedValue', graphs: ['workflow'], category: 'Variables',

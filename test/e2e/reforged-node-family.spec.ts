@@ -32,7 +32,7 @@ const BIND = `async (connected) => {
       types: { add: { label: 'Add', help: 'Add Value B to Value A', rows: [a, b] }, round: { label: 'Round', rows: [places, a, b] } } },
     lone: { heading: 'Lone', icon: 'flag', rows: [a], model: 'x', graphs: ['workflow'], types: { only: { label: 'Only' } } } };
   const flow = { v: 3, id: 'g', nodes: [
-    { id: 'v', kind: 'value', x: 0, y: 0, values: { value: '2', type: 'decimal' } },
+    { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 2, type: 'decimal' } },
     { id: 'm', kind: 'math', x: 360, y: 0, values: { type: 'round', places: 2 } },
     { id: 'l', kind: 'lone', x: 360, y: 300 },
   ], connections: connected ? [{ from: 'v/value', to: 'm/places' }] : [] };

@@ -67,9 +67,9 @@ test('a test of one value sends ALL its Data by Pass where it holds; Fail is not
 });
 
 test('a test of one value with no Data sends the value on the way taken; its Pass and Fail are drawn as what they send', () => {
-  const sim = simulateGraph(graphOf([N('v', 'value', { type: 'integer', value: '5' }), N('k', 'condition', { type: 'gt', b: 1 })], [C('v/value', 'k')]), {});
+  const sim = simulateGraph(graphOf([N('v', 'value', { type: 'integer', value: 5 }), N('k', 'condition', { type: 'gt', b: 1 })], [C('v/value', 'k')]), {});
   assert.deepEqual([out(sim, 'k', 'k/pass').value, out(sim, 'k', 'k/fail').notTaken], [5, true]);
-  const drawn = (data) => graphOf([...users, N('v', 'value', { type: 'integer', value: '5' }), N('k', 'condition', { type: 'gt', b: 1 })], [C('s/rows', 'f'), C('v/value', 'k'), ...(data ? [C(data, 'k/data')] : [])]).nodes.find((n) => n.id === 'k').rows;
+  const drawn = (data) => graphOf([...users, N('v', 'value', { type: 'integer', value: 5 }), N('k', 'condition', { type: 'gt', b: 1 })], [C('s/rows', 'f'), C('v/value', 'k'), ...(data ? [C(data, 'k/data')] : [])]).nodes.find((n) => n.id === 'k').rows;
   assert.deepEqual(drawn('s/rows').filter((r) => r.fork).map((r) => r.output), ['object', 'object']);
   assert.deepEqual(drawn(undefined).filter((r) => r.fork).map((r) => r.output), ['value', 'value']);
   // On a column the rows split, and Data is not used, and says so.
@@ -146,6 +146,6 @@ test('the Boolean passes on what comes in where it is true — above 0, true, no
   assert.deepEqual(out(rowsIn('active'), 'g', 'g').rows.map((r) => r.id), [1, 2]);
   assert.equal(out(rowsIn('gone'), 'g', 'g').notTaken, true);
   // Drawn as what comes in: a value, or rows (an object).
-  const drawn = (from, extra = []) => graphOf([...users, N('v', 'value', { type: 'integer', value: '5' }), N('c', 'condition', { type: 'eq', b: 'active' }), N('g', 'boolean'), ...extra], [...toStatus, C(from, 'g')]).nodes.find((n) => n.id === 'g').output;
+  const drawn = (from, extra = []) => graphOf([...users, N('v', 'value', { type: 'integer', value: 5 }), N('c', 'condition', { type: 'eq', b: 'active' }), N('g', 'boolean'), ...extra], [...toStatus, C(from, 'g')]).nodes.find((n) => n.id === 'g').output;
   assert.deepEqual([drawn('v/value'), drawn('c/pass')], ['value', 'object']);
 });

@@ -47,7 +47,7 @@ import { entityRefOf, type EntityGraph } from './entity.js';
 import { FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
-  LIST_OPS, NODE_KINDS, ROWS, TEST_KINDS, kindNode, resolveKind, rowChoices, rowOf, socketOf, storedValues,
+  LIST_OPS, NODE_KINDS, ROWS, TEST_KINDS, kindNode, resolveKind, rowChoices, rowOf, socketOf, storedValues, typedControl,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeConnection, type RowChoice,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
@@ -281,12 +281,14 @@ function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }
   const head = operation(shown, ops.map((o) => ({ value: o, label: OP_LABELS[o] })));
   const raw = leaf.value;
   const list = (Array.isArray(raw) ? raw : raw === undefined || raw === '' || raw === null ? [] : [raw]).map(String);
-  if (OP_TAKES[op] === 'range') return { kind: 'condition', type: shown, rows: [head, { name: 'start', label: 'Start', control: 'text', value: list[0] ?? '', editable: true }, { name: 'end', label: 'End', control: 'text', value: list[1] ?? '', editable: true }] };
+  // A value of its field takes that field's type's control: a number, a date (plan 986). TRAP T-a-row-takes-its-values-type
+  const control = typedControl(type) ?? 'text';
+  if (OP_TAKES[op] === 'range') return { kind: 'condition', type: shown, rows: [head, { name: 'start', label: 'Start', control, value: list[0] ?? '', editable: true }, { name: 'end', label: 'End', control, value: list[1] ?? '', editable: true }] };
   if (ticks) return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Values', control: 'values', multiple: true, value: list, editable: true, choices: picks! }] };
   // Is one of with no values to pick from: each typed word a tag. Plan 749 P4
   if (LIST_OPS.includes(op)) return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Values', control: 'tags', multiple: true, value: list, editable: true }] };
   const value = raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
-  return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Value B', control: 'text', value: value ?? '', editable: true }] };
+  return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Value B', control, value: value ?? '', editable: true }] };
 }
 
 /** What a tree's nodes need: the ids its root starts, the rows its Fields take, a Field's id, its first column, the field a

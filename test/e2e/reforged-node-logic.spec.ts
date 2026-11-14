@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
       { id: 'f', kind: 'field', x: 280, y: 0, values: { field: 'status' } },
       { id: 'c', kind: 'condition', x: 560, y: 0, heading: 'Check', values: { type: 'eq', b: 'active' } },
       { id: 'v1', kind: 'value', x: 0, y: 320, values: { value: 'active' } },
-      { id: 'v2', kind: 'value', x: 0, y: 520, values: { type: 'integer', value: '120' } },
+      { id: 'v2', kind: 'value', x: 0, y: 520, values: { type: 'integer', value: 120 } },
       { id: 'e1', kind: 'condition', x: 280, y: 320, heading: 'Is active', values: { type: 'eq', b: 'active' } },
       { id: 'e2', kind: 'condition', x: 280, y: 520, heading: 'Is big', values: { type: 'gt', b: '100' } },
       { id: 'both', kind: 'condition', x: 600, y: 400, heading: 'Both', values: { type: 'and' } },

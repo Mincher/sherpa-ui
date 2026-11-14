@@ -6249,6 +6249,28 @@ and a page that named a missing scope opened, and showed less, with nothing said
 - Site: `src/core/data/page-definition.ts`
 - Site: `test/unit/page-definition.test.mjs`
 
+### T-a-row-takes-its-values-type
+
+**A node row takes its value in its type's control** (Will, plan 986, 2026-11-14: "check all node input rows across
+all nodes to make sure their options, or input type, makes sense"). A Value's Integer and Decimal are a number (an
+Integer's step 1), its Date a date, its True/false a switch. A Condition's Value B, Start and End (`ofField`) take the
+type of the field that reaches them, by `typedControl`: a number, a date; a text field and a field with choices keep
+their own. The workflow (`here`) and a page's Query graph (`leafRows`) both call it, so they agree.
+
+- **Typed once, as stored** (`T-a-value-is-typed-once`): an Integer holds `5`, never `"5"`; a number row holding text
+  is a fault, as any number row's is. The graphs that held text were retrofitted, not read both ways.
+- **Each fault said once**: a Value's number and date are checked by their rows' controls; its own type check keeps
+  only True/false.
+- **A time of day is no date**: a Schedule's At (`"02:00"`) stays text until a time control exists.
+- **The sweep** (`a-row-takes-its-values-type`) walks every row of every kind: a pick has choices, `ofField` sits only
+  on a test's value, a number or a yes-or-no is never text, a day is a date.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/data/query-graph.ts`
+- Site: `test/unit/a-row-takes-its-values-type.test.mjs`
+- Site: `test/e2e/reforged-node-warning.spec.ts`
+
 ### T-a-value-is-typed-once
 
 **A condition's value is typed ONCE, by its field's type, where it comes in** —

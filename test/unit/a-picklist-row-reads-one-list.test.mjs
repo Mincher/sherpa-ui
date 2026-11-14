@@ -198,10 +198,10 @@ test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its 
   assert.deepEqual(workflowGraph(wrong).nodes.find((n) => n.id === 'pick').warnings, [{ row: 'field', words: 'Field takes a value; it was given rows' }]);
   // A Value node is typed: its text must be what its Type says.
   const typed = (type, value) => ({ v: 3, id: 't', nodes: [{ id: 'n', kind: 'value', x: 0, y: 0, values: { value, type } }] });
-  assert.deepEqual(workflowFaults(typed('decimal', '12.5')), []);
-  assert.deepEqual(workflowFaults(typed('decimal', 'twelve')), ['the node "n" holds "twelve" as its Value, which is not a number']);
-  assert.deepEqual(workflowFaults(typed('integer', '12')), []);
-  assert.deepEqual(workflowFaults(typed('integer', '12.5')), ['the node "n" holds "12.5" as its Value, which is not a whole number']);
+  assert.deepEqual(workflowFaults(typed('decimal', 12.5)), []);
+  assert.deepEqual(workflowFaults(typed('decimal', 'twelve')), ['the node "n" holds "twelve" as its Value, which is no number']);
+  assert.deepEqual(workflowFaults(typed('integer', 12)), []);
+  assert.deepEqual(workflowFaults(typed('integer', 12.5)), ['the node "n"\'s Value: 12.5 is not a whole number']);
   // A Number is no type now (TODO 777): the type is the fault.
   assert.deepEqual(workflowFaults(typed('number', 'twelve')), ['the node "n" holds "number" as its Type, which is none of its choices']);
   assert.deepEqual(workflowFaults(typed('list', ['a', 'b'])), []);
@@ -209,7 +209,7 @@ test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its 
   assert.deepEqual(workflowFaults(typed('boolean', 'maybe')), ['the node "n" holds "maybe" as its Value, which is not true or false']);
   assert.deepEqual(workflowFaults(typed('boolean', 'True')), []);
   assert.deepEqual(workflowFaults(typed('date', '2026-11-04')), []);
-  assert.deepEqual(workflowFaults(typed('date', 'soon')), ['the node "n" holds "soon" as its Value, which is not a date']);
+  assert.deepEqual(workflowFaults(typed('date', 'soon')), ['the node "n"\'s Value: "soon" is not a date: pick one, or write it as 31 Jan 2024']);
   assert.deepEqual(workflowFaults(typed('text', 'anything')), []);
   assert.deepEqual(workflowFaults({ ...typed('decimal', '1'), nodes: [{ id: 'n', kind: 'value', x: 0, y: 0, values: { type: 'object' } }] }), ['the node "n" holds "object" as its Type, which is none of its choices']);
 });

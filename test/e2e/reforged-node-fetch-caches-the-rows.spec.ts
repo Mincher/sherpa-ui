@@ -42,7 +42,7 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
     const connections = [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c/pass', to: 'o' }];
     // A Value into a Math, off the path: a node that sends a number, not rows (P6).
     if (calc) {
-      nodes.push({ id: 'v', kind: 'value', x: 0, y: 300, heading: 'v', values: { type: 'integer', value: '21' } }, { id: 'm', kind: 'math', x: 360, y: 300, heading: 'm', values: { type: 'multiply', b: 2 } });
+      nodes.push({ id: 'v', kind: 'value', x: 0, y: 300, heading: 'v', values: { type: 'integer', value: 21 } }, { id: 'm', kind: 'math', x: 360, y: 300, heading: 'm', values: { type: 'multiply', b: 2 } });
       connections.push({ from: 'v/value', to: 'm/a' });
     }
     // A Math Count of the Source's rows, and one of the Condition's Pass: counting is a Math type (plan 944).
