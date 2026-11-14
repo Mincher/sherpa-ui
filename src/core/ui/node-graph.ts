@@ -2518,8 +2518,8 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   /** A `sherpa-node-toolbar`: its Undo and Redo are this editor's, and it says when they can be pressed. */
   toolbar?: HTMLElement;
   /** The workflow is read only: drawn, opened, never edited, as a preset Custom Node's inside is. Words say why (the
-   *  app's Permissions, plan 972d: "Needs Runbooks · Edit"): Graph details says them, and so does a refused edit; true
-   *  is a preset. TRAP T-a-graph-is-a-view-of-a-type */
+   *  app's Permissions, plan 972d: "Needs Runbooks · Edit"): Graph details says them, and so does a refused edit; its
+   *  Publish and Roll back stay, for the app's `may` to refuse. True is a preset. TRAP T-a-graph-is-a-view-of-a-type */
   readOnly?: boolean | string;
   /** Whether the reader may change a Custom Node of their own: the app's rule, its owner, creator or roles (plan 936 D2).
    *  No, its inside opens read only, as a preset's does. None given: yes. */
@@ -3812,7 +3812,7 @@ export function bindWorkflow(
   const versionPart = (): HTMLElement[] => {
     const now = path.length ? undefined : keptNow?.();
     if (!now) return [];
-    const ask = act && !preset ? { publish: () => void versionAct('publish'), rollBack: (n: number) => void versionAct('roll-back', { version: n }) } : {};
+    const ask = act && now.origin !== 'preset' ? { publish: () => void versionAct('publish'), rollBack: (n: number) => void versionAct('roll-back', { version: n }) } : {};
     return [versionPane({ versions: versionsOf(now), changed: draftChanged(now) }, ask, historyShown)];
   };
   // The Graph details tab: the open entity's version, then the whole graph's models, the primary first, from the top graph

@@ -53,19 +53,23 @@ const bind = (page: Page, readOnly: boolean | string = false) => page.evaluate(a
   let mine: Record<string, unknown> = { trials, outer, top };
   const shelf = makeShelf({ presets: () => [active], mine: () => mine, keep: (next: Record<string, unknown>) => { mine = next; }, heard: () => undefined } as never);
   w['shelf'] = shelf;
+  // Read only by words: the app's may refuses each act in them (plan 972d).
+  const may = typeof readOnly === 'string' ? () => readOnly : undefined;
   const act = async (id: string, call: unknown) => {
-    const answer = await runAct(id, call as never, { stores: {}, entities: shelf } as never);
+    const answer = await runAct(id, call as never, { stores: {}, entities: shelf, may } as never);
     (w['ed'] as { refresh(l: unknown): void }).refresh(shelf.library());
     return answer;
   };
   const { workflow, kinds } = graphWorkflow(outer as never, { ...NODE_KINDS, ...kindsOf(library) });
   w['saved'] = [];
   w['savedNodes'] = [];
+  w['told'] = [];
   document.addEventListener('definition-save', (e) => (w['saved'] as unknown[]).push((e as CustomEvent).detail.definition));
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, workflow, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-list') as never,
     confirm: document.getElementById('confirm') as never, kinds, library, entity: outer, act, readOnly, kept: () => shelf.get('outer') as never,
+    notify: (words: string) => (w['told'] as string[]).push(words),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'lead'] } } }, stores: ['customers'],
   });
   // The app keeps each Custom Node the draft changed, once, at Save (plan 942 step 2: A).
@@ -208,7 +212,7 @@ test('Graph details says the open entity\'s version: Unpublished changes and Pub
   expect(await page.evaluate(() => (window as unknown as { shelf: { get(id: string): { label: string } } }).shelf.get('outer').label)).toBe('Outer');
 });
 
-test('a read-only graph says why, in the app\'s words, and shows its version and History, with no Publish and no Roll back; inside a use, no version (972d)', async ({ page }) => {
+test('a read-only graph says why, in the app\'s words; its Roll back stays, and a press says why (972d P3 A); inside a use, no version', async ({ page }) => {
   const why = 'Needs "Filters · Edit", which Viewer does not have.';
   await bind(page, why);
   await drafted(page);
@@ -219,9 +223,16 @@ test('a read-only graph says why, in the app\'s words, and shows its version and
   });
   await ed(page, "ed.refresh(window.shelf.library())");
   await settle(page);
-  expect(await version(page)).toEqual({ facts: ['Version', '2'], publish: false, history: [['Version 2', null], ['Version 1', null]], open: false });
+  expect(await version(page)).toEqual({ facts: ['Version', '2'], publish: false, history: [['Version 2', null], ['Version 1', 'Roll back to version 1']], open: false });
   const note = page.locator('#inspector .graph-details > sherpa-callout.graph-read-only');
   expect([await note.getAttribute('data-heading'), await note.textContent()]).toEqual(['Read only', why]);
+  // A press runs the act, the app's may refuses it, and the reader is told why; nothing is published.
+  await page.locator('#inspector .graph-history').evaluate((el) => (el.shadowRoot!.querySelector('summary') as HTMLElement).click());
+  await settle(page);
+  await press(page.locator('#inspector .graph-history [data-version="1"] sherpa-button'));
+  await settle(page);
+  expect(await page.evaluate(() => (window as unknown as { told: string[] }).told)).toEqual([why]);
+  expect((await version(page)).facts).toEqual(['Version', '2']);
   await header(page, 'Trials').focus();
   await page.keyboard.press('Enter');
   await settle(page);
