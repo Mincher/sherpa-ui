@@ -122,6 +122,7 @@ test('"Add a node" from what an output gives lists only the kinds that can use i
   assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'boolean', 'prompt', 'runbook', 'skill', 'time', 'organise', 'text', 'tag', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
   // Rows fit no Tag (it takes a Field) and no Time: their inputs never read rows. Math does, as Count (plan 944), and an
   // Organise, on its header (plan 960 U4.2).
-  assert.deepEqual(offered('rows'), ['field', 'math', 'condition', 'boolean', 'prompt', 'runbook', 'skill', 'organise', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
+  // A Text's Format reads rows too (plan 991a).
+  assert.deepEqual(offered('rows'), ['field', 'math', 'condition', 'boolean', 'prompt', 'runbook', 'skill', 'organise', 'text', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
   assert.deepEqual([takesGiven(NODE_KINDS.math, 'rows'), takesGiven(NODE_KINDS.math, 'field'), takesGiven(NODE_KINDS.value, 'field')], [true, true, false]);
 });

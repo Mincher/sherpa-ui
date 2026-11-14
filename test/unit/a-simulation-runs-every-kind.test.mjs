@@ -40,6 +40,16 @@ test('Math: add, subtract, multiply, divide, ratio, round, increment and the lis
   assert.equal(connected.value, 42, 'a Value connected in is Value A');
   const list = (type) => calc('math', { type }, [R('l/value', 'x/values')], [N('l', 'value', { type: 'list', value: ['3', '9', '6'] })]).value;
   assert.deepEqual([list('floor'), list('ceiling'), list('average')], [3, 9, 6]);
+  // The list's statistics (plan 991a): Sum, Median, Range; Count unique of values of any kind.
+  assert.deepEqual([list('sum'), list('median'), list('range')], [18, 6, 6]);
+  const words = (type, value) => calc('math', { type }, [R('l/value', 'x/values')], [N('l', 'value', { type: 'list', value })]);
+  assert.equal(words('unique', ['a', 'b', 'a', 'c']).value, 3);
+  assert.equal(words('median', ['1', '2', '3', '10']).value, 2.5, 'an even list: the mean of the middle two');
+  // Band: the label of the first band the value is up to, else the last; the labels must be one more than the bands.
+  const band = (a, bands = ['40', '70'], labels = ['Low', 'Medium', 'High']) => calc('math', { type: 'band', a, bands, labels });
+  assert.deepEqual([band(10).value, band(40).value, band(70).value, band(71).value], ['Low', 'Low', 'Medium', 'High']);
+  assert.match(band(5, ['40', '70'], ['Low', 'High']).note, /needs 3 labels/);
+  assert.match(band(5, ['forty'], ['Low', 'High']).note, /not a number/);
 });
 
 test('Math: no number says why, in words: a divide by zero, text, an empty row, a list that is not one', () => {
@@ -74,6 +84,14 @@ const organise = (values) => graphOf(
   [R('s/rows', 'x'), R('x/rows', 'o')],
 );
 const organised = (values) => out(simulateGraph(organise(values), { customers: ROWS }), 'x', 'x/rows');
+
+test('Format: its Template filled from each row that comes in, each value it names that row\'s field (plan 991a)', () => {
+  const g = (template) => graphOf([N('s', 'source', { store: 'customers' }), N('x', 'text', { type: 'format', template })], [R('s/rows', 'x/rows')]);
+  const said = out(simulateGraph(g('{{value:s.plan}}: {{value:s.seats}} seats'), { customers: ROWS }), 'x', 'x/result');
+  assert.deepEqual(said.value, ['Pro: 30 seats', 'Free: 5 seats', 'Pro: 12 seats', 'Team: 12 seats', 'Free: 70 seats']);
+  // No rows reach it: it says so, and sends nothing.
+  assert.match(out(simulateGraph(graphOf([N('x', 'text', { type: 'format', template: 'x' })], []), {}), 'x', 'x/result').note, /rows|empty/i);
+});
 
 test('Organise puts the rows in its Sort field\'s order, each way; the same rows, none lost', () => {
   const asc = organised({ sort: 'seats', direction: 'asc' }).rows;

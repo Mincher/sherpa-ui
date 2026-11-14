@@ -636,8 +636,19 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       floor: { label: 'Floor', help: 'Lowest value from the list', rows: [NUMBERS, NUMBER] },
       ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [NUMBERS, NUMBER] },
       average: { label: 'Average', help: 'Average value of the list', rows: [NUMBERS, NUMBER] },
+      // The list's statistics (plan 991a): each a list of numbers in, one number out.
+      sum: { label: 'Sum', help: 'Every value of the list added up', rows: [NUMBERS, NUMBER] },
+      median: { label: 'Median', help: 'The middle value of the list, in order', rows: [NUMBERS, NUMBER] },
+      range: { label: 'Range', help: 'The highest value of the list less the lowest', rows: [NUMBERS, NUMBER] },
       // Rows in, how many out: Count is no property (Will, plan 944, D3 A).
       count: { label: 'Count', help: 'How many rows come in', rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, NUMBER] },
+      unique: { label: 'Count unique', help: 'How many different values the list holds', rows: [LIST, NUMBER] },
+      // A number into named steps: the label of the first band it is up to, else the last (plan 991a).
+      band: {
+        label: 'Band', help: 'The label of the first band the value is up to',
+        rows: [numberRow('a', 'Value'), { name: 'bands', label: 'Up to', control: 'tags', multiple: true, input: 'object', needs: 'numbers' },
+          { name: 'labels', label: 'Labels', control: 'tags', multiple: true, input: 'object' }, RESULT],
+      },
     },
     rows: [], model: 'math', graphs: ['workflow'], category: 'Math',
   },
@@ -661,6 +672,12 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       prepend: { label: 'Prepend', help: 'Add Value B to the start of Value A', rows: [textRow('a', 'Value A'), textRow('b', 'Value B'), RESULT] },
       split: { label: 'Split by', help: 'Value as a list, split at each Separator', rows: [textRow('a', 'Value'), SEPARATOR, { ...RESULT, output: 'object', gives: 'list' }] },
       join: { label: 'Join', help: 'The list as one text, Separator between each', rows: [LIST, SEPARATOR, RESULT] },
+      // A template filled from each row, its values named as a message names them (plan 991a).
+      format: {
+        label: 'Format', help: 'The Template filled from each row: one text per row',
+        rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, { name: 'template', label: 'Template', control: 'message', input: 'value' },
+          { ...RESULT, output: 'object', gives: 'list' }],
+      },
     },
     rows: [], model: 'modifyText', graphs: ['workflow'], category: 'Utils',
   },
@@ -818,7 +835,9 @@ export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags' |
   const q = query.trim().toLowerCase();
   if (!q || kind.heading.toLowerCase().includes(q) || [...kind.tags ?? [], ...kind.keywords ?? []].some((t) => t.toLowerCase().includes(q))) return {};
   const types = Object.entries(kind.types ?? {});
-  const hit = types.find(([, t]) => t.label.toLowerCase() === q) ?? types.find(([, t]) => t.label.toLowerCase().includes(q));
+  // A type is found whole first, else by the start of a word: "and" is And, never the inside of Band (plan 991a).
+  const starts = (label: string): boolean => label.toLowerCase().split(/\s+/).some((_, i, words) => words.slice(i).join(' ').startsWith(q));
+  const hit = types.find(([, t]) => t.label.toLowerCase() === q) ?? types.find(([, t]) => starts(t.label));
   return hit ? { type: hit[0] } : undefined;
 }
 

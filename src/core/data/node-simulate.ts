@@ -26,13 +26,28 @@
  * - lightOf — A node's light after a simulation: the rows it heard and said, "412 → 87"; an Output's, what it would do.
  * - simulation — Begin a simulation; nothing runs until it is stepped.
  */
-import { filterTest, OP_LABELS, OP_TAKES, type Filter, type FilterOp, type Row } from './store.js';
+import { filterTest, OP_LABELS, OP_TAKES, valueKey, type Filter, type FilterOp, type Row } from './store.js';
 import { needOf, pickSent, readInput, truthOf, type Given } from './node-input.js';
 import { leafOf } from './node-flow.js';
 import { portalFlow } from './node-portals.js';
 import { isOutput } from './node-routes.js';
 import { fieldsSent, socketOf, storedValues, truthy, TEST_KINDS, type DrawnGraph, type GraphNode } from './node-kinds.js';
 import { START } from './node-start.js';
+import { filled, valuesIn } from './node-messages.js';
+
+/** The Math types that read a list of numbers, each to one number (plan 991a). */
+const LIST_MATH: Readonly<Record<string, (nums: readonly number[]) => number>> = {
+  floor: (n) => Math.min(...n),
+  ceiling: (n) => Math.max(...n),
+  average: (n) => n.reduce((a, b) => a + b, 0) / n.length,
+  sum: (n) => n.reduce((a, b) => a + b, 0),
+  median: (n) => {
+    const s = [...n].sort((a, b) => a - b);
+    const m = s.length >> 1;
+    return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
+  },
+  range: (n) => Math.max(...n) - Math.min(...n),
+};
 
 /** What a simulation reads beyond its graph and rows: the clock a relative date means (left out, the machine's), and
  *  where a fetch stopped at its cap, by store, in words: a Source says it beside its rows. */
@@ -387,13 +402,20 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
       const rows = rowsInto(`${node.id}/rows`);
       return rows ? { kind: 'value', value: rows.length } : fail(into(`${node.id}/rows`).find((p) => p.sent.note)?.sent.note ?? 'No rows reach it');
     }
-    if (type === 'floor' || type === 'ceiling' || type === 'average') {
+    // Count unique: how many different values, of any kind.
+    if (type === 'unique') {
+      const list = listOf(heard(node, 'values'));
+      return typeof list === 'string' ? fail(list) : { kind: 'value', value: new Set(list.map(valueKey)).size };
+    }
+    const ofList = LIST_MATH[type];
+    if (ofList) {
       const list = listOf(heard(node, 'values'));
       if (typeof list === 'string') return fail(list);
       const nums = list.map(Number);
       if (!nums.length || nums.some((n) => !Number.isFinite(n))) return fail('The list holds no numbers, or one that is not');
-      return { kind: 'value', value: type === 'floor' ? Math.min(...nums) : type === 'ceiling' ? Math.max(...nums) : nums.reduce((a, b) => a + b, 0) / nums.length };
+      return { kind: 'value', value: ofList(nums) };
     }
+    if (type === 'band') return band(node);
     const a = number(heard(node, 'a'));
     if (typeof a === 'string') return fail(a);
     if (type === 'round') {
@@ -408,10 +430,34 @@ export function simulation(graph: DrawnGraph, rowsByStore: Readonly<Record<strin
     return { kind: 'value', value: type === 'subtract' ? a - b : type === 'multiply' ? a * b : a + b };
   };
 
+  /** A Band's label: the first band the value is up to, else the last label; why there is none, in words. */
+  const band = (node: GraphNode): Sent => {
+    const fail = (note: string): Sent => ({ kind: 'value', note });
+    const a = number(heard(node, 'a'));
+    const ups = listOf(heard(node, 'bands'));
+    const labels = listOf(heard(node, 'labels'));
+    if (typeof a === 'string') return fail(a);
+    if (typeof ups === 'string' || typeof labels === 'string') return fail(typeof ups === 'string' ? ups : labels as string);
+    const limits = ups.map(Number);
+    if (limits.some((n) => !Number.isFinite(n))) return fail('Up to holds a value that is not a number');
+    if (labels.length !== limits.length + 1) return fail(`It needs ${limits.length + 1} labels: one per band, and one above them`);
+    const at = limits.findIndex((up) => a <= up);
+    return { kind: 'value', value: labels[at === -1 ? limits.length : at] };
+  };
+
   /** A Text node's result. */
   const text = (node: GraphNode): Sent => {
     const type = String(node.rows.find((r) => r.name === 'type')?.value ?? 'append');
     const word = (name: string): string | Sent => { const h = heard(node, name); return h.note ? h : String(h.value ?? ''); };
+    // Format: its Template filled from each row, each value it names that row's field (the one fill, `filled`).
+    if (type === 'format') {
+      const rows = rowsInto(`${node.id}/rows`);
+      const template = word('template');
+      if (typeof template !== 'string') return template;
+      if (!rows) return { kind: 'value', note: into(`${node.id}/rows`).find((p) => p.sent.note)?.sent.note ?? 'No rows reach it' };
+      const names = new Map(valuesIn(template).map((p) => [p.key, p.name]));
+      return { kind: 'value', value: rows.map((row) => filled(template, (key) => row[names.get(key) ?? ''])) };
+    }
     if (type === 'join') {
       const list = listOf(heard(node, 'values'));
       const sep = word('separator');

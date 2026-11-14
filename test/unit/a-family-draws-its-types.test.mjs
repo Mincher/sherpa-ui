@@ -23,12 +23,14 @@ test('each family: its types in order, the Type row first, and the rows, sockets
     math: {
       add: ['a', 'b', 'result'], subtract: ['a', 'b', 'result'], multiply: ['a', 'b', 'result'], divide: ['a', 'b', 'result'], ratio: ['a', 'b', 'result'],
       round: ['places', 'a', 'result'], increment: ['a', 'b', 'result'], floor: ['values', 'result'], ceiling: ['values', 'result'], average: ['values', 'result'],
-      // Count: how many rows come in (plan 944).
-      count: ['rows', 'result'],
+      // The list's statistics (plan 991a); Count, how many rows come in (plan 944), beside Count unique; then Band.
+      sum: ['values', 'result'], median: ['values', 'result'], range: ['values', 'result'],
+      count: ['rows', 'result'], unique: ['values', 'result'],
+      band: ['a', 'bands', 'labels', 'result'],
     },
     // A test leads with Pass and Fail (plan 971).
     time: { between: ['pass', 'fail', 'start', 'end'], duration: ['pass', 'fail', 'when', 'n', 'unit'] },
-    text: { append: ['a', 'b', 'result'], prepend: ['a', 'b', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'] },
+    text: { append: ['a', 'b', 'result'], prepend: ['a', 'b', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'], format: ['rows', 'template', 'result'] },
     tag: { includes: ['pass', 'fail', 'value'] },
   };
   for (const [id, types] of Object.entries(rows)) {
@@ -39,7 +41,7 @@ test('each family: its types in order, the Type row first, and the rows, sockets
       assert.deepEqual(kind.rows.map((r) => r.name), [...(id === 'tag' ? [] : ['type']), ...names], `${id} › ${type}`);
     }
   }
-  assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average', 'Count']);
+  assert.deepEqual(typeChoices(NODE_KINDS.math).map((c) => c.label), ['Add', 'Subtract', 'Multiply', 'Divide', 'Ratio', 'Round', 'Increment', 'Floor', 'Ceiling', 'Average', 'Sum', 'Median', 'Range', 'Count', 'Count unique', 'Band']);
   // Organise is one kind, no types (plan 960 U4.2): rows on its header, its fields in its own rows; no Count row (plan 944).
   const organise = NODE_KINDS.organise;
   assert.deepEqual([organise.types, organise.category, organise.input, organise.needs, organise.rows.map((r) => r.name)],

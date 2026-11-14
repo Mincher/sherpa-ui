@@ -118,6 +118,10 @@ and Max are not added.
 
 **D5 is Will's §2 words** ("by a Group by field"): built as above, no pick needed.
 
+**Built first (2026-11-14):** Sum, Median, Range, Count unique and Band as Math types, Format as a Text type, each run
+by Simulate and in the test that runs every kind. A palette search finds a type by the start of a word, so "and" is
+And, never the inside of Band. Next: Group by (D5), then Route (after D6), then Min and Max (after D4).
+
 **D6 (for Will): Route's outputs.** A (my pick): one output row per value picked, drawn on the node, plus Otherwise:
 a line from each route shows where it goes. This is a row per value, which a Field's Values is not (Will, 2026-11-13:
 one dropdown of ticks), because each route needs its own socket. B: one output and Otherwise, the route a row's value

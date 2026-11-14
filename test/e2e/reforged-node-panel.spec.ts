@@ -275,7 +275,8 @@ test('a connection let go on the bare canvas opens "Add a node": the kinds that 
   // Rows (an object) leave the Store row: the families whose header or a row takes one.
   // A portal's In takes anything (TODO 779); an AI node's header reads anything (plan 926); a Math Count's Rows and a
   // Condition's Data take rows (plans 944, 971 §9); an Organise takes them on its header (plan 960 U4.2).
-  expect(choices).toEqual(['field', 'math', 'condition', 'boolean', 'prompt', 'runbook', 'skill', 'organise', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
+  // A Text's Format reads rows too (plan 991a).
+  expect(choices).toEqual(['field', 'math', 'condition', 'boolean', 'prompt', 'runbook', 'skill', 'organise', 'text', 'portal', 'notify', 'content', 'response', 'result', 'output-trigger']);
   await choose(page, 'condition');
   const r = await draft(page);
   expect(r.nodes.map((n) => n.kind)).toEqual(['source', 'condition']);
@@ -324,7 +325,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   };
   // Rows into a Math are its Count's, never Floor's list of numbers; a Condition's Data takes them too (plan 971 §9), and an Organise, on
   // its header (plan 960 U4.2).
-  expect(await offered('rows')).toEqual(['Field', 'Math › Count', 'Condition', 'Boolean', 'Prompt', 'Runbook', 'Skill', 'Organise', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
+  expect(await offered('rows')).toEqual(['Field', 'Math › Count', 'Condition', 'Boolean', 'Prompt', 'Runbook', 'Skill', 'Organise', 'Text › Format', 'Portal', 'Notification', 'Content', 'Response', 'Run result', 'Output Trigger']);
   expect(await offered('field')).toEqual(said);
 });
 
