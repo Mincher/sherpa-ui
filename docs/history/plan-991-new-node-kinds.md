@@ -94,6 +94,35 @@ option), Closure (a step passed as a value).
 Each phase: the kinds in node-kinds.ts, their words, Simulate, graphText's words, N-zo's rule words, a unit per kind,
 and the Demos graphs that use them (sherpa-demos-67), in three engines.
 
+### 991a, in detail (sherpa-ui-e8, 2026-11-14)
+
+Read in the code first. Math already has **Floor** ("Lowest value from the list"), **Ceiling** ("Highest value from the
+list") and **Average**, each a list of numbers in and one number out; **Count** takes rows. A Field sends a column (its
+rows and the field it reads).
+
+- **Statistic.** New Math types over the same list: **Sum**, **Median**, **Range** (highest less lowest) and **Count
+  unique**. Min and Max are Floor and Ceiling already, so they are not added twice (D4). "By a Group by field" (§2):
+  each list type gains an optional **Group by** row, a field of the rows that reach it. Empty, it sends one number, as
+  now; set, it sends rows, one per group: the group's value and the statistic (D5).
+- **Band** (Math type): a number in; **Up to** (a list of numbers, rising) and **Labels** (one more than Up to: the last
+  is "above"); out, the label of the first band the number is up to. "Risk 70 → High".
+- **Format** (Text type): a **Template** (a message, its values `{{field:…}}` by Insert value, the one reference form of
+  956) and the rows or the record that come in; out, one text per row (a list), or one text for one record.
+- **Route** (a Logic kind): a Field joined to its header; **Routes**, the values of that field it picks (one dropdown of
+  ticks, as a Field's Values); out, ONE output row per value picked, and **Otherwise**. Each row goes on at the output of
+  its value, the rest at Otherwise. Routes by a rule, not a value, are a Condition each, as today (D6).
+
+**D4 (for Will): Min and Max.** A (my pick): rename Floor to **Min** and Ceiling to **Max** (their help already says
+lowest and highest; to most readers a floor rounds down), every graph retrofitted. B: keep Floor and Ceiling, and Min
+and Max are not added.
+
+**D5 is Will's §2 words** ("by a Group by field"): built as above, no pick needed.
+
+**D6 (for Will): Route's outputs.** A (my pick): one output row per value picked, drawn on the node, plus Otherwise:
+a line from each route shows where it goes. This is a row per value, which a Field's Values is not (Will, 2026-11-13:
+one dropdown of ticks), because each route needs its own socket. B: one output and Otherwise, the route a row's value
+picks said on the line's tip: fewer sockets, but two routes can no longer go to two places.
+
 ## 6. Sources
 
 n8n: docs.n8n.io — llms.txt; core nodes merge, switch, splitinbatches, wait, comparedatasets, summarize,
