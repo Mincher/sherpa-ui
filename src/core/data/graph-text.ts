@@ -135,7 +135,7 @@ export interface GraphText {
 }
 
 /** A graph read as text, by its steps: each stage's in order; a test of one value with where its Pass and Fail go (its Fail
- *  an error too); a split of a column with where its rows go; a step whose words say retry or again, a retry. */
+ *  an error too); a split of a column with where its rows go; a step's Retries, a retry. */
 export function graphText(graph: TextGraph): GraphText {
   const stages = graphSteps({ nodes: graph.nodes ?? [], connections: graph.connections ?? [], ...(graph.stages ? { stages: graph.stages } : {}) });
   const steps = stages.flatMap((st) => st.steps);
@@ -171,9 +171,11 @@ export function graphText(graph: TextGraph): GraphText {
       }
     }
   });
-  const nodeOf = (step: GraphStep): WorkflowNode | undefined => nodeIn(graph, step.node);
-  for (const st of steps.filter((s) => s.kind !== 'condition' && /retry|again/i.test(`${nodeOf(s)?.heading ?? ''} ${text(nodeOf(s)?.values?.['instructions'])}`))) {
-    errors.unshift(`- A retry: ${ref('step', st.number)} ${nodeOf(st)?.heading ?? st.kind}.`);
+  // A step's Retries setting: tried that many more times when it fails (plan 992 O7).
+  for (const st of [...steps].reverse()) {
+    const n = nodeIn(graph, st.node);
+    const times = Number(n?.values?.['retries'] ?? 0);
+    if (times > 0) errors.unshift(`- A retry: ${ref('step', st.number)} ${n?.heading ?? st.kind}, up to ${times} more ${times === 1 ? 'time' : 'times'}.`);
   }
   return { stages: lines, errors, steps };
 }

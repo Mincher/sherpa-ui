@@ -74,9 +74,10 @@ test('the lists are the app\'s: none shipped; a Model lists its own Provider\'s 
     // Another provider picked: its models.
     nodes[0].values = { provider: 'other', model: '' };
     assert.deepEqual(row(node(graphOf(nodes, connections), 'm'), 'model').choices.map((c) => c.label), ['Pick one', 'Model One']);
-    // A Skill lists the app's, then New; a Runbook picks nothing: it is its Model and its Instructions (plan 936 D1 B).
+    // A Skill lists the app's, then New; a Runbook picks nothing: it is its Model and its Instructions (plan 936 D1 B), and
+    // its Retries, a setting (plan 992 O7).
     const r = graphOf([N('r', 'runbook'), N('s', 'skill')]);
-    assert.deepEqual(node(r, 'r').rows.map((x) => x.name), ['type', 'model', 'instructions', 'answer']);
+    assert.deepEqual(node(r, 'r').rows.map((x) => x.name), ['type', 'retries', 'model', 'instructions', 'answer']);
     assert.deepEqual(row(node(r, 's'), 'skill').choices.map((c) => c.label), ['Pick one', 'Summarise tickets', 'New skill']);
   } finally {
     undo();

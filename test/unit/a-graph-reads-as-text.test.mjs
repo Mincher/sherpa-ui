@@ -1,7 +1,7 @@
 /**
  * A GRAPH READS AS TEXT (plan 960 U5, the text lens): its steps in words, stage by stage, in the order and numbers
  * `graphSteps` gives; a test of one value with where its Pass and Fail go, its Fail an error; a split of a column with
- * where its rows go; a retry. Each kind in its own words, an app's by `registerStepWords`; `graphKey` changes with what the
+ * where its rows go; a step's Retries, a retry (plan 992 O7). Each kind in its own words, an app's by `registerStepWords`; `graphKey` changes with what the
  * graph does, not where its nodes stand.
  * TRAP T-a-text-names-what-it-means
  *
@@ -13,22 +13,23 @@ import assert from 'node:assert/strict';
 import { graphKey, graphText, outputWords, registerStepWords, stepWords } from '../../dist/data.js';
 
 const N = (id, kind, x, y, stage, values, more = {}) => ({ id, kind, x, y, stage, ...(values ? { values } : {}), ...more });
-/** Find: the devices, their health, those at risk. Act: fix each, try again, then tell; none at risk, say so. */
+/** Find: the devices, their health, those at risk. Act: fix each, once more if it fails, then tell; not fixed, page; none
+ *  at risk, say so. A retry of the same step is its Retries (plan 992 O7); a different step on failure stays wired. */
 const graph = () => ({
   stages: [{ id: 'find', label: 'Find', x: 0 }, { id: 'act', label: 'Act', x: 1000 }],
   nodes: [
     N('s', 'source', 0, 0, 'find', { store: 'devices' }), N('f', 'field', 300, 0, 'find', { field: 'health' }),
     N('risk', 'condition', 600, 0, 'find', { type: 'eq', b: 'At risk' }, { heading: 'At risk' }),
-    N('fix', 'runbook', 1100, 0, 'act', { instructions: 'Fix the device.' }, { heading: 'Fix' }),
+    N('fix', 'runbook', 1100, 0, 'act', { instructions: 'Fix the device.', retries: 1 }, { heading: 'Fix' }),
     N('ok', 'condition', 1400, 0, 'act', { type: 'gt', b: 0 }, { heading: 'Fixed?' }),
-    N('again', 'runbook', 1700, 200, 'act', { instructions: 'Try again once.' }, { heading: 'Retry once' }),
+    N('page', 'notify', 1700, 200, 'act', { type: 'notification', title: 'Fix failed' }),
     N('tell', 'notify', 1700, 0, 'act', { type: 'notification', title: 'Fixed' }),
     N('none', 'condition', 1100, 400, 'act', { type: 'empty' }, { heading: 'None at risk' }),
     N('calm', 'notify', 1400, 400, 'act', { type: 'notification', title: 'All healthy' }),
   ],
   connections: [
     { from: 's/rows', to: 'f' }, { from: 'f/field', to: 'risk' }, { from: 'risk/pass', to: 'fix' }, { from: 'risk/pass', to: 'none' },
-    { from: 'fix/true', to: 'ok' }, { from: 'ok/pass', to: 'tell' }, { from: 'ok/fail', to: 'again' }, { from: 'none/pass', to: 'calm' },
+    { from: 'fix/true', to: 'ok' }, { from: 'ok/pass', to: 'tell' }, { from: 'ok/fail', to: 'page' }, { from: 'none/pass', to: 'calm' },
   ],
 });
 
@@ -45,13 +46,13 @@ test('a graph reads as its steps in words, stage by stage: a column split, a tes
     '       PASS: go to {{step:2.4}} notify.',
     '   2.3 Fixed?: when what comes in is more than 0.',
     '       PASS: go to {{step:2.5}} notify.',
-    '       FAIL: go to {{step:2.6}} Retry once.',
+    '       FAIL: go to {{step:2.6}} notify.',
     '   2.4 notify: {{action:notification}}, "All healthy".',
     '   2.5 notify: {{action:notification}}, "Fixed".',
-    '   2.6 Retry once: Try again once.',
+    '   2.6 notify: {{action:notification}}, "Fix failed".',
   ]);
-  // The one-value Fail is an error; a step whose words say again is a retry, first.
-  assert.deepEqual(read.errors, ['- A retry: {{step:2.6}} Retry once.', '- If not Fixed ({{step:2.3}}): go to {{step:2.6}} Retry once.']);
+  // The one-value Fail is an error; a step's Retries is a retry, first.
+  assert.deepEqual(read.errors, ['- A retry: {{step:2.1}} Fix, up to 1 more time.', '- If not Fixed ({{step:2.3}}): go to {{step:2.6}} notify.']);
   assert.equal(read.steps.length, 9);
 });
 

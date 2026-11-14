@@ -439,7 +439,9 @@ function connectionsOf(graph: DrawnGraph): { connected: Set<string>; sent: Set<s
 }
 
 /** One node's rows, made again when their shape changed and given their values. */
-function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
+function drawRows(drawn: Drawn, el: HTMLElement, given: GraphNode): void {
+  // A setting is the Settings tab's, never the canvas's (plan 992 O7): the node is drawn without it.
+  const node = given.rows.some((r) => r.setting) ? { ...given, rows: given.rows.filter((r) => !r.setting) } : given;
   // Read once a draw, not once a node.
   const { connected, sent } = connectionsOf(drawn.graph);
   const locked = (row: GraphRow): boolean => !row.editable || connected.has(`${node.id}/${row.name}`);
@@ -2106,15 +2108,16 @@ function detailsOf(panel: HTMLElement): HTMLElement | undefined {
   return details;
 }
 
-/** A node's body: Details, and an Output, a JSON, a Data and a Definition tab when it has them, and Graph details LAST
- *  (plan 951 D1 A). With no node, Graph details alone. The reader's tab is kept per inspector. */
+/** A node's body: Details, and a Settings, an Output, a JSON, a Data and a Definition tab when it has them, and Graph details
+ *  LAST (plan 951 D1 A). With no node, Graph details alone. The reader's tab is kept per inspector. */
 function contentTabs(
-  panel: HTMLElement, details: HTMLElement | undefined, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement, definition?: HTMLElement,
+  panel: HTMLElement, details: HTMLElement | undefined, json?: HTMLElement, data?: HTMLElement, output?: HTMLElement, definition?: HTMLElement, settings?: HTMLElement,
 ): HTMLElement {
   const graph = detailsOf(panel);
-  if (!json && !data && !output && !definition && !graph && details) return details;
+  if (!json && !data && !output && !definition && !settings && !graph && details) return details;
   const pages = [
-    ...(details ? [{ id: 'details', label: 'Details', el: details }] : []), ...(output ? [{ id: 'output', label: 'Output', el: output }] : []),
+    ...(details ? [{ id: 'details', label: 'Details', el: details }] : []), ...(settings ? [{ id: 'settings', label: 'Settings', el: settings }] : []),
+    ...(output ? [{ id: 'output', label: 'Output', el: output }] : []),
     ...(json ? [{ id: 'json', label: 'JSON', el: json }] : []), ...(data ? [{ id: 'data', label: 'Data', el: data }] : []),
     ...(definition ? [{ id: 'definition', label: 'Definition', el: definition }] : []),
     ...(graph ? [{ id: 'graph', label: 'Graph details', el: graph }] : []),
@@ -2174,7 +2177,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     el.addEventListener('button-click', act);
     return el;
   };
-  const items = node.rows.flatMap((row) => {
+  const fieldsOfRows = (rows: readonly GraphRow[]): HTMLElement[] => rows.flatMap((row) => {
     const at = `${node.id}/${row.name}`;
     const ins = graph.connections.filter((r) => r.to === at);
     const outs = graph.connections.filter((r) => r.from === at).map((r) => `To ${name(r.to)}`);
@@ -2189,6 +2192,14 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     const insert = options.output && row.control === 'message' && row.editable && !connected.has(at) ? [valueMenu(field, row.label, options.output)] : [];
     return [field, ...insert, ...cuts, ...custom];
   });
+  const items = fieldsOfRows(node.rows.filter((r) => !r.setting));
+  // Its settings, how it runs (an AI step's Retries), are a tab of their own (plan 992 O7).
+  const set = fieldsOfRows(node.rows.filter((r) => r.setting));
+  const settings = set.length ? document.createElement('sherpa-stack') : undefined;
+  if (settings) {
+    settings.setAttribute('data-gap', 'lg');
+    settings.append(...set);
+  }
   // The whole node's connections: in, and out — its True and False where it forks.
   const header = document.createElement('sherpa-key-value-list');
   header.setAttribute('data-orientation', 'vertical');
@@ -2207,7 +2218,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   const connectedTo = (row: string): string[] => graph.connections.filter((r) => r.from === `${node.id}/${row}`).map((r) => name(r.to));
   const output = options.output ? outputPane(node, options.output, connectedTo) : undefined;
   const definition = options.definition === undefined ? undefined : definitionPane(options.definition);
-  const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined, output, definition);
+  const body = contentTabs(panel, stack, 'fault' in flow ? undefined : flowPane(flow), options.data ? dataPane(options.data) : undefined, output, definition, settings);
   const { tabs } = options;
   if (tabs) {
     const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };

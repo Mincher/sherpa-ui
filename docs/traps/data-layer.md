@@ -6354,6 +6354,21 @@ on it picks its Ways from the Categories (`sender` sends the column, values and 
 - Site: `test/unit/a-category-is-a-column-the-model-makes.test.mjs`
 - Site: `test/e2e/reforged-a-category-feeds-a-fork.spec.ts`
 
+### T-a-retry-is-a-setting
+
+**A retry is a setting of the step that fails, never a step of its own** (Will, plan 992 O7 A: where a Runbook retries the
+same step, it becomes that step's Retry setting; its prompt's RETRIES AND ERRORS reads it; a different step on failure
+stays wired). Each kind that can fail (the AI steps, the Outputs) has Retries: a number from 0, optional, with no socket.
+A row's `setting` keeps it in the node's Settings tab, right after Details; the canvas never draws it (`drawRows`).
+`graphText` says each step's Retries in its errors: "A retry: step 2.1 Install patches, up to 2 more times".
+
+- **Words are no setting**: a step named "Try again" was read as a retry from its words; that guess is gone with the
+  wired retry steps, which the shipped Runbooks moved to the setting.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `test/unit/a-retry-is-a-setting.test.mjs`
+- Site: `test/e2e/reforged-a-retry-is-a-setting.spec.ts`
+
 ### T-a-value-is-typed-once
 
 **A condition's value is typed ONCE, by its field's type, where it comes in** —

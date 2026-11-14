@@ -45,7 +45,8 @@ test('a family of one type has no Type row: a Run result is its Status and Summa
 test('a family of several types has its Type row first; each type draws its own rows and icon; its properties connection on', () => {
   const n = node(workflowGraph(flow('notify', { channels: ['email'], priority: 'high' })), 'o');
   assert.equal(n.icon, 'notifications');
-  assert.deepEqual(n.rows.map((r) => r.name), ['channels', 'to', 'title', 'message', 'attachments', 'url', 'priority', 'sent', 'delivered', 'message-id']);
+  // Its Retries first, a setting of the family (plan 992 O7), drawn in the Settings tab.
+  assert.deepEqual(n.rows.map((r) => r.name), ['retries', 'channels', 'to', 'title', 'message', 'attachments', 'url', 'priority', 'sent', 'delivered', 'message-id']);
   assert.deepEqual([row(n, 'channels').multiple, row(n, 'channels').input], [true, 'object']);
   assert.deepEqual([row(n, 'sent').property, row(n, 'sent').output], [true, 'boolean']);
   const file = flow('content', { type: 'file' }, [{ id: 'n', kind: 'content', x: 800, y: 0, values: { type: 'file' } }]);
@@ -89,7 +90,7 @@ test('the panel lists the families that have a type, no Notify; a search finds a
   assert.deepEqual(Object.keys(withTicket.types), ['ticket']);
   assert.deepEqual(Object.keys(NODE_KINDS.request.types), [], 'the shipped family is left as it is');
   const t = node(workflowGraph(flow('request', { type: 'ticket' }), {}, { ...NODE_KINDS, request: withTicket }), 'o');
-  assert.deepEqual([t.icon, t.rows.map((r) => r.name)], ['ticket', ['summary']]);
+  assert.deepEqual([t.icon, t.rows.map((r) => r.name)], ['ticket', ['retries', 'summary']]);
 });
 
 test('an app adds types to a family: every check and editor reads them; Request is listed then; a clash is refused; it takes them back', () => {
