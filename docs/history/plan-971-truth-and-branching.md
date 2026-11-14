@@ -126,3 +126,16 @@ one answer, an agent's "Fixed?"), Will picked **"Fold it into Condition"**:
   healthy"; "Fixed?" is Condition (Is true, on the agent's True, Data the rows) › Pass and Fail.
 - Retrofit every shipped Branch (Will's rule), the Runbook prompt form (BRANCH lines become the split's PASS and FAIL),
   N-zo's words, and the page filter graph's status chain.
+
+### 9.1 Will, 2026-11-14: a Boolean node, a gate
+
+Will: "We should have a Boolean node for simple 'if true then' checks and routing. If the input is not less than or
+equal to 0, null, or no data then it is True. No output properties. Just an output socket in the header that passes
+through the input if the result is True. So, value of 1 in, pass the value of 1 out. Object with data in, returns true,
+pass the object with data on to the next node, and so on. … This is different from a Condition node as we're not
+comparing the details of the input against a condition. We're just determining which route to take based on the
+existence of input."
+
+- One input and one output, both on its header; no rows, no properties. True (truthOf): its input goes on unchanged;
+  false: nothing goes on, the route stops.
+- "Any at risk?" is Condition (Risk > 50) › Pass › Boolean › Fix; the "none" route is Condition Is empty › Pass.
