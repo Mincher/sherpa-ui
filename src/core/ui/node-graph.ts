@@ -1645,11 +1645,13 @@ function linkPortals(drawn: Drawn | undefined): void {
  * The ACTIVE border on what is joined to the pick (`data-joined`): every node downstream of a picked node, each node a
  * picked connection joins, and each node joined to the row whose field has focus (its output drawn on another row's, too). A
  * picked node wears the picked look instead. Will, TODO 889
+ * And the LIFT (`data-elevation`): md on a picked node, sm on each node downstream of one. Will, TODO 1011
  */
 function markJoined(drawn: Drawn | undefined): void {
   if (!drawn) return;
   const picked = new Set(currentOf(drawn.nodes));
-  const joined = downstreamOf(drawn.connections, picked);
+  const below = downstreamOf(drawn.connections, picked);
+  const joined = new Set(below);
   for (const connection of drawn.picked) for (const end of [connection.from, connection.to]) joined.add(socketOf(end).node);
   const focus = drawn.focusRow;
   if (focus) {
@@ -1662,6 +1664,11 @@ function markJoined(drawn: Drawn | undefined): void {
   for (const [id, el] of drawn.nodes) {
     const on = joined.has(id) && !picked.has(id);
     if (el.hasAttribute('data-joined') !== on) el.toggleAttribute('data-joined', on);
+    const lift = picked.has(id) ? 'md' : below.has(id) ? 'sm' : null;
+    if (el.getAttribute('data-elevation') !== lift) {
+      if (lift) el.setAttribute('data-elevation', lift);
+      else el.removeAttribute('data-elevation');
+    }
   }
 }
 

@@ -104,6 +104,10 @@
   border-start-end-radius: inherit;
 }
 :host(:state(dragging)) .header { cursor: grabbing; }
+/* LIFTED by Sherpa's elevation: the graph lifts a picked node and every node downstream of it (Will, TODO 1011). */
+:host([data-elevation="sm"]) .root { box-shadow: var(--sherpa-shadow-sm, 2px 2px 8px -4px #35353d4c); }
+:host([data-elevation="md"]) .root { box-shadow: var(--sherpa-shadow-md, 8px 8px 16px -4px #35353d4c); }
+:host([data-elevation="lg"]) .root { box-shadow: var(--sherpa-shadow-lg, 8px 8px 32px -8px #35353d4c); }
 /* DRAGGED: over the nodes it passes, lifted as Elevation=md draws it, and its
    edge one ring stronger — a ring, not a wider border, so nothing inside moves.
    Will, TODO 552 */

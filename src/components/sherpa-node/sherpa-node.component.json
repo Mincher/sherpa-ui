@@ -615,6 +615,21 @@
     },
     {
       "$type": "state",
+      "name": "sm",
+      "selector": ":host([data-elevation=\"sm\"])"
+    },
+    {
+      "$type": "state",
+      "name": "md",
+      "selector": ":host([data-elevation=\"md\"])"
+    },
+    {
+      "$type": "state",
+      "name": "lg",
+      "selector": ":host([data-elevation=\"lg\"])"
+    },
+    {
+      "$type": "state",
       "name": "sub-graph",
       "selector": ":host([data-sub-graph])"
     },

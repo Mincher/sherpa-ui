@@ -70,3 +70,39 @@ test('a row\'s field in focus lights each node joined to that row; a Store light
   await page.locator('#cv > sherpa-node[data-heading="Source"] sherpa-input-text[name="store"] select').blur();
   await expect.poll(() => joined(page)).toEqual([]);
 });
+
+/** Each node's lift, by heading: its `data-elevation`, and whether its card draws that level's Sherpa shadow. */
+const lifts = (page: Page) => page.evaluate(() => {
+  const probe = document.body.appendChild(document.createElement('div'));
+  const token = (level: string) => { probe.style.boxShadow = `var(--sherpa-shadow-${level})`; return getComputedStyle(probe).boxShadow; };
+  const shadows = { sm: token('sm'), md: token('md') };
+  probe.remove();
+  return Object.fromEntries([...document.querySelectorAll<HTMLElement>('#cv > sherpa-node')].map((n) => {
+    const level = n.getAttribute('data-elevation');
+    const drawn = getComputedStyle(n.shadowRoot!.querySelector('.root')!).boxShadow;
+    return [n.getAttribute('data-heading'), level ? `${level}${drawn === shadows[level as 'sm' | 'md'] ? '' : ' NOT DRAWN'}` : drawn];
+  }));
+});
+
+test('a picked node is lifted md, and every node downstream of it sm, by Sherpa\'s shadows; a picked connection lifts none (1011)', async ({ page }) => {
+  const pick = async (heading: string) => {
+    const b = (await page.locator(`#cv > sherpa-node[data-heading="${heading}"] .header[role="button"]`).boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + 8);
+  };
+  await pick('Field');
+  await expect.poll(() => lifts(page)).toEqual({ Start: 'none', One: 'none', Source: 'none', Field: 'md', Active: 'sm', Either: 'sm' });
+  await pick('Source');
+  await expect.poll(() => lifts(page)).toEqual({ Start: 'none', One: 'none', Source: 'md', Field: 'sm', Active: 'sm', Either: 'sm' });
+  const cv = (await page.locator('#cv').boundingBox())!;
+  await page.mouse.click(cv.x + 600, cv.y + 600);
+  await expect.poll(() => lifts(page)).toEqual({ Start: 'none', One: 'none', Source: 'none', Field: 'none', Active: 'none', Either: 'none' });
+  const at = await page.evaluate(() => {
+    const hit = document.querySelector<SVGPolylineElement>('#cv .graph-hit[data-from="f/field"][data-to="c"]')!;
+    const p = hit.points.getItem(Math.floor(hit.points.numberOfItems / 2));
+    const s = new DOMPoint(p.x, p.y).matrixTransform(hit.getScreenCTM()!);
+    return [s.x, s.y] as [number, number];
+  });
+  await page.mouse.click(...at);
+  await expect.poll(() => joined(page)).toEqual(['Active', 'Field']);
+  expect(Object.values(await lifts(page))).toEqual(['none', 'none', 'none', 'none', 'none', 'none']);
+});
