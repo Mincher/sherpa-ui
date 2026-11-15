@@ -41,7 +41,8 @@ test('unbend of one of two leaves one; of the last clears via', () => {
   assert.deepEqual(one.connections[0].via, [{ x: 500, y: 20 }]);
   const none = editWorkflow(one, { unbend: { connection, index: 0 } });
   assert.equal('via' in none.connections[0], false);
-  assert.deepEqual(none, flow());
+  // A bend is hand layout: the mark stays till an Unfurl (1001c).
+  assert.deepEqual(none, { ...flow(), byHand: true });
 });
 
 test('a connection that is not there, a number that is not real, or a point that is not there is refused, and the workflow is untouched', () => {
