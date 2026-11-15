@@ -83,6 +83,10 @@ test('the Operation select picks a Logic type: And takes many of anything, has n
   await pick(page, 'Is active', 'in');
   expect(await rows(page, 'Is active')).toEqual(['type', 'Value A (Optional)', 'b', 'Pass', 'Fail']);
   expect(await page.locator(`${NODE('Is active')} sherpa-input-text[name="b"]`).evaluate((el) => [el.getAttribute('data-type'), el.getAttribute('data-label'), (el as HTMLElement & { tags: string[] }).tags])).toEqual(['tags', 'Values', ['active']]);
+  // Contains: its header is the data, so no Value A of 994; its one value row is titled Value A, text with no choices (TODO 1002).
+  await pick(page, 'Is active', 'contains');
+  expect(await rows(page, 'Is active')).toEqual(['type', 'b', 'Pass', 'Fail']);
+  expect(await page.locator(`${NODE('Is active')} sherpa-input-text[name="b"]`).evaluate((el) => [el.getAttribute('data-type'), el.getAttribute('data-label')])).toEqual([null, 'Value A']);
 });
 
 test('a Field\'s column into a Condition switched to And stays joined, read as rows (939); back to Equals it reads it; a text field lists no Greater than (940); Save keeps what is drawn (770)', async ({ page }) => {

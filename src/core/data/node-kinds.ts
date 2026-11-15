@@ -473,6 +473,9 @@ export function nodeKinds(): Readonly<Record<string, NodeKind>> {
 
 /** The operators whose value is a list: Is one of, Is not one of. */
 export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
+/** The operators of a part of a text: its one value is typed or joined, never picked from the field's (Will, TODO 1002).
+ *  TRAP T-a-part-of-a-text-is-typed */
+const PART_OPS: readonly FilterOp[] = ['contains', 'notcontains', 'startswith', 'endswith'];
 
 /** The control a value of a field's type takes: a number, a date; none for text, which keeps the row's own (plan 986).
  *  TRAP T-a-row-takes-its-values-type */
@@ -484,14 +487,16 @@ export function typedControl(type: string | undefined): RowControl | undefined {
  *  value — against what the operator takes: Value B, a list of Values, or Start and End. Its words the operator's own
  *  (`OP_LABELS`). Plan 783 D3 · TRAP T-a-logic-type-is-an-operator */
 function compareType(op: FilterOp): NodeType {
-  const [list, range] = [LIST_OPS.includes(op), OP_TAKES[op] === 'range'];
+  const [list, range, part] = [LIST_OPS.includes(op), OP_TAKES[op] === 'range', PART_OPS.includes(op)];
+  // A part of a text is typed or joined, seldom a whole value: no choices of the field's, and titled Value A (Will, TODO 1002).
   const rows: RowKind[] = list ? [{ name: 'b', label: 'Values', control: 'tags', multiple: true, input: 'object' }]
     : range ? [{ ...textRow('start', 'Start'), ofField: true }, { ...textRow('end', 'End'), ofField: true }]
-      : [{ name: 'b', label: 'Value B', control: 'values', input: 'value', ofField: true }];
-  const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
+      : part ? [textRow('b', 'Value A')] : [{ name: 'b', label: 'Value B', control: 'values', input: 'value', ofField: true }];
+  const against = list ? 'the Values' : range ? 'Start and End' : part ? 'Value A' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, VALUE_A, ...rows] };
+  // A part of a text tests its header, the data, always: it has no Value A to test (TODO 1002).
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, ...(part ? [] : [VALUE_A]), ...rows] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */

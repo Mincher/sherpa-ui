@@ -28,7 +28,11 @@ headings below are older than the index: most entries are under the last one.
 
 | Area | Entries |
 |---|---:|
-| [The data layer](traps/data-layer.md) | 256 |
+<<<<<<< HEAD
+| [The data layer](traps/data-layer.md) | 257 |
+=======
+| [The data layer](traps/data-layer.md) | 257 |
+>>>>>>> afc358433 (feat(1002): a part of a text is typed — Contains and the text matches test their header, one row titled Value A)
 | [Storage, saved Views and the URL](traps/storage.md) | 36 |
 | [The join and the app layer](traps/join-and-app.md) | 44 |
 | [Filters](traps/filters.md) | 105 |
@@ -39,4 +43,8 @@ headings below are older than the index: most entries are under the last one.
 | [Other components](traps/other-components.md) | 73 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 38 |
 | [Tests only](traps/tests-only.md) | 14 |
-| **All** | **843** |
+<<<<<<< HEAD
+| **All** | **844** |
+=======
+| **All** | **842** |
+>>>>>>> afc358433 (feat(1002): a part of a text is typed — Contains and the text matches test their header, one row titled Value A)

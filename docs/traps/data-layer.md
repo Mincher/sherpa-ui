@@ -6319,6 +6319,21 @@ their own. The workflow (`here`) and a page's Query graph (`leafRows`) both call
 - Site: `test/unit/a-row-takes-its-values-type.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
+### T-a-part-of-a-text-is-typed
+
+**Contains, Does not contain, Starts with and Ends with test their header, the data, always** (Will, TODO 1002: "For
+'Contains' conditions we don't need Value A. Value B can become Value A. It shouldn't show any options unless values are
+connected to it, via a values output, or entered into the field manually"; the same for the other three, sherpa-demos-67's
+reading). They have no Value A of 994 (`PART_OPS` in `compareType`). Their one value row keeps its name, `b`, and is
+titled Value A: text, typed or joined, never a pick of the field's values (no `ofField`), as a part of a text is seldom a
+whole value. No graph is retrofitted: `b` is still `b`.
+
+- **A line into Value A on one is another type's**: kept, as switching back to Equals brings it back (off is not gone),
+  drawn nowhere, and the run tests the header. No fault.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `test/unit/a-part-of-a-text-is-typed.test.mjs`
+
 ### T-the-data-comes-in-at-the-header
 
 **A test's data comes in at its header, always** (Will, TODO 994: "Condition nodes have an optional data input but the
