@@ -462,3 +462,14 @@ test('every value ticked is in force, and drawn as its own test, said as its chi
   assert.deepEqual(pageWithQuery(page, source.query.draft).source.scopes.data.where, { status: { all: true } });
   source.close();
 });
+
+test('a Query\'s In the last is a Time with its own rows and ONE Pass and Fail, which hold no value (TODO 1004a)', async () => {
+  const page = { v: 1, id: 'p', source: { store: 'tickets', fields: { opened: { label: 'Opened', type: 'date' } },
+    scopes: { view: { label: 'View', holds: ['opened'], where: { opened: { last: 3, unit: 'month' } } } } } };
+  const source = await openSource(page.source, new ArrayStore([{ id: 1, opened: '2026-10-01' }], { key: 'id' }));
+  const time = queryGraph(source.query.draft, page, { type: (f) => page.source.fields[f]?.type }).nodes.find((n) => n.kind === 'time');
+  // Was: Pass and Fail twice, the first pair editable and holding "month".
+  assert.deepEqual(time.rows.map((r) => [r.name, r.value ?? null, !!r.editable]), [
+    ['type', 'duration', false], ['when', 'last', true], ['n', 3, true], ['unit', 'month', true], ['pass', null, false], ['fail', null, false],
+  ]);
+});

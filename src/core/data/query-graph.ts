@@ -266,7 +266,8 @@ function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }
   const operation = (value: string, choices: readonly RowChoice[]): GraphRow => ({ name: 'type', label: 'Operation', control: 'type', value, editable: true, choices });
   if (op === 'last' || op === 'next') {
     const span = leaf.value as Duration;
-    const time = resolveKind(NODE_KINDS['time']!, 'duration').rows.filter((r) => r.control !== 'type');
+    // Its own rows: no type, and no Pass and Fail, which every test takes once, after its rows (TODO 1004a).
+    const time = resolveKind(NODE_KINDS['time']!, 'duration').rows.filter((r) => r.control !== 'type' && !r.property);
     const rows = time.map(({ input: _in, ...r }): GraphRow => ({ ...r, value: r.name === 'when' ? op : r.name === 'n' ? span?.n : span?.unit, editable: true, ...(rowChoices(r) ? { choices: rowChoices(r, { count: span?.n })! } : {}) }));
     return { kind: 'time', type: 'duration', rows: [{ ...operation('duration', []), editable: false, hint: 'A span from today.' }, ...rows] };
   }

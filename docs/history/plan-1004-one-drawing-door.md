@@ -47,7 +47,7 @@ values, own headings and words, and what each node is to the Query (`ref`), with
 
 | Phase | Does | Owner |
 |---|---|---|
-| 1004a | Measure R28 (a Time test's Pass and Fail drawn twice in a Query graph), a test first, then fix it | e8 |
+| 1004a | Measure R28 (a Time test's Pass and Fail drawn twice in a Query graph), a test first, then fix it **BUILT 2026-11-15: measured, rows were type, pass ("month", editable), fail (the same), when, n, unit, pass, fail; leafRows now drops the type's Pass and Fail, and TEST_ROWS gives them once (a-query-is-drawn-as-nodes)** | e8 |
 | 1004b | `workflowGraph` by the graph's type: the Start (T1), the kind checks (T2), the kind registry with the app's types (G2) | e8 |
 | 1004c | The lens gives a definition: kinds, values, own words, `ref`, `editable`, hints and `off` (T3, T4); ids kept (T7); reconcile reads it (T5) | a9 |
 | 1004d | `queryDrawn` is `workflowGraph` of that definition; the rows written by hand go (R1, R20, R25). Each Query-only piece (PAGE_ROWS, the bar's chips and presets, Organise and Presentation rows, Equals read as ticks, EVERY, Off, superseded trees) becomes a kind's own rows or a value the lens gives | e8, a9 |
