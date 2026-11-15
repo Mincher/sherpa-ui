@@ -40,6 +40,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 | Property | Type | Access | What it is |
 |---|---|---|---|
 | `view` | `{ x: number; y: number; zoom: number }` | read only |  |
+| `drawnZoom` | `number` | read only |  |
 
 ## Methods
 

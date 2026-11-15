@@ -39,8 +39,8 @@ export function boxOf(el: HTMLElement): PlaneBox {
 
 /**
  * The plane point of a screen box's middle — a socket's — inside an element on the plane: its place, and the box's offset in
- * the element's own box on the screen at the `scale` it stands there (the view's zoom where drawn; 1 where a canvas leaves
- * it in flow). The caller says the scale: one read off the boxes (`offsetWidth` is whole pixels) is a pixel out on a node.
+ * the element's own box on the screen at the `scale` it stands there (the zoom drawn NOW, `drawnZoom`, short of the view's
+ * while it eases; 1 where a canvas leaves it in flow). The caller says the scale: one read off the boxes (`offsetWidth` is whole pixels) is a pixel out on a node.
  */
 export function pointIn(el: HTMLElement, rect: DOMRect, scale: number): [number, number] {
   const box = el.getBoundingClientRect();

@@ -1678,6 +1678,14 @@
           ],
           "members": [
             {
+              "kind": "field",
+              "name": "drawnZoom",
+              "type": {
+                "text": "number"
+              },
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "paint",
               "parameters": [],
@@ -4981,6 +4989,14 @@
               "name": "view",
               "type": {
                 "text": "{ x: number; y: number; zoom: number }"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "drawnZoom",
+              "type": {
+                "text": "number"
               },
               "readonly": true
             },

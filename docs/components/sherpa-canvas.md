@@ -29,6 +29,12 @@ For a surface of live elements, each at its own place: a real canvas draws them 
 | `data-y` | number | `0` | the view's pan down, in px |
 | `data-zoom` | number | `1` | the view's scale |
 
+## Properties
+
+| Property | Type | Access | What it is |
+|---|---|---|---|
+| `drawnZoom` | `number` | read only |  |
+
 ## Methods
 
 | Method | What it does |

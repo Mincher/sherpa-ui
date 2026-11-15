@@ -514,7 +514,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (view, drawnZoom). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -632,6 +632,11 @@
         {
           "name": "view",
           "type": "{ x: number; y: number; zoom: number }",
+          "access": "read"
+        },
+        {
+          "name": "drawnZoom",
+          "type": "number",
           "access": "read"
         }
       ]

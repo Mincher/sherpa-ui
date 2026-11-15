@@ -124,6 +124,11 @@
   "capabilities": [
     {
       "$type": "capability",
+      "api": "js-property-mirror",
+      "description": "read/write JS properties (drawnZoom). See $extensions.sherpa.jsProps."
+    },
+    {
+      "$type": "capability",
       "api": "js-methods",
       "description": "callable from a view definition's state block (paint). See $extensions.sherpa.methods."
     }
@@ -136,6 +141,13 @@
           "name": "paint",
           "args": "",
           "description": "Draw again, next frame: something the canvas cannot see moved."
+        }
+      ],
+      "jsProps": [
+        {
+          "name": "drawnZoom",
+          "type": "number",
+          "access": "read"
         }
       ]
     }

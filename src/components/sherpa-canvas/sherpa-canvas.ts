@@ -92,6 +92,13 @@ export class SherpaCanvas extends SherpaElement {
     this.#sizes?.disconnect();
   }
 
+  /** The zoom it is drawn at now: while the view eases, the eased step between where it was and `data-zoom`. */
+  get drawnZoom(): number {
+    const surface = this.$<HTMLElement>('div.surface');
+    const transform = surface ? getComputedStyle(surface).transform : 'none';
+    return transform && transform !== 'none' ? new DOMMatrixReadOnly(transform).a : this.num('data-zoom', 1);
+  }
+
   /** Draw again, next frame: something the canvas cannot see moved. */
   paint(): void {
     this.#canvas()?.requestPaint();

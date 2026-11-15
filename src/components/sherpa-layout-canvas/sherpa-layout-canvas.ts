@@ -216,6 +216,11 @@ export class SherpaLayoutCanvas extends SherpaElement {
     return { x: this.#x, y: this.#y, zoom: this.#zoom };
   }
 
+  /** The zoom the plane is drawn at now: while the view eases, short of `view.zoom`. What reads the screen divides by it. */
+  get drawnZoom(): number {
+    return this.$<HTMLElement & { drawnZoom?: number }>('.plane')?.drawnZoom ?? this.#zoom;
+  }
+
   /** Move the plane origin to (x, y) in the view, in screen px. */
   panTo(x: number, y: number): void {
     this.#x = x;

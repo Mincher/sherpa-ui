@@ -785,7 +785,8 @@ function socketAt(drawn: Drawn, address: string, side: SocketSide): DOMRect | nu
 function socketPoint(drawn: Drawn, address: string, side: SocketSide): [number, number] | null {
   const rect = socketAt(drawn, address, side);
   const node = drawn.nodes.get(socketOf(address).node);
-  return rect && node ? pointIn(node, rect, drawn.canvas.view.zoom) : null;
+  // The zoom drawn now: a line drawn while the view eases ends at its socket still (found by sherpa-demos-3d).
+  return rect && node ? pointIn(node, rect, drawn.canvas.drawnZoom) : null;
 }
 
 /** Where a drawn node or row is: `node`, or `node/row`. */

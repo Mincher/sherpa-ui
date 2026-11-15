@@ -128,3 +128,41 @@ test('settled() waits for the opening Unfurl: what measures after one settled() 
   await settle(page);
   expect(await read()).toEqual(once);
 });
+
+test('each line starts at its socket: after the opening, and drawn again while the view eases (1001c, found by sherpa-demos-3d)', async ({ page }) => {
+  /** Each output end, in screen px: the line's first point, and its socket's middle. */
+  const ends = () => page.evaluate(() => [['f', 'field'], ['v', 'value']].map(([node, row]) => {
+    const cv = document.getElementById('cv')!;
+    const path = cv.querySelector<SVGPathElement>(`svg.graph-connectors path[data-from="${node}/${row}"]`)!;
+    const p = new DOMPoint(path.getPointAtLength(0).x, path.getPointAtLength(0).y).matrixTransform(path.getScreenCTM()!);
+    const line = cv.querySelector(`:scope > sherpa-node[data-heading="${node}"] sherpa-node-row:has([name="${row}"])`) as HTMLElement & { socketRect(side: string): DOMRect };
+    const r = line.socketRect('output');
+    return Math.max(Math.abs(p.x - (r.left + r.width / 2)), Math.abs(p.y - (r.top + r.height / 2)));
+  }));
+  await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = `
+      <sherpa-layout-canvas id="cv" style="inline-size: 760px; block-size: 420px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>`;
+    await customElements.whenDefined('sherpa-node-toolbar');
+    const canvas = document.getElementById('cv') as HTMLElement & { rendered: Promise<void> };
+    await canvas.rendered;
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const at = (id: string, kind: string, values?: Record<string, unknown>) => ({ id, kind, x: 0, y: 0, heading: id, ...(values ? { values } : {}) });
+    bindWorkflow(canvas as never, { v: 3, id: 'ends', nodes: [at('s', 'source', { store: 'users' }), at('f', 'field', { field: 'status' }),
+      at('v', 'value', { type: 'text', value: 'active' }), at('c', 'condition', { type: 'eq' }), at('o', 'result')],
+    connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'v/value', to: 'c/b' }, { from: 'c/pass', to: 'o' }] } as never,
+    { session: new SessionStore(), toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'], fieldsOf: { users: { status: { label: 'Status' } } } });
+    await window.__settled();
+  });
+  for (const off of await ends()) expect(off).toBeLessThan(1);
+  // The view eases out to the fit; a node grows on the way, and its lines are drawn again mid-ease.
+  await page.evaluate(async () => {
+    const cv = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; fit(p?: unknown, o?: { ease?: boolean }): void };
+    cv.zoomTo(0.8);
+    await window.__settled();
+    cv.fit(undefined, { ease: true });
+    await new Promise((done) => setTimeout(done, 50));
+    for (const n of cv.querySelectorAll<HTMLElement>(':scope > sherpa-node')) n.style.minBlockSize = `${n.offsetHeight + 8}px`;
+    await window.__settled();
+  });
+  for (const off of await ends()) expect(off).toBeLessThan(1);
+});
