@@ -555,6 +555,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       id, kind, ...(drawn.heading ? { heading: drawn.heading } : {}), ...(drawn.description ? { description: drawn.description } : {}),
       ...(Object.keys(values).length ? { values } : {}), ...(drawn.ref ? { ref: drawn.ref } : {}),
       editable: rows.filter((r) => r.editable).map((r) => r.name), ...(Object.keys(hints).length ? { hints } : {}), ...(off ? { off: true } : {}),
+      ...(drawn.icon ? { icon: drawn.icon } : {}), ...(drawn.warnings ? { warnings: drawn.warnings } : {}),
     });
     return id;
   };

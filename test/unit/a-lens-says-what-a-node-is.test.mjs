@@ -1,7 +1,7 @@
 /**
  * A LENS SAYS WHAT A NODE IS — plan 1004c. A page's Query, through its lens, is a definition that says what each node
  * MEANS: its kind, values and own words, what it is to the Query (`ref`, T3), the rows a reader may change and each row's
- * words (T4), and Off; its ids are QUERY_NODE's, in the order drawn (T7). One builder makes the definition and the drawing,
+ * words (T4), Off, its own icon and its warnings; its ids are QUERY_NODE's, in the order drawn (T7). One builder makes the definition and the drawing,
  * node by node. A reconcile reads the definition, never the drawing (T5), so the one drawing (1004d) may add what it
  * likes.
  *
@@ -32,7 +32,9 @@ const query = {
   },
 };
 const components = [{ id: 'grid', label: 'Customer records', scope: 'data' }];
-const lensed = queryLensGraph(query, page, { components });
+// A Filter on the View's bar, and a Source the reader placed that the page does not read.
+const presets = (scope) => (scope === 'view' ? [{ id: 'filter:trials', label: 'Trials', readings: {} }] : []);
+const lensed = queryLensGraph(query, page, { components, presets, kept: [{ id: 'source-2', store: 'devices' }] });
 const meant = (id) => lensed.nodes.find((n) => n.id === id);
 
 test('one builder makes both: each node the lens says is a node drawn, by its QUERY_NODE id, in order, at its place (T7)', () => {
@@ -55,6 +57,10 @@ test('what each node is to the Query, its own words, the rows a reader may chang
   assert.deepEqual([meant('field-view-region').heading, meant('when-view-region').heading, meant('view-filters').heading], ['Region', 'Region', undefined]);
   assert.equal(meant('view-filters').description, '1 held');
   assert.deepEqual(meant('when-view-region').values, { type: 'in', b: ['EMEA', 'APAC'] });
+  // A Filter's own icon; a kept Source's warning.
+  assert.deepEqual([meant('preset-view-filter:trials').icon, meant('preset-view-filter:trials').heading], ['filter', 'Trials']);
+  assert.deepEqual(meant('source-2').warnings, [{ words: 'The page reads customers. This Source is not the page\'s: the Query reads nothing from it.' }]);
+  assert.deepEqual([lensed.nodes.filter((n) => n.icon).map((n) => n.id), lensed.nodes.filter((n) => n.warnings).map((n) => n.id)], [['preset-view-filter:trials'], ['source-2']]);
 });
 
 test('Off: a filter suspended, and a part turned off, each on its own node; the rest is in force (T4)', () => {

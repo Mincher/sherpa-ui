@@ -3,7 +3,7 @@
  * type-only imports, so the envelope (`entityGraph`) asks it with no import loop. `lensOf` (lens.ts) is the door. DOM-free.
  *
  * Map:
- * - LensNode — What a lens says of one node beyond what a kept graph holds: what it is to the lens, its rows, Off.
+ * - LensNode — What a lens says of one node beyond what a kept graph holds: what it is to the lens, its rows, Off, warnings.
  * - LensDefinition — A graph as a lens gives it: a definition whose nodes say what each is to the lens.
  * - LensAnswer — What writing a graph back gives: the definition it says now, or why not, in words.
  * - GraphLens — How one type's definitions are drawn as a graph and written back.
@@ -18,7 +18,7 @@ import type { WorkflowDefinition, WorkflowNode } from './workflow.js';
 type Kinds = Readonly<Record<string, NodeKind>>;
 
 /** What a lens says of one node beyond what a kept graph holds (plan 1004c): what the node is to the lens, the rows a
- *  reader may change there, a row's words, and whether it is kept but not applied. The drawing carries each through, and
+ *  reader may change there, a row's words, whether it is kept but not applied, its own icon and its warnings. The drawing carries each through, and
  *  the lens reads an edit back by them. TRAP T-the-node-editor-asks-the-query */
 export interface LensNode extends WorkflowNode {
   /** What the node is to its lens, as an edit of it is read back: drawn on the node untouched. */
@@ -29,6 +29,10 @@ export interface LensNode extends WorkflowNode {
   hints?: Readonly<Record<string, string>>;
   /** Kept, not applied: a filter turned off. */
   off?: true;
+  /** Its own icon, in place of its kind's: a Filter's. */
+  icon?: string;
+  /** What its lens warns of, on the node or one row: a Source the page does not read. */
+  warnings?: readonly { row?: string; words: string }[];
 }
 
 /** A graph as a lens gives it: a definition whose nodes say what each is to the lens. */
