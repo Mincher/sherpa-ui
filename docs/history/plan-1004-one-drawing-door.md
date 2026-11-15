@@ -3,7 +3,7 @@
 Will, 2026-11-15: "Filter graphs don't have the node type name prefixed in the title. I'm worried that filter graphs
 and other graphs are using different systems or implementations. We should look into this."
 
-**Status: looked into, and he is right (sherpa-demos-67; the inventory by sherpa-ui-e8; the traps by sherpa-ui-a9,
+**Status: ALL BUILT 2026-11-15, 1004a–f (main 281fda569; Demos 714a0c5), awaiting Will's look. Looked into, and he is right (sherpa-demos-67; the inventory by sherpa-ui-e8; the traps by sherpa-ui-a9,
 2026-11-15). Will, 2026-11-15: start it next, after the nodes already queued. 1004a built by sherpa-ui-e8 (the Time leaf's Pass and Fail drawn twice). 1004e built by sherpa-ui-a9 (one place set; it fixed Swimlanes off in a Query graph). 1004b built by sherpa-ui-e8 (`graph` on a definition; `NODE_GRAPHS`: the Start, the kind checks, the panel, by type). 1004c built by sherpa-ui-a9 (`queryLensGraph`, `LensNode`, `queryOpened`; a reconcile reads the definition; a Filter's icon and a kept Source's warnings are lens fields). 1004d split: sherpa-ui-e8 the drawing, sherpa-ui-a9 the Query-only pieces as kinds' rows or lens values. Owners: sherpa-ui-e8 (the drawing), sherpa-ui-a9 (the Query lens), sherpa-demos-67 (the
 plan, Demos' pages).**
 
