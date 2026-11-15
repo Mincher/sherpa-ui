@@ -10,7 +10,7 @@
  * - GraphLayout — What a reader gave a Query's graph that the Query does not hold.
  * - isGraphLayout — Whether a stored value is a GraphLayout.
  * - laidOut — A Query's derived graph, at the places, sizes and bends its layout gives.
- * - queryDefinition — A Query's drawn graph, and its layout, as a definition.
+ * - queryDefinition — A Query's graph as its lens says it, at the places its layout gives, as a definition.
  * - layoutOf — The layout a definition holds.
  * - RowEdit — One row's new value, by its node's id and the row's name.
  * - Reconciled — What a written definition asks of the Query.
@@ -18,10 +18,11 @@
  * - reconcileQuery — What changed between two definitions, as row edits, requests, kept Sources, layout and refusals.
  * - rowRequest — What one row's new value asks, against the Query's graph as it is now.
  */
-import { socketOf, storedValues, type DrawnGraph, type GraphEdit, type NodeTie } from './node-kinds.js';
+import { NODE_KINDS, socketOf, type DrawnGraph, type GraphEdit, type NodeConnection, type NodeTie } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import type { NodeStage } from './node-stages.js';
-import { tiesAmong, type WorkflowDefinition, type WorkflowNode } from './workflow.js';
+import { tiesAmong, type WorkflowDefinition } from './workflow.js';
+import type { LensDefinition, LensNode } from './lens-registry.js';
 import { connectionKey, isGraphPlaces, placesOf, withPlaces, type GraphPlaces } from './graph-layout.js';
 import { graphRequest, keptEdit, orderRequest, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryRequest } from './query.js';
@@ -56,13 +57,10 @@ export function laidOut(graph: DrawnGraph, layout: GraphLayout): DrawnGraph {
   return { ...graph, nodes, connections: connections ?? graph.connections };
 }
 
-/** A Query's drawn graph (laid out), and its layout, as a definition: each node's rows as its values. */
-export function queryDefinition(id: string, graph: DrawnGraph, layout: GraphLayout): WorkflowDefinition {
-  const nodes = graph.nodes.map((n): WorkflowNode => {
-    const values = storedValues(n.rows);
-    const stage = layout.staged?.[n.id];
-    return { id: n.id, kind: n.kind, x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}), ...(Object.keys(values).length ? { values } : {}), ...(stage ? { stage } : {}) };
-  });
+/** A Query's graph as its lens says it (`queryLensGraph`), at the places its layout gives, each node in its stage, with
+ *  the ties, frames and stages its layout holds: the definition the editor edits and a reconcile reads. */
+export function queryDefinition(id: string, graph: { nodes: readonly LensNode[]; connections: readonly NodeConnection[] }, layout: GraphLayout): LensDefinition {
+  const nodes = graph.nodes.map((n): LensNode => (layout.staged?.[n.id] ? { ...n, stage: layout.staged[n.id]! } : n));
   const ties = tiesAmong(layout.ties, graph.connections);
   const frames = framesAmong(layout.frames, nodes.map((n) => n.id));
   // Its name, where a trail names it: a page's Query (plan 960 U4.7b). Its swimlanes and unfurl mark are its places'.
@@ -118,10 +116,10 @@ const NODES_READ = 'The Query\'s nodes are its readings: turn a condition off, o
 /**
  * What changed between two definitions of a Query, as the Query's own requests: a row's new value (`graphRequest`, or a
  * kept Source's Store); a bar's chips in another order (`orderRequest`); a new connection (`connectionRequest`); a new node (`placeRequest`, in the scope of the node it joins, else
- * the View). A read-only row changed, a connection cut, or a reading removed, is refused; a kept Source removed goes. The layout is the written one's.
- * `graph` is the Query's graph as `before` was drawn from it. A kind that belongs in one scope (`scopeOf`) is placed there.
+ * the View). A row its lens says is read only, a connection cut, or a reading removed, is refused, in the row's own words; a kept Source removed goes. The layout is the written one's.
+ * `before` is the lens's own definition, never one read off the drawing; `graph`, the Query's graph as drawn from it. A kind that belongs in one scope (`scopeOf`) is placed there.
  */
-export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefinition, graph: DrawnGraph, facts: ReconcileFacts): Reconciled {
+export function reconcileQuery(before: LensDefinition, after: WorkflowDefinition, graph: DrawnGraph, facts: ReconcileFacts): Reconciled {
   const edits: RowEdit[] = [];
   const requests: QueryRequest[] = [];
   const refused = new Map<string, { code: string; message: string }>();
@@ -138,10 +136,11 @@ export function reconcileQuery(before: WorkflowDefinition, after: WorkflowDefini
     const names = [...new Set([...Object.keys(old.values ?? {}), ...Object.keys(node.values ?? {})])]
       .filter((name) => JSON.stringify(old.values?.[name]) !== JSON.stringify(node.values?.[name]) && live.rows.some((r) => r.name === name))
       .sort((a, b) => Number(b === 'type') - Number(a === 'type'));
+    // What may change, and why not, is the lens's: its definition says it (plan 1004c).
     for (const name of names) {
-      const row = live.rows.find((r) => r.name === name)!;
-      if (row.editable) edits.push({ node: node.id, row: name, value: node.values?.[name] });
-      else refuse('query-row', `No command takes "${row.label}" on "${live.heading}"${row.hint ? `: ${row.hint}` : '.'}`);
+      const hint = old.hints?.[name];
+      if (!old.editable || old.editable.includes(name)) edits.push({ node: node.id, row: name, value: node.values?.[name] });
+      else refuse('query-row', `No command takes "${live.rows.find((r) => r.name === name)!.label}" on "${old.heading ?? NODE_KINDS[old.kind]?.heading ?? old.id}"${hint ? `: ${hint}` : '.'}`);
     }
     // A bar's chips in another order: the Query's order.
     const order = orderRequest(live, node.values);

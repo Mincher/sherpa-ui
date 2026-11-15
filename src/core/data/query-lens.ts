@@ -7,6 +7,7 @@
  *
  * Map:
  * - QueryLensFacts — What the Query's lens reads beside a page: the live Query, how its graph is drawn, the layout given it.
+ * - queryOpened — A page's Query through its lens now: the definition it says, and the graph drawn of it, laid out.
  * - queryDrawn — The graph a page's Query draws now, at the places its layout gives.
  * - queryScopes — A page's scopes: the View, each its source declares, and each its live Query holds.
  * - reconcileFacts — What a reconcile needs, read from the live Query: its holds, fields and presets, and the Sources kept.
@@ -17,9 +18,9 @@
 import { pageWithQuery, storeOf, viewWithQuery, type PageDefinition } from './page-definition.js';
 import type { QueryContext } from './query-context.js';
 import { laidOut, queryDefinition, reconcileQuery, rowRequest, type GraphLayout, type ReconcileFacts, type Reconciled } from './query-document.js';
-import { queryGraph, type KeptSource, type QueryGraphFacts } from './query-graph.js';
+import { queryLensGraph, type KeptSource, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryDefaults } from './query.js';
-import { registerLens, type GraphLens } from './lens-registry.js';
+import { registerLens, type GraphLens, type LensDefinition } from './lens-registry.js';
 import type { DrawnGraph } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
 import { pageFields } from './type-definition.js';
@@ -38,11 +39,16 @@ const typeIn = (page: PageDefinition, facts: QueryLensFacts): ((field: string) =
   return (field) => facts.type?.(field) ?? declared[field]?.type;
 };
 
-/** The graph a page's Query draws now, at the places its layout gives. */
-export function queryDrawn(page: PageDefinition, facts: QueryLensFacts): DrawnGraph {
-  const { query, layout = {}, ...drawn } = facts;
-  return laidOut(queryGraph(query.draft, page, { ...drawn, type: typeIn(page, facts), presets: (scope) => query.presets(scope) }), layout);
+/** A page's Query through its lens now: the definition it says, and the graph drawn of it, each at the places its layout
+ *  gives. A reconcile reads the definition, never one read off the drawing (plan 1004 T5). */
+export function queryOpened(page: PageDefinition, facts: QueryLensFacts): { definition: LensDefinition; drawn: DrawnGraph } {
+  const { query, layout = {}, ...rest } = facts;
+  const graph = queryLensGraph(query.draft, page, { ...rest, type: typeIn(page, facts), presets: (scope) => query.presets(scope) });
+  return { definition: queryDefinition(page.id, graph, layout), drawn: laidOut(graph.drawn, layout) };
 }
+
+/** The graph a page's Query draws now, at the places its layout gives. */
+export const queryDrawn = (page: PageDefinition, facts: QueryLensFacts): DrawnGraph => queryOpened(page, facts).drawn;
 
 /** A page's scopes: the View, each its source declares, and each its live Query holds. */
 export const queryScopes = (page: PageDefinition, query: Pick<QueryContext, 'draft'>): string[] =>
@@ -90,15 +96,12 @@ function queryLens<D>(
   save: (definition: D, query: QueryLensFacts, type: (field: string) => FieldType | undefined) => D,
 ): GraphLens<D, QueryLensFacts> {
   return {
-    toGraph: (definition, facts) => {
-      const page = pageOf(definition, facts!);
-      return { workflow: queryDefinition(page.id, queryDrawn(page, facts!), facts!.layout ?? {}) };
-    },
+    toGraph: (definition, facts) => ({ workflow: queryOpened(pageOf(definition, facts!), facts!).definition }),
     fromGraph: (definition, graph, facts) => {
       const f = facts!;
       const page = pageOf(definition, f);
-      const drawn = queryDrawn(page, f);
-      const done = reconcileQuery(queryDefinition(page.id, drawn, f.layout ?? {}), graph, drawn, reconcileFacts(page, f));
+      const { definition: before, drawn } = queryOpened(page, f);
+      const done = reconcileQuery(before, graph, drawn, reconcileFacts(page, f));
       if (done.refused.length) return { faults: done.refused.map((r) => r.message) };
       const type = typeIn(page, f);
       applyReconciled(f.query, done, drawn, (kept) => queryDrawn(page, { ...f, kept }), { type, kept: f.kept ?? [] });

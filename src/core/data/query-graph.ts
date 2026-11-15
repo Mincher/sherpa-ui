@@ -23,7 +23,9 @@
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
  * - statusTallies — Each status field's rows per value, over the whole store: how many rows each value takes.
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a `when` that is no condition, a stray connection.
+ * - LensGraph — A page's Query as its lens says it, each node as the definition holds it, and as it is drawn now.
  * - queryGraph — A page's Query as nodes and connections, laid out in columns by depth.
+ * - queryLensGraph — A page's Query as its lens says it: kinds, values, own words, refs, editable rows, hints and Off.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
  * - orderRequest — The order a bar's chips are written in, as the Query's request; none where it is the drawn one.
  * - PlaceFacts — What placing a node needs of the Query: its holds, fields, presets and which are on.
@@ -54,6 +56,7 @@ import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
 import type { WorkflowNode } from './workflow.js';
 import type { NodeDefinition } from './node-library.js';
+import type { LensNode } from './lens-registry.js';
 import { conditionWords } from './graph-text.js';
 
 /** A test's properties, as its kind gives them (plan 971 A): Pass and Fail. */
@@ -506,8 +509,25 @@ export function queryGraphFaults(graph: DrawnGraph, domains: Readonly<Record<str
   return faults;
 }
 
+/** A page's Query as its lens says it (plan 1004c), each node as a definition holds it, and as it is drawn now: one
+ *  builder makes both, node by node, so they never disagree. */
+export interface LensGraph {
+  nodes: readonly LensNode[];
+  connections: readonly NodeConnection[];
+  drawn: DrawnGraph;
+}
+
 /** A page's Query as nodes and connections, laid out in columns by depth. */
 export function queryGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
+  return queryLensGraph(query, definition, facts).drawn;
+}
+
+/**
+ * A page's Query as its lens says it: each node's kind, values, own words and `ref`, the rows a reader may change, each
+ * row's hint, and Off; with the same nodes drawn, in columns by depth. Its ids are QUERY_NODE's, in the order drawn.
+ * TRAP T-the-node-editor-asks-the-query
+ */
+export function queryLensGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): LensGraph {
   // The fields the page declares: its own, else its type's.
   const declared = pageFields(definition.source);
   const label = (field: string): string => facts.label?.(field) ?? declared[field]?.label ?? field;
@@ -522,10 +542,20 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const components = facts.components ?? [];
   const scopeOf = (c: GraphComponent): string => c.scope ?? (c.id in query.scopes ? c.id : VIEW);
   const nodes: (Omit<GraphNode, 'x' | 'y'> & { column: number })[] = [];
+  const meant: Omit<LensNode, 'x' | 'y'>[] = [];
   const connections: NodeConnection[] = [];
-  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> = {}, type?: string): string => {
-    const made = kindNode({ ...NODE_KINDS, [kind]: resolveKind(NODE_KINDS[kind]!, type) }, kind, id, rows, own);
+  // Each node twice, from the one call: as drawn, and as the lens's definition says it.
+  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> & { off?: boolean } = {}, type?: string): string => {
+    const { off, ...drawn } = own;
+    const made = kindNode({ ...NODE_KINDS, [kind]: resolveKind(NODE_KINDS[kind]!, type) }, kind, id, rows, drawn);
     nodes.push({ ...made, column });
+    const values = storedValues(rows);
+    const hints = Object.fromEntries(rows.flatMap((r) => (r.hint ? [[r.name, r.hint]] : [])));
+    meant.push({
+      id, kind, ...(drawn.heading ? { heading: drawn.heading } : {}), ...(drawn.description ? { description: drawn.description } : {}),
+      ...(Object.keys(values).length ? { values } : {}), ...(drawn.ref ? { ref: drawn.ref } : {}),
+      editable: rows.filter((r) => r.editable).map((r) => r.name), ...(Object.keys(hints).length ? { hints } : {}), ...(off ? { off: true } : {}),
+    });
     return id;
   };
   // The page's rows: the Source's. Every Field reads them.
@@ -534,7 +564,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   // group, a part's Pass into its group's header; each Field takes the page's rows. It returns where the root says its tree
   // (a Condition's Pass, a Time's header), and its Pass and Fail (plan 971 §9).
   const treeNodes = (
-    column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
+    column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode> & { off?: boolean }, ref: Record<string, string>,
     apply: (row: GraphRow) => GraphRow = (r) => r,
   ): { says: string; pass: string; fail: string } => {
     const back = 0.25;
@@ -554,15 +584,17 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const at = path.length ? { heading: ctx.label(ctx.field), description: groupWords(part) } : own;
       const nodeRef = { ...ref, path: path.join('.'), tree: whole };
       const off = part.off ? (row: GraphRow): GraphRow => apply({ ...row, hint: 'Off: kept, not applied.' }) : apply;
+      // Off: a part turned off, or a whole filter suspended (its root's).
+      const kept = { ...(part.off || (!path.length && own.off) ? { off: true } : {}), ref: nodeRef };
       const parts = groupOf(part);
       if (parts) {
-        add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS }), ...TEST_ROWS.condition], { ...at, ref: nodeRef }, parts[0]);
+        add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS }), ...TEST_ROWS.condition], { ...at, ...kept }, parts[0]);
         parts[1].forEach((p, i) => connections.push({ from: walk(p, [...path, i + 1]), to: id }));
         return `${id}/pass`;
       }
       const leaf = part as ConditionLeaf;
       const drawn = leafRows(leaf, ctx);
-      add(column - path.length * back, id, drawn.kind, [...drawn.rows.map(off), ...TEST_ROWS[drawn.kind]], { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ref: nodeRef }, drawn.kind === 'time' ? 'duration' : drawn.type);
+      add(column - path.length * back, id, drawn.kind, [...drawn.rows.map(off), ...TEST_ROWS[drawn.kind]], { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ...kept }, drawn.kind === 'time' ? 'duration' : drawn.type);
       connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
       return drawn.kind === 'condition' ? `${id}/pass` : id;
     };
@@ -675,7 +707,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     for (const [field, condition, off] of where) {
       const { says, pass } = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
         heading: label(field),
-        description: off ? 'Off: kept, not applied.' : 'Applied.',
+        description: off ? 'Off: kept, not applied.' : 'Applied.', ...(off ? { off } : {}),
       }, { scope: id, field });
       if (top) connections.push({ from: says, to: `${bar}/${field}` });
       else passes.push(pass);
@@ -736,7 +768,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     down.set(column, y + HEADER + node.rows.length * ROW + GAP);
     return { ...node, x, y };
   });
-  return { nodes: laid, connections };
+  return { nodes: meant.map((n, i) => ({ ...n, x: laid[i]!.x, y: laid[i]!.y })), connections, drawn: { nodes: laid, connections } };
 }
 
 /** The whole tree a Condition node is a group of: its ref keeps it. */

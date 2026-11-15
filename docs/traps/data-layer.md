@@ -6850,8 +6850,8 @@ chip's is (`graphRequest`).
 - **`drawGraph` places a node where its graph says, when that place MOVED**; else
   it leaves the reader's. It WRITES NOTHING: a field's change is an edit it hands
   its host (`onEdit`), and a move too (`onMove`). `bindQueryEditor` keeps each moved
-  node's place for the tab (`/nodes/<page>`, `shared: false`, TODO 551) and lays it
-  over the layout (`placed`): a reload keeps it, a new tab starts from the layout. `bindQueryEditor` turns each into the
+  node's place for the tab (`/node-layout/<page>`, `shared: false`, TODO 551) and lays it
+  over the layout (`withPlaces`, `T-a-place-is-no-edit`): a reload keeps it, a new tab starts from the layout. `bindQueryEditor` turns each into the
   command a chip asks, through the one door (`query.ask`) — a reading, the
   Switch, a Sort, a Group (a slot's are its chart's) — so whether it applies
   at once or waits for Apply is the Query's, as for any chip (Q3). What a row
@@ -6886,6 +6886,17 @@ chip's is (`graphRequest`).
   U4.3); the places are not. The MCP writes back through the same door, the
   Query's lens (`QUERY_LENS`, plan 960 U4.5): what the Query cannot take — a
   read-only row, a cut connection — refuses the whole graph, in words.
+- **The lens says what each node IS; the drawing is only drawn** (plan 1004c).
+  `queryLensGraph` makes the definition (`LensNode`, lens-registry.ts) and the
+  drawn node in ONE call per node, so they never disagree: its kind, values and own
+  words, its `ref` (what it is to the Query: every request reads it), `editable`
+  (the rows a reader may change; the rest are read only), `hints` (each row's
+  words) and `off` (kept, not applied); its id is QUERY_NODE's, in the order drawn.
+  A reconcile reads `editable` and `hints` from the lens's definition
+  (`queryOpened`), never off the drawing: the one drawing (1004d) adds defaults,
+  kind headings and warnings, and a row it draws editable is still refused if the
+  lens says no. A drawn graph is shaped enough like a definition to type-check as
+  one, so `queryDefinition` takes `queryLensGraph`'s nodes, never a drawn graph's.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/data.ts`
@@ -6895,6 +6906,8 @@ chip's is (`graphRequest`).
 - Site: `src/core/data/query-document.ts`
 - Site: `src/core/ui/query-editor.ts`
 - Site: `src/core/data/query-lens.ts`
+- Site: `src/core/data/lens-registry.ts`
+- Site: `test/unit/a-lens-says-what-a-node-is.test.mjs`
 
 ### T-one-node-registry
 

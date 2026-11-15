@@ -21,8 +21,9 @@ import { NODE_KINDS, paletteOf, type DrawnGraph, type GraphNode, type NodeKind }
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { VIEW } from '../data/query.js';
 import { QUERY_DRAWN_ONLY, statusRule, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
-import { isGraphLayout, laidOut, layoutOf, queryDefinition, reconcileQuery, type GraphLayout } from '../data/query-document.js';
-import { applyReconciled, queryDrawn, queryScopes, reconcileFacts, type QueryLensFacts } from '../data/query-lens.js';
+import { isGraphLayout, laidOut, layoutOf, reconcileQuery, type GraphLayout } from '../data/query-document.js';
+import { applyReconciled, queryDrawn, queryOpened, queryScopes, reconcileFacts, type QueryLensFacts } from '../data/query-lens.js';
+import type { LensDefinition } from '../data/lens-registry.js';
 import { report } from '../data/report.js';
 import { pageFields } from '../data/type-definition.js';
 import { valueKey } from '../data/store.js';
@@ -79,7 +80,7 @@ export function queryDocument(source: QuerySource, { definition, session, markup
   // The graph `read` last gave, and the definition made from it: a reconcile reads its nodes' rows and refs, and a draw of
   // that definition is that graph. The Query has not moved since: each change is read again first.
   let drawn: DrawnGraph | null = null;
-  let lastRead: ReturnType<typeof queryDefinition> | null = null;
+  let lastRead: LensDefinition | null = null;
   // The page's Filters, as its Query declares them: placed as Custom Nodes. TODO 776
   const customs = (): Record<string, NodeKind> => Object.fromEntries(queryScopes(definition, query).flatMap((scope) => query.presets(scope)
     .filter((p) => entityRefOf(p.id).type === FILTER)
@@ -94,16 +95,16 @@ export function queryDocument(source: QuerySource, { definition, session, markup
       return { ...NODE_KINDS, ...customs() };
     },
     read() {
-      drawn = laidOut(derived(), layout);
-      return (lastRead = queryDefinition(definition.id, drawn, layout));
+      const opened = queryOpened(definition, lensFacts());
+      drawn = opened.drawn;
+      return (lastRead = opened.definition);
     },
     graph(def) {
       const g = def === lastRead && drawn ? drawn : laidOut(derived(), layoutOf(def));
       return { ...g, ...(def.ties ? { ties: def.ties } : {}), ...(def.frames ? { frames: def.frames } : {}) };
     },
     write(next) {
-      const was = drawn ?? laidOut(derived(), layout);
-      const before = lastRead && drawn ? lastRead : queryDefinition(definition.id, was, layout);
+      const { definition: before, drawn: was } = lastRead && drawn ? { definition: lastRead, drawn } : queryOpened(definition, lensFacts());
       const done = reconcileQuery(before, next, was, reconcileFacts(definition, lensFacts()));
       for (const { code, message } of done.refused) report({ code, message });
       if (done.kept) keep(done.kept);

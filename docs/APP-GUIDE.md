@@ -436,7 +436,10 @@ A graph View is a View whose body is a canvas, showing one entity of a type
   Views put on its Query, and writes back the View (`viewWithQuery`), its `query` as the Query holds
   it then: filters, sort, group and search. A View's `query` has one writer, `statedQuery`: the View
   chip's Save and the graph's write the same. The MCP's `edit_definition_graph` takes a page and a
-  `view`, for a View in your views file.
+  `view`, for a View in your views file. Each node of the graph a lens gives says what it is to the
+  Query (`ref`), the rows you may change (`editable`: every other row is read only) and why not
+  (`hints`), and `off` for a filter kept but not applied. Change only an `editable` row: the write-back
+  refuses any other, in its hint's words.
 
 ## 9. The session
 
