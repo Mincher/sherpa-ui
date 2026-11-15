@@ -8551,8 +8551,8 @@ A new layout mark goes into this set, or it lights Save and changes a version's 
 - **A published graph is drawn where the draft is**: `publishedOf` puts the draft's places on the version's graph. So the
   library, a use, and a Roll back (which writes `publishedOf`) leave each node where it is now.
 - **A page's Query keeps its places in the same set** (plan 1004e): its layout, kept for the tab (`GraphLayout`,
-  query-document.ts), holds `places` (`placesOf`, put back by `withPlaces`) and, whole, the parts a Query has none of:
-  its ties, frames and stages, and each node's stage. A second shape had dropped `beforeLanes` and the `unfurl` mark, so
+  query-document.ts), holds `places` (`placesOf`, put back by `withPlaces`; its ties whole, as any graph's, Will's
+  1001 tie pick) and, whole, the parts a Query has none of: its frames and stages, and each node's stage. A second shape had dropped `beforeLanes` and the `unfurl` mark, so
   Swimlanes off left each node of a Query graph where the lanes put it. A layout kept in the old shape is dropped once
   (`isGraphPlaces`), never drawn.
 - **The editor keeps places at once** (1001b, `keepTab` and `keepPlaces` in `bindWorkflow`): each write that is no drag

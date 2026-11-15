@@ -218,7 +218,7 @@
   "src/core/data/pointer.ts": 62,
   "src/core/data/query-context.ts": 694,
   "src/core/data/query-declarations.ts": 308,
-  "src/core/data/query-document.ts": 201,
+  "src/core/data/query-document.ts": 197,
   "src/core/data/query-edits.ts": 1355,
   "src/core/data/query-graph.ts": 938,
   "src/core/data/query-lens.ts": 154,

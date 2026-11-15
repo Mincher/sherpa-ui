@@ -85,6 +85,8 @@ test('the layout never reaches the Query: a move, a tie, a frame, stages and lan
   const back = read();
   assert.deepEqual([back.nodes.find((n) => n.id === 'field-view-seats').x, back.nodes.find((n) => n.id === 'field-view-seats').y], [999, 444]);
   assert.equal(back.ties.length, 1);
+  // A tie is layout, kept whole in the one place set (Will, TODO 1001): the layout holds no tie beside it.
+  assert.deepEqual([layoutOf(back).places.ties.length, 'ties' in layoutOf(back)], [1, false]);
   assert.equal(back.frames.length, 1);
   assert.deepEqual(back.stages.map((s) => s.label), ['Stage 1', 'Decide']);
   assert.equal(back.lanes.length, LANES_BY_FAMILY.length);

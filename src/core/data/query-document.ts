@@ -18,22 +18,21 @@
  * - reconcileQuery — What changed between two definitions, as row edits, requests, kept Sources, layout and refusals.
  * - rowRequest — What one row's new value asks, against the Query's graph as it is now.
  */
-import { NODE_KINDS, socketOf, type DrawnGraph, type GraphEdit, type NodeConnection, type NodeTie } from './node-kinds.js';
+import { NODE_KINDS, socketOf, type DrawnGraph, type GraphEdit, type NodeConnection } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import type { NodeStage } from './node-stages.js';
 import type { WorkflowDefinition } from './workflow.js';
 import type { LensDefinition, LensNode } from './lens-registry.js';
-import { connectionKey, isGraphPlaces, placesOf, tiesAmong, withPlaces, type GraphPlaces } from './graph-layout.js';
+import { connectionKey, isGraphPlaces, placesOf, withPlaces, type GraphPlaces } from './graph-layout.js';
 import { graphRequest, keptEdit, orderRequest, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryRequest } from './query.js';
 
-/** What a reader gave a Query's graph that the Query does not hold, kept beside it for the tab: where its nodes are drawn,
- *  in the one place set (each node's place and size, each connection's bends, the swimlanes and the places before them,
- *  the unfurl mark), and the parts a Query has none of, whole, each at its own place: its ties, frames and stages, and
- *  the stage each node is in. TRAP T-a-place-is-no-edit */
+/** What a reader gave a Query's graph that the Query does not hold, kept beside it for the tab: where it is drawn, in the
+ *  one place set (each node's place and size, each connection's bends, its ties whole, the swimlanes and the places
+ *  before them, the unfurl mark), and the parts a Query has none of, whole, each at its own place: its frames and stages,
+ *  and the stage each node is in. TRAP T-a-place-is-no-edit */
 export interface GraphLayout {
   places?: GraphPlaces;
-  ties?: readonly NodeTie[];
   frames?: readonly NodeFrame[];
   stages?: readonly NodeStage[];
   /** The stage each node is in, by node. */
@@ -48,7 +47,7 @@ const NOWHERE: GraphPlaces = { nodes: {}, bends: {}, stages: {} };
 export function isGraphLayout(v: unknown): v is GraphLayout {
   if (!record(v)) return false;
   return (v['places'] === undefined || isGraphPlaces(v['places']))
-    && list(v['ties']) && list(v['frames']) && list(v['stages']) && (v['staged'] === undefined || record(v['staged']));
+    && list(v['frames']) && list(v['stages']) && (v['staged'] === undefined || record(v['staged']));
 }
 
 /** A Query's derived graph, at the places, sizes and bends its layout gives. */
@@ -57,30 +56,27 @@ export function laidOut(graph: DrawnGraph, layout: GraphLayout): DrawnGraph {
   return { ...graph, nodes, connections: connections ?? graph.connections };
 }
 
-/** A Query's graph as its lens says it (`queryLensGraph`), at the places its layout gives, each node in its stage, with
- *  the ties, frames and stages its layout holds: the definition the editor edits and a reconcile reads. */
+/** A Query's graph as its lens says it (`queryLensGraph`), at the places its layout gives, its ties among them, each node
+ *  in its stage, with the frames and stages its layout holds: the definition the editor edits and a reconcile reads. */
 export function queryDefinition(id: string, graph: { nodes: readonly LensNode[]; connections: readonly NodeConnection[] }, layout: GraphLayout): LensDefinition {
   const nodes = graph.nodes.map((n): LensNode => (layout.staged?.[n.id] ? { ...n, stage: layout.staged[n.id]! } : n));
-  const ties = tiesAmong(layout.ties, graph.connections);
   const frames = framesAmong(layout.frames, nodes.map((n) => n.id));
   // Its name, where a trail names it: a page's Query (plan 960 U4.7b). Its swimlanes and unfurl mark are its places'. It
   // is drawn as a filter graph: no Start, a Query's kinds (plan 1004b).
   return withPlaces({
     v: 3, id, label: 'Query', graph: 'query', nodes, connections: graph.connections,
-    ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}), ...(layout.stages?.length ? { stages: layout.stages } : {}),
+    ...(frames.length ? { frames } : {}), ...(layout.stages?.length ? { stages: layout.stages } : {}),
   }, layout.places ?? NOWHERE);
 }
 
-/** The layout a definition holds: its places (its ties and stages keep their own, as they are kept whole), its ties,
- *  frames and stages, and the stage each node is in. */
+/** The layout a definition holds: its places, its ties whole among them (its stages keep their own, as they are kept
+ *  whole), its frames and stages, and the stage each node is in. */
 export function layoutOf(definition: WorkflowDefinition): GraphLayout {
-  const { ties, frames, stages, ...placed } = definition;
+  const { frames, stages, ...placed } = definition;
   const staged = Object.fromEntries(definition.nodes.flatMap((n) => (n.stage ? [[n.id, n.stage]] : [])));
-  // Its ties are kept whole beside its places, so its places name none: the graph keeps its own.
-  const { ties: _whole, ...places } = placesOf(placed);
   return {
-    places,
-    ...(ties?.length ? { ties } : {}), ...(frames?.length ? { frames } : {}), ...(stages?.length ? { stages } : {}),
+    places: placesOf(placed),
+    ...(frames?.length ? { frames } : {}), ...(stages?.length ? { stages } : {}),
     ...(Object.keys(staged).length ? { staged } : {}),
   };
 }
