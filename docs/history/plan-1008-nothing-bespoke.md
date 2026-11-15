@@ -71,3 +71,41 @@ Found on the way (a9): TODO 1009, a seed's marks hashed the whole entity, places
 | 1008d | G3: seeding, by the outlet | a9 |
 | 1008e | G4: a derived setting, kept by the library | a9, e8 |
 | 1008f | G5 and G8, and 1006: Demos onto each door | sherpa-demos-67, e8 |
+
+## 6. 1008c's G1: one agent-tools door, a design (sherpa-ui-35, was e8; 2026-11-15)
+
+**Read (N-zo, sherpa-demos side, read only):** 15 tools, their words in `tools.js` and their handlers in `actions.js`:
+`get_app`, `on_screen`, `open_page`, `describe_page`, `read_rows`, `summarize`, `filter`, `use_preset`, `arrange`,
+`clear_filters`, `node_kinds`, `flow`, `act`, `offer_actions`, `undo`; and the graph words, which 1005 now makes from the
+kinds (`graphRules`). The handlers already call the library's doors (`openSource`, `nodeKinds`, `entityTypes`, the
+outlet's acts): the door is mostly moving them, with their words, into the library.
+
+**The door:** `agentTools(outlet)` gives `{ tools, run(name, input), rules() }`: each tool's input schema and words, a
+handler over the outlet's own doors (its pages, a page's source, its acts and flows, the shelf), and the rules an agent
+reads (the app's words, then `graphRules`). An app adds its own tools beside them; a tool it does not want, it leaves out.
+
+| Tools | Whose | Why |
+|---|---|---|
+| `get_app`, `on_screen`, `describe_page`, `read_rows`, `summarize` | the library's | they read the outlet and a page's source |
+| `open_page`, `filter`, `use_preset`, `arrange`, `clear_filters` | the library's | a page's Query and the router's doors |
+| `node_kinds`, and the rules | the library's | the kinds and `graphRules` (1005) |
+| `act`, `flow` | the library's | `outlet.act` and the flow lens; a flow's step is asked of the app (a callback) and answered back |
+| `offer_actions`, the chat, the model call | the app's | its own screen and its own agent |
+
+### The choices, for Will (my pick first)
+
+- **D1, where the door lives.** A (my pick): `sherpa-ui/app`, beside the outlet: it needs the outlet and a page, which the
+  data layer may not touch. B: the data layer, with an adapter in the app layer.
+- **D2, Undo.** A (my pick): the app's: the door tells each change it made (`onChange`, with what was there before), so an
+  app keeps its own history, as N-zo does. B: the door keeps a history of its own and offers an `undo` tool.
+- **D3, the MCP.** A (my pick): the MCP keeps its own tools (it runs with no browser), and a tool both have takes the same
+  words from one place. B: one set of tools for both, the MCP running them over a page it opens.
+
+### Phases
+
+| Phase | Builds | Who |
+|---|---|---|
+| 1008c1 | The door, its read tools (`get_app` … `summarize`, `node_kinds`, the rules), a test over a harness outlet | e8 |
+| 1008c2 | Its tools that change what a page shows (`open_page` … `clear_filters`) | e8 |
+| 1008c3 | `act` and `flow`, a flow's step by a callback | e8 |
+| 1008c4 | N-zo onto the door: its `tools.js` and `actions.js` go, but its own | sherpa-demos-97 |
