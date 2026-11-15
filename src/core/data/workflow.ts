@@ -467,6 +467,8 @@ export interface WorkflowFacts {
   /** The primary model of the top graph a Custom Node's body is opened inside: its AI nodes use it (plan 951). `null`: that
    *  graph has none. None given: the body is opened alone, and uses the primary of whichever graph uses it. */
   primary?: ModelPick | null;
+  /** What each input last heard, by its socket (`node/row`): a Simulate's run. A joined row shows it, read only (TODO 990). */
+  heard?: Readonly<Record<string, unknown>>;
 }
 
 type StoreFields = NonNullable<WorkflowFacts['fieldsOf']>[string];
@@ -875,7 +877,11 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         return brought && read && read.value !== undefined ? { ...brought, value: read.value } : brought;
       };
       const ins = flows.filter((r) => r.to === address && !bad.includes(r));
-      const coming = ins.flatMap((r) => reading(r) ?? []);
+      // What its lines bring now; else what the last Simulate heard here: the text that came in (TODO 990).
+      // TRAP T-a-joined-row-shows-what-comes-in
+      const now = ins.flatMap((r) => reading(r) ?? []);
+      const last = facts.heard?.[address];
+      const coming = now.length || !ins.length || last === undefined ? now : [{ value: last, said: [...new Set(ins.map((r) => whence(r.from)))].join(', ') }];
       // An AI node asks a model: with none joined, it uses the primary, and says so; with none, it warns. A body opened
       // alone uses the primary of the graph that uses it (plans 926, 951).
       const unjoined = !ins.length && !bad.length && row.needs === 'model' && !row.optional;
@@ -908,10 +914,10 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       if (bad.length && !ins.length) return { ...own, value: null };
       if (unjoined && primary) return { ...own, value: primary.model, hint: 'From the Start' };
       if (unjoined && alone) return { ...own, hint: 'From the graph that uses it' };
-      // Connected, nothing sent yet, nothing held: it shows nothing — never a list's first choice — and says where from.
-      const none = has == null || has === '' || (Array.isArray(has) && !has.length);
-      if (!coming.length && ins.length && row.control && none) {
-        const blank = list || row.control === 'tags' ? mirrored(row, [], list) : { custom: true as const };
+      // Connected, nothing sent yet: it shows nothing — never its own value, nor a list's first choice — says where from,
+      // and is read only while the line holds it; cut, its own is back (Will, TODO 990).
+      if (!coming.length && ins.length && row.control) {
+        const blank = list || row.control === 'tags' ? mirrored(row, [], list) : { value: undefined, custom: true as const };
         return said({ ...own, ...blank, hint: `From ${[...new Set(ins.map((r) => whence(r.from)))].join(', ')}${told.hint ? `. ${told.hint}` : ''}` }, true);
       }
       if (!coming.length) return said({ ...own, ...told });

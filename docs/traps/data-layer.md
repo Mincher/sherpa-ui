@@ -8619,3 +8619,21 @@ keeps; none, a workflow. What each type is, is said once, in `NODE_GRAPHS`
 - Site: `src/core/data/workflow.ts`
 - Site: `src/core/data/query-lens.ts`
 - Site: `test/unit/a-graph-is-drawn-by-its-type.test.mjs`
+
+### T-a-joined-row-shows-what-comes-in
+
+**A row a line drives shows what comes in, read only** (Will, TODO 990: "text output from a node should be shown in the
+text input/area of the row it is connected to. These inputs/areas are then read only while connected"). Before a run,
+it shows nothing — never its own words, nor a list's first choice — and says where its value comes from ("From Prompt ›
+Answer"). After a Simulate, the value its input heard (`facts.heard`, by socket, from the run's incoming slots), drawn as
+a Value's held value is. Its own words stay in the draft: cut the line, and they are back. A Value's held value still
+comes through at once, as before (TODO 774).
+
+- **The editor redraws after a Simulate**, so the rows show what came in; what was heard stays until the next run.
+- **`simulation` is declared before the first draw** in `bindWorkflow`: the drawing reads it, and a `let` read before
+  its line throws (a TDZ error).
+
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-joined-row-shows-what-comes-in.test.mjs`
+- Site: `test/e2e/reforged-a-joined-row-shows-what-comes-in.spec.ts`

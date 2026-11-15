@@ -115,9 +115,9 @@ test('an unconnected row with no value is not invalid input: no warning; nor is 
   const bare = flow([{ id: 'm', kind: 'math', x: 0, y: 0 }, { id: 't', kind: 'time', x: 0, y: 200 }, { id: 'c', kind: 'condition', x: 0, y: 400 }, { id: 'col', kind: 'organise', x: 0, y: 600 }], []);
   assert.deepEqual(said(drawn(bare)), {});
   assert.deepEqual(at(drawn(bare), 'm').rows.map((r) => r.value), ['add', undefined, undefined, undefined]);
-  // An empty Value sends nothing (D2): Value A reads its own, unwarned, as it did.
+  // An empty Value sends nothing (D2): unwarned, and Value A shows nothing while the line holds it (TODO 990); its own waits.
   const empty = flow([value('v', undefined, 'text'), { id: 'm', kind: 'math', x: 300, y: 0, values: { a: 3 } }], [{ from: 'v/value', to: 'm/a' }]);
-  assert.deepEqual([said(drawn(empty)), row(drawn(empty), 'm', 'a').value], [{}, 3]);
+  assert.deepEqual([said(drawn(empty)), row(drawn(empty), 'm', 'a').value, row(drawn(empty), 'm', 'a').hint], [{}, undefined, 'From Value › Value']);
   // What a node works out is known only when it runs: a Text's Result in Value A may read as a number.
   const later = flow([store, { id: 'x', kind: 'text', x: 0, y: 0 }, { id: 'p', kind: 'field', x: 0, y: 200 }, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
     [{ from: 's/rows', to: 'p' }, { from: 'x/result', to: 'm/a' }, { from: 'p/field', to: 't' }]);

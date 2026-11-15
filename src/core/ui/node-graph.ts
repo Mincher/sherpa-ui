@@ -3002,9 +3002,22 @@ export function bindWorkflow(
     else if (doc) drawSoon = true;
     else draw();
   }, tag);
+  /** The last Simulate's run (836): declared before the first draw, which reads it. */
+  let simulation: { result: Simulated; stale: boolean; sig: string; times: Record<string, number> } | undefined;
+  /** What each input last heard in this graph's Simulate, by its socket: a joined row shows it (TODO 990).
+   *  TRAP T-a-joined-row-shows-what-comes-in */
+  const heard = (): Readonly<Record<string, unknown>> | undefined => {
+    const ran = simulation?.result.nodes;
+    if (!ran || path.length) return undefined;
+    return Object.fromEntries(Object.values(ran).flatMap((n) => n.incoming.flatMap((s) => (s.value === undefined ? [] : [[s.socket, s.value] as const]))));
+  };
   /** What a draw reads beside the graph: inside a Custom Node, the top graph's primary model too, or `null` where it has none
-   *  (plan 951). */
-  const factsAt = (inside: boolean): typeof facts => (inside && !doc ? { ...facts, primary: primaryOf(draft) ?? null } : facts);
+   *  (plan 951); what the last Simulate heard. */
+  const factsAt = (inside: boolean): typeof facts => {
+    const last = heard();
+    const given = last ? { ...facts, heard: last } : facts;
+    return inside && !doc ? { ...given, primary: primaryOf(draft) ?? null } : given;
+  };
   /** The graph shown, drawn: the document's own, else a workflow's; inside a node, always the inside's. */
   const bodyOf = (): FramedGraph => (doc && !path.length ? doc.graph(shown()) : workflowGraph(shown(), factsAt(!!path.length), K()));
   /** Mid-drag of a tie or a bend: the connections and ties as the draft has them, the nodes as drawn. */
@@ -3926,7 +3939,6 @@ export function bindWorkflow(
   keepOpen(inspector);
   // — Fetch and Simulate (836): a press reads each Source on a path once, at the cap, and runs the graph on the rows kept.
   //   Nothing fetches on its own, and an edit never runs a simulation: it only marks the last one stale.
-  let simulation: { result: Simulated; stale: boolean; sig: string; times: Record<string, number> } | undefined;
   /** What a simulation reads of the graph: its nodes' kinds and values and its connections, never a place. */
   const dataSig = (): string => JSON.stringify([shown().nodes.map((n) => [n.id, n.kind, n.values]), shown().connections]);
   /** Each Source's store id, by node. */
@@ -4034,6 +4046,8 @@ export function bindWorkflow(
       runningOff();
     }
     simulation = { result, stale: false, sig: dataSig(), times };
+    // A joined row shows what came in (TODO 990).
+    draw();
     lightNodes();
     toolbar?.toggleAttribute('data-cached', any);
     showData();

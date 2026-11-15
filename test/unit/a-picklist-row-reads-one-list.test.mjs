@@ -108,7 +108,9 @@ test('a Value node connected to a picklist OVERRIDES it: the row mirrors it, rea
   assert.equal(rowOf(connected(), 'filter', 'b', facts).value, 'active', 'with no list it still mirrors');
   const sum = { ...over, nodes: [...over.nodes, { id: 'sum', kind: 'math', x: 0, y: 400 }] };
   const waiting = editWorkflow(sum, { connection: { from: 'sum/result', to: 'filter/b' } });
-  assert.equal(rowOf(waiting, 'filter', 'b').value, 'trial', 'a Result holds no value yet: its own shows');
+  // A Result holds no value before a run: the row shows nothing, says where from, and its own pick waits (TODO 990).
+  assert.deepEqual([rowOf(waiting, 'filter', 'b').value, rowOf(waiting, 'filter', 'b').hint], ['', 'From Math › Result']);
+  assert.equal(waiting.nodes.find((n) => n.id === 'filter').values.b, 'trial');
   // The Type, and the node it connections: the flow is checked as it was.
   assert.deepEqual(workflowFaults(over), []);
 });
@@ -142,10 +144,10 @@ test('a row a connection drives that sends nothing yet, and that holds nothing, 
   // A typed row (no values known) is empty too, and says it.
   const typed = inside(definition, facts)('match', 'b');
   assert.deepEqual([typed.value, typed.choices, typed.hint], [undefined, undefined, 'From Group Input › Status']);
-  // A row that holds its own pick still shows it, until N4 runs the flow.
+  // A row that holds its own pick shows nothing while the line holds it, and says where from; cut, its own is back (TODO 990).
   const held = { ...definition, nodes: definition.nodes.map((n) => (n.id === 'match' ? { ...n, values: { ...n.values, b: 'trial' } } : n)) };
   const own = inside(held)('match', 'b');
-  assert.deepEqual([own.value, own.custom, own.hint, labels(own.choices)], ['trial', undefined, undefined, ['active', 'trial']]);
+  assert.deepEqual([own.value, own.custom, own.hint, own.choices], ['', true, 'From Group Input › Status', []]);
   // At the top too: a Result only a run fills.
   const sum = { ...flow(), nodes: [...flow().nodes, { id: 'sum', kind: 'math', x: 0, y: 400 }] };
   const waiting = rowOf(editWorkflow(sum, { connection: { from: 'sum/result', to: 'filter/b' } }), 'filter', 'b');
