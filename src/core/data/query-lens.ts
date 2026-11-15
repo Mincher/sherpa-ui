@@ -9,6 +9,7 @@
  * - QueryLensFacts — What the Query's lens reads beside a page: the live Query, how its graph is drawn, the layout given it.
  * - queryOpened — A page's Query through its lens now: the definition it says, and the graph the one door draws of it.
  * - queryDrawn — The graph a page's Query draws now, at the places its layout gives.
+ * - queryGraph — A Query, given whole, drawn by the one door every graph is: its lens's definition, at its first places.
  * - queryDrawingFacts — What the one drawing reads beside a Query's definition: its stores, and the page's fields.
  * - queryScopes — A page's scopes: the View, each its source declares, and each its live Query holds.
  * - reconcileFacts — What a reconcile needs, read from the live Query: its holds, fields and presets, and the Sources kept.
@@ -20,7 +21,7 @@ import { pageWithQuery, storeOf, viewWithQuery, type PageDefinition } from './pa
 import type { QueryContext } from './query-context.js';
 import { queryDefinition, reconcileQuery, rowRequest, type GraphLayout, type ReconcileFacts, type Reconciled } from './query-document.js';
 import { queryLensGraph, type KeptSource, type QueryGraphFacts } from './query-graph.js';
-import { VIEW, type QueryDefaults } from './query.js';
+import { VIEW, type Query, type QueryDefaults } from './query.js';
 import { registerLens, type GraphLens, type LensDefinition } from './lens-registry.js';
 import type { DrawnGraph } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
@@ -36,7 +37,7 @@ export interface QueryLensFacts extends Omit<QueryGraphFacts, 'presets'> {
 }
 
 /** A field's type: the facts', else as the page declares it, or its type does. */
-const typeIn = (page: PageDefinition, facts: QueryLensFacts): ((field: string) => string | undefined) => {
+const typeIn = (page: PageDefinition, facts: Pick<QueryLensFacts, 'type'>): ((field: string) => string | undefined) => {
   const declared = pageFields(page.source);
   return (field) => facts.type?.(field) ?? declared[field]?.type;
 };
@@ -54,10 +55,18 @@ export function queryOpened(page: PageDefinition, facts: QueryLensFacts): { defi
 /** The graph a page's Query draws now, at the places its layout gives. */
 export const queryDrawn = (page: PageDefinition, facts: QueryLensFacts): DrawnGraph => queryOpened(page, facts).drawn;
 
+/** A Query, given whole, drawn by the one door every graph is (plan 1004d): its lens's definition, at its first places,
+ *  with the page's facts. No live Query: `queryOpened` draws one. */
+export function queryGraph(query: Query, page: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
+  const given = { ...facts, query: { draft: query } };
+  const definition = queryDefinition(page.id, queryLensGraph(query, page, { ...facts, type: typeIn(page, facts) }), {});
+  return workflowGraph(definition, queryDrawingFacts(page, given));
+}
+
 /** What the one drawing reads beside a Query's definition (plan 1004 D2): the app's stores, and the page's store's fields,
  *  each with its words, type and values: those the page declares, each a scope holds, and each status field the store
  *  works out. A Field offers them, a test narrows its types by them, and none warns it is not a field of the rows. */
-export function queryDrawingFacts(page: PageDefinition, facts: QueryLensFacts): WorkflowFacts {
+export function queryDrawingFacts(page: PageDefinition, facts: Omit<QueryLensFacts, 'query'> & { query: { draft: Query } }): WorkflowFacts {
   const store = page.source && storeOf(page.source);
   const declared = pageFields(page.source);
   const type = typeIn(page, facts);

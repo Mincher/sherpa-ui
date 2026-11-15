@@ -40,13 +40,13 @@ test('Health is ONE Field node on the page\'s rows: its field, read only, and a 
   assert.equal(status.kind, 'field');
   assert.deepEqual(into('status-health'), [`source/${ROWS.name}`]);
   assert.deepEqual(status.rows.map((r) => [r.name, r.value, !!r.editable]), [
-    ['field', 'health', false],
+    ['field', 'health', false], ['values', undefined, false],
     ['At risk', 'Score is less than 60 or Open tickets is at least 5', false],
     ['Watch', 'Score is less than 80 or Open tickets is more than 0', false],
     ['Healthy', 'Every row the values before it left.', false],
   ]);
   // Its value rows take nothing and send nothing: they show.
-  assert.ok(status.rows.slice(1).every((r) => !r.input && !r.output), 'no socket on a value row');
+  assert.ok(status.rows.slice(2).every((r) => !r.input && !r.output), 'no socket on a value row');
   // No chain on the top canvas, and no Status kind.
   assert.deepEqual(g.nodes.filter((n) => n.kind === 'condition' || n.kind === 'status'), []);
   assert.equal(NODE_KINDS['status'], undefined);

@@ -1299,7 +1299,7 @@ export interface GraphEdit {
 }
 
 /** What a node keeps of its drawn rows: each that holds a value, by its name. */
-export const storedValues = (rows: readonly GraphRow[]): Record<string, unknown> =>
+export const storedValues = (rows: readonly Pick<GraphRow, 'name' | 'value'>[]): Record<string, unknown> =>
   Object.fromEntries(rows.filter((r) => r.value !== undefined && r.value !== null && r.value !== '').map((r) => [r.name, r.value]));
 
 /** The fields a node's rows carry, by its `every` field pick: those it keeps; none kept, every field (TODO 969). */

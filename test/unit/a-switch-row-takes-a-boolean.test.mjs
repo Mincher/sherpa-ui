@@ -14,7 +14,8 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, accepts, drivenSwitch, socketType } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
-const { queryGraph, connectionRequest } = await import(new URL('query-graph.js', core));
+const { connectionRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph } = await import(new URL('query-lens.js', core));
 const { readingsOf } = await import(new URL('where.js', core));
 
 test('every switch row of every kind takes a boolean, and no other row is changed to', () => {
@@ -72,6 +73,7 @@ test('the Query draws a boolean input on each switch row, and refuses a connecti
   const g = queryGraph(query, definition, live);
   // A card's bar is on its Presentation.
   const scope = g.nodes.find((n) => n.id === 'presentation-data');
+  // A switch keeps its Boolean's input in a Query (TODO 732; plan 1004 D5); the Query refuses the line, in words.
   assert.equal(scope.rows.find((r) => r.name === '#filters').input, 'boolean');
   const refused = connectionRequest(g, { from: scope.id, to: `${scope.id}/#filters` });
   assert.match(refused.refused, /takes no connection into .*Filters.*Switch is the reader's/);

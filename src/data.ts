@@ -282,7 +282,7 @@ export {
 export { lensOf } from './core/data/lens.js';
 export { registerLens, type GraphLens, type LensAnswer, type LensDefinition, type LensNode } from './core/data/lens-registry.js';
 // The Query's lens: a page's graph from its live Query, written back as its requests (plan 960 U4.5). Importing it registers it.
-export { QUERY_LENS, VIEW_LENS, applyReconciled, queryDrawingFacts, queryDrawn, queryOpened, reconcileFacts, type QueryLensFacts } from './core/data/query-lens.js';
+export { QUERY_LENS, VIEW_LENS, applyReconciled, queryDrawingFacts, queryDrawn, queryGraph, queryOpened, reconcileFacts, type QueryLensFacts } from './core/data/query-lens.js';
 export { groupNodes, socketEdit, ungroupUse, type GroupAsk, type Grouped, type SocketChange } from './core/data/node-group.js';
 export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
 export { branchesAt, flowDepths, isOutput, isSource, isStart, routeRead, routesOf, type RouteFacts, type RouteRead } from './core/data/node-routes.js';
@@ -333,7 +333,7 @@ export {
 } from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export {
-  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryLensGraph, queryStepNode, connectionRequest, statusRule, statusTallies, traceQuerySteps, whereGraph,
+  QUERY_NODE, graphRequest, queryGraphFaults, queryLensGraph, queryStepNode, connectionRequest, statusRule, statusTallies, traceQuerySteps, whereGraph,
   type GraphComponent, type LensGraph, type LoadSteps, type QueryGraphFacts, type ConnectionAnswer, type ScopePreset,
 } from './core/data/query-graph.js';
 /* A pure edit: the Query after a Sort, Group, Search, presentation, order or move. TRAP T-one-command-one-door */

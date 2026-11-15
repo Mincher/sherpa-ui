@@ -1,8 +1,8 @@
 /**
  * A LENS SAYS WHAT A NODE IS — plan 1004c. A page's Query, through its lens, is a definition that says what each node
  * MEANS: its kind, values and own words, what it is to the Query (`ref`, T3), the rows a reader may change and each row's
- * words (T4), Off, its own icon and its warnings; its ids are QUERY_NODE's, in the order drawn (T7). One builder makes the definition and the drawing,
- * node by node. A reconcile reads the definition, never the drawing (T5), so the one drawing (1004d) may add what it
+ * words (T4), Off, its own icon and its warnings; its ids are QUERY_NODE's, in the order drawn (T7). The one drawing
+ * draws it as it draws any graph (1004d). A reconcile reads the definition, never the drawing (T5), so the one drawing (1004d) may add what it
  * likes.
  *
  *   node --test test/unit/a-lens-says-what-a-node-is.test.mjs
@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { queryLensGraph } = await import(new URL('query-graph.js', core));
 const { queryDefinition, reconcileQuery } = await import(new URL('query-document.js', core));
-const { queryDrawingFacts } = await import(new URL('query-lens.js', core));
+const { queryDrawingFacts, queryGraph } = await import(new URL('query-lens.js', core));
 const { workflowGraph } = await import(new URL('workflow.js', core));
 const { readingsOf } = await import(new URL('where.js', core));
 
@@ -38,19 +38,22 @@ const components = [{ id: 'grid', label: 'Customer records', scope: 'data' }, { 
 const presets = (scope) => (scope === 'view' ? [{ id: 'filter:trials', label: 'Trials', readings: {} }] : []);
 const lensed = queryLensGraph(query, page, { components, presets, kept: [{ id: 'source-2', store: 'devices' }] });
 const meant = (id) => lensed.nodes.find((n) => n.id === id);
+// The one drawing of it (plan 1004d).
+const drawnNow = queryGraph(query, page, { components, presets, kept: [{ id: 'source-2', store: 'devices' }] });
 
-test('one builder makes both: each node the lens says is a node drawn, by its QUERY_NODE id, in order, at its place (T7)', () => {
-  assert.deepEqual(lensed.nodes.map((n) => [n.id, n.kind, n.x, n.y]), lensed.drawn.nodes.map((n) => [n.id, n.kind, n.x, n.y]));
-  assert.equal(lensed.connections, lensed.drawn.connections);
+test('each node the lens says is a node the one drawing draws, by its QUERY_NODE id, in order, at its place (T7)', () => {
+  assert.deepEqual(lensed.nodes.map((n) => [n.id, n.kind, n.x, n.y]), drawnNow.nodes.map((n) => [n.id, n.kind, n.x, n.y]));
+  assert.deepEqual(lensed.connections, drawnNow.connections);
   for (const id of ['source', 'view-filters', 'when-view-region', 'field-view-region', 'presentation-data', 'organise-data', 'view']) assert.ok(meant(id), id);
 });
 
 test('what each node is to the Query, its own words, the rows a reader may change and each row\'s words are the definition\'s (T3, T4)', () => {
-  for (const drawn of lensed.drawn.nodes) {
+  // Drawn as the lens says: its ref untouched, only the rows it names editable, each of its words on its row.
+  for (const drawn of drawnNow.nodes) {
     const n = meant(drawn.id);
     assert.deepEqual(n.ref, drawn.ref, `${drawn.id}: its ref`);
-    assert.deepEqual(n.editable, drawn.rows.filter((r) => r.editable).map((r) => r.name), `${drawn.id}: what a reader may change`);
-    assert.deepEqual(n.hints ?? {}, Object.fromEntries(drawn.rows.filter((r) => r.hint).map((r) => [r.name, r.hint])), `${drawn.id}: its rows' words`);
+    assert.deepEqual(drawn.rows.filter((r) => r.editable).map((r) => r.name), n.editable.filter((e) => drawn.rows.some((r) => r.name === e)), `${drawn.id}: what a reader may change`);
+    for (const [row, hint] of Object.entries(n.hints ?? {})) assert.equal(drawn.rows.find((r) => r.name === row)?.hint, hint, `${drawn.id}: ${row}'s words`);
   }
   // A chip is its Condition's to change; the page's store, its definition's; its page size, the reader's.
   assert.deepEqual([meant('view-filters').editable.includes('region'), meant('view-filters').hints.region], [false, 'Its Condition changes it.']);
@@ -75,7 +78,7 @@ test('a reconcile refuses a row the lens keeps read only, in its words, whatever
   const before = queryDefinition('records', lensed, {});
   const set = (def, id, row, value) => ({ ...def, nodes: def.nodes.map((n) => (n.id === id ? { ...n, values: { ...n.values, [row]: value } } : n)) });
   // A drawing that lets every row change, as one that adds its own rows might: the lens still says which may.
-  const loose = { ...lensed.drawn, nodes: lensed.drawn.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: true })) })) };
+  const loose = { ...drawnNow, nodes: drawnNow.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: true })) })) };
   const facts = { type: () => undefined, kept: [], place: { holds: () => [], fields: () => [], presets: () => [], on: () => false, kept: [] } };
   const chip = reconcileQuery(before, set(before, 'view-filters', 'region', 'Everywhere'), loose, facts);
   assert.deepEqual([chip.edits, chip.refused], [[], [{ code: 'query-row', message: 'No command takes "Region" on "View Filters": Its Condition changes it.' }]]);
@@ -112,9 +115,8 @@ test('one door unfolds a bar\'s chips and presets, a preset\'s fields and a stat
   assert.deepEqual(said('presentation-data', 'plan'), ['Plan', null, 'Its Condition changes it.']);
   // A status field's values, each its rule in words, no socket.
   assert.deepEqual([said('status-health', 'Good'), said('status-health', 'Poor')].map((r) => r?.slice(0, 2)), [['Good', null], ['Poor', null]]);
-  // Each name as the hand drawing's: a request reads them (T3).
-  for (const id of ['view-filters', 'presentation-data', 'status-health']) {
-    const hand = lensedNow.drawn.nodes.find((n) => n.id === id).rows.map((r) => r.name);
-    assert.deepEqual(hand.filter((n) => !rows(id).some((r) => r.name === n)), [], id);
-  }
+  // Each named as a request reads it (T3): the field, `@` and the preset, the value.
+  assert.deepEqual(rows('view-filters').map((r) => r.name), ['#filters', 'region', '@filter:trials', 'filters']);
+  assert.deepEqual(rows('presentation-data').map((r) => r.name), ['#filters', 'plan', 'kind', 'sort', 'content']);
+  assert.deepEqual(rows('status-health').map((r) => r.name), ['field', 'values', 'Good', 'Poor']);
 });

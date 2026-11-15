@@ -15,7 +15,8 @@ const { NODE_KINDS, LIST_OPS, kindIn, paletteMatch, paletteOf, resolveKind, sock
 const { OP_LABELS } = await import(new URL('store.js', core));
 const { editWorkflow, finalGraph, keptConnections, sentFrom, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { nodeFlow } = await import(new URL('node-flow.js', core));
-const { queryGraph, graphRequest } = await import(new URL('query-graph.js', core));
+const { graphRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph } = await import(new URL('query-lens.js', core));
 const { answerTree } = await import(new URL('filter-state.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));

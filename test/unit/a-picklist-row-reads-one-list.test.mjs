@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, fixedChoices, mirrored, resolveKind, rowChoices, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
 const { addCustomValue, editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
-const { queryGraph } = await import(new URL('query-graph.js', core));
+const { queryGraph } = await import(new URL('query-lens.js', core));
 const { innerOf } = await import(new URL('node-library.js', core));
 
 const fields = { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' } };
@@ -70,7 +70,7 @@ test('every workflow picklist row takes a value in; the Value node has its Type'
   const g = queryGraph({ v: 1, scopes: {} }, { v: 1, id: 'p', source: { store: 'customers', search: ['name'], fields: { name: {} } } });
   for (const [id, name] of [['source', 'store'], ['source', 'search'], ['source', 'applyOn']]) {
     const r = g.nodes.find((n) => n.id === id).rows.find((x) => x.name === name);
-    assert.deepEqual([r.input, r.output, r.editable], [undefined, undefined, undefined], `${id} › ${name} is read only, with no socket`);
+    assert.deepEqual([r.input, r.output, r.editable], [undefined, undefined, false], `${id} › ${name} is read only, with no socket`);
     assert.ok(r.choices, `${id} › ${name} is a picklist`);
   }
 });

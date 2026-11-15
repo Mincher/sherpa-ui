@@ -157,7 +157,7 @@ export function queryDocument(source: QuerySource, { definition, session, markup
     inside(node) {
       const field = (drawn ?? derived()).nodes.find((n) => n.id === node.id)?.ref?.['status'];
       const domain = field ? source.store?.domains?.[field] : undefined;
-      return field && domain ? statusRule(field, domain, { label: (f) => labelOf(f) ?? f, type: typeOf }) : undefined;
+      return field && domain ? statusRule(field, domain, { label: (f) => labelOf(f) ?? f }) : undefined;
     },
     save() {
       const page = pageWithQuery(definition, query.draft, { pageSize: source.state?.pageSize ?? null, type: (f) => typeOf(f) as FieldType | undefined });

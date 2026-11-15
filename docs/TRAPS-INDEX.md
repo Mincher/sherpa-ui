@@ -110,7 +110,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-route-is-start-to-end](traps/data-layer.md#t-a-route-is-start-to-end) — node-routes
 - [T-a-row-offers-its-stores-values](traps/data-layer.md#t-a-row-offers-its-stores-values) — field-catalogue
 - [T-a-row-says-its-own-fault](traps/data-layer.md#t-a-row-says-its-own-fault) — node-kinds, workflow
-- [T-a-row-takes-its-values-type](traps/data-layer.md#t-a-row-takes-its-values-type) — node-kinds, query-graph, workflow
+- [T-a-row-takes-its-values-type](traps/data-layer.md#t-a-row-takes-its-values-type) — node-kinds, workflow
 - [T-a-rule-names-its-clock-and-its-language](traps/data-layer.md#t-a-rule-names-its-clock-and-its-language) — data-source-types, source-counts, source-reads, store
 - [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, query-edits, source-counts, source-walk, store, stores, walk
 - [T-a-scope-below-narrows-within-a-fixed-field](traps/data-layer.md#t-a-scope-below-narrows-within-a-fixed-field) — query, query-edits, source-view

@@ -6335,7 +6335,6 @@ their own. The workflow (`here`) and a page's Query graph (`leafRows`) both call
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`
-- Site: `src/core/data/query-graph.ts`
 - Site: `test/unit/a-row-takes-its-values-type.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
@@ -6906,10 +6905,12 @@ chip's is (`graphRequest`).
   U4.3); the places are not. The MCP writes back through the same door, the
   Query's lens (`QUERY_LENS`, plan 960 U4.5): what the Query cannot take — a
   read-only row, a cut connection — refuses the whole graph, in words.
-- **The lens says what each node IS; the drawing is only drawn** (plan 1004c).
-  `queryLensGraph` makes the definition (`LensNode`, lens-registry.ts) and the
-  drawn node in ONE call per node, so they never disagree: its kind, values and own
-  words, its `ref` (what it is to the Query: every request reads it), `editable`
+- **The lens says what each node IS; the one drawing draws it** (plans 1004c, d).
+  `queryLensGraph` makes the definition (`LensNode`, lens-registry.ts), and draws
+  nothing: `workflowGraph` draws it, as any graph (`queryGraph`, `queryOpened`).
+  Each row it says is a value, whether a reader may change it, and its words
+  (`Said`); a row's label, control, choices and sockets are its kind's. Each node
+  says its kind, values and own words, its `ref` (what it is to the Query: every request reads it), `editable`
   (the rows a reader may change; the rest are read only), `hints` (each row's
   words), `off` (kept, not applied), its own `icon` (a Filter's), its
   `warnings` (a kept Source's), `omit` (the rows of its kind it leaves out
@@ -6957,8 +6958,9 @@ Sherpa draws: a page's Query and a workflow. Plan 695 N1: two registries had let
   none. A family's types are never listed in it: search finds a type by its name,
   and an item found so says that type's help.
 - **The graph is DERIVED, never stored**: from the definition and the live Query
-  (`queryGraph`), or from the workflow definition (`workflowGraph`). Only places are
-  the editor's, kept for the tab, and laid over (`placed`).
+  (`queryLensGraph`, drawn by `workflowGraph`), or from the workflow definition
+  (`workflowGraph`). Only places are the editor's, kept for the tab, and laid over
+  (`withPlaces`).
 - **An edit is a command**: a Query node's is a `QueryRequest` through `ask()`
   (`graphRequest`, `T-one-command-one-door`); a workflow node's a pure
   `editWorkflow`. A value entered is typed by its field (`typedValue`).

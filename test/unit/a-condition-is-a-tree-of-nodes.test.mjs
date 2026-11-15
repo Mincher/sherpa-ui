@@ -11,7 +11,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { queryGraph, graphRequest, placeRequest, connectionRequest } = await import(new URL('query-graph.js', core));
+const { graphRequest, placeRequest, connectionRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph } = await import(new URL('query-lens.js', core));
 const { answerTree } = await import(new URL('filter-state.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));

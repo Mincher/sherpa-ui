@@ -24,7 +24,6 @@
  * - statusTallies — Each status field's rows per value, over the whole store: how many rows each value takes.
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a `when` that is no condition, a stray connection.
  * - LensGraph — A page's Query as its lens says it, each node as the definition holds it, and as it is drawn now.
- * - queryGraph — A page's Query as nodes and connections, laid out in columns by depth.
  * - queryLensGraph — A page's Query as its lens says it: kinds, values, own words, refs, editable rows, hints and Off.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
  * - orderRequest — The order a bar's chips are written in, as the Query's request; none where it is the drawn one.
@@ -40,7 +39,7 @@
 import { storeOf, type PageDefinition } from './page-definition.js';
 import { pageFields } from './type-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, type Presentation, type Query, type QueryRequest, type ScopeQuery } from './query.js';
-import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
+import { OP_LABELS, OP_TAKES, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
 import { ALL, spellConditions } from './filter-face.js';
 import { parseWhere, readingsOf, treeReading, type Where } from './where.js';
@@ -49,8 +48,8 @@ import { entityRefOf, type EntityGraph } from './entity.js';
 import { FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
-  LIST_OPS, NODE_KINDS, ROWS, TEST_KINDS, kindNode, resolveKind, rowChoices, rowOf, socketOf, storedValues, typedControl,
-  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeConnection, type RowChoice,
+  LIST_OPS, NODE_KINDS, ROWS, TEST_KINDS, kindIn, resolveKind, rowOf, rowsOfNode, socketOf, storedValues,
+  type DrawnGraph, type GraphEdit, type GraphNode, type NodeConnection, type RowChoice,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
@@ -59,11 +58,6 @@ import type { NodeDefinition } from './node-library.js';
 import type { LensNode } from './lens-registry.js';
 import { conditionWords } from './graph-text.js';
 
-/** A test's properties, as its kind gives them (plan 971 A): Pass and Fail. */
-const TEST_ROWS: Readonly<Record<'condition' | 'time', readonly GraphRow[]>> = {
-  condition: resolveKind(NODE_KINDS['condition']!, 'and').rows.filter((r) => r.property),
-  time: resolveKind(NODE_KINDS['time']!, 'duration').rows.filter((r) => r.property),
-};
 /** A reading with every value ticked, as the Query graph's test names it. */
 const EVERY = 'all';
 
@@ -200,9 +194,6 @@ export interface QueryGraphFacts {
   kept?: readonly KeptSource[];
 }
 
-/** The operators a field's condition may take: its type's, and a pick list's. */
-const PICK_OPS: readonly FilterOp[] = ['in', 'notin', 'eq', 'ne'];
-
 /** A bar's filter Switch: the kind's own row, before its chips and presets. */
 const SWITCH = '#filters';
 
@@ -237,17 +228,16 @@ const groupWords = (tree: Condition): string => {
 /** The ids of a condition tree's nodes: its root's, and a part's by the numbers of its path. */
 const treeNodeId = (root: string, path: readonly number[]): string => (path.length ? `${root}.${path.join('.')}` : root);
 
-/** What drawing a tree's nodes needs: the field it reads, its type, the fields a reader may pick, and the field's values. */
+/** What saying a tree's nodes needs: the field it reads, the field's values, and each field's words. */
 interface TreeFacts {
   field: string;
-  type: (field: string) => string | undefined;
-  fields: readonly { value: string; label: string }[];
   values: (field: string) => readonly string[] | undefined;
   label: (field: string) => string;
 }
 
-/** The Operation an And or an Or picks: And or Or, in Logic's own words. */
-const JOINS: readonly RowChoice[] = (['and', 'or'] as const).map((j) => ({ value: j, label: NODE_KINDS['condition']!.types![j]!.label }));
+/** What the lens says of one row (plan 1004d): its value, whether a reader may change it here, and its words. Its label,
+ *  control, choices and sockets are its kind's: the one drawing draws them. */
+type Said = { name: string; value?: unknown; editable?: boolean; hint?: string };
 
 /** Each field a tree's leaves read, in order: a reading's own, or each a status `when` names. */
 function fieldsOf(tree: Condition, field: string): string[] {
@@ -255,40 +245,31 @@ function fieldsOf(tree: Condition, field: string): string[] {
   return [...new Set(parts ? parts[1].flatMap((p) => fieldsOf(p, field)) : [(tree as ConditionLeaf).field ?? field])];
 }
 
-/** One leaf of a tree as the rows of its test (plan 783 D6): its Operation, the field's operators — Is one of and Is not
- *  one of where its values are known, Equals read back as Is one of with one tick — then what the operator takes: Value B,
- *  the Values or Start and End, each editable as a chip's are. A span from today is Time › Duration's: When, Value, Unit. */
-function leafRows(leaf: ConditionLeaf, { field, type: typeOf, values: valuesOf }: TreeFacts): { kind: 'condition' | 'time'; type: string; rows: GraphRow[] } {
-  const of = leaf.field ?? field;
-  const type = typeOf(of);
-  const picks = valuesOf(of)?.map((v) => ({ value: v, label: v }));
+/** One leaf of a tree as what its test says (plan 783 D6): its type, the operator, read as its chip picks — Is one of and
+ *  Is not one of where its field's values are known, Equals read back as Is one of with one tick — then what the operator
+ *  takes: Value B, the Values or Start and End, each editable as a chip's are. A span from today is Time › Duration's:
+ *  When, Value, Unit. */
+function leafRows(leaf: ConditionLeaf, { field, values: valuesOf }: Pick<TreeFacts, 'field' | 'values'>): { kind: 'condition' | 'time'; rows: Said[] } {
   const { op } = leaf;
-  const operation = (value: string, choices: readonly RowChoice[]): GraphRow => ({ name: 'type', label: 'Operation', control: 'type', value, editable: true, choices });
   if (op === 'last' || op === 'next') {
     const span = leaf.value as Duration;
-    // Its own rows: no type, and no Pass and Fail, which every test takes once, after its rows (TODO 1004a).
+    // Its own rows, its type and Pass and Fail aside (TODO 1004a).
     const time = resolveKind(NODE_KINDS['time']!, 'duration').rows.filter((r) => r.control !== 'type' && !r.property);
-    const rows = time.map(({ input: _in, ...r }): GraphRow => ({ ...r, value: r.name === 'when' ? op : r.name === 'n' ? span?.n : span?.unit, editable: true, ...(rowChoices(r) ? { choices: rowChoices(r, { count: span?.n })! } : {}) }));
-    return { kind: 'time', type: 'duration', rows: [{ ...operation('duration', []), editable: false, hint: 'A span from today.' }, ...rows] };
+    const rows = time.map((r): Said => ({ name: r.name, value: r.name === 'when' ? op : r.name === 'n' ? span?.n : span?.unit, editable: true }));
+    return { kind: 'time', rows: [{ name: 'type', value: 'duration', hint: 'A span from today.' }, ...rows] };
   }
   // Every value ticked (TODO 965): "has a value", said as its chip says it. Its chip changes it.
-  if ((op as string) === EVERY) return { kind: 'condition', type: EVERY, rows: [{ ...operation(EVERY, [{ value: EVERY, label: ALL }]), editable: false, hint: 'Has a value: every row with a value of this field. Its chip changes it.' }] };
-  if (!(op in OP_LABELS)) return { kind: 'condition', type: op, rows: [{ ...operation(op, []), editable: false }] };
+  if ((op as string) === EVERY) return { kind: 'condition', rows: [{ name: 'type', value: EVERY, hint: 'Has a value: every row with a value of this field. Its chip changes it.' }] };
+  if (!(op in OP_LABELS)) return { kind: 'condition', rows: [{ name: 'type', value: op }] };
   // A field whose values are known is PICKED, as its chip picks: ticks, Is one of or Is not one of.
-  const ticks = !!picks?.length && (ONE.has(op) || MANY.has(op));
-  const shown = ticks ? (op === 'ne' || op === 'notin' ? 'notin' : 'in') : op;
-  const ops = ticks ? [...MANY] as FilterOp[] : [...new Set([...(OPS_FOR_TYPE[type ?? ''] ?? PICK_OPS), op])];
-  const head = operation(shown, ops.map((o) => ({ value: o, label: OP_LABELS[o] })));
+  const ticks = !!valuesOf(leaf.field ?? field)?.length && (ONE.has(op) || MANY.has(op));
+  const head: Said = { name: 'type', value: ticks ? (op === 'ne' || op === 'notin' ? 'notin' : 'in') : op, editable: true };
   const raw = leaf.value;
   const list = (Array.isArray(raw) ? raw : raw === undefined || raw === '' || raw === null ? [] : [raw]).map(String);
-  // A value of its field takes that field's type's control: a number, a date (plan 986). TRAP T-a-row-takes-its-values-type
-  const control = typedControl(type) ?? 'text';
-  if (OP_TAKES[op] === 'range') return { kind: 'condition', type: shown, rows: [head, { name: 'start', label: 'Start', control, value: list[0] ?? '', editable: true }, { name: 'end', label: 'End', control, value: list[1] ?? '', editable: true }] };
-  if (ticks) return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Values', control: 'values', multiple: true, value: list, editable: true, choices: picks! }] };
-  // Is one of with no values to pick from: each typed word a tag. Plan 749 P4
-  if (LIST_OPS.includes(op)) return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Values', control: 'tags', multiple: true, value: list, editable: true }] };
+  if (OP_TAKES[op] === 'range') return { kind: 'condition', rows: [head, { name: 'start', value: list[0] ?? '', editable: true }, { name: 'end', value: list[1] ?? '', editable: true }] };
+  if (ticks || LIST_OPS.includes(op)) return { kind: 'condition', rows: [head, { name: 'b', value: list, editable: true }] };
   const value = raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
-  return { kind: 'condition', type: shown, rows: [head, { name: 'b', label: 'Value B', control, value: value ?? '', editable: true }] };
+  return { kind: 'condition', rows: [head, { name: 'b', value: value ?? '', editable: true }] };
 }
 
 /** What a tree's nodes need: the ids its root starts, the rows its Fields take, a Field's id, its first column, the field a
@@ -299,7 +280,6 @@ interface TreeAt {
   fieldId: (field: string) => string;
   x: number;
   field: string;
-  type: (field: string) => string | undefined;
   own?: Pick<WorkflowNode, 'heading' | 'description'>;
 }
 
@@ -330,7 +310,7 @@ function treeGraph(tree: Condition, at: TreeAt, nodes: WorkflowNode[], connectio
     }
     const leaf = part as ConditionLeaf;
     const field = leaf.field ?? at.field;
-    const drawn = leafRows(leaf, { field, type: at.type, fields: [], values: () => undefined, label: (f) => f });
+    const drawn = leafRows(leaf, { field, values: () => undefined });
     // A list's values as the Where gives them, typed: the rows show them as text.
     const values = storedValues(drawn.rows);
     const list = Array.isArray(leaf.value) ? [...leaf.value as unknown[]] : undefined;
@@ -347,12 +327,12 @@ function treeGraph(tree: Condition, at: TreeAt, nodes: WorkflowNode[], connectio
  * A Where as the graph a Filter keeps it as (plan 960 U4.4b, D6): a Source over its store, then its tree (`treeGraph`), the
  * root's Pass into `#out/where`. Its places are a first layout: it unfurls the first time it is shown.
  */
-export function whereGraph(where: Readonly<Where>, { source, type = () => undefined }: { source?: string; type?: (field: string) => string | undefined } = {}): EntityGraph {
+export function whereGraph(where: Readonly<Where>, { source }: { source?: string } = {}): EntityGraph {
   const nodes: WorkflowNode[] = [{ id: 'source', kind: 'source', x: 0, y: 0, ...(source ? { values: { store: source } } : {}) }];
   const connections: NodeConnection[] = [];
   const tree = parseWhere(where);
   if (tree) {
-    const says = treeGraph(tree, { root: 'when', into: [`source/${ROWS.name}`], fieldId: (f) => `field-${f}`, x: 360, field: '', type }, nodes, connections);
+    const says = treeGraph(tree, { root: 'when', into: [`source/${ROWS.name}`], fieldId: (f) => `field-${f}`, x: 360, field: '' }, nodes, connections);
     connections.push({ from: says, to: '#out/where' });
   }
   return { nodes, connections, unfurl: true };
@@ -363,7 +343,7 @@ export function whereGraph(where: Readonly<Where>, { source, type = () => undefi
  * `when` a tree (`treeGraph`), its Pass out at that value's row of the Group Output, its Fail into the next value's Fields,
  * in the order the first match is taken; the last value, with no `when`, the rows the rest left. A load lights each root.
  */
-export function statusRule(field: string, domain: FieldDomain, { label = (f) => f, type = () => undefined }: { label?: (field: string) => string; type?: (field: string) => string | undefined } = {}): NodeDefinition {
+export function statusRule(field: string, domain: FieldDomain, { label = (f) => f }: { label?: (field: string) => string } = {}): NodeDefinition {
   const values = (domain.values ?? []).map(String);
   const nodes: WorkflowNode[] = [];
   const connections: NodeConnection[] = [];
@@ -379,7 +359,7 @@ export function statusRule(field: string, domain: FieldDomain, { label = (f) => 
     }
     const root = QUERY_NODE.statusWhen(field, value);
     const own = { heading: value, description: conditionWords(when, label) };
-    connections.push({ from: treeGraph(when, { root, into: [before ?? rows], fieldId: (f) => `field-${root}-${f}`, x: at++ * 1080, field, type, own }, nodes, connections), to: `#out/${value}` });
+    connections.push({ from: treeGraph(when, { root, into: [before ?? rows], fieldId: (f) => `field-${root}-${f}`, x: at++ * 1080, field, own }, nodes, connections), to: `#out/${value}` });
     before = `${treeNodeId(root, [])}/fail`;
   }
   return {
@@ -410,18 +390,12 @@ export function editedCondition(op: string, given: string | readonly string[], t
 /** What a presentation's row says where no slot keeps it: the View's is shared. */
 const SHARED = 'It shares the View: no slot keeps its own.';
 
-/** A Presentation's rows: its card's bar, where it carries it; then how it shows its rows, editable where it has a slot to
- *  keep them, its kind the definition's by default; then its Content. */
-function presentationRows(presented: Presentation, kind: string | undefined, slot: boolean, bar: readonly GraphRow[]): GraphRow[] {
-  const kinds = rowChoices({ control: 'presentation' })!.map((c) => (c.value || !kind ? c : { ...c, label: `Default (${kind})` }));
-  const sorts = [{ value: '', label: 'None' }, ...rowChoices({ control: 'direction' })!];
-  return [...bar, ...rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).flatMap((row): GraphRow[] => {
-    if (row.name === SWITCH) return [];
-    if (row.property) return [row];
-    return [slot
-      ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : sorts, value: String(row.value ?? '') }
-      : { ...row, value: String((row.name === 'kind' ? kind : row.value) ?? ''), hint: SHARED, choices: row.name === 'kind' ? kinds : sorts }];
-  })];
+/** What a Presentation says of how it shows its rows: its kind and segment order, editable where it has a slot to keep
+ *  them; else the definition's kind, shared, and none of its own. */
+function presentationRows(presented: Presentation, kind: string | undefined, slot: boolean): Said[] {
+  return (['kind', 'sort'] as const).map((name): Said => (slot
+    ? { name, value: String(presented[name] ?? ''), editable: true }
+    : { name, value: String((name === 'kind' ? kind : presented[name]) ?? ''), hint: SHARED }));
 }
 
 /** A chip's pick in words, as its chip's tip spells it; none, it picks nothing. */
@@ -436,33 +410,17 @@ function pickWords(reading: FieldReading | undefined, type: FieldType | undefine
 const AXES: Readonly<Record<string, keyof Presentation>> = { primary: 'primary', secondary: 'secondary', segments: 'group' };
 
 /** A scope's Organise rows (plan 960 U4.2): its sort, group and search, editable as their chips are; its axes, its slot's
- *  presentation, editable where it has a slot to keep them. */
-function organiseRows(scope: ScopeQuery, keys: readonly { value: string; label: string }[], slot: boolean): GraphRow[] {
+ *  presentation, editable where it has a slot to keep them, else shared. */
+function organiseRows(scope: ScopeQuery, slot: boolean): Said[] {
   const first = scope.sort?.[0];
   const presented = slot ? scope.presentation ?? {} : {};
   const values: Record<string, unknown> = { sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '' };
   for (const [row, key] of Object.entries(AXES)) values[row] = presented[key] ?? '';
-  // The Query owns each row: none takes a connection, as a chip's value takes none.
-  return rowsOf('organise', values).map(({ input: _in, ...row }): GraphRow => {
-    if (row.name === ROWS.name) return row;
-    if (row.name === 'search') return { ...row, editable: true };
-    if (row.name in AXES && !slot) return { ...row, choices: keys, hint: SHARED };
-    return { ...row, editable: true, choices: row.name === 'direction' ? rowChoices(row)! : keys };
-  });
+  return Object.entries(values).map(([name, value]): Said => (name in AXES && !slot ? { name, value, hint: SHARED } : { name, value, editable: true }));
 }
 
-/** A row of the Query the definition owns: its list, read only, and no socket — no connection reaches it. */
-function owned(row: GraphRow, list: readonly { value: string; label: string }[] | undefined): GraphRow {
-  const { input: _in, output: _out, ...rest } = row;
-  return { ...rest, hint: FROM_DEFINITION, ...(list ? { choices: list } : {}) };
-}
-
-/** A kind's fixed rows, each with its value. */
-function rowsOf(kind: string, values: Readonly<Record<string, unknown>>): GraphRow[] {
-  // A row a workflow's alone is not drawn: a page reads every field, and its Query filters its rows.
-  // A row that unfolds is drawn as its items, which the Query writes (plan 1004 D4).
-  return NODE_KINDS[kind]!.rows.filter((row) => (!row.graphs || row.graphs.includes('query')) && !row.unfolds).map((row) => ({ ...row, value: values[row.name] }));
-}
+/** A row of the Query the definition owns: read only, its words why. */
+const owned = (name: string, value: unknown): Said => ({ name, value, hint: FROM_DEFINITION });
 
 /** Whether a status value's `when` is a condition: a group of conditions, or one comparison. */
 function isCondition(when: unknown): when is Condition {
@@ -507,23 +465,17 @@ export function queryGraphFaults(graph: DrawnGraph, domains: Readonly<Record<str
   return faults;
 }
 
-/** A page's Query as its lens says it (plan 1004c), each node as a definition holds it, and as it is drawn now: one
- *  builder makes both, node by node, so they never disagree. */
+/** A page's Query as its lens says it (plan 1004c): each node as its definition holds it, in columns by depth. The one
+ *  drawing draws it (`queryGraph`, `queryOpened`). */
 export interface LensGraph {
   nodes: readonly LensNode[];
   connections: readonly NodeConnection[];
-  drawn: DrawnGraph;
-}
-
-/** A page's Query as nodes and connections, laid out in columns by depth. */
-export function queryGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
-  return queryLensGraph(query, definition, facts).drawn;
 }
 
 /**
  * A page's Query as its lens says it: each node's kind, values, own words and `ref`, the rows a reader may change, each
- * row's hint, and Off; with the same nodes drawn, in columns by depth. Its ids are QUERY_NODE's, in the order drawn.
- * TRAP T-the-node-editor-asks-the-query
+ * row's hint, Off, and the lists its kind's rows unfold; laid out in columns by depth. Its ids are QUERY_NODE's. It draws
+ * nothing: the one drawing draws it (plan 1004d). TRAP T-the-node-editor-asks-the-query
  */
 export function queryLensGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): LensGraph {
   // The fields the page declares: its own, else its type's.
@@ -534,29 +486,23 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
     const type = typeOf(field) as FieldType | undefined;
     return type ? { type } : {};
   };
-  // Every field a Sort or Group may pick: the declared ones, then any a scope holds.
-  const known = [...new Set([...Object.keys(declared), ...Object.values(query.scopes).flatMap((s) => s.holds)])];
-  const keys = [{ value: '', label: 'None' }, ...known.map((f) => ({ value: f, label: label(f) }))];
   const components = facts.components ?? [];
   const scopeOf = (c: GraphComponent): string => c.scope ?? (c.id in query.scopes ? c.id : VIEW);
-  const nodes: (Omit<GraphNode, 'x' | 'y'> & { column: number })[] = [];
-  const meant: Omit<LensNode, 'x' | 'y'>[] = [];
+  const meant: (Omit<LensNode, 'x' | 'y'> & { column: number; drawnRows: number })[] = [];
   const connections: NodeConnection[] = [];
-  // Each node twice, from the one call: as drawn, and as the lens's definition says it.
   // `lists`: the items each unfolding row of its kind holds (a bar's chips, plan 1004 D4), as values.
-  type Own = Partial<GraphNode> & { off?: boolean; omit?: readonly string[]; unjoined?: readonly string[]; lists?: Readonly<Record<string, readonly RowChoice[]>> };
-  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Own = {}, type?: string): string => {
-    const { off, omit, unjoined, lists, ...drawn } = own;
-    const made = kindNode({ ...NODE_KINDS, [kind]: resolveKind(NODE_KINDS[kind]!, type) }, kind, id, rows, drawn);
-    nodes.push({ ...made, column });
+  type Own = Pick<LensNode, 'heading' | 'description' | 'ref' | 'icon' | 'warnings' | 'omit' | 'unjoined'> & { off?: boolean; lists?: Readonly<Record<string, readonly RowChoice[]>> };
+  const add = (column: number, id: string, kind: string, rows: readonly Said[], own: Own = {}): string => {
+    const { off, lists, omit, ...words } = own;
     const values = { ...storedValues(rows), ...Object.fromEntries(Object.entries(lists ?? {}).filter(([, items]) => items.length)) };
     const hints = Object.fromEntries(rows.flatMap((r) => (r.hint ? [[r.name, r.hint]] : [])));
+    // The rows the one drawing draws of it, for its place in its column.
+    const shown = rowsOfNode(resolveKind(kindIn(NODE_KINDS[kind]!, 'query') ?? NODE_KINDS[kind]!, values['type']), values).filter((r) => !r.setting && !omit?.includes(r.name));
     meant.push({
-      id, kind, ...(drawn.heading ? { heading: drawn.heading } : {}), ...(drawn.description ? { description: drawn.description } : {}),
-      ...(Object.keys(values).length ? { values } : {}), ...(drawn.ref ? { ref: drawn.ref } : {}),
+      id, kind, ...Object.fromEntries(Object.entries(words).filter(([, v]) => v !== undefined && !(Array.isArray(v) && !v.length))),
+      ...(Object.keys(values).length ? { values } : {}),
       editable: rows.filter((r) => r.editable).map((r) => r.name), ...(Object.keys(hints).length ? { hints } : {}), ...(off ? { off: true } : {}),
-      ...(drawn.icon ? { icon: drawn.icon } : {}), ...(drawn.warnings ? { warnings: drawn.warnings } : {}), ...(omit?.length ? { omit } : {}),
-      ...(unjoined?.length ? { unjoined } : {}),
+      ...(omit?.length ? { omit } : {}), column, drawnRows: shown.length,
     });
     return id;
   };
@@ -566,8 +512,8 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
   // group, a part's Pass into its group's header; each Field takes the page's rows. It returns where the root says its tree
   // (a Condition's Pass, a Time's header), and its Pass and Fail (plan 971 §9).
   const treeNodes = (
-    column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode> & { off?: boolean }, ref: Record<string, string>,
-    apply: (row: GraphRow) => GraphRow = (r) => r,
+    column: number, root: string, tree: Condition, ctx: TreeFacts, own: Own, ref: Record<string, string>,
+    apply: (row: Said) => Said = (r) => r,
   ): { says: string; pass: string; fail: string } => {
     const back = 0.25;
     const whole = JSON.stringify(tree);
@@ -576,8 +522,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
     const base = root.startsWith('when-') ? root.slice('when-'.length) : root;
     const fieldNode = new Map(fields.map((f) => {
       const id = `field-${base}${fields.length > 1 || !root.startsWith('when-') ? `-${f}` : ''}`;
-      const row: GraphRow = { name: 'field', label: 'Field', control: 'field', output: 'object', gives: 'field', value: f, editable: true, choices: ctx.fields };
-      add(column - depth(tree) * back, id, 'field', [apply(row)], { heading: ctx.label(f), ref: { ...ref, field: f, tree: whole } });
+      add(column - depth(tree) * back, id, 'field', [apply({ name: 'field', value: f, editable: true })], { heading: ctx.label(f), ref: { ...ref, field: f, tree: whole } });
       for (const from of fed) connections.push({ from, to: id });
       return [f, id] as const;
     }));
@@ -585,18 +530,18 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       const id = treeNodeId(root, path);
       const at = path.length ? { heading: ctx.label(ctx.field), description: groupWords(part) } : own;
       const nodeRef = { ...ref, path: path.join('.'), tree: whole };
-      const off = part.off ? (row: GraphRow): GraphRow => apply({ ...row, hint: 'Off: kept, not applied.' }) : apply;
+      const off = part.off ? (row: Said): Said => apply({ ...row, hint: 'Off: kept, not applied.' }) : apply;
       // Off: a part turned off, or a whole filter suspended (its root's).
       const kept = { ...(part.off || (!path.length && own.off) ? { off: true } : {}), ref: nodeRef };
       const parts = groupOf(part);
       if (parts) {
-        add(column - path.length * back, id, 'condition', [off({ name: 'type', label: 'Operation', control: 'type', value: parts[0], editable: true, choices: JOINS }), ...TEST_ROWS.condition], { ...at, ...kept }, parts[0]);
+        add(column - path.length * back, id, 'condition', [off({ name: 'type', value: parts[0], editable: true })], { ...at, ...kept });
         parts[1].forEach((p, i) => connections.push({ from: walk(p, [...path, i + 1]), to: id }));
         return `${id}/pass`;
       }
       const leaf = part as ConditionLeaf;
       const drawn = leafRows(leaf, ctx);
-      add(column - path.length * back, id, drawn.kind, [...drawn.rows.map(off), ...TEST_ROWS[drawn.kind]], { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ...kept }, drawn.kind === 'time' ? 'duration' : drawn.type);
+      add(column - path.length * back, id, drawn.kind, drawn.rows.map(off), { ...(path.length ? { heading: ctx.label(leaf.field ?? ctx.field) } : own), ...kept });
       connections.push({ from: `${fieldNode.get(leaf.field ?? ctx.field)}/field`, to: id });
       return drawn.kind === 'condition' ? `${id}/pass` : id;
     };
@@ -610,23 +555,20 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
   // the page reads it are the definition's, until Save; its page size changes live. It forks nowhere in a Query.
   const source = definition.source;
   const store = source && storeOf(source);
-  const stores = (value: unknown): RowChoice[] => rowChoices({ control: 'store', value }, { stores: facts.stores ?? [] })!;
-  const reads = { store, pageSize: facts.pageSize ?? source?.pageSize, search: source?.search ?? [], applyOn: source?.applyOn ?? 'change' };
-  add(0, QUERY_NODE.source, 'source', rowsOf('source', reads).map((row): GraphRow => {
-    if (row.name === ROWS.name) return row;
-    if (row.name === 'pageSize') return { ...row, editable: true };
-    return owned(row, row.name === 'store' ? stores(store) : row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row));
-  }));
+  add(0, QUERY_NODE.source, 'source', [
+    owned('store', store), { name: 'pageSize', value: facts.pageSize ?? source?.pageSize, editable: true },
+    owned('search', source?.search ?? []), owned('applyOn', source?.applyOn ?? 'change'),
+  ]);
   // Each Source the reader placed, under it: its Store theirs to pick, and nothing the Query reads. TODO 808
   for (const kept of facts.kept ?? []) {
-    add(0, kept.id, 'source', rowsOf('source', { store: kept.store }).filter((row) => !PAGE_ROWS.includes(row.name)).map((row) => (row.name === ROWS.name ? row
-      : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(store) }], omit: PAGE_ROWS });
+    add(0, kept.id, 'source', [{ name: 'store', value: kept.store, editable: true, hint: 'Yours to pick: the page reads its own.' }], {
+      ref: { kept: kept.id }, warnings: [{ words: notThePage(store) }], omit: PAGE_ROWS,
+    });
   }
   // A worked-out status field: one with `when`. A stored field may carry looks per value (`statuses`) and is no status node.
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when);
-  const everyField = known.map((f) => ({ value: f, label: label(f) }));
-  const readOnly = (hint: string) => (row: GraphRow): GraphRow => ({ ...row, editable: false, hint });
-  const ctxOf = (field: string, fields: TreeFacts['fields']): TreeFacts => ({ field, type: typeOf, fields, values: (f) => facts.values?.(f), label });
+  const readOnly = (hint: string) => (row: Said): Said => ({ ...row, editable: false, hint });
+  const ctxOf = (field: string): TreeFacts => ({ field, values: (f) => facts.values?.(f), label });
   // A worked-out status field is ONE Field node on the page's rows, a row per value saying its rule (plan 960 U4.7b): the
   // rule itself is its inside, `statusRule`, opened read only. TRAP T-a-status-opens-its-rule
   for (const [field, domain] of statuses) {
@@ -634,11 +576,9 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       const when = domain.when?.[value];
       return when === undefined ? 'Every row the values before it left.' : isCondition(when) ? conditionWords(when, label) : 'Its `when` is not a condition.';
     };
-    const rows: GraphRow[] = [
-      { name: 'field', label: 'Field', control: 'field', value: field, editable: false, hint: FROM_STORE, choices: [{ value: field, label: label(field) }] },
-      ...(domain.values ?? []).map(String).map((value): GraphRow => ({ name: value, label: value, value: said(value), hint: OPENS_RULE })),
-    ];
-    const lists = { statuses: (domain.values ?? []).map(String).map((v) => ({ value: v, label: v })) };
+    const values = (domain.values ?? []).map(String);
+    const rows: Said[] = [{ name: 'field', value: field, hint: FROM_STORE }, ...values.map((value): Said => ({ name: value, value: said(value), hint: OPENS_RULE }))];
+    const lists = { statuses: values.map((v) => ({ value: v, label: v })) };
     connections.push({ from: sent(QUERY_NODE.source), to: add(1, QUERY_NODE.status(field), 'field', rows, { heading: label(field), ref: { field, status: field }, lists }) });
   }
 
@@ -669,20 +609,16 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
     // Its name: the definition's, else the one component that reads it.
     const named = source?.scopes?.[id]?.label
       ?? (components.find((c) => c.id === id) ?? (shows.length === 1 ? shows[0] : undefined))?.label;
-    // Its bar (plan 960 U4.8): the Switch, a chip per field it holds in order, saying its pick, then a row per preset. On View
-    // Filters each chip takes its filter's Pass; a card's chip takes no line, its filter on the rows' path.
+    // Its bar (plan 960 U4.8): the Switch, a chip per field it holds in order, saying its pick, then a row per preset, each
+    // unfolded from what it lists (plan 1004 D4). On View Filters each chip takes its filter's Pass; a card's chip takes no
+    // line, its filter on the rows' path.
     const bar = QUERY_NODE.bar(id);
-    const chip = (f: string): GraphRow => {
+    const chip = (f: string): Said => {
       const said = pickWords(scope.readings[f], typeOf(f) as FieldType | undefined);
-      return { name: f, label: label(f), ...(top || superseded.has(f) ? { input: 'any' as const } : {}), ...(said ? { value: said } : {}), hint: superseded.has(f) ? SUPERSEDED : CHIP };
+      return { name: f, ...(said ? { value: said } : {}), hint: superseded.has(f) ? SUPERSEDED : CHIP };
     };
-    const barRows: GraphRow[] = [
-      { ...rowOf(NODE_KINDS['view-filters']!.rows, SWITCH)!, value: !scope.suspended, editable: true },
-      ...fields.map(chip),
-      ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'boolean' })),
-    ];
+    const barRows: Said[] = [{ name: SWITCH, value: !scope.suspended, editable: true }, ...fields.map(chip)];
     const description = `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`;
-    // What the bar's rows unfold from: its chips and presets, and the chips that take no line, a card's (plan 1004 D4).
     const barLists = { chips: fields.map((f) => ({ value: f, label: label(f) })), presets: presets.map((p) => ({ value: p.id, label: p.label })) };
     const unjoined = top ? [] : fields.filter((f) => !superseded.has(f));
     // Each preset, the app's or a Filter: on or off, and what it writes.
@@ -691,26 +627,23 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
         const tree = answerTree(reading, typed(f));
         return tree ? [[f, tree] as const] : [];
       });
-      const on = presetHeld(query, id, p.id, p.readings);
       // A Filter is a preset too: its own graph says what it writes. TODO 776
       const entity = entityRefOf(p.id).type === FILTER;
-      const from = add(into, QUERY_NODE.preset(id, p.id), 'preset', [
-        ...rowsOf('preset', { on }).map((row) => ({ ...row, editable: true })),
-        ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'any' })),
-      ], { heading: p.label, ref: { scope: id, preset: p.id }, lists: { writes: wrote.map(([f]) => ({ value: f, label: label(f) })) }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
+      const from = add(into, QUERY_NODE.preset(id, p.id), 'preset', [{ name: 'on', value: presetHeld(query, id, p.id, p.readings), editable: true }], {
+        heading: p.label, ref: { scope: id, preset: p.id }, lists: { writes: wrote.map(([f]) => ({ value: f, label: label(f) })) },
+        ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}),
+      });
       connections.push({ from, to: `${bar}/@${p.id}` });
       // What it writes: each field a Condition, the definition's to change.
       for (const [f, tree] of wrote) {
         const hint = entity ? FROM_ENTITY : FROM_DEFINITION;
-        connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)).says, to: `${from}/${f}` });
+        connections.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)).says, to: `${from}/${f}` });
       }
     }
-    const held = fields.map((f) => ({ value: f, label: label(f) }));
-    const factsOf = (field: string): TreeFacts => ctxOf(field, held);
     // Its own filters: a View filter's Pass into its chip; a card's onto its rows' path (plan 971 §9: no True).
     const passes: string[] = [];
     for (const [field, condition, off] of where) {
-      const { says, pass } = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
+      const { says, pass } = treeNodes(into, QUERY_NODE.condition(id, field), condition, ctxOf(field), {
         heading: label(field),
         description: off ? 'Off: kept, not applied.' : 'Applied.', ...(off ? { off } : {}),
       }, { scope: id, field });
@@ -719,17 +652,17 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
     }
     // Its own answers the View holds over it: kept, not in force, into its chip.
     for (const [field, condition] of kept) {
-      const { says } = treeNodes(into, `kept-${id}-${field}`, condition, factsOf(field), {
+      const { says } = treeNodes(into, `kept-${id}-${field}`, condition, ctxOf(field), {
         heading: label(field), description: 'Superseded: kept, not in force.',
-      }, { scope: id, field, superseded: 'true' }, (row) => ({ ...row, editable: false, hint: SUPERSEDED }));
+      }, { scope: id, field, superseded: 'true' }, readOnly(SUPERSEDED));
       connections.push({ from: says, to: `${bar}/${field}` });
     }
     // A card's rows on their way: its filters, two or more joined in ONE And; then its Organise.
     let rows: readonly string[] = passes.length ? passes : fed;
     if (passes.length > 1) {
-      const and = add(6, QUERY_NODE.and(id), 'condition', [
-        { name: 'type', label: 'Operation', control: 'type', value: 'and', choices: JOINS, hint: EVERY_FILTER }, ...TEST_ROWS.condition,
-      ], { heading: named ?? id, description: `All of ${passes.length} filters`, ref: { scope: id } }, 'and');
+      const and = add(6, QUERY_NODE.and(id), 'condition', [{ name: 'type', value: 'and', hint: EVERY_FILTER }], {
+        heading: named ?? id, description: `All of ${passes.length} filters`, ref: { scope: id },
+      });
       for (const from of passes) connections.push({ from, to: and });
       rows = [`${and}/pass`];
     }
@@ -737,12 +670,12 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
     const slotted = !top && (shows.length === 1 || shows.some((c) => c.id === id) || (!shows.length && !!scope.presentation));
     if (arranging(scope) || slotted) {
       // Sort, Group and Search change as their chips do; the axes as a card's do. The View's arranges every card (Q2 A).
-      const organise = add(7, QUERY_NODE.organise(id), 'organise', organiseRows(scope, keys, slotted), { ref: { scope: id } });
+      const organise = add(7, QUERY_NODE.organise(id), 'organise', organiseRows(scope, slotted), { ref: { scope: id } });
       for (const from of rows) connections.push({ from, to: organise });
       rows = [sent(organise)];
     }
     if (top) {
-      add(8, bar, 'view-filters', [...barRows, ...rowsOf('view-filters', {}).filter((row) => row.name !== SWITCH)], { description, ref: { scope: id }, lists: barLists });
+      add(8, bar, 'view-filters', barRows, { description, ref: { scope: id }, lists: barLists });
       if (rows !== fed) connections.push({ from: rows[0]!, to: bar });
       connections.push({ from: `${bar}/filters`, to: `${view}/filters` });
     }
@@ -754,7 +687,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       const bears = !top && c === holder;
       const slot = !top && (!c || c.id === id || shows.length === 1);
       const presented = slot ? scope.presentation ?? {} : {};
-      const node = add(8, bears ? bar : QUERY_NODE.presentation(c?.id ?? id), 'presentation', presentationRows(presented, c?.kind, slot, bears ? barRows : []), {
+      const node = add(8, bears ? bar : QUERY_NODE.presentation(c?.id ?? id), 'presentation', [...(bears ? barRows : []), ...presentationRows(presented, c?.kind, slot)], {
         heading: c?.label ?? named ?? (top ? 'View' : id), ...(bears ? { description, lists: barLists, unjoined } : { omit: [SWITCH] }), ref: { scope: id, ...(c ? { component: c.id } : {}) },
       });
       for (const from of top ? fed : rows) connections.push({ from, to: node });
@@ -762,18 +695,18 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
     }
   }
   // The View: the View Filters over every Content (Will, D4).
-  add(9, view, 'view', rowsOf('view', {}));
+  add(9, view, 'view', []);
 
   // Columns with nothing in them close up; each column stacks its nodes.
-  const used = [...new Set(nodes.map((n) => n.column))].sort((a, b) => a - b);
+  const used = [...new Set(meant.map((n) => n.column))].sort((a, b) => a - b);
   const down = new Map<number, number>();
-  const laid = nodes.map(({ column, ...node }) => {
+  const nodes = meant.map(({ column, drawnRows, ...node }): LensNode => {
     const x = used.indexOf(column) * COLUMN;
     const y = down.get(column) ?? 0;
-    down.set(column, y + HEADER + node.rows.length * ROW + GAP);
+    down.set(column, y + HEADER + drawnRows * ROW + GAP);
     return { ...node, x, y };
   });
-  return { nodes: meant.map((n, i) => ({ ...n, x: laid[i]!.x, y: laid[i]!.y })), connections, drawn: { nodes: laid, connections } };
+  return { nodes, connections };
 }
 
 /** The whole tree a Condition node is a group of: its ref keeps it. */

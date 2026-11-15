@@ -14,7 +14,8 @@ const { NODE_KINDS, fieldsSent, paletteOf } = await import(new URL('node-kinds.j
 const { offeredKinds, registerEntityType } = await import(new URL('entity-types.js', core));
 const { editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { entityFaults } = await import(new URL('entity-check.js', core));
-const { graphRequest, keptEdit, placeRequest, queryGraph, connectionRequest } = await import(new URL('query-graph.js', core));
+const { graphRequest, keptEdit, placeRequest, connectionRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph } = await import(new URL('query-lens.js', core));
 const { simulateGraph } = await import(new URL('node-simulate.js', core));
 const { valuesAt } = await import(new URL('node-messages.js', core));
 const { pageWithQuery } = await import(new URL('page-definition.js', core));
@@ -83,7 +84,7 @@ test('a kept Source is drawn under the page\'s and warns; its Store is the reade
   assert.equal(own.warnings, undefined, 'the page\'s own says nothing');
   const store = second.rows.find((r) => r.name === 'store');
   assert.deepEqual([store.value, store.editable, store.input, store.choices.map((c) => c.value)], ['devices', true, undefined, ['customers', 'devices']]);
-  assert.equal(own.rows.find((r) => r.name === 'store').editable, undefined, 'the page\'s store is its definition\'s');
+  assert.equal(own.rows.find((r) => r.name === 'store').editable, false, 'the page\'s store is its definition\'s');
   // Its Store row's edit is the editor's; never a command for the Query.
   const edit = { node: second, row: store, value: 'customers' };
   assert.deepEqual(keptEdit(kept, edit), [{ id: 'source-2', store: 'customers' }]);

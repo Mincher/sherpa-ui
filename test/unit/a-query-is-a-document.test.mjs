@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { queryLensGraph } = await import(new URL('query-graph.js', core));
+const { queryGraph } = await import(new URL('query-lens.js', core));
 const { queryDefinition, reconcileQuery, rowRequest, layoutOf, laidOut, isGraphLayout } = await import(new URL('query-document.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));
@@ -34,7 +35,7 @@ const opened = async () => {
   const q = source.query;
   const place = { holds: (s) => q.scope(s), fields: () => Object.keys(page.source.fields), presets: (s) => q.presets(s), on: (s, id) => q.presetOn(s, id), kept: [], store: 'customers' };
   let layout = {};
-  const graph = () => laidOut(queryLensGraph(q.draft, page, facts).drawn, layout);
+  const graph = () => laidOut(queryGraph(q.draft, page, facts), layout);
   const read = () => queryDefinition('records', queryLensGraph(q.draft, page, facts), layout);
   /** Write a definition: reconcile it, ask each request, keep the layout. What it refused comes back. */
   const write = (next) => {

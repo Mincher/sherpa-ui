@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, kindOfNode, rowChoices, rowFault } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, finalGraph, keptConnections, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
-const { queryGraph } = await import(new URL('query-graph.js', core));
+const { queryGraph } = await import(new URL('query-lens.js', core));
 
 // The store's fields, Status with the values it takes: a Field reads its Source's (TODO 817).
 const facts = { fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } } } };
@@ -148,5 +148,5 @@ test('the Query draws Is one of with no values to pick as tags, and its Search f
   assert.deepEqual([value.control, value.value, value.editable], ['tags', ['EMEA', 'APAC'], true]);
   const search = g.nodes.find((n) => n.id === 'source').rows.find((r) => r.name === 'search');
   // The Source kind's own row in a Query (plan 1004 D3): its fields picked, as a Source's Fields picks them.
-  assert.deepEqual([search.control, search.multiple, search.editable, search.value], ['field', true, undefined, ['name']]);
+  assert.deepEqual([search.control, search.multiple, search.editable, search.value], ['field', true, false, ['name']]);
 });
