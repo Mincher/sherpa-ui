@@ -1,7 +1,7 @@
 /**
  * A page's QUERY is a DOCUMENT the one node editor reads and writes (plan 885). Read: its derived graph as a v2 definition,
  * with the layout a reader gave it. Written: a RECONCILE — a row's new value, a new connection and a new node are the Query's own
- * requests (a chip's door); the layout (places, ties, frames, stages, lanes) never reaches the Query; a cut connection or a
+ * requests (a chip's door); the layout (its places, in the one place set, and its ties, frames and stages) never reaches the Query; a cut connection or a
  * removed reading is refused, in words. Draw, edit, reconcile, ask, draw again: the edit is there. Will, 2026-11-10
  *
  *   node --test test/unit/a-query-is-a-document.test.mjs
@@ -88,6 +88,20 @@ test('the layout never reaches the Query: a move, a tie, a frame, stages and lan
   assert.deepEqual(back.stages.map((s) => s.label), ['Stage 1', 'Decide']);
   assert.equal(back.lanes.length, LANES_BY_FAMILY.length);
   assert.ok(isGraphLayout(JSON.parse(JSON.stringify(layoutOf(back)))), 'the layout is kept as JSON');
+});
+
+test('its places are the one place set: Swimlanes off puts each node back, the unfurl mark is kept, a wrong shape is dropped (1004e)', async () => {
+  const { read, write } = await opened();
+  const at = (def) => def.nodes.map((n) => [n.id, n.x, n.y]);
+  const first = at(read());
+  write(editWorkflow(read(), { lanes: LANES_BY_FAMILY }, NODE_KINDS));
+  // The lanes move a node; off, it goes back where it stood before them.
+  write(editWorkflow(read(), { node: 'field-view-seats', set: { x: 999, y: 444 } }, NODE_KINDS));
+  write(editWorkflow(read(), { lanes: null }, NODE_KINDS));
+  assert.deepEqual(at(read()), first);
+  write({ ...read(), unfurl: true });
+  assert.equal(read().unfurl, true, 'the unfurl mark travels with its places (plan 1001 D4)');
+  assert.equal(isGraphLayout({ places: { 'field-view-seats': { x: 1, y: 2 } } }), false, 'a place set of another shape');
 });
 
 test('a cut connection, or a removed reading, is refused in words, and the Query is as it was', async () => {

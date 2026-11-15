@@ -71,11 +71,9 @@
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
  * - DrawnGraph — Nodes and connections, ready to draw: a workflow's, or a page's Query.
  * - GraphEdit — One row a reader changed: its node, its row and the new value.
- * - NodePlaces — Each node's place by its id: where a reader moved it.
  * - storedValues — What a node keeps of its drawn rows: each that holds a value, by its name.
  * - fieldsSent — The fields a node's rows carry, by its `every` field pick: those it keeps; none kept, every field.
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
- * - placed — A graph with each node at its kept place.
  */
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
@@ -1240,9 +1238,6 @@ export interface GraphEdit {
   value: unknown;
 }
 
-/** Each node's place by its id: where a reader moved it. */
-export type NodePlaces = Readonly<Record<string, { x: number; y: number; size?: NodeSize }>>;
-
 /** What a node keeps of its drawn rows: each that holds a value, by its name. */
 export const storedValues = (rows: readonly GraphRow[]): Record<string, unknown> =>
   Object.fromEntries(rows.filter((r) => r.value !== undefined && r.value !== null && r.value !== '').map((r) => [r.name, r.value]));
@@ -1269,9 +1264,4 @@ export function kindNode(
     ...(k.would ? { would: k.would } : {}),
     ...own,
   };
-}
-
-/** A graph with each node at its kept place; one never moved stays where it was laid out. */
-export function placed(graph: DrawnGraph, places: NodePlaces): DrawnGraph {
-  return { ...graph, nodes: graph.nodes.map((n) => (places[n.id] ? { ...n, x: places[n.id]!.x, y: places[n.id]!.y, ...(places[n.id]!.size ? { size: places[n.id]!.size } : {}) } : n)) };
 }

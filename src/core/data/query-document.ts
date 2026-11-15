@@ -1,9 +1,10 @@
 /**
  * query-document.ts — a page's QUERY as a definition the one node editor reads and writes (plan 885). READ: the Query's
- * derived graph as a v2 workflow definition, with the LAYOUT a reader gave it (places, sizes, bends, ties, frames, stages,
- * lanes), which the Query holds none of. WRITTEN: a RECONCILE — what changed between two definitions, asked of the Query
- * through its own doors (a chip's), the Sources the editor keeps, the layout, and what is refused, in words. DOM-free.
- * Will, 2026-11-10 · docs/history/plan-885-one-node-editor.md · TRAP T-the-node-editor-asks-the-query
+ * derived graph as a v2 workflow definition, with the LAYOUT a reader gave it, which the Query holds none of: its places
+ * in the one place set (graph-layout.ts), and its ties, frames and stages. WRITTEN: a RECONCILE — what changed between two
+ * definitions, asked of the Query through its own doors (a chip's), the Sources the editor keeps, the layout, and what is
+ * refused, in words. DOM-free. Will, 2026-11-10 · docs/history/plan-885-one-node-editor.md
+ * TRAP T-the-node-editor-asks-the-query · TRAP T-a-place-is-no-edit
  *
  * Map:
  * - GraphLayout — What a reader gave a Query's graph that the Query does not hold.
@@ -17,47 +18,42 @@
  * - reconcileQuery — What changed between two definitions, as row edits, requests, kept Sources, layout and refusals.
  * - rowRequest — What one row's new value asks, against the Query's graph as it is now.
  */
-import { placed, socketOf, storedValues, type DrawnGraph, type GraphEdit, type NodePlaces, type NodeTie } from './node-kinds.js';
+import { socketOf, storedValues, type DrawnGraph, type GraphEdit, type NodeTie } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import type { NodeStage } from './node-stages.js';
-import type { NodeLane } from './node-lanes.js';
-import { bendFault, type Bend } from './connector-bends.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowNode } from './workflow.js';
-import { connectionKey } from './graph-layout.js';
+import { connectionKey, isGraphPlaces, placesOf, withPlaces, type GraphPlaces } from './graph-layout.js';
 import { graphRequest, keptEdit, orderRequest, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryRequest } from './query.js';
 
-/** What a reader gave a Query's graph that the Query does not hold: kept beside it, for the tab. */
+/** What a reader gave a Query's graph that the Query does not hold, kept beside it for the tab: where its nodes are drawn,
+ *  in the one place set (each node's place and size, each connection's bends, the swimlanes and the places before them,
+ *  the unfurl mark), and the parts a Query has none of, whole, each at its own place: its ties, frames and stages, and
+ *  the stage each node is in. TRAP T-a-place-is-no-edit */
 export interface GraphLayout {
-  places?: NodePlaces;
-  /** A connection's bend points, by `from>to`. */
-  bends?: Readonly<Record<string, readonly Bend[]>>;
+  places?: GraphPlaces;
   ties?: readonly NodeTie[];
   frames?: readonly NodeFrame[];
   stages?: readonly NodeStage[];
-  lanes?: readonly NodeLane[];
   /** The stage each node is in, by node. */
   staged?: Readonly<Record<string, string>>;
 }
 
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const list = (v: unknown): boolean => v === undefined || Array.isArray(v);
+const NOWHERE: GraphPlaces = { nodes: {}, ties: {}, bends: {}, stages: {} };
 
 /** Whether a stored value is a GraphLayout: a wrong shape is dropped, never drawn. */
 export function isGraphLayout(v: unknown): v is GraphLayout {
   if (!record(v)) return false;
-  const places = v['places'];
-  const bends = v['bends'];
-  return (places === undefined || (record(places) && Object.values(places).every((p) => record(p) && typeof p['x'] === 'number' && typeof p['y'] === 'number')))
-    && (bends === undefined || (record(bends) && Object.values(bends).every((b) => !bendFault(b))))
-    && list(v['ties']) && list(v['frames']) && list(v['stages']) && list(v['lanes'])
-    && (v['staged'] === undefined || record(v['staged']));
+  return (v['places'] === undefined || isGraphPlaces(v['places']))
+    && list(v['ties']) && list(v['frames']) && list(v['stages']) && (v['staged'] === undefined || record(v['staged']));
 }
 
 /** A Query's derived graph, at the places, sizes and bends its layout gives. */
 export function laidOut(graph: DrawnGraph, layout: GraphLayout): DrawnGraph {
-  const at = placed(graph, layout.places ?? {});
-  return { ...at, connections: at.connections.map((r) => (layout.bends?.[connectionKey(r)] ? { ...r, via: layout.bends[connectionKey(r)]! } : r)) };
+  const { nodes, connections } = withPlaces(graph, layout.places ?? NOWHERE);
+  return { ...graph, nodes, connections: connections ?? graph.connections };
 }
 
 /** A Query's drawn graph (laid out), and its layout, as a definition: each node's rows as its values. */
@@ -67,29 +63,23 @@ export function queryDefinition(id: string, graph: DrawnGraph, layout: GraphLayo
     const stage = layout.staged?.[n.id];
     return { id: n.id, kind: n.kind, x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}), ...(Object.keys(values).length ? { values } : {}), ...(stage ? { stage } : {}) };
   });
-  const ids = nodes.map((n) => n.id);
-  const ties = tiesAmong(layout.ties as NodeTie[] | undefined, graph.connections);
-  const frames = framesAmong(layout.frames, ids);
-  // Its name, where a trail names it: a page's Query (plan 960 U4.7b).
-  return {
+  const ties = tiesAmong(layout.ties, graph.connections);
+  const frames = framesAmong(layout.frames, nodes.map((n) => n.id));
+  // Its name, where a trail names it: a page's Query (plan 960 U4.7b). Its swimlanes and unfurl mark are its places'.
+  return withPlaces({
     v: 3, id, label: 'Query', nodes, connections: graph.connections,
-    ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}),
-    ...(layout.stages?.length ? { stages: layout.stages } : {}), ...(layout.lanes?.length ? { lanes: layout.lanes } : {}),
-  };
+    ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}), ...(layout.stages?.length ? { stages: layout.stages } : {}),
+  }, layout.places ?? NOWHERE);
 }
 
-/** The layout a definition holds: every node's place and size, each connection's bends, its ties, frames, stages and lanes. */
+/** The layout a definition holds: its places (its ties and stages keep their own, as they are kept whole), its ties,
+ *  frames and stages, and the stage each node is in. */
 export function layoutOf(definition: WorkflowDefinition): GraphLayout {
-  const places = Object.fromEntries(definition.nodes.map((n) => [n.id, { x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}) }]));
-  const bends = Object.fromEntries((definition.connections ?? []).flatMap((r) => (r.via?.length ? [[connectionKey(r), r.via]] : [])));
+  const { ties, frames, stages, ...placed } = definition;
   const staged = Object.fromEntries(definition.nodes.flatMap((n) => (n.stage ? [[n.id, n.stage]] : [])));
   return {
-    places,
-    ...(Object.keys(bends).length ? { bends } : {}),
-    ...(definition.ties?.length ? { ties: definition.ties } : {}),
-    ...(definition.frames?.length ? { frames: definition.frames } : {}),
-    ...(definition.stages?.length ? { stages: definition.stages } : {}),
-    ...(definition.lanes?.length ? { lanes: definition.lanes } : {}),
+    places: placesOf(placed),
+    ...(ties?.length ? { ties } : {}), ...(frames?.length ? { frames } : {}), ...(stages?.length ? { stages } : {}),
     ...(Object.keys(staged).length ? { staged } : {}),
   };
 }

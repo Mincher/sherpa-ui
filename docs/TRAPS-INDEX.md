@@ -84,7 +84,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-part-of-a-text-is-typed](traps/data-layer.md#t-a-part-of-a-text-is-typed) — node-kinds
 - [T-a-path-is-judged-by-its-parent-when-stepwise](traps/data-layer.md#t-a-path-is-judged-by-its-parent-when-stepwise) — source-counts
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — data-source-types
-- [T-a-place-is-no-edit](traps/data-layer.md#t-a-place-is-no-edit) — entity-versions, graph-layout
+- [T-a-place-is-no-edit](traps/data-layer.md#t-a-place-is-no-edit) — entity-versions, graph-layout, query-document
 - [T-a-portal-hop-is-resolved-once](traps/data-layer.md#t-a-portal-hop-is-resolved-once) — data, node-flow, node-group, node-kinds, node-portals, workflow
 - [T-a-preflight-is-the-apps-to-answer](traps/data-layer.md#t-a-preflight-is-the-apps-to-answer) — data-handler, request-store
 - [T-a-preset-is-its-own-part](traps/data-layer.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-edits, source-counts

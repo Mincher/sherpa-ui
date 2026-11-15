@@ -1,7 +1,7 @@
 /**
  * graph-layout.ts — how a graph is DRAWN: its ties, frames, stages and lanes, and where each part sits. A Custom Node's
- * definition, an entity's graph and the body a use opens each keep them, through the helpers here. Pure, and light: no
- * import at run time. TODO 947, 1001 · TRAP T-a-place-is-no-edit
+ * definition, an entity's graph, the body a use opens and a page's Query (its layout, for the tab) each keep them, through
+ * the helpers here. Pure, and light: no import at run time. TODO 947, 1001, 1004e · TRAP T-a-place-is-no-edit
  *
  * Map:
  * - LayoutParts — How a graph is drawn: its ties, frames, stages and lanes, and whether it is laid out yet.
@@ -11,6 +11,7 @@
  * - Placed — A graph as its places are read from it: nodes, connections, ties, stages, swimlanes, the unfurl mark.
  * - GraphPlaces — Where a graph is drawn, each part by its id: what saves itself, never an edit.
  * - placesOf — Where a graph is drawn, each part by its id.
+ * - isGraphPlaces — Whether a stored value is a GraphPlaces: a wrong shape is dropped, never drawn.
  * - withoutPlaces — A graph with nothing of where it is drawn: what it does alone, for a hash.
  * - withPlaces — A graph with these places on each part they name; a part they do not name keeps its own.
  */
@@ -82,6 +83,20 @@ export function placesOf(graph: Placed): GraphPlaces {
     ...(graph.lanes?.length ? { lanes: graph.lanes, ...(graph.beforeLanes ? { beforeLanes: graph.beforeLanes } : {}) } : {}),
     ...(graph.unfurl ? { unfurl: true as const } : {}),
   };
+}
+
+const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+const point = (v: unknown): v is Record<string, unknown> => record(v) && Number.isFinite(v['x']) && Number.isFinite(v['y']);
+const each = (v: unknown, ok: (one: unknown) => boolean): boolean => record(v) && Object.values(v).every(ok);
+
+/** Whether a stored value is a GraphPlaces: a wrong shape is dropped, never drawn. */
+export function isGraphPlaces(v: unknown): v is GraphPlaces {
+  if (!record(v)) return false;
+  return each(v['nodes'], (n) => point(n) && (n['size'] === undefined || record(n['size'])))
+    && each(v['ties'], point) && each(v['bends'], (b) => Array.isArray(b) && b.every(point))
+    && each(v['stages'], (st) => record(st) && Number.isFinite(st['x']))
+    && (v['lanes'] === undefined || Array.isArray(v['lanes'])) && (v['beforeLanes'] === undefined || each(v['beforeLanes'], point))
+    && (v['unfurl'] === undefined || v['unfurl'] === true);
 }
 
 /** A graph with nothing of where it is drawn: what it does alone, for a hash. */
