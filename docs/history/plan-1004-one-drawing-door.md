@@ -54,6 +54,27 @@ values, own headings and words, and what each node is to the Query (`ref`), with
 | 1004e | One place set (T6) | a9 |
 | 1004f | Demos: each page's filter graph in its specs (titles now "Field: Health"); Will looks | sherpa-demos-67 |
 
+## 5. 1004d, the lens half: measured (sherpa-ui-a9, on main e81c22880)
+
+`workflowGraph(queryDefinition(…))` set beside the hand drawing (`queryLensGraph(…).drawn`), node by node and row by row,
+on one page with every piece: a View pick, an Every (all ticked), a Time, a preset, a status field, a card's Or with a
+part Off, a superseded tree, a card's And, Organise, three Presentations and a kept Source. The ids, the order and the
+connections are the same (T7). What differs, in eight groups, with the way each goes:
+
+| # | What differs | The way | Who |
+|---|---|---|---|
+| D1 | The one drawing ADDS what a kept graph has: the kind before each title (`kindHeading`, Will's bug), a Field's type hint ("Region: a text field") and its Values row, a test's Value A "(Optional)" | keep: this is the point of 1004. But Value A is no part of a Query (its test reads the Field): Value A's row takes `graphs: ['workflow']`, so `kindIn` drops it in a Query | a9 |
+| D2 | Facts: a Field's choices are `fieldsOf`'s, and a worked-out status field warns "not a field of the rows that come in" | the lens hands the drawing the page's fields, each with its values, and the status fields (`facts.domains`) as fields of its store | a9 |
+| D3 | Rows the Query has and no kind does: the Source's Page size, Search fields and Apply on (PAGE_ROWS) | the Source kind's own rows, `graphs: ['query']` | a9 |
+| D4 | Rows one per field or value, made by hand: a bar's chips and `@preset` rows (View Filters, a card's Presentation), a preset's fields, a status field's values | one door: the Fork's unfolded rows (`unfolds`, `rowsOfNode`), made to unfold INPUT rows too, each named by its field or value as today, so a request still reads `view-filters/region` (T3). The values the lens gives say them | a9 (the kind and rowsOfNode), e8 (drawn as rows) |
+| D5 | Every row of a Query takes a connection in the one drawing (Store, Value B, Sort…); the Query took none: nothing in a page's Query says "driven by a node" | NODE_GRAPHS says it once per type: a Query's value rows take no connection; a test's header and a chip's line still do | e8 |
+| D6 | A test's Type row: "Check", every type of the kind (And, Or…) and its own help; the Query: "Operation", only the field's operators, Equals read as ticks, and Every as its own type | the kind's label and help (one door); its choices narrowed by the field that comes in, as `typeChoices` narrows by fit, and And or Or only on a group; Every (TODO 965, "has a value") a type of the Condition's own, Has a value, `graphs: ['query']` (a Query has no Is empty, 1004b) | a9, e8 (the narrowing) |
+| D7 | A pick row that may be empty (Sort, Group, the axes, a Presentation's kind and sort) offers None in the Query, and none in the one drawing | a row that may be empty offers None, in every graph (it can be cleared nowhere else) | e8 |
+| D8 | A Presentation draws the bar's Switch on every one; the Query, only on the one that carries its card's bar | the lens gives `#filters` only where the bar is, and a row the values leave out is not drawn there | a9 |
+
+Then `queryLensGraph`'s hand rows go (R1, R20, R25), and e8 switches `queryOpened`'s `drawn` to `workflowGraph(definition)`.
+Off, hints and read-only rows are 1004c's already. Will looks at the result in 1004f.
+
 ## Appendix: the inventory (sherpa-ui-e8, on main 59427c503)
 
 Made by sherpa-ui-e8 (a read-only agent read both builders; e8 checked N3 and R28), on main 59427c503. "wf" =
