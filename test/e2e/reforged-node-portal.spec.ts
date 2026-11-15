@@ -42,7 +42,8 @@ const BARE = {
 };
 /** Source → In "rows"; two Outs "rows", their row into the Field and the Organise; an In "other" alone. */
 const LINKED = {
-  v: 3, id: 'g',
+  // Laid out by hand: it opens where it was laid, so a press lands (TODO 1000).
+  v: 3, byHand: true, id: 'g',
   nodes: [
     node('start', 'source', 0, 0, { store: 'customers' }), node('in', 'portal', 360, 0, { type: 'in', name: 'rows' }, 'In rows'),
     node('o1', 'portal', 720, 0, { type: 'out', name: 'rows' }, 'Out one'), node('o2', 'portal', 720, 300, { type: 'out', name: 'rows' }, 'Out two'),

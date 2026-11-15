@@ -2341,7 +2341,8 @@ also"; plan 1001 D4 A). One door, `unfurl()` in `bindWorkflow`, for a press, an 
 - **It opens where it reads** (Will, 1001c A, 2026-11-15): an open's fit (`openFit`: the first, the opening Unfurl's, a
   Custom Node's way in) goes no further out than `READABLE_ZOOM` (0.35). A graph wider than that opens at 0.35, its Start
   (inside a Custom Node, its Group Input) at the view's left middle. Fit and a zoom out by hand still show all of it
-  (`canvas.fit()` with no `least`).
+  (`canvas.fit()` with no `least`). A view its host or a reader moved after the graph opened is kept: the opening Unfurl
+  lays the graph out, and fits only while the view is where it opened (`stillOpened`).
 - **A spec whose graph must keep its own places says `byHand: true`**: it was laid out by hand. 31 specs say so.
 
 - Site: `src/core/ui/node-graph.ts`

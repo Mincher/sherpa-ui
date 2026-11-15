@@ -1249,7 +1249,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawConnections(made);
-      if (!made.fitted && made.nodes.size) { made.fitted = true; canvas.fit(undefined, openFit(made)); }
+      if (!made.fitted && made.nodes.size) { made.fitted = true; fitOpen(canvas, made); }
     }),
   };
   // A drag pulls and pushes while the pointer is down. A node's header holds the pointer, and its letting go bubbles here.
@@ -1832,15 +1832,15 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
 }
 
 /** Unfurl the whole graph and hand the host the places, ties and bends with them, and the stages' (TODO 950): one step. The
- *  view fits it after, as `fit` says (an open's, `openFit`). TODO 569 */
-export function unfurlGraph(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDefinition, 'nodes' | 'stages'>, fit: OpenFit = {}): Arranged | undefined {
+ *  view fits it after, as `fit` says (an open's, `openFit`); `false` leaves the view. TODO 569 */
+export function unfurlGraph(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDefinition, 'nodes' | 'stages'>, fit: OpenFit | false = {}): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
   const placed = drawn?.options.onArrange ? unfurlment(canvas, staged) : undefined;
   if (!drawn || !placed) return undefined;
   // Each node moves there, and the view eases round them all. TODO 902
   canvas.easePieces();
   handOn(drawn, placed);
-  requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, { ease: true, ...fit })));
+  if (fit) requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, { ease: true, ...fit })));
   return placed;
 }
 
@@ -1853,6 +1853,18 @@ type OpenFit = { least?: number; from?: HTMLElement | null };
 function openFit(drawn: Drawn | undefined): OpenFit {
   return { least: READABLE_ZOOM, from: drawn?.nodes.get(START) ?? drawn?.nodes.get('#in') ?? null };
 }
+
+/** The view each canvas's graph opened at: the opening's later steps leave a view its host or reader has moved since. */
+const openedAt = new WeakMap<SherpaLayoutCanvas, string>();
+
+/** Fit the view as a graph opens (`openFit`), and keep where. */
+function fitOpen(canvas: SherpaLayoutCanvas, drawn: Drawn | undefined): void {
+  canvas.fit(undefined, openFit(drawn));
+  openedAt.set(canvas, JSON.stringify(canvas.view));
+}
+
+/** Whether the view is where the graph opened it: no host or reader has moved it since. */
+const stillOpened = (canvas: SherpaLayoutCanvas): boolean => openedAt.get(canvas) === JSON.stringify(canvas.view);
 
 /** Say in `data-can-arrange`, and each flag given, whether two or more nodes are picked; stop lets go. */
 export function watchArrange(
@@ -3158,7 +3170,7 @@ export function bindWorkflow(
   };
   /** Unfurl the whole graph, as the toolbar's Unfurl does: one door for a press, an open and Swimlanes off. A tag makes it one
    *  step with the edit before it (Swimlanes off and its Unfurl). */
-  const unfurl = (tag = '', fit: OpenFit = {}): void => {
+  const unfurl = (tag = '', fit: OpenFit | false = {}): void => {
     unfurling = tag;
     try {
       unfurlGraph(canvas, shown(), fit);
@@ -3410,7 +3422,7 @@ export function bindWorkflow(
     picks.deselect();
     refreshPanel();
     draw();
-    requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, openFit(drawnOn.get(canvas)))));
+    requestAnimationFrame(() => requestAnimationFrame(() => fitOpen(canvas, drawnOn.get(canvas))));
     if (focus) focusNode(canvas, focus);
     else canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   };
@@ -4305,7 +4317,7 @@ export function bindWorkflow(
     // Not where its host has set the view since.
     if (made && !made.fitted && made.nodes.size && JSON.stringify(canvas.view) === viewAtBind) {
       made.fitted = true;
-      canvas.fit(undefined, openFit(made));
+      fitOpen(canvas, made);
     }
   }));
   // A run lights its nodes: each step names its node, and the run its workflow. N4 reports.
@@ -4443,7 +4455,8 @@ export function bindWorkflow(
       }
       // The graph as it opened, never a reader's step: no Undo takes it back.
       const fresh = !journal.canBack;
-      if (!lanesOn()) unfurl('', openFit(drawnOn.get(canvas)));
+      // Not where its host or a reader has moved the view since it opened.
+      if (!lanesOn()) unfurl('', stillOpened(canvas) ? openFit(drawnOn.get(canvas)) : false);
       keepTab();
       if (fresh) {
         journal.clear();
