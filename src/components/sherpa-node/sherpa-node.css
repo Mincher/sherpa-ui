@@ -253,7 +253,12 @@
 }
 /* The header is as tall as the taller stack, and a gap each side; the body holds no room: its rows' sockets stand in the
    header's stacks. */
-:host([data-collapsed]) .header { min-block-size: calc(var(--_stack-h) + 2 * var(--sherpa-theme-gap-sm, 4px)); }
+:host([data-collapsed]) .header {
+  min-block-size: calc(var(--_stack-h) + 2 * var(--sherpa-theme-gap-sm, 4px));
+  border-radius: inherit;
+}
+/* Collapsed, every corner of the body is base, whatever its category (Will, TODO 1012). */
+:host([data-collapsed]) .root { --_node-radius: var(--sherpa-display-mode-border-rounding-base, 4px); }
 :host([data-collapsed]) .body {
   display: block;
   position: static;

@@ -66,6 +66,25 @@ test('a double click on a header collapses the node to its sockets, and again ex
   await expect(node(page, 'Organise')).not.toHaveAttribute('data-collapsed');
 });
 
+test('collapsed, every node\'s body has four 4px corners, whatever its category; expanded, its category\'s again (1012)', async ({ page }) => {
+  const corners = () => page.locator('#cv > sherpa-node').evaluateAll((els) => els.map((el) => {
+    const radii = (part: string) => {
+      const s = getComputedStyle(el.shadowRoot!.querySelector(part)!);
+      return [s.borderStartStartRadius, s.borderStartEndRadius, s.borderEndEndRadius, s.borderEndStartRadius].join(' ');
+    };
+    return { category: el.getAttribute('data-category'), root: radii('.root'), header: radii('.header') };
+  }));
+  const open = await corners();
+  // The Start (a trigger), Sources and Output wear 16px corners of their own while open.
+  expect(open.filter((n) => n.root.includes('16px')).map((n) => n.category).sort()).toEqual(['output', 'sources', 'triggers']);
+  await press(page, 'collapse');
+  const shut = await corners();
+  expect(shut.length).toBe(4);
+  for (const n of shut) expect(n, n.category ?? '').toMatchObject({ root: '4px 4px 4px 4px', header: '4px 4px 4px 4px' });
+  await press(page, 'collapse');
+  expect(await corners()).toEqual(open);
+});
+
 test('Collapse all, then Hide unconnected: an unconnected socket hides, and a hover or a dragged line shows it', async ({ page }) => {
   const tool = (name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
   await expect(tool('hide')).toHaveAttribute('disabled', '');
