@@ -2335,7 +2335,8 @@ canvas view it should get an unfurl applied once ready"; "Exiting Swimlane mode 
 also"; plan 1001 D4 A). One door, `unfurl()` in `bindWorkflow`, for a press, an opening and Swimlanes off.
 
 - **The mark is a place**: `byHand` (graph-layout.ts) travels with the places, saves itself and never lights Save. A
-  node's own place set (a drag, an arrow) or a group drag or an Arrange marks it; an Unfurl clears it
+  node's own place set (a drag, an arrow), a group drag, an Arrange, and a bend or a zip tie made, moved or cut
+  (`byHandEdit`, workflow.ts) mark it; an Unfurl clears it
   (`place.byHand: false`). An agent's `unfurl: true` (TODO 958) still unfurls a graph, mark or not.
 - **The opening is no step**: when nothing was done before it, the journal is cleared after it, so Undo never takes the
   graph back to how it was stored. Its places save themselves only where one changed (T5): an opening that moves

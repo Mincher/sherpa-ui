@@ -1191,8 +1191,14 @@ export function editWorkflow(
   given: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds = nodeKinds(), facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
 ): WorkflowDefinition {
   const next = editOnce(given, edit, kinds, facts);
-  return next === given ? next : holdTies(next);
+  if (next === given) return next;
+  return byHandEdit(edit) ? byHandAs(holdTies(next), true) : holdTies(next);
 }
+
+/** An edit a reader lays out by hand: a node's own place, a bend, a zip tie made, moved or cut. It marks the graph, so it
+ *  opens as it was left; only an Unfurl clears the mark (TODO 1000, D4 A; Will: a tie "is layout … as a move or a bend"). */
+const byHandEdit = (edit: WorkflowEdit): boolean =>
+  ['bend', 'unbend', 'tie', 'untie', 'moveTie', 'tieAdd'].some((key) => key in edit) || ('set' in edit && ('x' in edit.set || 'y' in edit.set));
 
 function editOnce(
   given: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>,
@@ -1391,8 +1397,7 @@ function editOnce(
     const { values: _old, ...bare } = node;
     return Object.keys(values).length ? { ...bare, values } : bare;
   });
-  // A node's own place set is a move by hand (D4 A): the graph is no longer unfurled when it opens.
-  return 'set' in edit && ('x' in edit.set || 'y' in edit.set) ? byHandAs({ ...workflow, nodes }, true) : { ...workflow, nodes };
+  return { ...workflow, nodes };
 }
 
 /** A frame's edits: frame two or more nodes, release one (its nodes stay), or set its title and line. A refusal reports and
