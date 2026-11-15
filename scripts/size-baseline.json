@@ -299,7 +299,7 @@
   "src/core/ui/radio-group.ts": 21,
   "src/core/ui/render-icon.ts": 119,
   "src/core/ui/roving-focus.ts": 177,
-  "src/core/ui/settled.ts": 83,
+  "src/core/ui/settled.ts": 92,
   "src/core/ui/shared-constants.ts": 161,
   "src/core/ui/sherpa-element.ts": 1204,
   "src/core/ui/show-as-menu.ts": 61,

@@ -46,9 +46,18 @@ export async function settled(root: Root = document, passes = 3): Promise<void> 
     ...shadows(root, []).flatMap((sr) => sr.getAnimations()),
   ]);
   await Promise.all([...all]
-    .filter((a) => a.timeline === doc.timeline && a.playState === 'running'
+    .filter((a) => a.timeline === doc.timeline && a.playState === 'running' && !stale(a)
       && Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity))
     .map(ended));
+}
+
+/** A CSS animation its element's style no longer names moves nothing: Firefox and WebKit still list the page's skeleton as
+ *  running on an element once it is defined, its animation none (TODO 996). */
+function stale(a: Animation): boolean {
+  const name = (a as CSSAnimation).animationName;
+  const effect = a.effect as KeyframeEffect | null;
+  if (name === undefined || !(effect?.target instanceof Element)) return false;
+  return !getComputedStyle(effect.target, effect.pseudoElement).animationName.split(/,\s*/).includes(name);
 }
 
 /** Done when it finishes or is cancelled — or is no longer drawn: Firefox never
@@ -58,7 +67,7 @@ function ended(a: Animation): Promise<void> {
     void a.finished.then(() => done(), () => done());
     const look = (): void => {
       const target = (a.effect as KeyframeEffect | null)?.target;
-      if (a.playState !== 'running' || (target && (!target.isConnected || !target.checkVisibility()))) done();
+      if (a.playState !== 'running' || stale(a) || (target && (!target.isConnected || !target.checkVisibility()))) done();
       else requestAnimationFrame(look);
     };
     look();

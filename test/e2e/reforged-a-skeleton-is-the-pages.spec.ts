@@ -62,3 +62,22 @@ test('the skeleton pulses 25 times and ends, also where an engine keeps it on an
   // Defined: gone (Chromium, Firefox), or kept but ending (WebKit).
   for (const [iterations, end] of timing.after) expect([iterations, end]).toEqual([25, 30300]);
 });
+
+// TODO 996, found by sherpa-demos-67: with an end, a kept skeleton made settled() wait its 30 s in Firefox and WebKit.
+test('settled() does not wait for a skeleton an engine keeps on an element defined since: its style names it no more', async ({ page }) => {
+  const waited = await page.evaluate(async () => {
+    const w = document.createElement('div');
+    document.body.appendChild(w);
+    w.innerHTML = Array.from({ length: 3 }, () => '<x-skeleton-kept><span>kid</span></x-skeleton-kept>').join('');
+    await new Promise((r) => setTimeout(r, 400));
+    customElements.define('x-skeleton-kept', class extends HTMLElement {
+      connectedCallback() {
+        if (!this.shadowRoot) this.attachShadow({ mode: 'open' }).innerHTML = '<slot></slot>';
+      }
+    });
+    const t0 = performance.now();
+    await window.__settled();
+    return performance.now() - t0;
+  });
+  expect(waited).toBeLessThan(5000);
+});

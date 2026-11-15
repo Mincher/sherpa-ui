@@ -9,7 +9,7 @@
   "components.js": {
     "files": 169,
     "brotli": {
-      "js": 316805,
+      "js": 316884,
       "fetched": 8607
     }
   },
@@ -569,7 +569,7 @@
   "index.js": {
     "files": 305,
     "brotli": {
-      "js": 548000,
+      "js": 548079,
       "fetched": 8607
     }
   }

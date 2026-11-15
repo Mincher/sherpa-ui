@@ -1553,6 +1553,13 @@ frames alone. `Animation.finished` is the only thing that waits for one.
   not wait for a task, so when Firefox's frames came fast, `settled()` ended
   before a menu said it was open — 1 run in 20, found by bisecting a flaky test
   to the change above. It waits one `setTimeout(0)` after the frames.
+- **A CSS animation its element's style no longer names is not waited for**
+  (`stale`, TODO 996). Firefox and WebKit still list the page's skeleton as
+  running on an element once it is defined, its `animation-name` none. Endless,
+  it was skipped; given an end (25 pulses), every `settled()` in those engines
+  waited its 30 s, and Demos' specs timed out in `settle()` (sherpa-demos-67).
+  Such an animation moves nothing, so it is left out, and one that goes stale
+  while awaited ends the wait.
 
 - Site: `src/core/ui/settled.ts`
 - Site: `test/e2e/reforged-settled.spec.ts`
