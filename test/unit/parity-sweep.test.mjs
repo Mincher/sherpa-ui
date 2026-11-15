@@ -78,6 +78,8 @@ const KNOWN = {
   'sherpa-quick-filter.answered': 'ok: the `reading` setter, the `values` setter, or clear()',
   'sherpa-quick-filter.drafting': 'ok: its menu\'s rows write it; the menu\'s Apply or Cancel (apply(), cancel()) clears it',
   'sherpa-layout-canvas.view': 'ok: panTo(x, y) and zoomTo(zoom), or data-zoom',
+  'sherpa-layout-canvas.drawnZoom': 'ok: zoomTo(zoom), or data-zoom — the zoom drawn now, there once an ease ends',
+  'sherpa-canvas.drawnZoom': 'ok: data-zoom — the zoom drawn now, there once an ease ends',
   'sherpa-quick-filter-toolbar.active': 'ok: populate() — a def carries `active: true`',
   'sherpa-quick-filter-toolbar.sortField': 'ok: data-sort-field attribute',
   'sherpa-quick-filter-toolbar.sortDirection': 'ok: data-sort-direction attribute',
