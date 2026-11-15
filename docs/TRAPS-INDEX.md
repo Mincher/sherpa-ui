@@ -56,7 +56,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-fork-unfolds-its-picks](traps/data-layer.md#t-a-fork-unfolds-its-picks) — node-kinds, node-simulate
 - [T-a-frame-is-drawn-round-its-nodes](traps/data-layer.md#t-a-frame-is-drawn-round-its-nodes) — data, node-frames, workflow
 - [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — app-definition, data, entity-check, graph-views
-- [T-a-graph-is-drawn-by-its-type](traps/data-layer.md#t-a-graph-is-drawn-by-its-type) — node-kinds, node-start, workflow
+- [T-a-graph-is-drawn-by-its-type](traps/data-layer.md#t-a-graph-is-drawn-by-its-type) — node-kinds, node-start, query-lens, workflow
 - [T-a-group-is-a-data-layer-concept](traps/data-layer.md#t-a-group-is-a-data-layer-concept) — column-facts, data-source, source-reads, store
 - [T-a-heading-asks-through-the-source](traps/data-layer.md#t-a-heading-asks-through-the-source) — query-edits
 - [T-a-heading-holds-a-whole-reading](traps/data-layer.md#t-a-heading-holds-a-whole-reading) — where

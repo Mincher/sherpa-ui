@@ -114,4 +114,6 @@ test('a single pick that may be empty offers None first, picked or not, in every
   assert.deepEqual(choices({ control: 'store', optional: true, value: 'customers' }), ['None', 'customers']);
   assert.deepEqual(choices({ control: 'store' }), ['Pick a store', 'customers']);
   assert.deepEqual(choices({ ...pick, optional: true, multiple: true }), ['A'], 'a many pick clears by its ticks');
+  assert.equal(choices({ control: 'direction', optional: true })[0], 'None', 'a fixed list too: a Segment order');
+  assert.notEqual(choices({ control: 'direction' })[0], 'None');
 });

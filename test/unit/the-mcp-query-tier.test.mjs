@@ -16,7 +16,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import {
   ArrayStore, NODE_KINDS, checkPage, connectionRequest, defineStores, editWorkflow, entityFaults, graphOfWorkflow, graphRequest,
-  graphWorkflow, kindsOf, lensOf, libraryOf, nodeKinds, onReport, openSource, pageWithQuery, queryGraph, queryGraphFaults,
+  graphWorkflow, kindsOf, lensOf, libraryOf, nodeKinds, onReport, openSource, pageWithQuery, queryDrawn, queryGraph, queryGraphFaults,
   pageFields, registerEntityType, valueKey, workflowGraph,
 } from '../../dist/data.js';
 import * as data from '../../dist/data.js';
@@ -187,15 +187,19 @@ const drawnFacts = (source, definition) => ({
   domains: source.store.domains ?? {}, pageSize: source.state.pageSize, type: (f) => pageFields(definition.source)[f]?.type,
 });
 
-test('definition_graph draws a page\'s Query as queryGraph draws it over the opened page, and the lens\'s graph of it', { skip }, async () => {
+test('definition_graph draws a page\'s Query as the editor draws it over the opened page (queryDrawn, plan 1004d), and the lens\'s graph of it', { skip }, async () => {
   const commands = [FILTER_AND_SORT[0]];
   const { bad, text, json } = await call('definition_graph', { definition: records, ...typed(), commands });
   assert.equal(bad, false, text);
   const source = await direct(records, commands);
   const facts = drawnFacts(source, records);
-  const graph = queryGraph(source.query.draft, records, facts);
+  const graph = queryDrawn(records, { ...facts, query: source.query });
   assert.deepEqual({ nodes: json.nodes, connections: json.connections }, JSON.parse(JSON.stringify(graph)));
   const ids = json.nodes.map((n) => n.id);
+  // Will's bug, 1004: a node with a title of its own says its kind before it, as in every graph.
+  const titled = json.nodes.filter((n) => n.kindHeading);
+  assert.ok(titled.length && titled.every((n) => n.kindHeading === NODE_KINDS[n.kind].heading && n.heading !== n.kindHeading), JSON.stringify(json.nodes.map((n) => [n.kind, n.heading, n.kindHeading])));
+  assert.ok(titled.some((n) => n.kind === 'field'), 'a Field: "Field" before its field\'s name');
   for (const id of ['source', 'view-filters', 'presentation-data', 'view', 'when-data-status', 'preset-data-high-risk']) assert.ok(ids.includes(id), id);
   // The graph the editor edits is the lens's, and its faults are the Query graph's own.
   assert.deepEqual(json.graph, JSON.parse(JSON.stringify(lensOf('query').toGraph(records, { ...facts, query: source.query }).workflow)));

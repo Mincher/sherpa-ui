@@ -50,8 +50,9 @@ test('Health is one Field node, its values saying their rules; Enter opens the r
   await expect(node(page, 'Health')).toHaveAttribute('data-sub-graph', '');
   const said = await node(page, 'Health').locator('sherpa-node-row').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')).filter((l) => l?.includes(':')));
   expect(said).toEqual(['At risk: Score is less than 60 or Open tickets is at least 5', 'Healthy: Every row the values before it left.']);
-  // It names its own field, read only.
-  expect(await node(page, 'Health').locator('select').evaluate((s: HTMLSelectElement) => [s.value, [...s.options].map((o) => o.text)])).toEqual(['health', ['Health']]);
+  // It names its own field, read only. Its Values row is a Field's, as in every graph (plan 1004 D1).
+  // Its choices are the page's fields, as a Field's are in every graph; read only, it shows its own.
+  expect(await node(page, 'Health').locator('select[name="field"]').evaluate((s: HTMLSelectElement) => [s.value, s.selectedOptions[0]?.text, s.hasAttribute('readonly')])).toEqual(['health', 'Health', true]);
   expect(await headings(page)).not.toContain('At risk');
 
   await node(page, 'Health').locator('.header[role="button"]').focus();

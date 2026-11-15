@@ -1153,7 +1153,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (row.control === 'pick') return [...(row.multiple ? [] : blank('Pick one')), ...(row.choices ?? [])];
   if (row.control === 'unit' && facts.count !== undefined) return unitWords(facts.count);
   const fixed = row.control && FIXED[row.control];
-  if (fixed) return [...fixed];
+  if (fixed) return [...(none ?? []), ...fixed];
   if (row.control === 'type') return facts.types && [...facts.types];
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
   // The app's catalog (plans 926, 941), or the shelf's entities of a type (949): one with none picked says so, as a pick does.

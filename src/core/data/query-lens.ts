@@ -7,7 +7,7 @@
  *
  * Map:
  * - QueryLensFacts — What the Query's lens reads beside a page: the live Query, how its graph is drawn, the layout given it.
- * - queryOpened — A page's Query through its lens now: the definition it says, and the graph drawn of it, laid out.
+ * - queryOpened — A page's Query through its lens now: the definition it says, and the graph the one door draws of it.
  * - queryDrawn — The graph a page's Query draws now, at the places its layout gives.
  * - queryDrawingFacts — What the one drawing reads beside a Query's definition: its stores, and the page's fields.
  * - queryScopes — A page's scopes: the View, each its source declares, and each its live Query holds.
@@ -18,14 +18,14 @@
  */
 import { pageWithQuery, storeOf, viewWithQuery, type PageDefinition } from './page-definition.js';
 import type { QueryContext } from './query-context.js';
-import { laidOut, queryDefinition, reconcileQuery, rowRequest, type GraphLayout, type ReconcileFacts, type Reconciled } from './query-document.js';
+import { queryDefinition, reconcileQuery, rowRequest, type GraphLayout, type ReconcileFacts, type Reconciled } from './query-document.js';
 import { queryLensGraph, type KeptSource, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryDefaults } from './query.js';
 import { registerLens, type GraphLens, type LensDefinition } from './lens-registry.js';
 import type { DrawnGraph } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
 import { pageFields } from './type-definition.js';
-import type { WorkflowFacts } from './workflow.js';
+import { workflowGraph, type WorkflowFacts } from './workflow.js';
 
 /** What the Query's lens reads beside a page: the live Query, how its graph is drawn, and the layout a reader gave it. */
 export interface QueryLensFacts extends Omit<QueryGraphFacts, 'presets'> {
@@ -46,7 +46,9 @@ const typeIn = (page: PageDefinition, facts: QueryLensFacts): ((field: string) =
 export function queryOpened(page: PageDefinition, facts: QueryLensFacts): { definition: LensDefinition; drawn: DrawnGraph } {
   const { query, layout = {}, ...rest } = facts;
   const graph = queryLensGraph(query.draft, page, { ...rest, type: typeIn(page, facts), presets: (scope) => query.presets(scope) });
-  return { definition: queryDefinition(page.id, graph, layout), drawn: laidOut(graph.drawn, layout) };
+  const definition = queryDefinition(page.id, graph, layout);
+  // Drawn by the one door every graph is, by its type: what a Query means, as a workflow is (plan 1004d). TRAP T-a-graph-is-drawn-by-its-type
+  return { definition, drawn: workflowGraph(definition, queryDrawingFacts(page, facts)) };
 }
 
 /** The graph a page's Query draws now, at the places its layout gives. */

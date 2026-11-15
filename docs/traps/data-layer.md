@@ -8584,9 +8584,11 @@ keeps; none, a workflow. What each type is, is said once, in `NODE_GRAPHS`
 - **A lens node is drawn as its lens says** (1004d, `LensNode`): its `ref` untouched,
   its `icon` and `warnings`, no row it `omit`s, only the rows `editable` names as
   editable, and each row's `hints` over the drawing's own. The Query lens's definition says
-  `graph: 'query'`.
+  `graph: 'query'`, and `queryOpened` draws it with `workflowGraph` and the page's facts
+  (`queryDrawingFacts`): the Query canvas has no drawing of its own (1004d).
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/node-start.ts`
 - Site: `src/core/data/workflow.ts`
+- Site: `src/core/data/query-lens.ts`
 - Site: `test/unit/a-graph-is-drawn-by-its-type.test.mjs`
