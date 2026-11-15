@@ -952,6 +952,9 @@ export class DataSource extends EventTarget {
       case 'hold':
         // A field just held needs its values. 345 phase 5
         this.readValues(this.#context.scope(change.scope));
+        // …and a list's limits: a hold moves no row, so no load walks again for it. Its values may not be read yet, so
+        // only a number or a date is known to be none. TODO 981
+        if (this.loaded && change.added.some((f) => !['number', 'date'].includes(this.#catalogue.get(f)?.type ?? ''))) this.#walk.soon();
         for (const field of change.moved) this.#view.draw(field);
         // Below, a fixed View field held or let go is free there, or held above again. TODO 554
         if (change.scope === VIEW || this.#context.fixed(VIEW).length) this.#view.syncHeld();

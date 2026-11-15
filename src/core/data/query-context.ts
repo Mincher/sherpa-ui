@@ -586,7 +586,10 @@ export class QueryContext extends EventTarget {
     const scopes = new Set([...Object.keys(was.scopes), ...Object.keys(next.scopes)]);
     this.#tell([
       { kind: 'drawn', fields: [...fields], pending: true },
-      ...[...scopes].flatMap((scope): QueryChange[] => [{ kind: 'hold', scope, moved: [...new Set([...(was.scopes[scope]?.holds ?? []), ...(next.scopes[scope]?.holds ?? [])])] }, { kind: 'bars', scope }]),
+      ...[...scopes].flatMap((scope): QueryChange[] => {
+        const [before, after] = [was.scopes[scope]?.holds ?? [], next.scopes[scope]?.holds ?? []];
+        return [{ kind: 'hold', scope, moved: [...new Set([...before, ...after])], added: after.filter((f) => !before.includes(f)) }, { kind: 'bars', scope }];
+      }),
     ]);
   }
 

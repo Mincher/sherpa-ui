@@ -998,7 +998,7 @@ function hold(w: Work, name: string, fields: readonly string[]): void {
   const now = homes(draft, w.viewFixed);
   const moved = [...now].filter(([field, home]) => was.get(field) !== home).map(([field]) => field);
   w.carry(moved);
-  w.say({ kind: 'hold', scope: name, moved });
+  w.say({ kind: 'hold', scope: name, moved, added });
 }
 
 /** The View let go of a field: its home below gets back the answer it kept

@@ -38,7 +38,8 @@ export type QueryChange =
   | { kind: 'write'; scope: string; field: string; narrows: string[] }
   /** A field's answer moved: drawn at `at`, its home as it was said. */
   | { kind: 'select'; field: string; at: string }
-  | { kind: 'hold'; scope: string; moved: string[] }
+  /** A scope's holds moved: the fields whose answer moved home, and those it holds now that it did not. */
+  | { kind: 'hold'; scope: string; moved: string[]; added: string[] }
   | { kind: 'move'; scopes: string[]; moved: boolean }
   /** The Query moved: compile it. */
   | { kind: 'recompose' }
