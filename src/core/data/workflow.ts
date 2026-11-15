@@ -1074,7 +1074,7 @@ export type WorkflowEdit =
   | { tieAdd: { id: string; connection: NodeConnection } }
   | { bend: { connection: NodeConnection; at: number; x: number; y: number; insert?: boolean } }
   | { unbend: { connection: NodeConnection; index: number } }
-  | { place: { nodes: Readonly<Record<string, { x: number; y: number; stage?: string }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow'; stages?: Readonly<Record<string, number>> } }
+  | { place: { nodes: Readonly<Record<string, { x: number; y: number; stage?: string }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow' | Readonly<Record<string, { x: number; y: number }>>; stages?: Readonly<Record<string, number>> } }
   | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
   | { unframe: string }
   | { setFrame: { id: string; label?: string; description?: string } }
@@ -1292,9 +1292,12 @@ function editOnce(
     };
     if (workflow.connections && bends) {
       result.connections = workflow.connections.map((r) => {
-        if (!r.via || !has(r, bends === 'reset' ? false : true)) return r;
+        // Bends an Unfurl laid out: each connection given one takes it; another between placed nodes loses its own (TODO 999).
+        const given = typeof bends === 'object' ? bends[`${r.from}>${r.to}`] : undefined;
+        if (given) return { ...r, via: [given] };
+        if (!r.via || !has(r, bends !== 'follow' ? false : true)) return r;
         const { via: _was, ...bare } = r;
-        if (bends === 'reset') return bare;
+        if (bends !== 'follow') return bare;
         const [[ax, ay], [bx, by]] = [shift(socketOf(r.from).node), shift(socketOf(r.to).node)];
         return { ...bare, via: r.via.map((p) => ({ x: p.x + (ax + bx) / 2, y: p.y + (ay + by) / 2 })) };
       });

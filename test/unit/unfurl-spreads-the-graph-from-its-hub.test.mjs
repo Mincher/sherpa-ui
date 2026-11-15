@@ -224,3 +224,22 @@ test('it is fast: 20, 100 and 300 nodes', (t) => {
   }
   t.diagnostic(said.join('; '));
 });
+
+test('a try (TODO 999): with midpoints, each untied line\'s middle is laid out as a point, given back as its one bend; off, none', async () => {
+  const { unfurlNodes: unfurl } = await import(new URL('../../dist/core/data/node-unfurl.js', import.meta.url));
+  const graph = {
+    nodes: [{ id: 'a', x: 0, y: 0 }, { id: 'b', x: 400, y: 0 }, { id: 'c', x: 800, y: 0 }],
+    connections: [{ from: 'a/out', to: 'b' }, { from: 'b/out', to: 'c' }, { from: 'a/out', to: 'c' }],
+  };
+  const boxes = { a: { w: 240, h: 120 }, b: { w: 240, h: 120 }, c: { w: 240, h: 120 } };
+  const off = unfurl(graph, ['a', 'b', 'c'], { gapX: 168, gapY: 168, boxes });
+  assert.equal(off.bends, undefined);
+  const on = unfurl(graph, ['a', 'b', 'c'], { gapX: 168, gapY: 168, boxes, midpoints: true });
+  assert.deepEqual(Object.keys(on.bends).sort(), ['a/out>b', 'a/out>c', 'b/out>c']);
+  // Each bend between its ends, left to right, and in no node's box.
+  for (const [key, p] of Object.entries(on.bends)) {
+    const [from, to] = key.split('>').map((s) => s.split('/')[0]);
+    assert.ok(p.x > on.nodes[from].x + 240 && p.x < on.nodes[to].x, `${key} between its ends`);
+    for (const [id, n] of Object.entries(on.nodes)) assert.ok(!(p.x > n.x && p.x < n.x + 240 && p.y > n.y && p.y < n.y + 120), `${key} not in ${id}`);
+  }
+});

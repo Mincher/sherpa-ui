@@ -42,6 +42,8 @@ export interface UnfurlOptions {
   /** Each socket's height in its node, as drawn: a node's neighbours stand in the order of the sockets they join
    *  (Will, TODO 827). A socket not given sits at mid height. */
   sockets?: SocketHeights;
+  /** A try (Will, TODO 999): each connection's middle laid out as a point a node is spaced from, given back as its bend. */
+  midpoints?: boolean;
 }
 
 /** The barycentre sweeps out and back; the centroid pulls; a ring's arc, each way from level; how far out a ring's
@@ -53,7 +55,7 @@ const BULGE = 8;
 const REACH = 0.5;
 
 /** One cell: a node, or a frame and its nodes, each at its offset in the cell's box; or a TIE, no node in it, at its middle. */
-interface Cell { key: string; w: number; h: number; members: { id: string; dx: number; dy: number }[]; tie?: { x: number; y: number } }
+interface Cell { key: string; w: number; h: number; members: { id: string; dx: number; dy: number }[]; tie?: { x: number; y: number }; mid?: true }
 /** A tie's cell: the bar's width, and its slots' top and step down it. */
 const TIE_W = 4;
 const TIE_TOP = 8;
@@ -133,6 +135,19 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     tie.connections.forEach((r, slot) => through.set(key(r), [...(through.get(key(r)) ?? []), { cell: cells.length, slot, x: tie.x }]));
     cells.push({ key: `#tie:${tie.id}`, w: TIE_W, h: (tie.connections.length - 1) * TIE_GAP + 2 * TIE_TOP, members: [], tie: { x: tie.x, y: tie.y } });
   }
+  // A try (Will, TODO 999): each untied connection between two moved cells passes a point of its own, laid out as a node is,
+  // so no node stands on its line. It passes it as a tie of one slot, and the point is the connection's bend point.
+  const midCell = new Map<string, { cell: number; ends: readonly [string, string] }>();
+  if (options.midpoints) for (const r of [...graph.connections].sort((p, q) => (key(p) < key(q) ? -1 : key(p) > key(q) ? 1 : 0))) {
+    const ends = [socketOf(r.from).node, socketOf(r.to).node] as const;
+    const [a, b] = ends.map((id) => cellOf.get(id));
+    if (a === undefined || b === undefined || a === b || through.has(key(r))) continue;
+    const [p, q] = [at.get(ends[0])!, at.get(ends[1])!];
+    const middle = { x: (p.x + box(ends[0]).w + q.x) / 2, y: (p.y + box(ends[0]).h / 2 + q.y + box(ends[1]).h / 2) / 2 };
+    midCell.set(key(r), { cell: cells.length, ends });
+    through.set(key(r), [{ cell: cells.length, slot: 0, x: middle.x }]);
+    cells.push({ key: `#mid:${key(r)}`, w: TIE_W, h: 2 * TIE_TOP, members: [], tie: middle, mid: true });
+  }
   // A socket's height in its cell: its node's offset there, and its own height in the node, else mid height.
   const offset = new Map(cells.flatMap((cell) => cell.members.map((m) => [m.id, m.dy] as const)));
   const heightOf = (address: string, heights: SocketHeights['inputs'] | undefined): number => {
@@ -188,7 +203,9 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
 
   /** One part round its anchor, each cell's centre with the anchor's at 0, 0. */
   const unfurlPart = (list: readonly number[]): { anchor: number; list: readonly number[]; x: Map<number, number>; y: Map<number, number> } => {
-    const anchor = [...list].sort((a, b) => weight[b]! - weight[a]! || adj[b]!.length - adj[a]!.length || byKey(a, b))[0]!;
+    // A line's middle is never the anchor: a node is (TODO 999).
+    const real = (c: number): number => (cells[c]!.mid ? 0 : 1);
+    const anchor = [...list].sort((a, b) => real(b) - real(a) || weight[b]! - weight[a]! || adj[b]!.length - adj[a]!.length || byKey(a, b))[0]!;
     const pull = (c: number): number => (c === anchor ? weight[c]! * weight[c]! : Math.max(1, weight[c]!));
     // Generations out from the anchor; each a ring past its parent's, right if the parent sends to it, left if it sends to the parent.
     const prefer = new Map([[anchor, 0]]);
@@ -440,6 +457,10 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
       const ins = new Set(tie.connections.flatMap((r) => [socketOf(r.from).node, socketOf(r.to).node].map((id) => stageIn.get(id))));
       if (c !== undefined && ins.size === 1) scopeOf.set(c, [...ins][0]!);
     }
+    for (const { cell, ends } of midCell.values()) {
+      const ins = new Set(ends.map((id) => stageIn.get(id)));
+      if (ins.size === 1) scopeOf.set(cell, [...ins][0]!);
+    }
     for (const s of staged) stack((c) => scopeOf.get(c) === s.id);
   } else stack(() => true);
   // The main part's anchor keeps its place — a tie's, its middle where it was; with none, the first lone node's.
@@ -490,5 +511,12 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
   const held = holdTies({ nodes: graph.nodes.map((nd) => ({ id: nd.id, x: final[nd.id]!.x, w: box(nd.id).w })),
     ties: (graph.ties ?? []).map((t) => (out.ties[t.id] ? { ...t, ...out.ties[t.id] } : t)) }, (nd) => (nd as { w: number }).w);
   for (const tie of held.ties ?? []) if (out.ties[tie.id]) out.ties[tie.id]!.x = tie.x;
+  // Each line's middle where its cell was laid; one across stages, at its ends' middle, as a tie is.
+  if (midCell.size) out.bends = Object.fromEntries([...midCell].map(([k, { cell: c, ends: [a, b] }]) => {
+    const spot = corner.has(c) && (!staged || scopeOf.has(c))
+      ? { x: corner.get(c)!.x + shift.x + cells[c]!.w / 2 + across(c), y: corner.get(c)!.y + shift.y + cells[c]!.h / 2 }
+      : { x: (final[a]!.x + box(a).w + final[b]!.x) / 2, y: (final[a]!.y + box(a).h / 2 + final[b]!.y + box(b).h / 2) / 2 };
+    return [k, { x: Math.round(spot.x), y: near(spot.y) }];
+  }));
   return out;
 }
