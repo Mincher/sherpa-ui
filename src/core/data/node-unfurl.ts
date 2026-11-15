@@ -42,7 +42,7 @@ export interface UnfurlOptions {
   /** Each socket's height in its node, as drawn: a node's neighbours stand in the order of the sockets they join
    *  (Will, TODO 827). A socket not given sits at mid height. */
   sockets?: SocketHeights;
-  /** A try (Will, TODO 999): each connection's middle laid out as a point a node is spaced from, given back as its bend. */
+  /** Each connection's middle laid out as a point a node is spaced from, given back as its bend (Will, TODO 999; the editor's default). */
   midpoints?: boolean;
 }
 
@@ -135,7 +135,7 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     tie.connections.forEach((r, slot) => through.set(key(r), [...(through.get(key(r)) ?? []), { cell: cells.length, slot, x: tie.x }]));
     cells.push({ key: `#tie:${tie.id}`, w: TIE_W, h: (tie.connections.length - 1) * TIE_GAP + 2 * TIE_TOP, members: [], tie: { x: tie.x, y: tie.y } });
   }
-  // A try (Will, TODO 999): each untied connection between two moved cells passes a point of its own, laid out as a node is,
+  // Each untied connection between two moved cells passes a point of its own, laid out as a node is,
   // so no node stands on its line. It passes it as a tie of one slot, and the point is the connection's bend point.
   const midCell = new Map<string, { cell: number; ends: readonly [string, string] }>();
   if (options.midpoints) for (const r of [...graph.connections].sort((p, q) => (key(p) < key(q) ? -1 : key(p) > key(q) ? 1 : 0))) {

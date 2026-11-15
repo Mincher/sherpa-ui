@@ -35,7 +35,7 @@ export interface Arranged {
   nodes: Record<string, { x: number; y: number; stage?: string }>;
   ties: Record<string, { x: number; y: number }>;
   stages?: Record<string, number>;
-  /** Each connection's one bend point, by its `from>to` key, where an Unfurl laid its middle out (a try, TODO 999). */
+  /** Each connection's one bend point, by its `from>to` key, where an Unfurl laid its middle out (TODO 999). */
   bends?: Record<string, { x: number; y: number }>;
 }
 

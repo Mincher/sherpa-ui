@@ -180,7 +180,7 @@ export interface DrawOptions {
   notes?: ReadonlyMap<string, string>;
   /** A node whose place the host owns: a drag reports and moves nothing (the Group Input, a preset's inside). */
   locked?: (node: GraphNode) => boolean;
-  /** A try (Will, TODO 999): an Unfurl lays each line's middle out as a point, its bend. Read at each Unfurl. */
+  /** An Unfurl lays each line's middle out as a point, its bend (Will, TODO 999: on by default). Read at each Unfurl. */
   unfurlMidpoints?: () => boolean;
   /** A node's drill-down was pressed: open its sub-graph (TODO 954). */
   onOpen?: (node: GraphNode) => void;
@@ -1790,7 +1790,7 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
   const inStages = nodes.map((n) => { const at = named.get(n.id); return at ? { ...n, stage: at } : n; });
   // The Start's drawn lines to the Sources hold the flow, as a portal's hop does: Trigger › Start › Source (TODO 955).
   if (drawn.nodes.has(START)) for (const n of drawn.graph.nodes) if (n.started) hops.push({ from: START, to: n.id });
-  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets, midpoints: !!drawn.options.unfurlMidpoints?.() });
+  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets, midpoints: drawn.options.unfurlMidpoints?.() ?? true });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
@@ -2595,7 +2595,8 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   /** The open entity as the app keeps it NOW: Graph details shows its version and History from it (plan 972). None: no
    *  version is shown. */
   kept?: () => Entity | undefined;
-  /** A try (Will, TODO 999), for an app's Labs: an Unfurl lays each line's middle out as a point, its bend. Read at each Unfurl. */
+  /** An Unfurl lays each line's middle out as a point, its bend: on unless this says no, as an app's Labs may (Will, TODO
+   *  999). Read at each Unfurl. */
   unfurlMidpoints?: () => boolean;
   /** The store a Source names, by its id: what Fetch reads. None, or it says none, the Source is "not fetched yet". TODO 836 */
   storeOf?: (id: string) => Store | undefined | Promise<Store | undefined>;

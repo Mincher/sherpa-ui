@@ -225,7 +225,7 @@ test('it is fast: 20, 100 and 300 nodes', (t) => {
   t.diagnostic(said.join('; '));
 });
 
-test('a try (TODO 999): with midpoints, each untied line\'s middle is laid out as a point, given back as its one bend; off, none', async () => {
+test('with midpoints (TODO 999, the editor\'s default), each untied line\'s middle is laid out as a point, given back as its one bend; off, none', async () => {
   const { unfurlNodes: unfurl } = await import(new URL('../../dist/core/data/node-unfurl.js', import.meta.url));
   const graph = {
     nodes: [{ id: 'a', x: 0, y: 0 }, { id: 'b', x: 400, y: 0 }, { id: 'c', x: 800, y: 0 }],
