@@ -667,8 +667,10 @@ function drawConnections(drawn: Drawn): void {
     const way = waypointsOf(connection.via && clampedVia(connection.via, { from: from[0], to: to[0] }), stops);
     const points = [from, ...way.map((w) => w.at), to];
     const soft = way.some((w) => w.bend !== undefined);
+    // A bend point is a smooth point; a tie's slot stays flat (TODO 999).
+    const smooth = new Set(way.flatMap((w, i) => (w.bend === undefined ? [] : [i + 1])));
     const path = document.createElementNS(SVG, 'path');
-    path.setAttribute('d', pathThrough(points, soft));
+    path.setAttribute('d', pathThrough(points, soft, smooth));
     path.dataset['type'] = outputType(drawn.graph, connection.from);
     path.dataset['from'] = connection.from;
     path.dataset['to'] = connection.to;
@@ -679,7 +681,7 @@ function drawConnections(drawn: Drawn): void {
     if (why) path.setAttribute('data-ignored', '');
     // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
     const hit = document.createElementNS(SVG, 'polyline');
-    const dots = dotsThrough(points, soft);
+    const dots = dotsThrough(points, soft, smooth);
     lanes.push({ connection, dots });
     hit.setAttribute('points', dots.map(([x, y]) => `${x},${y}`).join(' '));
     hit.setAttribute('class', 'graph-hit');

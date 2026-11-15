@@ -2282,3 +2282,18 @@ off `internals` to test or change a state.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-a-state-outlives-a-collection.spec.ts`
+
+### T-a-bend-is-a-smooth-point
+
+**At a bend point the curve passes without a corner** (Will, TODO 999: "the midpoint should have a equal bezier handle so
+that it doesn't kink at acute angles when moved"). `controlsThrough` gives each piece its two handles. A bend point's are
+one straight line along the way from the point before to the point after, of one length on both sides: a third of the
+shorter reach, and no more than half of each gap in x. So a control never passes its neighbours in x, and the curve,
+sorted by x, still never loops back. An end socket's handles and a tie's slot stay flat: a tie's lines pass it side by
+side. `pathThrough`, `dotsThrough` (the line a click lands on) and `handlesOf` (a piece's middle, on the curve as drawn)
+all read the same handles, so the hit line and the handles sit on the line that is seen.
+
+- Was: every piece flat at both ends, so a bend moved to an acute angle drew a kink.
+
+- Site: `src/core/ui/connector-path.ts`
+- Site: `test/unit/a-connector-bends-where-the-reader-put-them.test.mjs`

@@ -14,7 +14,7 @@ const core = new URL('../../dist/core/', import.meta.url);
 const { editWorkflow, readWorkflow, workflowFaults } = await import(new URL('data/workflow.js', core));
 const { placeBend, dropBend } = await import(new URL('data/connector-bends.js', core));
 const { versionOf } = await import(new URL('data/node-library.js', core));
-const { pathThrough, dotsThrough, waypointsOf, handlesOf, middleOf } = await import(new URL('ui/connector-path.js', core));
+const { pathThrough, dotsThrough, waypointsOf, handlesOf, middleOf, controlsThrough } = await import(new URL('ui/connector-path.js', core));
 
 const connection = { from: 's/rows', to: 'e' };
 const flow = () => ({
@@ -100,14 +100,17 @@ test('the curve through no points is the default; through points it never loops 
   const dflt = `M 0 0 C ${200} 0, ${200} 100, 400 100`;
   assert.equal(pathThrough([a, b]), dflt);
   const way = waypointsOf([{ x: 150, y: 80 }, { x: 260, y: -60 }], []);
-  const dots = dotsThrough([a, ...way.map((w) => w.at), b], true);
+  const smooth = new Set([1, 2]);
+  const dots = dotsThrough([a, ...way.map((w) => w.at), b], true, smooth);
   assert.ok(dots.every((p, i) => i === 0 || p[0] >= dots[i - 1][0] - 1e-9), 'x never goes back');
   const near = (at) => Math.min(...dots.map((p) => Math.hypot(p[0] - at[0], p[1] - at[1])));
   assert.ok(near([150, 80]) < 0.01 && near([260, -60]) < 0.01);
   const hs = handlesOf(a, b, way);
   assert.equal(hs.length, 3);
   assert.deepEqual(hs.map((h) => h.insert), [0, 1, 2]);
-  assert.deepEqual(hs[0].at, middleOf(a, [150, 80]));
+  // Each handle on the curve as drawn, at its piece's middle.
+  for (const h of hs) assert.ok(near(h.at) < 2, `handle ${h.insert} on the curve`);
+  assert.deepEqual(middleOf(a, [150, 80]), [75, 40], 'a flat piece: the plain middle');
   // None: one handle at the middle. A tied connection has none (754): its tie is its handle.
   assert.equal(handlesOf(a, b, []).length, 1);
   assert.deepEqual(handlesOf(a, b, waypointsOf(undefined, [[200, 50]])), []);
@@ -219,4 +222,29 @@ test('754: a group move shifts only the points the reader made, and Arrange clea
   assert.equal('via' in moved.connections[1], false);
   const arranged = editWorkflow(w, { place: { nodes: { s: { x: 0, y: 0 }, e: { x: 400, y: 0 } }, bends: 'reset' } });
   assert.equal(arranged.connections.some((r) => 'via' in r), false);
+});
+
+// TRAP T-a-bend-is-a-smooth-point
+test('a bend point is a smooth point: its two handles one straight line, of one length, inside the gaps in x; an end and a tie stay flat (TODO 999)', () => {
+  // A steep bend: once flat there, it kinked at the acute angle.
+  const points = [[0, 0], [60, 220], [400, 240]];
+  const [[c1a, c2a], [c1b, c2b]] = controlsThrough(points, true, new Set([1]));
+  const into = [points[1][0] - c2a[0], points[1][1] - c2a[1]];
+  const out = [c1b[0] - points[1][0], c1b[1] - points[1][1]];
+  // One line: the same way in and out, and the same length.
+  assert.ok(Math.abs(into[0] * out[1] - into[1] * out[0]) < 1e-6, 'in and out on one line');
+  assert.ok(Math.abs(Math.hypot(...into) - Math.hypot(...out)) < 1e-6, 'of one length');
+  // Along the way from the point before to the point after.
+  assert.ok(Math.abs(out[1] / out[0] - 240 / 400) < 1e-6);
+  // Inside the gaps in x: no control goes past its neighbours, so x never goes back.
+  const e = 1e-9;
+  assert.ok(c2a[0] >= points[0][0] - e && c1b[0] <= points[2][0] + e && c1a[0] <= c2a[0] + e && c1b[0] <= c2b[0] + e);
+  const dots = dotsThrough(points, true, new Set([1]));
+  assert.ok(dots.every((p, i) => i === 0 || p[0] >= dots[i - 1][0] - 1e-9), 'x never goes back');
+  // The ends stay flat; a point not smooth (a tie's slot) stays flat too.
+  assert.deepEqual([c1a[1], c2b[1]], [0, 240]);
+  const [[, c2t], [c1t]] = controlsThrough(points, true, new Set());
+  assert.deepEqual([c2t[1], c1t[1]], [220, 220]);
+  // With no bend, the default curve is as before.
+  assert.equal(pathThrough([[0, 0], [400, 100]]), 'M 0 0 C 200 0, 200 100, 400 100');
 });
