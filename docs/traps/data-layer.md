@@ -8637,3 +8637,21 @@ comes through at once, as before (TODO 774).
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-joined-row-shows-what-comes-in.test.mjs`
 - Site: `test/e2e/reforged-a-joined-row-shows-what-comes-in.spec.ts`
+
+### T-an-agent-reads-the-kinds
+
+**An agent's words for a node are said once, by its kind** (Will, TODO 1005: "are we ensuring that all the common,
+standardised aspects about nodes, graphs, and the node editor are making their way to Sherpa-UI"). N-zo's prompt held
+some 25 hand-written lines of how to wire each kind, written again for each new one (Fork, Merge, Category, Value A,
+Retry, the text matches), and the library's MCP held none.
+
+- **Each kind of a workflow says `agent`**: its sockets, rows and values, in a sentence or a few; a type says its own where
+  its kind's do not (a text match, And, Or, Count, Band, Format, Category). A test fails for a shipped kind without them.
+- **`graphRules(kinds)` makes the rules** (node-kinds.ts): a node's and a connection's shape, the Start, a Route and a
+  body's `#in` and `#out`, said once there; then each workflow kind with its words, its types and a type's own words. An
+  app's kind without words is listed by its line, so a kind added reaches every agent with nothing written elsewhere.
+- **Every agent reads it**: the library's MCP serves it as `sherpa://graph-rules`, and an app's agent reads it from
+  `sherpa-ui/data` (N-zo, sherpa-demos-67's part). The app keeps only its own: its acts and its types' forms.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `test/unit/an-agent-reads-the-kinds.test.mjs`

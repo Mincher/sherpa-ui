@@ -7,7 +7,7 @@ beside it — its specs, schemas, docs and tokens — and runs its own checks, i
 data layer and its usage check, never a copy of them. Each tool, resource and
 prompt below is written from the code that registers it.
 
-**20 tools · 10 resources · 3 prompts.**
+**20 tools · 11 resources · 3 prompts.**
 
 ## Setup
 
@@ -249,6 +249,7 @@ End the preview: its pages, its browser and its Node host, so nothing of it list
 | URI | Is |
 |---|---|
 | `sherpa://node-kinds` | **The node kinds.** Every node kind sherpa-ui ships, as `NODE_KINDS` in `sherpa-ui/data` says it, by name: its heading, icon and description, its header's sockets (`input`, `output`), its rows (each `name`, `label`, `control` and sockets), the data layer's `model` for it, and the `graphs` it is drawn in — a page's Query, a workflow or both |
+| `sherpa://graph-rules` | **How to wire a graph.** How an agent wires a node graph, in words made from the kinds (`graphRules` in `sherpa-ui/data`): a node's and a connection's shape, the Start and a Route, then each kind of a workflow with its own words, its types and a type's own words. Read it before making or changing a graph |
 
 ### The compose tier: a need → a pattern → a page, each page checked · `tools/compose.js`
 

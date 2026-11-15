@@ -135,6 +135,7 @@ export {
   kindIn,
   kindOfNode,
   nodeKinds,
+  graphRules,
   paletteMatch,
   paletteOf,
   propertyRow,

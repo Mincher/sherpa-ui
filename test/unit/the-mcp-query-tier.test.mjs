@@ -362,6 +362,12 @@ test('sherpa://node-kinds is NODE_KINDS as the registry says it', async () => {
   assert.deepEqual(JSON.parse(contents[0].text), JSON.parse(JSON.stringify(NODE_KINDS)));
 });
 
+test('sherpa://graph-rules is graphRules: how an agent wires a graph, made from the kinds (TODO 1005)', async () => {
+  const { contents } = await client.readResource({ uri: 'sherpa://graph-rules' });
+  assert.equal(contents[0].mimeType, 'text/plain');
+  assert.equal(contents[0].text, data.graphRules());
+});
+
 test('definition_graph and edit_definition_graph take the app\'s entities: a use of one in a workflow is a Custom Node, no fault (plan 942 D3 A)', async () => {
   const HAS_ROLE = {
     v: 3, type: 'node', id: 'has-role', label: 'Has role',

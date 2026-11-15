@@ -2,7 +2,8 @@
  * query.js — the query tier's resources: the kinds every node graph is drawn from.
  * Read from the one registry, never listed here. TRAP T-one-node-registry
  *
- *   sherpa://node-kinds  every node kind, as NODE_KINDS says it: its header, rows, sockets, model and graphs
+ *   sherpa://node-kinds   every node kind, as NODE_KINDS says it: its header, rows, sockets, model and graphs
+ *   sherpa://graph-rules  how an agent wires a graph, in words made from the kinds (graphRules, TODO 1005)
  *
  * Map:
  * - register — register the query resources on an MCP server
@@ -19,5 +20,13 @@ export function register(server) {
   }, async (uri) => {
     const { NODE_KINDS } = await imported('sherpa-ui/data');
     return { contents: [{ uri: uri.href, mimeType: JSON_TYPE, text: JSON.stringify(NODE_KINDS, null, 2) }] };
+  });
+  server.registerResource('graph rules', 'sherpa://graph-rules', {
+    title: 'How to wire a graph',
+    description: 'How an agent wires a node graph, in words made from the kinds (`graphRules` in `sherpa-ui/data`): a node\'s and a connection\'s shape, the Start and a Route, then each kind of a workflow with its own words, its types and a type\'s own words. Read it before making or changing a graph',
+    mimeType: 'text/plain',
+  }, async (uri) => {
+    const { graphRules } = await imported('sherpa-ui/data');
+    return { contents: [{ uri: uri.href, mimeType: 'text/plain', text: graphRules() }] };
   });
 }

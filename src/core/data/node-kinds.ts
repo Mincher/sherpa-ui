@@ -76,6 +76,7 @@
  * - storedValues — What a node keeps of its drawn rows: each that holds a value, by its name.
  * - fieldsSent — The fields a node's rows carry, by its `every` field pick: those it keeps; none kept, every field.
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
+ * - graphRules — How every agent wires a graph, in words made from the kinds: the rules, then each kind's own.
  */
 import { OP_LABELS, OP_TAKES, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
@@ -219,6 +220,8 @@ export interface NodeType {
   icon?: string;
   /** What it would do, where it acts outside the graph: Simulate says it and does nothing (an Output's). */
   would?: string;
+  /** How an agent joins it, where its kind's words do not say: one sentence, read into `graphRules` (TODO 1005). */
+  agent?: string;
   /** Its rows, after the kind's own. */
   rows?: readonly RowKind[];
   /** Its sockets, where they differ from the kind's. */
@@ -238,6 +241,9 @@ export interface NodeType {
 export interface NodeKind {
   heading: string;
   icon: string;
+  /** How an agent joins it: its sockets, its rows and its values, in one sentence or a few, said once here and read by every
+   *  agent through `graphRules` (TODO 1005). A shipped kind of a workflow says it; an app's kind may. */
+  agent?: string;
   /** Its synopsis: what it is, in a few words, on one line. The panel's line, and a node's when it has none of its own (809). */
   description?: string;
   /** The whole node's sockets, on its header. Its input is its DATA, of any type (D1): its rows
@@ -343,6 +349,7 @@ const expects = (rows: readonly RowKind[], would: string): Readonly<Record<strin
   // Classify (Will, plan 992 O6 A): one of the Categories for each row, a column a Fork sends the rows on by.
   category: {
     label: 'Category', help: 'One of the Categories for each row', would,
+    agent: 'To have the model sort each row: values.categories are the names; its "answer" is a column it makes, named by its node\'s id, one Category on each row; join "<node>/answer" to a Fork\'s header, its ways the Categories.',
     rows: [...rows, { name: 'categories', label: 'Categories', control: 'tags', multiple: true, input: 'object' }, { ...propertyRow('answer', 'Answer', 'field'), makes: 'categories' }],
   },
 });
@@ -528,7 +535,10 @@ function compareType(op: FilterOp): NodeType {
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
   // A part of a text tests its header, the data, always: it has no Value A to test (TODO 1002).
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, ...(part ? [] : [VALUE_A]), ...rows] };
+  return {
+    label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [PASS, FAIL, ...(part ? [] : [VALUE_A]), ...rows],
+    ...(part ? { agent: 'It has no Value A: it tests what comes into its header, and its one row, "b", titled Value A, is the text to find, typed in values.b or joined from a Value; it lists no values to pick.' } : {}),
+  };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -554,8 +564,8 @@ export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time']);
 const LOGIC: Readonly<Record<string, NodeType>> = {
   // And and Or join anything, several: rows, counts, values, tests. An input is true where it is above zero, true, or not
   // empty; Pass is the rows in all of the inputs (And) or in any true one (Or), Fail the rest (plan 971 A).
-  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL] },
-  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL] },
+  and: { label: 'And', help: 'True when every input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL], agent: 'It joins tests by their Pass: each one\'s Pass into its header.' },
+  or: { label: 'Or', help: 'True when any input is true: above zero, true, or not empty', input: 'any', many: true, rows: [PASS, FAIL], agent: 'It joins tests by their Pass: each one\'s Pass into its header.' },
   ...compareTypes(FIGMA_OPS),
   not: { label: 'Not', help: 'True when the value that comes in is false', input: 'any', rows: [PASS, FAIL, VALUE_A], graphs: ['workflow'] },
   empty: { label: 'Is empty', help: 'True when what comes in is nothing: none, 0, false, empty text or list, or no rows', input: 'any', rows: [PASS, FAIL, VALUE_A], graphs: ['workflow'] },
@@ -599,10 +609,12 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // A Start node: nothing comes in; what it heard leaves by its rows. Any one of a graph's Triggers starts it (Will, D2 B). Its
   // header sends True when it fires, to the Start (plan 949 D1 A).
   trigger: {
+    agent: 'A Trigger starts a top graph: join its header to the Start, {from: "<trigger>", to: "#start"}. It reads no store: a graph that reads rows still has a Source.',
     heading: 'Trigger', icon: 'bolt', description: 'Start the graph when its event comes', output: 'boolean',
     typeLabel: 'Listens for', defaultType: 'action', types: TRIGGERS, rows: [], model: 'trigger', graphs: ['workflow'], category: 'Triggers',
   },
   source: {
+    agent: 'A Source reads one store (values.store): its "rows" goes to EACH Field, and to any node that takes rows.',
     heading: 'Source', icon: 'storage', description: 'Connect a data source',
     rows: [
       { ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' },
@@ -623,12 +635,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Logic: one test per Condition, And and Or joining tests (plan 783 D4). TRAP T-a-condition-is-a-tree-of-nodes
   condition: {
+    agent: 'A Condition\'s data comes in at its header; it gives Pass (the rows that hold) and Fail (the rows that do not), and has no True. On a Field\'s column it splits the rows. To test ONE value that is not the data (an AI step\'s True, a Count\'s number), join it to Value A, "<condition>/a": Pass or Fail then sends on all that came into its header; with nothing there, the value itself. A column never goes to Value A.',
     heading: 'Condition', icon: 'function', description: 'Logical checks of a value against a condition',
     typeLabel: 'Check', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Rows on by ONE field's value (Will, plan 991 D6 A; plan 992: a Condition is one test, a Fork many places; Will named it Fork, so
   // a Route stays a full path, PRINCIPLES 19): a Field on its header; Ways, the values it picks, one dropdown of ticks; an output per value picked, and Otherwise.
   fork: {
+    agent: 'A Fork sends each row on by ONE field\'s value: a Field\'s "field", or a model\'s Category "answer", goes to its header; values.ways are the values it picks, each an output of its own, "v-" and the value in lower case, each run of other characters a "-" ("At risk" is "v-at-risk"); "otherwise" takes the rest. Split rows by a rule, not by a value, with a Condition.',
     heading: 'Fork', icon: 'link-simple', description: 'Send each row on by a field\'s value', input: 'any', needs: 'field',
     rows: [{ name: 'ways', label: 'Ways', control: 'tags', multiple: true, input: 'object', unfolds: { output: 'object', gives: 'rows', fork: true, prefix: UNFOLDED, slug: true } },
       { name: 'otherwise', label: 'Otherwise', output: 'object', gives: 'rows', fork: true }],
@@ -637,6 +651,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // "If true then" (Will, plan 971 §9): what comes in goes on where it is true (above 0, true, not empty), else the route
   // stops. No rows: one header in, one out, of what came in.
   boolean: {
+    agent: 'A Boolean is "only when there is any": what comes into its header goes on from its header where it is something; else the Route stops.',
     heading: 'Boolean', icon: 'tick', description: 'Pass the input on when it is true', input: 'any', output: 'object', passes: true,
     rows: [], model: 'boolean', graphs: ['workflow'], category: 'Logic',
   },
@@ -649,6 +664,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // ONE node for how rows are organised (Will, plan 960 U4.2): sorting, grouping, search, and the axes a chart reads —
   // its Primary (X), its Secondary (Y) and its Segments' parts. An empty row does nothing.
   organise: {
+    agent: 'An Organise sorts, groups and searches the rows that come into its header (values.sort, direction, group, search); its "rows" sends them on.',
     heading: 'Organise', icon: 'sort-ascending', description: 'Sort, group, search rows and set axes', input: 'any', needs: 'rows',
     keywords: ['sort', 'group', 'search', 'axes'],
     rows: [
@@ -667,6 +683,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Two sets of rows joined by a field of each (Will, plan 992 O3 A; no Compare): a Field of the A rows on its header, one of
   // the B rows on B. TRAP T-a-merge-joins-by-a-field-of-each
   merge: {
+    agent: 'A Merge joins two sets of rows: a Field of the A rows into its header, a Field of the B rows into "<merge>/b". It sends "matched" (each A row with each B row whose field holds the same value, the A row\'s columns over the B row\'s), "only-a", "only-b", and "changed" (the matched pairs whose "compare" fields differ; none picked, every column both hold). A value every page reads from a related type is that type\'s own field, not a Merge.',
     heading: 'Merge', icon: 'table-columns', description: 'Join two sets of rows by matching fields', input: 'any', needs: 'field', joins: true,
     keywords: ['join', 'compare', 'match'],
     rows: [
@@ -697,6 +714,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // A workflow: each kind over the data-layer function it runs by; a family's Type row picks what it does (plan 749).
   value: {
+    agent: 'A Value holds one value of its type (values.type, values.value): its "value" goes to a row that takes one, as a Condition\'s "b".',
     heading: 'Value', icon: 'function', description: 'Primitive value variables', typeLabel: 'Type', defaultType: 'text',
     types: {
       text: { label: 'Text', rows: [VALUE] },
@@ -711,6 +729,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Rows in, a column out, `{ rows, field }`; one record in, that field's value. Its True: the field is there. Plan 783 D1, D2
   field: {
+    agent: 'A Field takes the rows into its header and picks one column (values.field): its "field" goes to a Condition\'s or a Fork\'s header, never to a Condition\'s Value A; its "values" sends the values picked in values.values.',
     heading: 'Field', icon: 'price-tag', description: 'Target a field from a connected Source', input: 'any', needs: 'object',
     rows: [
       { name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field', recalls: true },
@@ -723,6 +742,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // One number from numbers, given from its Result row. Min, Max and Average read a list (D9; Will, plan 991 D4: once Floor
   // and Ceiling).
   math: {
+    agent: 'A Math works out a number from the numbers that come in, or from a list or a Field\'s column, as its type says (values.type).',
     heading: 'Math', icon: 'function', description: 'Numbers in, one number out', typeLabel: 'Operation', defaultType: 'add',
     types: {
       add: { label: 'Add', help: 'Add Value B to Value A', rows: [A, B, NUMBER] },
@@ -740,12 +760,16 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       median: { label: 'Median', help: 'The middle value of the list, in order', rows: [NUMBERS, NUMBER] },
       range: { label: 'Range', help: 'The highest value of the list less the lowest', rows: [NUMBERS, NUMBER] },
       // Rows in, how many out: Count is no property (Will, plan 944, D3 A).
-      count: { label: 'Count', help: 'How many rows come in. How many differ is Count unique', rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, NUMBER] },
+      count: {
+        label: 'Count', help: 'How many rows come in. How many differ is Count unique', rows: [{ name: 'rows', label: 'Rows', input: 'object', needs: 'rows' }, NUMBER],
+        agent: 'Rows into "<math>/rows", the number out of "<math>/result"; in a message, {{value:<math>.result}}.',
+      },
       unique: { label: 'Count unique', help: 'How many different values the list holds. How many rows is Count', rows: [LIST, NUMBER] },
       // A number into named steps: the label of the first band it is up to, else the last (plan 991a).
       band: {
         // One job (Will, plan 992 O1): a value worked out in this graph; a label every page shows is a type's status field.
         label: 'Band', help: 'The label of the first band a value worked out here is up to. A column every page shows is a status field',
+        agent: 'It names a number by its step: its "a" the number, values.bands a rising list of numbers (Up to), values.labels one more than them.',
         rows: [numberRow('a', 'Value'), { name: 'bands', label: 'Up to', control: 'tags', multiple: true, input: 'object', needs: 'numbers' },
           { name: 'labels', label: 'Labels', control: 'tags', multiple: true, input: 'object' }, RESULT],
       },
@@ -754,6 +778,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Whether the date that comes in, of any type (D1), holds: True takes it, False the rest.
   time: {
+    agent: 'A Time tests the dates that come into its header, as its type says (values.type): between two dates, or a duration from today; it gives Pass and Fail as a Condition does.',
     heading: 'Time', icon: 'time', description: 'Check a date against a time', input: 'any', needs: 'date', output: 'boolean', typeLabel: 'Check', defaultType: 'between',
     types: {
       between: { label: 'Between', help: 'True when the date is from Start to End', rows: [PASS, FAIL, dateRow('start', 'Start'), dateRow('end', 'End')] },
@@ -766,12 +791,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Text from text, given from its Result row: a list, where Split by makes one.
   text: {
+    agent: 'A Text works on text, as its type says (values.type).',
     heading: 'Text', icon: 'pencil', description: 'Change and combine text values', typeLabel: 'Operation', defaultType: 'format',
     types: {
       // A Template filled from what reaches its Data: one text per row, else one text. It is Append and Prepend too (Will,
       // plan 992 O2): "{{value:a.value}} and more". TRAP T-format-is-the-one-text-door
       format: {
         label: 'Format', help: 'The Template filled from its Data: one text per row, else one text. An Output fills its own message',
+        agent: 'It fills values.template, naming {{value:<node>.<field>}}, from what comes into "<text>/data": with rows, one text per row; with values only, one text. It is the one text door.',
         rows: [{ name: 'data', label: 'Data', input: 'any', many: true }, { name: 'template', label: 'Template', control: 'message', input: 'value' }, RESULT],
       },
       split: { label: 'Split by', help: 'Value as a list, split at each Separator', rows: [textRow('a', 'Value'), SEPARATOR, { ...RESULT, output: 'object', gives: 'list' }] },
@@ -782,6 +809,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // An In and an Out joined by a name, no line between them. An In takes many connections; an Out draws a row for each connection
   // into an In of its name, once drawn, and sends from those rows alone (TODOs 779, 826). TRAP T-a-portal-hop-is-resolved-once
   portal: {
+    agent: 'A Portal links two places with no line: what comes into an In (values.type "in") leaves each Out of the same values.name.',
     heading: 'Portal', icon: 'link-simple', description: 'Link two nodes without a line',
     typeLabel: 'Type', defaultType: 'in',
     types: {
@@ -794,6 +822,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // what it Expects. One joined to the Start is the graph's primary. The app gives the lists (`registerAiCatalog`). Simulate
   // asks no model: each says what it would do.
   model: {
+    agent: 'A top graph has ONE Model (values.provider, values.model), its "model" joined to the Start\'s Model row, "#start/model": every AI node in the graph, and in the Runbooks and Experts it uses, takes it. Join a Model to an AI node\'s own "model" only to override it.',
     heading: 'Model', icon: 'microchip-ai', description: 'Pick an AI provider and its model',
     rows: [
       { name: 'provider', label: 'Provider', control: 'provider', required: true },
@@ -802,28 +831,31 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     model: 'aiModel', graphs: ['workflow'], category: 'AI',
   },
   prompt: {
+    agent: 'A Prompt asks the model its values.prompt about what comes into its header; its type says what it answers (values.type), and its "answer" goes on.',
     heading: 'Prompt', icon: 'chat', description: 'Ask the joined model, in your words', input: 'any', typeLabel: 'Expects', defaultType: 'text',
     types: expects([MODEL_IN, messageRow('prompt', 'Prompt')], 'Would ask the model'), rows: RETRY, model: 'aiPrompt', graphs: ['workflow'], category: 'AI',
   },
   runbook: {
+    agent: 'A Runbook runs its values.instructions on what comes into its header; its type says what it answers (values.type), and its "answer" goes on. It has no Model of its own: it takes the graph\'s.',
     // A runbook of its own words: the app's runbooks are nodes of the Runbooks category (Will, plan 936 D1 B).
     heading: 'Runbook', icon: 'book-open-lines', description: 'Write a runbook for the model to run', input: 'any', typeLabel: 'Expects', defaultType: 'text',
     types: expects([MODEL_IN, INSTRUCTIONS], 'Would run the runbook'),
     rows: RETRY, model: 'aiRunbook', graphs: ['workflow'], category: 'AI',
   },
   skill: {
+    agent: 'A Skill runs a skill (values.skill) on what comes into its header; its type says what it answers (values.type), and its "answer" goes on.',
     heading: 'Skill', icon: 'wand-magic-sparkles', description: 'Use a skill, or write a new one', input: 'any', typeLabel: 'Expects', defaultType: 'text',
     types: expects([MODEL_IN, { name: 'skill', label: 'Skill', control: 'skill', input: 'value' }, INSTRUCTIONS], 'Would use the skill'),
     rows: RETRY, model: 'aiSkill', graphs: ['workflow'], category: 'AI',
   },
   // The Output families, each a kind (Will, plan 917). Request ships no type: a host adds its own, and it is listed then.
-  notify: outputFamily('Notification', 'notifications', 'Send a message by app, email or phone', NOTIFY_TYPES),
-  content: outputFamily('Content', 'dashboard', 'Show content, or make a file', CONTENT_TYPES),
-  response: outputFamily('Response', 'megaphone', 'Answer on the screen, or the call', RESPONSE_TYPES),
+  notify: { ...outputFamily('Notification', 'notifications', 'Send a message by app, email or phone', NOTIFY_TYPES), agent: 'An Output ends a Route. A Notification sends a message (values.type "notification") about what comes into its header; its title and message name {{value:<node>.<field>}}.' },
+  content: { ...outputFamily('Content', 'dashboard', 'Show content, or make a file', CONTENT_TYPES), agent: 'An Output ends a Route. A Content opens a View or makes a file (values.type) from what comes into its header.' },
+  response: { ...outputFamily('Response', 'megaphone', 'Answer on the screen, or the call', RESPONSE_TYPES), agent: 'An Output ends a Route. A Response shows a toast, raises an alert or answers the call (values.type) with what comes into its header.' },
   // The end of a run acts on nothing outside it, so it has nothing to try again.
-  result: outputFamily('Run result', 'flag', 'End the run with a status and summary', RESULT_TYPES, []),
-  request: outputFamily('Request', 'export', 'Ask another system or agent', {}),
-  [OUTPUT_TRIGGER]: outputFamily('Output Trigger', 'bolt-in-circle', 'Start something when the run gets here', OUTPUT_TRIGGER_TYPES),
+  result: { ...outputFamily('Run result', 'flag', 'End the run with a status and summary', RESULT_TYPES, []), agent: 'An Output ends a Route. A Run result ends the run with what comes into its header, its status and summary.' },
+  request: { ...outputFamily('Request', 'export', 'Ask another system or agent', {}), agent: 'An Output ends a Route. A Request asks another system or agent (values.type, an app\'s own) with what comes into its header.' },
+  [OUTPUT_TRIGGER]: { ...outputFamily('Output Trigger', 'bolt-in-circle', 'Start something when the run gets here', OUTPUT_TRIGGER_TYPES), agent: 'An Output ends a Route. An Output Trigger starts something when the run gets here: an event a Trigger hears, or an entity an app\'s type picks (values.type). One in a loop is blocked.' },
 };
 
 /** A category as the slug a node's, and its panel row's, `data-category` says: lower case, words joined by hyphens. TODO 840 */
@@ -1324,4 +1356,25 @@ export function kindNode(
     ...(k.would ? { would: k.would } : {}),
     ...own,
   };
+}
+
+/** How every agent wires a graph, in words made from the kinds (Will, TODO 1005): the graph's own rules, said once here, then
+ *  each kind of a workflow with its words (`agent`, else its line), its types and a type's own words. A kind added, the
+ *  library's or an app's, reaches every agent with no words written anywhere else. TRAP T-an-agent-reads-the-kinds */
+export function graphRules(kinds: Readonly<Record<string, NodeKind>> = nodeKinds()): string {
+  const lines = [
+    'How a graph is wired.',
+    '- Nodes are {id, kind, x, y, stage?, heading?, description?, values?}, about 360 apart across and 400 down. A heading is a title of the node\'s own, never its kind again.',
+    '- Connections are {from: "<node>/<socket>", to: "<node>" or "<node>/<socket>"}: a node\'s header is its id alone, a row is "<node>/<row>". A node\'s data always comes in at its header.',
+    '- A top graph starts at its Start, node "#start" (kind "#start"). A Route runs along Connections from a Start node (a Source or a Trigger) to an End node, an Output.',
+    '- Inside a Custom Node, rows come in from "#in/<input>" and go out to "#out/<output>".',
+    'Each kind:',
+  ];
+  for (const [id, kind] of Object.entries(kinds)) {
+    if (!kind.graphs.includes('workflow') || id.startsWith('#')) continue;
+    const types = Object.entries(kind.types ?? {}).filter(([, t]) => (t.graphs ?? kind.graphs).includes('workflow'));
+    lines.push(`- ${kind.heading} (kind "${id}"): ${kind.agent ?? kind.description ?? ''}${types.length ? ` Its types (values.type): ${types.map(([t]) => `"${t}"`).join(', ')}.` : ''}`.trimEnd());
+    for (const [t, type] of types) if (type.agent) lines.push(`  - ${type.label} ("${t}"): ${type.agent}`);
+  }
+  return lines.join('\n');
 }
