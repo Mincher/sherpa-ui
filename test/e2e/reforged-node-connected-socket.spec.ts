@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * A CONNECTED socket is three layers: a 1px BORDER in the socket's ink, a 1px WHITE inset (the card's
- * face) inside it, then the FILL in the socket's own shape in the ink again. A boolean is a circle.
+ * face) inside it, then the FILL in the socket's own shape in the ink again. A boolean is a square (TODO 998).
  * Read as pixels at 4x, from the edge inward. Will, TODO 874.
  */
 test.use({ deviceScaleFactor: 4 });
@@ -37,9 +37,12 @@ test('a connected socket: border and fill in the ink, a white inset between, in 
     await new Promise((r) => setTimeout(r, 400));
   }, SOCKETS);
   for (const s of SOCKETS) {
-    // Device pixels in a 64 box: a row through the middle, or the diamond's up-left side along the diagonal.
-    const at = s.along === 'row' ? [[1, 32], [6, 32], [20, 32], [32, 32]] : [[16, 16], [18, 18], [26, 26], [32, 32]];
-    const [border, inset, fill, centre] = await lights(page, s.id, s.side, at);
+    // Device pixels in a 64 box: a row through the middle, or the diamond's up-left side along the diagonal. Each layer is
+    // read over a few pixels: WebKit turns the diamond a device pixel further in than Chromium and Firefox (TODO 1007).
+    const row = (xs: number[]) => xs.map((x) => s.along === 'row' ? [x, 32] : [x, x]);
+    const spans = s.along === 'row' ? [[1], [6], [20], [32]] : [[15, 16, 17], [17, 18, 19, 20], [24, 25, 26], [32]];
+    const read = await Promise.all(spans.map((xs) => lights(page, s.id, s.side, row(xs))));
+    const [border, inset, fill, centre] = [Math.min(...read[0]!), Math.max(...read[1]!), Math.max(...read[2]!), Math.max(...read[3]!)];
     expect(inset, `${s.id} inset is the white face`).toBeGreaterThan(215);
     expect(border, `${s.id} border is ink`).toBeLessThan(150);
     expect(fill, `${s.id} fill is ink inside the white`).toBeLessThan(150);
