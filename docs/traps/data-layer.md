@@ -8559,8 +8559,12 @@ A new layout mark goes into this set, or it lights Save and changes a version's 
   graph did, and keeps where it is drawn.
 - **A move into another stage is an edit** (D2 A): `graphKey` reads each node's `stage`, so its place saves itself and
   its stage waits for Save.
-- **Not yet**: a preset's places kept for the session (D3 B: a preset is read only, so it cannot be moved today), and a
-  Custom Node opened inside a graph, whose moves are still its definition's draft.
+- **A preset is moved for the session alone** (D3 B, Will: "Position edits are only kept for the session and are
+  discarded when the session ends"): its top graph is `movable` though read only, so a move, an Unfurl and a Swimlane
+  toggle are kept in the tab's session (`/node-places/<id>`) and drawn there when the tab opens it again; never
+  `places-change`, never the shelf. A new session draws it as shipped. What it does stays locked: a change of more than
+  places is refused, as before.
+- **Not yet**: a Custom Node opened inside a graph, whose moves are still its definition's draft.
 
 - Site: `src/core/data/graph-layout.ts`
 - Site: `src/core/data/entity-versions.ts`

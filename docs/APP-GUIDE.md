@@ -874,7 +874,9 @@ writes it as the line's one bend, so a line goes round a node, not through it (T
 Where a graph is drawn saves itself, never an edit (TODO 1001): a
 move, an Unfurl, a Swimlane toggle, a tie, a bend or a size fires `places-change`, its
 `detail.definition` the kept graph with the new places (`detail.places` them alone). Keep it as
-it comes, with no Save and no new version; the tab keeps no draft for places alone. Give `bindWorkflow` a
+it comes, with no Save and no new version; the tab keeps no draft for places alone. A preset
+(`readOnly`) can be moved, unfurled and put in swimlanes too, for the tab's session alone: it
+fires no `places-change`, and a new session draws it as shipped. Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:
 
 ```html

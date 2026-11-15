@@ -77,7 +77,7 @@ import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
 import { START, primaryOf, withStart, withStartKind } from '../data/node-start.js';
-import { isGroupEnd, placesOf, withoutPlaces, withPlaces } from '../data/graph-layout.js';
+import { isGraphPlaces, isGroupEnd, placesOf, withoutPlaces, withPlaces, type GraphPlaces } from '../data/graph-layout.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { dragTo, startDrag, type ChainDrag, type ChainFalloff, type ChainLink, type ChainNode } from '../data/node-chain.js';
 import { drawLanes } from './node-lanes-ui.js';
@@ -2663,6 +2663,9 @@ export function bindWorkflow(
   const editsAt = `/node-edits/${workflow.id}`;
   session?.persist(editsAt, { shared: false, guard: isEdits });
   const edited = { ...session?.get(editsAt) as Record<string, NodeDefinition> | undefined };
+  // A preset's places, this tab's alone: never the shelf's (Will, TODO 1001 D3 B: "only kept for the session").
+  const placesAt = `/node-places/${workflow.id}`;
+  if (preset) session?.persist(placesAt, { shared: false, guard: isGraphPlaces });
   // The entity this graph is, by the kind its use has: the library holds its SAVED copy; the draft is its own.
   const own = entity && entityKind(entity);
   let given = library ?? { v: 1, nodes: {} };
@@ -2690,6 +2693,9 @@ export function bindWorkflow(
   const fitted = (w: WorkflowDefinition): WorkflowDefinition => holdTies(fitStages(opened(w), nodeWidth));
   let draft: WorkflowDefinition = fitted(read.workflow ?? { v: 3, id: workflow.id, nodes: [] });
   let original: WorkflowDefinition = fitted(readWorkflow(structuredClone(workflow)).workflow ?? draft);
+  // A preset this tab moved opens where it left it; a new session draws it as shipped (D3 B).
+  const presetPlaces = preset ? session?.get(placesAt) as GraphPlaces | undefined : undefined;
+  if (presetPlaces) [draft, original] = [withPlaces(draft, presetPlaces), withPlaces(original, presetPlaces)];
   /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
   const starting = original;
   /** It never changes: its JSON, once. */
@@ -2732,6 +2738,8 @@ export function bindWorkflow(
    *  preset workflow, everywhere. */
   const insidePreset = (): boolean => path.some((s) => s.held || lib.nodes[s.kind]?.preset || (canEdit && !canEdit(lib.nodes[s.kind]!)));
   const readOnly = (): boolean => preset || insidePreset();
+  /** Where a read-only preset is drawn is the reader's to move, for the session (D3 B): its top graph, never inside. */
+  const movable = (): boolean => !readOnly() || (preset && !path.length);
   // A graph's own Group Input and Output are drawn, never placed; the rest are what the graph shown may place.
   const refreshPanel = (): void => {
     if (doc) return void panel?.populate(doc.palette());
@@ -2768,7 +2776,9 @@ export function bindWorkflow(
    *  bend, a size. The kept graph takes the places at once (`places-change`), and the tab keeps a draft only for what the
    *  graph DOES. TRAP T-a-place-is-no-edit */
   const keepPlaces = (): void => {
-    if (path.length || doc || readOnly()) return;
+    if (path.length || doc) return;
+    if (preset) return session?.set(placesAt, placesOf(draft));
+    if (readOnly()) return;
     // A node only in the draft keeps its place there: the kept graph takes the places of what it holds (T4).
     const next = withPlaces(original, placesOf(draft));
     const places = placesOf(next);
@@ -2926,7 +2936,7 @@ export function bindWorkflow(
     dragging = false;
     const ids = [...moved];
     moved.clear();
-    if (readOnly()) return;
+    if (!movable()) return;
     // Shift held: it joins the stage it was let go in — a frame's nodes as ONE. Else it is where its stage still is.
     const framed = (shown().frames ?? []).some((f) => f.nodes.length === ids.length && f.nodes.every((id) => ids.includes(id)));
     write(ids.length && shiftDrag ? editWorkflow(shown(), { restage: ids, together: framed }, K()) : shown(), movedTag);
@@ -2957,7 +2967,8 @@ export function bindWorkflow(
     settle();
   };
   const write = (next: WorkflowDefinition, tag?: string): void => edit(() => {
-    if (!path.length && preset) {
+    // A preset takes a change of where it is drawn alone, kept for the session (D3 B).
+    if (!path.length && preset && !same(withoutPlaces(next), withoutPlaces(draft))) {
       report({ code: 'node-readonly', message: `bindWorkflow: ${lockedWhy ?? 'this workflow is a preset, read only: change a copy of it.'}`, at: { workflow: workflow.id } });
     } else if (!path.length) {
       // Its stages hold their nodes: a stage grows, and pushes the next. Not while a drag is under way: its end does it.
@@ -3078,7 +3089,7 @@ export function bindWorkflow(
   };
   // Arrange: every place, tie and bend in ONE edit. TODO 752
   const onArrange = (placed: Arranged): void => {
-    if (readOnly()) return;
+    if (!movable()) return;
     write(editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: placed.bends ?? 'reset', ...(placed.stages ? { stages: placed.stages } : {}) } }, K()));
   };
   const onResize = (node: GraphNode, size: NodeSize): void => {
@@ -3776,7 +3787,7 @@ export function bindWorkflow(
     else if (action === 'stop') stop();
     else if (action === 'frame') framePicked();
     // Swimlanes on, a lane for each family; off, none. One step; the nodes stay where they are. Will, 2026-11-10
-    else if (action === 'lanes' && !readOnly()) {
+    else if (action === 'lanes' && movable()) {
       // On or off, each node moves to its place, as Unfurl's do, and the view eases round them all (TODO 929).
       canvas.easePieces();
       write(editWorkflow(shown(), { lanes: shown().lanes?.length ? null : LANES_BY_FAMILY }, K()));
@@ -3784,7 +3795,7 @@ export function bindWorkflow(
     }
   };
   toolbar?.addEventListener('toolbar-select', onTool);
-  const unarrange = watchArrange(canvas, toolbar, () => !readOnly() && !lanesOn(), ['data-can-arrange']);
+  const unarrange = watchArrange(canvas, toolbar, () => movable() && !lanesOn(), ['data-can-arrange']);
   const unframe = watchArrange(canvas, toolbar, () => !readOnly(), ['data-can-frame']);
   const unview = watchView(canvas, toolbar);
   tell();
@@ -4140,7 +4151,7 @@ export function bindWorkflow(
     toolbar?.toggleAttribute('data-can-tie', !laning);
     drawGraph(canvas, laning ? { ...graph, ties: [] } : graph, {
       onEdit, onMove, onResize, onConnect, onReconnect, onBreak, onCustom, onDeselect: picks.deselect, opens: (node) => !!use(node.id),
-      ...(ro ? {} : { onMoveMany, onArrange }),
+      ...(movable() ? { onMoveMany, onArrange } : {}),
       onBox: pickBox, onPicked: tellPicked, onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
       ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop, onRemove: onRemoveNodes, onRelease: release }),
       onFrameSelect,
@@ -4149,7 +4160,8 @@ export function bindWorkflow(
         picks.select(node, graph);
       },
       notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
-      locked: (node) => ro || isGroupEnd(node.id),
+      // A preset's top graph is the reader's to move, for the session (D3 B); what it does stays locked.
+      locked: (node) => !movable() || isGroupEnd(node.id),
       // A Custom Node's use opens on its drill-down, as on a double click (TODO 954).
       onOpen: (node) => open(node.id),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd({ ...context, recent: recalled() }) } : {}),
