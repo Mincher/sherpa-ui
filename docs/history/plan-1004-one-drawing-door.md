@@ -4,7 +4,7 @@ Will, 2026-11-15: "Filter graphs don't have the node type name prefixed in the t
 and other graphs are using different systems or implementations. We should look into this."
 
 **Status: looked into, and he is right (sherpa-demos-67; the inventory by sherpa-ui-e8; the traps by sherpa-ui-a9,
-2026-11-15). Nothing built. Owners: sherpa-ui-e8 (the drawing), sherpa-ui-a9 (the Query lens), sherpa-demos-67 (the
+2026-11-15). Will, 2026-11-15: start it next, after the nodes already queued. 1004a built by sherpa-ui-e8 (the Time leaf's Pass and Fail drawn twice). Owners: sherpa-ui-e8 (the drawing), sherpa-ui-a9 (the Query lens), sherpa-demos-67 (the
 plan, Demos' pages).**
 
 ## 1. What is wrong
