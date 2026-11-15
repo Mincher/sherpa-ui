@@ -52,8 +52,9 @@ test('a kind the graph does not take is a fault in that graph\'s words; one it t
 test('kindIn gives the kind itself where nothing is left out, and a kind the graph does not take none', () => {
   assert.equal(kindIn(NODE_KINDS['field'], 'query'), NODE_KINDS['field']);
   assert.equal(kindIn(NODE_KINDS['trigger'], 'query'), undefined);
-  assert.notEqual(kindIn(NODE_KINDS['source'], 'query'), NODE_KINDS['source']);
-  assert.equal(kindIn(NODE_KINDS['source'], 'workflow'), NODE_KINDS['source']);
+  // A Source's Fields is a workflow's; its Page size, Search fields and Apply on a Query's (plan 1004 D3).
+  const rows = (graph) => kindIn(NODE_KINDS['source'], graph).rows.map((r) => r.name);
+  assert.deepEqual([rows('workflow'), rows('query')], [['rows', 'store', 'fields'], ['rows', 'store', 'pageSize', 'search', 'applyOn']]);
 });
 
 test('a lens node is drawn as its lens says: its ref untouched, its icon and warnings, only the rows it names editable, each row\'s words (plan 1004d)', () => {

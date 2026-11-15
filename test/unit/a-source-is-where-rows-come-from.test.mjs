@@ -26,7 +26,11 @@ test('every graph type\'s panel offers a Source, under Sources: a workflow, a Fi
   assert.deepEqual([NODE_KINDS.source.heading, NODE_KINDS.source.category, NODE_KINDS.source.graphs], ['Source', 'Sources', ['query', 'workflow']]);
   // No Count row: Math › Count counts rows (plan 944). Its Fields picks the fields its rows carry (TODO 969); no Rows pick:
   // rows are narrowed one way, a Field's Condition's Pass (Will, 2026-11-14).
-  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null]), [['rows', null], ['store', 'store'], ['fields', 'field']]);
+  // A page's Query adds how the page reads its store: Page size, Search fields, Apply on (plan 1004 D3).
+  assert.deepEqual(NODE_KINDS.source.rows.map((r) => [r.name, r.control ?? null, r.graphs ?? null]), [
+    ['rows', null, null], ['store', 'store', null], ['fields', 'field', ['workflow']],
+    ['pageSize', 'number', ['query']], ['search', 'field', ['query']], ['applyOn', 'apply', ['query']],
+  ]);
   const off = registerEntityType({ id: 'workflow', label: 'Workflow', graph: { runs: true } });
   try {
     for (const host of [undefined, 'filter:trials', 'mine', 'workflow:flow']) {

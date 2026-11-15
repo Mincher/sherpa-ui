@@ -139,7 +139,7 @@ test('PLANTED: Places is a whole number from 0, a span\'s Value from 1; a Unit s
   assert.deepEqual(words(7), ['days', 'weeks', 'months', 'years']);
 });
 
-test('the Query draws Is one of with no values to pick as tags, and its Search fields as tags, read only', () => {
+test('the Query draws Is one of with no values to pick as tags, and its Search fields as a field pick, read only', () => {
   const definition = { v: 1, id: 'p', source: { store: 'customers', search: ['name'], fields: { name: { label: 'Name' }, region: { label: 'Region' } } } };
   const query = { v: 1, scopes: { view: { holds: ['region'], readings: { region: { mode: 'advanced', tree: { op: 'in', value: ['EMEA', 'APAC'] } } } } } };
   const g = queryGraph(query, definition);
@@ -147,5 +147,6 @@ test('the Query draws Is one of with no values to pick as tags, and its Search f
   const value = when.rows.find((r) => r.name === 'b');
   assert.deepEqual([value.control, value.value, value.editable], ['tags', ['EMEA', 'APAC'], true]);
   const search = g.nodes.find((n) => n.id === 'source').rows.find((r) => r.name === 'search');
-  assert.deepEqual([search.control, search.editable, search.value], ['tags', undefined, ['name']]);
+  // The Source kind's own row in a Query (plan 1004 D3): its fields picked, as a Source's Fields picks them.
+  assert.deepEqual([search.control, search.multiple, search.editable, search.value], ['field', true, undefined, ['name']]);
 });

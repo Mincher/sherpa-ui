@@ -33,6 +33,8 @@ export interface LensNode extends WorkflowNode {
   icon?: string;
   /** What its lens warns of, on the node or one row: a Source the page does not read. */
   warnings?: readonly { row?: string; words: string }[];
+  /** The rows of its kind the lens leaves out here: a kept Source's page rows, the bar's Switch where the bar is not. */
+  omit?: readonly string[];
 }
 
 /** A graph as a lens gives it: a definition whose nodes say what each is to the lens. */

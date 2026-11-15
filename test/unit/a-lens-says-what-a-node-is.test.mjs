@@ -15,6 +15,8 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { queryLensGraph } = await import(new URL('query-graph.js', core));
 const { queryDefinition, reconcileQuery } = await import(new URL('query-document.js', core));
+const { queryDrawingFacts } = await import(new URL('query-lens.js', core));
+const { workflowGraph } = await import(new URL('workflow.js', core));
 const { readingsOf } = await import(new URL('where.js', core));
 
 const page = {
@@ -31,7 +33,7 @@ const query = {
     data: { holds: ['plan'], readings: readingsOf({ plan: { or: [{ eq: 'Pro', off: true }, { eq: 'Free' }] } }), sort: [{ field: 'plan', direction: 'asc' }] },
   },
 };
-const components = [{ id: 'grid', label: 'Customer records', scope: 'data' }];
+const components = [{ id: 'grid', label: 'Customer records', scope: 'data' }, { id: 'trend', label: 'Over time', scope: 'view' }];
 // A Filter on the View's bar, and a Source the reader placed that the page does not read.
 const presets = (scope) => (scope === 'view' ? [{ id: 'filter:trials', label: 'Trials', readings: {} }] : []);
 const lensed = queryLensGraph(query, page, { components, presets, kept: [{ id: 'source-2', store: 'devices' }] });
@@ -79,4 +81,20 @@ test('a reconcile refuses a row the lens keeps read only, in its words, whatever
   assert.deepEqual([chip.edits, chip.refused], [[], [{ code: 'query-row', message: 'No command takes "Region" on "View Filters": Its Condition changes it.' }]]);
   const size = reconcileQuery(before, set(before, 'source', 'pageSize', 50), loose, facts);
   assert.deepEqual([size.edits, size.refused], [[{ node: 'source', row: 'pageSize', value: 50 }], []]);
+});
+
+test('the rows of its kind a node leaves out are said: a kept Source\'s page rows, the Switch where the bar is not (1004 D3, D8)', () => {
+  assert.deepEqual(meant('source-2').omit, ['pageSize', 'search', 'applyOn']);
+  assert.equal(meant('source').omit, undefined, 'the page\'s Source has them');
+  assert.deepEqual([meant('presentation-trend').omit, meant('presentation-data').omit], [['#filters'], undefined]);
+});
+
+test('what the one drawing reads beside the definition: the page\'s fields and a status field, so none warns falsely (1004 D2)', () => {
+  const domains = { health: { values: ['Good', 'Poor'], when: { Good: { plan: { eq: 'Pro' } } } } };
+  const facts = queryDrawingFacts(page, { query: { draft: query }, domains, stores: ['customers'] });
+  assert.deepEqual(Object.keys(facts.fieldsOf.customers).sort(), ['health', 'plan', 'region', 'status']);
+  assert.deepEqual(facts.fieldsOf.customers.health, { values: ['Good', 'Poor'] });
+  const withStatus = queryLensGraph(query, page, { components, domains });
+  const drawn = workflowGraph(queryDefinition('records', withStatus, {}), facts);
+  assert.equal(drawn.nodes.find((n) => n.id === 'status-health')?.warnings, undefined);
 });

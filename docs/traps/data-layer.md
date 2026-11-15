@@ -6905,8 +6905,12 @@ chip's is (`graphRequest`).
   drawn node in ONE call per node, so they never disagree: its kind, values and own
   words, its `ref` (what it is to the Query: every request reads it), `editable`
   (the rows a reader may change; the rest are read only), `hints` (each row's
-  words), `off` (kept, not applied), its own `icon` (a Filter's) and its
-  `warnings` (a kept Source's); its id is QUERY_NODE's, in the order drawn.
+  words), `off` (kept, not applied), its own `icon` (a Filter's), its
+  `warnings` (a kept Source's) and `omit` (the rows of its kind it leaves out
+  there: a kept Source's page rows, the Switch where the bar is not); its id is
+  QUERY_NODE's, in the order drawn. What the one drawing reads beside it is
+  `queryDrawingFacts`: the stores, and the page's fields with their types and
+  values, status fields too, so a Field offers them and none warns falsely.
   A reconcile reads `editable` and `hints` from the lens's definition
   (`queryOpened`), never off the drawing: the one drawing (1004d) adds defaults,
   kind headings and warnings, and a row it draws editable is still refused if the

@@ -9,6 +9,7 @@
  * - QueryLensFacts — What the Query's lens reads beside a page: the live Query, how its graph is drawn, the layout given it.
  * - queryOpened — A page's Query through its lens now: the definition it says, and the graph drawn of it, laid out.
  * - queryDrawn — The graph a page's Query draws now, at the places its layout gives.
+ * - queryDrawingFacts — What the one drawing reads beside a Query's definition: its stores, and the page's fields.
  * - queryScopes — A page's scopes: the View, each its source declares, and each its live Query holds.
  * - reconcileFacts — What a reconcile needs, read from the live Query: its holds, fields and presets, and the Sources kept.
  * - applyReconciled — Ask the live Query what a reconcile gives; it answers the Sources kept after it.
@@ -24,6 +25,7 @@ import { registerLens, type GraphLens, type LensDefinition } from './lens-regist
 import type { DrawnGraph } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
 import { pageFields } from './type-definition.js';
+import type { WorkflowFacts } from './workflow.js';
 
 /** What the Query's lens reads beside a page: the live Query, how its graph is drawn, and the layout a reader gave it. */
 export interface QueryLensFacts extends Omit<QueryGraphFacts, 'presets'> {
@@ -49,6 +51,21 @@ export function queryOpened(page: PageDefinition, facts: QueryLensFacts): { defi
 
 /** The graph a page's Query draws now, at the places its layout gives. */
 export const queryDrawn = (page: PageDefinition, facts: QueryLensFacts): DrawnGraph => queryOpened(page, facts).drawn;
+
+/** What the one drawing reads beside a Query's definition (plan 1004 D2): the app's stores, and the page's store's fields,
+ *  each with its words, type and values: those the page declares, each a scope holds, and each status field the store
+ *  works out. A Field offers them, a test narrows its types by them, and none warns it is not a field of the rows. */
+export function queryDrawingFacts(page: PageDefinition, facts: QueryLensFacts): WorkflowFacts {
+  const store = page.source && storeOf(page.source);
+  const declared = pageFields(page.source);
+  const type = typeIn(page, facts);
+  const names = new Set([...Object.keys(declared), ...Object.keys(facts.domains ?? {}), ...Object.values(facts.query.draft.scopes).flatMap((s) => s.holds)]);
+  const fields = Object.fromEntries([...names].map((f) => {
+    const [label, of, values] = [facts.label?.(f) ?? declared[f]?.label, type(f), facts.values?.(f) ?? facts.domains?.[f]?.values?.map(String)];
+    return [f, { ...(label ? { label } : {}), ...(of ? { type: of } : {}), ...(values ? { values } : {}) }];
+  }));
+  return { ...(facts.stores ? { stores: facts.stores } : {}), ...(store ? { fieldsOf: { [store]: fields } } : {}) };
+}
 
 /** A page's scopes: the View, each its source declares, and each its live Query holds. */
 export const queryScopes = (page: PageDefinition, query: Pick<QueryContext, 'draft'>): string[] =>

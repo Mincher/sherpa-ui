@@ -16,12 +16,13 @@ const socket = schemaCheck('defs.v1.json#/$defs/socket');
 const saves = (row) => socket(`n/${row}`).length === 0;
 const saved = (graphs) => !graphs || graphs.includes('workflow');
 
-/** Each row a workflow can hold, as `kind.list.type row`: the kind's own, and each type's in every list of types. */
+/** Each row a workflow can hold, as `kind.list.type row`: the kind's own, and each type's in every list of types; a row
+ *  of a Query alone (a Source's Page size, plan 1004 D3) is held by no workflow. */
 const rowNames = () => Object.entries(NODE_KINDS).filter(([, kind]) => saved(kind.graphs)).flatMap(([k, kind]) => [
-  ...(kind.rows ?? []).map((r) => [k, r.name]),
+  ...(kind.rows ?? []).filter((r) => saved(r.graphs)).map((r) => [k, r.name]),
   ...Object.entries(kind).filter(([, v]) => v && typeof v === 'object' && !Array.isArray(v)).flatMap(([list, types]) =>
     Object.entries(types).filter(([, t]) => Array.isArray(t?.rows) && saved(t.graphs ?? kind.graphs))
-      .flatMap(([t, type]) => type.rows.map((r) => [`${k}.${list}.${t}`, r.name]))),
+      .flatMap(([t, type]) => type.rows.filter((r) => saved(r.graphs)).map((r) => [`${k}.${list}.${t}`, r.name]))),
 ]);
 
 test('the schema takes a row of lower case and dashes, and no other', () => {

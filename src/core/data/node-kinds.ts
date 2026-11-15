@@ -521,8 +521,9 @@ const [PASS, FAIL]: readonly [RowKind, RowKind] = [
   { ...propertyRow('pass', 'Pass', 'rows'), fork: true, passes: true }, { ...propertyRow('fail', 'Fail', 'rows'), fork: true, passes: true },
 ];
 /** The value a test tests when it is not the data (an AI step's True, a Count): the header is the data, always (Will, TODO
- *  994, A). Not joined, the test tests its header. TRAP T-the-data-comes-in-at-the-header */
-const VALUE_A: RowKind = { name: 'a', label: 'Value A', input: 'any', needs: 'tested', optional: true };
+ *  994, A). Not joined, the test tests its header. A Query's test reads its Field, so it has none (1004 D1).
+ *  TRAP T-the-data-comes-in-at-the-header */
+const VALUE_A: RowKind = { name: 'a', label: 'Value A', input: 'any', needs: 'tested', optional: true, graphs: ['workflow'] };
 /** The kinds that test: each gives Pass, Fail and its truth (plan 971 A). */
 export const TEST_KINDS: ReadonlySet<string> = new Set(['condition', 'time']);
 const LOGIC: Readonly<Record<string, NodeType>> = {
@@ -580,6 +581,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { ...ROWS, beside: 'store' }, { name: 'store', label: 'Store', control: 'store', input: 'value' },
       // The fields its rows carry, All at the start (Will, 2026-11-13, TODO 969). A page's Query reads every field.
       { name: 'fields', label: 'Fields', control: 'field', multiple: true, optional: true, every: true, graphs: ['workflow'] },
+      // How a page reads its store, in its Query alone (1004 D3): its page size, the fields its Search reads, when a change applies.
+      { name: 'pageSize', label: 'Page size', control: 'number', graphs: ['query'] },
+      { name: 'search', label: 'Search fields', control: 'field', multiple: true, graphs: ['query'] },
+      { name: 'applyOn', label: 'Apply on', control: 'apply', graphs: ['query'] },
     ], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.

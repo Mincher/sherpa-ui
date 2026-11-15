@@ -209,12 +209,8 @@ const SWITCH = '#filters';
 /** Where a node sends its data rows on: its Rows row. Plan 713 §3 */
 const sent = (node: string): string => `${node}/${ROWS.name}`;
 
-/** How the page reads its store: the Query's own rows on its Source, after the kind's. */
-const PAGE_ROWS: readonly GraphRow[] = [
-  { name: 'pageSize', label: 'Page size', control: 'number' },
-  { name: 'search', label: 'Search fields', control: 'tags', multiple: true },
-  { name: 'applyOn', label: 'Apply on', control: 'apply' },
-];
+/** How the page reads its store: its Source kind's rows in a Query alone; a kept Source has none (1004 D3). */
+const PAGE_ROWS: readonly string[] = ['pageSize', 'search', 'applyOn'];
 
 /** What a kept Source says: the page reads its own store, and the Query nothing from this one. */
 const notThePage = (store: string | undefined): string => `The page reads ${store ?? 'its own store'}. This Source is not the page's: the Query reads nothing from it.`;
@@ -545,8 +541,8 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
   const meant: Omit<LensNode, 'x' | 'y'>[] = [];
   const connections: NodeConnection[] = [];
   // Each node twice, from the one call: as drawn, and as the lens's definition says it.
-  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> & { off?: boolean } = {}, type?: string): string => {
-    const { off, ...drawn } = own;
+  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> & { off?: boolean; omit?: readonly string[] } = {}, type?: string): string => {
+    const { off, omit, ...drawn } = own;
     const made = kindNode({ ...NODE_KINDS, [kind]: resolveKind(NODE_KINDS[kind]!, type) }, kind, id, rows, drawn);
     nodes.push({ ...made, column });
     const values = storedValues(rows);
@@ -555,7 +551,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       id, kind, ...(drawn.heading ? { heading: drawn.heading } : {}), ...(drawn.description ? { description: drawn.description } : {}),
       ...(Object.keys(values).length ? { values } : {}), ...(drawn.ref ? { ref: drawn.ref } : {}),
       editable: rows.filter((r) => r.editable).map((r) => r.name), ...(Object.keys(hints).length ? { hints } : {}), ...(off ? { off: true } : {}),
-      ...(drawn.icon ? { icon: drawn.icon } : {}), ...(drawn.warnings ? { warnings: drawn.warnings } : {}),
+      ...(drawn.icon ? { icon: drawn.icon } : {}), ...(drawn.warnings ? { warnings: drawn.warnings } : {}), ...(omit?.length ? { omit } : {}),
     });
     return id;
   };
@@ -610,17 +606,16 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
   const source = definition.source;
   const store = source && storeOf(source);
   const stores = (value: unknown): RowChoice[] => rowChoices({ control: 'store', value }, { stores: facts.stores ?? [] })!;
-  add(0, QUERY_NODE.source, 'source', [
-    ...rowsOf('source', { store }).map((row) => (row.name === ROWS.name ? row : owned(row, stores(store)))),
-    ...PAGE_ROWS.map((row): GraphRow => {
-      const value = row.name === 'pageSize' ? facts.pageSize ?? source?.pageSize : row.name === 'search' ? source?.search ?? [] : source?.applyOn ?? 'change';
-      return row.name === 'pageSize' ? { ...row, value, editable: true } : owned({ ...row, value }, row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row));
-    }),
-  ]);
+  const reads = { store, pageSize: facts.pageSize ?? source?.pageSize, search: source?.search ?? [], applyOn: source?.applyOn ?? 'change' };
+  add(0, QUERY_NODE.source, 'source', rowsOf('source', reads).map((row): GraphRow => {
+    if (row.name === ROWS.name) return row;
+    if (row.name === 'pageSize') return { ...row, editable: true };
+    return owned(row, row.name === 'store' ? stores(store) : row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row));
+  }));
   // Each Source the reader placed, under it: its Store theirs to pick, and nothing the Query reads. TODO 808
   for (const kept of facts.kept ?? []) {
-    add(0, kept.id, 'source', rowsOf('source', { store: kept.store }).map((row) => (row.name === ROWS.name ? row
-      : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(store) }] });
+    add(0, kept.id, 'source', rowsOf('source', { store: kept.store }).filter((row) => !PAGE_ROWS.includes(row.name)).map((row) => (row.name === ROWS.name ? row
+      : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(store) }], omit: PAGE_ROWS });
   }
   // A worked-out status field: one with `when`. A stored field may carry looks per value (`statuses`) and is no status node.
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when);
@@ -751,7 +746,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       const slot = !top && (!c || c.id === id || shows.length === 1);
       const presented = slot ? scope.presentation ?? {} : {};
       const node = add(8, bears ? bar : QUERY_NODE.presentation(c?.id ?? id), 'presentation', presentationRows(presented, c?.kind, slot, bears ? barRows : []), {
-        heading: c?.label ?? named ?? (top ? 'View' : id), ...(bears ? { description } : {}), ref: { scope: id, ...(c ? { component: c.id } : {}) },
+        heading: c?.label ?? named ?? (top ? 'View' : id), ...(bears ? { description } : { omit: [SWITCH] }), ref: { scope: id, ...(c ? { component: c.id } : {}) },
       });
       for (const from of top ? fed : rows) connections.push({ from, to: node });
       connections.push({ from: `${node}/content`, to: `${view}/content` });

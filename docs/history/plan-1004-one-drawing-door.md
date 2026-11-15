@@ -72,7 +72,10 @@ connections are the same (T7). What differs, in eight groups, with the way each 
 | D7 | A pick row that may be empty (Sort, Group, the axes, a Presentation's kind and sort) offers None in the Query, and none in the one drawing | a row that may be empty offers None, in every graph (it can be cleared nowhere else) | e8 |
 | D8 | A Presentation draws the bar's Switch on every one; the Query, only on the one that carries its card's bar | the lens gives `#filters` only where the bar is, and a row the values leave out is not drawn there | a9 |
 
-Then `queryLensGraph`'s hand rows go (R1, R20, R25), and e8 switches `queryOpened`'s `drawn` to `workflowGraph(definition)`.
+Built: D5–D7 (sherpa-ui-e8, lane/1004d2: NODE_GRAPHS `drives` and `reshapes`, None on an `optional` pick); D1–D3
+(sherpa-ui-a9: Value A `graphs: ['workflow']`, `queryDrawingFacts`, the Source's page rows; and `omit`, a lens node's rows
+of its kind left out, for a kept Source and D8). Then `queryLensGraph`'s hand rows go (R1, R20, R25), and e8 switches
+`queryOpened`'s `drawn` to `workflowGraph(definition, queryDrawingFacts(…))`.
 Off, hints and read-only rows are 1004c's already. Will looks at the result in 1004f.
 
 ## Appendix: the inventory (sherpa-ui-e8, on main 59427c503)
