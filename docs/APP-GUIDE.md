@@ -724,7 +724,7 @@ registerAiCatalog({
 - A Model lists the models of the provider it picked.
 - A Skill lists yours, then New; a new one is its Instructions. A Runbook is its
   own Instructions, for the model to run.
-- Your runbooks are nodes of the **Runbooks** category, not a list (plan 936): see
+- Your runbooks are nodes of your Runbook type's category, not a list (plan 936): see
   Runbooks, below.
 - Simulate asks no model. A node says what it would do, and each answer is a
   stand-in by its shape: True 1, words, 0, no rows, an empty list.
@@ -733,14 +733,15 @@ registerAiCatalog({
 
 The Nodes panel's two tabs split by WHO made a node: **Preset Nodes** holds the kinds
 Sherpa and your app ship and every preset Custom Node; **Custom Nodes** holds the
-reader's own. In each tab the nodes stand under their category, so **Runbooks** can
-stand in both. A runbook is a Custom Node of the Runbooks category: its steps are its
-sub-graph, and a double click, or the drill-down button on its header's end, opens them,
-read only for a preset. Give an entity type
-a `category` (`registerEntityType({ …, category: 'Runbooks' })`) and its entities stand
-there; an entity's own `category` wins. Save as Custom Node asks a Category when its
-dialog has a `[name=category]` select (`data-type="select"`): Custom Nodes, Runbooks,
-and each category your entity types name (`savedCategories()`). Who may change a
+reader's own. In each tab the nodes stand under their category, so a **Runbooks** your
+app names can stand in both. Sherpa names no Runbooks of its own (plan 1008): give your
+graph type a `category` (`registerEntityType({ …, category: 'Runbooks' })`) and its
+entities stand there, right after Custom Nodes, with Custom Nodes' look and lane; an
+entity's own `category` wins, and one saved in one of Sherpa's categories (AI) wears that
+one's. A runbook's steps are its sub-graph, and a double click, or the drill-down button on
+its header's end, opens them, read only for a preset. Save as Custom Node asks a Category
+when its dialog has a `[name=category]` select (`data-type="select"`): Custom Nodes, and
+each category your graph types name (`savedCategories()`). Who may change a
 node of their own is your rule: give `bindWorkflow` a `canEdit(definition)`, and a no
 opens its inside read only, as a preset's does.
 

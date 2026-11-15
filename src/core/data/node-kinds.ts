@@ -42,6 +42,7 @@
  * - kindOfNode — The kind a node is, for its own type and operators; none, no such kind.
  * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
  * - NODE_CATEGORIES — The node panel's categories, in order.
+ * - familyOf — A node's family, its look and its lane: its category's, but a use of any saved graph (a Custom Node, an app's…
  * - PaletteItem — One node of the panel: the kind's id and the kind.
  * - PaletteGroup — One category of the panel, and its kinds in the registry's order.
  * - paletteOf — The node panel's list: each category with a workflow kind in it, in order; never a Query-only kind.
@@ -432,9 +433,9 @@ const RESPONSE_TYPES: Readonly<Record<string, NodeType>> = {
     rows: [pickRow('tone', 'Tone', [['info', 'Info'], ['success', 'Success'], ['warning', 'Warning'], ['critical', 'Critical']]), MESSAGE, textRow('action', 'Action'), propertyRow('shown', 'Shown', 'boolean')],
   },
   alert: {
-    label: 'Alert', would: 'Would raise an alert', icon: 'status-warning', help: 'Raise an alert on a device or customer',
+    label: 'Alert', would: 'Would raise an alert', icon: 'status-warning', help: 'Raise an alert on what comes in',
     rows: [
-      pickRow('severity', 'Severity', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High'], ['critical', 'Critical']]), pickRow('on', 'On', [['device', 'Device'], ['customer', 'Customer']]),
+      pickRow('severity', 'Severity', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High'], ['critical', 'Critical']]),
       TITLE, MESSAGE, propertyRow('alert-id', 'Alert ID', 'value'),
     ],
   },
@@ -838,7 +839,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   runbook: {
     agent: 'A Runbook runs its values.instructions on what comes into its header; its type says what it answers (values.type), and its "answer" goes on. It has no Model of its own: it takes the graph\'s.',
-    // A runbook of its own words: the app's runbooks are nodes of the Runbooks category (Will, plan 936 D1 B).
+    // A runbook of its own words: an app's saved runbooks are uses of its Runbook type, in that type's category (plan 936 D1 B).
     heading: 'Runbook', icon: 'book-open-lines', description: 'Write a runbook for the model to run', input: 'any', typeLabel: 'Expects', defaultType: 'text',
     types: expects([MODEL_IN, INSTRUCTIONS], 'Would run the runbook'),
     rows: RETRY, model: 'aiRunbook', graphs: ['workflow'], category: 'AI',
@@ -925,8 +926,14 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 }
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
- *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets'];
+ *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). An app's graph type's (a Runbook's) stands
+ *  after Custom Nodes; the library names none (plan 1008 L2). */
+export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets'];
+
+/** A node's family, its look and its lane: its category's. A use of a saved graph in a category of an app's own (a Runbook,
+ *  an Expert) is Custom Nodes'; one saved in a library category (AI) is that one's (plan 1008 L2). */
+export const familyOf = (kind: Pick<NodeKind, 'model' | 'category'> | undefined): string | undefined =>
+  kind?.model === 'graph' && !NODE_CATEGORIES.includes(kind.category ?? '') ? 'custom-nodes' : categorySlug(kind?.category);
 
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {
@@ -960,8 +967,13 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
     items.push({ id, kind });
     groups.set(category, items);
   }
+  // The library's categories in order, an app's graph types' (its uses all saved graphs) after Custom Nodes, then an app's own.
+  const shown = [...groups].filter(([c, items]) => items.length || (!categories && c === 'Custom Nodes'));
   const known = new Set(NODE_CATEGORIES);
-  return [...groups].filter(([c, items]) => items.length || (!categories && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
+  const saved = shown.filter(([c, items]) => !known.has(c) && items.every((i) => i.kind.model === 'graph'));
+  const placed = shown.some(([c]) => c === 'Custom Nodes') ? saved : [];
+  const rest = shown.filter(([c]) => !known.has(c) && !placed.some(([s]) => s === c));
+  return [...shown.filter(([c]) => known.has(c)).flatMap((g) => (g[0] === 'Custom Nodes' ? [g, ...placed] : [g])), ...rest].map(([category, items]) => ({ category, items }));
 }
 
 /** How a panel item answers a search: by its name, a tag or a keyword, `{}`; by a type's name, `{ type }`, the one it names
@@ -1302,8 +1314,10 @@ export interface GraphNode {
   rows: readonly GraphRow[];
   x: number;
   y: number;
-  /** Its kind's panel category: the node's look is styled by it. */
+  /** Its kind's panel category. */
   category?: string;
+  /** Its family (`familyOf`): the node's look is styled by it. */
+  family?: string;
   /** How far a reader grew it, each way, in times its natural size: 1 to 2. */
   size?: NodeSize;
   /** What it stands for, for whoever takes its edits: a Query node's scope, field or preset. */
@@ -1357,6 +1371,7 @@ export function kindNode(
     ...(k.many ? { many: k.many } : {}),
     ...(k.output ? { output: k.output } : {}),
     ...(k.category ? { category: k.category } : {}),
+    ...(familyOf(k) ? { family: familyOf(k)! } : {}),
     ...(k.would ? { would: k.would } : {}),
     ...own,
   };

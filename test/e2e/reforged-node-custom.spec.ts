@@ -338,7 +338,12 @@ test('a preset opens read only; Clone, the app\'s act, makes an editable copy th
   expect(await page.locator('#cv > sherpa-node[data-heading="Owner check copy"]').count()).toBe(1);
 });
 
-test('Save as Custom Node asks a Category: Custom Nodes, or Runbooks; a Runbook stands under Runbooks on the Custom tab (936)', async ({ page }) => {
+test('Save as Custom Node asks a Category: Custom Nodes, or one an app\'s graph type names, as Runbooks; it stands under it on the Custom tab (936, 1008 L2)', async ({ page }) => {
+  // The library names no Runbooks: an app's graph type does (plan 1008 L2).
+  await page.evaluate(async () => {
+    const { registerEntityType } = await import('/dist/data.js');
+    registerEntityType({ id: 'playbook', label: 'Playbook', category: 'Runbooks', graph: { runs: false } } as never);
+  });
   await bind(page);
   await header(page, 'Source').focus();
   await page.keyboard.press('Space');

@@ -19,7 +19,7 @@
  * - laneFaults — Every fault in a workflow's lanes, in words.
  */
 import { packBands } from './node-bands.js';
-import { categorySlug, kindOfNode, socketOf, type NodeKind, type NodeConnection } from './node-kinds.js';
+import { familyOf, kindOfNode, socketOf, type NodeKind, type NodeConnection } from './node-kinds.js';
 
 /** One lane: its id, its name, the families (node categories, as `data-category` writes them) it holds, and its colour. */
 export interface NodeLane {
@@ -45,7 +45,8 @@ export const LANES_BY_FAMILY: readonly NodeLane[] = [
   { id: 'values', label: 'Values', families: ['variables', 'math', 'time', 'utils'] },
   { id: 'organise', label: 'Organise', families: ['organise'] },
   { id: 'agentic', label: 'Agentic', families: ['ai'] },
-  { id: 'custom', label: 'Custom', families: ['custom-nodes', 'runbooks'] },
+  // A use of any saved graph (a Custom Node, an app's Runbook) is of the Custom Nodes family (`familyOf`, plan 1008 L2).
+  { id: 'custom', label: 'Custom', families: ['custom-nodes'] },
   { id: 'output', label: 'Output', families: ['output'] },
 ];
 
@@ -73,8 +74,8 @@ type HeightOf = (node: Laned['nodes'][number]) => number;
 const junctionOf = (lane: NodeLane): string => `junction:${lane.id}`;
 
 /** A node's family: its kind's category, as `data-category` writes it. */
-function familyOf(node: Laned['nodes'][number], kinds: Kinds): string | undefined {
-  return categorySlug(kindOfNode(kinds, node)?.category);
+function familyOfNode(node: Laned['nodes'][number], kinds: Kinds): string | undefined {
+  return familyOf(kindOfNode(kinds, node));
 }
 
 /**
@@ -94,7 +95,7 @@ function bandsOf(workflow: Laned, kinds: Kinds): (id: string) => string | undefi
   const laneIndex = (nodeId: string): number => {
     if (index.has(nodeId)) return index.get(nodeId)!;
     const node = byId.get(nodeId);
-    const family = node && !JUNCTION_KINDS.includes(node.kind) && familyOf(node, kinds);
+    const family = node && !JUNCTION_KINDS.includes(node.kind) && familyOfNode(node, kinds);
     const at = family ? lanes.findIndex((l) => l.families.includes(family)) : -1;
     index.set(nodeId, at);
     return at;

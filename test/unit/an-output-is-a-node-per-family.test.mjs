@@ -75,6 +75,8 @@ test('a type change in a family keeps the rows the types share, and the values o
   assert.equal(row(back, 'message').value, 'Patched {{value:customer.name}}');
   assert.equal(row(back, 'tone'), undefined);
   assert.deepEqual(workflowFaults(flow('response', { ...values, type: 'alert' })), [], 'the Toast\'s Tone is kept, not a fault');
+  // The shipped Alert names no app's things (plan 1008 L1): it raises one on what comes in; an app adds its own type for more.
+  assert.deepEqual(back.rows.map((r) => r.name).filter((n) => ['severity', 'on'].includes(n)), ['severity']);
 });
 
 test('the panel lists the families that have a type, no Notify; a search finds a family by a type', () => {

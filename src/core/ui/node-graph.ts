@@ -1581,7 +1581,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, option
     el.toggleAttribute('data-input-many', !!node.many);
     // A portal's look is its side's: In blue, Out orange (Will, TODO 907).
     const portal = portalOf(node);
-    put(el, 'data-category', portal ? `portal-${portal.side}` : categorySlug(node.category));
+    put(el, 'data-category', portal ? `portal-${portal.side}` : node.family ?? categorySlug(node.category));
     put(el, 'data-scale-w', node.size ? String(node.size.w) : undefined);
     put(el, 'data-scale-h', node.size ? String(node.size.h) : undefined);
     el.toggleAttribute('data-input-connected', connectionsOf(graph).connected.has(node.id));
@@ -3590,7 +3590,7 @@ export function bindWorkflow(
       tags.tags = [];
       tags.suggestions = knownTags().map((value) => ({ value }));
     }
-    // An optional Category (`[name=category]`, a select): Custom Nodes, Runbooks, and the app's own (plan 936 D3 A).
+    // An optional Category (`[name=category]`, a select): Custom Nodes, and each one an app's graph types name (plans 936, 1008).
     const category = dialogField('category');
     if (category) {
       void category.populate?.(savedCategories().map((value) => ({ value, label: value })));

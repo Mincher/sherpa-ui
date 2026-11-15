@@ -8,7 +8,7 @@
  * Will, plan 746 E1, E5 · TRAP T-an-entity-is-an-envelope-and-a-type · TRAP T-an-entity-is-used-as-a-node
  *
  * Map:
- * - savedCategories — The categories a reader may save a Custom Node or a graph in: Custom Nodes, Runbooks, and the app's.
+ * - savedCategories — The categories a reader may save a Custom Node or a graph in: Custom Nodes, and the app's graph types'.
  * - EntityType — One type: a type.v1 with its graph part, and the code JSON cannot say: its settings check and defaults.
  * - FILTER — The Filter type's id: a preset of its store's pages, and the first half of its preset's id.
  * - ENTITY_TYPES — The types the library ships: `filter` and `node`.
@@ -35,10 +35,11 @@ import { categoryOf, entityKind, entityRefOf, ENTITY_SCHEMA, definitionOf, type 
 import { layoutParts } from './graph-layout.js';
 import type { WorkflowDefinition } from './workflow.js';
 
-/** The categories a reader may save a Custom Node or a graph in (plan 936 D3 A): Custom Nodes, Runbooks, and each one an
- *  app's graph types name. A row type's category lists rows, not nodes. */
+/** The categories a reader may save a Custom Node or a graph in (plan 936 D3 A): Custom Nodes, and each one an app's graph
+ *  types name, as a Runbook type's Runbooks; the library names none of its own (plan 1008 L2). A row type's category lists
+ *  rows, not nodes. */
 export function savedCategories(types: Readonly<Record<string, Pick<EntityType, 'category' | 'graph'>>> = entityTypes()): string[] {
-  return [...new Set(['Custom Nodes', 'Runbooks', ...Object.values(types).flatMap((t) => (t.graph && t.category ? [t.category] : []))])];
+  return [...new Set(['Custom Nodes', ...Object.values(types).flatMap((t) => (t.graph && t.category ? [t.category] : []))])];
 }
 
 /** One type: a type.v1 — its id (a kebab-case noun: an entity's `type`, and the first half of a use's kind), its words,

@@ -1,6 +1,6 @@
 /**
  * ai-catalog.ts — what the AI nodes and the Triggers pick from: the host app's providers and their models, and its skills;
- * its events, tasks, agents and endpoints. Its runbooks are nodes of the Runbooks category (plan 936 D1 B). Sherpa ships none: model names change, and Sherpa knows no app.
+ * its events, tasks, agents and endpoints. Its runbooks are nodes of its Runbook type's category (plan 936 D1 B). Sherpa ships none: model names change, and Sherpa knows no app.
  * Registered once, at load, as Output types are. Pure: no DOM. Will, plans 926 D1 A, 941
  *
  * Map:
