@@ -65,6 +65,7 @@ import type { AddContext, SherpaNodeList } from '../../components/sherpa-node-li
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 import { primaryKey } from './modifier-key.js';
 import { keepOrder, morph } from './keep-order.js';
+import { settleAfter } from './settle-after.js';
 import { boxOf, pointIn } from './plane.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
 import { dotsThrough, handlesOf, pathThrough, sweepOf, waypointsOf, type Obstacle, type Pt } from './connector-path.js';
@@ -4444,7 +4445,8 @@ export function bindWorkflow(
   if (!doc && (draft.unfurl || !draft.byHand)) {
     const frame = (): Promise<void> => new Promise((done) => requestAnimationFrame(() => done()));
     const measured = (): boolean => { const boxes = nodeBoxes(); return boxes.length >= draft.nodes.length && boxes.every((b) => b.right > b.left); };
-    void (async () => {
+    // settled() waits for it: what measures after settled() measures the unfurled graph.
+    settleAfter(canvas, (async () => {
       for (let i = 0; i < 120 && !measured(); i++) await frame();
       await frame();
       await frame();
@@ -4462,7 +4464,10 @@ export function bindWorkflow(
         journal.clear();
         tell();
       }
-    })();
+      // The view's fit lands two frames after the Unfurl.
+      await frame();
+      await frame();
+    })());
   }
   return editor;
 }

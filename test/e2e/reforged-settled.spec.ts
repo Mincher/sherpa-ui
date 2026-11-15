@@ -43,3 +43,30 @@ test('given a part of the page, settled() waits on that part alone — shadow ro
   expect(r.waitedForInner).toBe(true);
   expect(r.ms).toBeLessThan(2500);
 });
+
+test('settled() waits for work an element began after its render (settleAfter), under its root alone, and lets it go once done (1001c)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { settled } = await import('/dist/index.js' as string) as { settled: Settled };
+    const { settleAfter } = await import('/dist/core/ui/settle-after.js' as string) as { settleAfter: (el: Element, work: Promise<unknown>) => void };
+    const root = document.getElementById('root')!;
+    const [busy, other] = [document.createElement('div'), document.createElement('div')];
+    root.replaceChildren(busy, other);
+    const later = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
+    settleAfter(busy, later(800));
+    // Failed work holds it no longer than its failing.
+    settleAfter(busy, later(100).then(() => { throw new Error('gone'); }));
+    const t0 = performance.now();
+    await settled(other);
+    const elsewhere = performance.now() - t0;
+    const t1 = performance.now();
+    await settled(root);
+    const under = performance.now() - t1;
+    const t2 = performance.now();
+    await settled(root);
+    return { elsewhere, under, again: performance.now() - t2 };
+  });
+  // 800ms of work: what settles before it is under 400ms, so what waits for it is over 400ms.
+  expect(r.elsewhere).toBeLessThan(400);
+  expect(r.under).toBeGreaterThan(400);
+  expect(r.again).toBeLessThan(400);
+});

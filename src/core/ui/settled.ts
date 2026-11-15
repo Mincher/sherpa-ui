@@ -6,14 +6,16 @@
  * - settled — resolve once a tree's components have rendered, stamped their data, loaded their icons, and stopped moving
  */
 import { iconsLoading } from './render-icon.js';
+import { workOf } from './settle-after.js';
 
 type Root = Document | DocumentFragment | Element;
 
-/** Every pending `rendered` under a root, shadow roots included. */
+/** Every pending `rendered`, and work begun since (`settleAfter`), under a root, shadow roots included. */
 function pending(root: Root, out: Set<Promise<void>>): Set<Promise<void>> {
   for (const el of root.querySelectorAll('*')) {
     const rendered = (el as Element & { rendered?: Promise<void> }).rendered;
     if (el.localName.startsWith('sherpa-') && rendered) out.add(rendered);
+    for (const work of workOf(el)) out.add(work);
     if (el.shadowRoot) pending(el.shadowRoot, out);
   }
   return out;

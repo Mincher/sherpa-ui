@@ -104,3 +104,27 @@ test('a view its host sets while the graph opens is kept: the opening unfurls th
   expect(new Set(await xs(page)).size).toBeGreaterThan(1);
   expect(await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { view: unknown }).view)).toEqual({ x: 360, y: 60, zoom: 0.5 });
 });
+
+test('settled() waits for the opening Unfurl: what measures after one settled() measures the unfurled graph, in its view (1001c)', async ({ page }) => {
+  const read = () => page.evaluate(() => ({
+    xs: [...document.querySelectorAll('#cv > sherpa-node')].map((n) => n.getAttribute('data-x')),
+    view: (document.getElementById('cv') as HTMLElement & { view: unknown }).view,
+  }));
+  await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = `
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>`;
+    await customElements.whenDefined('sherpa-node-toolbar');
+    const canvas = document.getElementById('cv') as HTMLElement & { rendered: Promise<void> };
+    await canvas.rendered;
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const at = (id: string, kind: string, values?: Record<string, unknown>) => ({ id, kind, x: 0, y: 0, heading: id, ...(values ? { values } : {}) });
+    bindWorkflow(canvas as never, { v: 3, id: 'once', nodes: [at('s', 'source', { store: 'users' }), at('f', 'field', { field: 'status' }), at('o', 'result')],
+      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'o' }] } as never, { session: new SessionStore(), toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'] });
+    await window.__settled();
+  });
+  const once = await read();
+  expect(new Set(await xs(page)).size).toBeGreaterThan(1);
+  await settle(page);
+  await settle(page);
+  expect(await read()).toEqual(once);
+});

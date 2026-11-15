@@ -1043,7 +1043,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-round-is-for-dynamic-sizes-only](traps/element-and-sheets.md#t-round-is-for-dynamic-sizes-only) — sherpa-grouping
 - [T-row-fragment-cloned-whole](traps/element-and-sheets.md#t-row-fragment-cloned-whole) — directives, sherpa-element
 - [T-set-removes-on-falsy](traps/element-and-sheets.md#t-set-removes-on-falsy) — sherpa-element
-- [T-settled-waits-for-renders-not-transitions](traps/element-and-sheets.md#t-settled-waits-for-renders-not-transitions) — settled
+- [T-settled-waits-for-renders-not-transitions](traps/element-and-sheets.md#t-settled-waits-for-renders-not-transitions) — settle-after, settled
 - [T-shadow-input-needs-element-internals](traps/element-and-sheets.md#t-shadow-input-needs-element-internals) — form-value, sherpa-element
 - [T-shared-sheets-settle-independently](traps/element-and-sheets.md#t-shared-sheets-settle-independently) — sherpa-element, templater
 - [T-shared-values-two-components-must-agree-on](traps/element-and-sheets.md#t-shared-values-two-components-must-agree-on) — shared-constants

@@ -1562,7 +1562,12 @@ frames alone. `Animation.finished` is the only thing that waits for one.
   while awaited ends the wait.
 
 - Site: `src/core/ui/settled.ts`
+- Site: `src/core/ui/settle-after.ts`
 - Site: `test/e2e/reforged-settled.spec.ts`
+
+**Work begun after a render is no `rendered`** (TODO 1000, 2026-11-15): a graph's opening Unfurl runs frames after
+its bind. `settleAfter(el, work)` gives it to `settled()`, which waits for it under `el`'s root, as for a
+`rendered`; done or failed, it is let go.
 
 ### T-a-native-control-brings-its-own-margin
 
@@ -2343,6 +2348,9 @@ also"; plan 1001 D4 A). One door, `unfurl()` in `bindWorkflow`, for a press, an 
   (inside a Custom Node, its Group Input) at the view's left middle. Fit and a zoom out by hand still show all of it
   (`canvas.fit()` with no `least`). A view its host or a reader moved after the graph opened is kept: the opening Unfurl
   lays the graph out, and fits only while the view is where it opened (`stillOpened`).
+- **settled() waits for it** (found by sherpa-demos-3d: five Demos specs raced it): the opening runs frames after the
+  bind, outside any `rendered`, so it is given to `settleAfter(canvas, …)`; what measures after `settled()` measures the
+  unfurled graph in its view.
 - **A spec whose graph must keep its own places says `byHand: true`**: it was laid out by hand. 31 specs say so.
 
 - Site: `src/core/ui/node-graph.ts`
