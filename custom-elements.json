@@ -5057,12 +5057,12 @@
                 {
                   "name": "options",
                   "type": {
-                    "text": "{ ease?: boolean }"
+                    "text": "{ ease?: boolean; least?: number; from?: HTMLElement | null }"
                   },
                   "optional": true
                 }
               ],
-              "description": "Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer than 100%. `ease` moves the view there as a reader's step does (TODO 905)."
+              "description": "Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer than 100%. `ease` moves the view there as a reader's step does (TODO 905). `least` is the furthest out it goes: where all would need further, the view stays at `least`, with `from` (else the content's start) at its left middle."
             },
             {
               "kind": "method",

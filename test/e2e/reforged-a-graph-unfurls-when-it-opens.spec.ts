@@ -58,3 +58,28 @@ test('it opens unfurled, its places saved and no Undo step; moved by hand, it op
   await settle(page);
   expect((await kept(page)).at(-1)?.byHand).toBeUndefined();
 });
+
+test('a graph too wide to read whole opens at a readable zoom, its Start at the left middle; Fit still shows it all; a small one opens whole (1001c, Will A)', async ({ page }) => {
+  /** The view's zoom, and the Start's middle-left in the stage the view shows, as a share of the stage's width and height. */
+  const view = () => page.evaluate(() => {
+    const canvas = document.getElementById('cv') as HTMLElement & { view: { zoom: number } };
+    const stage = canvas.shadowRoot!.querySelector('.stage')!.getBoundingClientRect();
+    const start = [...canvas.querySelectorAll('sherpa-node')].find((n) => n.getAttribute('data-heading')?.startsWith('Start'))!.getBoundingClientRect();
+    return { zoom: canvas.view.zoom, left: (start.left - stage.left) / stage.width, middle: (start.top + start.height / 2 - stage.top) / stage.height };
+  });
+  await open(page);
+  expect((await view()).zoom).toBeGreaterThan(0.35);
+  const at = (id: string, kind: string, values?: Record<string, unknown>) => ({ id, kind, x: 0, y: 0, heading: id, ...(values ? { values } : {}) });
+  const sorts = Array.from({ length: 12 }, (_, i) => at(`o${i}`, 'organise', { sort: 'status', direction: 'asc' }));
+  await open(page, { v: 3, id: 'wide', nodes: [at('s', 'source', { store: 'users' }), ...sorts, at('r', 'result')],
+    connections: [{ from: 's/rows', to: 'o0' }, ...sorts.slice(1).map((n, i) => ({ from: `o${i}/rows`, to: n.id })), { from: 'o11/rows', to: 'r' }] } as never);
+  const opened = await view();
+  expect(opened.zoom).toBeCloseTo(0.35, 3);
+  // The Start near the left middle: a reader reads from the left.
+  expect(opened.left).toBeGreaterThan(0);
+  expect(opened.left).toBeLessThan(0.1);
+  expect(Math.abs(opened.middle - 0.5)).toBeLessThan(0.25);
+  // Fit, and a zoom out by hand, still reach all of it.
+  await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { fit(): void }).fit());
+  expect((await view()).zoom).toBeLessThan(0.3);
+});

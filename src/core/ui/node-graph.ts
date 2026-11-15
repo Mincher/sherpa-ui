@@ -1249,7 +1249,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawConnections(made);
-      if (!made.fitted && made.nodes.size) { made.fitted = true; canvas.fit(); }
+      if (!made.fitted && made.nodes.size) { made.fitted = true; canvas.fit(undefined, openFit(made)); }
     }),
   };
   // A drag pulls and pushes while the pointer is down. A node's header holds the pointer, and its letting go bubbles here.
@@ -1832,16 +1832,26 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
 }
 
 /** Unfurl the whole graph and hand the host the places, ties and bends with them, and the stages' (TODO 950): one step. The
- *  view fits it after. TODO 569 */
-export function unfurlGraph(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDefinition, 'nodes' | 'stages'>): Arranged | undefined {
+ *  view fits it after, as `fit` says (an open's, `openFit`). TODO 569 */
+export function unfurlGraph(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDefinition, 'nodes' | 'stages'>, fit: OpenFit = {}): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
   const placed = drawn?.options.onArrange ? unfurlment(canvas, staged) : undefined;
   if (!drawn || !placed) return undefined;
   // Each node moves there, and the view eases round them all. TODO 902
   canvas.easePieces();
   handOn(drawn, placed);
-  requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, { ease: true })));
+  requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, { ease: true, ...fit })));
   return placed;
+}
+
+/** The furthest out a graph OPENS: fitted, but never further out than a reader reads it (Will, TODO 1001c A). Fit shows the rest. */
+const READABLE_ZOOM = 0.35;
+type OpenFit = { least?: number; from?: HTMLElement | null };
+
+/** How a graph's view opens: fitted, never further out than `READABLE_ZOOM`; past it, its Start (a Custom Node's, its Group
+ *  Input) at the view's left middle. */
+function openFit(drawn: Drawn | undefined): OpenFit {
+  return { least: READABLE_ZOOM, from: drawn?.nodes.get(START) ?? drawn?.nodes.get('#in') ?? null };
 }
 
 /** Say in `data-can-arrange`, and each flag given, whether two or more nodes are picked; stop lets go. */
@@ -3148,10 +3158,10 @@ export function bindWorkflow(
   };
   /** Unfurl the whole graph, as the toolbar's Unfurl does: one door for a press, an open and Swimlanes off. A tag makes it one
    *  step with the edit before it (Swimlanes off and its Unfurl). */
-  const unfurl = (tag = ''): void => {
+  const unfurl = (tag = '', fit: OpenFit = {}): void => {
     unfurling = tag;
     try {
-      unfurlGraph(canvas, shown());
+      unfurlGraph(canvas, shown(), fit);
     } finally {
       unfurling = undefined;
     }
@@ -3400,7 +3410,7 @@ export function bindWorkflow(
     picks.deselect();
     refreshPanel();
     draw();
-    requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit()));
+    requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, openFit(drawnOn.get(canvas)))));
     if (focus) focusNode(canvas, focus);
     else canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   };
@@ -4295,7 +4305,7 @@ export function bindWorkflow(
     // Not where its host has set the view since.
     if (made && !made.fitted && made.nodes.size && JSON.stringify(canvas.view) === viewAtBind) {
       made.fitted = true;
-      canvas.fit();
+      canvas.fit(undefined, openFit(made));
     }
   }));
   // A run lights its nodes: each step names its node, and the run its workflow. N4 reports.
@@ -4433,7 +4443,7 @@ export function bindWorkflow(
       }
       // The graph as it opened, never a reader's step: no Undo takes it back.
       const fresh = !journal.canBack;
-      if (!lanesOn()) unfurl();
+      if (!lanesOn()) unfurl('', openFit(drawnOn.get(canvas)));
       keepTab();
       if (fresh) {
         journal.clear();

@@ -48,7 +48,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 | `panTo(x: number, y: number)` | Move the plane origin to (x, y) in the view, in screen px. |
 | `zoomTo(zoom: number, cx?: number, cy?: number)` | Zoom to `zoom`, keeping the point at (cx, cy) in the view where it is — the view's middle unless given. |
 | `zoomBy(factor: number)` | Zoom by a factor, about the middle of what the view shows. |
-| `fit(pieces?: readonly HTMLElement[], options: { ease?: boolean } = {})` | Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer than 100%. `ease` moves the view there as a reader's step does (TODO 905). |
+| `fit(pieces?: readonly HTMLElement[], options: { ease?: boolean; least?: number; from?: HTMLElement \| null } = {})` | Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer than 100%. `ease` moves the view there as a reader's step does (TODO 905). `least` is the furthest out it goes: where all would need further, the view stays at `least`, with `from` (else the content's start) at its left middle. |
 | `easePieces()` | The places its pieces take next ease there from where they stand, as CSS moves them: an Unfurl, an Arrange. A plane drawn into a real canvas paints them at once. Will, TODO 902 |
 
 ## Events

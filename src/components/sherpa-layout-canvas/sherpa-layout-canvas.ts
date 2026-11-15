@@ -243,8 +243,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
   }
 
   /** Fit every piece of content in what the view shows, beside the card — or these pieces alone (a selection); no nearer
-   *  than 100%. `ease` moves the view there as a reader's step does (TODO 905). */
-  fit(pieces?: readonly HTMLElement[], options: { ease?: boolean } = {}): void {
+   *  than 100%. `ease` moves the view there as a reader's step does (TODO 905). `least` is the furthest out it goes: where
+   *  all would need further, the view stays at `least`, with `from` (else the content's start) at its left middle. */
+  fit(pieces?: readonly HTMLElement[], options: { ease?: boolean; least?: number; from?: HTMLElement | null } = {}): void {
     if (options.ease) this.#ease();
     const boxes = pieces?.length ? pieces.map(boxOf) : null;
     const bounds = boxes ? boxes.reduce((a, b) => ({
@@ -255,6 +256,14 @@ export class SherpaLayoutCanvas extends SherpaElement {
     const w = Math.max(1, bounds.right - bounds.left);
     const h = Math.max(1, bounds.bottom - bounds.top);
     const zoom = this.#clamp(Math.min(1, (seen.width - FIT_PADDING * 2) / w, (seen.height - FIT_PADDING * 2) / h));
+    if (options.least !== undefined && zoom < options.least) {
+      // Too far out to read: at `least`, the start at the view's left middle.
+      const start = options.from ? boxOf(options.from) : bounds;
+      this.#zoom = this.#clamp(options.least);
+      this.#x = seen.left + FIT_PADDING - start.left * this.#zoom;
+      this.#y = seen.top + seen.height / 2 - ((start.top + start.bottom) / 2) * this.#zoom;
+      return this.#apply();
+    }
     this.#zoom = zoom;
     this.#x = seen.left + (seen.width - w * zoom) / 2 - bounds.left * zoom;
     this.#y = seen.top + (seen.height - h * zoom) / 2 - bounds.top * zoom;
