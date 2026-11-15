@@ -825,6 +825,10 @@ registerNodeTypes(OUTPUT_TRIGGER, {
 bindWorkflow(canvas, workflow, { entities: () => shelf.list().map((e) => shelf.get(e.id)), ... });
 ```
 
+A row may pick from a list of your app's own instead (`control: 'list', of: 'views'`): give the editor your lists by
+name, each a value or `{ value, label }`, as `bindWorkflow(canvas, workflow, { lists: { views: [...] }, ... })`. Content ›
+On a view picks one of `views`; a list you do not give leaves its row text (plan 986c).
+
 A ring of them across the shelf (A starts B, B starts A; or A starts itself) is a loop:
 each Output Trigger in it is blocked, and warns "Blocked: it would start a loop, A › B ›
 A". The graph still saves. `startLoops` gives the same answer to a server or an agent.

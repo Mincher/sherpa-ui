@@ -6332,11 +6332,16 @@ their own. The workflow (`here`) and a page's Query graph (`leafRows`) both call
 - **A time of day is no date**: a Schedule's At (`"02:00"`) stays text until a time control exists.
 - **The sweep** (`a-row-takes-its-values-type`) walks every row of every kind: a pick has choices, `ofField` sits only
   on a test's value, a number or a yes-or-no is never text, a day is a date.
+- **A row may name the app's list** (986c): `control: 'list'` with `of`, its choices the app's `lists[of]` in the
+  editor's facts (each a value or `{ value, label }`), drawn as a dropdown; Content › On a view names `views`. A list the
+  app does not give leaves the row text.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-row-takes-its-values-type.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
+- Site: `test/unit/a-row-picks-the-apps-list.test.mjs`
+- Site: `test/e2e/reforged-a-row-picks-the-apps-list.spec.ts`
 
 ### T-a-part-of-a-text-is-typed
 

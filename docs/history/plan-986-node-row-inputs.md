@@ -1,6 +1,6 @@
 # Plan 986: Every node row offers what makes sense
 
-**Status: D1 answered, A (Will, 2026-11-14). 986a BUILT (sherpa-ui-e8, lane 986a); 986b BUILT (lane 986b: `withStoreValues` in field-catalogue.ts, called by the editor as a graph opens); 986c and 986d next.**
+**Status: D1 answered, A (Will, 2026-11-14). 986a BUILT (sherpa-ui-e8, lane 986a); 986b BUILT (lane 986b: `withStoreValues` in field-catalogue.ts, called by the editor as a graph opens); 986c BUILT (lane 986c: `control: 'list'`, `of`, the editor's `lists`); 986d next.**
 
 Will, 2026-11-14 (by sherpa-demos-67, from a screenshot: Contoso patching, Source `user` › Field `name` › Condition
 "Is one of"): "the values in the condition node should be showing all unique values from the 'user' sources 'name'

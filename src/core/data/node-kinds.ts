@@ -118,7 +118,7 @@ export function truthy(value: unknown): boolean {
 export type RowControl =
   | 'text' | 'message' | 'number' | 'switch' | 'tags' | 'datetime'
   | 'pick' | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type' | 'portal'
-  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity';
+  | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity' | 'list';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 /** The prefix of a row a pick unfolds: "At risk" unfolds as `v-at-risk` (a socket's name takes no space). */
@@ -181,7 +181,8 @@ export interface RowKind {
   graphs?: readonly NodeGraph[];
   /** A `pick` row's own fixed list, so a kind an app adds needs no control of its own. Drawn, the list as shown. Plan 891 */
   choices?: readonly RowChoice[];
-  /** An `entity` row's type: it picks one of the shelf's entities of it, as a Run Coworker's Coworker (plan 949). */
+  /** An `entity` row's type: it picks one of the shelf's entities of it, as a Run Coworker's Coworker (plan 949). A `list`
+   *  row's list, by its name: it picks one of the app's own (`WorkflowFacts.lists`), as Content's View picks a View (986c). */
   of?: string;
   /** A `message` row of one line, as a title or a file name: its editor has no toolbar and takes no line break. TODO 913 */
   singleLine?: true;
@@ -412,7 +413,7 @@ const CONTENT_TYPES: Readonly<Record<string, NodeType>> = {
   view: {
     label: 'On a view', would: 'Would show it on a view', icon: 'dashboard', help: 'Show content on a view',
     rows: [
-      textRow('view', 'View'), pickRow('place', 'Place', [['widget', 'Widget'], ['card', 'Card'], ['row', 'List row']]), objectIn('content', 'Content'), dateRow('until', 'Keep until'),
+      { ...textRow('view', 'View'), control: 'list', of: 'views' }, pickRow('place', 'Place', [['widget', 'Widget'], ['card', 'Card'], ['row', 'List row']]), objectIn('content', 'Content'), dateRow('until', 'Keep until'),
       propertyRow('content-id', 'Content ID', 'value'), propertyRow('link', 'Link', 'value'),
     ],
   },
@@ -1156,6 +1157,8 @@ export interface RowFacts {
   provider?: unknown;
   /** The shelf's entities of an `entity` row's type: what it picks (plan 949). */
   entities?: readonly RowChoice[];
+  /** An app's list a `list` row names: what it picks (plan 986c). */
+  list?: readonly RowChoice[];
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
@@ -1190,8 +1193,9 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (fixed) return [...(none ?? []), ...fixed];
   if (row.control === 'type') return facts.types && [...facts.types];
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
-  // The app's catalog (plans 926, 941), or the shelf's entities of a type (949): one with none picked says so, as a pick does.
-  const listed = row.control === 'entity' ? facts.entities : catalogChoices(row.control, facts.provider);
+  // The app's catalog (plans 926, 941), the shelf's entities of a type (949), or an app's own list (986c): one with none picked
+  // says so, as a pick does.
+  const listed = row.control === 'entity' ? facts.entities : row.control === 'list' ? facts.list : catalogChoices(row.control, facts.provider);
   if (listed) return [...blank('Pick one'), ...listed];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;

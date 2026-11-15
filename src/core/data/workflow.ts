@@ -38,7 +38,7 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, kindIn, NODE_GRAPHS, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, typedControl, rowsOfNode, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeGraph, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, kindIn, NODE_GRAPHS, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, typedControl, rowsOfNode, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeGraph, type NodeTie, type RowChoice, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -469,6 +469,9 @@ export interface WorkflowFacts {
   primary?: ModelPick | null;
   /** What each input last heard, by its socket (`node/row`): a Simulate's run. A joined row shows it, read only (TODO 990). */
   heard?: Readonly<Record<string, unknown>>;
+  /** The app's own lists, by name: what a `list` row (`of`) picks from, each a value or `{ value, label }`, as `views` the
+   *  app's Views (plan 986c). A list the app does not give leaves its row text. */
+  lists?: Readonly<Record<string, readonly (string | RowChoice)[]>>;
 }
 
 type StoreFields = NonNullable<WorkflowFacts['fieldsOf']>[string];
@@ -824,7 +827,10 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       // with no values to pick from is typed, as it was. Tags with values to pick from are one dropdown with a menu of
       // ticks: a node's multi-select is one row (Will, 2026-11-13). TRAP T-a-multi-select-is-one-row · TRAP T-a-row-takes-its-values-type
       const byType = row.ofField && !here?.length ? typedControl(type) : undefined;
+      // An app's own list, by its name (986c); one it does not give leaves the row text.
+      const named = row.control === 'list' ? facts.lists?.[row.of ?? '']?.map((c): RowChoice => (typeof c === 'string' ? { value: c, label: c } : c)) : undefined;
       const plain = byType ? { ...row, control: byType } : row.control === 'values' && !here?.length ? { ...row, control: 'text' as const }
+        : row.control === 'list' && !named ? { ...row, control: 'text' as const }
         : row.control === 'tags' && here?.length ? { ...row, control: 'values' as const, multiple: true as const } : row;
       // A Unit says its words for the count beside it: "1 day", "7 days".
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};
@@ -837,6 +843,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
         ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(types ? { types } : {}), ...(here ? { values: here } : {}), ...count,
         ...(row.control === 'portal' ? { portals: names } : {}),
         ...(row.control === 'entity' ? { entities: shelf.filter((e) => e.type === row.of).map((e) => ({ value: e.id, label: e.label })) } : {}),
+        ...(named ? { list: named } : {}),
       });
       // A Type row says the type's own value, and the line the type gives.
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
