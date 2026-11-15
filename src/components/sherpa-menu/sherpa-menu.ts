@@ -908,11 +908,14 @@ export class SherpaMenu extends SherpaElement {
   /**
    * The values the filters before it LEAVE, as value keys — its host's, from the
    * source. A row they rule out is greyed and refused, a TICKED one too: it stays
-   * ticked, and Clear lets it go. `null` limits nothing. Silent: no event.
+   * ticked, and Clear lets it go; a date's calendar offers only their days. `null`
+   * limits nothing. Silent: no event.
    * TRAP T-a-ruled-out-value-is-greyed
    */
   set present(values: readonly string[] | null) {
     this.#list.setPresent(values);
+    // A date's days, as a list's values: its calendar offers only those. TODO 982
+    this.#date.setPresent(values);
   }
   get present(): readonly string[] | null {
     return this.#list.present;

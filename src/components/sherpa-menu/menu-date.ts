@@ -13,6 +13,7 @@
  * - .flip — The Range switch: the calendar picks one day, or two.
  * - .reading — Its answer: two ends, or one day under the menu's op.
  * - .sync — The calendar's shape and the days it may pick.
+ * - .setPresent — The days the filters before it leave: the only ones its calendar offers.
  * - .today — Drive the calendar to today.
  * - .clear — Take every day off the calendar.
  */
@@ -41,6 +42,8 @@ const DAYS = ['value', 'data-value-start', 'data-value-end'];
 export class DateBody {
   /** The menu it is part of. */
   readonly #host: DateHost;
+  /** The days the filters before it leave; null, the days the menu says. */
+  #present: readonly string[] | null = null;
 
   constructor(host: DateHost) {
     this.#host = host;
@@ -117,8 +120,22 @@ export class DateBody {
        nobody asked. The FLIP says `single`, because that is a change. */
     const el = this.#host.el;
     if (el.hasAttribute('data-range')) cal.setAttribute('data-type', 'range');
-    const days = el.dataset['available'];
-    if (days) cal.setAttribute('data-available', days);
+    this.#days(cal);
+  }
+
+  /** The days the filters before it leave, as value keys, or null: the menu's own days. A range is bounded by them, as
+   *  any calendar's is; today is no pick of theirs. TODO 982 · TRAP T-a-ruled-out-value-is-greyed */
+  setPresent(values: readonly string[] | null): void {
+    this.#present = values && [...new Set(values.map((v) => v.slice(0, 10)))];
+    const cal = this.#calendar();
+    if (cal) this.#days(cal);
+  }
+
+  /** The days the calendar may pick: those the filters before it leave, else the menu's; none said, every day. */
+  #days(cal: HTMLElement): void {
+    const days = this.#present ? this.#present.join(',') : this.#host.el.dataset['available'];
+    if (days === undefined) cal.removeAttribute('data-available');
+    else cal.setAttribute('data-available', days);
   }
 
   /** Drive the calendar to today; the menu stays open. TRAP T-today-and-remove-are-menu-chrome */

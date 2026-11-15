@@ -2928,6 +2928,17 @@ Query that could only come back matching nothing (TODO 465). The Query decides,
 from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 (Will, TODO 523 F3 A).
 
+**A date is limited as a list is** (Will, TODO 982 A, 2026-11-15: "one door for
+lists and dates, on any card"). Where a chip holds a date, its ruler tallies the
+days the filters before it leave (`isDate` in the walk's facts), and `drawPresent`
+carries them as it carries a list's values. `menu.present` hands them to the date
+body, and its calendar offers only those days: a range is bounded by the first and
+last, as any calendar's is. Today is no pick of theirs: TODO 394's "today is always
+a pick" is for the menu's own days, and a ruled-out today stays the chip's value, as a
+ruled-out tick stays ticked. A date no chip holds is tallied nowhere, unlike a
+list's tap (each would be one more read per walk): a chip added asks a walk (981).
+A range outside the days stays in force and reads 0.
+
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
@@ -2946,6 +2957,9 @@ from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/components/sherpa-menu/menu-date.ts`
+- Site: `test/unit/a-date-is-limited-as-a-list-is.test.mjs`
+- Site: `test/e2e/reforged-a-date-is-limited-as-a-list-is.spec.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/source-counts.ts`

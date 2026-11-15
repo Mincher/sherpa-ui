@@ -88,6 +88,9 @@ export interface WalkFacts {
   field: (f: string) => Omit<FieldFacts, 'field'>;
   /** Is its answer a pick of values? */
   isList: (f: string) => boolean;
+  /** Is it a date? Where a chip holds it, its days are limited as a list's values are, by the rows at its place; one
+   *  no chip holds is tallied nowhere: a chip added asks a walk (981). None: no date. TODO 982 */
+  isDate?: (f: string) => boolean;
   /** Is this reading a plain pick — Simple, no range, the default op? */
   plainPicks: (f: string, reading: FieldReading) => boolean;
   /** A scope's filter sets. */
@@ -120,8 +123,8 @@ export interface WalkFacts {
  * Each scope's steps and taps, in order, from the applied Query: the View first,
  * from every row, its base the parts and the page's own scopes; then each other
  * scope from the View's end; then each chart part from its host's. With Limit, a
- * list field is ruled by the rows at its place; without, a component scope's by
- * the View's end (347), and the View's by nothing (D5 A).
+ * list field is ruled by the rows at its place, and a date by its days there (982);
+ * without, a component scope's by the View's end (347), and the View's by nothing (D5 A).
  * TRAP T-one-walk-counts-and-limits-in-order
  */
 export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
@@ -166,7 +169,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
       // A field the store answers counts by the keys it matched, as its rows do. TODO 612
       const clause = reading ? facts.fetched?.(f, answer) ?? readingClause({ field: f, ...fieldFacts }, answer) : undefined;
       const list = facts.isList(f);
-      const rule = list ? ruleOf(scope) : undefined;
+      const rule = list || facts.isDate?.(f) ? ruleOf(scope) : undefined;
       const step: WalkStep = {
         id: f, field: f, ...(clause ? { clause } : {}),
         // OFF counts what it would match, and narrows nothing (D3 A, 123).

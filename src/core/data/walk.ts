@@ -39,7 +39,7 @@ export interface WalkStep {
   on: boolean;
   /** It wears a badge: the rows that reach it and match its answer. */
   counts: boolean;
-  /** A list field: what greys its values and sets its picks aside — the rows at its place, or at the scope's start. */
+  /** A list field, or a date (982): what greys its values and sets its picks aside — the rows at its place, or at the scope's start. */
   ruler?: 'here' | 'start';
   /** A serial set's lower field: it offers only what the rows at its place hold, once something before it narrows. */
   offers?: boolean;
@@ -88,7 +88,7 @@ export interface Walk {
   results: Record<string, Record<string, number>>;
   /** Each pick's own rows, by field then value key. */
   values: Record<string, Record<string, Record<string, number>>>;
-  /** The value keys each list field's ruler leaves. */
+  /** The value keys each list or date field's ruler leaves. */
   present: Record<string, Record<string, string[]>>;
   /** What each lower field of a serial set offers. */
   offered: Record<string, Record<string, string[]>>;
