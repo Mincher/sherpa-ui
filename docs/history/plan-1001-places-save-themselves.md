@@ -50,6 +50,9 @@ Good: with no tab draft on a move, an agent's change, publish and roll back are 
 - **D4 A:** a graph is unfurled on opening only if nobody laid it out by hand; a move marks it so, the toolbar's Unfurl
   clears the mark, and leaving Swimlane mode always unfurls. A preset's mark is the session's too (D3).
 
+- **Zip ties (Will, 2026-11-15, asked in the 1001b pair):** making or removing a zip tie is layout: it saves itself, as a
+  move or a bend does. Frames stay edits: a frame has a title of its own.
+
 The questions, as they were asked:
 
 
