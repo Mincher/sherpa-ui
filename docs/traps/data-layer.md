@@ -8575,7 +8575,9 @@ keeps; none, a workflow. What each type is, is said once, in `NODE_GRAPHS`
   empty or not.
 - **Who drives a value** (`drives`, 1004 D5): in a Query a value is the reader's, so
   `kindIn` takes the input off every row that has a control (Value B, a Field's field, a
-  Store); a row of none (a chip's line, Pass, Fail) and every header keep theirs.
+  Store), but a Boolean's: a switch (a preset's On, a bar's Filters) still takes one
+  (TODO 732; the Demos pair caught it). A row of none (a chip's line, Pass, Fail) and every
+  header keep theirs.
 - **Who shapes a node** (`reshapes`, D6): the Query's lens owns its trees, so a type pick
   there keeps the node's sockets: a test is offered no And or Or, a group only those, on
   top of the narrowing by the field that comes in (which needs `fieldsOf`).

@@ -93,6 +93,8 @@ test('in a filter graph no node drives a value: a row with a control takes no co
   assert.deepEqual(inputs('query', 'f1'), [], 'a Field\'s field too');
   assert.ok(inputs(undefined, 't1').includes('b'), 'a workflow\'s Value B takes a line');
   assert.equal(node(tree('query'), 't1').input, 'any', 'the header still takes the column');
+  // A Boolean still turns a switch: a preset's On (TODO 732).
+  assert.equal(kindIn(NODE_KINDS['preset'], 'query').rows.find((r) => r.name === 'on').input, 'boolean');
   assert.equal(tree('query').connections.length, JOINS.length, 'each line is drawn');
 });
 

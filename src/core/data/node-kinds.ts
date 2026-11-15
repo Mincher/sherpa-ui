@@ -205,7 +205,8 @@ export type NodeGraph = 'query' | 'workflow';
  *  its node panel lists (none: all, and Custom Nodes empty or not). TRAP T-a-graph-is-drawn-by-its-type */
 export const NODE_GRAPHS: Readonly<Record<NodeGraph, { lacks: string; start: boolean; drives: boolean; reshapes: boolean; categories?: readonly string[] }>> = {
   workflow: { lacks: 'a workflow does not run', start: true, drives: true, reshapes: true },
-  // A Query's lens owns its shape: a value is the reader's, never a node's; And and Or stay groups. The kinds it takes placed
+  // A Query's lens owns its shape: a value is the reader's, never a node's, but a Boolean may still turn a switch (a preset's
+  // On, a bar's Filters: TODO 732); And and Or stay groups. The kinds it takes placed
   // — a Source (TODO 808), a Field (plan 783 D6) — and its Custom Nodes, its page's Filters (TODO 776).
   query: { lacks: "a page's filter graph does not draw", start: false, drives: false, reshapes: false, categories: ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets'] },
 };
@@ -859,12 +860,13 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
 }
 
 /** A kind as one graph draws it: a family with only the types that graph takes, and only the rows it draws (a Source's
- *  Fields is a workflow's); where no node drives a value, a row with a control has no input. None, the graph draws no such
+ *  Fields is a workflow's); where no node drives a value, a row with a control takes no input but a Boolean. None, the graph draws no such
  *  kind. Unchanged, the kind itself. */
 export function kindIn(kind: NodeKind, graph: NodeGraph): NodeKind | undefined {
   if (!kind.graphs.includes(graph)) return undefined;
   const { drives } = NODE_GRAPHS[graph];
-  const driven = (r: RowKind): boolean => !drives && !!r.control && !!r.input;
+  // Where no node drives a value, only a Boolean drives a row: a switch keeps its input (TODO 732).
+  const driven = (r: RowKind): boolean => !drives && !!r.control && !!r.input && r.input !== 'boolean';
   const drawn = (rows: readonly RowKind[]): readonly RowKind[] => (rows.some((r) => (r.graphs && !r.graphs.includes(graph)) || driven(r))
     ? rows.filter((r) => !r.graphs || r.graphs.includes(graph)).map((r) => (driven(r) ? (({ input: _input, ...rest }) => rest)(r) : r)) : rows);
   const rows = drawn(kind.rows);
