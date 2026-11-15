@@ -98,3 +98,23 @@ test('what the one drawing reads beside the definition: the page\'s fields and a
   const drawn = workflowGraph(queryDefinition('records', withStatus, {}), facts);
   assert.equal(drawn.nodes.find((n) => n.id === 'status-health')?.warnings, undefined);
 });
+
+test('one door unfolds a bar\'s chips and presets, a preset\'s fields and a status field\'s values, by today\'s names (1004 D4)', () => {
+  const domains = { health: { values: ['Good', 'Poor'], when: { Good: { plan: { eq: 'Pro' } } } } };
+  const lensedNow = queryLensGraph(query, page, { components, presets, kept: [{ id: 'source-2', store: 'devices' }], domains });
+  const drawn = workflowGraph(queryDefinition('records', lensedNow, {}), queryDrawingFacts(page, { query: { draft: query }, domains, presets }));
+  const rows = (id) => drawn.nodes.find((n) => n.id === id).rows;
+  const said = (id, name) => { const r = rows(id).find((x) => x.name === name); return r && [r.label, r.input ?? null, r.hint ?? null]; };
+  // The View's chips each take a filter's line; its preset a boolean's. The bar's own lists are no row.
+  assert.deepEqual([said('view-filters', 'region'), said('view-filters', '@filter:trials')], [['Region', 'any', 'Its Condition changes it.'], ['Trials', 'boolean', null]]);
+  assert.ok(!rows('view-filters').some((r) => r.name === 'chips' || r.name === 'presets'));
+  // A card's chip takes no line: its filter is on the card's rows.
+  assert.deepEqual(said('presentation-data', 'plan'), ['Plan', null, 'Its Condition changes it.']);
+  // A status field's values, each its rule in words, no socket.
+  assert.deepEqual([said('status-health', 'Good'), said('status-health', 'Poor')].map((r) => r?.slice(0, 2)), [['Good', null], ['Poor', null]]);
+  // Each name as the hand drawing's: a request reads them (T3).
+  for (const id of ['view-filters', 'presentation-data', 'status-health']) {
+    const hand = lensedNow.drawn.nodes.find((n) => n.id === id).rows.map((r) => r.name);
+    assert.deepEqual(hand.filter((n) => !rows(id).some((r) => r.name === n)), [], id);
+  }
+});

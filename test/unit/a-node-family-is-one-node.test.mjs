@@ -64,7 +64,8 @@ test('a kind of one type shows no select; the Query takes Logic\'s And, Or and c
   const query = kindIn(NODE_KINDS.condition, 'query');
   assert.deepEqual(Object.keys(query.types), Object.keys(NODE_KINDS.condition.types).filter((t) => t !== 'not' && t !== 'empty'));
   assert.equal(query.defaultType, 'eq');
-  assert.equal(kindIn(NODE_KINDS.condition, 'workflow'), NODE_KINDS.condition, 'a workflow takes every type');
+  // A workflow takes every type but Has a value, a Query's Every (plan 1004 D6).
+  assert.deepEqual(Object.keys(kindIn(NODE_KINDS.condition, 'workflow').types), Object.keys(NODE_KINDS.condition.types).filter((t) => t !== 'all'));
   assert.equal(kindIn(NODE_KINDS.value, 'query'), undefined, 'a kind no Query draws');
   assert.equal(NODE_KINDS.field.types, undefined);
 });

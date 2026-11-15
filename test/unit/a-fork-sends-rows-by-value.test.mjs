@@ -35,7 +35,7 @@ test('a Fork draws its Ways row, an output per value picked, then Otherwise; its
   assert.deepEqual([ways.control, ways.choices.map((c) => c.value)], ['values', ['High', 'Medium', 'Low']]);
   assert.deepEqual(workflowFaults(flow(['High', 'Medium']), NODE_KINDS, { fieldsOf }), [], 'a line from a way out is sound');
   assert.equal(socketType(NODE_KINDS.fork, 'v-anything', 'output'), 'object');
-  assert.deepEqual(unfoldedRows(['At risk', 'at-risk']).map((x) => x.name), ['v-at-risk', 'v-at-risk-2'], 'a clash takes -2');
+  assert.deepEqual(unfoldedRows(NODE_KINDS.fork.rows[0].unfolds, ['At risk', 'at-risk']).map((x) => x.name), ['v-at-risk', 'v-at-risk-2'], 'a clash takes -2');
 });
 
 test('a run sends each row at its value\'s output, the rest at Otherwise; a list cell goes the way of its first value picked', () => {

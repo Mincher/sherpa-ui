@@ -10,6 +10,8 @@
  * - accepts — Whether an input reads what an output of a type sends: its own type, or any; else it reads null.
  * - truthy — The road a value takes: True, unless it is nothing. Will, D2.
  * - RowControl — The control a row draws: text, a message, a number, a switch, or the list a picklist reads.
+ * - UNFOLDED — The prefix of a row a pick unfolds: "At risk" unfolds as `v-at-risk` (a socket's name takes no space).
+ * - Unfold — What each item a row unfolds becomes (`RowKind.unfolds`): a row as this says, named by the item itself, or by…
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
  * - NODE_GRAPHS — What each graph is, said once: its fault words, its Start, who drives a value or shapes a node, its panel.
@@ -52,7 +54,6 @@
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - downstreamOf — Every node the connections lead to from these, and on from each; these left out.
  * - rowOf — The row of a kind a name says.
- * - UNFOLDED — The prefix of a row a pick unfolds: "At risk" unfolds as `v-at-risk` (a socket's name takes no space).
  * - unfoldedRows — The output rows a pick unfolds, one per value picked: named by its words (`v-at-risk`; a clash, `-2`), each a…
  * - rowsOfNode — A node's rows: its kind's, each row that unfolds followed by the rows its pick unfolds.
  * - rowTitle — A row's title as a reader sees it: an optional one says so, "Values (Optional)".
@@ -119,6 +120,17 @@ export type RowControl =
   | 'provider' | 'model' | 'skill' | 'event' | 'task' | 'agent' | 'endpoint' | 'entity';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
+/** The prefix of a row a pick unfolds: "At risk" unfolds as `v-at-risk` (a socket's name takes no space). */
+export const UNFOLDED = 'v-';
+
+/** What each item a row unfolds becomes (`RowKind.unfolds`): a row as this says, named by the item itself, or by `prefix`
+ *  and the item, made a socket's name where `slug` (a Fork's words: "At risk" is `v-at-risk`). An item is a value, or a
+ *  value and its words. TRAP T-a-fork-unfolds-its-picks */
+export interface Unfold extends Partial<Omit<RowKind, 'name' | 'label' | 'unfolds'>> {
+  prefix?: string;
+  slug?: true;
+}
+
 export interface RowKind {
   /** A connection names the row by it, and a node keeps the row's value under it. */
   name: string;
@@ -156,9 +168,10 @@ export interface RowKind {
   /** It sends a column its node makes, named by its node, a value on each row: one of those picked on the row of this name
    *  (a Category answer, plan 992 O6). TRAP T-a-category-is-a-column-the-model-makes */
   makes?: string;
-  /** It draws an output row per value picked on it, right after it, each a fork of that value's rows (Fork, plan 991 D6).
-   *  TRAP T-a-fork-unfolds-its-picks */
-  unfolds?: true;
+  /** It draws a row per item its value lists, right after it, each as this says: a Fork's output per value picked, a fork
+   *  of that value's rows (plan 991 D6); a Query bar's chip per field it holds (plan 1004 D4). One with no control of its
+   *  own is drawn as its items alone. TRAP T-a-fork-unfolds-its-picks */
+  unfolds?: Unfold;
   /** A pick on it is kept with the kinds placed last, so "Add a node" offers the kind with it picked (TODO 968). */
   recalls?: true;
   /** A many pick that keeps none means every choice: drawn all ticked, and all ticked keeps none (TODO 969). */
@@ -215,6 +228,9 @@ export interface NodeType {
   graphs?: readonly NodeGraph[];
   /** What its header's input can use, over the kind's. */
   needs?: Need;
+  /** A type only its graph gives a node, never one a reader picks or places: offered only where it is (a Query's Every,
+   *  plan 1004 D6). */
+  given?: true;
 }
 
 /** What a node IS: its header, its sockets, its rows, and what it stands for in the data layer. */
@@ -268,6 +284,12 @@ const propertySocket = (gives: Given): SocketType => (gives === 'boolean' ? 'boo
 const TRUE = propertyRow('true', 'True');
 /** A bar's filter Switch: off, its filters are kept and filter nothing (a page's Query; plan 960 U4.8). */
 const FILTERS: RowKind = { name: '#filters', label: 'Filters', control: 'switch', input: 'boolean' };
+/** A Query bar's chips, a row per field it holds, each a filter's line in; and its presets, a row per preset, `@<id>`. Its
+ *  lens lists them (plan 1004 D4). TRAP T-a-fork-unfolds-its-picks */
+const BAR: readonly RowKind[] = [
+  { name: 'chips', label: 'Chips', unfolds: { input: 'any' } },
+  { name: 'presets', label: 'Presets', unfolds: { input: 'boolean', prefix: '@' } },
+];
 /** Results: the data rows a node sends on, a property like Count; they come in on its header (D1). It keeps the address `node/rows`. Plan 713 §3 */
 export const ROWS: Readonly<RowKind> = propertyRow('rows', 'Results', 'rows');
 
@@ -537,6 +559,8 @@ const LOGIC: Readonly<Record<string, NodeType>> = {
   not: { label: 'Not', help: 'True when the value that comes in is false', input: 'any', rows: [PASS, FAIL, VALUE_A], graphs: ['workflow'] },
   empty: { label: 'Is empty', help: 'True when what comes in is nothing: none, 0, false, empty text or list, or no rows', input: 'any', rows: [PASS, FAIL, VALUE_A], graphs: ['workflow'] },
   ...compareTypes(SHERPA_OPS),
+  // Every value of its field ticked, a Query's chip alone (TODO 965; plan 1004 D6): its chip changes it.
+  all: { label: 'Has a value', help: 'True when the field holds a value: every value of it ticked', input: 'any', rows: [PASS, FAIL], graphs: ['query'], given: true },
 };
 
 /** What one input into a Condition is, for the operations that fit it: a value or a column, by its type; or data. TODO 940 */
@@ -549,10 +573,10 @@ export const CONDITION_INPUT_WORDS: Readonly<Record<ConditionInput, string>> = {
  *  every input, Not a number or a boolean. Data, rows or an object, fits those three alone: a comparison needs a Field. */
 const JOINS = ['and', 'or', 'empty'];
 const FITS: Readonly<Record<ConditionInput, readonly string[]>> = {
-  text: [...JOINS, ...OPS_FOR_TYPE['text']!, ...LIST_OPS],
-  number: [...JOINS, 'not', ...OPS_FOR_TYPE['number']!, ...LIST_OPS],
-  date: [...JOINS, ...OPS_FOR_TYPE['date']!.filter((op) => op in LOGIC), ...LIST_OPS],
-  boolean: [...JOINS, 'not', 'eq', 'ne'],
+  text: [...JOINS, ...OPS_FOR_TYPE['text']!, ...LIST_OPS, 'all'],
+  number: [...JOINS, 'not', ...OPS_FOR_TYPE['number']!, ...LIST_OPS, 'all'],
+  date: [...JOINS, ...OPS_FOR_TYPE['date']!.filter((op) => op in LOGIC), ...LIST_OPS, 'all'],
+  boolean: [...JOINS, 'not', 'eq', 'ne', 'all'],
   data: JOINS,
 };
 
@@ -594,7 +618,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Its header takes the View's Organise; it goes into the View.
   'view-filters': {
     heading: 'View Filters', icon: 'filter', description: 'Filter every card in the View', input: 'any',
-    rows: [FILTERS, propertyRow('filters', 'View Filters', 'object')], model: 'ScopeQuery', graphs: ['query'],
+    rows: [FILTERS, ...BAR, propertyRow('filters', 'View Filters', 'object')], model: 'ScopeQuery', graphs: ['query'],
   },
   // Logic: one test per Condition, And and Or joining tests (plan 783 D4). TRAP T-a-condition-is-a-tree-of-nodes
   condition: {
@@ -605,7 +629,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // a Route stays a full path, PRINCIPLES 19): a Field on its header; Ways, the values it picks, one dropdown of ticks; an output per value picked, and Otherwise.
   fork: {
     heading: 'Fork', icon: 'link-simple', description: 'Send each row on by a field\'s value', input: 'any', needs: 'field',
-    rows: [{ name: 'ways', label: 'Ways', control: 'tags', multiple: true, input: 'object', unfolds: true },
+    rows: [{ name: 'ways', label: 'Ways', control: 'tags', multiple: true, input: 'object', unfolds: { output: 'object', gives: 'rows', fork: true, prefix: UNFOLDED, slug: true } },
       { name: 'otherwise', label: 'Otherwise', output: 'object', gives: 'rows', fork: true }],
     model: 'fork', graphs: ['workflow'], category: 'Logic',
   },
@@ -618,7 +642,8 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Its on, then each field it writes.
   preset: {
     heading: 'Preset', icon: 'star', description: 'Apply a filter the app named', output: 'boolean',
-    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Presets',
+    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }, { name: 'writes', label: 'Writes', unfolds: { input: 'any' } }],
+    model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Presets',
   },
   // ONE node for how rows are organised (Will, plan 960 U4.2): sorting, grouping, search, and the axes a chart reads —
   // its Primary (X), its Secondary (Y) and its Segments' parts. An empty row does nothing.
@@ -627,13 +652,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     keywords: ['sort', 'group', 'search', 'axes'],
     rows: [
       ROWS,
-      { name: 'sort', label: 'Sort', control: 'field', input: 'value' },
+      // Each but Direction may be empty, and does nothing then: a pick of one offers None (plan 1004 D7).
+      { name: 'sort', label: 'Sort', control: 'field', input: 'value', optional: true },
       { name: 'direction', label: 'Direction', control: 'direction', input: 'value' },
-      { name: 'group', label: 'Group', control: 'field', input: 'value' },
-      { name: 'search', label: 'Search', control: 'text', input: 'value' },
-      { name: 'primary', label: 'Primary', control: 'field', input: 'value' },
-      { name: 'secondary', label: 'Secondary', control: 'field', input: 'value' },
-      { name: 'segments', label: 'Segments', control: 'field', input: 'value' },
+      { name: 'group', label: 'Group', control: 'field', input: 'value', optional: true },
+      { name: 'search', label: 'Search', control: 'text', input: 'value', optional: true },
+      { name: 'primary', label: 'Primary', control: 'field', input: 'value', optional: true },
+      { name: 'secondary', label: 'Secondary', control: 'field', input: 'value', optional: true },
+      { name: 'segments', label: 'Segments', control: 'field', input: 'value', optional: true },
     ],
     model: 'Arrangement', graphs: ['query', 'workflow'], category: 'Organise',
   },
@@ -655,9 +681,9 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   presentation: {
     heading: 'Presentation', icon: 'insights', description: 'Choose how a card shows its rows', input: 'any',
     rows: [
-      FILTERS,
+      FILTERS, ...BAR,
       { name: 'kind', label: 'Show as', control: 'presentation' },
-      { name: 'sort', label: 'Segment order', control: 'direction' },
+      { name: 'sort', label: 'Segment order', control: 'direction', optional: true },
       propertyRow('content', 'Content', 'object'),
     ],
     model: 'Presentation', graphs: ['query'],
@@ -689,6 +715,8 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field', recalls: true },
       // The values it sends, picked from its field's own: one dropdown, a menu of ticks (Will, D1, E1 A).
       { name: 'values', label: 'Values', control: 'values', multiple: true, output: 'object', valuesOf: 'field', optional: true },
+      // A status field's values, each saying its rule, in a page's Query (plan 960 U4.7b; 1004 D4).
+      { name: 'statuses', label: 'Statuses', unfolds: {}, graphs: ['query'] },
     ], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Min, Max and Average read a list (D9; Will, plan 991 D4: once Floor
@@ -884,8 +912,11 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
   const groups = new Map<string, PaletteItem[]>(NODE_CATEGORIES.map((c) => [c, []]));
   const { categories } = NODE_GRAPHS[graph];
   for (const [id, family] of Object.entries(kinds)) {
-    // A family lists only the types its graph takes: the Query's Condition is its Rows that hold alone.
-    const kind = kindIn(family, graph);
+    // A family lists only the types its graph takes: the Query's Condition is its Rows that hold alone. A type the graph
+    // only gives a node is placed by no reader (plan 1004 D6).
+    const taken = kindIn(family, graph);
+    const kind = taken?.types && Object.values(taken.types).some((t) => t.given)
+      ? { ...taken, types: Object.fromEntries(Object.entries(taken.types).filter(([, t]) => !t.given)) } : taken;
     // A family with no type of its own, as Request before a host adds one, places nothing (plan 917).
     if (!kind || (kind.types && !Object.keys(kind.types).length)) continue;
     const category = kind.category ?? 'Other';
@@ -1002,26 +1033,26 @@ export function rowOf<R extends Pick<RowKind, 'name'>>(rows: readonly R[], name:
   return rows.find((r) => r.name === name);
 }
 
-/** The prefix of a row a pick unfolds: "At risk" unfolds as `v-at-risk` (a socket's name takes no space). */
-export const UNFOLDED = 'v-';
-
-/** The output rows a pick unfolds, one per value picked: named by its words (`v-at-risk`; a clash, `-2`), each a fork of that
- *  value's rows (Fork, plan 991 D6). TRAP T-a-fork-unfolds-its-picks */
-export function unfoldedRows(picked: unknown): RowKind[] {
+/** The rows a row's items unfold, one per item, each as its `Unfold` says: named by the item, or its prefix and the item
+ *  (a slug: `v-at-risk`; a clash, `-2`), its words the item's own. TRAP T-a-fork-unfolds-its-picks */
+export function unfoldedRows(unfold: Unfold, items: unknown): RowKind[] {
+  const { prefix = '', slug, ...row } = unfold;
   const taken = new Set<string>();
-  return [picked ?? []].flat().filter((v) => v != null && v !== '').map((value): RowKind => {
-    const base = `${UNFOLDED}${String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'value'}`;
+  return [items ?? []].flat().filter((v) => v != null && v !== '').map((item): RowKind => {
+    const { value, label } = typeof item === 'object' ? item as { value: unknown; label?: unknown } : { value: item, label: item };
+    const word = String(value);
+    const base = `${prefix}${slug ? word.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'value' : word}`;
     let name = base;
     for (let n = 2; taken.has(name); n++) name = `${base}-${n}`;
     taken.add(name);
-    return { name, label: String(value), output: 'object', gives: 'rows', fork: true };
+    return { ...row, name, label: String(label ?? value) };
   });
 }
 
-/** A node's rows: its kind's, each row that unfolds followed by the rows its pick unfolds. One door, so the drawing, a run and
- *  the text read the same rows. */
+/** A node's rows: its kind's, each row that unfolds followed by the rows its items unfold; one with no control of its own,
+ *  its items alone. One door, so the drawing, a run and the text read the same rows. */
 export function rowsOfNode(kind: Pick<Sockets, 'rows'>, values: Readonly<Record<string, unknown>> = {}): RowKind[] {
-  return kind.rows.flatMap((r) => (r.unfolds ? [r, ...unfoldedRows(values[r.name])] : [r]));
+  return kind.rows.flatMap((r) => (r.unfolds ? [...(r.control ? [r] : []), ...unfoldedRows(r.unfolds, values[r.name])] : [r]));
 }
 
 /** A row's title as a reader sees it: one the node can do without says so, "Values (Optional)". Its name, its
@@ -1034,8 +1065,11 @@ export function rowTitle(row: Pick<RowKind, 'label' | 'optional'>): string {
  *  none, it has no such socket. */
 export function socketType(kind: Sockets, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
   if (row === undefined) return kind[side];
-  // A row a pick unfolds (`v-…`) is an output of rows, on a kind that unfolds one.
-  return rowOf(kind.rows, row)?.[side] ?? (side === 'output' && row.startsWith(UNFOLDED) && kind.rows.some((r) => r.unfolds) ? 'object' : undefined);
+  const own = rowOf(kind.rows, row);
+  if (own) return own[side];
+  // A row an item unfolds takes its unfold's socket: the one whose prefix names it, else the one with none (plan 1004 D4).
+  const unfold = kind.rows.find((r) => r.unfolds?.prefix && row.startsWith(r.unfolds.prefix))?.unfolds ?? kind.rows.find((r) => r.unfolds && !r.unfolds.prefix)?.unfolds;
+  return unfold?.[side];
 }
 
 /** Whether an input of a kind, or of a node drawn of it, takes several connections: its header's (no row), or a row's. */

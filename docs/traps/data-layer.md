@@ -6275,6 +6275,12 @@ A row goes the way of its value, a list cell the way of the first value it holds
 
 - This is the unfold door U4.7a built and 5626a8fcd took away (a Field's values became one dropdown): back for a
   node whose outputs ARE its picks, never for a value row.
+- **The door takes what each item becomes** (plan 1004 D4): `unfolds` is a row's template (`Unfold`), the Fork's an
+  output of rows named `v-` and a slug. A Query's bar unfolds a chip per field it holds and a row per preset (`@<id>`),
+  a preset a row per field it writes, a status field a row per value: each named by its item, so a request still reads
+  `view-filters/region`. An item is a value, or a value and its words (the lens gives a field's label). A row that
+  unfolds and has no control of its own is drawn as its items alone; `socketType` gives an unfolded row its template's
+  socket, the one whose prefix names it, else the one with none.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/node-simulate.ts`
@@ -6906,8 +6912,11 @@ chip's is (`graphRequest`).
   words, its `ref` (what it is to the Query: every request reads it), `editable`
   (the rows a reader may change; the rest are read only), `hints` (each row's
   words), `off` (kept, not applied), its own `icon` (a Filter's), its
-  `warnings` (a kept Source's) and `omit` (the rows of its kind it leaves out
-  there: a kept Source's page rows, the Switch where the bar is not); its id is
+  `warnings` (a kept Source's), `omit` (the rows of its kind it leaves out
+  there: a kept Source's page rows, the Switch where the bar is not) and
+  `unjoined` (the rows that take no line there: a card's chip, its filter on the
+  card's rows). A Query's Every is the Condition's type Has a value, `given`: the
+  graph gives it a node, a reader never picks or places it; its id is
   QUERY_NODE's, in the order drawn. What the one drawing reads beside it is
   `queryDrawingFacts`: the stores, and the page's fields with their types and
   values, status fields too, so a Field offers them and none warns falsely.

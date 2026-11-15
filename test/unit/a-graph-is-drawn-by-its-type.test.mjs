@@ -50,7 +50,9 @@ test('a kind the graph does not take is a fault in that graph\'s words; one it t
 });
 
 test('kindIn gives the kind itself where nothing is left out, and a kind the graph does not take none', () => {
-  assert.equal(kindIn(NODE_KINDS['field'], 'workflow'), NODE_KINDS['field']);
+  assert.equal(kindIn(NODE_KINDS['value'], 'workflow'), NODE_KINDS['value']);
+  // A Field's Statuses is a Query's alone (plan 1004 D4).
+  assert.deepEqual(kindIn(NODE_KINDS['field'], 'workflow').rows.map((r) => r.name), ['field', 'values']);
   assert.equal(kindIn(NODE_KINDS['trigger'], 'query'), undefined);
   // A Source's Fields is a workflow's; its Page size, Search fields and Apply on a Query's (plan 1004 D3).
   const rows = (graph) => kindIn(NODE_KINDS['source'], graph).rows.map((r) => r.name);

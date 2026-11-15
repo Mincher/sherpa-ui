@@ -459,7 +459,8 @@ function owned(row: GraphRow, list: readonly { value: string; label: string }[] 
 /** A kind's fixed rows, each with its value. */
 function rowsOf(kind: string, values: Readonly<Record<string, unknown>>): GraphRow[] {
   // A row a workflow's alone is not drawn: a page reads every field, and its Query filters its rows.
-  return NODE_KINDS[kind]!.rows.filter((row) => !row.graphs || row.graphs.includes('query')).map((row) => ({ ...row, value: values[row.name] }));
+  // A row that unfolds is drawn as its items, which the Query writes (plan 1004 D4).
+  return NODE_KINDS[kind]!.rows.filter((row) => (!row.graphs || row.graphs.includes('query')) && !row.unfolds).map((row) => ({ ...row, value: values[row.name] }));
 }
 
 /** Whether a status value's `when` is a condition: a group of conditions, or one comparison. */
@@ -541,17 +542,20 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
   const meant: Omit<LensNode, 'x' | 'y'>[] = [];
   const connections: NodeConnection[] = [];
   // Each node twice, from the one call: as drawn, and as the lens's definition says it.
-  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> & { off?: boolean; omit?: readonly string[] } = {}, type?: string): string => {
-    const { off, omit, ...drawn } = own;
+  // `lists`: the items each unfolding row of its kind holds (a bar's chips, plan 1004 D4), as values.
+  type Own = Partial<GraphNode> & { off?: boolean; omit?: readonly string[]; unjoined?: readonly string[]; lists?: Readonly<Record<string, readonly RowChoice[]>> };
+  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Own = {}, type?: string): string => {
+    const { off, omit, unjoined, lists, ...drawn } = own;
     const made = kindNode({ ...NODE_KINDS, [kind]: resolveKind(NODE_KINDS[kind]!, type) }, kind, id, rows, drawn);
     nodes.push({ ...made, column });
-    const values = storedValues(rows);
+    const values = { ...storedValues(rows), ...Object.fromEntries(Object.entries(lists ?? {}).filter(([, items]) => items.length)) };
     const hints = Object.fromEntries(rows.flatMap((r) => (r.hint ? [[r.name, r.hint]] : [])));
     meant.push({
       id, kind, ...(drawn.heading ? { heading: drawn.heading } : {}), ...(drawn.description ? { description: drawn.description } : {}),
       ...(Object.keys(values).length ? { values } : {}), ...(drawn.ref ? { ref: drawn.ref } : {}),
       editable: rows.filter((r) => r.editable).map((r) => r.name), ...(Object.keys(hints).length ? { hints } : {}), ...(off ? { off: true } : {}),
       ...(drawn.icon ? { icon: drawn.icon } : {}), ...(drawn.warnings ? { warnings: drawn.warnings } : {}), ...(omit?.length ? { omit } : {}),
+      ...(unjoined?.length ? { unjoined } : {}),
     });
     return id;
   };
@@ -633,7 +637,8 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       { name: 'field', label: 'Field', control: 'field', value: field, editable: false, hint: FROM_STORE, choices: [{ value: field, label: label(field) }] },
       ...(domain.values ?? []).map(String).map((value): GraphRow => ({ name: value, label: value, value: said(value), hint: OPENS_RULE })),
     ];
-    connections.push({ from: sent(QUERY_NODE.source), to: add(1, QUERY_NODE.status(field), 'field', rows, { heading: label(field), ref: { field, status: field } }) });
+    const lists = { statuses: (domain.values ?? []).map(String).map((v) => ({ value: v, label: v })) };
+    connections.push({ from: sent(QUERY_NODE.source), to: add(1, QUERY_NODE.status(field), 'field', rows, { heading: label(field), ref: { field, status: field }, lists }) });
   }
 
   // Each scope, the View first — and one its definition gives presets, held or not. Every page has its View.
@@ -676,6 +681,9 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'boolean' })),
     ];
     const description = `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`;
+    // What the bar's rows unfold from: its chips and presets, and the chips that take no line, a card's (plan 1004 D4).
+    const barLists = { chips: fields.map((f) => ({ value: f, label: label(f) })), presets: presets.map((p) => ({ value: p.id, label: p.label })) };
+    const unjoined = top ? [] : fields.filter((f) => !superseded.has(f));
     // Each preset, the app's or a Filter: on or off, and what it writes.
     for (const p of presets) {
       const wrote = Object.entries(p.readings).flatMap(([f, reading]) => {
@@ -688,7 +696,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       const from = add(into, QUERY_NODE.preset(id, p.id), 'preset', [
         ...rowsOf('preset', { on }).map((row) => ({ ...row, editable: true })),
         ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'any' })),
-      ], { heading: p.label, ref: { scope: id, preset: p.id }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
+      ], { heading: p.label, ref: { scope: id, preset: p.id }, lists: { writes: wrote.map(([f]) => ({ value: f, label: label(f) })) }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
       connections.push({ from, to: `${bar}/@${p.id}` });
       // What it writes: each field a Condition, the definition's to change.
       for (const [f, tree] of wrote) {
@@ -733,7 +741,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       rows = [sent(organise)];
     }
     if (top) {
-      add(8, bar, 'view-filters', [...barRows, ...rowsOf('view-filters', {}).filter((row) => row.name !== SWITCH)], { description, ref: { scope: id } });
+      add(8, bar, 'view-filters', [...barRows, ...rowsOf('view-filters', {}).filter((row) => row.name !== SWITCH)], { description, ref: { scope: id }, lists: barLists });
       if (rows !== fed) connections.push({ from: rows[0]!, to: bar });
       connections.push({ from: `${bar}/filters`, to: `${view}/filters` });
     }
@@ -746,7 +754,7 @@ export function queryLensGraph(query: Query, definition: PageDefinition, facts: 
       const slot = !top && (!c || c.id === id || shows.length === 1);
       const presented = slot ? scope.presentation ?? {} : {};
       const node = add(8, bears ? bar : QUERY_NODE.presentation(c?.id ?? id), 'presentation', presentationRows(presented, c?.kind, slot, bears ? barRows : []), {
-        heading: c?.label ?? named ?? (top ? 'View' : id), ...(bears ? { description } : { omit: [SWITCH] }), ref: { scope: id, ...(c ? { component: c.id } : {}) },
+        heading: c?.label ?? named ?? (top ? 'View' : id), ...(bears ? { description, lists: barLists, unjoined } : { omit: [SWITCH] }), ref: { scope: id, ...(c ? { component: c.id } : {}) },
       });
       for (const from of top ? fed : rows) connections.push({ from, to: node });
       connections.push({ from: `${node}/content`, to: `${view}/content` });

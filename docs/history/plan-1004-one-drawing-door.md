@@ -74,7 +74,8 @@ connections are the same (T7). What differs, in eight groups, with the way each 
 
 Built: D5–D7 (sherpa-ui-e8, lane/1004d2: NODE_GRAPHS `drives` and `reshapes`, None on an `optional` pick); D1–D3
 (sherpa-ui-a9: Value A `graphs: ['workflow']`, `queryDrawingFacts`, the Source's page rows; and `omit`, a lens node's rows
-of its kind left out, for a kept Source and D8). Then `queryLensGraph`'s hand rows go (R1, R20, R25), and e8 switches
+of its kind left out, for a kept Source and D8); D4 (sherpa-ui-a9: `unfolds` a template, `unjoined`, Every as `given` Has a
+value, `optional` picks). Then `queryLensGraph`'s hand rows go (R1, R20, R25), and e8 switches
 `queryOpened`'s `drawn` to `workflowGraph(definition, queryDrawingFacts(…))`.
 Off, hints and read-only rows are 1004c's already. Will looks at the result in 1004f.
 

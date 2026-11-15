@@ -33,11 +33,12 @@ test('Pick became Field: one node in Variables, in both graphs; its Field row an
   assert.deepEqual([kind.heading, kind.category, kind.input, kind.needs, kind.branches, kind.graphs], ['Field', 'Variables', 'any', 'object', undefined, ['query', 'workflow']]);
   // Its Count row is gone: Math › Count counts rows (plan 944).
   // Its Values: one dropdown of its own field's values (plan 960 U4.7a). TRAP T-a-multi-select-is-one-row
-  assert.deepEqual(kind.rows.map((r) => [r.name, r.control, r.input, r.output, r.gives]), [['field', 'field', 'value', 'object', 'field'], ['values', 'values', undefined, 'object', undefined]]);
-  assert.deepEqual(kind.rows.map((r) => !!r.property), [false, false]);
+  // A Query's status field says a row per value, its Statuses unfolding them (plan 1004 D4).
+  assert.deepEqual(kind.rows.map((r) => [r.name, r.control, r.input, r.output, r.gives]), [['field', 'field', 'value', 'object', 'field'], ['values', 'values', undefined, 'object', undefined], ['statuses', undefined, undefined, undefined, undefined]]);
+  assert.deepEqual(kind.rows.map((r) => !!r.property), [false, false, false]);
   // In a Query its Field row is the reader's, never a node's (plan 1004 D5).
-  assert.equal(kindIn(kind, 'workflow'), kind);
-  assert.deepEqual(kindIn(kind, 'query').rows.map((r) => r.input), [undefined, undefined]);
+  assert.deepEqual(kindIn(kind, 'workflow').rows.map((r) => r.name), ['field', 'values'], 'a workflow has no Statuses');
+  assert.deepEqual(kindIn(kind, 'query').rows.map((r) => r.input), [undefined, undefined, undefined]);
   assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Variables').items.map((i) => i.id), ['value', 'field']);
   // A saved Pick reads with today's fault, in words: nothing converts it (D9).
   const old = flow([{ id: 'p', kind: 'pick', x: 0, y: 0, values: { field: 'status' } }], []);
@@ -126,7 +127,8 @@ test('a Condition on a Field keeps rows by the values picked, as the Tag did (pl
   const org = workflowGraph(bare, facts).nodes.find((n) => n.id === 'org');
   for (const name of ['sort', 'group']) {
     const row = org.rows.find((r) => r.name === name);
-    assert.deepEqual([row.value, row.input, row.choices.map((c) => c.value)], [name === 'sort' ? 'seats' : 'status', 'value', ['status', 'seats', 'joined']], name);
+    // None first: each may be empty (plan 1004 D7).
+    assert.deepEqual([row.value, row.input, row.choices.map((c) => c.value)], [name === 'sort' ? 'seats' : 'status', 'value', ['', 'status', 'seats', 'joined']], name);
   }
   // Is one of's Values is the Field's values: free with none known, closed where they are.
   const values = { fieldsOf: { customers: { ...fields, status: { label: 'Status', values: ['active', 'trial'] } } } };

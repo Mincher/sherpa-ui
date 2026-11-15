@@ -791,7 +791,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     }
     // Where the graph keeps each node's shape (a Query's), a type pick keeps its sockets: And and Or only on a group (plan 1004 D6).
     const shaped = (t: string): boolean => reshapes || !family.types?.[t]?.many === !at?.type.many;
-    const types = family.types ? typeChoices(family)!.filter((c) => (!fits || fits.has(c.value) || c.value === at?.id) && shaped(c.value)) : undefined;
+    // A type the graph only gives a node is offered where it is alone (a Query's Every, plan 1004 D6).
+    const offered = (t: string): boolean => !family.types?.[t]?.given || t === at?.id;
+    const types = family.types ? typeChoices(family)!.filter((c) => (!fits || fits.has(c.value) || c.value === at?.id) && shaped(c.value) && offered(c.value)) : undefined;
     let sources: MessageSource[] | undefined;
     // The rows it sends (Results, a test's Pass and Fail): where only a value, or a test of one, reaches its header, they have nothing to say.
     // Nothing usable joined: they show (TODO 924).
@@ -800,8 +802,14 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // Count into Between passes through).
     // Its kind's rows, each that unfolds followed by the rows its pick unfolds (a Fork's outputs, plan 991 D6).
     // A row the lens leaves out on this node is not drawn: a kept Source's page rows (plan 1004 D8). TRAP T-a-graph-is-drawn-by-its-type
-    const { omit } = node as LensNode;
-    const rows = rowsOfNode(kind, values).filter((r) => !omit?.includes(r.name)).map((row): GraphRow => {
+    // …and a row it says takes no line here has no input: a card's chip (plan 1004 D4).
+    const { omit, unjoined } = node as LensNode;
+    const lined = (r: RowKind): RowKind => {
+      if (!unjoined?.includes(r.name)) return r;
+      const { input: _in, ...bare } = r;
+      return bare;
+    };
+    const rows = rowsOfNode(kind, values).filter((r) => !omit?.includes(r.name)).map(lined).map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no connection gives warns, by its row (plan 891).
       if (row.control === 'message' && valuesIn(has).length) {

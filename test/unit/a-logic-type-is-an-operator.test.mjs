@@ -173,9 +173,10 @@ test('the panel: one Condition item naming its types; a search finds a type whol
   assert.deepEqual(found('rows that hold'), [], 'a workflow takes no Rows that hold (plan 783 D4)');
   // The Query draws its trees with the same Condition (plan 783 D6): And, Or and the comparisons; Not and Is empty are a workflow's.
   const query = paletteOf(NODE_KINDS, 'query').flatMap((g) => g.items).find((i) => i.id === 'condition');
-  assert.deepEqual(Object.keys(query.kind.types), Object.keys(logic.types).filter((t) => t !== 'not' && t !== 'empty'));
+  // Has a value, a Query's Every, is given a node, never placed (plan 1004 D6).
+  assert.deepEqual(Object.keys(query.kind.types), Object.keys(logic.types).filter((t) => t !== 'not' && t !== 'empty' && t !== 'all'));
   assert.deepEqual(paletteMatch(query.kind, 'equals'), { type: 'eq' });
-  assert.equal(kindIn(logic, 'workflow'), logic, 'a workflow takes every type');
+  assert.deepEqual(Object.keys(kindIn(logic, 'workflow').types), Object.keys(logic.types).filter((t) => t !== 'all'), 'a workflow takes every type but a Query\'s Every');
   // And the Field, in Variables.
   assert.deepEqual(paletteOf(NODE_KINDS, 'query').find((g) => g.category === 'Variables').items.map((i) => i.id), ['field']);
 });

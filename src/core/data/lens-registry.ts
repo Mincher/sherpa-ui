@@ -35,6 +35,8 @@ export interface LensNode extends WorkflowNode {
   warnings?: readonly { row?: string; words: string }[];
   /** The rows of its kind the lens leaves out here: a kept Source's page rows, the bar's Switch where the bar is not. */
   omit?: readonly string[];
+  /** The rows that take no line here: a card's chip, its filter on the card's rows instead. */
+  unjoined?: readonly string[];
 }
 
 /** A graph as a lens gives it: a definition whose nodes say what each is to the lens. */

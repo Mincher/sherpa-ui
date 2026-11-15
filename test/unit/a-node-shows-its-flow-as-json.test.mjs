@@ -48,7 +48,8 @@ test('a Value carries its value', () => {
 test('a node with no connections has sockets and no one on them', () => {
   const flow = nodeFlow(graph(), 'alone');
   // An Organise: its header and each of its rows an input, its Rows an output.
-  assert.deepEqual(flow.incoming.map((i) => [i.socket, i.from]), [['In', []], ...['Sort', 'Direction', 'Group', 'Search', 'Primary', 'Secondary', 'Segments'].map((s) => [s, []])]);
+  // Each but Direction may be empty, and says so (TODO 984; plan 1004 D7).
+  assert.deepEqual(flow.incoming.map((i) => [i.socket, i.from]), [['In', []], ...['Sort (Optional)', 'Direction', 'Group (Optional)', 'Search (Optional)', 'Primary (Optional)', 'Secondary (Optional)', 'Segments (Optional)'].map((s) => [s, []])]);
   assert.deepEqual(flow.outgoing.map((o) => [o.socket, o.to]), [['Results', []]]);
 });
 
