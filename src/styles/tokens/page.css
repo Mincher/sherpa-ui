@@ -26,10 +26,11 @@
   body > :is(div, main) > sherpa-app-shell {
     block-size: 100%;
   }
-  /* A component whose code has not loaded: after 300 ms, a shimmer in its box. TRAP T-a-skeleton-is-the-pages */
+  /* A component whose code has not loaded: after 300 ms, a shimmer in its box; 25 pulses, about 30 s, then still, as
+     WebKit keeps it running on an element defined since. TRAP T-a-skeleton-is-the-pages */
   :not(:defined) {
     color: transparent;
-    animation: sherpa-skeleton 1.2s ease-in-out 300ms infinite;
+    animation: sherpa-skeleton 1.2s ease-in-out 300ms 25;
   }
   :not(:defined) > * {
     visibility: hidden;

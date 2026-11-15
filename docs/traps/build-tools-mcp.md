@@ -179,6 +179,14 @@ one shimmer in the host's box, only after 300 ms) is `page.css`'s, on
 surfaces; its children are hidden. Defined, the element draws as itself.
 Reduced motion holds the end colour instead of pulsing.
 
+**It pulses 25 times, about 30 s, then stops — never `infinite`** (TODO 996,
+found by sherpa-demos-67, 2026-11-14). WebKit keeps a CSSAnimation "running" on
+an element that got its shadow root as it was defined, though its computed
+`animation-name` is `none` (Firefox kept one, on outlet.html's header; Chromium
+none). An endless one never ended, so a wait on `getAnimations()` met 35 to 52
+of them on every page. A finite one ends by itself. Never `:defined { animation:
+none }`: every plain element is `:defined`, so it would stop every animation.
+
 An element that is NEVER defined — a misspelt tag — shimmers for ever. That
 is a fault a person can see; `check:usage` catches it first.
 
