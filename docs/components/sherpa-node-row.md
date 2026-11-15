@@ -28,13 +28,13 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 | `data-input-at` | number |  |  |
 | `data-input-at-connected` | number |  |  |
 | `data-input-connected` | boolean |  | a connection joins the input: its socket is filled, else hollow |
-| `data-input-many` | boolean |  | the input takes several connections: its socket is a double height D |
-| `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value \| object \| boolean \| any: an input is a D, its type in its ink |
+| `data-input-many` | boolean |  | the input takes several connections |
+| `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value (a circle) \| object (a diamond) \| boolean (a square) \| any (a grey circle) |
 | `data-label` | text |  | the row's name, when it has no field: a field names itself |
 | `data-output-at` | number |  |  |
 | `data-output-at-connected` | number |  |  |
 | `data-output-connected` | boolean |  | a connection leaves the output: its socket is filled, else hollow |
-| `data-output-socket` | `value` `object` `boolean` |  | an output socket on the end edge: value (a circle) \| object (a diamond) \| boolean (a circle) |
+| `data-output-socket` | `value` `object` `boolean` |  | an output socket on the end edge: value (a circle) \| object (a diamond) \| boolean (a square) |
 | `data-property` | boolean |  | a property: its label reads in the input value's own type |
 | `data-socket-name` | text |  | the row's name, the first line of each socket's tip: a collapsed node shows no label |
 | `data-socket-value` | text |  | the row's value in words, a line of each socket's tip; unset, the line hides |

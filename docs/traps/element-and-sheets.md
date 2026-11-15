@@ -1966,39 +1966,37 @@ read both `define(` and `customElements.define(`.
 ### T-a-socket-is-drawn-by-its-type
 
 **A socket is its type's SHAPE, in its type's ink, hollow until a connection joins
-it** (Will, TODO 713; plan-713 §2, M2). The shape is the socket's and its inner
-face's CORNERS (`border-radius`; an object a square turned 45deg) — never an image —
-so one box draws them all: a value a circle, an object a diamond, a boolean a circle
-(its ink says boolean), an input round, False a rounded square. Not a `clip-path`: a
-round one was cut flat on one side in Chromium where the socket stood on a fraction
-of a pixel, as it does in a socket tab (Will saw it, 2026-11-11).
+it** (Will, TODO 713; plan-713 §2, M2; TODO 998 A). The shape is the socket's and its
+inner face's CORNERS (`border-radius`; an object a square turned 45deg) — never an
+image — so one box draws them all, input and output alike: a value a circle, an
+object a diamond, a boolean a square, any a grey circle. Colour is never the only
+cue (TODO 998: the three inks were neighbours on the wheel, and two were one colour
+to a protan eye). Not a `clip-path`: a round one was cut flat on one side in
+Chromium where the socket stood on a fraction of a pixel, as it does in a socket tab
+(Will saw it, 2026-11-11).
 
 - **The ink is the TYPE's, never a status's.** Each type's ink is said ONCE, on
   `:root` in the page sheet `sherpa-node-connectors.css`:
-  `--sherpa-socket-ink-value` (info blue), `-object` (the active indigo),
-  `-boolean` (the brand purple). They inherit into every node's and row's
-  shadow root, where `.socket` sets `--_ink` from them by type; any is the
-  secondary grey. No red, green or yellow: those read as a status (Will,
-  2026-11-13, after boolean was the success green). The socket part pins
-  `default` (`'& .socket'` in `state-pins.yaml`), so a picked or running node
-  changes none of them and the hollow face stays the card's white.
+  `--sherpa-socket-ink-value` (teal), `-object` (violet), `-boolean` (magenta),
+  the data viz series' own borders (`--sherpa-theme-data-viz-sequence-border-3`,
+  `-2`, `-8`). Measured for 998: at least 16 apart (CIEDE2000) in each colour
+  blindness, and at least 3:1 on the light and the dark card, so one ink serves both
+  modes. They inherit into every node's and row's shadow root, where `.socket` sets
+  `--_ink` from them by type; any is the secondary grey. No red, green or yellow:
+  those read as a status (Will, 2026-11-13, after boolean was the success green). The
+  socket part pins `default` (`'& .socket'` in `state-pins.yaml`), so a picked or
+  running node changes none of them and the hollow face stays the card's white.
 - **Hollow is the face inside the ring**; `data-input-connected` and
   `data-output-connected` (the host writes them) hide it, so a joined socket is
-  filled. False has its own, `data-false-connected`.
-- **A fork** (`data-branches`) is the header's True, a circle pinned
-  `success`, and a footer — the container footer, composed — with False. A node
-  with no fork draws no footer.
-- **Only a many INPUT is double height** (`data-input-many`, TODO 740). Its
-  `--_socket-h` is set on `.socket-in`, never on the host: every socket reads it,
-  so set there it drew the row's output, and a fork's True and False, 32px too
-  (TODO 807).
-- **Never colour alone.** Each socket has a tip that says its type in words
-  ("True: a boolean"), and in forced colours the ink goes to `CanvasText` while
-  the shape stays. A connection line takes the ink of its FROM socket's type, from
-  `data-type` on its path, in the page sheet `sherpa-node-connectors.css` — the
-  same list the sockets read, so a line and its socket never differ. A line being
-  DRAGGED from an output, or a lifted end, takes it too; one run back from an
-  input has no source yet, so it is grey.
+  filled. A diamond's ring is its 1px border, so a test meets it at a tip, where each
+  engine paints it a pixel apart.
+- **No socket is double height**, a many input included (TODO 807, plan 944).
+- **Never colour alone.** Each socket has a tip that says its type in words, and in
+  forced colours the ink goes to `CanvasText` while the shape stays. A connection line
+  takes the ink of its FROM socket's type, from `data-type` on its path, in the page
+  sheet `sherpa-node-connectors.css` — the same list the sockets read, so a line and
+  its socket never differ. A line being DRAGGED from an output, or a lifted end, takes
+  it too; one run back from an input has no source yet, so it is grey.
 
 - Site: `src/core/sherpa-node-sockets.css`
 - Site: `src/components/sherpa-node/sherpa-node-connectors.css`

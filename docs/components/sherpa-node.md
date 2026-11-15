@@ -10,7 +10,7 @@ One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canv
 
 ## When to use it
 
-For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a connection joins it; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`.
+For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape and ink (a value a circle, an object a diamond, a boolean a square) and hollow until a connection joins it; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`.
 
 ## Example
 
@@ -34,8 +34,8 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-hide-unconnected` | boolean |  | collapsed, a socket no connection joins hides; a hover shows them. Its host writes it |
 | `data-icon` | text |  | a glyph before the name |
 | `data-input-connected` | boolean |  | a connection joins the header's input: its socket is filled, else hollow |
-| `data-input-many` | boolean |  | the header's input takes several connections: its socket is a double height D |
-| `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value \| object \| boolean \| any: an input is a D, its type in its ink |
+| `data-input-many` | boolean |  | the header's input takes several connections |
+| `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value (a circle) \| object (a diamond) \| boolean (a square) \| any (a grey circle) |
 | `data-inputs` | number |  |  |
 | `data-inputs-connected` | number |  |  |
 | `data-joined` | boolean |  | joined to what is picked: downstream of a picked node, at an end of a picked connection, or joined to the row in focus. It wears the active border on its own fill. The HOST writes it |
@@ -43,7 +43,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-linked` | boolean |  | a portal of the picked portal's name, In or Out: it takes the picked look; the HOST writes it |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-connected` | boolean |  | a connection leaves the header's output: its socket is filled, else hollow |
-| `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a circle) |
+| `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a square) |
 | `data-outputs` | number |  |  |
 | `data-outputs-connected` | number |  |  |
 | `data-resizable` | boolean |  | the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way |

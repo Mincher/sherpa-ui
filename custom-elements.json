@@ -8143,14 +8143,14 @@
             },
             {
               "name": "data-input-many",
-              "description": "the input takes several connections: its socket is a double height D",
+              "description": "the input takes several connections",
               "type": {
                 "text": "boolean"
               }
             },
             {
               "name": "data-input-socket",
-              "description": "an input socket on the start edge: value | object | boolean | any: an input is a D, its type in its ink",
+              "description": "an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a square) | any (a grey circle)",
               "type": {
                 "text": "'value' | 'object' | 'boolean' | 'any'"
               }
@@ -8183,7 +8183,7 @@
             },
             {
               "name": "data-output-socket",
-              "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a circle)",
+              "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a square)",
               "type": {
                 "text": "'value' | 'object' | 'boolean'"
               }
@@ -8803,14 +8803,14 @@
             },
             {
               "name": "data-input-many",
-              "description": "the header's input takes several connections: its socket is a double height D",
+              "description": "the header's input takes several connections",
               "type": {
                 "text": "boolean"
               }
             },
             {
               "name": "data-input-socket",
-              "description": "the whole node's input socket, on its header: value | object | boolean | any: an input is a D, its type in its ink",
+              "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a square) | any (a grey circle)",
               "type": {
                 "text": "'value' | 'object' | 'boolean' | 'any'"
               }
@@ -8864,7 +8864,7 @@
             },
             {
               "name": "data-output-socket",
-              "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a circle)",
+              "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a square)",
               "type": {
                 "text": "'value' | 'object' | 'boolean'"
               }

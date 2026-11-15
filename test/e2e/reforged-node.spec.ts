@@ -219,13 +219,12 @@ const near = (a: Rgb, b: Rgb, within = 40): boolean => Math.max(...a.map((v, i) 
 
 /** Where, as fractions of the box, each shape is or is not ink: the centre, the four corners, the top middle, and (.2, .2). */
 const PROBES: [number, number][] = [[.5, .5], [.1, .1], [.9, .1], [.1, .9], [.9, .9], [.5, .08], [.2, .2]];
+// Input and output alike, so colour is never the only cue (TODO 998 A): a circle, a diamond, a square; any a circle.
 const SHAPES: Record<string, number[]> = {
   value: [1, 0, 0, 0, 0, 1, 1],
   object: [1, 0, 0, 0, 0, 1, 0],
-  boolean: [1, 0, 0, 0, 0, 1, 1],
-  any: [1, 1, 1, 1, 1, 1, 1],
-  // An INPUT is round, whatever its type (TODOs 740, 807); the dock behind it is grey, not ink.
-  input: [1, 0, 0, 0, 0, 1, 1],
+  boolean: [1, 1, 1, 1, 1, 1, 1],
+  any: [1, 0, 0, 0, 0, 1, 1],
 };
 
 /** A node of one input socket, big, connected or not, on the canvas at a place of its own. */
@@ -263,15 +262,22 @@ for (const type of ['value', 'object', 'boolean', 'any']) {
     await socketNode(page, 'sock', `data-input-socket="${type}" data-input-connected`);
     const filled = boxOf((await rectOf(page, 'sock', 'input'))!);
     const mask = (await paint(page, filled, PROBES)).map((p) => (near(p, ink) ? 1 : 0));
-    expect(mask, `${type} filled: a D`).toEqual(SHAPES['input']);
+    expect(mask, `${type} filled: its shape`).toEqual(SHAPES[type]);
 
     await socketNode(page, 'sock', `data-input-socket="${type}"`);
     const hollow = boxOf((await rectOf(page, 'sock', 'input'))!);
     const [centre] = await paint(page, hollow, [[.5, .5]]);
     expect(near(centre!, ink), `${type} hollow centre is the face, not the ink`).toBe(false);
-    // The ring is still there: a point on the edge of the shape.
-    const edge = await paint(page, hollow, [[.03, .5]]);
-    expect(near(edge[0]!, ink), `${type} ring`).toBe(true);
+    // The ring is still there: a point on the edge of the shape. A diamond's is 1px, met at its left and top tips, where
+    // each engine paints it a pixel apart and part in face: some pixel there is nearer the ink than the face.
+    if (type === 'object') {
+      const tips = await paint(page, hollow, [0, 1, 2, 3].flatMap((i) => [[i / 40, .5], [.5, i / 40]] as [number, number][]));
+      const gap = (p: Rgb, q: Rgb) => Math.max(...p.map((v, i) => Math.abs(v - q[i]!)));
+      expect(tips.some((p) => gap(p, ink) < gap(p, centre!)), 'object ring').toBe(true);
+    } else {
+      const edge = await paint(page, hollow, [[.03, .5]]);
+      expect(near(edge[0]!, ink), `${type} ring`).toBe(true);
+    }
   });
 }
 
@@ -287,13 +293,13 @@ test('an output socket takes its own type\'s ink, whatever its node is', async (
   expect(seen).toEqual({ value: true, object: true, boolean: true });
 });
 
-test('no node has a footer or a False, data-branches or not; a boolean output is one circle on the header, in its ink (plan 944)', async ({ page }) => {
+test('no node has a footer or a False, data-branches or not; a boolean output is one square on the header, in its ink (plan 944, TODO 998)', async ({ page }) => {
   const boolean = await inkOf(page, '--sherpa-socket-ink-boolean');
   // The old fork's attributes say nothing now: no footer, no False socket, no False tip.
   await socketNode(page, 'fork', 'data-branches data-output-socket="boolean" data-output-connected data-false-connected');
   expect(await page.evaluate(() => document.querySelector('#fork')!.shadowRoot!.querySelector('.footer, .socket-false, .tip-false'))).toBeNull();
-  const circle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
-  expect(circle.map((p) => (near(p, boolean) ? 1 : 0))).toEqual(SHAPES['boolean']);
+  const square = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
+  expect(square.map((p) => (near(p, boolean) ? 1 : 0))).toEqual(SHAPES['boolean']);
 });
 
 test('a socket\'s tip says its type in words, on its socket\'s side: an input\'s to the left, an output\'s to the right', async ({ page }) => {

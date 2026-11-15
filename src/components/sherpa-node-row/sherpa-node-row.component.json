@@ -275,7 +275,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the input takes several connections: its socket is a double height D"
+      "description": "the input takes several connections"
     },
     {
       "$type": "prop",
@@ -290,7 +290,7 @@
         "boolean",
         "any"
       ],
-      "description": "an input socket on the start edge: value | object | boolean | any: an input is a D, its type in its ink"
+      "description": "an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a square) | any (a grey circle)"
     },
     {
       "$type": "prop",
@@ -338,7 +338,7 @@
         "object",
         "boolean"
       ],
-      "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a circle)"
+      "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a square)"
     },
     {
       "$type": "prop",

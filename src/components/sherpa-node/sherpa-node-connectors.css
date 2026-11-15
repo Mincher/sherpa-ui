@@ -5,16 +5,17 @@
  * row's shadow root, where the sockets read them. TRAP T-a-socket-is-drawn-by-its-type
  */
 @layer components {
-  /* Three hues far apart, and none a status's: no red, green or yellow (Will, 2026-11-13). Each flips in dark mode. */
+  /* Teal, violet and magenta, from the data viz series: far apart, none a status's, each told apart in each colour
+     blindness, and at least 3:1 on the light and the dark card, so one ink serves both modes (Will, TODO 998 A). */
   :root {
-    --sherpa-socket-ink-value: var(--sherpa-style-info-indicator-accent, #006c91);
-    --sherpa-socket-ink-object: var(--sherpa-style-active-indicator-accent, #1e189c);
-    --sherpa-socket-ink-boolean: var(--sherpa-display-mode-color-brand-color-4, #8300b6); /* theme-direct */
+    --sherpa-socket-ink-value: var(--sherpa-theme-data-viz-sequence-border-3, #00a790); /* theme-direct */
+    --sherpa-socket-ink-object: var(--sherpa-theme-data-viz-sequence-border-2, #9e03db); /* theme-direct */
+    --sherpa-socket-ink-boolean: var(--sherpa-theme-data-viz-sequence-border-8, #c92e61); /* theme-direct */
   }
 
-  svg.graph-connectors path[data-type="value"] { stroke: var(--sherpa-socket-ink-value, #006c91); }
-  svg.graph-connectors path[data-type="object"] { stroke: var(--sherpa-socket-ink-object, #1e189c); }
-  svg.graph-connectors path[data-type="boolean"] { stroke: var(--sherpa-socket-ink-boolean, #8300b6); }
+  svg.graph-connectors path[data-type="value"] { stroke: var(--sherpa-socket-ink-value, #00a790); }
+  svg.graph-connectors path[data-type="object"] { stroke: var(--sherpa-socket-ink-object, #9e03db); }
+  svg.graph-connectors path[data-type="boolean"] { stroke: var(--sherpa-socket-ink-boolean, #c92e61); }
 
   /* An input its Condition's type ignores: dashed, in the border's grey. Its tip says why (TODO 940). */
   svg.graph-connectors path[data-ignored] { stroke: var(--sherpa-style-border-base, #b3b3c3); stroke-dasharray: 4 4; }

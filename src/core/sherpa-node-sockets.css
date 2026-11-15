@@ -12,9 +12,9 @@
   --_hit: 6px; /* off-grid-ok */
   --_ring: var(--sherpa-display-mode-border-width-lg, 2px);
   /* Each shape is its CORNERS: a clip-path's round shape was cut flat on one side in Chromium, where it landed on a
-     fraction of a pixel (Will saw it, 2026-11-11). A circle; a fully round input. */
+     fraction of a pixel (Will saw it, 2026-11-11). */
   --_circle: 50%;
-  --_d: 50%;
+  --_square: var(--sherpa-display-mode-border-rounding-sm, 2px);
   --_socket-h: var(--_socket);
   /* A socket's column, its tab's width: the socket and a small inset each side, 24px (Will, 2026-11-11: narrower, the
      sockets nearer the card). Its tab is as tall as the socket and its press area, 28px; the press area may reach past the
@@ -67,13 +67,10 @@
 :host([data-output-connected]) .socket-out { --_ring: var(--sherpa-display-mode-border-width-base, 1px); }
 
 /* An INPUT takes the pointer too: its connection's end drags to another input, or a picklist's
-   input drags out a line. Will, TODOs 557, 558.
-   An INPUT is fully round, whatever its type: the type reads in its ink and its tip.
-   The outputs keep their own shapes. Will, TODOs 740, 807 */
+   input drags out a line. Will, TODOs 557, 558. */
 .socket-in {
   inset-inline-start: 0;
   cursor: crosshair;
-  --_shape: var(--_d);
 }
 /* An OUTPUT takes the pointer: a drag from it draws a new connection. Will, TODO 555 */
 .socket-out {
@@ -83,10 +80,14 @@
 :host([data-input-socket]) .socket-in,
 :host([data-output-socket]) .socket-out { display: block; }
 
-/* An OUTPUT keeps its type's SHAPE: a value a circle, an object a diamond, a boolean
-   a circle, like a value: its colour says boolean. False is a rounded square. Will, TODOs 713, 740, 874 */
+/* Every socket is its type's SHAPE, input and output, so colour is never the only cue: a value a circle, an object a
+   diamond, a boolean a square; any a circle. Will, TODO 998 A */
+:host([data-input-socket="boolean"]) .socket-in,
+:host([data-output-socket="boolean"]) .socket-out { --_shape: var(--_square); }
 /* An object is a square, 1px border, turned 45deg: no corners. It is as wide across its corners as the box. */
+:host([data-input-socket="object"]) .socket-in,
 :host([data-output-socket="object"]) .socket-out { --_dia: calc(var(--_socket) * 0.1464); }
+:host([data-input-socket="object"]) .socket-in::before,
 :host([data-output-socket="object"]) .socket-out::before {
   inset: var(--_dia);
   box-sizing: border-box;
@@ -95,7 +96,9 @@
   background: var(--sherpa-style-surface-base, #ffffff);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
 }
+:host([data-input-socket="object"]) .socket-in::after,
 :host([data-output-socket="object"]) .socket-out::after { display: none; }
+:host([data-input-socket="object"]) .socket-in .core,
 :host([data-output-socket="object"]) .socket-out .core {
   inset: calc(var(--_dia) + var(--_ring) * 1.5);
   border-radius: 0;
@@ -103,11 +106,11 @@
 }
 /* Each type's INK, from the one list the lines read too (sherpa-node-connectors.css): never a status colour. Any is grey. */
 :host([data-input-socket="value"]) .socket-in,
-:host([data-output-socket="value"]) .socket-out { --_ink: var(--sherpa-socket-ink-value, #006c91); }
+:host([data-output-socket="value"]) .socket-out { --_ink: var(--sherpa-socket-ink-value, #00a790); }
 :host([data-input-socket="object"]) .socket-in,
-:host([data-output-socket="object"]) .socket-out { --_ink: var(--sherpa-socket-ink-object, #1e189c); }
+:host([data-output-socket="object"]) .socket-out { --_ink: var(--sherpa-socket-ink-object, #9e03db); }
 :host([data-input-socket="boolean"]) .socket-in,
-:host([data-output-socket="boolean"]) .socket-out { --_ink: var(--sherpa-socket-ink-boolean, #8300b6); }
+:host([data-output-socket="boolean"]) .socket-out { --_ink: var(--sherpa-socket-ink-boolean, #c92e61); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
 /* A SOCKET TAB: the D a socket stands in, outside the card — the card's fill (in a row in a grey box, the box's grey), and

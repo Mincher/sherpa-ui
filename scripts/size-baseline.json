@@ -368,7 +368,7 @@
   "src/components/sherpa-node-row/sherpa-node-row.css": 179,
   "src/components/sherpa-node-stage/sherpa-node-stage.css": 130,
   "src/components/sherpa-node-toolbar/sherpa-node-toolbar.css": 36,
-  "src/components/sherpa-node/sherpa-node-connectors.css": 55,
+  "src/components/sherpa-node/sherpa-node-connectors.css": 56,
   "src/components/sherpa-node/sherpa-node.css": 328,
   "src/components/sherpa-notifications/sherpa-notifications.css": 109,
   "src/components/sherpa-outlet/sherpa-outlet.css": 71,

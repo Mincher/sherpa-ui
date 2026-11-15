@@ -7,11 +7,11 @@
   Public API:
     data-label          the row's name, when it has no field: a field names itself
     data-caption        what a run says of the row, at the end of its label's line ("43 rows"). Its host writes it
-    data-input-socket   an input socket on the start edge: value | object | boolean | any: an input is a D, its type in its ink
-    data-output-socket  an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a circle)
+    data-input-socket   an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a square) | any (a grey circle)
+    data-output-socket  an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a square)
     data-input-connected   a connection joins the input: its socket is filled, else hollow
     data-output-connected  a connection leaves the output: its socket is filled, else hollow
-    data-input-many     the input takes several connections: its socket is a double height D
+    data-input-many     the input takes several connections
     data-property       a property: its label reads in the input value's own type
     data-idle           a property with nothing to say (no rows reach its node): hidden, unless a connection leaves it
     data-socket-name    the row's name, the first line of each socket's tip: a collapsed node shows no label

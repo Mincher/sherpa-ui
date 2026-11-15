@@ -10,5 +10,5 @@
     "</sherpa-node>",
     "</sherpa-layout-canvas>"
   ],
-  "use": "For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a connection joins it; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`."
+  "use": "For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape and ink (a value a circle, an object a diamond, a boolean a square) and hollow until a connection joins it; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`."
 }

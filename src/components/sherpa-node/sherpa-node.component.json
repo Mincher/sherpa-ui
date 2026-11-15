@@ -359,7 +359,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "the header's input takes several connections: its socket is a double height D"
+      "description": "the header's input takes several connections"
     },
     {
       "$type": "prop",
@@ -374,7 +374,7 @@
         "boolean",
         "any"
       ],
-      "description": "the whole node's input socket, on its header: value | object | boolean | any: an input is a D, its type in its ink"
+      "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a square) | any (a grey circle)"
     },
     {
       "$type": "prop",
@@ -449,7 +449,7 @@
         "object",
         "boolean"
       ],
-      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a circle)"
+      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a square)"
     },
     {
       "$type": "prop",

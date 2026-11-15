@@ -118,20 +118,18 @@ async function socketPaint(page: Page, at: [number, number][]): Promise<Rgb[]> {
 
 test('a switch row has a boolean input socket: hollow until a connection joins it', async ({ page }) => {
   await bind(page);
-  const purple = await ink(page);
+  const boolean = await ink(page);
   expect(await page.evaluate((sel) => document.querySelector(`${sel} sherpa-node-row:has(sherpa-switch)`)!.getAttribute('data-input-socket'), GATE)).toBe('boolean');
   // Hollow: the middle is the face, not the ink (the connected one, below, is ink there).
   const [centre] = await socketPaint(page, [[.5, .5]]);
-  expect(near(centre!, purple), 'hollow centre').toBe(false);
+  expect(near(centre!, boolean), 'hollow centre').toBe(false);
 });
 
-test('a connected socket is filled: the shape is ink in the middle, not at its far corners', async ({ page }) => {
-  // A boolean Value's (plan 971 §9: a Condition has no True).
+test('a connected socket is filled: the shape is ink in the middle', async ({ page }) => {
+  // A boolean Value's (plan 971 §9: a Condition has no True). Its square is read in pixels, big, in reforged-node.spec.ts.
   await bind(page, [{ from: 'yes/value', to: 'gate/on' }]);
-  const purple = await ink(page);
-  // Three corners: the fourth, bottom right, is inked or not by the fraction of a pixel the fitted view puts the socket on.
-  const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.04, .04], [.04, .96]])).map((p) => (near(p, purple) ? 1 : 0));
-  expect(mask).toEqual([1, 0, 0, 0]);
+  const [centre] = await socketPaint(page, [[.5, .5]]);
+  expect(near(centre!, await ink(page))).toBe(true);
 });
 
 const sw = (page: Page) => page.evaluate((sel) => {
