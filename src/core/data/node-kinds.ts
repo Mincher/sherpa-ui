@@ -12,7 +12,7 @@
  * - RowControl — The control a row draws: text, a message, a number, a switch, or the list a picklist reads.
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
- * - NODE_GRAPHS — What each graph is, said once: its words for a kind it does not take, its Start, its panel's categories.
+ * - NODE_GRAPHS — What each graph is, said once: its fault words, its Start, who drives a value or shapes a node, its panel.
  * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
@@ -36,7 +36,7 @@
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
- * - kindIn — A kind as one graph draws it: only the types and rows that graph takes; none, it draws no such kind.
+ * - kindIn — A kind as one graph draws it: only its types and rows there, a value row undriven where no node drives one.
  * - kindOfNode — The kind a node is, for its own type and operators; none, no such kind.
  * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
  * - NODE_CATEGORIES — The node panel's categories, in order.
@@ -62,7 +62,7 @@
  * - NodeTie — One zip tie: a place, and the connections it funnels, in order. It changes no data.
  * - RowChoice — One pick in a row's list: the value it keeps, and its words.
  * - RowFacts — What a row's list is read from that the registry does not say.
- * - rowChoices — The list a picklist row reads, a Type row's the family's types; none, it is no picklist.
+ * - rowChoices — The list a picklist row reads, a Type row's the family's types, None first where it may be empty.
  * - fixedChoices — A fixed list: a pick row's own, or one the same on every page; none, an open list or no picklist.
  * - mirrored — What a picklist row shows while connections drive it: what comes in, read only, each pick marked Custom.
  * - drivenSwitch — What a switch row shows while a boolean connection drives it: True if any came in True, marked Custom.
@@ -188,11 +188,13 @@ export interface RowKind {
 export type NodeGraph = 'query' | 'workflow';
 
 /** What each graph is, said once (plan 1004): what it says of a kind it does not take, whether its top graph has a Start
- *  (T1), and the categories its node panel lists (none: all, and Custom Nodes empty or not). TRAP T-a-graph-is-drawn-by-its-type */
-export const NODE_GRAPHS: Readonly<Record<NodeGraph, { lacks: string; start: boolean; categories?: readonly string[] }>> = {
-  workflow: { lacks: 'a workflow does not run', start: true },
-  // The kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and its Custom Nodes, its page's Filters (TODO 776).
-  query: { lacks: "a page's filter graph does not draw", start: false, categories: ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets'] },
+ *  (T1), whether a node drives a value row (D5), whether a type pick may change a node's sockets (D6), and the categories
+ *  its node panel lists (none: all, and Custom Nodes empty or not). TRAP T-a-graph-is-drawn-by-its-type */
+export const NODE_GRAPHS: Readonly<Record<NodeGraph, { lacks: string; start: boolean; drives: boolean; reshapes: boolean; categories?: readonly string[] }>> = {
+  workflow: { lacks: 'a workflow does not run', start: true, drives: true, reshapes: true },
+  // A Query's lens owns its shape: a value is the reader's, never a node's; And and Or stay groups. The kinds it takes placed
+  // — a Source (TODO 808), a Field (plan 783 D6) — and its Custom Nodes, its page's Filters (TODO 776).
+  query: { lacks: "a page's filter graph does not draw", start: false, drives: false, reshapes: false, categories: ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets'] },
 };
 
 /** One type of a family kind (plan 749): the hint under its select, and what it adds to the kind's own rows and sockets. */
@@ -829,10 +831,14 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
 }
 
 /** A kind as one graph draws it: a family with only the types that graph takes, and only the rows it draws (a Source's
- *  Fields is a workflow's); none, the graph draws no such kind. Unchanged, the kind itself. */
+ *  Fields is a workflow's); where no node drives a value, a row with a control has no input. None, the graph draws no such
+ *  kind. Unchanged, the kind itself. */
 export function kindIn(kind: NodeKind, graph: NodeGraph): NodeKind | undefined {
   if (!kind.graphs.includes(graph)) return undefined;
-  const drawn = (rows: readonly RowKind[]): readonly RowKind[] => (rows.some((r) => r.graphs && !r.graphs.includes(graph)) ? rows.filter((r) => !r.graphs || r.graphs.includes(graph)) : rows);
+  const { drives } = NODE_GRAPHS[graph];
+  const driven = (r: RowKind): boolean => !drives && !!r.control && !!r.input;
+  const drawn = (rows: readonly RowKind[]): readonly RowKind[] => (rows.some((r) => (r.graphs && !r.graphs.includes(graph)) || driven(r))
+    ? rows.filter((r) => !r.graphs || r.graphs.includes(graph)).map((r) => (driven(r) ? (({ input: _input, ...rest }) => rest)(r) : r)) : rows);
   const rows = drawn(kind.rows);
   if (!kind.types) return rows === kind.rows ? kind : { ...kind, rows };
   const taken = Object.entries(kind.types).filter(([, t]) => (t.graphs ?? kind.graphs).includes(graph));
@@ -1105,9 +1111,12 @@ const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
  *  An open list — fields, values, stores, scopes — also offers each of the row's own
  *  values it lacks, so a select shows it. A tags row's list is the field's values, and only them:
  *  it is CLOSED to them (`rowFault`); none known, its tags are free. */
-export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind, 'choices' | 'multiple'>> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
+export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind, 'choices' | 'multiple' | 'optional'>> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
+  // One pick that may be empty offers None, first, picked or not: it can be cleared nowhere else (plan 1004 D7).
+  const none: RowChoice[] | undefined = row.optional && !row.multiple ? [{ value: '', label: 'None' }] : undefined;
+  const blank = (said: string): RowChoice[] => none ?? (row.value != null && row.value !== '' ? [] : [{ value: '', label: said }]);
   // A row's own list; one pick with none picked says so, as a Store row does: a select would show its first.
-  if (row.control === 'pick') return [...(row.multiple || (row.value != null && row.value !== '') ? [] : [{ value: '', label: 'Pick one' }]), ...(row.choices ?? [])];
+  if (row.control === 'pick') return [...(row.multiple ? [] : blank('Pick one')), ...(row.choices ?? [])];
   if (row.control === 'unit' && facts.count !== undefined) return unitWords(facts.count);
   const fixed = row.control && FIXED[row.control];
   if (fixed) return [...fixed];
@@ -1115,7 +1124,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (row.control === 'portal') return portalChoices(row.value, facts.portals ?? []);
   // The app's catalog (plans 926, 941), or the shelf's entities of a type (949): one with none picked says so, as a pick does.
   const listed = row.control === 'entity' ? facts.entities : catalogChoices(row.control, facts.provider);
-  if (listed) return [...(row.value != null && row.value !== '' ? [] : [{ value: '', label: 'Pick one' }]), ...listed];
+  if (listed) return [...blank('Pick one'), ...listed];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;
   const open = row.control === 'field' ? Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }))
@@ -1126,8 +1135,8 @@ export function rowChoices(row: Pick<RowKind, 'control'> & Partial<Pick<RowKind,
   if (!open) return undefined;
   const own = [...new Set([row.value].flat().filter((v) => v != null && v !== '').map(String))];
   // A Store row with none says so, drawn the same every time: a select would show its first store. TODO 824
-  const none = row.control === 'store' && !own.length ? [{ value: '', label: 'Pick a store' }] : [];
-  return [...none, ...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
+  const first = none ?? (row.control === 'store' && !own.length ? [{ value: '', label: 'Pick a store' }] : []);
+  return [...first, ...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
 }
 
 /** A portal's Name list: the graph's names, its own among them; New name…, whose value is the next free `Portal N`; and

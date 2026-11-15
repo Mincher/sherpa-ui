@@ -35,7 +35,9 @@ test('Pick became Field: one node in Variables, in both graphs; its Field row an
   // Its Values: one dropdown of its own field's values (plan 960 U4.7a). TRAP T-a-multi-select-is-one-row
   assert.deepEqual(kind.rows.map((r) => [r.name, r.control, r.input, r.output, r.gives]), [['field', 'field', 'value', 'object', 'field'], ['values', 'values', undefined, 'object', undefined]]);
   assert.deepEqual(kind.rows.map((r) => !!r.property), [false, false]);
-  assert.equal(kindIn(kind, 'query'), kind);
+  // In a Query its Field row is the reader's, never a node's (plan 1004 D5).
+  assert.equal(kindIn(kind, 'workflow'), kind);
+  assert.deepEqual(kindIn(kind, 'query').rows.map((r) => r.input), [undefined, undefined]);
   assert.deepEqual(paletteOf(NODE_KINDS).find((g) => g.category === 'Variables').items.map((i) => i.id), ['value', 'field']);
   // A saved Pick reads with today's fault, in words: nothing converts it (D9).
   const old = flow([{ id: 'p', kind: 'pick', x: 0, y: 0, values: { field: 'status' } }], []);

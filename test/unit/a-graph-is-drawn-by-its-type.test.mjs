@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { kindIn, NODE_KINDS } = await import(new URL('node-kinds.js', core));
+const { kindIn, NODE_KINDS, rowChoices } = await import(new URL('node-kinds.js', core));
 const { workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 const def = (nodes, graph) => ({ v: 3, id: 'g', nodes, ...(graph ? { graph } : {}) });
@@ -50,7 +50,7 @@ test('a kind the graph does not take is a fault in that graph\'s words; one it t
 });
 
 test('kindIn gives the kind itself where nothing is left out, and a kind the graph does not take none', () => {
-  assert.equal(kindIn(NODE_KINDS['field'], 'query'), NODE_KINDS['field']);
+  assert.equal(kindIn(NODE_KINDS['field'], 'workflow'), NODE_KINDS['field']);
   assert.equal(kindIn(NODE_KINDS['trigger'], 'query'), undefined);
   // A Source's Fields is a workflow's; its Page size, Search fields and Apply on a Query's (plan 1004 D3).
   const rows = (graph) => kindIn(NODE_KINDS['source'], graph).rows.map((r) => r.name);
@@ -69,4 +69,44 @@ test('a lens node is drawn as its lens says: its ref untouched, its icon and war
   assert.equal(rows.type.hint, 'Its chip changes it');
   // A kept graph's node names none: every row it can change, it may.
   assert.equal(node(drawn([CHECK]), 'c').rows.find((r) => r.name === 'type').editable, true);
+});
+
+/** A page's rows, a Field of a text and one of a number, each into a test, and both tests' Pass into a group (plan 1004 D5, D6). */
+const FIELDS = { customers: { region: { label: 'Region', type: 'text', values: ['EMEA', 'APAC'] }, seats: { label: 'Seats', type: 'number' } } };
+const TREE = [
+  SOURCE,
+  { id: 'f1', kind: 'field', x: 200, y: 0, values: { field: 'region' } }, { id: 'f2', kind: 'field', x: 200, y: 200, values: { field: 'seats' } },
+  { id: 't1', kind: 'condition', x: 400, y: 0, values: { type: 'eq', b: 'EMEA' } }, { id: 't2', kind: 'condition', x: 400, y: 200, values: { type: 'gt', b: 3 } },
+  { id: 'g', kind: 'condition', x: 600, y: 0, values: { type: 'and' } },
+];
+const JOINS = [{ from: 'src', to: 'f1' }, { from: 'src', to: 'f2' }, { from: 'f1/field', to: 't1' }, { from: 'f2/field', to: 't2' }, { from: 't1/pass', to: 'g' }, { from: 't2/pass', to: 'g' }];
+const tree = (graph) => workflowGraph({ ...def(TREE, graph), connections: JOINS }, { fieldsOf: FIELDS });
+
+test('in a filter graph no node drives a value: a row with a control takes no connection; a header and a row of none still do (D5)', () => {
+  const inputs = (graph, id) => node(tree(graph), id).rows.filter((r) => r.input && r.control).map((r) => r.name);
+  assert.deepEqual(inputs('query', 't1'), [], 'a test\'s Value B is the reader\'s');
+  assert.deepEqual(inputs('query', 'f1'), [], 'a Field\'s field too');
+  assert.ok(inputs(undefined, 't1').includes('b'), 'a workflow\'s Value B takes a line');
+  assert.equal(node(tree('query'), 't1').input, 'any', 'the header still takes the column');
+  assert.equal(tree('query').connections.length, JOINS.length, 'each line is drawn');
+});
+
+test('in a filter graph a type pick keeps the node\'s shape: a test is offered no And or Or, a group only And and Or (D6)', () => {
+  const types = (graph, id) => node(tree(graph), id).rows.find((r) => r.name === 'type').choices.map((c) => c.value);
+  assert.deepEqual(types('query', 't1'), ['eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith', 'in', 'notin'], 'a text field\'s');
+  assert.deepEqual(types('query', 't2'), ['gt', 'gte', 'lt', 'lte', 'eq', 'ne', 'in', 'notin', 'between', 'notbetween'], 'a number field\'s');
+  assert.deepEqual(types('query', 'g'), ['and', 'or']);
+  assert.ok(types(undefined, 't1').includes('and'), 'a workflow\'s test may become a group');
+});
+
+test('a single pick that may be empty offers None first, picked or not, in every graph; one that may not says Pick one while empty (D7)', () => {
+  const choices = (row) => rowChoices(row, { stores: ['customers'] }).map((c) => c.label);
+  const pick = { control: 'pick', choices: [{ value: 'a', label: 'A' }] };
+  assert.deepEqual(choices({ ...pick, optional: true }), ['None', 'A']);
+  assert.deepEqual(choices({ ...pick, optional: true, value: 'a' }), ['None', 'A']);
+  assert.deepEqual(choices(pick), ['Pick one', 'A']);
+  assert.deepEqual(choices({ ...pick, value: 'a' }), ['A']);
+  assert.deepEqual(choices({ control: 'store', optional: true, value: 'customers' }), ['None', 'customers']);
+  assert.deepEqual(choices({ control: 'store' }), ['Pick a store', 'customers']);
+  assert.deepEqual(choices({ ...pick, optional: true, multiple: true }), ['A'], 'a many pick clears by its ticks');
 });

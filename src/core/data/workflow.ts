@@ -659,6 +659,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
   const { workflow: read } = readWorkflow(given);
   if (!read) return { nodes: [], connections: [] };
   const kinds = kindsIn(withStartKind(shipped), read.graph ?? 'workflow');
+  const { reshapes } = NODE_GRAPHS[read.graph ?? 'workflow'];
   const workflow = withStart(read, nodeWidth);
   // A connection kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
   // What each input reads, it reads as the data flows: through the portals (TODO 779).
@@ -788,7 +789,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
       const given = new Intl.ListFormat('en').format([...new Set(inputs.map((i) => i.said))]);
       warnings.push({ words: `${takes}; it was given ${given}` });
     }
-    const types = family.types ? typeChoices(family)!.filter((c) => !fits || fits.has(c.value) || c.value === at?.id) : undefined;
+    // Where the graph keeps each node's shape (a Query's), a type pick keeps its sockets: And and Or only on a group (plan 1004 D6).
+    const shaped = (t: string): boolean => reshapes || !family.types?.[t]?.many === !at?.type.many;
+    const types = family.types ? typeChoices(family)!.filter((c) => (!fits || fits.has(c.value) || c.value === at?.id) && shaped(c.value)) : undefined;
     let sources: MessageSource[] | undefined;
     // The rows it sends (Results, a test's Pass and Fail): where only a value, or a test of one, reaches its header, they have nothing to say.
     // Nothing usable joined: they show (TODO 924).

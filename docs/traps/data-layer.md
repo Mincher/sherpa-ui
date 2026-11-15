@@ -8564,6 +8564,14 @@ keeps; none, a workflow. What each type is, is said once, in `NODE_GRAPHS`
   words (`lacks`): "which a page's filter graph does not draw".
 - **Its panel**: `paletteOf` lists only its `categories`; none, all, and Custom Nodes
   empty or not.
+- **Who drives a value** (`drives`, 1004 D5): in a Query a value is the reader's, so
+  `kindIn` takes the input off every row that has a control (Value B, a Field's field, a
+  Store); a row of none (a chip's line, Pass, Fail) and every header keep theirs.
+- **Who shapes a node** (`reshapes`, D6): the Query's lens owns its trees, so a type pick
+  there keeps the node's sockets: a test is offered no And or Or, a group only those, on
+  top of the narrowing by the field that comes in (which needs `fieldsOf`).
+- **A pick that may be empty offers None** (`rowChoices`, D7), in every graph, first,
+  picked or not: nothing else clears it. One that may not says "Pick one" while empty.
 - **A lens node is drawn as its lens says** (1004d, `LensNode`): its `ref` untouched,
   its `icon` and `warnings`, only the rows `editable` names as editable, and each
   row's `hints` over the drawing's own. The Query lens's definition says
