@@ -164,7 +164,7 @@
   "src/core/data/entity-acts.ts": 280,
   "src/core/data/entity-check.ts": 130,
   "src/core/data/entity-shelf.ts": 197,
-  "src/core/data/entity-store.ts": 156,
+  "src/core/data/entity-store.ts": 161,
   "src/core/data/entity-types.ts": 234,
   "src/core/data/entity-versions.ts": 159,
   "src/core/data/entity.ts": 233,

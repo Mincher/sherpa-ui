@@ -14,6 +14,7 @@ import { definitionPart, entityGraph, type Entity } from './entity.js';
 import { draftChanged, newestOf, nextVersion, versionsOf } from './entity-versions.js';
 import type { EntityShelf } from './entity-shelf.js';
 import { seedVersionOf } from './seed-version.js';
+import { placesOf, withPlaces, withoutPlaces } from './graph-layout.js';
 import { statusFields } from './status-field.js';
 import { ArrayStore } from './stores.js';
 import type { Row, Store } from './store.js';
@@ -117,31 +118,35 @@ export interface SeedMarks {
   set(marks: Record<string, { seed: number; put: number }>): void;
 }
 
-/** An entity as JSON, with no `origin`: what a mark is made from. */
+/** What an entity does, as a mark is made from it: no `origin`, and nothing of where its graph is drawn. A place is no
+ *  edit (plan 1001 D1 A): a reader who only moves a copy's nodes has not changed it, and a seed that only moves its own
+ *  has not moved. TODO 1009 · TRAP T-a-place-is-no-edit */
 const markOf = (entity: Entity): number => {
   const { origin: _origin, ...own } = entity;
-  return seedVersionOf(own);
+  return seedVersionOf(own.graph ? { ...own, graph: withoutPlaces(own.graph) } : own);
 };
 
 /**
  * A type's seed entities on the shelf as the reader's own (editable, as a Coworker's Schedule saves): one is put the
- * first time, unless one of its id is there, and put again when its seed moves (its version, a hash of it) over a copy
- * the reader has not changed since, or has removed, published as the copy's next version; a reader's change is left as
- * it is. `marks` keeps what was put.
+ * first time, unless one of its id is there, and put again when its seed moves (a hash of what it does) over a copy
+ * the reader has not changed since, or has removed, published as the copy's next version, at the copy's places; a
+ * reader's change is left as it is, and a move is none. `marks` keeps what was put.
  * Each save is the shelf's, so it is checked. The ids it put.
  */
 export async function seedEntities(shelf: EntityShelf, seeds: readonly Entity[], marks: SeedMarks): Promise<string[]> {
   const was = { ...marks.get() };
   const put: string[] = [];
   for (const seed of seeds) {
-    const version = seedVersionOf(seed);
+    const version = markOf(seed);
     const kept = shelf.get(seed.id);
     const mark = was[seed.id];
     // Never put here: put, unless one of its id is there. Put before: again only when its seed moved, over a copy the
     // reader has not changed or has removed; one they removed stays removed while the seed is the same.
     const untouched = !!kept && kept.origin === 'mine' && !!mark && markOf(kept) === mark.put;
     if (!(mark ? mark.seed !== version && (!kept || untouched) : !kept)) continue;
-    const { origin: _origin, ...own } = structuredClone(seed) as Entity;
+    const { origin: _origin, ...given } = structuredClone(seed) as Entity;
+    // Put at the copy's places: a place is the entity's own, the last kept (D1 A).
+    const own: Entity = kept?.graph && given.graph ? { ...given, graph: withPlaces(given.graph, placesOf(kept.graph)) } : given;
     // A seed is the app's, published: one with no versions publishes its change over the copy, as its first put does.
     // One with versions must extend the copy's, or the shelf refuses it in words and the copy stays (plan 972).
     const published = kept && !own.versions && draftChanged({ ...own, versions: versionsOf(kept) })

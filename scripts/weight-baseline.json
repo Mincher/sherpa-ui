@@ -562,14 +562,14 @@
   "data.js": {
     "files": 119,
     "brotli": {
-      "js": 184161,
+      "js": 184222,
       "fetched": 0
     }
   },
   "index.js": {
     "files": 305,
     "brotli": {
-      "js": 548283,
+      "js": 548344,
       "fetched": 8607
     }
   }

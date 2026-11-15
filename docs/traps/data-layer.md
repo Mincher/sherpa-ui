@@ -8568,12 +8568,17 @@ A new layout mark goes into this set, or it lights Save and changes a version's 
   `places-change`, never the shelf. A new session draws it as shipped. What it does stays locked: a change of more than
   places is refused, as before.
 - **Not yet**: a Custom Node opened inside a graph, whose moves are still its definition's draft.
+- **A seed's marks leave places out** (TODO 1009): `seedEntities` puts a seed again over a copy the reader has not
+  changed, and a move is no change, so its marks hash what a graph does (`withoutPlaces`). A seed is put at the copy's
+  places. Before, once places saved themselves (1001b), one move, or an Unfurl on opening, kept every later seed off.
 
 - Site: `src/core/data/graph-layout.ts`
 - Site: `src/core/data/entity-versions.ts`
+- Site: `src/core/data/entity-store.ts`
 - Site: `src/core/data/query-document.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-place-is-no-edit.test.mjs`
+- Site: `test/unit/a-seed-follows-past-a-move.test.mjs`
 - Site: `test/e2e/reforged-a-query-graph-keeps-its-places.spec.ts`
 - Site: `test/e2e/reforged-a-place-is-no-edit.spec.ts`
 
