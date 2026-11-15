@@ -39,6 +39,22 @@ Nodes, kinds, the drawing, the editor, Unfurl, places, versions, the Query lens 
 No app paths or URLs are in library logic. The other domain words in the library are in examples, comments, tests and
 default labels (fine).
 
+## 3b. The traps (sherpa-ui-a9, 2026-11-15)
+
+| # | For | Trap | The way out |
+|---|---|---|---|
+| T1 | G2 | A new list Demos keeps would be a sixth copy | Read the one list from what exists: the outlet's stores (defineStores) and each type's fields (typeFields, storeOfType) |
+| T2 | G2 | A store with no type has no word in the library today | Say where its word comes from (its defineStores entry), or it becomes another copy |
+| T3 | G2 | Reading every store's values at app start costs a request per field on a remote store | Read values lazily, one field at a time, as 986b does when a graph opens |
+| T4 | G2 | A copied customer value becomes `ref: 'customer'` (995's refWhere narrows it), but a chip or a Field's Values on a ref field must show the other type's rows by their titles, and the field catalogue reads no ref's store today | A new door, a9's part |
+| T5 | G2 | The server and the Service Worker need the same list | Keep it DOM-free, in the module both import |
+| T6 | G3 | A use names an entity that is not there yet, and faults | Seeds go in use order: a used Custom Node before the graphs that use it |
+| T7 | G3 | A type from entities.json has no store | Its store comes from the type registry (registerEntityType), never from a list beside it |
+| T8 | G4 | A move would mark a derived text stale | Its key is what the graph does (hashOfDefinition, no places) |
+| T9 | G4 | Reference facts listed by hand | They come from refFacts (988), through the stores and the shelf |
+
+Found on the way (a9): TODO 1009, a seed's marks hashed the whole entity, places too, so one move froze a seeded copy for good; fixed at 9e9bdddfd (a mark hashes what the entity does). Demos' one-off app/retrofit-1009.html puts each unchanged seeded Coworker again with a mark of the new rule.
+
 ## 4. Will's pick
 
 - **A (sherpa-demos-67's pick): do G1–G5 and L1–L2 next, before plan 991's other new nodes** (For each, Wait, Approval,
