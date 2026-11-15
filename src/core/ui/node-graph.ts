@@ -77,7 +77,7 @@ import { Journal, type Change } from '../data/journal.js';
 import { copyNodes, pasteNodes, type NodeClip } from '../data/node-clipboard.js';
 import { fitStages } from '../data/node-stages.js';
 import { START, primaryOf, withStart, withStartKind } from '../data/node-start.js';
-import { isGroupEnd } from '../data/graph-layout.js';
+import { isGroupEnd, placesOf, withoutPlaces, withPlaces } from '../data/graph-layout.js';
 import { LANES_BY_FAMILY, fitLanes } from '../data/node-lanes.js';
 import { dragTo, startDrag, type ChainDrag, type ChainFalloff, type ChainLink, type ChainNode } from '../data/node-chain.js';
 import { drawLanes } from './node-lanes-ui.js';
@@ -2693,7 +2693,8 @@ export function bindWorkflow(
   /** The graph as it was when the editor loaded: what Reset node graph puts back. A Save moves `original`, never this. */
   const starting = original;
   /** It never changes: its JSON, once. */
-  const startingJSON = JSON.stringify(starting);
+  /** What it does as it loaded: a place is no change (TODO 1001). */
+  const startingPlaceless = withoutPlaces(starting);
   /** The view bar of the app header, where its ⋮ holds Reset node graph (TODO 837). */
   const resetBar = (): HTMLElement | null | undefined => header?.querySelector<HTMLElement>('sherpa-quick-filter-toolbar[data-type="view"]');
   const edits = (): Record<string, NodeDefinition> => Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : [])));
@@ -2704,6 +2705,7 @@ export function bindWorkflow(
     draft = held.workflow;
     lib = held.library;
     for (const id of held.ids) dirty.add(id);
+    // The app's held edits are edits, read as the editor opens too: the tab keeps them, and no place is the reader's.
     session?.set(pointer, draft);
     session?.set(editsAt, edits());
   };
@@ -2746,7 +2748,7 @@ export function bindWorkflow(
     toolbar?.toggleAttribute('data-can-redo', journal.canForward);
     canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
     // Reset node graph is off while the graph is as it was when the editor loaded (a preset's never changes).
-    resetBar()?.toggleAttribute('data-graph-unchanged', (draft === starting || JSON.stringify(draft) === startingJSON) && !dirty.size && ownTags === handedTags);
+    resetBar()?.toggleAttribute('data-graph-unchanged', (draft === starting || same(withoutPlaces(draft), startingPlaceless)) && !dirty.size && ownTags === handedTags);
   };
   /** Two steps as one: the first's before, the second's after, for every definition either changed. */
   const fold = (last: Change<Snap>, next: Change<Snap>): Change<Snap> => ({
@@ -2762,6 +2764,23 @@ export function bindWorkflow(
   let docRead = draft;
   let docWriting = false;
   const same = (a: unknown, b: unknown): boolean => a === b || JSON.stringify(a) === JSON.stringify(b);
+  /** Where a graph is drawn saves itself, never an edit (Will, TODO 1001): a move, an Unfurl, a Swimlane toggle, a tie, a
+   *  bend, a size. The kept graph takes the places at once (`places-change`), and the tab keeps a draft only for what the
+   *  graph DOES. TRAP T-a-place-is-no-edit */
+  const keepPlaces = (): void => {
+    if (path.length || doc || readOnly()) return;
+    // A node only in the draft keeps its place there: the kept graph takes the places of what it holds (T4).
+    const next = withPlaces(original, placesOf(draft));
+    const places = placesOf(next);
+    if (same(places, placesOf(original))) return;
+    original = next;
+    canvas.dispatchEvent(new CustomEvent('places-change', { detail: { definition: original, places }, bubbles: true, composed: true }));
+  };
+  /** The tab's draft, kept only where the graph differs from the kept one in more than its places; the places saved. */
+  const keepTab = (): void => {
+    session?.set(pointer, same(withoutPlaces(draft), withoutPlaces(original)) ? undefined : draft);
+    keepPlaces();
+  };
   let depth = 0;
   let begun: { draft: WorkflowDefinition; nodes: NodeLibrary['nodes']; tags: readonly string[] } | undefined;
   let lastTag = '';
@@ -2840,7 +2859,7 @@ export function bindWorkflow(
     const kept = Object.entries(lib.nodes).flatMap(([id, d]) => (put.has(id) ? (put.get(id) ? [[id, put.get(id)!] as const] : []) : [[id, d] as const]));
     const added = [...put].flatMap(([id, d]) => (d && !(id in lib.nodes) ? [[id, d] as const] : []));
     lib = { ...lib, nodes: Object.fromEntries([...kept, ...added]) };
-    session?.set(pointer, draft);
+    keepTab();
     session?.set(editsAt, edits());
     lastTag = '';
     refreshPanel();
@@ -2853,7 +2872,8 @@ export function bindWorkflow(
     if (preset) return;
     edit(() => {
       path = [];
-      draft = starting;
+      // What the graph does, as it loaded; where it is drawn stays as it is now: a place is no edit (TODO 1001).
+      draft = withPlaces(starting, placesOf(draft));
       ownTags = handedTags;
       const back = new Map([...dirty].map((id) => [id, handed.nodes[id]] as const));
       lib = { ...lib, nodes: Object.fromEntries(Object.entries(lib.nodes).flatMap(([id, d]) => (back.has(id) ? (back.get(id) ? [[id, back.get(id)!] as const] : []) : [[id, d] as const]))) };
@@ -2944,7 +2964,7 @@ export function bindWorkflow(
       // The Start stays in the first stage, if the stages change (Will).
       draft = settling ? next : holdTies(fitLanes(fitStages(opened(next), nodeWidth), heightOf, K()));
       // Kept for the tab as the drag ends, not each pointer move: each is the whole workflow as JSON.
-      if (!dragging) session?.set(pointer, draft);
+      if (!dragging) keepTab();
     } else if (readOnly()) {
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Clone it, and change the clone.', at: { workflow: workflow.id } });
     } else {
@@ -2961,7 +2981,7 @@ export function bindWorkflow(
       const through = path.length === 1 ? draft.nodes.find((n) => n.id === path[0]!.use) : undefined;
       if (through && lib.nodes[id] && through.version === numberOf(lib.nodes[id]!)) {
         draft = updateInstance(draft, through.id, nextLib, K());
-        session?.set(pointer, draft);
+        keepTab();
       }
       setLib(nextLib, [id]);
     }
@@ -3422,7 +3442,7 @@ export function bindWorkflow(
     edit(() => {
       if (ids.length) setLib(next, ids);
       draft = updateAll(draft, kind, lib, topKinds());
-      session?.set(pointer, draft);
+      keepTab();
     });
     onUpdateAll?.(kind);
     draw();

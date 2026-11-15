@@ -8552,12 +8552,23 @@ A new layout mark goes into this set, or it lights Save and changes a version's 
   its ties, frames and stages, and each node's stage. A second shape had dropped `beforeLanes` and the `unfurl` mark, so
   Swimlanes off left each node of a Query graph where the lanes put it. A layout kept in the old shape is dropped once
   (`isGraphPlaces`), never drawn.
+- **The editor keeps places at once** (1001b, `keepTab` and `keepPlaces` in `bindWorkflow`): each write that is no drag
+  (a move let go, an Unfurl, a Swimlane toggle, a tie, a bend, a size), an Undo and a Redo put the draft's places on the
+  kept graph (`withPlaces`, so a node only in the draft keeps its place there) and fire `places-change` with it. The tab
+  keeps a draft only where the graph differs from the kept one in more than places. Reset node graph puts back what the
+  graph did, and keeps where it is drawn.
+- **A move into another stage is an edit** (D2 A): `graphKey` reads each node's `stage`, so its place saves itself and
+  its stage waits for Save.
+- **Not yet**: a preset's places kept for the session (D3 B: a preset is read only, so it cannot be moved today), and a
+  Custom Node opened inside a graph, whose moves are still its definition's draft.
 
 - Site: `src/core/data/graph-layout.ts`
 - Site: `src/core/data/entity-versions.ts`
 - Site: `src/core/data/query-document.ts`
+- Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-place-is-no-edit.test.mjs`
 - Site: `test/e2e/reforged-a-query-graph-keeps-its-places.spec.ts`
+- Site: `test/e2e/reforged-a-place-is-no-edit.spec.ts`
 
 ### T-a-graph-is-drawn-by-its-type
 

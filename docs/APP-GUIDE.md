@@ -870,7 +870,11 @@ as the toolbar's Unfurl would, and saves it without the flag. That save is the e
 `definition-save`: an app that keeps graphs on its own Save keeps them on that event too, or
 the layout is never stored. With the setting `unfurlMidpoints` (on; it writes the canvas's
 `data-unfurl-midpoints`), an Unfurl also spaces each line's middle as it spaces a node, and
-writes it as the line's one bend, so a line goes round a node, not through it (TODO 999). Give `bindWorkflow` a
+writes it as the line's one bend, so a line goes round a node, not through it (TODO 999).
+Where a graph is drawn saves itself, never an edit (TODO 1001): a
+move, an Unfurl, a Swimlane toggle, a tie, a bend or a size fires `places-change`, its
+`detail.definition` the kept graph with the new places (`detail.places` them alone). Keep it as
+it comes, with no Save and no new version; the tab keeps no draft for places alone. Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:
 
 ```html

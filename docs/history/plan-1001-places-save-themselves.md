@@ -74,6 +74,6 @@ The questions, as they were asked:
 | Phase | Does |
 |---|---|
 | 1001a | The place set, said once (T3); the hash and draftChanged (T1); D1's roll back (T6) — a9 |
-| 1001b | The canvas: a move, an Unfurl and a Swimlane toggle save themselves when they end, onto the kept graph and the draft (T4, T7); D2; D3 — e8 |
+| 1001b | The canvas: a move, an Unfurl and a Swimlane toggle save themselves when they end, onto the kept graph and the draft (T4, T7); D2; D3 — e8 **In part, 2026-11-15 (sherpa-ui-e8): the kept graph takes its places at once (`places-change`), the tab keeps no draft for places alone, Reset keeps where nodes stand, graphKey reads each node's stage (D2). Next: D3 B (a preset moved, kept for the session) and a Custom Node's inner graph** |
 | 1001c | Row 1000: Unfurl on opening and on leaving Swimlane mode, by D4, writing only when a place changed (T5) — e8 |
 | 1001d | Demos: the specs that read a Save or a draft after a move, and the graphs' views — sherpa-demos-67 |

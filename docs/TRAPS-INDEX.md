@@ -901,7 +901,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (158)
+## SherpaElement and the shared sheets (159)
 
 - [T-a-bend-is-a-smooth-point](traps/element-and-sheets.md#t-a-bend-is-a-smooth-point) — connector-path
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
@@ -942,6 +942,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-node-row-wears-its-nodes-look](traps/element-and-sheets.md#t-a-node-row-wears-its-nodes-look) — sherpa-node-look
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — filter-host-controller, shared-constants
+- [T-a-place-is-no-edit](traps/data-layer.md#t-a-place-is-no-edit) — node-graph
 - [T-a-portal-hop-is-resolved-once](traps/data-layer.md#t-a-portal-hop-is-resolved-once) — node-graph
 - [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — float-box, sherpa-float
 - [T-a-property-set-before-upgrade-shadows-its-accessor](traps/element-and-sheets.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element

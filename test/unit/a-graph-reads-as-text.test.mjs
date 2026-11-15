@@ -77,5 +77,8 @@ test('graphKey changes with what a graph does, not with where its nodes stand', 
   const changed = { ...g, nodes: g.nodes.map((n) => (n.id === 'risk' ? { ...n, values: { type: 'eq', b: 'Critical' } } : n)) };
   assert.equal(graphKey(moved), graphKey(g));
   assert.notEqual(graphKey(changed), graphKey(g));
+  // A move into another stage is an edit: the stage is its run order (Will, TODO 1001 D2 A).
+  const restaged = { ...g, nodes: g.nodes.map((n) => (n.id === 'fix' ? { ...n, stage: 'find' } : n)) };
+  assert.notEqual(graphKey(restaged), graphKey(g));
   assert.equal(typeof graphKey(), 'string');
 });

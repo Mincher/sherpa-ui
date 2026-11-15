@@ -37,7 +37,8 @@ export type StepWords = (node: WorkflowNode, graph: TextGraph) => string | undef
  *  out: a node moved does not change what it says. */
 export function graphKey(graph: TextGraph = {}): string {
   const what = JSON.stringify({
-    nodes: (graph.nodes ?? []).map(({ id, kind, heading, description, values }) => [id, kind, heading, description, values]),
+    // A node's stage is what the graph does, its run order (Will, TODO 1001 D2 A): a move into another stage is an edit.
+    nodes: (graph.nodes ?? []).map(({ id, kind, heading, description, values, stage }) => [id, kind, heading, description, values, ...(stage ? [stage] : [])]),
     connections: (graph.connections ?? []).map(({ from, to }) => [from, to]),
     stages: (graph.stages ?? []).map(({ label }) => label),
   });
