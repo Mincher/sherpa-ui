@@ -63,9 +63,10 @@ export function queryDefinition(id: string, graph: { nodes: readonly LensNode[];
   const nodes = graph.nodes.map((n): LensNode => (layout.staged?.[n.id] ? { ...n, stage: layout.staged[n.id]! } : n));
   const ties = tiesAmong(layout.ties, graph.connections);
   const frames = framesAmong(layout.frames, nodes.map((n) => n.id));
-  // Its name, where a trail names it: a page's Query (plan 960 U4.7b). Its swimlanes and unfurl mark are its places'.
+  // Its name, where a trail names it: a page's Query (plan 960 U4.7b). Its swimlanes and unfurl mark are its places'. It
+  // is drawn as a filter graph: no Start, a Query's kinds (plan 1004b).
   return withPlaces({
-    v: 3, id, label: 'Query', nodes, connections: graph.connections,
+    v: 3, id, label: 'Query', graph: 'query', nodes, connections: graph.connections,
     ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}), ...(layout.stages?.length ? { stages: layout.stages } : {}),
   }, layout.places ?? NOWHERE);
 }

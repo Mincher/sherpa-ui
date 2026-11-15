@@ -43,6 +43,7 @@ import { nodeKinds, kindIn, NODE_GRAPHS, ROWS, LIST_OPS, TEST_KINDS, accepts, co
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
+import type { LensNode } from './lens-registry.js';
 import { columnOf, fieldWords, givenAt, INPUT_WORDS, needOf, pickSent, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 import { laneFaults, type NodeLane } from './node-lanes.js';
@@ -910,6 +911,11 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     });
     // A row whose choices are its field's values (a Field's Values) is drawn only where that field declares some.
     const shownRows = rows.filter((r) => !r.valuesOf || !!r.choices?.length);
+    // What a lens says of the node (plan 1004d): the rows a reader may change there, each row's words, its icon and what it
+    // warns. Its ref is drawn untouched. TRAP T-a-graph-is-drawn-by-its-type
+    const { ref, editable: may, hints, icon, warnings: lensWarns = [] } = node as LensNode;
+    warnings.push(...lensWarns);
+    const lensed = (row: GraphRow): GraphRow => ({ ...row, ...(may && !may.includes(row.name) ? { editable: false } : {}), ...(hints?.[row.name] ? { hint: hints[row.name] } : {}) });
     // A value kept on a row that takes none, an input of rows (a To once typed): unused, and said so, never kept quietly.
     for (const row of kind.rows) {
       const kept = values[row.name];
@@ -933,7 +939,7 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     const started = top && kind.rows.some((r) => r.control === 'store') ? { started: true as const } : {};
     // A header that passes on what reaches it is drawn as that type (the Boolean, plan 971 §9).
     const passing = kind.passes && flows.some((c) => c.to === node.id) ? { output: socketOfGiven(sent(node.id)?.kind) } : {};
-    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, shownRows, heads), ...passing, x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}), ...ignores, ...blocked, ...started };
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, may || hints ? shownRows.map(lensed) : shownRows, heads), ...passing, ...(icon ? { icon } : {}), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(ref ? { ref } : {}), ...(warnings.length ? { warnings } : {}), ...ignores, ...blocked, ...started };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, connections) : workflow.ties ?? [];
   const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));

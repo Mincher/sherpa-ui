@@ -8546,6 +8546,10 @@ keeps; none, a workflow. What each type is, is said once, in `NODE_GRAPHS`
   words (`lacks`): "which a page's filter graph does not draw".
 - **Its panel**: `paletteOf` lists only its `categories`; none, all, and Custom Nodes
   empty or not.
+- **A lens node is drawn as its lens says** (1004d, `LensNode`): its `ref` untouched,
+  its `icon` and `warnings`, only the rows `editable` names as editable, and each
+  row's `hints` over the drawing's own. The Query lens's definition says
+  `graph: 'query'`.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/node-start.ts`

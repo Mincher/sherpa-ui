@@ -55,3 +55,17 @@ test('kindIn gives the kind itself where nothing is left out, and a kind the gra
   assert.notEqual(kindIn(NODE_KINDS['source'], 'query'), NODE_KINDS['source']);
   assert.equal(kindIn(NODE_KINDS['source'], 'workflow'), NODE_KINDS['source']);
 });
+
+test('a lens node is drawn as its lens says: its ref untouched, its icon and warnings, only the rows it names editable, each row\'s words (plan 1004d)', () => {
+  const lens = { ...CHECK, ref: { scope: 'view', field: 'status' }, editable: ['b'], hints: { type: 'Its chip changes it' }, off: true, icon: 'filter', warnings: [{ words: 'Not the page\'s Source' }] };
+  const at = node(drawn([lens], 'query'), 'c');
+  assert.deepEqual(at.ref, { scope: 'view', field: 'status' });
+  assert.equal(at.icon, 'filter');
+  assert.ok(at.warnings.some((w) => w.words === 'Not the page\'s Source'));
+  const rows = Object.fromEntries(at.rows.map((r) => [r.name, r]));
+  assert.equal(rows.type.editable, false, 'a row the lens does not name is read only');
+  assert.equal(rows.b.editable, true);
+  assert.equal(rows.type.hint, 'Its chip changes it');
+  // A kept graph's node names none: every row it can change, it may.
+  assert.equal(node(drawn([CHECK]), 'c').rows.find((r) => r.name === 'type').editable, true);
+});
