@@ -11,7 +11,8 @@ import assert from 'node:assert/strict';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { editWorkflow, holdTies, readWorkflow, workflowFaults, workflowGraph, tieLimit, tiesAmong } = await import(new URL('workflow.js', core));
+const { editWorkflow, holdTies, readWorkflow, workflowFaults, workflowGraph, tieLimit } = await import(new URL('workflow.js', core));
+const { tiesAmong } = await import(new URL('graph-layout.js', core));
 const { versionOf: definitionVersion, innerOf } = await import(new URL('node-library.js', core));
 
 const R = (n) => ({ from: `s${n}/rows`, to: `e${n}` });

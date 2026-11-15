@@ -21,9 +21,9 @@
 import { NODE_KINDS, socketOf, type DrawnGraph, type GraphEdit, type NodeConnection, type NodeTie } from './node-kinds.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import type { NodeStage } from './node-stages.js';
-import { tiesAmong, type WorkflowDefinition } from './workflow.js';
+import type { WorkflowDefinition } from './workflow.js';
 import type { LensDefinition, LensNode } from './lens-registry.js';
-import { connectionKey, isGraphPlaces, placesOf, withPlaces, type GraphPlaces } from './graph-layout.js';
+import { connectionKey, isGraphPlaces, placesOf, tiesAmong, withPlaces, type GraphPlaces } from './graph-layout.js';
 import { graphRequest, keptEdit, orderRequest, placeRequest, connectionRequest, type KeptSource, type PlaceFacts, type QueryGraphFacts } from './query-graph.js';
 import { VIEW, type QueryRequest } from './query.js';
 
@@ -42,7 +42,7 @@ export interface GraphLayout {
 
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const list = (v: unknown): boolean => v === undefined || Array.isArray(v);
-const NOWHERE: GraphPlaces = { nodes: {}, ties: {}, bends: {}, stages: {} };
+const NOWHERE: GraphPlaces = { nodes: {}, bends: {}, stages: {} };
 
 /** Whether a stored value is a GraphLayout: a wrong shape is dropped, never drawn. */
 export function isGraphLayout(v: unknown): v is GraphLayout {
@@ -76,8 +76,10 @@ export function queryDefinition(id: string, graph: { nodes: readonly LensNode[];
 export function layoutOf(definition: WorkflowDefinition): GraphLayout {
   const { ties, frames, stages, ...placed } = definition;
   const staged = Object.fromEntries(definition.nodes.flatMap((n) => (n.stage ? [[n.id, n.stage]] : [])));
+  // Its ties are kept whole beside its places, so its places name none: the graph keeps its own.
+  const { ties: _whole, ...places } = placesOf(placed);
   return {
-    places: placesOf(placed),
+    places,
     ...(ties?.length ? { ties } : {}), ...(frames?.length ? { frames } : {}), ...(stages?.length ? { stages } : {}),
     ...(Object.keys(staged).length ? { staged } : {}),
   };

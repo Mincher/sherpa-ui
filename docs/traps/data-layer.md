@@ -8534,10 +8534,13 @@ edits, unfurls, swimlane toggles don't count as edits requiring a save. They app
 D1 A: Save and Publish are for what a graph DOES. A version still keeps its definition whole, places in it, and that looks
 like a mistake; it is the fallback for a node the draft no longer has.
 
-**The place set is said once**, in `graph-layout.ts`: each node's x, y and size, each tie's x and y, each connection's
-bends (`via`), each stage's x and width, the swimlanes with `beforeLanes`, and the `unfurl` mark. `placesOf` reads it,
-`withoutPlaces` takes it away, `withPlaces` puts it on each part it names; a part it does not name keeps its own. A
-node's `stage` is no place: a move into another stage changes the run, so it waits for Save (D2 A). A frame is words.
+**The place set is said once**, in `graph-layout.ts`: each node's x, y and size, each tie WHOLE (Will, 2026-11-15: "making
+or removing a zip tie is layout"), each connection's bends (`via`), each stage's x and width, the swimlanes with
+`beforeLanes`, and the `unfurl` mark. `placesOf` reads it, `withoutPlaces` takes it away (ties and all), `withPlaces` puts
+it on each part it names; a part it does not name keeps its own. Its ties take the graph's place, each keeping only the
+connections the graph still has (`tiesAmong`, moved here), and places that name no ties leave the graph's own. A
+node's `stage` is no place: a move into another stage changes the run, so it waits for Save (D2 A). A frame is words:
+an edit.
 A new layout mark goes into this set, or it lights Save and changes a version's hash.
 
 - **The hash leaves places out**: `hashOfDefinition` hashes `withoutPlaces(graph)`. So a move alone is no change to

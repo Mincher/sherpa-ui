@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
 const V = await import(new URL('data/entity-versions.js', core));
-const { placesOf, withPlaces, withoutPlaces } = await import(new URL('data/graph-layout.js', core));
+const { isGraphPlaces, placesOf, withPlaces, withoutPlaces } = await import(new URL('data/graph-layout.js', core));
 
 const keeper = () => new PageKeeper({ tab: memoryTier(), local: memoryTier() });
 /** A Filter whose test reads one status: `value` is that status; `dx` moves every node right. */
@@ -46,14 +46,23 @@ test('where a graph is drawn is said once: read, taken away and put back; a part
   const places = placesOf(STAGED);
   assert.deepEqual(withPlaces(STAGED, places), STAGED, 'read and put back, it is the same graph');
   const bare = withoutPlaces(STAGED);
-  assert.deepEqual(Object.keys(bare).sort(), ['connections', 'nodes', 'stages', 'ties']);
+  // A tie is layout, whole: made or cut, it saves itself and is no change to publish (Will, 2026-11-15).
+  assert.deepEqual(Object.keys(bare).sort(), ['connections', 'nodes', 'stages']);
+  assert.deepEqual(places.ties, STAGED.ties, 'each tie whole: its place and the connections it funnels');
   assert.deepEqual(bare.nodes, [{ id: 'a', kind: 'value', stage: 's1' }, { id: 'b', kind: 'value', stage: 's2' }], 'a node keeps its stage');
-  assert.deepEqual([bare.connections, bare.ties, bare.stages], [[{ from: 'a/value', to: 'b' }], [{ id: 't', connections: [{ from: 'a/value', to: 'b' }] }], [{ id: 's1', label: 'One' }, { id: 's2', label: 'Two' }]]);
+  assert.deepEqual([bare.connections, bare.stages], [[{ from: 'a/value', to: 'b' }], [{ id: 's1', label: 'One' }, { id: 's2', label: 'Two' }]]);
   // Another graph's places: each part they name takes its own; no bends, no width and no lanes are theirs too.
   const plain = { nodes: [{ id: 'a', kind: 'value', x: 9, y: 9 }, { id: 'c', kind: 'value', x: 7, y: 7 }], connections: [{ from: 'a/value', to: 'b' }], stages: [{ id: 's2', label: 'Two', x: 0 }] };
   const put = withPlaces(STAGED, placesOf(plain));
   assert.deepEqual([at(put, 'a'), at(put, 'b')], [{ id: 'a', kind: 'value', x: 9, y: 9, stage: 's1' }, STAGED.nodes[1]]);
-  assert.deepEqual([put.connections, put.stages, 'lanes' in put, 'beforeLanes' in put, 'unfurl' in put], [[{ from: 'a/value', to: 'b' }], [STAGED.stages[0], { id: 's2', label: 'Two', x: 0 }], false, false, false]);
+  assert.deepEqual([put.connections, put.stages, 'lanes' in put, 'beforeLanes' in put, 'unfurl' in put, 'ties' in put], [[{ from: 'a/value', to: 'b' }], [STAGED.stages[0], { id: 's2', label: 'Two', x: 0 }], false, false, false, false]);
+  // A tie keeps only the connections the graph still has; with none, it goes. Places that name no ties leave the graph's own.
+  assert.deepEqual(withPlaces({ ...STAGED, connections: [] }, places).ties, undefined);
+  const { ties: _t, ...untied } = places;
+  assert.deepEqual(withPlaces(STAGED, untied).ties, STAGED.ties);
+  // A place set of the old shape (a tie's place alone) is dropped, never drawn.
+  assert.equal(isGraphPlaces({ ...places, ties: { t: { x: 1, y: 2 } } }), false);
+  assert.equal(isGraphPlaces(JSON.parse(JSON.stringify(places))), true);
 });
 
 test('a version\'s hash leaves out every place, never what the graph does: a node\'s stage, a value, a connection', () => {
@@ -63,7 +72,8 @@ test('a version\'s hash leaves out every place, never what the graph does: a nod
     ties: [{ ...STAGED.ties[0], x: 0 }], stages: STAGED.stages.map((st) => ({ id: st.id, label: st.label, x: st.x + 80 })),
   };
   const { lanes: _l, beforeLanes: _b, unfurl: _u, ...noLanes } = STAGED;
-  assert.deepEqual([hash(moved), hash(noLanes)], [hash(STAGED), hash(STAGED)], 'a move, a bend, a size, a stage width, Swimlanes off');
+  const { ties: _ties, ...untied } = STAGED;
+  assert.deepEqual([hash(moved), hash(noLanes), hash(untied)], [hash(STAGED), hash(STAGED), hash(STAGED)], 'a move, a bend, a size, a stage width, Swimlanes off, a tie cut');
   const staged = { ...STAGED, nodes: [STAGED.nodes[0], { ...STAGED.nodes[1], stage: 's1' }] };
   const valued = { ...STAGED, nodes: [{ ...STAGED.nodes[0], values: { value: 1 } }, STAGED.nodes[1]] };
   const joined = { ...STAGED, connections: [] };

@@ -14,6 +14,7 @@
  * - isGraphPlaces — Whether a stored value is a GraphPlaces: a wrong shape is dropped, never drawn.
  * - withoutPlaces — A graph with nothing of where it is drawn: what it does alone, for a hash.
  * - withPlaces — A graph with these places on each part they name; a part they do not name keeps its own.
+ * - tiesAmong — The ties left when only these connections remain: a tie keeps its connections still there; with none, it goes.
  */
 import type { NodeConnection, NodeSize, NodeTie } from './node-kinds.js';
 import type { NodeFrame } from './node-frames.js';
@@ -61,11 +62,13 @@ export interface Placed {
 }
 
 /** Where a graph is drawn, each part by its id: what saves itself and is no part of a version (Will, TODO 1001; plan 1001
- *  D1 A). A node's place and size, a tie's place, a connection's bends (none, `[]`), a stage's left and width, the
- *  swimlanes with the places before them, and the unfurl mark. A node's stage is no place: it changes the run (D2 A). */
+ *  D1 A). A node's place and size, each tie whole (a tie made or cut is layout too: Will, 2026-11-15), a connection's
+ *  bends (none, `[]`), a stage's left and width, the swimlanes with the places before them, and the unfurl mark. A node's
+ *  stage is no place: it changes the run (D2 A). */
 export interface GraphPlaces {
   nodes: Readonly<Record<string, Point & { size?: NodeSize }>>;
-  ties: Readonly<Record<string, Point>>;
+  /** None: the graph keeps its own. */
+  ties?: readonly NodeTie[];
   bends: Readonly<Record<string, readonly Point[]>>;
   stages: Readonly<Record<string, { x: number; w?: number }>>;
   lanes?: WorkflowDefinition['lanes'];
@@ -77,7 +80,7 @@ export interface GraphPlaces {
 export function placesOf(graph: Placed): GraphPlaces {
   return {
     nodes: Object.fromEntries(graph.nodes.map((n) => [n.id, { x: n.x, y: n.y, ...(n.size ? { size: n.size } : {}) }])),
-    ties: Object.fromEntries((graph.ties ?? []).map((t) => [t.id, { x: t.x, y: t.y }])),
+    ties: (graph.ties ?? []).map((t) => ({ id: t.id, x: t.x, y: t.y, connections: t.connections.map(({ from, to }) => ({ from, to })) })),
     bends: Object.fromEntries((graph.connections ?? []).map((c) => [connectionKey(c), c.via ?? []])),
     stages: Object.fromEntries((graph.stages ?? []).map((st) => [st.id, st.w === undefined ? { x: st.x } : { x: st.x, w: st.w }])),
     ...(graph.lanes?.length ? { lanes: graph.lanes, ...(graph.beforeLanes ? { beforeLanes: graph.beforeLanes } : {}) } : {}),
@@ -93,7 +96,9 @@ const each = (v: unknown, ok: (one: unknown) => boolean): boolean => record(v) &
 export function isGraphPlaces(v: unknown): v is GraphPlaces {
   if (!record(v)) return false;
   return each(v['nodes'], (n) => point(n) && (n['size'] === undefined || record(n['size'])))
-    && each(v['ties'], point) && each(v['bends'], (b) => Array.isArray(b) && b.every(point))
+    && (v['ties'] === undefined || Array.isArray(v['ties']) && v['ties'].every((t) => point(t) && typeof t['id'] === 'string' && Array.isArray(t['connections'])
+      && t['connections'].every((r) => record(r) && typeof r['from'] === 'string' && typeof r['to'] === 'string')))
+    && each(v['bends'], (b) => Array.isArray(b) && b.every(point))
     && each(v['stages'], (st) => record(st) && Number.isFinite(st['x']))
     && (v['lanes'] === undefined || Array.isArray(v['lanes'])) && (v['beforeLanes'] === undefined || each(v['beforeLanes'], point))
     && (v['unfurl'] === undefined || v['unfurl'] === true);
@@ -101,20 +106,19 @@ export function isGraphPlaces(v: unknown): v is GraphPlaces {
 
 /** A graph with nothing of where it is drawn: what it does alone, for a hash. */
 export function withoutPlaces(graph: Placed): Record<string, unknown> {
-  const { nodes, connections, ties, stages, lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, ...rest } = graph;
+  const { nodes, connections, ties: _ties, stages, lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, ...rest } = graph;
   return {
     ...rest,
     nodes: nodes.map(({ x: _x, y: _y, size: _size, ...n }) => n),
     ...(connections ? { connections: connections.map(({ via: _via, ...c }) => c) } : {}),
-    ...(ties ? { ties: ties.map(({ x: _x, y: _y, ...t }) => t) } : {}),
     ...(stages ? { stages: stages.map(({ x: _x, w: _w, ...st }) => st) } : {}),
   };
 }
 
-/** A graph with these places on each part they name; a part they do not name (one added since) keeps its own. Its
- *  swimlanes and unfurl mark are theirs. */
+/** A graph with these places on each part they name; a part they do not name (one added since) keeps its own. Its ties,
+ *  swimlanes and unfurl mark are theirs: a tie keeps the connections the graph still has, and with none it goes. */
 export function withPlaces<G extends Placed>(graph: G, places: GraphPlaces): G {
-  const { lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, ...rest } = graph;
+  const { ties: _ties, lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, ...rest } = graph;
   const nodes = graph.nodes.map((n) => {
     const at = places.nodes[n.id];
     if (!at) return n;
@@ -127,7 +131,7 @@ export function withPlaces<G extends Placed>(graph: G, places: GraphPlaces): G {
     const { via: _via, ...bare } = c;
     return via.length ? { ...bare, via } : bare;
   });
-  const ties = graph.ties?.map((t) => (places.ties[t.id] ? { ...t, ...places.ties[t.id] } : t));
+  const ties = places.ties ? tiesAmong(places.ties, graph.connections ?? []) : graph.ties ?? [];
   const stages = graph.stages?.map((st) => {
     const at = places.stages[st.id];
     if (!at) return st;
@@ -136,8 +140,16 @@ export function withPlaces<G extends Placed>(graph: G, places: GraphPlaces): G {
   });
   return {
     ...rest, nodes,
-    ...(connections ? { connections } : {}), ...(ties ? { ties } : {}), ...(stages ? { stages } : {}),
+    ...(connections ? { connections } : {}), ...(ties.length ? { ties } : {}), ...(stages ? { stages } : {}),
     ...(places.lanes ? { lanes: places.lanes, ...(places.beforeLanes ? { beforeLanes: places.beforeLanes } : {}) } : {}),
     ...(places.unfurl ? { unfurl: true as const } : {}),
   } as unknown as G;
+}
+
+/** The ties left when only these connections remain: a tie keeps its connections still there; with none, it goes. */
+export function tiesAmong(ties: readonly NodeTie[] | undefined, connections: readonly Pick<NodeConnection, 'from' | 'to'>[]): NodeTie[] {
+  return (ties ?? []).flatMap((t) => {
+    const kept = t.connections.filter((r) => connections.some((x) => x.from === r.from && x.to === r.to));
+    return kept.length ? [kept.length === t.connections.length ? t : { ...t, connections: kept }] : [];
+  });
 }

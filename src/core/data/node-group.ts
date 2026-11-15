@@ -19,7 +19,8 @@
 import { NODE_KINDS, nodeKinds, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeConnection, type SocketType } from './node-kinds.js';
 import { kindsOf, numberOf, updateInstance, useOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tidyTags } from './tags.js';
-import { nodeWidth, tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { nodeWidth, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { tiesAmong } from './graph-layout.js';
 import { restage } from './node-stages.js';
 import { framesAmong, type NodeFrame } from './node-frames.js';
 import { PORTAL, addressOf, addressRow, cutNames, ungroupNames } from './node-portals.js';

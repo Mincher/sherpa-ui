@@ -26,7 +26,6 @@
  * - tieLimit — The range a zip tie's x may take: 20% to 80% of its own section of its connector set.
  * - tieAt — An x held inside a tie's range, in whole px.
  * - holdTies — Every tie held inside its own section: after an edit, a layout or a fit.
- * - tiesAmong — The ties left when only some connections remain: a tie keeps its connections still there, and none, it goes.
  * - WorkflowEdit — One edit: a row, a node, a size, a connection, a bend, a tie, nodes placed together, a node added or removed.
  * - nodeWidth — A node's width on the canvas, in plane px: what a stage holds.
  * - editWorkflow — The workflow after one edit; the one given untouched.
@@ -44,6 +43,7 @@ import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } fr
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 import type { LensNode } from './lens-registry.js';
+import { tiesAmong } from './graph-layout.js';
 import { columnOf, fieldWords, givenAt, INPUT_WORDS, needOf, pickSent, readInput, truthOf, type ColumnField, type InputNeeds, type Reached } from './node-input.js';
 import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 import { laneFaults, type NodeLane } from './node-lanes.js';
@@ -1046,14 +1046,6 @@ export function holdTies<W extends TieGround>(workflow: W, widthOf: WidthOf = no
     return { ...t, x };
   });
   return changed ? { ...workflow, ties: held } : workflow;
-}
-
-/** The ties left when only these connections remain: a tie keeps its connections still there; with none, it goes. */
-export function tiesAmong(ties: readonly NodeTie[] | undefined, connections: readonly NodeConnection[]): NodeTie[] {
-  return (ties ?? []).flatMap((t) => {
-    const kept = t.connections.filter((r) => connections.some((x) => x.from === r.from && x.to === r.to));
-    return kept.length ? [kept.length === t.connections.length ? t : { ...t, connections: kept }] : [];
-  });
 }
 
 /** One edit to a workflow: a row's value, a node's own name, line or place, a connection made

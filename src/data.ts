@@ -182,7 +182,6 @@ export {
   readWorkflow,
   sentFrom,
   tieLimit,
-  tiesAmong,
   workflowFaults,
   workflowGraph,
   type WorkflowDefinition,
@@ -191,6 +190,7 @@ export {
   type WorkflowNode,
   type WorkflowRead,
 } from './core/data/workflow.js';
+export { tiesAmong } from './core/data/graph-layout.js';
 /* A FRAME: nodes under one header; only which nodes is kept. TRAP T-a-frame-is-drawn-round-its-nodes */
 export { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './core/data/node-frames.js';
 export {

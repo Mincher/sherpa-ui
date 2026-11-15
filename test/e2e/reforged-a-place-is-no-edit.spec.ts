@@ -57,6 +57,24 @@ test('a node moved saves its place at once, with no tab draft; Undo moves it bac
   expect(await tabDraft(page)).toBeNull();
 });
 
+// Will, 2026-11-15: making or removing a zip tie is layout. It saves itself, like a move or a bend: no draft, no Save.
+test('a tie made saves itself, with no tab draft; cut, that saves itself too', async ({ page }) => {
+  const tiesSaid = (p: Page) => p.evaluate(() => ((window as unknown as { placed: { definition: { ties?: unknown[] } }[] }).placed)
+    .map((d) => d.definition.ties?.length ?? 0));
+  for (const id of ['Source', 'Field']) {
+    await page.locator(`#cv > sherpa-node[data-heading="${id}"] .header[role="button"]`).focus();
+    await page.keyboard.press('Space');
+  }
+  await page.keyboard.press('t');
+  await settle(page);
+  expect(await tiesSaid(page)).toEqual([1]);
+  expect(await tabDraft(page)).toBeNull();
+  await page.keyboard.press('t');
+  await settle(page);
+  expect(await tiesSaid(page)).toEqual([1, 0]);
+  expect(await tabDraft(page)).toBeNull();
+});
+
 /** The preset graph bound again on a fresh canvas, with the session `sess` (the same, or a new one). */
 const bindPreset = (page: Page, fresh: boolean) => page.evaluate(async (fresh) => {
   const w = window as unknown as Record<string, unknown>;
