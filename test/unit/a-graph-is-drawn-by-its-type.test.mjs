@@ -57,7 +57,7 @@ test('kindIn gives the kind itself where nothing is left out, and a kind the gra
   assert.deepEqual([rows('workflow'), rows('query')], [['rows', 'store', 'fields'], ['rows', 'store', 'pageSize', 'search', 'applyOn']]);
 });
 
-test('a lens node is drawn as its lens says: its ref untouched, its icon and warnings, only the rows it names editable, each row\'s words (plan 1004d)', () => {
+test('a lens node is drawn as its lens says: its ref untouched, its icon and warnings, no row it omits, only the rows it names editable, each row\'s words (plan 1004d)', () => {
   const lens = { ...CHECK, ref: { scope: 'view', field: 'status' }, editable: ['b'], hints: { type: 'Its chip changes it' }, off: true, icon: 'filter', warnings: [{ words: 'Not the page\'s Source' }] };
   const at = node(drawn([lens], 'query'), 'c');
   assert.deepEqual(at.ref, { scope: 'view', field: 'status' });
@@ -67,6 +67,9 @@ test('a lens node is drawn as its lens says: its ref untouched, its icon and war
   assert.equal(rows.type.editable, false, 'a row the lens does not name is read only');
   assert.equal(rows.b.editable, true);
   assert.equal(rows.type.hint, 'Its chip changes it');
+  // A row the lens leaves out is not drawn there: a kept Source has no page rows (D8).
+  const kept = node(drawn([{ ...SOURCE, omit: ['pageSize', 'search', 'applyOn'] }], 'query'), 'src').rows.map((r) => r.name);
+  assert.deepEqual(kept, ['rows', 'store']);
   // A kept graph's node names none: every row it can change, it may.
   assert.equal(node(drawn([CHECK]), 'c').rows.find((r) => r.name === 'type').editable, true);
 });

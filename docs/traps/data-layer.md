@@ -8573,8 +8573,8 @@ keeps; none, a workflow. What each type is, is said once, in `NODE_GRAPHS`
 - **A pick that may be empty offers None** (`rowChoices`, D7), in every graph, first,
   picked or not: nothing else clears it. One that may not says "Pick one" while empty.
 - **A lens node is drawn as its lens says** (1004d, `LensNode`): its `ref` untouched,
-  its `icon` and `warnings`, only the rows `editable` names as editable, and each
-  row's `hints` over the drawing's own. The Query lens's definition says
+  its `icon` and `warnings`, no row it `omit`s, only the rows `editable` names as
+  editable, and each row's `hints` over the drawing's own. The Query lens's definition says
   `graph: 'query'`.
 
 - Site: `src/core/data/node-kinds.ts`

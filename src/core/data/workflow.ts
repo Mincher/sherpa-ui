@@ -799,7 +799,9 @@ export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = 
     // A Condition's Count also says the counts that pass: it shows where a number comes in (TODO 939; Will, 2026-11-11: a
     // Count into Between passes through).
     // Its kind's rows, each that unfolds followed by the rows its pick unfolds (a Fork's outputs, plan 991 D6).
-    const rows = rowsOfNode(kind, values).map((row): GraphRow => {
+    // A row the lens leaves out on this node is not drawn: a kept Source's page rows (plan 1004 D8). TRAP T-a-graph-is-drawn-by-its-type
+    const { omit } = node as LensNode;
+    const rows = rowsOfNode(kind, values).filter((r) => !omit?.includes(r.name)).map((row): GraphRow => {
       const has = values[row.name];
       // A message's values: each one no connection gives warns, by its row (plan 891).
       if (row.control === 'message' && valuesIn(has).length) {
