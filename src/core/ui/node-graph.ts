@@ -438,8 +438,17 @@ function read(field: Field, row: GraphRow): unknown {
 const connectionSets = new WeakMap<DrawnGraph, { connected: Set<string>; sent: Set<string> }>();
 function connectionsOf(graph: DrawnGraph): { connected: Set<string>; sent: Set<string> } {
   let sets = connectionSets.get(graph);
-  if (!sets) connectionSets.set(graph, (sets = { connected: new Set(graph.connections.map((r) => r.to)), sent: new Set(graph.connections.map((r) => r.from)) }));
+  if (!sets) {
+    // Every line drawn, the Start's too: its ends fill as a kept connection's do (TODO 1014).
+    const lines = [...graph.connections, ...startLines(graph)];
+    connectionSets.set(graph, (sets = { connected: new Set(lines.map((r) => r.to)), sent: new Set(lines.map((r) => r.from)) }));
+  }
   return sets;
+}
+
+/** The Start's lines, one to each node it starts (plan 949): drawn, never kept. */
+function startLines(graph: DrawnGraph): { from: string; to: string }[] {
+  return graph.nodes.some((n) => n.id === START) ? graph.nodes.filter((n) => n.started).map((n) => ({ from: START, to: n.id })) : [];
 }
 
 /** One node's rows, made again when their shape changed and given their values. */
@@ -706,15 +715,15 @@ function drawConnections(drawn: Drawn): void {
   });
   drawn.lanes = lanes;
   // The Start's line to each Source (Will, plan 949): drawn, never kept; with no hit line, no click lands on it.
-  const started = drawn.nodes.has(START) ? drawn.graph.nodes.filter((n) => n.started).flatMap((n) => {
-    const [from, to] = [socketPoint(drawn, START, 'output'), socketPoint(drawn, n.id, 'input')];
+  const started = startLines(drawn.graph).flatMap((line) => {
+    const [from, to] = [socketPoint(drawn, line.from, 'output'), socketPoint(drawn, line.to, 'input')];
     if (!from || !to) return [];
     const path = document.createElementNS(SVG, 'path');
     path.setAttribute('d', pathThrough([from, to], false));
     path.dataset['type'] = 'boolean';
-    path.dataset['start'] = n.id;
+    path.dataset['start'] = line.to;
     return [path];
-  }) : [];
+  });
   const bars = drawn.ties.map((tie) => {
     const [x, y] = slotOf(drawn, tie, 0);
     const high = (tie.connections.length - 1) * TIE_GAP + 16;
@@ -1804,7 +1813,7 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
   const named = new Map(staged?.nodes.map((n) => [n.id, n.stage]) ?? []);
   const inStages = nodes.map((n) => { const at = named.get(n.id); return at ? { ...n, stage: at } : n; });
   // The Start's drawn lines to the Sources hold the flow, as a portal's hop does: Trigger › Start › Source (TODO 955).
-  if (drawn.nodes.has(START)) for (const n of drawn.graph.nodes) if (n.started) hops.push({ from: START, to: n.id });
+  hops.push(...startLines(drawn.graph));
   const midpoints = drawn.canvas.hasAttribute('data-unfurl-midpoints');
   const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets, midpoints });
   if (!Object.keys(placed.nodes).length) return undefined;

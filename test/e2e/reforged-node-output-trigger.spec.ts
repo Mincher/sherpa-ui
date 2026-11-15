@@ -53,12 +53,18 @@ test('an Output Trigger picks a Coworker from the shelf; one that starts a loop 
   await expect(run).not.toHaveAttribute('data-warning');
 });
 
-test('the Start\'s line to each Source is drawn, from its output to the Source\'s header, and never kept', async ({ page }) => {
+test('the Start\'s line to each Source is drawn, from its output to the Source\'s header, its two ends filled, and never kept (1014)', async ({ page }) => {
   const line = page.locator('#cv svg.graph-connectors path[data-start="s"]');
   await expect(line).toHaveCount(1);
   expect(await line.getAttribute('data-type')).toBe('boolean');
   await expect(card(page, 'Source')).toHaveAttribute('data-input-socket', 'boolean');
   await expect(card(page, 'Start')).toHaveAttribute('data-output-socket', 'boolean');
+  // Its ends fill, as a kept connection's do (Will: "Boolean sockets don't fill when connected.").
+  await expect(card(page, 'Source')).toHaveAttribute('data-input-connected', '');
+  await expect(card(page, 'Start')).toHaveAttribute('data-output-connected', '');
+  const core = (heading: string, side: 'in' | 'out') => card(page, heading).evaluate((el, at) => getComputedStyle(el.shadowRoot!.querySelector(`.header .socket-${at} .core`)!).display, side);
+  expect(await core('Source', 'in')).not.toBe('none');
+  expect(await core('Start', 'out')).not.toBe('none');
   // No hit line: no click picks it.
   expect(await page.locator('#cv svg.graph-connectors .graph-hit[data-from="#start"]').count()).toBe(0);
   const kept = await page.evaluate(() => (window as never as { editor: { workflow(): { connections: { from: string; to: string }[] } } }).editor.workflow().connections);
