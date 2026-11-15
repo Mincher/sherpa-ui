@@ -166,3 +166,36 @@ test('each line starts at its socket: after the opening, and drawn again while t
   });
   for (const off of await ends()) expect(off).toBeLessThan(1);
 });
+
+test('a reader who begins before the opening has run keeps their graph: no Unfurl, and one placement is one Undo step (1001c)', async ({ page }) => {
+  await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = `
+      <sherpa-layout-canvas id="cv" style="inline-size: 760px; block-size: 420px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
+        <sherpa-overlay-panel slot="panel" open data-heading="Nodes" data-padding="none"><sherpa-node-list></sherpa-node-list></sherpa-overlay-panel>
+      </sherpa-layout-canvas>`;
+    await customElements.whenDefined('sherpa-node-list');
+    const canvas = document.getElementById('cv') as HTMLElement & { rendered: Promise<void> };
+    await canvas.rendered;
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const at = (id: string, kind: string, values?: Record<string, unknown>) => ({ id, kind, x: 0, y: 0, heading: id, ...(values ? { values } : {}) });
+    const panel = canvas.querySelector('sherpa-node-list')!;
+    const w = window as never as { kept: unknown[]; ed: unknown };
+    w.kept = [];
+    canvas.addEventListener('places-change', (e) => w.kept.push((e as CustomEvent).detail.definition));
+    w.ed = bindWorkflow(canvas as never, { v: 3, id: 'early', nodes: [at('s', 'source', { store: 'users' }), at('f', 'field', { field: 'status' }), at('o', 'result')],
+      connections: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'o' }] } as never,
+    { session: new SessionStore(), toolbar: canvas.querySelector('sherpa-node-toolbar')!, panel: panel as never, stores: ['users'] });
+    // At once: before the opening has measured its nodes.
+    panel.dispatchEvent(new CustomEvent('node-add', { detail: { kind: 'math' } }));
+    await window.__settled();
+  });
+  const can = () => page.locator('sherpa-node-toolbar').evaluate((t) => t.hasAttribute('data-can-undo'));
+  // Not unfurled: its nodes stay where it was kept, and no places were saved for it.
+  expect(new Set(await xs(page)).size).toBeLessThanOrEqual(2);
+  expect(await kept(page)).toEqual([]);
+  expect(await can()).toBe(true);
+  await page.locator('sherpa-node-toolbar sherpa-button.undo').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect(await page.evaluate(() => (window as never as { ed: { workflow(): { nodes: { kind: string }[] } } }).ed.workflow().nodes.some((n) => n.kind === 'math'))).toBe(false);
+  expect(await can()).toBe(false);
+});

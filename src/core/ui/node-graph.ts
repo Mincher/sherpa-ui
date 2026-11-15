@@ -4451,20 +4451,18 @@ export function bindWorkflow(
       for (let i = 0; i < 120 && !measured(); i++) await frame();
       await frame();
       await frame();
-      if (!measured() || path.length || (draft.byHand && !draft.unfurl) || !movable()) return;
+      // Not once the reader has begun: the opening never moves what a reader is working on, nor becomes their step.
+      if (!measured() || path.length || (draft.byHand && !draft.unfurl) || !movable() || journal.canBack) return;
       if (draft.unfurl) {
         const { unfurl: _laid, ...laid } = draft;
         draft = laid;
       }
-      // The graph as it opened, never a reader's step: no Undo takes it back.
-      const fresh = !journal.canBack;
       // Not where its host or a reader has moved the view since it opened.
       if (!lanesOn()) unfurl('', stillOpened(canvas) ? openFit(drawnOn.get(canvas)) : false);
       keepTab();
-      if (fresh) {
-        journal.clear();
-        tell();
-      }
+      // The graph as it opened, never a reader's step: no Undo takes it back.
+      journal.clear();
+      tell();
       // The view's fit lands two frames after the Unfurl.
       await frame();
       await frame();

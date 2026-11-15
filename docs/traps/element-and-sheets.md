@@ -2338,8 +2338,9 @@ also"; plan 1001 D4 A). One door, `unfurl()` in `bindWorkflow`, for a press, an 
   node's own place set (a drag, an arrow), a group drag, an Arrange, and a bend or a zip tie made, moved or cut
   (`byHandEdit`, workflow.ts) mark it; an Unfurl clears it
   (`place.byHand: false`). An agent's `unfurl: true` (TODO 958) still unfurls a graph, mark or not.
-- **The opening is no step**: when nothing was done before it, the journal is cleared after it, so Undo never takes the
-  graph back to how it was stored. Its places save themselves only where one changed (T5): an opening that moves
+- **The opening is no step**: the journal is cleared after it, so Undo never takes the graph back to how it was stored.
+  A reader who began before it ran (a node placed while it measured, found by sherpa-demos-3d) keeps their graph: it does
+  not unfurl, so it neither moves their work nor becomes their step. Its places save themselves only where one changed (T5): an opening that moves
   nothing fires no `places-change`.
 - **Not**: a page's Query (its lens lays it out), a body opened inside a node, a graph shown so that nothing moves; a
   preset (read only) unfurls for the tab alone (D3 B).
