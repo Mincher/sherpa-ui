@@ -1874,6 +1874,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-unfurl-midpoints",
+          "description": "an Unfurl spaces each line's middle as a node, its one bend: the app's Unfurl spaces line middles setting writes it. It follows the app's `unfurlMidpoints` setting.",
+          "valueSet": "v"
+        },
+        {
           "name": "data-zoom",
           "description": "the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it"
         }

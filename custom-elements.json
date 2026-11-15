@@ -4961,6 +4961,13 @@
               }
             },
             {
+              "name": "data-unfurl-midpoints",
+              "description": "an Unfurl spaces each line's middle as a node, its one bend: the app's Unfurl spaces line middles setting writes it. It follows the app's `unfurlMidpoints` setting.",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-zoom",
               "description": "the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it",
               "type": {
@@ -10769,7 +10776,7 @@
               "name": "setting-change",
               "description": "A reader changed a setting here: a bar's ⋮, the panel's mode.",
               "type": {
-                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'chainDrag' | 'chainFalloff' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'resizeStages' | 'resizeStagesMoveNodes' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
+                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'chainDrag' | 'chainFalloff' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navLarge' | 'navViews' | 'reduceMotion' | 'reorderFilters' | 'resizeNodes' | 'resizeStages' | 'resizeStagesMoveNodes' | 'results' | 'saveAnyScope' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes' | 'unfurlMidpoints'; value: SettingValue }>"
               }
             },
             {

@@ -379,6 +379,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-unfurl-midpoints",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "an Unfurl spaces each line's middle as a node, its one bend: the app's Unfurl spaces line middles setting writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-zoom",
       "type": "number",
       "observed": true,
@@ -468,8 +477,11 @@
     }
   ],
   "populate": {
-    "shape": "{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, trail?, zoom? }",
+    "shape": "{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, trail?, unfurlMidpoints?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
+  },
+  "settings": {
+    "data-unfurl-midpoints": "unfurlMidpoints"
   },
   "states": [
     {

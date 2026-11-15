@@ -180,8 +180,6 @@ export interface DrawOptions {
   notes?: ReadonlyMap<string, string>;
   /** A node whose place the host owns: a drag reports and moves nothing (the Group Input, a preset's inside). */
   locked?: (node: GraphNode) => boolean;
-  /** An Unfurl lays each line's middle out as a point, its bend (Will, TODO 999: on by default). Read at each Unfurl. */
-  unfurlMidpoints?: () => boolean;
   /** A node's drill-down was pressed: open its sub-graph (TODO 954). */
   onOpen?: (node: GraphNode) => void;
   /** A frame's header pressed, or Enter or Space there: the drawing marks it picked (TODO 778). */
@@ -1790,7 +1788,7 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
   const inStages = nodes.map((n) => { const at = named.get(n.id); return at ? { ...n, stage: at } : n; });
   // The Start's drawn lines to the Sources hold the flow, as a portal's hop does: Trigger › Start › Source (TODO 955).
   if (drawn.nodes.has(START)) for (const n of drawn.graph.nodes) if (n.started) hops.push({ from: START, to: n.id });
-  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets, midpoints: drawn.options.unfurlMidpoints?.() ?? true });
+  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets, midpoints: drawn.canvas.hasAttribute('data-unfurl-midpoints') });
   return Object.keys(placed.nodes).length ? placed : undefined;
 }
 
@@ -2595,9 +2593,6 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   /** The open entity as the app keeps it NOW: Graph details shows its version and History from it (plan 972). None: no
    *  version is shown. */
   kept?: () => Entity | undefined;
-  /** An Unfurl lays each line's middle out as a point, its bend: on unless this says no, as an app's Labs may (Will, TODO
-   *  999). Read at each Unfurl. */
-  unfurlMidpoints?: () => boolean;
   /** The store a Source names, by its id: what Fetch reads. None, or it says none, the Source is "not fetched yet". TODO 836 */
   storeOf?: (id: string) => Store | undefined | Promise<Store | undefined>;
   /** The cap of a fetch: rows and bytes. Left out, 100,000 rows and 50 MB. */
@@ -2656,7 +2651,7 @@ const isUses = (v: unknown): v is RecentUse[] => Array.isArray(v) && v.every((u:
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
-  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: locked = false, canEdit, entity, document: doc, act, kept: keptNow, unfurlMidpoints, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session: kept$, kinds = nodeKinds(), library, header, confirm, customDialog, stageDialog, onUpdateAll, toolbar, readOnly: locked = false, canEdit, entity, document: doc, act, kept: keptNow, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   // Read only everywhere; and why, where the app says it.
   const preset = !!locked;
@@ -4135,7 +4130,6 @@ export function bindWorkflow(
       },
       notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
       locked: (node) => ro || isGroupEnd(node.id),
-      ...(unfurlMidpoints ? { unfurlMidpoints } : {}),
       // A Custom Node's use opens on its drill-down, as on a double click (TODO 954).
       onOpen: (node) => open(node.id),
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd({ ...context, recent: recalled() }) } : {}),

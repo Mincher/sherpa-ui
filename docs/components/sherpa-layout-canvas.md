@@ -32,6 +32,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 | `data-panel-start-width` | number |  |  |
 | `data-select-box` | boolean |  | a plain left drag on blank canvas draws a box and reports it (canvas-box) |
 | `data-trail` | boolean |  | a way back is shown: the trail slot, at the top left (the graph on the canvas is inside another) instead of panning; Space + drag, the middle button and the Pan tool still pan data-panel-start-width, data-panel-end-width a card area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas |
+| `data-unfurl-midpoints` | boolean |  | an Unfurl spaces each line's middle as a node, its one bend: the app's Unfurl spaces line middles setting writes it |
 | `data-zoom` | number |  | the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it |
 
 ## Properties
@@ -109,8 +110,16 @@ What each class's base rule reads:
 | `--sherpa-style-active-border-base-1` | `.minimap-view` | `border-color` |
 | `--sherpa-display-mode-border-rounding-sm` | `.minimap-view` | `border-radius` |
 
+## Settings it reads
+
+Each of the app's settings, onto one of its attributes:
+
+| Setting | Attribute |
+|---|---|
+| `unfurlMidpoints` | `data-unfurl-midpoints` |
+
 ## populate()
 
-`{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, trail?, zoom? }`
+`{ drawn?, editing?, maxZoom?, minZoom?, noMinimap?, panelEndWidth?, panelStartWidth?, selectBox?, trail?, unfurlMidpoints?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

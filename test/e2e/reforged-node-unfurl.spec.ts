@@ -343,3 +343,18 @@ test('a graph not laid out yet is unfurled and saved the first time it shows, an
   expect(await saved()).toEqual([]);
   expect(overlaps(await rects(page)).length).toBeGreaterThan(0);
 });
+
+// Will, TODO 999: with the app's setting on (`data-unfurl-midpoints`), Unfurl spaces each line's middle as a node and writes
+// it as the line's one bend; with it off, it writes none.
+test('with Unfurl spaces line middles on, each line Unfurl lays out has its one bend; off, none (TODO 999)', async ({ page }) => {
+  const bends = async (on: boolean) => {
+    await page.evaluate(() => { document.getElementById('cv')?.remove(); document.getElementById('inspector')?.remove(); });
+    await start(page, TANGLE, KNOTS);
+    await page.evaluate((o) => document.getElementById('cv')!.toggleAttribute('data-unfurl-midpoints', o), on);
+    await button(page).click();
+    await settle(page);
+    return (await flow(page)).connections.filter((c) => c.via?.length).length;
+  };
+  expect(await bends(false)).toBe(0);
+  expect(await bends(true)).toBeGreaterThan(0);
+});

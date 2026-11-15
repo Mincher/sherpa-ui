@@ -106,6 +106,8 @@ export const SETTINGS = {
   resizeStagesMoveNodes: on('/nodes/resizeStagesMoveNodes', 'app'),
   // ⌘ or Ctrl held on a node's drag pulls the nodes it joins along behind it. Will, plan 918
   chainDrag: on('/nodes/chainDrag', 'app'),
+  // Unfurl spaces each line's middle as it spaces a node, written as the line's one bend. Will, TODO 999: on by default
+  unfurlMidpoints: on('/nodes/unfurlMidpoints', 'app'),
   // What that pull falls off by: the distance along the connectors, or how many there are. Will, TODO 975
   chainFalloff: { type: 'string', default: 'distance', values: ['distance', 'connections'], scope: 'app', at: '/nodes/chainFalloff' },
   // Every Sherpa motion token is instant: transitions and travels land at once. Will, TODO 896

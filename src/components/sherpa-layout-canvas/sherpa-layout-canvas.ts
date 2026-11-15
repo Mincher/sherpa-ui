@@ -74,7 +74,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
     'data-panel-end-width': { type: 'number', kind: 'behaviour' },
     // Handed to the plane, by its template. Plan 852
     'data-drawn': { type: 'boolean', kind: 'behaviour' },
+    // An Unfurl on it spaces each line's middle too; the app's setting writes it. Will, TODO 999
+    'data-unfurl-midpoints': { type: 'boolean', kind: 'behaviour' },
   } as const;
+  static override settings = { 'data-unfurl-midpoints': 'unfurlMidpoints' };
   static override observed = ['data-zoom', 'data-panel-start-width', 'data-panel-end-width'];
 
   /** The zoom, and its bounds — read by the code, so observed, not CSS props. */

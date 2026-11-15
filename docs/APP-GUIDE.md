@@ -868,10 +868,9 @@ so stage 1 wears colour 1. A graph an app or an agent makes without laying it ou
 sets `unfurl: true` on its graph: the editor unfurls it the first time it shows it,
 as the toolbar's Unfurl would, and saves it without the flag. That save is the editor's own
 `definition-save`: an app that keeps graphs on its own Save keeps them on that event too, or
-the layout is never stored. An Unfurl also spaces each line's middle as it spaces a node, and
-writes it as the line's one bend, so a line goes round a node, not through it (TODO 999). An
-app may turn that off, as a Labs switch would: `bindWorkflow(canvas, graph, { unfurlMidpoints:
-() => false })`, read at each Unfurl. Give `bindWorkflow` a
+the layout is never stored. With the setting `unfurlMidpoints` (on; it writes the canvas's
+`data-unfurl-midpoints`), an Unfurl also spaces each line's middle as it spaces a node, and
+writes it as the line's one bend, so a line goes round a node, not through it (TODO 999). Give `bindWorkflow` a
 `stageDialog` for Edit, one field to a row:
 
 ```html
