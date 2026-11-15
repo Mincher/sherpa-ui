@@ -77,7 +77,7 @@ async function place(page: Page, kind: string, [x, y]: [number, number]): Promis
 }
 
 const node = (id: string, kind: string, x: number, y: number, values?: object) => ({ id, kind, x, y, ...(values ? { values } : {}) });
-const BARE = { v: 3, id: 'g', nodes: [node('start', 'source', 360, 0, { store: 'customers' }), node('add', 'math', 1160, 0, { type: 'add' }), node('pick', 'field', 760, 340, { field: 'status' })], connections: [] };
+const BARE = { v: 3, byHand: true as const, id: 'g', nodes: [node('start', 'source', 360, 0, { store: 'customers' }), node('add', 'math', 1160, 0, { type: 'add' }), node('pick', 'field', 760, 340, { field: 'status' })], connections: [] };
 /** A card's row by the words it says, its sockets as drawn. */
 const rowOf = (page: Page, heading: string, label: string) => card(page, heading).locator(`sherpa-node-row[data-label="${label}"]`);
 const connections = async (page: Page) => (await flow(page)).connections.map((r) => `${r.from} → ${r.to}`);

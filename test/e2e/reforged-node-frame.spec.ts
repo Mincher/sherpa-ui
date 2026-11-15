@@ -24,7 +24,7 @@ async function start(page: Page, flow?: unknown, readOnly = false): Promise<void
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = given ?? { v: 3 as const, id: 'f', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: rs };
+    const flow = given ?? { v: 3 as const, byHand: true as const, id: 'f', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: rs };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     const saved: unknown[] = [];
     canvas.addEventListener('definition-save', (event) => saved.push((event as CustomEvent<{ definition: unknown }>).detail.definition));
@@ -243,7 +243,7 @@ test('Save hands the frame over; bound again from what was saved, it is drawn ro
 });
 
 test('read only, a preset: the frame is drawn, with no Release, and a drag on its header moves nothing', async ({ page }) => {
-  const framed = { v: 3, id: 'f', nodes: NODES.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: CONNECTIONS, frames: [{ id: 'frame-1', label: 'Kept', nodes: ['s1', 'p1'] }] };
+  const framed = { v: 3, byHand: true as const, id: 'f', nodes: NODES.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), connections: CONNECTIONS, frames: [{ id: 'frame-1', label: 'Kept', nodes: ['s1', 'p1'] }] };
   await start(page, framed, true);
   await expect(frameEl(page)).toHaveCount(1);
   await expect(frameEl(page)).toHaveAttribute('data-locked', '');

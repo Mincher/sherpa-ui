@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
 const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 3, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], connections: [] };
+  const flow = { v: 3, byHand: true, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], connections: [] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'),
     fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['customers'],
@@ -161,7 +161,7 @@ test('a drag goes into the stage under the cursor, though the node\'s middle sta
   await page.evaluate(async () => {
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const canvas = document.querySelector('#root sherpa-layout-canvas') as HTMLElement;
-    const flow = { v: 3, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, stage: 'stage-1', values: { store: 'customers' } }], connections: [],
+    const flow = { v: 3, byHand: true, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, stage: 'stage-1', values: { store: 'customers' } }], connections: [],
       stages: [{ id: 'stage-1', label: 'Stage 1', x: 380 }, { id: 'stage-2', label: 'Stage 2', x: 1100 }] };
     (window as never as { editor: unknown }).editor = bindWorkflow(canvas, flow, {
       session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'), stores: ['customers'],

@@ -903,7 +903,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (161)
+## SherpaElement and the shared sheets (162)
 
 - [T-a-bend-is-a-smooth-point](traps/element-and-sheets.md#t-a-bend-is-a-smooth-point) — connector-path
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
@@ -929,6 +929,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-frame-is-drawn-round-its-nodes](traps/data-layer.md#t-a-frame-is-drawn-round-its-nodes) — node-graph
 - [T-a-gauge-composes-the-ring](traps/charts.md#t-a-gauge-composes-the-ring) — shared-constants
 - [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — node-graph, page-components, shared-constants
+- [T-a-graph-unfurls-when-it-opens](traps/element-and-sheets.md#t-a-graph-unfurls-when-it-opens) — node-graph
 - [T-a-grid-group-computes-its-own-position](traps/element-and-sheets.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping
 - [T-a-host-attribute-is-declared-once](traps/element-and-sheets.md#t-a-host-attribute-is-declared-once) — sherpa-element
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — sherpa-element

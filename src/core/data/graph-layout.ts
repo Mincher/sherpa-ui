@@ -8,7 +8,7 @@
  * - layoutParts — A graph's layout, each part only where it holds something.
  * - isGroupEnd — Whether a node is a body's Group Input or Output: placed from its body, never kept or moved.
  * - connectionKey — A connection's key in its graph, as its bends are kept by: `from>to`.
- * - Placed — A graph as its places are read from it: nodes, connections, ties, stages, swimlanes, the unfurl mark.
+ * - Placed — A graph as its places are read from it: nodes, connections, ties, stages, swimlanes, its marks.
  * - GraphPlaces — Where a graph is drawn, each part by its id: what saves itself, never an edit.
  * - placesOf — Where a graph is drawn, each part by its id.
  * - isGraphPlaces — Whether a stored value is a GraphPlaces: a wrong shape is dropped, never drawn.
@@ -29,6 +29,8 @@ export interface LayoutParts {
   beforeLanes?: NonNullable<WorkflowDefinition['beforeLanes']>;
   /** Not laid out yet: it travels with the layout, wherever a graph goes, until the editor unfurls it (TODO 958). */
   unfurl?: true;
+  /** Laid out by hand: a move set it, so the graph is not unfurled when it opens; the toolbar's Unfurl clears it (D4 A). */
+  byHand?: true;
 }
 
 /** A graph's layout, each part only where it holds something: no empty list is kept, nor places with no lanes to put back. */
@@ -36,7 +38,7 @@ export function layoutParts(g: { readonly [K in keyof LayoutParts]?: LayoutParts
   return {
     ...(g.ties?.length ? { ties: g.ties } : {}), ...(g.frames?.length ? { frames: g.frames } : {}), ...(g.stages?.length ? { stages: g.stages } : {}),
     ...(g.lanes?.length ? { lanes: g.lanes, ...(g.beforeLanes ? { beforeLanes: g.beforeLanes } : {}) } : {}),
-    ...(g.unfurl ? { unfurl: true as const } : {}),
+    ...(g.unfurl ? { unfurl: true as const } : {}), ...(g.byHand ? { byHand: true as const } : {}),
   };
 }
 
@@ -59,11 +61,12 @@ export interface Placed {
   lanes?: WorkflowDefinition['lanes'] | undefined;
   beforeLanes?: WorkflowDefinition['beforeLanes'] | undefined;
   unfurl?: true | undefined;
+  byHand?: true | undefined;
 }
 
 /** Where a graph is drawn, each part by its id: what saves itself and is no part of a version (Will, TODO 1001; plan 1001
  *  D1 A). A node's place and size, each tie whole (a tie made or cut is layout too: Will, 2026-11-15), a connection's
- *  bends (none, `[]`), a stage's left and width, the swimlanes with the places before them, and the unfurl mark. A node's
+ *  bends (none, `[]`), a stage's left and width, the swimlanes with the places before them, and the unfurl and by-hand marks. A node's
  *  stage is no place: it changes the run (D2 A). */
 export interface GraphPlaces {
   nodes: Readonly<Record<string, Point & { size?: NodeSize }>>;
@@ -74,6 +77,7 @@ export interface GraphPlaces {
   lanes?: WorkflowDefinition['lanes'];
   beforeLanes?: WorkflowDefinition['beforeLanes'];
   unfurl?: true;
+  byHand?: true;
 }
 
 /** Where a graph is drawn, each part by its id. */
@@ -84,7 +88,7 @@ export function placesOf(graph: Placed): GraphPlaces {
     bends: Object.fromEntries((graph.connections ?? []).map((c) => [connectionKey(c), c.via ?? []])),
     stages: Object.fromEntries((graph.stages ?? []).map((st) => [st.id, st.w === undefined ? { x: st.x } : { x: st.x, w: st.w }])),
     ...(graph.lanes?.length ? { lanes: graph.lanes, ...(graph.beforeLanes ? { beforeLanes: graph.beforeLanes } : {}) } : {}),
-    ...(graph.unfurl ? { unfurl: true as const } : {}),
+    ...(graph.unfurl ? { unfurl: true as const } : {}), ...(graph.byHand ? { byHand: true as const } : {}),
   };
 }
 
@@ -101,12 +105,12 @@ export function isGraphPlaces(v: unknown): v is GraphPlaces {
     && each(v['bends'], (b) => Array.isArray(b) && b.every(point))
     && each(v['stages'], (st) => record(st) && Number.isFinite(st['x']))
     && (v['lanes'] === undefined || Array.isArray(v['lanes'])) && (v['beforeLanes'] === undefined || each(v['beforeLanes'], point))
-    && (v['unfurl'] === undefined || v['unfurl'] === true);
+    && (v['unfurl'] === undefined || v['unfurl'] === true) && (v['byHand'] === undefined || v['byHand'] === true);
 }
 
 /** A graph with nothing of where it is drawn: what it does alone, for a hash. */
 export function withoutPlaces(graph: Placed): Record<string, unknown> {
-  const { nodes, connections, ties: _ties, stages, lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, ...rest } = graph;
+  const { nodes, connections, ties: _ties, stages, lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, byHand: _hand, ...rest } = graph;
   return {
     ...rest,
     nodes: nodes.map(({ x: _x, y: _y, size: _size, ...n }) => n),
@@ -116,9 +120,9 @@ export function withoutPlaces(graph: Placed): Record<string, unknown> {
 }
 
 /** A graph with these places on each part they name; a part they do not name (one added since) keeps its own. Its ties,
- *  swimlanes and unfurl mark are theirs: a tie keeps the connections the graph still has, and with none it goes. */
+ *  swimlanes and marks are theirs: a tie keeps the connections the graph still has, and with none it goes. */
 export function withPlaces<G extends Placed>(graph: G, places: GraphPlaces): G {
-  const { ties: _ties, lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, ...rest } = graph;
+  const { ties: _ties, lanes: _lanes, beforeLanes: _before, unfurl: _unfurl, byHand: _hand, ...rest } = graph;
   const nodes = graph.nodes.map((n) => {
     const at = places.nodes[n.id];
     if (!at) return n;
@@ -142,7 +146,7 @@ export function withPlaces<G extends Placed>(graph: G, places: GraphPlaces): G {
     ...rest, nodes,
     ...(connections ? { connections } : {}), ...(ties.length ? { ties } : {}), ...(stages ? { stages } : {}),
     ...(places.lanes ? { lanes: places.lanes, ...(places.beforeLanes ? { beforeLanes: places.beforeLanes } : {}) } : {}),
-    ...(places.unfurl ? { unfurl: true as const } : {}),
+    ...(places.unfurl ? { unfurl: true as const } : {}), ...(places.byHand ? { byHand: true as const } : {}),
   } as unknown as G;
 }
 

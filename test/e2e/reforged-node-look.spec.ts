@@ -192,7 +192,7 @@ test('Alt and an arrow on the header grows it a tenth, held to the limits', asyn
 /* ── In the editor: connections follow, the size is saved, Undo gives it back ── */
 const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-  const flow = { v: 3, id: 'g', nodes: [
+  const flow = { v: 3, byHand: true, id: 'g', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     { id: 'sort', kind: 'organise', x: 360, y: 0, values: { sort: 'status', direction: 'asc' } },
     { id: 'end', kind: 'result', x: 700, y: 0 },
@@ -309,7 +309,7 @@ async function bindCategories(page: Page): Promise<void> {
       const at = { id: kind, x: (i % 4) * 290, y: i < 4 ? 0 : 460, heading };
       return kind in library.nodes ? { ...useOf(library as never, kind, at), heading } : { kind, ...at };
     });
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, id: 'cats', nodes } as never, {
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, byHand: true as const, id: 'cats', nodes } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, library: library as never, stores: ['users'],
     });
     await window.__settled();

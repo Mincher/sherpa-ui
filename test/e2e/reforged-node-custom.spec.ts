@@ -64,7 +64,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   };
   const at = (id: string, kind: string, x: number, y: number) => useOf(library as never, kind, { id, x, y });
   const flow = {
-    v: 3, id: 'g',
+    v: 3, byHand: true as const, id: 'g',
     nodes: [
       { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),
@@ -524,7 +524,7 @@ test('inside, a picklist row connected from the Group Input, which sends nothing
         },
       },
     };
-    const flow = { v: 3, id: 'g774', nodes: [useOf(library as never, 'has-status', { id: 'has', x: 200, y: 100 })], connections: [] };
+    const flow = { v: 3, byHand: true as const, id: 'g774', nodes: [useOf(library as never, 'has-status', { id: 'has', x: 200, y: 100 })], connections: [] };
     (window as unknown as Record<string, unknown>)['ed'] = bindWorkflow(document.getElementById('cv') as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, library: library as never,
       fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['users'],
@@ -559,7 +559,7 @@ test('a connection a file kept on a use\'s header reads once as its own new inpu
     const org = (window as unknown as { ORG: Record<string, unknown> }).ORG;
     const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
     const flow = {
-      v: 3, id: 'held',
+      v: 3, byHand: true as const, id: 'held',
       nodes: [{ id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, useOf(library as never, 'org-permissions', { id: 'perm', x: 400, y: 0 })],
       connections: [{ from: 'start/rows', to: 'perm' }],
     };

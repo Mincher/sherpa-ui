@@ -50,7 +50,7 @@ const BIND = `async (org) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const { useOf } = await import('/dist/data.js');
   const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
-  const flow = { v: 3, id: 'g', nodes: [
+  const flow = { v: 3, byHand: true, id: 'g', nodes: [
     { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
     useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
     useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),

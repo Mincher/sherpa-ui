@@ -51,7 +51,7 @@ async function start(page: Page, options: { limit?: { rows?: number }; delay?: n
       connections.push({ from: 's/rows', to: 'ns/rows' }, { from: 'c/pass', to: 'nc/rows' });
     }
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, id: 'w', nodes, connections } as never, {
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 3, byHand: true as const, id: 'w', nodes, connections } as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!,
       stores: ['users'], storeOf: (id: string) => (known && id === 'users' ? store : undefined), tasks: new TaskQueue({ wait: 40 }), ...(limit ? { fetchLimit: limit } : {}),
       ...(collect ? { notify: (words: string, status: string) => notices.push({ words, status }) } : {}),

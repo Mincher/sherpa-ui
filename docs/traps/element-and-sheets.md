@@ -2322,3 +2322,24 @@ with handles along the way from the point before to the point after, so a line b
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-line-sweeps-round-a-node.test.mjs`
 - Site: `test/e2e/reforged-node-unfurl.spec.ts`
+
+### T-a-graph-unfurls-when-it-opens
+
+**A graph unfurls when it opens, unless a reader laid it out by hand** (Will, TODO 1000: "When a graph is loaded in the
+canvas view it should get an unfurl applied once ready"; "Exiting Swimlane mode should apply an Unfurl to the graph,
+also"; plan 1001 D4 A). One door, `unfurl()` in `bindWorkflow`, for a press, an opening and Swimlanes off.
+
+- **The mark is a place**: `byHand` (graph-layout.ts) travels with the places, saves itself and never lights Save. A
+  node's own place set (a drag, an arrow) or a group drag or an Arrange marks it; an Unfurl clears it
+  (`place.byHand: false`). An agent's `unfurl: true` (TODO 958) still unfurls a graph, mark or not.
+- **The opening is no step**: when nothing was done before it, the journal is cleared after it, so Undo never takes the
+  graph back to how it was stored. Its places save themselves only where one changed (T5): an opening that moves
+  nothing fires no `places-change`.
+- **Not**: a page's Query (its lens lays it out), a body opened inside a node, a graph shown so that nothing moves; a
+  preset (read only) unfurls for the tab alone (D3 B).
+- **Swimlanes off unfurls**, as one Undo step with the lanes' going: both writes share a tag.
+- **A spec whose graph must keep its own places says `byHand: true`**: it was laid out by hand. 31 specs say so.
+
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-graph-unfurls-when-it-opens.test.mjs`
+- Site: `test/e2e/reforged-a-graph-unfurls-when-it-opens.spec.ts`

@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, byHand: true as const, id: 'g', nodes: [
       { id: 'start', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'sort', kind: 'organise', x: 330, y: 0, values: { sort: 'status', direction: 'asc' } },
       { id: 'end', kind: 'result', x: 660, y: 0 },

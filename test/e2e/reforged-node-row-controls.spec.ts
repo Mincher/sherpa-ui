@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
 const BIND = `async (connections, plan = [], status = ['active'], start = '2024-01-12T09:30', places = 2) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 3, id: 'g', nodes: [
+  const flow = { v: 3, byHand: true, id: 'g', nodes: [
     { id: 'l', kind: 'value', x: 0, y: 0, heading: 'Plans', values: { type: 'list', value: ['Team', 'Free'] } },
     { id: 'p', kind: 'condition', x: 330, y: 0, heading: 'By plan', values: { type: 'in', ...(plan.length ? { b: plan } : {}) } },
     { id: 's', kind: 'condition', x: 660, y: 0, heading: 'By status', values: { type: 'in', b: status } },

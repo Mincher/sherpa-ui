@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
     const { registerTriggerCatalog } = await import('/dist/data.js');
     (window as never as { undoCatalog: () => void }).undoCatalog = registerTriggerCatalog({ tasks: { patch: { label: 'Patch run' } } });
     const flow = {
-      v: 3, id: 'g',
+      v: 3, byHand: true as const, id: 'g',
       nodes: [
         { id: 't', kind: 'trigger', x: 340, y: 40, values: { type: 'status', task: 'patch', status: 'failed' } },
         { id: 'u', kind: 'trigger', x: 340, y: 360, values: { type: 'ui' } },

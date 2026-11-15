@@ -47,7 +47,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   };
   const at = (id: string, kind: string, x: number, y: number) => useOf(library as never, kind, { id, x, y });
   const flow = {
-    v: 3, id: 'g',
+    v: 3, byHand: true as const, id: 'g',
     nodes: [
       { id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'users' } },
       at('perm', 'org-permissions', 800, 40), at('perm2', 'org-permissions', 800, 360), at('own', 'owner-check', 420, 360),

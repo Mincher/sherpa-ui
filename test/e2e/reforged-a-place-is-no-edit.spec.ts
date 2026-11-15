@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
     canvas.addEventListener('places-change', (e) => (w['placed'] as unknown[]).push((e as CustomEvent).detail));
     w['sess'] = new SessionStore();
     w['ed'] = bindWorkflow(canvas as never, {
-      v: 3, id: 'places',
+      v: 3, byHand: true as const, id: 'places',
       nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'f', kind: 'field', x: 400, y: 0, values: { field: 'name' } }],
       connections: [{ from: 's/rows', to: 'f' }],
     } as never, { session: w['sess'] as never, toolbar: canvas.querySelector('sherpa-node-toolbar') as never, stores: ['users'] } as never);
@@ -89,7 +89,7 @@ const bindPreset = (page: Page, fresh: boolean) => page.evaluate(async (fresh) =
   canvas.addEventListener('places-change', (e) => (w['placed'] as unknown[]).push((e as CustomEvent).detail));
   if (fresh || !w['sess']) w['sess'] = new SessionStore();
   w['ed'] = bindWorkflow(canvas as never, {
-    v: 3, id: 'shipped',
+    v: 3, byHand: true as const, id: 'shipped',
     nodes: [{ id: 's', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'f', kind: 'field', x: 400, y: 0, values: { field: 'name' } }],
     connections: [{ from: 's/rows', to: 'f' }],
   } as never, { session: w['sess'] as never, toolbar: canvas.querySelector('sherpa-node-toolbar') as never, stores: ['users'], readOnly: 'A preset' } as never);

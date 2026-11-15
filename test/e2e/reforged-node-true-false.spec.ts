@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
     const canvas = document.getElementById('cv')! as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     // Five columns, none overlapping: a test of one value, "Fixed?", and a second Output join the old set (plans 944, 971 §9).
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, {
-      v: 3, id: 'g',
+      v: 3, byHand: true as const, id: 'g',
       nodes: [
         { id: 's', kind: 'source', x: 20, y: 40, values: { store: 'users' } }, { id: 'v', kind: 'value', x: 20, y: 300, values: { value: 'admin' } },
         { id: 'f', kind: 'field', x: 300, y: 40 }, { id: 'm', kind: 'math', x: 300, y: 260 },

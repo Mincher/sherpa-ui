@@ -96,6 +96,8 @@ export interface WorkflowDefinition {
   /** Not laid out yet, as a graph an agent made: the editor unfurls it the first time it shows it, and saves it without
    *  this (TODO 958). */
   unfurl?: true;
+  /** Laid out by hand: a move set it, so it is not unfurled when it opens; the toolbar's Unfurl clears it (TODO 1000, D4 A). */
+  byHand?: true;
   /** Where it is drawn: a page's filter graph, which its Query lens gives and never keeps (no schema holds it); none, a
    *  workflow (plan 1004). */
   graph?: NodeGraph;
@@ -1061,6 +1063,12 @@ export function holdTies<W extends TieGround>(workflow: W, widthOf: WidthOf = no
   return changed ? { ...workflow, ties: held } : workflow;
 }
 
+/** A graph marked laid out by hand, or not (TODO 1000, D4 A). */
+const byHandAs = (workflow: WorkflowDefinition, by: boolean): WorkflowDefinition => {
+  const { byHand: _was, ...bare } = workflow;
+  return by ? { ...bare, byHand: true } : bare;
+};
+
 /** One edit to a workflow: a row's value, a node's own name, line or place, a connection made
  *  (into an input, in place of the one there, or beside it where the input takes many), or cut
  *  (each by the input it enters, or the one connection), a node added (its id free), or removed
@@ -1079,7 +1087,7 @@ export type WorkflowEdit =
   | { tieAdd: { id: string; connection: NodeConnection } }
   | { bend: { connection: NodeConnection; at: number; x: number; y: number; insert?: boolean } }
   | { unbend: { connection: NodeConnection; index: number } }
-  | { place: { nodes: Readonly<Record<string, { x: number; y: number; stage?: string }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow' | Readonly<Record<string, { x: number; y: number; turn?: number }>>; stages?: Readonly<Record<string, number>> } }
+  | { place: { nodes: Readonly<Record<string, { x: number; y: number; stage?: string }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow' | Readonly<Record<string, { x: number; y: number; turn?: number }>>; stages?: Readonly<Record<string, number>>; byHand?: boolean } }
   | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
   | { unframe: string }
   | { setFrame: { id: string; label?: string; description?: string } }
@@ -1308,7 +1316,7 @@ function editOnce(
       });
     }
     if (workflow.ties && ties) result.ties = workflow.ties.map((t) => { const to = ties[t.id]; return to ? { ...t, x: to.x, y: to.y } : t; });
-    return result;
+    return edit.place.byHand === undefined ? result : byHandAs(result, edit.place.byHand);
   }
   if ('resize' in edit) {
     const { node, w, h } = edit.resize;
@@ -1383,7 +1391,8 @@ function editOnce(
     const { values: _old, ...bare } = node;
     return Object.keys(values).length ? { ...bare, values } : bare;
   });
-  return { ...workflow, nodes };
+  // A node's own place set is a move by hand (D4 A): the graph is no longer unfurled when it opens.
+  return 'set' in edit && ('x' in edit.set || 'y' in edit.set) ? byHandAs({ ...workflow, nodes }, true) : { ...workflow, nodes };
 }
 
 /** A frame's edits: frame two or more nodes, release one (its nodes stay), or set its title and line. A refusal reports and

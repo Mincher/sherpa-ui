@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const schema = (file) => JSON.parse(readFileSync(new URL(`../../schemas/${file}`, import.meta.url), 'utf8'));
-const BODY = ['nodes', 'connections', 'ties', 'frames', 'stages', 'lanes', 'beforeLanes', 'unfurl'];
+const BODY = ['nodes', 'connections', 'ties', 'frames', 'stages', 'lanes', 'beforeLanes', 'unfurl', 'byHand'];
 const nodes = [{ id: 'a', kind: 'source', x: 0, y: 0, values: { store: 'users' } }, { id: 'b', kind: 'result', x: 360, y: 0 }];
 
 test('the body and the header are each said once, in defs.v1, and each definition $refs them', () => {

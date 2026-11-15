@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = {
-      v: 3, id: 'z',
+      v: 3, byHand: true as const, id: 'z',
       nodes: [
         { id: 's', kind: 'source', x: 0, y: 0, heading: 'S', values: { store: 'users' } },
         { id: 't', kind: 'condition', x: 500, y: 0, heading: 'T', values: { type: 'empty' } },

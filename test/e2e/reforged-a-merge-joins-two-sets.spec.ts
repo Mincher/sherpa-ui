@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
     await el.rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const flow = {
-      v: 3, id: 'merge',
+      v: 3, byHand: true as const, id: 'merge',
       nodes: [
         { id: 'sa', kind: 'source', x: 20, y: 20, values: { store: 'devices' } }, { id: 'fa', kind: 'field', x: 380, y: 20, values: { field: 'customer' } },
         { id: 'sb', kind: 'source', x: 20, y: 380, values: { store: 'customers' } }, { id: 'fb', kind: 'field', x: 380, y: 380, values: { field: 'id' } },

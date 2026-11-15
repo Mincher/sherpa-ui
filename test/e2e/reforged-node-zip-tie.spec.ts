@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
     const node = (id: string, kind: string, x: number, y: number) => ({ id, kind, x, y, heading: id });
-    const flow = { v: 3 as const, id: 'z', nodes: [
+    const flow = { v: 3 as const, byHand: true as const, id: 'z', nodes: [
       node('s1', 'source', 0, 0), node('e1', 'result', 700, 0),
       node('s2', 'source', 0, 480), node('e2', 'result', 700, 480),
       node('s3', 'source', 0, 960), node('e3', 'result', 700, 960),

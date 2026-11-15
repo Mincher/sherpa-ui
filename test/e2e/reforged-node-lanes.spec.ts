@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js' as string);
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
-    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, id: 'g', nodes: [
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas, { v: 3, byHand: true as const, id: 'g', nodes: [
       { id: 'src', kind: 'source', x: 0, y: 0, values: { store: 'users' } },
       { id: 'val', kind: 'value', x: 0, y: 40 },
       { id: 'cond', kind: 'condition', x: 330, y: 20 },
@@ -45,7 +45,7 @@ const lanes = (page: Page) => page.locator('#cv > sherpa-node-lane').evaluateAll
 /** A node's top and bottom, in plane px, as drawn. */
 const span = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluate((n) => ({ top: Number(n.getAttribute('data-y')), bottom: Number(n.getAttribute('data-y')) + (n as HTMLElement).offsetHeight }));
 
-test('Swimlanes on: a band for each family that has a node, the logic node in a junction, no band over the next; off, they go and each node goes back', async ({ page }, info) => {
+test('Swimlanes on: a band for each family that has a node, the logic node in a junction, no band over the next; off, they go and the graph unfurls, one step', async ({ page }, info) => {
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(0);
   const before = await Promise.all(['Source', 'Value', 'Condition', 'Organise', 'Run result'].map((h) => span(page, h)));
   // Each node moves by a transition, as Unfurl's do: the plane says so while they go (TODO 929). A plane drawn into a real
@@ -78,10 +78,12 @@ test('Swimlanes on: a band for each family that has a node, the logic node in a 
   // The lanes moved the nodes, each by a transition, as Unfurl's do (TODO 929).
   const placed = await span(page, 'Run result');
   expect(placed).not.toEqual(before[4]);
-  // Off: the rows go, and each node goes back where it stood before; Undo turns them back on.
+  // Off: the rows go, and the graph unfurls, always (Will, TODO 1000, D4 A): not back where it stood by hand. ONE Undo, for
+  // the lanes and their Unfurl, turns them back on.
   await press(page, 'lanes');
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(0);
-  expect(await Promise.all(['Source', 'Value', 'Condition', 'Organise', 'Run result'].map((h) => span(page, h)))).toEqual(before);
+  await settle(page);
+  expect(await Promise.all(['Source', 'Value', 'Condition', 'Organise', 'Run result'].map((h) => span(page, h)))).not.toEqual(before);
   await press(page, 'undo');
   await expect(page.locator('#cv > sherpa-node-lane')).toHaveCount(5);
 });

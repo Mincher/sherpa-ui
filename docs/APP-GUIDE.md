@@ -869,11 +869,11 @@ stage before, Add stage after and Remove. A default name is its place (Stage 1,
 Stage 2): one added or moved before Stage 1 is Stage 1. A new stage takes the next
 data-viz colour no stage wears (`nextStageColour`); an app that makes stages gives
 them colours the same way, `colourStages(stages, DATA_VIZ_SWATCHES.map((s) => s.value))`,
-so stage 1 wears colour 1. A graph an app or an agent makes without laying it out
-sets `unfurl: true` on its graph: the editor unfurls it the first time it shows it,
-as the toolbar's Unfurl would, and saves it without the flag. That save is the editor's own
-`definition-save`: an app that keeps graphs on its own Save keeps them on that event too, or
-the layout is never stored. With the setting `unfurlMidpoints` (on; it writes the canvas's
+so stage 1 wears colour 1. A graph unfurls when it opens, once its nodes are drawn, as the
+toolbar's Unfurl would, unless a reader laid it out by hand (TODO 1000): a move or an Arrange
+marks it `byHand`, the toolbar's Unfurl clears the mark, and leaving Swimlane mode always
+unfurls. A graph an agent makes says `unfurl: true` and is unfurled the same way, mark or not;
+the flag then goes. The opening is no Undo step, and its places save themselves as below. With the setting `unfurlMidpoints` (on; it writes the canvas's
 `data-unfurl-midpoints`), an Unfurl also spaces each line's middle as it spaces a node, and
 writes it as the line's one bend, so a line goes round a node, not through it (TODO 999).
 Where a graph is drawn saves itself, never an edit (TODO 1001): a

@@ -39,12 +39,12 @@ headings below are older than the index: most entries are under the last one.
 | [Menus, tips and overlays](traps/menus-tips-overlays.md) | 92 |
 | [The data grid](traps/data-grid.md) | 58 |
 | [Charts](traps/charts.md) | 44 |
-| [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 85 |
+| [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 86 |
 | [Other components](traps/other-components.md) | 73 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 38 |
 | [Tests only](traps/tests-only.md) | 14 |
 <<<<<<< HEAD
-| **All** | **849** |
+| **All** | **850** |
 =======
 | **All** | **842** |
 >>>>>>> afc358433 (feat(1002): a part of a text is typed — Contains and the text matches test their header, one row titled Value A)

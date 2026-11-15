@@ -481,7 +481,8 @@
         "stages": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/stage" } },
         "lanes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/lane" } },
         "beforeLanes": { "$ref": "#/$defs/beforeLanes" },
-        "unfurl": { "description": "Not laid out yet, as a graph an agent made: the editor unfurls it the first time it shows it, then saves it without this (TODO 958).", "const": true }
+        "unfurl": { "description": "Not laid out yet, as a graph an agent made: the editor unfurls it the first time it shows it, then saves it without this (TODO 958).", "const": true },
+        "byHand": { "description": "Laid out by hand: a move set it, so the editor does not unfurl the graph when it opens; its Unfurl clears it (TODO 1000). Like a place, it saves itself and is no change to publish.", "const": true }
       }
     },
     "nodeDefinition": {

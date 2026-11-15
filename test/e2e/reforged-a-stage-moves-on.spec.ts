@@ -9,7 +9,7 @@ import { test, expect, type Page } from './harness';
  */
 const N = (id: string, kind: string, x: number, stage: string, values?: Record<string, unknown>) => ({ id, kind, x, y: 0, heading: id, stage, ...(values ? { values } : {}) });
 const FLOW = {
-  v: 3, id: 'on',
+  v: 3, byHand: true as const, id: 'on',
   stages: [{ id: 'a', label: 'Read', x: -40 }, { id: 'b', label: 'Test', x: 700 }, { id: 'c', label: 'Send', x: 1400 }],
   nodes: [N('s', 'source', 0, 'a', { store: 'users' }), N('k', 'condition', 860, 'b', { type: 'empty' }), N('o', 'result', 1460, 'c')],
   connections: [{ from: 's/rows', to: 'k' }, { from: 'k/pass', to: 'o' }],

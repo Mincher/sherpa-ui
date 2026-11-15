@@ -15,7 +15,7 @@ const R = (from: string, to: string) => ({ from, to });
 // Two ties on one pair of lines, stacked at one x; a grown node with a tie; a tie on two lines whose nodes do not line up;
 // each tie's x where the reader left it, some behind a node.
 const FLOW = {
-  v: 3, id: 'sections',
+  v: 3, byHand: true as const, id: 'sections',
   nodes: [N('s', 'source', 0, 0, { values: { store: 'users' } }), N('f', 'field', 400, 0), N('c', 'condition', 800, 0, { values: { type: 'eq' } }), N('o', 'result', 1200, 0),
     N('c2', 'condition', 400, 400, { values: { type: 'eq' } }), N('o2', 'result', 800, 400), N('v', 'value', 0, 600, { values: { type: 'text', value: 'a' }, size: { w: 1.6, h: 1 } }),
     N('v2', 'value', 0, 900, { values: { type: 'text', value: 'b' } })],
@@ -91,7 +91,7 @@ test('each tie stands in 20% to 80% of its own section, as loaded and after Unfu
 
 test('in stages, after Unfurl and the stages\' fit, each tie stands in its section (TODO 973)', async ({ page }) => {
   await open(page, {
-    v: 3, id: 'staged',
+    v: 3, byHand: true as const, id: 'staged',
     stages: [{ id: 'plan', label: 'Plan', x: -40 }, { id: 'run', label: 'Run', x: 1100 }, { id: 'report', label: 'Report', x: 1700 }],
     nodes: [N('src', 'source', 0, 0, { values: { store: 'users' }, stage: 'plan' }), N('pick', 'field', 360, 0, { stage: 'plan' }), N('keep', 'condition', 720, 0, { values: { type: 'eq', b: 'x' }, stage: 'plan' }),
       N('sort1', 'organise', 1140, 0, { stage: 'run' }), N('sort2', 'organise', 1140, 300, { stage: 'run' }), N('end1', 'result', 1740, 0, { stage: 'report' }), N('end2', 'result', 1740, 300, { stage: 'report' })],
@@ -106,7 +106,7 @@ test('in stages, after Unfurl and the stages\' fit, each tie stands in its secti
 
 test('a dragged tie stays in its own section: it never passes the next tie on its set (TODO 973)', async ({ page }) => {
   // One long line, 240 to 1200, two ties on it: sections 336–624 and 816–1104.
-  await open(page, { v: 3, id: 'long', nodes: [N('s', 'source', 0, 0, { values: { store: 'users' } }), N('o', 'result', 1200, 0)], connections: [R('s/rows', 'o')],
+  await open(page, { v: 3, byHand: true as const, id: 'long', nodes: [N('s', 'source', 0, 0, { values: { store: 'users' } }), N('o', 'result', 1200, 0)], connections: [R('s/rows', 'o')],
     ties: [{ id: 'near', x: 500, y: 60, connections: [R('s/rows', 'o')] }, { id: 'far', x: 900, y: 60, connections: [R('s/rows', 'o')] }] });
   const before = await sections(page);
   const [first, second] = [...before].sort((p, q) => p.drawn - q.drawn);

@@ -3136,13 +3136,25 @@ export function bindWorkflow(
     const tag = `move:${[...(held ?? Object.keys(nodes))].sort().join(',')}`;
     settling = pressing && shifted;
     dragging = pressing;
-    write(editWorkflow(shown(), { place: { nodes, ties, bends: 'follow' } }, K()), tag);
+    write(editWorkflow(shown(), { place: { nodes, ties, bends: 'follow', byHand: true } }, K()), tag);
     dragged(Object.keys(nodes), tag);
   };
-  // Arrange: every place, tie and bend in ONE edit. TODO 752
+  // Arrange: every place, tie and bend in ONE edit. TODO 752. An Arrange is a layout by hand; an Unfurl clears the mark, so
+  // the graph unfurls again when it opens (D4 A, TODO 1000).
+  let unfurling: string | undefined;
   const onArrange = (placed: Arranged): void => {
     if (!movable()) return;
-    write(editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: placed.bends ?? 'reset', ...(placed.stages ? { stages: placed.stages } : {}) } }, K()));
+    write(editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: placed.bends ?? 'reset', ...(placed.stages ? { stages: placed.stages } : {}), byHand: unfurling === undefined } }, K()), unfurling);
+  };
+  /** Unfurl the whole graph, as the toolbar's Unfurl does: one door for a press, an open and Swimlanes off. A tag makes it one
+   *  step with the edit before it (Swimlanes off and its Unfurl). */
+  const unfurl = (tag = ''): void => {
+    unfurling = tag;
+    try {
+      unfurlGraph(canvas, shown());
+    } finally {
+      unfurling = undefined;
+    }
   };
   const onResize = (node: GraphNode, size: NodeSize): void => {
     if (isGroupEnd(node.id)) return;
@@ -3832,7 +3844,7 @@ export function bindWorkflow(
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
     else if (action === 'arrange') arrangePicked(canvas);
-    else if (action === 'unfurl') unfurlGraph(canvas, shown());
+    else if (action === 'unfurl') unfurl();
     else if (action === 'fetch') void fetchRows('toolbar');
     else if (action === 'play') play('toolbar');
     else if (action === 'pause') pause();
@@ -3840,10 +3852,13 @@ export function bindWorkflow(
     else if (action === 'frame') framePicked();
     // Swimlanes on, a lane for each family; off, none. One step; the nodes stay where they are. Will, 2026-11-10
     else if (action === 'lanes' && movable()) {
-      // On or off, each node moves to its place, as Unfurl's do, and the view eases round them all (TODO 929).
+      // On or off, each node moves to its place, as Unfurl's do, and the view eases round them all (TODO 929). Off, the graph
+      // then unfurls, always (Will, TODO 1000, D4 A), once its nodes are drawn again.
+      const off = !!shown().lanes?.length;
+      const tag = `lanes:${Date.now()}`;
       canvas.easePieces();
-      write(editWorkflow(shown(), { lanes: shown().lanes?.length ? null : LANES_BY_FAMILY }, K()));
-      requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit(undefined, { ease: true })));
+      write(editWorkflow(shown(), { lanes: off ? null : LANES_BY_FAMILY }, K()), tag);
+      requestAnimationFrame(() => requestAnimationFrame(() => (off ? unfurl(tag) : canvas.fit(undefined, { ease: true }))));
     }
   };
   toolbar?.addEventListener('toolbar-select', onTool);
@@ -4400,20 +4415,30 @@ export function bindWorkflow(
       picks.stop();
     },
   };
-  // A graph not laid out yet (TODO 958): the first time it shows, it is unfurled and saved, as a reader's Unfurl and Save
-  // would, once its nodes are drawn and measured. Save drops the flag; one that cannot be saved keeps it, for next time.
-  if (draft.unfurl && !doc && !preset) {
+  // A graph unfurls when it opens, once its nodes are drawn and measured, unless a reader laid it out by hand (Will, TODO
+  // 1000, D4 A); a graph an agent made (`unfurl`, TODO 958) too, and its mark goes. Its places save themselves, and only
+  // where one changed (T5); a preset's for the tab (D3 B). Not a page's Query, nor a graph shown read only.
+  // TRAP T-a-graph-unfurls-when-it-opens
+  if (!doc && (draft.unfurl || !draft.byHand)) {
     const frame = (): Promise<void> => new Promise((done) => requestAnimationFrame(() => done()));
     const measured = (): boolean => { const boxes = nodeBoxes(); return boxes.length >= draft.nodes.length && boxes.every((b) => b.right > b.left); };
     void (async () => {
       for (let i = 0; i < 120 && !measured(); i++) await frame();
       await frame();
       await frame();
-      if (!draft.unfurl || !measured() || path.length) return;
-      if (!lanesOn()) unfurlGraph(canvas, shown());
-      const { unfurl: _laid, ...laid } = draft;
-      draft = laid;
-      editor.save();
+      if (!measured() || path.length || (draft.byHand && !draft.unfurl) || !movable()) return;
+      if (draft.unfurl) {
+        const { unfurl: _laid, ...laid } = draft;
+        draft = laid;
+      }
+      // The graph as it opened, never a reader's step: no Undo takes it back.
+      const fresh = !journal.canBack;
+      if (!lanesOn()) unfurl();
+      keepTab();
+      if (fresh) {
+        journal.clear();
+        tell();
+      }
     })();
   }
   return editor;

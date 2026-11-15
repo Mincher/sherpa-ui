@@ -22,7 +22,7 @@ async function start(page: Page, nodes: [string, string, number, number, Record<
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     const { bindWorkflow, SessionStore } = await import('/dist/app.js');
-    const flow = { v: 3 as const, id: 'u', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}), ...(st?.of[id] ? { stage: st.of[id] } : {}) })),
+    const flow = { v: 3 as const, byHand: true as const, id: 'u', nodes: ns.map(([id, kind, x, y, values]) => ({ id, kind, x, y, heading: id, ...(values ? { values } : {}), ...(st?.of[id] ? { stage: st.of[id] } : {}) })),
       connections: rs, ...(st ? { stages: st.stages } : {}) };
     const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
@@ -310,7 +310,7 @@ test('a graph in stages: each node stays in its own stage, inside its band, none
   expect(await flow(page)).toEqual(before);
 });
 
-test('a graph not laid out yet is unfurled and saved the first time it shows, and the flag goes; read only, it is left (TODO 958)', async ({ page }) => {
+test('a graph not laid out yet is unfurled the first time it shows, its places saving themselves, and the flag goes; read only, for the tab alone (TODO 958, 1000)', async ({ page }) => {
   const open = (readOnly: boolean) => page.evaluate(async (ro) => {
     document.getElementById('root')!.innerHTML = `
       <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
@@ -321,7 +321,7 @@ test('a graph not laid out yet is unfurled and saved the first time it shows, an
     const w = window as never as { saved: unknown[]; ed: unknown };
     w.saved = [];
     const canvas = document.getElementById('cv')!;
-    canvas.addEventListener('definition-save', (e) => w.saved.push((e as CustomEvent).detail.definition));
+    canvas.addEventListener('places-change', (e) => w.saved.push((e as CustomEvent).detail.definition));
     // As an agent makes it: every node at one place, and the flag.
     const at = (id: string, kind: string, values?: Record<string, unknown>) => ({ id, kind, x: 0, y: 0, heading: id, ...(values ? { values } : {}) });
     w.ed = bindWorkflow(canvas as never, {
@@ -338,12 +338,12 @@ test('a graph not laid out yet is unfurled and saved the first time it shows, an
   expect(overlaps(await rects(page))).toEqual([]);
   expect((await saved())[0]!['unfurl']).toBeUndefined();
   expect((await flow(page) as Flow & { unfurl?: true }).unfurl).toBeUndefined();
-  // Read only: it is not moved, and nothing is saved.
+  // Read only, as a preset is: it unfurls for the tab alone (D3 B, D4 A), and nothing is saved.
   await open(true);
   await settle(page);
   await settle(page);
   expect(await saved()).toEqual([]);
-  expect(overlaps(await rects(page)).length).toBeGreaterThan(0);
+  expect(overlaps(await rects(page))).toEqual([]);
 });
 
 // Will, TODOs 999 and 1010: with the app's setting on (`data-unfurl-midpoints`), Unfurl spaces each line's middle as a node,
