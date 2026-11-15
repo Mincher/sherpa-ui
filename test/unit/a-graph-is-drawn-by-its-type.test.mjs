@@ -1,0 +1,57 @@
+/**
+ * A GRAPH IS DRAWN BY ITS TYPE: one door, `workflowGraph`, draws a workflow and a page's filter graph alike, each by its
+ * `graph` (plan 1004b). A filter graph has no Start, and only the kinds, types and rows a Query takes; its checks say so in
+ * its own words. TRAP T-a-graph-is-drawn-by-its-type
+ *
+ *   node --test test/unit/a-graph-is-drawn-by-its-type.test.mjs
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+const core = new URL('../../dist/core/data/', import.meta.url);
+const { kindIn, NODE_KINDS } = await import(new URL('node-kinds.js', core));
+const { workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
+
+const def = (nodes, graph) => ({ v: 3, id: 'g', nodes, ...(graph ? { graph } : {}) });
+const SOURCE = { id: 'src', kind: 'source', x: 0, y: 0, values: { store: 'customers' } };
+const CHECK = { id: 'c', kind: 'condition', x: 300, y: 0, values: { type: 'eq' } };
+const drawn = (nodes, graph) => workflowGraph(def(nodes, graph));
+const node = (g, id) => g.nodes.find((n) => n.id === id);
+
+test('a workflow has its Start; a filter graph has none, and no Trigger is told to join one', () => {
+  assert.ok(node(drawn([SOURCE]), '#start'), 'a workflow');
+  assert.equal(node(drawn([SOURCE], 'query'), '#start'), undefined, 'a filter graph');
+  assert.ok(node(drawn([SOURCE], 'workflow'), '#start'), 'a workflow, said');
+  const trigger = { id: 't', kind: 'trigger', x: 0, y: 0, values: { type: 'action' } };
+  const told = (graph) => (node(drawn([trigger], graph), 't').warnings ?? []).some((w) => w.words === 'Connect it to the Start');
+  assert.equal(told(), true, 'a workflow\'s Trigger');
+  assert.equal(told('query'), false, 'a filter graph\'s');
+});
+
+test('a filter graph draws only the rows a Query takes: a Source has no Fields there', () => {
+  const rows = (graph) => node(drawn([SOURCE], graph), 'src').rows.map((r) => r.name);
+  assert.ok(rows().includes('fields'), 'a workflow\'s Source has its Fields');
+  assert.ok(!rows('query').includes('fields'), 'a filter graph\'s has none');
+});
+
+test('a filter graph offers only the types a Query takes: a Condition has no Not and no Is empty there', () => {
+  const types = (graph) => node(drawn([CHECK], graph), 'c').rows.find((r) => r.name === 'type').choices.map((c) => c.value);
+  assert.ok(types().includes('not') && types().includes('empty'), 'a workflow offers both');
+  assert.deepEqual(types('query').filter((t) => t === 'not' || t === 'empty'), []);
+});
+
+test('a kind the graph does not take is a fault in that graph\'s words; one it takes is none', () => {
+  const trigger = { id: 't', kind: 'trigger', x: 0, y: 0, values: { type: 'action' } };
+  const filters = { id: 'vf', kind: 'view-filters', x: 0, y: 0 };
+  const faults = (nodes, graph) => workflowFaults(def(nodes, graph)).filter((f) => f.includes('does not'));
+  assert.deepEqual(faults([filters]), ['the node "vf" is of the kind "view-filters", which a workflow does not run']);
+  assert.deepEqual(faults([filters], 'query'), []);
+  assert.deepEqual(faults([trigger], 'query'), ['the node "t" is of the kind "trigger", which a page\'s filter graph does not draw']);
+});
+
+test('kindIn gives the kind itself where nothing is left out, and a kind the graph does not take none', () => {
+  assert.equal(kindIn(NODE_KINDS['field'], 'query'), NODE_KINDS['field']);
+  assert.equal(kindIn(NODE_KINDS['trigger'], 'query'), undefined);
+  assert.notEqual(kindIn(NODE_KINDS['source'], 'query'), NODE_KINDS['source']);
+  assert.equal(kindIn(NODE_KINDS['source'], 'workflow'), NODE_KINDS['source']);
+});

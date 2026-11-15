@@ -12,6 +12,7 @@
  * - RowControl — The control a row draws: text, a message, a number, a switch, or the list a picklist reads.
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
+ * - NODE_GRAPHS — What each graph is, said once: its words for a kind it does not take, its Start, its panel's categories.
  * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - propertyRow — A property row, the one definition: output only, no control and no value, sending what the node's data or log…
@@ -35,7 +36,7 @@
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
- * - kindIn — A kind as one graph draws it: a family with only the types that graph takes; none, it draws no such kind.
+ * - kindIn — A kind as one graph draws it: only the types and rows that graph takes; none, it draws no such kind.
  * - kindOfNode — The kind a node is, for its own type and operators; none, no such kind.
  * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
  * - NODE_CATEGORIES — The node panel's categories, in order.
@@ -185,6 +186,14 @@ export interface RowKind {
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
 export type NodeGraph = 'query' | 'workflow';
+
+/** What each graph is, said once (plan 1004): what it says of a kind it does not take, whether its top graph has a Start
+ *  (T1), and the categories its node panel lists (none: all, and Custom Nodes empty or not). TRAP T-a-graph-is-drawn-by-its-type */
+export const NODE_GRAPHS: Readonly<Record<NodeGraph, { lacks: string; start: boolean; categories?: readonly string[] }>> = {
+  workflow: { lacks: 'a workflow does not run', start: true },
+  // The kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and its Custom Nodes, its page's Filters (TODO 776).
+  query: { lacks: "a page's filter graph does not draw", start: false, categories: ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets'] },
+};
 
 /** One type of a family kind (plan 749): the hint under its select, and what it adds to the kind's own rows and sockets. */
 export interface NodeType {
@@ -814,14 +823,18 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
   };
 }
 
-/** A kind as one graph draws it: a family with only the types that graph takes; none, the graph draws no such kind. */
+/** A kind as one graph draws it: a family with only the types that graph takes, and only the rows it draws (a Source's
+ *  Fields is a workflow's); none, the graph draws no such kind. Unchanged, the kind itself. */
 export function kindIn(kind: NodeKind, graph: NodeGraph): NodeKind | undefined {
   if (!kind.graphs.includes(graph)) return undefined;
-  if (!kind.types) return kind;
-  const types = Object.fromEntries(Object.entries(kind.types).filter(([, t]) => (t.graphs ?? kind.graphs).includes(graph)));
-  if (Object.keys(types).length === Object.keys(kind.types).length) return kind;
+  const drawn = (rows: readonly RowKind[]): readonly RowKind[] => (rows.some((r) => r.graphs && !r.graphs.includes(graph)) ? rows.filter((r) => !r.graphs || r.graphs.includes(graph)) : rows);
+  const rows = drawn(kind.rows);
+  if (!kind.types) return rows === kind.rows ? kind : { ...kind, rows };
+  const taken = Object.entries(kind.types).filter(([, t]) => (t.graphs ?? kind.graphs).includes(graph));
+  const types = Object.fromEntries(taken.map(([id, t]) => [id, t.rows && drawn(t.rows) !== t.rows ? { ...t, rows: drawn(t.rows) } : t]));
+  if (rows === kind.rows && taken.length === Object.keys(kind.types).length && taken.every(([id, t]) => types[id] === t)) return kind;
   const { defaultType, ...rest } = kind;
-  return Object.keys(types).length ? { ...rest, types, ...(defaultType && types[defaultType] ? { defaultType } : {}) } : undefined;
+  return taken.length ? { ...rest, rows, types, ...(defaultType && types[defaultType] ? { defaultType } : {}) } : undefined;
 }
 
 /** The kind a node is, resolved for its own type: the registry's `kind`, its `type` row's. The operator, a type, shapes
@@ -841,10 +854,6 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
 export const NODE_CATEGORIES: readonly string[] = ['Triggers', 'Sources', 'Custom Nodes', 'Runbooks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output', 'Presets'];
 
-/** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
- *  its Custom Nodes, its page's Filters (TODO 776). */
-const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets'];
-
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {
   id: string;
@@ -859,22 +868,23 @@ export interface PaletteGroup {
 
 /** The node panel's list: each category with a kind of the graph in it, in `NODE_CATEGORIES`' order and
  *  then an app's own, in the order met. A workflow's has `Custom Nodes` always, empty or not, and never a
- *  Query-only kind; a Query's lists only the kinds a Query takes placed (`QUERY_CATEGORIES`). */
+ *  Query-only kind; a Query's lists only its graph's categories (`NODE_GRAPHS`). */
 export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: NodeGraph = 'workflow'): PaletteGroup[] {
   const groups = new Map<string, PaletteItem[]>(NODE_CATEGORIES.map((c) => [c, []]));
+  const { categories } = NODE_GRAPHS[graph];
   for (const [id, family] of Object.entries(kinds)) {
     // A family lists only the types its graph takes: the Query's Condition is its Rows that hold alone.
     const kind = kindIn(family, graph);
     // A family with no type of its own, as Request before a host adds one, places nothing (plan 917).
     if (!kind || (kind.types && !Object.keys(kind.types).length)) continue;
     const category = kind.category ?? 'Other';
-    if (graph === 'query' && !QUERY_CATEGORIES.includes(category)) continue;
+    if (categories && !categories.includes(category)) continue;
     const items = groups.get(category) ?? [];
     items.push({ id, kind });
     groups.set(category, items);
   }
   const known = new Set(NODE_CATEGORIES);
-  return [...groups].filter(([c, items]) => items.length || (graph === 'workflow' && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
+  return [...groups].filter(([c, items]) => items.length || (!categories && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
 }
 
 /** How a panel item answers a search: by its name, a tag or a keyword, `{}`; by a type's name, `{ type }`, the one it names

@@ -8529,3 +8529,25 @@ A new layout mark goes into this set, or it lights Save and changes a version's 
 - Site: `src/core/data/query-document.ts`
 - Site: `test/unit/a-place-is-no-edit.test.mjs`
 - Site: `test/e2e/reforged-a-query-graph-keeps-its-places.spec.ts`
+
+### T-a-graph-is-drawn-by-its-type
+
+**One door draws every graph, by its type** (plan 1004b). A definition's `graph` says
+where it is drawn: `query`, a page's filter graph, which its Query lens gives and never
+keeps; none, a workflow. What each type is, is said once, in `NODE_GRAPHS`
+(node-kinds.ts), never an `if` for the Query:
+
+- **Its Start** (T1): `hasStart` reads `start`. A filter graph has none, so no Start is
+  placed, and no Trigger is told "Connect it to the Start".
+- **Its kinds** (T2): `workflowGraph` draws each kind as `kindIn` gives it for the
+  graph: only the types it takes (a Query's Condition has no Not and no Is empty) and
+  only the rows it draws (a Source's Fields is a workflow's). A kind the graph does not
+  take stays whole, so its node is drawn and `workflowFaults` says why, in the graph's
+  words (`lacks`): "which a page's filter graph does not draw".
+- **Its panel**: `paletteOf` lists only its `categories`; none, all, and Custom Nodes
+  empty or not.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/node-start.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `test/unit/a-graph-is-drawn-by-its-type.test.mjs`

@@ -18,7 +18,7 @@
  * - startFaults — What joins the Start that may not, in words: only a Trigger does, by its header; none leaves it.
  * - unstarted — Whether a node is a Trigger that is not joined to the Start: it warns.
  */
-import { socketOf, type NodeConnection, type NodeKind } from './node-kinds.js';
+import { NODE_GRAPHS, socketOf, type NodeConnection, type NodeGraph, type NodeKind } from './node-kinds.js';
 import { DEFAULT_STAGE, STAGE_PAD } from './node-stages.js';
 
 /** The Start's node id, and its kind's: `#start`. */
@@ -60,6 +60,7 @@ const START_HEIGHT = 64;
 
 /** What the Start reads of a graph: its nodes and their places, and its connections. */
 interface Graph {
+  graph?: NodeGraph;
   nodes: readonly { id: string; kind: string; x: number; y: number; size?: { w: number }; stage?: string }[];
   connections?: readonly NodeConnection[];
   stages?: readonly { id: string; x: number }[];
@@ -69,8 +70,9 @@ interface Graph {
 type WidthOf = (node: { size?: { w: number } }) => number;
 type HeightOf = (node: { id: string }) => number;
 
-/** Whether a graph has a Start: one with no Group Input or Group Output, which enter a Custom Node's body or a type's graph. */
-export const hasStart = (graph: Pick<Graph, 'nodes'>): boolean => !graph.nodes.some((n) => n.id === '#in' || n.id === '#out');
+/** Whether a graph has a Start: a top graph of a type that has one (a workflow's, never a page's filter graph), with no Group
+ *  Input or Group Output, which enter a Custom Node's body or a type's graph. TRAP T-a-graph-is-drawn-by-its-type */
+export const hasStart = (graph: Pick<Graph, 'nodes' | 'graph'>): boolean => NODE_GRAPHS[graph.graph ?? 'workflow'].start && !graph.nodes.some((n) => n.id === '#in' || n.id === '#out');
 
 /** The graph with its Start, in the first stage (Will). One added stands right of the Triggers joined to it there, at
  *  their middle; with none, at the first stage's left edge, or left of every node where no stage is written; and down past

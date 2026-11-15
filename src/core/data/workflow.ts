@@ -39,7 +39,7 @@ import { startLoops } from './output-triggers.js';
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
-import { nodeKinds, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, typedControl, rowsOfNode, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
+import { nodeKinds, kindIn, NODE_GRAPHS, ROWS, LIST_OPS, TEST_KINDS, accepts, conditionFits, fieldsSent, fitsCondition, CONDITION_INPUT_WORDS, type ConditionInput, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf, typedControl, rowsOfNode, type GraphRow, type NodeSize, type NodeKind, type NodeConnection, type NodeGraph, type NodeTie, type RowKind, type SocketType } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './connector-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -95,9 +95,16 @@ export interface WorkflowDefinition {
   /** Not laid out yet, as a graph an agent made: the editor unfurls it the first time it shows it, and saves it without
    *  this (TODO 958). */
   unfurl?: true;
+  /** Where it is drawn: a page's filter graph, which its Query lens gives and never keeps (no schema holds it); none, a
+   *  workflow (plan 1004). */
+  graph?: NodeGraph;
 }
 
 type Kinds = Readonly<Record<string, NodeKind>>;
+
+/** Every kind as one graph draws it (`kindIn`): its types and rows there. A kind the graph does not take stays whole, so its
+ *  node is drawn and its fault said. TRAP T-a-graph-is-drawn-by-its-type */
+const kindsIn = (kinds: Kinds, graph: NodeGraph): Kinds => Object.fromEntries(Object.entries(kinds).map(([id, k]) => [id, kindIn(k, graph) ?? k]));
 
 /** A workflow read as v3, and each fault the read met; no workflow, it is not one. */
 export interface WorkflowRead {
@@ -325,7 +332,7 @@ export function workflowFaults(given: WorkflowDefinition, shipped: Kinds = nodeK
     const kind = kindOf(node);
     if (byId.has(node.id)) problems.push(`two nodes are "${node.id}"`);
     if (!kind) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which is not one`);
-    else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
+    else if (!kind.graphs.includes(workflow.graph ?? 'workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which ${NODE_GRAPHS[workflow.graph ?? 'workflow'].lacks}`);
     else byId.set(node.id, kind);
     if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
     const read = kind && fieldAt(node, flow.connections, sends);
@@ -648,9 +655,9 @@ export function sentFrom(given: WorkflowDefinition, from: string, facts: Pick<Wo
  *  reaches an input that it cannot use reads null, and the node says why in `warnings`.
  *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export function workflowGraph(given: WorkflowDefinition, facts: WorkflowFacts = {}, shipped: Kinds = nodeKinds()): FramedGraph {
-  const kinds = withStartKind(shipped);
   const { workflow: read } = readWorkflow(given);
   if (!read) return { nodes: [], connections: [] };
+  const kinds = kindsIn(withStartKind(shipped), read.graph ?? 'workflow');
   const workflow = withStart(read, nodeWidth);
   // A connection kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
   // What each input reads, it reads as the data flows: through the portals (TODO 779).
