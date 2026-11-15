@@ -902,7 +902,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (160)
+## SherpaElement and the shared sheets (161)
 
 - [T-a-bend-is-a-smooth-point](traps/element-and-sheets.md#t-a-bend-is-a-smooth-point) — connector-path
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
@@ -935,6 +935,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-joined-row-shows-what-comes-in](traps/data-layer.md#t-a-joined-row-shows-what-comes-in) — node-graph
 - [T-a-kind-is-registered-never-a-tag](traps/join-and-app.md#t-a-kind-is-registered-never-a-tag) — components
 - [T-a-layout-read-belongs-in-a-frame](traps/menus-tips-overlays.md#t-a-layout-read-belongs-in-a-frame) — sherpa-element
+- [T-a-line-sweeps-round-a-node](traps/element-and-sheets.md#t-a-line-sweeps-round-a-node) — connector-path, node-graph
 - [T-a-list-takes-its-children-as-data](traps/element-and-sheets.md#t-a-list-takes-its-children-as-data) — sherpa-element
 - [T-a-multi-select-is-one-row](traps/data-layer.md#t-a-multi-select-is-one-row) — node-graph
 - [T-a-native-control-brings-its-own-margin](traps/element-and-sheets.md#t-a-native-control-brings-its-own-margin) — sherpa-base

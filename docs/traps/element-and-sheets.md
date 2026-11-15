@@ -2297,3 +2297,28 @@ all read the same handles, so the hit line and the handles sit on the line that 
 
 - Site: `src/core/ui/connector-path.ts`
 - Site: `test/unit/a-connector-bends-where-the-reader-put-them.test.mjs`
+
+### T-a-line-sweeps-round-a-node
+
+**An Unfurl writes a line's one bend only where its curve would meet a node, and sets its handles' turn** (Will, TODO 1010:
+"The unfurled mid points of connectors cause the connector to be squiggly. The rotation of the handles of the point, as well
+as the position, need to be set so that they create a nice consistent flow from one socket to another while also avoiding
+any other nodes."). 999's middles, each laid out as a node's cell and written as its bend, sat off the line's natural path,
+with handles along the way from the point before to the point after, so a line bent twice.
+
+- **The middles still space the nodes**; then `sweepOf` (connector-path.ts) looks at each untied line's default curve: one
+  that misses every node it does not join gets no bend. Else, of the bends that miss them all, the gentlest: on the curve or
+  moved square off it, at the curve's own turn there or a little off it (`TURN_COST` px a degree), written as `{ x, y, turn }`.
+- **A node's radius** (half its largest side) is the quick test, its box (`LINE_CLEAR` px round it) the real one.
+- **The test samples every few px**: 17 dots a piece, as a click lands, slipped past a node's corner and passed a grazing
+  curve as clear.
+- **One bend cannot clear every line**: a line that leaves its socket already level with a node next to it keeps its flat
+  end handle that far. Then the bend that meets the fewest dots wins. On reforged-node-unfurl's tangle: dots in a node a line
+  does not join 36 → 4 (of 880), bends 11 → 2, the width the same.
+- **A turn is the Unfurl's**: `controlsThrough` lays the bend's handles at it; a point the reader moves loses it
+  (`placeBend`), and `clampedVia` keeps it.
+
+- Site: `src/core/ui/connector-path.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-line-sweeps-round-a-node.test.mjs`
+- Site: `test/e2e/reforged-node-unfurl.spec.ts`

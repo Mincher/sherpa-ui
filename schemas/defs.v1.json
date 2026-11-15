@@ -360,7 +360,10 @@
       "type": "array", "minItems": 1,
       "items": {
         "type": "object", "additionalProperties": false, "required": ["x", "y"],
-        "properties": { "x": { "type": "number" }, "y": { "type": "number" } }
+        "properties": {
+          "x": { "type": "number" }, "y": { "type": "number" },
+          "turn": { "description": "Its handles' turn, in degrees from the +x axis, set by an Unfurl so the curve sweeps through as one (TODO 1010). None, they lie along the way from the point before to the point after.", "type": "number" }
+        }
       }
     },
     "tie": {

@@ -36,7 +36,7 @@ export interface Arranged {
   ties: Record<string, { x: number; y: number }>;
   stages?: Record<string, number>;
   /** Each connection's one bend point, by its `from>to` key, where an Unfurl laid its middle out (TODO 999). */
-  bends?: Record<string, { x: number; y: number }>;
+  bends?: Record<string, { x: number; y: number; turn?: number }>;
 }
 
 type Spot = { x: number; y: number };

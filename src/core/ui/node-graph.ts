@@ -67,7 +67,7 @@ import { primaryKey } from './modifier-key.js';
 import { keepOrder, morph } from './keep-order.js';
 import { boxOf, pointIn } from './plane.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
-import { dotsThrough, handlesOf, pathThrough, waypointsOf, type Pt } from './connector-path.js';
+import { dotsThrough, handlesOf, pathThrough, sweepOf, waypointsOf, type Obstacle, type Pt } from './connector-path.js';
 import { clampedVia } from '../data/connector-bends.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import { SessionList, type SessionStore } from '../browser/session.js';
@@ -667,10 +667,11 @@ function drawConnections(drawn: Drawn): void {
     const way = waypointsOf(connection.via && clampedVia(connection.via, { from: from[0], to: to[0] }), stops);
     const points = [from, ...way.map((w) => w.at), to];
     const soft = way.some((w) => w.bend !== undefined);
-    // A bend point is a smooth point; a tie's slot stays flat (TODO 999).
+    // A bend point is a smooth point; a tie's slot stays flat (TODO 999). One an Unfurl set lies at its turn (TODO 1010).
     const smooth = new Set(way.flatMap((w, i) => (w.bend === undefined ? [] : [i + 1])));
+    const turns = new Map(way.flatMap((w, i) => (w.turn === undefined ? [] : [[i + 1, w.turn] as const])));
     const path = document.createElementNS(SVG, 'path');
-    path.setAttribute('d', pathThrough(points, soft, smooth));
+    path.setAttribute('d', pathThrough(points, soft, smooth, turns));
     path.dataset['type'] = outputType(drawn.graph, connection.from);
     path.dataset['from'] = connection.from;
     path.dataset['to'] = connection.to;
@@ -681,7 +682,7 @@ function drawConnections(drawn: Drawn): void {
     if (why) path.setAttribute('data-ignored', '');
     // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
     const hit = document.createElementNS(SVG, 'polyline');
-    const dots = dotsThrough(points, soft, smooth);
+    const dots = dotsThrough(points, soft, smooth, turns);
     lanes.push({ connection, dots });
     hit.setAttribute('points', dots.map(([x, y]) => `${x},${y}`).join(' '));
     hit.setAttribute('class', 'graph-hit');
@@ -1722,6 +1723,9 @@ function laidAs(canvas: SherpaLayoutCanvas, drawn: Drawn): { gap: number; nodes:
   };
 }
 
+/** How far a line an Unfurl lays keeps from a node it does not join, in plane px (TODO 1010). */
+const LINE_CLEAR = 8;
+
 /** Where these nodes go, from the boxes they are drawn in: on a grid. None, fewer than two. */
 export function arrangement(canvas: SherpaLayoutCanvas, picked: readonly string[]): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
@@ -1765,12 +1769,16 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
   const frame = [...drawn.frames.values()].find((el) => !el.hasAttribute('hidden') && el.offsetWidth);
   const side = frame ? Math.max(0, (frame.offsetWidth - Number(frame.getAttribute('data-w'))) / 2) : 0;
   const top = frame ? Math.max(0, frame.offsetHeight - Number(frame.getAttribute('data-h')) - side) : 0;
-  // Each connected socket's height in its node, as drawn: a node's neighbours stand in its sockets' order. TODO 827
+  // Each connected socket's height in its node, as drawn: a node's neighbours stand in its sockets' order. TODO 827. And where
+  // it stands across, for the lines' ends once the nodes are placed (TODO 1010).
   const sockets: { inputs: Record<string, number>; outputs: Record<string, number> } = { inputs: {}, outputs: {} };
+  const across: Record<string, number> = {};
   for (const connection of drawn.connections) {
     for (const [address, side, into] of [[connection.from, 'output', sockets.outputs], [connection.to, 'input', sockets.inputs]] as const) {
       const [at, el] = [socketPoint(drawn, address, side), drawn.nodes.get(socketOf(address).node)];
-      if (at && el) into[address] = at[1] - (Number(el.getAttribute('data-y')) || 0);
+      if (!at || !el) continue;
+      into[address] = at[1] - (Number(el.getAttribute('data-y')) || 0);
+      across[`${side}:${address}`] = at[0] - (Number(el.getAttribute('data-x')) || 0);
     }
   }
   // A graph reads left to right: Sources and Portal Ins stand left, Outputs and Portal Outs right; an In hands on to each Out of
@@ -1788,8 +1796,32 @@ export function unfurlment(canvas: SherpaLayoutCanvas, staged?: Pick<WorkflowDef
   const inStages = nodes.map((n) => { const at = named.get(n.id); return at ? { ...n, stage: at } : n; });
   // The Start's drawn lines to the Sources hold the flow, as a portal's hop does: Trigger › Start › Source (TODO 955).
   if (drawn.nodes.has(START)) for (const n of drawn.graph.nodes) if (n.started) hops.push({ from: START, to: n.id });
-  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets, midpoints: drawn.canvas.hasAttribute('data-unfurl-midpoints') });
-  return Object.keys(placed.nodes).length ? placed : undefined;
+  const midpoints = drawn.canvas.hasAttribute('data-unfurl-midpoints');
+  const placed = unfurlNodes({ nodes: inStages, connections: drawn.connections, ties: drawn.ties, frames: drawn.graph.frames ?? [], hops, bands, ...(staged?.stages ? { stages: staged.stages } : {}) }, ids, { gapX: gap, gapY: gap, boxes, frameMargin: { top, side }, sockets, midpoints });
+  if (!Object.keys(placed.nodes).length) return undefined;
+  if (!midpoints) return placed;
+  // Each untied line's one bend, where its curve would meet a node it does not join: its middles spaced the nodes, and now the
+  // curve sweeps round them (TODO 1010). TRAP T-a-line-sweeps-round-a-node
+  const where = (id: string): { x: number; y: number } | undefined => placed.nodes[id] ?? nodes.find((n) => n.id === id);
+  const end = (address: string, side: 'input' | 'output'): Pt | undefined => {
+    const [at, dx, dy] = [where(socketOf(address).node), across[`${side}:${address}`], (side === 'input' ? sockets.inputs : sockets.outputs)[address]];
+    return at && dx !== undefined && dy !== undefined ? [at.x + dx, at.y + dy] : undefined;
+  };
+  const tied = new Set(drawn.ties.flatMap((t) => t.connections.map((r) => `${r.from}>${r.to}`)));
+  const bends: Record<string, { x: number; y: number; turn?: number }> = {};
+  for (const r of drawn.connections) {
+    const [a, b] = [end(r.from, 'output'), end(r.to, 'input')];
+    if (!a || !b || tied.has(`${r.from}>${r.to}`)) continue;
+    const ends = new Set([socketOf(r.from).node, socketOf(r.to).node]);
+    const others = nodes.filter((n) => !ends.has(n.id) && boxes[n.id]).map((n): Obstacle => {
+      const at = where(n.id)!;
+      const { w, h } = boxes[n.id]!;
+      return { left: at.x - LINE_CLEAR, top: at.y - LINE_CLEAR, right: at.x + w + LINE_CLEAR, bottom: at.y + h + LINE_CLEAR };
+    });
+    const bend = sweepOf(a, b, others);
+    if (bend) bends[`${r.from}>${r.to}`] = bend;
+  }
+  return { ...placed, bends };
 }
 
 /** Unfurl the whole graph and hand the host the places, ties and bends with them, and the stages' (TODO 950): one step. The

@@ -1072,7 +1072,7 @@ export type WorkflowEdit =
   | { tieAdd: { id: string; connection: NodeConnection } }
   | { bend: { connection: NodeConnection; at: number; x: number; y: number; insert?: boolean } }
   | { unbend: { connection: NodeConnection; index: number } }
-  | { place: { nodes: Readonly<Record<string, { x: number; y: number; stage?: string }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow' | Readonly<Record<string, { x: number; y: number }>>; stages?: Readonly<Record<string, number>> } }
+  | { place: { nodes: Readonly<Record<string, { x: number; y: number; stage?: string }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | 'follow' | Readonly<Record<string, { x: number; y: number; turn?: number }>>; stages?: Readonly<Record<string, number>> } }
   | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
   | { unframe: string }
   | { setFrame: { id: string; label?: string; description?: string } }

@@ -20,12 +20,16 @@ import type { NodeConnection } from './node-kinds.js';
 export interface Bend {
   x: number;
   y: number;
+  /** Its handles' turn, in degrees from the +x axis: set by an Unfurl, so the curve sweeps through as one (TODO 1010). None, they
+   *  lie along the way from the point before to the point after. A point moved by hand loses it. */
+  turn?: number;
 }
 
 /** What is wrong with a bend list, in words; none, it is a good one: points that are real, sorted by x. */
 export function bendFault(via: unknown): string | undefined {
   if (!Array.isArray(via) || !via.length) return 'its bend points are not a list of one or more points';
   if (!via.every((p) => p && Number.isFinite((p as Bend).x) && Number.isFinite((p as Bend).y))) return 'a bend point needs a finite x and y';
+  if (via.some((p) => (p as Bend).turn !== undefined && !Number.isFinite((p as Bend).turn))) return 'a bend point\'s turn is a number of degrees';
   if (via.some((p, i) => i > 0 && (p as Bend).x < (via[i - 1] as Bend).x)) return 'its bend points are not in order from left to right';
   return undefined;
 }
@@ -67,7 +71,7 @@ export function clampBend(ends: { from: number; to: number }, via: readonly Bend
 /** A bend list held inside its end sockets and apart, as drawn: a node moved later never leaves a loop-back. The saved list is not rewritten. */
 export function clampedVia(via: readonly Bend[], ends: { from: number; to: number }): Bend[] {
   const [min, max] = [ends.from + BEND_INSET, ends.to - BEND_INSET];
-  const out = via.map((p) => ({ x: hold(p.x, min, max), y: p.y }));
+  const out = via.map((p) => ({ ...p, x: hold(p.x, min, max) }));
   for (let i = 1; i < out.length; i++) out[i]!.x = Math.max(out[i]!.x, out[i - 1]!.x + BEND_GAP);
   for (let i = out.length - 2; i >= 0; i--) out[i]!.x = Math.min(out[i]!.x, out[i + 1]!.x - BEND_GAP);
   return out.map((p, i) => (p.x === via[i]!.x ? via[i]! : p));

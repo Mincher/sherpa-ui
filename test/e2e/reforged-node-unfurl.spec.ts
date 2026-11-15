@@ -346,17 +346,33 @@ test('a graph not laid out yet is unfurled and saved the first time it shows, an
   expect(overlaps(await rects(page)).length).toBeGreaterThan(0);
 });
 
-// Will, TODO 999: with the app's setting on (`data-unfurl-midpoints`), Unfurl spaces each line's middle as a node and writes
-// it as the line's one bend; with it off, it writes none.
-test('with Unfurl spaces line middles on, each line Unfurl lays out has its one bend; off, none (TODO 999)', async ({ page }) => {
-  const bends = async (on: boolean) => {
+// Will, TODOs 999 and 1010: with the app's setting on (`data-unfurl-midpoints`), Unfurl spaces each line's middle as a node,
+// and a line whose curve would meet a node it does not join gets ONE bend that sweeps round it, its handles at a turn of its
+// own; one whose curve is clear gets none. Measured on this tangle: line points in a node they do not join 36 → 4 (of 880),
+// bends 11 → 2, the width the same. Off, it writes none. TRAP T-a-line-sweeps-round-a-node
+test('with Unfurl spaces line middles on, only a line that would meet a node gets a bend, one that sweeps round; off, none (TODOs 999, 1010)', async ({ page }) => {
+  const unfurled = async (on: boolean) => {
     await page.evaluate(() => { document.getElementById('cv')?.remove(); document.getElementById('inspector')?.remove(); });
     await start(page, TANGLE, KNOTS);
     await page.evaluate((o) => document.getElementById('cv')!.toggleAttribute('data-unfurl-midpoints', o), on);
     await button(page).click();
     await settle(page);
-    return (await flow(page)).connections.filter((c) => c.via?.length).length;
+    const met = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll('#cv > sherpa-node')].map((n) => ({ id: n.getAttribute('data-heading')!, x: Number(n.getAttribute('data-x')), y: Number(n.getAttribute('data-y')), w: (n as HTMLElement).offsetWidth, h: (n as HTMLElement).offsetHeight }));
+      return [...document.querySelectorAll<SVGPathElement>('#cv > svg.graph-connectors path[data-from]')].reduce((sum, p) => {
+        const [f, t] = [p.dataset['from']!.split('/')[0], p.dataset['to']!.split('/')[0]];
+        const len = p.getTotalLength();
+        return sum + Array.from({ length: 80 }, (_, i) => p.getPointAtLength((len * i) / 79))
+          .filter((q) => nodes.some((n) => n.id !== f && n.id !== t && q.x > n.x && q.x < n.x + n.w && q.y > n.y && q.y < n.y + n.h)).length;
+      }, 0);
+    });
+    return { via: (await flow(page)).connections.filter((c) => c.via?.length) as { via: { turn?: number }[] }[], met };
   };
-  expect(await bends(false)).toBe(0);
-  expect(await bends(true)).toBeGreaterThan(0);
+  expect((await unfurled(false)).via).toEqual([]);
+  const on = await unfurled(true);
+  expect(on.via.length).toBeGreaterThan(0);
+  expect(on.via.length).toBeLessThan(KNOTS.length);
+  for (const c of on.via) expect(c.via.length === 1 && Number.isFinite(c.via[0]!.turn)).toBe(true);
+  // A ratchet: may only fall (36 before 1010).
+  expect(on.met).toBeLessThanOrEqual(4);
 });
