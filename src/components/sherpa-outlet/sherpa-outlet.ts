@@ -170,6 +170,16 @@ export class SherpaOutlet extends SherpaElement {
     return Object.entries(this.#options?.app.contexts ?? {}).map(([id, c]) => ({ id, label: c.label, records: !!(c.definition || c.type) }));
   }
 
+  /** Where a graph type's entities are shown: the first Context and View whose graph is that type; none where no View
+   *  shows it. An act's change, or an agent's, is seen there. */
+  graphViewOf(type: string): { context: string; view: string } | null {
+    for (const { id } of this.contexts) {
+      const view = Object.entries(this.viewsOf(id)).find(([, v]) => v.graph?.type === type)?.[0];
+      if (view) return { context: id, view };
+    }
+    return null;
+  }
+
   /** The View on screen: the URL's, else its Context's first. */
   get view(): string | null {
     const context = this.#context;

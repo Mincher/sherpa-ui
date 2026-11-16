@@ -60,6 +60,13 @@ test('a "views" Context\'s row is the View chip and, on a graph View, the graph 
   expect(r.rows).toEqual(['Presets', 'Shipped (Read only)', 'My graphs', 'Mine', 'New graph…']);
   expect(r.graph).toEqual({ view: 'filters', type: 'filter', id: 'shipped', origin: 'preset' });
   expect(await page.evaluate(() => (window as unknown as { __graphs: { start: unknown } }).__graphs.start)).toEqual(r.graph);
+  // Where a graph type's entities are shown, asked of the outlet: an act's change is seen there (1025's ask by sherpa-demos-3d).
+  const where = await page.evaluate(() => {
+    const outlet = document.querySelector('sherpa-outlet') as unknown as { context: string; graphViewOf(type: string): unknown };
+    return { filter: outlet.graphViewOf('filter'), none: outlet.graphViewOf('nothing-shows-it'), context: outlet.context };
+  });
+  expect(where.filter).toEqual({ context: where.context, view: 'filters' });
+  expect(where.none).toBeNull();
   // A View with no graph has no graph chip.
   await pick(page, 'view', 'Notes');
   await expect.poll(async () => (await row(page)).chips.map((c) => c.id)).toEqual(['view']);

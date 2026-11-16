@@ -371,7 +371,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, pageDefinition, reload, refreshNav, act, checkAct, actContext, start, savePageView, deletePageView). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, graphViewOf, pageDefinition, reload, refreshNav, act, checkAct, actContext, start, savePageView, deletePageView). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -500,6 +500,12 @@
           "name": "firstView",
           "args": "context: string",
           "description": "Its first View, which the URL leaves out."
+        },
+        {
+          "$type": "method",
+          "name": "graphViewOf",
+          "args": "type: string",
+          "description": "Where a graph type's entities are shown: the first Context and View whose graph is that type; none where no View shows it. An act's change, or an agent's, is seen there."
         },
         {
           "$type": "method",

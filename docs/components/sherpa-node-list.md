@@ -2,7 +2,7 @@
 
 # sherpa-node-list
 
-The nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom Nodes), then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places
+The nodes a graph editor may place, by category: three tabs (Core Nodes, Node Graphs, Custom Node Graphs), then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. The CONTENT of a panel on a canvas: the overlay panel it sits in is the box, its header, float, dock and minimise. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786, 846. TRAP T-the-node-panel-asks-it-places
 
 |  |  |
 |---|---|
@@ -10,7 +10,7 @@ The nodes a graph editor may place, by category: two tabs (Preset Nodes, Custom 
 
 ## When to use it
 
-For a graph editor's list of the nodes it may place, one per family, in two tabs (Preset Nodes, Custom Nodes) and one list whose category headings stick while their items scroll, with a search that finds a family by any of its types, or a Custom Node by a tag (it is listed under each of its tags). It is the CONTENT of a `sherpa-overlay-panel`, slotted into a canvas's `panel` slot, and the panel gives it its header, float, dock and minimise. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens "Add a node" from `askAdd()`.
+For a graph editor's list of the nodes it may place, one per family, in three tabs (Core Nodes, Node Graphs, Custom Node Graphs) and one list whose category headings stick while their items scroll, with a search that finds a family by any of its types, or a Custom Node by a tag (it is listed under each of its tags). It is the CONTENT of a `sherpa-overlay-panel`, slotted into a canvas's `panel` slot, and the panel gives it its header, float, dock and minimise. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens "Add a node" from `askAdd()`.
 
 ## Example
 

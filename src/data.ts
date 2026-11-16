@@ -268,7 +268,7 @@ export {
 export { graphActs } from './core/data/entity-acts.js';
 export { actSchema, actsOf, checkAct, refChoices, registerAct, runAct, typeActs, type Act, type ActAnswer, type ActCall, type ActContext, type Choice } from './core/data/acts.js';
 // Each tool the library offers an agent, said once: the utility layer's door and the MCP share the words. Plan 1008 G1
-export { agentToolWords, type AgentTool } from './core/data/agent-tool-words.js';
+export { agentRules, agentToolWords, type AgentTool } from './core/data/agent-tool-words.js';
 /* A UX flow: one act's input asked step by step, then a confirm; a dialog and the chat draw it. Plan 964 N4 */
 export {
   answerStep, flowFaults, flowOf, flowsOf, nextStep, registerFlow, stepsOf,

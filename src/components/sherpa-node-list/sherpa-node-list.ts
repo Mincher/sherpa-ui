@@ -1,7 +1,7 @@
 /**
  * sherpa-node-list — the nodes a graph editor may place, by category, as the CONTENT of a panel on a canvas.
  *
- * It re-makes nothing: sherpa-tabs (Preset Nodes, Custom Nodes), the search its panel's header holds (`data-searchable`),
+ * It re-makes nothing: sherpa-tabs (Core Nodes, Node Graphs, Custom Node Graphs), the search its panel's header holds (`data-searchable`),
  * a sherpa-section-header per category that sticks while its items scroll, a sherpa-list of
  * sherpa-list-items, and a sherpa-menu for "Add a node". It places nothing either: an item
  * clicked, Enter on it, or dragged off the panel is `node-add`, and the editor that hears it makes
@@ -41,19 +41,22 @@ export interface AddContext {
   recent?: readonly RecentUse[];
 }
 
-/** The two lists, by who made a node: the kinds a file gives and every preset, and the reader's own (plan 936). */
-const TABS = [{ id: 'preset', label: 'Preset Nodes' }, { id: 'custom', label: 'Custom Nodes' }] as const;
+/** The three lists (Will, TODO 1025): the Core Nodes, the kinds the library and the app give; the Node Graphs the reader is
+ *  given and cannot change; and the Custom Node Graphs the reader made. */
+const TABS = [{ id: 'core', label: 'Core Nodes' }, { id: 'graphs', label: 'Node Graphs' }, { id: 'custom', label: 'Custom Node Graphs' }] as const;
+type Tab = (typeof TABS)[number]['id'];
 const CUSTOM = 'Custom Nodes';
-/** A reader's own: a Custom Node, not a preset. Its category says where in the tab, as Runbooks. */
-const own = (kind: NodeKind): boolean => kind.model === 'graph' && !('preset' in kind && kind.preset);
+/** A kind's tab: a Core Node; or a Custom Node (a graph, or one in the Custom Nodes category, as a page's Filter), given (a
+ *  preset) or made (the reader's own). Its category says where in the tab. */
+const tabOf = (kind: NodeKind): Tab => (kind.model !== 'graph' && kind.category !== CUSTOM ? 'core' : 'preset' in kind && kind.preset ? 'graphs' : 'custom');
 
-/** The palette's categories split by tab: the presets' in order, then the reader's own, Custom Nodes there always. */
+/** The palette's categories split by tab, each tab's in the palette's order; the reader's own tab always has Custom Nodes. */
 function byWho(palette: readonly PaletteGroup[]): (PaletteGroup & { tab: string })[] {
-  const of = (tab: string, mine: boolean): (PaletteGroup & { tab: string })[] =>
-    palette.map((g) => ({ category: g.category, tab, items: g.items.filter((i) => own(i.kind) === mine) }))
-      .filter((g) => g.items.length || (mine && g.category === CUSTOM));
-  const custom = of('custom', true);
-  return [...of('preset', false), ...(custom.some((g) => g.category === CUSTOM) ? custom : [{ category: CUSTOM, tab: 'custom', items: [] }, ...custom])];
+  const of = (tab: Tab): (PaletteGroup & { tab: string })[] =>
+    palette.map((g) => ({ category: g.category, tab, items: g.items.filter((i) => tabOf(i.kind) === tab) }))
+      .filter((g) => g.items.length || (tab === 'custom' && g.category === CUSTOM));
+  const custom = of('custom');
+  return [...of('core'), ...of('graphs'), ...(custom.some((g) => g.category === CUSTOM) ? custom : [{ category: CUSTOM, tab: 'custom', items: [] }, ...custom])];
 }
 
 /** How far a pointer travels before a press on an item becomes a drag. */
@@ -110,7 +113,7 @@ export class SherpaNodeList extends SherpaElement {
     this.on(this.$('.add')!, 'menu-select', this.#onChoose);
     this.on(this.$('.tabs')!, 'tab-select', this.#onTab);
     void this.$<SherpaElement>('.tabs')?.populate(TABS.map(({ id, label }) => ({ id, label })));
-    this.$<HTMLElement>('.categories')?.setAttribute('data-tab', 'preset');
+    this.$<HTMLElement>('.categories')?.setAttribute('data-tab', 'core');
     this.#draw();
   }
 
@@ -181,8 +184,8 @@ export class SherpaNodeList extends SherpaElement {
   #search(): void {
     const query = this.#query;
     let shown = 0;
-    const current = this.$('.tabs')?.getAttribute('data-current-id') ?? 'preset';
-    const counts: Record<string, number> = { preset: 0, custom: 0 };
+    const current = this.$('.tabs')?.getAttribute('data-current-id') ?? 'core';
+    const counts: Record<string, number> = { core: 0, graphs: 0, custom: 0 };
     for (const category of this.$$('.categories > .category')) {
       let own = 0;
       for (const item of category.querySelectorAll<HTMLElement>('sherpa-list-item')) if (this.#match(item, query)) own++;
@@ -192,7 +195,7 @@ export class SherpaNodeList extends SherpaElement {
         const any = !!tag.querySelector('sherpa-list-item:not([data-filtered])');
         tag.toggleAttribute('data-filtered', !any);
       }
-      counts[category.dataset['group'] ?? 'preset']! += own;
+      counts[category.dataset['group'] ?? 'core']! += own;
       if (category.dataset['group'] === current) shown += own;
     }
     this.toggleState('none', !!query && shown === 0);

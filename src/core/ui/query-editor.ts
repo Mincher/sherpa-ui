@@ -81,10 +81,10 @@ export function queryDocument(source: QuerySource, { definition, session, markup
   // that definition is that graph. The Query has not moved since: each change is read again first.
   let drawn: DrawnGraph | null = null;
   let lastRead: LensDefinition | null = null;
-  // The page's Filters, as its Query declares them: placed as Custom Nodes. TODO 776
+  // The page's Filters, as its Query declares them: placed as Custom Nodes, the reader's own (`mine`) or given (a preset). TODO 776
   const customs = (): Record<string, NodeKind> => Object.fromEntries(queryScopes(definition, query).flatMap((scope) => query.presets(scope)
     .filter((p) => entityRefOf(p.id).type === FILTER)
-    .map((p) => [p.id, { heading: p.label, icon: 'filter', description: 'This page\'s Filter.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes' } as NodeKind])));
+    .map((p) => [p.id, { heading: p.label, icon: 'filter', description: 'This page\'s Filter.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes', ...(p.mine ? {} : { preset: true }) } as NodeKind])));
   // A component's live copy, kept while the same component is shown: it asks the provider as the page's does.
   let visual: { id: string; el: HTMLElement } | null = null;
   // Its own writes and restores are no change from outside.

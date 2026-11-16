@@ -76,8 +76,8 @@ test('a Condition\'s row has no tint and a plain 4px; a Custom Node\'s, its node
   expect([row.radii[0], row.radii[3]]).toEqual([node.radii[0], node.radii[3]]);
   expect(new Set(row.radii).size).toBe(1);
   expect(near(row.fill, node.fill), `its fill ${row.fill} is its node's ${node.fill}`).toBe(true);
-  // Custom Nodes is a tab of its own.
-  await page.locator('sherpa-node-list sherpa-tabs').evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
+  // The reader's own are a tab of their own: Custom Node Graphs, the third (1025).
+  await page.locator('sherpa-node-list sherpa-tabs').evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[2] as HTMLElement).click());
   const [mine, mineNode] = [await rowLook(page, 'mine'), await nodeLook(page, 'Mine')];
   expect(mine.radii).toEqual(mineNode.radii);
   expect(near(mine.fill, mineNode.fill), `its fill ${mine.fill} is its node's ${mineNode.fill}`).toBe(true);

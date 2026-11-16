@@ -89,6 +89,8 @@ test('on_screen says the page, its acts and what the app adds; node_kinds and th
   const rules = await page.evaluate(() => (window as unknown as { agent: { rules(): Promise<string> } }).agent.rules());
   expect(rules.startsWith('APP WORDS FIRST.\n')).toBe(true);
   expect(rules).toContain('#start');
+  // One way for the door and an MCP: agentRules, DOM-free, says the same.
+  expect(await page.evaluate(async () => ((await import('/dist/data.js' as string)) as { agentRules(w: string): string }).agentRules('APP WORDS FIRST.'))).toBe(rules);
 });
 
 /** The Devices grid's rows as they read now. */

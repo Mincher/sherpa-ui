@@ -195,11 +195,8 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
     const type = act.type;
     if (context) return { context, ...(key !== undefined && type && params.includes(type) ? { [type]: String(key) } : {}) };
     if (key === undefined || !type) return null;
-    for (const c of outlet.contexts) {
-      const view = Object.entries(outlet.viewsOf(c.id)).find(([, v]) => v.graph?.type === type)?.[0];
-      if (view) return { context: c.id, view, [GRAPH_CHIP]: String(key) };
-    }
-    return null;
+    const shown = outlet.graphViewOf(type);
+    return shown ? { ...shown, [GRAPH_CHIP]: String(key) } : null;
   };
   /** Keep one change for the app's Undo. */
   const told = (label: string, undo: () => Promise<string | undefined>, route: Record<string, string> | null): void => {
@@ -497,8 +494,8 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
       return handler && tools().some((t) => t.name === name) ? handler({ ...input }) : fail(`No tool is called ${name}.`);
     },
     async rules() {
-      const { graphRules, nodeKinds } = await import('../data/node-kinds.js');
-      return [options.rules, graphRules(nodeKinds())].filter(Boolean).join('\n');
+      const { agentRules } = await import('../data/agent-tool-words.js');
+      return agentRules(options.rules);
     },
     stop: () => stopping.abort(),
   };

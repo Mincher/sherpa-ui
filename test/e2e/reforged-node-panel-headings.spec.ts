@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The node panel is ONE list (Will, TODOs 786, 784): no accordions. Each category's heading sticks
- * at the top while its items scroll under it, and the next category's pushes it on. Two tabs, Preset Nodes and
+ * at the top while its items scroll under it, and the next category's pushes it on. Three tabs, Core Nodes, Node Graphs and
  * Custom Nodes, each wear their match count while something is searched. A search hides each heading with nothing under it. A Custom Node is
  * listed under each of its tags, set in Save as Custom Node, and the search finds it by one. Real
  * pointer and keys; read back by boxes and by pixels. TRAP T-a-node-panel-lists-under-sticky-headings
@@ -93,8 +93,8 @@ const dark = (p: [number, number, number]): boolean => Math.max(...p) < 160;
 
 test('one list, no accordions: a heading sticks while its items scroll under it, and the next one pushes it on', async ({ page }) => {
   expect(await page.locator('sherpa-node-list sherpa-accordion').count()).toBe(0);
-  // A preset Custom Node is the Preset tab's, under its category and its tag (plan 936).
-  expect(await shown(page)).toEqual(['Triggers', 'Sources', 'Custom Nodes', '› checks', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
+  // The Core Nodes: the kinds alone; a preset Custom Node is the Node Graphs tab's (Will, TODO 1025).
+  expect(await shown(page)).toEqual(['Triggers', 'Sources', 'Variables', 'Math', 'Logic', 'AI', 'Time', 'Organise', 'Utils', 'Output']);
   const list = await rect(page, '.categories');
   // The wheel, over the list, until Variables' first item passes under its heading. Each engine
   // scrolls its own distance for a notch, so it turns until it has.
@@ -140,43 +140,46 @@ const openTab = async (page: Page, id: string) => {
 };
 const badges = (page: Page) => page.locator('sherpa-node-list sherpa-tabs .badge').evaluateAll((els) => els.map((b) => ((b as HTMLElement).checkVisibility() ? b.textContent : '')));
 
-test('two tabs: Preset Nodes lists the kinds a file gives and every preset, Custom Nodes the reader\'s own; there is no Jump to', async ({ page }) => {
+test('three tabs: Core Nodes the kinds, Node Graphs the presets, Custom Node Graphs the reader\'s own; there is no Jump to (1025)', async ({ page }) => {
   await expect(page.locator('sherpa-node-list .jump')).toHaveCount(0);
-  expect(await page.locator('sherpa-node-list sherpa-tabs .tab .label').allTextContents()).toEqual(['Preset Nodes', 'Custom Nodes']);
-  // By who made it (plan 936): the preset Shipped check here, under Custom Nodes, its category.
-  expect(await shown(page)).toEqual(expect.arrayContaining(['Custom Nodes', '› checks', 'Math']));
+  expect(await page.locator('sherpa-node-list sherpa-tabs .tab .label').allTextContents()).toEqual(['Core Nodes', 'Node Graphs', 'Custom Node Graphs']);
+  expect(await shown(page)).toContain('Math');
+  expect(await shown(page)).not.toContain('Custom Nodes');
+  // Given, read only: the preset Shipped check, under Custom Nodes, its category, and its tag.
+  await openTab(page, 'graphs');
+  expect(await shown(page)).toEqual(['Custom Nodes', '› checks']);
   await openTab(page, 'custom');
   expect(await shown(page)).toEqual(['Custom Nodes', '› permissions', '› users']);
-  await openTab(page, 'preset');
+  await openTab(page, 'core');
   expect(await shown(page)).toContain('Math');
 });
 
-test('a search narrows both tabs, a count shows on each tab, and a heading with nothing under it is hidden', async ({ page }) => {
+test('a search narrows every tab, a count shows on each tab, and a heading with nothing under it is hidden', async ({ page }) => {
   const find = page.locator('sherpa-overlay-panel .header > .search input:not([aria-label*="menu"])');
-  expect(await badges(page)).toEqual(['', '']);
+  expect(await badges(page)).toEqual(['', '', '']);
   await find.fill('round');
   expect(await shown(page)).toEqual(['Math']);
-  expect(await badges(page)).toEqual(['1', '0']);
-  // A Custom Node by a tag: the tab it is on says so, though the other tab is open.
+  expect(await badges(page)).toEqual(['1', '0', '0']);
+  // A Custom Node by a tag: the tab it is on says so, though another tab is open.
   await find.fill('admin');
-  expect(await badges(page)).toEqual(['0', '1']);
+  expect(await badges(page)).toEqual(['0', '0', '1']);
   await openTab(page, 'custom');
   expect(await shown(page)).toEqual(['Custom Nodes', '› permissions']);
   expect(await names(page)).toEqual(['Is admin']);
   await find.fill('users');
   expect(await shown(page)).toEqual(['Custom Nodes', '› permissions', '› users']);
   expect(await names(page)).toEqual(['Org permissions', 'Org permissions']);
-  // A preset's tags are its own, read only, and find it as any tag does: on the Preset tab, its own.
+  // A preset's tags are its own, read only, and find it as any tag does: on the Node Graphs tab, its own.
   await find.fill('checks');
-  expect(await badges(page)).toEqual(['1', '0']);
-  await openTab(page, 'preset');
+  expect(await badges(page)).toEqual(['0', '1', '0']);
+  await openTab(page, 'graphs');
   expect(await names(page)).toEqual(['Shipped check']);
   expect(await page.locator('sherpa-node-list sherpa-list-item[data-kind="shipped-check"]').getAttribute('data-description')).toMatch(/^Preset, read only/);
   await find.fill('zzz');
   expect(await shown(page)).toEqual([]);
   await expect(page.locator('sherpa-node-list .none')).toBeVisible();
   await find.fill('');
-  expect(await badges(page)).toEqual(['', '']);
+  expect(await badges(page)).toEqual(['', '', '']);
   await openTab(page, 'custom');
   // Untagged, a Custom Node is listed under its category's own heading, before the tags.
   const custom = await page.evaluate(() => [...document.querySelector('sherpa-node-list')!.shadowRoot!.querySelectorAll('.category[data-group="custom"]:has(> .category-heading[data-heading="Custom Nodes"]) :is(.category-heading, .tag-heading, sherpa-list-item)')]

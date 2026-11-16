@@ -43,7 +43,8 @@
   padding-inline-start: var(--sherpa-theme-padding-md, 8px);
 }
 /* Only the open tab's categories show. */
-.categories[data-tab="preset"] > .category:not([data-group="preset"]),
+.categories[data-tab="core"] > .category:not([data-group="core"]),
+.categories[data-tab="graphs"] > .category:not([data-group="graphs"]),
 .categories[data-tab="custom"] > .category:not([data-group="custom"]) {
   display: none;
 }

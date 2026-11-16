@@ -47,8 +47,8 @@ const said = (page: Page) => page.evaluate(() => (window as unknown as { said: s
 
 test('it lists the Query\'s kinds by category, 8px in from the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-list .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
-  // The Preset tab's, the page's preset Filters under Custom Nodes; then the Custom tab's, the reader's own (plan 936).
-  expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Presets', 'Custom Nodes']);
+  // The Core Nodes tab's; then Node Graphs', the page's given Filters under Custom Nodes; then the reader's own (1025).
+  expect(heads).toEqual(['Sources', 'Variables', 'Presets', 'Custom Nodes', 'Custom Nodes']);
   // The Query draws a Condition and an Organise, and places neither: they are not offered (plans 944, 971).
   await expect(item(page, 'condition')).toHaveCount(0);
   await expect(item(page, 'organise')).toHaveCount(0);
@@ -69,12 +69,13 @@ test('a click on Field asks the Query to hold the next field; a click on Preset 
 });
 
 test('a Filter is a Custom Node: listed by its name, and a click switches it on where it is declared', async ({ page }) => {
-  // A preset, it is on the Preset Nodes tab (plan 936).
+  // A preset, it is on the Node Graphs tab (1025).
+  await page.locator('sherpa-node-list sherpa-tabs .tab[data-id="graphs"]').click();
   await expect(item(page, 'filter:active')).toHaveAttribute('data-label', 'Active');
   await item(page, 'filter:active').click();
   expect(await asked(page)).toEqual([{ scope: 'view', preset: 'filter:active', on: true }]);
-  // Preset is the page's own: it never switches a Filter on. It is a kind, on the Preset Nodes tab.
-  await page.locator('sherpa-node-list sherpa-tabs .tab[data-id="preset"]').click();
+  // Preset is the page's own: it never switches a Filter on. It is a kind, on the Core Nodes tab.
+  await page.locator('sherpa-node-list sherpa-tabs .tab[data-id="core"]').click();
   await item(page, 'preset').click();
   expect((await asked(page)).at(-1)).toEqual({ scope: 'view', preset: 'big', on: true });
   expect(await said(page)).toEqual([]);

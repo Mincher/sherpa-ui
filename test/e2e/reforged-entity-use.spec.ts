@@ -100,7 +100,8 @@ test('the panel offers what a Filter takes, and every entity\'s node but its own
   expect(all).toContain('condition');
   expect(all).not.toContain('output');
   expect(lists['Custom Nodes']).toEqual(['filter:active', 'filter:trials']);
-  // A preset, on the Preset Nodes tab, open already.
+  // A preset, on the Node Graphs tab (1025).
+  await page.locator('#cv sherpa-node-list sherpa-tabs .tab[data-id="graphs"]').click();
   await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="filter:active"]').click();
   await settle(page);
   const placed = await ed<{ kind: string; version?: string }>(page, "ed.workflow().nodes.find((n) => n.kind === 'filter:active')");
@@ -120,7 +121,8 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   await page.keyboard.press('Escape');
   await settle(page);
   expect((await offered(page))['Custom Nodes']).toEqual(['filter:active', 'filter:trials']);
-  // A preset placed and opened: locked, with Clone.
+  // A preset placed and opened: locked, with Clone. It is on the Node Graphs tab (1025).
+  await page.locator('#cv sherpa-node-list sherpa-tabs .tab[data-id="graphs"]').click();
   await page.locator('#cv sherpa-node-list sherpa-list-item[data-kind="filter:active"]').click();
   await settle(page);
   await header(page, 'Active').dblclick();

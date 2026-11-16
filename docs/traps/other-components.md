@@ -1678,10 +1678,11 @@ D14 and D16). A click on an item, Enter on it, or a drag let go off the card is
 that category's items pass under it and the next category's pushes it on. Its
 surface is opaque: what scrolls under it never shows through.
 
-- **Two TABS, no Jump to** (Will, 2026-11-06): Preset Nodes (every category but
-  Custom Nodes) and Custom Nodes (that category, with its tags). Each category
-  block says its tab in `data-group`; CSS hides the other tab's. A search runs
-  across BOTH: each tab wears a count badge (`sherpa-tabs`' `badge`) of its matches
+- **Three TABS, no Jump to** (Will, TODO 1025, 2026-11-16): Core Nodes (the kinds
+  the library and the app give), Node Graphs (the Custom Nodes given, read only:
+  presets) and Custom Node Graphs (the reader's own, Custom Nodes always there with
+  its tags). Each category block says its tab in `data-group`; CSS hides the other
+  tabs'. A search runs across ALL: each tab wears a count badge (`sherpa-tabs`' `badge`) of its matches
   while something is typed, and none otherwise, so a match on the other tab is
   seen. The empty message speaks for the open tab.
 - **A Custom Node is listed under EACH of its tags**, inside its category, after

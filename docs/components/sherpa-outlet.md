@@ -36,6 +36,7 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 | `openGraph(id: string \| null)` | Open an entity in the graph View on screen; none, its type's first. The graph chip shows it, and the URL follows. |
 | `viewsOf(context: string)` | A Context's Views: its own, then the reader's saved ones. |
 | `firstView(context: string)` | Its first View, which the URL leaves out. |
+| `graphViewOf(type: string)` | Where a graph type's entities are shown: the first Context and View whose graph is that type; none where no View shows it. An act's change, or an agent's, is seen there. |
 | `pageDefinition(context: string)` | A Context's page definition as it opens — its file, or its type's page, with the app's last word on it — read, never opened: none where it holds no records. Plan 1008 G1 |
 | `reload()` | Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436 |
 | `refreshNav()` | Draw the nav again — after a View is saved or deleted, say. |

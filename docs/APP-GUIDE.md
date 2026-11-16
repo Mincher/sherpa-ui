@@ -731,10 +731,11 @@ registerAiCatalog({
 
 ### Runbooks, and who made a node
 
-The Nodes panel's two tabs split by WHO made a node: **Preset Nodes** holds the kinds
-Sherpa and your app ship and every preset Custom Node; **Custom Nodes** holds the
-reader's own. In each tab the nodes stand under their category, so a **Runbooks** your
-app names can stand in both. Sherpa names no Runbooks of its own (plan 1008): give your
+The Nodes panel's three tabs (Will, TODO 1025): **Core Nodes** holds the kinds Sherpa and
+your app ship; **Node Graphs** holds the Custom Nodes the reader is given and cannot
+change (your presets); **Custom Node Graphs** holds the reader's own. In each tab the
+nodes stand under their category, so a **Runbooks** your app names can stand in the last
+two. Sherpa names no Runbooks of its own (plan 1008): give your
 graph type a `category` (`registerEntityType({ …, category: 'Runbooks' })`) and its
 entities stand there, right after Custom Nodes, with Custom Nodes' look and lane; an
 entity's own `category` wins, and one saved in one of Sherpa's categories (AI) wears that

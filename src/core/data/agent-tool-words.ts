@@ -6,8 +6,10 @@
  * Map:
  * - AgentTool — one tool as an agent is told it
  * - agentToolWords — the tools, their `context` naming this app's Contexts
+ * - agentRules — what an agent is told: the app's own words, then the graph's (`graphRules`), one way for the door and an MCP
  */
 import { OP_LABELS } from './store.js';
+import { graphRules, nodeKinds } from './node-kinds.js';
 
 /** One tool as an agent is told it. */
 export interface AgentTool {
@@ -37,6 +39,11 @@ const where: Schema = {
   type: 'object', minProperties: 1, maxProperties: 12,
   additionalProperties: object({ ...Object.fromEntries(Object.keys(OP_LABELS).map((op) => [op, value])), unit: { type: 'string', enum: ['day', 'week', 'month', 'year'] } }),
 };
+
+/** What an agent is told: the app's own words, then the graph's, from the kinds registered now. */
+export function agentRules(appWords?: string): string {
+  return [appWords, graphRules(nodeKinds())].filter(Boolean).join('\n');
+}
 
 /** The tools, their `context` naming these Contexts. */
 export function agentToolWords(contexts: readonly string[]): AgentTool[] {
@@ -131,7 +138,7 @@ export function agentToolWords(contexts: readonly string[]): AgentTool[] {
     },
     {
       name: 'node_kinds',
-      description: 'The kinds of node a graph may hold, and the Custom Nodes it may place. With no `kinds`, each kind\'s name and words, and each Custom Node with its `custom` facts: its id, type, sockets, and whether it is the reader\'s own. With `kinds`, those kinds whole: their types, sockets and values. A graph places a Custom Node by its `kind`.',
+      description: 'The Core Nodes a graph may hold (the kinds the library and the app give), and the Custom Nodes it may place (the Node Graphs given, and the reader\'s own Custom Node Graphs). With no `kinds`, each kind\'s name and words, and each Custom Node with its `custom` facts: its id, type, sockets, and whether it is the reader\'s own. With `kinds`, those kinds whole: their types, sockets and values. A graph places a Custom Node by its `kind`.',
       input: object({ kinds: { type: 'array', maxItems: 8, items: id } }),
       changes: false,
     },
