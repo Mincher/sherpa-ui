@@ -216,7 +216,11 @@ export class SherpaOutlet extends SherpaElement {
     }
     this.emit('act-run', { id, keys, done: answer.done });
     const { undo } = answer;
-    return undo ? { ...answer, undo: async () => { await undo(); this.emit('act-run', { id, keys, undone: true }); } } : answer;
+    return undo ? { ...answer, undo: async () => {
+      const why = await undo();
+      if (!why) this.emit('act-run', { id, keys, undone: true });
+      return why;
+    } } : answer;
   }
 
   /** Why an act would be refused here, before the reader is asked: the door's checks, then the act's own (a use that
@@ -782,7 +786,8 @@ export class SherpaOutlet extends SherpaElement {
     }
     const { undo } = answer;
     const toast = SherpaToast.success(answer.done, undo ? { action: this.word('undo') } : {});
-    if (undo) toast.addEventListener('toast-action', () => void undo().then(() => SherpaToast.info(this.word('undone'))), { once: true });
+    // An undo that cannot run says why: a Custom Node a graph now uses stays.
+    if (undo) toast.addEventListener('toast-action', () => void undo().then((why) => (why ? SherpaToast.warning(why) : SherpaToast.info(this.word('undone')))), { once: true });
   }
 
   /** Open in Node Editor, from a page's toolbar: the app's `query` graph View, on this page. A push, so Back

@@ -97,6 +97,15 @@ const heldBack = (act: Act): Act => ({
 const refusal = (verb: string, answer: NodeAnswer): { refused: string } | undefined =>
   ('faults' in answer ? { refused: `${verb}: ${answer.faults.join('; ')}.` } : undefined);
 
+/** Why an undo's delete kept the entity, in words: a graph now uses it, say. None where it went. */
+const kept = (answer: NodeAnswer): string | undefined => ('faults' in answer ? answer.faults.join('; ') : undefined);
+
+/** An entity put back as it was; why not, in words, where the shelf refuses it. */
+async function putBack(shelf: EntityShelf, entity: Entity): Promise<string | undefined> {
+  if (await shelf.save(entity)) return undefined;
+  return (await shelf.faults(entity)).join('; ') || `"${entity.label}" could not be put back.`;
+}
+
 /**
  * A graph type's own acts, through the shelf (`ctx.entities`), each refused in the shelf's words: find (its entities, by a
  * search and a tag), read (one, as JSON: its body as kept, its settings, its versions' numbers), add (a new one, as a
@@ -179,7 +188,7 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
         const refused = refusal('Add', answer);
         if (refused || !('id' in answer)) return refused ?? none;
         const made = answer.id;
-        return { done: `Added ${named(shelf.get(made)!)}.`, result: { id: made }, undo: async () => { deleteNode(shelf, made); } };
+        return { done: `Added ${named(shelf.get(made)!)}.`, result: { id: made }, undo: async () => kept(deleteNode(shelf, made)) };
       },
     },
     {
@@ -202,7 +211,7 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
         if (refused) return refused;
         // Its versions are the shelf's to keep: the undo writes the draft back alone.
         const { origin: _origin, versions: _versions, ...own } = was;
-        return { done: `Changed ${named(shelf.get(was.id) ?? was)}.`, undo: async () => { await shelf.save(own as Entity); } };
+        return { done: `Changed ${named(shelf.get(was.id) ?? was)}.`, undo: async () => putBack(shelf, own as Entity) };
       },
     },
     {
@@ -223,7 +232,11 @@ export function graphActs(type: Pick<TypeDefinition, 'id' | 'label' | 'graph'>):
         return {
           done: `Removed ${gone.length === 1 ? named(gone[0]!) : `${gone.length} of ${label}`}.`,
           undo: async () => {
-            for (const { origin: _origin, ...e } of gone) await shelf.save(e);
+            for (const { origin: _origin, ...e } of gone) {
+              const why = await putBack(shelf, e);
+              if (why) return why;
+            }
+            return undefined;
           },
         };
       },
@@ -272,7 +285,7 @@ function versionActs(type: { id: string; label: string }): Act[] {
         const label = call.input?.['label'];
         const made = await clone(shelf, String(keysOf(call)[0]), { ...(label ? { label: String(label) } : {}) });
         if ('refused' in made) return { refused: made.refused };
-        return { done: `Made "${shelf.get(made.id)?.label ?? made.id}", your own copy.`, result: made, undo: async () => { shelf.remove(made.id); } };
+        return { done: `Made "${shelf.get(made.id)?.label ?? made.id}", your own copy.`, result: made, undo: async () => kept(deleteNode(shelf, made.id)) };
       },
     },
   ];

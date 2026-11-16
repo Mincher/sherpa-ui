@@ -202,8 +202,8 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
     return null;
   };
   /** Keep one change for the app's Undo. */
-  const told = (label: string, undo: () => Promise<void>, route: Record<string, string> | null): void => {
-    options.onChange?.({ label, route, undo: async (): Promise<string | undefined> => { await undo(); return undefined; } });
+  const told = (label: string, undo: () => Promise<string | undefined>, route: Record<string, string> | null): void => {
+    options.onChange?.({ label, route, undo });
   };
 
   const graphOnScreen = (): { graph?: Record<string, unknown> } => {
@@ -406,10 +406,19 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
       const ran = answers.filter((a): a is Extract<ActAnswer, { done: string }> => 'done' in a);
       const refused = answers.flatMap((a) => ('refused' in a ? [a.refused] : []));
       // One Undo for all of them, the last first, in the acts' own words.
-      const undos = ran.map((a) => a.undo).filter((u): u is () => Promise<void> => !!u).reverse();
+      const undos = ran.map((a) => a.undo).filter((u): u is () => Promise<string | undefined> => !!u).reverse();
       if (undos.length) {
         const label = ran.length === 1 ? ran[0]!.done.replace(/\.$/, '') : `${act.label}, ${ran.length} times`;
-        told(label, async () => { for (const undo of undos) await undo(); }, await routeOf(act, list.length === 1 ? list[0]!.keys ?? [] : [], ran.length === 1 ? ran[0]! : { done: '' }));
+        // Each undone, the last first; the first that cannot says why.
+        const undoAll = async (): Promise<string | undefined> => {
+          let why: string | undefined;
+          for (const undo of undos) {
+            const not = await undo();
+            why ??= not;
+          }
+          return why;
+        };
+        told(label, undoAll, await routeOf(act, list.length === 1 ? list[0]!.keys ?? [] : [], ran.length === 1 ? ran[0]! : { done: '' }));
       }
       if (!ran.length) return fail(refused.join(' '));
       return done({

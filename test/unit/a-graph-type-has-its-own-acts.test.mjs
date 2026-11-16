@@ -63,8 +63,22 @@ test('add: checked by the shelf\'s own check and refused in its words; kept as a
     assert.deepEqual([added.done, added.result], ['Added Playbook "Night check".', { id: 'night-check' }]);
     const kept = shelf.get('night-check');
     assert.deepEqual([kept.tags, kept.versions.map((v) => v.number), kept.graph.unfurl], [['ops', 'nightly'], [1], true]);
-    await added.undo();
+    assert.equal(await added.undo(), undefined, 'undone: no why');
     assert.equal(shelf.get('night-check'), undefined);
+  });
+});
+
+test('an undo that cannot run says why, and keeps the entity: one a graph now uses stays (1008c3)', async () => {
+  await withPlaybook(async () => {
+    const shelf = shelfOf();
+    const ctx = { stores: {}, entities: shelf };
+    const added = await runAct('playbook.add', { input: { label: 'Night check', graph: body } }, ctx);
+    const use = { nodes: [{ id: 'nc', kind: 'playbook:night-check', x: 0, y: 0 }], connections: [{ from: '#in/rows', to: 'nc/rows' }, { from: 'nc/found', to: '#out/found' }] };
+    const user = await runAct('playbook.add', { input: { label: 'Uses it', graph: use } }, ctx);
+    assert.ok(user.done, user.refused);
+    const why = await added.undo();
+    assert.match(why, /Uses it/);
+    assert.ok(shelf.get('night-check'), 'it stays');
   });
 });
 

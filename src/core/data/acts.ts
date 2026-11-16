@@ -51,7 +51,8 @@ export interface ActContext {
 }
 
 /** What an act answers, in words: done — with its result, and an undo where it changed data — or refused. */
-export type ActAnswer = { done: string; result?: unknown; undo?: () => Promise<void> } | { refused: string };
+/** An act's answer: done (its words, what it made, and its undo, which answers why, in words, where it cannot), or refused. */
+export type ActAnswer = { done: string; result?: unknown; undo?: () => Promise<string | undefined> } | { refused: string };
 
 /** One act: its id, its words, the type whose rows it acts on, what it asks, whether it changes data (a caller asks
  *  first), where a press offers it (none: wherever its type is), and the one function that does it. */
@@ -344,7 +345,7 @@ export function typeActs(type: TypeDefinition): Act[] {
         const store = storeOf(ctx);
         const make = (type.fields?.[key] as StoredField | undefined)?.make;
         const row = await store.insert({ ...call.input, ...(make ? { [key]: await madeKey(store, make) } : {}) });
-        return { done: `Added ${named(row)}.`, result: row, undo: async () => { await store.remove(row[key]); } };
+        return { done: `Added ${named(row)}.`, result: row, undo: async () => { await store.remove(row[key]); return undefined; } };
       },
     },
     {
@@ -363,7 +364,7 @@ export function typeActs(type: TypeDefinition): Act[] {
         const keys = keysOf(call);
         return {
           done: `Changed ${keys.length === 1 ? named(await store.byKey(keys[0])) : many(keys.length)}.`,
-          undo: async () => { for (const [i, k] of keys.entries()) await store.update(k, before[i]!); },
+          undo: async () => { for (const [i, k] of keys.entries()) await store.update(k, before[i]!); return undefined; },
         };
       },
     },
@@ -384,6 +385,7 @@ export function typeActs(type: TypeDefinition): Act[] {
           undo: async () => {
             for (const row of gone) await store.insert(row);
             for (const { store: at, rows } of owned) for (const row of rows) await at.insert(row);
+            return undefined;
           },
         };
       },
