@@ -167,6 +167,9 @@ test('a drag goes into the stage under the cursor, though the node\'s middle sta
       session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-list'), stores: ['customers'],
     });
     await window.__settled();
+    // Stage 1 whole in view, as STAGE_MIN is wide (TODO 1027): its right edge on the canvas.
+    (canvas as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void }).zoomTo(0.4);
+    (canvas as HTMLElement & { panTo(x: number, y: number): void }).panTo(160, 40);
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
   const one = (await page.locator('#root sherpa-layout-canvas > sherpa-node-stage').first().boundingBox())!;

@@ -70,12 +70,23 @@ test('Cmd/Ctrl on the edge between two stages moves the one after and every one 
   expect(now.bands).toEqual([[a, aw + 100], [b + 100, bw], [c + 100, cw]]);
   expect(now.nodes).toEqual({ s: was.nodes['s'], k: was.nodes['k']! + 100, o: was.nodes['o']! + 100 });
   expect(now.tie).toBe(was.tie! + 100);
-  // Back: the stages after it come back with it, and no further than its own node lets it.
+  // Back: the stages after it come back with it.
   await drag(page, stage(page, 0).locator('.edge'), -50, true);
   expect(await state(page)).toEqual(was);
+  // Back again: narrower than STAGE_MIN is the reader's to choose (TODO 1027, A), no further than its own node lets it.
   await drag(page, stage(page, 0).locator('.edge'), -50, true);
-  expect(await state(page)).toEqual(was);
-  // One step each: Undo the back, then the on, and it stands as it was.
+  const least = await page.evaluate(async () => {
+    const { stageWidthRange, nodeWidth } = await import('/dist/data.js' as string) as { stageWidthRange(w: unknown, id: string, width: unknown): { least: number }; nodeWidth: unknown };
+    return stageWidthRange((window as never as { ed: { workflow(): unknown } }).ed.workflow(), 'a', nodeWidth).least;
+  });
+  const width = Math.max(least, aw - 100);
+  expect((await state(page)).bands).toEqual([[a, width], [b - (aw - width), bw], [c - (aw - width), cw]]);
+  // One step each: Undo the backs, then the on, and it stands as it was.
+  if (width !== aw) {
+    await undo(page);
+    await settle(page);
+    expect(await state(page)).toEqual(was);
+  }
   await undo(page);
   await settle(page);
   expect((await state(page)).bands).toEqual(now.bands);

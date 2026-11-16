@@ -26,7 +26,8 @@ test('a workflow with no stages has one, Stage 1, round every node', () => {
   const w = flow();
   assert.deepEqual(stagesOf(w).map((s) => s.label), ['Stage 1']);
   const { bands } = stageBands(w, nodeWidth);
-  assert.deepEqual(bands, [{ id: 'stage-1', left: -STAGE_PAD, right: 400 + NODE_WIDTH + STAGE_PAD }]);
+  // Round its nodes, and never narrower than STAGE_MIN (TODO 1027).
+  assert.deepEqual(bands, [{ id: 'stage-1', left: -STAGE_PAD, right: Math.max(400 + NODE_WIDTH + STAGE_PAD, -STAGE_PAD + STAGE_MIN) }]);
 });
 
 test('Add stage writes Stage 1 out, every node in it, and puts the new one after it, empty and its own width', () => {
@@ -94,8 +95,9 @@ test('a new node goes in the stage under the point it was let go at, though its 
 test('an edge dragged makes a stage wider and the next as much narrower, no node moving; each keeps room for its nodes (900)', () => {
   let w = editWorkflow(flow(), { addStage: {} });
   w = fitStages(editWorkflow(editWorkflow(w, { node: 'b', set: { x: stageBands(w, nodeWidth).bands[1].left + 40 } }), { restage: ['b'] }), nodeWidth);
-  // Packed, stage 2 has no room before b: the edge stays (moving b is 901's). Moved on in its stage, b leaves room.
-  assert.equal(editWorkflow(w, { resizeStage: { id: 'stage-1', w: 900 } }), w);
+  // Packed, stage 2 has no room before b: a wider edge stays (moving b is 901's). Moved on in its stage, b leaves room.
+  const packed = stageBands(w, nodeWidth).bands[0];
+  assert.equal(editWorkflow(w, { resizeStage: { id: 'stage-1', w: packed.right - packed.left + 60 } }), w);
   w = fitStages(editWorkflow(w, { node: 'b', set: { x: w.nodes.find((n) => n.id === 'b').x + 200 } }), nodeWidth);
   const [one, two] = stageBands(w, nodeWidth).bands;
   const xs = w.nodes.map((n) => n.x);

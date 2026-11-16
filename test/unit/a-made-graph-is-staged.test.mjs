@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { placeStages, stageNodes } from '../../dist/data.js';
+import { STAGE_GAP, STAGE_MIN, placeStages, stageNodes } from '../../dist/data.js';
 
 const STAGES = [{ id: 'gather', label: 'Gather', x: 0 }, { id: 'decide', label: 'Decide', x: 600 }, { id: 'act', label: 'Act', x: 1200 }];
 const node = (id, x, stage) => ({ id, kind: 'value', x, y: 0, ...(stage ? { stage } : {}) });
@@ -49,8 +49,8 @@ test('a stage given no place stands at the left of its nodes, an empty one after
   const nodes = [node('#start', -300, 'gather'), node('a', 100, 'gather'), node('b', 160, 'gather'), node('c', 900, 'act')];
   const stages = [{ id: 'gather', label: 'Gather' }, { id: 'decide', label: 'Decide' }, { id: 'act', label: 'Act', colour: 'red' }];
   const placed = placeStages(stages, nodes, colours);
-  // Its nodes' left, less the stage's pad (48); the Start, placed each time, holds no edge. Empty: 320 wide, then a 16 gap.
-  assert.deepEqual(placed.map((s) => [s.id, s.x, s.colour]), [['gather', 52, 'green'], ['decide', 388, 'blue'], ['act', 852, 'red']]);
+  // Its nodes' left, less the stage's pad (48); the Start, placed each time, holds no edge. Empty: STAGE_MIN wide, then a gap.
+  assert.deepEqual(placed.map((s) => [s.id, s.x, s.colour]), [['gather', 52, 'green'], ['decide', 52 + STAGE_MIN + STAGE_GAP, 'blue'], ['act', 852, 'red']]);
   assert.equal(placeStages(placed, nodes, colours), placed, 'every stage placed: the same array');
   assert.deepEqual(placeStages([{ id: 'one', label: 'One' }], [], colours), [{ id: 'one', label: 'One', x: 0, colour: 'red' }]);
 });

@@ -37,8 +37,9 @@
     toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' | 'unfurl' | 'fetch' | 'play' | 'pause' | 'stop' | 'frame' | 'collapse' | 'hide' | 'lanes' }
 -->
 <template id="default">
-  <!-- Four sections, each a button group, with a small divider between them: the data (Fetch, then Play, Pause, Stop), the history (Undo, Redo, Save),
-       the graph's shape (Zip tie, Save as Custom Node, Arrange, Unfurl, Frame), and the view (Collapse all, Hide unconnected, Swimlanes, Zoom to selection, Zoom to fit). -->
+  <!-- Five sections, each a button group, with a small divider between them (Will, TODO 1019): the data (Fetch, then Play, Pause,
+       Stop), the history (Undo, Redo), the graph's shape (Zip tie, Arrange, Unfurl, Frame), keeping it (Save as Custom Node,
+       Save), and the view (Collapse all, Hide unconnected, Swimlanes, Zoom to selection, Zoom to fit). -->
   <span class="tools" part="tools" role="toolbar" aria-label="Editor">
     <sherpa-group class="section" part="section">
       <sherpa-button class="fetch" data-type="icon" data-icon-start="cloud" data-action="fetch"
@@ -56,15 +57,11 @@
                      aria-label="Undo" data-tip="Undo (Ctrl+Z)" disabled></sherpa-button>
       <sherpa-button class="redo" data-type="icon" data-icon-start="arrow-rotate-right" data-action="redo"
                      aria-label="Redo" data-tip="Redo (Shift+Ctrl+Z)" disabled></sherpa-button>
-      <sherpa-button class="save" data-type="icon" data-icon-start="floppy-disk" data-action="save"
-                     aria-label="Save" data-tip="Save" disabled></sherpa-button>
     </sherpa-group>
     <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
     <sherpa-group class="section" part="section">
       <sherpa-button class="tie" data-type="icon" data-icon-start="zip-tie" data-action="tie"
                      aria-label="Zip tie" data-tip="Zip tie (T)" aria-pressed="false" disabled></sherpa-button>
-      <sherpa-button class="group" data-type="icon" data-icon-start="group" data-action="group"
-                     aria-label="Save as Custom Node" data-tip="Save as Custom Node (Ctrl+G)" disabled></sherpa-button>
       <sherpa-button class="arrange" data-type="icon" data-icon-start="arrange" data-action="arrange"
                      aria-label="Arrange nodes" data-tip="Arrange nodes" disabled></sherpa-button>
       <sherpa-button class="unfurl" data-type="icon" data-icon-start="unfurl" data-action="unfurl"
@@ -74,7 +71,14 @@
     </sherpa-group>
     <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
     <sherpa-group class="section" part="section">
-      <sherpa-button class="collapse" data-type="icon" data-icon-start="density-compact" data-action="collapse"
+      <sherpa-button class="group" data-type="icon" data-icon-start="group" data-action="group"
+                     aria-label="Save as Custom Node" data-tip="Save as Custom Node (Ctrl+G)" disabled></sherpa-button>
+      <sherpa-button class="save" data-type="icon" data-icon-start="floppy-disk" data-action="save"
+                     aria-label="Save" data-tip="Save" disabled></sherpa-button>
+    </sherpa-group>
+    <span class="divider" part="divider" role="separator" aria-orientation="vertical"></span>
+    <sherpa-group class="section" part="section">
+      <sherpa-button class="collapse" data-type="icon" data-icon-start="fullscreen-exit" data-action="collapse"
                      aria-label="Collapse all nodes" data-tip="Collapse all nodes" aria-pressed="false" disabled></sherpa-button>
       <sherpa-button class="hide" data-type="icon" data-icon-start="hide" data-action="hide"
                      aria-label="Hide unconnected sockets" data-tip="Hide unconnected sockets" aria-pressed="false" disabled></sherpa-button>

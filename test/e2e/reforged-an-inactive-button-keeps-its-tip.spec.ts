@@ -86,7 +86,7 @@ test('Tab reaches an inactive tool and opens its tip; Enter and Space do nothing
     await expect.poll(async () => (await focused(page)).tip).toBe(true);
     seen.push(await focused(page));
   }
-  expect(seen.map((s) => s.tool)).toEqual(['fetch', 'play', 'pause', 'stop', 'undo', 'redo', 'save', 'tie', 'group', 'arrange', 'unfurl', 'frame']);
+  expect(seen.map((s) => s.tool)).toEqual(['fetch', 'play', 'pause', 'stop', 'undo', 'redo', 'tie', 'arrange', 'unfurl', 'frame', 'group', 'save']);
 
   // On an off tool, Enter and Space are refused.
   await page.locator('#bar sherpa-button.redo .trigger').focus();

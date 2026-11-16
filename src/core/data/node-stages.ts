@@ -52,8 +52,9 @@ export interface StageBand {
   right: number;
 }
 
-/** How wide an empty stage is, in plane px. */
-export const STAGE_MIN = 320;
+/** How wide an empty stage is, and the least a fitted one is, in plane px: tripled (Will, TODO 1027, A); a drag by hand may
+ *  still go narrower (STAGE_LEAST). */
+export const STAGE_MIN = 960;
 /** How far a stage reaches past its nodes, each side. */
 export const STAGE_PAD = 48;
 /** The gap between two stages. */

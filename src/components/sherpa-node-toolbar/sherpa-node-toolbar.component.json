@@ -118,18 +118,6 @@
                 "data-tip": "Redo (Shift+Ctrl+Z)",
                 "disabled": ""
               }
-            },
-            {
-              "el": "sherpa-button",
-              "class": "save",
-              "attrs": {
-                "data-type": "icon",
-                "data-icon-start": "floppy-disk",
-                "data-action": "save",
-                "aria-label": "Save",
-                "data-tip": "Save",
-                "disabled": ""
-              }
             }
           ]
         },
@@ -157,18 +145,6 @@
                 "aria-label": "Zip tie",
                 "data-tip": "Zip tie (T)",
                 "aria-pressed": "false",
-                "disabled": ""
-              }
-            },
-            {
-              "el": "sherpa-button",
-              "class": "group",
-              "attrs": {
-                "data-type": "icon",
-                "data-icon-start": "group",
-                "data-action": "group",
-                "aria-label": "Save as Custom Node",
-                "data-tip": "Save as Custom Node (Ctrl+G)",
                 "disabled": ""
               }
             },
@@ -226,10 +202,50 @@
           "children": [
             {
               "el": "sherpa-button",
+              "class": "group",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "group",
+                "data-action": "group",
+                "aria-label": "Save as Custom Node",
+                "data-tip": "Save as Custom Node (Ctrl+G)",
+                "disabled": ""
+              }
+            },
+            {
+              "el": "sherpa-button",
+              "class": "save",
+              "attrs": {
+                "data-type": "icon",
+                "data-icon-start": "floppy-disk",
+                "data-action": "save",
+                "aria-label": "Save",
+                "data-tip": "Save",
+                "disabled": ""
+              }
+            }
+          ]
+        },
+        {
+          "el": "span",
+          "class": "divider",
+          "part": "divider",
+          "attrs": {
+            "role": "separator",
+            "aria-orientation": "vertical"
+          }
+        },
+        {
+          "el": "sherpa-group",
+          "class": "section",
+          "part": "section",
+          "children": [
+            {
+              "el": "sherpa-button",
               "class": "collapse",
               "attrs": {
                 "data-type": "icon",
-                "data-icon-start": "density-compact",
+                "data-icon-start": "fullscreen-exit",
                 "data-action": "collapse",
                 "aria-label": "Collapse all nodes",
                 "data-tip": "Collapse all nodes",
