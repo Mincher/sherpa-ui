@@ -12,6 +12,7 @@
  */
 import type { SherpaOutlet } from '../../components/sherpa-outlet/sherpa-outlet.js';
 import type { SherpaProvider } from '../../components/sherpa-provider/sherpa-provider.js';
+import type { SherpaRouter } from '../../components/sherpa-router/sherpa-router.js';
 import { ContextRequestEvent, SOURCE_CONTEXT } from '../ui/context.js';
 import { agentToolWords, type AgentTool } from '../data/agent-tool-words.js';
 import type { PageDefinition } from '../data/page-definition.js';
@@ -20,6 +21,8 @@ import type { DataSource } from '../data/data-source.js';
 import type { EntityShelf } from '../data/entity-shelf.js';
 import type { Row, Store } from '../data/store.js';
 import type { Where } from '../data/where.js';
+import type { QueryRequest } from '../data/query.js';
+import type { SortDirection } from '../data/store.js';
 
 /** One tool's answer: done, with its data; or refused, with why, in words. */
 export type AgentAnswer = { ok: true; data: unknown } | { ok: false; data: string };
@@ -142,6 +145,24 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
   };
   const viewsOf = (context: string): { id: string; label: string | undefined }[] => Object.entries(outlet.viewsOf(context)).map(([id, v]) => ({ id, label: v.label }));
   /** The graph a graph View shows, and the reader's unsaved draft of it. */
+  /** The page on screen, for a tool that changes what it shows: with its source. */
+  const shownPage = async (): Promise<(Page & { shown: DataSource }) | { why: string }> => {
+    const now = await pageOf();
+    return 'why' in now ? now : now.shown ? { ...now, shown: now.shown } : { why: 'The page is still opening. Try again.' };
+  };
+  /** The scope a field's filter goes in: the one that holds it, else the one that offers every field, else the first. */
+  const scopeOf = (page: Page, field?: string): string => {
+    const scopes = Object.entries(page.source.scopes ?? {});
+    return (field ? scopes.find(([, s]) => s.holds?.includes(field)) : undefined)?.[0]
+      ?? scopes.find(([, s]) => s.offers === 'all')?.[0] ?? scopes[0]?.[0] ?? 'data';
+  };
+  /** Wait for what the page draws, then say how many rows it shows, and its filters. */
+  const shown = async (source: DataSource): Promise<AgentAnswer> => {
+    const { settled } = await import('../ui/settled.js');
+    await settled();
+    return done({ total: source.total, filters: provider()?.export().query ?? null });
+  };
+
   const graphOnScreen = (): { graph?: Record<string, unknown> } => {
     const id = outlet.graph?.id;
     if (!id) return {};
@@ -234,6 +255,72 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
       }
       const largest = (g: { rows: number; sums: Record<string, number> }): number => (sums.length ? g.sums[sums[0]!]! : g.rows);
       return done({ context: now.context, matched: rows.length, groups: [...groups.values()].sort((a, b) => largest(b) - largest(a)).slice(0, top as number) });
+    },
+
+    /* WHAT A PAGE SHOWS, changed only when the reader asks to see it: the page, its filters, its order. 1008c2 */
+    async open_page({ context, view }) {
+      await outlet.viewsReady;
+      const at = context as string;
+      if (!outlet.contexts.some((c) => c.id === at)) return fail(`No page is called ${at}. get_app lists them.`);
+      const views = outlet.viewsOf(at);
+      if (view && !(view as string in views)) return fail(`${at} has no View "${view as string}". Its Views: ${Object.keys(views).join(', ') || 'none'}.`);
+      const router = document.querySelector<SherpaRouter>('sherpa-router');
+      if (!router) return fail('This app has no router.');
+      const arrived = outlet.context === at ? null : new Promise<void>((resolve) => {
+        const heard = (e: Event): void => { if ((e as CustomEvent<{ context?: string }>).detail?.context === at) { outlet.removeEventListener('context-load', heard); resolve(); } };
+        outlet.addEventListener('context-load', heard);
+        setTimeout(resolve, 10_000);
+      });
+      // A page's own params go with it: the new page starts from its own.
+      const cleared = Object.fromEntries(Object.keys(router.route).map((k) => [k, null]));
+      await router.go({ ...cleared, context: at, view: !view || view === outlet.firstView(at) ? null : view as string });
+      await arrived;
+      const { settled } = await import('../ui/settled.js');
+      await settled();
+      return done({ context: outlet.context, view: outlet.view });
+    },
+
+    async filter({ where, replace }) {
+      const now = await shownPage();
+      if ('why' in now) return fail(now.why);
+      const refused = unknown(now, Object.keys(where as Where));
+      if (refused) return refused;
+      const asks: QueryRequest[] = Object.entries(now.shown.readingsOf(where as Where)).map(([field, reading]) => ({ scope: scopeOf(now, field), field, reading, commit: true as const }));
+      if (replace) asks.unshift(...Object.keys(now.source.scopes ?? {}).map((scope) => ({ scope, reset: {}, commit: true as const })));
+      now.shown.query.ask(asks);
+      return shown(now.shown);
+    },
+
+    async use_preset({ id, on = true }) {
+      const now = await shownPage();
+      if ('why' in now) return fail(now.why);
+      // A page's preset and a Filter alike: each a preset of the scope whose bar it is on.
+      const scope = Object.keys(now.source.scopes ?? {}).find((s) => now.shown.query.presets(s).some((p) => p.id === id));
+      if (!scope) return fail(`This page has no preset or Filter ${id as string}. Call describe_page.`);
+      now.shown.query.ask({ scope, preset: id as string, on: on as boolean, commit: true });
+      return shown(now.shown);
+    },
+
+    async arrange({ sort, direction, group, search }) {
+      const now = await shownPage();
+      if ('why' in now) return fail(now.why);
+      const refused = unknown(now, [sort, group].filter((f): f is string => typeof f === 'string'));
+      if (refused) return refused;
+      const scope = scopeOf(now);
+      const asks: QueryRequest[] = [];
+      if (sort !== undefined) asks.push(sort === null ? { scope, sort: null, clear: true } : { scope, sort: sort as string, direction: (direction ?? 'asc') as SortDirection });
+      if (group !== undefined) asks.push({ scope, group: group as string | null });
+      if (search !== undefined) asks.push({ scope, search: search as string });
+      if (!asks.length) return fail('Name a sort, a group or a search.');
+      now.shown.query.ask(asks);
+      return shown(now.shown);
+    },
+
+    async clear_filters() {
+      const now = await shownPage();
+      if ('why' in now) return fail(now.why);
+      now.shown.query.ask(Object.keys(now.source.scopes ?? {}).map((scope) => ({ scope, reset: { organise: true }, commit: true as const })));
+      return shown(now.shown);
     },
 
     async node_kinds({ kinds }) {

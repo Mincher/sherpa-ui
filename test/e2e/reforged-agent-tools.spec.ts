@@ -27,7 +27,7 @@ const run = (page: Page, name: string, input: Record<string, unknown> = {}) => p
 test('the tools are said once, their `context` naming the app\'s Contexts; a tool there is not is refused', async ({ page }) => {
   await open(page);
   const tools = await page.evaluate(() => (window as unknown as { agent: { tools: { name: string; input: { properties: Record<string, { enum?: string[] }> } }[] } }).agent.tools);
-  expect(tools.map((t) => t.name)).toEqual(['get_app', 'on_screen', 'describe_page', 'read_rows', 'summarize', 'node_kinds']);
+  expect(tools.map((t) => t.name)).toEqual(['get_app', 'on_screen', 'describe_page', 'read_rows', 'summarize', 'open_page', 'filter', 'use_preset', 'arrange', 'clear_filters', 'node_kinds']);
   expect(tools.find((t) => t.name === 'read_rows')!.input.properties['context']!.enum).toEqual(['devices', 'teammates', 'all-devices', 'all-teammates']);
   expect(await run(page, 'nope')).toEqual({ ok: false, data: 'No tool is called nope.' });
 });
@@ -79,4 +79,34 @@ test('on_screen says the page, its acts and what the app adds; node_kinds and th
   const rules = await page.evaluate(() => (window as unknown as { agent: { rules(): Promise<string> } }).agent.rules());
   expect(rules.startsWith('APP WORDS FIRST.\n')).toBe(true);
   expect(rules).toContain('#start');
+});
+
+/** The Devices grid's rows as they read now. */
+const gridRows = (page: Page) => page.evaluate(() => [...(document.querySelector('#grid') as HTMLElement & { shadowRoot: ShadowRoot }).shadowRoot.querySelectorAll('.row')]
+  .map((row) => (row as HTMLElement).innerText.replace(/\s+/g, ' ').trim().split(' ')[0]));
+
+test('filter, arrange and clear_filters change what the page on screen shows, through its Query; a field it has not is refused (1008c2)', async ({ page }) => {
+  await open(page);
+  const filtered = await run(page, 'filter', { where: { status: { eq: 'online' } } }) as { ok: boolean; data: { total: number } };
+  expect(filtered.ok).toBe(true);
+  expect(filtered.data.total).toBe(2);
+  await expect.poll(() => gridRows(page)).toEqual(['Alpha', 'Charlie']);
+  const sorted = await run(page, 'arrange', { sort: 'risk', direction: 'asc' }) as { ok: boolean; data: { total: number } };
+  expect(sorted.data.total).toBe(2);
+  await expect.poll(() => gridRows(page)).toEqual(['Charlie', 'Alpha']);
+  expect(await run(page, 'arrange', {})).toEqual({ ok: false, data: 'Name a sort, a group or a search.' });
+  expect(await run(page, 'filter', { where: { colour: { eq: 'red' } } })).toEqual({ ok: false, data: 'The Devices page has no field colour. Call describe_page.' });
+  const cleared = await run(page, 'clear_filters') as { ok: boolean; data: { total: number } };
+  expect(cleared.data.total).toBe(3);
+  await expect.poll(() => gridRows(page)).toHaveLength(3);
+  expect(await run(page, 'use_preset', { id: 'nope' })).toEqual({ ok: false, data: 'This page has no preset or Filter nope. Call describe_page.' });
+});
+
+test('open_page takes the reader to a page, and refuses a page or a View there is not (1008c2)', async ({ page }) => {
+  await open(page);
+  expect(await run(page, 'open_page', { context: 'nowhere' })).toEqual({ ok: false, data: 'No page is called nowhere. get_app lists them.' });
+  const noView = await run(page, 'open_page', { context: 'teammates', view: 'nope' });
+  expect(noView.ok).toBe(false);
+  expect(await run(page, 'open_page', { context: 'teammates' })).toEqual({ ok: true, data: { context: 'teammates', view: null } });
+  expect(await page.evaluate(() => new URL(location.href).searchParams.get('context'))).toBe('teammates');
 });

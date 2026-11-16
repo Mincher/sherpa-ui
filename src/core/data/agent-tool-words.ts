@@ -72,6 +72,41 @@ export function agentToolWords(contexts: readonly string[]): AgentTool[] {
       changes: false,
     },
     {
+      name: 'open_page',
+      description: 'Take the reader to a page (Context), and one of its Views when given. Only when the reader asks to see it: every other tool works on a page without opening it. Ids come from get_app.',
+      input: object({ context, view: id }, ['context']),
+      changes: false,
+    },
+    {
+      name: 'filter',
+      description: 'Filter what the page on screen shows. `where` names each field\'s condition by its op, e.g. {"status":{"in":["trial"]},"score":{"lt":60},"created":{"last":3,"unit":"month"}}. Ops: eq ne contains notcontains startswith endswith gt gte lt lte between notbetween (a [low, high] pair) last next (with unit) in notin (a list). `replace` clears the other filters first.',
+      input: object({ where, replace: { type: 'boolean' } }, ['where']),
+      changes: false,
+    },
+    {
+      name: 'use_preset',
+      description: 'Turn one of the page\'s presets or Filters (filter:<id>) on, or off. Ids come from describe_page.',
+      input: object({ id, on: { type: 'boolean' } }, ['id']),
+      changes: false,
+    },
+    {
+      name: 'arrange',
+      description: 'Sort, group or search the page\'s rows. A `sort` of null stops the sort; a `group` of null stops the grouping; an empty `search` clears it.',
+      input: object({
+        sort: { anyOf: [id, { type: 'null' }] },
+        direction: { type: 'string', enum: ['asc', 'desc'] },
+        group: { anyOf: [id, { type: 'null' }] },
+        search: { type: 'string', maxLength: 200 },
+      }),
+      changes: false,
+    },
+    {
+      name: 'clear_filters',
+      description: 'Clear every filter, sort and grouping on the page on screen.',
+      input: object({}),
+      changes: false,
+    },
+    {
       name: 'node_kinds',
       description: 'The kinds of node a graph may hold, and the Custom Nodes it may place. With no `kinds`, each kind\'s name and words, and each Custom Node with its `custom` facts: its id, type, sockets, and whether it is the reader\'s own. With `kinds`, those kinds whole: their types, sockets and values. A graph places a Custom Node by its `kind`.',
       input: object({ kinds: { type: 'array', maxItems: 8, items: id } }),
