@@ -59,8 +59,6 @@ export interface QueryPart {
 export interface Preset {
   label: string;
   readings: Record<string, FieldReading>;
-  /** On at the start, and again on a Reset. Plan 963 */
-  on?: boolean;
   /** The reader's own entity it is, by id: its chip offers Rename and Delete. Plan 960 U4.4c */
   mine?: string;
 }
@@ -165,7 +163,7 @@ export class QueryDeclarations {
   /** A scope's presets: the app's own named conditions, each a boolean chip. TODOs 493, 510 */
   setPresets(scope: string, presets: readonly DeclaredPreset[]): void {
     this.#presets.set(scope, new Map(presets.map((p) => [p.id, {
-      label: p.label, readings: structuredClone(p.readings), ...(p.on ? { on: true } : {}), ...(p.mine ? { mine: p.mine } : {}),
+      label: p.label, readings: structuredClone(p.readings), ...(p.mine ? { mine: p.mine } : {}),
     }])));
   }
 

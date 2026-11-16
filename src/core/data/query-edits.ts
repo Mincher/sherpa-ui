@@ -1198,8 +1198,6 @@ function reset(w: Work, scopes: readonly string[], options: { carry?: boolean; o
         else if (start) select(w, field, [...start.picked ?? []], start, id);
         else select(w, field, [], {}, id);
       }
-      // A preset that starts on goes back on, as a start does. Plan 963
-      for (const [pid, given] of w.facts.presets(id)) if (given.on) preset(w, id, pid, true);
     }
     // The arrangement in a scope it resets, never another source's. TODO 523 S3
     const { scope } = arrangementOf(w.applied, (id) => scopes.includes(id));
