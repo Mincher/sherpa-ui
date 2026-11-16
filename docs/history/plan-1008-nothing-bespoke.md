@@ -103,6 +103,15 @@ reads (the app's words, then `graphRules`). An app adds its own tools beside the
 
 **Will's picks, 2026-11-16: D1 A, D2 A, D3 A.**
 
+**1008c1 as built (sherpa-ui-56, 2026-11-16).** `agentTools(outlet, { rules, onScreen, own })` (src/core/browser/agent-tools.ts,
+`sherpa-ui/app`, the utility layer) gives `{ tools, run(name, input), rules(), stop() }`. Each tool's words and input schema
+are said once in the data layer (`agentToolWords(contexts)`, src/core/data/agent-tool-words.ts, `sherpa-ui/data`), for the
+MCP to share (D3 A). The read tools: `get_app`, `on_screen`, `describe_page`, `read_rows`, `summarize`, `node_kinds`; and
+`rules()`, the app's words then `graphRules`. The outlet gained what they read: `contexts`, `view` and `pageDefinition(context)`
+(a page read as it opens, never opened: a `type` page too, which N-zo's own read missed). Two N-zo faults not carried over:
+`get_app` awaits each act's `actSchema` (N-zo's gave `{}`), and a Custom Node is what the shelf's `library()` offers (no
+"every type but workflow"). What only N-zo has (its Coworker tab) comes in through `onScreen`. Test: reforged-agent-tools.spec.ts.
+
 ### Phases
 
 | Phase | Builds | Who |

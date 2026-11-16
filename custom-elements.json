@@ -9275,6 +9275,22 @@
               "readonly": true
             },
             {
+              "kind": "field",
+              "name": "contexts",
+              "type": {
+                "text": "{ id: string; label: string; records: boolean }[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "view",
+              "type": {
+                "text": "string | null"
+              },
+              "readonly": true
+            },
+            {
               "kind": "method",
               "name": "openGraph",
               "parameters": [
@@ -9312,6 +9328,19 @@
                 }
               ],
               "description": "Its first View, which the URL leaves out."
+            },
+            {
+              "kind": "method",
+              "name": "pageDefinition",
+              "parameters": [
+                {
+                  "name": "context",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "A Context's page definition as it opens — its file, or its type's page, with the app's last word on it — read, never opened: none where it holds no records. Plan 1008 G1"
             },
             {
               "kind": "method",

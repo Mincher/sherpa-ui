@@ -26,6 +26,8 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 | `settingsPage` | `string \| null` | read only |  |
 | `graph` | `OpenGraph \| null` | read only |  |
 | `viewsReady` | `Promise<void>` | read only |  |
+| `contexts` | `{ id: string; label: string; records: boolean }[]` | read only |  |
+| `view` | `string \| null` | read only |  |
 
 ## Methods
 
@@ -34,6 +36,7 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 | `openGraph(id: string \| null)` | Open an entity in the graph View on screen; none, its type's first. The graph chip shows it, and the URL follows. |
 | `viewsOf(context: string)` | A Context's Views: its own, then the reader's saved ones. |
 | `firstView(context: string)` | Its first View, which the URL leaves out. |
+| `pageDefinition(context: string)` | A Context's page definition as it opens — its file, or its type's page, with the app's last word on it — read, never opened: none where it holds no records. Plan 1008 G1 |
 | `reload()` | Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436 |
 | `refreshNav()` | Draw the nav again — after a View is saved or deleted, say. |
 | `act(id: string, call: ActCall = {})` | Run an act through the one door, over the stores and the shelf a press uses, and fire `act-run` as a press does; its undo fires it again. It says nothing: the caller says the answer, as N-zo does in its chat. Plan 964 N3 |

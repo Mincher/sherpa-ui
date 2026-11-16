@@ -1,5 +1,5 @@
 /**
- * app.ts — `sherpa-ui/app`: the app layer. The provider and the router, the
+ * app.ts — `sherpa-ui/app`: the utility layer. The provider and the router, the
  * session and settings bound by pointer, a page's state and its one keeper,
  * Views from files, and the app definition. OPT-IN: no display component
  * imports any of it. TRAP T-the-app-layer-is-opt-in
@@ -66,3 +66,5 @@ export { openWorkerStore, type WorkerStoreOptions } from './core/browser/worker-
 // Hear what is new — a new version's files, a store's rows waiting. Plan 652 S6
 export { hearUpdates, noticeSeen, onUpdate, watchForUpdates } from './core/browser/updates.js';
 export { followUpdates, type FollowOptions } from './core/browser/follow-updates.js';
+// The tools an agent works the app with, over the outlet's own doors; the app keeps the Undo. Plan 1008 G1
+export { agentTools, type AgentAnswer, type AgentToolOptions, type AgentTools } from './core/browser/agent-tools.js';

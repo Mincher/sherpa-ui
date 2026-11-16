@@ -164,6 +164,28 @@ export class SherpaOutlet extends SherpaElement {
     return Object.keys(this.viewsOf(context))[0] ?? null;
   }
 
+  /** The app's Contexts, as app.json says them: each one's id, its label, and whether it holds records (a page, or a
+   *  type's own). */
+  get contexts(): { id: string; label: string; records: boolean }[] {
+    return Object.entries(this.#options?.app.contexts ?? {}).map(([id, c]) => ({ id, label: c.label, records: !!(c.definition || c.type) }));
+  }
+
+  /** The View on screen: the URL's, else its Context's first. */
+  get view(): string | null {
+    const context = this.#context;
+    return this.#router?.route[VIEW_CHIP] ?? (context ? this.firstView(context) : null);
+  }
+
+  /** A Context's page definition as it opens — its file, or its type's page, with the app's last word on it — read, never
+   *  opened: none where it holds no records. Plan 1008 G1 */
+  async pageDefinition(context: string): Promise<PageDefinition | null> {
+    const options = this.#options;
+    const def = options?.app.contexts[context];
+    if (!options || !def || !(def.definition || def.type)) return null;
+    const [, read] = await this.#contextFiles(context, def);
+    return read && options.definition ? options.definition(context, structuredClone(read)) : read;
+  }
+
   /** Open the Context on screen again: a setting its definition reads moved.
    *  Its Query is the tab's, so its filters come back with it. Under Settings,
    *  once Settings closes. TODO 436 */

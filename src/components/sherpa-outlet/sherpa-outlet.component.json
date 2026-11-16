@@ -366,12 +366,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (context, settingsPage, graph, viewsReady). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (context, settingsPage, graph, viewsReady, contexts, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, act, checkAct, actContext, start, savePageView, deletePageView). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, pageDefinition, reload, refreshNav, act, checkAct, actContext, start, savePageView, deletePageView). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -503,6 +503,12 @@
         },
         {
           "$type": "method",
+          "name": "pageDefinition",
+          "args": "context: string",
+          "description": "A Context's page definition as it opens — its file, or its type's page, with the app's last word on it — read, never opened: none where it holds no records. Plan 1008 G1"
+        },
+        {
+          "$type": "method",
           "name": "reload",
           "args": "",
           "description": "Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436"
@@ -569,6 +575,16 @@
         {
           "name": "viewsReady",
           "type": "Promise<void>",
+          "access": "read"
+        },
+        {
+          "name": "contexts",
+          "type": "{ id: string; label: string; records: boolean }[]",
+          "access": "read"
+        },
+        {
+          "name": "view",
+          "type": "string | null",
           "access": "read"
         }
       ]
