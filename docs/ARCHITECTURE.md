@@ -13,13 +13,17 @@ Paths that start with `app/` or `server/` are in Sherpa Demos. Paths that start 
 
 ## 1. The parts
 
-| Part | Where it runs | What it holds | What it never does |
-|---|---|---|---|
-| **The data layer** — `src/core/data/` | Anywhere: a page, the worker, Node | Stores, the request protocol, held sets, the Query, field facts | Touch the DOM (rule 13) |
-| **The Service Worker** — `src/core/worker/`, run by the app's `sw.js` | One per app, for every tab | The app's files; the app's stores and their one held set; the outbox; kept notices | See a component, a chip or a Query |
-| **The Node host** — `src/core/server/`, `sherpa-ui/server` (plan 695 H5) | The app's server | The same handler over the app's stores; the worker script, stamped with the build; the feed | Hold a reader's state, or read a header of the app's |
-| **The utility layer** — router, provider, outlet | The page | The URL; which Context is open; who asks for what | Draw anything; hold rows |
-| **The presentation layer** — every `sherpa-*` component | The page | What it draws, and what it counts from its answer | Reach a store; talk to another component |
+Three LAYERS, by what code does; two PLACES, by where it runs (Will, 2026-11-16). The utility layer is everything an
+app runs that is neither data nor presentation. The places are the page and the Backend: the Service Worker and the
+Node host. Tooling — the library's MCP server, its CLI, the schemas, the gates — builds and checks the app, outside it.
+
+| Part | Layer | Where it runs | What it holds | What it never does |
+|---|---|---|---|---|
+| **The data layer** — `src/core/data/` | Data | Anywhere: the page, the Backend | Stores, the request protocol, held sets, the Query, field facts | Touch the DOM (rule 13) |
+| **The Service Worker** — `src/core/worker/`, run by the app's `sw.js` | Utility, over the data layer | The Backend: one per app, for every tab | The app's files; the app's stores and their one held set; the outbox; kept notices | See a component, a chip or a Query |
+| **The Node host** — `src/core/server/`, `sherpa-ui/server` (plan 695 H5) | Utility, over the data layer | The Backend: the app's server | The same handler over the app's stores; the worker script, stamped with the build; the feed | Hold a reader's state, or read a header of the app's |
+| **Router, provider, outlet, agent tools** — `sherpa-ui/app` | Utility | The page | The URL; which Context is open; who asks for what; an agent's tools over those doors (plan 1008) | Draw anything; hold rows |
+| **Every `sherpa-*` component** | Presentation | The page | What it draws, and what it counts from its answer | Reach a store; talk to another component |
 
 The worker is the DATA's home; each tab holds its own STATE (the Query) and its own
 presentation (D1). A page that has no worker — a first visit, a private window —

@@ -32,11 +32,20 @@ Every page joins its data that way: a data grid bound by hand is reported
 component never reaches past the source to a store, and two components never
 speak directly.
 
-**A utility layer sits beside them.** App plumbing that holds no rows and draws
-nothing. `sherpa-router` owns the URL, on the Navigation API
-(`T-the-router-owns-the-url`); `sherpa-provider` opens a page's source and
-answers what its components ask. The frame they sit in is a component,
+**A utility layer sits beside them** (Will, 2026-11-16: "'Utility layer' is just a
+semantic labelling of things that facilitate functionality but aren't in the Data or
+Presentation layers."). It is everything an app RUNS that is neither data nor
+presentation, wherever it runs. `sherpa-router` owns the URL, on the Navigation API
+(`T-the-router-owns-the-url`); `sherpa-provider` opens a page's source and answers
+what its components ask; `sherpa-outlet` opens a Context; `agentTools` gives an agent
+the app's own doors (plan 1008). The frame they sit in is a component,
 `sherpa-app-shell`.
+
+**A layer says what code does; a place says where it runs.** The places are the page
+and the Backend (Will: "the Server and Service Worker are 'Backend' for lack of a
+better term"): the Service Worker and the Node host. What builds and checks the
+library — its MCP server, its CLI, the schemas, the gates — is tooling, outside the
+app. An app's own run-time MCP bridge is utility: its tools come from `agentTools`.
 
 **Where does new code go?**
 
