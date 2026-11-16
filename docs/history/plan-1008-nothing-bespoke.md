@@ -101,6 +101,8 @@ reads (the app's words, then `graphRules`). An app adds its own tools beside the
 - **D3, the MCP.** A (my pick): the MCP keeps its own tools (it runs with no browser), and a tool both have takes the same
   words from one place. B: one set of tools for both, the MCP running them over a page it opens.
 
+**Will's picks, 2026-11-16: D1 A, D2 A, D3 A.**
+
 ### Phases
 
 | Phase | Builds | Who |
