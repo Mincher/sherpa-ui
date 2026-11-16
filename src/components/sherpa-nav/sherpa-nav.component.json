@@ -91,7 +91,7 @@
                           "data-type": "icon",
                           "data-size": "sm",
                           "data-group": "end",
-                          "data-icon-start": "thumbtack-angle",
+                          "data-icon-start": "sidebar",
                           "aria-label": "Pin navigation",
                           "aria-pressed": "false"
                         }
