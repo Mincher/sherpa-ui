@@ -112,6 +112,13 @@ MCP to share (D3 A). The read tools: `get_app`, `on_screen`, `describe_page`, `r
 `get_app` awaits each act's `actSchema` (N-zo's gave `{}`), and a Custom Node is what the shelf's `library()` offers (no
 "every type but workflow"). What only N-zo has (its Coworker tab) comes in through `onScreen`. Test: reforged-agent-tools.spec.ts.
 
+**1008c2 and c3 as built (sherpa-ui-56, 2026-11-16).** c2: `open_page`, `filter`, `use_preset`, `arrange`, `clear_filters`, over
+the page's own Query; a field's filter goes in the scope that holds it, else the one that offers every field (no app's scope
+names). c3: `act` and `flow`. An app gives `ask(words)` (and `step(ask)` for a flow, `say(words)` for a refused answer): a tool
+that changes data is offered only where it does. A change is asked first in the act's words, a row named by its title (its
+type's title field, through its store; N-zo named it by its key), then told to the app (`onChange`: its words, its undo, the
+route where it is seen) for the app's own Undo (D2 A). The app's own tools (`offer_actions`, `undo`) stay its own.
+
 ### Phases
 
 | Phase | Builds | Who |

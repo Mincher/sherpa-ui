@@ -8,18 +8,28 @@ import { test, expect, type Page } from './harness';
 type Answer = { ok: boolean; data: unknown };
 
 /** The typed test app, open on its Devices page, and its agent's tools on `window.agent`. */
-async function open(page: Page): Promise<void> {
+async function open(page: Page, asks = false): Promise<void> {
   await page.goto('/test/reforged/outlet.html?context=devices');
   await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
-  await page.evaluate(async () => {
+  await page.evaluate(async (asks) => {
     const { SessionStore, agentTools } = await import('/dist/index.js');
     const outlet = document.querySelector('sherpa-outlet') as unknown as HTMLElement & { start(o: unknown): Promise<void> };
     const base = new URL('/test/reforged/typed/app.json', location.href);
     await outlet.start({ app: await (await fetch(base)).json(), base, session: new SessionStore({}), stores: () => ({}) });
     const grid = () => document.querySelector('#grid') as HTMLElement & { shadowRoot: ShadowRoot };
     for (let i = 0; i < 100 && !grid()?.shadowRoot?.querySelectorAll('.row').length; i++) await new Promise((done) => setTimeout(done, 50));
-    (window as unknown as { agent: unknown }).agent = agentTools(outlet as never, { rules: 'APP WORDS FIRST.', onScreen: () => ({ tab: 'overview' }) });
-  });
+    // The app's own asking, a chat's as it were: what it was asked, the reader's answers, and each change it was told.
+    const w = window as unknown as { agent: unknown; asked: string[]; allow: boolean; answers: Record<string, unknown>; changes: { label: string; undo(): Promise<unknown>; route: unknown }[] };
+    Object.assign(w, { asked: [], allow: true, answers: {}, changes: [] });
+    w.agent = agentTools(outlet as never, {
+      rules: 'APP WORDS FIRST.', onScreen: () => ({ tab: 'overview' }),
+      ...(asks ? {
+        ask: async (words: string) => { w.asked.push(words); return w.allow; },
+        step: async (step: { field: string }) => w.answers[step.field],
+        onChange: (change: { label: string; undo(): Promise<unknown>; route: unknown }) => w.changes.push(change),
+      } : {}),
+    });
+  }, asks);
 }
 const run = (page: Page, name: string, input: Record<string, unknown> = {}) => page.evaluate(([n, i]) =>
   (window as unknown as { agent: { run(n: string, i: unknown): Promise<Answer> } }).agent.run(n as string, i), [name, input] as const) as Promise<Answer>;
@@ -109,4 +119,49 @@ test('open_page takes the reader to a page, and refuses a page or a View there i
   expect(noView.ok).toBe(false);
   expect(await run(page, 'open_page', { context: 'teammates' })).toEqual({ ok: true, data: { context: 'teammates', view: null } });
   expect(await page.evaluate(() => new URL(location.href).searchParams.get('context'))).toBe('teammates');
+});
+
+/** The devices store's rows, by id: their status. */
+const statuses = (page: Page) => page.evaluate(async () => {
+  const outlet = document.querySelector('sherpa-outlet') as unknown as { actContext(): { stores: Record<string, never> } };
+  const { storeOfType } = await import('/dist/index.js');
+  const rows = (await storeOfType(outlet.actContext().stores, 'device')!.load({})).rows;
+  return Object.fromEntries(rows.map((r) => [String(r['id']), String(r['status'])]));
+});
+
+test('act and flow are offered only where the app asks the reader; a change is asked first, told to the app, and its Undo puts it back (1008c3)', async ({ page }) => {
+  await open(page);
+  const quiet = await page.evaluate(() => (window as unknown as { agent: { tools: { name: string }[] } }).agent.tools.map((t) => t.name));
+  expect(quiet).not.toContain('act');
+  expect(await run(page, 'act', { id: 'device.change' })).toEqual({ ok: false, data: 'No tool is called act.' });
+
+  await open(page, true);
+  expect(await page.evaluate(() => (window as unknown as { agent: { tools: { name: string }[] } }).agent.tools.map((t) => t.name))).toEqual(expect.arrayContaining(['act', 'flow']));
+  // Declined: nothing changes, and the agent is told not to try another way.
+  await page.evaluate(() => { (window as unknown as { allow: boolean }).allow = false; });
+  const no = await run(page, 'act', { id: 'device.change', keys: ['d2'], input: { status: 'online' } });
+  expect(no.ok).toBe(false);
+  expect((await statuses(page))['d2']).toBe('offline');
+  // Allowed: asked in the act's words, done, and told to the app with its Undo.
+  await page.evaluate(() => { (window as unknown as { allow: boolean }).allow = true; });
+  const yes = await run(page, 'act', { id: 'device.change', keys: ['d2'], input: { status: 'online' } });
+  expect(yes.ok).toBe(true);
+  expect((await statuses(page))['d2']).toBe('online');
+  const told = await page.evaluate(() => { const w = window as unknown as { asked: string[]; changes: { label: string }[] }; return { asked: w.asked.at(-1), labels: w.changes.map((c) => c.label) }; });
+  expect(told.asked).toMatch(/"Bravo".*Status online\?$/);
+  expect(told.labels).toHaveLength(1);
+  await page.evaluate(() => (window as unknown as { changes: { undo(): Promise<unknown> }[] }).changes[0]!.undo());
+  expect((await statuses(page))['d2']).toBe('offline');
+  expect(await run(page, 'act', { id: 'nothing' })).toEqual({ ok: false, data: 'No act has the id nothing. get_app lists the acts.' });
+});
+
+test('flow asks each field it still needs where the app asks, then the confirm, then does the act (1008c3)', async ({ page }) => {
+  await open(page, true);
+  await page.evaluate(() => { (window as unknown as { answers: Record<string, unknown> }).answers = { id: 'd4', name: 'Delta', status: 'online', risk: 5 }; });
+  const added = await run(page, 'flow', { act: 'device.add', input: { name: 'Delta' } });
+  expect(added.ok).toBe(true);
+  expect((await statuses(page))['d4']).toBe('online');
+  // A stopped step stops the flow.
+  await page.evaluate(() => { (window as unknown as { answers: Record<string, unknown> }).answers = {}; });
+  expect(await run(page, 'flow', { act: 'device.add' })).toEqual({ ok: false, data: 'The reader stopped it. Ask them what they want.' });
 });

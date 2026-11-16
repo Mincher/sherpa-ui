@@ -24,6 +24,14 @@ const id: Schema = { type: 'string', minLength: 1, maxLength: 80 };
 const plain: Schema = { anyOf: [{ type: 'string', maxLength: 500 }, { type: 'number' }, { type: 'boolean' }, { type: 'null' }] };
 const value: Schema = { anyOf: [plain, { type: 'array', maxItems: 50, items: plain }] };
 const object = (properties: Schema, required: readonly string[] = []): Schema => ({ type: 'object', properties, required, additionalProperties: false });
+/** The most rows or entities one act names. */
+const MANY = 25;
+const keys: Schema = { type: 'array', maxItems: MANY, items: { type: 'string', maxLength: 200 } };
+/** An act's input: plain values by field, and an entity's `settings` and `graph` whole, as its read gives them. */
+const actInput = (max: number): Schema => ({
+  type: 'object', maxProperties: max, additionalProperties: value,
+  properties: { graph: { type: 'object', description: 'The entity\'s graph whole, as its read gives it.' }, settings: { type: 'object', maxProperties: 24 } },
+});
 /** A page's `where`: each field's condition by its op, as a filter takes it. */
 const where: Schema = {
   type: 'object', minProperties: 1, maxProperties: 12,
@@ -105,6 +113,21 @@ export function agentToolWords(contexts: readonly string[]): AgentTool[] {
       description: 'Clear every filter, sort and grouping on the page on screen.',
       input: object({}),
       changes: false,
+    },
+    {
+      name: 'act',
+      description: 'Do one of the app\'s acts: what a button or a menu row on a page does, and every type\'s find, read, add, change and remove (a graph type\'s publish, roll back and clone too), on its rows or entities by their `keys`, with its `input`. A graph type\'s add and change take the entity\'s `settings` and its `graph` whole, as its read gives them. get_app lists every act: its id, its words, its input and where it applies. One that changes data is asked of the reader first. It works on any page, without opening it. To do the same act several times at once, give `calls`, each with its keys and input: the reader is asked once.',
+      input: object({
+        id: { type: 'string', maxLength: 80 }, keys, input: actInput(20),
+        calls: { type: 'array', minItems: 1, maxItems: MANY, items: object({ keys, input: actInput(40) }) },
+      }, ['id']),
+      changes: true,
+    },
+    {
+      name: 'flow',
+      description: 'Do an act as its flow, a step at a time: each field it still needs is asked of the reader (a dropdown of its choices, or a field), then they confirm it. Use it when the reader wants to do an act with a form and has not said every field; give what they did say as `input`. get_app lists the acts.',
+      input: object({ act: { type: 'string', maxLength: 80 }, keys, input: { type: 'object', maxProperties: 20, additionalProperties: value } }, ['act']),
+      changes: true,
     },
     {
       name: 'node_kinds',

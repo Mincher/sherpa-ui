@@ -6,7 +6,8 @@
  *
  * Map:
  * - AgentAnswer — one tool's answer: done, with its data; or refused, with why, in words
- * - AgentToolOptions — what an app adds: its own words, what it shows besides the page, its agent's own panel
+ * - AgentChange — one change a tool made, for the app's own Undo: its words, how it is undone, and where it is seen
+ * - AgentToolOptions — what an app adds: its words, what it shows besides the page, its own panel, and how it asks the reader
  * - AgentTools — the tools, the one way to run them, and the rules an agent reads
  * - agentTools — the tools over an outlet
  */
@@ -23,9 +24,20 @@ import type { Row, Store } from '../data/store.js';
 import type { Where } from '../data/where.js';
 import type { QueryRequest } from '../data/query.js';
 import type { SortDirection } from '../data/store.js';
+import type { Act, ActAnswer, ActCall } from '../data/acts.js';
+import type { Ask, FlowAnswers } from '../data/flows.js';
+import { GRAPH_CHIP } from '../ui/shared-constants.js';
 
 /** One tool's answer: done, with its data; or refused, with why, in words. */
 export type AgentAnswer = { ok: true; data: unknown } | { ok: false; data: string };
+
+/** One change a tool made, for the app's own Undo (D2 A): its words, how it is undone (why not, in words, where it cannot
+ *  be), and where it is seen — its page, and its row where the router names its type. */
+export interface AgentChange {
+  readonly label: string;
+  undo(): Promise<string | undefined>;
+  readonly route: Readonly<Record<string, string>> | null;
+}
 
 /** What an app adds to its agent's tools. */
 export interface AgentToolOptions {
@@ -35,6 +47,15 @@ export interface AgentToolOptions {
   onScreen?(): Readonly<Record<string, unknown>>;
   /** The agent's own panel: a press in it is not the reader's. */
   readonly own?: Element | null;
+  /** Ask the reader to allow a change, in words: whether they did. Without it, no tool that changes data is offered. */
+  ask?(words: string): Promise<boolean>;
+  /** Ask the reader one step of a flow, where the app asks (its chat): the answer, or none where they stopped. Without it,
+   *  `flow` is not offered. */
+  step?(step: Ask): Promise<unknown>;
+  /** Tell the reader something on the way: a flow's answer refused, and why. */
+  say?(words: string): void;
+  /** Each change a tool made, for the app's own Undo. */
+  onChange?(change: AgentChange): void;
 }
 
 /** The tools, the one way to run them, and the rules an agent reads. */
@@ -161,6 +182,28 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
     const { settled } = await import('../ui/settled.js');
     await settled();
     return done({ total: source.total, filters: provider()?.export().query ?? null });
+  };
+
+  /** Where an act's change is seen: its page (the act's own, else the one its type's other acts name), and the one row it
+   *  changed where the router has a param for its type; a graph type's entity in the View that shows its type's graphs. */
+  const routeOf = async (act: Act, keys: readonly unknown[], answer: ActAnswer): Promise<Record<string, string> | null> => {
+    const { actsOf } = await import('../data/acts.js');
+    const made = 'result' in answer ? (answer.result as { id?: unknown } | undefined)?.id : undefined;
+    const key = keys.length === 1 ? keys[0] : made;
+    const context = act.where?.contexts?.[0] ?? actsOf().find((a) => a.type === act.type && a.where?.contexts?.length)?.where?.contexts?.[0];
+    const params = document.querySelector<SherpaRouter>('sherpa-router')?.dataset['params']?.split(/\s+/) ?? [];
+    const type = act.type;
+    if (context) return { context, ...(key !== undefined && type && params.includes(type) ? { [type]: String(key) } : {}) };
+    if (key === undefined || !type) return null;
+    for (const c of outlet.contexts) {
+      const view = Object.entries(outlet.viewsOf(c.id)).find(([, v]) => v.graph?.type === type)?.[0];
+      if (view) return { context: c.id, view, [GRAPH_CHIP]: String(key) };
+    }
+    return null;
+  };
+  /** Keep one change for the app's Undo. */
+  const told = (label: string, undo: () => Promise<void>, route: Record<string, string> | null): void => {
+    options.onChange?.({ label, route, undo: async (): Promise<string | undefined> => { await undo(); return undefined; } });
   };
 
   const graphOnScreen = (): { graph?: Record<string, unknown> } => {
@@ -323,6 +366,97 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
       return shown(now.shown);
     },
 
+    /* AN ACT, said once (plan 964): through the outlet's one door, as a press is, so the page draws it; a change asked of
+       the reader first, and told to the app for its Undo. 1008c3 */
+    async act({ id, keys = [], input, calls }) {
+      const { actsOf } = await import('../data/acts.js');
+      const act = actsOf().find((a) => a.id === id);
+      if (!act) return fail(`No act has the id ${id as string}. get_app lists the acts.`);
+      const list: ActCall[] = (calls as ActCall[] | undefined)?.length
+        ? (calls as ActCall[]).map((c) => ({ keys: c.keys ?? [], ...(c.input ? { input: c.input } : {}) }))
+        : [{ keys: keys as unknown[], ...(input ? { input: input as NonNullable<ActCall['input']> } : {}) }];
+      /** The rows or entities keys name, by their titles: an entity's label, else its row's title field in its type's store. */
+      const titles = async (named: readonly unknown[]): Promise<string[]> => {
+        const [{ entityTypes }, { storeOfType, titleOf }] = await Promise.all([import('../data/entity-types.js'), import('../data/type-definition.js')]);
+        const type = act.type ? entityTypes()[act.type] : undefined;
+        const store = act.type ? storeOfType(outlet.actContext()?.stores ?? {}, act.type) : undefined;
+        const field = type ? titleOf(type) : undefined;
+        const rows = store && field ? (await store.load({ filter: [store.key, 'in', named.map(String)] })).rows : [];
+        return named.map((k) => shelf()?.get(String(k))?.label ?? String(rows.find((r) => String(r[store!.key]) === String(k))?.[field!] ?? k));
+      };
+      /** One call, in words: the rows it names and the input it gives. */
+      const words = async (call: ActCall): Promise<string> => {
+        const said = Object.entries(call.input ?? {}).filter(([k]) => k !== 'graph' && k !== 'settings')
+          .map(([k, v]) => `${act.input?.[k]?.label ?? k} ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(', ');
+        const keyed = call.keys ?? [];
+        const named = !keyed.length ? '' : keyed.length > 3 ? ` ${keyed.length} rows` : ` ${(await titles(keyed)).map((t) => `"${t}"`).join(', ')}`;
+        return `${act.label}${named}${said ? `: ${said}` : ''}`;
+      };
+      // What would be refused is said first, never asked: the reader is asked only what can run.
+      for (const call of list) {
+        const checked = await outlet.checkAct(act.id, call);
+        if (checked.refused) return fail(checked.refused);
+      }
+      const asked = list.length === 1 ? `${await words(list[0]!)}?` : `${act.label}, ${list.length} times?\n${(await Promise.all(list.map(words))).join('\n')}`;
+      if (act.changes && !(await options.ask?.(asked))) {
+        return fail('The reader declined. Do not try this another way; ask the reader what they want.');
+      }
+      const answers: ActAnswer[] = [];
+      for (const call of list) answers.push(await outlet.act(act.id, call));
+      const ran = answers.filter((a): a is Extract<ActAnswer, { done: string }> => 'done' in a);
+      const refused = answers.flatMap((a) => ('refused' in a ? [a.refused] : []));
+      // One Undo for all of them, the last first, in the acts' own words.
+      const undos = ran.map((a) => a.undo).filter((u): u is () => Promise<void> => !!u).reverse();
+      if (undos.length) {
+        const label = ran.length === 1 ? ran[0]!.done.replace(/\.$/, '') : `${act.label}, ${ran.length} times`;
+        told(label, async () => { for (const undo of undos) await undo(); }, await routeOf(act, list.length === 1 ? list[0]!.keys ?? [] : [], ran.length === 1 ? ran[0]! : { done: '' }));
+      }
+      if (!ran.length) return fail(refused.join(' '));
+      return done({
+        done: ran.length === 1 ? ran[0]!.done : ran.map((a) => a.done),
+        ...(ran.length === 1 && ran[0]!.result !== undefined ? { result: ran[0]!.result } : {}),
+        ...(refused.length ? { refused } : {}),
+      });
+    },
+
+    /* AN ACT AS ITS FLOW (plan 964 N4): each field it still needs asked of the reader where the app asks, a step at a time,
+       then its confirm, then the act through the outlet's door. What the reader already said is given as `input`. */
+    async flow({ act: id, keys = [], input = {} }) {
+      const [{ actsOf }, { answerStep, flowOf, nextStep }] = await Promise.all([import('../data/acts.js'), import('../data/flows.js')]);
+      const act = actsOf().find((a) => a.id === id);
+      const flow = act ? flowOf(act.id) : undefined;
+      const ctx = outlet.actContext();
+      if (!act || !flow || !ctx) return fail(`No act has the id ${id as string}. get_app lists the acts.`);
+      const named = keys as unknown[];
+      let answers: FlowAnswers = {};
+      for (const [field, value] of Object.entries(input as Record<string, unknown>)) {
+        const given = await answerStep(flow, answers, field, value, ctx);
+        if ('answers' in given) answers = given.answers;
+        else options.say?.(given.refused);
+      }
+      for (let turn = 0; turn < 40; turn += 1) {
+        const next = await nextStep(flow, answers, { ...ctx, keys: named });
+        if ('refused' in next) return fail(next.refused);
+        if ('step' in next) {
+          const value = await options.step?.(next.step);
+          if (value === undefined) return fail('The reader stopped it. Ask them what they want.');
+          const given = await answerStep(flow, answers, next.step.field, value, ctx);
+          if ('answers' in given) answers = given.answers;
+          else options.say?.(given.refused);
+          continue;
+        }
+        const call: ActCall = { keys: named, input: 'confirm' in next ? next.input : next.run };
+        const checked = await outlet.checkAct(act.id, call);
+        if (checked.refused) return fail(checked.refused);
+        if ('confirm' in next && !(await options.ask?.(next.confirm))) return fail('The reader declined. Do not try this another way; ask the reader what they want.');
+        const answer = await outlet.act(act.id, call);
+        if ('refused' in answer) return fail(answer.refused);
+        if (answer.undo) told(answer.done.replace(/\.$/, ''), answer.undo, await routeOf(act, named, answer));
+        return done({ done: answer.done, ...(answer.result !== undefined ? { result: answer.result } : {}) });
+      }
+      return fail('The flow asked too many steps.');
+    },
+
     async node_kinds({ kinds }) {
       const [{ nodeKinds }, { asNode }, { entityKind }] = await Promise.all([import('../data/node-kinds.js'), import('../data/entity-types.js'), import('../data/entity.js')]);
       const all = nodeKinds();
@@ -342,14 +476,16 @@ export function agentTools(outlet: SherpaOutlet, options: AgentToolOptions = {})
     },
   };
 
-  const tools = (): AgentTool[] => agentToolWords(outlet.contexts.map((c) => c.id)).filter((t) => t.name in handlers);
+  // A tool that changes data only where the app asks the reader; a flow only where it asks its steps too.
+  const offered = (t: AgentTool): boolean => t.name in handlers && (!t.changes || !!options.ask) && (t.name !== 'flow' || !!options.step);
+  const tools = (): AgentTool[] => agentToolWords(outlet.contexts.map((c) => c.id)).filter(offered);
   return {
     get tools() {
       return tools();
     },
     async run(name, input = {}) {
       const handler = handlers[name];
-      return handler ? handler({ ...input }) : fail(`No tool is called ${name}.`);
+      return handler && tools().some((t) => t.name === name) ? handler({ ...input }) : fail(`No tool is called ${name}.`);
     },
     async rules() {
       const { graphRules, nodeKinds } = await import('../data/node-kinds.js');
